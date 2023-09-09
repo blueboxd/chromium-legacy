@@ -25,8 +25,6 @@ class DisplayOverlayController;
 //
 class EditingList : public views::View, public TouchInjectorObserver {
  public:
-  static EditingList* Show(DisplayOverlayController* controller);
-
   explicit EditingList(DisplayOverlayController* display_overlay_controller);
   EditingList(const EditingList&) = delete;
   EditingList& operator=(const EditingList&) = delete;
@@ -36,6 +34,7 @@ class EditingList : public views::View, public TouchInjectorObserver {
   friend class ButtonOptionsMenuTest;
   friend class EditingListTest;
   friend class EditLabelTest;
+  friend class OverlayViewTestBase;
 
   void Init();
   bool HasControls() const;
@@ -57,9 +56,9 @@ class EditingList : public views::View, public TouchInjectorObserver {
   // TouchInjectorObserver:
   void OnActionAdded(Action& action) override;
   void OnActionRemoved(const Action& action) override;
-  void OnActionTypeChanged(const Action& action,
-                           const Action& new_action) override;
-  void OnActionUpdated(const Action& action) override;
+  void OnActionTypeChanged(Action* action, Action* new_action) override;
+  void OnActionInputBindingUpdated(const Action& action) override;
+  void OnActionNameUpdated(const Action& action) override;
 
   raw_ptr<DisplayOverlayController> controller_;
   // It wraps ActionViewListItem.

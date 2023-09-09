@@ -108,6 +108,7 @@
 #include "chrome/test/base/test_switches.h"
 #include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/ash/components/dbus/cros_disks/fake_cros_disks_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/dbus/spaced/fake_spaced_client.h"
 #include "chromeos/ash/components/dbus/vm_concierge/concierge_service.pb.h"
 #include "chromeos/ash/components/disks/mount_point.h"
@@ -442,6 +443,7 @@ struct AddEntriesMessage {
     EntryCapabilities capabilities;   // Entry permissions.
     EntryFolderFeature folder_feature;  // Entry folder feature.
     bool pinned = false;                // Whether the file should be pinned.
+    bool dirty = false;                 // Whether the file is dirty.
     bool available_offline = false;  // Whether the file is available_offline.
     std::string alternate_url;       // Entry's alternate URL on Drive.
     bool can_pin = true;             // Whether the file can be pinned.
@@ -493,6 +495,11 @@ struct AddEntriesMessage {
       return *this;
     }
 
+    TestEntryInfo& SetDirty(bool is_dirty) {
+      dirty = is_dirty;
+      return *this;
+    }
+
     TestEntryInfo& SetAvailableOffline(bool is_available_offline) {
       available_offline = is_available_offline;
       return *this;
@@ -530,6 +537,7 @@ struct AddEntriesMessage {
       converter->RegisterNestedField("folderFeature",
                                      &TestEntryInfo::folder_feature);
       converter->RegisterBoolField("pinned", &TestEntryInfo::pinned);
+      converter->RegisterBoolField("dirty", &TestEntryInfo::dirty);
       converter->RegisterBoolField("availableOffline",
                                    &TestEntryInfo::available_offline);
       converter->RegisterStringField("alternateUrl",
@@ -855,6 +863,7 @@ ash::LoggedInUserMixin::LogInType LogInTypeFor(
       // TODO(crbug.com/1061742): `base::ImmediateCrash` is necessary.
       base::ImmediateCrash();
     case kEnterprise:
+    case kGoogler:
       return ash::LoggedInUserMixin::LogInType::kRegular;
     case kChild:
       return ash::LoggedInUserMixin::LogInType::kChild;
@@ -875,9 +884,10 @@ absl::optional<AccountId> AccountIdFor(TestAccountType test_account_type) {
       return AccountId::FromUserEmailGaiaId(
           FakeGaiaMixin::kEnterpriseUser1,
           FakeGaiaMixin::kEnterpriseUser1GaiaId);
+    case kGoogler:
+      return AccountId::FromUserEmailGaiaId(
+          "user@google.com", FakeGaiaMixin::kEnterpriseUser1GaiaId);
     case kChild:
-      // Use the default account provided by `LoggedInUserMixin`.
-      return absl::nullopt;
     case kNonManaged:
     case kNonManagedNonOwner:
       // Use the default account provided by `LoggedInUserMixin`.
@@ -1374,6 +1384,7 @@ class DriveFsTestVolume : public TestVolume {
     metadata.path = relative_path;
     metadata.mime_type = entry.mime_type;
     metadata.original_name = original_name.value();
+    metadata.dirty = entry.dirty;
     metadata.pinned = entry.pinned;
     metadata.available_offline = entry.available_offline;
     metadata.shared =
@@ -3221,7 +3232,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
         drive::DriveIntegrationServiceFactory::FindForProfile(profile());
     ASSERT_NE(integration_service, nullptr);
     ASSERT_NE(integration_service->GetPinManager(), nullptr);
-    integration_service->GetPinManager()->CalculateRequiredSpace();
+    ASSERT_TRUE(integration_service->GetPinManager()->CalculateRequiredSpace());
     return;
   }
 
@@ -3242,6 +3253,19 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     ASSERT_NE(integration_service->GetPinManager(), nullptr);
     auto progress = integration_service->GetPinManager()->GetProgress();
     *output = base::NumberToString(progress.required_space);
+    return;
+  }
+
+  if (name == "setBulkPinningShouldPinFiles") {
+    absl::optional<bool> enabled = value.FindBool("enabled");
+    ASSERT_TRUE(enabled.has_value())
+        << "enabled must be sent with setBulkPiningDontPinFiles";
+    auto* integration_service =
+        drive::DriveIntegrationServiceFactory::FindForProfile(profile());
+    ASSERT_NE(integration_service, nullptr);
+    ASSERT_NE(integration_service->GetPinManager(), nullptr);
+    integration_service->GetPinManager()->SetShouldPinFilesForTesting(
+        enabled.value());
     return;
   }
 
@@ -3658,6 +3682,13 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
   if (name == "isJellybean") {
     *output = options.enable_jellybean ? "true" : "false";
+    return;
+  }
+
+  if (name == "setDeviceOffline") {
+    ash::ShillServiceClient::Get()->GetTestInterface()->ClearServices();
+    content::NetworkConnectionChangeSimulator().SetConnectionType(
+        network::mojom::ConnectionType::CONNECTION_NONE);
     return;
   }
 

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_NIGORI_CRYPTOGRAPHER_IMPL_H_
 #define COMPONENTS_SYNC_NIGORI_CRYPTOGRAPHER_IMPL_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -12,6 +13,7 @@
 #include "components/sync/engine/nigori/cryptographer.h"
 #include "components/sync/engine/nigori/key_derivation_params.h"
 #include "components/sync/engine/nigori/nigori.h"
+#include "components/sync/nigori/cross_user_sharing_keys.h"
 #include "components/sync/nigori/nigori_key_bag.h"
 #include "components/sync/protocol/nigori_local_data.pb.h"
 
@@ -60,6 +62,9 @@ class CryptographerImpl : public Cryptographer {
   // Does NOT set or change the default encryption key.
   void EmplaceKeysFrom(const NigoriKeyBag& key_bag);
 
+  // Adds all keys from |keys| that weren't previously known.
+  void EmplaceCrossUserSharingKeysFrom(const CrossUserSharingKeys& keys);
+
   // Adds the given Public-private key-pair associated with |version|.
   void EmplaceKeyPair(CrossUserSharingPublicPrivateKeyPair key_pair,
                       uint32_t version);
@@ -107,10 +112,13 @@ class CryptographerImpl : public Cryptographer {
                      sync_pb::EncryptedData* encrypted) const override;
   bool DecryptToString(const sync_pb::EncryptedData& encrypted,
                        std::string* decrypted) const override;
+  const CrossUserSharingPublicPrivateKeyPair&
+  GetCrossUserSharingKeyPairForTesting(uint32_t version) const override;
 
  private:
   CryptographerImpl(NigoriKeyBag key_bag,
-                    std::string default_encryption_key_name);
+                    std::string default_encryption_key_name,
+                    CrossUserSharingKeys cross_user_sharing_keys);
 
   // The actual keys we know about.
   NigoriKeyBag key_bag_;
@@ -119,6 +127,9 @@ class CryptographerImpl : public Cryptographer {
   // must correspond to a key within |key_bag_|. May be empty even if |key_bag_|
   // is not.
   std::string default_encryption_key_name_;
+
+  // Cross user sharing keys we know about.
+  CrossUserSharingKeys cross_user_sharing_keys_;
 };
 
 }  // namespace syncer

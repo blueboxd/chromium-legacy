@@ -72,6 +72,7 @@ WebView::WebView(content::BrowserContext* browser_context) {
 WebView::~WebView() {
   ui::AXPlatformNode::RemoveAXModeObserver(this);
   SetWebContents(nullptr);  // Make sure all necessary tear-down takes place.
+  browser_context_ = nullptr;
 }
 
 content::WebContents* WebView::GetWebContents(base::Location creator_location) {
@@ -284,10 +285,11 @@ gfx::NativeViewAccessible WebView::GetNativeViewAccessible() {
       gfx::NativeViewAccessible accessible =
           host_view->GetNativeViewAccessible();
       // |accessible| needs to know whether this is the primary WebContents.
-      if (auto* ax_platform_node =
-              ui::AXPlatformNode::FromNativeViewAccessible(accessible)) {
-        ax_platform_node->SetIsPrimaryWebContentsForWindow(
-            is_primary_web_contents_for_window_);
+      if (is_primary_web_contents_for_window_) {
+        if (auto* ax_platform_node =
+                ui::AXPlatformNode::FromNativeViewAccessible(accessible)) {
+          ax_platform_node->GetDelegate()->SetIsPrimaryWebContentsForWindow();
+        }
       }
       return accessible;
     }

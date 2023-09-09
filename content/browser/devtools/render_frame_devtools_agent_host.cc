@@ -48,6 +48,7 @@
 #include "content/browser/devtools/protocol/system_info_handler.h"
 #include "content/browser/devtools/protocol/target_handler.h"
 #include "content/browser/devtools/protocol/tracing_handler.h"
+#include "content/browser/devtools/web_contents_devtools_agent_host.h"
 #include "content/browser/fenced_frame/fenced_frame.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -90,6 +91,8 @@ using RenderFrameDevToolsMap =
     std::map<FrameTreeNode*, RenderFrameDevToolsAgentHost*>;
 base::LazyInstance<RenderFrameDevToolsMap>::Leaky g_agent_host_instances =
     LAZY_INSTANCE_INITIALIZER;
+
+static bool g_was_ever_attached_to_any_frame = false;
 
 RenderFrameDevToolsAgentHost* FindAgentHost(FrameTreeNode* frame_tree_node) {
   if (!g_agent_host_instances.IsCreated())
@@ -188,7 +191,19 @@ bool DevToolsAgentHost::HasFor(WebContents* web_contents) {
 }
 
 // static
+bool RenderFrameDevToolsAgentHost::WasEverAttachedToAnyFrame() {
+  return g_was_ever_attached_to_any_frame;
+}
+
+// static
 bool DevToolsAgentHost::IsDebuggerAttached(WebContents* web_contents) {
+  return RenderFrameDevToolsAgentHost::IsDebuggerAttached(web_contents) ||
+         WebContentsDevToolsAgentHost::IsDebuggerAttached(web_contents);
+}
+
+// static
+bool RenderFrameDevToolsAgentHost::IsDebuggerAttached(
+    WebContents* web_contents) {
   FrameTreeNode* node =
       static_cast<WebContentsImpl*>(web_contents)->GetPrimaryFrameTree().root();
   RenderFrameDevToolsAgentHost* host = node ? FindAgentHost(node) : nullptr;
@@ -254,6 +269,7 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
     : DevToolsAgentHostImpl(frame_host->devtools_frame_token().ToString()),
       auto_attacher_(std::make_unique<FrameAutoAttacher>(GetRendererChannel())),
       frame_tree_node_(nullptr) {
+  g_was_ever_attached_to_any_frame = true;
   AddRef();  // Balanced in DestroyOnRenderFrameGone.
   auto* wc = WebContentsImpl::FromRenderFrameHostImpl(frame_host);
   WebContentsObserver::Observe(wc);

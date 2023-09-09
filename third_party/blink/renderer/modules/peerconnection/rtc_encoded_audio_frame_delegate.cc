@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/webrtc/api/frame_transformer_factory.h"
 
 namespace blink {
@@ -55,6 +56,18 @@ void RTCEncodedAudioFrameDelegate::SetData(const DOMArrayBuffer* data) {
   }
 }
 
+void RTCEncodedAudioFrameDelegate::SetTimestamp(
+    uint32_t timestamp,
+    ExceptionState& exception_state) {
+  base::AutoLock lock(lock_);
+  if (webrtc_frame_) {
+    webrtc_frame_->SetRTPTimestamp(timestamp);
+  } else {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Underlying webrtc frame doesn't exist.");
+  }
+}
+
 absl::optional<uint32_t> RTCEncodedAudioFrameDelegate::Ssrc() const {
   base::AutoLock lock(lock_);
   return webrtc_frame_ ? absl::make_optional(webrtc_frame_->GetSsrc())
@@ -86,11 +99,7 @@ absl::optional<uint64_t> RTCEncodedAudioFrameDelegate::AbsCaptureTime() const {
         static_cast<webrtc::TransformableAudioFrameInterface*>(
             webrtc_frame_.get());
 
-    auto abs_capture_time_struct =
-        incoming_audio_frame->GetHeader().extension.absolute_capture_time;
-    if (abs_capture_time_struct) {
-      return abs_capture_time_struct->absolute_capture_timestamp;
-    }
+    return incoming_audio_frame->AbsoluteCaptureTimestamp();
   }
 
   return absl::nullopt;

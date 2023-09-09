@@ -28,6 +28,8 @@
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/device_reauth/device_authenticator.h"
 #include "components/device_reauth/mock_device_authenticator.h"
+#include "components/password_manager/content/browser/mock_keyboard_replacing_surface_visibility_controller.h"
+#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/mock_webauthn_credentials_delegate.h"
 #include "components/password_manager/core/browser/origin_credential_store.h"
 #include "components/password_manager/core/browser/passkey_credential.h"
@@ -96,7 +98,6 @@ struct MockTouchToFillView : TouchToFillView {
 
 struct MockPasswordCredentialFiller
     : public password_manager::PasswordCredentialFiller {
-  MOCK_METHOD(bool, IsReadyToFill, (), (override));
   MOCK_METHOD(void,
               FillUsernameAndPassword,
               (const std::u16string&, const std::u16string&),
@@ -112,7 +113,7 @@ struct MockPasswordCredentialFiller
               (),
               (const override));
   MOCK_METHOD(const GURL&, GetFrameUrl, (), (const override));
-  MOCK_METHOD(void, CleanUp, (ToShowVirtualKeyboard), (override));
+  MOCK_METHOD(void, Dismiss, (ToShowVirtualKeyboard), (override));
 };
 
 struct MakeUiCredentialParams {
@@ -160,7 +161,6 @@ class TouchToFillControllerAutofillTest
     weak_filler_ = filler.get();
     ON_CALL(*filler, GetFrameUrl())
         .WillByDefault(ReturnRefOfCopy(GURL(kExampleCom)));
-    ON_CALL(*filler, IsReadyToFill()).WillByDefault(Return(true));
     return filler;
   }
 
@@ -180,7 +180,7 @@ class TouchToFillControllerAutofillTest
   base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
   TouchToFillController& touch_to_fill_controller() {
-    return touch_to_fill_controller_;
+    return *touch_to_fill_controller_;
   }
 
   base::MockCallback<base::RepeatingCallback<
@@ -211,6 +211,11 @@ class TouchToFillControllerAutofillTest
     return webauthn_credentials_delegate_;
   }
 
+  password_manager::MockKeyboardReplacingSurfaceVisibilityController&
+  visibility_controller() {
+    return *visibility_controller_;
+  }
+
   base::test::ScopedFeatureList& scoped_feature_list() {
     return scoped_feature_list_;
   }
@@ -219,6 +224,10 @@ class TouchToFillControllerAutofillTest
     ChromeRenderViewHostTestHarness::SetUp();
     auto mock_view = std::make_unique<MockTouchToFillView>();
     mock_view_ = mock_view.get();
+    visibility_controller_ = std::make_unique<
+        password_manager::MockKeyboardReplacingSurfaceVisibilityController>();
+    touch_to_fill_controller_ = std::make_unique<TouchToFillController>(
+        visibility_controller_->AsWeakPtr());
     touch_to_fill_controller().set_view(std::move(mock_view));
   }
 
@@ -231,7 +240,10 @@ class TouchToFillControllerAutofillTest
       webauthn_credentials_delegate_;
   base::HistogramTester histogram_tester_;
   ukm::TestAutoSetUkmRecorder test_recorder_;
-  TouchToFillController touch_to_fill_controller_;
+  std::unique_ptr<
+      password_manager::MockKeyboardReplacingSurfaceVisibilityController>
+      visibility_controller_;
+  std::unique_ptr<TouchToFillController> touch_to_fill_controller_;
   base::test::ScopedFeatureList scoped_feature_list_;
   base::MockCallback<base::RepeatingCallback<void(
       gfx::NativeWindow,
@@ -245,6 +257,7 @@ TEST_F(TouchToFillControllerAutofillTest, Show_And_Fill_No_Auth) {
   UiCredential credentials[] = {
       MakeUiCredential({.username = "alice", .password = "p4ssw0rd"})};
 
+  EXPECT_CALL(visibility_controller(), SetVisible(_)).Times(1);
   EXPECT_CALL(view(), Show(Eq(GURL(kExampleCom)), IsOriginSecure(true),
                            ElementsAreArray(credentials),
                            ElementsAreArray(std::vector<PasskeyCredential>()),
@@ -254,7 +267,8 @@ TEST_F(TouchToFillControllerAutofillTest, Show_And_Fill_No_Auth) {
       MakeTouchToFillControllerDelegate(
           autofill::mojom::SubmissionReadinessState::kNoInformation,
           CreateMockFiller(),
-          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)));
+          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)),
+      /*render_widget_host=*/nullptr);
 
   // Test that we correctly log the absence of an Android credential.
   EXPECT_CALL(*last_mock_filler(),
@@ -293,7 +307,8 @@ TEST_F(TouchToFillControllerAutofillTest, Show_Fill_And_Submit) {
       MakeTouchToFillControllerDelegate(
           autofill::mojom::SubmissionReadinessState::kTwoFields,
           std::move(filler_to_pass),
-          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)));
+          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)),
+      /*render_widget_host=*/nullptr);
 
   EXPECT_CALL(*last_mock_filler(),
               FillUsernameAndPassword(std::u16string(u"alice"),
@@ -320,7 +335,8 @@ TEST_F(TouchToFillControllerAutofillTest, Show_Fill_And_Dont_Submit) {
       MakeTouchToFillControllerDelegate(
           autofill::mojom::SubmissionReadinessState::kNoInformation,
           std::move(filler_to_pass),
-          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)));
+          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)),
+      /*render_widget_host=*/nullptr);
 
   EXPECT_CALL(*last_mock_filler(),
               FillUsernameAndPassword(std::u16string(u"alice"),
@@ -351,7 +367,8 @@ TEST_F(TouchToFillControllerAutofillTest,
       MakeTouchToFillControllerDelegate(
           autofill::mojom::SubmissionReadinessState::kTwoFields,
           std::move(filler_to_pass),
-          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)));
+          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)),
+      /*render_widget_host=*/nullptr);
 
   EXPECT_CALL(*last_mock_filler(),
               FillUsernameAndPassword(std::u16string(u"alice"),
@@ -386,7 +403,8 @@ TEST_F(TouchToFillControllerAutofillTest, Dont_Submit_With_Empty_Username) {
       MakeTouchToFillControllerDelegate(
           autofill::mojom::SubmissionReadinessState::kTwoFields,
           std::move(filler_to_pass),
-          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)));
+          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)),
+      /*render_widget_host=*/nullptr);
 
   ON_CALL(*last_mock_filler(), ShouldTriggerSubmission())
       .WillByDefault(Return(false));
@@ -420,7 +438,8 @@ TEST_F(TouchToFillControllerAutofillTest,
       MakeTouchToFillControllerDelegate(
           autofill::mojom::SubmissionReadinessState::kTwoFields,
           std::move(filler_to_pass),
-          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)));
+          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)),
+      /*render_widget_host=*/nullptr);
 
   EXPECT_CALL(*last_mock_filler(),
               FillUsernameAndPassword(std::u16string(u""),
@@ -444,7 +463,8 @@ TEST_F(TouchToFillControllerAutofillTest, Show_And_Fill_No_Auth_Available) {
       MakeTouchToFillControllerDelegate(
           autofill::mojom::SubmissionReadinessState::kNoInformation,
           CreateMockFiller(),
-          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)));
+          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)),
+      /*render_widget_host=*/nullptr);
 
   // Test that we correctly log the absence of an Android credential.
   EXPECT_CALL(*last_mock_filler(),
@@ -482,7 +502,8 @@ TEST_F(TouchToFillControllerAutofillTest,
       MakeTouchToFillControllerDelegate(
           autofill::mojom::SubmissionReadinessState::kTwoFields,
           std::move(filler_to_pass),
-          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)));
+          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)),
+      /*render_widget_host=*/nullptr);
 
   ON_CALL(*last_mock_filler(), ShouldTriggerSubmission())
       .WillByDefault(Return(true));
@@ -515,7 +536,8 @@ TEST_F(TouchToFillControllerAutofillTest,
       MakeTouchToFillControllerDelegate(
           autofill::mojom::SubmissionReadinessState::kNoInformation,
           CreateMockFiller(),
-          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)));
+          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)),
+      /*render_widget_host=*/nullptr);
 
   EXPECT_CALL(*last_mock_filler(), FillUsernameAndPassword(_, _)).Times(0);
 
@@ -541,7 +563,8 @@ TEST_F(TouchToFillControllerAutofillTest, Show_Empty) {
       MakeTouchToFillControllerDelegate(
           autofill::mojom::SubmissionReadinessState::kNoInformation,
           CreateMockFiller(),
-          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)));
+          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)),
+      /*render_widget_host=*/nullptr);
   histogram_tester().ExpectUniqueSample(
       "PasswordManager.TouchToFill.NumCredentialsShown", 0, 1);
 }
@@ -563,7 +586,8 @@ TEST_F(TouchToFillControllerAutofillTest, Show_Insecure_Origin) {
       MakeTouchToFillControllerDelegate(
           autofill::mojom::SubmissionReadinessState::kNoInformation,
           std::move(filler_to_pass),
-          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)));
+          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)),
+      /*render_widget_host=*/nullptr);
 }
 
 TEST_F(TouchToFillControllerAutofillTest, Show_And_Fill_Android_Credential) {
@@ -592,7 +616,8 @@ TEST_F(TouchToFillControllerAutofillTest, Show_And_Fill_Android_Credential) {
       MakeTouchToFillControllerDelegate(
           autofill::mojom::SubmissionReadinessState::kNoInformation,
           CreateMockFiller(),
-          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)));
+          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)),
+      /*render_widget_host=*/nullptr);
 
   // Test that we correctly log the presence of an Android credential.
   EXPECT_CALL(*last_mock_filler(),
@@ -648,7 +673,8 @@ TEST_F(TouchToFillControllerAutofillTest, Show_Orders_Credentials) {
       MakeTouchToFillControllerDelegate(
           autofill::mojom::SubmissionReadinessState::kNoInformation,
           CreateMockFiller(),
-          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)));
+          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)),
+      /*render_widget_host=*/nullptr);
 }
 
 TEST_F(TouchToFillControllerAutofillTest, Dismiss) {
@@ -664,9 +690,10 @@ TEST_F(TouchToFillControllerAutofillTest, Dismiss) {
       MakeTouchToFillControllerDelegate(
           autofill::mojom::SubmissionReadinessState::kNoInformation,
           CreateMockFiller(),
-          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)));
+          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)),
+      /*render_widget_host=*/nullptr);
 
-  EXPECT_CALL(*last_mock_filler(), CleanUp(ToShowVirtualKeyboard(true)));
+  EXPECT_CALL(*last_mock_filler(), Dismiss(ToShowVirtualKeyboard(true)));
   touch_to_fill_controller().OnDismiss();
 
   auto entries = test_recorder().GetEntriesByName(UkmBuilder::kEntryName);
@@ -694,9 +721,10 @@ TEST_F(TouchToFillControllerAutofillTest, ManagePasswordsSelected) {
       MakeTouchToFillControllerDelegate(
           autofill::mojom::SubmissionReadinessState::kNoInformation,
           CreateMockFiller(),
-          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)));
+          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)),
+      /*render_widget_host=*/nullptr);
 
-  EXPECT_CALL(*last_mock_filler(), CleanUp(ToShowVirtualKeyboard(false)));
+  EXPECT_CALL(*last_mock_filler(), Dismiss(ToShowVirtualKeyboard(false)));
   EXPECT_CALL(client(),
               NavigateToManagePasswordsPage(
                   password_manager::ManagePasswordsReferrer::kTouchToFill));
@@ -731,7 +759,8 @@ TEST_F(TouchToFillControllerAutofillTest, DestroyedWhileAuthRunning) {
       MakeTouchToFillControllerDelegate(
           autofill::mojom::SubmissionReadinessState::kNoInformation,
           CreateMockFiller(),
-          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)));
+          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)),
+      /*render_widget_host=*/nullptr);
 
   EXPECT_CALL(*authenticator(), CanAuthenticateWithBiometrics)
       .WillOnce(Return(true));
@@ -761,11 +790,12 @@ TEST_F(TouchToFillControllerAutofillTest, ShowWebAuthnCredential) {
       MakeTouchToFillControllerDelegate(
           autofill::mojom::SubmissionReadinessState::kNoInformation,
           CreateMockFiller(),
-          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)));
+          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)),
+      /*render_widget_host=*/nullptr);
 
   EXPECT_CALL(webauthn_credentials_delegate(),
               SelectPasskey(base::Base64Encode(credential.credential_id())));
-  EXPECT_CALL(*last_mock_filler(), CleanUp(ToShowVirtualKeyboard(false)));
+  EXPECT_CALL(*last_mock_filler(), Dismiss(ToShowVirtualKeyboard(false)));
   EXPECT_CALL(*last_mock_filler(), FillUsernameAndPassword(_, _)).Times(0);
   touch_to_fill_controller().OnPasskeyCredentialSelected(credentials[0]);
   histogram_tester().ExpectUniqueSample(
@@ -790,7 +820,8 @@ TEST_F(TouchToFillControllerAutofillTest, ShowAndSelectHybrid) {
       MakeTouchToFillControllerDelegate(
           autofill::mojom::SubmissionReadinessState::kNoInformation,
           CreateMockFiller(),
-          TouchToFillControllerAutofillDelegate::ShowHybridOption(true)));
+          TouchToFillControllerAutofillDelegate::ShowHybridOption(true)),
+      /*render_widget_host=*/nullptr);
 
   EXPECT_CALL(webauthn_credentials_delegate(), ShowAndroidHybridSignIn());
   touch_to_fill_controller().OnHybridSignInSelected();
@@ -821,9 +852,10 @@ TEST_P(TouchToFillControllerAutofillTestWithSubmissionReadinessVariationTest,
       credentials, {},
       MakeTouchToFillControllerDelegate(
           submission_readiness, CreateMockFiller(),
-          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)));
+          TouchToFillControllerAutofillDelegate::ShowHybridOption(false)),
+      /*render_widget_host=*/nullptr);
 
-  EXPECT_CALL(*last_mock_filler(), CleanUp(ToShowVirtualKeyboard(true)));
+  EXPECT_CALL(*last_mock_filler(), Dismiss(ToShowVirtualKeyboard(true)));
   touch_to_fill_controller().OnDismiss();
 
   uma_recorder.ExpectUniqueSample(

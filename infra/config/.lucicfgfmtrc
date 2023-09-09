@@ -87,10 +87,7 @@ rules {
         arg: "executable_suffix"
         arg: "skip_usage_check"
 
-        # mixin/variant
-        arg: "enabled"
-        arg: "identifier"
-        arg: "description"
+        # mixin
         arg: "args"
         arg: "precommit_args"
         arg: "linux_args"
@@ -98,6 +95,7 @@ rules {
         arg: "win64_args"
 
         # swarming
+        arg: "dimension_sets"
         arg: "dimensions"
         arg: "optional_dimensions"
 

@@ -238,6 +238,18 @@ chrome.accessibilityPrivate.FocusRingStackingOrder = {
 };
 
 /**
+ * @enum {string}
+ */
+chrome.accessibilityPrivate.AssistiveTechnologyType = {
+  CHROME_VOX: 'chromeVox',
+  SELECT_TO_SPEAK: 'selectToSpeak',
+  SWITCH_ACCESS: 'switchAccess',
+  AUTO_CLICK: 'autoClick',
+  MAGNIFIER: 'magnifier',
+  DICTATION: 'dictation',
+};
+
+/**
  * @typedef {{
  *   rects: !Array<!chrome.accessibilityPrivate.ScreenRect>,
  *   type: !chrome.accessibilityPrivate.FocusType,
@@ -264,7 +276,6 @@ chrome.accessibilityPrivate.AcceleratorAction = {
 chrome.accessibilityPrivate.AccessibilityFeature = {
   GOOGLE_TTS_LANGUAGE_PACKS: 'googleTtsLanguagePacks',
   DICTATION_CONTEXT_CHECKING: 'dictationContextChecking',
-  CHROMEVOX_TABS_DEPRECATION: 'chromevoxTabsDeprecation',
   CHROMEVOX_SETTINGS_MIGRATION: 'chromevoxSettingsMigration',
 };
 
@@ -426,8 +437,10 @@ chrome.accessibilityPrivate.setNativeAccessibilityEnabled = function(enabled) {}
  * Sets the given accessibility focus rings for this extension.
  * @param {!Array<!chrome.accessibilityPrivate.FocusRingInfo>} focusRings Array
  *     of focus rings to draw.
+ * @param {!chrome.accessibilityPrivate.AssistiveTechnologyType} atType
+ *     Associates these focus rings with this feature type.
  */
-chrome.accessibilityPrivate.setFocusRings = function(focusRings) {};
+chrome.accessibilityPrivate.setFocusRings = function(focusRings, atType) {};
 
 /**
  * Sets the bounds of the accessibility highlight.
@@ -667,6 +680,13 @@ chrome.accessibilityPrivate.onTwoFingerTouchStart;
  * @type {!ChromeEvent}
  */
 chrome.accessibilityPrivate.onTwoFingerTouchStop;
+
+/**
+ * Fired when the Select to Speak context menu is clicked from outside the
+ * context of the Select to Speak extension.
+ * @type {!ChromeEvent}
+ */
+chrome.accessibilityPrivate.onSelectToSpeakContextMenuClicked;
 
 /**
  * Fired when Chrome OS wants to change the Select-to-Speak state, between

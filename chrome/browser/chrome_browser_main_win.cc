@@ -391,10 +391,9 @@ void MigratePinnedTaskBarShortcutsIfNeeded() {
         local_state->GetString(prefs::kShortcutMigrationVersion));
     if (!last_version_migrated.IsValid() ||
         last_version_migrated < kLastVersionNeedingMigration) {
-      shell_integration::win::MigrateTaskbarPins(
-          base::BindOnce(&PrefService::SetString, base::Unretained(local_state),
-                         prefs::kShortcutMigrationVersion,
-                         std::string(version_info::GetVersionNumber())));
+      shell_integration::win::MigrateTaskbarPins(base::BindOnce(
+          &PrefService::SetString, base::Unretained(local_state),
+          prefs::kShortcutMigrationVersion, version_info::GetVersionNumber()));
     }
   }
 }
@@ -723,10 +722,9 @@ bool ChromeBrowserMainPartsWin::CheckMachineLevelInstall() {
   if (version.IsValid()) {
     base::FilePath exe_path;
     base::PathService::Get(base::DIR_EXE, &exe_path);
-    const base::FilePath user_exe_path(
-        installer::GetInstalledDirectory(/*system_install=*/false));
-    if (base::FilePath::CompareEqualIgnoreCase(exe_path.value(),
-                                               user_exe_path.value())) {
+    std::wstring exe = exe_path.value();
+    base::FilePath user_exe_path(installer::GetChromeInstallPath(false));
+    if (base::FilePath::CompareEqualIgnoreCase(exe, user_exe_path.value())) {
       base::CommandLine uninstall_cmd(
           InstallUtil::GetChromeUninstallCmd(false));
       if (!uninstall_cmd.GetProgram().empty()) {

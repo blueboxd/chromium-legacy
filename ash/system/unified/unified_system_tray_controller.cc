@@ -68,6 +68,7 @@
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "ash/system/unified/user_chooser_detailed_view_controller.h"
+#include "ash/wm/focus_mode/focus_mode_detailed_view_controller.h"
 #include "ash/wm/focus_mode/focus_mode_feature_pod_controller.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -505,7 +506,8 @@ void UnifiedSystemTrayController::ShowAccessibilityDetailedView() {
 }
 
 void UnifiedSystemTrayController::ShowFocusModeDetailedView() {
-  // TODO(b/286931532): Create the Focus Mode detailed view.
+  base::RecordAction(base::UserMetricsAction("StatusArea_FocusMode_Detailed"));
+  ShowDetailedView(std::make_unique<FocusModeDetailedViewController>(this));
 }
 
 void UnifiedSystemTrayController::ShowVPNDetailedView() {
@@ -557,9 +559,10 @@ void UnifiedSystemTrayController::ShowCalendarView(
   }
 }
 
-void UnifiedSystemTrayController::ShowMediaControlsDetailedView() {
-  ShowDetailedView(
-      std::make_unique<UnifiedMediaControlsDetailedViewController>(this));
+void UnifiedSystemTrayController::ShowMediaControlsDetailedView(
+    const std::string& show_devices_for_item_id) {
+  ShowDetailedView(std::make_unique<UnifiedMediaControlsDetailedViewController>(
+      this, show_devices_for_item_id));
 }
 
 void UnifiedSystemTrayController::TransitionToMainView(bool restore_focus) {
@@ -724,7 +727,6 @@ void UnifiedSystemTrayController::InitFeaturePods() {
 }
 
 void UnifiedSystemTrayController::InitFeatureTiles() {
-  // TODO(b/252871301): Create each feature's tile.
   std::vector<std::unique_ptr<FeatureTile>> tiles;
 
   auto create_tile =

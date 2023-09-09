@@ -109,8 +109,18 @@ bool IsReservedDomCode(ui::DomCode code) {
   }
 }
 
+bool IsFlagChanged(ash::ArcGameControlsFlag new_flags,
+                   ash::ArcGameControlsFlag old_flags,
+                   ash::ArcGameControlsFlag flag) {
+  return ((new_flags ^ old_flags) & flag) != flag;
+}
+
 bool IsBeta() {
   return ash::features::IsArcInputOverlayBetaEnabled();
+}
+
+bool IsGameDashboardFlagOn() {
+  return ash::features::IsGameDashboardEnabled();
 }
 
 }  // namespace arc::input_overlay

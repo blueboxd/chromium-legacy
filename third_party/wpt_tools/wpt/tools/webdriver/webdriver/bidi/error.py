@@ -35,6 +35,10 @@ class InvalidArgumentException(BidiException):
     error_code = "invalid argument"
 
 
+class InvalidSessionIDError(BidiException):
+    error_code = "invalid session id"
+
+
 class MoveTargetOutOfBoundsException(BidiException):
     error_code = "move target out of bounds"
 
@@ -65,6 +69,10 @@ class UnknownCommandException(BidiException):
 
 class UnknownErrorException(BidiException):
     error_code = "unknown error"
+
+
+class UnsupportedOperationException(BidiException):
+    error_code = "unsupported operation"
 
 
 def from_error_details(error: str, message: str, stacktrace: Optional[str]) -> BidiException:

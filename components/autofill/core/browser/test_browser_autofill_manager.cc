@@ -8,6 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_suggestion_generator.h"
+#include "components/autofill/core/browser/browser_autofill_manager_test_api.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/form_structure_test_api.h"
@@ -22,14 +23,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
-
-namespace {
-
-FormStructureTestApi test_api(FormStructure* form_structure) {
-  return FormStructureTestApi(form_structure);
-}
-
-}  // namespace
 
 TestBrowserAutofillManager::TestBrowserAutofillManager(AutofillDriver* driver,
                                                        AutofillClient* client)
@@ -168,7 +161,7 @@ const gfx::Image& TestBrowserAutofillManager::GetCardImage(
 void TestBrowserAutofillManager::ScheduleRefill(
     const FormData& form,
     const AutofillTriggerSource trigger_source) {
-  TriggerRefillForTest(form, trigger_source);
+  test_api(*this).TriggerRefill(form, trigger_source);
 }
 
 bool TestBrowserAutofillManager::MaybeStartVoteUploadProcess(
@@ -208,9 +201,8 @@ void TestBrowserAutofillManager::AddSeenForm(
     bool preserve_values_in_form_structure) {
   auto form_structure = std::make_unique<FormStructure>(
       preserve_values_in_form_structure ? form : test::WithoutValues(form));
-  test_api(form_structure.get()).SetFieldTypes(heuristic_types, server_types);
-  test_api(form_structure.get())
-      .IdentifySections(/*ignore_autocomplete=*/false);
+  test_api(*form_structure).SetFieldTypes(heuristic_types, server_types);
+  test_api(*form_structure).IdentifySections(/*ignore_autocomplete=*/false);
   AddSeenFormStructure(std::move(form_structure));
   form_interactions_ukm_logger()->OnFormsParsed(client()->GetUkmSourceId());
 }

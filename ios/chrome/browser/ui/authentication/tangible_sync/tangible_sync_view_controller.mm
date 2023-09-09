@@ -8,7 +8,6 @@
 #import "base/metrics/histogram_functions.h"
 #import "base/notreached.h"
 #import "components/password_manager/core/common/password_manager_features.h"
-#import "components/signin/public/base/signin_metrics.h"
 #import "ios/chrome/browser/shared/ui/elements/instruction_view.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
@@ -109,21 +108,15 @@ UIView* IconViewWithImage(NSString* image_name, BOOL custom_symbol) {
     l10n_util::GetNSString(IDS_IOS_TANGIBLE_SYNC_DATA_TYPE_AUTOFILL),
     l10n_util::GetNSString(IDS_IOS_TANGIBLE_SYNC_DATA_TYPE_HISTORY),
   ];
-  UIView* autofillIconView =
-      base::FeatureList::IsEnabled(
-          password_manager::features::kEnablePasswordsAccountStorage)
-          ? IconViewWithImage(kDocPlaintext, /*custom_symbol=*/NO)
-          : IconViewWithImage(kPasswordSymbol, /*custom_symbol=*/YES);
   NSArray<UIView*>* imageViews = @[
     IconViewWithImage(kBookmarksSymbol, /*custom_symbol=*/NO),
-    autofillIconView,
+    IconViewWithImage(kDocPlaintext, /*custom_symbol=*/NO),
     IconViewWithImage(kRecentTabsSymbol, /*custom_symbol=*/YES),
   ];
   InstructionView* instructionView =
       [[InstructionView alloc] initWithList:dataTypeNames
                                       style:InstructionViewStyleDefault
                                   iconViews:imageViews];
-  instructionView.tapListener = self;
   instructionView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.specificContentView addSubview:instructionView];
   [NSLayoutConstraint activateConstraints:@[
@@ -157,30 +150,6 @@ UIView* IconViewWithImage(NSString* image_name, BOOL custom_symbol) {
         primaryIdentityAvatarAccessibilityLabel;
     self.avatarAccessibilityLabel = primaryIdentityAvatarAccessibilityLabel;
   }
-}
-
-#pragma mark - InstructionLineTappedListener
-
-// Sends histogram indicating that a line is tapped.
-- (void)tappedOnLineNumber:(NSInteger)index {
-  // TODO(crbug.com/1371062) Potentially open the settings menu
-  signin_metrics::SigninSyncConsentDataRow enumIndex =
-      signin_metrics::SigninSyncConsentDataRow::kBookmarksRowTapped;
-  switch (index) {
-    case 0:
-      enumIndex = signin_metrics::SigninSyncConsentDataRow::kBookmarksRowTapped;
-      break;
-    case 1:
-      enumIndex = signin_metrics::SigninSyncConsentDataRow::kAutofillRowTapped;
-      break;
-    case 2:
-      enumIndex = signin_metrics::SigninSyncConsentDataRow::kHistoryRowTapped;
-      break;
-    default:
-      NOTREACHED();
-  }
-  base::UmaHistogramEnumeration("Signin.SyncConsentScreen.DataRowClicked",
-                                enumIndex);
 }
 
 @end

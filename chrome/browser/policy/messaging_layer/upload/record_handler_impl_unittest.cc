@@ -4,15 +4,14 @@
 
 #include "chrome/browser/policy/messaging_layer/upload/record_handler_impl.h"
 
+#include <memory>
+#include <string_view>
 #include <utility>
 
-#include "base/base64.h"
 #include "base/functional/callback_helpers.h"
-#include "base/json/json_writer.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/task/task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
@@ -21,25 +20,25 @@
 #include "chrome/browser/policy/messaging_layer/public/report_client_test_util.h"
 #include "chrome/browser/policy/messaging_layer/upload/dm_server_uploader.h"
 #include "chrome/browser/policy/messaging_layer/upload/file_upload_job.h"
-#include "chrome/browser/policy/messaging_layer/upload/record_upload_request_builder.h"
+#include "chrome/browser/policy/messaging_layer/upload/file_upload_job_test_util.h"
 #include "chrome/browser/policy/messaging_layer/util/reporting_server_connector.h"
 #include "chrome/browser/policy/messaging_layer/util/reporting_server_connector_test_util.h"
 #include "chrome/browser/policy/messaging_layer/util/test_request_payload.h"
 #include "chrome/browser/policy/messaging_layer/util/test_response_payload.h"
-#include "components/policy/core/common/cloud/dm_token.h"
-#include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/reporting/proto/synced/record.pb.h"
 #include "components/reporting/proto/synced/record_constants.pb.h"
 #include "components/reporting/resources/resource_manager.h"
 #include "components/reporting/storage/test_storage_module.h"
 #include "components/reporting/util/status.h"
-#include "components/reporting/util/status_macros.h"
 #include "components/reporting/util/statusor.h"
-#include "components/reporting/util/task_runner_context.h"
 #include "components/reporting/util/test_support_callbacks.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
+#endif
 
 using ::testing::_;
 using ::testing::AllOf;
@@ -50,6 +49,7 @@ using ::testing::IsEmpty;
 using ::testing::Not;
 using ::testing::Property;
 using ::testing::Return;
+using ::testing::SizeIs;
 using ::testing::WithArgs;
 
 namespace reporting {
@@ -76,8 +76,8 @@ class MockFileUploadDelegate : public FileUploadJob::Delegate {
  public:
   MOCK_METHOD(void,
               DoInitiate,
-              (base::StringPiece origin_path,
-               base::StringPiece upload_parameters,
+              (std::string_view origin_path,
+               std::string_view upload_parameters,
                base::OnceCallback<void(
                    StatusOr<std::pair<int64_t /*total*/,
                                       std::string /*session_token*/>>)> cb),
@@ -87,7 +87,7 @@ class MockFileUploadDelegate : public FileUploadJob::Delegate {
               DoNextStep,
               (int64_t total,
                int64_t uploaded,
-               base::StringPiece session_token,
+               std::string_view session_token,
                ScopedReservation scoped_reservation,
                base::OnceCallback<void(
                    StatusOr<std::pair<int64_t /*uploaded*/,
@@ -97,14 +97,14 @@ class MockFileUploadDelegate : public FileUploadJob::Delegate {
   MOCK_METHOD(
       void,
       DoFinalize,
-      (base::StringPiece session_token,
+      (std::string_view session_token,
        base::OnceCallback<void(StatusOr<std::string /*access_parameters*/>)>
            cb),
       (override));
 
   MOCK_METHOD(void,
               DoDeleteFile,
-              (base::StringPiece /*origin_path*/),
+              (std::string_view /*origin_path*/),
               (override));
 };
 
@@ -115,7 +115,8 @@ class RecordHandlerImplTest : public ::testing::TestWithParam<
  protected:
   void SetUp() override {
     handler_ = std::make_unique<RecordHandlerImpl>(
-        sequenced_task_runner_, std::make_unique<MockFileUploadDelegate>());
+        base::SequencedTaskRunner::GetCurrentDefault(),
+        std::make_unique<MockFileUploadDelegate>());
     test_storage_ = base::MakeRefCounted<test::TestStorageModule>();
     test_reporting_ = ReportingClient::TestEnvironment::CreateWithStorageModule(
         test_storage_);
@@ -136,9 +137,8 @@ class RecordHandlerImplTest : public ::testing::TestWithParam<
   bool force_confirm() const { return std::get<1>(GetParam()); }
 
   content::BrowserTaskEnvironment task_environment_;
-  const scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_ =
-      base::ThreadPool::CreateSequencedTaskRunner({});
 
+  FileUploadJob::TestEnvironment manager_test_env_;
   ReportingServerConnector::TestEnvironment test_env_;
 
   scoped_refptr<test::TestStorageModule> test_storage_;
@@ -147,6 +147,14 @@ class RecordHandlerImplTest : public ::testing::TestWithParam<
   std::unique_ptr<RecordHandlerImpl> handler_;
 
   scoped_refptr<ResourceManager> memory_resource_;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Control device management status for Ash.
+  std::unique_ptr<ash::ScopedStubInstallAttributes> install_attributes_ =
+      std::make_unique<ash::ScopedStubInstallAttributes>(
+          ash::StubInstallAttributes::CreateCloudManaged("fake-domain-name",
+                                                         "fake-device-id"));
+#endif
 };
 
 std::pair<ScopedReservation, std::vector<EncryptedRecord>>
@@ -173,7 +181,7 @@ BuildTestRecordsVector(int64_t number_of_test_records,
   return std::make_pair(std::move(total_reservation), std::move(test_records));
 }
 
-TEST_P(RecordHandlerImplTest, ForwardsRecordsToCloudPolicyClient) {
+TEST_P(RecordHandlerImplTest, UploadRecords) {
   static constexpr int64_t kNumTestRecords = 10;
   static constexpr int64_t kGenerationId = 1234;
   auto test_records =
@@ -184,17 +192,24 @@ TEST_P(RecordHandlerImplTest, ForwardsRecordsToCloudPolicyClient) {
       .sequence_information = test_records.second.back().sequence_information(),
       .force_confirm = force_confirm()};
 
-  EXPECT_CALL(*test_env_.client(),
-              UploadEncryptedReport(IsDataUploadRequestValid(), _, _))
-      .WillOnce(MakeUploadEncryptedReportAction(std::move(
-          ResponseBuilder().SetForceConfirm(force_confirm_by_server))));
-
   test::TestEvent<SignedEncryptionInfo> encryption_key_attached_event;
   test::TestEvent<CompletionResponse> responder_event;
 
   handler_->HandleRecords(need_encryption_key(), std::move(test_records.second),
                           std::move(test_records.first), responder_event.cb(),
                           encryption_key_attached_event.repeating_cb());
+  task_environment_.RunUntilIdle();
+
+  ASSERT_THAT(*test_env_.url_loader_factory()->pending_requests(), SizeIs(1));
+  base::Value::Dict request_body = test_env_.request_body(0);
+  EXPECT_THAT(request_body, IsDataUploadRequestValid());
+  absl::optional<base::Value::Dict> response =
+      ResponseBuilder(std::move(request_body))
+          .SetForceConfirm(force_confirm_by_server)
+          .Build();
+  ASSERT_TRUE(response.has_value());
+  test_env_.SimulateCustomResponseForRequest(0, std::move(response.value()));
+
   if (need_encryption_key()) {
     EXPECT_THAT(
         encryption_key_attached_event.result(),
@@ -203,8 +218,8 @@ TEST_P(RecordHandlerImplTest, ForwardsRecordsToCloudPolicyClient) {
               Property(&SignedEncryptionInfo::public_key_id, Gt(0)),
               Property(&SignedEncryptionInfo::signature, Not(IsEmpty()))));
   }
-  auto response = responder_event.result();
-  EXPECT_THAT(response, ResponseEquals(expected_response));
+  const auto result = responder_event.result();
+  EXPECT_THAT(result, ResponseEquals(expected_response));
 }
 
 TEST_P(RecordHandlerImplTest, MissingPriorityField) {
@@ -214,28 +229,27 @@ TEST_P(RecordHandlerImplTest, MissingPriorityField) {
       BuildTestRecordsVector(kNumTestRecords, kGenerationId, memory_resource_);
   const auto force_confirm_by_server = force_confirm();
 
-  EXPECT_CALL(*test_env_.client(),
-              UploadEncryptedReport(IsDataUploadRequestValid(), _, _))
-      .WillOnce(WithArgs<0, 2>(
-          Invoke([&force_confirm_by_server](
-                     base::Value::Dict request,
-                     ::policy::CloudPolicyClient::ResponseCallback callback) {
-            auto response = ResponseBuilder(std::move(request))
-                                .SetForceConfirm(force_confirm_by_server)
-                                .Build();
-            response->RemoveByDottedPath("lastSucceedUploadedRecord.priority");
-            std::move(callback).Run(std::move(response));
-          })));
-
   test::TestEvent<SignedEncryptionInfo> encryption_key_attached_event;
   test::TestEvent<CompletionResponse> responder_event;
 
   handler_->HandleRecords(need_encryption_key(), std::move(test_records.second),
                           std::move(test_records.first), responder_event.cb(),
                           encryption_key_attached_event.repeating_cb());
+  task_environment_.RunUntilIdle();
 
-  auto response = responder_event.result();
-  EXPECT_THAT(response.status(),
+  ASSERT_THAT(*test_env_.url_loader_factory()->pending_requests(), SizeIs(1));
+  base::Value::Dict request_body = test_env_.request_body(0);
+  EXPECT_THAT(request_body, IsDataUploadRequestValid());
+  absl::optional<base::Value::Dict> response =
+      ResponseBuilder(std::move(request_body))
+          .SetForceConfirm(force_confirm_by_server)
+          .Build();
+  ASSERT_TRUE(response.has_value());
+  response->RemoveByDottedPath("lastSucceedUploadedRecord.priority");
+  test_env_.SimulateCustomResponseForRequest(0, std::move(response.value()));
+
+  const auto result = responder_event.result();
+  EXPECT_THAT(result.status(),
               Property(&Status::error_code, Eq(error::INTERNAL)));
 }
 
@@ -246,33 +260,30 @@ TEST_P(RecordHandlerImplTest, InvalidPriorityField) {
       BuildTestRecordsVector(kNumTestRecords, kGenerationId, memory_resource_);
   const auto force_confirm_by_server = force_confirm();
 
-  EXPECT_CALL(*test_env_.client(),
-              UploadEncryptedReport(
-                  RequestValidityMatcherBuilder<>::CreateDataUpload()
-                      .RemoveMatcher("sequence-information-record-matcher")
-                      .Build(),
-                  _, _))
-      .WillOnce(WithArgs<0, 2>(
-          Invoke([&force_confirm_by_server](
-                     base::Value::Dict request,
-                     ::policy::CloudPolicyClient::ResponseCallback callback) {
-            auto response = ResponseBuilder(std::move(request))
-                                .SetForceConfirm(force_confirm_by_server)
-                                .Build();
-            response->SetByDottedPath("lastSucceedUploadedRecord.priority",
-                                      "abc");
-            std::move(callback).Run(std::move(response));
-          })));
-
   test::TestEvent<SignedEncryptionInfo> encryption_key_attached_event;
   test::TestEvent<CompletionResponse> responder_event;
 
   handler_->HandleRecords(need_encryption_key(), std::move(test_records.second),
                           std::move(test_records.first), responder_event.cb(),
                           encryption_key_attached_event.repeating_cb());
+  task_environment_.RunUntilIdle();
 
-  auto response = responder_event.result();
-  EXPECT_THAT(response.status(),
+  ASSERT_THAT(*test_env_.url_loader_factory()->pending_requests(), SizeIs(1));
+  base::Value::Dict request_body = test_env_.request_body(0);
+  EXPECT_THAT(request_body,
+              RequestValidityMatcherBuilder<>::CreateDataUpload()
+                  .RemoveMatcher("sequence-information-record-matcher")
+                  .Build());
+  absl::optional<base::Value::Dict> response =
+      ResponseBuilder(std::move(request_body))
+          .SetForceConfirm(force_confirm_by_server)
+          .Build();
+  ASSERT_TRUE(response.has_value());
+  response->SetByDottedPath("lastSucceedUploadedRecord.priority", "abc");
+  test_env_.SimulateCustomResponseForRequest(0, std::move(response.value()));
+
+  const auto result = responder_event.result();
+  EXPECT_THAT(result.status(),
               Property(&Status::error_code, Eq(error::INTERNAL)));
 }
 
@@ -284,20 +295,21 @@ TEST_P(RecordHandlerImplTest, MissingSequenceInformation) {
       BuildTestRecordsVector(kNumTestRecords, kGenerationId, memory_resource_);
   test_records.second.back().clear_sequence_information();
 
-  // The response should show an error and UploadEncryptedReport should not have
-  // been even called, because UploadEncryptedReportingRequestBuilder::Build()
-  // should fail in this situation.
-  EXPECT_CALL(*test_env_.client(), UploadEncryptedReport(_, _, _)).Times(0);
-
   test::TestEvent<SignedEncryptionInfo> encryption_key_attached_event;
   test::TestEvent<CompletionResponse> responder_event;
 
   handler_->HandleRecords(need_encryption_key(), std::move(test_records.second),
                           std::move(test_records.first), responder_event.cb(),
                           encryption_key_attached_event.repeating_cb());
+  task_environment_.RunUntilIdle();
 
-  auto response = responder_event.result();
-  EXPECT_THAT(response.status(),
+  // The result should show an error and UploadEncryptedReport should not have
+  // been even called, because UploadEncryptedReportingRequestBuilder::Build()
+  // should fail in this situation.
+  EXPECT_THAT(*test_env_.url_loader_factory()->pending_requests(), IsEmpty());
+
+  const auto result = responder_event.result();
+  EXPECT_THAT(result.status(),
               Property(&Status::error_code, Eq(error::FAILED_PRECONDITION)));
 }
 
@@ -307,26 +319,32 @@ TEST_P(RecordHandlerImplTest, ReportsUploadFailure) {
   auto test_records =
       BuildTestRecordsVector(kNumTestRecords, kGenerationId, memory_resource_);
 
-  EXPECT_CALL(*test_env_.client(),
-              UploadEncryptedReport(IsDataUploadRequestValid(), _, _))
-      .WillOnce(MakeUploadEncryptedReportAction(
-          std::move(ResponseBuilder().SetNull(true))));
-
   test::TestEvent<CompletionResponse> response_event;
   test::TestEvent<SignedEncryptionInfo> encryption_key_attached_event;
 
   handler_->HandleRecords(need_encryption_key(), std::move(test_records.second),
                           std::move(test_records.first), response_event.cb(),
                           encryption_key_attached_event.repeating_cb());
+  task_environment_.RunUntilIdle();
 
-  const auto response = response_event.result();
-  EXPECT_THAT(response.status(),
+  ASSERT_THAT(*test_env_.url_loader_factory()->pending_requests(), SizeIs(1));
+  base::Value::Dict request_body = test_env_.request_body(0);
+  EXPECT_THAT(request_body, IsDataUploadRequestValid());
+
+  test_env_.SimulateCustomResponseForRequest(0, absl::nullopt);
+
+  const auto result = response_event.result();
+  EXPECT_THAT(result.status(),
               Property(&Status::error_code, Eq(error::DATA_LOSS)));
 
   EXPECT_TRUE(encryption_key_attached_event.no_result());
 }
 
-TEST_P(RecordHandlerImplTest, UploadsGapRecordOnServerFailure) {
+// TODO(b/289534046): Uploading gap records immediately on response will be
+// throttled by the uploading client (`CloudPolicyClient` or
+// `EncryptedReportingClient`). We need to resolve the issue, update the test
+// accordingly then re-enable it.
+TEST_P(RecordHandlerImplTest, DISABLED_UploadsGapRecordOnServerFailure) {
   static constexpr int64_t kNumTestRecords = 10;
   static constexpr int64_t kGenerationId = 1234;
   auto test_records =
@@ -338,28 +356,39 @@ TEST_P(RecordHandlerImplTest, UploadsGapRecordOnServerFailure) {
           test_records.second.rbegin()->sequence_information(),
       .force_confirm = force_confirm()};
 
-  // Once for failure, and once for gap.
-  {
-    ::testing::InSequence seq;
-    EXPECT_CALL(*test_env_.client(),
-                UploadEncryptedReport(IsDataUploadRequestValid(), _, _))
-        .WillOnce(MakeUploadEncryptedReportAction(
-            std::move(ResponseBuilder().SetSuccess(false))));
-    EXPECT_CALL(*test_env_.client(),
-                UploadEncryptedReport(IsGapUploadRequestValid(), _, _))
-        .WillOnce(MakeUploadEncryptedReportAction(std::move(
-            ResponseBuilder().SetForceConfirm(force_confirm_by_server))));
-  }
-
   test::TestEvent<CompletionResponse> response_event;
   test::TestEvent<SignedEncryptionInfo> encryption_key_attached_event;
 
   handler_->HandleRecords(need_encryption_key(), std::move(test_records.second),
                           std::move(test_records.first), response_event.cb(),
                           encryption_key_attached_event.repeating_cb());
+  task_environment_.RunUntilIdle();
 
-  const auto response = response_event.result();
-  EXPECT_THAT(response, ResponseEquals(expected_response));
+  ASSERT_THAT(*test_env_.url_loader_factory()->pending_requests(), SizeIs(1));
+  base::Value::Dict request_body = test_env_.request_body(0);
+  EXPECT_THAT(request_body, IsDataUploadRequestValid());
+  absl::optional<base::Value::Dict> response =
+      ResponseBuilder(std::move(request_body)).SetSuccess(false).Build();
+  ASSERT_TRUE(response.has_value());
+  test_env_.SimulateCustomResponseForRequest(0, std::move(response.value()));
+
+  // Gap records upload.
+  task_environment_.RunUntilIdle();
+  ASSERT_THAT(*test_env_.url_loader_factory()->pending_requests(), SizeIs(1));
+  request_body = test_env_.request_body(0);
+  EXPECT_THAT(request_body, IsGapUploadRequestValid());
+
+  response = ResponseBuilder(std::move(request_body))
+                 .SetForceConfirm(force_confirm_by_server)
+                 .Build();
+  ASSERT_TRUE(response.has_value());
+  test_env_.SimulateCustomResponseForRequest(0, std::move(response.value()));
+
+  // No more uploads expected.
+  EXPECT_THAT(*test_env_.url_loader_factory()->pending_requests(), IsEmpty());
+
+  const auto result = response_event.result();
+  EXPECT_THAT(result, ResponseEquals(expected_response));
 
   if (need_encryption_key()) {
     EXPECT_THAT(
@@ -382,22 +411,21 @@ TEST_P(RecordHandlerImplTest, HandleUnknownResponseFromServer) {
   auto test_records =
       BuildTestRecordsVector(kNumTestRecords, kGenerationId, memory_resource_);
 
-  EXPECT_CALL(*test_env_.client(),
-              UploadEncryptedReport(IsDataUploadRequestValid(), _, _))
-      .WillOnce(WithArgs<2>(
-          Invoke([](::policy::CloudPolicyClient::ResponseCallback callback) {
-            std::move(callback).Run(base::Value::Dict());
-          })));
-
   test::TestEvent<SignedEncryptionInfo> encryption_key_attached_event;
   test::TestEvent<CompletionResponse> response_event;
 
   handler_->HandleRecords(need_encryption_key(), std::move(test_records.second),
                           std::move(test_records.first), response_event.cb(),
                           encryption_key_attached_event.repeating_cb());
+  task_environment_.RunUntilIdle();
 
-  const auto response = response_event.result();
-  EXPECT_THAT(response.status(),
+  ASSERT_THAT(*test_env_.url_loader_factory()->pending_requests(), SizeIs(1));
+  EXPECT_THAT(test_env_.request_body(0), IsDataUploadRequestValid());
+
+  test_env_.SimulateCustomResponseForRequest(0, base::Value::Dict());
+
+  const auto result = response_event.result();
+  EXPECT_THAT(result.status(),
               Property(&Status::error_code, Eq(error::INTERNAL)));
 
   EXPECT_TRUE(encryption_key_attached_event.no_result());
@@ -414,21 +442,27 @@ TEST_P(RecordHandlerImplTest, AssignsRequestIdForRecordUploads) {
       .sequence_information = test_records.second.back().sequence_information(),
       .force_confirm = force_confirm()};
 
-  EXPECT_CALL(*test_env_.client(),
-              UploadEncryptedReport(IsDataUploadRequestValid(), _, _))
-      .WillOnce(MakeUploadEncryptedReportAction(std::move(
-          ResponseBuilder().SetForceConfirm(force_confirm_by_server))));
-
   test::TestEvent<CompletionResponse> responder_event;
   handler_->HandleRecords(need_encryption_key(), std::move(test_records.second),
                           std::move(test_records.first), responder_event.cb(),
                           base::DoNothing());
+  task_environment_.RunUntilIdle();
+
+  ASSERT_THAT(*test_env_.url_loader_factory()->pending_requests(), SizeIs(1));
+  base::Value::Dict request_body = test_env_.request_body(0);
+  EXPECT_THAT(request_body, IsDataUploadRequestValid());
+  absl::optional<base::Value::Dict> response =
+      ResponseBuilder(std::move(request_body))
+          .SetForceConfirm(force_confirm_by_server)
+          .Build();
+  ASSERT_TRUE(response.has_value());
+  test_env_.SimulateCustomResponseForRequest(0, std::move(response.value()));
 
   // We need to wait until the upload operation is marked complete (after it
   // triggers the response callback) so we can avoid leaking unmanaged
   // resources.
-  auto response = responder_event.result();
-  EXPECT_THAT(response, ResponseEquals(expected_response));
+  const auto result = responder_event.result();
+  EXPECT_THAT(result, ResponseEquals(expected_response));
 }
 
 INSTANTIATE_TEST_SUITE_P(

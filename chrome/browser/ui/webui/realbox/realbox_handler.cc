@@ -399,6 +399,7 @@ class RealboxOmniboxClient : public OmniboxClient {
       override;
   bool IsPasteAndGoEnabled() const override;
   SessionID GetSessionID() const override;
+  PrefService* GetPrefs() override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   AutocompleteControllerEmitter* GetAutocompleteControllerEmitter() override;
   TemplateURLService* GetTemplateURLService() override;
@@ -457,6 +458,10 @@ bool RealboxOmniboxClient::IsPasteAndGoEnabled() const {
 
 SessionID RealboxOmniboxClient::GetSessionID() const {
   return sessions::SessionTabHelper::IdForTab(web_contents_);
+}
+
+PrefService* RealboxOmniboxClient::GetPrefs() {
+  return profile_->GetPrefs();
 }
 
 bookmarks::BookmarkModel* RealboxOmniboxClient::GetBookmarkModel() {
@@ -589,9 +594,6 @@ void RealboxHandler::SetupDropdownWebUIDataSource(
       {"hideSuggestions", IDS_TOOLTIP_HEADER_HIDE_SUGGESTIONS_BUTTON},
       {"showSuggestions", IDS_TOOLTIP_HEADER_SHOW_SUGGESTIONS_BUTTON}};
   source->AddLocalizedStrings(kStrings);
-
-  source->AddBoolean("roundCorners", base::FeatureList::IsEnabled(
-                                         ntp_features::kRealboxRoundedCorners));
 }
 
 // static
@@ -758,20 +760,18 @@ RealboxHandler::RealboxHandler(
     Profile* profile,
     content::WebContents* web_contents,
     MetricsReporter* metrics_reporter,
-    bool is_omnibox_popup_handler)
+    OmniboxController* omnibox_controller)
     : profile_(profile),
       web_contents_(web_contents),
       metrics_reporter_(metrics_reporter),
+      page_set_(false),
       page_handler_(this, std::move(pending_page_handler)) {
   // Keep a reference to the OmniboxController instance owned by the OmniboxView
   // when the handler is being used in the context of the omnibox popup.
   // Otherwise, create own instance of OmniboxController. Either way, observe
   // the AutocompleteController instance owned by the OmniboxController.
-  if (is_omnibox_popup_handler) {
-    // TODO(crbug.com/1396174): This seems hacky. But currently there is no API
-    //  for getting the browser instance from the web contents in top chrome.
-    Browser* active_browser = chrome::FindLastActive();
-    controller_ = search::GetOmniboxView(active_browser)->controller();
+  if (omnibox_controller) {
+    controller_ = omnibox_controller;
   } else {
     owned_controller_ = std::make_unique<OmniboxController>(
         /*view=*/nullptr,
@@ -788,9 +788,14 @@ RealboxHandler::~RealboxHandler() {
   controller_ = nullptr;
 }
 
+bool RealboxHandler::IsRemoteBound() const {
+  return page_set_;
+}
+
 void RealboxHandler::SetPage(
     mojo::PendingRemote<omnibox::mojom::Page> pending_page) {
   page_.Bind(std::move(pending_page));
+  page_set_ = page_.is_bound();
 }
 
 void RealboxHandler::OnFocusChanged(bool focused) {
@@ -893,10 +898,8 @@ void RealboxHandler::ToggleSuggestionGroupIdVisibility(
   const auto& group_id = omnibox::GroupIdForNumber(suggestion_group_id);
   DCHECK_NE(omnibox::GROUP_INVALID, group_id);
   const bool current_visibility =
-      autocomplete_controller()->result().IsSuggestionGroupHidden(
-          profile_->GetPrefs(), group_id);
-  autocomplete_controller()->result().SetSuggestionGroupHidden(
-      profile_->GetPrefs(), group_id, !current_visibility);
+      controller_->IsSuggestionGroupHidden(group_id);
+  controller_->SetSuggestionGroupHidden(group_id, !current_visibility);
 }
 
 void RealboxHandler::ExecuteAction(uint8_t line,
@@ -954,8 +957,30 @@ void RealboxHandler::OnResultChanged(AutocompleteController* controller,
   }
 }
 
-void RealboxHandler::SelectMatchAtLine(size_t old_line, size_t new_line) {
-  page_->SelectMatchAtLine(new_line);
+omnibox::mojom::SelectionLineState ConvertLineState(
+    OmniboxPopupSelection::LineState state) {
+  switch (state) {
+    case OmniboxPopupSelection::LineState::FOCUSED_BUTTON_HEADER:
+      return omnibox::mojom::SelectionLineState::kFocusedButtonHeader;
+    case OmniboxPopupSelection::LineState::NORMAL:
+      return omnibox::mojom::SelectionLineState::kNormal;
+    case OmniboxPopupSelection::LineState::KEYWORD_MODE:
+      return omnibox::mojom::SelectionLineState::kKeywordMode;
+    case OmniboxPopupSelection::LineState::FOCUSED_BUTTON_ACTION:
+      return omnibox::mojom::SelectionLineState::kFocusedButtonAction;
+    case OmniboxPopupSelection::LineState::FOCUSED_BUTTON_REMOVE_SUGGESTION:
+      return omnibox::mojom::SelectionLineState::kFocusedButtonRemoveSuggestion;
+    default:
+      NOTREACHED();
+      break;
+  }
+  return omnibox::mojom::SelectionLineState::kNormal;
+}
+
+void RealboxHandler::UpdateSelection(OmniboxPopupSelection selection) {
+  page_->UpdateSelection(omnibox::mojom::OmniboxPopupSelection::New(
+      selection.line, ConvertLineState(selection.state),
+      selection.action_index));
 }
 
 // LocationBarModel:

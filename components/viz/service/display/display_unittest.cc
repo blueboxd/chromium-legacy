@@ -235,7 +235,7 @@ class DisplayTest : public testing::Test {
 
   bool ShouldSendBeginFrame(CompositorFrameSinkSupport* support,
                             base::TimeTicks frame_time) {
-    return support->ShouldSendBeginFrame(frame_time);
+    return support->ShouldSendBeginFrame(frame_time, base::Seconds(0));
   }
 
   void UpdateBeginFrameTime(CompositorFrameSinkSupport* support,
@@ -4412,7 +4412,7 @@ TEST_F(DisplayTest, PixelMovingForegroundFilterTest) {
       // The scissor rect is expanded by direct_renderer to include the
       // overlapping pixel-moving foreground filter surface.
       auto expected_scissor_rect =
-          first_frame ? gfx::Rect(display_size) : gfx::Rect(0, 0, 60, 60);
+          first_frame ? gfx::Rect(display_size) : gfx::Rect(4, 5, 56, 55);
       EXPECT_EQ(
           expected_scissor_rect,
           display_->renderer_for_testing()->GetLastRootScissorRectForTesting());

@@ -19,6 +19,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
+#include "ui/views/controls/button/button_controller.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/highlight_path_generator.h"
@@ -30,14 +31,43 @@ namespace autofill {
 
 namespace {
 
-constexpr int kCloseIconSize = 20;
+// Overrides `OnMouseEntered` and `OnMouseExited` from
+// `views::ButtonController`. Used by `PopupAutocompleteCellView` to know when
+// the mouse cursor has entered or left the delete button in order to run the
+// selection callbacks.
+class DeleteButtonController : public views::ButtonController {
+ public:
+  DeleteButtonController(
+      views::Button* button,
+      DeleteButtonDelegate* delete_button_owner,
+      std::unique_ptr<views::ButtonControllerDelegate> delegate)
+      : views::ButtonController(button, std::move(delegate)),
+        delete_button_owner_(delete_button_owner) {}
 
-}
+  void OnMouseEntered(const ui::MouseEvent& event) override {
+    delete_button_owner_->OnMouseEnteredDeleteButton();
+    views::ButtonController::OnMouseEntered(event);
+  }
+
+  void OnMouseExited(const ui::MouseEvent& event) override {
+    delete_button_owner_->OnMouseExitedDeleteButton();
+    views::ButtonController::OnMouseExited(event);
+  }
+
+ private:
+  raw_ptr<DeleteButtonDelegate> delete_button_owner_ = nullptr;
+};
+
+constexpr int kCloseIconSize = 16;
+
+}  // namespace
 
 PopupAutocompleteCellView::PopupAutocompleteCellView(
     base::WeakPtr<AutofillPopupController> controller,
     int line_number)
-    : controller_(controller), line_number_(line_number) {
+    : PopupCellView(controller->GetAutofillSuggestionTriggerSource()),
+      controller_(controller),
+      line_number_(line_number) {
   CHECK(controller_);
   const Suggestion& kSuggestion = controller->GetSuggestionAt(line_number_);
 
@@ -123,17 +153,14 @@ bool PopupAutocompleteCellView::HandleKeyPressEvent(
 
 void PopupAutocompleteCellView::SetSelected(bool selected) {
   CHECK(button_);
-  if ((selected || IsMouseHovered())) {
-    button_->SetVisible(true);
-  } else {
-    button_->SetVisible(false);
-  }
+
+  button_->SetVisible(selected);
   autofill::PopupCellView::SetSelected(selected);
 
   // There are cases where SetSelect is called with the same value as before
   // but we still want to refresh the style. For example in the case where there
   // is an arrow navigation from the delete button to the next cell. In this
-  // case we go directly from selected = false (buttons was selected) to again
+  // case we go directly from selected = false (button was selected) to again
   // selected = false, which does not lead to a style refresh. Another case is
   // when the cursor moves directly from the delete button to outside of the
   // cell (if moving quickly from top to bottom). This can lead the the style
@@ -162,7 +189,19 @@ void PopupAutocompleteCellView::CreateDeleteButton() {
           base::BindRepeating(&PopupAutocompleteCellView::DeleteAutocomplete,
                               base::Unretained(this)),
           views::kIcCloseIcon, kCloseIconSize);
-  InstallCircleHighlightPathGenerator(button.get());
+
+  CHECK(GetLayoutManager());
+  views::BoxLayout* layout = static_cast<views::BoxLayout*>(GetLayoutManager());
+  // We are making sure that the vertical distance from the delete button edges
+  // to the cell border is the same as the horizontal distance.
+  // 1. Take the current horizontal distance.
+  int horizontal_margin = layout->inside_border_insets().right();
+  // 2. Take the height of the cell.
+  int cell_height = layout->minimum_cross_axis_size();
+  // 3. The diameter needs to be the height - 2 * the desired margin.
+  int radius = (cell_height - horizontal_margin * 2) / 2;
+  InstallFixedSizeCircleHighlightPathGenerator(button.get(), radius);
+  button->SetPreferredSize(gfx::Size(radius * 2, radius * 2));
   button->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_AUTOFILL_DELETE_AUTOCOMPLETE_SUGGESTION_TOOLTIP));
   button->SetAccessibleRole(ax::mojom::Role::kMenuItem);
@@ -173,8 +212,6 @@ void PopupAutocompleteCellView::CreateDeleteButton() {
   button->SetVisible(false);
 
   // Make child view grow to fill the space and align the button to the right.
-  CHECK(GetLayoutManager());
-  views::BoxLayout* layout = static_cast<views::BoxLayout*>(GetLayoutManager());
   for (views::View* child : children()) {
     layout->SetFlexForView(child, 1);
   }
@@ -186,9 +223,10 @@ void PopupAutocompleteCellView::CreateDeleteButton() {
   button_ = button_placeholder->AddChildView(std::move(button));
   layout->SetFlexForView(button_placeholder, 0);
 
-  button_state_change_subscription_ = button_->AddStateChangedCallback(
-      base::BindRepeating(&PopupAutocompleteCellView::OnButtonPropertyChanged,
-                          base::Unretained(this)));
+  button_->SetButtonController(std::make_unique<DeleteButtonController>(
+      button_, this,
+      std::make_unique<views::Button::DefaultButtonControllerDelegate>(
+          button_.get())));
 }
 
 void PopupAutocompleteCellView::DeleteAutocomplete() {
@@ -199,11 +237,14 @@ void PopupAutocompleteCellView::DeleteAutocomplete() {
   }
 }
 
-void PopupAutocompleteCellView::OnButtonPropertyChanged() {
-  CHECK(button_);
-  bool selected = !button_->IsMouseHovered() && IsMouseHovered();
+void PopupAutocompleteCellView::OnMouseEnteredDeleteButton() {
+  UpdateSelectedAndRunCallback(/*selected=*/false);
+}
 
-  UpdateSelectedAndRunCallback(selected);
+void PopupAutocompleteCellView::OnMouseExitedDeleteButton() {
+  // We check for IsMouseHovered() because moving too fast outside the button
+  // could place the mouse cursor outside the whole cell.
+  UpdateSelectedAndRunCallback(/*selected=*/IsMouseHovered());
 }
 
 void PopupAutocompleteCellView::UpdateSelectedAndRunCallback(bool selected) {

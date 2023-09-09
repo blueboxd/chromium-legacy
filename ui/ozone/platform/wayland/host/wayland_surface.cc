@@ -72,6 +72,8 @@ uint32_t TranslatePriority(gfx::OverlayPriorityHint priority_hint) {
   return priority;
 }
 
+const wl_fixed_t kMinusOne = wl_fixed_from_int(-1);
+
 }  // namespace
 
 WaylandSurface::ExplicitReleaseInfo::ExplicitReleaseInfo(
@@ -326,7 +328,7 @@ void WaylandSurface::set_surface_buffer_scale(float scale) {
 }
 
 void WaylandSurface::set_opaque_region(
-    const std::vector<gfx::Rect>* region_px) {
+    absl::optional<std::vector<gfx::Rect>> region_px) {
   pending_state_.opaque_region_px.clear();
   if (!root_window_)
     return;
@@ -335,7 +337,7 @@ void WaylandSurface::set_opaque_region(
     pending_state_.opaque_region_px = *region_px;
 
   if (apply_state_immediately_) {
-    state_.opaque_region_px.swap(pending_state_.opaque_region_px);
+    state_.opaque_region_px = pending_state_.opaque_region_px;
     wl_surface_set_opaque_region(
         surface_.get(),
         pending_state_.opaque_region_px.empty()
@@ -346,7 +348,7 @@ void WaylandSurface::set_opaque_region(
   }
 }
 
-void WaylandSurface::set_input_region(const gfx::Rect* region_px) {
+void WaylandSurface::set_input_region(absl::optional<gfx::Rect> region_px) {
   pending_state_.input_region_px.reset();
   if (!root_window_)
     return;
@@ -355,7 +357,7 @@ void WaylandSurface::set_input_region(const gfx::Rect* region_px) {
     return;
   }
   if (region_px)
-    pending_state_.input_region_px = *region_px;
+    pending_state_.input_region_px = region_px;
 
   if (apply_state_immediately_) {
     state_.input_region_px = pending_state_.input_region_px;
@@ -577,11 +579,38 @@ void WaylandSurface::ApplyPendingState() {
 
   if (pending_state_.rounded_clip_bounds != state_.rounded_clip_bounds) {
     DCHECK(get_augmented_surface());
-    if (augmented_surface_get_version(get_augmented_surface()) >=
-        AUGMENTED_SURFACE_SET_ROUNDED_CLIP_BOUNDS_SINCE_VERSION) {
-      gfx::RRectF rounded_clip_bounds = pending_state_.rounded_clip_bounds;
-      rounded_clip_bounds.Scale(1.f / GetWaylandScale(pending_state_));
+    gfx::RRectF rounded_clip_bounds = pending_state_.rounded_clip_bounds;
+    rounded_clip_bounds.Scale(1.f / GetWaylandScale(pending_state_));
 
+    // For backwards compatibility, support both the latest and the deprecated
+    // incarnation of this request. In the future, this API will get a clean up
+    // pass.
+    if (augmented_surface_get_version(get_augmented_surface()) >=
+        AUGMENTED_SURFACE_SET_ROUNDED_CORNERS_CLIP_BOUNDS_SINCE_VERSION) {
+      augmented_surface_set_rounded_corners_clip_bounds(
+          get_augmented_surface(),
+          wl_fixed_from_double(rounded_clip_bounds.rect().x()),
+          wl_fixed_from_double(rounded_clip_bounds.rect().y()),
+          wl_fixed_from_double(rounded_clip_bounds.rect().width()),
+          wl_fixed_from_double(rounded_clip_bounds.rect().height()),
+          wl_fixed_from_double(
+              rounded_clip_bounds
+                  .GetCornerRadii(gfx::RRectF::Corner::kUpperLeft)
+                  .x()),
+          wl_fixed_from_double(
+              rounded_clip_bounds
+                  .GetCornerRadii(gfx::RRectF::Corner::kUpperRight)
+                  .x()),
+          wl_fixed_from_double(
+              rounded_clip_bounds
+                  .GetCornerRadii(gfx::RRectF::Corner::kLowerRight)
+                  .x()),
+          wl_fixed_from_double(
+              rounded_clip_bounds
+                  .GetCornerRadii(gfx::RRectF::Corner::kLowerLeft)
+                  .x()));
+    } else if (augmented_surface_get_version(get_augmented_surface()) >=
+               AUGMENTED_SURFACE_SET_ROUNDED_CLIP_BOUNDS_SINCE_VERSION) {
       augmented_surface_set_rounded_clip_bounds(
           get_augmented_surface(), rounded_clip_bounds.rect().x(),
           rounded_clip_bounds.rect().y(), rounded_clip_bounds.rect().width(),
@@ -602,6 +631,25 @@ void WaylandSurface::ApplyPendingState() {
               rounded_clip_bounds
                   .GetCornerRadii(gfx::RRectF::Corner::kLowerLeft)
                   .x()));
+    }
+  }
+
+  if (pending_state_.clip_rect != state_.clip_rect) {
+    DCHECK(get_augmented_surface());
+    if (connection_->surface_augmenter()
+            ->SupportsClipRectOnAugmentedSurface()) {
+      absl::optional<gfx::RectF> clip_rect = pending_state_.clip_rect;
+      if (clip_rect) {
+        clip_rect->Scale(1.f / GetWaylandScale(pending_state_));
+        augmented_surface_set_clip_rect(
+            get_augmented_surface(), wl_fixed_from_double(clip_rect->x()),
+            wl_fixed_from_double(clip_rect->y()),
+            wl_fixed_from_double(clip_rect->width()),
+            wl_fixed_from_double(clip_rect->height()));
+      } else {
+        augmented_surface_set_clip_rect(get_augmented_surface(), kMinusOne,
+                                        kMinusOne, kMinusOne, kMinusOne);
+      }
     }
   }
 
@@ -857,6 +905,7 @@ WaylandSurface::State& WaylandSurface::State::operator=(
   rounded_clip_bounds = other.rounded_clip_bounds;
   priority_hint = other.priority_hint;
   background_color = other.background_color;
+  clip_rect = other.clip_rect;
   contains_video = other.contains_video;
   return *this;
 }

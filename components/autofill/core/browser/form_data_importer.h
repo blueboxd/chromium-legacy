@@ -246,9 +246,15 @@ class FormDataImporter : public PersonalDataManagerObserver {
                                 std::vector<AddressProfileImportCandidate>*
                                     address_profile_import_candidates);
 
-  // Helper method for ImportAddressProfiles which only considers the fields for
-  // a specified `section`. If no section is passed, the import is performed on
-  // the union of all sections.
+  // Validates that the required fields in the `profile` have values, based on
+  // the requirements of the `profile`'s country. Accordingly, logs the form
+  // import requirement metrics.
+  bool LogAddressFormImportRequirementMetric(const AutofillProfile& profile,
+                                             LogBuffer* import_log_buffer);
+
+  // Helper method for ImportAddressProfiles which only considers the fields
+  // for a specified `section`. If no section is passed, the import is
+  // performed on the union of all sections.
   bool ExtractAddressProfileFromSection(
       base::span<const AutofillField* const> section_fields,
       const GURL& source_url,
@@ -384,7 +390,6 @@ class FormDataImporter : public PersonalDataManagerObserver {
   // The personal data manager, used to save and load personal data to/from the
   // web database.  This is overridden by the BrowserAutofillManagerTest.
   // Weak reference.
-  // May be NULL.  NULL indicates OTR.
   raw_ptr<PersonalDataManager> personal_data_manager_;
 
   // Represents the type of the credit card import candidate from the submitted

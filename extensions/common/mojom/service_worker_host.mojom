@@ -5,6 +5,7 @@
 module extensions.mojom;
 
 import "mojo/public/mojom/base/unguessable_token.mojom";
+import "mojo/public/mojom/base/uuid.mojom";
 import "extensions/common/mojom/event_dispatcher.mojom";
 import "extensions/common/mojom/frame.mojom";
 import "url/mojom/url.mojom";
@@ -64,5 +65,6 @@ interface ServiceWorkerHost {
 
   // Optional Ack message sent to the browser to notify that the response to a
   // function has been processed.
-  WorkerResponseAck(int32 request_id, int64 service_worker_version_id);
+  // The `request_uuid` is the UUID of the extension function.
+  WorkerResponseAck(mojo_base.mojom.Uuid request_uuid);
 };

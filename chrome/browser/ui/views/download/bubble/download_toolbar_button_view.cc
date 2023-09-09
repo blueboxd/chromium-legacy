@@ -13,6 +13,7 @@
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "cc/paint/paint_flags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/download/bubble/download_bubble_prefs.h"
@@ -37,7 +38,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/components/kiosk/kiosk_utils.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/user_education/common/user_education_class_properties.h"
 #include "content/public/browser/browser_thread.h"
@@ -46,7 +46,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
-#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
@@ -67,6 +66,10 @@
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
+
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chromeos/components/kiosk/kiosk_utils.h"
+#endif
 
 namespace {
 
@@ -320,8 +323,13 @@ bool DownloadToolbarButtonView::ShouldShowExclusiveAccessBubble() {
   if (!browser_view) {
     return false;
   }
+#if BUILDFLAG(IS_CHROMEOS)
+  if (chromeos::IsKioskSession()) {
+    return false;
+  }
+#endif
   return !browser_view->IsImmersiveModeEnabled() &&
-         browser_view->CanUserExitFullscreen() && !chromeos::IsKioskSession();
+         browser_view->CanUserExitFullscreen();
 }
 
 // This function shows the partial view. If the main view is already showing,
@@ -523,24 +531,6 @@ void DownloadToolbarButtonView::CreateBubbleDialogDelegate() {
   bubble_delegate->SetEnableArrowKeyTraversal(true);
   bubble_delegate_ = bubble_delegate.get();
   views::BubbleDialogDelegate::CreateBubble(std::move(bubble_delegate));
-
-  if (!is_primary_partial_view_) {
-    // The main view is shown after clicking on the toolbar button.
-    // Record the time from click to shown.
-    DCHECK_NE(button_click_time_, base::TimeTicks());
-    bubble_delegate_->GetWidget()
-        ->GetCompositor()
-        ->RequestSuccessfulPresentationTimeForNextFrame(base::BindOnce(
-            [](base::TimeTicks click_time, base::TimeTicks presentation_time) {
-              UmaHistogramTimes(
-                  "Download.Bubble.ToolbarButtonClickToFullViewShownLatency",
-                  presentation_time - click_time);
-            },
-            button_click_time_));
-    // Reset click time.
-    button_click_time_ = base::TimeTicks();
-  }
-
   // The bubble can either be shown as active or inactive. When the current
   // browser is inactive, make the bubble inactive to avoid stealing focus from
   // non-Chrome windows or showing on a different workspace.
@@ -626,7 +616,6 @@ void DownloadToolbarButtonView::AutoClosePartialView() {
 void DownloadToolbarButtonView::ButtonPressed() {
   if (!bubble_delegate_) {
     is_primary_partial_view_ = false;
-    button_click_time_ = base::TimeTicks::Now();
     CreateBubbleDialogDelegate();
   }
   controller_->OnButtonPressed();

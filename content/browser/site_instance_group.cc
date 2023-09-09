@@ -52,6 +52,8 @@ void SiteInstanceGroup::RemoveObserver(Observer* observer) {
 }
 
 void SiteInstanceGroup::AddSiteInstance(SiteInstanceImpl* site_instance) {
+  CHECK(site_instance);
+  CHECK(!site_instances_.contains(site_instance));
   CHECK_EQ(browsing_instance_id(), site_instance->GetBrowsingInstanceId());
   site_instances_.insert(site_instance);
 }
@@ -89,8 +91,9 @@ void SiteInstanceGroup::RenderProcessHostDestroyed(RenderProcessHost* host) {
   // Remove references to `this` from all SiteInstances in this group. That will
   // cause `this` to be destructed, to enforce the invariant that a
   // SiteInstanceGroup must have a RenderProcessHost.
-  for (auto* instance : site_instances_)
+  for (auto instance : site_instances_) {
     instance->ResetSiteInstanceGroup();
+  }
 }
 
 void SiteInstanceGroup::RenderProcessExited(

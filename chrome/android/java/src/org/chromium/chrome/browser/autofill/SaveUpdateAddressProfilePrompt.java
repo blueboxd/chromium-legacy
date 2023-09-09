@@ -20,6 +20,7 @@ import androidx.annotation.VisibleForTesting;
 
 import com.google.android.material.textfield.TextInputLayout;
 
+import org.chromium.base.ResettersForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
@@ -55,8 +56,7 @@ public class SaveUpdateAddressProfilePrompt {
      */
     public SaveUpdateAddressProfilePrompt(SaveUpdateAddressProfilePromptController controller,
             ModalDialogManager modalDialogManager, Activity activity, Profile browserProfile,
-            PersonalDataManager.AutofillProfile autofillProfile, boolean isUpdate,
-            boolean isMigrationToAccount) {
+            AutofillProfile autofillProfile, boolean isUpdate, boolean isMigrationToAccount) {
         mController = controller;
         mModalDialogManager = modalDialogManager;
 
@@ -125,8 +125,7 @@ public class SaveUpdateAddressProfilePrompt {
     @CalledByNative
     private static @Nullable SaveUpdateAddressProfilePrompt create(WindowAndroid windowAndroid,
             SaveUpdateAddressProfilePromptController controller, Profile browserProfile,
-            PersonalDataManager.AutofillProfile autofillProfile, boolean isUpdate,
-            boolean isMigrationToAccount) {
+            AutofillProfile autofillProfile, boolean isUpdate, boolean isMigrationToAccount) {
         Activity activity = windowAndroid.getActivity().get();
         ModalDialogManager modalDialogManager = windowAndroid.getModalDialogManager();
         if (activity == null || modalDialogManager == null) return null;
@@ -270,7 +269,9 @@ public class SaveUpdateAddressProfilePrompt {
     }
 
     void setAddressEditorForTesting(AddressEditorCoordinator addressEditor) {
+        var oldValue = mAddressEditor;
         mAddressEditor = addressEditor;
+        ResettersForTesting.register(() -> mAddressEditor = oldValue);
     }
 
     View getDialogViewForTesting() {

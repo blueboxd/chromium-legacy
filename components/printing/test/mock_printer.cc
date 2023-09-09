@@ -47,7 +47,7 @@ void UpdateMargins(int margins_type,
   }
 }
 
-void UpdatePageSizeAndScaling(const gfx::Size& page_size,
+void UpdatePageSizeAndScaling(const gfx::SizeF& page_size,
                               int scale_factor,
                               printing::mojom::PrintParams* params) {
   params->page_size = page_size;
@@ -160,7 +160,7 @@ void MockPrinter::ScriptedPrint(int cookie,
 void MockPrinter::UpdateSettings(printing::mojom::PrintPagesParams* params,
                                  const printing::PageRanges& pages,
                                  int margins_type,
-                                 const gfx::Size& page_size,
+                                 const gfx::SizeF& page_size,
                                  int scale_factor) {
   EXPECT_TRUE(document_cookie_.has_value());
 
@@ -271,8 +271,9 @@ bool MockPrinter::SaveBitmap(unsigned int page,
 
 void MockPrinter::CreateDocumentCookie() {
   EXPECT_FALSE(document_cookie_.has_value());
-  document_cookie_ =
-      use_invalid_settings_ ? 0 : printing::PrintSettings::NewCookie();
+  document_cookie_ = use_invalid_settings_
+                         ? printing::PrintSettings::NewInvalidCookie()
+                         : printing::PrintSettings::NewCookie();
 }
 
 void MockPrinter::SetPrintParams(printing::mojom::PrintParams* params) {

@@ -56,7 +56,6 @@
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
-#import "ios/chrome/browser/ui/thumb_strip/thumb_strip_feature.h"
 #import "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #import "ios/chrome/test/app/bookmarks_test_util.h"
@@ -89,6 +88,10 @@
 #import "net/base/mac/url_conversions.h"
 #import "services/metrics/public/cpp/ukm_recorder.h"
 #import "ui/base/device_form_factor.h"
+
+// To get access to UseSessionSerializationOptimizations().
+// TODO(crbug.com/1383087): remove once the feature is fully launched.
+#import "ios/web/common/features.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -191,15 +194,17 @@ NSString* SerializedValue(const base::Value* value) {
 }
 
 + (void)saveSessionImmediately {
-  SessionRestorationBrowserAgent::FromBrowser(
-      chrome_test_util::GetMainBrowser())
-      ->SaveSession(/*immediately=*/true);
-  dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
-  ProceduralBlock completionBlock = ^{
-    dispatch_semaphore_signal(semaphore);
-  };
-  [[SessionServiceIOS sharedService] shutdownWithCompletion:completionBlock];
-  dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+  if (!web::features::UseSessionSerializationOptimizations()) {
+    SessionRestorationBrowserAgent::FromBrowser(
+        chrome_test_util::GetMainBrowser())
+        ->SaveSession(/*immediately=*/true);
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    ProceduralBlock completionBlock = ^{
+      dispatch_semaphore_signal(semaphore);
+    };
+    [[SessionServiceIOS sharedService] shutdownWithCompletion:completionBlock];
+    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+  }
 }
 
 + (NSError*)clearAllWebStateBrowsingData {
@@ -1184,11 +1189,6 @@ NSString* SerializedValue(const base::Value* value) {
   return ios::provider::IsLensSupported() &&
          ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET &&
          search_engines::SupportsSearchImageWithLens(service);
-}
-
-+ (BOOL)isThumbstripEnabledForWindowWithNumber:(int)windowNumber {
-  return ShowThumbStripInTraitCollection(
-      [self windowWithNumber:windowNumber].traitCollection);
 }
 
 + (BOOL)isWebChannelsEnabled {

@@ -104,8 +104,7 @@ const char* const kSupportedAdditionalDomains[] = {"aol",
                                                    "yahoo",
                                                    "ymail"};
 
-bool IsCreditCardUploadEnabled(const PrefService* pref_service,
-                               const syncer::SyncService* sync_service,
+bool IsCreditCardUploadEnabled(const syncer::SyncService* sync_service,
                                const std::string& user_email,
                                const std::string& user_country,
                                const AutofillSyncSigninState sync_state,
@@ -169,15 +168,6 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     autofill_metrics::LogCardUploadEnabledMetric(
         autofill_metrics::CardUploadEnabled::kLocalSyncEnabled, sync_state);
     LogCardUploadDisabled(log_manager, "USER_ONLY_SYNCING_LOCALLY");
-    return false;
-  }
-
-  // Check Payments integration user setting.
-  if (!prefs::IsPaymentsIntegrationEnabled(pref_service)) {
-    autofill_metrics::LogCardUploadEnabledMetric(
-        autofill_metrics::CardUploadEnabled::kPaymentsIntegrationDisabled,
-        sync_state);
-    LogCardUploadDisabled(log_manager, "PAYMENTS_INTEGRATION_DISABLED");
     return false;
   }
 
@@ -246,7 +236,6 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
 }
 
 bool IsCreditCardMigrationEnabled(PersonalDataManager* personal_data_manager,
-                                  PrefService* pref_service,
                                   syncer::SyncService* sync_service,
                                   bool is_test_mode,
                                   LogManager* log_manager) {
@@ -255,7 +244,7 @@ bool IsCreditCardMigrationEnabled(PersonalDataManager* personal_data_manager,
   // local card migration browsertests.
   if (!is_test_mode &&
       !IsCreditCardUploadEnabled(
-          pref_service, sync_service,
+          sync_service,
           personal_data_manager->GetAccountInfoForPaymentsServer().email,
           personal_data_manager->GetCountryCodeForExperimentGroup(),
           personal_data_manager->GetSyncSigninState(), log_manager)) {
@@ -315,7 +304,7 @@ bool IsDeviceAuthAvailable(
     scoped_refptr<device_reauth::DeviceAuthenticator> device_authenticator) {
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
   CHECK(device_authenticator);
-  return device_authenticator->CanAuthenticateWithBiometrics() &&
+  return device_authenticator->CanAuthenticateWithBiometricOrScreenLock() &&
          base::FeatureList::IsEnabled(
              features::kAutofillEnablePaymentsMandatoryReauth);
 #else

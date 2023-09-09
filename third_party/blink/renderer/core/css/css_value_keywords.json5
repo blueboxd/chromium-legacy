@@ -161,6 +161,7 @@
     "cap-height",
     "ch-width",
     "ic-width",
+    // from-font
 
     //
     // font-family (<generic-family> in CSS 2.1)
@@ -757,6 +758,12 @@
     "fit-content",
 
     //
+    // text-autospace
+    //
+    // normal
+    "no-autospace",
+
+    //
     // text-overflow
     //
     "clip",
@@ -786,11 +793,6 @@
     // under
     // left
     // right
-
-    //
-    // word-boundary-detection
-    //
-    "ja",
 
     //
     // word-break
@@ -829,8 +831,6 @@
     // CSSParserFastPaths::IsValidKeywordPropertyAndValue.
     "checkbox",
     "radio",
-    "push-button",
-    "square-button",
     "button",
     "listbox",
     "-internal-media-control",
@@ -838,7 +838,6 @@
     "menulist-button",
     "meter",
     "progress-bar",
-    "slider-horizontal",
     "slider-vertical",
     "searchfield",
     "textfield",
@@ -849,6 +848,9 @@
     "media-sliderthumb",
     "media-volume-slider",
     "media-volume-sliderthumb",
+    "push-button",
+    "square-button",
+    "slider-horizontal",
     "sliderthumb-horizontal",
     "sliderthumb-vertical",
     "searchfield-cancel-button",
@@ -1541,6 +1543,7 @@
 
     // (prefers-reduced-motion:) media feature
     // (prefers-reduced-data:) media feature
+    // (prefers-reduced-transparency:) media feature
     "reduce",
 
     // (forced-colors:) media feature
@@ -1666,9 +1669,12 @@
     "self-block",
     "self-inline",
 
-    // anchor-scroll
+    // anchor-default
     "implicit",
     // none,
+
+    // position-fallback-bounds
+    // normal,
 
     // animation-[end-]delay
     // contain
@@ -1681,5 +1687,8 @@
     // scroll()
     "root",
     "nearest",
+
+    // transition-animation-type
+    "discrete",
   ],
 }

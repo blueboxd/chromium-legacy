@@ -59,9 +59,9 @@ source_set("autofill") {
     "//components/sync/service",
     "//components/variations/service",
     "//ios/chrome/browser/history",
-    "//ios/chrome/browser/shared/model/paths",
     "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/shared/model/browser_state",
+    "//ios/chrome/browser/shared/model/paths",
     "//ios/chrome/browser/shared/model/prefs:pref_names",
     "//ios/chrome/browser/shared/ui/util:util_swift",
     "//ios/chrome/browser/shared/ui/util/image",
@@ -158,6 +158,7 @@ source_set("unit_tests") {
   sources = [
     "autofill_controller_js_unittest.mm",
     "autofill_controller_unittest.mm",
+    "autofill_image_fetcher_impl_unittest.mm",
     "autofill_java_script_feature_unittest.mm",
     "child_frame_registration_java_script_feature_unittest.mm",
     "form_input_accessory_view_handler_unittest.mm",
@@ -192,9 +193,9 @@ source_set("unit_tests") {
     "//ios/chrome/app/application_delegate:app_state_header",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/passwords",
-    "//ios/chrome/browser/shared/model/paths",
     "//ios/chrome/browser/shared/coordinator/chrome_coordinator",
     "//ios/chrome/browser/shared/model/browser_state:test_support",
+    "//ios/chrome/browser/shared/model/paths",
     "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/sync:sync",
     "//ios/chrome/browser/ui/autofill",
@@ -211,6 +212,7 @@ source_set("unit_tests") {
     "//third_party/leveldatabase",
     "//third_party/ocmock",
     "//ui/base:test_support",
+    "//ui/gfx:test_support",
   ]
 }
 

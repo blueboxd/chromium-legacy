@@ -75,6 +75,46 @@ class CookieSettingsBase {
 
   virtual ~CookieSettingsBase() = default;
 
+  // An enum that represents the scope of cookies to which the user's
+  // third-party-cookie-blocking setting applies, in a given context.
+  enum class ThirdPartyBlockingScope {
+    // Access to all cookies (partitioned or unpartitioned) is blocked in this
+    // context.
+    kUnpartitionedAndPartitioned,
+    // Access to unpartitioned cookies is blocked in this context, but access to
+    // partitioned cookies is allowed.
+    kUnpartitionedOnly,
+  };
+
+  class CookieSettingWithMetadataBase {
+   public:
+    CookieSettingWithMetadataBase(
+        ContentSetting cookie_setting,
+        absl::optional<ThirdPartyBlockingScope> third_party_blocking_scope,
+        bool is_explicit_setting);
+
+    // Returns true iff the setting is "block" due to the user's
+    // third-party-cookie-blocking setting.
+    bool BlockedByThirdPartyCookieBlocking() const;
+
+    ContentSetting cookie_setting() const { return cookie_setting_; }
+
+    bool is_explicit_setting() const { return is_explicit_setting_; }
+
+   protected:
+    // The setting itself.
+    ContentSetting cookie_setting_;
+
+    // The scope of cookies blocked by third-party-cookie-blocking.  The scope
+    // must only be nullopt if `cookie_setting_` is not "allow", and if the
+    // reason for blocking cookies is the third-party cookie blocking setting
+    // (rather than a site-specific setting).
+    absl::optional<ThirdPartyBlockingScope> third_party_blocking_scope_;
+
+    // Whether the setting is for a specific pattern.
+    bool is_explicit_setting_ = false;
+  };
+
   // Returns true if the cookie associated with |domain| should be deleted
   // on exit.
   // This uses domain matching as described in section 5.1.3 of RFC 6265 to
@@ -115,7 +155,7 @@ class CookieSettingsBase {
       const GURL& url,
       const GURL& first_party_url,
       net::CookieSettingOverrides overrides,
-      content_settings::SettingSource* source) const;
+      content_settings::SettingInfo* info = nullptr) const;
 
   // Returns the cookie access semantics (legacy or nonlegacy) to be applied for
   // cookies on the given domain. The |cookie_domain| can be provided as the
@@ -151,10 +191,10 @@ class CookieSettingsBase {
   // the context should be treated as "first party" even if URLs have different
   // sites (or even different schemes).
   //
-  // (One such situation is e.g. chrome://print embedding some content from
-  // https://accounts.google.com for Cloud Print login. Because we trust the
-  // chrome:// scheme, and the embedded content is https://, we can treat this
-  // as effectively first-party for the purposes of SameSite cookies.)
+  // This situation can happen when chrome:// URLs embed content from https://
+  // URLs. Because we trust the chrome:// scheme, and the embedded content is
+  // https://, we can treat this as effectively first-party for the purposes of
+  // SameSite cookies.
   //
   // This differs from "legacy SameSite behavior" because rather than the
   // requested URL, this bypass is based on the site_for_cookies, i.e. the
@@ -213,7 +253,7 @@ class CookieSettingsBase {
       const GURL& first_party_url,
       bool is_third_party_request,
       net::CookieSettingOverrides overrides,
-      content_settings::SettingSource* source) const = 0;
+      content_settings::SettingInfo* info) const = 0;
 
   static bool storage_access_api_grants_unpartitioned_storage_;
   const bool is_storage_partitioned_;

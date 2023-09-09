@@ -25,8 +25,14 @@ source_set("webnn") {
       "dml/command_recorder.cc",
       "dml/command_recorder.h",
       "dml/error.h",
+      "dml/graph_builder.cc",
+      "dml/graph_builder.h",
       "dml/platform_functions.cc",
       "dml/platform_functions.h",
+      "dml/tensor_desc.cc",
+      "dml/tensor_desc.h",
+      "dml/utils.cc",
+      "dml/utils.h",
     ]
   }
 
@@ -51,7 +57,9 @@ source_set("tests") {
       "dml/adapter_test.cc",
       "dml/command_queue_test.cc",
       "dml/command_recorder_test.cc",
+      "dml/graph_builder_test.cc",
       "dml/platform_functions_test.cc",
+      "dml/tensor_desc_test.cc",
       "dml/test_base.cc",
       "dml/test_base.h",
     ]

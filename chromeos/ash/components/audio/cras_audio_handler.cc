@@ -633,6 +633,7 @@ void CrasAudioHandler::SetKeyboardMicActive(bool active) {
 
 void CrasAudioHandler::SetSpeakOnMuteDetection(bool som_on) {
   CrasAudioClient::Get()->SetSpeakOnMuteDetection(som_on);
+  speak_on_mute_detection_on_ = som_on;
 }
 
 void CrasAudioHandler::AddActiveNode(uint64_t node_id, bool notify) {
@@ -1453,6 +1454,14 @@ void CrasAudioHandler::InitializeAudioAfterCrasServiceAvailable(
   input_muted_by_microphone_mute_switch_ = IsMicrophoneMuteSwitchOn();
   if (input_muted_by_microphone_mute_switch_)
     SetInputMute(true, InputMuteChangeMethod::kPhysicalShutter);
+
+  // Sets speak-on-mute detection enabled based on local variable, it re-applies
+  // the previous state if CRAS restarts.
+  CrasAudioClient::Get()->SetSpeakOnMuteDetection(speak_on_mute_detection_on_);
+
+  // Sets force respect ui gains enabled based on audio pref, it re-applies the
+  // previous state if CRAS restarts.
+  CrasAudioClient::Get()->SetForceRespectUiGains(GetForceRespectUiGainsState());
 }
 
 void CrasAudioHandler::ApplyAudioPolicy() {

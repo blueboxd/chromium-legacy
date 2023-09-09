@@ -18,6 +18,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
+#include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/extensions/file_manager/device_event_router.h"
 #include "chrome/browser/ash/extensions/file_manager/drivefs_event_router.h"
 #include "chrome/browser/ash/extensions/file_manager/system_notification_manager.h"
@@ -34,10 +35,10 @@
 #include "chromeos/ash/components/disks/disk_mount_manager.h"
 #include "chromeos/ash/components/drivefs/sync_status_tracker.h"
 #include "chromeos/ash/components/settings/timezone_settings.h"
+#include "chromeos/dbus/dlp/dlp_client.h"
 #include "components/arc/intent_helper/arc_intent_helper_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/extension_registry_observer.h"
-#include "services/network/public/cpp/network_connection_tracker.h"
 #include "storage/browser/file_system/file_system_operation.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -58,18 +59,17 @@ class RecalculateTasksObserver;
 
 // Monitors changes in disk mounts, network connection state and preferences
 // affecting File Manager. Dispatches appropriate File Browser events.
-class EventRouter
-    : public KeyedService,
-      public network::NetworkConnectionTracker::NetworkConnectionObserver,
-      public extensions::ExtensionRegistryObserver,
-      public ash::system::TimezoneSettings::Observer,
-      public VolumeManagerObserver,
-      public arc::ArcIntentHelperObserver,
-      public drive::DriveIntegrationServiceObserver,
-      public guest_os::GuestOsSharePath::Observer,
-      public ash::TabletModeObserver,
-      public file_manager::io_task::IOTaskController::Observer,
-      public guest_os::GuestOsMountProviderRegistry::Observer {
+class EventRouter : public KeyedService,
+                    public extensions::ExtensionRegistryObserver,
+                    public ash::system::TimezoneSettings::Observer,
+                    public VolumeManagerObserver,
+                    public arc::ArcIntentHelperObserver,
+                    public drive::DriveIntegrationServiceObserver,
+                    public guest_os::GuestOsSharePath::Observer,
+                    public ash::TabletModeObserver,
+                    public file_manager::io_task::IOTaskController::Observer,
+                    public guest_os::GuestOsMountProviderRegistry::Observer,
+                    public chromeos::DlpClient::Observer {
  public:
   using DispatchDirectoryChangeEventImplCallback =
       base::RepeatingCallback<void(const base::FilePath& virtual_path,
@@ -118,9 +118,6 @@ class EventRouter
       const url::Origin& listener_origin,
       storage::WatcherManager::ChangeType change_type);
 
-  // network::NetworkConnectionTracker::NetworkConnectionObserver overrides.
-  void OnConnectionChanged(network::mojom::ConnectionType type) override;
-
   // extensions::ExtensionRegistryObserver overrides
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const extensions::Extension* extension) override;
@@ -164,6 +161,8 @@ class EventRouter
 
   // DriveIntegrationServiceObserver override.
   void OnFileSystemMountFailed() override;
+  void OnDriveConnectionStatusChanged(
+      drive::util::ConnectionStatusType status) override;
 
   // guest_os::GuestOsSharePath::Observer overrides.
   void OnPersistedPathRegistered(const std::string& vm_name,
@@ -199,6 +198,10 @@ class EventRouter
   void BroadcastOnAppsUpdatedEvent();
 
   drivefs::SyncState GetDriveSyncStateForPath(const base::FilePath& drive_path);
+
+  // chromeos::DlpClient::Observer override.
+  void OnFilesAddedToDlpDaemon(
+      const std::vector<base::FilePath>& files) override;
 
   // Use this method for unit tests to bypass checking if there are any SWA
   // windows.
@@ -280,6 +283,30 @@ class EventRouter
       file_manager_private::ProgressStatus event_status,
       std::unique_ptr<file_manager::util::EntryDefinitionList>
           entry_definition_list);
+
+  // Notifies Files app frontend that some files have changed.
+  void OnFilesChanged(
+      const std::vector<base::FilePath>& files,
+      extensions::api::file_manager_private::ChangeType change_type);
+
+  // Broadcast a directory change event for directories and files in
+  // `files_to_directory_map`.
+  void BroadcastDirectoryChangeEvent(
+      const std::map<base::FilePath, std::vector<base::FilePath>>&
+          files_to_directory_map,
+      const GURL& listener_url,
+      extensions::api::file_manager_private::ChangeType change_type);
+
+  // Broadcast a directory change event for the files listed in `changed_files`
+  // belonging to a filesystem described by `info`.
+  void BroadcastDirectoryChangeEventOnFilesystemInfoResolved(
+      GURL listener_url,
+      std::vector<base::FilePath> changed_files,
+      extensions::api::file_manager_private::ChangeType change_type,
+      base::File::Error result,
+      const storage::FileSystemInfo& info,
+      const base::FilePath& dir_path,
+      storage::FileSystemContext::ResolvedEntryType);
 
   // Broadcast the `event_status` to all open SWA windows.
   void BroadcastIOTask(

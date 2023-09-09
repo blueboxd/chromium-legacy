@@ -4,6 +4,7 @@
 
 #include "content/browser/webid/federated_provider_fetcher.h"
 
+#include "content/browser/webid/flags.h"
 #include "content/browser/webid/webid_utils.h"
 
 namespace content {
@@ -157,7 +158,7 @@ void FederatedProviderFetcher::OnWellKnownFetched(
   bool provider_url_is_valid =
       (urls.count(fetch_result.identity_provider_config_url) != 0);
 
-  if (!provider_url_is_valid) {
+  if (!provider_url_is_valid && !IsFedCmWithoutWellKnownEnforcementEnabled()) {
     OnError(fetch_result,
             FederatedAuthRequestResult::kErrorConfigNotInWellKnown,
             TokenStatus::kConfigNotInWellKnown,

@@ -171,8 +171,8 @@ std::unique_ptr<MockDataRetriever> CreateDefaultDataRetriever(
   using HttpStatusCode = int;
   std::map<GURL, HttpStatusCode> http_result = {};
 
-  ON_CALL(*fake_data_retriever, GetIcons(_, _, _, IsNotNullCallback()))
-      .WillByDefault(RunOnceCallback<3>(IconsDownloadedResult::kCompleted,
+  ON_CALL(*fake_data_retriever, GetIcons(_, _, _, _, IsNotNullCallback()))
+      .WillByDefault(RunOnceCallback<4>(IconsDownloadedResult::kCompleted,
                                         std::move(icons), http_result));
 
   return fake_data_retriever;
@@ -208,18 +208,14 @@ class FakeResponseReaderFactory : public IsolatedWebAppResponseReaderFactory {
   base::expected<void, UnusableSwbnFileError> bundle_status_;
 };
 
+// TODO(b/288395295): Refactor this test to use `FakeWebContentsManager` and
+// `provider()->command_scheduler().InstallIsolatedWebApp(...)` instead of
+// constructing the `InstallIsolatedWebAppCommand` manually.
 class InstallIsolatedWebAppCommandTest : public ::testing::Test {
  public:
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
         {features::kIsolatedWebApps, features::kIsolatedWebAppDevMode}, {});
-    FakeWebAppProvider* provider = FakeWebAppProvider::Get(profile());
-
-    auto command_manager_url_loader = std::make_unique<TestWebAppUrlLoader>();
-    command_manager_url_loader->SetPrepareForLoadResultLoaded();
-    provider->GetCommandManager().SetUrlLoaderForTesting(
-        std::move(command_manager_url_loader));
-
     test::AwaitStartWebAppProviderAndSubsystems(profile());
   }
 
@@ -308,13 +304,13 @@ class InstallIsolatedWebAppCommandTest : public ::testing::Test {
       location = CreateDevProxyLocation();
     }
 
+    if (data_retriever == nullptr) {
+      data_retriever = CreateDefaultDataRetriever(url_info.origin().GetURL());
+    }
+
     auto command_helper = std::make_unique<IsolatedWebAppInstallCommandHelper>(
-        url_info,
+        url_info, std::move(data_retriever),
         std::make_unique<FakeResponseReaderFactory>(std::move(bundle_status)));
-    command_helper->SetDataRetrieverForTesting(
-        data_retriever != nullptr
-            ? std::move(data_retriever)
-            : CreateDefaultDataRetriever(url_info.origin().GetURL()));
 
     return std::make_unique<InstallIsolatedWebAppCommand>(
         url_info, location.value(), expected_version, std::move(web_contents),
@@ -471,8 +467,7 @@ TEST_F(InstallIsolatedWebAppCommandTest,
   const WebApp* web_app = web_app_registrar().GetAppById(url_info.app_id());
   ASSERT_THAT(web_app, NotNull());
 
-  EXPECT_THAT(web_app->GetSources().test(WebAppManagement::kCommandLine),
-              IsTrue());
+  EXPECT_TRUE(web_app->GetSources().Has(WebAppManagement::kCommandLine));
 
   EXPECT_THAT(web_app->latest_install_source(),
               Optional(Eq(InstallSource::ISOLATED_APP_DEV_INSTALL)));
@@ -802,8 +797,9 @@ TEST_F(InstallIsolatedWebAppCommandManifestIconsTest,
 
   EXPECT_CALL(*fake_data_retriever,
               GetIcons(_, UnorderedElementsAre(img_url),
-                       /*skip_page_favicons=*/true, IsNotNullCallback()))
-      .WillOnce(RunOnceCallback<3>(IconsDownloadedResult::kCompleted,
+                       /*skip_page_favicons=*/true,
+                       /*fail_all_if_any_fail=*/true, IsNotNullCallback()))
+      .WillOnce(RunOnceCallback<4>(IconsDownloadedResult::kCompleted,
                                    std::move(icons), http_result));
 
   EXPECT_TRUE(ExecuteCommand(
@@ -855,8 +851,8 @@ TEST_F(InstallIsolatedWebAppCommandManifestIconsTest,
   using HttpStatusCode = int;
   std::map<GURL, HttpStatusCode> http_result = {};
 
-  EXPECT_CALL(*fake_data_retriever, GetIcons(_, _, _, IsNotNullCallback()))
-      .WillOnce(RunOnceCallback<3>(IconsDownloadedResult::kAbortedDueToFailure,
+  EXPECT_CALL(*fake_data_retriever, GetIcons(_, _, _, _, IsNotNullCallback()))
+      .WillOnce(RunOnceCallback<4>(IconsDownloadedResult::kAbortedDueToFailure,
                                    std::move(icons), http_result));
 
   EXPECT_THAT(ExecuteCommand(

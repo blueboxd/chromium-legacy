@@ -38,7 +38,7 @@ cx_events::KeyboardInfo UncheckedConvertPtr(
     crosapi::TelemetryKeyboardInfoPtr ptr) {
   cx_events::KeyboardInfo result;
 
-  result.id = ConvertStructPtr<absl::optional<uint32_t>>(std::move(ptr->id));
+  result.id = ConvertStructPtr(std::move(ptr->id));
   result.connection_type = Convert(ptr->connection_type);
   result.name = std::move(ptr->name);
   result.physical_layout = Convert(ptr->physical_layout);
@@ -46,8 +46,7 @@ cx_events::KeyboardInfo UncheckedConvertPtr(
   result.region_code = std::move(ptr->region_code);
   result.number_pad_present = Convert(ptr->number_pad_present);
   if (ptr->top_row_keys) {
-    result.top_row_keys =
-        ConvertVector<cx_events::KeyboardTopRowKey>(ptr->top_row_keys.value());
+    result.top_row_keys = ConvertVector(ptr->top_row_keys.value());
   }
   result.top_right_key = Convert(ptr->top_right_key);
   if (ptr->has_assistant_key) {
@@ -61,16 +60,15 @@ cx_events::KeyboardDiagnosticEventInfo UncheckedConvertPtr(
     crosapi::TelemetryKeyboardDiagnosticEventInfoPtr ptr) {
   cx_events::KeyboardDiagnosticEventInfo result;
 
-  result.keyboard_info =
-      ConvertStructPtr<cx_events::KeyboardInfo>(std::move(ptr->keyboard_info));
+  result.keyboard_info = ConvertStructPtr(std::move(ptr->keyboard_info));
 
   if (ptr->tested_keys) {
-    result.tested_keys = ConvertVector<int>(ptr->tested_keys.value());
+    result.tested_keys = ConvertVector(ptr->tested_keys.value());
   }
 
   if (ptr->tested_top_row_keys) {
     result.tested_top_row_keys =
-        ConvertVector<int>(ptr->tested_top_row_keys.value());
+        ConvertVector(ptr->tested_top_row_keys.value());
   }
 
   return result;
@@ -95,6 +93,15 @@ cx_events::UsbEventInfo UncheckedConvertPtr(
   result.vid = ptr->vid;
   result.pid = ptr->pid;
   result.categories = ptr->categories;
+
+  return result;
+}
+
+cx_events::HdmiEventInfo UncheckedConvertPtr(
+    crosapi::TelemetryHdmiEventInfoPtr ptr) {
+  cx_events::HdmiEventInfo result;
+
+  result.event = Convert(ptr->state);
 
   return result;
 }
@@ -152,9 +159,7 @@ cx_events::TouchpadConnectedEventInfo UncheckedConvertPtr(
     crosapi::TelemetryTouchpadConnectedEventInfoPtr ptr) {
   cx_events::TouchpadConnectedEventInfo result;
   std::vector<cx_events::InputTouchButton> converted_buttons =
-      ConvertVector<cx_events::InputTouchButton,
-                    crosapi::TelemetryInputTouchButton>(
-          std::move(ptr->buttons));
+      ConvertVector(std::move(ptr->buttons));
   result.buttons = std::move(converted_buttons);
   result.max_x = ptr->max_x;
   result.max_y = ptr->max_y;
@@ -168,15 +173,37 @@ cx_events::TouchPointInfo UncheckedConvertPtr(
   result.tracking_id = ptr->tracking_id;
   result.x = ptr->x;
   result.y = ptr->y;
-  result.pressure =
-      ConvertStructPtr<absl::optional<uint32_t>, crosapi::UInt32ValuePtr>(
-          std::move(ptr->pressure));
-  result.touch_major =
-      ConvertStructPtr<absl::optional<uint32_t>, crosapi::UInt32ValuePtr>(
-          std::move(ptr->touch_major));
-  result.touch_minor =
-      ConvertStructPtr<absl::optional<uint32_t>, crosapi::UInt32ValuePtr>(
-          std::move(ptr->touch_minor));
+  result.pressure = ConvertStructPtr(std::move(ptr->pressure));
+  result.touch_major = ConvertStructPtr(std::move(ptr->touch_major));
+  result.touch_minor = ConvertStructPtr(std::move(ptr->touch_minor));
+  return result;
+}
+
+cx_events::StylusTouchPointInfo UncheckedConvertPtr(
+    crosapi::TelemetryStylusTouchPointInfoPtr ptr) {
+  cx_events::StylusTouchPointInfo result;
+  if (ptr.is_null()) {
+    return result;
+  }
+  result.x = ptr->x;
+  result.y = ptr->y;
+  result.pressure = ptr->pressure;
+  return result;
+}
+
+cx_events::StylusTouchEventInfo UncheckedConvertPtr(
+    crosapi::TelemetryStylusTouchEventInfoPtr ptr) {
+  cx_events::StylusTouchEventInfo result;
+  result.touch_point = ConvertStructPtr(std::move(ptr->touch_point));
+  return result;
+}
+
+cx_events::StylusConnectedEventInfo UncheckedConvertPtr(
+    crosapi::TelemetryStylusConnectedEventInfoPtr ptr) {
+  cx_events::StylusConnectedEventInfo result;
+  result.max_x = ptr->max_x;
+  result.max_y = ptr->max_y;
+  result.max_pressure = ptr->max_pressure;
   return result;
 }
 
@@ -366,6 +393,18 @@ cx_events::UsbEvent Convert(crosapi::TelemetryUsbEventInfo::State state) {
   NOTREACHED();
 }
 
+cx_events::HdmiEvent Convert(crosapi::TelemetryHdmiEventInfo::State state) {
+  switch (state) {
+    case crosapi::TelemetryHdmiEventInfo_State::kUnmappedEnumField:
+      return cx_events::HdmiEvent::kNone;
+    case crosapi::TelemetryHdmiEventInfo_State::kAdd:
+      return cx_events::HdmiEvent::kConnected;
+    case crosapi::TelemetryHdmiEventInfo_State::kRemove:
+      return cx_events::HdmiEvent::kDisconnected;
+  }
+  NOTREACHED();
+}
+
 cx_events::SdCardEvent Convert(crosapi::TelemetrySdCardEventInfo::State state) {
   switch (state) {
     case crosapi::TelemetrySdCardEventInfo_State::kUnmappedEnumField:
@@ -431,6 +470,8 @@ crosapi::TelemetryEventCategoryEnum Convert(cx_events::EventCategory input) {
       return crosapi::TelemetryEventCategoryEnum::kLid;
     case cx_events::EventCategory::kUsb:
       return crosapi::TelemetryEventCategoryEnum::kUsb;
+    case cx_events::EventCategory::kHdmi:
+      return crosapi::TelemetryEventCategoryEnum::kHdmi;
     case cx_events::EventCategory::kSdCard:
       return crosapi::TelemetryEventCategoryEnum::kSdCard;
     case cx_events::EventCategory::kPower:
@@ -445,6 +486,10 @@ crosapi::TelemetryEventCategoryEnum Convert(cx_events::EventCategory input) {
       return crosapi::TelemetryEventCategoryEnum::kTouchpadTouch;
     case cx_events::EventCategory::kTouchpadConnected:
       return crosapi::TelemetryEventCategoryEnum::kTouchpadConnected;
+    case cx_events::EventCategory::kStylusTouch:
+      return crosapi::TelemetryEventCategoryEnum::kStylusTouch;
+    case cx_events::EventCategory::kStylusConnected:
+      return crosapi::TelemetryEventCategoryEnum::kStylusConnected;
   }
   NOTREACHED();
 }

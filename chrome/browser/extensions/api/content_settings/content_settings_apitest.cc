@@ -24,7 +24,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/content_settings/core/browser/content_settings_uma_util.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -245,7 +244,7 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
   }
 
  private:
-  raw_ptr<Profile, DanglingUntriaged> profile_ = nullptr;
+  raw_ptr<Profile, AcrossTasksDanglingUntriaged> profile_ = nullptr;
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
   std::unique_ptr<ScopedProfileKeepAlive> profile_keep_alive_;
 };
@@ -358,14 +357,11 @@ IN_PROC_BROWSER_TEST_P(ExtensionContentSettingsApiTestWithContextType,
   EXPECT_TRUE(RunExtensionTest(kExtensionPath)) << message_;
 
   int images_type =
-      content_settings_uma_util::ContentSettingTypeToHistogramValue(
-          ContentSettingsType::IMAGES);
+      ContentSettingTypeToHistogramValue(ContentSettingsType::IMAGES);
   int geolocation_type =
-      content_settings_uma_util::ContentSettingTypeToHistogramValue(
-          ContentSettingsType::GEOLOCATION);
+      ContentSettingTypeToHistogramValue(ContentSettingsType::GEOLOCATION);
   int cookies_type =
-      content_settings_uma_util::ContentSettingTypeToHistogramValue(
-          ContentSettingsType::COOKIES);
+      ContentSettingTypeToHistogramValue(ContentSettingsType::COOKIES);
 
   histogram_tester.ExpectBucketCount(
       "ContentSettings.ExtensionEmbeddedSettingSet", images_type, 1);

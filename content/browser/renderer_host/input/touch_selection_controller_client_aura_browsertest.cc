@@ -43,7 +43,6 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/motion_event_test_utils.h"
 #include "ui/touch_selection/touch_selection_controller_test_api.h"
-#include "ui/touch_selection/touch_selection_magnifier_runner.h"
 
 namespace content {
 namespace {
@@ -63,33 +62,6 @@ bool JSONToPoint(const std::string& str, gfx::PointF* point) {
   point->set_y(*y);
   return true;
 }
-
-// A mock touch selection magnifier runner to use whenever a default one is not
-// installed.
-class TestTouchSelectionMagnifierRunner
-    : public ui::TouchSelectionMagnifierRunner {
- public:
-  TestTouchSelectionMagnifierRunner() = default;
-
-  TestTouchSelectionMagnifierRunner(const TestTouchSelectionMagnifierRunner&) =
-      delete;
-  TestTouchSelectionMagnifierRunner& operator=(
-      const TestTouchSelectionMagnifierRunner&) = delete;
-
-  ~TestTouchSelectionMagnifierRunner() override = default;
-
- private:
-  void ShowMagnifier(aura::Window* context,
-                     const gfx::SelectionBound& focus_bound) override {
-    magnifier_running_ = true;
-  }
-
-  void CloseMagnifier() override { magnifier_running_ = false; }
-
-  bool IsRunning() const override { return magnifier_running_; }
-
-  bool magnifier_running_ = false;
-};
 
 // A mock touch selection menu runner to use whenever a default one is not
 // installed.
@@ -173,6 +145,10 @@ class TestTouchSelectionControllerClientAura
 
   ui::TouchSelectionMenuClient* GetActiveMenuClient() {
     return active_menu_client_;
+  }
+
+  bool IsMagnifierVisible() const {
+    return touch_selection_magnifier_ != nullptr;
   }
 
  private:
@@ -271,21 +247,17 @@ class TouchSelectionControllerClientAuraTest : public ContentBrowserTest {
 
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
-    if (!ui::TouchSelectionMagnifierRunner::GetInstance())
-      magnifier_runner_ = std::make_unique<TestTouchSelectionMagnifierRunner>();
     if (!ui::TouchSelectionMenuRunner::GetInstance())
       menu_runner_ = std::make_unique<TestTouchSelectionMenuRunner>();
   }
 
  private:
   void TearDownOnMainThread() override {
-    magnifier_runner_ = nullptr;
     menu_runner_ = nullptr;
     selection_controller_client_ = nullptr;
     ContentBrowserTest::TearDownOnMainThread();
   }
 
-  std::unique_ptr<TestTouchSelectionMagnifierRunner> magnifier_runner_;
   std::unique_ptr<TestTouchSelectionMenuRunner> menu_runner_;
 
   raw_ptr<TestTouchSelectionControllerClientAura> selection_controller_client_ =
@@ -559,19 +531,26 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraSiteIsolationTest,
   EXPECT_NE(gfx::RectF(),
             parent_view->selection_controller()->GetVisibleRectBetweenBounds());
 
-  // Tap inside/outside the iframe and make sure the selection handles go away.
+  // Check that selection handles are cleared after tapping inside/outside the
+  // iframe.
   parent_selection_controller_client->InitWaitForSelectionEvent(
       ui::SELECTION_HANDLES_CLEARED);
+  const gfx::RectF rect_between_selection_bounds =
+      parent_view->selection_controller()->GetRectBetweenBounds();
   if (GetParam()) {
-    gfx::PointF point_outside_iframe =
-        child_view->TransformPointToRootCoordSpaceF(gfx::PointF(-1.f, -1.f));
-    SimpleTap(gfx::Point(point_outside_iframe.x(), point_outside_iframe.y()),
-              parent_view);
+    // Tap a point outside the iframe that doesn't overlap with the selection
+    // handles or menu.
+    const gfx::Point point_outside_iframe(
+        child_view->TransformPointToRootCoordSpaceF(gfx::PointF(-20.f, 0)).x(),
+        rect_between_selection_bounds.left_center().y());
+    SimpleTap(point_outside_iframe, parent_view);
   } else {
-    gfx::PointF point_inside_iframe =
-        child_view->TransformPointToRootCoordSpaceF(gfx::PointF(+1.f, +1.f));
-    SimpleTap(gfx::Point(point_inside_iframe.x(), point_inside_iframe.y()),
-              child_view);
+    // Tap a point inside the iframe that doesn't overlap with the selection
+    // handles or menu.
+    const gfx::Point point_inside_iframe(
+        rect_between_selection_bounds.right_center().x() + 10,
+        rect_between_selection_bounds.right_center().y());
+    SimpleTap(point_inside_iframe, child_view);
   }
   parent_selection_controller_client->Wait();
 
@@ -1021,7 +1000,7 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraCAPFeatureTest,
   RenderWidgetHostViewAura* rwhva = GetRenderWidgetHostViewAura();
   gfx::NativeView native_view = rwhva->GetNativeView();
   ui::test::EventGenerator generator(native_view->GetRootWindow());
-  EXPECT_FALSE(ui::TouchSelectionMagnifierRunner::GetInstance()->IsRunning());
+  EXPECT_FALSE(selection_controller_client()->IsMagnifierVisible());
 
   // Tap to focus the textfield.
   selection_controller_client()->InitWaitForSelectionEvent(
@@ -1044,13 +1023,12 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraCAPFeatureTest,
               ui::INSERTION_HANDLE_MOVED);
         } else if (event_type == ui::ET_GESTURE_SCROLL_UPDATE) {
           selection_controller_client()->Wait();
-          EXPECT_TRUE(
-              ui::TouchSelectionMagnifierRunner::GetInstance()->IsRunning());
+          EXPECT_TRUE(selection_controller_client()->IsMagnifierVisible());
           selection_controller_client()->InitWaitForSelectionEvent(
               ui::INSERTION_HANDLE_MOVED);
         }
       }));
-  EXPECT_FALSE(ui::TouchSelectionMagnifierRunner::GetInstance()->IsRunning());
+  EXPECT_FALSE(selection_controller_client()->IsMagnifierVisible());
 }
 
 // Tests that the select all command in the quick menu works correctly and that
@@ -1230,7 +1208,7 @@ IN_PROC_BROWSER_TEST_P(
 
   EXPECT_EQ(ui::TouchSelectionController::INACTIVE,
             rwhva->selection_controller()->active_status());
-  EXPECT_FALSE(ui::TouchSelectionMagnifierRunner::GetInstance()->IsRunning());
+  EXPECT_FALSE(selection_controller_client()->IsMagnifierVisible());
   EXPECT_FALSE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
   EXPECT_EQ(2.f, rwhva->GetDeviceScaleFactor());
   EXPECT_EQ(gfx::RectF(),
@@ -1286,9 +1264,6 @@ IN_PROC_BROWSER_TEST_P(
   rwhva->OnTouchEvent(&touch_down);
   selection_controller_client()->Wait();
 
-  // The magnifier should be shown when selection handle dragging starts.
-  EXPECT_TRUE(ui::TouchSelectionMagnifierRunner::GetInstance()->IsRunning());
-
   // Move the selection handle.
   selection_controller_client()->InitWaitForSelectionEvent(
       ui::SELECTION_HANDLES_MOVED);
@@ -1299,8 +1274,8 @@ IN_PROC_BROWSER_TEST_P(
   rwhva->OnTouchEvent(&touch_move);
   selection_controller_client()->Wait();
 
-  // The magnifier should still be shown after the selection handle moves.
-  EXPECT_TRUE(ui::TouchSelectionMagnifierRunner::GetInstance()->IsRunning());
+  // The magnifier should be shown after the selection handle moves.
+  EXPECT_TRUE(selection_controller_client()->IsMagnifierVisible());
 
   // Then release.
   selection_controller_client()->InitWaitForSelectionEvent(
@@ -1315,7 +1290,7 @@ IN_PROC_BROWSER_TEST_P(
   // longer be shown.
   EXPECT_EQ(start_top.y(), controller->start().edge_start().y());
   EXPECT_LT(start_top.x(), controller->start().edge_start().x());
-  EXPECT_FALSE(ui::TouchSelectionMagnifierRunner::GetInstance()->IsRunning());
+  EXPECT_FALSE(selection_controller_client()->IsMagnifierVisible());
 
   EXPECT_EQ(ui::TouchSelectionController::SELECTION_ACTIVE,
             rwhva->selection_controller()->active_status());
@@ -1378,9 +1353,6 @@ IN_PROC_BROWSER_TEST_P(
   rwhva->OnTouchEvent(&touch_down);
   selection_controller_client()->Wait();
 
-  // The magnifier should be shown when insertion handle dragging starts.
-  EXPECT_TRUE(ui::TouchSelectionMagnifierRunner::GetInstance()->IsRunning());
-
   // Move it.
   selection_controller_client()->InitWaitForSelectionEvent(
       ui::INSERTION_HANDLE_MOVED);
@@ -1391,8 +1363,8 @@ IN_PROC_BROWSER_TEST_P(
   rwhva->OnTouchEvent(&touch_move);
   selection_controller_client()->Wait();
 
-  // The magnifier should still be shown after the insertion handle moves.
-  EXPECT_TRUE(ui::TouchSelectionMagnifierRunner::GetInstance()->IsRunning());
+  // The magnifier should be shown after the insertion handle moves.
+  EXPECT_TRUE(selection_controller_client()->IsMagnifierVisible());
 
   // Then release.
   selection_controller_client()->InitWaitForSelectionEvent(
@@ -1402,7 +1374,6 @@ IN_PROC_BROWSER_TEST_P(
                           ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   rwhva->OnTouchEvent(&touch_up);
   selection_controller_client()->Wait();
-  EXPECT_FALSE(ui::TouchSelectionMagnifierRunner::GetInstance()->IsRunning());
 
   gfx::RectF moved_handle_rect =
       rwhva->selection_controller()->GetStartHandleRect();
@@ -1411,7 +1382,7 @@ IN_PROC_BROWSER_TEST_P(
   // longer be shown.
   EXPECT_EQ(initial_handle_rect.y(), moved_handle_rect.y());
   EXPECT_LT(initial_handle_rect.x(), moved_handle_rect.x());
-  EXPECT_FALSE(ui::TouchSelectionMagnifierRunner::GetInstance()->IsRunning());
+  EXPECT_FALSE(selection_controller_client()->IsMagnifierVisible());
 
   EXPECT_EQ(ui::TouchSelectionController::INSERTION_ACTIVE,
             rwhva->selection_controller()->active_status());

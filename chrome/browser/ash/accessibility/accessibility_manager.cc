@@ -11,6 +11,7 @@
 
 #include "ash/accessibility/autoclick/autoclick_controller.h"
 #include "ash/accessibility/sticky_keys/sticky_keys_controller.h"
+#include "ash/color_enhancement/color_enhancement_controller.h"
 #include "ash/constants/ash_constants.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
@@ -381,13 +382,6 @@ AccessibilityManager* AccessibilityManager::Get() {
 
 // static
 void AccessibilityManager::ShowAccessibilityHelp() {
-  if (crosapi::browser_util::IsLacrosPrimaryBrowser()) {
-    crosapi::BrowserManager::Get()->SwitchToTab(
-        GURL(chrome::kChromeAccessibilityHelpURL),
-        /*path_behavior=*/NavigateParams::RESPECT);
-    return;
-  }
-
   ShowSingletonTab(ProfileManager::GetActiveUserProfile(),
                    GURL(chrome::kChromeAccessibilityHelpURL));
 }
@@ -562,7 +556,7 @@ bool AccessibilityManager::ShouldShowAccessibilityMenu() {
     }
     if (::features::
             AreExperimentalAccessibilityColorEnhancementSettingsEnabled() &&
-        prefs->GetBoolean(prefs::kAccessibilityColorFiltering)) {
+        prefs->GetBoolean(prefs::kAccessibilityColorCorrectionEnabled)) {
       return true;
     }
   }
@@ -1286,6 +1280,25 @@ void AccessibilityManager::OnSelectToSpeakChanged() {
   }
 }
 
+void AccessibilityManager::OnSelectToSpeakContextMenuClick() {
+  if (!profile_) {
+    return;
+  }
+
+  extensions::EventRouter* event_router =
+      extensions::EventRouter::Get(profile_);
+
+  // Send an event to the Select-to-Speak extension requesting a state change.
+  std::unique_ptr<extensions::Event> event(new extensions::Event(
+      extensions::events::
+          ACCESSIBILITY_PRIVATE_ON_SELECT_TO_SPEAK_CONTEXT_MENU_CLICKED,
+      extensions::api::accessibility_private::
+          OnSelectToSpeakContextMenuClicked::kEventName,
+      base::Value::List()));
+  event_router->DispatchEventWithLazyListener(
+      extension_misc::kSelectToSpeakExtensionId, std::move(event));
+}
+
 void AccessibilityManager::SetSwitchAccessEnabled(bool enabled) {
   if (!profile_)
     return;
@@ -1355,13 +1368,14 @@ void AccessibilityManager::SetColorCorrectionEnabled(bool enabled) {
   }
 
   PrefService* pref_service = profile_->GetPrefs();
-  pref_service->SetBoolean(prefs::kAccessibilityColorFiltering, enabled);
+  pref_service->SetBoolean(prefs::kAccessibilityColorCorrectionEnabled,
+                           enabled);
   pref_service->CommitPendingWrite();
 }
 
 bool AccessibilityManager::IsColorCorrectionEnabled() const {
-  return profile_ &&
-         profile_->GetPrefs()->GetBoolean(prefs::kAccessibilityColorFiltering);
+  return profile_ && profile_->GetPrefs()->GetBoolean(
+                         prefs::kAccessibilityColorCorrectionEnabled);
 }
 
 bool AccessibilityManager::IsBrailleDisplayConnected() const {
@@ -1699,6 +1713,23 @@ void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {
     base::UmaHistogramBoolean(
         "Accessibility.CrosCursorColor",
         prefs->GetBoolean(prefs::kAccessibilityCursorColorEnabled));
+
+    if (::features::
+            AreExperimentalAccessibilityColorEnhancementSettingsEnabled()) {
+      bool color_correction_enabled = IsColorCorrectionEnabled();
+      base::UmaHistogramBoolean("Accessibility.CrosColorCorrection",
+                                color_correction_enabled);
+      if (color_correction_enabled) {
+        base::UmaHistogramEnumeration(
+            "Accessibility.CrosColorCorrection.FilterType",
+            static_cast<ColorVisionCorrectionType>(prefs->GetInteger(
+                prefs::kAccessibilityColorVisionCorrectionType)));
+        base::UmaHistogramPercentage(
+            "Accessibility.CrosColorCorrection.FilterAmount",
+            prefs->GetInteger(
+                prefs::kAccessibilityColorVisionCorrectionAmount));
+      }
+    }
   }
   base::UmaHistogramBoolean("Accessibility.CrosCaretHighlight",
                             IsCaretHighlightEnabled());
@@ -1831,7 +1862,7 @@ void AccessibilityManager::PostLoadChromeVox() {
   audio_focus_manager_->SetEnforcementMode(
       media_session::mojom::EnforcementMode::kNone);
 
-  InitializeFocusRings(extension_id);
+  InitializeFocusRings(ax::mojom::AssistiveTechnologyType::kChromeVox);
 
   // Force volume slide gesture to be on for Chromebox for Meetings provisioned
   // devices.
@@ -1853,7 +1884,7 @@ void AccessibilityManager::PostUnloadChromeVox() {
 
   PlayEarcon(Sound::kSpokenFeedbackDisabled, PlaySoundOption::kAlways);
 
-  RemoveFocusRings(extension_misc::kChromeVoxExtensionId);
+  RemoveFocusRings(ax::mojom::AssistiveTechnologyType::kChromeVox);
 
   if (chromevox_panel_) {
     chromevox_panel_->Close();
@@ -1892,7 +1923,7 @@ void AccessibilityManager::OnChromeVoxPanelDestroying() {
 }
 
 void AccessibilityManager::PostLoadSelectToSpeak() {
-  InitializeFocusRings(extension_misc::kSelectToSpeakExtensionId);
+  InitializeFocusRings(ax::mojom::AssistiveTechnologyType::kSelectToSpeak);
 
   UpdateEnhancedNetworkTts();
 }
@@ -1902,7 +1933,7 @@ void AccessibilityManager::PostUnloadSelectToSpeak() {
   // unloads.
 
   // Clear the accessibility focus ring and highlight.
-  RemoveFocusRings(extension_misc::kSelectToSpeakExtensionId);
+  RemoveFocusRings(ax::mojom::AssistiveTechnologyType::kSelectToSpeak);
   HideHighlights();
 
   UpdateEnhancedNetworkTts();
@@ -1975,7 +2006,7 @@ void AccessibilityManager::PostLoadEnhancedNetworkTts() {
 }
 
 void AccessibilityManager::PostLoadSwitchAccess() {
-  InitializeFocusRings(extension_misc::kSwitchAccessExtensionId);
+  InitializeFocusRings(ax::mojom::AssistiveTechnologyType::kSwitchAccess);
 }
 
 void AccessibilityManager::PostUnloadSwitchAccess() {
@@ -1983,7 +2014,7 @@ void AccessibilityManager::PostUnloadSwitchAccess() {
   // unloads.
 
   // Clear the accessibility focus ring.
-  RemoveFocusRings(extension_misc::kSwitchAccessExtensionId);
+  RemoveFocusRings(ax::mojom::AssistiveTechnologyType::kSwitchAccess);
 
   if (!was_vk_enabled_before_switch_access_) {
     ChromeKeyboardControllerClient::Get()->ClearEnableFlag(
@@ -1997,14 +2028,18 @@ void AccessibilityManager::PostLoadAccessibilityCommon() {
   // Do any setup work needed immediately after the Accessibility Common
   // extension actually loads. This may be used by all features which make
   // use of the Accessibility Common extension.
-  InitializeFocusRings(extension_misc::kAccessibilityCommonExtensionId);
+  // Autoclick uses a focus ring to highlight the scrollable area.
+  InitializeFocusRings(ax::mojom::AssistiveTechnologyType::kAutoClick);
+  // Magnifier may use a focus ring to draw the user debug rect.
+  InitializeFocusRings(ax::mojom::AssistiveTechnologyType::kMagnifier);
 }
 
 void AccessibilityManager::PostUnloadAccessibilityCommon() {
   // Do any teardown work needed immediately after the Accessibility Common
   // extension actually unloads. This may be used by all features which make
   // use of the Accessibility Common extension.
-  RemoveFocusRings(extension_misc::kAccessibilityCommonExtensionId);
+  RemoveFocusRings(ax::mojom::AssistiveTechnologyType::kAutoClick);
+  RemoveFocusRings(ax::mojom::AssistiveTechnologyType::kMagnifier);
 }
 
 void AccessibilityManager::SetKeyboardListenerExtensionId(
@@ -2050,31 +2085,32 @@ bool AccessibilityManager::ToggleDictation() {
 }
 
 const std::string AccessibilityManager::GetFocusRingId(
-    const std::string& extension_id,
+    ax::mojom::AssistiveTechnologyType at_type,
     const std::string& focus_ring_name) {
   // Add the focus ring name to the list of focus rings for the extension.
-  focus_ring_names_for_extension_id_.find(extension_id)
-      ->second.insert(focus_ring_name);
-  return extension_id + '-' + focus_ring_name;
+  focus_ring_names_for_at_type_.find(at_type)->second.insert(focus_ring_name);
+  std::ostringstream typeStringStream;
+  typeStringStream << at_type;
+  return typeStringStream.str() + '-' + focus_ring_name;
 }
 
 void AccessibilityManager::InitializeFocusRings(
-    const std::string& extension_id) {
-  if (focus_ring_names_for_extension_id_.count(extension_id) == 0) {
-    focus_ring_names_for_extension_id_.emplace(extension_id,
-                                               std::set<std::string>());
+    ax::mojom::AssistiveTechnologyType at_type) {
+  if (focus_ring_names_for_at_type_.count(at_type) == 0) {
+    focus_ring_names_for_at_type_.emplace(at_type, std::set<std::string>());
   }
 }
 
-void AccessibilityManager::RemoveFocusRings(const std::string& extension_id) {
-  if (focus_ring_names_for_extension_id_.count(extension_id) != 0) {
+void AccessibilityManager::RemoveFocusRings(
+    ax::mojom::AssistiveTechnologyType at_type) {
+  if (focus_ring_names_for_at_type_.count(at_type) != 0) {
     const std::set<std::string>& focus_ring_names =
-        focus_ring_names_for_extension_id_.find(extension_id)->second;
+        focus_ring_names_for_at_type_.find(at_type)->second;
 
     for (const std::string& focus_ring_name : focus_ring_names)
-      HideFocusRing(GetFocusRingId(extension_id, focus_ring_name));
+      HideFocusRing(GetFocusRingId(at_type, focus_ring_name));
   }
-  focus_ring_names_for_extension_id_.erase(extension_id);
+  focus_ring_names_for_at_type_.erase(at_type);
 }
 
 void AccessibilityManager::SetFocusRing(

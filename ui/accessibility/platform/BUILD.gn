@@ -58,10 +58,6 @@ component("platform") {
     "compute_attributes.cc",
     "compute_attributes.h",
 
-    # Used by //ui/accessibility:ax_assistant.
-    "ax_android_constants.cc",
-    "ax_android_constants.h",
-
     # Used by //ui/views/views/ax_virtual_view.h.
     "ax_platform_node_base.cc",
     "ax_platform_node_base.h",
@@ -119,6 +115,15 @@ component("platform") {
       "//base:i18n",
       "//components/crash/core/common:crash_key",
       "//gin",
+      "//services/accessibility/public/mojom:automation",
+    ]
+  }
+
+  if (is_android || is_chromeos_ash) {
+    sources += [
+      # Used by //ui/accessibility:ax_assistant.
+      "ax_android_constants.cc",
+      "ax_android_constants.h",
     ]
   }
 
@@ -193,6 +198,7 @@ component("platform") {
         "inspect/ax_tree_formatter_win.cc",
         "inspect/ax_tree_formatter_win.h",
         "inspect/ax_tree_indexer_win.h",
+        "sequence_affine_com_object_root_win.h",
         "uia_registrar_win.cc",
         "uia_registrar_win.h",
       ]

@@ -111,6 +111,8 @@ class CONTENT_EXPORT RenderWidgetHostViewIOS
   void CancelSuccessfulPresentationTimeRequestForHostAndDelegate() override;
   viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata) override;
+  void DidNavigateMainFramePreCommit() override;
+  void DidEnterBackForwardCache() override;
   void DidNavigate() override;
   bool RequestRepaintForTesting() override;
   void Destroy() override;
@@ -129,12 +131,13 @@ class CONTENT_EXPORT RenderWidgetHostViewIOS
       blink::mojom::InputEventResultState ack_result,
       blink::mojom::ScrollResultDataPtr scroll_result_data) override;
   void OnSynchronizedDisplayPropertiesChanged(bool rotation) override;
+  gfx::Size GetCompositorViewportPixelSize() override;
 
   BrowserCompositorIOS* BrowserCompositor() const {
     return browser_compositor_.get();
   }
 
-  // BrowserCompositorIOS overrides:
+  // `BrowserCompositorIOSClient` overrides:
   SkColor BrowserCompositorIOSGetGutterColor() override;
   void OnFrameTokenChanged(uint32_t frame_token,
                            base::TimeTicks activation_time) override;
@@ -215,7 +218,9 @@ class CONTENT_EXPORT RenderWidgetHostViewIOS
 
   bool ComputeIsViewOrSubviewFirstResponder() const;
 
-  void ApplyRootScrollOffsetChanged(const gfx::PointF& root_scroll_offset);
+  void ApplyRootScrollOffsetChanged(const gfx::PointF& root_scroll_offset,
+                                    bool force);
+  void UpdateFrameBounds();
 
   // Provides gesture synthesis given a stream of touch events and touch event
   // acks. This is for generating gesture events from injected touch events.
@@ -242,6 +247,10 @@ class CONTENT_EXPORT RenderWidgetHostViewIOS
 
   absl::optional<gfx::PointF> last_root_scroll_offset_;
   bool is_scrolling_ = false;
+
+  // This stores the underlying view bounds. The UIView might change size but
+  // we do not change its size during scroll.
+  gfx::Rect view_bounds_;
 
   std::unique_ptr<BrowserCompositorIOS> browser_compositor_;
   std::unique_ptr<UIViewHolder> ui_view_;

@@ -68,11 +68,6 @@ String StringForBoxType(const NGPhysicalFragment& fragment) {
       result.Append("rendered-legend");
       break;
   }
-  if (fragment.IsLegacyLayoutRoot()) {
-    if (result.length())
-      result.Append(" ");
-    result.Append("legacy-layout-root");
-  }
   if (fragment.IsBlockFlow()) {
     if (result.length())
       result.Append(" ");
@@ -190,16 +185,6 @@ class FragmentTreeDumper {
   void AppendLegacySubtree(const LayoutObject& layout_object, unsigned indent) {
     for (const LayoutObject* descendant = &layout_object; descendant;) {
       if (!IsNGRootWithFragments(*descendant)) {
-        if (const auto* block = DynamicTo<LayoutBlock>(descendant)) {
-          if (const auto* positioned_descendants = block->PositionedObjects()) {
-            for (const auto& positioned_object : *positioned_descendants) {
-              if (IsNGRootWithFragments(*positioned_object))
-                AppendNGRootInLegacySubtree(*positioned_object, indent);
-              else
-                AppendLegacySubtree(*positioned_object, indent);
-            }
-          }
-        }
         if (descendant->IsOutOfFlowPositioned() && descendant != &layout_object)
           descendant = descendant->NextInPreOrderAfterChildren(&layout_object);
         else
@@ -354,7 +339,6 @@ NGPhysicalFragment::NGPhysicalFragment(NGFragmentBuilder* builder,
           builder->may_have_descendant_above_block_start_),
       is_fieldset_container_(false),
       is_table_ng_part_(false),
-      is_legacy_layout_root_(false),
       is_painted_atomically_(false),
       has_collapsed_borders_(builder->has_collapsed_borders_),
       has_first_baseline_(false),
@@ -443,7 +427,6 @@ NGPhysicalFragment::NGPhysicalFragment(const NGPhysicalFragment& other)
           other.may_have_descendant_above_block_start_),
       is_fieldset_container_(other.is_fieldset_container_),
       is_table_ng_part_(other.is_table_ng_part_),
-      is_legacy_layout_root_(other.is_legacy_layout_root_),
       is_painted_atomically_(other.is_painted_atomically_),
       has_collapsed_borders_(other.has_collapsed_borders_),
       has_first_baseline_(other.has_first_baseline_),

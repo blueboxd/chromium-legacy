@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ObserverList;
+import org.chromium.base.Promise;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
@@ -66,9 +67,7 @@ public class AccountTrackerService implements AccountsChangeObserver {
     private final Queue<Runnable> mRunnablesWaitingForAccountsSeeding;
     private @AccountsSeedingStatus int mAccountsSeedingStatus;
     private final ObserverList<Observer> mObservers = new ObserverList<>();
-    private boolean mAccountsChangeObserverAdded;
-    // TODO(crbug.com/1455941): Remove this field.
-    private boolean mExistsPendingSeedAccountsTask;
+    private final AccountManagerFacade mAccountManagerFacade;
 
     @VisibleForTesting
     @CalledByNative
@@ -76,7 +75,14 @@ public class AccountTrackerService implements AccountsChangeObserver {
         mNativeAccountTrackerService = nativeAccountTrackerService;
         mAccountsSeedingStatus = AccountsSeedingStatus.NOT_STARTED;
         mRunnablesWaitingForAccountsSeeding = new ConcurrentLinkedDeque<>();
-        mExistsPendingSeedAccountsTask = false;
+        mAccountManagerFacade = AccountManagerFacadeProvider.getInstance();
+        mAccountManagerFacade.addObserver(this);
+    }
+
+    @VisibleForTesting
+    @CalledByNative
+    void destroy() {
+        mAccountManagerFacade.removeObserver(this);
     }
 
     /**
@@ -117,35 +123,22 @@ public class AccountTrackerService implements AccountsChangeObserver {
 
     /** Implements {@link AccountsChangeObserver}. */
     @Override
-    public void onAccountsChanged() {}
-
-    /** Implements {@link AccountsChangeObserver}. */
-    @Override
     public void onCoreAccountInfosChanged() {
-        onAccountsChangedInternal();
+        // If mAccountsSeedingStatus is IN_PROGRESS do nothing. The promise in seedAccounts() will
+        // be fulfilled with updated list of CoreAccountInfo's.
+        if (mAccountsSeedingStatus != AccountsSeedingStatus.IN_PROGRESS) {
+            mAccountsSeedingStatus = AccountsSeedingStatus.NOT_STARTED;
+            seedAccounts(true);
+        }
     }
 
     @MainThread
     void invalidateAccountsSeedingStatus() {
-        if (mAccountsSeedingStatus == AccountsSeedingStatus.IN_PROGRESS) {
-            // Re-seed accounts again after the current, now invalid, seeding process finishes.
-            mExistsPendingSeedAccountsTask = true;
-        } else {
+        // If mAccountsSeedingStatus is IN_PROGRESS do nothing. The old invalidated seeding status
+        // will be overwritten by the new seeding process.
+        if (mAccountsSeedingStatus != AccountsSeedingStatus.IN_PROGRESS) {
             mAccountsSeedingStatus = AccountsSeedingStatus.NOT_STARTED;
-        }
-    }
-
-    /**
-     * Invoked when accounts change on device. When there is already a seeding in
-     * progress, the {@link #seedAccounts()} task will be added to the pending task list so
-     * that we will seed the accounts again in the end of the current seeding to avoid
-     * the race condition.
-     */
-    private void onAccountsChangedInternal() {
-        if (mAccountsSeedingStatus == AccountsSeedingStatus.IN_PROGRESS) {
-            mExistsPendingSeedAccountsTask = true;
-        } else {
-            seedAccounts(/*accountsChanged=*/true);
+            seedAccounts(false);
         }
     }
 
@@ -162,19 +155,19 @@ public class AccountTrackerService implements AccountsChangeObserver {
      */
     private void seedAccounts(boolean accountsChanged) {
         ThreadUtils.assertOnUiThread();
-        final AccountManagerFacade accountManagerFacade =
-                AccountManagerFacadeProvider.getInstance();
         assert mAccountsSeedingStatus
                 != AccountsSeedingStatus.IN_PROGRESS : "There is already a seeding in progress!";
         mAccountsSeedingStatus = AccountsSeedingStatus.IN_PROGRESS;
 
-        if (!mAccountsChangeObserverAdded) {
-            mAccountsChangeObserverAdded = true;
-            accountManagerFacade.addObserver(this);
+        Promise<List<CoreAccountInfo>> coreAccountInfosPromise =
+                mAccountManagerFacade.getCoreAccountInfos();
+        if (coreAccountInfosPromise.isFulfilled()) {
+            finishSeedingAccounts(coreAccountInfosPromise.getResult(), accountsChanged);
+        } else {
+            coreAccountInfosPromise.then(coreAccountInfos -> {
+                finishSeedingAccounts(coreAccountInfos, accountsChanged);
+            });
         }
-
-        accountManagerFacade.getCoreAccountInfos().then(
-                coreAccountInfos -> { finishSeedingAccounts(coreAccountInfos, accountsChanged); });
     }
 
     private void finishSeedingAccounts(
@@ -182,15 +175,6 @@ public class AccountTrackerService implements AccountsChangeObserver {
         AccountTrackerServiceJni.get().seedAccountsInfo(
                 mNativeAccountTrackerService, coreAccountInfos.toArray(new CoreAccountInfo[0]));
         mAccountsSeedingStatus = AccountsSeedingStatus.DONE;
-
-        if (mExistsPendingSeedAccountsTask) {
-            // When mExistsPendingSeedAccountsTask is true, it means that an accounts changed
-            // event has been triggered during the current seeding, we should stop the current
-            // seeding here and re-seed the accounts
-            seedAccounts(/*accountsChanged=*/true);
-            mExistsPendingSeedAccountsTask = false;
-            return;
-        }
 
         for (@Nullable Runnable runnable = mRunnablesWaitingForAccountsSeeding.poll();
                 runnable != null; runnable = mRunnablesWaitingForAccountsSeeding.poll()) {

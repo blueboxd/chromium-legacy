@@ -261,6 +261,10 @@ void AutofillClientImpl::ConfirmSaveAddressProfile(
   NOTREACHED();
 }
 
+void AutofillClientImpl::ShowDeleteAddressProfileDialog() {
+  NOTREACHED();
+}
+
 bool AutofillClientImpl::HasCreditCardScanFeature() {
   NOTREACHED();
   return false;
@@ -314,15 +318,16 @@ void AutofillClientImpl::PinPopupView() {
   NOTIMPLEMENTED();
 }
 
-autofill::AutofillClient::PopupOpenArgs AutofillClientImpl::GetReopenPopupArgs()
-    const {
+autofill::AutofillClient::PopupOpenArgs AutofillClientImpl::GetReopenPopupArgs(
+    autofill::AutofillSuggestionTriggerSource trigger_source) const {
   NOTIMPLEMENTED();
   return {};
 }
 
 void AutofillClientImpl::UpdatePopup(
     const std::vector<autofill::Suggestion>& suggestions,
-    autofill::PopupType popup_type) {
+    autofill::PopupType popup_type,
+    autofill::AutofillSuggestionTriggerSource trigger_source) {
   NOTREACHED();
 }
 

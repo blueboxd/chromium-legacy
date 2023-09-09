@@ -102,6 +102,9 @@ constexpr char kNote[] = "note";
 - (void)onAllPasswordsDeleted {
 }
 
+- (void)onShareButtonPressed {
+}
+
 @end
 
 // Test class that conforms to PasswordDetailsViewControllerDelegate in order
@@ -204,8 +207,9 @@ class PasswordDetailsTableViewControllerTest
     : public ChromeTableViewControllerTest {
  protected:
   PasswordDetailsTableViewControllerTest() {
-    feature_list_.InitAndEnableFeature(
-        password_manager::features::kPasswordsGrouping);
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{syncer::kPasswordNotesWithBackup},
+        /*disabled_features=*/{});
     handler_ = [[FakePasswordDetailsHandler alloc] init];
     delegate_ = [[FakePasswordDetailsDelegate alloc] init];
     reauthentication_module_ = [[MockReauthenticationModule alloc] init];
@@ -394,37 +398,11 @@ class PasswordDetailsTableViewControllerTest
   CredentialType credential_type_ = CredentialTypeRegular;
 };
 
-class PasswordGroupingTest : public ::testing::WithParamInterface<bool>,
-                             public PasswordDetailsTableViewControllerTest {
- protected:
-  PasswordGroupingTest() {
-    feature_list_.InitWithFeatureState(
-        password_manager::features::kPasswordsGrouping, GetParam());
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
 // Tests that password is displayed properly.
 TEST_F(PasswordDetailsTableViewControllerTest, TestPassword) {
   SetPassword();
   EXPECT_EQ(1, NumberOfSections());
-  EXPECT_EQ(3, NumberOfItemsInSection(0));
-  CheckStackedDetailsCellDetails(@[ @"http://www.example.com/" ], 0, 0);
-  CheckEditCellText(@"test@egmail.com", 0, 1);
-  CheckEditCellText(kMaskedPassword, 0, 2);
-}
-
-// Tests that password with note is displayed properly.
-TEST_F(PasswordDetailsTableViewControllerTest, TestPasswordWithNote) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(syncer::kPasswordNotesWithBackup);
-
-  SetPassword();
-  EXPECT_EQ(1, NumberOfSections());
   EXPECT_EQ(4, NumberOfItemsInSection(0));
-
   CheckStackedDetailsCellDetails(@[ @"http://www.example.com/" ], 0, 0);
   CheckEditCellText(@"test@egmail.com", 0, 1);
   CheckEditCellText(kMaskedPassword, 0, 2);
@@ -433,8 +411,6 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestPasswordWithNote) {
 
 // Tests that correct metrics is reported after adding a note.
 TEST_F(PasswordDetailsTableViewControllerTest, TestAddingPasswordWithNote) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(syncer::kPasswordNotesWithBackup);
   base::HistogramTester histogram_tester;
 
   SetPassword(kExampleCom, kUsername, kPassword, /*note=*/"");
@@ -458,8 +434,6 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestAddingPasswordWithNote) {
 
 // Tests that correct metrics is reported after editing a note.
 TEST_F(PasswordDetailsTableViewControllerTest, TestEditingPasswordWithNote) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(syncer::kPasswordNotesWithBackup);
   base::HistogramTester histogram_tester;
 
   SetPassword();
@@ -484,8 +458,6 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestEditingPasswordWithNote) {
 // Tests that correct metrics is reported after editing a password without a
 // note change.
 TEST_F(PasswordDetailsTableViewControllerTest, TestRemovingPasswordWithNote) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(syncer::kPasswordNotesWithBackup);
   base::HistogramTester histogram_tester;
 
   SetPassword();
@@ -550,11 +522,12 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestMultipleWebsites) {
                                        "http://example.com/"};
   SetPassword(websites);
   EXPECT_EQ(1, NumberOfSections());
-  EXPECT_EQ(3, NumberOfItemsInSection(0));
+  EXPECT_EQ(4, NumberOfItemsInSection(0));
   CheckStackedDetailsCellDetails(
       @[ @"http://www.example.com/", @"http://example.com/" ], 0, 0);
   CheckEditCellText(@"test@egmail.com", 0, 1);
   CheckEditCellText(kMaskedPassword, 0, 2);
+  CheckEditCellMultiLineText(@"note", 0, 3);
 }
 
 // Tests that compromised password is displayed properly when
@@ -569,14 +542,15 @@ TEST_F(PasswordDetailsTableViewControllerTest,
   SetPassword(kExampleCom, kUsername, kPassword, kNote,
               /*is_compromised=*/true);
   EXPECT_EQ(1, NumberOfSections());
-  EXPECT_EQ(5, NumberOfItemsInSection(0));
+  EXPECT_EQ(6, NumberOfItemsInSection(0));
   CheckStackedDetailsCellDetails(@[ @"http://www.example.com/" ], 0, 0);
   CheckEditCellText(@"test@egmail.com", 0, 1);
   CheckEditCellText(kMaskedPassword, 0, 2);
+  CheckEditCellMultiLineText(@"note", 0, 3);
 
   CheckDetailItemTextWithId(
-      IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION_BRANDED, 0, 3);
-  CheckTextCellTextWithId(IDS_IOS_CHANGE_COMPROMISED_PASSWORD, 0, 4);
+      IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION_BRANDED, 0, 4);
+  CheckTextCellTextWithId(IDS_IOS_CHANGE_COMPROMISED_PASSWORD, 0, 5);
 }
 
 // Tests that compromised password is displayed properly when
@@ -590,16 +564,17 @@ TEST_F(PasswordDetailsTableViewControllerTest,
   SetPassword(kExampleCom, kUsername, kPassword, kNote,
               /*is_compromised=*/true);
   EXPECT_EQ(1, NumberOfSections());
-  EXPECT_EQ(6, NumberOfItemsInSection(0));
+  EXPECT_EQ(7, NumberOfItemsInSection(0));
   CheckStackedDetailsCellDetails(@[ @"http://www.example.com/" ], 0, 0);
   CheckEditCellText(@"test@egmail.com", 0, 1);
   CheckEditCellText(kMaskedPassword, 0, 2);
+  CheckEditCellMultiLineText(@"note", 0, 3);
 
   CheckDetailItemTextWithId(
-      IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION_BRANDED, 0, 3);
-  CheckTextCellTextWithId(IDS_IOS_CHANGE_COMPROMISED_PASSWORD, 0, 4);
+      IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION_BRANDED, 0, 4);
+  CheckTextCellTextWithId(IDS_IOS_CHANGE_COMPROMISED_PASSWORD, 0, 5);
 
-  CheckTextCellTextWithId(IDS_IOS_DISMISS_WARNING, 0, 5);
+  CheckTextCellTextWithId(IDS_IOS_DISMISS_WARNING, 0, 6);
 }
 
 // Tests that muted compromised password is displayed properly.
@@ -614,20 +589,21 @@ TEST_F(PasswordDetailsTableViewControllerTest,
               /*is_compromised=*/false, /*is_muted=*/true,
               DetailsContext::kDismissedWarnings);
   EXPECT_EQ(1, NumberOfSections());
-  EXPECT_EQ(6, NumberOfItemsInSection(0));
+  EXPECT_EQ(7, NumberOfItemsInSection(0));
   CheckStackedDetailsCellDetails(@[ @"http://www.example.com/" ], 0, 0);
   CheckEditCellText(@"test@egmail.com", 0, 1);
   CheckEditCellText(kMaskedPassword, 0, 2);
+  CheckEditCellMultiLineText(@"note", 0, 3);
 
   CheckDetailItemTextWithId(
-      IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION_BRANDED, 0, 3);
-  CheckTextCellTextWithId(IDS_IOS_CHANGE_COMPROMISED_PASSWORD, 0, 4);
+      IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION_BRANDED, 0, 4);
+  CheckTextCellTextWithId(IDS_IOS_CHANGE_COMPROMISED_PASSWORD, 0, 5);
 
-  CheckTextCellTextWithId(IDS_IOS_RESTORE_WARNING, 0, 5);
+  CheckTextCellTextWithId(IDS_IOS_RESTORE_WARNING, 0, 6);
 }
 
 // Tests the “Change Password on Website” button.
-TEST_P(PasswordGroupingTest, TestChangePasswordOnWebsite) {
+TEST_F(PasswordDetailsTableViewControllerTest, TestChangePasswordOnWebsite) {
   SetPassword(kExampleCom, kUsername, kPassword, kNote,
               /*is_compromised=*/true);
   PasswordDetailsTableViewController* password_details =
@@ -721,10 +697,6 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestShowHidePassword) {
 
   CheckEditCellText(@"test", 0, 2);
 
-  EXPECT_NSEQ(
-      l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_REAUTH_REASON_SHOW),
-      reauth().localizedReasonForAuthentication);
-
   [textFieldCell.identifyingIconButton
       sendActionsForControlEvents:UIControlEventTouchUpInside];
 
@@ -733,6 +705,10 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestShowHidePassword) {
 
 // Tests that passwords was not shown in case reauth failed.
 TEST_F(PasswordDetailsTableViewControllerTest, TestShowPasswordReauthFailed) {
+  // This test makes sense with notes for password disabled only since the
+  // feature moves reauth one level above.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(syncer::kPasswordNotesWithBackup);
   SetPassword();
 
   CheckEditCellText(kMaskedPassword, 0, 2);
@@ -773,6 +749,10 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestPasswordShownDuringEditing) {
 
 // Tests that editing mode was not entered because reauth failed.
 TEST_F(PasswordDetailsTableViewControllerTest, TestEditingReauthFailed) {
+  // This test makes sense with notes for password disabled only since the
+  // feature moves reauth one level above.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(syncer::kPasswordNotesWithBackup);
   SetPassword();
 
   CheckEditCellText(kMaskedPassword, 0, 2);
@@ -796,7 +776,7 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestPasswordDelete) {
           controller());
   [password_details editButtonPressed];
   [password_details tableView:password_details.tableView
-      didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:3 inSection:0]];
+      didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:4 inSection:0]];
   EXPECT_TRUE(handler().deletionCalled);
   EXPECT_FALSE(handler().deletionCalledOnCompromisedPassword);
 }
@@ -873,14 +853,15 @@ TEST_F(PasswordDetailsTableViewControllerTest,
   SetPassword(kAndroid, kUsername, kPassword, kNote, /*is_compromised=*/true);
 
   EXPECT_EQ(1, NumberOfSections());
-  EXPECT_EQ(4, NumberOfItemsInSection(0));
+  EXPECT_EQ(5, NumberOfItemsInSection(0));
 
   CheckStackedDetailsCellDetails(@[ @"com.example.my.app" ], 0, 0);
   CheckEditCellText(@"test@egmail.com", 0, 1);
   CheckEditCellText(kMaskedPassword, 0, 2);
+  CheckEditCellMultiLineText(@"note", 0, 3);
 
   CheckDetailItemTextWithId(
-      IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION_BRANDED, 0, 3);
+      IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION_BRANDED, 0, 4);
 }
 
 // Tests android compromised credential is displayed without change password
@@ -894,16 +875,17 @@ TEST_F(PasswordDetailsTableViewControllerTest,
   SetPassword(kAndroid, kUsername, kPassword, kNote, /*is_compromised=*/true);
 
   EXPECT_EQ(1, NumberOfSections());
-  EXPECT_EQ(5, NumberOfItemsInSection(0));
+  EXPECT_EQ(6, NumberOfItemsInSection(0));
 
   CheckStackedDetailsCellDetails(@[ @"com.example.my.app" ], 0, 0);
   CheckEditCellText(@"test@egmail.com", 0, 1);
   CheckEditCellText(kMaskedPassword, 0, 2);
+  CheckEditCellMultiLineText(@"note", 0, 3);
 
   CheckDetailItemTextWithId(
-      IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION_BRANDED, 0, 3);
+      IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION_BRANDED, 0, 4);
 
-  CheckTextCellTextWithId(IDS_IOS_DISMISS_WARNING, 0, 4);
+  CheckTextCellTextWithId(IDS_IOS_DISMISS_WARNING, 0, 5);
 }
 
 // Tests federated credential is shown without password value and editing
@@ -948,30 +930,13 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestBlockedOrigin) {
 TEST_F(PasswordDetailsTableViewControllerTest, CopySite) {
   std::vector<std::string> websites = {"http://www.example.com/"};
   NSString* expected_pasteboard = @"http://www.example.com/";
-  // Test without password grouping.
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(
-        password_manager::features::kPasswordsGrouping);
-    CheckCopyWebsites(
-        websites, expected_pasteboard,
-        l10n_util::GetNSString(IDS_IOS_SETTINGS_SITE_WAS_COPIED_MESSAGE));
-  }
-  // Test with password grouping.
-  {
-    base::test::ScopedFeatureList feature_list(
-        password_manager::features::kPasswordsGrouping);
-    CheckCopyWebsites(
-        websites, expected_pasteboard,
-        l10n_util::GetNSString(IDS_IOS_SETTINGS_SITES_WERE_COPIED_MESSAGE));
-  }
+  CheckCopyWebsites(
+      websites, expected_pasteboard,
+      l10n_util::GetNSString(IDS_IOS_SETTINGS_SITES_WERE_COPIED_MESSAGE));
 }
 
 // Tests copy multiple websites works as intended.
 TEST_F(PasswordDetailsTableViewControllerTest, CopySites) {
-  base::test::ScopedFeatureList feature_list(
-      password_manager::features::kPasswordsGrouping);
-
   std::vector<std::string> websites = {"http://www.example.com/",
                                        "http://example.com/"};
   CheckCopyWebsites(
@@ -1028,9 +993,6 @@ TEST_F(PasswordDetailsTableViewControllerTest, CopyPasswordSuccess) {
   UIPasteboard* generalPasteboard = [UIPasteboard generalPasteboard];
   EXPECT_NSEQ(@"test", generalPasteboard.string);
   EXPECT_NSEQ(
-      l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_REAUTH_REASON_COPY),
-      reauth().localizedReasonForAuthentication);
-  EXPECT_NSEQ(
       l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_WAS_COPIED_MESSAGE),
       snack_bar().snackbarMessage);
   // Verify that the error histogram was emitted to the success bucket.
@@ -1040,6 +1002,11 @@ TEST_F(PasswordDetailsTableViewControllerTest, CopyPasswordSuccess) {
 
 // Tests copy password works as intended.
 TEST_F(PasswordDetailsTableViewControllerTest, CopyPasswordFail) {
+  // This test makes sense with notes for password disabled only since the
+  // feature moves reauth one level above.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(syncer::kPasswordNotesWithBackup);
+
   base::HistogramTester histogram_tester;
   SetPassword();
 
@@ -1084,7 +1051,3 @@ TEST_F(PasswordDetailsTableViewControllerTest, CopyDetailsFailedEmitted) {
 
   EXPECT_FALSE(handler().passwordCopiedByUserCalled);
 }
-
-INSTANTIATE_TEST_SUITE_P(PasswordDetailsTableViewControllerTest,
-                         PasswordGroupingTest,
-                         ::testing::Bool());

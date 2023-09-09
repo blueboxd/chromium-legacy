@@ -16,6 +16,7 @@
 #include "services/device/geolocation/network_location_provider.h"
 #include "services/device/geolocation/wifi_polling_policy.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"
+#include "services/device/public/mojom/geolocation_internals.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace device {
@@ -148,6 +149,17 @@ void LocationArbitrator::FillDiagnostics(
   }
   for (auto& provider : providers_) {
     provider->FillDiagnostics(diagnostics);
+  }
+  if (position_cache_) {
+    diagnostics.position_cache_diagnostics =
+        mojom::PositionCacheDiagnostics::New();
+    position_cache_->FillDiagnostics(*diagnostics.position_cache_diagnostics);
+  }
+  if (WifiPollingPolicy::IsInitialized()) {
+    diagnostics.wifi_polling_policy_diagnostics =
+        mojom::WifiPollingPolicyDiagnostics::New();
+    WifiPollingPolicy::Get()->FillDiagnostics(
+        *diagnostics.wifi_polling_policy_diagnostics);
   }
 }
 

@@ -83,10 +83,6 @@ using ::testing::StrictMock;
 namespace autofill {
 namespace {
 
-ContentAutofillRouterTestApi test_api(ContentAutofillRouter* cadf) {
-  return ContentAutofillRouterTestApi(cadf);
-}
-
 class MockAutofillDriver : public ContentAutofillDriver {
  public:
   MockAutofillDriver(content::RenderFrameHost* rfh,
@@ -117,7 +113,9 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
       : AutofillExternalDelegate(autofill_manager, autofill_driver) {}
   ~MockAutofillExternalDelegate() override = default;
 
-  void DidSelectSuggestion(const Suggestion& suggestion) override {}
+  void DidSelectSuggestion(
+      const Suggestion& suggestion,
+      AutofillSuggestionTriggerSource trigger_source) override {}
   bool RemoveSuggestion(const std::u16string& value,
                         PopupItemId popup_item_id,
                         Suggestion::BackendId backend_id) override {
@@ -129,7 +127,10 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
 
   MOCK_METHOD(void, ClearPreviewedForm, (), (override));
   MOCK_METHOD(void, OnPopupSuppressed, (), (override));
-  MOCK_METHOD(void, DidAcceptSuggestion, (const Suggestion&, int), (override));
+  MOCK_METHOD(void,
+              DidAcceptSuggestion,
+              (const Suggestion&, int, AutofillSuggestionTriggerSource),
+              (override));
 };
 
 class MockAutofillPopupView : public AutofillPopupView {
@@ -251,7 +252,7 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
   virtual std::unique_ptr<NiceMock<MockAutofillExternalDelegate>>
   CreateExternalDelegate() {
     // Fake that |driver| has queried a form.
-    test_api(&autofill_router()).set_last_queried_source(autofill_driver());
+    test_api(autofill_router()).set_last_queried_source(autofill_driver());
     return std::make_unique<NiceMock<MockAutofillExternalDelegate>>(
         autofill_manager(), autofill_driver());
   }
@@ -264,8 +265,9 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
     for (PopupItemId popup_item_id : popup_item_ids) {
       suggestions.emplace_back("", "", "", popup_item_id);
     }
-    popup_controller().Show(std::move(suggestions),
-                            AutoselectFirstSuggestion(false));
+    popup_controller().Show(
+        std::move(suggestions),
+        AutofillSuggestionTriggerSource::kFormControlElementClicked);
   }
 
   TestAutofillPopupController& popup_controller() {
@@ -329,7 +331,7 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
       password_manager::metrics_util::PasswordMigrationWarningTriggers)>>
       show_pwd_migration_warning_callback_;
 #endif
-  raw_ptr<NiceMock<TestAutofillPopupController>, DanglingUntriaged>
+  raw_ptr<NiceMock<TestAutofillPopupController>, AcrossTasksDanglingUntriaged>
       autofill_popup_controller_ = nullptr;
 };
 
@@ -577,7 +579,6 @@ TEST_F(AutofillPopupControllerUnitTest, SelectInvalidSuggestion) {
 }
 
 TEST_F(AutofillPopupControllerUnitTest, AcceptSuggestionRespectsTimeout) {
-  base::HistogramTester histogram_tester;
   ShowSuggestions({PopupItemId::kAddressEntry});
 
   // Calls before the threshold are ignored.
@@ -589,25 +590,18 @@ TEST_F(AutofillPopupControllerUnitTest, AcceptSuggestionRespectsTimeout) {
   EXPECT_CALL(*delegate(), DidAcceptSuggestion);
   task_environment()->FastForwardBy(base::Milliseconds(400));
   popup_controller().AcceptSuggestion(0);
-
-  histogram_tester.ExpectTotalCount(
-      "Autofill.Popup.AcceptanceDelayThresholdNotMet", 2);
 }
 
 TEST_F(AutofillPopupControllerUnitTest, AcceptSuggestionWithoutThreshold) {
-  base::HistogramTester histogram_tester;
   ShowSuggestions({PopupItemId::kAddressEntry});
 
   // Calls are accepted immediately.
   EXPECT_CALL(*delegate(), DidAcceptSuggestion).Times(1);
   popup_controller().AcceptSuggestionWithoutThreshold(0);
-  histogram_tester.ExpectTotalCount(
-      "Autofill.Popup.AcceptanceDelayThresholdNotMet", 0);
 }
 
 TEST_F(AutofillPopupControllerUnitTest,
        AcceptSuggestionTimeoutIsUpdatedOnPopupMove) {
-  base::HistogramTester histogram_tester;
   ShowSuggestions({PopupItemId::kAddressEntry});
 
   // Calls before the threshold are ignored.
@@ -616,8 +610,6 @@ TEST_F(AutofillPopupControllerUnitTest,
   task_environment()->FastForwardBy(base::Milliseconds(100));
   popup_controller().AcceptSuggestion(0);
 
-  histogram_tester.ExpectTotalCount(
-      "Autofill.Popup.AcceptanceDelayThresholdNotMet", 2);
   task_environment()->FastForwardBy(base::Milliseconds(400));
   // Show the suggestions again (simulating, e.g., a click somewhere slightly
   // different).
@@ -625,15 +617,11 @@ TEST_F(AutofillPopupControllerUnitTest,
 
   EXPECT_CALL(*delegate(), DidAcceptSuggestion).Times(0);
   popup_controller().AcceptSuggestion(0);
-  histogram_tester.ExpectTotalCount(
-      "Autofill.Popup.AcceptanceDelayThresholdNotMet", 3);
 
   EXPECT_CALL(*delegate(), DidAcceptSuggestion);
   // After waiting, suggestions are accepted again.
   task_environment()->FastForwardBy(base::Milliseconds(500));
   popup_controller().AcceptSuggestion(0);
-  histogram_tester.ExpectTotalCount(
-      "Autofill.Popup.AcceptanceDelayThresholdNotMet", 3);
 }
 
 #if BUILDFLAG(IS_ANDROID)

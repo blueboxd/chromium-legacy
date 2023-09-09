@@ -48,6 +48,7 @@
 #include "chrome/browser/ash/guest_os/public/guest_os_service.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/upload_office_to_cloud/upload_office_to_cloud.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/file_util_service.h"
@@ -69,6 +70,7 @@
 #include "chrome/common/extensions/api/manifest_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chromeos/ash/components/drivefs/drivefs_pin_manager.h"
 #include "chromeos/ash/components/settings/timezone_settings.h"
 #include "components/account_id/account_id.h"
 #include "components/drive/drive_pref_names.h"
@@ -282,6 +284,8 @@ FileManagerPrivateSetPreferencesFunction::Run() {
       params->change_info.drive_fs_bulk_pinning_enabled) {
     service->SetBoolean(drive::prefs::kDriveFsBulkPinningEnabled,
                         *params->change_info.drive_fs_bulk_pinning_enabled);
+    drivefs::pinning::RecordBulkPinningEnabledSource(
+        drivefs::pinning::BulkPinningEnabledSource::kBanner);
   }
   if (params->change_info.arc_enabled) {
     service->SetBoolean(arc::prefs::kArcEnabled,
@@ -508,7 +512,7 @@ FileManagerPrivateAddProvidedFileSystemFunction::Run() {
   // Show Connect To OneDrive dialog only when mounting ODFS for the first time.
   // There will already a ODFS mount if the user is requesting a new mount to
   // replace the unauthenticated one.
-  if (ash::cloud_upload::IsEligibleAndEnabledUploadOfficeToCloud(profile) &&
+  if (chromeos::IsEligibleAndEnabledUploadOfficeToCloud(profile) &&
       params->provider_id ==
           file_manager::file_tasks::GetODFSExtensionId(profile) &&
       first_file_system) {
@@ -621,8 +625,8 @@ FileManagerPrivateMountCrostiniFunction::Run() {
 void FileManagerPrivateMountCrostiniFunction::RestartCallback(
     crostini::CrostiniResult result) {
   if (result != crostini::CrostiniResult::SUCCESS) {
-    Respond(Error(
-        base::StringPrintf("Error mounting crostini container: %d", result)));
+    Respond(Error(base::StringPrintf("Error mounting crostini container: %d",
+                                     static_cast<int>(result))));
     return;
   }
   // Use OriginalProfile since using crostini in incognito such as saving
@@ -640,8 +644,8 @@ void FileManagerPrivateMountCrostiniFunction::RestartCallback(
 void FileManagerPrivateMountCrostiniFunction::MountCallback(
     crostini::CrostiniResult result) {
   if (result != crostini::CrostiniResult::SUCCESS) {
-    Respond(Error(
-        base::StringPrintf("Error mounting crostini container: %d", result)));
+    Respond(Error(base::StringPrintf("Error mounting crostini container: %d",
+                                     static_cast<int>(result))));
     return;
   }
   Respond(NoArguments());

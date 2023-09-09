@@ -12,82 +12,10 @@ namespace password_manager::features {
 // NOTE: It is strongly recommended to use UpperCamelCase style for feature
 //       names, e.g. "MyGreatFeature".
 
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-// Enables biometric authentication before form filling.
-BASE_FEATURE(kBiometricAuthenticationForFilling,
-             "BiometricAuthenticationForFilling",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
-
-#if BUILDFLAG(IS_MAC)
-// Enables biometric authentication in settings.
-BASE_FEATURE(kBiometricAuthenticationInSettings,
-             "BiometricAuthenticationInSettings",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
-
-// Enables Biometrics for the Touch To Fill feature. This only effects Android.
-BASE_FEATURE(kBiometricTouchToFill,
-             "BiometricTouchToFill",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Disables fallback filling if the server or the autocomplete attribute says it
-// is a credit card field.
-BASE_FEATURE(kDisablePasswordsDropdownForCvcFields,
-             "DisablePasswordsDropdownForCvcFields",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables the overwriting of prefilled username fields if the server predicted
 // the field to contain a placeholder value.
 BASE_FEATURE(kEnableOverwritingPlaceholderUsernames,
              "EnableOverwritingPlaceholderUsernames",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables a second, Gaia-account-scoped password store for users who are signed
-// in but not syncing.
-BASE_FEATURE(kEnablePasswordsAccountStorage,
-             "EnablePasswordsAccountStorage",
-#if BUILDFLAG(IS_ANDROID)
-             base::FEATURE_DISABLED_BY_DEFAULT
-#else
-             base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-);
-
-BASE_FEATURE(kEnablePasswordGenerationForClearTextFields,
-             "EnablePasswordGenerationForClearTextFields",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// By default, Password Manager is enabled in fenced frames as part of
-// FencedFramesAPIChanges blink experiment.
-// This flag can be used via Finch to disable PasswordManager in the
-// FencedFramesAPIChanges blink experiment without affecting the other
-// features included in the experiment.
-// TODO(crbug.com/1294378): Remove once launched.
-BASE_FEATURE(kEnablePasswordManagerWithinFencedFrame,
-             "EnablePasswordManagerWithinFencedFrame",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables filling password on a website when there is saved password on
-// affiliated website.
-BASE_FEATURE(kFillingAcrossAffiliatedWebsites,
-             "FillingAcrossAffiliatedWebsites",
-#if !BUILDFLAG(IS_ANDROID)  // Desktop and iOS
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
-
-// This flag enables password filling across grouped websites. Information about
-// website groups is provided by the affiliation service.
-BASE_FEATURE(kFillingAcrossGroupedSites,
-             "FillingAcrossGroupedSites",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables the experiment for the password manager to only fill on account
-// selection, rather than autofilling on page load, with highlighting of fields.
-BASE_FEATURE(kFillOnAccountSelect,
-             "fill-on-account-select",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables logging the content of chrome://password-manager-internals to the
@@ -103,13 +31,6 @@ BASE_FEATURE(kForceInitialSyncWhenDecryptionFails,
              "ForceInitialSyncWhenDecryptionFails",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
-
-// Enables finding a confirmation password field during saving by inspecting the
-// values of the fields. Used as a kill switch.
-// TODO(crbug.com/1164861): Remove once confirmed to be safe (around M92 or so).
-BASE_FEATURE(kInferConfirmationPasswordField,
-             "InferConfirmationPasswordField",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_IOS)
 // Removes the list of passwords from the Settings UI and adds a separate
@@ -143,7 +64,7 @@ BASE_FEATURE(kMemoryMapWeaknessCheckDictionaries,
 // Enables new regex for OTP fields.
 BASE_FEATURE(kNewRegexForOtpFields,
              "NewRegexForOtpFields",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Killswitch for changes regarding password issues in
 // `PasswordSpcificsMetadata`. Guards writing issues to metadata and preserving
@@ -166,12 +87,6 @@ BASE_FEATURE(kPasswordsImportM2,
              "PasswordsImportM2",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-BASE_FEATURE(kPasswordManagerRedesign,
-             "PasswordManagerRedesign",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
-
 // Enables password reuse detection.
 BASE_FEATURE(kPasswordReuseDetectionEnabled,
              "PasswordReuseDetectionEnabled",
@@ -189,8 +104,8 @@ BASE_FEATURE(kPasswordGenerationExperiment,
 // affiliation service.
 // TODO(crbug.com/1359392): Remove once launched on all platforms.
 BASE_FEATURE(kPasswordsGrouping,
-             "PasswordsGrouping",
-#if BUILDFLAG(USE_BLINK)
+             "PasswordsGrouping_LAUNCHED",
+#if (BUILDFLAG(IS_IOS) && BUILDFLAG(USE_BLINK)) || BUILDFLAG(IS_ANDROID)
              base::FEATURE_DISABLED_BY_DEFAULT
 #else
              base::FEATURE_ENABLED_BY_DEFAULT

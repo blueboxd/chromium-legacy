@@ -938,6 +938,12 @@ FileManagerPrivateInternalGetDisallowedTransfersFunction::Run() {
     return RespondNow(Error("File URL was invalid"));
   }
 
+  // If the new UX flow is enabled, return an empty list so the copy/move
+  // operation can start.
+  if (policy::DlpFilesController::kNewFilesPolicyUXEnabled) {
+    return RespondNow(WithArguments(base::Value::List()));
+  }
+
   policy::DlpFilesControllerAsh* files_controller =
       static_cast<policy::DlpFilesControllerAsh*>(
           rules_manager->GetDlpFilesController());
@@ -1320,9 +1326,9 @@ FileManagerPrivateSearchFilesByHashesFunction::Run() {
   drive::EventLogger* const logger = file_manager::util::GetLogger(profile);
   if (logger) {
     logger->Log(logging::LOG_INFO,
-                "%s[%d] called. (volume id: %s, number of hashes: %zd)", name(),
-                request_id(), params->volume_id.c_str(),
-                params->hash_list.size());
+                "%s[%s] called. (volume id: %s, number of hashes: %zd)", name(),
+                request_uuid().AsLowercaseString().c_str(),
+                params->volume_id.c_str(), params->hash_list.size());
   }
   set_log_on_completion(true);
 
@@ -1567,13 +1573,30 @@ FileManagerPrivateInternalStartIOTaskFunction::Run() {
     return RespondNow(Error("Cannot find VolumeManager"));
   }
 
+  storage::ExternalMountPoints* mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
+
   std::vector<storage::FileSystemURL> source_urls;
   for (const std::string& url : params->urls) {
+    GURL gurl(url);
     storage::FileSystemURL cracked_url =
-        file_system_context->CrackURLInFirstPartyContext(GURL(url));
+        file_system_context->CrackURLInFirstPartyContext(gurl);
     if (!cracked_url.is_valid()) {
       return RespondNow(Error("Invalid source URL *", Redact(url)));
     }
+    base::FilePath virtual_path;
+    const bool result =
+        file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
+            profile, gurl, cracked_url.path(), &virtual_path);
+    if (!result) {
+      LOG(WARNING) << "Failed to convert file_system_url to relative file "
+                      "system path, type: "
+                   << cracked_url.type();
+      continue;
+    }
+    cracked_url = mount_points->CreateCrackedFileSystemURL(
+        cracked_url.storage_key(), storage::kFileSystemTypeExternal,
+        virtual_path);
     source_urls.push_back(std::move(cracked_url));
   }
 
@@ -1714,14 +1737,20 @@ FileManagerPrivateResumeIOTaskFunction::Run() {
   }
 
   file_manager::io_task::ResumeParams io_task_resume_params;
-  io_task_resume_params.conflict_params->conflict_resolve =
-      params->params.conflict_params->conflict_resolve.value_or("");
-  io_task_resume_params.conflict_params->conflict_apply_to_all =
-      params->params.conflict_params->conflict_apply_to_all.value_or(false);
-  absl::optional<policy::Policy> policy =
-      ApiPolicyErrorTypeToChromeEnum(params->params.policy_params->type);
-  if (policy.has_value()) {
-    io_task_resume_params.policy_params->type = policy.value();
+  if (params->params.conflict_params) {
+    io_task_resume_params.conflict_params.emplace();
+    io_task_resume_params.conflict_params->conflict_resolve =
+        params->params.conflict_params->conflict_resolve.value_or("");
+    io_task_resume_params.conflict_params->conflict_apply_to_all =
+        params->params.conflict_params->conflict_apply_to_all.value_or(false);
+  }
+  if (params->params.policy_params) {
+    absl::optional<policy::Policy> policy =
+        ApiPolicyErrorTypeToChromeEnum(params->params.policy_params->type);
+    if (policy.has_value()) {
+      io_task_resume_params.policy_params.emplace();
+      io_task_resume_params.policy_params->type = policy.value();
+    }
   }
 
   volume_manager->io_task_controller()->Resume(

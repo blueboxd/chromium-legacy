@@ -11,22 +11,21 @@
 
 import 'chrome://os-settings/os_settings.js';
 
-import {createRoutesForTesting, CrSettingsPrefs, MainPageContainerElement, OsSettingsMainElement, OsSettingsMenuElement, OsSettingsRoutes, OsSettingsUiElement, Router, routesMojom} from 'chrome://os-settings/os_settings.js';
+import {createRouterForTesting, CrSettingsPrefs, MainPageContainerElement, OsSettingsMainElement, OsSettingsMenuElement, OsSettingsUiElement, Router, routesMojom, SettingsIdleLoadElement} from 'chrome://os-settings/os_settings.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {assertEquals, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {eventToPromise} from 'chrome://webui-test/test_util.js';
+import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {eventToPromise, isVisible} from 'chrome://webui-test/test_util.js';
 
 const {Section} = routesMojom;
-type PageName = keyof typeof Section;
+type SectionName = keyof typeof Section;
 
 suite('<os-settings-ui> page visibility', () => {
   let ui: OsSettingsUiElement;
   let settingsMain: OsSettingsMainElement;
   let mainPageContainer: MainPageContainerElement;
   let menu: OsSettingsMenuElement;
-  let testRoutes: OsSettingsRoutes;
 
   async function createUi() {
     ui = document.createElement('os-settings-ui');
@@ -48,54 +47,57 @@ suite('<os-settings-ui> page visibility', () => {
     assert(menuEl);
     menu = menuEl;
 
-    const idleRender =
-        mainPageContainer.shadowRoot!.querySelector('settings-idle-load');
-    assert(idleRender);
-    await idleRender.get();
+    // Force load advanced page container
+    const advancedPageTemplate =
+        mainPageContainer.shadowRoot!.querySelector<SettingsIdleLoadElement>(
+            '#advancedPageTemplate');
+    assert(advancedPageTemplate);
+    await advancedPageTemplate.get();
     flush();
   }
 
-  function queryMenuItem(pageName: PageName): HTMLElement|null {
+  function queryMenuItemByHref(href: string): HTMLElement|null {
     return menu.shadowRoot!.querySelector<HTMLElement>(
-        `a.item[data-section="${Section[pageName]}"]`);
+        `a.item[href="${href}"]`);
   }
 
   /**
    * Asserts the following:
-   * - Only one page is marked active
-   * - Active page does not have style "display: none"
-   * - Active page is focused
-   * - Inactive pages have style "display: none"
+   * - The page with |sectionName| is the only page marked active
+   * - The page with |sectionName| is the only page visible
    */
-  function assertOnlyActivePageIsVisible(pageName: PageName): void {
+  function assertIsOnlyActiveAndVisiblePage(sectionName: SectionName): void {
     const pages =
         mainPageContainer.shadowRoot!.querySelectorAll('page-displayer');
-    let numActive = 0;
-
     for (const page of pages) {
-      const displayStyle = getComputedStyle(page).display;
-      if (page.hasAttribute('active')) {
-        numActive++;
-        assertNotEquals('none', displayStyle);
-        assertEquals(Section[pageName], page.section);
-        assertEquals(page, mainPageContainer.shadowRoot!.activeElement);
+      if (page.section === Section[sectionName]) {
+        assertTrue(page.active);
+        assertTrue(isVisible(page));
       } else {
-        assertEquals('none', displayStyle);
+        assertFalse(page.active);
+        assertFalse(isVisible(page));
       }
     }
+  }
 
-    assertEquals(1, numActive);
+  /**
+   * Asserts the page with the given |sectionName| is focused.
+   */
+  function assertPageIsFocused(sectionName: SectionName): void {
+    const page = mainPageContainer.shadowRoot!.querySelector(
+        `page-displayer[section="${Section[sectionName]}"`);
+    assertEquals(page, mainPageContainer.shadowRoot!.activeElement);
   }
 
   suiteSetup(async () => {
     loadTimeData.overrideValues({
       isRevampWayfindingEnabled: true,
-      isKerberosEnabled: true,  // Simulate kerberos page available
+      isKerberosEnabled: true,  // Simulate kerberos route exists
     });
 
-    // Recreate routes and Router so Kerberos route exists
-    testRoutes = createRoutesForTesting();
-    Router.resetInstanceForTesting(new Router(testRoutes));
+    // Reinitialize Router and routes based on load time data
+    const testRouter = createRouterForTesting();
+    Router.resetInstanceForTesting(testRouter);
 
     await createUi();
   });
@@ -110,43 +112,102 @@ suite('<os-settings-ui> page visibility', () => {
   });
 
   test('Network page should be the default visible page', () => {
-    Router.getInstance().navigateTo(testRoutes.BASIC);
-    assertOnlyActivePageIsVisible('kNetwork');
+    assertIsOnlyActiveAndVisiblePage('kNetwork');
   });
 
-  const pageNames: PageName[] = [
-    'kAccessibility',
-    'kApps',
-    'kBluetooth',
-    'kCrostini',
-    'kDateAndTime',
-    'kDevice',
-    'kFiles',
-    'kKerberos',
-    'kMultiDevice',
-    'kLanguagesAndInput',
-    'kNetwork',
-    'kPeople',
-    'kPersonalization',
-    'kPrinting',
-    'kPrivacyAndSecurity',
-    'kReset',
-    'kSearchAndAssistant',
-  ];
-  for (const pageName of pageNames) {
-    test(
-        `Clicking menu item for ${pageName} page should show only that page`,
-        async () => {
-          const pageReadyPromise = eventToPromise('show-container', window);
+  interface MenuItemData {
+    sectionName: SectionName;
+    href: string;
+  }
 
-          const menuItem = queryMenuItem(pageName);
+  const menuItemData: MenuItemData[] = [
+    // Basic pages
+    {
+      sectionName: 'kNetwork',
+      href: `/${routesMojom.NETWORK_SECTION_PATH}`,
+    },
+    {
+      sectionName: 'kBluetooth',
+      href: `/${routesMojom.BLUETOOTH_SECTION_PATH}`,
+    },
+    {
+      sectionName: 'kMultiDevice',
+      href: `/${routesMojom.MULTI_DEVICE_SECTION_PATH}`,
+    },
+    {
+      sectionName: 'kPeople',
+      href: `/${routesMojom.PEOPLE_SECTION_PATH}`,
+    },
+    {
+      sectionName: 'kKerberos',
+      href: `/${routesMojom.KERBEROS_SECTION_PATH}`,
+    },
+    {
+      sectionName: 'kDevice',
+      href: `/${routesMojom.DEVICE_SECTION_PATH}`,
+    },
+    {
+      sectionName: 'kPersonalization',
+      href: `/${routesMojom.PERSONALIZATION_SECTION_PATH}`,
+    },
+    {
+      sectionName: 'kSearchAndAssistant',
+      href: `/${routesMojom.SEARCH_AND_ASSISTANT_SECTION_PATH}`,
+    },
+    {
+      sectionName: 'kPrivacyAndSecurity',
+      href: `/${routesMojom.PRIVACY_AND_SECURITY_SECTION_PATH}`,
+    },
+    {
+      sectionName: 'kApps',
+      href: `/${routesMojom.APPS_SECTION_PATH}`,
+    },
+    {
+      sectionName: 'kAccessibility',
+      href: `/${routesMojom.ACCESSIBILITY_SECTION_PATH}`,
+    },
+
+    // Advanced pages
+    {
+      sectionName: 'kDateAndTime',
+      href: `/${routesMojom.DATE_AND_TIME_SECTION_PATH}`,
+    },
+    {
+      sectionName: 'kLanguagesAndInput',
+      href: `/${routesMojom.LANGUAGES_AND_INPUT_SECTION_PATH}`,
+    },
+    {
+      sectionName: 'kFiles',
+      href: `/${routesMojom.FILES_SECTION_PATH}`,
+    },
+    {
+      sectionName: 'kPrinting',
+      href: `/${routesMojom.PRINTING_SECTION_PATH}`,
+    },
+    {
+      sectionName: 'kCrostini',
+      href: `/${routesMojom.CROSTINI_SECTION_PATH}`,
+    },
+    {
+      sectionName: 'kReset',
+      href: `/${routesMojom.RESET_SECTION_PATH}`,
+    },
+  ];
+
+  for (const {sectionName, href} of menuItemData) {
+    test(
+        `Clicking menu item for ${sectionName} page should show only that page`,
+        async () => {
+          const menuItem = queryMenuItemByHref(href);
           assert(menuItem);
+
+          const pageReadyPromise = eventToPromise('show-container', window);
           menuItem.click();
           flush();
-
           await pageReadyPromise;
 
-          assertOnlyActivePageIsVisible(pageName);
+          assertIsOnlyActiveAndVisiblePage(sectionName);
+          assertPageIsFocused(sectionName);
         });
   }
 });

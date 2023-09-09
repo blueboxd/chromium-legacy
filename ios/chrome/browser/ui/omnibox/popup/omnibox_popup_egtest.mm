@@ -7,6 +7,7 @@
 #import "base/functional/bind.h"
 #import "base/ios/ios_util.h"
 #import "base/strings/sys_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_app_interface.h"
@@ -648,6 +649,10 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       assertWithMatcher:chrome_test_util::OmniboxContainingText("testupdown")];
 
+  // The omnibox popup may update multiple times.  Don't downArrow until this
+  // is done.
+  base::test::ios::SpinRunLoopWithMinDelay(base::Seconds(1));
+
   // Go down to testautocomplete1 popup row.
   [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"downArrow" flags:0];
   [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"downArrow" flags:0];
@@ -663,15 +668,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 }
 
 // Tests that leading image in omnibox changes based on the suggestion
-// hilighted.
+// highlighted.
 - (void)testOmniboxLeadingImage {
-  // TODO(crbug.com/1455347): Test is flaky on iPad simulator. Re-enable the
-  // test.
-#if TARGET_IPHONE_SIMULATOR
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_DISABLED(@"This test is flaky on iPad simulator.");
-  }
-#endif
   // Start a server to be able to navigate to a web page.
   self.testServer->RegisterRequestHandler(
       base::BindRepeating(&StandardResponse));
@@ -685,14 +683,17 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [ChromeEarlGreyUI focusOmnibox];
 
   // Typing the title of page1.
-  [ChromeEarlGrey simulatePhysicalKeyboardEvent:base::SysUTF8ToNSString(
-                                                    std::string(kPage1Title))
-                                          flags:0];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      performAction:grey_replaceText(
+                        base::SysUTF8ToNSString(std::string(kPage1Title)))];
 
   // Wait for suggestions to show.
   [ChromeEarlGrey
       waitForSufficientlyVisibleElementWithMatcher:PopupRowWithUrl(_URL1)];
 
+  // The omnibox popup may update multiple times.  Don't downArrow until this
+  // is done.
+  base::test::ios::SpinRunLoopWithMinDelay(base::Seconds(1));
   [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"downArrow" flags:0];
 
   // We expect to have the default leading image.

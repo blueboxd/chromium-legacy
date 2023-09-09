@@ -79,6 +79,14 @@ TEST(DiagnosticsServiceConvertersTest, ConvertDiagnosticRoutineEnum) {
             crosapi::DiagnosticsRoutineEnum::kSmartctlCheckWithPercentageUsed);
   EXPECT_EQ(Convert(cros_healthd::DiagnosticRoutineEnum::kEmmcLifetime),
             crosapi::DiagnosticsRoutineEnum::kEmmcLifetime);
+  EXPECT_EQ(Convert(cros_healthd::DiagnosticRoutineEnum::kBluetoothPower),
+            crosapi::DiagnosticsRoutineEnum::kBluetoothPower);
+  EXPECT_EQ(Convert(cros_healthd::DiagnosticRoutineEnum::kUfsLifetime),
+            crosapi::DiagnosticsRoutineEnum::kUfsLifetime);
+  EXPECT_EQ(Convert(cros_healthd::DiagnosticRoutineEnum::kPowerButton),
+            crosapi::DiagnosticsRoutineEnum::kPowerButton);
+  EXPECT_EQ(Convert(cros_healthd::DiagnosticRoutineEnum::kAudioDriver),
+            crosapi::DiagnosticsRoutineEnum::kAudioDriver);
 
   EXPECT_EQ(Convert(cros_healthd::DiagnosticRoutineEnum::kArcHttp),
             absl::nullopt);
@@ -160,6 +168,10 @@ TEST(DiagnosticsServiceConvertersTest,
   EXPECT_EQ(
       Convert(cros_healthd::DiagnosticRoutineUserMessageEnum::kCheckLedColor),
       crosapi::DiagnosticsRoutineUserMessageEnum::kUnknown);
+  EXPECT_EQ(
+      Convert(
+          cros_healthd::DiagnosticRoutineUserMessageEnum::kPressPowerButton),
+      crosapi::DiagnosticsRoutineUserMessageEnum::kPressPowerButton);
 }
 
 TEST(DiagnosticsServiceConvertersTest, ConvertDiagnosticRoutineCommandEnum) {

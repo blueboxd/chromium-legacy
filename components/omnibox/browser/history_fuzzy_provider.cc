@@ -449,7 +449,7 @@ class LoadSignificantUrls : public history::HistoryDBTask {
 
  private:
   Node node_;
-  raw_ptr<base::WaitableEvent, DanglingUntriaged> wait_event_;
+  raw_ptr<base::WaitableEvent, AcrossTasksDanglingUntriaged> wait_event_;
   Callback callback_;
 };
 
@@ -565,15 +565,6 @@ size_t HistoryFuzzyProvider::EstimateMemoryUsage() const {
   res += base::trace_event::EstimateMemoryUsage(autocomplete_input_);
   res += base::trace_event::EstimateMemoryUsage(root_);
   return res;
-}
-
-// static
-void HistoryFuzzyProvider::ApplyRelevancePenalty(AutocompleteMatch& match,
-                                                 int penalty) {
-  DCHECK_GE(penalty, 0);
-  DCHECK_LE(penalty, 100);
-  match.relevance -= match.relevance * penalty / 100;
-  match.fuzzy_match_penalty = penalty;
 }
 
 HistoryFuzzyProvider::~HistoryFuzzyProvider() = default;
@@ -707,7 +698,9 @@ int HistoryFuzzyProvider::AddConvertedMatches(const ACMatches& matches,
 
   // Apply relevance penalty; all corrections are equal and we only apply this
   // to the most relevant result, so edit distance isn't needed.
-  ApplyRelevancePenalty(match, penalty);
+  DCHECK_GE(penalty, 0);
+  DCHECK_LE(penalty, 100);
+  match.relevance = match.relevance * (100 - penalty) / 100;
 
   return 1;
 }

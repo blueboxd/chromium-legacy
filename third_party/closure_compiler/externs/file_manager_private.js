@@ -464,9 +464,9 @@ chrome.fileManagerPrivate.BulkPinStage = {
   LISTING_FILES: 'listing_files',
   SYNCING: 'syncing',
   SUCCESS: 'success',
+  NOT_ENOUGH_SPACE: 'not_enough_space',
   CANNOT_GET_FREE_SPACE: 'cannot_get_free_space',
   CANNOT_LIST_FILES: 'cannot_list_files',
-  NOT_ENOUGH_SPACE: 'not_enough_space',
   CANNOT_ENABLE_DOCS_OFFLINE: 'cannot_enable_docs_offline',
 };
 
@@ -875,6 +875,15 @@ chrome.fileManagerPrivate.IOTaskParams;
 
 /**
  * @typedef {{
+ *   type: !chrome.fileManagerPrivate.PolicyErrorType,
+ *   policyFileCount: number,
+ *   fileName: string
+ * }}
+ */
+chrome.fileManagerPrivate.PolicyError;
+
+/**
+ * @typedef {{
  *   conflictName: (string|undefined),
  *   conflictIsDirectory: (boolean|undefined),
  *   conflictMultiple: (boolean|undefined),
@@ -885,7 +894,9 @@ chrome.fileManagerPrivate.ConflictPauseParams;
 
 /**
  * @typedef {{
- *   type: !chrome.fileManagerPrivate.PolicyErrorType
+ *   type: !chrome.fileManagerPrivate.PolicyErrorType,
+ *   policyFileCount: number,
+ *   fileName: string
  * }}
  */
 chrome.fileManagerPrivate.PolicyPauseParams;
@@ -925,7 +936,7 @@ chrome.fileManagerPrivate.ResumeParams;
  * @typedef {{
  *   type: !chrome.fileManagerPrivate.IOTaskType,
  *   state: !chrome.fileManagerPrivate.IOTaskState,
- *   policyError: (!chrome.fileManagerPrivate.PolicyErrorType|undefined),
+ *   policyError: (!chrome.fileManagerPrivate.PolicyError|undefined),
  *   sourceName: string,
  *   numRemainingItems: number,
  *   itemCount: number,
@@ -996,7 +1007,8 @@ chrome.fileManagerPrivate.ParsedTrashInfoFile;
  *   bytesToPin: number,
  *   pinnedBytes: number,
  *   filesToPin: number,
- *   remainingSeconds: number
+ *   remainingSeconds: number,
+ *   emptiedQueue: boolean
  * }}
  */
 chrome.fileManagerPrivate.BulkPinProgress;

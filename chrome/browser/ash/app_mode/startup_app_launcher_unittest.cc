@@ -26,9 +26,9 @@
 #include "base/test/scoped_command_line.h"
 #include "base/test/test_future.h"
 #include "base/version.h"
-#include "chrome/browser/ash/app_mode/app_session_ash.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/ash/app_mode/kiosk_system_session.h"
 #include "chrome/browser/ash/app_mode/test_kiosk_extension_builder.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crosapi/chrome_app_kiosk_service_ash.h"
@@ -245,8 +245,9 @@ class TestKioskLoaderVisitor
     extension_service_->OnExtensionInstalled(
         extension, syncer::StringOrdinal::CreateInitialOrdinal(),
         extensions::kInstallFlagInstallImmediately);
+    auto installer = extensions::CrxInstaller::CreateSilent(extension_service_);
     extensions::InstallTracker::Get(browser_context_)
-        ->OnFinishCrxInstall(extension->id(), true);
+        ->OnFinishCrxInstall(*installer, extension->id(), true);
     return true;
   }
 
@@ -263,8 +264,9 @@ class TestKioskLoaderVisitor
 
     pending_crx_files_.erase(extension_id);
     pending_update_urls_.erase(extension_id);
+    auto installer = extensions::CrxInstaller::CreateSilent(extension_service_);
     extensions::InstallTracker::Get(browser_context_)
-        ->OnFinishCrxInstall(extension_id, false);
+        ->OnFinishCrxInstall(*installer, extension_id, false);
     extension_service_->pending_extension_manager()->Remove(extension_id);
     return true;
   }
@@ -287,8 +289,9 @@ class TestKioskLoaderVisitor
     }
 
     pending_crx_files_.insert(info.extension_id);
+    auto installer = extensions::CrxInstaller::CreateSilent(extension_service_);
     extensions::InstallTracker::Get(browser_context_)
-        ->OnBeginCrxInstall(info.extension_id);
+        ->OnBeginCrxInstall(*installer, info.extension_id);
     return true;
   }
   bool OnExternalExtensionUpdateUrlFound(
@@ -308,8 +311,9 @@ class TestKioskLoaderVisitor
     }
 
     pending_update_urls_.insert(info.extension_id);
+    auto installer = extensions::CrxInstaller::CreateSilent(extension_service_);
     extensions::InstallTracker::Get(browser_context_)
-        ->OnBeginCrxInstall(info.extension_id);
+        ->OnBeginCrxInstall(*installer, info.extension_id);
     return true;
   }
   void OnExternalProviderReady(
@@ -380,7 +384,7 @@ extensions::AppWindow* CreateAppWindow(Profile* profile,
 // This class overrides some of the behaviour of `KioskAppManager`, which is the
 // `KioskAppManagerBase` implementation for ChromeApp kiosk.
 // Notably it injects its own `ExternalCache` implementation and overrides the
-// construction on an `AppSession` object.
+// construction on an `KioskBrowserSession` object.
 class ScopedKioskAppManagerOverrides : public KioskAppManager::Overrides {
  public:
   ScopedKioskAppManagerOverrides() {
@@ -473,9 +477,9 @@ class ScopedKioskAppManagerOverrides : public KioskAppManager::Overrides {
     return cache;
   }
 
-  std::unique_ptr<AppSessionAsh> CreateAppSession() override {
-    EXPECT_FALSE(kiosk_app_session_initialized_);
-    kiosk_app_session_initialized_ = true;
+  std::unique_ptr<KioskSystemSession> CreateKioskSystemSession() override {
+    EXPECT_FALSE(kiosk_system_session_initialized_);
+    kiosk_system_session_initialized_ = true;
     return nullptr;
   }
 
@@ -495,7 +499,7 @@ class ScopedKioskAppManagerOverrides : public KioskAppManager::Overrides {
   std::unique_ptr<ScopedCrosSettingsTestHelper> accounts_settings_helper_;
 
   raw_ptr<chromeos::TestExternalCache, ExperimentalAsh> external_cache_;
-  bool kiosk_app_session_initialized_ = false;
+  bool kiosk_system_session_initialized_ = false;
 };
 
 TestKioskExtensionBuilder PrimaryAppBuilder() {

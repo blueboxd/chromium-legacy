@@ -8,10 +8,12 @@
 #include <memory>
 #include <string>
 
-#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
+#include "base/sequence_checker.h"
+#include "base/thread_annotations.h"
+#include "chrome/browser/ash/app_mode/cancellable_job.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_launch_error.h"
-#include "chrome/browser/ash/app_mode/kiosk_app_manager_base.h"
+#include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chromeos/ash/components/login/auth/login_performer.h"
 #include "components/account_id/account_id.h"
@@ -21,14 +23,12 @@ class Profile;
 namespace ash {
 
 class AuthFailure;
-enum class KioskAppType;
 class UserContext;
 
 // KioskProfileLoader loads a special profile for a given app. It first
 // attempts to login for the app's generated user id. If the login is
 // successful, it prepares app profile then calls the delegate.
-class KioskProfileLoader : public LoginPerformer::Delegate,
-                           public UserSessionManagerDelegate {
+class KioskProfileLoader : public LoginPerformer::Delegate {
  public:
   class Delegate {
    public:
@@ -52,9 +52,9 @@ class KioskProfileLoader : public LoginPerformer::Delegate,
   void Start();
 
  private:
-  class CryptohomedChecker;
-
   void LoginAsKioskAccount();
+  void PrepareProfile(const UserContext& user_context);
+  void ReportProfileLoaded(Profile& profile);
   void ReportLaunchResult(KioskAppLaunchError::Error error);
 
   // LoginPerformer::Delegate overrides:
@@ -65,15 +65,16 @@ class KioskProfileLoader : public LoginPerformer::Delegate,
   void OnOldEncryptionDetected(std::unique_ptr<UserContext> user_context,
                                bool has_incomplete_migration) override;
 
-  // UserSessionManagerDelegate implementation:
-  void OnProfilePrepared(Profile* profile, bool browser_launched) override;
-
   const AccountId account_id_;
   const KioskAppType app_type_;
-  raw_ptr<Delegate, ExperimentalAsh> delegate_;
+  raw_ptr<Delegate, ExperimentalAsh> delegate_
+      GUARDED_BY_CONTEXT(sequence_checker_);
   int failed_mount_attempts_;
-  std::unique_ptr<CryptohomedChecker> cryptohomed_checker_;
   std::unique_ptr<LoginPerformer> login_performer_;
+  std::unique_ptr<CancellableJob> current_step_
+      GUARDED_BY_CONTEXT(sequence_checker_);
+
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 }  // namespace ash

@@ -74,6 +74,8 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(
     preferred_contrast = MediaValues::CalculatePreferredContrast(frame);
     prefers_reduced_motion = MediaValues::CalculatePrefersReducedMotion(frame);
     prefers_reduced_data = MediaValues::CalculatePrefersReducedData(frame);
+    prefers_reduced_transparency =
+        MediaValues::CalculatePrefersReducedTransparency(frame);
     forced_colors = MediaValues::CalculateForcedColors(frame);
     navigation_controls = MediaValues::CalculateNavigationControls(frame);
     horizontal_viewport_segments =
@@ -148,6 +150,18 @@ float MediaValuesCached::RootLineHeight(float zoom) const {
   DCHECK_EQ(1.0f, zoom);
   // For media queries rlh and lh units are both based on the initial font.
   return data_.line_height;
+}
+
+float MediaValuesCached::CapFontSize(float zoom) const {
+  DCHECK_EQ(1.0f, zoom);
+  // For media queries cap units are based on the initial font.
+  return data_.cap_size;
+}
+
+float MediaValuesCached::RcapFontSize(float zoom) const {
+  DCHECK_EQ(1.0f, zoom);
+  // For media queries rcap units are based on the initial font.
+  return data_.cap_size;
 }
 
 double MediaValuesCached::ViewportWidth() const {
@@ -285,6 +299,10 @@ bool MediaValuesCached::PrefersReducedMotion() const {
 
 bool MediaValuesCached::PrefersReducedData() const {
   return data_.prefers_reduced_data;
+}
+
+bool MediaValuesCached::PrefersReducedTransparency() const {
+  return data_.prefers_reduced_transparency;
 }
 
 ForcedColors MediaValuesCached::GetForcedColors() const {

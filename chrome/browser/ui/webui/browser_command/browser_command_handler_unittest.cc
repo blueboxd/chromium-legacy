@@ -107,16 +107,8 @@ class TestCommandHandler : public BrowserCommandHandler {
     tab_groups_feature_supported_ = is_supported;
   }
 
-  void SetBrowserHasTabGroups(bool has_tab_groups) {
-    has_tab_groups_ = has_tab_groups;
-  }
-
   void SetBrowserSupportsCustomizeChromeSidePanel(bool is_supported) {
     customize_chrome_side_panel_feature_supported_ = is_supported;
-  }
-
-  void SetBrowserSupportsNewPasswordManager(bool is_supported) {
-    new_password_manager_feature_supported_ = is_supported;
   }
 
   void SetDefaultSearchProviderToGoogle(bool is_google) {
@@ -128,14 +120,8 @@ class TestCommandHandler : public BrowserCommandHandler {
     return tab_groups_feature_supported_;
   }
 
-  bool BrowserHasTabGroups() override { return has_tab_groups_; }
-
   bool BrowserSupportsCustomizeChromeSidePanel() override {
     return customize_chrome_side_panel_feature_supported_;
-  }
-
-  bool BrowserSupportsNewPasswordManager() override {
-    return new_password_manager_feature_supported_;
   }
 
   bool DefaultSearchProviderIsGoogle() override {
@@ -147,9 +133,7 @@ class TestCommandHandler : public BrowserCommandHandler {
   std::unique_ptr<CommandUpdater> command_updater_;
 
   bool tab_groups_feature_supported_ = true;
-  bool has_tab_groups_ = false;
   bool customize_chrome_side_panel_feature_supported_ = true;
-  bool new_password_manager_feature_supported_ = true;
   bool default_search_provider_is_google_ = true;
 };
 
@@ -507,31 +491,14 @@ TEST_F(BrowserCommandHandlerTest, StartTabGroupTutorialCommand) {
   command_handler_->SetBrowserSupportsTabGroups(true);
   EXPECT_TRUE(CanExecuteCommand(Command::kStartTabGroupTutorial));
 
-  // The StartTabGroupTutorial command should start the tab group tutorial. if
-  // there are no tab groups in the tabstrip
+  // The StartTabGroupTutorial command should start the tab group tutorial.
   {
-    command_handler_->SetBrowserHasTabGroups(false);
     ClickInfoPtr info = ClickInfo::New();
     EXPECT_CALL(service, StartTutorial(kTabGroupTutorialId, kTestContext1,
                                        testing::_, testing::_))
         .Times(1);
     EXPECT_CALL(service, IsRunningTutorial).WillOnce(testing::Return(true));
     EXPECT_CALL(service, LogStartedFromWhatsNewPage(kTabGroupTutorialId, true));
-    EXPECT_TRUE(
-        ExecuteCommand(Command::kStartTabGroupTutorial, std::move(info)));
-  }
-
-  // The StartTabGroupTutorial command should start the "existing tab groups"
-  // tab group tutorial. if there are tab groups in the tabstrip
-  {
-    command_handler_->SetBrowserHasTabGroups(true);
-    ClickInfoPtr info = ClickInfo::New();
-    EXPECT_CALL(service, StartTutorial(kTabGroupWithExistingGroupTutorialId,
-                                       kTestContext1, testing::_, testing::_))
-        .Times(1);
-    EXPECT_CALL(service, IsRunningTutorial).WillOnce(testing::Return(true));
-    EXPECT_CALL(service, LogStartedFromWhatsNewPage(
-                             kTabGroupWithExistingGroupTutorialId, true));
     EXPECT_TRUE(
         ExecuteCommand(Command::kStartTabGroupTutorial, std::move(info)));
   }
@@ -627,14 +594,6 @@ TEST_F(BrowserCommandHandlerTest, StartPasswordManagerTutorialCommand) {
   MockTutorialService service(&registry, bubble_factory_registry.get());
   command_handler_->SetTutorialService(&service);
 
-  // If the browser does not support the new password manager,
-  // dont run the command.
-  command_handler_->SetBrowserSupportsNewPasswordManager(false);
-  EXPECT_FALSE(CanExecuteCommand(Command::kStartPasswordManagerTutorial));
-
-  // If the browser supports the new password manager and has a tutorial
-  // service it should allow running commands.
-  command_handler_->SetBrowserSupportsNewPasswordManager(true);
   EXPECT_TRUE(CanExecuteCommand(Command::kStartPasswordManagerTutorial));
 
   ClickInfoPtr info = ClickInfo::New();

@@ -59,6 +59,7 @@
 #import "ios/chrome/browser/safe_browsing/safe_browsing_client_factory.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_metrics_collector_factory.h"
 #import "ios/chrome/browser/safe_browsing/verdict_cache_manager_factory.h"
+#import "ios/chrome/browser/safety_check/ios_chrome_safety_check_manager_factory.h"
 #import "ios/chrome/browser/screen_time/screen_time_buildflags.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/segmentation_platform/segmentation_platform_service_factory.h"
@@ -72,7 +73,9 @@
 #import "ios/chrome/browser/signin/signin_client_factory.h"
 #import "ios/chrome/browser/signin/signin_error_controller_factory.h"
 #import "ios/chrome/browser/signin/trusted_vault_client_backend_factory.h"
+#import "ios/chrome/browser/supervised_user/child_account_service_factory.h"
 #import "ios/chrome/browser/supervised_user/kids_chrome_management_client_factory.h"
+#import "ios/chrome/browser/supervised_user/list_family_members_service_factory.h"
 #import "ios/chrome/browser/supervised_user/supervised_user_metrics_service_factory.h"
 #import "ios/chrome/browser/supervised_user/supervised_user_service_factory.h"
 #import "ios/chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
@@ -83,6 +86,7 @@
 #import "ios/chrome/browser/tabs_search/tabs_search_service_factory.h"
 #import "ios/chrome/browser/text_selection/text_classifier_model_service_factory.h"
 #import "ios/chrome/browser/translate/translate_ranker_factory.h"
+#import "ios/chrome/browser/trusted_vault/ios_trusted_vault_service_factory.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller_factory.h"
 #import "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 #import "ios/chrome/browser/webdata_services/web_data_service_factory.h"
@@ -155,7 +159,9 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   IOSChromePasswordCheckManagerFactory::GetInstance();
   IOSChromePasswordStoreFactory::GetInstance();
   IOSChromeProfileInvalidationProviderFactory::GetInstance();
+  IOSChromeSafetyCheckManagerFactory::GetInstance();
   IOSProfileSessionDurationsServiceFactory::GetInstance();
+  IOSTrustedVaultServiceFactory::GetInstance();
   IOSUserEventServiceFactory::GetInstance();
   KidsChromeManagementClientFactory::GetInstance();
   LanguageModelManagerFactory::GetInstance();
@@ -177,6 +183,8 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   SupervisedUserMetricsServiceFactory::GetInstance();
   SupervisedUserSettingsServiceFactory::GetInstance();
   SupervisedUserServiceFactory::GetInstance();
+  ChildAccountServiceFactory::GetInstance();
+  ListFamilyMembersServiceFactory::GetInstance();
   SyncSetupServiceFactory::GetInstance();
   TextToSpeechPlaybackControllerFactory::GetInstance();
   AcceptLanguagesServiceFactory::GetInstance();

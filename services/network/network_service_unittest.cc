@@ -25,6 +25,7 @@
 #include "base/test/values_test_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/privacy_sandbox/masked_domain_list/masked_domain_list.pb.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/mock_network_change_notifier.h"
@@ -55,12 +56,10 @@
 #include "services/network/network_context.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
-#include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-#include "services/network/public/mojom/system_dns_resolution.mojom.h"
 #include "services/network/test/fake_test_cert_verifier_params_factory.h"
 #include "services/network/test/test_network_context_client.h"
 #include "services/network/test/test_url_loader_client.h"
@@ -99,7 +98,6 @@ mojom::NetworkContextParamsPtr CreateContextParams() {
       FakeTestCertVerifierParamsFactory::GetCertVerifierParams();
   return params;
 }
-
 class NetworkServiceTest : public testing::Test {
  public:
   explicit NetworkServiceTest(
@@ -108,7 +106,7 @@ class NetworkServiceTest : public testing::Test {
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO,
                           time_source),
         service_(NetworkService::CreateForTesting()) {}
-  ~NetworkServiceTest() override {}
+  ~NetworkServiceTest() override = default;
 
   base::test::TaskEnvironment* task_environment() { return &task_environment_; }
 
@@ -153,6 +151,74 @@ TEST_F(NetworkServiceTest, CreateContextWithoutChannelID) {
   mojo::Remote<mojom::NetworkContext> network_context;
   service()->CreateNetworkContext(network_context.BindNewPipeAndPassReceiver(),
                                   std::move(params));
+  network_context.reset();
+  // Make sure the NetworkContext is destroyed.
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(NetworkServiceTest, CreateContextWithMaskedDomainListProxyConfig) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      net::features::kEnableIpProtectionProxy);
+
+  masked_domain_list::MaskedDomainList mdl;
+  auto* resourceOwner = mdl.add_resource_owners();
+  resourceOwner->set_owner_name("foo");
+  resourceOwner->add_owned_resources()->set_domain("example.com");
+  service()->UpdateMaskedDomainList(mdl.SerializeAsString());
+  task_environment()->RunUntilIdle();
+
+  mojom::NetworkContextParamsPtr params = CreateContextParams();
+  mojo::Remote<mojom::NetworkContext> network_context;
+  service()->CreateNetworkContext(network_context.BindNewPipeAndPassReceiver(),
+                                  std::move(params));
+
+  // TODO(aakallam): verify that the allow list is used
+
+  network_context.reset();
+  // Make sure the NetworkContext is destroyed.
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(NetworkServiceTest,
+       CreateContextWithCustomProxyConfig_MdlConfigIsNotUsed) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      net::features::kEnableIpProtectionProxy);
+
+  masked_domain_list::MaskedDomainList mdl;
+  auto* resourceOwner = mdl.add_resource_owners();
+  resourceOwner->set_owner_name("foo");
+  resourceOwner->add_owned_resources()->set_domain("example.com");
+  service()->UpdateMaskedDomainList(mdl.SerializeAsString());
+  task_environment()->RunUntilIdle();
+
+  mojom::NetworkContextParamsPtr params = CreateContextParams();
+  params->initial_custom_proxy_config =
+      network::mojom::CustomProxyConfig::New();
+  mojo::Remote<mojom::NetworkContext> network_context;
+  service()->CreateNetworkContext(network_context.BindNewPipeAndPassReceiver(),
+                                  std::move(params));
+
+  // TODO(aakallam): verify that the allow list isn't used
+
+  network_context.reset();
+  // Make sure the NetworkContext is destroyed.
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(NetworkServiceTest, CreateContextWithoutMaskedDomainListData) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      net::features::kEnableIpProtectionProxy);
+
+  mojom::NetworkContextParamsPtr params = CreateContextParams();
+  mojo::Remote<mojom::NetworkContext> network_context;
+  service()->CreateNetworkContext(network_context.BindNewPipeAndPassReceiver(),
+                                  std::move(params));
+
+  // TODO(aakallam): verify that the allow list isn't used
+
   network_context.reset();
   // Make sure the NetworkContext is destroyed.
   base::RunLoop().RunUntilIdle();
@@ -982,6 +1048,23 @@ TEST_F(NetworkServiceTest, DisableCTEnforcement) {
 }
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
+TEST_F(NetworkServiceTest, SetMaskedDomainList) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitWithFeatures(
+      {net::features::kEnableIpProtectionProxy,
+       network::features::kMaskedDomainList},
+      {});
+
+  masked_domain_list::MaskedDomainList mdl;
+  auto* resourceOwner = mdl.add_resource_owners();
+  resourceOwner->set_owner_name("foo");
+  resourceOwner->add_owned_resources()->set_domain("example.com");
+
+  service()->UpdateMaskedDomainList(mdl.SerializeAsString());
+
+  EXPECT_TRUE(service()->network_service_proxy_allow_list()->IsPopulated());
+}
+
 class NetworkServiceTestWithService : public testing::Test {
  public:
   NetworkServiceTestWithService()
@@ -991,19 +1074,13 @@ class NetworkServiceTestWithService : public testing::Test {
   NetworkServiceTestWithService& operator=(
       const NetworkServiceTestWithService&) = delete;
 
-  ~NetworkServiceTestWithService() override {}
-
-  virtual mojom::NetworkServiceParamsPtr GetParams() {
-    return mojom::NetworkServiceParams::New();
-  }
+  ~NetworkServiceTestWithService() override = default;
 
   void SetUp() override {
     test_server_.AddDefaultHandlers(base::FilePath(kServicesTestData));
     ASSERT_TRUE(test_server_.Start());
-    service_ = std::make_unique<NetworkService>(
-        nullptr, network_service_.BindNewPipeAndPassReceiver(),
-        /*delay_initialization_until_set_client=*/true);
-    service_->Initialize(GetParams());
+    service_ = NetworkService::CreateForTesting();
+    service_->Bind(network_service_.BindNewPipeAndPassReceiver());
   }
 
   void CreateNetworkContext() {
@@ -1263,7 +1340,7 @@ class TestNetworkChangeManagerClient
   TestNetworkChangeManagerClient& operator=(
       const TestNetworkChangeManagerClient&) = delete;
 
-  ~TestNetworkChangeManagerClient() override {}
+  ~TestNetworkChangeManagerClient() override = default;
 
   // NetworkChangeManagerClient implementation:
   void OnInitialConnectionType(mojom::ConnectionType type) override {
@@ -1298,7 +1375,7 @@ class NetworkChangeTest : public testing::Test {
             net::NetworkChangeNotifier::CreateMockIfNeeded()),
         service_(NetworkService::CreateForTesting()) {}
 
-  ~NetworkChangeTest() override {}
+  ~NetworkChangeTest() override = default;
 
   NetworkService* service() const { return service_.get(); }
 
@@ -1308,14 +1385,7 @@ class NetworkChangeTest : public testing::Test {
   std::unique_ptr<NetworkService> service_;
 };
 
-// mojom:NetworkChangeManager isn't supported on iOS.
-// See the same ifdef in CreateNetworkChangeNotifierIfNeeded.
-#if BUILDFLAG(IS_IOS)
-#define MAYBE_NetworkChangeManagerRequest DISABLED_NetworkChangeManagerRequest
-#else
-#define MAYBE_NetworkChangeManagerRequest NetworkChangeManagerRequest
-#endif
-TEST_F(NetworkChangeTest, MAYBE_NetworkChangeManagerRequest) {
+TEST_F(NetworkChangeTest, NetworkChangeManagerRequest) {
   TestNetworkChangeManagerClient manager_client(service());
   net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
       net::NetworkChangeNotifier::CONNECTION_3G);
@@ -1337,7 +1407,7 @@ class NetworkServiceNetworkChangeTest : public testing::Test {
   NetworkServiceNetworkChangeTest& operator=(
       const NetworkServiceNetworkChangeTest&) = delete;
 
-  ~NetworkServiceNetworkChangeTest() override {}
+  ~NetworkServiceNetworkChangeTest() override = default;
 
   mojom::NetworkService* service() { return network_service_.get(); }
 
@@ -1348,7 +1418,7 @@ class NetworkServiceNetworkChangeTest : public testing::Test {
   std::unique_ptr<NetworkService> service_;
 };
 
-TEST_F(NetworkServiceNetworkChangeTest, MAYBE_NetworkChangeManagerRequest) {
+TEST_F(NetworkServiceNetworkChangeTest, NetworkChangeManagerRequest) {
   TestNetworkChangeManagerClient manager_client(service());
 
   // Wait for the NetworkChangeManagerClient registration to be processed within
@@ -1583,96 +1653,6 @@ TEST_F(NetworkServiceNetworkDelegateTest, HandleClearSiteDataHeaders) {
     }
     clear_site_observer.ClearOnClearSiteDataCounter();
   }
-}
-
-class NetworkServiceTestWithSystemDnsResolver
-    : public NetworkServiceTestWithService {
- public:
-  NetworkServiceTestWithSystemDnsResolver() = default;
-  NetworkServiceTestWithSystemDnsResolver(
-      const NetworkServiceTestWithSystemDnsResolver&) = delete;
-  NetworkServiceTestWithSystemDnsResolver& operator=(
-      const NetworkServiceTestWithSystemDnsResolver&) = delete;
-  ~NetworkServiceTestWithSystemDnsResolver() override = default;
-
-  mojom::NetworkServiceParamsPtr GetParams() override {
-    auto params = mojom::NetworkServiceParams::New();
-    params->system_dns_resolver =
-        system_dns_resolver_pending_receiver_.InitWithNewPipeAndPassRemote();
-    return params;
-  }
-
- protected:
-  mojo::PendingReceiver<mojom::SystemDnsResolver>
-      system_dns_resolver_pending_receiver_;
-};
-
-class StubHostResolverClient : public mojom::ResolveHostClient {
- public:
-  using ResolveHostCallback = base::OnceCallback<void(net::AddressList)>;
-
-  explicit StubHostResolverClient(
-      mojo::PendingReceiver<mojom::ResolveHostClient> receiver,
-      ResolveHostCallback resolve_host_callback)
-      : receiver_(this, std::move(receiver)),
-        resolve_host_callback_(std::move(resolve_host_callback)) {}
-
-  StubHostResolverClient(const StubHostResolverClient&) = delete;
-  StubHostResolverClient& operator=(const StubHostResolverClient&) = delete;
-  ~StubHostResolverClient() override = default;
-
-  void OnTextResults(const std::vector<std::string>& text_results) override {}
-  void OnHostnameResults(const std::vector<net::HostPortPair>& hosts) override {
-  }
-  void OnComplete(int result,
-                  const net::ResolveErrorInfo& resolve_error_info,
-                  const absl::optional<net::AddressList>& resolved_addresses,
-                  const absl::optional<net::HostResolverEndpointResults>&
-                      endpoint_results_with_metadata) override {
-    std::move(resolve_host_callback_)
-        .Run(resolved_addresses.value_or(net::AddressList()));
-  }
-
- private:
-  mojo::Receiver<network::mojom::ResolveHostClient> receiver_;
-  ResolveHostCallback resolve_host_callback_;
-};
-
-TEST_F(NetworkServiceTestWithSystemDnsResolver,
-       HandlesDeadSystemDnsResolverService) {
-  CreateNetworkContext();
-
-  // Kill the SystemDnsResolver pipe.
-  system_dns_resolver_pending_receiver_.reset();
-
-  // Call ResolveHost() and force it to use the SYSTEM dns resolver without
-  // cache or DoH. This will attempt to call back into the SystemDnsResolver,
-  // whose pipe is dead.
-  network::mojom::ResolveHostParametersPtr parameters =
-      network::mojom::ResolveHostParameters::New();
-  parameters->initial_priority = net::RequestPriority::HIGHEST;
-  // Use the SYSTEM resolver, and don't allow the cache or attempt DoH.
-  parameters->source = net::HostResolverSource::SYSTEM;
-  parameters->cache_usage =
-      network::mojom::ResolveHostParameters::CacheUsage::DISALLOWED;
-  parameters->secure_dns_policy = network::mojom::SecureDnsPolicy::DISABLE;
-  mojo::PendingReceiver<network::mojom::ResolveHostClient> receiver;
-  network_context_->ResolveHost(
-      network::mojom::HostResolverHost::NewHostPortPair(
-          net::HostPortPair("hostname1", 80)),
-      net::NetworkAnonymizationKey::CreateTransient(), std::move(parameters),
-      receiver.InitWithNewPipeAndPassRemote());
-
-  // Wait until the ResolveHost() call is done and make sure it returns an empty
-  // AddressList.
-  base::RunLoop run_loop;
-  auto stub_host_resolver_client = std::make_unique<StubHostResolverClient>(
-      std::move(receiver),
-      base::BindLambdaForTesting([&run_loop](net::AddressList address_list) {
-        ASSERT_TRUE(address_list.empty());
-        run_loop.Quit();
-      }));
-  run_loop.Run();
 }
 
 }  // namespace

@@ -10,7 +10,14 @@ import {
 import {
   getDefaultWindowSize,
 } from './app_window.js';
-import {assert, assertInstanceof} from './assert.js';
+import {
+  assert,
+  assertEnumVariant,
+  assertExists,
+  assertInstanceof,
+  checkEnumVariant,
+} from './assert.js';
+import * as customEffect from './custom_effect.js';
 import {DEPLOYED_VERSION} from './deployed_version.js';
 import {CameraManager} from './device/index.js';
 import {ModeConstraints} from './device/type.js';
@@ -22,7 +29,6 @@ import {GalleryButton} from './gallerybutton.js';
 import {I18nString} from './i18n_string.js';
 import {Intent} from './intent.js';
 import * as Comlink from './lib/comlink.js';
-import {loadSvgImages} from './lit/svg_wrapper.js';
 import * as metrics from './metrics.js';
 import * as filesystem from './models/file_system.js';
 import * as loadTimeData from './models/load_time_data.js';
@@ -37,6 +43,7 @@ import {preloadImagesList} from './preload_images.js';
 import * as state from './state.js';
 import * as toast from './toast.js';
 import * as tooltip from './tooltip.js';
+import {getSanitizedScriptUrl} from './trusted_script_url_policy_util.js';
 import {
   ErrorLevel,
   ErrorType,
@@ -123,11 +130,13 @@ export class App {
     window.addEventListener('resize', () => nav.layoutShownViews());
     windowController.addWindowStateListener(() => nav.layoutShownViews());
 
+    customEffect.setup();
     util.setupI18nElements(document.body);
     this.setupTooltip();
     this.setupToggles();
     localStorage.cleanup();
     this.setupEffect();
+    this.showNewFeatureToast();
     this.setupExperimentalFeatures();
 
     // Set up views navigation by their DOM z-order.
@@ -149,33 +158,37 @@ export class App {
    * Note `i18n-label` attribute should not be removed from elements.
    */
   private setupTooltip() {
+    tooltip.init();
     const tooltipAttribute = 'i18n-label';
+    const tooltipAttributeSelector = `[${tooltipAttribute}]`;
     const elements =
-        Array.from(dom.getAll(`[${tooltipAttribute}]`, HTMLElement));
-    tooltip.setup(elements);
+        Array.from(dom.getAll(tooltipAttributeSelector, HTMLElement));
+    tooltip.setupElements(elements);
     const observer = new MutationObserver((mutations) => {
       const elements: HTMLElement[] = [];
       for (const mutation of mutations) {
-        if (mutation.type === 'childList') {
-          for (const node of mutation.addedNodes) {
-            if (node instanceof HTMLElement &&
-                node.hasAttribute(tooltipAttribute)) {
-              elements.push(node);
-            }
+        if (mutation.type === 'attributes') {
+          // Check newly added attributes on existing elements.
+          const {target, oldValue} = mutation;
+          if (target instanceof HTMLElement && oldValue === null) {
+            elements.push(target);
           }
-        } else if (mutation.type === 'attributes') {
-          const {target: node, attributeName, oldValue} = mutation;
-          if (node instanceof HTMLElement &&
-              attributeName === tooltipAttribute && oldValue === null) {
-            elements.push(node);
+        } else if (mutation.type === 'childList') {
+          const {target} = mutation;
+          if (target instanceof HTMLElement) {
+            elements.push(
+                ...dom.getAllFrom(
+                    target, tooltipAttributeSelector, HTMLElement),
+            );
           }
         }
       }
-      tooltip.setup(elements);
+      tooltip.setupElements(elements);
     });
     observer.observe(document.body, {
       subtree: true,
       childList: true,
+      attributeFilter: [tooltipAttribute],
       attributes: true,
       attributeOldValue: true,
     });
@@ -195,7 +208,7 @@ export class App {
       function getKey(element: HTMLInputElement) {
         return element.dataset['key'] === undefined ?
             null :
-            util.assertEnumVariant(LocalStorageKey, element.dataset['key']);
+            assertEnumVariant(LocalStorageKey, element.dataset['key']);
       }
       const stateKey = element.dataset['state'] === undefined ?
           null :
@@ -270,6 +283,26 @@ export class App {
     });
   }
 
+  private showNewFeatureToast() {
+    // TODO(b/236800499): Remove the toast around 3 milestones after the feature
+    // is launched.
+    const showTimeLapseToast = () => this.cameraManager.registerCameraUI({
+      onUpdateConfig: async () => {
+        if (localStorage.getBool(LocalStorageKey.TIME_LAPSE_DIALOG_SHOWN) ||
+            state.get(Mode.VIDEO)) {
+          return;
+        }
+        customEffect.showTimeLapseIntroToast(this.cameraView.root);
+        // Do not show the toast to users who has already seen it.
+        localStorage.set(LocalStorageKey.TIME_LAPSE_DIALOG_SHOWN, true);
+      },
+    });
+
+    if (loadTimeData.getChromeFlag(Flag.TIME_LAPSE)) {
+      showTimeLapseToast();
+    }
+  }
+
   private setupExperimentalFeatures() {
     if (loadTimeData.getChromeFlag(Flag.TIME_LAPSE)) {
       const modeButton = dom.get('#time-lapse-mode', HTMLDivElement);
@@ -286,7 +319,6 @@ export class App {
     try {
       await filesystem.initialize();
       const cameraDir = filesystem.getCameraDirectory();
-      assert(cameraDir !== null);
 
       // There are three possible cases:
       // 1. Regular instance
@@ -329,7 +361,16 @@ export class App {
     })();
 
     preloadImages();
-    loadSvgImages();
+
+    for (const el of dom.getAll('[data-svg]', HTMLElement)) {
+      const imageName = assertExists(el.dataset['svg']);
+      const svg = document.createElement('svg-wrapper');
+      svg.setAttribute('name', imageName);
+      // Prepend the svg so it's on the bottom-most layer and won't be covering
+      // other possible children (e.g. inkdrop effect).
+      el.prepend(svg);
+    }
+
     metrics.sendLaunchEvent({launchType});
     await Promise.all([showWindow, startCamera]);
 
@@ -404,9 +445,8 @@ export class App {
       await this.suspend();
     };
 
-    const multiWindowManagerPath = '/js/multi_window_manager.js';
-    const multiWindowManagerWorker =
-        new SharedWorker(multiWindowManagerPath, {type: 'module'});
+    const multiWindowManagerWorker = new SharedWorker(
+        getSanitizedScriptUrl('/js/multi_window_manager.js'), {type: 'module'});
     const windowInstance =
         Comlink.wrap<WindowInstance>(multiWindowManagerWorker.port);
     addUnloadCallback(() => {
@@ -461,9 +501,9 @@ function parseSearchParams(): {
   const url = new URL(window.location.href);
   const params = url.searchParams;
 
-  const facing = util.checkEnumVariant(Facing, params.get('facing'));
+  const facing = checkEnumVariant(Facing, params.get('facing'));
 
-  const mode = util.checkEnumVariant(Mode, params.get('mode'));
+  const mode = checkEnumVariant(Mode, params.get('mode'));
 
   const intent = (() => {
     if (params.get('intentId') === null) {
@@ -481,8 +521,6 @@ function parseSearchParams(): {
 
 /**
  * Preload images to avoid flickering.
- * TODO(pihsun): Remove this and stop including .svg file in CCA once all
- * images are migrated to use data-svg / loadSvgImages.
  */
 function preloadImages() {
   const imagesContainer = document.createElement('div');
@@ -556,7 +594,7 @@ let instance: App|null = null;
 
   metrics.initMetrics();
   if (appWindow !== null) {
-    metrics.setMetricsEnabled(false);
+    metrics.setEnabled(false);
   }
 
   // Setup listener for performance events.

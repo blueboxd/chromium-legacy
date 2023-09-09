@@ -393,6 +393,10 @@ void ChromeAutofillClientIOS::ConfirmSaveAddressProfile(
       std::move(delegate)));
 }
 
+void ChromeAutofillClientIOS::ShowDeleteAddressProfileDialog() {
+  NOTREACHED();
+}
+
 bool ChromeAutofillClientIOS::HasCreditCardScanFeature() {
   return false;
 }
@@ -437,15 +441,16 @@ void ChromeAutofillClientIOS::PinPopupView() {
   NOTIMPLEMENTED();
 }
 
-AutofillClient::PopupOpenArgs ChromeAutofillClientIOS::GetReopenPopupArgs()
-    const {
+AutofillClient::PopupOpenArgs ChromeAutofillClientIOS::GetReopenPopupArgs(
+    AutofillSuggestionTriggerSource trigger_source) const {
   NOTIMPLEMENTED();
   return {};
 }
 
 void ChromeAutofillClientIOS::UpdatePopup(
     const std::vector<Suggestion>& suggestions,
-    PopupType popup_type) {
+    PopupType popup_type,
+    AutofillSuggestionTriggerSource trigger_source) {
   NOTIMPLEMENTED();
 }
 
@@ -462,7 +467,7 @@ bool ChromeAutofillClientIOS::IsPasswordManagerEnabled() {
       password_manager::prefs::kCredentialsEnableService);
 }
 
-void ChromeAutofillClientIOS::PropagateAutofillPredictions(
+void ChromeAutofillClientIOS::HandleParsedForms(
     AutofillDriver* driver,
     const std::vector<FormStructure*>& forms) {
   web::WebFrame* frame = (static_cast<AutofillDriverIOS*>(driver))->web_frame();
@@ -475,8 +480,19 @@ void ChromeAutofillClientIOS::PropagateAutofillPredictions(
   AutofillBottomSheetTabHelper* helper =
       AutofillBottomSheetTabHelper::FromWebState(web_state_);
   if (helper && !personal_data_manager_->GetCreditCardsToSuggest().empty()) {
-    helper->AttachPaymentsListeners(forms, frame->GetFrameId());
+    helper->AttachPaymentsListeners(forms, frame);
   }
+}
+
+void ChromeAutofillClientIOS::PropagateAutofillPredictions(
+    AutofillDriver* driver,
+    const std::vector<FormStructure*>& forms) {
+  web::WebFrame* frame = (static_cast<AutofillDriverIOS*>(driver))->web_frame();
+  if (!frame) {
+    return;
+  }
+
+  HandleParsedForms(driver, forms);
 
   // If the frame exists, then the driver will exist/be created.
   IOSPasswordManagerDriver* password_manager_driver =

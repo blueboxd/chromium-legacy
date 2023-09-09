@@ -40,7 +40,7 @@ LayoutCustomScrollbarPart::LayoutCustomScrollbarPart(
     CustomScrollbar* scrollbar,
     ScrollbarPart part,
     bool suppress_use_counters)
-    : LayoutReplaced(nullptr, LayoutSize()),
+    : LayoutReplaced(nullptr, PhysicalSize()),
       scrollable_area_(scrollable_area),
       scrollbar_(scrollbar),
       part_(part),
@@ -174,14 +174,14 @@ void LayoutCustomScrollbarPart::SetOverriddenFrameRect(const LayoutRect& rect) {
   overridden_rect_ = rect;
 }
 
-LayoutPoint LayoutCustomScrollbarPart::Location() const {
+LayoutPoint LayoutCustomScrollbarPart::LocationInternal() const {
   NOT_DESTROYED();
   return overridden_rect_.Location();
 }
 
-LayoutSize LayoutCustomScrollbarPart::Size() const {
+PhysicalSize LayoutCustomScrollbarPart::Size() const {
   NOT_DESTROYED();
-  return overridden_rect_.Size();
+  return PhysicalSizeToBeNoop(overridden_rect_.Size());
 }
 
 static LayoutUnit ComputeMargin(const Length& style_margin) {

@@ -8,6 +8,9 @@
 
 #import "content/browser/web_contents/web_contents_view_mac.h"
 
+#include "base/containers/contains.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #import "base/mac/mac_util.h"
 #include "base/threading/thread_restrictions.h"
 #import "content/app_shim_remote_cocoa/web_contents_occlusion_checker_mac.h"
@@ -25,6 +28,10 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using content::DropData;
 using features::kMacWebContentsOcclusion;
@@ -82,12 +89,12 @@ class DroppedScreenShotCopierMac {
  private:
   bool IsPathScreenShot(const base::FilePath& path) const {
     const std::string& value = path.value();
-    size_t found_var = value.find("/var");
-    if (found_var != 0)
+    if (!base::Contains(value, "/var")) {
       return false;
-    size_t found_screencaptureui = value.find("screencaptureui");
-    if (found_screencaptureui == std::string::npos)
+    }
+    if (!base::Contains(value, "screencaptureui")) {
       return false;
+    }
     return true;
   }
 
@@ -111,6 +118,28 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
 // WebContentsViewCocoa
 
 @implementation WebContentsViewCocoa {
+  // Instances of this class are owned by both `_host` and AppKit. The `_host`
+  // must call `-setHost:nil` in its destructor.
+  raw_ptr<remote_cocoa::mojom::WebContentsNSViewHost> _host;
+
+  // The interface exported to views::Views that embed this as a sub-view.
+  raw_ptr<ui::ViewsHostableView> _viewsHostableView;
+
+  BOOL _mouseDownCanMoveWindow;
+
+  // Utility to copy screenshots to a usable directory for PWAs. This utility
+  // will maintain a temporary directory for such screenshot files until this
+  // WebContents is destroyed.
+  // https://crbug.com/1148078
+  std::unique_ptr<remote_cocoa::DroppedScreenShotCopierMac>
+      _droppedScreenShotCopier;
+
+  // Drag variables.
+  WebDragSource* __strong _dragSource;
+  NSDragOperation _dragOperation;
+
+  gfx::Rect _windowControlsOverlayRect;
+
   // TODO(https://crbug.com/883031): Remove this when kMacWebContentsOcclusion
   // is enabled by default.
   BOOL _inFullScreenTransition;
@@ -145,8 +174,6 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
 
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [self cancelDelayedSetWebContentsOccluded];
-
-  [super dealloc];
 }
 
 - (void)enableDroppedScreenShotCopier {
@@ -230,13 +257,13 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
   NSPasteboard* pasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
   [pasteboard clearContents];
 
-  _dragSource.reset([[WebDragSource alloc] initWithHost:_host
+  _dragSource = [[WebDragSource alloc] initWithHost:_host
                                                    view:self
                                                dropData:&dropData
                                                   image:image
                                                  offset:offset
                                              pasteboard:pasteboard
-                                      dragOperationMask:operationMask]);
+                                      dragOperationMask:operationMask];
   [_dragSource startDrag];
 }
 
@@ -260,7 +287,7 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
       endDragAt:screenPoint
       operation:ui::DragDropTypes::NSDragOperationToDragOperation(operation)];
 
-  WebDragSource* currentDragSource = _dragSource.get();
+  WebDragSource* currentDragSource = _dragSource;
   NSPoint localPoint = NSZeroPoint;
   if (self.window) {
     NSPoint basePoint =
@@ -271,12 +298,12 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
   dispatch_after(
       dispatch_time(DISPATCH_TIME_NOW, (int64_t)kPasteboardClearDelay),
       dispatch_get_main_queue(), ^{
-        if (_dragSource.get() == currentDragSource) {
+        if (_dragSource == currentDragSource) {
           // Clear the drag pasteboard. Even though this is called in dealloc,
           // we need an explicit call because NSPasteboard can retain the drag
           // source.
           [_dragSource clearPasteboard];
-          _dragSource.reset();
+          _dragSource = nil;
         }
       });
 }

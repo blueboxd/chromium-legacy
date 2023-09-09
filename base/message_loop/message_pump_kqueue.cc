@@ -38,8 +38,8 @@ std::atomic_bool g_use_simplified_version = false;
 // waiting in a kevent64 invocation is still (inherently) racy.
 bool KqueueTimersSpuriouslyWakeUp() {
 #if BUILDFLAG(IS_MAC)
-  static const bool kqueue_needs_port_set = mac::IsAtMostOS10_11();
-  return kqueue_needs_port_set;
+  static const bool kqueue_timers_spuriously_wakeup = mac::IsAtMostOS10_13();
+  return kqueue_timers_spuriously_wakeup;
 #else
   return false;
 #endif

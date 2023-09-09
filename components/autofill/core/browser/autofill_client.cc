@@ -22,11 +22,11 @@ AutofillClient::PopupOpenArgs::PopupOpenArgs(
     const gfx::RectF& element_bounds,
     base::i18n::TextDirection text_direction,
     std::vector<Suggestion> suggestions,
-    AutoselectFirstSuggestion autoselect_first_suggestion)
+    AutofillSuggestionTriggerSource trigger_source)
     : element_bounds(element_bounds),
       text_direction(text_direction),
       suggestions(std::move(suggestions)),
-      autoselect_first_suggestion(autoselect_first_suggestion) {}
+      trigger_source(trigger_source) {}
 AutofillClient::PopupOpenArgs::PopupOpenArgs(
     const AutofillClient::PopupOpenArgs&) = default;
 AutofillClient::PopupOpenArgs::PopupOpenArgs(AutofillClient::PopupOpenArgs&&) =
@@ -199,6 +199,13 @@ void AutofillClient::CloseAutofillProgressDialog(
     base::OnceClosure no_interactive_authentication_callback) {
   // This is overridden by platform subclasses. Currently only
   // ChromeAutofillClient (Chrome Desktop & Android) implements this.
+}
+
+void AutofillClient::HandleParsedForms(
+    AutofillDriver* driver,
+    const std::vector<autofill::FormStructure*>& forms) {
+  // This is overridden by platform subclasses. Currently only
+  // ChromeAutofillClientIOS implements this.
 }
 
 LogManager* AutofillClient::GetLogManager() const {

@@ -8,6 +8,7 @@
 
 #include "base/feature_list.h"
 #include "build/build_config.h"
+#include "net/base/cronet_buildflags.h"
 #include "net/net_buildflags.h"
 
 namespace net::features {
@@ -64,6 +65,14 @@ const base::FeatureParam<base::TimeDelta> kUseDnsHttpsSvcbSecureExtraTimeMin{
 
 BASE_FEATURE(kUseDnsHttpsSvcbAlpn,
              "UseDnsHttpsSvcbAlpn",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<int> kAlternativePortForGloballyReachableCheck{
+    &kUseAlternativePortForGloballyReachableCheck,
+    "AlternativePortForGloballyReachableCheck", 443};
+
+BASE_FEATURE(kUseAlternativePortForGloballyReachableCheck,
+             "UseAlternativePortForGloballyReachableCheck",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSHA1ServerSignature,
@@ -162,7 +171,12 @@ BASE_FEATURE(kCertDualVerificationTrialFeature,
 #if BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
 BASE_FEATURE(kChromeRootStoreUsed,
              "ChromeRootStoreUsed",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 #endif  // BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(USE_NSS_CERTS) || BUILDFLAG(IS_WIN)
@@ -225,10 +239,6 @@ BASE_FEATURE(kUdpSocketPosixAlwaysUpdateBytesReceived,
 
 BASE_FEATURE(kCookieSameSiteConsidersRedirectChain,
              "CookieSameSiteConsidersRedirectChain",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kSamePartyAttributeEnabled,
-             "SamePartyAttributeEnabled",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kWaitForFirstPartySetsInit,
@@ -305,11 +315,6 @@ BASE_FEATURE(kPlatformKeyProbeSHA256,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
-// Enable support for HTTP extensible priorities (RFC 9218)
-BASE_FEATURE(kPriorityIncremental,
-             "PriorityIncremental",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Prefetch to follow normal semantics instead of 5-minute rule
 // https://crbug.com/1345207
 BASE_FEATURE(kPrefetchFollowsNormalCacheSemantics,
@@ -329,6 +334,15 @@ BASE_FEATURE(kKerberosInBrowserRedirect,
 BASE_FEATURE(kAsyncQuicSession,
              "AsyncQuicSession",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// A flag to make multiport context creation asynchronous.
+BASE_FEATURE(kAsyncMultiPortPath,
+             "AsyncMultiPortPath",
+#if !BUILDFLAG(CRONET_BUILD) && (BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID))
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 // IP protection experiment configuration settings
 BASE_FEATURE(kEnableIpProtectionProxy,
@@ -356,6 +370,10 @@ inline constexpr auto kMigrateSessionsOnNetworkChangeV2Default =
 BASE_FEATURE(kMigrateSessionsOnNetworkChangeV2,
              "MigrateSessionsOnNetworkChangeV2",
              kMigrateSessionsOnNetworkChangeV2Default);
+
+BASE_FEATURE(kDisableBlackholeOnNoNewNetwork,
+             "DisableBlackHoleOnNoNewNetwork",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_LINUX)
 BASE_FEATURE(kAddressTrackerLinuxIsProxied,
@@ -387,6 +405,18 @@ BASE_FEATURE(kAsyncCacheLock,
 
 BASE_FEATURE(kEnableEarlyHintsOnHttp11,
              "EnableEarlyHintsOnHttp11",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kEnableWebTransportDraft07,
+             "EnableWebTransportDraft07",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kZstdContentEncoding,
+             "ZstdContentEncoding",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kClearSiteDataWildcardSupport,
+             "ClearSiteDataWildcardSupport",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace net::features

@@ -81,6 +81,9 @@ enum class ValidPropertyFilter : unsigned {
   // ::target-text. Only properties listed in
   // https://drafts.csswg.org/css-pseudo-4/#highlight-styling are valid.
   kHighlight,
+  // Defined in @try block of a @position-fallback rule. Only properties listed
+  // in https://drafts.csswg.org/css-anchor-position-1/#fallback-rule are valid.
+  kPositionFallback,
 };
 
 class CSSSelector;
@@ -97,11 +100,6 @@ class CORE_EXPORT RuleData {
   DISALLOW_NEW();
 
  public:
-  // The `extra_specificity` parameter is added to the specificity of the
-  // RuleData. This is useful for @scope, where inner selectors must gain
-  // additional specificity from the <scope-start> of the enclosing @scope.
-  // https://drafts.csswg.org/css-cascade-6/#scope-atrule
-  //
   // NOTE: You will want to call ComputeBloomFilterHashes() before actually
   // using this RuleData for matching. However, the constructor cannot do it
   // right away, since RuleMap wants to use the space normally used for hashes
@@ -109,7 +107,6 @@ class CORE_EXPORT RuleData {
   RuleData(StyleRule*,
            unsigned selector_index,
            unsigned position,
-           unsigned extra_specificity,
            AddRuleFlags);
 
   unsigned GetPosition() const { return position_; }
@@ -480,6 +477,10 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
 
   bool HasBucketForStyleAttribute() const { return has_bucket_for_style_attr_; }
 
+  bool MayHaveScopeInUniversalBucket() const {
+    return may_have_scope_in_universal_bucket_;
+  }
+
   bool NeedsFullRecalcForRuleSetInvalidation() const {
     return features_.NeedsFullRecalcForRuleSetInvalidation();
   }
@@ -656,6 +657,13 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
   // may need to take extra steps to synchronize the style attribute on
   // an element before looking for appropriate buckets.
   bool has_bucket_for_style_attr_ = false;
+
+  // Since the :scope pseudo-class can match a shadow host when that host
+  // is the scoping root, ElementRuleCollector::CollectMatchingShadowHostRules
+  // also needs to collect rules from the universal bucket, but this is only
+  // required when :scope is actually present. Nothing else in the universal
+  // bucket can match the host from inside the shadow tree.
+  bool may_have_scope_in_universal_bucket_ = false;
 
   unsigned rule_count_ = 0;
   bool need_compaction_ = false;

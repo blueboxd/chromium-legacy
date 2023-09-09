@@ -24,7 +24,6 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_util.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/shared_image_format_utils.h"
 #include "components/viz/service/display/external_use_client.h"
 #include "components/viz/service/display/output_surface_client.h"
@@ -83,7 +82,8 @@ struct FulfillForPlane {
   explicit FulfillForPlane(ImageContextImpl* context, int plane_index = 0)
       : context_(context), plane_index_(plane_index) {}
 
-  const raw_ptr<ImageContextImpl, DanglingUntriaged> context_ = nullptr;
+  const raw_ptr<ImageContextImpl, AcrossTasksDanglingUntriaged> context_ =
+      nullptr;
   const int plane_index_ = 0;
 };
 
@@ -820,8 +820,9 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
     SkImageInfo image_info =
         SkImageInfo::Make(gfx::SizeToSkISize(surface_size), color_type,
                           kPremul_SkAlphaType, color_space);
-    skgpu::graphite::TextureInfo texture_info =
-        gpu::GetGraphiteTextureInfo(dependency_->gr_context_type(), format);
+    skgpu::graphite::TextureInfo texture_info = gpu::GetGraphiteTextureInfo(
+        dependency_->gr_context_type(), format, /*plane_index=*/0,
+        /*is_yuv_plane=*/false, mipmap);
     if (!texture_info.isValid()) {
       DLOG(ERROR) << "BeginPaintRenderPass: invalid Graphite TextureInfo";
       return nullptr;

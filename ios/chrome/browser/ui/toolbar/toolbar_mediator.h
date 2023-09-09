@@ -9,8 +9,9 @@
 #import <UIKit/UIKit.h>
 
 #import "components/prefs/pref_service.h"
-#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_type.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_type.h"
 
+@protocol ToolbarOmniboxConsumer;
 class WebStateList;
 
 /// Delegate for events in `ToolbarMediator`.
@@ -22,12 +23,18 @@ class WebStateList;
 /// Transitions the omnibox position to the toolbar of type `toolbarType`.
 - (void)transitionOmniboxToToolbarType:(ToolbarType)toolbarType;
 
+/// Transitions the steady state omnibox position to the toolbar of type
+/// `toolbarType`. The steady state omnibox is when the omnibox is not focused.
+- (void)transitionSteadyStateOmniboxToToolbarType:(ToolbarType)toolbarType;
+
 @end
 
 @interface ToolbarMediator : NSObject
 
 /// Delegate for events in `ToolbarMediator`.
 @property(nonatomic, weak) id<ToolbarMediatorDelegate> delegate;
+/// The omnibox consumer for this object.
+@property(nonatomic, weak) id<ToolbarOmniboxConsumer> omniboxConsumer;
 /// Observe user preference changes for preferred omnibox position.
 @property(nonatomic, assign) PrefService* prefService;
 
@@ -45,6 +52,10 @@ class WebStateList;
 
 /// Location bar (omnibox) focus has changed to `focused`.
 - (void)locationBarFocusChangedTo:(BOOL)focused;
+
+/// NTP became active on the active web state. This can happen after web state
+/// finish navigation.
+- (void)didNavigateToNTPOnActiveWebState;
 
 /// Toolbar's trait collection changed to `traitCollection`.
 - (void)toolbarTraitCollectionChangedTo:(UITraitCollection*)traitCollection;

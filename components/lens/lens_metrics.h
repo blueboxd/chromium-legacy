@@ -69,8 +69,7 @@ enum class AmbientSearchEntryPoint {
   SPOTLIGHT = 10,
   PLUS_BUTTON = 11,
   WEB_SEARCH_BAR = 12,
-  COMPANION_REGION_SEARCH = 13,
-  kMaxValue = COMPANION_REGION_SEARCH
+  kMaxValue = WEB_SEARCH_BAR
 };
 
 // This should be kept in sync with the LensRegionSearchAspectRatio enum

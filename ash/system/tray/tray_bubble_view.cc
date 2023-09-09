@@ -344,13 +344,6 @@ TrayBubbleView::~TrayBubbleView() {
     // Inform host items (models) that their views are being destroyed.
     delegate_->BubbleViewDestroyed();
   }
-
-  if (IsAnchoredToStatusArea()) {
-    Shell::Get()
-        ->system_tray_notifier()
-        ->NotifyStatusAreaAnchoredBubbleVisibilityChanged(/*tray_bubble=*/this,
-                                                          /*visible=*/false);
-  }
 }
 
 void TrayBubbleView::InitializeAndShowBubble() {
@@ -364,11 +357,6 @@ void TrayBubbleView::InitializeAndShowBubble() {
     shadow_->SetContentBounds(layer()->bounds());
   }
 
-  if (IsAnchoredToStatusArea()) {
-    tray_bubble_counter_.emplace(
-        StatusAreaWidget::ForWindow(GetWidget()->GetNativeView()));
-  }
-
   // Register pre target event handler to reroute key
   // events to the widget for activating the view or closing it.
   if (!CanActivate() && params_.reroute_event_handler) {
@@ -376,10 +364,7 @@ void TrayBubbleView::InitializeAndShowBubble() {
   }
 
   if (IsAnchoredToStatusArea()) {
-    Shell::Get()
-        ->system_tray_notifier()
-        ->NotifyStatusAreaAnchoredBubbleVisibilityChanged(/*tray_bubble=*/this,
-                                                          /*visible=*/true);
+    NotifyTrayBubbleOpen();
   }
 }
 
@@ -452,16 +437,20 @@ void TrayBubbleView::StopReroutingEvents() {
   reroute_event_handler_.reset();
 }
 
+TrayBubbleView::TrayBubbleType TrayBubbleView::GetBubbleType() const {
+  return params_.type;
+}
+
 void TrayBubbleView::OnWidgetClosing(Widget* widget) {
   // We no longer need to watch key events for activation if the widget is
   // closing.
   reroute_event_handler_.reset();
 
-  BubbleDialogDelegateView::OnWidgetClosing(widget);
-
   if (IsAnchoredToStatusArea()) {
-    tray_bubble_counter_.reset();
+    NotifyTrayBubbleClosed();
   }
+
+  BubbleDialogDelegateView::OnWidgetClosing(widget);
 }
 
 void TrayBubbleView::OnWidgetActivationChanged(Widget* widget, bool active) {
@@ -517,6 +506,15 @@ std::u16string TrayBubbleView::GetAccessibleWindowTitle() const {
     return delegate_->GetAccessibleNameForBubble();
   } else {
     return std::u16string();
+  }
+}
+
+void TrayBubbleView::AddedToWidget() {
+  // If the view has a shadow on texture layer, should make it observe widget
+  // theme change to update its colors. The function is called here since we
+  // should guarantee that `GetWidget()` returns non-nullptr.
+  if (params_.has_shadow && params_.has_large_corner_radius) {
+    shadow_->ObserveColorProviderSource(GetWidget());
   }
 }
 
@@ -613,6 +611,36 @@ void TrayBubbleView::OnNotificationDisplayed(
     aura::Window* tray_window = GetWidget()->GetNativeView();
     tray_window->parent()->StackChildAtBottom(tray_window);
   }
+}
+
+void TrayBubbleView::NotifyTrayBubbleOpen() {
+  DCHECK(IsAnchoredToStatusArea());
+
+  if (GetBubbleType() == TrayBubbleType::kShelfPodBubble) {
+    StatusAreaWidget::ForWindow(GetWidget()->GetNativeView())
+        ->SetOpenShelfPodBubble(this);
+  }
+
+  Shell::Get()
+      ->system_tray_notifier()
+      ->NotifyStatusAreaAnchoredBubbleVisibilityChanged(/*tray_bubble=*/this,
+                                                        /*visible=*/true);
+}
+
+void TrayBubbleView::NotifyTrayBubbleClosed() {
+  DCHECK(IsAnchoredToStatusArea());
+
+  auto* status_area = StatusAreaWidget::ForWindow(GetWidget()->GetNativeView());
+
+  // `TrayBubbleView` may live longer than `StatusAreaWidget`.
+  if (status_area && GetBubbleType() == TrayBubbleType::kShelfPodBubble) {
+    status_area->SetOpenShelfPodBubble(nullptr);
+  }
+
+  Shell::Get()
+      ->system_tray_notifier()
+      ->NotifyStatusAreaAnchoredBubbleVisibilityChanged(/*tray_bubble=*/this,
+                                                        /*visible=*/false);
 }
 
 void TrayBubbleView::ChildPreferredSizeChanged(View* child) {

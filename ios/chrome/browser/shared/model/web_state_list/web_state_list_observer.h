@@ -13,6 +13,14 @@ namespace web {
 class WebState;
 }
 
+// WebStateListChange and WebStateListStatus are used to inform
+// WebStateListObservers of changes of
+// (1) inserted/remove/replaced/removed WebStates
+// (2) status updates
+//    (2-1) activated WebState
+//    (2-2) pinned/non-pinned WebState
+// The change of (1) and (2) can be triggered synchronously.
+
 // Represents a generic change to the WebStateList. Use `type()` to determine
 // its type, then access the correct sub-class using `As()<...>` method.
 class WebStateListChange {
@@ -20,7 +28,7 @@ class WebStateListChange {
   enum class Type {
     // Used when the status of a WebState is updated by the activation or the
     // pinned state update. It does not update the layout of WebStateList.
-    kSelectionOnly,
+    kStatusOnly,
     // Used when a WebState at the specified index is detached. The detached
     // WebState is still valid when observer is called but it is no longer in
     // WebStateList.
@@ -52,13 +60,39 @@ class WebStateListChange {
   WebStateListChange() = default;
 };
 
+// Represents a change that corresponds to updating the active state or the
+// pinned state of a selected WebState.
+class WebStateListChangeStatusOnly final : public WebStateListChange {
+ public:
+  static constexpr Type kType = Type::kStatusOnly;
+
+  explicit WebStateListChangeStatusOnly(
+      raw_ptr<web::WebState> selected_web_state);
+  ~WebStateListChangeStatusOnly() final = default;
+
+  Type type() const final;
+
+  // The WebState that is updated. The selected WebState updates the active
+  // state or the pinned state, but the position of it isn't updated in
+  // WebStateList.
+  raw_ptr<web::WebState> selected_web_state() const {
+    CHECK(selected_web_state_);
+    return selected_web_state_;
+  }
+
+ private:
+  raw_ptr<web::WebState> selected_web_state_;
+};
+
 // Represents a change that corresponds to detaching one WebState from
 // WebStateList.
 class WebStateListChangeDetach final : public WebStateListChange {
  public:
   static constexpr Type kType = Type::kDetach;
 
-  explicit WebStateListChangeDetach(raw_ptr<web::WebState> detached_web_state);
+  WebStateListChangeDetach(raw_ptr<web::WebState> detached_web_state,
+                           bool is_closing,
+                           bool is_user_action);
   ~WebStateListChangeDetach() final = default;
 
   Type type() const final;
@@ -71,8 +105,15 @@ class WebStateListChangeDetach final : public WebStateListChange {
     return detached_web_state_;
   }
 
+  // Returns true when a detached WebState will be closed as well.
+  bool is_closing() const { return is_closing_; }
+  // Returns true when a detached WebState will be closed by the user action.
+  bool is_user_action() const { return is_user_action_; }
+
  private:
   raw_ptr<web::WebState> detached_web_state_;
+  const bool is_closing_;
+  const bool is_user_action_;
 };
 
 // Represents a change that corresponds to moving one WebState to a new index in
@@ -88,7 +129,8 @@ class WebStateListChangeMove final : public WebStateListChange {
   Type type() const final;
 
   // The WebState that is moved from the position of `moved_from_index` in
-  // WebStateListChangeMove to the position of `index` in WebStateSelection.
+  // WebStateListChangeMove to the position of `index` in
+  // WebStateListStatus.
   raw_ptr<web::WebState> moved_web_state() const {
     CHECK(moved_web_state_);
     return moved_web_state_;
@@ -145,7 +187,7 @@ class WebStateListChangeInsert final : public WebStateListChange {
   Type type() const final;
 
   // The WebState that is inserted into the WebStateList. It is inserted to the
-  // position of `index` in WebStateSelection.
+  // position of `index` in WebStateListStatus.
   raw_ptr<web::WebState> inserted_web_state() const {
     CHECK(inserted_web_state_);
     return inserted_web_state_;
@@ -155,16 +197,23 @@ class WebStateListChangeInsert final : public WebStateListChange {
   raw_ptr<web::WebState> inserted_web_state_;
 };
 
-struct WebStateSelection {
+// Represents a change on pinned state/activation.
+struct WebStateListStatus {
   // The index to be changed. A WebState is no longer in WebStateList at the
   // `index` position when a WebState is detached.
   const int index;
-  // True when the WebState at `index` is being activated.
-  // TODO(crbug.com/1442546): Remove `activating` and introduce `active_index`,
-  // the index of the currently active WebState, once WebStateActivatedAt() is
-  // merged into WebStateListChange() because WebStateListChange() will be able
-  // to handle an operation with the activation at the same time.
-  const bool activating;
+  // True when the pinned state of the WebState at `index` in WebStateList is
+  // updated.
+  const bool pinned_state_change;
+  // WebState that used to be active before the change in WebStateList is
+  // finished.
+  const raw_ptr<web::WebState> old_active_web_state;
+  // WebState that will be active after the change in WebStateList is finished.
+  const raw_ptr<web::WebState> new_active_web_state;
+  // True when the active WebState is updated.
+  bool active_web_state_change() const {
+    return old_active_web_state != new_active_web_state;
+  }
 };
 
 // Constants used when notifying about changes to active WebState.
@@ -195,24 +244,18 @@ class WebStateListObserver : public base::CheckedObserver {
 
   ~WebStateListObserver() override;
 
+  // Invoked before the specified WebState is updated. Is is currently used to
+  // notify the event before a WebState is detached from WebStateList. So the
+  // type of `change` is always `WebStateListChangeDetach`.
+  virtual void WebStateListWillChange(
+      WebStateList* web_state_list,
+      const WebStateListChangeDetach& detach_change,
+      const WebStateListStatus& status);
+
   /// Invoked when WebStateList is updated.
-  virtual void WebStateListChanged(WebStateList* web_state_list,
-                                   const WebStateListChange& change,
-                                   const WebStateSelection& selection);
-
-  // Invoked before the specified WebState is detached from the WebStateList.
-  // The WebState is still valid and still in the WebStateList.
-  virtual void WillDetachWebStateAt(WebStateList* web_state_list,
-                                    web::WebState* web_state,
-                                    int index);
-
-  // Invoked before the specified WebState is destroyed via the WebStateList.
-  // The WebState is still valid but is no longer in the WebStateList. If the
-  // WebState is closed due to user action, `user_action` will be true.
-  virtual void WillCloseWebStateAt(WebStateList* web_state_list,
-                                   web::WebState* web_state,
-                                   int index,
-                                   bool user_action);
+  virtual void WebStateListDidChange(WebStateList* web_state_list,
+                                     const WebStateListChange& change,
+                                     const WebStateListStatus& status);
 
   // Invoked after `new_web_state` was activated at the specified index. Both
   // WebState are either valid or null (if there was no selection or there is
@@ -222,11 +265,6 @@ class WebStateListObserver : public base::CheckedObserver {
                                    web::WebState* new_web_state,
                                    int active_index,
                                    ActiveWebStateChangeReason reason);
-
-  // Invoked when the pinned state of a tab changes.
-  virtual void WebStatePinnedStateChanged(WebStateList* web_state_list,
-                                          web::WebState* web_state,
-                                          int index);
 
   // Invoked before a batched operations begins. The observer can use this
   // notification if it is interested in considering all those individual

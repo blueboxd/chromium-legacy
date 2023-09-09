@@ -59,6 +59,7 @@
 <translation id="3984746313391923992">Vaša organizacija zahtijeva da ostanete odjavljeni s Chromea.</translation>
 <translation id="3988789688219830639">Chrome nema pristup fotografijama ni videozapisima. Omogućite pristup u Postavkama iOS-a &gt; Privatnost &gt; Fotografije.</translation>
 <translation id="4064699917955374540">Da biste upotrebljavali i spremali podatke iz Chromea na svoj Google račun, potvrdite da ste to vi.</translation>
+<translation id="4093042601582616698">Želite li postaviti Chrome kao zadani preglednik?</translation>
 <translation id="417201473131094001">Nije podržano u Chrome Canaryju</translation>
 <translation id="4233521129555661685">Korisnik <ph name="USER_EMAIL1" /> upotrebljavao je Chrome i ostavio oznake, zaporke i druge postavke na ovom uređaju.</translation>
 <translation id="424864128008805179">Želite li se odjaviti s Chromea?</translation>
@@ -69,7 +70,6 @@
 <translation id="4636900170638246267">Prijavite se na ovu web-lokaciju i Chrome.</translation>
 <translation id="4698415050768537821">Chrome nije uspio provjeriti sve zaporke. Pokušajte ponovno sutra ili <ph name="BEGIN_LINK" />provjerite zaporke na svojem Google računu<ph name="END_LINK" />.</translation>
 <translation id="4819268619367838612">Radi poboljšanja aplikacije Chrome šalje Googleu podatke o upotrebi i rušenju. <ph name="BEGIN_LINK" />Upravljanje<ph name="END_LINK" /></translation>
-<translation id="4830799082179398588">Želite li postaviti Chrome kao zadani preglednik?</translation>
 <translation id="484033449593719797">Nije podržano u beta verziji Chromea</translation>
 <translation id="4840404732697892756">Google upravitelj zaporki može provjeriti vaše zaporke kad se prijavite Google računom.</translation>
 <translation id="4903674399067644695">Na ovoj se kartici prikazuju prijedlozi o tome kako iskoristiti sve prednosti Chromea.</translation>
@@ -85,7 +85,7 @@
 <translation id="5552137475244467770">Chrome povremeno uspoređuje vaše zaporke s javno objavljenim popisima. Tom su prilikom vaše zaporke i korisnička imena kriptirani, tako da ih nitko ne može pročitati, uključujući Google.</translation>
 <translation id="5639704535586432836">Otvorite Postavke &gt; Privatnost &gt; Fotoaparat &gt; Google Chrome i uključite fotoaparat.</translation>
 <translation id="5642200033778930880">Google Chrome ne može upotrebljavati vaš fotoaparat u načinu podijeljenog prikaza</translation>
-<translation id="5661521615548540542">Google upravitelj zaporki nije uspio provjeriti sve zaporke. Pokušajte ponovo kasnije.</translation>
+<translation id="5661521615548540542">Google upravitelj zaporki nije uspio provjeriti sve zaporke. Pokušajte ponovo poslije.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Chrome ne može provjeriti ima li ažuriranja jer ste offline</translation>
 <translation id="5716154293141027663">Otvorite Chrome svaki put kada dodirnete veze u drugim aplikacijama</translation>

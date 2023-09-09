@@ -20,10 +20,12 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chrome_for_testing/buildflags.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/file_system_access/chrome_file_system_access_permission_context.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
+#include "chrome/browser/performance_manager/public/user_tuning/battery_saver_mode_manager.h"
 #include "chrome/browser/performance_manager/public/user_tuning/user_performance_tuning_manager.h"
 #include "chrome/browser/preloading/preloading_features.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
@@ -372,7 +374,8 @@ void AddAboutStrings(content::WebUIDataSource* html_source, Profile* profile) {
   html_source->AddString("aboutObsoleteSystemURL",
                          ObsoleteSystem::GetLinkURL());
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) || \
+    BUILDFLAG(GOOGLE_CHROME_FOR_TESTING_BRANDING)
   html_source->AddString("aboutTermsURL", chrome::kChromeUITermsURL);
   html_source->AddLocalizedString("aboutProductTos",
                                   IDS_ABOUT_TERMS_OF_SERVICE);
@@ -714,8 +717,8 @@ void AddPerformanceStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
   html_source->AddBoolean(
-      "highEfficiencyDefaultHeuristicMode",
-      performance_manager::features::kHighEfficiencyDefaultHeuristicMode.Get());
+      "highEfficiencyShowRecommendedBadge",
+      performance_manager::features::kHighEfficiencyShowRecommendedBadge.Get());
 
   html_source->AddString(
       "tabDiscardTimerFiveMinutes",
@@ -759,7 +762,7 @@ void AddPerformanceStrings(content::WebUIDataSource* html_source) {
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_BELOW_THRESHOLD_LABEL,
           base::NumberToString16(
-              performance_manager::user_tuning::UserPerformanceTuningManager::
+              performance_manager::user_tuning::BatterySaverModeManager::
                   kLowBatteryThresholdPercent)));
   html_source->AddString(
       "tabDiscardingExceptionsAddDialogHelp",
@@ -794,8 +797,6 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE},
     {"displayInThisLanguage", IDS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE},
 #endif
-    {"offerToTranslateInThisLanguage",
-     IDS_SETTINGS_LANGUAGES_OFFER_TO_TRANSLATE_IN_THIS_LANGUAGE},
     {"offerToEnableTranslate",
      IDS_SETTINGS_LANGUAGES_OFFER_TO_ENABLE_TRANSLATE},
     {"offerToEnableTranslateSublabel",
@@ -1035,7 +1036,6 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
     {"editAddressRequiredFieldsError",
      IDS_AUTOFILL_EDIT_ADDRESS_REQUIRED_FIELDS_FORM_ERROR},
     {"clearCreditCard", IDS_SETTINGS_CREDIT_CARD_CLEAR},
-    {"creditCardType", IDS_SETTINGS_AUTOFILL_CREDIT_CARD_TYPE_COLUMN_LABEL},
     {"creditCardExpiration", IDS_SETTINGS_CREDIT_CARD_EXPIRATION_DATE},
     {"creditCardName", IDS_SETTINGS_NAME_ON_CREDIT_CARD},
     {"creditCardNickname", IDS_SETTINGS_CREDIT_CARD_NICKNAME},
@@ -1078,8 +1078,12 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_PASSWORDS_AUTOSIGNIN_CHECKBOX_DESC},
     {"passwordsLeakDetectionLabel",
      IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_LABEL},
+    {"passwordsLeakDetectionLabelUpdated",
+     IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_LABEL_UPDATED},
     {"passwordsLeakDetectionGeneralDescription",
      IDS_PASSWORD_MANAGER_LEAK_HELP_MESSAGE},
+    {"passwordsLeakDetectionGeneralDescriptionUpdated",
+     IDS_PASSWORD_MANAGER_LEAK_HELP_MESSAGE_UPDATED},
     {"passwordsLeakDetectionSignedOutEnabledDescription",
      IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_SIGNED_OUT_ENABLED_DESC},
     {"savedPasswordsHeading", IDS_SETTINGS_PASSWORDS_SAVED_HEADING},
@@ -1265,7 +1269,6 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
     {"addVirtualCard", IDS_AUTOFILL_ADD_VIRTUAL_CARD},
     {"removeVirtualCard", IDS_AUTOFILL_REMOVE_VIRTUAL_CARD},
     {"editServerCard", IDS_AUTOFILL_EDIT_SERVER_CREDIT_CARD},
-    {"virtualCardEnabled", IDS_AUTOFILL_VIRTUAL_CARD_ENABLED_LABEL},
     {"virtualCardTurnedOn", IDS_AUTOFILL_VIRTUAL_CARD_TURNED_ON_LABEL},
     {"unenrollVirtualCardDialogTitle",
      IDS_AUTOFILL_VIRTUAL_CARD_UNENROLL_DIALOG_TITLE},
@@ -1370,11 +1373,11 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       autofill::PersonalDataManagerFactory::GetForProfile(profile);
   html_source->AddBoolean(
       "migrationEnabled",
-      !is_guest_mode && autofill::IsCreditCardMigrationEnabled(
-                            personal_data, profile->GetPrefs(),
-                            SyncServiceFactory::GetForProfile(profile),
-                            /*is_test_mode=*/false,
-                            /*log_manager=*/nullptr));
+      !is_guest_mode &&
+          autofill::IsCreditCardMigrationEnabled(
+              personal_data, SyncServiceFactory::GetForProfile(profile),
+              /*is_test_mode=*/false,
+              /*log_manager=*/nullptr));
 
   html_source->AddBoolean("showIbansSettings",
                           autofill::ShouldShowIbanOnSettingsPage(
@@ -1393,11 +1396,6 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       "undoDescription",
       l10n_util::GetStringFUTF16(IDS_UNDO_DESCRIPTION,
                                  undo_accelerator.GetShortcutText()));
-
-  html_source->AddBoolean(
-      "removeCardExpirationAndTypeTitles",
-      base::FeatureList::IsEnabled(
-          autofill::features::kAutofillRemoveCardExpirationAndTypeTitles));
 
   html_source->AddBoolean("showUpiIdSettings",
                           base::FeatureList::IsEnabled(
@@ -1430,6 +1428,20 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       l10n_util::GetPluralStringFUTF16(
           IDS_SETTINGS_PASSWORDS_TIMED_OUT_DESCRIPTION,
           syncer::kPasswordNotesAuthValidity.Get().InMinutes()));
+
+  html_source->AddBoolean(
+      "autofillAccountProfileStorage",
+      base::FeatureList::IsEnabled(
+          autofill::features::kAutofillAccountProfileStorage));
+
+  html_source->AddBoolean(
+      "syncEnableContactInfoDataType",
+      base::FeatureList::IsEnabled(syncer::kSyncEnableContactInfoDataType));
+
+  html_source->AddBoolean(
+      "syncEnableContactInfoDataTypeInTransportMode",
+      base::FeatureList::IsEnabled(
+          syncer::kSyncEnableContactInfoDataTypeInTransportMode));
 }
 
 void AddSignOutDialogStrings(content::WebUIDataSource* html_source,
@@ -1616,6 +1628,8 @@ void AddSyncControlsStrings(content::WebUIDataSource* html_source) {
     {"historyCheckboxLabel", IDS_SETTINGS_HISTORY_CHECKBOX_LABEL},
     {"extensionsCheckboxLabel", IDS_SETTINGS_EXTENSIONS_CHECKBOX_LABEL},
     {"openTabsCheckboxLabel", IDS_SETTINGS_OPEN_TABS_CHECKBOX_LABEL},
+    {"savedTabGroupsCheckboxLabel",
+     IDS_SETTINGS_SAVED_TAB_GROUPS_CHECKBOX_LABEL},
     {"wifiConfigurationsCheckboxLabel",
      IDS_SETTINGS_WIFI_CONFIGURATIONS_CHECKBOX_LABEL},
     {"syncEverythingCheckboxLabel",
@@ -1624,8 +1638,7 @@ void AddSyncControlsStrings(content::WebUIDataSource* html_source) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     {"appCheckboxSublabel", IDS_SETTINGS_APPS_CHECKBOX_SUBLABEL},
 #endif
-    {"enablePaymentsIntegrationCheckboxLabel",
-     IDS_AUTOFILL_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL},
+    {"paymentsCheckboxLabel", IDS_SYNC_DATATYPE_PAYMENTS},
     {"nonPersonalizedServicesSectionLabel",
      IDS_SETTINGS_NON_PERSONALIZED_SERVICES_SECTION_LABEL},
     {"customizeSyncLabel", IDS_SETTINGS_CUSTOMIZE_SYNC},
@@ -1790,6 +1803,8 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_FIVE},
     {"safeBrowsingStandard", IDS_SETTINGS_SAFEBROWSING_STANDARD},
     {"safeBrowsingStandardDesc", IDS_SETTINGS_SAFEBROWSING_STANDARD_DESC},
+    {"safeBrowsingStandardDescUpdated",
+     IDS_SETTINGS_SAFEBROWSING_STANDARD_DESC_UPDATED},
     {"safeBrowsingStandardExpandA11yLabel",
      IDS_SETTINGS_SAFEBROWSING_STANDARD_EXPAND_ACCESSIBILITY_LABEL},
     {"safeBrowsingStandardBulOne",
@@ -1905,6 +1920,9 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "driveSuggestAvailable",
       base::FeatureList::IsEnabled(omnibox::kDocumentProvider));
+  html_source->AddBoolean(
+      "driveSuggestNoSetting",
+      base::FeatureList::IsEnabled(omnibox::kDocumentProviderNoSetting));
 
   bool show_secure_dns = IsSecureDnsAvailable();
   bool link_secure_dns = ShouldLinkSecureDnsOsSettings();
@@ -2453,6 +2471,10 @@ void AddSafetyCheckStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_TOAST_LABEL},
       {"safetyCheckUnusedSitePermissionsUndoLabel",
        IDS_SETTINGS_SAFETY_CHECK_TOAST_UNDO_BUTTON_LABEL},
+      {"safetyCheckUnusedSitePermissionsSettingLabel",
+       IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_SETTING_LABEL},
+      {"safetyCheckUnusedSitePermissionsSettingSublabel",
+       IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_SETTING_SUBLABEL},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }
@@ -3333,10 +3355,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean("enableWebBluetoothNewPermissionsBackend",
                           base::FeatureList::IsEnabled(
                               features::kWebBluetoothNewPermissionsBackend));
-
-  html_source->AddBoolean(
-      "enableMathMLCore",
-      base::FeatureList::IsEnabled(blink::features::kMathMLCore));
 
   html_source->AddBoolean(
       "showPersistentPermissions",

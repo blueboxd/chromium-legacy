@@ -17,6 +17,7 @@ class PrefService;
 namespace ash {
 
 class DeprecationNotificationController;
+class InputDeviceSettingsNotificationController;
 
 class EventRewriterDelegateImpl : public ui::EventRewriterAsh::Delegate {
  public:
@@ -24,6 +25,8 @@ class EventRewriterDelegateImpl : public ui::EventRewriterAsh::Delegate {
   EventRewriterDelegateImpl(
       wm::ActivationClient* activation_client,
       std::unique_ptr<DeprecationNotificationController> deprecation_controller,
+      std::unique_ptr<InputDeviceSettingsNotificationController>
+          input_device_settings_notification_controller,
       InputDeviceSettingsController* input_device_settings_controller);
 
   EventRewriterDelegateImpl(const EventRewriterDelegateImpl&) = delete;
@@ -59,6 +62,15 @@ class EventRewriterDelegateImpl : public ui::EventRewriterAsh::Delegate {
   absl::optional<ui::mojom::SixPackShortcutModifier>
   GetShortcutModifierForSixPackKey(int device_id,
                                    ui::KeyboardCode key_code) override;
+  void NotifyRightClickRewriteBlockedBySetting(
+      ui::mojom::SimulateRightClickModifier blocked_modifier,
+      ui::mojom::SimulateRightClickModifier active_modifier) override;
+
+  void NotifySixPackRewriteBlockedBySetting(
+      ui::KeyboardCode key_code,
+      ui::mojom::SixPackShortcutModifier blocked_modifier,
+      ui::mojom::SixPackShortcutModifier active_modifier,
+      int device_id) override;
 
  private:
   PrefService* GetPrefService() const;
@@ -70,6 +82,8 @@ class EventRewriterDelegateImpl : public ui::EventRewriterAsh::Delegate {
 
   // Handles showing notifications when deprecated event rewrites occur.
   std::unique_ptr<DeprecationNotificationController> deprecation_controller_;
+  std::unique_ptr<InputDeviceSettingsNotificationController>
+      input_device_settings_notification_controller_;
 
   // Tracks whether modifier rewrites should be suppressed or not.
   bool suppress_modifier_key_rewrites_ = false;

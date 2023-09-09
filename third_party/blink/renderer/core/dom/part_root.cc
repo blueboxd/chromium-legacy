@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/dom/part_root.h"
 
+#include "third_party/blink/renderer/core/dom/child_node_part.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_part_root.h"
@@ -15,20 +16,19 @@ namespace blink {
 void PartRoot::Trace(Visitor* visitor) const {
   visitor->Trace(parts_unordered_);
   visitor->Trace(cached_ordered_parts_);
-  ScriptWrappable::Trace(visitor);
 }
 
 void PartRoot::AddPart(Part& new_part) {
   CHECK(!parts_unordered_.Contains(&new_part));
   parts_unordered_.push_back(new_part);
-  cached_parts_list_dirty_ = true;
+  MarkPartsDirty();
 }
 
 void PartRoot::RemovePart(Part& part) {
   auto index = parts_unordered_.Find(&part);
   CHECK_NE(index, kNotFound);
   parts_unordered_.EraseAt(index);
-  cached_parts_list_dirty_ = true;
+  MarkPartsDirty();
 }
 
 namespace {
@@ -110,15 +110,11 @@ HeapVector<Member<Part>> SortPartsInTreeOrder(
     } else {
       lca = LowestCommonAncestor(lca, lca_depth, node, node_depth, lca_depth);
     }
-#if DCHECK_IS_ON()
-    for (auto& part : *entry.value) {
-      DCHECK_EQ(node, part->RelevantNode());
-    }
-#endif
   }
 
   // Then traverse the tree under the LCA and add parts in the order they're
-  // found in the tree.
+  // found in the tree, and for the same Node, in the order they were
+  // constructed.
   for (auto& child : NodeTraversal::InclusiveDescendantsOf(*lca)) {
     auto it = unordered_nodes_to_parts.find(&child);
     if (it != unordered_nodes_to_parts.end()) {
@@ -132,39 +128,42 @@ HeapVector<Member<Part>> SortPartsInTreeOrder(
 
 }  // namespace
 
-DocumentPartRoot* PartRoot::GetDocumentPartRoot() {
-  PartRoot* root = this;
-  while (!root->IsDocumentPartRoot()) {
-    CHECK(root->IsPart());
-    root = static_cast<Part*>(root)->root();
+const DocumentPartRoot* PartRoot::GetDocumentPartRoot() {
+  const PartRoot* root = this;
+  const PartRoot* next;
+  while ((next = root->GetParentPartRoot())) {
+    root = next;
   }
-  return static_cast<DocumentPartRoot*>(root);
+  return static_cast<const DocumentPartRoot*>(root);
 }
 
 // |getParts| must always return the contained parts list subject to these
 // rules:
 //  1. parts are returned in DOM tree order. If more than one part refers to the
 //     same Node, parts are returned in the order they were constructed.
-//  2. parts referring to nodes that aren't in a document, or not in the same
-//     document as the owning DocumentPartRoot, are not returned.
-//  3. invalid parts are not returned. For example, a ChildNodePart whose
-//     previous_node comes after its next_node.
+//  2. parts referring to nodes that aren't in a document, not in the same
+//     document as the owning DocumentPartRoot, or not contained by the root
+//     Element of the DocumentPartRoot are not returned.
+//  3. parts referring to invalid parts are not returned. For example, a
+//     ChildNodePart whose previous_node comes after its next_node.
 HeapVector<Member<Part>> PartRoot::RebuildPartsList() {
   CHECK(cached_parts_list_dirty_);
   NodesToParts unordered_nodes_to_parts;
-  DocumentPartRoot* root = GetDocumentPartRoot();
+  const DocumentPartRoot* root = GetDocumentPartRoot();
   if (!root) {
     return HeapVector<Member<Part>>();
   }
-  Document* root_document = root->GetDocument();
-  CHECK(root_document);
+  Document& root_document = root->GetDocument();
   for (Part* part : parts_unordered_) {
     if (!part->IsValid() || part->GetDocument() != root_document) {
       continue;
     }
-    Node* node = part->RelevantNode();
-    CHECK(node->isConnected());
-    CHECK_EQ(&node->GetDocument(), root_document);
+    Node* node = part->NodeToSortBy();
+    if (!root->rootContainer()->contains(node)) {
+      continue;
+    }
+    DCHECK_EQ(part->root()->GetDocumentPartRoot(), root);
+    CHECK_EQ(node->GetDocument(), root_document);
     auto result = unordered_nodes_to_parts.insert(node, nullptr);
     if (result.is_new_entry) {
       result.stored_value->value =
@@ -178,20 +177,30 @@ HeapVector<Member<Part>> PartRoot::RebuildPartsList() {
 HeapVector<Member<Part>> PartRoot::getParts() {
   if (cached_parts_list_dirty_) {
     cached_ordered_parts_ = RebuildPartsList();
-    // TODO(crbug.com/1453291) Set cached_parts_list_dirty_=false here.
+    cached_parts_list_dirty_ = false;
   }
   return cached_ordered_parts_;
 }
 
-std::ostream& operator<<(std::ostream& ostream, const PartRoot& part) {
-  return ostream << part.ToString().Utf8();
+// static
+PartRoot* PartRoot::GetPartRootFromUnion(PartRootUnion* root_union) {
+  if (root_union->IsChildNodePart()) {
+    return root_union->GetAsChildNodePart();
+  }
+  CHECK(root_union->IsDocumentPartRoot());
+  return root_union->GetAsDocumentPartRoot();
 }
 
-std::ostream& operator<<(std::ostream& ostream, const PartRoot* part) {
-  if (!part) {
-    return ostream << "null";
+// static
+PartRootUnion* PartRoot::GetUnionFromPartRoot(PartRoot* root) {
+  if (!root) {
+    return nullptr;
   }
-  return ostream << *part;
+  if (root->IsDocumentPartRoot()) {
+    return MakeGarbageCollected<PartRootUnion>(
+        static_cast<DocumentPartRoot*>(root));
+  }
+  return MakeGarbageCollected<PartRootUnion>(static_cast<ChildNodePart*>(root));
 }
 
 }  // namespace blink

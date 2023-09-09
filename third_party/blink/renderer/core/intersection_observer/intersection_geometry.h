@@ -31,12 +31,15 @@ class CORE_EXPORT IntersectionGeometry {
   // See comment of IntersectionObserver::kMinimumThreshold.
   static constexpr float kMinimumThreshold = std::numeric_limits<float>::min();
 
+  static constexpr gfx::Vector2dF kInfiniteScrollDelta{
+      std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+
   enum Flags {
     // These flags should passed to the constructor
     kShouldReportRootBounds = 1 << 0,
     kShouldComputeVisibility = 1 << 1,
     kShouldTrackFractionOfRoot = 1 << 2,
-    kShouldUseReplacedContentRect = 1 << 3,
+    kForFrameViewportIntersection = 1 << 3,
     kShouldConvertToCSSPixels = 1 << 4,
     // Applies to boxes. If true, OverflowClipRect() is used if necessary
     // instead of BorderBoundingBox().
@@ -132,11 +135,18 @@ class CORE_EXPORT IntersectionGeometry {
   bool IsIntersecting() const { return threshold_index_ > 0; }
   bool IsVisible() const { return flags_ & kIsVisible; }
 
+  gfx::Vector2dF MinScrollDeltaToUpdate() const {
+    return min_scroll_delta_to_update_;
+  }
+
   bool CanUseCachedRectsForTesting() const { return ShouldUseCachedRects(); }
 
  private:
   bool RootIsImplicit() const { return flags_ & kRootIsImplicit; }
   bool ShouldUseCachedRects() const { return flags_ & kShouldUseCachedRects; }
+  bool IsForFrameViewportIntersection() const {
+    return flags_ & kForFrameViewportIntersection;
+  }
 
   struct RootAndTarget {
     STACK_ALLOCATED();
@@ -151,18 +161,22 @@ class CORE_EXPORT IntersectionGeometry {
       kTargetInSubFrame,
       // The target can't be scrolled in the root by any scroller.
       kNotScrollable,
-      // The target can be scrolled in the root by the root only.
+      // The target can be scrolled in the root by the root only, without any
+      // intermediate clippers (scroll containers or not).
       kScrollableByRootOnly,
-      // The target can be scrolled in the root by intermediate scrollers.
-      kScrollableByIntermediateScrollers,
+      // The target can be scrolled in the root, with intermediate clippers
+      // (scroll containers or not).
+      kScrollableWithIntermediateClippers,
     };
-    Relationship relationship;
+    Relationship relationship = kInvalid;
+    // This is used only when relationship is kScrollable*.
+    bool has_filter = false;
 
    private:
     static const LayoutObject* GetTargetLayoutObject(
         const Element& target_element);
     const LayoutObject* GetRootLayoutObject(const Node* root_node) const;
-    Relationship ComputeRelationship(bool root_is_implicit) const;
+    void ComputeRelationship(bool root_is_implicit);
   };
   RootAndTarget PrepareComputeGeometry(const Node* root_node,
                                        const Element& target_element,
@@ -182,17 +196,17 @@ class CORE_EXPORT IntersectionGeometry {
                   CachedRects* cached_rects = nullptr);
   unsigned FirstThresholdGreaterThan(float ratio,
                                      const Vector<float>& thresholds) const;
-  void ComputeMinScrollDeltaToUpdate(
-      RootAndTarget::Relationship relationship,
+  gfx::Vector2dF ComputeMinScrollDeltaToUpdate(
+      const RootAndTarget& root_and_target,
       const gfx::Transform& target_to_document_transform,
       const gfx::Transform& root_to_document_transform,
-      const Vector<float>& thresholds,
-      CachedRects* cached_rects) const;
+      const Vector<float>& thresholds) const;
 
   PhysicalRect target_rect_;
   PhysicalRect intersection_rect_;
   PhysicalRect unclipped_intersection_rect_;
   PhysicalRect root_rect_;
+  gfx::Vector2dF min_scroll_delta_to_update_;
   unsigned flags_;
   double intersection_ratio_ = 0;
   unsigned threshold_index_ = 0;

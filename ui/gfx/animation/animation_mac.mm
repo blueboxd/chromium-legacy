@@ -29,7 +29,7 @@ bool Animation::ScrollAnimationsEnabledBySystem() {
 
   bool enabled = false;
   id value = nil;
-  value = [[NSUserDefaults standardUserDefaults]
+  value = [NSUserDefaults.standardUserDefaults
       objectForKey:@"NSScrollAnimationEnabled"];
   if (value)
     enabled = [value boolValue];

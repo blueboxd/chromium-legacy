@@ -9,7 +9,6 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/gmock_callback_support.h"
-#include "base/test/repeating_test_future.h"
 #include "base/test/test_future.h"
 #include "base/uuid.h"
 #include "build/build_config.h"
@@ -55,7 +54,6 @@
 
 namespace {
 
-using ::base::test::RepeatingTestFuture;
 using ::base::test::RunClosure;
 using ::base::test::TestFuture;
 using ::testing::ElementsAre;
@@ -397,11 +395,11 @@ class ChromeHidTestHelper {
 
     // Disconnect all four devices. The `mock_client` should be notified only
     // for the devices it has permission to access.
-    RepeatingTestFuture<device::mojom::HidDeviceInfoPtr> device_removed_future;
+    TestFuture<device::mojom::HidDeviceInfoPtr> device_removed_future;
     EXPECT_CALL(mock_client, DeviceRemoved)
         .Times(2)
         .WillRepeatedly(
-            [&](auto d) { device_removed_future.AddValue(std::move(d)); });
+            [&](auto d) { device_removed_future.SetValue(std::move(d)); });
     RemoveDevice(allowed_device1);
     RemoveDevice(allowed_device2);
     RemoveDevice(other_device1);
@@ -411,9 +409,9 @@ class ChromeHidTestHelper {
 
     // Reconnect all four devices. The `mock_client` should be notified only for
     // the devices it has permission to access.
-    RepeatingTestFuture<device::mojom::HidDeviceInfoPtr> device_added_future;
+    TestFuture<device::mojom::HidDeviceInfoPtr> device_added_future;
     EXPECT_CALL(mock_client, DeviceAdded).Times(2).WillRepeatedly([&](auto d) {
-      device_added_future.AddValue(std::move(d));
+      device_added_future.SetValue(std::move(d));
     });
     AddDevice(allowed_device1);
     AddDevice(allowed_device2);
@@ -534,8 +532,9 @@ class ChromeHidTestHelper {
         hid_connection_client.InitWithNewPipeAndPassReceiver());
     TestFuture<mojo::PendingRemote<device::mojom::HidConnection>>
         pending_remote_future;
-    if (supports_hid_connection_tracker_)
+    if (supports_hid_connection_tracker_) {
       EXPECT_CALL(hid_connection_tracker(), IncrementConnectionCount(origin));
+    }
     hid_service->Connect(device->guid, std::move(hid_connection_client),
                          pending_remote_future.GetCallback());
     mojo::Remote<device::mojom::HidConnection> connection;
@@ -590,8 +589,9 @@ class ChromeHidTestHelper {
         hid_connection_client.InitWithNewPipeAndPassReceiver());
     TestFuture<mojo::PendingRemote<device::mojom::HidConnection>>
         pending_remote_future;
-    if (supports_hid_connection_tracker_)
+    if (supports_hid_connection_tracker_) {
       EXPECT_CALL(hid_connection_tracker(), IncrementConnectionCount(origin));
+    }
     hid_service->Connect(device->guid, std::move(hid_connection_client),
                          pending_remote_future.GetCallback());
     mojo::Remote<device::mojom::HidConnection> connection;
@@ -647,8 +647,9 @@ class ChromeHidTestHelper {
         hid_connection_client.InitWithNewPipeAndPassReceiver());
     TestFuture<mojo::PendingRemote<device::mojom::HidConnection>>
         pending_remote_future;
-    if (supports_hid_connection_tracker_)
+    if (supports_hid_connection_tracker_) {
       EXPECT_CALL(hid_connection_tracker(), IncrementConnectionCount(origin));
+    }
     hid_service->Connect(device->guid, std::move(hid_connection_client),
                          pending_remote_future.GetCallback());
     mojo::Remote<device::mojom::HidConnection> connection;
@@ -713,8 +714,9 @@ class ChromeHidTestHelper {
         hid_connection_client.InitWithNewPipeAndPassReceiver());
     TestFuture<mojo::PendingRemote<device::mojom::HidConnection>>
         pending_remote_future;
-    if (supports_hid_connection_tracker_)
+    if (supports_hid_connection_tracker_) {
       EXPECT_CALL(hid_connection_tracker(), IncrementConnectionCount(origin));
+    }
     hid_service->Connect(device->guid, std::move(hid_connection_client),
                          pending_remote_future.GetCallback());
     mojo::Remote<device::mojom::HidConnection> connection;
@@ -1033,11 +1035,13 @@ class ChromeHidDelegateServiceWorkerTest
 };
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-class EnableWebHidOnExtensionServiceWorkerHelper {
+class DisableWebHidOnExtensionServiceWorkerHelper {
  public:
-  EnableWebHidOnExtensionServiceWorkerHelper() {
+  DisableWebHidOnExtensionServiceWorkerHelper() {
     scoped_feature_list_.InitWithFeatures(
-        {features::kEnableWebHidOnExtensionServiceWorker}, {});
+        /*enabled_features=*/{},
+        /*disabled_features=*/{
+            features::kEnableWebHidOnExtensionServiceWorker});
   }
 
  private:
@@ -1047,34 +1051,44 @@ class EnableWebHidOnExtensionServiceWorkerHelper {
 class ChromeHidDelegateExtensionServiceWorkerTest
     : public ChromeHidDelegateServiceWorkerTestBase {
  public:
+  ChromeHidDelegateExtensionServiceWorkerTest() {
+    supports_hid_connection_tracker_ = true;
+  }
   // ChromeHidTestHelper
   void SetUpOriginUrl() override { SetUpExtensionOriginUrl(); }
 };
 
-class ChromeHidDelegateExtensionServiceWorkerFeatureEnabledTest
+class ChromeHidDelegateExtensionServiceWorkerFeatureDisabledTest
     : public ChromeHidDelegateExtensionServiceWorkerTest,
-      public EnableWebHidOnExtensionServiceWorkerHelper {
+      public DisableWebHidOnExtensionServiceWorkerHelper {
  public:
-  ChromeHidDelegateExtensionServiceWorkerFeatureEnabledTest() {
-    supports_hid_connection_tracker_ = true;
+  ChromeHidDelegateExtensionServiceWorkerFeatureDisabledTest() {
+    // There is no hid connection tracker activity when
+    // features::kEnableWebHidOnExtensionServiceWorker is disabled.
+    supports_hid_connection_tracker_ = false;
   }
 };
-
-class ChromeHidDelegateServiceWorkerTestFeatureEnabledTest
-    : public ChromeHidDelegateServiceWorkerTest,
-      public EnableWebHidOnExtensionServiceWorkerHelper {};
 
 class ChromeHidDelegateExtensionRenderFrameTest
     : public ChromeHidDelegateRenderFrameTestBase {
  public:
+  ChromeHidDelegateExtensionRenderFrameTest() {
+    supports_hid_connection_tracker_ = true;
+  }
   // ChromeHidTestHelper
   void SetUpOriginUrl() override { SetUpExtensionOriginUrl(); }
 };
 
-class ChromeHidDelegateExtensionRenderFrameFeatureEnabledTest
+class ChromeHidDelegateExtensionRenderFrameFeatureDisabledTest
     : public ChromeHidDelegateExtensionRenderFrameTest,
-      public EnableWebHidOnExtensionServiceWorkerHelper {};
-
+      public DisableWebHidOnExtensionServiceWorkerHelper {
+ public:
+  ChromeHidDelegateExtensionRenderFrameFeatureDisabledTest() {
+    supports_hid_connection_tracker_ = false;
+  }
+  // ChromeHidTestHelper
+  void SetUpOriginUrl() override { SetUpExtensionOriginUrl(); }
+};
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 }  // namespace
@@ -1112,16 +1126,12 @@ TEST_F(ChromeHidDelegateRenderFrameTest, ConnectAndNavigateCrossDocument) {
   TestConnectAndNavigateCrossDocument(web_contents());
 }
 
-TEST_F(ChromeHidDelegateExtensionServiceWorkerTest, HidServiceNotConnected) {
+TEST_F(ChromeHidDelegateExtensionServiceWorkerFeatureDisabledTest,
+       HidServiceNotConnected) {
   TestHidServiceNotConnected();
 }
 
 TEST_F(ChromeHidDelegateServiceWorkerTest, HidServiceNotConnected) {
-  TestHidServiceNotConnected();
-}
-
-TEST_F(ChromeHidDelegateServiceWorkerTestFeatureEnabledTest,
-       HidServiceNotConnected) {
   TestHidServiceNotConnected();
 }
 
@@ -1165,43 +1175,37 @@ TEST_F(ChromeHidDelegateExtensionRenderFrameTest,
   TestConnectAndNavigateCrossDocument(web_contents());
 }
 
-TEST_F(ChromeHidDelegateExtensionRenderFrameTest,
+TEST_F(ChromeHidDelegateExtensionRenderFrameFeatureDisabledTest,
        ConnectionTrackerOpenDeviceNoIndicatorNoNotification) {
   TestConnectionTrackerOpenDeviceNoConnectionCountUpdate();
 }
 
-TEST_F(ChromeHidDelegateExtensionServiceWorkerFeatureEnabledTest,
-       AddChangeRemoveDevice) {
+TEST_F(ChromeHidDelegateExtensionServiceWorkerTest, AddChangeRemoveDevice) {
   TestAddChangeRemoveDevice();
 }
 
-TEST_F(ChromeHidDelegateExtensionServiceWorkerFeatureEnabledTest,
-       NoPermissionDevice) {
+TEST_F(ChromeHidDelegateExtensionServiceWorkerTest, NoPermissionDevice) {
   TestNoPermissionDevice();
 }
 
-TEST_F(ChromeHidDelegateExtensionServiceWorkerFeatureEnabledTest,
-       ReconnectHidService) {
+TEST_F(ChromeHidDelegateExtensionServiceWorkerTest, ReconnectHidService) {
   TestReconnectHidService();
 }
 
-TEST_F(ChromeHidDelegateExtensionServiceWorkerFeatureEnabledTest,
-       RevokeDevicePermission) {
+TEST_F(ChromeHidDelegateExtensionServiceWorkerTest, RevokeDevicePermission) {
   TestRevokeDevicePermission();
 }
 
-TEST_F(ChromeHidDelegateExtensionServiceWorkerFeatureEnabledTest,
+TEST_F(ChromeHidDelegateExtensionServiceWorkerTest,
        RevokeDevicePermissionEphemeral) {
   TestRevokeDevicePermissionEphemeral();
 }
 
-TEST_F(ChromeHidDelegateExtensionServiceWorkerFeatureEnabledTest,
-       ConnectAndDisconnect) {
+TEST_F(ChromeHidDelegateExtensionServiceWorkerTest, ConnectAndDisconnect) {
   TestConnectAndDisconnect(/*web_contents=*/nullptr);
 }
 
-TEST_F(ChromeHidDelegateExtensionServiceWorkerFeatureEnabledTest,
-       ConnectAndRemove) {
+TEST_F(ChromeHidDelegateExtensionServiceWorkerTest, ConnectAndRemove) {
   TestConnectAndRemove(/*web_contents=*/nullptr);
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)

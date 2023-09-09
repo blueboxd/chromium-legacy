@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include <memory>
-#include <string>
 
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
@@ -36,11 +35,6 @@ class ProcessMonitor;
 #if BUILDFLAG(IS_LINUX)
 class PressureMetricsReporter;
 #endif  // BUILDFLAG(IS_LINUX)
-
-#if BUILDFLAG(IS_ANDROID)
-bool IsBundleForMixedDeviceAccordingToVersionCode(
-    const std::string& version_code);
-#endif
 
 namespace chrome {
 void AddMetricsExtraParts(ChromeBrowserMainParts* main_parts);

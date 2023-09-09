@@ -59,6 +59,7 @@
 #include "ui/events/test/events_test_utils.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/vector2d_f.h"
+#include "ui/gl/test/gl_test_support.h"
 #include "ui/views/widget/widget.h"
 
 using ::testing::_;
@@ -299,8 +300,8 @@ TEST_P(PointerTest, SetCursor) {
 
   constexpr gfx::Size buffer_size(10, 10);
   std::unique_ptr<Surface> pointer_surface(new Surface);
-  std::unique_ptr<Buffer> pointer_buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Buffer> pointer_buffer =
+      std::make_unique<SolidColorBuffer>(SkColors::kRed, buffer_size);
   pointer_surface->Attach(pointer_buffer.get());
   pointer_surface->Commit();
 
@@ -310,7 +311,8 @@ TEST_P(PointerTest, SetCursor) {
 
   const viz::CompositorRenderPass* last_render_pass;
   {
-    viz::SurfaceId surface_id = pointer->host_window()->GetSurfaceId();
+    viz::SurfaceId surface_id =
+        *pointer->host_window()->layer()->GetSurfaceId();
     viz::SurfaceManager* surface_manager = GetSurfaceManager();
     ASSERT_TRUE(surface_manager->GetSurfaceForId(surface_id)->HasActiveFrame());
     const viz::CompositorFrame& frame =
@@ -326,7 +328,8 @@ TEST_P(PointerTest, SetCursor) {
 
   // Verify that adjustment to hotspot resulted in new frame.
   {
-    viz::SurfaceId surface_id = pointer->host_window()->GetSurfaceId();
+    viz::SurfaceId surface_id =
+        *pointer->host_window()->layer()->GetSurfaceId();
     viz::SurfaceManager* surface_manager = GetSurfaceManager();
     ASSERT_TRUE(surface_manager->GetSurfaceForId(surface_id)->HasActiveFrame());
     const viz::CompositorFrame& frame =
@@ -392,8 +395,8 @@ TEST_P(PointerTest, SetCursorType) {
   // Set the pointer with surface after setting pointer type.
   constexpr gfx::Size buffer_size(10, 10);
   std::unique_ptr<Surface> pointer_surface(new Surface);
-  std::unique_ptr<Buffer> pointer_buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Buffer> pointer_buffer =
+      std::make_unique<SolidColorBuffer>(SkColors::kRed, buffer_size);
   pointer_surface->Attach(pointer_buffer.get());
   pointer_surface->Commit();
 
@@ -401,7 +404,8 @@ TEST_P(PointerTest, SetCursorType) {
   test::WaitForLastFrameAck(pointer.get());
 
   {
-    viz::SurfaceId surface_id = pointer->host_window()->GetSurfaceId();
+    viz::SurfaceId surface_id =
+        *pointer->host_window()->layer()->GetSurfaceId();
     viz::SurfaceManager* surface_manager = GetSurfaceManager();
     ASSERT_TRUE(surface_manager->GetSurfaceForId(surface_id)->HasActiveFrame());
     const viz::CompositorFrame& frame =
@@ -464,8 +468,8 @@ TEST_P(PointerTest, SetCursorAndSetCursorType) {
 
   constexpr gfx::Size buffer_size(10, 10);
   std::unique_ptr<Surface> pointer_surface(new Surface);
-  std::unique_ptr<Buffer> pointer_buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Buffer> pointer_buffer =
+      std::make_unique<SolidColorBuffer>(SkColors::kRed, buffer_size);
   pointer_surface->Attach(pointer_buffer.get());
   pointer_surface->Commit();
 
@@ -475,7 +479,8 @@ TEST_P(PointerTest, SetCursorAndSetCursorType) {
   test::WaitForLastFramePresentation(pointer.get());
 
   {
-    viz::SurfaceId surface_id = pointer->host_window()->GetSurfaceId();
+    viz::SurfaceId surface_id =
+        *pointer->host_window()->layer()->GetSurfaceId();
     viz::SurfaceManager* surface_manager = GetSurfaceManager();
     ASSERT_TRUE(surface_manager->GetSurfaceForId(surface_id)->HasActiveFrame());
     const viz::CompositorFrame& frame =
@@ -495,7 +500,8 @@ TEST_P(PointerTest, SetCursorAndSetCursorType) {
   test::WaitForLastFramePresentation(pointer.get());
 
   {
-    viz::SurfaceId surface_id = pointer->host_window()->GetSurfaceId();
+    viz::SurfaceId surface_id =
+        *pointer->host_window()->layer()->GetSurfaceId();
     viz::SurfaceManager* surface_manager = GetSurfaceManager();
     ASSERT_TRUE(surface_manager->GetSurfaceForId(surface_id)->HasActiveFrame());
     const viz::CompositorFrame& frame =
@@ -2034,9 +2040,8 @@ TEST_P(PointerTest, SetCursorWithSurfaceChange) {
 
   MockPointerDelegate delegate;
   Seat seat;
-  auto pointer = std::make_unique<Pointer>(&delegate, &seat);
-  pointer->SetHostWindowForTesting(std::make_unique<PointerTestHostWindow>(),
-                                   "TestPointerHostWindow");
+  auto pointer = std::make_unique<Pointer>(
+      &delegate, &seat, std::make_unique<PointerTestHostWindow>());
   ui::test::EventGenerator* generator = AshTestBase::GetEventGenerator();
 
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface))
@@ -2089,6 +2094,56 @@ TEST_P(PointerTest, SetCursorWithSurfaceChange) {
   // Check that we get the correct cursor bitmap.
   SkBitmap cursor_bitmap = cursor_client->GetCursor().custom_bitmap();
   EXPECT_EQ(SK_ColorGREEN, cursor_bitmap.getColor(0, 0));
+
+  EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
+  pointer.reset();
+}
+
+TEST_P(PointerTest, SetCursorBitmapFromBuffer) {
+  auto shell_surface = test::ShellSurfaceBuilder({10, 10}).BuildShellSurface();
+  auto* surface = shell_surface->surface_for_testing();
+
+  MockPointerDelegate delegate;
+  Seat seat;
+  std::unique_ptr<Pointer> pointer(new Pointer(&delegate, &seat));
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+  aura::client::CursorClient* cursor_client = aura::client::GetCursorClient(
+      shell_surface->GetWidget()->GetNativeWindow()->GetRootWindow());
+
+  EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(delegate, OnPointerFrame()).Times(1);
+  EXPECT_CALL(delegate, OnPointerEnter(surface, gfx::PointF(), 0));
+  generator.MoveMouseTo(surface->window()->GetBoundsInScreen().origin());
+
+  constexpr gfx::Size buffer_size(10, 10);
+  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size,
+                                               gfx::BufferFormat::RGBA_8888);
+  ASSERT_TRUE(gpu_memory_buffer->Map());
+  ASSERT_NE(nullptr, gpu_memory_buffer->memory(0));
+  ASSERT_NE(0, gpu_memory_buffer->stride(0));
+  // Set the gpu memory buffer to yellow.
+  constexpr uint8_t yellow_rgba[] = {255u, 255u, 0u, 255u};
+  gl::GLTestSupport::SetBufferDataToColor(
+      buffer_size.width(), buffer_size.height(), gpu_memory_buffer->stride(0),
+      0, gfx::BufferFormat::RGBA_8888, yellow_rgba,
+      static_cast<uint8_t*>(gpu_memory_buffer->memory(0)));
+  gpu_memory_buffer->Unmap();
+
+  std::unique_ptr<Surface> pointer_surface(new Surface);
+  std::unique_ptr<Buffer> pointer_buffer(
+      new Buffer(std::move(gpu_memory_buffer)));
+  pointer_surface->Attach(pointer_buffer.get());
+  pointer_surface->Commit();
+
+  // Cursor bitmap should be created from the buffer.
+  pointer->SetCursor(pointer_surface.get(), gfx::Point());
+
+  // Check that we get the correct cursor bitmap.
+  SkBitmap cursor_bitmap = cursor_client->GetCursor().custom_bitmap();
+  // The color at (0,0) should be yellow.
+  EXPECT_EQ(SK_ColorYELLOW, cursor_bitmap.getColor(0, 0));
 
   EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
   pointer.reset();

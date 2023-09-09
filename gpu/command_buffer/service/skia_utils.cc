@@ -7,8 +7,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "components/viz/common/resources/resource_format.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/config/gpu_finch_features.h"
@@ -97,8 +95,6 @@ GrContextOptions GetDefaultGrContextOptions() {
   // in a more granular way.  For OOPR-Canvas we want 8, but for other purposes,
   // a texture atlas with sample count of 4 would be sufficient
   options.fInternalMultisampleCount = 8;
-  options.fAllowMSAAOnNewIntel =
-      base::FeatureList::IsEnabled(features::kEnableMSAAOnNewIntelGPUs);
 
   options.fSuppressMipmapSupport =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -307,7 +303,9 @@ GrVkImageInfo CreateGrVkImageInfo(VulkanImage* image) {
       (image->format() == VK_FORMAT_R8G8B8A8_UNORM ||
        image->format() == VK_FORMAT_R8G8B8_UNORM ||
        image->format() == VK_FORMAT_B8G8R8A8_UNORM ||
-       image->format() == VK_FORMAT_B8G8R8_UNORM)) {
+       image->format() == VK_FORMAT_B8G8R8_UNORM ||
+       image->format() == VK_FORMAT_R8_UNORM ||
+       image->format() == VK_FORMAT_R8G8_UNORM)) {
     image_info.fImageTiling = VK_IMAGE_TILING_OPTIMAL;
   } else {
     image_info.fImageTiling = image->image_tiling();

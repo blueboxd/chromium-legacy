@@ -15,7 +15,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/network/http_cache_backend_file_operations_factory.h"
-#include "content/browser/network/network_service_util_internal.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/network_service_util.h"
@@ -70,7 +69,7 @@ class NonSandboxedNetworkServiceBrowserTest : public ContentBrowserTest {
     scoped_feature_list_.InitWithFeatures(
         /*enabled_features=*/{},
         /*disabled_features=*/kDisabledFeatures);
-    ForceOutOfProcessNetworkServiceImpl();
+    ForceOutOfProcessNetworkService();
   }
 
   void SetUpOnMainThread() override {
@@ -116,7 +115,7 @@ class SandboxedHttpCacheBrowserTest : public ContentBrowserTest {
 #endif
     };
     scoped_feature_list_.InitWithFeatures(enabled_features, {});
-    ForceOutOfProcessNetworkServiceImpl();
+    ForceOutOfProcessNetworkService();
   }
 
   void SetUp() override {
@@ -401,8 +400,16 @@ IN_PROC_BROWSER_TEST_F(SandboxedHttpCacheBrowserTest,
   IgnoreNetworkServiceCrashes();
 }
 
+// TODO(crbug.com/1459570): Flaky on at least Mac11.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_CreateSimpleCacheWithParentDirectoryTraversal \
+  DISABLED_CreateSimpleCacheWithParentDirectoryTraversal
+#else
+#define MAYBE_CreateSimpleCacheWithParentDirectoryTraversal \
+  CreateSimpleCacheWithParentDirectoryTraversal
+#endif
 IN_PROC_BROWSER_TEST_F(SandboxedHttpCacheBrowserTest,
-                       CreateSimpleCacheWithParentDirectoryTraversal) {
+                       MAYBE_CreateSimpleCacheWithParentDirectoryTraversal) {
   base::RunLoop run_loop;
 
   const base::FilePath root_path = GetTempDirPath();

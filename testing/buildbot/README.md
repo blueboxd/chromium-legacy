@@ -51,8 +51,8 @@ exclusions to
 on trybots.
 * [filters/](./filters/) -- filters out tests that shouldn't be
 run in a particular mode.
-* [manage.py](./manage.py) -- makes sure the buildbot configuration json is in
-a standardized format.
+* [check.py](./check.py) -- makes sure the buildbot configuration json
+satisifies certain criteria.
 
 ### Starlark inputs
 
@@ -322,9 +322,11 @@ and a matrix compound suite with this variants definition:
       {
         'identifier': 'device_iPhone_X_13.3',
         'swarming': {
-          'dimensions': {
-            'os': 'iOS-iPhone10,3'
-          },
+          'dimension_sets': [
+            {
+              'os': 'iOS-iPhone10,3'
+            }
+          ]
         }
       }
     ]
@@ -361,9 +363,11 @@ we can expect the following output:
   },
   'name': 'basic_unittests_device_iPhone_X_13.3',
   'swarming': {
-    'dimensions': {
-      'os': 'iOS-iPhone10,3'
-    },
+    'dimension_sets': [
+      {
+        'os': 'iOS-iPhone10,3'
+      }
+    ]
   },
   'test': 'basic_unittests'
 }
@@ -379,7 +383,7 @@ dimension sets.
 [waterfalls.pyl](./waterfalls.pyl) describes the waterfalls, the bots on those
 waterfalls, and the test suites which those bots run.
 
-A bot can specify a `swarming` dictionary including `dimensions`. These
+A bot can specify a `swarming` dictionary including `dimension_sets`. These
 parameters are applied to all tests that are run on this bot. Since most bots
 run their tests on Swarming, this is one of the mechanisms that dramatically
 reduces redundancy compared to maintaining the JSON files by hand.

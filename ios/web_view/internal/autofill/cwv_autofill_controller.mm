@@ -729,11 +729,11 @@ using UserDecision =
 
 - (void)attachListenersForBottomSheet:
             (const std::vector<autofill::FieldRendererId>&)rendererIds
-                           forFrameId:(const std::string&)frameId {
+                              inFrame:(web::WebFrame*)frame {
   // No op.
 }
 
-- (void)detachListenersForBottomSheet:(const std::string&)frameId {
+- (void)detachListenersForBottomSheet:(web::WebFrame*)frame {
   // No op.
 }
 

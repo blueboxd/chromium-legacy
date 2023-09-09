@@ -351,8 +351,6 @@ HttpNetworkSessionParams SpdySessionDependencies::CreateSessionParams(
   params.enable_user_alternate_protocol_ports =
       session_deps->enable_user_alternate_protocol_ports;
   params.enable_quic = session_deps->enable_quic;
-  params.enable_server_push_cancellation =
-      session_deps->enable_server_push_cancellation;
   params.spdy_session_max_recv_window_size =
       session_deps->session_max_recv_window_size;
   params.spdy_session_max_queued_capped_frames =
@@ -1020,24 +1018,6 @@ HashValue GetTestHashValue(uint8_t label) {
   HashValue hash_value(HASH_VALUE_SHA256);
   memset(hash_value.data(), label, hash_value.size());
   return hash_value;
-}
-
-TestServerPushDelegate::TestServerPushDelegate() = default;
-
-TestServerPushDelegate::~TestServerPushDelegate() = default;
-
-void TestServerPushDelegate::OnPush(
-    std::unique_ptr<ServerPushHelper> push_helper,
-    const NetLogWithSource& session_net_log) {
-  push_helpers[push_helper->GetURL()] = std::move(push_helper);
-}
-
-bool TestServerPushDelegate::CancelPush(GURL url) {
-  auto itr = push_helpers.find(url);
-  DCHECK(itr != push_helpers.end());
-  itr->second->Cancel();
-  push_helpers.erase(itr);
-  return true;
 }
 
 }  // namespace test

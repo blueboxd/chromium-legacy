@@ -19,7 +19,9 @@ extern NSString* const kManageSyncTableViewAccessibilityIdentifier;
 extern NSString* const kSyncEverythingItemAccessibilityIdentifier;
 extern NSString* const kSyncBookmarksIdentifier;
 extern NSString* const kSyncOmniboxHistoryIdentifier;
+extern NSString* const kSyncHistoryAndTabsIdentifier;
 extern NSString* const kSyncPasswordsIdentifier;
+extern NSString* const kSyncPaymentsIdentifier;
 extern NSString* const kSyncOpenTabsIdentifier;
 extern NSString* const kSyncAutofillIdentifier;
 extern NSString* const kSyncPreferencesIdentifier;
@@ -62,12 +64,21 @@ typedef NS_ENUM(NSInteger, SyncSettingsItemType) {
   ReadingListDataTypeItemType,
   // kSyncPreferences.
   SettingsDataTypeItemType,
-  // Item for kAutofillWalletImportEnabled.
-  AutocompleteWalletItemType,
+  // kPayments.
+  PaymentsDataTypeItemType,
+  // Item for the header and the footer of the types list.
+  TypesListHeaderOrFooterType,
+  // SignOutSectionIdentifier section.
   // Sign out and turn off sync item,
   SignOutAndTurnOffSyncItemType,
-  // Sign out item,
+  // Sign out item.
   SignOutItemType,
+  // Sign out item footer.
+  SignOutItemFooterType,
+  // Manage Google Account item.
+  ManageGoogleAccountItemType,
+  // Manage accounts on this device item.
+  ManageAccountsItemType,
   // AdvancedSettingsSectionIdentifier section.
   // Encryption item.
   EncryptionItemType,
@@ -75,16 +86,16 @@ typedef NS_ENUM(NSInteger, SyncSettingsItemType) {
   GoogleActivityControlsItemType,
   // Data from Chrome sync.
   DataFromChromeSync,
+  // SyncErrorsSectionIdentifier section.
   // Sync errors.
   PrimaryAccountReauthErrorItemType,
   ShowPassphraseDialogErrorItemType,
   SyncNeedsTrustedVaultKeyErrorItemType,
   SyncTrustedVaultRecoverabilityDegradedErrorItemType,
   SyncDisabledByAdministratorErrorItemType,
-  // Sign out item footer.
-  SignOutItemFooterType,
-  // Item for the header and the footer of the types list.
-  TypesListHeaderOrFooterType,
+  // Indicates the errors related to the signed in not syncing account.
+  AccountErrorMessageItemType,
+  // AccountSectionIdentifier section.
   // Item for the signed in identity.
   IdentityAccountItemType,
 };

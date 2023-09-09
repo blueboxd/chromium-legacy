@@ -154,6 +154,7 @@ java_strings_grd("ui_strings_grd") {
 
 android_resources("ui_java_resources") {
   sources = [
+    "java/res/anim/emphasized.xml",
     "java/res/anim/menu_enter.xml",
     "java/res/anim/menu_enter_from_bottom.xml",
     "java/res/anim/menu_enter_from_bottom_left.xml",
@@ -591,6 +592,7 @@ robolectric_binary("ui_junit_tests") {
     "//third_party/androidx:androidx_test_runner_java",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/mockito:mockito_java",
+    "//ui/accessibility:ax_base_java",
     "//ui/android:ui_android_features_java",
     "//ui/base/ime/mojom:mojom_java",
     "//url:gurl_java",

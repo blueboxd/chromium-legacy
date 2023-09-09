@@ -115,18 +115,18 @@ if (is_fuchsia) {
   import("//third_party/fuchsia-sdk/sdk/build/fidl_library.gni")
 }
 
+# The Rust implementation of base::JSONReader. NaCl depends on base and doesn't
+# have a Rust toolchain, so we need a fallback to C++ for it until it removes
+# its dependency on //base.
+#
 # TODO(crbug.com/1280708): Drop toolchain_has_rust and move the C++ parser into
 # components/nacl to just run in-process there. Don't compile base::JSONReader
 # on NaCL at all.
-#
-# TODO(crbug.com/1304707): Drop toolchain_has_rust after we have support for all
-# our toolchains: Linux x86 is missing in order to build for Android.
-#
-# Rust to C++ type conversions.
-build_rust_base_conversions = toolchain_has_rust && enable_rust_base_conversions
-
-# The Rust implementation of base::JSONReader.
 build_rust_json_reader = toolchain_has_rust && enable_rust_json
+
+# Rust to C++ type conversions. Also can not be enabled while NaCl depends on
+# //base.
+build_rust_base_conversions = toolchain_has_rust && enable_rust_base_conversions
 
 assert(build_rust_base_conversions || !build_rust_json_reader,
        "Cannot enable Rust JSON decoder without also base conversions")
@@ -203,57 +203,6 @@ buildflag_header("message_pump_buildflags") {
   header = "message_pump_buildflags.h"
   header_dir = "base/message_loop"
   flags = [ "ENABLE_MESSAGE_PUMP_EPOLL=$enable_message_pump_epoll" ]
-}
-
-if (is_apple) {
-  # TODO(https://crbug.com/1280317): Merge back into the `base` target once all
-  # .mm files are ARCed.
-  source_set("base_arc") {
-    sources = [
-      "apple/backup_util.h",
-      "apple/backup_util.mm",
-      "apple/bundle_locations.h",
-      "apple/bundle_locations.mm",
-      "apple/owned_objc.h",
-      "apple/owned_objc.mm",
-      "file_version_info_mac.h",
-      "file_version_info_mac.mm",
-      "files/file_util_mac.mm",
-      "message_loop/message_pump_mac.h",
-      "message_loop/message_pump_mac.mm",
-      "strings/sys_string_conversions_mac.mm",
-      "system/sys_info_apple.mm",
-      "threading/platform_thread_mac.mm",
-      "time/time_mac.mm",
-    ]
-    defines = [ "BASE_IMPLEMENTATION" ]
-    configs += [ "//build/config/compiler:enable_arc" ]
-    deps = [
-      "//base:base_static",
-      "//base/numerics:base_numerics",
-      "//build:blink_buildflags",
-      "//third_party/abseil-cpp:absl",
-    ]
-    if (is_mac) {
-      sources += [
-        "enterprise_util_mac.mm",
-        "mac/authorization_util.h",
-        "mac/authorization_util.mm",
-        "mac/launch_application.h",
-        "mac/launch_application.mm",
-        "system/sys_info_mac.mm",
-      ]
-      frameworks = [
-        "AppKit.framework",
-        "Foundation.framework",
-        "OpenDirectory.framework",
-        "Security.framework",
-      ]
-    }
-    if (is_ios) {
-      deps += [ "//base/ios" ]
-    }
-  }
 }
 
 # Base and everything it depends on should be a static library rather than
@@ -355,7 +304,6 @@ component("base") {
     "containers/lru_cache.h",
     "containers/small_map.h",
     "containers/span.h",
-    "containers/span_rust.h",
     "containers/stack.h",
     "containers/stack_container.h",
     "containers/unique_ptr_adapters.h",
@@ -521,7 +469,6 @@ component("base") {
     "message_loop/message_pump_for_io.h",
     "message_loop/message_pump_for_ui.h",
     "message_loop/message_pump_type.h",
-    "message_loop/timer_slack.h",
     "message_loop/work_id_provider.cc",
     "message_loop/work_id_provider.h",
     "metrics/bucket_ranges.cc",
@@ -698,10 +645,8 @@ component("base") {
     "strings/string_number_conversions.cc",
     "strings/string_number_conversions.h",
     "strings/string_number_conversions_internal.h",
-    "strings/string_piece.cc",
     "strings/string_piece.h",
     "strings/string_piece_forward.h",
-    "strings/string_piece_rust.h",
     "strings/string_split.cc",
     "strings/string_split.h",
     "strings/string_split_internal.h",
@@ -718,6 +663,8 @@ component("base") {
     "strings/to_string.h",
     "strings/utf_offset_string_conversions.cc",
     "strings/utf_offset_string_conversions.h",
+    "strings/utf_ostream_operators.cc",
+    "strings/utf_ostream_operators.h",
     "strings/utf_string_conversion_utils.cc",
     "strings/utf_string_conversion_utils.h",
     "strings/utf_string_conversions.cc",
@@ -1058,9 +1005,14 @@ component("base") {
       "process/process_linux.cc",
       "process/process_metrics_linux.cc",
       "threading/platform_thread_linux.cc",
+      "threading/platform_thread_linux_base.cc",
       "threading/thread_type_delegate.cc",
       "threading/thread_type_delegate.h",
     ]
+  }
+
+  if (is_chromeos) {
+    sources += [ "threading/platform_thread_cros.cc" ]
   }
 
   if (is_linux || is_chromeos || is_android) {
@@ -1138,6 +1090,11 @@ component("base") {
   ]
 
   if (build_rust_base_conversions) {
+    sources += [
+      "containers/span_rust.h",
+      "strings/string_piece_rust.h",
+    ]
+
     # Base provides conversions between CXX types and base types (e.g.
     # StringPiece).
     public_deps += [ "//build/rust:cxx_cppdeps" ]
@@ -1156,63 +1113,8 @@ component("base") {
   }
 
   if (use_allocator_shim) {
-    sources += [
-      "allocator/partition_allocator/shim/allocator_shim.cc",
-      "allocator/partition_allocator/shim/allocator_shim.h",
-      "allocator/partition_allocator/shim/allocator_shim_internals.h",
-    ]
-    if (use_partition_alloc) {
-      sources += [
-        "allocator/partition_allocator/shim/allocator_shim_default_dispatch_to_partition_alloc.cc",
-        "allocator/partition_allocator/shim/allocator_shim_default_dispatch_to_partition_alloc.h",
-        "allocator/partition_allocator/shim/nonscannable_allocator.cc",
-        "allocator/partition_allocator/shim/nonscannable_allocator.h",
-      ]
-    }
-    if (is_android) {
-      sources += [
-        "allocator/partition_allocator/shim/allocator_shim_override_cpp_symbols.h",
-        "allocator/partition_allocator/shim/allocator_shim_override_linker_wrapped_symbols.h",
-      ]
-      all_dependent_configs += [ "//base/allocator:wrap_malloc_symbols" ]
-    }
     if (is_apple) {
-      sources += [
-        "allocator/early_zone_registration_mac.h",
-        "allocator/partition_allocator/shim/allocator_shim_override_mac_default_zone.h",
-        "allocator/partition_allocator/shim/allocator_shim_override_mac_symbols.h",
-        "allocator/partition_allocator/shim/early_zone_registration_constants.h",
-      ]
-      # configs += [ "//base/allocator:mac_no_default_new_delete_symbols" ]
-    }
-    if (is_chromeos || is_linux) {
-      sources += [
-        "allocator/partition_allocator/shim/allocator_shim_override_cpp_symbols.h",
-        "allocator/partition_allocator/shim/allocator_shim_override_glibc_weak_symbols.h",
-        "allocator/partition_allocator/shim/allocator_shim_override_libc_symbols.h",
-      ]
-    }
-    if (is_win) {
-      sources += [
-        "allocator/partition_allocator/shim/allocator_shim_override_ucrt_symbols_win.h",
-        "allocator/partition_allocator/shim/winheap_stubs_win.cc",
-        "allocator/partition_allocator/shim/winheap_stubs_win.h",
-      ]
-    }
-
-    if (!use_partition_alloc_as_malloc) {
-      if (is_android) {
-        sources += [ "allocator/partition_allocator/shim/allocator_shim_default_dispatch_to_linker_wrapped_symbols.cc" ]
-      }
-      if (is_apple) {
-        sources += [ "allocator/partition_allocator/shim/allocator_shim_default_dispatch_to_mac_zoned_malloc.cc" ]
-      }
-      if (is_chromeos || is_linux) {
-        sources += [ "allocator/partition_allocator/shim/allocator_shim_default_dispatch_to_glibc.cc" ]
-      }
-      if (is_win) {
-        sources += [ "allocator/partition_allocator/shim/allocator_shim_default_dispatch_to_winheap.cc" ]
-      }
+      sources += [ "allocator/early_zone_registration_mac.h" ]
     }
   }
 
@@ -1392,6 +1294,13 @@ component("base") {
       "debug/allocation_trace.cc",
       "debug/allocation_trace.h",
     ]
+
+    if (build_allocation_trace_recorder_full_reporting) {
+      sources += [
+        "debug/allocation_trace_reporting.cc",
+        "debug/allocation_trace_reporting.h",
+      ]
+    }
   }
 
   if (is_robolectric) {
@@ -1618,7 +1527,8 @@ component("base") {
       "rand_util_nacl.cc",
       "sync_socket_nacl.cc",
       "system/sys_info_nacl.cc",
-      "threading/platform_thread_linux.cc",
+      "threading/platform_thread_linux_base.cc",
+      "threading/platform_thread_nacl.cc",
     ]
   } else {
     sources += [
@@ -2025,21 +1935,79 @@ component("base") {
     ]
   }
 
+  # Mac or iOS.
+  if (is_apple) {
+    sources += [
+      "apple/backup_util.h",
+      "apple/backup_util.mm",
+      "apple/bridging.h",
+      "apple/bundle_locations.h",
+      "apple/bundle_locations.mm",
+      "apple/owned_objc.h",
+      "apple/owned_objc.mm",
+      "file_version_info_mac.h",
+      "file_version_info_mac.mm",
+      "files/file_util_mac.mm",
+      "mac/call_with_eh_frame.cc",
+      "mac/call_with_eh_frame.h",
+      "mac/call_with_eh_frame_asm.S",
+      "mac/dispatch_source_mach.cc",
+      "mac/dispatch_source_mach.h",
+      "mac/foundation_util.h",
+      "mac/foundation_util.mm",
+      "mac/mac_logging.h",
+      "mac/mac_logging.mm",
+      "mac/mach_logging.cc",
+      "mac/mach_logging.h",
+      "mac/scoped_mach_port.cc",
+      "mac/scoped_mach_port.h",
+      "mac/scoped_mach_vm.cc",
+      "mac/scoped_mach_vm.h",
+      "mac/scoped_nsautorelease_pool.cc",
+      "mac/scoped_nsautorelease_pool.h",
+      "mac/scoped_nsobject.h",
+      "mac/scoped_objc_class_swizzler.h",
+      "mac/scoped_objc_class_swizzler.mm",
+      "mac/scoped_typeref.h",
+      "memory/platform_shared_memory_mapper_mac.cc",
+      "memory/platform_shared_memory_region_mac.cc",
+      "message_loop/message_pump_mac.h",
+      "message_loop/message_pump_mac.mm",
+      "process/process_metrics_apple.cc",
+      "profiler/module_cache_mac.cc",
+      "strings/sys_string_conversions_mac.mm",
+      "synchronization/waitable_event_mac.cc",
+      "system/sys_info_apple.mm",
+      "threading/platform_thread_mac.mm",
+      "threading/atomic.c",
+      "time/time_mac.mm",
+    ]
+    frameworks += [
+      "CoreFoundation.framework",
+      "CoreGraphics.framework",
+      "CoreText.framework",
+      "Foundation.framework",
+      "Security.framework",
+    ]
+    configs += [ "//build/config/compiler:enable_arc" ]
+  }
+
   # Desktop Mac.
   if (is_mac) {
     sources += [
-      "allocator/partition_allocator/shim/allocator_interception_mac.h",
-      "allocator/partition_allocator/shim/allocator_interception_mac.mm",
-      "allocator/partition_allocator/shim/malloc_zone_functions_mac.cc",
-      "allocator/partition_allocator/shim/malloc_zone_functions_mac.h",
       "enterprise_util.cc",
       "enterprise_util.h",
+      "enterprise_util_mac.mm",
       "files/file_path_watcher_fsevents.cc",
       "files/file_path_watcher_fsevents.h",
       "files/file_path_watcher_kqueue.cc",
       "files/file_path_watcher_kqueue.h",
       "files/file_path_watcher_mac.cc",
+      "mac/authorization_util.h",
+      "mac/authorization_util.mm",
       "mac/close_nocancel.cc",
+      "mac/launch_application.h",
+      "mac/launch_application.mm",
       "mac/launchd.cc",
       "mac/launchd.h",
       "mac/mac_util.h",
@@ -2088,6 +2056,7 @@ component("base") {
       "profiler/suspendable_thread_delegate_mac.cc",
       "profiler/suspendable_thread_delegate_mac.h",
       "synchronization/waitable_event_watcher_mac.cc",
+      "system/sys_info_mac.mm",
       "time/time_exploded_posix.cc",
     ]
 
@@ -2101,87 +2070,6 @@ component("base") {
       "IOKit.framework",
       "OpenDirectory.framework",
     ]
-  }
-
-  # Mac or iOS.
-  if (is_apple) {
-    sources += [
-      "apple/bridging.h",
-      "mac/call_with_eh_frame.cc",
-      "mac/call_with_eh_frame.h",
-      "mac/call_with_eh_frame_asm.S",
-      "mac/dispatch_source_mach.cc",
-      "mac/dispatch_source_mach.h",
-      "mac/foundation_util.h",
-      "mac/foundation_util.mm",
-      "mac/mac_logging.h",
-      "mac/mac_logging.mm",
-      "mac/mach_logging.cc",
-      "mac/mach_logging.h",
-      "mac/scoped_block.h",
-      "mac/scoped_mach_port.cc",
-      "mac/scoped_mach_port.h",
-      "mac/scoped_mach_vm.cc",
-      "mac/scoped_mach_vm.h",
-      "mac/scoped_nsautorelease_pool.cc",
-      "mac/scoped_nsautorelease_pool.h",
-      "mac/scoped_nsobject.h",
-      "mac/scoped_objc_class_swizzler.h",
-      "mac/scoped_objc_class_swizzler.mm",
-      "mac/scoped_typeref.h",
-      "memory/platform_shared_memory_mapper_mac.cc",
-      "memory/platform_shared_memory_region_mac.cc",
-      "process/process_metrics_apple_internal.cc",
-      "process/process_metrics_apple_internal.h",
-      "profiler/module_cache_mac.cc",
-      "synchronization/waitable_event_mac.cc",
-      "threading/atomic.c",
-    ]
-    frameworks += [
-      "CoreFoundation.framework",
-      "CoreGraphics.framework",
-      "CoreText.framework",
-      "Foundation.framework",
-      "Security.framework",
-    ]
-    public_deps += [ ":base_arc" ]
-    allow_circular_includes_from = [ ":base_arc" ]
-  }
-
-  # Linux.
-  if (is_linux || is_chromeos) {
-    # TODO(brettw) this will need to be parameterized at some point.
-    linux_configs = []
-    if (use_glib) {
-      linux_configs += [ "//build/config/linux:glib" ]
-    }
-
-    configs += linux_configs
-    all_dependent_configs += linux_configs
-    sources += [ "system/sys_info_linux.cc" ]
-    if (!is_cronet_build) {
-      # These dependencies are not required on Android, and in the case
-      # of xdg_mime must be excluded due to licensing restrictions.
-      sources += [
-        "nix/mime_util_xdg.cc",
-        "nix/mime_util_xdg.h",
-        "nix/xdg_util.cc",
-        "nix/xdg_util.h",
-      ]
-      defines += [ "USE_SYMBOLIZE" ]
-      deps += [
-        "//base/third_party/symbolize",
-        "//base/third_party/xdg_mime",
-        "//base/third_party/xdg_user_dirs",
-      ]
-    }
-  } else {
-    if (!is_android) {
-      sources -= [
-        "linux_util.cc",
-        "linux_util.h",
-      ]
-    }
   }
 
   # iOS
@@ -2227,7 +2115,7 @@ component("base") {
     }
 
     public_deps += [ "//base/ios" ]
-    allow_circular_includes_from += [ "//base/ios" ]
+    allow_circular_includes_from = [ "//base/ios" ]
 
     if (is_cronet_build) {
       sources += [
@@ -2249,14 +2137,7 @@ component("base") {
         "profiler/suspendable_thread_delegate_mac.h",
       ]
     }
-    if (use_allocator_shim) {
-      sources += [
-        "allocator/partition_allocator/shim/allocator_interception_mac.h",
-        "allocator/partition_allocator/shim/allocator_interception_mac.mm",
-        "allocator/partition_allocator/shim/malloc_zone_functions_mac.cc",
-        "allocator/partition_allocator/shim/malloc_zone_functions_mac.h",
-      ]
-    } else {
+    if (!use_allocator_shim) {
       sources -= [
         "sampling_heap_profiler/poisson_allocation_sampler.cc",
         "sampling_heap_profiler/poisson_allocation_sampler.h",
@@ -2272,6 +2153,42 @@ component("base") {
     }
 
     frameworks += [ "UIKit.framework" ]
+  }
+
+  # Linux.
+  if (is_linux || is_chromeos) {
+    # TODO(brettw) this will need to be parameterized at some point.
+    linux_configs = []
+    if (use_glib) {
+      linux_configs += [ "//build/config/linux:glib" ]
+    }
+
+    configs += linux_configs
+    all_dependent_configs += linux_configs
+    sources += [ "system/sys_info_linux.cc" ]
+    if (!is_cronet_build) {
+      # These dependencies are not required on Android, and in the case
+      # of xdg_mime must be excluded due to licensing restrictions.
+      sources += [
+        "nix/mime_util_xdg.cc",
+        "nix/mime_util_xdg.h",
+        "nix/xdg_util.cc",
+        "nix/xdg_util.h",
+      ]
+      defines += [ "USE_SYMBOLIZE" ]
+      deps += [
+        "//base/third_party/symbolize",
+        "//base/third_party/xdg_mime",
+        "//base/third_party/xdg_user_dirs",
+      ]
+    }
+  } else {
+    if (!is_android) {
+      sources -= [
+        "linux_util.cc",
+        "linux_util.h",
+      ]
+    }
   }
 
   if (use_blink) {
@@ -2532,6 +2449,7 @@ buildflag_header("debugging_buildflags") {
     "ENABLE_STACK_TRACE_LINE_NUMBERS=$enable_stack_trace_line_numbers",
     "ENABLE_COMMANDLINE_SEQUENCE_CHECKS=$enable_commandline_sequence_checks",
     "ENABLE_ALLOCATION_STACK_TRACE_RECORDER=$build_allocation_stack_trace_recorder",
+    "ENABLE_ALLOCATION_TRACE_RECORDER_FULL_REPORTING=$build_allocation_trace_recorder_full_reporting",
   ]
 }
 
@@ -2993,6 +2911,14 @@ if (is_apple) {
   }
 }
 
+# Generated file whose location is verified in DIR_GEN_TEST_DATA_ROOT test.
+generated_file("generate_file_for_test") {
+  testonly = true
+  outputs = [ "$target_gen_dir/generated_file_for_test.txt" ]
+  data = [ "$target_gen_dir/generated_file_for_test.txt" ]
+  contents = "Hello world"
+}
+
 if (is_ios) {
   bundle_data("base_test_proto_bundle_data") {
     testonly = true
@@ -3000,15 +2926,19 @@ if (is_ios) {
     sources = [ "$root_gen_dir/base/test/test_proto.descriptor" ]
     outputs = [ "{{bundle_resources_dir}}/gen/base/test/{{source_file_part}}" ]
   }
+
+  bundle_data("base_generated_test_file_bundle_data") {
+    testonly = true
+    public_deps = [ ":generate_file_for_test" ]
+    sources = [ "$target_gen_dir/generated_file_for_test.txt" ]
+    outputs = [ "{{bundle_resources_dir}}/gen/base/{{source_file_part}}" ]
+  }
 }
 
 if (is_apple) {
   source_set("base_unittests_noarc") {
     testonly = true
-    sources = [
-      "mac/bind_objc_block_unittest.mm",
-      "mac/scoped_nsobject_unittest.mm",
-    ]
+    sources = [ "mac/scoped_nsobject_unittest.mm" ]
     deps = [
       ":base",
       "//base/test:test_support",
@@ -3101,6 +3031,24 @@ source_set("arm_bti_testfunctions") {
       "allocator/partition_allocator/arm_bti_test_functions.S",
       "allocator/partition_allocator/arm_bti_test_functions.h",
     ]
+  }
+}
+
+source_set("path_service_unittest") {
+  testonly = true
+
+  sources = [ "path_service_unittest.cc" ]
+
+  deps = [
+    ":base",
+    "//base/test:test_support",
+    "//testing/gtest",
+  ]
+
+  if (is_ios) {
+    deps += [ ":base_generated_test_file_bundle_data" ]
+  } else {
+    data_deps = [ ":generate_file_for_test" ]
   }
 }
 
@@ -3271,7 +3219,6 @@ test("base_unittests") {
     "observer_list_unittest.cc",
     "one_shot_event_unittest.cc",
     "parameter_pack_unittest.cc",
-    "path_service_unittest.cc",
     "pickle_unittest.cc",
     "power_monitor/battery_level_provider_unittest.cc",
     "power_monitor/battery_state_sampler_unittest.cc",
@@ -3327,6 +3274,7 @@ test("base_unittests") {
     "strings/sys_string_conversions_unittest.cc",
     "strings/to_string_test.cc",
     "strings/utf_offset_string_conversions_unittest.cc",
+    "strings/utf_string_conversion_utils_unittest.cc",
     "strings/utf_string_conversions_unittest.cc",
     "substring_set_matcher/string_pattern_unittest.cc",
     "substring_set_matcher/substring_set_matcher_unittest.cc",
@@ -3496,6 +3444,8 @@ test("base_unittests") {
     ":base_stack_sampling_profiler_test_util",
     ":feature_list_buildflags",
     ":i18n",
+    ":partition_alloc_test_support",
+    ":path_service_unittest",
     ":sanitizer_buildflags",
     "//base/allocator:buildflags",
     "//base/test:native_library_test_utils",
@@ -3744,7 +3694,6 @@ test("base_unittests") {
       "apple/backup_util_unittest.mm",
       "mac/bind_objc_block_unittest_arc.mm",
       "mac/foundation_util_unittest.mm",
-      "mac/scoped_nsobject_unittest_arc.mm",
       "strings/sys_string_conversions_mac_unittest.mm",
     ]
     configs += [ "//build/config/compiler:enable_arc" ]
@@ -4232,7 +4181,6 @@ if (is_android) {
       "android/java/src/org/chromium/base/annotations/CalledByNativeForTesting.java",
       "android/java/src/org/chromium/base/annotations/CalledByNativeUnchecked.java",
       "android/java/src/org/chromium/base/annotations/JNINamespace.java",
-      "android/java/src/org/chromium/base/annotations/JniIgnoreNatives.java",
       "android/java/src/org/chromium/base/annotations/NativeClassQualifiedName.java",
       "android/java/src/org/chromium/base/annotations/NativeMethods.java",
     ]
@@ -4959,6 +4907,7 @@ source_set("partition_alloc_test_support") {
     "allocator/partition_allocator/extended_api.h",
     "allocator/partition_allocator/partition_alloc_base/threading/platform_thread_for_testing.h",
     "allocator/partition_allocator/partition_alloc_for_testing.h",
+    "allocator/partition_allocator/pointers/raw_ptr_counting_impl_wrapper_for_test.h",
   ]
   if (is_posix) {
     sources += [ "allocator/partition_allocator/partition_alloc_base/threading/platform_thread_posix_for_testing.cc" ]

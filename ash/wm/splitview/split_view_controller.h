@@ -199,6 +199,9 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   SplitViewDivider* split_view_divider() { return split_view_divider_.get(); }
   bool is_resizing_with_divider() const { return is_resizing_with_divider_; }
   EndReason end_reason() const { return end_reason_; }
+  bool in_snap_group_creation_session() const {
+    return in_snap_group_creation_session_;
+  }
   SplitViewMetricsController* split_view_metrics_controller() {
     return split_view_metrics_controller_.get();
   }
@@ -223,6 +226,10 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // default to check if we can snap to half.
   bool CanSnapWindow(aura::Window* window) const;
   bool CanSnapWindow(aura::Window* window, float snap_ratio) const;
+
+  // Returns true if, after a window is snapped, it will get put into split
+  // overview eventually.
+  bool WillStartOverview() const;
 
   // Returns the snap ratio (if valid) for `window` depending on the default
   // window. Returns null if `window` cannot get snapped. If there is no default
@@ -391,7 +398,9 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // a snap group is dragged without using the `split_view_divider_`.
   void MaybeDetachWindow(aura::Window* dragged_window);
 
-  void OpenOverviewOnTheOtherSideOfTheScreen(SnapPosition snap_position);
+  // Opens partial overview on the opposite side of `snap_position` to update
+  // the window in a snap group.
+  void OpenPartialOverviewToUpdateSnapGroup(SnapPosition snap_position);
 
   // aura::WindowObserver:
   void OnWindowPropertyChanged(aura::Window* window,
@@ -712,6 +721,11 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // The split view type. See SplitViewType for the differences between tablet
   // split view and clamshell split view.
   SplitViewType split_view_type_ = SplitViewType::kTabletType;
+
+  // True if we are currently in a snap group creation session which can either
+  // be active on one window snapped or when updating a window. Both use cases
+  // are behind the feature flag `kSnapGroup`.
+  bool in_snap_group_creation_session_ = false;
 
   // The time when splitview starts. Used for metric collection purpose.
   base::Time splitview_start_time_;

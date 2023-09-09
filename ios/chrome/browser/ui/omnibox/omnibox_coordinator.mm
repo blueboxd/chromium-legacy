@@ -10,6 +10,7 @@
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/feature_engagement/public/tracker.h"
+#import "components/omnibox/browser/omnibox_controller.h"
 #import "components/omnibox/browser/omnibox_edit_model.h"
 #import "components/omnibox/common/omnibox_features.h"
 #import "components/omnibox/common/omnibox_focus_state.h"
@@ -30,9 +31,7 @@
 #import "ios/chrome/browser/shared/public/commands/load_query_commands.h"
 #import "ios/chrome/browser/shared/public/commands/omnibox_commands.h"
 #import "ios/chrome/browser/shared/public/commands/qr_scanner_commands.h"
-#import "ios/chrome/browser/shared/public/commands/thumb_strip_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
-#import "ios/chrome/browser/ui/gestures/view_revealing_animatee.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #import "ios/chrome/browser/ui/omnibox/keyboard_assist/omnibox_assistive_keyboard_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/keyboard_assist/omnibox_assistive_keyboard_views.h"
@@ -212,15 +211,6 @@
   if (![self.textField isFirstResponder]) {
     base::RecordAction(base::UserMetricsAction("MobileOmniboxFocused"));
 
-    // Thumb strip is not necessarily active, so only close it if it is active.
-    if ([self.browser->GetCommandDispatcher()
-            dispatchingForProtocol:@protocol(ThumbStripCommands)]) {
-      id<ThumbStripCommands> thumbStripHandler = HandlerForProtocol(
-          self.browser->GetCommandDispatcher(), ThumbStripCommands);
-      [thumbStripHandler
-          closeThumbStripWithTrigger:ViewRevealTrigger::OmniboxFocus];
-    }
-
     // In multiwindow context, -becomeFirstRepsonder is not enough to get the
     // keyboard input. The window will not automatically become key. Make it key
     // manually. UITextField does this under the hood when tapped from
@@ -254,7 +244,7 @@
     (id<OmniboxPopupPresenterDelegate>)presenterDelegate {
   DCHECK(!_popupCoordinator);
   std::unique_ptr<OmniboxPopupViewIOS> popupView =
-      std::make_unique<OmniboxPopupViewIOS>(_editView->model(),
+      std::make_unique<OmniboxPopupViewIOS>(_editView->controller(),
                                             self.locationBar, _editView.get());
 
   _editView->SetPopupProvider(popupView.get());
@@ -262,7 +252,8 @@
   OmniboxPopupCoordinator* coordinator = [[OmniboxPopupCoordinator alloc]
       initWithBaseViewController:nil
                          browser:self.browser
-          autocompleteController:_editView->model()->autocomplete_controller()
+          autocompleteController:_editView->controller()
+                                     ->autocomplete_controller()
                        popupView:std::move(popupView)];
   coordinator.presenterDelegate = presenterDelegate;
 
@@ -288,6 +279,10 @@
 
 - (id<EditViewAnimatee>)animatee {
   return self.viewController;
+}
+
+- (id<ToolbarOmniboxConsumer>)toolbarOmniboxConsumer {
+  return self.popupCoordinator.toolbarOmniboxConsumer;
 }
 
 #pragma mark Scribble

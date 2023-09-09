@@ -12,7 +12,6 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityEvent;
-import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
@@ -35,7 +34,6 @@ public class AutocompleteEditText
     private static final String TAG = "AutocompleteEdit";
 
     private static final boolean DEBUG = false;
-    private final AccessibilityManager mAccessibilityManager;
 
     private AutocompleteEditTextModelBase mModel;
     private boolean mIgnoreTextChangesForAutocomplete = true;
@@ -49,16 +47,11 @@ public class AutocompleteEditText
      */
     private boolean mDisableTextScrollingFromAutocomplete;
 
-    private boolean mIgnoreImeForTest;
-
     /** Local copy of the OnKeyListener. */
     private @Nullable OnKeyListener mOnKeyListener;
 
     public AutocompleteEditText(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mAccessibilityManager =
-                (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
-
         addTextWatcherForPaste();
     }
 
@@ -95,11 +88,6 @@ public class AutocompleteEditText
      */
     public void onFinishNativeInitialization() {
         mNativeInitialized = true;
-    }
-
-    @VisibleForTesting
-    public AccessibilityManager getAccessibilityManagerForTesting() {
-        return mAccessibilityManager;
     }
 
     private void ensureModel() {
@@ -282,11 +270,6 @@ public class AutocompleteEditText
         return mModel.getInputConnection();
     }
 
-    @VisibleForTesting
-    public void setIgnoreImeForTest(boolean ignore) {
-        mIgnoreImeForTest = ignore;
-    }
-
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
         InputConnection target = super.onCreateInputConnection(outAttrs);
@@ -298,7 +281,6 @@ public class AutocompleteEditText
         if (DEBUG) Log.i(TAG, "onCreateInputConnection: " + target);
         ensureModel();
         InputConnection retVal = mModel.onCreateInputConnection(target);
-        if (mIgnoreImeForTest) return null;
         return retVal;
     }
 
@@ -311,7 +293,6 @@ public class AutocompleteEditText
                 return true;
             }
 
-            if (mIgnoreImeForTest) return true;
             if (mModel == null) return super.dispatchKeyEvent(event);
             return mModel.dispatchKeyEvent(event);
         } finally {
@@ -349,11 +330,6 @@ public class AutocompleteEditText
     @Override
     public void onAutocompleteTextStateChanged(boolean updateDisplay) {
         assert false; // make sure that this method is properly overridden.
-    }
-
-    @Override
-    public boolean isAccessibilityEnabled() {
-        return mAccessibilityManager != null && mAccessibilityManager.isEnabled();
     }
 
     @Override

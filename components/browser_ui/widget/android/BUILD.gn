@@ -139,6 +139,7 @@ android_library("java") {
     "//third_party/androidx:androidx_recyclerview_recyclerview_java",
     "//third_party/androidx:androidx_vectordrawable_vectordrawable_animated_java",
     "//third_party/androidx:androidx_vectordrawable_vectordrawable_java",
+    "//ui/accessibility:ax_base_java",
     "//ui/android:ui_java",
     "//url:gurl_java",
   ]
@@ -224,6 +225,7 @@ android_resources("java_resources") {
     "java/res/drawable/oval_surface_0.xml",
     "java/res/drawable/oval_surface_1.xml",
     "java/res/drawable/oval_surface_2.xml",
+    "java/res/drawable/oval_surface_3.xml",
     "java/res/drawable/query_tile_overlay.xml",
     "java/res/drawable/rectangle_surface_1.xml",
     "java/res/drawable/rounded_rectangle_surface_0.xml",
@@ -267,6 +269,7 @@ android_resources("java_resources") {
     "java/res/values-night/colors.xml",
     "java/res/values-night/dimens.xml",
     "java/res/values-night/drawables.xml",
+    "java/res/values-v31/styles.xml",
     "java/res/values/attrs.xml",
     "java/res/values/colors.xml",
     "java/res/values/dimens.xml",
@@ -414,6 +417,7 @@ robolectric_library("junit") {
     "//third_party/androidx:androidx_test_runner_java",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",
+    "//ui/accessibility:ax_base_java",
     "//ui/android:ui_no_recycler_view_java",
   ]
 }

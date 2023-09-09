@@ -9,7 +9,6 @@
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
 #include "base/values.h"
@@ -192,7 +191,7 @@ class DesktopAttestationServiceTest : public testing::Test {
   }
 
   base::test::TaskEnvironment task_environment_;
-  scoped_refptr<SigningKeyPair> test_key_pair_;
+  std::unique_ptr<SigningKeyPair> test_key_pair_;
   std::unique_ptr<DesktopAttestationService> attestation_service_;
   test::ScopedKeyPersistenceDelegateFactory persistence_delegate_factory_;
   std::unique_ptr<test::MockDeviceTrustKeyManager> mock_key_manager_;

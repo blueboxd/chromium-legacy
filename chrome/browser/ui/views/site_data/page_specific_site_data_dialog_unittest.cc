@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/site_data/page_specific_site_data_dialog.h"
 
 #include "base/test/bind.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -13,7 +12,6 @@
 #include "components/browsing_data/content/fake_browsing_data_model.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/common/content_settings_manager.mojom.h"
-#include "components/page_info/core/features.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/cookie_access_details.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -45,6 +43,10 @@ void ValidateAllowedUnpartitionedSites(
                           [](const auto& site, const auto& expected_site) {
                             return site.origin.host() == expected_site.host();
                           }));
+}
+
+blink::StorageKey CreateFirstPartyStorageKey(const GURL& url) {
+  return blink::StorageKey::CreateFirstParty(url::Origin::Create(url));
 }
 
 }  // namespace
@@ -83,16 +85,12 @@ class PageSpecificSiteDataDialogUnitTest
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    feature_list_.InitAndEnableFeature(page_info::kPageSpecificSiteDataDialog);
     NavigateAndCommit(GURL(kCurrentUrl));
     content_settings::PageSpecificContentSettings::CreateForWebContents(
         web_contents(),
         std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
             web_contents()));
   }
-
- protected:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 TEST_F(PageSpecificSiteDataDialogUnitTest, CookieAccessed) {
@@ -420,10 +418,12 @@ TEST_P(PageSpecificSiteDataDialogStorageUnitTest, StorageAccessed) {
   // displayed in the dialog.
   auto* content_settings = GetContentSettings();
 
-  content_settings->OnStorageAccessed(GetParam(), GURL(kCurrentUrl),
-                                      /*blocked_by_policy=*/false);
-  content_settings->OnStorageAccessed(GetParam(), GURL(kThirdPartyUrl),
-                                      /*blocked_by_policy=*/false);
+  content_settings->OnStorageAccessed(
+      GetParam(), CreateFirstPartyStorageKey(GURL(kCurrentUrl)),
+      /*blocked_by_policy=*/false);
+  content_settings->OnStorageAccessed(
+      GetParam(), CreateFirstPartyStorageKey(GURL(kThirdPartyUrl)),
+      /*blocked_by_policy=*/false);
 
   auto delegate =
       std::make_unique<test::PageSpecificSiteDataDialogTestApi>(web_contents());

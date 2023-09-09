@@ -1011,7 +1011,7 @@ void AppLauncherHandler::HandleUninstallApp(const base::Value::List& args) {
           weak_ptr_factory_.GetWeakPtr());
 
       base::AutoReset<bool> auto_reset(&ignore_changes_, true);
-      web_app_provider_->install_finalizer().UninstallWebApp(
+      web_app_provider_->scheduler().UninstallWebApp(
           extension_id_prompting_, webapps::WebappUninstallSource::kAppsPage,
           std::move(uninstall_success_callback));
     } else {
@@ -1272,7 +1272,7 @@ void AppLauncherHandler::HandleLaunchDeprecatedAppDialog(
 void AppLauncherHandler::OnFaviconForAppInstallFromLink(
     std::unique_ptr<AppInstallInfo> install_info,
     const favicon_base::FaviconImageResult& image_result) {
-  auto web_app = std::make_unique<WebAppInstallInfo>();
+  auto web_app = std::make_unique<web_app::WebAppInstallInfo>();
   web_app->title = install_info->title;
   web_app->start_url = install_info->app_url;
 

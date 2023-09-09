@@ -462,7 +462,7 @@ void ContentBrowserClientImpl::ConfigureNetworkContextParams(
     context_params->file_paths->data_directory = context->GetPath();
     context_params->file_paths->cookie_database_name =
         base::FilePath(FILE_PATH_LITERAL("Cookies"));
-    context_params->http_cache_directory =
+    context_params->file_paths->http_cache_directory =
         ProfileImpl::GetCachePath(context).Append(FILE_PATH_LITERAL("Cache"));
   }
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -676,17 +676,20 @@ void ContentBrowserClientImpl::PersistIsolatedOrigin(
 }
 
 base::OnceClosure ContentBrowserClientImpl::SelectClientCertificate(
+    content::BrowserContext* browser_context,
     content::WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
     net::ClientCertIdentityList client_certs,
     std::unique_ptr<content::ClientCertificateDelegate> delegate) {
 #if BUILDFLAG(IS_ANDROID)
-  return browser_ui::ShowSSLClientCertificateSelector(
-      web_contents, cert_request_info, std::move(delegate));
-#else
+  if (web_contents) {
+    return browser_ui::ShowSSLClientCertificateSelector(
+        web_contents, cert_request_info, std::move(delegate));
+  }
+  // Otherwise, fall through to continuing without a certificate.
+#endif
   delegate->ContinueWithCertificate(nullptr, nullptr);
   return base::OnceClosure();
-#endif
 }
 
 bool ContentBrowserClientImpl::CanCreateWindow(
@@ -1071,8 +1074,7 @@ void ContentBrowserClientImpl::AppendExtraCommandLineSwitches(
         embedder_support::kOriginTrialDisabledFeatures,
         embedder_support::kOriginTrialPublicKey,
     };
-    command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
-                                   std::size(kSwitchNames));
+    command_line->CopySwitchesFrom(browser_command_line, kSwitchNames);
   }
 }
 

@@ -194,6 +194,10 @@ class Surface final : public ui::PropertyHandler {
   // Sets the surface's clip rectangle.
   void SetClipRect(const absl::optional<gfx::RectF>& clip_rect);
 
+  // Sets the surface's clip rectangle on parent surface coordinates.
+  // TODO(crbug.com/1457446): Remove this.
+  void SetClipRectOnParentSurface(const absl::optional<gfx::RectF>& clip_rect);
+
   // Sets the surface's transformation matrix.
   void SetSurfaceTransform(const gfx::Transform& transform);
 
@@ -286,6 +290,8 @@ class Surface final : public ui::PropertyHandler {
   void SetAcquireFence(std::unique_ptr<gfx::GpuFence> gpu_fence);
   // Returns whether the surface has an uncommitted acquire fence.
   bool HasPendingAcquireFence() const;
+  // Returns whether the surface has a committed acquire fence.
+  bool HasAcquireFence() const;
 
   // Request a callback when the buffer attached at the next commit is
   // no longer used by that commit.
@@ -315,10 +321,9 @@ class Surface final : public ui::PropertyHandler {
   // This will append contents for surface and its descendants to frame.
   void AppendSurfaceHierarchyContentsToFrame(
       const gfx::PointF& origin,
-      float device_scale_factor,
-      bool client_submits_in_pixel_coords,
       bool needs_full_damage,
       FrameSinkResourceManager* resource_manager,
+      absl::optional<float> device_scale_factor,
       viz::CompositorFrame* frame);
 
   // Returns true if surface is in synchronized mode.
@@ -482,6 +487,12 @@ class Surface final : public ui::PropertyHandler {
     return state_.overlay_priority_hint;
   }
 
+  // Returns the buffer scale of the last committed buffer.
+  float GetBufferScale() const { return state_.basic_state.buffer_scale; }
+
+  // Returns the last committed buffer.
+  Buffer* GetBuffer();
+
  private:
   struct State {
     State();
@@ -582,10 +593,17 @@ class Surface final : public ui::PropertyHandler {
     // The hint for overlay prioritization
     // Persisted between commits.
     OverlayPriority overlay_priority_hint = OverlayPriority::REGULAR;
-    // The clip rect for this surface, in the parent's coordinate space. This
+    // The clip rect for this surface, in the local coordinate space. This
     // should only be set for subsurfaces.
     // Persisted between commits.
     absl::optional<gfx::RectF> clip_rect;
+    // True if `clip_rect` is on parent coordinate space. `clip_rect` should be
+    // on local surface coordinates, but the outdated implementation was on
+    // parent coordinate space. This flag is to support the fallback
+    // implementation.
+    // Persisted between commits.
+    // TODO(crbug.com/1457446): Remove this.
+    bool clip_rect_is_parent_coordinates = false;
     // The transform to apply when drawing this surface. This should only be set
     // for subsurfaces, and doesn't apply to children of this surface.
     // Persisted between commits.
@@ -609,9 +627,8 @@ class Surface final : public ui::PropertyHandler {
   // Puts the current surface into a draw quad, and appends the draw quads into
   // the |frame|.
   void AppendContentsToFrame(const gfx::PointF& origin,
-                             float device_scale_factor,
-                             bool client_submits_in_pixel_coords,
                              bool needs_full_damage,
+                             absl::optional<float> device_scale_factor,
                              viz::CompositorFrame* frame);
 
   // Update surface content size base on current buffer size.

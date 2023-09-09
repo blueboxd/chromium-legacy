@@ -73,7 +73,6 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/sync/base/command_line_switches.h"
-#include "components/sync/base/invalidation_helper.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/sync_scheduler_impl.h"
 #include "components/sync/invalidations/sync_invalidations_service_impl.h"
@@ -81,7 +80,6 @@
 #include "components/sync/service/sync_service_impl.h"
 #include "components/sync/service/sync_user_settings.h"
 #include "components/sync/test/fake_server_network_resources.h"
-#include "components/trusted_vault/command_line_switches.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
@@ -122,6 +120,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
+#include "components/trusted_vault/command_line_switches.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
 using syncer::SyncServiceImpl;
@@ -353,6 +352,7 @@ void SyncTest::SetUpCommandLine(base::CommandLine* cl) {
     cl->AppendSwitch(switches::kAllowProfilesOutsideUserDir);
   }
 
+#if !BUILDFLAG(IS_ANDROID)
   if (cl->HasSwitch(syncer::kSyncServiceURL)) {
     // TODO(crbug.com/1243653): setup real SecurityDomainService if
     // server_type_ == EXTERNAL_LIVE_SERVER.
@@ -361,6 +361,7 @@ void SyncTest::SetUpCommandLine(base::CommandLine* cl) {
     cl->AppendSwitchASCII(trusted_vault::kTrustedVaultServiceURLSwitch,
                           "broken_url");
   }
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   cl->AppendSwitch(ash::switches::kIgnoreUserProfileMappingForTests);

@@ -6,23 +6,39 @@
 
 #include <memory>
 
-#include "base/debug/dump_without_crashing.h"
 #include "base/functional/bind.h"
 #include "base/time/time.h"
 #include "chrome/browser/signin/bound_session_credentials/bound_session_cookie_observer.h"
 #include "chrome/browser/signin/bound_session_credentials/bound_session_refresh_cookie_fetcher.h"
 #include "chrome/browser/signin/bound_session_credentials/bound_session_refresh_cookie_fetcher_impl.h"
+#include "chrome/browser/signin/bound_session_credentials/session_binding_helper.h"
 #include "components/signin/public/base/signin_client.h"
-#include "net/base/net_errors.h"
-#include "net/http/http_status_code.h"
+
+namespace {
+using Result = BoundSessionRefreshCookieFetcher::Result;
+}
 
 BoundSessionCookieControllerImpl::BoundSessionCookieControllerImpl(
+    unexportable_keys::UnexportableKeyService& key_service,
     SigninClient* client,
     const GURL& url,
-    const std::string& cookie_name,
+    const std::vector<std::string>& cookie_names,
+    base::span<const uint8_t> wrapped_key,
     Delegate* delegate)
-    : BoundSessionCookieController(url, cookie_name, delegate),
-      client_(client) {}
+    : BoundSessionCookieController(url, cookie_names, delegate),
+      key_service_(key_service),
+      client_(client) {
+  // TODO(b/273920907): Mark `wrapped_key` as non-optional when
+  // `BoundSessionCookieRefreshServiceImpl` uses only
+  // explicitly registered sessions.
+  if (!wrapped_key.empty()) {
+    session_binding_helper_ = std::make_unique<SessionBindingHelper>(
+        key_service_.get(), wrapped_key, /*session_id=*/"");
+    // Preemptively load the binding key to speed up the generation of binding
+    // key assertion.
+    session_binding_helper_->MaybeLoadBindingKey();
+  }
+}
 
 BoundSessionCookieControllerImpl::~BoundSessionCookieControllerImpl() {
   // On shutdown or session termination, resume blocked requests if any.
@@ -30,13 +46,7 @@ BoundSessionCookieControllerImpl::~BoundSessionCookieControllerImpl() {
 }
 
 void BoundSessionCookieControllerImpl::Initialize() {
-  // `base::Unretained(this)` is safe because `this` owns
-  // `cookie_observer_`.
-  cookie_observer_ = std::make_unique<BoundSessionCookieObserver>(
-      client_, url_, cookie_name_,
-      base::BindRepeating(
-          &BoundSessionCookieControllerImpl::SetCookieExpirationTimeAndNotify,
-          base::Unretained(this)));
+  CreateBoundCookiesObservers();
   MaybeRefreshCookie();
 }
 
@@ -53,26 +63,48 @@ void BoundSessionCookieControllerImpl::OnRequestBlockedOnCookie(
 }
 
 void BoundSessionCookieControllerImpl::SetCookieExpirationTimeAndNotify(
+    const std::string& cookie_name,
     base::Time expiration_time) {
-  if (cookie_expiration_time_ == expiration_time) {
+  const base::TimeDelta kCookieExpirationThreshold = base::Seconds(15);
+  if (!expiration_time.is_null()) {
+    expiration_time -= kCookieExpirationThreshold;
+  }
+
+  auto it = bound_cookies_info_.find(cookie_name);
+  CHECK(it != bound_cookies_info_.end());
+  if (it->second == expiration_time) {
     return;
   }
 
-  // TODO(b/263264391): Subtract a safety margin (e.g 2 seconds) from the cookie
-  // expiration time.
-  cookie_expiration_time_ = expiration_time;
+  it->second = expiration_time;
   if (IsCookieFresh()) {
     ResumeBlockedRequests();
   }
   delegate_->OnCookieExpirationDateChanged();
+  MaybeScheduleCookieRotation();
+}
+
+void BoundSessionCookieControllerImpl::CreateBoundCookiesObservers() {
+  for (const auto& [cookie_name, _] : bound_cookies_info_) {
+    // `base::Unretained(this)` is safe because `this` owns
+    // `cookie_observer_`.
+    std::unique_ptr<BoundSessionCookieObserver> cookie_observer =
+        std::make_unique<BoundSessionCookieObserver>(
+            client_, url_, cookie_name,
+            base::BindRepeating(&BoundSessionCookieControllerImpl::
+                                    SetCookieExpirationTimeAndNotify,
+                                base::Unretained(this)));
+    bound_cookies_observers_.push_back(std::move(cookie_observer));
+  }
 }
 
 std::unique_ptr<BoundSessionRefreshCookieFetcher>
 BoundSessionCookieControllerImpl::CreateRefreshCookieFetcher() const {
   return refresh_cookie_fetcher_factory_for_testing_.is_null()
-             ? std::make_unique<BoundSessionRefreshCookieFetcherImpl>(client_)
+             ? std::make_unique<BoundSessionRefreshCookieFetcherImpl>(
+                   client_, url_, cookie_name())
              : refresh_cookie_fetcher_factory_for_testing_.Run(client_, url_,
-                                                               cookie_name_);
+                                                               cookie_name());
 }
 
 bool BoundSessionCookieControllerImpl::IsCookieFresh() {
@@ -80,6 +112,7 @@ bool BoundSessionCookieControllerImpl::IsCookieFresh() {
 }
 
 void BoundSessionCookieControllerImpl::MaybeRefreshCookie() {
+  cookie_refresh_timer_.Stop();
   if (refresh_cookie_fetcher_) {
     return;
   }
@@ -102,11 +135,30 @@ void BoundSessionCookieControllerImpl::OnCookieRefreshFetched(
 
   // Persistent errors result in session termination.
   // Transient errors have no impact on future requests.
-  if (result ==
-      BoundSessionRefreshCookieFetcher::Result::kServerPersistentError) {
+
+  if (result == Result::kServerPersistentError ||
+      result == Result::kServerUnexepectedResponse) {
     delegate_->TerminateSession();
     // `this` should be deleted.
   }
+}
+
+void BoundSessionCookieControllerImpl::MaybeScheduleCookieRotation() {
+  const base::TimeDelta kCookieRefreshInterval = base::Minutes(2);
+  base::TimeDelta refresh_in =
+      cookie_expiration_time() - base::Time::Now() - kCookieRefreshInterval;
+  if (!refresh_in.is_positive()) {
+    MaybeRefreshCookie();
+    return;
+  }
+
+  // If a refresh task is already scheduled, this will reschedule it.
+  // `base::Unretained(this)` is safe because `this` owns
+  // `cookie_rotation_timer_`.
+  cookie_refresh_timer_.Start(
+      FROM_HERE, refresh_in,
+      base::BindRepeating(&BoundSessionCookieControllerImpl::MaybeRefreshCookie,
+                          base::Unretained(this)));
 }
 
 void BoundSessionCookieControllerImpl::ResumeBlockedRequests() {

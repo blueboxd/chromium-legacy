@@ -76,6 +76,7 @@
 #include "components/safe_browsing/core/browser/db/fake_database_manager.h"
 #include "components/safe_browsing/core/browser/db/util.h"
 #include "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/core/browser/hashprefix_realtime/hash_realtime_utils.h"
 #include "components/safe_browsing/core/browser/safe_browsing_metrics_collector.h"
 #include "components/safe_browsing/core/browser/verdict_cache_manager.h"
 #include "components/safe_browsing/core/common/features.h"
@@ -151,6 +152,8 @@ const char kPageWithCrossOriginMaliciousIframe[] =
     "/safe_browsing/malware3.html";
 const char kCrossOriginMaliciousIframeHost[] = "malware.test";
 const char kMaliciousIframe[] = "/safe_browsing/malware_iframe.html";
+const char kMaliciousMultipleIframesPage[] =
+    "/safe_browsing/malware_multiple_iframes.html";
 const char kUnrelatedUrl[] = "https://www.google.com";
 const char kEnhancedProtectionUrl[] = "chrome://settings/security?q=enhanced";
 const char kMaliciousJsPage[] = "/safe_browsing/malware_js.html";
@@ -158,6 +161,21 @@ const char kMaliciousJs[] = "/safe_browsing/script.js";
 const char kMaliciousFencedFrameOwner[] =
     "/safe_browsing/malware_in_fenced_frame.html";
 const char kMaliciousFencedFrame[] = "/safe_browsing/malware_fenced_frame.html";
+
+const char kInterstitialCloseHistogram[] = "interstitial.CloseReason";
+
+std::string GetHistogramPrefix(const SBThreatType& threat_type) {
+  if (threat_type == SB_THREAT_TYPE_URL_MALWARE) {
+    return "malware";
+  } else if (threat_type == SB_THREAT_TYPE_URL_PHISHING) {
+    return "phishing";
+  } else if (threat_type == SB_THREAT_TYPE_URL_UNWANTED) {
+    return "harmful";
+  } else {
+    NOTREACHED();
+    return "";
+  }
+}
 
 }  // namespace
 
@@ -301,10 +319,14 @@ class FakeSafeBrowsingUIManager : public TestSafeBrowsingUIManager {
     if (SafeBrowsingUIManager::ShouldSendHitReport(hit_report.get(),
                                                    web_contents)) {
       hit_report_sent_ = true;
+      hit_report_sent_threat_source_ = hit_report.get()->threat_source;
     }
   }
 
   bool hit_report_sent() { return hit_report_sent_; }
+  absl::optional<ThreatSource> hit_report_sent_threat_source() {
+    return hit_report_sent_threat_source_;
+  }
 
   void set_threat_details_done_callback(base::OnceClosure callback) {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -325,6 +347,7 @@ class FakeSafeBrowsingUIManager : public TestSafeBrowsingUIManager {
   base::OnceClosure threat_details_done_callback_;
   bool threat_details_done_ = false;
   bool hit_report_sent_ = false;
+  absl::optional<ThreatSource> hit_report_sent_threat_source_;
 };
 
 class TestThreatDetailsFactory : public ThreatDetailsFactory {
@@ -353,7 +376,7 @@ class TestThreatDetailsFactory : public ThreatDetailsFactory {
   ThreatDetails* get_details() { return details_; }
 
  private:
-  raw_ptr<ThreatDetails, DanglingUntriaged> details_;
+  raw_ptr<ThreatDetails, AcrossTasksDanglingUntriaged> details_;
 };
 
 // A SafeBrowingBlockingPage class that lets us wait until it's hidden.
@@ -1403,16 +1426,8 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
                 SafeBrowsingMetricsCollector::EventType::
                     SECURITY_SENSITIVE_SAFE_BROWSING_INTERSTITIAL));
   base::HistogramTester histograms;
-  std::string prefix;
   SBThreatType threat_type = GetThreatType();
-  if (threat_type == SB_THREAT_TYPE_URL_MALWARE)
-    prefix = "malware";
-  else if (threat_type == SB_THREAT_TYPE_URL_PHISHING)
-    prefix = "phishing";
-  else if (threat_type == SB_THREAT_TYPE_URL_UNWANTED)
-    prefix = "harmful";
-  else
-    NOTREACHED();
+  std::string prefix = GetHistogramPrefix(threat_type);
   const std::string decision_histogram = "interstitial." + prefix + ".decision";
   const std::string interaction_histogram =
       "interstitial." + prefix + ".interaction";
@@ -1456,21 +1471,26 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   histograms.ExpectBucketCount(
       interaction_histogram,
       security_interstitials::MetricsHelper::SHOW_ENHANCED_PROTECTION, 1);
+
+  // CloseReason histograms.
+  histograms.ExpectTotalCount(kInterstitialCloseHistogram, 2);
+  histograms.ExpectBucketCount(
+      kInterstitialCloseHistogram,
+      security_interstitials::SecurityInterstitialTabHelper::
+          InterstitialCloseReason::INTERSTITIAL_SHOWN,
+      1);
+  histograms.ExpectBucketCount(
+      kInterstitialCloseHistogram,
+      security_interstitials::SecurityInterstitialTabHelper::
+          InterstitialCloseReason::NAVIGATE_AWAY,
+      1);
 }
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
                        Histograms_Proceed) {
   base::HistogramTester histograms;
-  std::string prefix;
   SBThreatType threat_type = GetThreatType();
-  if (threat_type == SB_THREAT_TYPE_URL_MALWARE)
-    prefix = "malware";
-  else if (threat_type == SB_THREAT_TYPE_URL_PHISHING)
-    prefix = "phishing";
-  else if (threat_type == SB_THREAT_TYPE_URL_UNWANTED)
-    prefix = "harmful";
-  else
-    NOTREACHED();
+  std::string prefix = GetHistogramPrefix(threat_type);
   const std::string decision_histogram = "interstitial." + prefix + ".decision";
   const std::string interaction_histogram =
       "interstitial." + prefix + ".interaction";
@@ -1508,22 +1528,26 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   histograms.ExpectBucketCount(
       interaction_histogram,
       security_interstitials::MetricsHelper::CLOSE_INTERSTITIAL_WITHOUT_UI, 0);
+
+  // CloseReason histograms.
+  histograms.ExpectTotalCount(kInterstitialCloseHistogram, 2);
+  histograms.ExpectBucketCount(
+      kInterstitialCloseHistogram,
+      security_interstitials::SecurityInterstitialTabHelper::
+          InterstitialCloseReason::INTERSTITIAL_SHOWN,
+      1);
+  histograms.ExpectBucketCount(
+      kInterstitialCloseHistogram,
+      security_interstitials::SecurityInterstitialTabHelper::
+          InterstitialCloseReason::NAVIGATE_AWAY,
+      1);
 }
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
                        Histograms_UserMadeNoDecision) {
   base::HistogramTester histograms;
-  std::string prefix;
   SBThreatType threat_type = GetThreatType();
-  if (threat_type == SB_THREAT_TYPE_URL_MALWARE) {
-    prefix = "malware";
-  } else if (threat_type == SB_THREAT_TYPE_URL_PHISHING) {
-    prefix = "phishing";
-  } else if (threat_type == SB_THREAT_TYPE_URL_UNWANTED) {
-    prefix = "harmful";
-  } else {
-    NOTREACHED();
-  }
+  std::string prefix = GetHistogramPrefix(threat_type);
   const std::string interaction_histogram =
       "interstitial." + prefix + ".interaction";
 
@@ -1538,6 +1562,93 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   histograms.ExpectBucketCount(
       interaction_histogram,
       security_interstitials::MetricsHelper::CLOSE_INTERSTITIAL_WITHOUT_UI, 1);
+
+  // CloseReason histograms.
+  histograms.ExpectTotalCount(kInterstitialCloseHistogram, 2);
+  histograms.ExpectBucketCount(
+      kInterstitialCloseHistogram,
+      security_interstitials::SecurityInterstitialTabHelper::
+          InterstitialCloseReason::INTERSTITIAL_SHOWN,
+      1);
+  histograms.ExpectBucketCount(
+      kInterstitialCloseHistogram,
+      security_interstitials::SecurityInterstitialTabHelper::
+          InterstitialCloseReason::CLOSE_TAB,
+      1);
+}
+
+// Test that ensures the SHOW and DONT_PROCEED buckets are logged correctly if
+// multiple subresources are flagged on the same page. Regression test for
+// https://crbug.com/1195411.
+IN_PROC_BROWSER_TEST_P(
+    SafeBrowsingBlockingPageBrowserTest,
+    Histograms_MultipleDangerousIframesInterstitial_DontProceed) {
+  base::HistogramTester histograms;
+  SBThreatType threat_type = GetThreatType();
+
+  GURL url = embedded_test_server()->GetURL(kMaliciousMultipleIframesPage);
+  GURL iframe_url = embedded_test_server()->GetURL(kMaliciousIframe);
+  SetURLThreatType(iframe_url, threat_type);
+
+  std::string prefix = GetHistogramPrefix(threat_type);
+  const std::string decision_histogram =
+      "interstitial." + prefix + "_subresource.decision";
+  histograms.ExpectTotalCount(decision_histogram, 0);
+
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  EXPECT_TRUE(WaitForReady(browser()));
+
+  histograms.ExpectBucketCount(decision_histogram,
+                               security_interstitials::MetricsHelper::SHOW, 1);
+  histograms.ExpectBucketCount(
+      decision_histogram, security_interstitials::MetricsHelper::DONT_PROCEED,
+      0);
+
+  EXPECT_TRUE(ClickAndWaitForDetach("primary-button"));
+  AssertNoInterstitial(false);  // Assert the interstitial is gone
+  histograms.ExpectBucketCount(decision_histogram,
+                               security_interstitials::MetricsHelper::SHOW, 1);
+  histograms.ExpectBucketCount(
+      decision_histogram, security_interstitials::MetricsHelper::DONT_PROCEED,
+      1);
+  histograms.ExpectBucketCount(
+      decision_histogram, security_interstitials::MetricsHelper::PROCEED, 0);
+}
+
+// Test that ensures the SHOW and PROCEED buckets are logged correctly if
+// multiple subresources are flagged on the same page.
+IN_PROC_BROWSER_TEST_P(
+    SafeBrowsingBlockingPageBrowserTest,
+    Histograms_MultipleDangerousIframesInterstitial_Proceed) {
+  base::HistogramTester histograms;
+  SBThreatType threat_type = GetThreatType();
+
+  GURL url = embedded_test_server()->GetURL(kMaliciousMultipleIframesPage);
+  GURL iframe_url = embedded_test_server()->GetURL(kMaliciousIframe);
+  SetURLThreatType(iframe_url, threat_type);
+
+  std::string prefix = GetHistogramPrefix(threat_type);
+  const std::string decision_histogram =
+      "interstitial." + prefix + "_subresource.decision";
+  histograms.ExpectTotalCount(decision_histogram, 0);
+
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  EXPECT_TRUE(WaitForReady(browser()));
+
+  histograms.ExpectBucketCount(decision_histogram,
+                               security_interstitials::MetricsHelper::SHOW, 1);
+  histograms.ExpectBucketCount(
+      decision_histogram, security_interstitials::MetricsHelper::PROCEED, 0);
+
+  EXPECT_TRUE(ClickAndWaitForDetach("proceed-link"));
+  AssertNoInterstitial(true);  // Assert the interstitial is gone
+  histograms.ExpectBucketCount(decision_histogram,
+                               security_interstitials::MetricsHelper::SHOW, 1);
+  histograms.ExpectBucketCount(
+      decision_histogram, security_interstitials::MetricsHelper::PROCEED, 1);
+  histograms.ExpectBucketCount(
+      decision_histogram, security_interstitials::MetricsHelper::DONT_PROCEED,
+      0);
 }
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, AllowlistRevisit) {
@@ -2432,9 +2543,6 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
                 ->tab_strip_model()
                 ->GetActiveWebContents()
                 ->GetLastCommittedURL());
-
-  histograms.ExpectUniqueTimeSample(kDelayedWarningsTimeOnPageHistogram,
-                                    base::Seconds(kTimeOnPage), 1);
 }
 
 // Same as KeyPress_WarningShown, but user disabled URL elision by enabling
@@ -2467,10 +2575,6 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
   AssertNoInterstitial(browser(), false);  // Assert the interstitial is gone
   EXPECT_EQ(GURL(url::kAboutBlankURL),     // Back to "about:blank"
             web_contents->GetLastCommittedURL());
-
-  histograms.ExpectUniqueTimeSample(
-      kDelayedWarningsTimeOnPageWithElisionDisabledHistogram,
-      base::Seconds(kTimeOnPage), 1);
 }
 
 // Same as KeyPress_WarningShown_UrlElisionDisabled, but user disabled URL
@@ -3132,7 +3236,7 @@ class SafeBrowsingBlockingPageRealTimeUrlCheckTest
         "mark_as_real_time_phishing",
         embedded_test_server()->GetURL("/empty.html").spec());
     safe_browsing::VerdictCacheManagerFactory::GetForProfile(profile)
-        ->CacheArtificialRealTimeUrlVerdict();
+        ->CacheArtificialUnsafeRealTimeUrlVerdictFromSwitch();
   }
 
  private:
@@ -3181,6 +3285,166 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageRealTimeUrlCheckTest,
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   ASSERT_FALSE(IsShowingInterstitial(
       browser()->tab_strip_model()->GetActiveWebContents()));
+}
+
+// Tests for hash-prefix real-time check. To avoid redundant testing of the
+// HashRealTimeService, this populates the local cache instead of mocking
+// network requests.
+class SafeBrowsingBlockingPageHashRealTimeCheckTest
+    : public InProcessBrowserTest {
+ public:
+  SafeBrowsingBlockingPageHashRealTimeCheckTest() = default;
+  SafeBrowsingBlockingPageHashRealTimeCheckTest(
+      const SafeBrowsingBlockingPageHashRealTimeCheckTest&) = delete;
+  SafeBrowsingBlockingPageHashRealTimeCheckTest& operator=(
+      const SafeBrowsingBlockingPageHashRealTimeCheckTest&) = delete;
+
+  void SetUp() override {
+    InitFeatures();
+    InProcessBrowserTest::SetUp();
+  }
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    content::SetupCrossSiteRedirector(embedded_test_server());
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+  void CreatedBrowserMainParts(
+      content::BrowserMainParts* browser_main_parts) override {
+    InProcessBrowserTest::CreatedBrowserMainParts(browser_main_parts);
+    // Test UI manager and test database manager should be set before
+    // the browser is started but after threads are created.
+    factory_.SetTestUIManager(new FakeSafeBrowsingUIManager(
+        std::make_unique<TestSafeBrowsingBlockingPageFactory>()));
+    factory_.SetTestDatabaseManager(new FakeSafeBrowsingDatabaseManager(
+        content::GetUIThreadTaskRunner({}),
+        content::GetIOThreadTaskRunner({})));
+    SafeBrowsingService::RegisterFactory(&factory_);
+  }
+
+ protected:
+  virtual void InitFeatures() {
+    scoped_feature_list_.InitAndEnableFeature(kHashPrefixRealTimeLookups);
+  }
+  void SetUpVerdict(GURL url, Profile* profile, bool is_unsafe) {
+    safe_browsing::VerdictCacheManagerFactory::GetForProfile(profile)
+        ->CacheArtificialHashRealTimeLookupVerdict(url.spec(), is_unsafe);
+  }
+  void SetUpAndNavigateToUrl(bool is_unsafe) {
+    GURL url = embedded_test_server()->GetURL("/empty.html");
+    SetUpVerdict(url, browser()->profile(), is_unsafe);
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  }
+  bool IsShowingInterstitial() {
+    return ::safe_browsing::IsShowingInterstitial(
+        browser()->tab_strip_model()->GetActiveWebContents());
+  }
+  absl::optional<ThreatSource> hit_report_sent_threat_source() {
+    return static_cast<FakeSafeBrowsingUIManager*>(
+               factory_.test_safe_browsing_service()->ui_manager().get())
+        ->hit_report_sent_threat_source();
+  }
+  std::string GetReportSent() {
+    return static_cast<FakeSafeBrowsingUIManager*>(
+               factory_.test_safe_browsing_service()->ui_manager().get())
+        ->GetReport();
+  }
+  void SetReportSentCallback(base::OnceClosure callback) {
+    static_cast<FakeSafeBrowsingUIManager*>(
+        factory_.test_safe_browsing_service()->ui_manager().get())
+        ->set_threat_details_done_callback(std::move(callback));
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+ private:
+  TestSafeBrowsingServiceFactory factory_;
+  hash_realtime_utils::GoogleChromeBrandingPretenderForTesting apply_branding_;
+};
+class SafeBrowsingBlockingPageHashRealTimeCheckFeatureOffTest
+    : public SafeBrowsingBlockingPageHashRealTimeCheckTest {
+ protected:
+  void InitFeatures() override {
+    scoped_feature_list_.InitAndDisableFeature(kHashPrefixRealTimeLookups);
+  }
+};
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageHashRealTimeCheckTest,
+                       ShowWarning) {
+  base::HistogramTester histogram_tester;
+  SetUpAndNavigateToUrl(/*is_unsafe=*/true);
+  ASSERT_TRUE(IsShowingInterstitial());
+  histogram_tester.ExpectTotalCount(
+      "SafeBrowsing.BrowserThrottle.TotalDelay2.HashPrefixRealTimeCheck",
+      /*expected_count=*/1);
+  histogram_tester.ExpectTotalCount(
+      "SafeBrowsing.BrowserThrottle.TotalDelay2.HashPrefixDatabaseCheck",
+      /*expected_count=*/0);
+  histogram_tester.ExpectUniqueSample(
+      "SafeBrowsing.HPRT.Ineligible.IneligibleForSession", /*sample=*/false,
+      /*expected_bucket_count=*/1);
+  histogram_tester.ExpectTotalCount(
+      "interstitial.phishing.decision.from_hash_prefix_real_time_check_v5",
+      /*expected_count=*/1);
+}
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageHashRealTimeCheckTest,
+                       DontShowWarning_PageIsSafe) {
+  base::HistogramTester histogram_tester;
+  SetUpAndNavigateToUrl(/*is_unsafe=*/false);
+  ASSERT_FALSE(IsShowingInterstitial());
+  histogram_tester.ExpectTotalCount(
+      "SafeBrowsing.BrowserThrottle.TotalDelay2.HashPrefixRealTimeCheck",
+      /*expected_count=*/1);
+  histogram_tester.ExpectTotalCount(
+      "SafeBrowsing.BrowserThrottle.TotalDelay2.HashPrefixDatabaseCheck",
+      /*expected_count=*/0);
+  histogram_tester.ExpectUniqueSample(
+      "SafeBrowsing.HPRT.Ineligible.IneligibleForSession", /*sample=*/false,
+      /*expected_bucket_count=*/1);
+  histogram_tester.ExpectTotalCount(
+      "interstitial.phishing.decision.from_hash_prefix_real_time_check_v5",
+      /*expected_count=*/0);
+}
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageHashRealTimeCheckFeatureOffTest,
+                       DontShowWarning_FeatureIsOff) {
+  base::HistogramTester histogram_tester;
+  SetUpAndNavigateToUrl(/*is_unsafe=*/true);
+  ASSERT_FALSE(IsShowingInterstitial());
+  histogram_tester.ExpectTotalCount(
+      "SafeBrowsing.BrowserThrottle.TotalDelay2.HashPrefixRealTimeCheck",
+      /*expected_count=*/0);
+  histogram_tester.ExpectTotalCount(
+      "SafeBrowsing.BrowserThrottle.TotalDelay2.HashPrefixDatabaseCheck",
+      /*expected_count=*/1);
+  histogram_tester.ExpectUniqueSample(
+      "SafeBrowsing.HPRT.Ineligible.IneligibleForSession", /*sample=*/true,
+      /*expected_bucket_count=*/1);
+  histogram_tester.ExpectTotalCount(
+      "interstitial.phishing.decision.from_hash_prefix_real_time_check_v5",
+      /*expected_count=*/0);
+}
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageHashRealTimeCheckTest,
+                       TriggerHitReportAndClientSafeBrowsingReportRequest) {
+  SetExtendedReportingPrefForTests(browser()->profile()->GetPrefs(), true);
+  SetUpAndNavigateToUrl(/*is_unsafe=*/true);
+  ASSERT_TRUE(IsShowingInterstitial());
+
+  // Verify correct hit report is sent.
+  EXPECT_EQ(hit_report_sent_threat_source(),
+            ThreatSource::NATIVE_PVER5_REAL_TIME);
+
+  // Verify correct CSBRR is sent.
+  auto threat_report_sent_runner = std::make_unique<base::RunLoop>();
+  SetReportSentCallback(threat_report_sent_runner->QuitClosure());
+  EXPECT_TRUE(ClickAndWaitForDetach(browser(), "proceed-link"));
+  ASSERT_FALSE(IsShowingInterstitial());
+  threat_report_sent_runner->Run();
+  std::string serialized_report = GetReportSent();
+  ClientSafeBrowsingReportRequest report;
+  ASSERT_TRUE(report.ParseFromString(serialized_report));
+  EXPECT_EQ(report.type(),
+            ClientSafeBrowsingReportRequest_ReportType_URL_PHISHING);
+  EXPECT_EQ(
+      report.client_properties().url_api_type(),
+      ClientSafeBrowsingReportRequest_SafeBrowsingUrlApiType_PVER5_NATIVE_REAL_TIME);
 }
 
 class SafeBrowsingPrerenderBrowserTest

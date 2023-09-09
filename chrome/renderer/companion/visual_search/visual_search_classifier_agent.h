@@ -18,9 +18,6 @@
 
 namespace companion::visual_search {
 
-using ClassificationResultsAndStats =
-    std::pair<std::vector<SkBitmap>, mojom::ClassificationStatsPtr>;
-
 class VisualSearchClassifierAgent : public content::RenderFrameObserver,
                                     mojom::VisualSuggestionsRequestHandler {
  public:
@@ -60,15 +57,11 @@ class VisualSearchClassifierAgent : public content::RenderFrameObserver,
   // Private method used to post result from long-running visual classification
   // tasks that runs in the background thread. This method should run in the
   // same thread that triggered the classification task (i.e. main thread).
-  void OnClassificationDone(ClassificationResultsAndStats results);
+  void OnClassificationDone(const std::vector<SkBitmap> results);
 
   // Used to track whether there is an ongoing classification task, if so, we
   // drop the incoming request.
   bool is_classifying_ = false;
-
-  // Used to track that we are retrying visual classification because our
-  // first attempt did not find any images in the DOM.
-  bool is_retrying_ = false;
 
   // Pointer to RenderFrame used for DOM traversal and extract image bytes.
   content::RenderFrame* render_frame_ = nullptr;

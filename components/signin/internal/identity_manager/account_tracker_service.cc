@@ -8,6 +8,7 @@
 #include <sstream>
 #include <string>
 
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
@@ -39,7 +40,9 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/account_capabilities.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/tribool.h"
+#include "google_apis/gaia/core_account_id.h"
 #include "ui/gfx/image/image.h"
 
 #if BUILDFLAG(IS_ANDROID)
@@ -191,6 +194,10 @@ AccountTrackerService::AccountTrackerService() {
 
 AccountTrackerService::~AccountTrackerService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+#if BUILDFLAG(IS_ANDROID)
+  JNIEnv* env = base::android::AttachCurrentThread();
+  signin::Java_AccountTrackerService_destroy(env, java_ref_);
+#endif
   pref_service_ = nullptr;
   accounts_.clear();
 }
@@ -291,14 +298,17 @@ void AccountTrackerService::NotifyAccountRemoved(
 
 void AccountTrackerService::StartTrackingAccount(
     const CoreAccountId& account_id) {
+  CHECK(!account_id.empty());
   if (!base::Contains(accounts_, account_id)) {
     DVLOG(1) << "StartTracking " << account_id;
-    base::UmaHistogramBoolean("Signin.AccountTracker.IsAccountIdEmpty",
-                              account_id.empty());
     AccountInfo account_info;
     account_info.account_id = account_id;
     accounts_.insert(std::make_pair(account_id, account_info));
   }
+}
+
+bool AccountTrackerService::IsTrackingAccount(const CoreAccountId& account_id) {
+  return base::Contains(accounts_, account_id);
 }
 
 void AccountTrackerService::StopTrackingAccount(
@@ -371,13 +381,12 @@ void AccountTrackerService::SetAccountCapabilities(
   // Set the child account status based on the account capabilities.
   if (base::FeatureList::IsEnabled(
           supervised_user::kEnableSupervisionOnDesktopAndIOS)) {
-    // TODO(crbug.com/1458356): avoid notifying account observers and saving
-    // to prefs twice in the case where the child status and account
-    // capabilities have both changed.
-    SetIsChildAccount(
-        account_id,
-        account_info.capabilities.is_subject_to_parental_controls() ==
-            signin::Tribool::kTrue);
+    modified =
+        UpdateAccountInfoChildStatus(
+            account_info,
+            account_info.capabilities.is_subject_to_parental_controls() ==
+                signin::Tribool::kTrue) ||
+        modified;
   }
 #endif
 
@@ -395,11 +404,10 @@ void AccountTrackerService::SetIsChildAccount(const CoreAccountId& account_id,
                                               bool is_child_account) {
   DCHECK(base::Contains(accounts_, account_id)) << account_id.ToString();
   AccountInfo& account_info = accounts_[account_id];
-  signin::Tribool new_status =
-      is_child_account ? signin::Tribool::kTrue : signin::Tribool::kFalse;
-  if (account_info.is_child_account == new_status)
+  bool modified = UpdateAccountInfoChildStatus(account_info, is_child_account);
+  if (!modified) {
     return;
-  account_info.is_child_account = new_status;
+  }
   if (!account_info.gaia.empty())
     NotifyAccountUpdated(account_info);
   SaveToPrefs(account_info);
@@ -626,6 +634,11 @@ void AccountTrackerService::LoadFromPrefs() {
     const base::Value::Dict* dict = list[i].GetIfDict();
     if (dict) {
       if (const std::string* account_key = dict->FindString(kAccountKeyKey)) {
+        // Ignore empty account ids.
+        if (account_key->empty()) {
+          to_remove.insert(CoreAccountId());
+          continue;
+        }
         // Ignore incorrectly persisted non-canonical account ids.
         if (account_key->find('@') != std::string::npos &&
             *account_key != gaia::CanonicalizeEmail(*account_key)) {
@@ -836,6 +849,15 @@ CoreAccountId AccountTrackerService::SeedAccountInfo(
 
 CoreAccountId AccountTrackerService::SeedAccountInfo(AccountInfo info) {
   info.account_id = PickAccountIdForAccount(info.gaia, info.email);
+  base::UmaHistogramBoolean(
+      "Signin.AccountTracker.SeedAccountInfo.IsAccountIdEmpty",
+      info.account_id.empty());
+
+  if (info.account_id.empty()) {
+    DLOG(ERROR) << "Cannot seed an account with an empty account id: [" << info
+                << "]";
+    return CoreAccountId();
+  }
 
   const bool already_exists = base::Contains(accounts_, info.account_id);
   StartTrackingAccount(info.account_id);
@@ -862,6 +884,18 @@ CoreAccountId AccountTrackerService::SeedAccountInfo(AccountInfo info) {
 
 void AccountTrackerService::RemoveAccount(const CoreAccountId& account_id) {
   StopTrackingAccount(account_id);
+}
+
+bool AccountTrackerService::UpdateAccountInfoChildStatus(
+    AccountInfo& account_info,
+    bool is_child_account) {
+  signin::Tribool new_status =
+      is_child_account ? signin::Tribool::kTrue : signin::Tribool::kFalse;
+  if (account_info.is_child_account == new_status) {
+    return false;
+  }
+  account_info.is_child_account = new_status;
+  return true;
 }
 
 #if BUILDFLAG(IS_ANDROID)

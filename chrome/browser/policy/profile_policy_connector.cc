@@ -29,6 +29,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
+#include "components/policy/core/common/local_test_policy_provider.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
@@ -217,6 +218,11 @@ void ProfilePolicyConnector::Init(
   if (connector->command_line_policy_provider())
     policy_providers_.push_back(connector->command_line_policy_provider());
 #endif
+
+  if (connector->local_test_policy_provider()) {
+    local_test_policy_provider_ = connector->local_test_policy_provider();
+    policy_providers_.push_back(local_test_policy_provider_);
+  }
 
   if (configuration_policy_provider) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -506,6 +512,28 @@ std::string ProfilePolicyConnector::GetTimeToFirstPolicyLoadMetricSuffix()
 #else   // BUILDFLAG(IS_CHROMEOS_ASH)
   return "Managed";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+}
+
+void ProfilePolicyConnector::UseLocalTestPolicyProvider() {
+  for (auto* provider : policy_providers_) {
+    provider->set_active(false);
+  }
+
+  if (local_test_policy_provider_) {
+    local_test_policy_provider_->set_active(true);
+  }
+  policy_service()->RefreshPolicies(base::DoNothing());
+}
+
+void ProfilePolicyConnector::RevertUseLocalTestPolicyProvider() {
+  for (auto* provider : policy_providers_) {
+    provider->set_active(true);
+  }
+
+  local_test_policy_provider_->set_active(false);
+  static_cast<LocalTestPolicyProvider*>(local_test_policy_provider_)
+      ->ClearPolicies();
+  policy_service()->RefreshPolicies(base::DoNothing());
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

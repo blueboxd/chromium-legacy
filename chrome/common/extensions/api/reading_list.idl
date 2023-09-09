@@ -1,0 +1,61 @@
+// Copyright 2023 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Use the <code>chrome.readingList</code> API to read from and modify
+// the items in the Reading List.
+namespace readingList{
+  dictionary ReadingListEntry {
+    // The url of the entry.
+    DOMString url;
+
+    // The title of the entry.
+    DOMString title;
+
+    // True if the entry has been read.
+    boolean hasBeenRead;
+  };
+
+  dictionary RemoveOptions {
+    // The url to remove.
+    DOMString url;
+  };
+
+  dictionary UpdateEntryOptions {
+    // The url that will be updated.
+    DOMString url;
+
+    // The updated title.
+    DOMString? title;
+
+    // The updated read status.
+    boolean? hasBeenRead;
+  };
+
+  callback AddEntryCallback = void ();
+  callback RemoveEntryCallback = void();
+  callback UpdateEntryCallback = void();
+
+  interface Functions {
+    // Adds an entry to the reading list if it does not exist.
+    // |entry|: The entry to add to the reading list.
+    // |callback|: Invoked once the entry has been added.
+    [supportsPromises] static void addEntry(
+                                      ReadingListEntry entry,
+                                      optional AddEntryCallback callback);
+
+    // Removes an entry from the reading list if it exists.
+    // |info|: The entry to remove from the reading list.
+    // |callback|: Invoked once the entry has been removed.
+    [supportsPromises] static void removeEntry(
+                                      RemoveOptions info,
+                                      optional RemoveEntryCallback callback);
+
+    // Updates the features of a reading list entry if it exists.
+    // |info|: The entry to update.
+    // |callback|: Invoked once the matched entries have been updated.
+    [supportsPromises] static void updateEntry(
+                                      UpdateEntryOptions info,
+                                      optional UpdateEntryCallback callback);
+  };
+};

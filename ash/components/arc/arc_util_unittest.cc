@@ -100,12 +100,11 @@ class ArcUtilTest : public ash::AshTestBase {
   ArcUtilTest() { ash::UpstartClient::InitializeFake(); }
   ArcUtilTest(const ArcUtilTest&) = delete;
   ArcUtilTest& operator=(const ArcUtilTest&) = delete;
-  ~ArcUtilTest() override = default;
+  ~ArcUtilTest() override { ash::UpstartClient::Shutdown(); }
 
   void SetUp() override {
     ash::AshTestBase::SetUp();
     prefs::RegisterProfilePrefs(profile_prefs_.registry());
-    RemoveUpstartStartStopJobFailures();
   }
 
   void TearDown() override { ash::AshTestBase::TearDown(); }
@@ -117,7 +116,8 @@ class ArcUtilTest : public ash::AshTestBase {
         [job_name_to_fail](const std::string& job_name,
                            const std::vector<std::string>& env) {
           // Return success unless |job_name| is |job_name_to_fail|.
-          return job_name != job_name_to_fail;
+          return ash::FakeUpstartClient::StartJobResult(job_name !=
+                                                        job_name_to_fail);
         }));
   }
 
@@ -137,7 +137,7 @@ class ArcUtilTest : public ash::AshTestBase {
         base::BindLambdaForTesting([this](const std::string& job_name,
                                           const std::vector<std::string>& env) {
           upstart_operations_.emplace_back(job_name, true);
-          return true;
+          return ash::FakeUpstartClient::StartJobResult(true /* success */);
         }));
     upstart_client->set_stop_job_cb(
         base::BindLambdaForTesting([this](const std::string& job_name,
@@ -154,14 +154,6 @@ class ArcUtilTest : public ash::AshTestBase {
   PrefService* profile_prefs() { return &profile_prefs_; }
 
  private:
-  void RemoveUpstartStartStopJobFailures() {
-    auto* upstart_client = ash::FakeUpstartClient::Get();
-    upstart_client->set_start_job_cb(
-        ash::FakeUpstartClient::StartStopJobCallback());
-    upstart_client->set_stop_job_cb(
-        ash::FakeUpstartClient::StartStopJobCallback());
-  }
-
   TestingPrefServiceSimple profile_prefs_;
 
   // List of upstart operations recorded. When it's "start" the boolean is set
@@ -361,6 +353,16 @@ TEST_F(ArcUtilTest, HostUreadaheadGenerationSet) {
   command_line->InitFromArgv({"", "--arc-host-ureadahead-generation"});
   EXPECT_TRUE(IsHostUreadaheadGeneration());
   EXPECT_FALSE(IsUreadaheadDisabled());
+}
+
+TEST_F(ArcUtilTest, UseDevCachesDefault) {
+  EXPECT_FALSE(IsArcUseDevCaches());
+}
+
+TEST_F(ArcUtilTest, UseDevCachesSet) {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->InitFromArgv({"", "--arc-use-dev-caches"});
+  EXPECT_TRUE(IsArcUseDevCaches());
 }
 
 // TODO(hidehiko): Add test for IsArcKioskMode().

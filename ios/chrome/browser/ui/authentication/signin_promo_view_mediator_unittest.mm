@@ -8,6 +8,7 @@
 #import "base/run_loop.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "build/branding_buildflags.h"
 #import "components/pref_registry/pref_registry_syncable.h"
 #import "components/prefs/pref_service.h"
 #import "components/signin/public/base/signin_metrics.h"
@@ -35,7 +36,6 @@
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
-#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/grit/ios_chromium_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
@@ -60,8 +60,6 @@ using user_prefs::PrefRegistrySyncable;
 using web::WebTaskEnvironment;
 
 namespace {
-// The image name of the SigninPromoViewStyleCompactTitled view's icon.
-NSString* const kPromoViewImageName = @"ntp_feed_signin_promo_icon";
 
 class SigninPromoViewMediatorTest : public PlatformTest {
  protected:
@@ -103,7 +101,6 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     EXPECT_OCMOCK_VERIFY((id)primary_button_);
     EXPECT_OCMOCK_VERIFY((id)secondary_button_);
     EXPECT_OCMOCK_VERIFY((id)close_button_);
-    EXPECT_OCMOCK_VERIFY((id)title_label_);
   }
 
   void CreateMediator(signin_metrics::AccessPoint access_point) {
@@ -128,8 +125,6 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     OCMStub([signin_promo_view_ secondaryButton]).andReturn(secondary_button_);
     close_button_ = OCMStrictClassMock([UIButton class]);
     OCMStub([signin_promo_view_ closeButton]).andReturn(close_button_);
-    title_label_ = OCMStrictClassMock([UILabel class]);
-    OCMStub([signin_promo_view_ titleLabel]).andReturn(title_label_);
   }
 
   std::unique_ptr<PrefServiceSyncable> CreatePrefService() {
@@ -196,10 +191,10 @@ class SigninPromoViewMediatorTest : public PlatformTest {
   void ExpectNoAccountsConfiguration(SigninPromoViewStyle style) {
     OCMExpect([signin_promo_view_ setMode:SigninPromoViewModeNoAccounts]);
     NSString* title = nil;
-    if (style == SigninPromoViewStyleCompactTitled) {
-      title = GetNSString(IDS_IOS_NTP_FEED_SIGNIN_PROMO_CONTINUE);
-    } else {
+    if (style == SigninPromoViewStyleStandard) {
       title = GetNSString(IDS_IOS_SYNC_PROMO_TURN_ON_SYNC);
+    } else {
+      title = GetNSString(IDS_IOS_NTP_FEED_SIGNIN_PROMO_CONTINUE);
     }
     OCMExpect([signin_promo_view_ configurePrimaryButtonWithTitle:title]);
     image_view_profile_image_ = nil;
@@ -211,12 +206,17 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     EXPECT_NE(nil, configurator);
     ExpectNoAccountsConfiguration(style);
     OCMExpect([close_button_ setHidden:close_button_hidden_]);
-    OCMExpect([title_label_ setHidden:(style == SigninPromoViewStyleStandard)]);
     OCMExpect([signin_promo_view_ setPromoViewStyle:style]);
     OCMExpect([signin_promo_view_ stopSignInSpinner]);
-    if (style == SigninPromoViewStyleCompactTitled) {
-      OCMExpect([signin_promo_view_
-          setNonProfileImage:[UIImage imageNamed:kPromoViewImageName]]);
+    if (style == SigninPromoViewStyleCompactVertical ||
+        style == SigninPromoViewStyleCompactHorizontal) {
+      UIImage* logo;
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+      logo = [UIImage imageNamed:@"signin_promo_logo_chrome_color"];
+#else
+      logo = [UIImage imageNamed:@"signin_promo_logo_chromium_color"];
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+      OCMExpect([signin_promo_view_ setNonProfileImage:logo]);
     }
     [configurator configureSigninPromoView:signin_promo_view_ withStyle:style];
     EXPECT_EQ(nil, image_view_profile_image_);
@@ -228,13 +228,13 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     EXPECT_EQ(identity_, mediator_.identity);
     OCMExpect(
         [signin_promo_view_ setMode:SigninPromoViewModeSigninWithAccount]);
+    OCMExpect([signin_promo_view_
+        setProfileImage:[OCMArg checkWithBlock:^BOOL(id value) {
+          image_view_profile_image_ = value;
+          return YES;
+        }]]);
     switch (style) {
       case SigninPromoViewStyleStandard: {
-        OCMExpect([signin_promo_view_
-            setProfileImage:[OCMArg checkWithBlock:^BOOL(id value) {
-              image_view_profile_image_ = value;
-              return YES;
-            }]]);
         NSString* name = identity_.userGivenName.length
                              ? identity_.userGivenName
                              : identity_.userEmail;
@@ -247,15 +247,11 @@ class SigninPromoViewMediatorTest : public PlatformTest {
             forState:UIControlStateNormal]);
         break;
       }
-      case SigninPromoViewStyleCompactTitled: {
-        OCMExpect([primary_button_
-            setTitle:GetNSString(IDS_IOS_NTP_FEED_SIGNIN_PROMO_CONTINUE)
-            forState:UIControlStateNormal]);
-        break;
-      }
       case SigninPromoViewStyleCompactHorizontal:
       case SigninPromoViewStyleCompactVertical: {
-        // TODO(crbug.com/1412758): Test the new styles when implemented.
+        OCMExpect([signin_promo_view_
+            configurePrimaryButtonWithTitle:
+                GetNSString(IDS_IOS_NTP_FEED_SIGNIN_PROMO_CONTINUE)]);
         break;
       }
     }
@@ -268,27 +264,10 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     EXPECT_NE(nil, configurator);
     ExpectSigninWithAccountConfiguration(style);
     OCMExpect([close_button_ setHidden:close_button_hidden_]);
-    OCMExpect([title_label_ setHidden:(style == SigninPromoViewStyleStandard)]);
     OCMExpect([signin_promo_view_ setPromoViewStyle:style]);
     OCMExpect([signin_promo_view_ stopSignInSpinner]);
     [configurator configureSigninPromoView:signin_promo_view_ withStyle:style];
-    switch (style) {
-      case SigninPromoViewStyleStandard: {
-        EXPECT_NE(nil, image_view_profile_image_);
-        break;
-      }
-      case SigninPromoViewStyleCompactTitled: {
-        OCMExpect([signin_promo_view_
-            setNonProfileImage:[UIImage imageNamed:kPromoViewImageName]]);
-        EXPECT_EQ(nil, image_view_profile_image_);
-        break;
-      }
-      case SigninPromoViewStyleCompactHorizontal:
-      case SigninPromoViewStyleCompactVertical: {
-        // TODO(crbug.com/1412758): Test the new styles when implemented.
-        break;
-      }
-    }
+    EXPECT_NE(nil, image_view_profile_image_);
   }
 
   // Expects the sync promo view to be configured
@@ -316,7 +295,6 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     EXPECT_NE(nil, configurator);
     ExpectSyncPromoConfiguration();
     OCMExpect([close_button_ setHidden:close_button_hidden_]);
-    OCMExpect([title_label_ setHidden:(style == SigninPromoViewStyleStandard)]);
     OCMExpect([signin_promo_view_ setPromoViewStyle:style]);
     OCMExpect([signin_promo_view_ stopSignInSpinner]);
     [configurator configureSigninPromoView:signin_promo_view_ withStyle:style];
@@ -360,7 +338,6 @@ class SigninPromoViewMediatorTest : public PlatformTest {
   UIButton* primary_button_;
   UIButton* secondary_button_;
   UIButton* close_button_;
-  UILabel* title_label_;
 
   // Value set by -[SigninPromoView setProfileImage:].
   UIImage* image_view_profile_image_;
@@ -409,23 +386,18 @@ TEST_F(SigninPromoViewMediatorTest, ConfigureSigninPromoViewWithColdAndWarm) {
 // compact horizontal.
 TEST_F(SigninPromoViewMediatorTest,
        ConfigureCompactHorizontalSigninPromoViewWithColdAndWarm) {
-  // TODO(crbug.com/1412758): Test the new styles when implemented.
+  CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
+  TestSigninPromoWithNoAccounts(SigninPromoViewStyleCompactHorizontal);
+  TestSigninPromoWithAccount(SigninPromoViewStyleCompactHorizontal);
 }
 
 // Tests the sign-in promo with and without account when the promo style is
 // compact vertical.
 TEST_F(SigninPromoViewMediatorTest,
        ConfigureCompactVerticalSigninPromoViewWithColdAndWarm) {
-  // TODO(crbug.com/1412758): Test the new styles when implemented.
-}
-
-// Tests the sign-in promo without account when the promo style is titled
-// compact.
-TEST_F(SigninPromoViewMediatorTest,
-       ConfigureCompactTitledSigninPromoViewWithColdAndWarm) {
-  close_button_hidden_ = NO;
-  CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO);
-  TestSigninPromoWithNoAccounts(SigninPromoViewStyleCompactTitled);
+  CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
+  TestSigninPromoWithNoAccounts(SigninPromoViewStyleCompactVertical);
+  TestSigninPromoWithAccount(SigninPromoViewStyleCompactVertical);
 }
 
 // Tests the scenario with the sign-in promo with accounts on the device, and
@@ -492,7 +464,7 @@ TEST_F(SigninPromoViewMediatorTest, SigninPromoViewStateSignedin) {
   OCMExpect([consumer_ promoProgressStateDidChange]);
   OCMExpect([consumer_ signinDidFinish]);
   ExpectConfiguratorNotification(NO /* identity changed */);
-  completion(SigninCoordinatorResultSuccess);
+  completion(YES);
   EXPECT_FALSE(mediator_.signinInProgress);
   EXPECT_EQ(ios::SigninPromoViewState::UsedAtLeastOnce,
             mediator_.signinPromoViewState);
@@ -529,7 +501,7 @@ TEST_F(SigninPromoViewMediatorTest,
   OCMExpect([consumer_ promoProgressStateDidChange]);
   OCMExpect([consumer_ signinDidFinish]);
   ExpectConfiguratorNotification(NO /* identity changed */);
-  completion(SigninCoordinatorResultSuccess);
+  completion(YES);
 }
 
 // Tests that no update notification is sent by the mediator to its consumer,
@@ -566,7 +538,7 @@ TEST_F(SigninPromoViewMediatorTest,
   OCMExpect([consumer_ promoProgressStateDidChange]);
   OCMExpect([consumer_ signinDidFinish]);
   ExpectConfiguratorNotification(NO /* identity changed */);
-  completion(SigninCoordinatorResultSuccess);
+  completion(YES);
 }
 
 // Tests that promos aren't shown if browser sign-in is disabled by policy
@@ -638,7 +610,7 @@ TEST_F(SigninPromoViewMediatorTest,
   EXPECT_EQ(weak_mediator, nil);
   // Finish the sign-in.
   OCMExpect([consumer_ signinDidFinish]);
-  completion(SigninCoordinatorResultSuccess);
+  completion(YES);
 }
 
 // Tests that the sign-in promo view being removed, and tests the consumer is
@@ -668,7 +640,7 @@ TEST_F(SigninPromoViewMediatorTest, RemoveSigninPromoWhileSignedIn) {
   EXPECT_EQ(ios::SigninPromoViewState::Invalid, mediator_.signinPromoViewState);
   // Finish the sign-in.
   OCMExpect([consumer_ signinDidFinish]);
-  completion(SigninCoordinatorResultSuccess);
+  completion(YES);
   // Set mediator_ to nil to avoid the TearDown doesn't call
   // -[mediator_ disconnect] again.
   mediator_ = nil;

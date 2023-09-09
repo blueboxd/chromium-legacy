@@ -42,6 +42,7 @@ class TrainingDataCollector {
   using SuccessCallback = SegmentationPlatformService::SuccessCallback;
   // Name and sample of the uma output metric to be collected as training data.
   static std::unique_ptr<TrainingDataCollector> Create(
+      const PlatformOptions& platform_options,
       processing::FeatureListQueryProcessor* processor,
       HistogramSignalHandler* histogram_signal_handler,
       UserActionSignalHandler* user_action_signal_handler,
@@ -52,8 +53,10 @@ class TrainingDataCollector {
 
   // Parameters used for reporting immediate output collections.
   struct ImmediateCollectionParam {
+    // Optional name used for debugging.
+    std::string output_metric_name;
     // Hash of the output metric name given by
-    // |base::HashMetricName(histogram_name)| function.
+    // |base::HashMetricName(name)| function.
     uint64_t output_metric_hash;
     // Value of the output metric.
     // TODO(haileywang): Make this a vector and append all the values to the

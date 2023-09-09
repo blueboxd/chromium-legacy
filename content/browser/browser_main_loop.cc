@@ -106,6 +106,7 @@
 #include "content/common/skia_utils.h"
 #include "content/common/thread_pool_util.h"
 #include "content/public/browser/audio_service.h"
+#include "content/public/browser/background_tracing_manager.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -955,6 +956,8 @@ int BrowserMainLoop::PostCreateThreads() {
   TRACE_EVENT0("startup", "BrowserMainLoop::PostCreateThreads");
 
   tracing_controller_ = std::make_unique<content::TracingControllerImpl>();
+  background_tracing_manager_ =
+      content::BackgroundTracingManagerImpl::CreateInstance();
   content::BackgroundTracingManagerImpl::GetInstance()
       .AddMetadataGeneratorFunction();
 
@@ -1197,6 +1200,13 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     ResetThread_IO(std::move(io_thread_));
   }
 
+  // Must be done before ThreadPool shutdown since the trace report database
+  // lives on the ThreadPool.
+  {
+    TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem::TracingManager");
+    background_tracing_manager_.reset();
+  }
+
   {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:ThreadPool");
     base::ThreadPoolInstance::Get()->Shutdown();
@@ -1417,9 +1427,7 @@ void BrowserMainLoop::PostCreateThreadsImpl() {
     GpuProcessHost::Get(GPU_PROCESS_KIND_SANDBOXED, true /* force_create */);
   }
 
-#if BUILDFLAG(IS_WIN)
   GpuDataManagerImpl::GetInstance()->PostCreateThreads();
-#endif
 
   if (MediaKeysListenerManager::IsMediaKeysListenerManagerEnabled()) {
     media_keys_listener_manager_ =

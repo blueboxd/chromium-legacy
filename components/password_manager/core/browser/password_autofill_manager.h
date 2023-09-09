@@ -56,9 +56,17 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   void OnPopupHidden() override;
   void OnPopupSuppressed() override;
 
-  void DidSelectSuggestion(const autofill::Suggestion& suggestion) override;
-  void DidAcceptSuggestion(const autofill::Suggestion& suggestion,
-                           int position) override;
+  // The password manager doesn't distinguish between trigger sources and its
+  // value is `kPasswordManager` for all password suggestions.
+  void DidSelectSuggestion(
+      const autofill::Suggestion& suggestion,
+      autofill::AutofillSuggestionTriggerSource trigger_source =
+          autofill::AutofillSuggestionTriggerSource::kPasswordManager) override;
+  void DidAcceptSuggestion(
+      const autofill::Suggestion& suggestion,
+      int position,
+      autofill::AutofillSuggestionTriggerSource trigger_source =
+          autofill::AutofillSuggestionTriggerSource::kPasswordManager) override;
   bool GetDeletionConfirmationText(const std::u16string& value,
                                    autofill::PopupItemId popup_item_id,
                                    autofill::Suggestion::BackendId backend_id,
@@ -83,7 +91,8 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   // Handles a request from the renderer to show a popup with the suggestions
   // from the password manager. |options| should be a bitwise mask of
   // autofill::ShowPasswordSuggestionsOptions values.
-  void OnShowPasswordSuggestions(base::i18n::TextDirection text_direction,
+  void OnShowPasswordSuggestions(autofill::FieldRendererId element_id,
+                                 base::i18n::TextDirection text_direction,
                                  const std::u16string& typed_username,
                                  int options,
                                  const gfx::RectF& bounds);
@@ -213,11 +222,11 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   gfx::Image page_favicon_;
 
   // The driver that owns |this|.
-  raw_ptr<PasswordManagerDriver, DanglingUntriaged> password_manager_driver_;
+  const raw_ptr<PasswordManagerDriver> password_manager_driver_;
 
-  raw_ptr<autofill::AutofillClient> autofill_client_;  // weak
+  raw_ptr<autofill::AutofillClient> autofill_client_;
 
-  raw_ptr<PasswordManagerClient, DanglingUntriaged> password_client_;
+  const raw_ptr<PasswordManagerClient> password_client_;
 
   // If not null then it will be called in destructor.
   base::OnceClosure deletion_callback_;

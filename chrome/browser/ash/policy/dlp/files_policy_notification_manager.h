@@ -8,6 +8,7 @@
 #include <memory>
 #include <queue>
 
+#include "base/files/file_path.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
@@ -17,7 +18,6 @@
 #include "chrome/browser/chromeos/policy/dlp/dlp_confidential_file.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_file_destination.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_files_utils.h"
-#include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_context.h"
@@ -59,6 +59,9 @@ class FilesPolicyNotificationManager
 
   ~FilesPolicyNotificationManager() override;
 
+  // KeyedService overrides:
+  void Shutdown() override;
+
   // Show DLP block UI. If `task_id` is set, the corresponding IOTask will be
   // updated with the blocked files. Otherwise a desktop notification will be
   // shown.
@@ -79,7 +82,7 @@ class FilesPolicyNotificationManager
 
   // Shows a Files Policy warning or error desktop notification with
   // `notification_id` based on `status`.
-  void ShowsFilesPolicyNotification(
+  virtual void ShowFilesPolicyNotification(
       const std::string& notification_id,
       const file_manager::io_task::ProgressStatus& status);
 
@@ -87,6 +90,13 @@ class FilesPolicyNotificationManager
   // Used for copy and move operations.
   void ShowDialog(file_manager::io_task::IOTaskId task_id,
                   FilesDialogType type);
+
+  // Shows a DLP warning timeout notification for `action`. `notification_id`
+  // should have value for IO tasks. When it  doesn't have a value, i.e. for non
+  // IO tasks, computes a new unique id for the notification.
+  void ShowDlpWarningTimeoutNotification(
+      dlp::FileAction action,
+      absl::optional<std::string> notification_id = absl::nullopt);
 
   // Returns whether IO task is being tracked.
   bool HasIOTask(file_manager::io_task::IOTaskId task_id) const;
@@ -285,9 +295,6 @@ class FilesPolicyNotificationManager
 
   // Calls the IOTaskController to cancel the task with `task_id`.
   void Cancel(file_manager::io_task::IOTaskId task_id);
-
-  // KeyedService overrides:
-  void Shutdown() override;
 
   // Shows DLP block desktop notification.
   void ShowDlpBlockNotification(std::vector<base::FilePath> blocked_files,

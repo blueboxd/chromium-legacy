@@ -69,6 +69,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/zoom_level_delegate.h"
 #include "media/mojo/buildflags.h"
+#include "net/base/features.h"
 #include "net/http/http_util.h"
 #include "net/proxy_resolution/proxy_config_service_android.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
@@ -546,11 +547,12 @@ void AwBrowserContext::ConfigureNetworkContextParams(
   // HTTP cache
   context_params->http_cache_enabled = true;
   context_params->http_cache_max_size = GetHttpCacheSize();
-  context_params->http_cache_directory = GetCacheDir();
 
   // WebView should persist and restore cookies between app sessions (including
   // session cookies).
   context_params->file_paths = network::mojom::NetworkContextFilePaths::New();
+  // Adding HTTP cache dir here
+  context_params->file_paths->http_cache_directory = GetCacheDir();
   base::FilePath cookie_path = AwBrowserContext::GetCookieStorePath();
   context_params->file_paths->data_directory = cookie_path.DirName();
   context_params->file_paths->cookie_database_name = cookie_path.BaseName();
@@ -581,6 +583,8 @@ void AwBrowserContext::ConfigureNetworkContextParams(
 
   context_params->enable_brotli = base::FeatureList::IsEnabled(
       android_webview::features::kWebViewBrotliSupport);
+  context_params->enable_zstd =
+      base::FeatureList::IsEnabled(net::features::kZstdContentEncoding);
 
   context_params->check_clear_text_permitted =
       AwContentBrowserClient::get_check_cleartext_permitted();

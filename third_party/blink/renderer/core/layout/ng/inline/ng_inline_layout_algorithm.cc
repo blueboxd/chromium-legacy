@@ -8,6 +8,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/adapters.h"
+#include "base/metrics/histogram_macros.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-shared.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
@@ -144,9 +146,10 @@ class NGLineBreakStrategy {
     DCHECK(!context->BalancedAvailableWidth());
     DCHECK_GT(opportunities.size(), 0u);
     DCHECK(!opportunities.back().HasShapeExclusions());
+    const base::ElapsedTimer timer;
 
     // Try `NGScoreLineBreaker` first if it's applicable.
-    if (use_score_line_break_) {
+    if (use_score_line_break_ && score_line_break_context_->IsActive()) {
       DCHECK(RuntimeEnabledFeatures::CSSTextWrapBalanceByScoreEnabled());
       DCHECK(score_line_break_context_->LineBreakPoints().empty());
       DCHECK_EQ(score_line_break_context_->LineBreakPointsIndex(), 0u);
@@ -157,6 +160,9 @@ class NGLineBreakStrategy {
         optimizer.BalanceBreakPoints(leading_floats,
                                      *score_line_break_context_);
         if (!score_line_break_context_->LineBreakPoints().empty()) {
+          UMA_HISTOGRAM_TIMES("Renderer.Layout.TextWrapBalance",
+                              timer.Elapsed());
+          UseCounter::Count(node.GetDocument(), WebFeature::kTextWrapBalance);
           return;
         }
       }
@@ -164,19 +170,25 @@ class NGLineBreakStrategy {
     }
 
     // Then try the bisection algorithm.
-    if (UNLIKELY(opportunities.size() != 1 ||
-                 line_opportunity.AvailableInlineSize() <= LayoutUnit())) {
-      // Exclusions and negative inline sizes are not supported.
-      return;
-    }
-    if (const absl::optional<LayoutUnit> balanced_available_width =
-            NGParagraphLineBreaker::AttemptParagraphBalancing(
-                node, space, line_opportunity)) {
-      context->SetBalancedAvailableWidth(balanced_available_width);
-      if (score_line_break_context_) {
-        score_line_break_context_->LineInfoList().Clear();
+    // Exclusions and negative inline sizes are not supported.
+    if (opportunities.size() == 1 &&
+        line_opportunity.AvailableInlineSize() > LayoutUnit()) {
+      if (const absl::optional<LayoutUnit> balanced_available_width =
+              NGParagraphLineBreaker::AttemptParagraphBalancing(
+                  node, space, line_opportunity)) {
+        context->SetBalancedAvailableWidth(balanced_available_width);
+        if (score_line_break_context_) {
+          score_line_break_context_->LineInfoList().Clear();
+        }
+        UMA_HISTOGRAM_TIMES("Renderer.Layout.TextWrapBalance", timer.Elapsed());
+        UseCounter::Count(node.GetDocument(), WebFeature::kTextWrapBalance);
+        return;
       }
     }
+
+    UMA_HISTOGRAM_TIMES("Renderer.Layout.TextWrapBalance.Fail",
+                        timer.Elapsed());
+    UseCounter::Count(node.GetDocument(), WebFeature::kTextWrapBalanceFail);
   }
 
   void Optimize(const NGInlineNode& node,
@@ -190,15 +202,31 @@ class NGLineBreakStrategy {
     if (UNLIKELY(!score_line_break_context_->IsActive())) {
       return;
     }
+    const base::ElapsedTimer timer;
     NGLineWidths line_widths;
     if (UNLIKELY(!line_widths.Set(node, opportunities, break_token))) {
       // The next line may have less opportunities that keep running, without
       // suspending the context.
+      UMA_HISTOGRAM_TIMES("Renderer.Layout.TextWrapPretty.Fail",
+                          timer.Elapsed());
+      UseCounter::Count(node.GetDocument(), WebFeature::kTextWrapPrettyFail);
       return;
     }
     NGScoreLineBreaker optimizer(node, space, line_widths, break_token,
                                  exclusion_space);
     optimizer.OptimalBreakPoints(leading_floats, *score_line_break_context_);
+    if (score_line_break_context_->IsActive()) {
+      // There are more lines until the end of a paragraph, keep looking.
+      return;
+    }
+    if (!score_line_break_context_->LineBreakPoints().empty()) {
+      UMA_HISTOGRAM_TIMES("Renderer.Layout.TextWrapPretty", timer.Elapsed());
+      UseCounter::Count(node.GetDocument(), WebFeature::kTextWrapPretty);
+    } else {
+      UMA_HISTOGRAM_TIMES("Renderer.Layout.TextWrapPretty.Fail",
+                          timer.Elapsed());
+      UseCounter::Count(node.GetDocument(), WebFeature::kTextWrapPrettyFail);
+    }
   }
 
   bool initiate_balancing_ = false;

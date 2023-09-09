@@ -153,14 +153,6 @@ const char kIosDiscoverFeedLastRefreshTime[] =
 const char kIosDiscoverFeedLastUnseenRefreshTime[] =
     "ios.discover_feed.last_unseen_refresh_time";
 
-// A list of the latest fetched Most Visited Sites.
-const char kIosLatestMostVisitedSites[] = "ios.most_visited_sites";
-
-// Integer representing the number of impressions of the Most Visited Site since
-// a freshness signal.
-const char kIosMagicStackSegmentationMVTImpressionsSinceFreshness[] =
-    "ios.magic_stack_segmentation.most_visited_sites_freshness";
-
 // The number of consecutive times the user dismissed the password bottom sheet.
 // This gets reset to 0 whenever the user selects a password from the bottom
 // sheet or from the keyboard accessory.
@@ -266,6 +258,10 @@ const char kOverflowMenuNewDestinations[] = "overflow_menu.new_destinations";
 // destinations.
 const char kOverflowMenuDestinationsOrder[] =
     "overflow_menu.destinations_order";
+
+// Dict preference which tracks the current elements and order of the overflow
+// menu's actions.
+const char kOverflowMenuActionsOrder[] = "overflow_menu.actions_order";
 
 // Boolean that is true when Suggest support is enabled.
 const char kSearchSuggestEnabled[] = "search.suggest_enabled";

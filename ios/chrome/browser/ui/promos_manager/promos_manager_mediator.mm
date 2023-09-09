@@ -39,19 +39,27 @@
   _promosManager->RecordImpression(promo);
 }
 
-- (absl::optional<promos_manager::Promo>)nextPromoForDisplay:
+- (absl::optional<PromoDisplayData>)nextPromoForDisplay:
     (BOOL)isFirstShownPromo {
   DCHECK_NE(_promosManager, nullptr);
   // Only check for a forced promo the first time around, to prevent infinite
   // forced promos.
+  // TODO(crbug.com/1457208): Once promo reentrance is supported, remove this
+  // and always show the forced promo.
   if (isFirstShownPromo) {
     absl::optional<promos_manager::Promo> forcedPromo =
         [self forcedPromoToDisplay];
     if (forcedPromo) {
-      return forcedPromo;
+      return PromoDisplayData{.promo = forcedPromo.value(), .was_forced = true};
     }
   }
-  return self.promosManager->NextPromoForDisplay();
+
+  absl::optional<promos_manager::Promo> promo =
+      self.promosManager->NextPromoForDisplay();
+  if (promo) {
+    return PromoDisplayData{.promo = promo.value(), .was_forced = false};
+  }
+  return absl::nullopt;
 }
 
 // Returns the promo selected in the Force Promo experimental setting.

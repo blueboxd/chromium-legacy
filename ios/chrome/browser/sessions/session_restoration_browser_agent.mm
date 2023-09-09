@@ -83,7 +83,7 @@ void SessionRestorationBrowserAgent::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-bool SessionRestorationBrowserAgent::RestoreSessionWindow(
+void SessionRestorationBrowserAgent::RestoreSessionWindow(
     SessionWindowIOS* window,
     SessionRestorationScope scope) {
   // Start the session restoration.
@@ -187,7 +187,6 @@ bool SessionRestorationBrowserAgent::RestoreSessionWindow(
   }
 
   // If there was only one tab and it was the new tab page, clobber it.
-  bool closed_ntp_tab = false;
   if (old_count == 1) {
     web::WebState* web_state = web_state_list_->GetWebStateAt(0);
 
@@ -201,7 +200,6 @@ bool SessionRestorationBrowserAgent::RestoreSessionWindow(
     if (!has_pending_load &&
         (web_state->GetLastCommittedURL() == kChromeUINewTabURL)) {
       web_state_list_->CloseWebStateAt(0, WebStateList::CLOSE_USER_ACTION);
-      closed_ntp_tab = true;
     }
   }
 
@@ -214,11 +212,9 @@ bool SessionRestorationBrowserAgent::RestoreSessionWindow(
 
   // Schedule a session save.
   SaveSession(/*immediately*/ false);
-
-  return closed_ntp_tab;
 }
 
-bool SessionRestorationBrowserAgent::RestoreSession() {
+void SessionRestorationBrowserAgent::RestoreSession() {
   DCHECK(session_identifier_.length != 0);
 
   const base::TimeTicks start_time = base::TimeTicks::Now();
@@ -237,13 +233,9 @@ bool SessionRestorationBrowserAgent::RestoreSession() {
     session_window = session.sessionWindows[0];
   }
 
-  const bool closed_ntp_tab =
-      RestoreSessionWindow(session_window, SessionRestorationScope::kAll);
-
+  RestoreSessionWindow(session_window, SessionRestorationScope::kAll);
   base::UmaHistogramTimes("Session.WebStates.LoadingTimeOnMainThread",
                           base::TimeTicks::Now() - start_time);
-
-  return closed_ntp_tab;
 }
 
 bool SessionRestorationBrowserAgent::IsRestoringSession() {
@@ -256,7 +248,7 @@ void SessionRestorationBrowserAgent::SaveSession(bool immediately) {
   if (!CanSaveSession())
     return;
 
-  if (batch_in_progress_) {
+  if (web_state_list_->IsBatchInProgress()) {
     save_after_batch_ = true;
     save_immediately_ = save_immediately_ || immediately;
     return;
@@ -344,12 +336,24 @@ void SessionRestorationBrowserAgent::WebStateActivatedAt(
   SaveSession(/*immediately=*/false);
 }
 
-void SessionRestorationBrowserAgent::WebStateListChanged(
+void SessionRestorationBrowserAgent::WebStateListWillChange(
+    WebStateList* web_state_list,
+    const WebStateListChangeDetach& detach_change,
+    const WebStateListStatus& status) {
+  if (web_state_list->active_index() == status.index) {
+    return;
+  }
+
+  // Persist the session state if a background tab is detached.
+  SaveSession(/*immediately=*/false);
+}
+
+void SessionRestorationBrowserAgent::WebStateListDidChange(
     WebStateList* web_state_list,
     const WebStateListChange& change,
-    const WebStateSelection& selection) {
+    const WebStateListStatus& status) {
   switch (change.type()) {
-    case WebStateListChange::Type::kSelectionOnly:
+    case WebStateListChange::Type::kStatusOnly:
       // TODO(crbug.com/1442546): Move the implementation from
       // WebStateActivatedAt() to here. Note that here is reachable only when
       // `reason` == ActiveWebStateChangeReason::Activated.
@@ -390,7 +394,7 @@ void SessionRestorationBrowserAgent::WebStateListChanged(
     case WebStateListChange::Type::kInsert: {
       const WebStateListChangeInsert& insert_change =
           change.As<WebStateListChangeInsert>();
-      if (selection.activating ||
+      if (status.active_web_state_change() ||
           insert_change.inserted_web_state()->IsLoading()) {
         return;
       }
@@ -402,27 +406,14 @@ void SessionRestorationBrowserAgent::WebStateListChanged(
   }
 }
 
-void SessionRestorationBrowserAgent::WillDetachWebStateAt(
-    WebStateList* web_state_list,
-    web::WebState* web_state,
-    int index) {
-  if (web_state_list->active_index() == index)
-    return;
-
-  // Persist the session state if a background tab is detached.
-  SaveSession(/*immediately=*/false);
-}
-
 void SessionRestorationBrowserAgent::WillBeginBatchOperation(
     WebStateList* web_state_list) {
-  batch_in_progress_ = true;
   save_after_batch_ = false;
   save_immediately_ = false;
 }
 
 void SessionRestorationBrowserAgent::BatchOperationEnded(
     WebStateList* web_state_list) {
-  batch_in_progress_ = false;
   if (save_after_batch_) {
     SaveSession(save_immediately_);
     save_after_batch_ = false;

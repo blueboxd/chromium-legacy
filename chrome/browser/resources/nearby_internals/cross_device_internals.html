@@ -14,6 +14,7 @@
 
   #buttons {
     margin-bottom: 80px;
+    display: flex;
   }
 
   #header {
@@ -36,7 +37,6 @@
     border-inline-end: var(--standard-border);
     border-inline-start: var(--standard-border);
     border-top: var(--standard-border);
-    height: 50px;
   }
 
 </style>
@@ -44,6 +44,10 @@
 <div id="buttons">
   <cr-button class="internals-button" on-click="onStartScanClicked">
     Presence: Start scan
+  </cr-button>
+
+  <cr-button class="internals-button" on-click="onStopScanClicked">
+    Presence: Stop scan
   </cr-button>
 
   <cr-button class="internals-button" on-click="onSyncCredentialsClicked">

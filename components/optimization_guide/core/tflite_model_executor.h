@@ -23,6 +23,7 @@
 #include "components/optimization_guide/core/model_executor.h"
 #include "components/optimization_guide/core/model_util.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
+#include "components/optimization_guide/machine_learning_tflite_buildflags.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/tflite/src/tensorflow/lite/c/common.h"
 #include "third_party/tflite_support/src/tensorflow_lite_support/cc/task/core/base_task_api.h"
@@ -72,11 +73,20 @@ class ScopedExecutionStatusResultRecorder {
 // to keep memory usage of the browser process down, but does delay model
 // execution by the time it takes to load the model (about 50ms in practice).
 // See |SetShouldUnloadModelOnComplete| to override this behavior.
-template <class OutputType, class InputType>
+//
+// Note that when built with the MediaPipe backend (non-default), task
+// cancellation is not supported.
+template <class OutputType,
+          class InputType,
+          // TODO(b/283522287): Remove this once all usage of TFLite Task
+          // Support are replaced by MediaPipe.
+          class ModelExecutionTaskType =
+              tflite::task::core::BaseTaskApi<OutputType, InputType>>
 class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
  public:
   TFLiteModelExecutor()
       : watchdog_(nullptr, base::OnTaskRunnerDeleter(nullptr)) {}
+
   ~TFLiteModelExecutor() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   }
@@ -103,9 +113,9 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
       // tasks can safely be executed.
       scoped_refptr<base::SequencedTaskRunner> watchdog_sequence =
           base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()});
-      using WatchdogType = ModelExecutionTimeoutWatchdog<OutputType, InputType>;
-      watchdog_ = std::unique_ptr<WatchdogType, base::OnTaskRunnerDeleter>(
-          new WatchdogType(
+      watchdog_ = std::unique_ptr<ModelExecutionTimeoutWatchdog,
+                                  base::OnTaskRunnerDeleter>(
+          new ModelExecutionTimeoutWatchdog(
               watchdog_sequence, optimization_target_,
               model_inference_timeout.value_or(
                   features::ModelExecutionWatchdogDefaultTimeout())),
@@ -248,7 +258,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
       // IMPORTANT: Once the arm method is called, disarm must be called when
       // the model execution finishes. Do NOT early-return in this next block.
       if (watchdog_) {
-        watchdog_->ArmWithTask(loaded_model_.get());
+        watchdog_->ArmWithTask(MakeCancelClosure());
       }
       {
         TRACE_EVENT1("browser", "OptGuideModelExecutor::Execute",
@@ -298,12 +308,13 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
 
   // Executes the model using |execution_task| on |args|, returning the model
   // output and setting |out_status| with the status of the execution attempt.
-  virtual absl::optional<OutputType> Execute(ModelExecutionTask* execution_task,
-                                             ExecutionStatus* out_status,
-                                             InputType args) = 0;
+  virtual absl::optional<OutputType> Execute(
+      ModelExecutionTaskType* execution_task,
+      ExecutionStatus* out_status,
+      InputType args) = 0;
 
   // Builds a model execution task using |model_file|.
-  virtual std::unique_ptr<ModelExecutionTask> BuildModelExecutionTask(
+  virtual std::unique_ptr<ModelExecutionTaskType> BuildModelExecutionTask(
       base::MemoryMappedFile* model_file,
       ExecutionStatus* out_status) = 0;
 
@@ -370,13 +381,25 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
     }
   }
 
+  base::OnceClosure MakeCancelClosure() {
+#if BUILDFLAG(BUILD_WITH_MEDIAPIPE_LIB)
+    return base::DoNothing();
+#else
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    // |base::Unretained| is safe here since the watchdog itself guarantees the
+    // lifetime of the stored pointer will not extend beyond when it is
+    // disarmed.
+    return base::BindOnce(&ModelExecutionTask::Cancel,
+                          base::Unretained(loaded_model_.get()));
+#endif
+  }
+
   proto::OptimizationTarget optimization_target_ =
       proto::OptimizationTarget::OPTIMIZATION_TARGET_UNKNOWN;
 
   bool should_unload_model_on_complete_ = true;
 
-  std::unique_ptr<ModelExecutionTimeoutWatchdog<OutputType, InputType>,
-                  base::OnTaskRunnerDeleter>
+  std::unique_ptr<ModelExecutionTimeoutWatchdog, base::OnTaskRunnerDeleter>
       watchdog_;
 
   scoped_refptr<base::SequencedTaskRunner> execution_task_runner_;
@@ -397,7 +420,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
   // lifetime, being set in |LoadModelFile()| and being destroyed in
   // |ResetModelFile()|.
 
-  std::unique_ptr<ModelExecutionTask> loaded_model_
+  std::unique_ptr<ModelExecutionTaskType> loaded_model_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
   // This will only be non-null when |model_file_path_| is set, and while the

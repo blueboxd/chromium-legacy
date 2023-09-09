@@ -26,6 +26,10 @@
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace content {
 
 namespace {
@@ -322,6 +326,15 @@ BrowserCompositorMac::CollectSurfaceIdsForEviction() {
 
 bool BrowserCompositorMac::ShouldShowStaleContentOnEviction() {
   return false;
+}
+
+void BrowserCompositorMac::DidNavigateMainFramePreCommit() {
+  delegated_frame_host_->DidNavigateMainFramePreCommit();
+}
+
+void BrowserCompositorMac::DidEnterBackForwardCache() {
+  dfh_local_surface_id_allocator_.GenerateId();
+  delegated_frame_host_->DidEnterBackForwardCache();
 }
 
 void BrowserCompositorMac::DidNavigate() {

@@ -23,6 +23,10 @@
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
 
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/document_part_root.h"
+#include "third_party/blink/renderer/core/dom/node_cloning_data.h"
+#include "third_party/blink/renderer/core/dom/part_root.h"
+#include "third_party/blink/renderer/core/dom/tree_scope.h"
 #include "third_party/blink/renderer/core/html/parser/html_document_parser.h"
 #include "third_party/blink/renderer/core/xml/parser/xml_document_parser.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
@@ -56,10 +60,12 @@ bool DocumentFragment::ChildTypeAllowed(NodeType type) const {
   }
 }
 
-Node* DocumentFragment::Clone(Document& factory, CloneChildrenFlag flag) const {
+Node* DocumentFragment::Clone(Document& factory, NodeCloningData& data) const {
   DocumentFragment* clone = Create(factory);
-  if (flag != CloneChildrenFlag::kSkip)
-    clone->CloneChildNodesFrom(*this, flag);
+  clone->ClonePartsFrom(*this, data);
+  if (data.Has(CloneOption::kIncludeDescendants)) {
+    clone->CloneChildNodesFrom(*this, data);
+  }
   return clone;
 }
 
@@ -78,6 +84,19 @@ bool DocumentFragment::ParseXML(const String& source,
                                 ParserContentPolicy parser_content_policy) {
   return XMLDocumentParser::ParseDocumentFragment(source, this, context_element,
                                                   parser_content_policy);
+}
+
+void DocumentFragment::Trace(Visitor* visitor) const {
+  visitor->Trace(document_part_root_);
+  ContainerNode::Trace(visitor);
+}
+
+DocumentPartRoot& DocumentFragment::getPartRoot() {
+  CHECK(RuntimeEnabledFeatures::DOMPartsAPIEnabled());
+  if (!document_part_root_) {
+    document_part_root_ = MakeGarbageCollected<DocumentPartRoot>(*this);
+  }
+  return *document_part_root_;
 }
 
 }  // namespace blink

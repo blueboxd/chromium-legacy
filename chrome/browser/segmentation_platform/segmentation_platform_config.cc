@@ -26,7 +26,6 @@
 #include "components/segmentation_platform/public/constants.h"
 #include "components/segmentation_platform/public/features.h"
 #include "components/segmentation_platform/public/proto/segmentation_platform.pb.h"
-#include "components/webapps/browser/features.h"
 #include "content/public/browser/browser_context.h"
 
 #if BUILDFLAG(IS_ANDROID)
@@ -109,7 +108,7 @@ std::unique_ptr<Config> GetConfigForContextualPageActions(
   config->AddSegmentId(
       SegmentId::OPTIMIZATION_TARGET_CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING,
       std::make_unique<ContextualPageActionsModel>());
-  config->on_demand_execution = true;
+  config->auto_execute_and_cache = false;
   return config;
 }
 
@@ -121,7 +120,7 @@ std::unique_ptr<Config> GetConfigForWebAppInstallationPromo() {
   config->segmentation_uma_name = kWebAppInstallationPromoUmaName;
   config->AddSegmentId(
       SegmentId::OPTIMIZATION_TARGET_WEB_APP_INSTALLATION_PROMO);
-  config->on_demand_execution = true;
+  config->auto_execute_and_cache = false;
   return config;
 }
 
@@ -156,15 +155,9 @@ std::vector<std::unique_ptr<Config>> GetSegmentationPlatformConfig(
   configs.emplace_back(CrossDeviceUserSegment::GetConfig());
   configs.emplace_back(ResumeHeavyUserModel::GetConfig());
   configs.emplace_back(DeviceSwitcherModel::GetConfig());
+  configs.emplace_back(GetConfigForWebAppInstallationPromo());
   configs.emplace_back(TabResumptionRanker::GetConfig());
   configs.emplace_back(PasswordManagerUserModel::GetConfig());
-
-  if (base::FeatureList::IsEnabled(
-          webapps::features::kWebAppsEnableMLModelForPromotion) ||
-      base::FeatureList::IsEnabled(
-          webapps::features::kInstallPromptSegmentation)) {
-    configs.emplace_back(GetConfigForWebAppInstallationPromo());
-  }
 
   base::EraseIf(configs, [](const auto& config) { return !config.get(); });
 

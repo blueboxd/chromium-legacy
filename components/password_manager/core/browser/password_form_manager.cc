@@ -23,7 +23,6 @@
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
-#include "components/password_manager/core/browser/field_info_manager.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/password_change_success_tracker_impl.h"
 #include "components/password_manager/core/browser/password_feature_manager.h"
@@ -58,11 +57,11 @@ using autofill::FormFieldData;
 using autofill::FormRendererId;
 using autofill::FormSignature;
 using autofill::FormStructure;
-using autofill::GaiaIdHash;
 using autofill::NOT_USERNAME;
 using autofill::SINGLE_USERNAME;
 using autofill::password_generation::PasswordGenerationType;
 using base::TimeTicks;
+using signin::GaiaIdHash;
 
 using Logger = autofill::SavePasswordProgressLogger;
 
@@ -516,10 +515,6 @@ bool PasswordFormManager::IsNewLogin() const {
 
 FormFetcher* PasswordFormManager::GetFormFetcher() {
   return form_fetcher_;
-}
-
-bool PasswordFormManager::IsPendingCredentialsPublicSuffixMatch() const {
-  return password_save_manager_->GetPendingCredentials().is_public_suffix_match;
 }
 
 void PasswordFormManager::PresaveGeneratedPassword(

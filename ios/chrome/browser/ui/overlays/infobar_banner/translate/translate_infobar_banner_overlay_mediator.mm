@@ -55,13 +55,6 @@
 #pragma mark - InfobarOverlayRequestMediator
 
 - (void)bannerInfobarButtonWasPressed:(UIButton*)sender {
-  // This can happen if the user quickly navigates to another website while the
-  // banner is still appearing, causing the banner to be triggered before being
-  // removed.
-  if (!self.translateDelegate) {
-    return;
-  }
-
   translate::TranslateInfoBarDelegate* delegate = self.translateDelegate;
   translate::TranslateStep step = delegate->translate_step();
   switch (step) {

@@ -22,6 +22,8 @@
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_hooks.h"
+#include "base/allocator/partition_allocator/partition_root.h"
+#include "base/allocator/partition_allocator/pointers/raw_ptr_counting_impl_wrapper_for_test.h"
 #include "base/allocator/partition_allocator/pointers/raw_ptr_test_support.h"
 #include "base/allocator/partition_allocator/pointers/raw_ref.h"
 #include "base/allocator/partition_allocator/tagging.h"
@@ -156,14 +158,14 @@ namespace {
 
 // `kAllowPtrArithmetic` matches what `CountingRawPtr` does internally.
 // `kUseCountingWrapperForTest` is removed.
-using RawPtrCountingImpl = base::internal::RawPtrCountingImplWrapperForTest<
+using RawPtrCountingImpl = base::test::RawPtrCountingImplWrapperForTest<
     base::RawPtrTraits::kAllowPtrArithmetic>;
 
 // `kMayDangle | kAllowPtrArithmetic` matches what `CountingRawPtrMayDangle`
 // does internally. `kUseCountingWrapperForTest` is removed, and `kMayDangle`
 // and `kAllowPtrArithmetic` are kept.
 using RawPtrCountingMayDangleImpl =
-    base::internal::RawPtrCountingImplWrapperForTest<
+    base::test::RawPtrCountingImplWrapperForTest<
         base::RawPtrTraits::kMayDangle |
         base::RawPtrTraits::kAllowPtrArithmetic>;
 
@@ -1516,17 +1518,17 @@ class BackupRefPtrTest : public testing::Test {
     // TODO(bartekn): Avoid using PartitionAlloc API directly. Switch to
     // new/delete once PartitionAlloc Everywhere is fully enabled.
     partition_alloc::PartitionAllocGlobalInit(HandleOOM);
-    allocator_.init(
-        {.backup_ref_ptr =
-             partition_alloc::PartitionOptions::BackupRefPtr::kEnabled,
-         .memory_tagging =
-             base::CPU::GetInstanceNoAllocation().has_mte()
-                 ? partition_alloc::PartitionOptions::MemoryTagging::kEnabled
-                 : partition_alloc::PartitionOptions::MemoryTagging::
-                       kDisabled});
   }
 
-  partition_alloc::PartitionAllocator allocator_;
+  partition_alloc::PartitionAllocator allocator_ =
+      partition_alloc::PartitionAllocator(partition_alloc::PartitionOptions{
+          .backup_ref_ptr =
+              partition_alloc::PartitionOptions::BackupRefPtr::kEnabled,
+          .memory_tagging =
+              base::CPU::GetInstanceNoAllocation().has_mte()
+                  ? partition_alloc::PartitionOptions::MemoryTagging::kEnabled
+                  : partition_alloc::PartitionOptions::MemoryTagging::
+                        kDisabled});
 };
 
 TEST_F(BackupRefPtrTest, Basic) {

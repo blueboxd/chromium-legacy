@@ -16,9 +16,9 @@ android_library("java") {
   sources = [
     "java/src/org/chromium/chrome/browser/autofill/AutofillAddress.java",
     "java/src/org/chromium/chrome/browser/autofill/AutofillEditorBase.java",
+    "java/src/org/chromium/chrome/browser/autofill/AutofillProfile.java",
     "java/src/org/chromium/chrome/browser/autofill/AutofillProfileBridge.java",
     "java/src/org/chromium/chrome/browser/autofill/AutofillUiUtils.java",
-    "java/src/org/chromium/chrome/browser/autofill/LegalMessageLine.java",
     "java/src/org/chromium/chrome/browser/autofill/PersonalDataManager.java",
     "java/src/org/chromium/chrome/browser/autofill/PhoneNumberUtil.java",
     "java/src/org/chromium/chrome/browser/autofill/editors/AddressEditorCoordinator.java",
@@ -29,6 +29,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/autofill/editors/EditorDialogToolbar.java",
     "java/src/org/chromium/chrome/browser/autofill/editors/EditorDialogView.java",
     "java/src/org/chromium/chrome/browser/autofill/editors/EditorDialogViewBinder.java",
+    "java/src/org/chromium/chrome/browser/autofill/editors/EditorFieldValidator.java",
     "java/src/org/chromium/chrome/browser/autofill/editors/EditorObserverForTest.java",
     "java/src/org/chromium/chrome/browser/autofill/editors/EditorProperties.java",
     "java/src/org/chromium/chrome/browser/autofill/editors/FieldView.java",
@@ -104,6 +105,7 @@ android_library("bottom_sheet_utils_java") {
 
 generate_jni("jni_headers") {
   sources = [
+    "java/src/org/chromium/chrome/browser/autofill/AutofillProfile.java",
     "java/src/org/chromium/chrome/browser/autofill/AutofillProfileBridge.java",
     "java/src/org/chromium/chrome/browser/autofill/PersonalDataManager.java",
     "java/src/org/chromium/chrome/browser/autofill/PhoneNumberUtil.java",
@@ -147,6 +149,7 @@ android_library("test_java") {
     "//chrome/browser/ui/android/night_mode:night_mode_java_test_support",
     "//chrome/browser/util:java",
     "//chrome/test/android:chrome_java_integration_test_support",
+    "//components/autofill/android:main_autofill_java",
     "//components/signin/public/android:java",
     "//components/sync/android:sync_java",
     "//content/public/test/android:content_java_test_support",
@@ -177,6 +180,7 @@ robolectric_library("junit") {
     "//chrome/browser/signin/services/android:java",
     "//chrome/browser/sync/android:java",
     "//chrome/test/android:chrome_java_unit_test_support",
+    "//components/autofill/android:main_autofill_java",
     "//components/signin/public/android:java",
     "//components/sync/android:sync_java",
     "//third_party/androidx:androidx_annotation_annotation_java",

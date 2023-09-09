@@ -84,7 +84,6 @@
 #include "third_party/blink/renderer/core/content_capture/content_capture_manager.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
-#include "third_party/blink/renderer/core/dom/context_features_client_impl.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
@@ -402,6 +401,20 @@ ui::mojom::blink::WindowOpenDisposition NavigationPolicyToDisposition(
   }
   NOTREACHED() << "Unexpected NavigationPolicy";
   return ui::mojom::blink::WindowOpenDisposition::IGNORE_ACTION;
+}
+
+// Records the queuing duration for activation IPC.
+void RecordPrerenderActivationSignalDelay() {
+  auto* task = base::TaskAnnotator::CurrentTaskForThread();
+
+  // It should be a Mojo call, so `RunTask` executes it as a non-delayed task.
+  CHECK(task);
+  CHECK(task->delayed_run_time.is_null());
+  base::TimeDelta queueing_time =
+      !task->queue_time.is_null() ? base::TimeTicks::Now() - task->queue_time
+                                  : base::TimeDelta();
+  base::UmaHistogramTimes("Prerender.Experimental.ActivationIPCDelay",
+                          queueing_time);
 }
 
 #if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_WIN)
@@ -1446,8 +1459,14 @@ void WebViewImpl::PaintContent(cc::PaintCanvas* canvas, const gfx::Rect& rect) {
     return;
 
   LocalFrameView& main_view = *MainFrameImpl()->GetFrame()->View();
-  DCHECK(main_view.GetLayoutView()->GetDocument().Lifecycle().GetState() ==
-         DocumentLifecycle::kPaintClean);
+  // TODO(crbug.com/1442088): Investigate the reason.
+  if (!main_view.GetLayoutView()
+           ->FirstFragment()
+           .HasLocalBorderBoxProperties()) {
+    return;
+  }
+  DCHECK_EQ(main_view.GetLayoutView()->GetDocument().Lifecycle().GetState(),
+            DocumentLifecycle::kPaintClean);
 
   auto* builder = MakeGarbageCollected<PaintRecordBuilder>();
   main_view.PaintOutsideOfLifecycleWithThrottlingAllowed(
@@ -1576,6 +1595,7 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
       prefs.should_clear_document_background);
   settings->SetEnableScrollAnimator(prefs.enable_scroll_animator);
   settings->SetPrefersReducedMotion(prefs.prefers_reduced_motion);
+  settings->SetPrefersReducedTransparency(prefs.prefers_reduced_transparency);
 
   RuntimeEnabledFeatures::SetTouchEventFeatureDetectionEnabled(
       prefs.touch_event_feature_detection_enabled);
@@ -3327,6 +3347,9 @@ void WebViewImpl::ActivatePrerenderedPage(
   Member<Document> main_frame_document;
   if (auto* local_frame = DynamicTo<LocalFrame>(GetPage()->MainFrame())) {
     main_frame_document = local_frame->GetDocument();
+  }
+  if (main_frame_document) {
+    RecordPrerenderActivationSignalDelay();
   }
 
   for (Frame* frame = GetPage()->MainFrame(); frame;

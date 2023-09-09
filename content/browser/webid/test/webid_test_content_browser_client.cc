@@ -36,7 +36,7 @@ void WebIdTestContentBrowserClient::SetMDocProvider(
 
 void WebIdTestContentBrowserClient::SetIdentityRegistry(
     WebContents* web_contents,
-    base::WeakPtr<FederatedIdentityModalDialogViewDelegate> delegate,
+    FederatedIdentityModalDialogViewDelegate* delegate,
     const url::Origin& url) {
   IdentityRegistry::CreateForWebContents(web_contents, delegate, url);
 }

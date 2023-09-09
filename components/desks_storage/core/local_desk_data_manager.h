@@ -107,7 +107,7 @@ class LocalDeskDataManager : public DeskModel, public AdminTemplateModel {
   size_t GetDeskTemplateEntryCount() const override;
   size_t GetMaxSaveAndRecallDeskEntryCount() const override;
   size_t GetMaxDeskTemplateEntryCount() const override;
-  std::vector<base::Uuid> GetAllEntryUuids() const override;
+  std::set<base::Uuid> GetAllEntryUuids() const override;
   bool IsReady() const override;
   bool IsSyncing() const override;
   ash::DeskTemplate* FindOtherEntryWithName(
@@ -128,11 +128,10 @@ class LocalDeskDataManager : public DeskModel, public AdminTemplateModel {
   // Update entry status used in testing to verify
   // behavior.
   enum class UpdateEntryStatus {
-    kUpdateNotCalled,
     kOk,
     kNotFound,
     kDuplicate,
-    kBadPolicy,
+    kOutdatedPolicy,
   };
 
   // Loads templates from `user_data_dir_path` and `sub_directory_name` into the

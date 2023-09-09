@@ -162,7 +162,7 @@ std::atomic_bool g_no_wake_ups_for_canceled_tasks{true};
 std::atomic_bool g_record_crash_keys = false;
 
 #if BUILDFLAG(IS_WIN)
-bool g_explicit_high_resolution_timer_win = false;
+bool g_explicit_high_resolution_timer_win = true;
 #endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace
@@ -955,11 +955,6 @@ void SequenceManagerImpl::SetWorkBatchSize(int work_batch_size) {
   controller_->SetWorkBatchSize(work_batch_size);
 }
 
-void SequenceManagerImpl::SetTimerSlack(TimerSlack timer_slack) {
-  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
-  controller_->SetTimerSlack(timer_slack);
-}
-
 void SequenceManagerImpl::AddTaskObserver(TaskObserver* task_observer) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   main_thread_only().task_observers.AddObserver(task_observer);
@@ -1136,9 +1131,10 @@ size_t SequenceManagerImpl::GetPendingTaskCountForTesting() const {
   return total;
 }
 
-scoped_refptr<TaskQueue> SequenceManagerImpl::CreateTaskQueue(
+TaskQueue::Handle SequenceManagerImpl::CreateTaskQueue(
     const TaskQueue::Spec& spec) {
-  return WrapRefCounted(new TaskQueue(CreateTaskQueueImpl(spec), spec));
+  return TaskQueue::Handle(
+      std::make_unique<TaskQueue>(CreateTaskQueueImpl(spec), spec));
 }
 
 std::string SequenceManagerImpl::DescribeAllPendingTasks() const {

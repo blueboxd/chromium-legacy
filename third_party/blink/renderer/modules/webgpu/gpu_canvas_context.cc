@@ -489,17 +489,15 @@ void GPUCanvasContext::configure(const GPUCanvasConfiguration* descriptor,
     return;
   }
 
-  gfx::HDRMode hdr_mode = gfx::HDRMode::kDefault;
-  absl::optional<gfx::HDRMetadata> hdr_metadata;
+  gfx::HDRMetadata hdr_metadata;
   if (descriptor->hasHdrOptions()) {
-    ParseCanvasHighDynamicRangeOptions(descriptor->hdrOptions(), hdr_mode,
-                                       hdr_metadata);
+    ParseCanvasHighDynamicRangeOptions(descriptor->hdrOptions(), hdr_metadata);
   }
 
   swap_buffers_ = base::AdoptRef(new WebGPUSwapBufferProvider(
       this, device_->GetDawnControlClient(), device_->GetHandle(),
       static_cast<WGPUTextureUsage>(swap_texture_descriptor_.usage),
-      swap_texture_descriptor_.format, color_space_, hdr_mode, hdr_metadata));
+      swap_texture_descriptor_.format, color_space_, hdr_metadata));
   swap_buffers_->SetFilterQuality(filter_quality_);
 
   // Note: SetContentsOpaque is only an optimization hint. It doesn't
@@ -838,8 +836,7 @@ scoped_refptr<StaticBitmapImage> GPUCanvasContext::SnapshotInternal(
   // usually related to OffscreenCanvas; in cases where the image created from
   // this Snapshot will be sent eventually to the Display Compositor.
   auto resource_provider = CanvasResourceProvider::CreateWebGPUImageProvider(
-      info,
-      /*is_origin_top_left=*/true, gpu::SHARED_IMAGE_USAGE_DISPLAY_READ);
+      info, gpu::SHARED_IMAGE_USAGE_DISPLAY_READ);
   if (!resource_provider)
     return nullptr;
 

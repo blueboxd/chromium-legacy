@@ -41,6 +41,7 @@
 #include "components/autofill/core/browser/payments/mandatory_reauth_manager.h"
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/profile_requirement_utils.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_internals/log_message.h"
@@ -112,7 +113,7 @@ bool ShouldOfferVirtualCardEnrollment(
   }
 
   if (extracted_credit_card->virtual_card_enrollment_state() !=
-      CreditCard::VirtualCardEnrollmentState::UNENROLLED_AND_ELIGIBLE) {
+      CreditCard::VirtualCardEnrollmentState::kUnenrolledAndEligible) {
     return false;
   }
 
@@ -403,6 +404,35 @@ size_t FormDataImporter::ExtractAddressProfiles(
   return num_complete_profiles;
 }
 
+bool FormDataImporter::LogAddressFormImportRequirementMetric(
+    const AutofillProfile& profile,
+    LogBuffer* import_log_buffer) {
+  base::flat_set<autofill_metrics::AddressProfileImportRequirementMetric>
+      autofill_profile_requirement_results =
+          GetAutofillProfileRequirementResult(profile, import_log_buffer);
+
+  for (const auto& requirement_result : autofill_profile_requirement_results) {
+    autofill_metrics::LogAddressFormImportRequirementMetric(requirement_result);
+  }
+
+  autofill_metrics::LogAddressFormImportCountrySpecificFieldRequirementsMetric(
+      autofill_profile_requirement_results.contains(
+          AddressImportRequirement::kZipRequirementViolated),
+      autofill_profile_requirement_results.contains(
+          AddressImportRequirement::kStateRequirementViolated),
+      autofill_profile_requirement_results.contains(
+          AddressImportRequirement::kCityRequirementViolated),
+      autofill_profile_requirement_results.contains(
+          AddressImportRequirement::kLine1RequirementViolated));
+
+  return !base::ranges::any_of(
+      kMinimumAddressRequirementViolations,
+      [&](AddressImportRequirement address_requirement_violation) {
+        return autofill_profile_requirement_results.contains(
+            address_requirement_violation);
+      });
+}
+
 bool FormDataImporter::ExtractAddressProfileFromSection(
     base::span<const AutofillField* const> section_fields,
     const GURL& source_url,
@@ -546,16 +576,13 @@ bool FormDataImporter::ExtractAddressProfileFromSection(
     }
   }
 
-  const std::string variation_country_code =
-      client_->GetVariationConfigCountryCode();
-  std::string predicted_country_code =
-      GetPredictedCountryCode(candidate_profile, variation_country_code,
-                              app_locale_, import_log_buffer);
-
   // When setting a phone number, the region is deduced from the profile's
-  // country or the app locale. For the `variation_country_code` to take
+  // country or the app locale. For the variation country code to take
   // precedence over the app locale, country code complemention needs to happen
   // before `SetPhoneNumber()`.
+  const std::string predicted_country_code = GetPredictedCountryCode(
+      candidate_profile, client_->GetVariationConfigCountryCode(), app_locale_,
+      import_log_buffer);
   import_metadata.did_complement_country =
       ComplementCountry(candidate_profile, predicted_country_code);
 
@@ -586,11 +613,6 @@ bool FormDataImporter::ExtractAddressProfileFromSection(
       !has_invalid_information) {
     multistep_importer_.ProcessMultiStepImport(candidate_profile,
                                                import_metadata);
-    // If `candidate_profile` was merged with a profile containing
-    // (non-complemented) country information, the country might have changed.
-    predicted_country_code =
-        GetPredictedCountryCode(candidate_profile, variation_country_code,
-                                app_locale_, /*import_log_buffer=*/nullptr);
   }
 
   // This relies on the profile's country code and must be done strictly after
@@ -598,11 +620,9 @@ bool FormDataImporter::ExtractAddressProfileFromSection(
   RemoveInaccessibleProfileValues(candidate_profile);
 
   // Do not import a profile if any of the requirements is violated.
-  // |IsMinimumAddress()| goes first to collect metrics.
-  bool all_fulfilled =
-      IsMinimumAddress(candidate_profile, predicted_country_code, app_locale_,
-                       import_log_buffer, /*collect_metrics=*/true) &&
-      !has_invalid_information;
+  bool all_fulfilled = LogAddressFormImportRequirementMetric(
+                           candidate_profile, import_log_buffer) &&
+                       !has_invalid_information;
 
   // Collect metrics regarding the requirements for an address profile import.
   autofill_metrics::LogAddressFormImportRequirementMetric(
@@ -638,7 +658,7 @@ bool FormDataImporter::ExtractAddressProfileFromSection(
   // At this stage, the saving of the profile can only be omitted by the
   // incognito mode but the import is not triggered if the browser is in the
   // incognito mode.
-  DCHECK(!personal_data_manager_->IsOffTheRecord());
+  DCHECK(!client_->IsOffTheRecord());
 
   AddressProfileImportCandidate import_candidate;
   import_candidate.profile = candidate_profile;

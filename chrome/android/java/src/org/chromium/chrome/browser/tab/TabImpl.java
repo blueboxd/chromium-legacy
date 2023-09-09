@@ -594,7 +594,6 @@ public class TabImpl implements Tab {
             return true;
         }
 
-        RequestDesktopUtils.maybeRestoreUserAgentOnSiteSettingsDowngrade(this);
         switchUserAgentIfNeeded(UseDesktopUserAgentCaller.LOAD_IF_NEEDED + caller);
         restoreIfNeeded();
         return true;
@@ -826,28 +825,11 @@ public class TabImpl implements Tab {
         return null;
     }
 
-    /**
-     * @param tab {@link Tab} instance being checked.
-     * @return Whether the tab is detached from any Activity and its {@link WindowAndroid}.
-     * Certain functionalities will not work until it is attached to an activity
-     * with {@link ReparentingTask#finish}.
-     */
-    static boolean isDetached(Tab tab) {
-        if (tab.getWebContents() == null) return true;
-        // Should get WindowAndroid from WebContents since the one from |getWindowAndroid()|
-        // is always non-null even when the tab is in detached state. See the comment in |detach()|.
-        WindowAndroid window = tab.getWebContents().getTopLevelNativeWindow();
-        if (window == null) return true;
-        Activity activity = ContextUtils.activityFromContext(window.getContext().get());
-        return !(activity instanceof ChromeActivity);
-    }
-
     @Override
     public void setIsTabSaveEnabled(boolean isTabSaveEnabled) {
         mIsTabSaveEnabledSupplier.set(isTabSaveEnabled);
     }
 
-    @VisibleForTesting
     public ObservableSupplierImpl<Boolean> getIsTabSaveEnabledSupplierForTesting() {
         return mIsTabSaveEnabledSupplier;
     }
@@ -1221,7 +1203,7 @@ public class TabImpl implements Tab {
         // While detached for reparenting we don't have an owning Activity, or TabModelSelector,
         // so we can't create the native page. The native page will be created once reparenting is
         // completed.
-        if (isDetached(this)) return false;
+        if (TabUtils.isDetached(this)) return false;
         NativePage candidateForReuse = forceReload ? null : getNativePage();
         NativePage nativePage = mDelegateFactory.createNativePage(url, candidateForReuse, this);
         if (nativePage != null) {
@@ -1443,8 +1425,8 @@ public class TabImpl implements Tab {
             mWebContentsDelegate = createWebContentsDelegate();
 
             assert mNativeTabAndroid != 0;
-            TabImplJni.get().initWebContents(mNativeTabAndroid, mIncognito, isDetached(this),
-                    webContents, mWebContentsDelegate,
+            TabImplJni.get().initWebContents(mNativeTabAndroid, mIncognito,
+                    TabUtils.isDetached(this), webContents, mWebContentsDelegate,
                     new TabContextMenuPopulatorFactory(
                             mDelegateFactory.createContextMenuPopulatorFactory(this), this));
 
@@ -1537,7 +1519,7 @@ public class TabImpl implements Tab {
      */
     private void updateInteractableState() {
         boolean currentState =
-                !mIsHidden && !isFrozen() && mIsViewAttachedToWindow && !isDetached(this);
+                !mIsHidden && !isFrozen() && mIsViewAttachedToWindow && !TabUtils.isDetached(this);
 
         if (currentState == mInteractableState) return;
 
@@ -1560,6 +1542,11 @@ public class TabImpl implements Tab {
 
         try {
             TraceEvent.begin("Tab.restoreIfNeeded");
+            if (isFrozen()) {
+                assert CriticalPersistedTabData.from(this).getWebContentsState()
+                        != null
+                    : "crbug/1393848: A frozen tab must have WebContentsState to restore from.";
+            }
             // Restore is needed for a tab that is loaded for the first time. WebContents will
             // be restored from a saved state.
             if ((isFrozen() && CriticalPersistedTabData.from(this).getWebContentsState() != null

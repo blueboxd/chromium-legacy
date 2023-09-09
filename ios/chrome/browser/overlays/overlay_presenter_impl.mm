@@ -520,12 +520,24 @@ void OverlayPresenterImpl::OverlayPresentationContextDidMoveToWindow(
 
 #pragma mark - WebStateListObserver
 
-void OverlayPresenterImpl::WebStateListChanged(
+void OverlayPresenterImpl::WebStateListWillChange(
+    WebStateList* web_state_list,
+    const WebStateListChangeDetach& detach_change,
+    const WebStateListStatus& status) {
+  web::WebState* detached_web_state = detach_change.detached_web_state();
+  detaching_presenting_web_state_ =
+      presented_request_
+          ? presented_request_->GetQueueWebState() == detached_web_state
+          : false;
+  WebStateRemovedFromBrowser(detached_web_state);
+}
+
+void OverlayPresenterImpl::WebStateListDidChange(
     WebStateList* web_state_list,
     const WebStateListChange& change,
-    const WebStateSelection& selection) {
+    const WebStateListStatus& status) {
   switch (change.type()) {
-    case WebStateListChange::Type::kSelectionOnly:
+    case WebStateListChange::Type::kStatusOnly:
       // TODO(crbug.com/1442546): Move the implementation from
       // WebStateActivatedAt() to here. Note that here is reachable only when
       // `reason` == ActiveWebStateChangeReason::Activated.
@@ -550,15 +562,6 @@ void OverlayPresenterImpl::WebStateListChanged(
       break;
     }
   }
-}
-
-void OverlayPresenterImpl::WillDetachWebStateAt(WebStateList* web_state_list,
-                                                web::WebState* web_state,
-                                                int index) {
-  detaching_presenting_web_state_ =
-      presented_request_ ? presented_request_->GetQueueWebState() == web_state
-                         : false;
-  WebStateRemovedFromBrowser(web_state);
 }
 
 void OverlayPresenterImpl::WebStateActivatedAt(

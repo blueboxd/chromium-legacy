@@ -105,6 +105,23 @@ IconSizes& IconSizes::operator=(const IconSizes&) = default;
 
 IconSizes& IconSizes::operator=(IconSizes&&) noexcept = default;
 
+base::Value IconSizes::AsDebugValue() const {
+  auto ConvertList = [](const auto& list) {
+    base::Value::List list_json;
+    for (const auto& item : list) {
+      list_json.Append(item);
+    }
+    return list_json;
+  };
+
+  base::Value::Dict root;
+  for (IconPurpose purpose : kIconPurposes) {
+    root.Set(base::ToString(purpose), ConvertList(GetSizesForPurpose(purpose)));
+  }
+
+  return base::Value(std::move(root));
+}
+
 const std::vector<SquareSizePx>& IconSizes::GetSizesForPurpose(
     IconPurpose purpose) const {
   switch (purpose) {
@@ -224,10 +241,14 @@ base::Value WebAppShortcutsMenuItemInfo::AsDebugValue() const {
   }
   root.Set("icons", std::move(icons));
 
+  root.Set("downloaded_icons_sizes", downloaded_icon_sizes.AsDebugValue());
+
   return base::Value(std::move(root));
 }
 
 // WebAppInstallInfo
+
+namespace web_app {
 
 // static
 WebAppInstallInfo WebAppInstallInfo::CreateInstallInfoForCreateShortcut(
@@ -255,11 +276,26 @@ WebAppInstallInfo WebAppInstallInfo::CreateInstallInfoForCreateShortcut(
   return create_shortcut_info;
 }
 
+// static
+std::unique_ptr<WebAppInstallInfo>
+WebAppInstallInfo::CreateWithStartUrlForTesting(const GURL& start_url) {
+  return std::make_unique<WebAppInstallInfo>(
+      GenerateManifestIdFromStartUrlOnly(start_url), start_url);
+}
+
 WebAppInstallInfo::WebAppInstallInfo() = default;
 
 WebAppInstallInfo::WebAppInstallInfo(const web_app::ManifestId& manifest_id)
     : manifest_id(manifest_id) {
   CHECK(manifest_id.is_valid());
+}
+
+WebAppInstallInfo::WebAppInstallInfo(const web_app::ManifestId& manifest_id,
+                                     const GURL& start_url)
+    : manifest_id(manifest_id), start_url(start_url) {
+  CHECK(manifest_id.is_valid());
+  CHECK(!manifest_id.has_ref());
+  CHECK(start_url.is_valid());
 }
 
 WebAppInstallInfo::WebAppInstallInfo(const WebAppInstallInfo& other) = default;
@@ -273,6 +309,8 @@ WebAppInstallInfo::~WebAppInstallInfo() = default;
 WebAppInstallInfo WebAppInstallInfo::Clone() const {
   return WebAppInstallInfo(*this);
 }
+
+}  // namespace web_app
 
 bool operator==(const IconSizes& icon_sizes1, const IconSizes& icon_sizes2) {
   return std::tie(icon_sizes1.any, icon_sizes1.maskable,

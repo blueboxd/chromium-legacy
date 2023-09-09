@@ -17,6 +17,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
+import org.chromium.base.ResettersForTesting;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.build.BuildConfig;
@@ -58,7 +59,7 @@ public class VariationsSeedFetcher {
                             + "      'state of field trials in Chrome. These field trials '"
                             + "      'typically configure either A/B experiments, or launched '"
                             + "      'features – oftentimes, critical security features.'"
-                            + "  trigger: 'This request is made once, on Chrome\'s first run, to '"
+                            + "  trigger: 'This request is made once, on Chrome\\'s first run, to '"
                             + "           'determine the initial state Chrome should be in.'"
                             + "  data: 'None.'"
                             + "  destination: GOOGLE_OWNED_SERVICE"
@@ -179,9 +180,10 @@ public class VariationsSeedFetcher {
      *
      * @param fetcher the mock.
      */
-    @VisibleForTesting
     public static void setVariationsSeedFetcherForTesting(VariationsSeedFetcher fetcher) {
+        var oldValue = sInstance;
         sInstance = fetcher;
+        ResettersForTesting.register(() -> sInstance = oldValue);
     }
 
     @VisibleForTesting

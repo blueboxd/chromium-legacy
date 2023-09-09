@@ -126,6 +126,14 @@ absl::optional<crosapi::mojom::DiagnosticsRoutineEnum> Convert(
           kSmartctlCheckWithPercentageUsed;
     case cros_healthd::mojom::DiagnosticRoutineEnum::kEmmcLifetime:
       return crosapi::mojom::DiagnosticsRoutineEnum::kEmmcLifetime;
+    case cros_healthd::mojom::DiagnosticRoutineEnum::kBluetoothPower:
+      return crosapi::mojom::DiagnosticsRoutineEnum::kBluetoothPower;
+    case cros_healthd::mojom::DiagnosticRoutineEnum::kUfsLifetime:
+      return crosapi::mojom::DiagnosticsRoutineEnum::kUfsLifetime;
+    case cros_healthd::mojom::DiagnosticRoutineEnum::kPowerButton:
+      return crosapi::mojom::DiagnosticsRoutineEnum::kPowerButton;
+    case cros_healthd::mojom::DiagnosticRoutineEnum::kAudioDriver:
+      return crosapi::mojom::DiagnosticsRoutineEnum::kAudioDriver;
     default:
       return absl::nullopt;
   }
@@ -156,6 +164,10 @@ crosapi::mojom::DiagnosticsRoutineUserMessageEnum Convert(
     case cros_healthd::mojom::DiagnosticRoutineUserMessageEnum::kCheckLedColor:
       NOTIMPLEMENTED();
       return crosapi::mojom::DiagnosticsRoutineUserMessageEnum::kUnknown;
+    case cros_healthd::mojom::DiagnosticRoutineUserMessageEnum::
+        kPressPowerButton:
+      return crosapi::mojom::DiagnosticsRoutineUserMessageEnum::
+          kPressPowerButton;
   }
   NOTREACHED();
   return static_cast<crosapi::mojom::DiagnosticsRoutineUserMessageEnum>(

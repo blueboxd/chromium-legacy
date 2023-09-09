@@ -8,6 +8,7 @@
 
 #include "base/functional/callback.h"
 #include "base/run_loop.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "services/accessibility/public/mojom/accessibility_service.mojom.h"
 #include "services/accessibility/public/mojom/tts.mojom.h"
 
@@ -24,9 +25,9 @@ void FakeAccessibilityService::BindAccessibilityServiceClient(
 }
 
 void FakeAccessibilityService::BindAnotherAutomation() {
-  mojo::PendingRemote<ax::mojom::Automation> automation_remote;
-  automation_receivers_.Add(this,
-                            automation_remote.InitWithNewPipeAndPassReceiver());
+  mojo::PendingAssociatedRemote<ax::mojom::Automation> automation_remote;
+  automation_receivers_.Add(
+      this, automation_remote.InitWithNewEndpointAndPassReceiver());
 
   mojo::PendingReceiver<ax::mojom::AutomationClient> automation_client_receiver;
   automation_client_remotes_.Add(
@@ -48,6 +49,16 @@ void FakeAccessibilityService::BindAssistiveTechnologyController(
     const std::vector<ax::mojom::AssistiveTechnologyType>& enabled_features) {
   at_controller_receivers_.Add(this, std::move(at_controller_receiver));
   EnableAssistiveTechnology(enabled_features);
+}
+
+void FakeAccessibilityService::ConnectDevToolsAgent(
+    mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent,
+    ax::mojom::AssistiveTechnologyType type) {
+  auto it = connect_devtools_counts.find(type);
+  if (it == connect_devtools_counts.end()) {
+    connect_devtools_counts[type] = 0;
+  }
+  connect_devtools_counts[type]++;
 }
 
 void FakeAccessibilityService::DispatchTreeDestroyedEvent(
@@ -84,6 +95,10 @@ void FakeAccessibilityService::DispatchAccessibilityLocationChange(
     std::move(automation_events_closure_).Run();
 }
 
+void FakeAccessibilityService::DispatchGetTextLocationResult(
+    const ui::AXActionData& data,
+    const absl::optional<gfx::Rect>& rect) {}
+
 void FakeAccessibilityService::EnableAssistiveTechnology(
     const std::vector<ax::mojom::AssistiveTechnologyType>& enabled_features) {
   enabled_ATs_ = std::set(enabled_features.begin(), enabled_features.end());
@@ -95,6 +110,15 @@ void FakeAccessibilityService::WaitForATChanged() {
   base::RunLoop runner;
   change_ATs_closure_ = runner.QuitClosure();
   runner.Run();
+}
+
+int FakeAccessibilityService::GetDevtoolsConnectionCount(
+    ax::mojom::AssistiveTechnologyType type) const {
+  auto it = connect_devtools_counts.find(type);
+  if (it == connect_devtools_counts.end()) {
+    return 0;
+  }
+  return it->second;
 }
 
 bool FakeAccessibilityService::IsBound() const {

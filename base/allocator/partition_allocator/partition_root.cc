@@ -29,7 +29,7 @@
 #include "base/allocator/partition_allocator/thread_isolation/thread_isolation.h"
 #include "build/build_config.h"
 
-#if PA_CONFIG(ENABLE_MAC11_MALLOC_SIZE_HACK)
+#if BUILDFLAG(IS_MAC)
 #include "base/allocator/partition_allocator/partition_alloc_base/mac/mac_util.h"
 #endif
 
@@ -119,8 +119,7 @@ namespace internal {
 
 class PartitionRootEnumerator {
  public:
-  using EnumerateCallback = void (*)(ThreadSafePartitionRoot* root,
-                                     bool in_child);
+  using EnumerateCallback = void (*)(PartitionRoot* root, bool in_child);
   enum EnumerateOrder {
     kNormal,
     kReverse,
@@ -135,14 +134,14 @@ class PartitionRootEnumerator {
                  bool in_child,
                  EnumerateOrder order) PA_NO_THREAD_SAFETY_ANALYSIS {
     if (order == kNormal) {
-      ThreadSafePartitionRoot* root;
+      PartitionRoot* root;
       for (root = Head(partition_roots_); root != nullptr;
            root = root->next_root) {
         callback(root, in_child);
       }
     } else {
       PA_DCHECK(order == kReverse);
-      ThreadSafePartitionRoot* root;
+      PartitionRoot* root;
       for (root = Tail(partition_roots_); root != nullptr;
            root = root->prev_root) {
         callback(root, in_child);
@@ -150,8 +149,8 @@ class PartitionRootEnumerator {
     }
   }
 
-  void Register(ThreadSafePartitionRoot* root) {
-    internal::ScopedGuard guard(ThreadSafePartitionRoot::GetEnumeratorLock());
+  void Register(PartitionRoot* root) {
+    internal::ScopedGuard guard(PartitionRoot::GetEnumeratorLock());
     root->next_root = partition_roots_;
     root->prev_root = nullptr;
     if (partition_roots_) {
@@ -160,10 +159,10 @@ class PartitionRootEnumerator {
     partition_roots_ = root;
   }
 
-  void Unregister(ThreadSafePartitionRoot* root) {
-    internal::ScopedGuard guard(ThreadSafePartitionRoot::GetEnumeratorLock());
-    ThreadSafePartitionRoot* prev = root->prev_root;
-    ThreadSafePartitionRoot* next = root->next_root;
+  void Unregister(PartitionRoot* root) {
+    internal::ScopedGuard guard(PartitionRoot::GetEnumeratorLock());
+    PartitionRoot* prev = root->prev_root;
+    PartitionRoot* next = root->next_root;
     if (prev) {
       PA_DCHECK(prev->next_root == root);
       prev->next_root = next;
@@ -182,23 +181,20 @@ class PartitionRootEnumerator {
  private:
   constexpr PartitionRootEnumerator() = default;
 
-  ThreadSafePartitionRoot* Head(ThreadSafePartitionRoot* roots) {
-    return roots;
-  }
+  PartitionRoot* Head(PartitionRoot* roots) { return roots; }
 
-  ThreadSafePartitionRoot* Tail(ThreadSafePartitionRoot* roots)
-      PA_NO_THREAD_SAFETY_ANALYSIS {
+  PartitionRoot* Tail(PartitionRoot* roots) PA_NO_THREAD_SAFETY_ANALYSIS {
     if (!roots) {
       return nullptr;
     }
-    ThreadSafePartitionRoot* node = roots;
+    PartitionRoot* node = roots;
     for (; node->next_root != nullptr; node = node->next_root)
       ;
     return node;
   }
 
-  ThreadSafePartitionRoot* partition_roots_
-      PA_GUARDED_BY(ThreadSafePartitionRoot::GetEnumeratorLock()) = nullptr;
+  PartitionRoot* partition_roots_
+      PA_GUARDED_BY(PartitionRoot::GetEnumeratorLock()) = nullptr;
 };
 
 }  // namespace internal
@@ -219,7 +215,7 @@ void LockRoot(PartitionRoot* root, bool) PA_NO_THREAD_SAFETY_ANALYSIS {
 // PA_NO_THREAD_SAFETY_ANALYSIS: acquires the lock and doesn't release it, by
 // design.
 void BeforeForkInParent() PA_NO_THREAD_SAFETY_ANALYSIS {
-  // ThreadSafePartitionRoot::GetLock() is private. So use
+  // PartitionRoot::GetLock() is private. So use
   // g_root_enumerator_lock here.
   g_root_enumerator_lock.Acquire();
   internal::PartitionRootEnumerator::Instance().Enumerate(
@@ -252,7 +248,7 @@ void ReleaseLocks(bool in_child) PA_NO_THREAD_SAFETY_ANALYSIS {
       UnlockOrReinitRoot, in_child,
       internal::PartitionRootEnumerator::EnumerateOrder::kReverse);
 
-  // ThreadSafePartitionRoot::GetLock() is private. So use
+  // PartitionRoot::GetLock() is private. So use
   // g_root_enumerator_lock here.
   UnlockOrReinit(g_root_enumerator_lock, in_child);
 }
@@ -711,7 +707,7 @@ void PartitionAllocThreadIsolationInit(ThreadIsolationOption thread_isolation) {
   // stacks, and other allocators will also consume address space).
   const size_t kReasonableVirtualSize = (is_wow_64 ? 2800 : 1024) * 1024 * 1024;
   // Make it obvious whether we are running on 64-bit Windows.
-  PA_DEBUG_DATA_ON_STACK("is_wow_64", static_cast<size_t>(is_wow_64));
+  PA_DEBUG_DATA_ON_STACK("iswow64", static_cast<size_t>(is_wow_64));
 #else
   constexpr size_t kReasonableVirtualSize =
       // 1.5GiB elsewhere, since address space is typically 3GiB.
@@ -879,7 +875,11 @@ void PartitionRoot::Init(PartitionOptions opts) {
 
     settings.allow_aligned_alloc =
         opts.aligned_alloc == PartitionOptions::AlignedAlloc::kAllowed;
-    settings.allow_cookie = opts.cookie == PartitionOptions::Cookie::kAllowed;
+#if BUILDFLAG(PA_DCHECK_IS_ON)
+    settings.use_cookie = opts.cookie == PartitionOptions::Cookie::kAllowed;
+#else
+    static_assert(!Settings::use_cookie);
+#endif  // BUILDFLAG(PA_DCHECK_IS_ON)
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
     settings.brp_enabled_ =
         opts.backup_ref_ptr == PartitionOptions::BackupRefPtr::kEnabled;
@@ -930,7 +930,7 @@ void PartitionRoot::Init(PartitionOptions opts) {
     settings.extras_size = 0;
     settings.extras_offset = 0;
 
-    if (settings.allow_cookie) {
+    if (settings.use_cookie) {
       settings.extras_size += internal::kPartitionCookieSizeAdjustment;
     }
 
@@ -942,6 +942,7 @@ void PartitionRoot::Init(PartitionOptions opts) {
       if (!ref_count_size) {
         ref_count_size = internal::kPartitionRefCountSizeAdjustment;
       }
+      ref_count_size = internal::AlignUpRefCountSizeForMac(ref_count_size);
 #if PA_CONFIG(INCREASE_REF_COUNT_SIZE_FOR_MTE)
       if (IsMemoryTaggingEnabled()) {
         ref_count_size = internal::base::bits::AlignUp(
@@ -1183,13 +1184,11 @@ bool PartitionRoot::TryReallocInPlaceForDirectMap(
     thread_cache->RecordAllocation(GetSlotUsableSize(slot_span));
   }
 
-#if BUILDFLAG(PA_DCHECK_IS_ON)
   // Write a new trailing cookie.
-  if (settings.allow_cookie) {
+  if (settings.use_cookie) {
     auto* object = static_cast<unsigned char*>(SlotStartToObject(slot_start));
     internal::PartitionCookieWriteValue(object + GetSlotUsableSize(slot_span));
   }
-#endif
 
   return true;
 }
@@ -1230,14 +1229,12 @@ bool PartitionRoot::TryReallocInPlaceForNormalBuckets(void* object,
     }
 #endif  // BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT) &&
         // BUILDFLAG(PA_DCHECK_IS_ON)
-#if BUILDFLAG(PA_DCHECK_IS_ON)
     // Write a new trailing cookie only when it is possible to keep track
     // raw size (otherwise we wouldn't know where to look for it later).
-    if (settings.allow_cookie) {
+    if (settings.use_cookie) {
       internal::PartitionCookieWriteValue(static_cast<unsigned char*>(object) +
                                           GetSlotUsableSize(slot_span));
     }
-#endif  // BUILDFLAG(PA_DCHECK_IS_ON)
   }
 
   // Always record a realloc() as a free() + malloc(), even if it's in

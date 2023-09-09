@@ -213,7 +213,8 @@ export class SettingsUnusedSitePermissionsElement extends
     const permissionsI18n = permissions.map(permission => {
       const localizationString =
           getLocalizationStringForContentType(permission);
-      return localizationString ? this.i18n(localizationString) : '';
+      assert(localizationString !== null);
+      return this.i18n(localizationString);
     });
 
     if (permissionsI18n.length === 1) {

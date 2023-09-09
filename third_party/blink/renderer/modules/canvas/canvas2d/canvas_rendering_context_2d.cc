@@ -43,6 +43,8 @@
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_canvas_font_stretch.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_canvas_text_rendering.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_canvas_will_read_frequently.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_canvasrenderingcontext2d_gpucanvascontext_imagebitmaprenderingcontext_webgl2renderingcontext_webglrenderingcontext.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
@@ -175,9 +177,8 @@ bool CanvasRenderingContext2D::IsAccelerated() const {
 }
 
 bool CanvasRenderingContext2D::IsOriginTopLeft() const {
-  // Accelerated 2D contexts have the origin of coordinates on the bottom left,
-  // except if they are used for low latency mode (front buffer rendering).
-  return !IsAccelerated() || canvas()->LowLatencyEnabled();
+  // Use top-left origin since Skia Graphite won't support bottom-left origin.
+  return true;
 }
 
 bool CanvasRenderingContext2D::IsComposited() const {
@@ -785,24 +786,17 @@ void CanvasRenderingContext2D::setTextRendering(
   if (!GetState().HasRealizedFont())
     setFont(font());
 
-  TextRenderingMode text_rendering_mode;
-  String text_rendering = text_rendering_string.LowerASCII();
+  absl::optional<blink::V8CanvasTextRendering> text_value =
+      V8CanvasTextRendering::Create(text_rendering_string);
 
-  if (text_rendering == kAutoRendering)
-    text_rendering_mode = TextRenderingMode::kAutoTextRendering;
-  else if (text_rendering == kOptimizeSpeedRendering)
-    text_rendering_mode = TextRenderingMode::kOptimizeSpeed;
-  else if (text_rendering == kOptimizeLegibilityRendering)
-    text_rendering_mode = TextRenderingMode::kOptimizeLegibility;
-  else if (text_rendering == kGeometricPrecisionRendering)
-    text_rendering_mode = TextRenderingMode::kGeometricPrecision;
-  else
+  if (!text_value.has_value()) {
     return;
+  }
 
-  if (GetState().GetTextRendering() == text_rendering_mode)
+  if (GetState().GetTextRendering() == text_value.value()) {
     return;
-
-  GetState().SetTextRendering(text_rendering_mode, Host()->GetFontSelector());
+  }
+  GetState().SetTextRendering(text_value.value(), Host()->GetFontSelector());
 }
 
 void CanvasRenderingContext2D::setFontKerning(
@@ -814,15 +808,15 @@ void CanvasRenderingContext2D::setFontKerning(
   if (!GetState().HasRealizedFont())
     setFont(font());
   FontDescription::Kerning kerning;
-  String font_kerning = font_kerning_string.LowerASCII();
-  if (font_kerning == kAutoKerningString)
+  if (font_kerning_string == kAutoKerningString) {
     kerning = FontDescription::kAutoKerning;
-  else if (font_kerning == kNoneKerningString)
+  } else if (font_kerning_string == kNoneKerningString) {
     kerning = FontDescription::kNoneKerning;
-  else if (font_kerning == kNormalKerningString)
+  } else if (font_kerning_string == kNormalKerningString) {
     kerning = FontDescription::kNormalKerning;
-  else
+  } else {
     return;
+  }
 
   if (GetState().GetFontKerning() == kerning)
     return;
@@ -838,33 +832,16 @@ void CanvasRenderingContext2D::setFontStretch(const String& font_stretch) {
   if (!GetState().HasRealizedFont())
     setFont(font());
 
-  String font_stretch_string = font_stretch.LowerASCII();
-  FontSelectionValue stretch_vale;
-  if (font_stretch_string == kUltraCondensedString)
-    stretch_vale = UltraCondensedWidthValue();
-  else if (font_stretch_string == kExtraCondensedString)
-    stretch_vale = ExtraCondensedWidthValue();
-  else if (font_stretch_string == kCondensedString)
-    stretch_vale = CondensedWidthValue();
-  else if (font_stretch_string == kSemiCondensedString)
-    stretch_vale = SemiCondensedWidthValue();
-  else if (font_stretch_string == kNormalStretchString)
-    stretch_vale = NormalWidthValue();
-  else if (font_stretch_string == kSemiExpandedString)
-    stretch_vale = SemiExpandedWidthValue();
-  else if (font_stretch_string == kExpandedString)
-    stretch_vale = ExpandedWidthValue();
-  else if (font_stretch_string == kExtraExpandedString)
-    stretch_vale = ExtraExpandedWidthValue();
-  else if (font_stretch_string == kUltraExpandedString)
-    stretch_vale = UltraExpandedWidthValue();
-  else
-    return;
+  absl::optional<blink::V8CanvasFontStretch> font_value =
+      V8CanvasFontStretch::Create(font_stretch);
 
-  if (GetState().GetFontStretch() == stretch_vale)
+  if (!font_value.has_value()) {
     return;
-
-  GetState().SetFontStretch(stretch_vale, Host()->GetFontSelector());
+  }
+  if (GetState().GetFontStretch() == font_value.value()) {
+    return;
+  }
+  GetState().SetFontStretch(font_value.value(), Host()->GetFontSelector());
 }
 
 void CanvasRenderingContext2D::setFontVariantCaps(
@@ -876,23 +853,23 @@ void CanvasRenderingContext2D::setFontVariantCaps(
   if (!GetState().HasRealizedFont())
     setFont(font());
   FontDescription::FontVariantCaps variant_caps;
-  String variant_caps_lower = font_variant_caps_string.LowerASCII();
-  if (variant_caps_lower == kNormalVariantString)
+  if (font_variant_caps_string == kNormalVariantString) {
     variant_caps = FontDescription::kCapsNormal;
-  else if (variant_caps_lower == kSmallCapsVariantString)
+  } else if (font_variant_caps_string == kSmallCapsVariantString) {
     variant_caps = FontDescription::kSmallCaps;
-  else if (variant_caps_lower == kAllSmallCapsVariantString)
+  } else if (font_variant_caps_string == kAllSmallCapsVariantString) {
     variant_caps = FontDescription::kAllSmallCaps;
-  else if (variant_caps_lower == kPetiteVariantString)
+  } else if (font_variant_caps_string == kPetiteVariantString) {
     variant_caps = FontDescription::kPetiteCaps;
-  else if (variant_caps_lower == kAllPetiteVariantString)
+  } else if (font_variant_caps_string == kAllPetiteVariantString) {
     variant_caps = FontDescription::kAllPetiteCaps;
-  else if (variant_caps_lower == kUnicaseVariantString)
+  } else if (font_variant_caps_string == kUnicaseVariantString) {
     variant_caps = FontDescription::kUnicase;
-  else if (variant_caps_lower == kTitlingCapsVariantString)
+  } else if (font_variant_caps_string == kTitlingCapsVariantString) {
     variant_caps = FontDescription::kTitlingCaps;
-  else
+  } else {
     return;
+  }
 
   if (GetState().GetFontVariantCaps() == variant_caps)
     return;
@@ -1077,9 +1054,21 @@ void CanvasRenderingContext2D::DrawTextInternal(
         TextRun text_run(text, direction, bidi_override);
         text_run.SetNormalizeSpace(true);
         TextRunPaintInfo text_run_paint_info(text_run);
+        // Font::DrawType::kGlyphsAndClusters is required for printing to PDF,
+        // otherwise the character to glyph mapping will not be reversible,
+        // which prevents text data from being extracted from PDF files or
+        // from the print preview. This is only needed in vector printing mode
+        // (i.e. when rendering inside the beforeprint event listener),
+        // because in all other cases the canvas is just a rectangle of pixels.
+        // Note: Test coverage for this is assured by manual (non-automated)
+        // web test printing/manual/canvas2d-vector-text.html
+        // That test should be run manually against CLs that touch this code.
+        Font::DrawType draw_type = canvas()->IsPrinting()
+                                       ? Font::DrawType::kGlyphsAndClusters
+                                       : Font::DrawType::kGlyphsOnly;
         this->AccessFont().DrawBidiText(c, text_run_paint_info, location,
                                         Font::kUseFallbackIfFontNotReady,
-                                        *flags);
+                                        *flags, draw_type);
       },
       [](const SkIRect& rect)  // overdraw test lambda
       { return false; },
@@ -1224,10 +1213,10 @@ void CanvasRenderingContext2D::UpdateElementAccessibility(const Path& path,
   transformed_path.Transform(GetState().GetTransform());
 
   // Add border and padding to the bounding rect.
-  LayoutRect element_rect =
-      EnclosingLayoutRect(transformed_path.BoundingRect());
-  element_rect.Move(lbmo->BorderLeft() + lbmo->PaddingLeft(),
-                    lbmo->BorderTop() + lbmo->PaddingTop());
+  PhysicalRect element_rect =
+      PhysicalRect::EnclosingRect(transformed_path.BoundingRect());
+  element_rect.Move({lbmo->BorderLeft() + lbmo->PaddingLeft(),
+                     lbmo->BorderTop() + lbmo->PaddingTop()});
 
   // Update the accessible object.
   ax_object_cache->SetCanvasObjectBounds(canvas(), element, element_rect);

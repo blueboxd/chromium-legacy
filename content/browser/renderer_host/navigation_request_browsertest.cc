@@ -9,6 +9,7 @@
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
@@ -55,8 +56,10 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/mock_commit_deferring_condition.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/url_request/url_request_failed_job.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "third_party/blink/public/common/runtime_feature_state/runtime_feature_state_context.h"
@@ -2464,8 +2467,8 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
   WebContents* web_contents = shell()->web_contents();
   ReadyToCommitObserver observer(web_contents);
 
-  MockCommitDeferringConditionInstaller installer(simple_url,
-                                                  /*is_ready_to_commit=*/true);
+  MockCommitDeferringConditionInstaller installer(
+      simple_url, CommitDeferringCondition::Result::kProceed);
 
   shell()->LoadURL(simple_url);
   ASSERT_TRUE(manager.WaitForResponse());
@@ -2489,9 +2492,9 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
   WebContents* web_contents = shell()->web_contents();
 
   MockCommitDeferringConditionInstaller installer1(
-      simple_url, /*is_ready_to_commit=*/false);
+      simple_url, CommitDeferringCondition::Result::kDefer);
   MockCommitDeferringConditionInstaller installer2(
-      simple_url, /*is_ready_to_commit=*/false);
+      simple_url, CommitDeferringCondition::Result::kDefer);
 
   ReadyToCommitObserver observer(web_contents);
 
@@ -2537,12 +2540,12 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
   WebContents* web_contents = shell()->web_contents();
 
   MockCommitDeferringConditionInstaller installer1(
-      simple_url, /*is_ready_to_commit=*/false);
+      simple_url, CommitDeferringCondition::Result::kDefer);
 
   // We'll cancel the navigation while the first condition is deferred so this
   // is added only to make sure it's never invoked.
   MockCommitDeferringConditionInstaller installer2(
-      simple_url, /*is_ready_to_commit=*/false);
+      simple_url, CommitDeferringCondition::Result::kDefer);
 
   shell()->LoadURL(simple_url);
   ASSERT_TRUE(manager.WaitForResponse());
@@ -3796,8 +3799,7 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
   // currently run in that case.
   TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
   shell()->web_contents()->GetController().LoadPostCommitErrorPage(
-      subframe_rfh, subframe_rfh->GetLastCommittedURL(), "error_page_contents",
-      net::ERR_BLOCKED_BY_CLIENT);
+      subframe_rfh, subframe_rfh->GetLastCommittedURL(), "error_page_contents");
   navigation_observer.Wait();
   EXPECT_FALSE(navigation_observer.last_navigation_succeeded());
 
@@ -4459,6 +4461,195 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
 
   // The tab stayed at `url_b1` as the `url_b2` navigation didn't commit.
   EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), url_b1);
+}
+
+namespace {
+
+constexpr char kResponseBody[] = "response-body-contents";
+
+// HTTP response template with adjustable header and body contents.
+const char kResponseTemplate[] =
+    "HTTP/1.1 200 OK\r\n"
+    "%s"
+    "\r\n"
+    "%s";
+
+// Test version of a NavigationThrottle that requests the response body.
+class ResponseBodyNavigationThrottle : public NavigationThrottle {
+ public:
+  explicit ResponseBodyNavigationThrottle(NavigationHandle* handle)
+      : NavigationThrottle(handle) {}
+  ResponseBodyNavigationThrottle(const ResponseBodyNavigationThrottle&) =
+      delete;
+  ResponseBodyNavigationThrottle& operator=(
+      const ResponseBodyNavigationThrottle&) = delete;
+  ~ResponseBodyNavigationThrottle() override = default;
+
+  NavigationThrottle::ThrottleCheckResult WillProcessResponse() override {
+    // It is safe to use base::Unretained as the NavigationThrottle will not be
+    // destroyed before the callback is called.
+    navigation_handle()->GetResponseBody(
+        base::BindOnce(&ResponseBodyNavigationThrottle::OnResponseBodyReady,
+                       base::Unretained(this)));
+    return NavigationThrottle::DEFER;
+  }
+
+  const char* GetNameForLogging() override {
+    return "ResponseBodyNavigationThrottle";
+  }
+
+  bool was_callback_called() const { return was_callback_called_; }
+
+  const std::string& response_body() const { return response_body_; }
+
+ private:
+  void OnResponseBodyReady(const std::string& response_body) {
+    was_callback_called_ = true;
+    response_body_ = response_body;
+    Resume();
+  }
+
+  bool was_callback_called_ = false;
+  std::string response_body_;
+};
+
+}  // namespace
+
+class NavigationRequestResponseBodyBrowserTest
+    : public NavigationRequestBrowserTest {
+ protected:
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(NavigationRequestResponseBodyBrowserTest, Received) {
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      "/target.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ResponseBodyNavigationThrottle* client_throttle = nullptr;
+
+  // Set the client to register a ResponseBodyNavigationThrottle. Save a pointer
+  // to this throttle in `client_throttle` on registration.
+  content::ShellContentBrowserClient::Get()
+      ->set_create_throttles_for_navigation_callback(base::BindLambdaForTesting(
+          [&client_throttle](content::NavigationHandle* handle)
+              -> std::vector<std::unique_ptr<content::NavigationThrottle>> {
+            std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
+            auto throttle =
+                std::make_unique<ResponseBodyNavigationThrottle>(handle);
+            client_throttle = throttle.get();
+            throttles.push_back(std::move(throttle));
+            return throttles;
+          }));
+
+  // Start navigating.
+  GURL simple_url(embedded_test_server()->GetURL("/target.html"));
+  TestNavigationManager manager(shell()->web_contents(), simple_url);
+  shell()->LoadURL(simple_url);
+
+  EXPECT_TRUE(manager.WaitForRequestStart());
+  manager.ResumeNavigation();
+
+  // Build the response with no headers and some body text.
+  response.WaitForRequest();
+  response.Send(base::StringPrintf(kResponseTemplate, "", kResponseBody));
+  response.Done();
+  ASSERT_TRUE(manager.WaitForResponse());
+  ASSERT_NE(nullptr, client_throttle);
+  EXPECT_TRUE(client_throttle->was_callback_called());
+  EXPECT_EQ(kResponseBody, client_throttle->response_body());
+
+  // Finish the navigation.
+  ASSERT_TRUE(manager.WaitForNavigationFinished());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationRequestResponseBodyBrowserTest,
+                       ContentLengthZero) {
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      "/target.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ResponseBodyNavigationThrottle* client_throttle = nullptr;
+
+  // Set the client to register a ResponseBodyNavigationThrottle. Save a pointer
+  // to this throttle in `client_throttle` on registration.
+  content::ShellContentBrowserClient::Get()
+      ->set_create_throttles_for_navigation_callback(base::BindLambdaForTesting(
+          [&client_throttle](content::NavigationHandle* handle)
+              -> std::vector<std::unique_ptr<content::NavigationThrottle>> {
+            std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
+            auto throttle =
+                std::make_unique<ResponseBodyNavigationThrottle>(handle);
+            client_throttle = throttle.get();
+            throttles.push_back(std::move(throttle));
+            return throttles;
+          }));
+
+  // Start navigating.
+  GURL simple_url(embedded_test_server()->GetURL("/target.html"));
+  TestNavigationManager manager(shell()->web_contents(), simple_url);
+  shell()->LoadURL(simple_url);
+
+  EXPECT_TRUE(manager.WaitForRequestStart());
+  manager.ResumeNavigation();
+
+  // Build the response with Content-Length: 0 and some body text.
+  response.WaitForRequest();
+  response.Send(base::StringPrintf(kResponseTemplate, "Content-Length: 0",
+                                   kResponseBody));
+  response.Done();
+  ASSERT_TRUE(manager.WaitForResponse());
+  ASSERT_NE(nullptr, client_throttle);
+  EXPECT_TRUE(client_throttle->was_callback_called());
+  // The received response body is empty due to the Content-Length value.
+  EXPECT_EQ(std::string(), client_throttle->response_body());
+
+  // Finish the navigation.
+  ASSERT_TRUE(manager.WaitForNavigationFinished());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationRequestResponseBodyBrowserTest,
+                       BodyLargerThanDataPipeSize) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ResponseBodyNavigationThrottle* client_throttle = nullptr;
+
+  // Set the client to register a ResponseBodyNavigationThrottle. Save a pointer
+  // to this throttle in `client_throttle` on registration.
+  content::ShellContentBrowserClient::Get()
+      ->set_create_throttles_for_navigation_callback(base::BindLambdaForTesting(
+          [&client_throttle](content::NavigationHandle* handle)
+              -> std::vector<std::unique_ptr<content::NavigationThrottle>> {
+            std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
+            auto throttle =
+                std::make_unique<ResponseBodyNavigationThrottle>(handle);
+            client_throttle = throttle.get();
+            throttles.push_back(std::move(throttle));
+            return throttles;
+          }));
+
+  // Start navigating to a page with a large body (>5 million characters).
+  GURL simple_url(embedded_test_server()->GetURL("/long_response_body.html"));
+  TestNavigationManager manager(shell()->web_contents(), simple_url);
+  shell()->LoadURL(simple_url);
+
+  ASSERT_TRUE(manager.WaitForResponse());
+  ASSERT_NE(nullptr, client_throttle);
+  EXPECT_TRUE(client_throttle->was_callback_called());
+  // Ensure that the received response body contains text from the target page.
+  EXPECT_NE(client_throttle->response_body().npos,
+            client_throttle->response_body().find(
+                "Test page with a long response body"));
+  // The initial response body chunk may be smaller than the max data pipe size.
+  EXPECT_LE(
+      client_throttle->response_body().length(),
+      network::features::GetDataPipeDefaultAllocationSize(
+          network::features::DataPipeAllocationSize::kLargerSizeIfPossible));
+
+  // Finish the navigation.
+  ASSERT_TRUE(manager.WaitForNavigationFinished());
 }
 
 }  // namespace content

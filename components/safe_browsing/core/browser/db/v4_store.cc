@@ -348,11 +348,13 @@ std::ostream& operator<<(std::ostream& os, const V4Store& store) {
   return os;
 }
 
-std::unique_ptr<V4Store> V4StoreFactory::CreateV4Store(
+V4StorePtr V4StoreFactory::CreateV4Store(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     const base::FilePath& store_path) {
-  auto new_store = std::make_unique<V4Store>(
-      task_runner, store_path, CreateHashPrefixMap(store_path, task_runner));
+  V4StorePtr new_store(
+      new V4Store(task_runner, store_path,
+                  CreateHashPrefixMap(store_path, task_runner)),
+      V4StoreDeleter(task_runner));
   new_store->Initialize();
   return new_store;
 }
@@ -393,14 +395,6 @@ std::string V4Store::DebugString() const {
 
   return base::StringPrintf("path: %" PRFilePath "; state: %s",
                             store_path_.value().c_str(), state_base64.c_str());
-}
-
-// static
-void V4Store::Destroy(std::unique_ptr<V4Store> v4_store) {
-  V4Store* v4_store_raw = v4_store.release();
-  if (v4_store_raw) {
-    v4_store_raw->task_runner_->DeleteSoon(FROM_HERE, v4_store_raw);
-  }
 }
 
 void V4Store::Reset() {
@@ -534,9 +528,10 @@ void V4Store::ApplyUpdate(
     const scoped_refptr<base::SequencedTaskRunner>& callback_task_runner,
     UpdatedStoreReadyCallback callback) {
   base::ElapsedThreadTimer thread_timer;
-  auto new_store = std::make_unique<V4Store>(
-      task_runner_, store_path_, CreateHashPrefixMap(store_path_, task_runner_),
-      file_size_);
+  V4StorePtr new_store(
+      new V4Store(task_runner_, store_path_,
+                  CreateHashPrefixMap(store_path_, task_runner_), file_size_),
+      V4StoreDeleter(task_runner_));
   ApplyUpdateResult apply_update_result;
   std::string metric;
   if (response->response_type() == ListUpdateResponse::PARTIAL_UPDATE) {
@@ -900,10 +895,10 @@ StoreReadResult V4Store::ReadFromDisk() {
     return HASH_PREFIX_INFO_MISSING_FAILURE;
   }
 
-  migrate_result_ = MigrateFileFormatIfNeeded(&file_format);
-  if (migrate_result_ == HashPrefixMap::MigrateResult::kFailure) {
+  HashPrefixMap::MigrateResult migrate_result =
+      MigrateFileFormatIfNeeded(&file_format);
+  if (migrate_result == HashPrefixMap::MigrateResult::kFailure)
     return MIGRATION_FAILURE;
-  }
 
   ApplyUpdateResult apply_update_result =
       hash_prefix_map_->ReadFromDisk(file_format);
@@ -922,7 +917,7 @@ StoreReadResult V4Store::ReadFromDisk() {
   }
 
   // If a migration happened, we already updated file size.
-  if (migrate_result_ != HashPrefixMap::MigrateResult::kSuccess) {
+  if (migrate_result != HashPrefixMap::MigrateResult::kSuccess) {
     // Update |file_size_| now because we parsed the file correctly.
     file_size_ = file_size;
     for (const auto& hash_file : file_format.hash_files())
@@ -1103,5 +1098,12 @@ void V4Store::CollectStoreInfo(
 
   hash_prefix_map_->GetPrefixInfo(store_info->mutable_prefix_sets());
 }
+
+V4StoreDeleter::V4StoreDeleter(
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : task_runner_(std::move(task_runner)) {}
+V4StoreDeleter::~V4StoreDeleter() = default;
+V4StoreDeleter::V4StoreDeleter(V4StoreDeleter&&) = default;
+V4StoreDeleter& V4StoreDeleter::operator=(V4StoreDeleter&&) = default;
 
 }  // namespace safe_browsing

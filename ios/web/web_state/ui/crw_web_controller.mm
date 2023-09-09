@@ -17,7 +17,6 @@
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
 #import "build/branding_buildflags.h"
-#import "ios/web/browsing_data/browsing_data_remover.h"
 #import "ios/web/common/annotations_utils.h"
 #import "ios/web/common/crw_input_view_provider.h"
 #import "ios/web/common/crw_web_view_content_view.h"
@@ -1970,14 +1969,6 @@ CrFullscreenState CrFullscreenStateFromWKFullscreenState(
 - (void)webRequestControllerDidStartLoading:
     (CRWWebRequestController*)requestController {
   [self didStartLoading];
-}
-
-- (void)webRequestControllerDisableNavigationGesturesUntilFinishNavigation:
-    (CRWWebRequestController*)requestController {
-  // Disable `allowsBackForwardNavigationGestures` during restore. Otherwise,
-  // WebKit will trigger a snapshot for each (blank) page, and quickly
-  // overload system memory.
-  self.webView.allowsBackForwardNavigationGestures = NO;
 }
 
 - (CRWWKNavigationHandler*)webRequestControllerNavigationHandler:

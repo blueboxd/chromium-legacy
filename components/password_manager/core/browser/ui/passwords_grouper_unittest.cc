@@ -61,8 +61,8 @@ GroupedFacets GetSingleGroupForForm(PasswordForm form) {
 GURL GetIconUrl(const std::string& site) {
   GURL::Replacements replacements;
   std::string query =
-      "client=PASSWORD_MANAGER&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size="
-      "32&url=" +
+      "client=PASSWORD_MANAGER&type=FAVICON&fallback_opts=TYPE,SIZE,URL,TOP_"
+      "DOMAIN&size=32&url=" +
       base::EscapeQueryParamValue(site,
                                   /*use_plus=*/false);
   replacements.SetQueryStr(query);
@@ -589,6 +589,29 @@ TEST_F(PasswordsGrouperTest, SchemeOmittedDuringOrdering) {
                                           GetIconUrl(ip_form.signon_realm)}),
           AffiliatedGroup({credential1}, GetDefaultBrandingInfo(credential1)),
           AffiliatedGroup({credential2}, GetDefaultBrandingInfo(credential2))));
+}
+
+TEST_F(PasswordsGrouperTest, BlockedSitesOmitDuplicates) {
+  PasswordForm form = CreateForm("https://test.com/");
+
+  PasswordForm blocked_form_1;
+  blocked_form_1.signon_realm = "https://test.com/";
+  blocked_form_1.url = GURL(blocked_form_1.signon_realm);
+  blocked_form_1.blocked_by_user = true;
+
+  PasswordForm blocked_form_2;
+  blocked_form_2.signon_realm = "https://test.com/auth";
+  blocked_form_2.url = GURL(blocked_form_2.signon_realm);
+  blocked_form_2.blocked_by_user = true;
+
+  EXPECT_CALL(affiliation_service(), GetGroupingInfo)
+      .WillRepeatedly(
+          base::test::RunOnceCallback<1>(std::vector<GroupedFacets>{}));
+  grouper().GroupCredentials({blocked_form_1, blocked_form_2}, {},
+                             base::DoNothing());
+
+  EXPECT_THAT(grouper().GetBlockedSites(),
+              ElementsAre(CredentialUIEntry(blocked_form_1)));
 }
 
 }  // namespace password_manager

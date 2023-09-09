@@ -12,11 +12,45 @@
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "build/buildflag.h"
-#include "components/viz/common/resources/resource_format.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/shared_image_format_utils.h"
 
 namespace gpu {
+
+// Wraps functions from shared_image_format_utils.h that are made private with
+// friending to prevent their existing client-side usage (which is an
+// anti-pattern) from growing within a class that
+// SharedImageFormatRestrictedSinglePlaneUtils can friend. (Note that if
+// SharedImageFormatRestrictedSinglePlaneUtils instead directly friended the
+// service-side calling functions, any client-side code could then also
+// directly call those service-side calling functions as well, defeating the
+// purpose).
+class SharedImageFormatRestrictedSinglePlaneUtilsAccessor {
+ public:
+  static GLenum ToGLDataFormat(viz::SharedImageFormat format) {
+    return viz::SharedImageFormatRestrictedSinglePlaneUtils::ToGLDataFormat(
+        format);
+  }
+  static GLenum ToGLDataType(viz::SharedImageFormat format) {
+    return viz::SharedImageFormatRestrictedSinglePlaneUtils::ToGLDataType(
+        format);
+  }
+
+  static unsigned int ToGLTextureStorageFormat(viz::SharedImageFormat format,
+                                               bool use_angle_rgbx_format) {
+    return viz::SharedImageFormatRestrictedSinglePlaneUtils::
+        ToGLTextureStorageFormat(format, use_angle_rgbx_format);
+  }
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  static bool HasVkFormat(viz::SharedImageFormat format) {
+    return viz::SharedImageFormatRestrictedSinglePlaneUtils::HasVkFormat(
+        format);
+  }
+  static VkFormat ToVkFormat(viz::SharedImageFormat format) {
+    return viz::SharedImageFormatRestrictedSinglePlaneUtils::ToVkFormat(format);
+  }
+#endif
+};
 
 gfx::BufferFormat ToBufferFormat(viz::SharedImageFormat format) {
   if (format.is_single_plane()) {
@@ -32,12 +66,14 @@ gfx::BufferFormat ToBufferFormat(viz::SharedImageFormat format) {
   } else if (format == viz::MultiPlaneFormat::kP010) {
     return gfx::BufferFormat::P010;
   }
-  NOTREACHED();
+  NOTREACHED() << "format=" << format.ToString();
   return gfx::BufferFormat::RGBA_8888;
 }
 
 SkYUVAInfo::PlaneConfig ToSkYUVAPlaneConfig(viz::SharedImageFormat format) {
   switch (format.plane_config()) {
+    case viz::SharedImageFormat::PlaneConfig::kY_U_V:
+      return SkYUVAInfo::PlaneConfig::kY_U_V;
     case viz::SharedImageFormat::PlaneConfig::kY_V_U:
       return SkYUVAInfo::PlaneConfig::kY_V_U;
     case viz::SharedImageFormat::PlaneConfig::kY_UV:
@@ -82,7 +118,8 @@ GLFormatDesc ToGLFormatDesc(viz::SharedImageFormat format,
 
 GLenum GLDataType(viz::SharedImageFormat format) {
   if (format.is_single_plane()) {
-    return viz::GLDataType(format.resource_format());
+    return SharedImageFormatRestrictedSinglePlaneUtilsAccessor::ToGLDataType(
+        format);
   }
 
   switch (format.channel_format()) {
@@ -100,7 +137,8 @@ GLenum GLDataType(viz::SharedImageFormat format) {
 GLenum GLDataFormat(viz::SharedImageFormat format, int plane_index) {
   DCHECK(format.IsValidPlaneIndex(plane_index));
   if (format.is_single_plane()) {
-    return viz::GLDataFormat(format.resource_format());
+    return SharedImageFormatRestrictedSinglePlaneUtilsAccessor::ToGLDataFormat(
+        format);
   }
 
   // For multiplanar formats without external sampler, GL formats are per plane.
@@ -154,8 +192,8 @@ GLenum TextureStorageFormat(viz::SharedImageFormat format,
                             int plane_index) {
   DCHECK(format.IsValidPlaneIndex(plane_index));
   if (format.is_single_plane()) {
-    return viz::TextureStorageFormat(format.resource_format(),
-                                     use_angle_rgbx_format);
+    return SharedImageFormatRestrictedSinglePlaneUtilsAccessor::
+        ToGLTextureStorageFormat(format, use_angle_rgbx_format);
   }
 
   // For multiplanar formats without external sampler, GL formats are per plane.
@@ -179,10 +217,12 @@ GLenum TextureStorageFormat(viz::SharedImageFormat format,
 #if BUILDFLAG(ENABLE_VULKAN)
 bool HasVkFormat(viz::SharedImageFormat format) {
   if (format.is_single_plane()) {
-    return viz::HasVkFormat(format.resource_format());
+    return SharedImageFormatRestrictedSinglePlaneUtilsAccessor::HasVkFormat(
+        format);
   } else if (format == viz::MultiPlaneFormat::kYV12 ||
              format == viz::MultiPlaneFormat::kNV12 ||
-             format == viz::MultiPlaneFormat::kP010) {
+             format == viz::MultiPlaneFormat::kP010 ||
+             format == viz::MultiPlaneFormat::kI420) {
     return true;
   }
 
@@ -193,13 +233,15 @@ VkFormat ToVkFormat(viz::SharedImageFormat format, int plane_index) {
   DCHECK(format.IsValidPlaneIndex(plane_index));
 
   if (format.is_single_plane()) {
-    return viz::ToVkFormat(format.resource_format());
+    return SharedImageFormatRestrictedSinglePlaneUtilsAccessor::ToVkFormat(
+        format);
   }
 
   // The following SharedImageFormat constants have PrefersExternalSampler()
   // false so they create a separate VkImage per plane and return the single
   // planar equivalents.
-  if (format == viz::MultiPlaneFormat::kYV12) {
+  if (format == viz::MultiPlaneFormat::kYV12 ||
+      format == viz::MultiPlaneFormat::kI420) {
     // Based on VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM.
     return VK_FORMAT_R8_UNORM;
   } else if (format == viz::MultiPlaneFormat::kNV12) {

@@ -1,4 +1,35 @@
 <style include="cr-shared-style shimless-rma-shared shimless-fonts">
+  hr {
+    border: 0;
+    border-top: 1px solid var(--cros-separator-color);
+    display: block;
+    height: 1px;
+    width: 100%;
+  }
+
+  /* Include div selector to increase specificity. */
+  div.input-wrapper-overflow {
+    justify-content: flex-start;
+    overflow-y: auto;
+    /* Add padding on the left so the inputs don't get visually cropped. */
+    padding-inline-start: 2px;
+  }
+
+  /*
+   * This CSS block is necessary for the correct functioning of the
+   * CrContainerShadowMixin intersection probe: that mixin uses an empty div
+   * with the IntersectionObserver API to track when the scroll container is
+   * scrolled all the way to the bottom (to hide/show the bottom shadow).
+   * When the scroll container has height 100%, the intersection probe div will
+   * never trigger, causing the bottom shadow to never disappear. This block
+   * of CSS moves the element up slightly so that it works correctly.
+   */
+  .input-wrapper-overflow > div:last-of-type {
+    position: relative;
+    top: -1px;
+  }
+
+  hr,
   .input-row {
     margin-bottom: 30px;
   }
@@ -45,22 +76,44 @@
   .md-select {
     width: 336px;
   }
-  
-  #skuIconContainer {
+ 
+  .label-wrapper {
     align-items: center;
     display: inline-flex;
     vertical-align: middle;
   }
 
-  #infoIcon {
+  .info-icon {
+    color: var(--shimless-hint-text-color);
     display: inline-block;
     height: 18px;
     margin-inline-start: 6px;
+    position: relative;
+    top: -5px;
     width: 18px;
   }
 
-  #tooltipContent {
+  .tooltip-content {
     line-height: var(--shimless-instructions-line-height);
+  }
+
+  #complianceWarning {
+    align-items: center;
+    color: var(--cros-color-warning);
+    display: flex;
+    margin-top: 2px;
+  }
+
+  #complianceWarning iron-icon {
+    display: inline-block;
+    height: 18px;
+    margin-inline-end: 6px;
+    width: 18px;
+  }
+
+  .required-field-asterisk {
+    color: var(--cros-text-color-alert);
+    margin-inline-start: 3px;
   }
 </style>
 
@@ -72,10 +125,12 @@
     </div>
   </div>
   <div slot="right-pane">
-    <div class="input-wrapper">
+    <!-- The #container ID is necessary for the CrContainerShadowMixin to work. -->
+    <div id="container" class="input-wrapper input-wrapper-overflow"
+        show-bottom-shadow>
       <div class="input-row">
         <div class="input-holder">
-          <cr-input id="serialNumber" value="{{serialNumber_}}" 
+          <cr-input id="serialNumber" value="{{serialNumber_}}"
               label="[[i18n('confirmDeviceInfoSerialNumberLabel')]]"
               disabled="[[allButtonsDisabled]]">
           </cr-input>
@@ -145,18 +200,19 @@
           </cr-button>
         </div>
       </div>
-      <div id="skuIconContainer">
+      <div class="label-wrapper">
         <label id="skuLabel" class="cr-form-field-label">
           [[i18n('confirmDeviceInfoSkuLabel')]]
         </label>
-        <iron-icon icon="shimless-icon:info" id="infoIcon"
-            class="cr-form-field-label">
+        <iron-icon id="skuIcon" icon="shimless-icon:info" class="info-icon">
         </iron-icon>
-        <paper-tooltip for="infoIcon" aria-hidden="true">
-          <div id="tooltipContent">[[i18n('confirmDeviceInfoSkuWarning')]]</div>
+        <paper-tooltip for="skuIcon" aria-hidden="true">
+          <div class="tooltip-content">
+            [[i18n('confirmDeviceInfoSkuWarning')]]
+          </div>
         </paper-tooltip>
       </div>
-      <div class="input-holder">
+      <div class="input-holder input-row">
         <select id="skuSelect" class="md-select"
             on-change="onSelectedSkuChange_" aria-labelledby="skuLabel"
             disabled="[[allButtonsDisabled]]">
@@ -171,6 +227,80 @@
             aria-describedby="skuLabel">
           [[i18n('confirmDeviceInfoResetButtonLabel')]]
         </cr-button>
+      </div>
+      <div hidden="[[!shouldShowComplianceSection_(featureLevel_)]]">
+        <div hidden="[[!isComplianceStatusKnown_(featureLevel_)]]">
+          <hr>
+          <div class="input-row">
+            <div class="compliance-status-string">
+              [[getComplianceStatusString_(featureLevel_)]]
+            </div>
+            <div id="complianceWarning">
+              <iron-icon icon="shimless-icon:info"></iron-icon>
+              <span>
+                [[i18n('confirmDeviceInfoDeviceComplianceWarning')]]
+              </span>
+            </div>
+          </div>
+        </div>
+        <div hidden="[[isComplianceStatusKnown_(featureLevel_)]]">
+          <div class="input-row">
+            <div class="label-wrapper">
+              <label id="isChassisBrandedLabel" class="cr-form-field-label">
+                [[i18n('confirmDeviceInfoDeviceQuestionIsBranded')]]
+              </label>
+              <span class="required-field-asterisk cr-form-field-label">*</span>
+            </div>
+            <div class="input-holder">
+              <select id="isChassisBranded" class="md-select"
+                  on-change="onIsChassisBrandedChange_"
+                  aria-labelledby="isChassisBrandedLabel"
+                  disabled="[[allButtonsDisabled]]">
+                <option value="[[booleanOrDefaultOptions_.DEFAULT]]">
+                  [[i18n('confirmDeviceInfoDeviceAnswerDefault')]]
+                </option>
+                <option value="[[booleanOrDefaultOptions_.NO]]">
+                  [[i18n('confirmDeviceInfoDeviceAnswerNo')]]
+                </option>
+                <option value="[[booleanOrDefaultOptions_.YES]]">
+                  [[i18n('confirmDeviceInfoDeviceAnswerYes')]]
+                </option>
+              </select>
+            </div>
+          </div>
+          <div class="input-row">
+            <div class="label-wrapper">
+              <label id="doesMeetRequirementsLabel" class="cr-form-field-label">
+                [[i18n('confirmDeviceInfoDeviceQuestionDoesMeetRequirements')]]
+              </label>
+              <span class="required-field-asterisk cr-form-field-label">*</span>
+              <iron-icon icon="shimless-icon:info" class="info-icon"
+                id="requirements-icon">
+              </iron-icon>
+              <paper-tooltip for="requirements-icon" aria-hidden="true">
+                <div class="tooltip-content">
+                  [[i18n('confirmDeviceInfoDeviceQuestionDoesMeetRequirementsTooltip')]]
+                </div>
+              </paper-tooltip>
+            </div>
+            <div class="input-holder">
+              <select id="doesMeetRequirements" class="md-select"
+                  on-change="onDoesMeetRequirementsChange_"
+                  aria-labelledby="doesMeetRequirementsLabel"
+                  disabled="[[allButtonsDisabled]]">
+                <option value="[[booleanOrDefaultOptions_.DEFAULT]]">
+                  [[i18n('confirmDeviceInfoDeviceAnswerDefault')]]
+                </option>
+                <option value="[[booleanOrDefaultOptions_.NO]]">
+                  [[i18n('confirmDeviceInfoDeviceAnswerNo')]]
+                </option>
+                <option value="[[booleanOrDefaultOptions_.YES]]">
+                  [[i18n('confirmDeviceInfoDeviceAnswerYes')]]
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

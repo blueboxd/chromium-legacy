@@ -177,8 +177,6 @@ class ChromeURLDataManagerWebUITrustedTypesTest
     enabled_features.push_back(history_clusters::kSidePanelJourneys);
     enabled_features.push_back(features::kSupportTool);
     enabled_features.push_back(ntp_features::kCustomizeChromeSidePanel);
-    enabled_features.push_back(
-        password_manager::features::kPasswordManagerRedesign);
     enabled_features.push_back(features::kReadAnything);
     enabled_features.push_back(user_notes::kUserNotes);
 
@@ -403,6 +401,9 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://account-migration-welcome",
     "chrome://add-supervision/",
     "chrome://app-disabled",
+    "chrome://camera-app/views/main.html",
+    "chrome://assistant-optin/",
+    "chrome://bluetooth-pairing",
     "chrome://certificate-manager/",
     // Crashes because message handler is not registered outside of the dialog
     // for confirm password change UI.
@@ -412,9 +413,11 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://crostini-installer",
     "chrome://crostini-upgrader",
     "chrome://cryptohome",
+    "chrome://diagnostics",
     "chrome://drive-internals",
     "chrome://emoji-picker",
     "chrome://family-link-user-internals",
+    "chrome://file-manager",
     "chrome://guest-os-installer",
     "chrome://help-app",
     "chrome://linux-proxy-config",
@@ -434,6 +437,7 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://print-management",
     "chrome-untrusted://projector",
     "chrome://proximity-auth/proximity_auth.html",
+    "chrome://scanning",
     "chrome://set-time",
     "chrome://shimless-rma",
     "chrome://shortcut-customization",

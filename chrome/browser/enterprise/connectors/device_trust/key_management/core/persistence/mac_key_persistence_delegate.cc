@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/check.h"
-#include "base/memory/scoped_refptr.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/mac/secure_enclave_signing_key.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/shared_command_constants.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/signing_key_pair.h"
@@ -57,7 +56,7 @@ bool MacKeyPersistenceDelegate::StoreKeyPair(KeyTrustLevel trust_level,
   return true;
 }
 
-scoped_refptr<SigningKeyPair> MacKeyPersistenceDelegate::LoadKeyPair() {
+std::unique_ptr<SigningKeyPair> MacKeyPersistenceDelegate::LoadKeyPair() {
   SecureEnclaveClient::KeyType key_type =
       SecureEnclaveClient::KeyType::kPermanent;
   std::vector<uint8_t> key_label;
@@ -71,11 +70,11 @@ scoped_refptr<SigningKeyPair> MacKeyPersistenceDelegate::LoadKeyPair() {
     return nullptr;
   }
 
-  return base::MakeRefCounted<SigningKeyPair>(std::move(signing_key),
-                                              BPKUR::CHROME_BROWSER_HW_KEY);
+  return std::make_unique<SigningKeyPair>(std::move(signing_key),
+                                          BPKUR::CHROME_BROWSER_HW_KEY);
 }
 
-scoped_refptr<SigningKeyPair> MacKeyPersistenceDelegate::CreateKeyPair() {
+std::unique_ptr<SigningKeyPair> MacKeyPersistenceDelegate::CreateKeyPair() {
   // Moving a previous signing key to temporary key storage if a key exists.
   client_->UpdateStoredKeyLabel(SecureEnclaveClient::KeyType::kPermanent,
                                 SecureEnclaveClient::KeyType::kTemporary);
@@ -91,8 +90,8 @@ scoped_refptr<SigningKeyPair> MacKeyPersistenceDelegate::CreateKeyPair() {
     return nullptr;
   }
 
-  return base::MakeRefCounted<SigningKeyPair>(std::move(signing_key),
-                                              BPKUR::CHROME_BROWSER_HW_KEY);
+  return std::make_unique<SigningKeyPair>(std::move(signing_key),
+                                          BPKUR::CHROME_BROWSER_HW_KEY);
 }
 
 void MacKeyPersistenceDelegate::CleanupTemporaryKeyData() {

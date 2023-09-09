@@ -111,6 +111,7 @@
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_result.h"
 #include "content/public/browser/private_aggregation_data_model.h"
+#include "content/public/browser/private_network_device_delegate.h"
 #include "content/public/browser/service_process_host.h"
 #include "content/public/browser/session_storage_usage_info.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
@@ -131,10 +132,13 @@
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/shared_dictionary_access_observer.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
+#include "services/network/public/mojom/url_loader_network_service_observer.mojom.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -145,6 +149,7 @@
 #include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-shared.h"
+#include "third_party/blink/public/mojom/private_network_device/private_network_device.mojom.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/scheme_host_port.h"
 
@@ -449,6 +454,34 @@ WebContents* GetWebContents(
   return context.navigation_or_document()->GetWebContents();
 }
 
+// A getter for the context required for the SSLClientAuthHandler. If
+// `BrowserContext` is null, it indicates the calling context is no longer
+// valid. This assumes that if the WebContents goes away, the caller is no
+// longer valid.
+std::pair<BrowserContext*, WebContents*> GetContextFromNetworkContext(
+    StoragePartitionImpl::URLLoaderNetworkContext context) {
+  WebContents* web_contents = GetWebContents(context);
+  if (!web_contents) {
+    return std::make_pair(nullptr, nullptr);
+  }
+  return std::make_pair(web_contents->GetBrowserContext(), web_contents);
+}
+
+// A getter for the context required for the SSLClientAuthHandler. If
+// `BrowserContext` is null, it indicates the calling context is no longer
+// valid. This version allows for a null WebContents and is used in cases when
+// the context is not associated with a document.
+// TODO(devlin): This is used as a proxy for if a service worker requestor is
+// still alive, but it's a pretty sorry excuse. The StoragePartition is owned by
+// the BrowserContext, and can definitely outlive service workers.
+// This seems to be okay, since in the request sites its used, we also have
+// checks for if the mojo receiver goes away, but... eww.
+std::pair<BrowserContext*, WebContents*> GetContextFromStoragePartition(
+    base::WeakPtr<StoragePartitionImpl> storage_partition) {
+  return std::make_pair(
+      GetBrowserContextFromStoragePartition(storage_partition), nullptr);
+}
+
 // LoginHandlerDelegate manages HTTP auth. It is self-owning and deletes itself
 // when the credentials are resolved or the AuthChallengeResponder is cancelled.
 class LoginHandlerDelegate {
@@ -587,14 +620,14 @@ class SSLClientAuthDelegate : public SSLClientAuthHandler::Delegate {
   SSLClientAuthDelegate(
       mojo::PendingRemote<network::mojom::ClientCertificateResponder>
           client_cert_responder_remote,
-      content::BrowserContext* browser_context,
-      WebContents::Getter web_contents_getter,
+      BrowserContext* browser_context,
+      SSLClientAuthHandler::ContextGetter context_getter,
       const scoped_refptr<net::SSLCertRequestInfo>& cert_info)
       : client_cert_responder_(std::move(client_cert_responder_remote)),
         ssl_client_auth_handler_(std::make_unique<SSLClientAuthHandler>(
             GetContentClient()->browser()->CreateClientCertStore(
                 browser_context),
-            std::move(web_contents_getter),
+            std::move(context_getter),
             std::move(cert_info.get()),
             this)) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -678,27 +711,6 @@ bool CancelIfPrerendering(NavigationOrDocumentHandle* navigation_or_document,
 
   auto* web_contents = WebContentsImpl::FromFrameTreeNode(frame_tree_node);
   return web_contents->CancelPrerendering(frame_tree_node, final_status);
-}
-
-void OnCertificateRequestedContinuation(
-    const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
-    mojo::PendingRemote<network::mojom::ClientCertificateResponder>
-        client_cert_responder_remote,
-    base::RepeatingCallback<WebContents*(void)> web_contents_getter) {
-  WebContents* web_contents = nullptr;
-  if (web_contents_getter) {
-    web_contents = web_contents_getter.Run();
-  }
-
-  if (!web_contents) {
-    CallCancelRequest(std::move(client_cert_responder_remote));
-    return;
-  }
-
-  new SSLClientAuthDelegate(std::move(client_cert_responder_remote),
-                            web_contents->GetBrowserContext(),
-                            std::move(web_contents_getter),
-                            cert_info);  // deletes self
 }
 
 class SSLErrorDelegate : public SSLErrorHandler::Delegate {
@@ -1184,6 +1196,49 @@ class StoragePartitionImpl::ServiceWorkerTrustTokenAccessObserver
   raw_ptr<StoragePartitionImpl> storage_partition_;
 };
 
+class StoragePartitionImpl::ServiceWorkerSharedDictionaryAccessObserver
+    : public network::mojom::SharedDictionaryAccessObserver {
+ public:
+  explicit ServiceWorkerSharedDictionaryAccessObserver(
+      StoragePartitionImpl* storage_partition)
+      : storage_partition_(storage_partition) {}
+
+ private:
+  void Clone(
+      mojo::PendingReceiver<network::mojom::SharedDictionaryAccessObserver>
+          observer) override {
+    storage_partition_->service_worker_shared_dictionary_observers_.Add(
+        std::make_unique<ServiceWorkerSharedDictionaryAccessObserver>(
+            storage_partition_),
+        std::move(observer));
+  }
+
+  void OnSharedDictionaryAccessed(
+      network::mojom::SharedDictionaryAccessDetailsPtr details) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context =
+        storage_partition_->GetServiceWorkerContext();
+
+    std::vector<GlobalRenderFrameHostId> destinations =
+        *service_worker_context->GetWindowClientFrameRoutingIds(
+            blink::StorageKey::CreateFirstParty(
+                details->isolation_key.frame_origin()));
+    if (destinations.empty()) {
+      return;
+    }
+
+    for (GlobalRenderFrameHostId frame_id : destinations) {
+      if (RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(frame_id)) {
+        rfh->OnSharedDictionaryAccessed(mojo::Clone(details));
+      }
+    }
+  }
+
+  // `storage_partition_` owns this object via UniqueReceiverSet
+  // (service_worker_shared_dictionary_observers_).
+  raw_ptr<StoragePartitionImpl> storage_partition_;
+};
+
 StoragePartitionImpl::StoragePartitionImpl(
     BrowserContext* browser_context,
     const StoragePartitionConfig& config,
@@ -1503,8 +1558,10 @@ void StoragePartitionImpl::Initialize(
                        : path.Append(storage::kSharedStoragePath);
     shared_storage_manager_ = std::make_unique<storage::SharedStorageManager>(
         shared_storage_path, special_storage_policy_);
-    shared_storage_header_observer_ =
-        std::make_unique<SharedStorageHeaderObserver>(this);
+    if (base::FeatureList::IsEnabled(blink::features::kSharedStorageAPIM117)) {
+      shared_storage_header_observer_ =
+          std::make_unique<SharedStorageHeaderObserver>(this);
+    }
   }
 
   if (base::FeatureList::IsEnabled(blink::features::kPrivateAggregationApi)) {
@@ -2047,6 +2104,51 @@ void StoragePartitionImpl::OnAuthRequired(
       web_contents_getter);
 }
 
+void StoragePartitionImpl::OnPrivateNetworkAccessPermissionRequired(
+    const GURL& url,
+    const net::IPAddress& ip_address,
+    const std::string& private_network_device_id,
+    const std::string& private_network_device_name,
+    OnPrivateNetworkAccessPermissionRequiredCallback callback) {
+  if (!base::FeatureList::IsEnabled(
+          network::features::kPrivateNetworkAccessPermissionPrompt)) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  if (url_loader_network_observers_.empty()) {
+    std::move(callback).Run(false);
+    return;
+  }
+  const URLLoaderNetworkContext& context =
+      url_loader_network_observers_.current_context();
+
+  if (context.type() !=
+          URLLoaderNetworkContext::Type::kRenderFrameHostContext ||
+      !context.navigation_or_document()) {
+    std::move(callback).Run(false);
+    return;
+  }
+  RenderFrameHost* render_frame_host =
+      context.navigation_or_document()->GetDocument();
+  if (!render_frame_host) {
+    std::move(callback).Run(false);
+    return;
+  }
+  auto device = blink::mojom::PrivateNetworkDevice::New(
+      private_network_device_id, private_network_device_name, ip_address);
+
+  PrivateNetworkDeviceDelegate* delegate =
+      GetContentClient()->browser()->GetPrivateNetworkDeviceDelegate();
+  if (!delegate) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  delegate->RequestPermission(*render_frame_host, std::move(device),
+                              std::move(callback));
+}
+
 void StoragePartitionImpl::OnCertificateRequested(
     const absl::optional<base::UnguessableToken>& window_id,
     const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
@@ -2102,9 +2204,23 @@ void StoragePartitionImpl::OnCertificateRequested(
     return;
   }
 
-  auto web_contents_getter = base::BindRepeating(GetWebContents, context);
-  OnCertificateRequestedContinuation(cert_info, std::move(cert_responder),
-                                     std::move(web_contents_getter));
+  SSLClientAuthHandler::ContextGetter context_getter;
+
+  if (context.type() == URLLoaderNetworkContext::Type::kServiceWorkerContext) {
+    context_getter = base::BindRepeating(GetContextFromStoragePartition,
+                                         weak_factory_.GetWeakPtr());
+  } else {
+    context_getter = base::BindRepeating(GetContextFromNetworkContext, context);
+    // The WebContents is already invalid. Bail.
+    if (!GetWebContents(context)) {
+      CallCancelRequest(std::move(cert_responder));
+      return;
+    }
+  }
+
+  // SSLClientAuthDelegate handles its own lifetime.
+  new SSLClientAuthDelegate(std::move(cert_responder), browser_context(),
+                            std::move(context_getter), cert_info);
 }
 
 void StoragePartitionImpl::OnSSLCertificateError(
@@ -3163,10 +3279,16 @@ void StoragePartitionImpl::InitNetworkContext() {
   cors_exempt_header_list_ = context_params->cors_exempt_header_list;
 
   if (base::FeatureList::IsEnabled(
-          blink::features::kCompressionDictionaryTransportBackend)) {
+          network::features::kCompressionDictionaryTransportBackend)) {
     context_params->shared_dictionary_enabled = true;
     if (!is_in_memory()) {
-      context_params->shared_dictionary_directory =
+      // Some callers may already initialize NetworkContextFilePaths, and we
+      // don't want to overwrite them.
+      if (!context_params->file_paths) {
+        context_params->file_paths =
+            network::mojom::NetworkContextFilePaths::New();
+      }
+      context_params->file_paths->shared_dictionary_directory =
           partition_path_.Append(FILE_PATH_LITERAL("Shared Dictionary"));
     }
     if (context_params->shared_dictionary_cache_max_size == 0u) {
@@ -3262,6 +3384,15 @@ StoragePartitionImpl::CreateTrustTokenAccessObserverForServiceWorker() {
   mojo::PendingRemote<network::mojom::TrustTokenAccessObserver> remote;
   service_worker_trust_token_observers_.Add(
       std::make_unique<ServiceWorkerTrustTokenAccessObserver>(this),
+      remote.InitWithNewPipeAndPassReceiver());
+  return remote;
+}
+
+mojo::PendingRemote<network::mojom::SharedDictionaryAccessObserver>
+StoragePartitionImpl::CreateSharedDictionaryAccessObserverForServiceWorker() {
+  mojo::PendingRemote<network::mojom::SharedDictionaryAccessObserver> remote;
+  service_worker_shared_dictionary_observers_.Add(
+      std::make_unique<ServiceWorkerSharedDictionaryAccessObserver>(this),
       remote.InitWithNewPipeAndPassReceiver());
   return remote;
 }

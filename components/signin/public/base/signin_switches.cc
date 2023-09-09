@@ -25,13 +25,12 @@ const char kDisableSigninScopedDeviceId[] = "disable-signin-scoped-device-id";
 
 #if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
 // Enable experimental binding session credentials to the device.
-BASE_FEATURE(kEnableBoundSessionCrendentials,
-             "EnableBoundSessionCrendentials",
+BASE_FEATURE(kEnableBoundSessionCredentials,
+             "EnableBoundSessionCredentials",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsBoundSessionCredentialsEnabled() {
-  return base::FeatureList::IsEnabled(
-      switches::kEnableBoundSessionCrendentials);
+  return base::FeatureList::IsEnabled(switches::kEnableBoundSessionCredentials);
 }
 #endif
 
@@ -53,6 +52,10 @@ BASE_FEATURE(kForceStartupSigninPromo,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
+#if BUILDFLAG(IS_IOS)
+BASE_FEATURE(kFinchIosFre, "FinchIosFre", base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
 // Enables a new version of the sync confirmation UI.
 BASE_FEATURE(kTangibleSync,
              "TangibleSync",
@@ -64,5 +67,7 @@ BASE_FEATURE(kTangibleSync,
 #endif
 
 );
+
+BASE_FEATURE(kWaffle, "WaffleDesktop", base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace switches

@@ -20,6 +20,7 @@
 #include "chrome/updater/app/app_utils.h"
 #include "chrome/updater/configurator.h"
 #include "chrome/updater/constants.h"
+#include "chrome/updater/external_constants.h"
 #include "chrome/updater/persisted_data.h"
 #include "chrome/updater/prefs.h"
 #include "chrome/updater/update_service.h"
@@ -42,15 +43,16 @@ bool IsInternalService() {
              kServerServiceSwitch) == kServerUpdateServiceInternalSwitchValue;
 }
 
-AppServer::AppServer() : external_constants_(CreateExternalConstants()) {}
-
+AppServer::AppServer() = default;
 AppServer::~AppServer() = default;
 
-void AppServer::Initialize() {
+int AppServer::Initialize() {
   first_task_ = ModeCheck();
+  return kErrorOk;
 }
 
 base::OnceClosure AppServer::ModeCheck() {
+  VLOG(2) << __func__;
   scoped_refptr<GlobalPrefs> global_prefs = CreateGlobalPrefs(updater_scope());
   if (!global_prefs) {
     return base::BindOnce(&AppServer::Shutdown, this,
@@ -168,6 +170,11 @@ void AppServer::Uninitialize() {
   } else {
     MaybeUninstall();
   }
+
+  // Because this instance is leaky when running on Windows, the following
+  // references must be reset to destroy the objects, otherwise `Prefs` leaks.
+  prefs_ = nullptr;
+  config_ = nullptr;
 }
 
 void AppServer::MaybeUninstall() {

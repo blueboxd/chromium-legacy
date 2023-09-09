@@ -172,10 +172,8 @@ std::string CompanionTabHelper::GetTextQueryFromSearchUrl(
   return text_query_param_value;
 }
 
-void CompanionTabHelper::StartRegionSearch(
-    content::WebContents* web_contents,
-    bool use_fullscreen_capture,
-    lens::AmbientSearchEntryPoint entry_point) {
+void CompanionTabHelper::StartRegionSearch(content::WebContents* web_contents,
+                                           bool use_fullscreen_capture) {
 #if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
   // TODO(shaktisahu): Pass a UI entry point for accurate metrics.
   Browser* browser = companion::GetBrowserForWebContents(web_contents);
@@ -186,7 +184,7 @@ void CompanionTabHelper::StartRegionSearch(
   }
   lens_region_search_controller_->Start(web_contents, use_fullscreen_capture,
                                         /*is_google_default_search_provider=*/
-                                        true, entry_point);
+                                        true);
 #endif
 }
 

@@ -10,14 +10,15 @@
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/containers/span.h"
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/sync/protocol/webauthn_credential_specifics.pb.h"
 #include "device/fido/cable/cable_discovery_data.h"
 #include "device/fido/cable/v2_constants.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/fido_constants.h"
-#include "device/fido/fido_device_discovery.h"
 #include "device/fido/fido_discovery_base.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
@@ -92,6 +93,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
 
   void set_hid_ignore_list(base::flat_set<VidPid> hid_ignore_list);
 
+  // Provides the passkeys that will be made available to use for cloud-based
+  // enclave authentication.
+  void SetEnclavePasskeys(
+      std::vector<sync_pb::WebauthnCredentialSpecifics> passkeys);
+
 #if BUILDFLAG(IS_MAC)
   // Configures the Touch ID authenticator. Set to absl::nullopt to disable it.
   void set_mac_touch_id_info(
@@ -128,6 +134,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
       CtapGetAssertionRequest request);
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
+  // no_cable_linking requests that QR-linked and pre-linked phones be ignored
+  // for this discovery.
+  //
+  // TODO(crbug.com/1459443): remove this and everything else from the CL that
+  // added it if this is unused by June 2024.
+  bool no_cable_linking = false;
+
  protected:
   static std::vector<std::unique_ptr<FidoDiscoveryBase>> SingleDiscovery(
       std::unique_ptr<FidoDiscoveryBase> discovery);
@@ -137,6 +150,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
   std::vector<std::unique_ptr<FidoDiscoveryBase>> MaybeCreatePlatformDiscovery()
       const;
 #endif
+
+  void MaybeCreateEnclaveDiscovery(
+      std::vector<std::unique_ptr<FidoDiscoveryBase>>& discoveries);
 
 #if BUILDFLAG(IS_MAC)
   absl::optional<fido::mac::AuthenticatorConfig> mac_touch_id_config_;
@@ -166,6 +182,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
       get_assertion_request_for_legacy_credential_check_;
 #endif  // BUILDFLAG(IS_CHROMEOS)
   base::flat_set<VidPid> hid_ignore_list_;
+  std::vector<sync_pb::WebauthnCredentialSpecifics> enclave_passkeys_;
 };
 
 }  // namespace device

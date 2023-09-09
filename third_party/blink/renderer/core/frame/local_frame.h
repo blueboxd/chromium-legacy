@@ -381,7 +381,6 @@ class CORE_EXPORT LocalFrame final
   // If this frame doesn't need to fit into a page size, default values are
   // used.
   void StartPrinting(const gfx::SizeF& page_size = gfx::SizeF(),
-                     const gfx::SizeF& aspect_ratio = gfx::SizeF(),
                      float maximum_shrink_ratio = 0);
 
   void EndPrinting();
@@ -583,6 +582,13 @@ class CORE_EXPORT LocalFrame final
   // be removed.
   bool IsProvisional() const;
 
+  // Returns the Page's `previous_main_frame_for_local_swap_` if set, or the
+  // LocalFrame for which `provisional_frame_ == this`. The LocalFrame returned
+  // will be swapped out in place of `this` as part of a
+  // LocalFrame <-> LocalFrame swap during navigation commit. This function may
+  // only be called on a provisional frame.
+  LocalFrame* GetPreviousLocalFrameForLocalSwap();
+
   // Whether the frame is considered to be a root ad frame by Ad Tagging.
   bool IsAdRoot() const;
 
@@ -648,9 +654,6 @@ class CORE_EXPORT LocalFrame final
       mojom::blink::BackForwardCacheNotRestoredReasonsPtr);
   const mojom::blink::BackForwardCacheNotRestoredReasonsPtr&
   GetNotRestoredReasons();
-
-  // Sets the LCPP Hint available at the navigation commit timing.
-  void SetLCPPHint(mojom::blink::LCPCriticalPathPredictorNavigationTimeHintPtr);
 
   const AtomicString& GetReducedAcceptLanguage() const {
     return reduced_accept_language_;
@@ -881,7 +884,7 @@ class CORE_EXPORT LocalFrame final
 
   void ScheduleNextServiceForScrollSnapshotClients();
 
-  void CollectAnchorScrollContainerIds(
+  void CollectAnchorPositionScrollerIds(
       Vector<cc::ElementId>* scroll_container_ids) const;
 
   using BlockingDetailsList = Vector<mojom::blink::BlockingDetailsPtr>;
@@ -933,11 +936,10 @@ class CORE_EXPORT LocalFrame final
 
   // Internal implementation for starting or ending printing.
   // |printing| is true when printing starts, false when printing ends.
-  // |page_size|, |aspect_ratio|, and |maximum_shrink_ratio| are only
-  // meaningful when we should use printing layout for this frame.
+  // |page_size| and |maximum_shrink_ratio| are only meaningful when we should
+  // use printing layout for this frame.
   void SetPrinting(bool printing,
                    const gfx::SizeF& page_size,
-                   const gfx::SizeF& aspect_ratio,
                    float maximum_shrink_ratio);
 
   // FrameScheduler::Delegate overrides:

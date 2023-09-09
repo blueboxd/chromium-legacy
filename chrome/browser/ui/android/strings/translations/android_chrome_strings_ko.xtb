@@ -68,7 +68,6 @@
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - <ph name="DEVICE_NAME" />에서 전송</translation>
 <translation id="1311657260431405215">이 QR 코드(<ph name="QRCODEVALUE" />)는 URL이 아닙니다.</translation>
 <translation id="1316212908214730110">Chrome_스타일_지정된_하이라이트_</translation>
-<translation id="131655401280401879">나중에 프로필 잠금을 삭제하면 저장된 정보가 삭제됩니다.</translation>
 <translation id="1320912611264252795">북마크 저장 흐름 폴더가 전체 높이로 열림</translation>
 <translation id="1327257854815634930">탐색 기록 열림</translation>
 <translation id="1331212799747679585">Chrome을 업데이트할 수 없습니다. 옵션 더보기</translation>
@@ -193,7 +192,6 @@
 <translation id="2056878612599315956">사이트 일시중지됨</translation>
 <translation id="2065944887543506430">{FILE_COUNT,plural, =1{다운로드 1개 실패}other{다운로드 #개 실패}}</translation>
 <translation id="2067805253194386918">텍스트</translation>
-<translation id="2079545284768500474">실행취소</translation>
 <translation id="2082238445998314030">전체 결과 <ph name="TOTAL_RESULTS" />개 중 <ph name="RESULT_NUMBER" />개</translation>
 <translation id="2096012225669085171">모든 기기 동기화 및 맞춤설정</translation>
 <translation id="2100273922101894616">자동 로그인</translation>
@@ -240,6 +238,7 @@
 <translation id="2349710944427398404">계정, 북마크, 저장된 설정 등 Chrome에서 사용한 전체 데이터</translation>
 <translation id="235789365079050412">Google 개인정보처리방침</translation>
 <translation id="2359808026110333948">계속</translation>
+<translation id="2362083820973145409"><ph name="USER_NAME" /> 계정으로 로그인되었습니다. <ph name="USER_EMAIL" />입니다. 설정을 엽니다.</translation>
 <translation id="2386938421315164605">주제 숨기기 및 숨기기 해제</translation>
 <translation id="2390510615457643724"><ph name="FILE_NAME" />(<ph name="FILE_SIZE" />) 파일을 다시 다운로드하시겠습니까?</translation>
 <translation id="2394602618534698961">다운로드한 파일이 여기 표시됩니다.</translation>
@@ -277,7 +276,7 @@
 <translation id="2571711316400087311">다른 언어로 된 페이지를 Google 번역으로 전송하는 옵션 제공</translation>
 <translation id="2571834852878229351">직접 만들기</translation>
 <translation id="2573452357057307036">Chrome을 기본 브라우저로 설정하는 방법을 알아보세요.</translation>
-<translation id="257470231920177468">이 설정을 사용하면 내 관심분야를 추측하는 내가 방문한 사이트 목록이 여기에 표시됩니다.</translation>
+<translation id="2574249610672786438">Chrome을 사용하는 어느 곳에서나 탭을 확인하려면 모든 기기에서 로그인하세요.</translation>
 <translation id="2580436639406015883">스팸 및 사기 감소 기능은 비공개 상태 토큰을 사용해 사이트에서 사기에 대응하고 사람과 봇을 구별하도록 돕습니다.
 
 사이트에서는 나와 사이트의 상호작용(예: 정기적인 계정 로그인)을 기반으로 브라우저에 비공개 상태 토큰을 발행할 수 있습니다. 나중에 방문하는 다른 사이트에서 유효한 비공개 상태 토큰이 있는지 확인하여 토큰을 찾으면 이 사이트에서도 나를 봇이 아닌 사람으로 여길 가능성이 큽니다.
@@ -296,6 +295,7 @@
 <translation id="2643064289437760082">언제든지 인터넷 사용 기록을 삭제하여 광고 측정 데이터를 삭제할 수 있습니다.</translation>
 <translation id="2647434099613338025">언어 추가</translation>
 <translation id="2649068648233607930">내 브라우저는 <ph name="DOMAIN" />에서 관리합니다</translation>
+<translation id="2650077116157640844">동기화된 기기에 대해 자세히 알아보기</translation>
 <translation id="2650348088770008516">개인 정보 보호 가이드 설명이 닫힘</translation>
 <translation id="2650408372219180431">이 기기에 저장된 비밀번호 내보내기 및 삭제</translation>
 <translation id="2650751991977523696">파일을 다시 다운로드하시겠습니까?</translation>
@@ -389,14 +389,12 @@
 <translation id="3070005020161560471">자동으로 번역</translation>
 <translation id="3072980200212375806"><ph name="APP_NAME" /> 앱이 Chrome에서 열립니다. 계속하면 <ph name="BEGIN_LINK1" />Google 서비스 약관<ph name="END_LINK1" /> 및 <ph name="BEGIN_LINK2" />Chrome 및 ChromeOS 추가 서비스 약관<ph name="END_LINK2" />에 동의하는 것으로 간주됩니다. <ph name="BEGIN_LINK3" />개인정보처리방침<ph name="END_LINK3" />도 적용됩니다.</translation>
 <translation id="3080525922482950719">페이지를 저장하여 나중에 읽거나 오프라인 상태에서 읽을 수 있습니다.</translation>
-<translation id="3083194063661536258">로그아웃했습니다. 버튼 대화상자를 열어 로그인하고 동기화를 사용 설정합니다.</translation>
 <translation id="3091010850649238832">클립보드 내용 표시</translation>
 <translation id="3098745985164956033">설명을 개선하기 위해 일부 이미지가 Google에 전송됨</translation>
 <translation id="3114507951000454849">오늘의 뉴스 읽기 <ph name="NEWS_ICON" /></translation>
 <translation id="3123734510202723619">공지사항</translation>
 <translation id="3134784203083076891">”</translation>
 <translation id="314939179385989105">Chrome 홈페이지</translation>
-<translation id="3157931365184549694">복구</translation>
 <translation id="3166827708714933426">탭 및 창 단축키</translation>
 <translation id="316694332262407393">Chrome이 이미 실행 중입니다.</translation>
 <translation id="3167258285411721858"><ph name="HOST_NAME" />의 모바일 사이트를 요청할 수 있습니다.</translation>
@@ -408,7 +406,6 @@
 <translation id="3214996641768123781">로그인할 경우 <ph name="BEGIN_LINK1" />검색 기록<ph name="END_LINK1" /> 및 <ph name="BEGIN_LINK2" />다른 활동 형식<ph name="END_LINK2" />이 Google 계정에 저장될 수 있습니다. 이러한 데이터는 언제든지 삭제할 수 있습니다.</translation>
 <translation id="321773570071367578">암호를 잊어버렸거나 이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />합니다.</translation>
 <translation id="3220943972464248773">비밀번호를 동기화하려면 본인 여부를 인증하세요.</translation>
-<translation id="3223522355830797639">은행에서 본인 확인을 요청합니다</translation>
 <translation id="3227557059438308877">Chrome을 보안 키로 사용</translation>
 <translation id="3232754137068452469">웹 앱</translation>
 <translation id="3234978181857588512">기기에 저장</translation>
@@ -431,11 +428,11 @@
 <translation id="3303414029551471755">콘텐츠를 다운로드하시겠습니까?</translation>
 <translation id="3305130791745726624">기기로 보내기</translation>
 <translation id="3305795716056605962">옵션 더보기 버튼을 눌러 페이지 번역하기</translation>
-<translation id="3319664549618064419">사이트를 더 편하게 보려면 데스크톱 사이트로 전환하세요</translation>
 <translation id="3334729583274622784">파일 확장자를 변경하시겠습니까?</translation>
 <translation id="3341262203274374114">팔로우를 해제할 수 없습니다. 문제가 발생했습니다.</translation>
 <translation id="3359667936385849800">현재 서비스 제공업체 사용</translation>
 <translation id="3365271666488085187">Chrome에서 이 관심분야를 고려할 수 있습니다.</translation>
+<translation id="3373701465337594448">이 설정을 사용하면 내 관심분야를 추측하는 내가 방문한 사이트 목록이 여기에 표시됩니다.</translation>
 <translation id="3373979091428520308">이 페이지를 다른 기기로 공유하려면 다른 기기의 Chrome 설정에서 동기화를 사용 설정하세요.</translation>
 <translation id="3374023511497244703">북마크, 방문 기록, 비밀번호 등의 Chrome 데이터가 더 이상 Google 계정과 동기화되지 않습니다.</translation>
 <translation id="3384347053049321195">이미지 공유</translation>
@@ -447,9 +444,9 @@
 <translation id="3421726884497337397">타사 쿠키를 차단하는 경우 선택</translation>
 <translation id="3428747202529429621">로그인 상태일 때 Chrome에서 사용자를 보호하고 기타 Google 앱에서 사용자의 보안을 개선하는 데 사용될 수 있습니다.</translation>
 <translation id="3429160811076349561">무료 체험 기능 사용 안함</translation>
-<translation id="3432973700170747422">지난 15분 데이터 삭제</translation>
 <translation id="3435465986463792564">창이 많이 열렸나요? 여기에서 관리할 수 있습니다.</translation>
 <translation id="3435738964857648380">보안</translation>
+<translation id="3439276997620616816">여기에서 최근 탭을 확인할 수 있습니다.</translation>
 <translation id="3443221991560634068">현재 페이지 새로고침</translation>
 <translation id="3444179773590444986">사이트의 어두운 테마에 관한 의견을 공유할까요?</translation>
 <translation id="3452832259067974318">Chrome에서는 개인 정보 보호를 위해 이 입력란의 비밀번호를 자동 완성하지 않습니다.</translation>
@@ -458,6 +455,7 @@
 <translation id="3479552764303398839">나중에</translation>
 <translation id="3493531032208478708">추천 콘텐츠 <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="3495219333887281978">로그인 하단 시트가 절반 높이로 열렸습니다.</translation>
+<translation id="3498338220321963224">나중에 프로필 잠금을 삭제하면 저장된 데이터가 삭제됩니다.</translation>
 <translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="350276055892098337">오래된 항목순 정렬</translation>
 <translation id="3507132249039706973">표준 보호 모드를 사용 중입니다.</translation>
@@ -481,9 +479,9 @@
 <translation id="3587596251841506391">웹 보안 개선에 참여</translation>
 <translation id="3597179440835065298">추천 기능 개선하기</translation>
 <translation id="3602290021589620013">미리보기</translation>
-<translation id="360901359071773787">지난 15분 동안의 데이터를 삭제하시겠습니까?</translation>
 <translation id="3616113530831147358">오디오</translation>
 <translation id="3622349720008044802">창 관리</translation>
+<translation id="3623240789707551553">{DOMAIN_COUNT,plural, =1{외 사이트 1개}other{외 사이트 #개}}</translation>
 <translation id="3631987586758005671"><ph name="DEVICE_NAME" />에 공유하는 중</translation>
 <translation id="363596933471559332">저장된 사용자 인증 정보를 사용하여 자동으로 웹사이트에 로그인합니다. 이 기능이 꺼져 있는 경우에는 웹사이트에 로그인할 때마다 인증 요청 메시지가 표시됩니다.</translation>
 <translation id="3636940436873918441">기본 언어</translation>
@@ -549,7 +547,6 @@
 <translation id="4024768890073681126">내 브라우저는 부모님이 관리합니다.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{#시간}other{#시간}}</translation>
 <translation id="4035877632587724847">허용 안함</translation>
-<translation id="4036177530563778041">중단한 위치에서 계속하기</translation>
 <translation id="4042941173059740150"><ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" />(으)로 <ph name="SITE_ETLD_PLUS_ONE" /> 계속하기</translation>
 <translation id="4044708993631234325">하단 시트</translation>
 <translation id="4045764304651014138">사용 데이터</translation>
@@ -622,8 +619,8 @@
 <translation id="4405224443901389797">다음 폴더로 이동…</translation>
 <translation id="4405636711880428279">가상 카드를 삭제하시겠습니까?</translation>
 <translation id="4409271659088619928">기본 검색엔진은 <ph name="DSE" />입니다. 해당 검색엔진에서 검색 기록을 삭제할 수 있는 경우 검색 기록 삭제 안내를 확인하세요.</translation>
-<translation id="441383202534727410">방문 기록을 기반으로 사이트 목록이 표시되는 데 최대 일주일이 걸릴 수 있습니다.</translation>
 <translation id="4415276339145661267">Google 계정 관리</translation>
+<translation id="4417111749295506837">자동차에서 Chrome 정보를 동기화하고 데이터를 안전하게 유지하려면 프로필 잠금을 만들어야 합니다. 차량에 탑승할 때마다 코드나 비밀번호를 사용하게 됩니다.</translation>
 <translation id="4425140285732600465">가격 추적 중입니다. 사이트에서 가격이 인하되면 알림이 전송됩니다.</translation>
 <translation id="442518031075347249">더 이상 Google Pay에서 가상 카드를 사용할 수 없습니다. <ph name="BEGIN_LINK1" />가상 카드에 관해 자세히 알아보기<ph name="END_LINK1" /></translation>
 <translation id="4428065317363009941">광고 개인 최적화</translation>
@@ -752,6 +749,7 @@
 <translation id="5010886807652684893">시각 뷰</translation>
 <translation id="5011311129201317034"><ph name="SITE" />에서 연결하려고 함</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5017529052065664584">최근 15분</translation>
 <translation id="5032430150487044192">QR 코드를 만들 수 없음</translation>
 <translation id="5039804452771397117">허용</translation>
 <translation id="5040262127954254034">개인정보 보호</translation>
@@ -770,7 +768,6 @@
 <translation id="5118713593561876160">관심분야</translation>
 <translation id="5122378528687922675">도움이 필요하면 부모님(<ph name="PARENT_NAME_1" /> 또는 <ph name="PARENT_NAME_2" />)께 요청하세요</translation>
 <translation id="5123685120097942451">시크릿 탭</translation>
-<translation id="5126510351761255129">카드 인증</translation>
 <translation id="5132942445612118989">모든 기기의 비밀번호, 방문 기록 등 동기화</translation>
 <translation id="5139940364318403933">Google Drive 사용 방법 알아보기</translation>
 <translation id="5142281402488957685">새로운 스토리를 보려면 아래로 당겨 새로고침하세요.</translation>
@@ -875,6 +872,7 @@
 <translation id="5752232708629533680">GIF만 공유</translation>
 <translation id="5753139477036638699">Chrome에서 음성으로 검색할 수 있습니다.</translation>
 <translation id="5754350196967618083">디스커버를 새로고침할 수 없음</translation>
+<translation id="5755162682436943950">로그아웃했습니다. 대화상자를 열어 로그인하고 동기화를 사용 설정합니다.</translation>
 <translation id="5763382633136178763">시크릿 탭</translation>
 <translation id="5763514718066511291">탭하여 이 앱의 URL 복사하기</translation>
 <translation id="5765517223145864268">사용 경험에 관해 알려주세요. 아니면 <ph name="BEGIN_LINK" />설정을 변경하세요<ph name="END_LINK" />.</translation>
@@ -903,7 +901,6 @@
 <translation id="5864419784173784555">다른 다운로드 대기 중…</translation>
 <translation id="5865733239029070421">사용 통계 및 비정상 종료 보고서를 Google로 자동 전송</translation>
 <translation id="5869522115854928033">저장된 비밀번호</translation>
-<translation id="5876496397064130037">작업 계속</translation>
 <translation id="587735546353481577">사이트를 팔로우하려면 사이트로 이동해서 Chrome 메뉴를 연 다음 팔로우를 탭합니다.</translation>
 <translation id="5879072387416556377">추천 기능 개선</translation>
 <translation id="5916664084637901428">사용</translation>
@@ -929,12 +926,10 @@
 <translation id="6011308810877101166">추천 검색어 개선</translation>
 <translation id="6026538407078977628">전체 화면으로 확장</translation>
 <translation id="6030719887161080597">사이트에서 광고 실적을 측정하는 데 사용하는 정보 관리</translation>
-<translation id="6034146297924778597">지난 15분 동안의 다음 기록이 삭제됩니다.</translation>
 <translation id="6039379616847168523">다음 탭으로 이동</translation>
 <translation id="6040143037577758943">닫기</translation>
 <translation id="604124094241169006">자동</translation>
 <translation id="6042308850641462728">자세히</translation>
-<translation id="6049046116080614938"><ph name="USER_NAME" /> 계정으로 로그인되었습니다. <ph name="USER_EMAIL" />입니다. 버튼 설정을 엽니다.</translation>
 <translation id="604996488070107836">알 수 없는 오류로 인해 <ph name="FILE_NAME" /> 다운로드에 실패했습니다.</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6059830886158432458">여기에서 스토리 및 활동을 관리하세요.</translation>
@@ -993,6 +988,7 @@
 <translation id="6363990818884053551">동기화를 시작하려면 본인 여부를 확인하세요.</translation>
 <translation id="6364438453358674297">기록에서 제안을 삭제하시겠습니까?</translation>
 <translation id="6380100320871303656">Chrome에서 사용자가 방문할 가능성이 높다고 생각되는 페이지를 더 자주 미리 로드합니다. 이 설정을 사용하면 데이터 사용량이 늘어날 수 있습니다.</translation>
+<translation id="6391355955030242704">자동차에서 Chrome 정보를 동기화하고 데이터를 안전하게 유지하려면 보안 설정에서 프로필 잠금을 만들어야 합니다. 차량에 탑승할 때마다 코드나 비밀번호를 사용하게 됩니다.</translation>
 <translation id="6394791151443660613">검색: <ph name="SEARCH_QUERY" /></translation>
 <translation id="6395288395575013217">링크</translation>
 <translation id="6397616442223433927">인터넷에 다시 연결됨</translation>
@@ -1126,14 +1122,13 @@
 <translation id="6978717888677691380">차단한 사이트</translation>
 <translation id="6979737339423435258">전체 기간</translation>
 <translation id="6987047470128880212">이 기기에서는 시크릿 모드를 사용할 수 없습니다.</translation>
-<translation id="6995899638241819463">정보 유출로 인해 비밀번호가 노출된 경우 알림</translation>
+<translation id="6995899638241819463">데이터 유출로 인해 비밀번호가 노출된 경우 알림</translation>
 <translation id="7020741890149022655">읽기 목록에 추가 <ph name="BEGIN_NEW" />New<ph name="END_NEW" /></translation>
 <translation id="7022756207310403729">브라우저에서 열기</translation>
 <translation id="7027549951530753705"><ph name="ITEM_TITLE" /> 복원됨</translation>
 <translation id="7029390216614421513">프레임 안에 QR 코드나 바코드를 위치시키세요.</translation>
 <translation id="7029809446516969842">비밀번호</translation>
 <translation id="7030304022046916278">세이프 브라우징 서비스에 URL을 전송하여 확인하도록 합니다.</translation>
-<translation id="7030585293819777123">마지막 할 일을 다시 시작할까요?</translation>
 <translation id="7035701931849773472">기타 옵션</translation>
 <translation id="7037830628447527439">Google 계정으로 Chrome에 로그인하기</translation>
 <translation id="7038956721828960940">chrome_image_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
@@ -1148,13 +1143,13 @@
 <translation id="7088681679121566888">Chrome이 최신 버전입니다.</translation>
 <translation id="7105047059074518658">로그인하여 여러 기기에서 쉽게 인터넷을 사용하세요</translation>
 <translation id="7106762743910369165">조직에서 관리하는 브라우저입니다.</translation>
-<translation id="7116420572655804716">자동차에서 정보를 동기화하고 데이터를 안전하게 유지하려면 보안 설정에서 프로필 잠금을 만들어야 합니다. 차량에 탑승할 때마다 코드나 비밀번호를 사용하게 됩니다.</translation>
 <translation id="7116588989735740310">다른 기기에서 내가 방문한 사이트로 돌아가려면 탭과 방문 기록을 동기화하세요</translation>
 <translation id="7130504491556983216">웹을 탐색하면 여기에 내 관심분야 목록이 표시됩니다.</translation>
 <translation id="7138678301420049075">기타</translation>
 <translation id="7146622961999026732">다음 사이트와 앱은 중요할 수도 있습니다.</translation>
 <translation id="7149893636342594995">지난 24시간</translation>
 <translation id="7155317020660659215">QR 코드를 스캔하려면 Chrome에서 카메라를 사용할 수 있도록 설정을 변경하세요.</translation>
+<translation id="7168323970702333693"><ph name="USER_NAME" /> 계정으로 로그인되었습니다. 설정을 엽니다.</translation>
 <translation id="7173114856073700355">설정 열기</translation>
 <translation id="7177466738963138057">나중에 설정에서 변경 가능</translation>
 <translation id="7177873915659574692">QR 코드를 만들 수 없습니다. URL이 <ph name="CHARACTER_LIMIT" />자(영문 기준)를 초과합니다.</translation>
@@ -1318,7 +1313,6 @@
 <translation id="7968014550143838305">읽기 목록에 추가됨</translation>
 <translation id="7971136598759319605">1일 전 동기화됨</translation>
 <translation id="7975379999046275268">페이지 미리보기 표시 <ph name="BEGIN_NEW" />새로운 기능<ph name="END_NEW" /></translation>
-<translation id="7981085434646346979"><ph name="USER_NAME" /> 계정으로 로그인되었습니다. 버튼 설정을 엽니다.</translation>
 <translation id="7986497153528221272">비밀번호를 보려면 먼저 기기에 화면 잠금을 설정하세요.</translation>
 <translation id="7995059495660416932">이용 가능한 콘텐츠가 있으면 표시됩니다.</translation>
 <translation id="799576009106109668">현재 웹페이지 방문을 토대로 콘텐츠가 미리 로드되므로 더 빠르게 탐색할 수 있습니다.</translation>
@@ -1364,13 +1358,13 @@
 <translation id="8130309322784422030">저장된 로그인 정보가 오래되었을 수 있습니다</translation>
 <translation id="813082847718468539">사이트 정보 보기</translation>
 <translation id="8137562778192957619">비밀번호를 기억하지 않아도 됩니다. 비밀번호가 Google 비밀번호 관리자에 저장됩니다</translation>
-<translation id="8156139159503939589">어떤 언어로 읽을 수 있으신가요?</translation>
 <translation id="8186512483418048923">파일 <ph name="FILES" />개가 남았습니다.</translation>
 <translation id="8189750580333936930">개인 정보 보호 샌드박스</translation>
 <translation id="8190358571722158785">1일 남음</translation>
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />내 기기<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8200772114523450471">다시 시작</translation>
 <translation id="8209050860603202033">이미지 열기</translation>
+<translation id="8210770465353466621">여기에서 탭을 확인할 수 있습니다.</translation>
 <translation id="8215740705341534369">측면 시트</translation>
 <translation id="8218622182176210845">계정 관리</translation>
 <translation id="8221401890884589479">원치 않는 사이트를 차단할 수 있습니다. 또한 Chrome에서는 30일이 지난 사이트도 목록에서 자동 삭제합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
@@ -1471,7 +1465,7 @@
 <translation id="8699120352855309748">번역할지 묻지 않을 언어</translation>
 <translation id="8712637175834984815">확인</translation>
 <translation id="8723453889042591629">이 페이지를 빠르게 번역합니다. 바로가기를 수정하려면 길게 터치하세요.</translation>
-<translation id="8725066075913043281">다시 시도하기</translation>
+<translation id="8725066075913043281">다시 시도하세요</translation>
 <translation id="8746155870861185046">강조표시한 텍스트 공유</translation>
 <translation id="874726034427945498">주소 표시줄의 추천 항목을 개선하려면 탭과 방문 기록을 동기화하세요</translation>
 <translation id="8748850008226585750">숨겨진 콘텐츠</translation>
@@ -1573,7 +1567,6 @@
 <translation id="932327136139879170">홈</translation>
 <translation id="938850635132480979">오류: <ph name="ERROR_CODE" /></translation>
 <translation id="939598580284253335">암호 입력</translation>
-<translation id="950679278154734362">자동차에서 정보를 동기화하고 데이터를 안전하게 유지하려면 프로필 잠금을 만들어야 합니다. 차량에 탑승할 때마다 코드나 비밀번호를 사용하게 됩니다.</translation>
 <translation id="952301137339791907">페이지 통계 하단 시트가 열림</translation>
 <translation id="95817756606698420">중국에서 검색할 때 Chrome에서 <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" />를 사용할 수 있습니다. <ph name="BEGIN_LINK" />설정<ph name="END_LINK" />에서 변경할 수 있습니다.</translation>
 <translation id="962979164594783469">앱 설치</translation>

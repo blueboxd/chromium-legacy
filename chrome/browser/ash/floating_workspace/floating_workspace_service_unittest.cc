@@ -245,7 +245,10 @@ class TestFloatingWorkSpaceService : public FloatingWorkspaceService {
     previously_captured_desk_template_ = std::move(desk_template);
   }
 
-  const sync_sessions::SyncedSession* restored_session_ = nullptr;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter
+  // for: #addr-of
+  RAW_PTR_EXCLUSION const sync_sessions::SyncedSession* restored_session_ =
+      nullptr;
   raw_ptr<const DeskTemplate, ExperimentalAsh>
       restored_floating_workspace_template_ = nullptr;
   raw_ptr<DeskTemplate, ExperimentalAsh> uploaded_desk_template_ = nullptr;
@@ -893,6 +896,229 @@ TEST_F(FloatingWorkspaceServiceTest,
       test_floating_workspace_service_v2.GetUploadedFloatingWorkspaceTemplate()
           ->created_time(),
       second_captured_template_creation_time);
+  scoped_feature_list().Reset();
+}
+
+TEST_F(FloatingWorkspaceServiceTest, PopulateFloatingWorkspaceTemplate) {
+  scoped_feature_list().InitWithFeatures(
+      {features::kFloatingWorkspaceV2, features::kDesksTemplates,
+       features::kDeskTemplateSync},
+      {});
+
+  const std::string template_name = "floating_workspace_template";
+  base::RunLoop loop;
+  fake_desk_sync_service()->GetDeskModel()->AddOrUpdateEntry(
+      MakeTestFloatingWorkspaceDeskTemplate(template_name, base::Time::Now()),
+      base::BindLambdaForTesting(
+          [&](desks_storage::DeskModel::AddOrUpdateEntryStatus status,
+              std::unique_ptr<ash::DeskTemplate> new_entry) {
+            EXPECT_EQ(desks_storage::DeskModel::AddOrUpdateEntryStatus::kOk,
+                      status);
+            loop.Quit();
+          }));
+  loop.Run();
+  std::unique_ptr<MockSyncService> mock_sync_service =
+      std::make_unique<MockSyncService>();
+
+  TestFloatingWorkSpaceService test_floating_workspace_service_v2(
+      profile(), fake_desk_sync_service(), mock_sync_service.get(),
+      floating_workspace_util::FloatingWorkspaceVersion::
+          kFloatingWorkspaceV2Enabled);
+
+  mock_sync_service->SetDownloadStatus(
+      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+  test_floating_workspace_service_v2.OnStateChanged(mock_sync_service.get());
+  EXPECT_EQ(
+      test_floating_workspace_service_v2.GetFloatingWorkspaceTemplateEntries()
+          .size(),
+      1u);
+  scoped_feature_list().Reset();
+}
+
+TEST_F(FloatingWorkspaceServiceTest,
+       PopulateFloatingWorkspaceTemplateWithUpdates) {
+  scoped_feature_list().InitWithFeatures(
+      {features::kFloatingWorkspaceV2, features::kDesksTemplates,
+       features::kDeskTemplateSync},
+      {});
+
+  std::unique_ptr<ash::DeskTemplate> template_1 =
+      MakeTestFloatingWorkspaceDeskTemplate("Template 1", base::Time::Now());
+  base::Uuid template_1_uuid = template_1->uuid();
+  base::RunLoop loop;
+  fake_desk_sync_service()->GetDeskModel()->AddOrUpdateEntry(
+      std::move(template_1),
+      base::BindLambdaForTesting(
+          [&](desks_storage::DeskModel::AddOrUpdateEntryStatus status,
+              std::unique_ptr<ash::DeskTemplate> new_entry) {
+            EXPECT_EQ(desks_storage::DeskModel::AddOrUpdateEntryStatus::kOk,
+                      status);
+            loop.Quit();
+          }));
+  loop.Run();
+  std::unique_ptr<MockSyncService> mock_sync_service =
+      std::make_unique<MockSyncService>();
+
+  TestFloatingWorkSpaceService test_floating_workspace_service_v2(
+      profile(), fake_desk_sync_service(), mock_sync_service.get(),
+      floating_workspace_util::FloatingWorkspaceVersion::
+          kFloatingWorkspaceV2Enabled);
+
+  mock_sync_service->SetDownloadStatus(
+      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+  test_floating_workspace_service_v2.OnStateChanged(mock_sync_service.get());
+  EXPECT_EQ(
+      test_floating_workspace_service_v2.GetFloatingWorkspaceTemplateEntries()
+          .size(),
+      1u);
+
+  std::unique_ptr<ash::DeskTemplate> template_2 =
+      MakeTestFloatingWorkspaceDeskTemplate("Template 2", base::Time::Now());
+  base::Uuid template_2_uuid = template_2->uuid();
+  base::RunLoop loop2;
+  fake_desk_sync_service()->GetDeskModel()->AddOrUpdateEntry(
+      std::move(template_2),
+      base::BindLambdaForTesting(
+          [&](desks_storage::DeskModel::AddOrUpdateEntryStatus status,
+              std::unique_ptr<ash::DeskTemplate> new_entry) {
+            EXPECT_EQ(desks_storage::DeskModel::AddOrUpdateEntryStatus::kOk,
+                      status);
+            loop2.Quit();
+          }));
+  loop2.Run();
+  base::RunLoop loop3;
+  fake_desk_sync_service()->GetDeskModel()->DeleteEntry(
+      template_1_uuid,
+      base::BindLambdaForTesting(
+          [&](desks_storage::DeskModel::DeleteEntryStatus status) {
+            EXPECT_EQ(desks_storage::DeskModel::DeleteEntryStatus::kOk, status);
+            loop3.Quit();
+          }));
+  loop3.Run();
+
+  mock_sync_service->SetDownloadStatus(
+      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+  test_floating_workspace_service_v2.OnStateChanged(mock_sync_service.get());
+  EXPECT_EQ(
+      test_floating_workspace_service_v2.GetFloatingWorkspaceTemplateEntries()
+          .size(),
+      1u);
+  mock_sync_service->SetDownloadStatus(
+      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+  test_floating_workspace_service_v2.OnStateChanged(mock_sync_service.get());
+  EXPECT_EQ(test_floating_workspace_service_v2
+                .GetFloatingWorkspaceTemplateEntries()[0]
+                ->uuid(),
+            template_2_uuid);
+
+  scoped_feature_list().Reset();
+}
+
+TEST_F(FloatingWorkspaceServiceTest,
+       DoNotPerformGarbageCollectionOnSingleEntryBeyondThreshold) {
+  scoped_feature_list().InitWithFeatures(
+      {features::kFloatingWorkspaceV2, features::kDesksTemplates,
+       features::kDeskTemplateSync},
+      {});
+
+  const std::string fws_name = "Template 1";
+  std::unique_ptr<ash::DeskTemplate> fws_template =
+      MakeTestFloatingWorkspaceDeskTemplate(fws_name, base::Time::Now());
+  fws_template->set_client_cache_guid("cache_guid_1");
+  base::RunLoop loop;
+  fake_desk_sync_service()->GetDeskModel()->AddOrUpdateEntry(
+      std::move(fws_template),
+      base::BindLambdaForTesting(
+          [&](desks_storage::DeskModel::AddOrUpdateEntryStatus status,
+              std::unique_ptr<ash::DeskTemplate> new_entry) {
+            EXPECT_EQ(desks_storage::DeskModel::AddOrUpdateEntryStatus::kOk,
+                      status);
+            loop.Quit();
+          }));
+  loop.Run();
+
+  task_environment().FastForwardBy(base::Days(31));
+  std::unique_ptr<MockSyncService> mock_sync_service =
+      std::make_unique<MockSyncService>();
+
+  TestFloatingWorkSpaceService test_floating_workspace_service_v2(
+      profile(), fake_desk_sync_service(), mock_sync_service.get(),
+      floating_workspace_util::FloatingWorkspaceVersion::
+          kFloatingWorkspaceV2Enabled);
+
+  mock_sync_service->SetDownloadStatus(
+      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+  test_floating_workspace_service_v2.OnStateChanged(mock_sync_service.get());
+  ASSERT_TRUE(test_floating_workspace_service_v2
+                  .GetRestoredFloatingWorkspaceTemplate());
+  EXPECT_EQ(
+      test_floating_workspace_service_v2.GetRestoredFloatingWorkspaceTemplate()
+          ->template_name(),
+      base::UTF8ToUTF16(fws_name));
+
+  EXPECT_EQ(
+      1ul, fake_desk_sync_service()->GetDeskModel()->GetAllEntryUuids().size());
+  scoped_feature_list().Reset();
+}
+
+TEST_F(FloatingWorkspaceServiceTest, PerformGarbageCollectionOnStaleEntries) {
+  scoped_feature_list().InitWithFeatures(
+      {features::kFloatingWorkspaceV2, features::kDesksTemplates,
+       features::kDeskTemplateSync},
+      {});
+
+  const std::string fws_one_name = "Template 1";
+  const std::string fws_two_name = "Template 2";
+  std::unique_ptr<ash::DeskTemplate> fws_one =
+      MakeTestFloatingWorkspaceDeskTemplate(fws_one_name, base::Time::Now());
+  fws_one->set_client_cache_guid("cache_guid_1");
+  std::unique_ptr<ash::DeskTemplate> fws_two =
+      MakeTestFloatingWorkspaceDeskTemplate(fws_two_name,
+                                            base::Time::Now() + base::Days(2));
+  fws_two->set_client_cache_guid("cache_guid_2");
+  base::RunLoop loop;
+  fake_desk_sync_service()->GetDeskModel()->AddOrUpdateEntry(
+      std::move(fws_one),
+      base::BindLambdaForTesting(
+          [&](desks_storage::DeskModel::AddOrUpdateEntryStatus status,
+              std::unique_ptr<ash::DeskTemplate> new_entry) {
+            EXPECT_EQ(desks_storage::DeskModel::AddOrUpdateEntryStatus::kOk,
+                      status);
+            loop.Quit();
+          }));
+  loop.Run();
+  base::RunLoop loop2;
+  fake_desk_sync_service()->GetDeskModel()->AddOrUpdateEntry(
+      std::move(fws_two),
+      base::BindLambdaForTesting(
+          [&](desks_storage::DeskModel::AddOrUpdateEntryStatus status,
+              std::unique_ptr<ash::DeskTemplate> new_entry) {
+            EXPECT_EQ(desks_storage::DeskModel::AddOrUpdateEntryStatus::kOk,
+                      status);
+            loop2.Quit();
+          }));
+  loop2.Run();
+  task_environment().FastForwardBy(base::Days(31));
+  std::unique_ptr<MockSyncService> mock_sync_service =
+      std::make_unique<MockSyncService>();
+
+  TestFloatingWorkSpaceService test_floating_workspace_service_v2(
+      profile(), fake_desk_sync_service(), mock_sync_service.get(),
+      floating_workspace_util::FloatingWorkspaceVersion::
+          kFloatingWorkspaceV2Enabled);
+
+  mock_sync_service->SetDownloadStatus(
+      syncer::SyncService::ModelTypeDownloadStatus::kUpToDate);
+  test_floating_workspace_service_v2.OnStateChanged(mock_sync_service.get());
+  ASSERT_TRUE(test_floating_workspace_service_v2
+                  .GetRestoredFloatingWorkspaceTemplate());
+  EXPECT_EQ(
+      test_floating_workspace_service_v2.GetRestoredFloatingWorkspaceTemplate()
+          ->template_name(),
+      base::UTF8ToUTF16(fws_two_name));
+
+  EXPECT_EQ(
+      1ul, fake_desk_sync_service()->GetDeskModel()->GetAllEntryUuids().size());
   scoped_feature_list().Reset();
 }
 

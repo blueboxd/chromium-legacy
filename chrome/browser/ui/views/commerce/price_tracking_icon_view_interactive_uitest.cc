@@ -34,6 +34,7 @@
 #include "components/commerce/core/test_utils.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/test/scoped_iph_feature_list.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -168,9 +169,10 @@ class PriceTrackingIconViewInteractiveTest : public InProcessBrowserTest {
 
  protected:
   base::UserActionTester user_action_tester_;
-  raw_ptr<commerce::MockShoppingService, DanglingUntriaged>
+  raw_ptr<commerce::MockShoppingService, AcrossTasksDanglingUntriaged>
       mock_shopping_service_;
-  raw_ptr<MockShoppingListUiTabHelper, DanglingUntriaged> mock_tab_helper_;
+  raw_ptr<MockShoppingListUiTabHelper, AcrossTasksDanglingUntriaged>
+      mock_tab_helper_;
 
  private:
   feature_engagement::test::ScopedIphFeatureList test_features_;
@@ -254,8 +256,14 @@ IN_PROC_BROWSER_TEST_F(PriceTrackingIconViewInteractiveTest,
   icon_view->ForceVisibleForTesting(/*is_tracking_price=*/false);
   EXPECT_EQ(icon_view->GetIconLabelForTesting(),
             l10n_util::GetStringUTF16(IDS_OMNIBOX_TRACK_PRICE));
-  EXPECT_STREQ(icon_view->GetVectorIcon().name,
-               omnibox::kPriceTrackingDisabledIcon.name);
+  if (OmniboxFieldTrial::IsChromeRefreshIconsEnabled() ||
+      features::IsChromeRefresh2023()) {
+    EXPECT_STREQ(icon_view->GetVectorIcon().name,
+                 omnibox::kPriceTrackingDisabledRefreshIcon.name);
+  } else {
+    EXPECT_STREQ(icon_view->GetVectorIcon().name,
+                 omnibox::kPriceTrackingDisabledIcon.name);
+  }
   EXPECT_EQ(icon_view->GetTextForTooltipAndAccessibleName(),
             l10n_util::GetStringUTF16(IDS_OMNIBOX_TRACK_PRICE));
 
@@ -265,8 +273,14 @@ IN_PROC_BROWSER_TEST_F(PriceTrackingIconViewInteractiveTest,
 
   EXPECT_EQ(icon_view->GetIconLabelForTesting(),
             l10n_util::GetStringUTF16(IDS_OMNIBOX_TRACKING_PRICE));
-  EXPECT_STREQ(icon_view->GetVectorIcon().name,
-               omnibox::kPriceTrackingEnabledFilledIcon.name);
+  if (OmniboxFieldTrial::IsChromeRefreshIconsEnabled() ||
+      features::IsChromeRefresh2023()) {
+    EXPECT_STREQ(icon_view->GetVectorIcon().name,
+                 omnibox::kPriceTrackingEnabledRefreshIcon.name);
+  } else {
+    EXPECT_STREQ(icon_view->GetVectorIcon().name,
+                 omnibox::kPriceTrackingEnabledFilledIcon.name);
+  }
   EXPECT_EQ(icon_view->GetTextForTooltipAndAccessibleName(),
             l10n_util::GetStringUTF16(IDS_OMNIBOX_TRACKING_PRICE));
 }
@@ -365,9 +379,14 @@ IN_PROC_BROWSER_TEST_F(PriceTrackingIconViewInteractiveTest,
       .WillByDefault(testing::Return(true));
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kNonBookmarkedUrl)));
-
-  EXPECT_STREQ(GetChip()->GetVectorIcon().name,
-               omnibox::kPriceTrackingEnabledFilledIcon.name);
+  if (OmniboxFieldTrial::IsChromeRefreshIconsEnabled() ||
+      features::IsChromeRefresh2023()) {
+    EXPECT_STREQ(GetChip()->GetVectorIcon().name,
+                 omnibox::kPriceTrackingEnabledRefreshIcon.name);
+  } else {
+    EXPECT_STREQ(GetChip()->GetVectorIcon().name,
+                 omnibox::kPriceTrackingEnabledFilledIcon.name);
+  }
   EXPECT_FALSE(GetBookmarkStar()->GetActive());
 }
 
@@ -405,8 +424,14 @@ IN_PROC_BROWSER_TEST_F(PriceTrackingIconViewErrorHandelingTest,
   icon_view->ForceVisibleForTesting(/*is_tracking_price=*/false);
   EXPECT_EQ(icon_view->GetIconLabelForTesting(),
             l10n_util::GetStringUTF16(IDS_OMNIBOX_TRACK_PRICE));
-  EXPECT_STREQ(icon_view->GetVectorIcon().name,
-               omnibox::kPriceTrackingDisabledIcon.name);
+  if (OmniboxFieldTrial::IsChromeRefreshIconsEnabled() ||
+      features::IsChromeRefresh2023()) {
+    EXPECT_STREQ(icon_view->GetVectorIcon().name,
+                 omnibox::kPriceTrackingDisabledRefreshIcon.name);
+  } else {
+    EXPECT_STREQ(icon_view->GetVectorIcon().name,
+                 omnibox::kPriceTrackingDisabledIcon.name);
+  }
   EXPECT_EQ(icon_view->GetTextForTooltipAndAccessibleName(),
             l10n_util::GetStringUTF16(IDS_OMNIBOX_TRACK_PRICE));
 
@@ -425,8 +450,14 @@ IN_PROC_BROWSER_TEST_F(PriceTrackingIconViewErrorHandelingTest,
   EXPECT_TRUE(icon_view->GetVisible());
   EXPECT_EQ(icon_view->GetIconLabelForTesting(),
             l10n_util::GetStringUTF16(IDS_OMNIBOX_TRACK_PRICE));
-  EXPECT_STREQ(icon_view->GetVectorIcon().name,
-               omnibox::kPriceTrackingDisabledIcon.name);
+  if (OmniboxFieldTrial::IsChromeRefreshIconsEnabled() ||
+      features::IsChromeRefresh2023()) {
+    EXPECT_STREQ(icon_view->GetVectorIcon().name,
+                 omnibox::kPriceTrackingDisabledRefreshIcon.name);
+  } else {
+    EXPECT_STREQ(icon_view->GetVectorIcon().name,
+                 omnibox::kPriceTrackingDisabledIcon.name);
+  }
   EXPECT_EQ(icon_view->GetTextForTooltipAndAccessibleName(),
             l10n_util::GetStringUTF16(IDS_OMNIBOX_TRACK_PRICE));
   EXPECT_FALSE(icon_view->GetBubble());
@@ -575,8 +606,14 @@ IN_PROC_BROWSER_TEST_F(PriceTrackingBubbleInteractiveTest,
   // Verify the PriceTackingIconView original state.
   EXPECT_EQ(icon_view->GetIconLabelForTesting(),
             l10n_util::GetStringUTF16(IDS_OMNIBOX_TRACK_PRICE));
-  EXPECT_STREQ(icon_view->GetVectorIcon().name,
-               omnibox::kPriceTrackingDisabledIcon.name);
+  if (OmniboxFieldTrial::IsChromeRefreshIconsEnabled() ||
+      features::IsChromeRefresh2023()) {
+    EXPECT_STREQ(icon_view->GetVectorIcon().name,
+                 omnibox::kPriceTrackingDisabledRefreshIcon.name);
+  } else {
+    EXPECT_STREQ(icon_view->GetVectorIcon().name,
+                 omnibox::kPriceTrackingDisabledIcon.name);
+  }
   EXPECT_EQ(icon_view->GetTextForTooltipAndAccessibleName(),
             l10n_util::GetStringUTF16(IDS_OMNIBOX_TRACK_PRICE));
 
@@ -595,8 +632,14 @@ IN_PROC_BROWSER_TEST_F(PriceTrackingBubbleInteractiveTest,
   // Verify the PriceTackingIconView updates its state.
   EXPECT_EQ(icon_view->GetIconLabelForTesting(),
             l10n_util::GetStringUTF16(IDS_OMNIBOX_TRACKING_PRICE));
-  EXPECT_STREQ(icon_view->GetVectorIcon().name,
-               omnibox::kPriceTrackingEnabledFilledIcon.name);
+  if (OmniboxFieldTrial::IsChromeRefreshIconsEnabled() ||
+      features::IsChromeRefresh2023()) {
+    EXPECT_STREQ(icon_view->GetVectorIcon().name,
+                 omnibox::kPriceTrackingEnabledRefreshIcon.name);
+  } else {
+    EXPECT_STREQ(icon_view->GetVectorIcon().name,
+                 omnibox::kPriceTrackingEnabledFilledIcon.name);
+  }
   EXPECT_EQ(icon_view->GetTextForTooltipAndAccessibleName(),
             l10n_util::GetStringUTF16(IDS_OMNIBOX_TRACKING_PRICE));
   EXPECT_TRUE(GetBookmarkStar()->GetActive());
@@ -661,8 +704,14 @@ IN_PROC_BROWSER_TEST_F(PriceTrackingBubbleInteractiveTest,
   // Verify the PriceTackingIconView state before cancel.
   EXPECT_EQ(icon_view->GetIconLabelForTesting(),
             l10n_util::GetStringUTF16(IDS_OMNIBOX_TRACKING_PRICE));
-  EXPECT_STREQ(icon_view->GetVectorIcon().name,
-               omnibox::kPriceTrackingEnabledFilledIcon.name);
+  if (OmniboxFieldTrial::IsChromeRefreshIconsEnabled() ||
+      features::IsChromeRefresh2023()) {
+    EXPECT_STREQ(icon_view->GetVectorIcon().name,
+                 omnibox::kPriceTrackingEnabledRefreshIcon.name);
+  } else {
+    EXPECT_STREQ(icon_view->GetVectorIcon().name,
+                 omnibox::kPriceTrackingEnabledFilledIcon.name);
+  }
   EXPECT_EQ(icon_view->GetTextForTooltipAndAccessibleName(),
             l10n_util::GetStringUTF16(IDS_OMNIBOX_TRACKING_PRICE));
 
@@ -673,8 +722,14 @@ IN_PROC_BROWSER_TEST_F(PriceTrackingBubbleInteractiveTest,
   // Verify the PriceTackingIconView updates its state.
   EXPECT_EQ(icon_view->GetIconLabelForTesting(),
             l10n_util::GetStringUTF16(IDS_OMNIBOX_TRACK_PRICE));
-  EXPECT_STREQ(icon_view->GetVectorIcon().name,
-               omnibox::kPriceTrackingDisabledIcon.name);
+  if (OmniboxFieldTrial::IsChromeRefreshIconsEnabled() ||
+      features::IsChromeRefresh2023()) {
+    EXPECT_STREQ(icon_view->GetVectorIcon().name,
+                 omnibox::kPriceTrackingDisabledRefreshIcon.name);
+  } else {
+    EXPECT_STREQ(icon_view->GetVectorIcon().name,
+                 omnibox::kPriceTrackingDisabledIcon.name);
+  }
   EXPECT_EQ(icon_view->GetTextForTooltipAndAccessibleName(),
             l10n_util::GetStringUTF16(IDS_OMNIBOX_TRACK_PRICE));
 }

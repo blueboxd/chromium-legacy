@@ -10,6 +10,7 @@
 #import "components/bookmarks/browser/bookmark_node.h"
 #import "components/bookmarks/common/bookmark_features.h"
 #import "components/prefs/pref_service.h"
+#import "components/sync/base/features.h"
 #import "components/url_formatter/url_fixer.h"
 #import "ios/chrome/browser/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/bookmarks/bookmarks_utils.h"
@@ -60,8 +61,7 @@
   if (self) {
     DCHECK(profileBookmarkModel);
     DCHECK(profileBookmarkModel->loaded());
-    if (base::FeatureList::IsEnabled(
-            bookmarks::kEnableBookmarksAccountStorage)) {
+    if (base::FeatureList::IsEnabled(syncer::kEnableBookmarksAccountStorage)) {
       DCHECK(accountBookmarkModel);
       DCHECK(accountBookmarkModel->loaded());
     } else {
@@ -136,7 +136,7 @@
   DCHECK(folder);
   DCHECK(folder->is_folder());
   [self setFolder:folder];
-  [self.consumer updateFolderLabel];
+  [self updateFolderLabel];
 }
 
 #pragma mark - BookmarkModelBridgeObserver
@@ -150,10 +150,14 @@
   if (self.ignoresBookmarkModelChanges) {
     return;
   }
-
+  // If the changed bookmark is not the current one.
   if (self.bookmark == bookmarkNode) {
-    [self.consumer updateUIFromBookmark];
+    return;
   }
+  [self.consumer
+      updateUIWithName:bookmark_utils_ios::TitleForBookmarkNode(_bookmark)
+                   URL:base::SysUTF8ToNSString(_bookmark->url().spec())
+            folderName:bookmark_utils_ios::TitleForBookmarkNode(_folder)];
 }
 
 - (void)bookmarkModel:(bookmarks::BookmarkModel*)model
@@ -162,7 +166,7 @@
     return;
   }
 
-  [self.consumer updateFolderLabel];
+  [self updateFolderLabel];
 }
 
 - (void)bookmarkModel:(bookmarks::BookmarkModel*)model
@@ -270,6 +274,17 @@
 
 - (void)onSyncStateChanged {
   [_consumer updateSync];
+}
+
+#pragma mark - Private
+
+// Tells the consumer to update the name of the bookmark’s folder.
+- (void)updateFolderLabel {
+  NSString* folderName = @"";
+  if (_bookmark) {
+    folderName = bookmark_utils_ios::TitleForBookmarkNode(_folder);
+  }
+  [_consumer updateFolderLabel:folderName];
 }
 
 @end

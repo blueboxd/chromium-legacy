@@ -11,7 +11,9 @@
 #include "base/types/strong_alias.h"
 #include "chrome/browser/ui/user_education/scoped_new_badge_tracker.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/metrics/fallback_autocomplete_unrecognized_metrics.h"
 #include "components/renderer_context_menu/render_view_context_menu_base.h"
+#include "components/renderer_context_menu/render_view_context_menu_observer.h"
 #include "content/public/browser/context_menu_params.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -21,6 +23,7 @@ class Browser;
 namespace autofill {
 
 class AutofillProfile;
+class AutofillField;
 class CreditCard;
 class PersonalDataManager;
 
@@ -99,7 +102,7 @@ struct ContextMenuItem {
 // how this is done.
 // 4. The Other Section, that suggests more granular data for filling. See
 // `AddAddressOrCreditCardItemToMenu` and `AddProfileDataToMenu` for details.
-class AutofillContextMenuManager {
+class AutofillContextMenuManager : public RenderViewContextMenuObserver {
  public:
   // Represents command id used to denote a row in the context menu. The
   // command ids are created when the items are added to the context menu during
@@ -122,20 +125,23 @@ class AutofillContextMenuManager {
       ui::SimpleMenuModel* menu_model,
       Browser* browser,
       std::unique_ptr<ScopedNewBadgeTracker> new_badge_tracker);
-  ~AutofillContextMenuManager();
+  ~AutofillContextMenuManager() override;
   AutofillContextMenuManager(const AutofillContextMenuManager&) = delete;
   AutofillContextMenuManager& operator=(const AutofillContextMenuManager&) =
       delete;
 
   // Adds items such as "Addresses"/"Credit Cards"/"Passwords" to the top level
   // of the context menu.
+  // Note: This doesn't use `RenderViewContextMenuObserver::InitMenu()`, since
+  // Autofill context menu entries are conditioned on
+  // `ContextMenuContentType::ITEM_GROUP_AUTOFILL`.
   void AppendItems();
 
-  // `AutofillContextMenuManager` specific, called from `RenderViewContextMenu`.
-  bool IsCommandIdChecked(CommandId command_id) const;
-  bool IsCommandIdVisible(CommandId command_id) const;
-  bool IsCommandIdEnabled(CommandId command_id) const;
-  void ExecuteCommand(CommandId command_id);
+  // `RenderViewContextMenuObserver` overrides.
+  bool IsCommandIdSupported(int command_id) override;
+  bool IsCommandIdEnabled(int command_id) override;
+  void ExecuteCommand(int command_id) override;
+  void OnMenuClosed() override;
 
   // Getter for `command_id_to_menu_item_value_mapper_` used for testing
   // purposes.
@@ -200,6 +206,10 @@ class AutofillContextMenuManager {
           item_details_added_to_context_menu,
       SubMenuType sub_menu_type);
 
+  // If an address field was clicked, depending on its autocomplete attribute,
+  // adds an option to the context menu to trigger Autofill suggestions.
+  void MaybeAddFallbackForAutocompleteUnrecognizedToMenu();
+
   // Returns true if the command ids left are sufficient for showing the whole
   // profile in the context menu.
   bool HaveEnoughIdsForProfile(
@@ -210,6 +220,11 @@ class AutofillContextMenuManager {
 
   // Triggers the feedback flow for Autofill command.
   void ExecuteAutofillFeedbackCommand(content::RenderFrameHost* rfh);
+
+  // Triggers Autofill suggestions on the field that the context menu was
+  // opened on.
+  void ExecuteFallbackForAutocompleteUnrecognizedCommand(
+      content::RenderFrameHost* rfh);
 
   // Triggers the corresponding menu manager command.
   void ExecuteMenuManagerCommand(CommandId command_id,
@@ -233,10 +248,14 @@ class AutofillContextMenuManager {
   // menu for Autofill.
   absl::optional<CommandId> GetNextAvailableAutofillCommandId();
 
-  const raw_ptr<PersonalDataManager, DanglingUntriaged> personal_data_manager_;
+  // Gets the `AutofillField` described by the `params_` from the context menu's
+  // render frame host.
+  AutofillField* GetAutofillField() const;
+
+  const raw_ptr<PersonalDataManager> personal_data_manager_;
   const raw_ptr<ui::SimpleMenuModel> menu_model_;
   const raw_ptr<RenderViewContextMenuBase> delegate_;
-  const raw_ptr<Browser, DanglingUntriaged> browser_;
+  const raw_ptr<Browser> browser_;
   content::ContextMenuParams params_;
 
   // Stores the count of items added to the context menu from Autofill.
@@ -252,6 +271,9 @@ class AutofillContextMenuManager {
       command_id_to_menu_item_value_mapper_;
 
   std::unique_ptr<ScopedNewBadgeTracker> new_badge_tracker_;
+
+  autofill_metrics::AutocompleteUnrecognizedFallbackMetricLogger
+      fallback_metric_logger_;
 };
 
 }  // namespace autofill

@@ -118,13 +118,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeAddPasswordButton,
 };
 
-// Return if the feature flag for the password grouping is enabled.
-// TODO(crbug.com/1359392): Remove this when kPasswordsGrouping flag is removed.
-bool IsPasswordGroupingEnabled() {
-  return base::FeatureList::IsEnabled(
-      password_manager::features::kPasswordsGrouping);
-}
-
 bool IsPasswordNotesWithBackupEnabled() {
   return base::FeatureList::IsEnabled(syncer::kPasswordNotesWithBackup);
 }
@@ -294,7 +287,8 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
 
 - (instancetype)initWithChromeAccountManagerService:
                     (ChromeAccountManagerService*)accountManagerService
-                                        prefService:(PrefService*)prefService {
+                                        prefService:(PrefService*)prefService
+                                        requireAuth:(BOOL)requireAuth {
   self = [super initWithStyle:ChromeTableViewStyle()];
   if (self) {
     _prefService = prefService;
@@ -307,6 +301,8 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
 
     // Default behavior: search bar is enabled.
     self.shouldEnableSearchBar = YES;
+
+    // TODO(crbug.com/1462419): Configure for Auth Mode.
 
     [self updateUIForEditState];
   }
@@ -432,10 +428,7 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
 }
 
 - (BOOL)hasPasswords {
-  if (IsPasswordGroupingEnabled()) {
-    return !_affiliatedGroups.empty();
-  }
-  return !_passwords.empty();
+  return !_affiliatedGroups.empty();
 }
 
 #pragma mark - SettingsRootTableViewController
@@ -551,8 +544,7 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
 - (void)deleteItems:(NSArray<NSIndexPath*>*)indexPaths {
   // Only show the user the alert dialog if the index path array contain at
   // least one saved password.
-  if (IsPasswordGroupingEnabled() &&
-      [self indexPathsContainsSavedPassword:indexPaths]) {
+  if ([self indexPathsContainsSavedPassword:indexPaths]) {
     // Show password delete dialog before deleting the passwords.
     NSMutableArray<NSString*>* origins = [[NSMutableArray alloc] init];
     for (NSIndexPath* indexPath : indexPaths) {
@@ -632,6 +624,7 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
 }
 
 - (void)settingsWillBeDismissed {
+  CHECK(self.prefService);
   _accountManagerServiceObserver.reset();
   self.prefService = nullptr;
 }
@@ -878,7 +871,6 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
                blockedSites:
                    (const std::vector<password_manager::CredentialUIEntry>&)
                        blockedSites {
-  DCHECK(IsPasswordGroupingEnabled());
   if (!_didReceivePasswords) {
     _blockedSites = blockedSites;
     _affiliatedGroups = affiliatedGroups;
@@ -1209,31 +1201,17 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
 }
 
 - (void)updatePasswordsSectionWithSearchTerm:(NSString*)searchTerm {
-  if (IsPasswordGroupingEnabled()) {
-    for (const auto& affiliatedGroup : _affiliatedGroups) {
-      AffiliatedGroupTableViewItem* item =
-          [self savedFormItemForAffiliatedGroup:affiliatedGroup];
-      bool hidden =
-          searchTerm.length > 0 &&
-          ![item.title localizedCaseInsensitiveContainsString:searchTerm];
-      if (hidden)
-        continue;
-      [self.tableViewModel addItem:item
-           toSectionWithIdentifier:SectionIdentifierSavedPasswords];
+  for (const auto& affiliatedGroup : _affiliatedGroups) {
+    AffiliatedGroupTableViewItem* item =
+        [self savedFormItemForAffiliatedGroup:affiliatedGroup];
+    bool hidden =
+        searchTerm.length > 0 &&
+        ![item.title localizedCaseInsensitiveContainsString:searchTerm];
+    if (hidden) {
+      continue;
     }
-  } else {
-    for (const auto& credential : _passwords) {
-      CredentialTableViewItem* item =
-          [self savedFormItemForCredential:credential];
-      bool hidden =
-          searchTerm.length > 0 &&
-          ![item.title localizedCaseInsensitiveContainsString:searchTerm] &&
-          ![item.detailText localizedCaseInsensitiveContainsString:searchTerm];
-      if (hidden)
-        continue;
-      [self.tableViewModel addItem:item
-           toSectionWithIdentifier:SectionIdentifierSavedPasswords];
-    }
+    [self.tableViewModel addItem:item
+         toSectionWithIdentifier:SectionIdentifierSavedPasswords];
   }
 }
 
@@ -1446,8 +1424,8 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
       // state to make sure it is the correct one for the Password Grouping
       // feature. TODO(crbug.com/1406871): Remove line when kIOSPasswordCheckup
       // is enabled by default.
-      _passwordProblemsItem.trailingImageTintColor = [UIColor
-          colorNamed:IsPasswordGroupingEnabled() ? kRed500Color : kRedColor];
+      _passwordProblemsItem.trailingImageTintColor =
+          [UIColor colorNamed:kRed500Color];
       break;
     }
     case PasswordCheckStateReusedPasswords: {
@@ -1546,14 +1524,13 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
 
 - (void)deleteItemAtIndexPaths:(NSArray<NSIndexPath*>*)indexPaths {
   std::vector<password_manager::CredentialUIEntry> credentialsToDelete;
-
   for (NSIndexPath* indexPath in indexPaths) {
     // Only form items are editable.
     NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
     TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
 
     // Remove affiliated group.
-    if (IsPasswordGroupingEnabled() && itemType == ItemTypeSavedPassword) {
+    if (itemType == ItemTypeSavedPassword) {
       password_manager::AffiliatedGroup affiliatedGroup =
           base::mac::ObjCCastStrict<AffiliatedGroupTableViewItem>(item)
               .affiliatedGroup;
@@ -1567,7 +1544,7 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
       credentialsToDelete.insert(credentialsToDelete.end(),
                                  affiliatedGroup.GetCredentials().begin(),
                                  affiliatedGroup.GetCredentials().end());
-    } else {
+    } else if (itemType == ItemTypeBlocked) {
       password_manager::CredentialUIEntry credential =
           base::mac::ObjCCastStrict<CredentialTableViewItem>(item).credential;
 
@@ -1578,13 +1555,7 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
             if (iterator != credentials.end())
               credentials.erase(iterator);
           };
-
-      if (itemType == ItemTypeBlocked) {
-        removeCredential(_blockedSites, credential);
-      } else {
-        removeCredential(_passwords, credential);
-      }
-
+      removeCredential(_blockedSites, credential);
       credentialsToDelete.push_back(std::move(credential));
     }
   }
@@ -1949,18 +1920,10 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
 }
 
 - (void)showDetailedViewPageForItem:(TableViewItem*)item {
-  if (IsPasswordGroupingEnabled()) {
-    [self.handler
-        showDetailedViewForAffiliatedGroup:base::mac::ObjCCastStrict<
-                                               AffiliatedGroupTableViewItem>(
-                                               item)
-                                               .affiliatedGroup];
-  } else {
-    [self.handler
-        showDetailedViewForCredential:base::mac::ObjCCastStrict<
-                                          CredentialTableViewItem>(item)
-                                          .credential];
-  }
+  [self.handler
+      showDetailedViewForAffiliatedGroup:base::mac::ObjCCastStrict<
+                                             AffiliatedGroupTableViewItem>(item)
+                                             .affiliatedGroup];
 }
 
 #pragma mark - UITableViewDelegate

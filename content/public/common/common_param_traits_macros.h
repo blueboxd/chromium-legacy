@@ -26,7 +26,6 @@
 #include "third_party/blink/public/mojom/v8_cache_options.mojom.h"
 #include "third_party/blink/public/mojom/window_features/window_features.mojom.h"
 #include "third_party/blink/public/platform/web_url_request.h"
-#include "ui/accessibility/ax_param_traits.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/transform.h"
@@ -77,6 +76,7 @@ IPC_STRUCT_TRAITS_BEGIN(blink::UserAgentMetadata)
   IPC_STRUCT_TRAITS_MEMBER(mobile)
   IPC_STRUCT_TRAITS_MEMBER(bitness)
   IPC_STRUCT_TRAITS_MEMBER(wow64)
+  IPC_STRUCT_TRAITS_MEMBER(form_factor)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::UserAgentBrandVersionType,

@@ -64,12 +64,6 @@ BASE_FEATURE(kRealboxIsTall,
              "NtpRealboxIsTall",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If enabled, the NTP "realbox" will have the same rounded corners as
-// searchbox.
-BASE_FEATURE(kRealboxRoundedCorners,
-             "NtpRealboxRoundedCorners",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // If enabled, the real search box ("realbox") on the New Tab page will show a
 // Google (g) icon instead of the typical magnifying glass (aka loupe).
 BASE_FEATURE(kRealboxUseGoogleGIcon,
@@ -291,6 +285,11 @@ BASE_FEATURE(kNtpModulesHeaderIcon,
              "NtpModulesHeaderIcon",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If enabled a suggestion chip will show in the header for Quests V2.
+BASE_FEATURE(kNtpHistoryClustersModuleSuggestionChipHeader,
+             "NtpHistoryClustersModuleSuggestionChipHeader",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, ChromeCart tile will show in the History clusters module when
 // available.
 BASE_FEATURE(kNtpChromeCartInHistoryClusterModule,
@@ -299,6 +298,10 @@ BASE_FEATURE(kNtpChromeCartInHistoryClusterModule,
 
 BASE_FEATURE(kNtpHistoryClustersModuleUseModelRanking,
              "NtpHistoryClustersModuleUseModelRanking",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kNtpHistoryClustersModuleTextOnly,
+             "NtpHistoryClustersModuleTextOnly",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, ChromeCart module will show together with ChromeCart+History

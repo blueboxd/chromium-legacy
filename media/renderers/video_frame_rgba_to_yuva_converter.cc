@@ -8,7 +8,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
@@ -132,10 +131,11 @@ bool CopyRGBATextureToVideoFrame(viz::RasterContextProvider* provider,
     return false;
   }
 
-  // If RGB->YUV conversion is unsupported, the CopySharedImage calls will fail
-  // on the service side with no ability to detect failure on the client side.
-  // Hence, check for support preemptively and early out here if unsupported.
-  if (!provider->ContextCapabilities().supports_yuv_rgb_conversion) {
+  // With OOP raster, if RGB->YUV conversion is unsupported, the CopySharedImage
+  // calls will fail on the service side with no ability to detect failure on
+  // the client side. Check for support here and early out if it's unsupported.
+  if (!provider->GrContext() &&
+      !provider->ContextCapabilities().supports_yuv_rgb_conversion) {
     DVLOG(1) << "RGB->YUV conversion not supported";
     return false;
   }
@@ -148,8 +148,7 @@ bool CopyRGBATextureToVideoFrame(viz::RasterContextProvider* provider,
   }
 #endif  // BUILDFLAG(IS_WIN)
 
-  if ((!provider->GrContext() ||
-       provider->ContextCapabilities().supports_yuv_rgb_conversion) &&
+  if (provider->ContextCapabilities().supports_yuv_rgb_conversion &&
       src_mailbox_holder.mailbox.IsSharedImage()) {
     ri->WaitSyncTokenCHROMIUM(src_mailbox_holder.sync_token.GetConstData());
     if (dst_video_frame->shared_image_format_type() ==
@@ -196,6 +195,10 @@ bool CopyRGBATextureToVideoFrame(viz::RasterContextProvider* provider,
                           /*unpack_premultiply_alpha=*/false);
     }
   } else {
+    // We shouldn't be here with OOP-raster since supports_yuv_rgb_conversion
+    // should be true in that case. We can end up here with non-OOP raster when
+    // dealing with legacy mailbox when YUV-RGB conversion is unsupported by GL.
+    CHECK(provider->GrContext());
     // Create an accelerated SkImage for the source.
     auto scoped_sk_image = ScopedAcceleratedSkImage::Create(
         provider, src_format, src_size, src_color_space, src_surface_origin,
@@ -233,8 +236,6 @@ bool CopyRGBATextureToVideoFrame(viz::RasterContextProvider* provider,
   }
   ri->Flush();
 
-  const size_t num_planes = dst_video_frame->layout().num_planes();
-
 #if BUILDFLAG(IS_WIN)
   // For shared memory GMBs on Windows we needed to explicitly request a copy
   // from the shared image GPU texture to the GMB.
@@ -246,7 +247,7 @@ bool CopyRGBATextureToVideoFrame(viz::RasterContextProvider* provider,
   ri->GenUnverifiedSyncTokenCHROMIUM(blit_done_sync_token.GetData());
 
   auto* sii = provider->SharedImageInterface();
-  for (size_t plane = 0; plane < num_planes; ++plane) {
+  for (size_t plane = 0; plane < dst_video_frame->NumTextures(); ++plane) {
     const auto& mailbox = dst_video_frame->mailbox_holder(plane).mailbox;
     sii->CopyToGpuMemoryBuffer(blit_done_sync_token, mailbox);
   }
@@ -265,8 +266,9 @@ bool CopyRGBATextureToVideoFrame(viz::RasterContextProvider* provider,
   gpu::SyncToken completion_sync_token;
   ri->GenSyncTokenCHROMIUM(completion_sync_token.GetData());
   SimpleSyncTokenClient simple_client(completion_sync_token);
-  for (size_t plane = 0; plane < num_planes; ++plane)
+  for (size_t plane = 0; plane < dst_video_frame->NumTextures(); ++plane) {
     dst_video_frame->UpdateMailboxHolderSyncToken(plane, &simple_client);
+  }
   dst_video_frame->UpdateReleaseSyncToken(&simple_client);
   return true;
 }

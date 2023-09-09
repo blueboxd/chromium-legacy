@@ -33,17 +33,17 @@ namespace {
 // disabled.
 constexpr size_t kLayerLimitDefault = 128;
 
-// The new limit if kCALayerNewLimit is enabled. It can be overriden by the
+// The new limit if kCALayerNewLimit is enabled. It can be overridden by the
 // "default" feature parameters.
-constexpr size_t kLayerNewLimitDefault = 512;
+constexpr size_t kLayerNewLimitDefault = 1024;
 
 // The default CALayer number allowed for CoreAnimation with many videos (video
 // count >= kMaxNumVideos) when kCALayerNewLimit is disabled.
 constexpr size_t kLayerLimitWithManyVideos = 300;
 
 // The new limit with many videos if kCALayerNewLimit is enabled. It can be
-// overriden by the "many-video" feature parameters.
-constexpr size_t kLayerNewLimitWithManyVideos = 512;
+// overridden by the "many-video" feature parameters.
+constexpr size_t kLayerNewLimitWithManyVideos = 1024;
 
 // If there are too many RenderPassDrawQuads, we shouldn't use Core
 // Animation to present them as individual layers, since that potentially
@@ -116,6 +116,7 @@ gfx::CALayerResult FromRenderPassQuad(
   }
 
   ca_layer_overlay->rpdq = quad;
+  ca_layer_overlay->is_render_pass_draw_quad = true;
   ca_layer_overlay->uv_rect = gfx::RectF(0, 0, 1, 1);
 
   // For RenderPassDrawQuad, the opacity is applied when its ddl is recorded, so
@@ -164,7 +165,6 @@ gfx::CALayerResult FromTextureQuad(DisplayResourceProvider* resource_provider,
   }
   ca_layer_overlay->opacity *= quad->vertex_opacity[0];
   ca_layer_overlay->nearest_neighbor_filter = quad->nearest_neighbor;
-  ca_layer_overlay->hdr_mode = quad->hdr_mode;
   ca_layer_overlay->hdr_metadata = quad->hdr_metadata;
   if (quad->is_video_frame)
     ca_layer_overlay->protected_video_type = quad->protected_video_type;
@@ -229,7 +229,8 @@ gfx::CALayerResult FromYUVVideoQuad(DisplayResourceProvider* resource_provider,
 
   ca_layer_overlay->resource_id = y_resource_id;
   ca_layer_overlay->uv_rect = ya_contents_rect;
-  ca_layer_overlay->hdr_metadata = quad->hdr_metadata;
+  ca_layer_overlay->hdr_metadata =
+      quad->hdr_metadata.value_or(gfx::HDRMetadata());
   ca_layer_overlay->protected_video_type = quad->protected_video_type;
   return gfx::kCALayerSuccess;
 }

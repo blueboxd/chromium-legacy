@@ -319,9 +319,6 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
             menuCoordinator.clickChipForTesting();
         });
 
-        Assert.assertEquals("Selection histogram pings not equal to one", 1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "ContextMenu.LensChip.Event", ContextMenuChipController.ChipEvent.CLICKED));
         Assert.assertFalse("Chip popoup still showing.",
                 menuCoordinator.getCurrentPopupWindowForTesting().isShowing());
     }
@@ -422,9 +419,6 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
             menuCoordinator.clickChipForTesting();
         });
 
-        Assert.assertEquals("Selection histogram pings not equal to one", 1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "ContextMenu.LensChip.Event", ContextMenuChipController.ChipEvent.CLICKED));
         Assert.assertFalse("Chip popoup still showing.",
                 menuCoordinator.getCurrentPopupWindowForTesting().isShowing());
     }
@@ -922,7 +916,6 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
                 Assert.assertEquals(1,
                         RecordHistogram.getHistogramTotalCountForTesting(
                                 "ContextMenu.Shown.SharedHighlightingInteraction"));
-                ContextMenuHelper.setMenuShownCallbackForTests(null);
             });
             contextMenuHelper.showContextMenuForTesting(
                     populatorFactory, params, null, tab.getView(), 0);

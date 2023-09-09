@@ -14,12 +14,15 @@ class SampleProxyEdgeCases {
     @interface ShouldBeIgnored {}
     static class OtherInnerClass {}
 
+    public @interface ShouldBeIgnored {}
+
     @NativeMethods
     interface Natives {
         void foo__weirdly__escaped_name1();
         String[][] arrayTypes1(int[] a, Object[][] b);
         int[] arrayTypes2(int[] a, Throwable[][] b);
         void fooForTest();
+        void fooForTests();
         void fooForTesting();
         Map<OtherInnerClass, OtherInnerClass[]>[] genericsWithNestedClassArray(
                 Map<OtherInnerClass, OtherInnerClass[]>[] arg);

@@ -1482,7 +1482,7 @@ message DownloadMetadata {
 // A Detailed Safebrowsing Report from clients. Chrome safebrowsing reports are
 // only sent by Chrome users who have opted into extended Safe Browsing.
 // This proto is replacing ClientMalwareReportRequest.
-// Next tag: 30
+// Next tag: 32
 message ClientSafeBrowsingReportRequest {
   // Note: A lot of the "optional" fields would make sense to be
   // "required" instead.  However, having them as optional allows the
@@ -2231,6 +2231,31 @@ message ExtensionTelemetryReportRequest {
     }
 
     optional DeclarativeNetRequestInfo declarative_net_request_info = 6;
+
+    // chrome.tabs API signal information.
+    message TabsApiInfo {
+      enum ApiMethod {
+        // Convenient default value, should not be used in real signal payload.
+        API_METHOD_UNSPECIFIED = 0;
+        CREATE = 1;
+        UPDATE = 2;
+        REMOVE = 3;
+      }
+      message CallDetails {
+        // The API method invoked.
+        optional ApiMethod method = 1;
+        // The URL to navigate the tab to.
+        optional string new_url = 2;
+        // The currently committed URL for the tab. This field is not applicable
+        // when method = CREATE.
+        optional string current_url = 3;
+        // Number of times this call was made.
+        optional uint32 count = 4;
+      }
+      repeated CallDetails call_details = 1;
+    }
+
+    optional TabsApiInfo tabs_api_info = 7;
   }
 
   // Single report structure consists of all the signals observed for a

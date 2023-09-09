@@ -4,6 +4,8 @@
 
 package org.chromium.components.page_info;
 
+import static org.chromium.components.content_settings.PrefNames.IN_CONTEXT_COOKIE_CONTROLS_OPENED;
+
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -20,6 +22,7 @@ import org.chromium.components.content_settings.CookieControlsBridge;
 import org.chromium.components.content_settings.CookieControlsEnforcement;
 import org.chromium.components.content_settings.CookieControlsObserver;
 import org.chromium.components.embedder_support.util.Origin;
+import org.chromium.components.user_prefs.UserPrefs;
 
 import java.util.Collection;
 
@@ -37,8 +40,11 @@ public class PageInfoCookiesController
 
     private int mAllowedCookies;
     private int mBlockedCookies;
+    private int mAllowedSites;
+    private int mBlockedSites;
     private int mStatus;
     private boolean mIsEnforced;
+    private long mExpiration;
     private Website mWebsite;
 
     public PageInfoCookiesController(PageInfoMainController mainController, PageInfoRowView rowView,
@@ -60,6 +66,11 @@ public class PageInfoCookiesController
     }
 
     private void launchSubpage() {
+        // Record a pref on page open if 3PC blocking is enabled.
+        if (getDelegate().cookieControlsShown()) {
+            UserPrefs.get(mMainController.getBrowserContext())
+                    .setBoolean(IN_CONTEXT_COOKIE_CONTROLS_OPENED, true);
+        }
         mMainController.recordAction(PageInfoAction.PAGE_INFO_COOKIES_DIALOG_OPENED);
         mMainController.launchSubpage(this);
     }
@@ -85,8 +96,13 @@ public class PageInfoCookiesController
         params.disableCookieDeletion = isDeletionDisabled();
         params.hostName = mMainController.getURL().getHost();
         mSubPage.setParams(params);
-        mSubPage.setCookiesCount(mAllowedCookies, mBlockedCookies);
-        mSubPage.setCookieBlockingStatus(mStatus, mIsEnforced);
+        if (PageInfoFeatures.USER_BYPASS_UI.isEnabled()) {
+            mSubPage.setCookieStatus(mStatus, mIsEnforced, mExpiration);
+            mSubPage.setSitesCount(mAllowedSites, mBlockedSites);
+        } else {
+            mSubPage.setCookieBlockingStatus(mStatus, mIsEnforced);
+            mSubPage.setCookiesCount(mAllowedCookies, mBlockedCookies);
+        }
 
         SiteSettingsCategory storageCategory = SiteSettingsCategory.createFromType(
                 mMainController.getBrowserContext(), SiteSettingsCategory.Type.USE_STORAGE);
@@ -172,6 +188,30 @@ public class PageInfoCookiesController
             mSubPage.setCookieBlockingStatus(mStatus, mIsEnforced);
         }
     }
+
+    @Override
+    public void onStatusChanged(int status, int enforcement, long expiration) {
+        mStatus = status;
+        mIsEnforced = enforcement != CookieControlsEnforcement.NO_ENFORCEMENT;
+        mExpiration = expiration;
+        if (mSubPage != null) {
+            mSubPage.setCookieStatus(mStatus, mIsEnforced, expiration);
+        }
+    }
+
+    @Override
+    public void onSitesCountChanged(int allowedSites, int blockedSites) {
+        mAllowedSites = allowedSites;
+        mBlockedSites = blockedSites;
+        // TODO(crbug.com/1446230): Update the row view.
+        if (mSubPage != null) {
+            mSubPage.setSitesCount(allowedSites, blockedSites);
+        }
+    }
+
+    // TODO(crbug.com/1446230): Implement.
+    @Override
+    public void onBreakageConfidenceLevelChanged(int level) {}
 
     private boolean isDeletionDisabled() {
         return WebsitePreferenceBridge.isCookieDeletionDisabled(mMainController.getBrowserContext(), mFullUrl);

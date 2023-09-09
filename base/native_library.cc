@@ -7,10 +7,9 @@
 namespace base {
 
 NativeLibrary LoadNativeLibrary(const FilePath& library_path,
-                                NativeLibraryLoadError* error,
-                                NativeLibraryOptions options) {
+                                NativeLibraryLoadError* error) {
   return LoadNativeLibraryWithOptions(
-      library_path, options, error);
+      library_path, NativeLibraryOptions(), error);
 }
 
 }  // namespace base

@@ -6,8 +6,14 @@
 // https://github.com/tbondwilkinson/dom-parts
 
 [RuntimeEnabled=DOMPartsAPI,Exposed=Window]
-interface Part : PartRoot {
-  readonly attribute PartRoot root;
+interface Part {
+  [ImplementedAs=rootForBindings] readonly attribute PartRoot root;
   readonly attribute FrozenArray<DOMString> metadata;
   void disconnect();
+};
+
+// While Part is not directly constructible, PartInit is used to initialize
+// the subclasses of Part.
+dictionary PartInit {
+  FrozenArray<DOMString> metadata;
 };

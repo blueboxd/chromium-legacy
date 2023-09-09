@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/affiliation/affiliation_service.h"
 #include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
+#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 
@@ -26,11 +27,13 @@ constexpr base::TimeDelta kInitializationDelayOnStartup = base::Seconds(30);
 
 bool IsFacetValidForAffiliation(const FacetURI& facet) {
   return facet.IsValidAndroidFacetURI() ||
+#if BUILDFLAG(IS_ANDROID)
          (facet.IsValidWebFacetURI() &&
           (base::FeatureList::IsEnabled(
-               features::kFillingAcrossAffiliatedWebsites) ||
-           base::FeatureList::IsEnabled(features::kPasswordsGrouping) ||
-           base::FeatureList::IsEnabled(features::kFillingAcrossGroupedSites)));
+              features::kFillingAcrossAffiliatedWebsites)));
+#else
+         facet.IsValidWebFacetURI();
+#endif
 }
 
 }  // namespace

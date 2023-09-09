@@ -82,8 +82,6 @@ if (!is_cronet_build || is_ios) {
     sources = [
       "android_metrics_helper.cc",
       "android_metrics_helper.h",
-      "android_metrics_provider.cc",
-      "android_metrics_provider.h",
       "call_stack_profile_metrics_provider.cc",
       "call_stack_profile_metrics_provider.h",
       "clean_exit_beacon.cc",
@@ -157,6 +155,8 @@ if (!is_cronet_build || is_ios) {
       "metrics_service_client.h",
       "metrics_service_observer.cc",
       "metrics_service_observer.h",
+      "metrics_shutdown.cc",
+      "metrics_shutdown.h",
       "metrics_state_manager.cc",
       "metrics_state_manager.h",
       "metrics_switches.cc",
@@ -226,7 +226,11 @@ if (!is_cronet_build || is_ios) {
     }
 
     if (is_android) {
-      sources += [ "drive_metrics_provider_android.cc" ]
+      sources += [
+        "android_metrics_provider.cc",
+        "android_metrics_provider.h",
+        "drive_metrics_provider_android.cc",
+      ]
       deps += [ ":jni_headers" ]
     }
 
@@ -492,7 +496,6 @@ if (!is_cronet_build) {
     testonly = true
     sources = [
       "android_metrics_helper_unittest.cc",
-      "android_metrics_provider_unittest.cc",
       "call_stack_profile_builder_unittest.cc",
       "call_stack_profile_metadata_unittest.cc",
       "call_stack_profile_metrics_provider_unittest.cc",
@@ -591,6 +594,10 @@ if (!is_cronet_build) {
         "//chromeos/ash/components/dbus:test_support",
         "//chromeos/ash/components/network:test_support",
       ]
+    }
+
+    if (is_android) {
+      sources += [ "android_metrics_provider_unittest.cc" ]
     }
 
     if (use_blink) {

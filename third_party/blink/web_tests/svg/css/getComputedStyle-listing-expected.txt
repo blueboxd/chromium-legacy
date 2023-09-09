@@ -14,7 +14,6 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 -webkit-box-pack: start
 -webkit-box-reflect: none
 -webkit-font-smoothing: auto
--webkit-highlight: none
 -webkit-line-break: auto
 -webkit-line-clamp: none
 -webkit-locale: auto
@@ -52,7 +51,6 @@ align-self: auto
 alignment-baseline: auto
 anchor-default: implicit
 anchor-name: none
-anchor-scroll: default
 animation-composition: replace
 animation-delay: 0s
 animation-direction: normal
@@ -292,6 +290,7 @@ popover-hide-delay: infinity * 1s
 popover-show-delay: 0.5s
 position: static
 position-fallback: none
+position-fallback-bounds: normal
 r: 0px
 resize: none
 right: auto
@@ -343,6 +342,7 @@ table-layout: auto
 text-align: start
 text-align-last: auto
 text-anchor: start
+text-autospace: normal
 text-box-trim: none
 text-decoration: none solid rgb(0, 0, 0)
 text-decoration-color: rgb(0, 0, 0)
@@ -370,6 +370,7 @@ touch-action: auto
 transform: none
 transform-origin: 0px 0px
 transform-style: flat
+transition-animation-type: normal
 transition-delay: 0s
 transition-duration: 0s
 transition-property: all
@@ -388,7 +389,6 @@ white-space-collapse: collapse
 widows: 2
 width: 100px
 will-change: auto
-word-boundary-detection: normal
 word-break: normal
 word-spacing: 0px
 writing-mode: horizontal-tb

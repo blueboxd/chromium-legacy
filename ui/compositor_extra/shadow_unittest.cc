@@ -5,6 +5,7 @@
 #include "ui/compositor_extra/shadow.h"
 
 #include "base/test/test_discardable_memory_allocator.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -14,6 +15,8 @@
 
 namespace ui {
 namespace {
+
+using ::testing::FieldsAre;
 
 constexpr int kElevationLarge = 24;
 constexpr int kElevationSmall = 6;
@@ -136,7 +139,7 @@ TEST_F(ShadowTest, AdjustRoundedCornerRadius) {
   shadow_bounds.Inset(InsetsForElevation(kElevationSmall));
   EXPECT_EQ(shadow_bounds, shadow.layer()->bounds());
   EXPECT_EQ(NineboxImageSizeForElevationAndCornerRadius(6, 0),
-            shadow.details_for_testing()->ninebox_image.size());
+            shadow.details_for_testing()->nine_patch_image.size());
 }
 
 // Test that the uniquely owned shadow image is evicted from the cache when new
@@ -200,6 +203,79 @@ TEST_F(ShadowTest, EvictUniquelyOwnedDetail) {
       gfx::Rect(MinContentSizeForElevationAndCornerRadius(kElevationLarge, 2)));
   // The cache size is unchanged.
   EXPECT_EQ(1u, gfx::ShadowDetails::GetDetailsCacheSizeForTest());
+}
+
+class ShadowColorTest : public ShadowTest,
+                        public testing::WithParamInterface<gfx::ShadowStyle> {
+ public:
+  ShadowColorTest() = default;
+  ShadowColorTest(const ShadowColorTest&) = delete;
+  ShadowColorTest& operator=(const ShadowColorTest&) = delete;
+  ~ShadowColorTest() override = default;
+
+  static std::vector<gfx::ShadowStyle> GetTestParamValues() {
+#if BUILDFLAG(IS_CHROMEOS)
+    return {gfx::ShadowStyle::kMaterialDesign,
+            gfx::ShadowStyle::kChromeOSSystemUI};
+#else
+    return {gfx::ShadowStyle::kMaterialDesign};
+#endif
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    ShadowColorTest,
+    testing::ValuesIn(ShadowColorTest::GetTestParamValues()));
+
+// Tests the shadow colors are updated when setting elevation to colors map.
+TEST_P(ShadowColorTest, ElevationToColorsMap) {
+  Shadow shadow;
+  shadow.Init(kElevationSmall);
+  shadow.SetShadowStyle(GetParam());
+  // Set the content bounds which is big enough for the large elevation.
+  shadow.SetContentBounds(
+      gfx::Rect(MinContentSizeForElevationAndCornerRadius(kElevationLarge, 0)));
+
+  // Cache the default colors.
+  const auto& values = shadow.details_for_testing()->values;
+  const SkColor default_key_color = values[0].color();
+  const SkColor default_ambient_color = values[1].color();
+
+  // Set a color map.
+  const SkColor small_key_color = SkColorSetA(SK_ColorRED, 0x3d);
+  const SkColor small_ambient_color = SkColorSetA(SK_ColorBLUE, 0x1a);
+  const SkColor large_key_color = SkColorSetA(SK_ColorGREEN, 0x41);
+  const SkColor large_ambient_color = SkColorSetA(SK_ColorYELLOW, 0x26);
+  Shadow::ElevationToColorsMap color_map;
+  color_map[kElevationSmall] =
+      std::make_pair(small_key_color, small_ambient_color);
+  color_map[kElevationLarge] =
+      std::make_pair(large_key_color, large_ambient_color);
+  shadow.SetElevationToColorsMap(color_map);
+
+  // A lambda to get key and ambient shadow colors.
+  auto get_colors =
+      [](const ui::Shadow& shadow) -> std::pair<SkColor, SkColor> {
+    const auto& values = shadow.details_for_testing()->values;
+    return std::make_pair(values[0].color(), values[1].color());
+  };
+
+  // Check if shadow colors are updated.
+  EXPECT_THAT(get_colors(shadow),
+              FieldsAre(small_key_color, small_ambient_color));
+
+  // Check if shadow colors are updated when the shadow changes to another
+  // specified elevation.
+  shadow.SetElevation(kElevationLarge);
+  EXPECT_THAT(get_colors(shadow),
+              FieldsAre(large_key_color, large_ambient_color));
+
+  // Check if the shadow colors change back to default colors when the shadow
+  // changes to a non-specified elevation.
+  shadow.SetElevation(kElevationSmall + 1);
+  EXPECT_THAT(get_colors(shadow),
+              FieldsAre(default_key_color, default_ambient_color));
 }
 
 }  // namespace

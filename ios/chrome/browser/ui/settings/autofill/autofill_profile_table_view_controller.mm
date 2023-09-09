@@ -10,7 +10,9 @@
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
+#import "base/strings/utf_string_conversions.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
+#import "components/autofill/core/browser/profile_requirement_utils.h"
 #import "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/core/common/autofill_prefs.h"
 #import "components/autofill/ios/browser/personal_data_manager_observer_bridge.h"
@@ -132,8 +134,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)dealloc {
-  if (!_settingsAreDismissed)
-    _personalDataManager->RemoveObserver(_observer.get());
+  // TODO(crbug.com/1454777)
+  DUMP_WILL_BE_CHECK(_settingsAreDismissed);
 }
 
 - (void)viewDidLoad {
@@ -255,6 +257,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   item.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   item.accessibilityIdentifier = title;
   item.GUID = guid;
+  item.showMigrateToAccountButton = NO;
   if (autofillProfile.source() == autofill::AutofillProfile::Source::kAccount) {
     item.autofillProfileSource =
         AutofillAddressProfileSource::AutofillAccountProfile;
@@ -263,13 +266,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
         AutofillAddressProfileSource::AutofillSyncableProfile;
   } else {
     item.autofillProfileSource = AutofillLocalProfile;
-    if (base::FeatureList::IsEnabled(
-            autofill::features::kAutofillAccountProfileStorage) &&
-        base::FeatureList::IsEnabled(syncer::kSyncEnableContactInfoDataType) &&
-        base::FeatureList::IsEnabled(
-            syncer::kSyncEnableContactInfoDataTypeInTransportMode) &&
-        // Denotes that the user is signed-in.
-        self.userEmail != nil) {
+    if ([self shouldShowCloudOffIconForProfile:autofillProfile]) {
+      item.showMigrateToAccountButton = YES;
       item.image = CustomSymbolTemplateWithPointSize(
           kCloudSlashSymbol, kCloudSlashSymbolPointSize);
     }
@@ -381,10 +379,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
     return;
   }
 
-  const std::vector<autofill::AutofillProfile*> autofillProfiles =
-      _personalDataManager->GetProfilesForSettings();
-  [self showAddressProfileDetailsPageForProfile:*autofillProfiles[indexPath
-                                                                      .item]];
+  AutofillProfileItem* item = base::mac::ObjCCastStrict<AutofillProfileItem>(
+      [self.tableViewModel itemAtIndexPath:indexPath]);
+  [self
+      showAddressProfileDetailsPageForProfile:_personalDataManager
+                                                  ->GetProfileByGUID(item.GUID)
+                   withMigrateToAccountButton:item.showMigrateToAccountButton];
   [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
@@ -751,13 +751,26 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)showAddressProfileDetailsPageForProfile:
-    (const autofill::AutofillProfile&)profile {
+            (autofill::AutofillProfile*)profile
+                     withMigrateToAccountButton:(BOOL)migrateToAccountButton {
   self.autofillProfileEditCoordinator = [[AutofillProfileEditCoordinator alloc]
       initWithBaseNavigationController:self.navigationController
                                browser:_browser
-                               profile:profile];
+                               profile:*profile
+                migrateToAccountButton:migrateToAccountButton];
   self.autofillProfileEditCoordinator.delegate = self;
   [self.autofillProfileEditCoordinator start];
+}
+
+// Returns YES if the cloud off icon should be shown next to the profile. Only
+// those profiles, that are eligible for the migration to Account show cloud off
+// icon.
+- (BOOL)shouldShowCloudOffIconForProfile:
+    (const autofill::AutofillProfile&)profile {
+  return IsEligibleForMigrationToAccount(*_personalDataManager, profile) &&
+         base::FeatureList::IsEnabled(
+             syncer::kSyncEnableContactInfoDataTypeInTransportMode) &&
+         self.userEmail != nil && IsMinimumAddress(profile);
 }
 
 @end

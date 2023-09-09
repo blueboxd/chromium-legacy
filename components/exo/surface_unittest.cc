@@ -151,7 +151,8 @@ class SurfaceTest
   }
 
   const viz::CompositorFrame& GetFrameFromSurface(ShellSurface* shell_surface) {
-    viz::SurfaceId surface_id = shell_surface->host_window()->GetSurfaceId();
+    viz::SurfaceId surface_id =
+        *shell_surface->host_window()->layer()->GetSurfaceId();
     const viz::CompositorFrame& frame =
         GetSurfaceManager()->GetSurfaceForId(surface_id)->GetActiveFrame();
     return frame;
@@ -1601,10 +1602,9 @@ TEST_P(SurfaceTest, SubsurfaceClipRect) {
     EXPECT_EQ(absl::nullopt, quad_list.front()->shared_quad_state->clip_rect);
   }
 
-  int clip_size_px = 10;
-  float clip_size_dip = clip_size_px / device_scale_factor();
+  int clip_size = 10;
   absl::optional<gfx::RectF> clip_rect =
-      gfx::RectF(clip_size_dip, clip_size_dip, clip_size_dip, clip_size_dip);
+      gfx::RectF(clip_size, clip_size, clip_size, clip_size);
   sub_surface->SetClipRect(clip_rect);
   child_surface->Attach(child_buffer.get());
   child_surface->Commit();
@@ -1612,10 +1612,9 @@ TEST_P(SurfaceTest, SubsurfaceClipRect) {
   test::WaitForLastFrameAck(shell_surface.get());
 
   {
-    // Subsurface has a clip applied, and it is converted to px in the
-    // compositor frame.
+    // Subsurface has a clip applied.
     absl::optional<gfx::Rect> clip_rect_px =
-        gfx::Rect(clip_size_px, clip_size_px, clip_size_px, clip_size_px);
+        gfx::Rect(clip_size, clip_size, clip_size, clip_size);
 
     const viz::CompositorFrame& frame =
         GetFrameFromSurface(shell_surface.get());

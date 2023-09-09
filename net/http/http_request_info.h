@@ -54,7 +54,8 @@ struct NET_EXPORT HttpRequestInfo {
   HttpRequestHeaders extra_headers;
 
   // Any upload data.
-  raw_ptr<UploadDataStream, DanglingUntriaged> upload_data_stream = nullptr;
+  raw_ptr<UploadDataStream, AcrossTasksDanglingUntriaged> upload_data_stream =
+      nullptr;
 
   // Any load flags (see load_flags.h).
   int load_flags = 0;
@@ -92,6 +93,10 @@ struct NET_EXPORT HttpRequestInfo {
   // this to NetworkIsolationKey::TopFrameSite().  That gives more consistent
   /// behavior, and may still provide useful metrics.
   absl::optional<url::Origin> possibly_top_frame_origin;
+
+  // The frame origin associated with a request. This is used to isolate shared
+  // dictionaries between different frame origins.
+  absl::optional<url::Origin> frame_origin;
 
   // Idempotency of the request, which determines that if it is safe to enable
   // 0-RTT for the request. By default, 0-RTT is only enabled for safe

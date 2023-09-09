@@ -365,7 +365,7 @@ void AwContentBrowserClient::AppendExtraCommandLineSwitches(
     };
 
     command_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
-                                   kSwitchNames, std::size(kSwitchNames));
+                                   kSwitchNames);
   }
 }
 
@@ -424,12 +424,14 @@ void AwContentBrowserClient::AllowCertificateError(
 }
 
 base::OnceClosure AwContentBrowserClient::SelectClientCertificate(
+    content::BrowserContext* browser_context,
     content::WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
     net::ClientCertIdentityList client_certs,
     std::unique_ptr<content::ClientCertificateDelegate> delegate) {
   AwContentsClientBridge* client =
-      AwContentsClientBridge::FromWebContents(web_contents);
+      web_contents ? AwContentsClientBridge::FromWebContents(web_contents)
+                   : nullptr;
   if (client) {
     client->SelectClientCertificate(cert_request_info, std::move(delegate));
   }
@@ -1069,11 +1071,11 @@ void AwContentBrowserClient::LogWebFeatureForCurrentPage(
       render_frame_host, feature);
 }
 
-bool AwContentBrowserClient::ShouldAllowInsecureLocalNetworkRequests(
+bool AwContentBrowserClient::ShouldAllowInsecurePrivateNetworkRequests(
     content::BrowserContext* browser_context,
     const url::Origin& origin) {
   // Webview does not implement support for deprecation trials, so webview apps
-  // broken by Local Network Access restrictions cannot help themselves by
+  // broken by Private Network Access restrictions cannot help themselves by
   // registering for the trial.
   // See crbug.com/1255675.
   return true;

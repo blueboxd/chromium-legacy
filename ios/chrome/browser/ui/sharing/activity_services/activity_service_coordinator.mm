@@ -85,12 +85,6 @@ constexpr CGFloat kAppIconPointSize = 80;
 #pragma mark - Public methods
 
 - (void)start {
-  NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
-  [defaultCenter addObserver:self
-                    selector:@selector(applicationDidEnterBackground:)
-                        name:UIApplicationDidEnterBackgroundNotification
-                      object:nil];
-
   self.handler =
       static_cast<id<BrowserCoordinatorCommands, FindInPageCommands>>(
           self.browser->GetCommandDispatcher());
@@ -272,9 +266,7 @@ constexpr CGFloat kAppIconPointSize = 80;
 
   id extraItem = nil;
   if (@available(iOS 16.4, *)) {
-    if (ShouldAddToHomeScreen(self.incognito)) {
-      extraItem = webState->GetActivityItem();
-    }
+    extraItem = webState->GetActivityItem();
   }
   [self shareItems:items activities:activities extraItem:extraItem];
 }
@@ -351,9 +343,7 @@ constexpr CGFloat kAppIconPointSize = 80;
       [self.mediator applicationActivitiesForDataItems:@[ URLData ]];
   id extraItem = nil;
   if (@available(iOS 16.4, *)) {
-    if (ShouldAddToHomeScreen(self.incognito)) {
-      extraItem = webState->GetActivityItem();
-    }
+    extraItem = webState->GetActivityItem();
   }
   [self shareItems:items activities:activities extraItem:extraItem];
 }
@@ -416,14 +406,6 @@ constexpr CGFloat kAppIconPointSize = 80;
                                                       kAppIconPointSize);
 #endif  // BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
   return [[NSItemProvider alloc] initWithObject:image];
-}
-
-#pragma mark - Notification callback
-
-- (void)applicationDidEnterBackground:(NSNotification*)note {
-  [self.viewController.presentingViewController
-      dismissViewControllerAnimated:YES
-                         completion:nil];
 }
 
 @end

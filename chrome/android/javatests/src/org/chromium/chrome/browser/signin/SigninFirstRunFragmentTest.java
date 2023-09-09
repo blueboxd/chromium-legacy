@@ -40,7 +40,6 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.test.espresso.ViewAction;
 import androidx.test.filters.MediumTest;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -92,6 +91,7 @@ import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ActivityTestUtils;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestRule;
+import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.externalauth.ExternalAuthUtils;
 import org.chromium.components.policy.PolicyService;
@@ -220,15 +220,18 @@ public class SigninFirstRunFragmentTest {
         when(mFirstRunPageDelegateMock.getChildAccountStatusSupplier())
                 .thenReturn(mChildAccountStatusListenerMock);
         when(mFirstRunPageDelegateMock.isLaunchedFromCct()).thenReturn(false);
+
+        OneshotSupplierImpl<Profile> profileSupplier =
+                TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+                    OneshotSupplierImpl<Profile> supplier = new OneshotSupplierImpl<>();
+                    supplier.set(Profile.getLastUsedRegularProfile());
+                    return supplier;
+                });
+        when(mFirstRunPageDelegateMock.getProfileSupplier()).thenReturn(profileSupplier);
+
         mActivityTestRule.launchActivity(null);
         mFragment = new CustomSigninFirstRunFragment();
         mFragment.setPageDelegate(mFirstRunPageDelegateMock);
-    }
-
-    @After
-    public void tearDown() {
-        FirstRunUtils.setDisableDelayOnExitFreForTest(false);
-        EnterpriseInfo.setInstanceForTest(null);
     }
 
     @Test
@@ -381,7 +384,7 @@ public class SigninFirstRunFragmentTest {
 
         final String continueAsText = mActivityTestRule.getActivity().getString(
                 R.string.sync_promo_continue_as, GIVEN_NAME1);
-        onView(withText(continueAsText)).perform(click());
+        clickContinueButton(continueAsText);
 
         verify(mFirstRunPageDelegateMock).acceptTermsOfService(true);
         verify(mFirstRunPageDelegateMock, never()).advanceToNextPage();
@@ -595,7 +598,7 @@ public class SigninFirstRunFragmentTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_less_than = VERSION_CODES.Q, message = "https://crbug.com/1434098")
+    @Restriction({DeviceRestriction.RESTRICTION_TYPE_NON_AUTO})
     public void testSigninWithNonDefaultAccount() {
         mSigninTestRule.addAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1, /*avatar=*/null);
         mSigninTestRule.addAccount(
@@ -623,6 +626,7 @@ public class SigninFirstRunFragmentTest {
 
     @Test
     @MediumTest
+    @Restriction({DeviceRestriction.RESTRICTION_TYPE_NON_AUTO})
     public void testContinueButtonWithAnAccountOtherThanTheSignedInAccount() {
         final CoreAccountInfo targetPrimaryAccount =
                 mSigninTestRule.addAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1, null);
@@ -667,7 +671,7 @@ public class SigninFirstRunFragmentTest {
 
         final String continueAsText = mActivityTestRule.getActivity().getString(
                 R.string.sync_promo_continue_as, GIVEN_NAME1);
-        onView(withText(continueAsText)).perform(click());
+        clickContinueButton(continueAsText);
 
         verify(mSigninManagerMock, never()).signin(any(), anyInt(), any());
         verify(mFirstRunPageDelegateMock).acceptTermsOfService(true);
@@ -778,7 +782,7 @@ public class SigninFirstRunFragmentTest {
 
         final String continueAsText = mActivityTestRule.getActivity().getString(
                 R.string.sync_promo_continue_as, GIVEN_NAME1);
-        onView(withText(continueAsText)).perform(click());
+        clickContinueButton(continueAsText);
 
         verify(mFirstRunPageDelegateMock).acceptTermsOfService(true);
         onView(withId(R.id.fre_signin_progress_spinner)).check(matches(isDisplayed()));
@@ -792,8 +796,6 @@ public class SigninFirstRunFragmentTest {
         onView(withText(continueAsText)).check(matches(not(isDisplayed())));
         onView(withText(R.string.signin_fre_dismiss_button)).check(matches(not(isDisplayed())));
         onView(withId(R.id.signin_fre_footer)).check(matches(not(isDisplayed())));
-
-        IdentityServicesProvider.setInstanceForTests(null);
     }
 
     @Test
@@ -901,7 +903,7 @@ public class SigninFirstRunFragmentTest {
 
         final String continueAsText = mActivityTestRule.getActivity().getString(
                 R.string.sync_promo_continue_as, GIVEN_NAME1);
-        onView(withText(continueAsText)).perform(click());
+        clickContinueButton(continueAsText);
 
         verify(mFirstRunPageDelegateMock).acceptTermsOfService(false);
         verify(mFirstRunPageDelegateMock).advanceToNextPage();
@@ -1276,7 +1278,7 @@ public class SigninFirstRunFragmentTest {
                         R.string.sync_promo_continue_as, CHILD_FULL_NAME)
                 : mActivityTestRule.getActivity().getString(R.string.sync_promo_continue);
 
-        onView(withText(continueAsText)).perform(click());
+        clickContinueButton(continueAsText);
 
         verify(mFirstRunPageDelegateMock).acceptTermsOfService(true);
         verify(mFirstRunPageDelegateMock).advanceToNextPage();
@@ -1344,5 +1346,10 @@ public class SigninFirstRunFragmentTest {
     private static <T> T waitForEvent(T mock) {
         return verify(mock,
                 timeout(ScalableTimeout.scaleTimeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL)));
+    }
+
+    private void clickContinueButton(String continueAsText) {
+        onView(withText(continueAsText)).perform(click());
+        SigninTestUtil.completeAutoDeviceLockIfNeeded(mFragment);
     }
 }

@@ -18,7 +18,7 @@
 #include "components/prefs/pref_service.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/color/color_provider_manager.h"
+#include "ui/color/color_provider_key.h"
 #include "ui/gfx/color_palette.h"
 
 class PrefRegistrySimple;
@@ -51,8 +51,8 @@ struct ASH_EXPORT ColorPaletteSeed {
   // The type of palette which is being generated.
   ColorScheme scheme = ColorScheme::kStatic;
   // Dark or light palette.
-  ui::ColorProviderManager::ColorMode color_mode =
-      ui::ColorProviderManager::ColorMode::kLight;
+  ui::ColorProviderKey::ColorMode color_mode =
+      ui::ColorProviderKey::ColorMode::kLight;
 
   bool operator==(const ColorPaletteSeed& other) const {
     return std::tie(seed_color, scheme, color_mode) ==
@@ -117,6 +117,9 @@ class ASH_EXPORT ColorPaletteController : public SessionObserver,
                               const AccountId& account_id,
                               base::OnceClosure on_complete) = 0;
 
+  virtual SkColor GetUserWallpaperColorOrDefault(
+      SkColor default_color) const = 0;
+
   // Overrides the wallpaper color with a scheme based on the provided
   // `seed_color`. This will override whatever might be sampled from the
   // wallpaper. `on_complete` is called after the change has been applied to the
@@ -140,6 +143,8 @@ class ASH_EXPORT ColorPaletteController : public SessionObserver,
   // Iff a static color is the currently selected scheme, returns that color.
   virtual absl::optional<SkColor> GetStaticColor(
       const AccountId& account_id) const = 0;
+
+  virtual bool GetUseKMeansPref(const AccountId& account_id) const = 0;
 
   // Updates the system colors with the given account's color prefs. Used for
   // the login screen.

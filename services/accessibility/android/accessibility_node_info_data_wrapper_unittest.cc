@@ -38,10 +38,19 @@ class AccessibilityNodeInfoDataWrapperTest
     : public testing::Test,
       public AXTreeSourceAndroid::Delegate {
  public:
+  class TestSerializationDelegate
+      : public AXTreeSourceAndroid::SerializationDelegate {
+    // AXTreeSourceAndroid::SerializationDelegate overrides.
+    void PopulateBounds(const AccessibilityInfoDataWrapper& node,
+                        ui::AXNodeData& out_data) const override {}
+  };
+
   class TestAXTreeSourceAndroid : public AXTreeSourceAndroid {
    public:
     explicit TestAXTreeSourceAndroid(AXTreeSourceAndroid::Delegate* delegate)
-        : AXTreeSourceAndroid(delegate, /*window=*/nullptr) {}
+        : AXTreeSourceAndroid(delegate,
+                              std::make_unique<TestSerializationDelegate>(),
+                              /*window=*/nullptr) {}
 
     // AXTreeSourceAndroid overrides.
     bool IsRootOfNodeTree(int32_t id) const override {
@@ -239,19 +248,6 @@ TEST_F(AccessibilityNodeInfoDataWrapperTest, NameFromDescendants) {
 
   SetProperty(root, AXBooleanProperty::SCROLLABLE, false);
 
-  // Don't compute name from descendants for virtual views, e.g. WebView.
-  root.is_virtual_node = true;
-  child1.is_virtual_node = true;
-  child2.is_virtual_node = true;
-
-  data = CallSerialize(root_wrapper);
-  ASSERT_FALSE(
-      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
-
-  root.is_virtual_node = false;
-  child1.is_virtual_node = false;
-  child2.is_virtual_node = false;
-
   // If one child is clickable, do not use clickable child.
   SetProperty(child1, AXBooleanProperty::CLICKABLE, true);
 
@@ -293,6 +289,88 @@ TEST_F(AccessibilityNodeInfoDataWrapperTest, NameFromDescendants) {
   data = CallSerialize(root_wrapper);
   ASSERT_FALSE(
       data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
+}
+
+TEST_F(AccessibilityNodeInfoDataWrapperTest,
+       NameFromDescendants_ignoreWebView) {
+  AXNodeInfoData root;
+  root.id = 10;
+  AccessibilityNodeInfoDataWrapper root_wrapper(tree_source(), &root);
+  SetIdToWrapper(&root_wrapper);
+  SetProperty(root, AXBooleanProperty::IMPORTANCE, true);
+  SetProperty(root, AXIntListProperty::CHILD_NODE_IDS,
+              std::vector<int>({1, 2}));
+  SetProperty(root, AXStringProperty::CHROME_ROLE, "webView");
+
+  AXNodeInfoData child1;
+  child1.id = 1;
+  AccessibilityNodeInfoDataWrapper child1_wrapper(tree_source(), &child1);
+  SetIdToWrapper(&child1_wrapper);
+  SetProperty(child1, AXBooleanProperty::IMPORTANCE, true);
+  child1.is_virtual_node = true;
+
+  AXNodeInfoData child2;
+  child2.id = 2;
+  AccessibilityNodeInfoDataWrapper child2_wrapper(tree_source(), &child2);
+  SetIdToWrapper(&child2_wrapper);
+  SetProperty(child2, AXBooleanProperty::IMPORTANCE, true);
+  child2.is_virtual_node = true;
+
+  SetParentId(child1.id, root.id);
+  SetParentId(child2.id, root.id);
+
+  // Root node has no name, but has descendants with name.
+  // Name from contents can happen if a node is focusable.
+  SetProperty(root, AXBooleanProperty::FOCUSABLE, true);
+  SetProperty(child1, AXStringProperty::TEXT, "child1 label text");
+  SetProperty(child2, AXStringProperty::TEXT, "child2 label text");
+
+  set_full_focus_mode(true);
+
+  ui::AXNodeData data = CallSerialize(root_wrapper);
+  data = CallSerialize(root_wrapper);
+  std::string name;
+  ASSERT_FALSE(
+      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
+}
+
+TEST_F(AccessibilityNodeInfoDataWrapperTest,
+       NameFromDescendants_fromRoleDescription) {
+  AXNodeInfoData root;
+  root.id = 10;
+  AccessibilityNodeInfoDataWrapper root_wrapper(tree_source(), &root);
+  SetIdToWrapper(&root_wrapper);
+  SetProperty(root, AXBooleanProperty::IMPORTANCE, true);
+  SetProperty(root, AXIntListProperty::CHILD_NODE_IDS,
+              std::vector<int>({1, 2}));
+  SetProperty(root, AXBooleanProperty::FOCUSABLE, true);
+  SetProperty(root, AXStringProperty::ROLE_DESCRIPTION, "rootRole");
+
+  AXNodeInfoData child1;
+  child1.id = 1;
+  AccessibilityNodeInfoDataWrapper child1_wrapper(tree_source(), &child1);
+  SetIdToWrapper(&child1_wrapper);
+  SetProperty(child1, AXBooleanProperty::IMPORTANCE, true);
+  SetProperty(child1, AXStringProperty::TEXT, "child1");
+
+  AXNodeInfoData child2;
+  child2.id = 2;
+  AccessibilityNodeInfoDataWrapper child2_wrapper(tree_source(), &child2);
+  SetIdToWrapper(&child2_wrapper);
+  SetProperty(child2, AXBooleanProperty::IMPORTANCE, true);
+  SetProperty(child2, AXStringProperty::ROLE_DESCRIPTION, "child2Role");
+
+  SetParentId(child1.id, root.id);
+  SetParentId(child2.id, root.id);
+
+  set_full_focus_mode(true);
+
+  ui::AXNodeData data = CallSerialize(root_wrapper);
+  data = CallSerialize(root_wrapper);
+  std::string name;
+  ASSERT_TRUE(
+      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
+  ASSERT_EQ("child1 child2Role", name);  // rootRole is not used.
 }
 
 TEST_F(AccessibilityNodeInfoDataWrapperTest, NameFromTextProperties) {
@@ -896,5 +974,16 @@ TEST_F(AccessibilityNodeInfoDataWrapperTest, ActionLabel) {
   EXPECT_TRUE(data.GetStringAttribute(
       ax::mojom::StringAttribute::kLongClickLabel, &val));
   EXPECT_EQ("long click label", val);
+}
+
+TEST_F(AccessibilityNodeInfoDataWrapperTest, InvalidChromeRole) {
+  AXNodeInfoData root;
+  root.id = 1;
+  AccessibilityNodeInfoDataWrapper wrapper(tree_source(), &root);
+
+  SetProperty(root, AXStringProperty::CHROME_ROLE, "ThisRoleDoesNotExist");
+
+  ui::AXNodeData data = CallSerialize(wrapper);
+  // This test makes sure that an invalid role name won't make Chrome crash.
 }
 }  // namespace ax::android

@@ -19,6 +19,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
+#include "components/device_event_log/device_event_log.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
@@ -501,8 +502,6 @@ std::vector<internal::DisplayInfo> GetDisplayInfosFromSystem() {
   std::vector<internal::DisplayInfo> display_infos;
   EnumDisplayMonitors(nullptr, nullptr, EnumMonitorForDisplayInfoCallback,
                       reinterpret_cast<LPARAM>(&display_infos));
-  DCHECK_EQ(::GetSystemMetrics(SM_CMONITORS),
-            static_cast<int>(display_infos.size()));
   return display_infos;
 }
 
@@ -844,10 +843,30 @@ gfx::Rect ScreenWin::DIPToScreenRectInWindow(gfx::NativeWindow window,
 
 void ScreenWin::UpdateFromDisplayInfos(
     const std::vector<internal::DisplayInfo>& display_infos) {
+  // DisplayInfosToScreenWinDisplays builds a sorted list of non primary
+  // displays.  If the Internal Display Ids list is set, internal displays
+  // are sorted to the start.  When DisplayLayout::Validate checks the list
+  // it expects it to be sorting order to be based on display_id&0xFF and may
+  // return false.  This can lead to the DIP display bounds being incorrectly
+  // calculated if the the internal display list is set (on second+ call to
+  // this function
+  // Fix: Set the internal display list to the empty list before calling
+  // DisplayInfosToScreenWinDisplays - it is already updated based on the new
+  // display_infos at the end of this function
+  std::vector<int64_t> internal_display_ids;
+  SetInternalDisplayIds(internal_display_ids);
+
   screen_win_displays_ = DisplayInfosToScreenWinDisplays(
       display_infos, color_profile_reader_.get(), dxgi_info_.get());
-  displays_ = ScreenWinDisplaysToDisplays(screen_win_displays_);
-  std::vector<int64_t> internal_display_ids;
+  std::vector<Display> displays =
+      ScreenWinDisplaysToDisplays(screen_win_displays_);
+  if (displays != displays_) {
+    DISPLAY_LOG(EVENT) << "Displays updated, count: " << displays.size();
+    for (const auto& display : displays) {
+      DISPLAY_LOG(EVENT) << display.ToString();
+    }
+  }
+  displays_ = std::move(displays);
   for (const auto& display_info : display_infos) {
     if (IsInternalOutputTechnology(display_info.output_technology())) {
       internal_display_ids.push_back(display_info.id());

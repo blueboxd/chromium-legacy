@@ -14,8 +14,8 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/web_apps/web_app_info_image_source.h"
+#include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
-#include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -176,8 +176,9 @@ void WebAppUninstallDialogDelegateView::Uninstall() {
   // WebAppUninstallDialogDelegateView lifetime is controlled by Widget and it
   // is terminiated as soon as dialog is closed regardless of web app
   // uninstallation.
-  provider->install_finalizer().UninstallWebApp(app_id_, uninstall_source_,
-                                                dialog_->UninstallStarted());
+  provider->scheduler().UninstallWebApp(app_id_, uninstall_source_,
+                                        dialog_->UninstallStarted());
+  std::move(dialog_->TakeUninstallScheduledCallback()).Run();
   // We successfully call Web App Uninstall routine, then
   // WebAppUninstallDialogDelegateView can be terminated, but can't call the
   // callback of the dialog caller.
@@ -185,20 +186,18 @@ void WebAppUninstallDialogDelegateView::Uninstall() {
 }
 
 void WebAppUninstallDialogDelegateView::ClearWebAppSiteData() {
-  content::ClearSiteData(base::BindRepeating(
-                             [](content::BrowserContext* browser_context) {
-                               return browser_context;
-                             },
-                             base::Unretained(profile_)),
-                         url::Origin::Create(app_start_url_),
-                         /*clear_cookies=*/true,
-                         /*clear_storage=*/true, /*clear_cache=*/true,
-                         /*storage_buckets_to_remove=*/{},
-                         /*avoid_closing_connections=*/false,
-                         /*cookie_partition_key=*/absl::nullopt,
-                         /*storage_key=*/absl::nullopt,
-                         /*partitioned_state_allowed_only=*/false,
-                         base::DoNothing());
+  content::ClearSiteData(
+      base::BindRepeating(
+          [](content::BrowserContext* browser_context) {
+            return browser_context;
+          },
+          base::Unretained(profile_)),
+      url::Origin::Create(app_start_url_), content::ClearSiteDataTypeSet::All(),
+      /*storage_buckets_to_remove=*/{},
+      /*avoid_closing_connections=*/false,
+      /*cookie_partition_key=*/absl::nullopt,
+      /*storage_key=*/absl::nullopt,
+      /*partitioned_state_allowed_only=*/false, base::DoNothing());
 }
 
 void WebAppUninstallDialogDelegateView::ProcessAutoConfirmValue() {
@@ -237,11 +236,13 @@ WebAppUninstallDialogViews::~WebAppUninstallDialogViews() {
 void WebAppUninstallDialogViews::ConfirmUninstall(
     const web_app::AppId& app_id,
     webapps::WebappUninstallSource uninstall_source,
-    WebAppUninstallDialogViews::OnWebAppUninstallDialogClosed closed_callback) {
+    WebAppUninstallDialogViews::OnWebAppUninstallDialogClosed closed_callback,
+    base::OnceClosure uninstall_scheduled_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   app_id_ = app_id;
   closed_callback_ = std::move(closed_callback);
+  uninstall_scheduled_callback_ = std::move(uninstall_scheduled_callback);
 
   if (parent_ && parent_window_tracker_->WasNativeWindowDestroyed()) {
     UninstallCancelled();
@@ -313,6 +314,11 @@ WebAppUninstallDialogViews::UninstallStarted() {
       [](OnWebAppUninstallDialogClosed callback,
          webapps::UninstallResultCode code) { std::move(callback).Run(code); },
       std::move(closed_callback_));
+}
+
+base::OnceClosure WebAppUninstallDialogViews::TakeUninstallScheduledCallback() {
+  DCHECK(uninstall_scheduled_callback_);
+  return std::move(uninstall_scheduled_callback_);
 }
 
 void WebAppUninstallDialogViews::UninstallCancelled() {

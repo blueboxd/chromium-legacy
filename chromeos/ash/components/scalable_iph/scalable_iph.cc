@@ -7,17 +7,27 @@
 #include <memory>
 #include <vector>
 
+#include "base/check.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/location.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/no_destructor.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chromeos/ash/components/scalable_iph/iph_session.h"
+#include "chromeos/ash/components/scalable_iph/scalable_iph_constants.h"
 #include "chromeos/ash/components/scalable_iph/scalable_iph_delegate.h"
+#include "components/feature_engagement/public/feature_constants.h"
 
 namespace scalable_iph {
 
 namespace {
+
+using NotificationParams =
+    ::scalable_iph::ScalableIphDelegate::NotificationParams;
+using BubbleParams = ::scalable_iph::ScalableIphDelegate::BubbleParams;
 
 constexpr char kFunctionCallAfterKeyedServiceShutdown[] =
     "Function call after keyed service shutdown.";
@@ -27,7 +37,7 @@ const std::map<ScalableIph::Event, std::string>& GetEventNamesMap() {
   // events.
   static const base::NoDestructor<std::map<ScalableIph::Event, std::string>>
       event_names_map(
-          {{ScalableIph::Event::kFiveMinTick, "ScalableIphFiveMinTick"}});
+          {{ScalableIph::Event::kFiveMinTick, kEventNameFiveMinTick}});
   return *event_names_map;
 }
 
@@ -35,11 +45,101 @@ const std::map<ScalableIph::Event, std::string>& GetEventNamesMap() {
 // conditions of all events listed in this list when it receives an `Event`.
 const std::vector<const base::Feature*>& GetFeatureListConstant() {
   static const base::NoDestructor<std::vector<const base::Feature*>>
-      feature_list({});
+      feature_list({
+          // This must be sorted from One to Ten. A config expects that IPHs are
+          // evaluated in this priority.
+          &feature_engagement::kIPHScalableIphTimerBasedOneFeature,
+          &feature_engagement::kIPHScalableIphTimerBasedTwoFeature,
+          &feature_engagement::kIPHScalableIphTimerBasedThreeFeature,
+          &feature_engagement::kIPHScalableIphTimerBasedFourFeature,
+          &feature_engagement::kIPHScalableIphTimerBasedFiveFeature,
+          &feature_engagement::kIPHScalableIphTimerBasedSixFeature,
+          &feature_engagement::kIPHScalableIphTimerBasedSevenFeature,
+          &feature_engagement::kIPHScalableIphTimerBasedEightFeature,
+          &feature_engagement::kIPHScalableIphTimerBasedNineFeature,
+          &feature_engagement::kIPHScalableIphTimerBasedTenFeature,
+      });
   return *feature_list;
 }
 
 constexpr base::TimeDelta kTimeTickEventInterval = base::Minutes(5);
+
+std::string GetParamValue(const base::Feature& feature,
+                          const std::string& param_name) {
+  std::string fully_qualified_param_name =
+      base::StrCat({feature.name, "_", param_name});
+  std::string value = base::GetFieldTrialParamValueByFeature(
+      feature, fully_qualified_param_name);
+
+  // Non-fully-qualified name field must always be empty.
+  DCHECK(base::GetFieldTrialParamValueByFeature(feature, param_name).empty())
+      << param_name
+      << " is specified in a non-fully-qualified way. It should be specified "
+         "as "
+      << fully_qualified_param_name
+      << ". It's often the case in Scalable Iph to enable multiple features at "
+         "once. To avoid an unexpected fall-back behavior, non-fully-qualified "
+         "name is not accepted. Parameter names of custom fields must be "
+         "specified in a fully qualified way: [Feature Name]_[Parameter Name]";
+
+  return value;
+}
+
+UiType ParseUiType(const base::Feature& feature) {
+  std::string ui_type = GetParamValue(feature, kCustomUiTypeParamName);
+  CHECK(ui_type == kCustomUiTypeValueNotification ||
+        ui_type == kCustomUiTypeValueBubble);
+  if (ui_type == kCustomUiTypeValueNotification) {
+    return UiType::kNotification;
+  }
+  return UiType::kBubble;
+}
+
+NotificationParams ParseNotificationParams(const base::Feature& feature) {
+  // TODO(b/288167957): Implement a fallback for an invalid config, e.g. Do not
+  // show an IPH for the case instead of CHECK failure. Config is served from
+  // the server. This is not a constraint coming from client side.
+  NotificationParams param;
+  param.notification_id =
+      GetParamValue(feature, kCustomNotificationIdParamName);
+  CHECK(!param.notification_id.empty())
+      << kCustomNotificationIdParamName << " is a required field";
+  param.title = GetParamValue(feature, kCustomNotificationTitleParamName);
+  CHECK(!param.title.empty())
+      << kCustomNotificationTitleParamName << " is a required field";
+  param.text = GetParamValue(feature, kCustomNotificationBodyTextParamName);
+  CHECK(!param.text.empty())
+      << kCustomNotificationBodyTextParamName << " is a required field";
+  param.button.text =
+      GetParamValue(feature, kCustomNotificationButtonTextParamName);
+  CHECK(!param.button.text.empty())
+      << kCustomNotificationButtonTextParamName << " is a required field";
+
+  std::string image_type =
+      GetParamValue(feature, kCustomNotificationImageTypeParamName);
+  param.image_type = ScalableIphDelegate::NotificationImageType::kNoImage;
+  if (image_type == kCustomNotificationImageTypeValueWallpaper) {
+    param.image_type = ScalableIphDelegate::NotificationImageType::kWallpaper;
+  }
+  return param;
+}
+
+BubbleParams ParseBubbleParams(const base::Feature& feature) {
+  // TODO(b/288167957): Implement a fallback for an invalid config, e.g. Do not
+  // show an IPH for the case instead of CHECK failure. Config is served from
+  // the server. This is not a constraint coming from client side.
+  BubbleParams param;
+  param.bubble_id = GetParamValue(feature, kCustomBubbleIdParamName);
+  CHECK(!param.bubble_id.empty())
+      << kCustomBubbleIdParamName << " is a required field";
+  param.text = GetParamValue(feature, kCustomBubbleTextParamName);
+  CHECK(!param.text.empty())
+      << kCustomBubbleTextParamName << " is a required field";
+  param.button.text = GetParamValue(feature, kCustomBubbleButtonTextParamName);
+  CHECK(!param.button.text.empty())
+      << kCustomBubbleButtonTextParamName << " is a required field";
+  return param;
+}
 
 }  // namespace
 
@@ -49,7 +149,15 @@ ScalableIph::ScalableIph(feature_engagement::Tracker* tracker,
   CHECK(tracker_);
   CHECK(delegate_);
 
+  delegate_observation_.Observe(delegate_.get());
+
   EnsureTimerStarted();
+
+  online_ = delegate_->IsOnline();
+
+  tracker_->AddOnInitializedCallback(
+      base::BindOnce(&ScalableIph::CheckTriggerConditionsOnInitSuccess,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 ScalableIph::~ScalableIph() = default;
@@ -58,7 +166,25 @@ void ScalableIph::Shutdown() {
   timer_.Stop();
 
   tracker_ = nullptr;
+
+  delegate_observation_.Reset();
   delegate_.reset();
+}
+
+void ScalableIph::OnConnectionChanged(bool online) {
+  if (online_ == online) {
+    return;
+  }
+
+  online_ = online;
+
+  tracker_->AddOnInitializedCallback(
+      base::BindOnce(&ScalableIph::CheckTriggerConditionsOnInitSuccess,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ScalableIph::PerformActionForIphSession(ActionType action_type) {
+  PerformAction(action_type);
 }
 
 void ScalableIph::OverrideFeatureListForTesting(
@@ -77,6 +203,11 @@ void ScalableIph::OverrideTaskRunnerForTesting(
   timer_.Stop();
   timer_.SetTaskRunner(task_runner);
   EnsureTimerStarted();
+}
+
+void ScalableIph::PerformAction(ActionType action_type) {
+  // TODO(b/289108135): Implement this.
+  delegate_->PerformActionForScalableIph(action_type);
 }
 
 void ScalableIph::RecordEvent(ScalableIph::Event event) {
@@ -125,6 +256,15 @@ void ScalableIph::RecordEventInternal(ScalableIph::Event event,
   CheckTriggerConditions();
 }
 
+void ScalableIph::CheckTriggerConditionsOnInitSuccess(bool init_success) {
+  if (!init_success) {
+    DCHECK(false) << "Failed to initialize feature_engagement::Tracker.";
+    return;
+  }
+
+  CheckTriggerConditions();
+}
+
 void ScalableIph::CheckTriggerConditions() {
   // Make sure that `tracker_` is initialized. `tracker_` should not cause crash
   // even if we call `ShouldTriggerHelpUI` before initialization. But it returns
@@ -133,13 +273,81 @@ void ScalableIph::CheckTriggerConditions() {
   DCHECK(tracker_->IsInitialized());
 
   for (const base::Feature* feature : GetFeatureList()) {
-    if (tracker_->ShouldTriggerHelpUI(*feature)) {
-      // TODO(b/284053005): Add the actual implementations.
-      ScalableIphDelegate::BubbleParams params;
-      delegate_->ShowBubble(params,
-                            std::make_unique<IphSession>(*feature, tracker_));
+    // TODO(b/289267799): Check our custom extension version number.
+    if (CheckCustomConditions(*feature) &&
+        tracker_->ShouldTriggerHelpUI(*feature)) {
+      // TODO(b/284053005): Support other ui types.
+      UiType ui_type = ParseUiType(*feature);
+      switch (ui_type) {
+        case UiType::kNotification:
+          delegate_->ShowNotification(
+              ParseNotificationParams(*feature),
+              std::make_unique<IphSession>(*feature, tracker_, this));
+          break;
+        case UiType::kBubble:
+          delegate_->ShowBubble(
+              ParseBubbleParams(*feature),
+              std::make_unique<IphSession>(*feature, tracker_, this));
+          break;
+        case UiType::kHelpApp:
+          CHECK(false) << "Help App Scalable IPH is not supported";
+      }
     }
   }
+}
+
+bool ScalableIph::CheckCustomConditions(const base::Feature& feature) {
+  return CheckNetworkConnection(feature) && CheckClientAge(feature);
+}
+
+bool ScalableIph::CheckNetworkConnection(const base::Feature& feature) {
+  std::string connection_condition =
+      GetParamValue(feature, kCustomConditionNetworkConnectionParamName);
+  if (connection_condition.empty()) {
+    return true;
+  }
+
+  // If an invalid value is provided, does not satisfy a condition for a
+  // fail-safe behavior.
+  if (connection_condition != kCustomConditionNetworkConnectionOnline) {
+    DLOG(WARNING) << "Only " << kCustomConditionNetworkConnectionOnline
+                  << " is the valid value for network connection condition";
+    return false;
+  }
+
+  return online_;
+}
+
+bool ScalableIph::CheckClientAge(const base::Feature& feature) {
+  std::string client_age_condition =
+      GetParamValue(feature, kCustomConditionClientAgeInDaysParamName);
+  if (client_age_condition.empty()) {
+    return true;
+  }
+
+  // Use `DLOG`s for logging instead of `DCHECK(false)` as we want to test those
+  // fail-safe behaviors in browser_tests.
+  int max_client_age = 0;
+  if (!base::StringToInt(client_age_condition, &max_client_age)) {
+    DLOG(WARNING)
+        << "Failed to parse client age condition. It must be an integer.";
+    return false;
+  }
+
+  if (max_client_age < 0) {
+    DLOG(WARNING) << "Client age condition must be a positive integer value.";
+    return false;
+  }
+
+  int client_age = delegate_->ClientAgeInDays();
+  if (client_age < 0) {
+    DLOG(WARNING) << "Client age is a negative number. This can happen if a "
+                     "user changes time zone, etc. Condition is not satisfied "
+                     "for a fail safe behavior.";
+    return false;
+  }
+
+  return client_age <= max_client_age;
 }
 
 const std::vector<const base::Feature*>& ScalableIph::GetFeatureList() const {

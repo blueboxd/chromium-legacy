@@ -28,6 +28,7 @@ struct TutorialDescription;
 namespace ash {
 
 enum class HelpBubbleId;
+enum class SystemWebAppType;
 enum class TutorialId;
 
 // The delegate of the `UserEducationController` which facilitates communication
@@ -75,11 +76,28 @@ class ASH_EXPORT UserEducationDelegate {
                              base::OnceClosure completed_callback,
                              base::OnceClosure aborted_callback) = 0;
 
-  // Aborts the currently running tutorial for the user associated with the
-  // given `account_id`, whether it was started by this delegate or not. Any
-  // `aborted_callback` passed in at the time of start will be called.
+  // Aborts the currently running tutorial. If `tutorial_id` is given, will only
+  // abort the tutorial if it matches the id. If no `tutorial_id` is given, it
+  // aborts any running tutorial whether it was started by this controller or
+  // not. Any `aborted_callback` passed in at the time of start will be called.
   // NOTE: Currently only the primary user profile is supported.
-  virtual void AbortTutorial(const AccountId& account_id) = 0;
+  virtual void AbortTutorial(
+      const AccountId& account_id,
+      absl::optional<TutorialId> tutorial_id = absl::nullopt) = 0;
+
+  // Attempts to launch the system web app associated with the given type on
+  // the display associated with the given ID asynchronously.
+  // NOTE: Currently only the primary user profile is supported.
+  virtual void LaunchSystemWebAppAsync(const AccountId& account_id,
+                                       SystemWebAppType system_web_app_type,
+                                       int64_t display_id) = 0;
+
+  // Returns true if there is a currently running tutorial for the user
+  // associated with `account_id`. If `tutorial_id` is specified, specifically
+  // returns whether *that* tutorial is running.
+  virtual bool IsRunningTutorial(
+      const AccountId& account_id,
+      absl::optional<TutorialId> tutorial_id = absl::nullopt) const = 0;
 };
 
 }  // namespace ash

@@ -35,9 +35,6 @@ namespace {
 // roughly 4x.
 constexpr int kHibermanResumeTimeoutMs = 5 * 60 * 1000;
 
-constexpr const char kHibernateAfterTimeFile[] =
-    "/run/chrome/hibernate_after_time_hrs";
-
 HibermanClient* g_instance = nullptr;
 
 // "Real" implementation of HibermanClient talking to the hiberman's
@@ -65,29 +62,22 @@ class HibermanClientImpl : public HibermanClient {
 
   bool IsEnabled() const override {
     bool enabled = base::FeatureList::IsEnabled(features::kSuspendToDisk);
+    bool s4_enabled =
+        base::FeatureList::IsEnabled(features::kSuspendToDiskAllowS4);
     if (enabled) {
       LOG(WARNING) << "SuspendToDisk is enabled with value "
-                   << features::kHibernateAfterTimeHours.Get() << " hours";
-      // Store the hibernate time so power manager can fetch it without using
-      // feature_library.
-      RunOnBlockingThread(base::BindOnce([]() -> void {
-        if (!base::WriteFile(
-                base::FilePath(kHibernateAfterTimeFile),
-                base::ToString(features::kHibernateAfterTimeHours.Get()))) {
-          PLOG(ERROR) << "Unable to write hibernate after time value";
-        }
-      }));
+                   << features::kHibernateAfterTimeHours.Get()
+                   << " hours. Suspend Mode is: "
+                   << (s4_enabled ? "S5 (S4 allowed with aeskl)" : "S5 only");
     } else {
       LOG(WARNING) << "SuspendToDisk is NOT enabled";
-
-      // Clear the hibernate time file in case it still exists to prevent
-      // power_manager from doing anything weird.
-      RunOnBlockingThread(base::BindOnce([]() -> void {
-        base::DeleteFile(base::FilePath(kHibernateAfterTimeFile));
-      }));
     }
 
     return enabled;
+  }
+
+  bool IsHibernateToS4Enabled() const override {
+    return base::FeatureList::IsEnabled(features::kSuspendToDiskAllowS4);
   }
 
   void WaitForServiceToBeAvailable(

@@ -47,6 +47,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_tree_owner.h"
@@ -88,6 +89,27 @@ class InteriorResizeHandleTargeterAsh
     return InteriorResizeHandleTargeter::ShouldUseExtendedBounds(target);
   }
 };
+
+// Returns true if `window` has any descendant that is a system modal window or
+// is itself a system modal window.
+bool ContainsSystemModalWindow(const aura::Window* window) {
+  if (!window) {
+    return false;
+  }
+
+  if (window->GetProperty(aura::client::kModalKey) ==
+      ui::ModalType::MODAL_TYPE_SYSTEM) {
+    return true;
+  }
+
+  for (const auto* child : window->children()) {
+    if (ContainsSystemModalWindow(child)) {
+      return true;
+    }
+  }
+
+  return false;
+}
 
 // Returns the lowest common parent of the given `windows` by traversing up from
 // one of the windows' direct parent and check if the intermediate parent
@@ -184,6 +206,11 @@ void GetBlockingContainersForRoot(aura::Window* root_window,
         root_window->GetChildById(kShellWindowId_LockScreenContainersContainer);
     *system_modal_container =
         root_window->GetChildById(kShellWindowId_LockSystemModalContainer);
+  } else if (aura::Window* const help_bubble_container =
+                 root_window->GetChildById(kShellWindowId_HelpBubbleContainer);
+             ContainsSystemModalWindow(help_bubble_container)) {
+    *min_container = help_bubble_container;
+    *system_modal_container = nullptr;
   } else {
     *min_container = nullptr;
     *system_modal_container =
@@ -308,12 +335,18 @@ bool ShouldExcludeForOverview(const aura::Window* window) {
   // snap position is the position where the window was first snapped. See
   // `default_snap_position_` in SplitViewController for more details.
   auto* split_view_controller =
-      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+      SplitViewController::Get(window->GetRootWindow());
 
   auto* snap_group_controller = Shell::Get()->snap_group_controller();
+
+  // A window should be excluded from being shown in overview when we are
+  // selecting another window to complete a window layout, which can happen when
+  // in tablet split view mode or during snap group creation session in
+  // clamshell mode with `IsArm1AutomaticallyLockEnabled()` returns true.
   const bool should_exclude_in_clamshell =
       snap_group_controller &&
-      snap_group_controller->IsArm1AutomaticallyLockEnabled();
+      snap_group_controller->IsArm1AutomaticallyLockEnabled() &&
+      split_view_controller->in_snap_group_creation_session();
   if ((split_view_controller->InTabletSplitViewMode() ||
        should_exclude_in_clamshell) &&
       window == split_view_controller->GetDefaultSnappedWindow()) {

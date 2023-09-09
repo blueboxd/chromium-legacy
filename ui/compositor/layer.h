@@ -174,7 +174,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // The layer's animator is responsible for causing automatic animations when
   // properties are set. It also manages a queue of pending animations and
   // handles blending of animations. The layer takes ownership of the animator.
-  void SetAnimator(LayerAnimator* animator);
+  void SetAnimator(scoped_refptr<LayerAnimator> animator);
 
   // Returns the layer's animator. Creates a default animator of one has not
   // been set. Will not return NULL.
@@ -304,8 +304,10 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // Zoom the background by a factor of |zoom|. The effect is blended along the
   // edge across |inset| pixels.
   // NOTE: Background zoom does not currently work with software compositing,
-  // see crbug.com/1451898. Usage should be limited to ash/ which does not
-  // rely on software compositing.
+  // see crbug.com/1451898. Usage should generally be limited to ash chrome,
+  // which does not rely on software compositing. Elsewhere, background zoom can
+  // still be set, but it will have no effect when software compositing is used
+  // (e.g. as a fallback when the GPU process has crashed too many times).
   void SetBackgroundZoom(float zoom, int inset);
 
   // Applies an offset when drawing pixels for the layer background filter.

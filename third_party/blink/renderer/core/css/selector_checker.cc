@@ -207,6 +207,21 @@ static bool ShouldMatchHoverOrActive(
   return false;
 }
 
+static bool Impacts(const SelectorChecker::SelectorCheckingContext& context,
+                    SelectorChecker::Impact impact) {
+  return static_cast<int>(context.impact) & static_cast<int>(impact);
+}
+
+static bool ImpactsSubject(
+    const SelectorChecker::SelectorCheckingContext& context) {
+  return Impacts(context, SelectorChecker::Impact::kSubject);
+}
+
+static bool ImpactsNonSubject(
+    const SelectorChecker::SelectorCheckingContext& context) {
+  return Impacts(context, SelectorChecker::Impact::kNonSubject);
+}
+
 static bool IsFirstChild(const Element& element) {
   return !ElementTraversal::PreviousSibling(element);
 }
@@ -279,7 +294,10 @@ SelectorChecker::MatchStatus SelectorChecker::MatchSelector(
 
   MatchStatus match;
   if (context.selector->Relation() != CSSSelector::kSubSelector) {
-    if (NextSelectorExceedsScope(context)) {
+    // The kScopeActivation relation type does not change the current element
+    // being matched, unlike e.g. kChild which looks at the parent element.
+    if (NextSelectorExceedsScope(context) &&
+        (context.selector->Relation() != CSSSelector::kScopeActivation)) {
       return kSelectorFailsCompletely;
     }
 
@@ -376,6 +394,7 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
   }
 
   next_context.in_rightmost_compound = false;
+  next_context.impact = Impact::kNonSubject;
   next_context.is_sub_selector = false;
   next_context.previous_element = context.element;
   next_context.pseudo_id = kPseudoIdNone;
@@ -711,10 +730,18 @@ ALWAYS_INLINE bool SelectorChecker::CheckOne(
   DCHECK(context.selector);
   const CSSSelector& selector = *context.selector;
 
-  // Only :host and :host-context() should match the host:
-  // http://drafts.csswg.org/css-scoping/#host-element
+  // When considered within its own shadow trees, the shadow host is
+  // featureless. Only the :host, :host(), and :host-context() pseudo-classes
+  // are allowed to match it. [1]
+  //
+  // However, the :scope pseudo-class may also match the host if the host is the
+  // scoping root. [2]
+  //
+  // [1] https://drafts.csswg.org/css-scoping/#host-element-in-tree
+  // [2] https://github.com/w3c/csswg-drafts/issues/9025
   if (context.scope && context.scope->OwnerShadowHost() == element &&
       (!selector.IsHostPseudoClass() &&
+       selector.GetPseudoType() != CSSSelector::kPseudoTrue &&
        selector.GetPseudoType() != CSSSelector::kPseudoScope &&
        !context.treat_shadow_host_as_normal_scope &&
        selector.Match() != CSSSelector::kPseudoElement)) {
@@ -1526,11 +1553,11 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       return element.IsLink() && context.match_visited;
     case CSSSelector::kPseudoDrag:
       if (mode_ == kResolvingStyle) {
-        if (!context.in_rightmost_compound) {
+        if (ImpactsNonSubject(context)) {
           element.SetChildrenOrSiblingsAffectedByDrag();
         }
       }
-      if (context.in_rightmost_compound) {
+      if (ImpactsSubject(context)) {
         result.SetFlag(MatchFlag::kAffectedByDrag);
       }
       return element.IsDragged();
@@ -1539,7 +1566,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
         if (UNLIKELY(context.is_inside_has_pseudo_class)) {
           element.SetAncestorsOrSiblingsAffectedByFocusInHas();
         } else {
-          if (!context.in_rightmost_compound) {
+          if (ImpactsNonSubject(context)) {
             element.SetChildrenOrSiblingsAffectedByFocus();
           }
         }
@@ -1550,7 +1577,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
         if (UNLIKELY(context.is_inside_has_pseudo_class)) {
           element.SetAncestorsOrSiblingsAffectedByFocusVisibleInHas();
         } else {
-          if (!context.in_rightmost_compound) {
+          if (ImpactsNonSubject(context)) {
             element.SetChildrenOrSiblingsAffectedByFocusVisible();
           }
         }
@@ -1560,11 +1587,11 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       if (mode_ == kResolvingStyle) {
         if (UNLIKELY(context.is_inside_has_pseudo_class)) {
           element.SetAncestorsOrSiblingsAffectedByFocusInHas();
-        } else if (!context.in_rightmost_compound) {
+        } else if (ImpactsNonSubject(context)) {
           element.SetChildrenOrSiblingsAffectedByFocusWithin();
         }
       }
-      if (context.in_rightmost_compound) {
+      if (ImpactsSubject(context)) {
         result.SetFlag(MatchFlag::kAffectedByFocusWithin);
       }
       probe::ForcePseudoState(&element, CSSSelector::kPseudoFocusWithin,
@@ -1577,11 +1604,11 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       if (mode_ == kResolvingStyle) {
         if (UNLIKELY(context.is_inside_has_pseudo_class)) {
           element.SetAncestorsOrSiblingsAffectedByHoverInHas();
-        } else if (!context.in_rightmost_compound) {
+        } else if (ImpactsNonSubject(context)) {
           element.SetChildrenOrSiblingsAffectedByHover();
         }
       }
-      if (context.in_rightmost_compound) {
+      if (ImpactsSubject(context)) {
         result.SetFlag(MatchFlag::kAffectedByHover);
       }
       if (!ShouldMatchHoverOrActive(context)) {
@@ -1597,11 +1624,11 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       if (mode_ == kResolvingStyle) {
         if (UNLIKELY(context.is_inside_has_pseudo_class)) {
           element.SetAncestorsOrSiblingsAffectedByActiveInHas();
-        } else if (!context.in_rightmost_compound) {
+        } else if (ImpactsNonSubject(context)) {
           element.SetChildrenOrSiblingsAffectedByActive();
         }
       }
-      if (context.in_rightmost_compound) {
+      if (ImpactsSubject(context)) {
         result.SetFlag(MatchFlag::kAffectedByActive);
       }
       if (!ShouldMatchHoverOrActive(context)) {
@@ -1859,9 +1886,10 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
         // of a :has() anchor element, we may need to invalidate the subject
         // element of the style rule containing the :has() pseudo class because
         // the mutation can affect the state of the :has().
-        if (context.in_rightmost_compound) {
+        if (ImpactsSubject(context)) {
           element.SetAffectedBySubjectHas();
-        } else {
+        }
+        if (ImpactsNonSubject(context)) {
           element.SetAffectedByNonSubjectHas();
         }
 
@@ -2082,6 +2110,7 @@ bool SelectorChecker::CheckPseudoHost(const SelectorCheckingContext& context,
     }
 
     host_context.in_rightmost_compound = false;
+    host_context.impact = Impact::kNonSubject;
     next_element = FlatTreeTraversal::ParentElement(*next_element);
   } while (next_element);
 
@@ -2412,6 +2441,13 @@ bool SelectorChecker::MatchesWithScope(Element& element,
                                        const ContainerNode* scope) const {
   SelectorCheckingContext context(&element);
   context.scope = scope;
+  // We are matching this selector list with the intent of storing the result
+  // in a cache (StyleScopeFrame). The :scope pseudo-class which triggered
+  // this call to MatchesWithScope, is either part of the subject compound
+  // or *not* part of the subject compound, but subsequent cache hits which
+  // return this result may have the opposite subject/non-subject position.
+  // Therefore we're using Impact::kBoth, to ensure sufficient invalidation.
+  context.impact = Impact::kBoth;
   for (context.selector = &selector_list; context.selector;
        context.selector = CSSSelectorList::Next(*context.selector)) {
     SelectorChecker::MatchResult ignore_result;

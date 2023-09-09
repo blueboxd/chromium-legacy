@@ -694,8 +694,14 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
         're2::RE2 instead (crbug.com/755321)',
       ),
       True,
-      # Abseil's benchmarks never linked into chrome.
-      ['third_party/abseil-cpp/.*_benchmark.cc'],
+      [
+        # Abseil's benchmarks never linked into chrome.
+        'third_party/abseil-cpp/.*_benchmark.cc',
+
+        # TODO(b/283522287): MediaPipe is not built into chrome, but will be.
+        # This needs to be fixed first.
+        'third_party/mediapipe/src/.*',
+      ],
     ),
     BanRule(
       r'/\bstd::sto(i|l|ul|ll|ull)\b',
@@ -950,51 +956,6 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
     ),
     BanRule(
-      r'/\babsl::string_view\b',
-      (
-        'absl::string_view is a legacy spelling of std::string_view, which is ',
-        'not allowed yet (https://crbug.com/691162). Use base::StringPiece ',
-        'instead, unless std::string_view is needed to use with an external ',
-        'API.',
-      ),
-      True,
-      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
-    ),
-    BanRule(
-      r'/\bstd::(u16)?string_view\b',
-      (
-        'std::[u16]string_view is not yet allowed (crbug.com/691162). Use ',
-        'base::StringPiece[16] instead, unless std::[u16]string_view is ',
-        'needed to use an external API.',
-      ),
-      True,
-      [
-        # Needed to implement and test std::string_view interoperability.
-        r'base/strings/string_piece.*',
-        # Needed to use re2::RE2 regular expression library.
-        r'third_party/blink/common/interest_group/ad_display_size_utils.cc',
-        # Needed to use liburlpattern API.
-        r'third_party/blink/renderer/core/url_pattern/.*',
-        r'third_party/blink/renderer/modules/manifest/manifest_parser\.cc',
-        # Needed to use QUICHE API.
-        r'net/quic/.*',
-        r'net/spdy/.*',
-        r'net/test/embedded_test_server/.*',
-        r'net/third_party/quiche/.*',
-        r'services/network/web_transport\.cc',
-        # This code is in the process of being extracted into an external
-        # library, where //base will be unavailable.
-        r'net/cert/pki/.*',
-        r'net/der/.*',
-        # Needed to use APIs from the above.
-        r'net/cert/.*',
-        # Needed by Caspian, which compiles to WASM.
-        r'tools/binary_size/libsupersize/viewer/caspian/.*',
-        # Not an error in third_party folders.
-        _THIRD_PARTY_EXCEPT_BLINK
-      ],
-    ),
-    BanRule(
       r'/\babsl::(StrSplit|StrJoin|StrCat|StrAppend|Substitute|StrContains)\b',
       (
         'Abseil string utilities are banned. Use base/strings instead.',
@@ -1017,7 +978,11 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
         'Abseil\'s time library is banned. Use base/time instead.',
       ),
       True,
-      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+      [
+        # Needed to use QUICHE API.
+        r'chrome/browser/ip_protection/.*',
+        _THIRD_PARTY_EXCEPT_BLINK  # Not an error in third_party folders.
+      ],
     ),
     BanRule(
       r'/\bstd::optional\b',
@@ -1088,8 +1053,6 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
           # This code is in the process of being extracted into a third-party library.
           # See https://crbug.com/1322914
           '^net/cert/pki/path_builder_unittest\.cc',
-          # Needed to use QUICHE API
-          r'chrome/browser/ip_protection/.*',
           # TODO(https://crbug.com/1364577): Various uses that should be
           # migrated to something else.
           # Should use base::OnceCallback or base::RepeatingCallback.
@@ -1709,8 +1672,7 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
 _GENERIC_PYDEPS_FILES = [
     'android_webview/test/components/run_webview_component_smoketest.pydeps',
     'android_webview/tools/run_cts.pydeps',
-    'base/android/jni_generator/jni_generator.pydeps',
-    'base/android/jni_generator/jni_registration_generator.pydeps',
+    'base/android/jni_generator/jni_zero.pydeps',
     'build/android/apk_operations.pydeps',
     'build/android/devil_chromium.pydeps',
     'build/android/gyp/aar.pydeps',
@@ -1970,6 +1932,7 @@ def CheckNoProductionCodeUsingTestOnlyFunctionsJava(input_api, output_api):
     inclusion_re = input_api.re.compile(r'(%s)\s*\(' % name_pattern)
     # Ignore definitions. (Comments are ignored separately.)
     exclusion_re = input_api.re.compile(r'(%s)[^;]+\{' % name_pattern)
+    allowlist_re = input_api.re.compile(r'// IN-TEST$')
 
     problems = []
     sources = lambda x: input_api.FilterSourceFile(
@@ -1990,6 +1953,7 @@ def CheckNoProductionCodeUsingTestOnlyFunctionsJava(input_api, output_api):
                 continue
             if (inclusion_re.search(line) and not comment_re.search(line)
                     and not annotation_re.search(line)
+                    and not allowlist_re.search(line)
                     and not exclusion_re.search(line)):
                 problems.append('%s:%d\n    %s' %
                                 (local_path, line_number, line.strip()))
@@ -2056,16 +2020,26 @@ def CheckNoStrCatRedefines(input_api, output_api):
     return []
 
 
+def _CheckNoUNIT_TESTInSourceFiles(input_api, f):
+    problems = []
+
+    unit_test_macro = input_api.re.compile(
+        '^\s*#.*(?:ifn?def\s+UNIT_TEST|defined\s*\(?\s*UNIT_TEST\s*\)?)(?:$|\s+)')
+    for line_num, line in f.ChangedContents():
+        if unit_test_macro.match(line):
+            problems.append('    %s:%d' % (f.LocalPath(), line_num))
+
+    return problems
+
+
 def CheckNoUNIT_TESTInSourceFiles(input_api, output_api):
     """Checks to make sure no source files use UNIT_TEST."""
     problems = []
     for f in input_api.AffectedFiles():
         if (not f.LocalPath().endswith(('.cc', '.mm'))):
             continue
-
-        for line_num, line in f.ChangedContents():
-            if 'UNIT_TEST ' in line or line.endswith('UNIT_TEST'):
-                problems.append('    %s:%d' % (f.LocalPath(), line_num))
+        problems.extend(
+            _CheckNoUNIT_TESTInSourceFiles(input_api, f))
 
     if not problems:
         return []
@@ -3088,6 +3062,7 @@ def CheckSpamLogging(input_api, output_api):
             r"^chrome/chrome_elf/dll_hash/dll_hash_main\.cc$",
             r"^chrome/installer/setup/.*",
             r"^chromecast/",
+            r"^components/cast",
             r"^components/media_control/renderer/media_playback_options\.cc$",
             r"^components/policy/core/common/policy_logger\.cc$",
             r"^components/viz/service/display/"
@@ -4409,10 +4384,10 @@ class _PydepsCheckerResult:
     def GetError(self):
         """Returns an error message, or None."""
         import difflib
+        new_contents = self._process.stdout.read().splitlines()[2:]
         if self._process.wait() != 0:
             # STDERR should already be printed.
             return 'Command failed: ' + self._cmd
-        new_contents = self._process.stdout.read().splitlines()[2:]
         if self._old_contents != new_contents:
             diff = '\n'.join(
                 difflib.context_diff(self._old_contents, new_contents))
@@ -6730,6 +6705,7 @@ def CheckBatchAnnotation(input_api, output_api):
     robolectric_test = input_api.re.compile(r'[rR]obolectric')
     test_class_declaration = input_api.re.compile(r'^\s*public\sclass.*Test')
     uiautomator_test = input_api.re.compile(r'[uU]i[aA]utomator')
+    test_annotation_declaration = input_api.re.compile(r'^\s*public\s@interface\s.*{')
 
     missing_annotation_errors = []
     extra_annotation_errors = []
@@ -6744,6 +6720,7 @@ def CheckBatchAnnotation(input_api, output_api):
         batch_matched = None
         do_not_batch_matched = None
         is_instrumentation_test = True
+        test_annotation_declaration_matched = None
         for line in f.NewContents():
             if robolectric_test.search(line) or uiautomator_test.search(line):
                 # Skip Robolectric and UiAutomator tests.
@@ -6755,8 +6732,11 @@ def CheckBatchAnnotation(input_api, output_api):
                 do_not_batch_matched = do_not_batch_annotation.search(line)
             test_class_declaration_matched = test_class_declaration.search(
                 line)
-            if test_class_declaration_matched:
+            test_annotation_declaration_matched = test_annotation_declaration.search(line)
+            if test_class_declaration_matched or test_annotation_declaration_matched:
                 break
+        if test_annotation_declaration_matched:
+            continue
         if (is_instrumentation_test and
             not batch_matched and
             not do_not_batch_matched):

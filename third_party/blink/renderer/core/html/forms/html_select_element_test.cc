@@ -63,7 +63,7 @@ class HTMLSelectElementTest : public PageTestBase {
 
 void HTMLSelectElementTest::SetUp() {
   PageTestBase::SetUp();
-  GetDocument().SetMimeType("text/html");
+  GetDocument().SetMimeType(AtomicString("text/html"));
   original_delegates_flag_ =
       LayoutTheme::GetTheme().DelegatesMenuListRendering();
 }
@@ -499,13 +499,13 @@ TEST_F(HTMLSelectElementTest, CrashOnAttachingMenuList) {
   ASSERT_TRUE(select->GetLayoutObject());
 
   // Detach LayoutMenuList.
-  select->setAttribute("style", "display:none;");
+  select->setAttribute(html_names::kStyleAttr, AtomicString("display:none;"));
   GetDocument().UpdateStyleAndLayoutTree();
   ASSERT_FALSE(select->GetLayoutObject());
 
   // Attach LayoutMenuList again.  It triggered null-dereference in
   // LayoutMenuList::AdjustInnerStyle().
-  select->removeAttribute("style");
+  select->removeAttribute(html_names::kStyleAttr);
   GetDocument().UpdateStyleAndLayoutTree();
   ASSERT_TRUE(select->GetLayoutObject());
 }
@@ -518,12 +518,12 @@ TEST_F(HTMLSelectElementTest, CrashOnAttachingMenuList2) {
   select->setTextContent("foo");
 
   // Detach LayoutObject.
-  select->setAttribute("style", "display:none;");
+  select->setAttribute(html_names::kStyleAttr, AtomicString("display:none;"));
   GetDocument().UpdateStyleAndLayoutTree();
 
   // Attach LayoutObject.  It triggered a DCHECK failure in
   // MenuListSelectType::OptionToBeShown()
-  select->removeAttribute("style");
+  select->removeAttribute(html_names::kStyleAttr);
   GetDocument().UpdateStyleAndLayoutTree();
 }
 
@@ -670,9 +670,9 @@ TEST_F(HTMLSelectElementTest, ChangeRenderingCrash3) {
     <div id="green">Green</div>
   )HTML");
 
-  auto* host = GetDocument().getElementById("host");
-  auto* select = GetDocument().getElementById("select");
-  auto* green = GetDocument().getElementById("green");
+  auto* host = GetDocument().getElementById(AtomicString("host"));
+  auto* select = GetDocument().getElementById(AtomicString("select"));
+  auto* green = GetDocument().getElementById(AtomicString("green"));
 
   // Make sure the select is outside the flat tree.
   host->AttachShadowRootInternal(ShadowRootType::kOpen);

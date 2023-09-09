@@ -63,7 +63,6 @@
 #include "chrome/browser/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/certificate_provider/pin_dialog_manager.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/enterprise/util/managed_browser_utils.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/net/nss_temp_certs_cache_chromeos.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -189,23 +188,9 @@ GaiaScreenHandler::GaiaScreenMode GetGaiaScreenMode(const std::string& email) {
   CrosSettings::Get()->GetInteger(kLoginAuthenticationBehavior,
                                   &authentication_behavior);
   if (authentication_behavior ==
-      em::LoginAuthenticationBehaviorProto::SAML_INTERSTITIAL) {
-    if (email.empty())
-      return GaiaScreenHandler::GAIA_SCREEN_MODE_SAML_REDIRECT;
-
-    user_manager::KnownUser known_user(g_browser_process->local_state());
-    // If there's a populated email, we must check first that this user is using
-    // SAML in order to decide whether to show the interstitial page.
-    const user_manager::User* user =
-        user_manager::UserManager::Get()->FindUser(known_user.GetAccountId(
-            email, std::string() /* id */, AccountType::UNKNOWN));
-
-    // TODO(b/259675128): we shouldn't rely on `user->using_saml()` when
-    // deciding which IdP page to show because this flag can be outdated. Admin
-    // could have changed the IdP to GAIA since last authentication and we
-    // wouldn't know about it.
-    if (user && user->using_saml())
-      return GaiaScreenHandler::GAIA_SCREEN_MODE_SAML_REDIRECT;
+          em::LoginAuthenticationBehaviorProto::SAML_INTERSTITIAL &&
+      email.empty()) {
+    return GaiaScreenHandler::GAIA_SCREEN_MODE_SAML_REDIRECT;
   }
 
   return GaiaScreenHandler::GAIA_SCREEN_MODE_DEFAULT;
@@ -638,6 +623,9 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_ENROLLMENT_NUDGE_ENROLL_BUTTON);
   builder->Add("enrollmentNudgeUseAnotherAccountButton",
                IDS_ENROLLMENT_NUDGE_USE_ANOTHER_ACCOUNT_BUTTON);
+
+  builder->Add("signinScreenQuickStart",
+               IDS_LOGIN_QUICK_START_SETUP_SIGNIN_SCREEN_ENTRY_POINT);
 }
 
 void GaiaScreenHandler::InitAfterJavascriptAllowed() {
@@ -662,7 +650,6 @@ void GaiaScreenHandler::DeclareJSCallbacks() {
   AddCallback("samlChallengeMachineKey",
               &GaiaScreenHandler::HandleSamlChallengeMachineKey);
   AddCallback("loginWebuiReady", &GaiaScreenHandler::HandleGaiaUIReady);
-  AddCallback("identifierEntered", &GaiaScreenHandler::HandleIdentifierEntered);
   AddCallback("authExtensionLoaded",
               &GaiaScreenHandler::HandleAuthExtensionLoaded);
   AddCallback("setIsFirstSigninStep",
@@ -675,14 +662,6 @@ void GaiaScreenHandler::DeclareJSCallbacks() {
   AddCallback("passwordEntered", &GaiaScreenHandler::HandlePasswordEntered);
   AddCallback("showLoadingTimeoutError",
               &GaiaScreenHandler::HandleShowLoadingTimeoutError);
-}
-
-void GaiaScreenHandler::HandleIdentifierEntered(const std::string& user_email) {
-  if (MaybeTriggerEnrollmentNudge(user_email)) {
-    return;
-  }
-
-  CheckIfAllowlisted(user_email);
 }
 
 void GaiaScreenHandler::HandleAuthExtensionLoaded() {
@@ -851,8 +830,6 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
 
   online_login_helper_->SetUserContext(std::move(user_context));
   online_login_helper_->RequestCookiesAndCompleteAuthentication();
-
-  populated_account_id_.clear();
 
   if (test_expects_complete_login_) {
     VLOG(2) << "Complete test login for " << sanitized_email
@@ -1357,6 +1334,10 @@ void GaiaScreenHandler::SetReauthRequestToken(
   gaia_reauth_request_token_ = reauth_request_token;
 }
 
+void GaiaScreenHandler::ShowEnrollmentNudge(const std::string& email_domain) {
+  CallExternalAPI("showEnrollmentNudge", email_domain);
+}
+
 void GaiaScreenHandler::LoadAuthExtension(bool force) {
   VLOG(1) << "LoadAuthExtension, force: " << force;
   if (!initialized_) {
@@ -1384,6 +1365,7 @@ void GaiaScreenHandler::LoadAuthExtension(bool force) {
         AccountId::FromUserEmail(gaia::CanonicalizeEmail(context.email)));
   }
 
+  populated_account_id_.clear();
   LoadGaia(context);
 }
 
@@ -1441,16 +1423,14 @@ void GaiaScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
   }
   connecting_callback_.Cancel();
 
-  const bool is_online = NetworkStateInformer::IsOnline(state, reason);
-  const bool is_behind_captive_portal =
-      NetworkStateInformer::IsBehindCaptivePortal(state, reason);
   const bool is_gaia_loading_timeout =
       (reason == NetworkError::ERROR_REASON_LOADING_TIMEOUT);
   const bool is_gaia_error =
       frame_error() != net::OK && frame_error() != net::ERR_NETWORK_CHANGED;
   const bool error_screen_should_overlay = IsGaiaVisible();
   const bool from_not_online_to_online_transition =
-      is_online && last_network_state_ != NetworkStateInformer::ONLINE;
+      state == NetworkStateInformer::ONLINE &&
+      last_network_state_ != NetworkStateInformer::ONLINE;
   last_network_state_ = state;
   proxy_auth_dialog_need_reload_ =
       (reason == NetworkError::ERROR_REASON_NETWORK_STATE_CHANGED) &&
@@ -1465,7 +1445,7 @@ void GaiaScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
     return;
   }
 
-  if (is_online || !is_behind_captive_portal) {
+  if (state != NetworkStateInformer::CAPTIVE_PORTAL) {
     error_screen_->HideCaptivePortal();
   }
 
@@ -1506,7 +1486,8 @@ void GaiaScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
     reload_gaia = true;
   }
 
-  if (!is_online || is_gaia_loading_timeout || is_gaia_error) {
+  if (state != NetworkStateInformer::ONLINE || is_gaia_loading_timeout ||
+      is_gaia_error) {
     if (GetCurrentScreen() != ErrorScreenView::kScreenId) {
       error_screen_->SetParentScreen(GaiaView::kScreenId);
       error_screen_->SetHideCallback(base::BindOnce(
@@ -1607,42 +1588,6 @@ void GaiaScreenHandler::SAMLConfirmPassword(
       std::move(scraped_saml_passwords), std::move(user_context));
 }
 
-bool GaiaScreenHandler::MaybeTriggerEnrollmentNudge(
-    const std::string& user_email) {
-  const bool is_enterprise_managed = g_browser_process->platform_part()
-                                         ->browser_policy_connector_ash()
-                                         ->IsDeviceEnterpriseManaged();
-  if (is_enterprise_managed) {
-    // Device either already went through enterprise enrollment flow or goes
-    // through it right now. No need for nudging.
-    return false;
-  }
-  const bool is_first_user =
-      user_manager::UserManager::Get()->GetUsers().empty();
-  if (!is_first_user) {
-    // Enrollment nudge targets only initial OOBE flow on unowned devices.
-    // Current user is not a first user which means that device is already
-    // owned.
-    return false;
-  }
-  const std::string email_domain =
-      chrome::enterprise_util::GetDomainFromEmail(user_email);
-  if (chrome::enterprise_util::IsKnownConsumerDomain(email_domain)) {
-    // User doesn't belong to a managed domain, so enrollment nudging can't
-    // apply.
-    return false;
-  }
-
-  // TODO(b/271104781): replace this check with a policy fetch through a special
-  // DM server API when it is available.
-  if (!ash::features::IsEnrollmentNudgingForTestingEnabled()) {
-    return false;
-  }
-
-  CallExternalAPI("showEnrollmentNudge", email_domain);
-  return true;
-}
-
 void GaiaScreenHandler::CheckIfAllowlisted(const std::string& user_email) {
   // We cannot tell a user type from the identifier, so we delay checking if
   // the account should be allowed.
@@ -1658,6 +1603,14 @@ void GaiaScreenHandler::CheckIfAllowlisted(const std::string& user_email) {
           absl::nullopt)) {
     ShowAllowlistCheckFailedError();
   }
+}
+
+void GaiaScreenHandler::ToggleLoadingUI(bool is_shown) {
+  CallExternalAPI("toggleLoadingUI", is_shown);
+}
+
+void GaiaScreenHandler::SetQuickStartEnabled() {
+  CallExternalAPI("setQuickStartEnabled");
 }
 
 }  // namespace ash

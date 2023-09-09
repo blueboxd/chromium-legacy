@@ -8,11 +8,16 @@
 #include <map>
 
 #include "base/component_export.h"
+#include "base/containers/lru_cache.h"
 #include "base/functional/callback.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "net/extras/shared_dictionary/shared_dictionary_isolation_key.h"
+#include "net/extras/shared_dictionary/shared_dictionary_usage_info.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 namespace base {
 namespace android {
@@ -26,6 +31,9 @@ class BackendFileOperationsFactory;
 }  // namespace disk_cache
 
 namespace network {
+namespace cors {
+class CorsURLLoaderSharedDictionaryTest;
+}
 
 class SharedDictionaryStorage;
 
@@ -71,6 +79,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SharedDictionaryManager {
                          base::Time end_time,
                          base::RepeatingCallback<bool(const GURL&)> url_matcher,
                          base::OnceClosure callback) = 0;
+  virtual void ClearDataForIsolationKey(
+      const net::SharedDictionaryIsolationKey& isolation_key,
+      base::OnceClosure callback) = 0;
+  virtual void GetUsageInfo(
+      base::OnceCallback<void(
+          const std::vector<net::SharedDictionaryUsageInfo>&)> callback) = 0;
+  virtual void GetSharedDictionaryInfo(
+      const net::SharedDictionaryIsolationKey& isolation_key,
+      base::OnceCallback<void(
+          std::vector<network::mojom::SharedDictionaryInfoPtr>)> callback) = 0;
 
  protected:
   SharedDictionaryManager();
@@ -88,10 +106,43 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SharedDictionaryManager {
   }
 
  private:
+  friend class cors::CorsURLLoaderSharedDictionaryTest;
+
+  size_t GetStorageCountForTesting();
+
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel level);
+
+  base::LRUCache<net::SharedDictionaryIsolationKey,
+                 scoped_refptr<SharedDictionaryStorage>>
+      cached_storages_;
+  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
+  base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level_ =
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
+
   std::map<net::SharedDictionaryIsolationKey, raw_ptr<SharedDictionaryStorage>>
       storages_;
+
   base::WeakPtrFactory<SharedDictionaryManager> weak_factory_{this};
 };
+
+// Creates a network::mojom::SharedDictionaryInfo from a `DictionaryInfoType`.
+// This is a template method because SharedDictionaryManagerOnDisk and
+// SharedDictionaryManagerInMemory are using different class for
+// DictionaryInfoType.
+template <class DictionaryInfoType>
+network::mojom::SharedDictionaryInfoPtr ToMojoSharedDictionaryInfo(
+    const DictionaryInfoType& info) {
+  auto mojo_info = network::mojom::SharedDictionaryInfo::New();
+  mojo_info->match = info.match();
+  mojo_info->dictionary_url = info.url();
+  mojo_info->response_time = info.response_time();
+  mojo_info->expiration = info.expiration();
+  mojo_info->last_used_time = info.last_used_time();
+  mojo_info->size = info.size();
+  mojo_info->hash = info.hash();
+  return mojo_info;
+}
 
 }  // namespace network
 

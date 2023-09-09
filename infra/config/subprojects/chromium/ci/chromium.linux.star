@@ -24,6 +24,7 @@ ci.defaults.set(
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
+    shadow_service_account = ci.DEFAULT_SHADOW_SERVICE_ACCOUNT,
 )
 
 consoles.console_view(
@@ -158,9 +159,6 @@ ci.builder(
     ),
     execution_timeout = 6 * time.hour,
     notifies = ["Deterministic Linux", "close-on-any-step-failure"],
-    reclient_bootstrap_env = {
-        "RBE_clang_depscan_archive": "true",
-    },
     reclient_jobs = reclient.jobs.DEFAULT,
 )
 
@@ -173,9 +171,6 @@ ci.builder(
         short_name = "det",
     ),
     execution_timeout = 7 * time.hour,
-    reclient_bootstrap_env = {
-        "RBE_clang_depscan_archive": "true",
-    },
     reclient_jobs = reclient.jobs.DEFAULT,
 )
 
@@ -228,9 +223,6 @@ ci.builder(
         short_name = "bld",
     ),
     cq_mirrors_console_view = "mirrors",
-    reclient_bootstrap_env = {
-        "RBE_clang_depscan_archive": "true",
-    },
 )
 
 ci.builder(
@@ -253,9 +245,6 @@ ci.builder(
         short_name = "64",
     ),
     cq_mirrors_console_view = "mirrors",
-    reclient_bootstrap_env = {
-        "RBE_clang_depscan_archive": "true",
-    },
     reclient_jobs = reclient.jobs.DEFAULT,
 )
 
@@ -284,9 +273,6 @@ ci.builder(
         short_name = "bld-wl",
     ),
     cq_mirrors_console_view = "mirrors",
-    reclient_bootstrap_env = {
-        "RBE_clang_depscan_archive": "true",
-    },
     reclient_jobs = reclient.jobs.DEFAULT,
 )
 
@@ -483,4 +469,31 @@ ci.builder(
         short_name = "gcc",
     ),
     reclient_instance = None,
+)
+
+ci.builder(
+    name = "linux-v4l2-codec-rel",
+    branch_selector = branches.selector.MAIN,
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        build_gs_bucket = "chromium-linux-archive",
+    ),
+    sheriff_rotations = args.ignore_default(None),
+    tree_closing = False,
+    console_view_entry = consoles.console_view_entry(
+        category = "linux",
+    ),
+    cq_mirrors_console_view = "mirrors",
 )

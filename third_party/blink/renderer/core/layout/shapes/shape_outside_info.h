@@ -33,9 +33,9 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/shapes/shape.h"
 #include "third_party/blink/renderer/core/style/shape_value.h"
-#include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -96,11 +96,12 @@ class ShapeOutsideInfo final : public GarbageCollected<ShapeOutsideInfo> {
   explicit ShapeOutsideInfo(const LayoutBox& layout_box)
       : layout_box_(&layout_box), is_computing_shape_(false) {}
 
-  void SetReferenceBoxLogicalSize(LayoutSize);
+  void SetReferenceBoxLogicalSize(LogicalSize new_reference_box_logical_size,
+                                  LogicalSize margin_size);
   void SetPercentageResolutionInlineSize(LayoutUnit);
 
   LayoutUnit ShapeLogicalBottom() const {
-    return ComputedShape().ShapeMarginLogicalBoundingBox().MaxY() +
+    return ComputedShape().ShapeMarginLogicalBoundingBox().BlockEndOffset() +
            LogicalTopOffset();
   }
 
@@ -147,7 +148,7 @@ class ShapeOutsideInfo final : public GarbageCollected<ShapeOutsideInfo> {
 
   const Member<const LayoutBox> layout_box_;
   mutable std::unique_ptr<Shape> shape_;
-  LayoutSize reference_box_logical_size_;
+  LogicalSize reference_box_logical_size_;
   LayoutUnit percentage_resolution_inline_size_;
   ShapeOutsideDeltas shape_outside_deltas_;
   mutable bool is_computing_shape_;

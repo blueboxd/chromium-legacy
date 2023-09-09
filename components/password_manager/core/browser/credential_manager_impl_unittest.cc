@@ -20,19 +20,20 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
+#include "components/password_manager/core/browser/affiliation/fake_affiliation_service.h"
 #include "components/password_manager/core/browser/affiliation/mock_affiliated_match_helper.h"
-#include "components/password_manager/core/browser/affiliation/mock_affiliation_service.h"
 #include "components/password_manager/core/browser/credential_manager_pending_request_task.h"
 #include "components/password_manager/core/browser/credential_manager_utils.h"
+#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_request_utils.h"
 #include "components/password_manager/core/browser/leak_detection/mock_leak_detection_check_factory.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -241,10 +242,10 @@ class CredentialManagerImplTest : public testing::Test,
   void SetUp() override {
     store_ = new TestPasswordStore;
 
-    mock_affiliation_service_ = std::make_unique<MockAffiliationService>();
+    fake_affiliation_service_ = std::make_unique<FakeAffiliationService>();
     auto owning_mock_match_helper =
         std::make_unique<NiceMock<MockAffiliatedMatchHelper>>(
-            mock_affiliation_service_.get());
+            fake_affiliation_service_.get());
     mock_match_helper_ = owning_mock_match_helper.get();
     store_->Init(/*prefs=*/nullptr, std::move(owning_mock_match_helper));
 
@@ -323,7 +324,8 @@ class CredentialManagerImplTest : public testing::Test,
 
   void TearDown() override {
     cm_service_impl_.reset();
-
+    // Reset the match helper, since it references an object owned by the store.
+    mock_match_helper_ = nullptr;
     if (account_store_) {
       account_store_->ShutdownOnUIThread();
     }
@@ -425,8 +427,8 @@ class CredentialManagerImplTest : public testing::Test,
   scoped_refptr<TestPasswordStore> store_;
   scoped_refptr<TestPasswordStore> account_store_;
   std::unique_ptr<testing::NiceMock<MockPasswordManagerClient>> client_;
-  std::unique_ptr<MockAffiliationService> mock_affiliation_service_;
-  raw_ptr<MockAffiliatedMatchHelper, DanglingUntriaged> mock_match_helper_;
+  std::unique_ptr<FakeAffiliationService> fake_affiliation_service_;
+  raw_ptr<MockAffiliatedMatchHelper> mock_match_helper_ = nullptr;
   std::unique_ptr<CredentialManagerImpl> cm_service_impl_;
 };
 
@@ -712,6 +714,7 @@ TEST_P(CredentialManagerImplTest,
   form_.password_value = std::u16string();
   form_.skip_zero_click = true;
   form_.signon_realm = "federation://example.com/example.com";
+  form_.match_type = PasswordForm::MatchType::kExact;
   store_->AddLogin(form_);
   RunAllPendingTasks();
 
@@ -926,7 +929,7 @@ TEST_P(CredentialManagerImplTest,
 TEST_P(CredentialManagerImplTest,
        CredentialManagerOnRequestCredentialWithPSLCredential) {
   store_->AddLogin(subdomain_form_);
-  subdomain_form_.is_public_suffix_match = true;
+  subdomain_form_.match_type = PasswordForm::MatchType::kPSL;
   EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr(
                             UnorderedElementsAre(Pointee(
                                 MatchesFormExceptStore(subdomain_form_))),
@@ -943,6 +946,9 @@ TEST_P(CredentialManagerImplTest,
   store_->AddLogin(form_);
   store_->AddLogin(origin_path_form_);
   store_->AddLogin(subdomain_form_);
+
+  form_.match_type = PasswordForm::MatchType::kExact;
+  origin_path_form_.match_type = PasswordForm::MatchType::kExact;
 
   EXPECT_CALL(*client_,
               PromptUserToChooseCredentialsPtr(
@@ -996,6 +1002,10 @@ TEST_P(CredentialManagerImplTest,
   federated.signon_realm =
       "federation://" + federated.url.host() + "/google.com";
   store_->AddLogin(federated);
+
+  form_.match_type = PasswordForm::MatchType::kExact;
+  origin_path_form_.match_type = PasswordForm::MatchType::kExact;
+  federated.match_type = PasswordForm::MatchType::kExact;
 
   EXPECT_CALL(*client_,
               PromptUserToChooseCredentialsPtr(
@@ -1205,6 +1215,8 @@ TEST_P(CredentialManagerImplTest, RequestCredentialWithoutFirstRun) {
 
   store_->AddLogin(form_);
 
+  form_.match_type = PasswordForm::MatchType::kExact;
+
   std::vector<GURL> federations;
   EXPECT_CALL(*client_, NotifyUserCouldBeAutoSignedInPtr(
                             Pointee(MatchesFormExceptStore(form_))))
@@ -1219,6 +1231,8 @@ TEST_P(CredentialManagerImplTest, RequestCredentialWithFirstRunAndSkip) {
 
   form_.skip_zero_click = true;
   store_->AddLogin(form_);
+
+  form_.match_type = PasswordForm::MatchType::kExact;
 
   std::vector<GURL> federations;
   EXPECT_CALL(*client_, NotifyUserCouldBeAutoSignedInPtr(
@@ -1740,6 +1754,9 @@ TEST_P(CredentialManagerImplTest,
 
   form_.username_value = u"username_value";
   store_->AddLogin(form_);
+
+  form_.match_type = PasswordForm::MatchType::kExact;
+  federated.match_type = PasswordForm::MatchType::kExact;
 
   EXPECT_CALL(
       *client_,

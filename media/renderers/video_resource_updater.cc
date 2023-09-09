@@ -34,7 +34,6 @@
 #include "components/viz/common/quads/video_hole_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -82,8 +81,7 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
   const VideoPixelFormat format = frame.format();
   const size_t num_textures = frame.NumTextures();
 
-  if (frame.RequiresExternalSampler() &&
-      frame.shared_image_format_type() == SharedImageFormatType::kLegacy) {
+  if (frame.RequiresExternalSampler()) {
     // The texture |target| can be 0 for Fuchsia.
     DCHECK(target == 0 || target == GL_TEXTURE_EXTERNAL_OES)
         << "Unsupported target " << gl::GLEnums::GetStringEnum(target);
@@ -91,9 +89,47 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
     absl::optional<gfx::BufferFormat> buffer_format =
         VideoPixelFormatToGfxBufferFormat(format);
     DCHECK(buffer_format.has_value());
-    si_formats[0] = viz::GetSharedImageFormat(buffer_format.value());
+    if (frame.shared_image_format_type() == SharedImageFormatType::kLegacy) {
+      si_formats[0] = viz::GetSharedImageFormat(buffer_format.value());
+    } else {
+#if BUILDFLAG(IS_OZONE)
+      CHECK_EQ(frame.shared_image_format_type(),
+               SharedImageFormatType::kSharedImageFormatExternalSampler);
+
+      // The format must be one of NV12/YV12/P016LE, as these are the only
+      // formats for which VideoFrame::RequiresExternalSampler() will return
+      // true.
+      // NOTE: If this is ever expanded to include NV12A, it will be necessary
+      // to decide whether the value returned in that case should be RGB (as is
+      // done for other values here) or RGBA (as is done for the handling of
+      // NV12A with per-plane sampling below).
+      switch (format) {
+        case PIXEL_FORMAT_NV12:
+          si_formats[0] = viz::MultiPlaneFormat::kNV12;
+          break;
+        case PIXEL_FORMAT_YV12:
+          si_formats[0] = viz::MultiPlaneFormat::kYV12;
+          break;
+        case PIXEL_FORMAT_P016LE:
+          si_formats[0] = viz::MultiPlaneFormat::kP010;
+          break;
+        default:
+          NOTREACHED_NORETURN();
+      }
+      si_formats[0].SetPrefersExternalSampler();
+#else
+      // MultiplanarSharedImage with external sampling is supported only on
+      // Ozone, and VideoFrames with format type
+      // kSharedImageFormatExternalSampler should not be created on other
+      // platforms.
+      NOTREACHED_NORETURN();
+#endif
+    }
+
     return VideoFrameResourceType::RGB;
   }
+
+  CHECK(!frame.RequiresExternalSampler());
 
   switch (format) {
     case PIXEL_FORMAT_ARGB:
@@ -146,7 +182,7 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
         return VideoFrameResourceType::YUV;
       } else {
         DCHECK_EQ(num_textures, 1u);
-        si_formats[0] = viz::MultiPlaneFormat::kYV12;
+        si_formats[0] = viz::MultiPlaneFormat::kI420;
         return VideoFrameResourceType::RGB;
       }
 
@@ -701,7 +737,7 @@ void VideoResourceUpdater::AppendQuads(
           frame_resource_offset_, frame_resource_multiplier_,
           frame_bits_per_channel_,
           ProtectedVideoTypeFromMetadata(frame->metadata()),
-          frame->hdr_metadata());
+          frame->hdr_metadata().value_or(gfx::HDRMetadata()));
 
       for (viz::ResourceId resource_id : yuv_video_quad->resources) {
         resource_provider_->ValidateResource(resource_id);
@@ -735,8 +771,16 @@ void VideoResourceUpdater::AppendQuads(
       // (e.g. *_layer_overlay.cc).
       texture_quad->is_stream_video =
           frame_resource_type_ == VideoFrameResourceType::STREAM_TEXTURE;
+#if BUILDFLAG(IS_WIN)
+      // Windows uses DComp surfaces to e.g. hold MediaFoundation videos, which
+      // must be promoted to overlay to be composited correctly.
+      if (frame->metadata().dcomp_surface) {
+        texture_quad->overlay_priority_hint = viz::OverlayPriority::kRequired;
+      }
+#endif
       texture_quad->is_video_frame = true;
-      texture_quad->hdr_metadata = frame->hdr_metadata();
+      texture_quad->hdr_metadata =
+          frame->hdr_metadata().value_or(gfx::HDRMetadata());
       for (viz::ResourceId resource_id : texture_quad->resources) {
         resource_provider_->ValidateResource(resource_id);
       }
@@ -767,14 +811,19 @@ viz::SharedImageFormat VideoResourceUpdater::YuvSharedImageFormat(
   const auto& caps = context_provider_->ContextCapabilities();
   if (caps.disable_one_component_textures)
     return PaintCanvasVideoRenderer::GetRGBPixelsOutputFormat();
-  if (bits_per_channel <= 8)
+  if (bits_per_channel <= 8) {
+    DCHECK(caps.supports_luminance_shared_images || caps.texture_rg);
     return caps.texture_rg ? viz::SinglePlaneFormat::kR_8
                            : viz::SinglePlaneFormat::kLUMINANCE_8;
+  }
   if (use_r16_texture_ && caps.texture_norm16)
     return viz::SinglePlaneFormat::kR_16;
-  if (caps.texture_half_float_linear)
+  if (caps.texture_half_float_linear && caps.supports_luminance_shared_images) {
     return viz::SinglePlaneFormat::kLUMINANCE_F16;
-  return viz::SinglePlaneFormat::kLUMINANCE_8;
+  }
+  DCHECK(caps.supports_luminance_shared_images || caps.texture_rg);
+  return caps.texture_rg ? viz::SinglePlaneFormat::kR_8
+                         : viz::SinglePlaneFormat::kLUMINANCE_8;
 }
 
 bool VideoResourceUpdater::ReallocateUploadPixels(size_t needed_size) {
@@ -983,7 +1032,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
       transfer_resource.color_space = resource_color_space;
       transfer_resource.color_space_when_sampled =
           resource_color_space_when_sampled;
-      transfer_resource.hdr_metadata = video_frame->hdr_metadata();
+      transfer_resource.hdr_metadata =
+          video_frame->hdr_metadata().value_or(gfx::HDRMetadata());
       if (video_frame->metadata().read_lock_fences_enabled) {
         transfer_resource.synchronization_type = viz::TransferableResource::
             SynchronizationType::kGpuCommandsCompleted;
@@ -1002,7 +1052,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
                 : VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601;
 
         transfer_resource.ycbcr_info = gpu::VulkanYCbCrInfo(
-            ToVkFormat(transfer_resource.format.resource_format()),
+            viz::SharedImageFormatRestrictedSinglePlaneUtils::ToVkFormat(
+                transfer_resource.format),
             /*external_format=*/0, ycbcr_conversion,
             VK_SAMPLER_YCBCR_RANGE_ITU_NARROW, VK_CHROMA_LOCATION_COSITED_EVEN,
             VK_CHROMA_LOCATION_COSITED_EVEN,
@@ -1067,7 +1118,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     }
 
     // Some YUV resources have different sized planes. If we lack the proper
-    // ResourceFormat just convert to RGB. We could do something better like
+    // SharedImageFormat just convert to RGB. We could do something better like
     // unpacking to I420/I016, but texture_rg and r16 support should be pretty
     // universal and we expect these frames to be rare.
     if (input_frame_format == PIXEL_FORMAT_NV12) {
@@ -1239,11 +1290,14 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
           HardwarePlaneResource::ScopedTexture scope(gl, hardware_resource);
           gl->BindTexture(hardware_resource->texture_target(),
                           scope.texture_id());
-          gl->TexSubImage2D(hardware_resource->texture_target(), 0, 0, 0,
-                            plane_size.width(), plane_size.height(),
-                            GLDataFormat(output_si_format.resource_format()),
-                            GLDataType(output_si_format.resource_format()),
-                            source_pixels);
+          gl->TexSubImage2D(
+              hardware_resource->texture_target(), 0, 0, 0, plane_size.width(),
+              plane_size.height(),
+              viz::SharedImageFormatRestrictedSinglePlaneUtils::ToGLDataFormat(
+                  output_si_format),
+              viz::SharedImageFormatRestrictedSinglePlaneUtils::ToGLDataType(
+                  output_si_format),
+              source_pixels);
         }
       }
       plane_resource->SetUniqueId(video_frame->unique_id(), 0);
@@ -1405,11 +1459,14 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
       gl->PixelStorei(GL_UNPACK_ROW_LENGTH, unpack_row_length);
       gl->PixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment);
-      gl->TexSubImage2D(plane_resource->texture_target(), 0, 0, 0,
-                        resource_size_pixels.width(),
-                        resource_size_pixels.height(),
-                        GLDataFormat(plane_si_format.resource_format()),
-                        GLDataType(plane_si_format.resource_format()), pixels);
+      gl->TexSubImage2D(
+          plane_resource->texture_target(), 0, 0, 0,
+          resource_size_pixels.width(), resource_size_pixels.height(),
+          viz::SharedImageFormatRestrictedSinglePlaneUtils::ToGLDataFormat(
+              plane_si_format),
+          viz::SharedImageFormatRestrictedSinglePlaneUtils::ToGLDataType(
+              plane_si_format),
+          pixels);
       gl->PixelStorei(GL_UNPACK_ROW_LENGTH, kDefaultUnpackRowLength);
       gl->PixelStorei(GL_UNPACK_ALIGNMENT, kDefaultUnpackAlignment);
     }

@@ -179,9 +179,7 @@
 #include "url/origin.h"
 
 #if BUILDFLAG(IS_ANDROID)
-#include "content/browser/android/date_time_chooser_android.h"
 #include "content/browser/android/text_suggestion_host_android.h"
-#include "content/browser/environment_integrity/environment_integrity_service_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "services/device/public/mojom/nfc.mojom.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom.h"
@@ -195,8 +193,17 @@
 #include "third_party/blink/public/mojom/serial/serial.mojom.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+#include "content/browser/date_time_chooser/date_time_chooser.h"
+#endif
+
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
 #include "media/mojo/mojom/remoting.mojom-forward.h"
+#endif
+
+#if BUILDFLAG(ENABLE_VR)
+#include "content/browser/xr/webxr_internals/mojom/webxr_internals.mojom.h"
+#include "content/browser/xr/webxr_internals/webxr_internals_ui.h"
 #endif
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING) && BUILDFLAG(IS_CHROMEOS)
@@ -329,15 +336,17 @@ void BindSharedWorkerConnector(
   SharedWorkerConnectorImpl::Create(host->GetGlobalId(), std::move(receiver));
 }
 
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 void BindDateTimeChooserForFrame(
     RenderFrameHost* host,
     mojo::PendingReceiver<blink::mojom::DateTimeChooser> receiver) {
-  auto* date_time_chooser = DateTimeChooserAndroid::FromWebContents(
+  auto* date_time_chooser = DateTimeChooser::GetDateTimeChooser(
       WebContents::FromRenderFrameHost(host));
   date_time_chooser->OnDateTimeChooserReceiver(std::move(receiver));
 }
+#endif
 
+#if BUILDFLAG(IS_ANDROID)
 void BindTextSuggestionHostForFrame(
     RenderFrameHost* host,
     mojo::PendingReceiver<blink::mojom::TextSuggestionHost> receiver) {
@@ -1135,6 +1144,10 @@ void PopulateBinderMapWithContext(
     map->Add<blink::mojom::BrowsingTopicsDocumentService>(
         base::BindRepeating(&BrowsingTopicsDocumentHost::CreateMojoService));
   }
+  if (base::FeatureList::IsEnabled(blink::features::kWebEnvironmentIntegrity)) {
+    map->Add<blink::mojom::EnvironmentIntegrityService>(base::BindRepeating(
+        &EmptyBinderForFrame<blink::mojom::EnvironmentIntegrityService>));
+  }
 #if !BUILDFLAG(IS_ANDROID)
   map->Add<blink::mojom::DirectSocketsService>(
       base::BindRepeating(&DirectSocketsServiceImpl::CreateForFrame));
@@ -1194,22 +1207,20 @@ void PopulateBinderMapWithContext(
                                          ProcessInternalsUI>(map);
   RegisterWebUIControllerInterfaceBinder<storage::mojom::QuotaInternalsHandler,
                                          QuotaInternalsUI>(map);
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(ENABLE_VR)
+  RegisterWebUIControllerInterfaceBinder<webxr::mojom::WebXrInternalsHandler,
+                                         WebXrInternalsUI>(map);
+#endif
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   map->Add<blink::mojom::DateTimeChooser>(
       base::BindRepeating(&BindDateTimeChooserForFrame));
+#endif
+#if BUILDFLAG(IS_ANDROID)
   map->Add<blink::mojom::TextSuggestionHost>(
       base::BindRepeating(&BindTextSuggestionHostForFrame));
-  if (base::FeatureList::IsEnabled(features::kWebEnvironmentIntegrity)) {
-    map->Add<blink::mojom::EnvironmentIntegrityService>(
-        base::BindRepeating(&EnvironmentIntegrityServiceImpl::Create));
-  }
 #else
   map->Add<blink::mojom::TextSuggestionHost>(base::BindRepeating(
       &EmptyBinderForFrame<blink::mojom::TextSuggestionHost>));
-  if (base::FeatureList::IsEnabled(features::kWebEnvironmentIntegrity)) {
-    map->Add<blink::mojom::EnvironmentIntegrityService>(base::BindRepeating(
-        &EmptyBinderForFrame<blink::mojom::EnvironmentIntegrityService>));
-  }
 #endif  // BUILDFLAG(IS_ANDROID)
 
   map->Add<blink::mojom::ClipboardHost>(
@@ -1284,6 +1295,11 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
       base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
 
+#if !BUILDFLAG(IS_ANDROID)
+  map->Add<blink::mojom::DirectSocketsService>(
+      base::BindRepeating(&DedicatedWorkerHost::CreateDirectSocketsService,
+                          base::Unretained(host)));
+#endif
   map->Add<blink::mojom::WebUsbService>(base::BindRepeating(
       &DedicatedWorkerHost::CreateWebUsbService, base::Unretained(host)));
   map->Add<blink::mojom::WebSocketConnector>(base::BindRepeating(

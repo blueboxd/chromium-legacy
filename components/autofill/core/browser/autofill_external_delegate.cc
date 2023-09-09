@@ -29,6 +29,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
@@ -48,6 +49,45 @@ namespace {
 bool IsAutofillWarningEntry(PopupItemId popup_item_id) {
   return popup_item_id == PopupItemId::kInsecureContextPaymentDisabledMessage ||
          popup_item_id == PopupItemId::kMixedFormMessage;
+}
+
+// The `AutofillTriggerSource` indicates what caused an Autofill fill or preview
+// to happen. This can happen by selecting a suggestion, but also through a
+// dynamic change (refills) or through a surface that doesn't use suggestions,
+// like TTF. This function is concerned with the first case: A suggestion that
+// was generated through the `suggestion_trigger_source` got selected. This
+// function returns the appropriate `AutofillTriggerSource`.
+// Note that an `AutofillSuggestionTriggerSource` is different from a
+// `AutofillTriggerSource`. The former describes what caused the suggestion
+// itself to appear. For example, depending on the completeness of the form,
+// clicking into a field (the suggestion trigger source) can cause
+// the keyboard accessory or TTF/fast checkout to appear (the trigger source).
+AutofillTriggerSource TriggerSourceFromSuggestionTriggerSource(
+    AutofillSuggestionTriggerSource suggestion_trigger_source) {
+  switch (suggestion_trigger_source) {
+    case AutofillSuggestionTriggerSource::kUnspecified:
+    case AutofillSuggestionTriggerSource::kFormControlElementClicked:
+    case AutofillSuggestionTriggerSource::kTextFieldDidChange:
+    case AutofillSuggestionTriggerSource::kTextFieldDidReceiveKeyDown:
+    case AutofillSuggestionTriggerSource::kOpenTextDataListChooser:
+    case AutofillSuggestionTriggerSource::kShowCardsFromAccount:
+    case AutofillSuggestionTriggerSource::kPasswordManager:
+    case AutofillSuggestionTriggerSource::kAndroidWebView:
+    case AutofillSuggestionTriggerSource::kiOS:
+      // On Android, no popup exists. Instead, the keyboard accessory is used.
+#if BUILDFLAG(IS_ANDROID)
+      return AutofillTriggerSource::kKeyboardAccessory;
+#else
+      return AutofillTriggerSource::kPopup;
+#endif  // BUILDFLAG(IS_ANDROID)
+    case AutofillSuggestionTriggerSource::
+        kManualFallbackForAutocompleteUnrecognized:
+      // Manual fallbacks are both a suggestion trigger source (e.g. through the
+      // context menu) and a trigger source (by selecting a suggestion generated
+      // through the context menu).
+      return AutofillTriggerSource::kManualFallbackForAutocompleteUnrecognized;
+  }
+  NOTREACHED_NORETURN();
 }
 
 }  // namespace
@@ -137,11 +177,9 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
 
   // Send to display.
   if (query_field_.is_focusable && driver_->CanShowAutofillUi()) {
-    AutofillClient::PopupOpenArgs open_args(
-        element_bounds_, query_field_.text_direction, suggestions,
-        AutoselectFirstSuggestion(
-            trigger_source ==
-            AutofillSuggestionTriggerSource::kTextFieldDidReceiveKeyDown));
+    AutofillClient::PopupOpenArgs open_args(element_bounds_,
+                                            query_field_.text_direction,
+                                            suggestions, trigger_source);
     manager_->client()->ShowAutofillPopup(open_args, GetWeakPtr());
   }
 }
@@ -189,6 +227,7 @@ void AutofillExternalDelegate::OnPopupShown() {
 
 void AutofillExternalDelegate::OnPopupHidden() {
   driver_->PopupHidden();
+  manager_->DidHidePopup();
 }
 
 void AutofillExternalDelegate::OnPopupSuppressed() {
@@ -196,41 +235,68 @@ void AutofillExternalDelegate::OnPopupSuppressed() {
 }
 
 void AutofillExternalDelegate::DidSelectSuggestion(
-    const Suggestion& suggestion) {
+    const Suggestion& suggestion,
+    AutofillSuggestionTriggerSource trigger_source) {
   ClearPreviewedForm();
 
   const Suggestion::BackendId backend_id =
       suggestion.GetPayload<Suggestion::BackendId>();
 
-  // Only preview the data if it is a profile or a virtual card.
-  if (suggestion.popup_item_id == PopupItemId::kAddressEntry ||
-      suggestion.popup_item_id == PopupItemId::kCreditCardEntry) {
-    FillAutofillFormData(suggestion.popup_item_id, backend_id, true,
-                         AutofillTriggerSource::kKeyboardAccessory);
-  } else if (suggestion.popup_item_id == PopupItemId::kAutocompleteEntry ||
-             suggestion.popup_item_id == PopupItemId::kIbanEntry ||
-             suggestion.popup_item_id == PopupItemId::kMerchantPromoCodeEntry) {
-    driver_->RendererShouldPreviewFieldWithValue(query_field_.global_id(),
-                                                 suggestion.main_text.value);
-  } else if (suggestion.popup_item_id == PopupItemId::kVirtualCreditCardEntry) {
-    manager_->FillOrPreviewVirtualCardInformation(
-        mojom::RendererFormDataAction::kPreview, backend_id.value(),
-        query_form_, query_field_, AutofillTriggerSource::kKeyboardAccessory);
+  switch (suggestion.popup_item_id) {
+    case PopupItemId::kClearForm:
+      if (base::FeatureList::IsEnabled(features::kAutofillUndo)) {
+        manager_->UndoAutofill(mojom::RendererFormDataAction::kPreview,
+                               query_form_, query_field_);
+      }
+      break;
+    case PopupItemId::kAddressEntry:
+    case PopupItemId::kCreditCardEntry:
+    case PopupItemId::kFillEverythingFromAddressProfile:
+      FillAutofillFormData(
+          suggestion.popup_item_id, backend_id, true,
+          TriggerSourceFromSuggestionTriggerSource(trigger_source));
+      break;
+    case PopupItemId::kAutocompleteEntry:
+    case PopupItemId::kIbanEntry:
+    case PopupItemId::kMerchantPromoCodeEntry:
+      driver_->RendererShouldPreviewFieldWithValue(query_field_.global_id(),
+                                                   suggestion.main_text.value);
+      break;
+    case PopupItemId::kVirtualCreditCardEntry:
+      manager_->FillOrPreviewVirtualCardInformation(
+          mojom::RendererFormDataAction::kPreview, backend_id.value(),
+          query_form_, query_field_, AutofillTriggerSource::kKeyboardAccessory);
+      break;
+    default:
+      break;
   }
 }
 
-void AutofillExternalDelegate::DidAcceptSuggestion(const Suggestion& suggestion,
-                                                   int position) {
+void AutofillExternalDelegate::DidAcceptSuggestion(
+    const Suggestion& suggestion,
+    int position,
+    AutofillSuggestionTriggerSource trigger_source) {
   switch (suggestion.popup_item_id) {
     case PopupItemId::kAutofillOptions:
       // User selected 'Autofill Options'.
       autofill_metrics::LogAutofillSelectedManageEntry(popup_type_);
       manager_->ShowAutofillSettings(popup_type_);
       break;
+    case PopupItemId::kDeleteAddressProfile:
+      // TODO(crbug.com/1459990): call the manager to display the delete address
+      // profile dialog.
+      break;
     case PopupItemId::kClearForm:
-      // User selected 'Clear form'.
-      AutofillMetrics::LogAutofillFormCleared();
-      driver_->RendererShouldClearFilledSection();
+      // This serves as a clear form or undo autofill suggestion, depending on
+      // the state of the feature `kAutofillUndo`.
+      if (base::FeatureList::IsEnabled(features::kAutofillUndo)) {
+        manager_->UndoAutofill(mojom::RendererFormDataAction::kFill,
+                               query_form_, query_field_);
+      } else {
+        // User selected 'Clear form'.
+        AutofillMetrics::LogAutofillFormCleared();
+        driver_->RendererShouldClearFilledSection();
+      }
       break;
     case PopupItemId::kPasswordEntry:
     case PopupItemId::kUsernameEntry:
@@ -296,13 +362,16 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const Suggestion& suggestion,
       break;
     default:
       if (suggestion.popup_item_id == PopupItemId::kAddressEntry ||
-          suggestion.popup_item_id == PopupItemId::kCreditCardEntry) {
+          suggestion.popup_item_id == PopupItemId::kCreditCardEntry ||
+          suggestion.popup_item_id ==
+              PopupItemId::kFillEverythingFromAddressProfile) {
         autofill_metrics::LogAutofillSuggestionAcceptedIndex(
             position, popup_type_, manager_->client()->IsOffTheRecord());
       }
-      FillAutofillFormData(suggestion.popup_item_id,
-                           suggestion.GetPayload<Suggestion::BackendId>(),
-                           false, AutofillTriggerSource::kPopup);
+      FillAutofillFormData(
+          suggestion.popup_item_id,
+          suggestion.GetPayload<Suggestion::BackendId>(), false,
+          TriggerSourceFromSuggestionTriggerSource(trigger_source));
       break;
   }
 
@@ -439,7 +508,9 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
   // form.  Append the 'Clear form' menu item.
   if (query_field_.is_autofilled) {
     std::u16string value =
-        l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM);
+        base::FeatureList::IsEnabled(features::kAutofillUndo)
+            ? l10n_util::GetStringUTF16(IDS_AUTOFILL_UNDO_MENU_ITEM)
+            : l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM);
 #if BUILDFLAG(IS_ANDROID)
     if (IsKeyboardAccessoryEnabled())
       value = base::i18n::ToUpper(value);
@@ -447,7 +518,9 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
 
     suggestions->emplace_back(value);
     suggestions->back().popup_item_id = PopupItemId::kClearForm;
-    suggestions->back().icon = "clearIcon";
+    suggestions->back().icon =
+        base::FeatureList::IsEnabled(features::kAutofillUndo) ? "undoIcon"
+                                                              : "clearIcon";
     suggestions->back().acceptance_a11y_announcement =
         l10n_util::GetStringUTF16(IDS_AUTOFILL_A11Y_ANNOUNCE_CLEARED_FORM);
   }

@@ -61,14 +61,13 @@ class SessionRestorationBrowserAgent
   // restored: all, regular or pinned. If there is only one tab showing the
   // NTP, then this tab should be clobbered, otherwise, the tabs from the
   // restored sessions should be added at the end of the current list of tabs.
-  // Returns YES if the single NTP tab is closed.
-  bool RestoreSessionWindow(SessionWindowIOS* window,
+  void RestoreSessionWindow(SessionWindowIOS* window,
                             SessionRestorationScope scope);
 
   // Restores the session whose ID matches the session ID set for this agent.
   // Restoration is done via RestoreSessionWindow(), above, and the return
   // value of that method is returned.
-  bool RestoreSession();
+  void RestoreSession();
 
   // Persists the current list of tabs to disk, either immediately or deferred
   // based on the value of `immediately`.
@@ -108,12 +107,12 @@ class SessionRestorationBrowserAgent
                            web::WebState* new_web_state,
                            int active_index,
                            ActiveWebStateChangeReason reason) override;
-  void WebStateListChanged(WebStateList* web_state_list,
-                           const WebStateListChange& change,
-                           const WebStateSelection& selection) override;
-  void WillDetachWebStateAt(WebStateList* web_state_list,
-                            web::WebState* web_state,
-                            int index) override;
+  void WebStateListWillChange(WebStateList* web_state_list,
+                              const WebStateListChangeDetach& detach_change,
+                              const WebStateListStatus& status) override;
+  void WebStateListDidChange(WebStateList* web_state_list,
+                             const WebStateListChange& change,
+                             const WebStateListStatus& status) override;
   void WillBeginBatchOperation(WebStateList* web_state_list) override;
   void BatchOperationEnded(WebStateList* web_state_list) override;
 
@@ -146,7 +145,6 @@ class SessionRestorationBrowserAgent
   // Used to delay saves requested while a batch operation was in progress.
   // The save will be scheduled with a delay unless any of the SaveSession()
   // call was asking for no delay.
-  bool batch_in_progress_ = false;
   bool save_after_batch_ = false;
   bool save_immediately_ = false;
 

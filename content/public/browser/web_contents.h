@@ -30,6 +30,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/page.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/preloading.h"
 #include "content/public/browser/prerender_handle.h"
 #include "content/public/browser/prerender_trigger_type.h"
 #include "content/public/browser/save_page_type.h"
@@ -47,7 +48,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
-#include "ui/color/color_provider_manager.h"
+#include "ui/color/color_provider_key.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -527,7 +528,7 @@ class WebContents : public PageNavigator,
   virtual const ui::ColorProvider& GetColorProvider() const = 0;
 
   // Gets the color mode for the ColorProvider associated with this WebContents.
-  virtual ui::ColorProviderManager::ColorMode GetColorMode() const = 0;
+  virtual ui::ColorProviderKey::ColorMode GetColorMode() const = 0;
 
   // Returns the committed WebUI if one exists.
   virtual WebUI* GetWebUI() = 0;
@@ -1406,6 +1407,7 @@ class WebContents : public PageNavigator,
       PrerenderTriggerType trigger_type,
       const std::string& embedder_histogram_suffix,
       ui::PageTransition page_transition,
+      PreloadingHoldbackStatus holdback_status_override,
       PreloadingAttempt* preloading_attempt,
       absl::optional<base::RepeatingCallback<bool(const GURL&)>>
           url_match_predicate = absl::nullopt) = 0;

@@ -98,6 +98,8 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
       base::Seconds(2);
   static constexpr char kInputGainChangedSourceHistogramName[] =
       "Cras.InputGainChangedSource";
+  static constexpr char kInputGainChangedHistogramName[] =
+      "Cras.InputGainChanged";
   static constexpr char kInputGainMuteSourceHistogramName[] =
       "Cras.InputGainMutedSource";
   static constexpr char kOutputVolumeChangedSourceHistogramName[] =
@@ -931,6 +933,9 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   // Whether the audio device was selected by user, to track user overrides
   bool input_device_selected_by_user_ = false;
   bool output_device_selected_by_user_ = false;
+
+  // Whether the speak-on-mute detection is enabled in CRAS.
+  bool speak_on_mute_detection_on_ = false;
 
   // Task runner of browser main thread. All member variables should be accessed
   // on this thread.

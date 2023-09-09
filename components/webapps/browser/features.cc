@@ -66,6 +66,14 @@ BASE_FEATURE(kWebApkInstallFailureNotification,
 BASE_FEATURE(kWebApkInstallFailureRetry,
              "WebApkInstallFailureRetry",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, the web app install prompt will be block on the site if
+// user ignored the prompt recently. The number of days the prompt will be
+// blocked is controlled by feature |kAppBannerTriggering| with params
+// |days_after_ignore|.
+BASE_FEATURE(kBlockInstallPromptIfIgnoreRecently,
+             "BlockInstallPromptIfIgnoreRecently",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_ANDROID)
 
 // When the user clicks "Create Shortcut" in the dot menu, the current page is
@@ -98,7 +106,7 @@ extern const base::FeatureParam<int> kBannerParamsDaysAfterBannerIgnoredKey{
     &kAppBannerTriggering, "days_after_ignore", kMinimumDaysBetweenBannerShows};
 
 BASE_FEATURE(kWebAppsEnableMLModelForPromotion,
-             "kWebAppsEnableMLModelForPromotion",
+             "WebAppsEnableMLModelForPromotion",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

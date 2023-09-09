@@ -406,8 +406,8 @@ TEST_P(WaylandWindowTest, ApplyPendingStatesAndCommit) {
   });
 
   std::vector<gfx::Rect> region_px = {gfx::Rect{500, 300}};
-  window_->root_surface()->set_opaque_region(&region_px);
-  window_->root_surface()->set_input_region(region_px.data());
+  window_->root_surface()->set_opaque_region(region_px);
+  window_->root_surface()->set_input_region(region_px[0]);
   window_->root_surface()->set_surface_buffer_scale(2);
 
   wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
@@ -3509,7 +3509,8 @@ TEST_P(WaylandWindowTest, ReattachesBackgroundOnShow) {
                                   /*supports_viewporter=*/true,
                                   /*supports_acquire_fence=*/false,
                                   /*supports_overlays=*/true,
-                                  kAugmentedSurfaceNotSupportedVersion);
+                                  kAugmentedSurfaceNotSupportedVersion,
+                                  /*supports_single_pixel_buffer=*/true);
 
   // Setup wl_buffers.
   constexpr uint32_t buffer_id1 = 1;
@@ -3640,10 +3641,8 @@ TEST_P(WaylandWindowTest, MAYBE_SetsPropertiesOnShow) {
   absl::optional<gfx::Size> min_size(gfx::Size(1, 1));
   absl::optional<gfx::Size> max_size(gfx::Size(100, 100));
   EXPECT_CALL(delegate, GetMinimumSizeForWindow())
-      .Times(2)
       .WillRepeatedly(Return(min_size));
   EXPECT_CALL(delegate, GetMaximumSizeForWindow())
-      .Times(2)
       .WillRepeatedly(Return(max_size));
 
   PostToServerAndWait([surface_id, min_size, max_size,
@@ -4120,7 +4119,8 @@ class WaylandSubsurfaceTest : public WaylandWindowTest {
         });
     wayland_subsurface->ConfigureAndShowSurface(
         subsurface_bounds, gfx::RectF(0, 0, 640, 480) /*parent_bounds_px*/,
-        absl::nullopt /*clip_rect_px*/, 1.f /*buffer_scale*/, nullptr, nullptr);
+        absl::nullopt /*clip_rect_px*/, gfx::OVERLAY_TRANSFORM_NONE,
+        1.f /*buffer_scale*/, nullptr, nullptr);
     connection_->Flush();
 
     PostToServerAndWait(
@@ -4206,9 +4206,9 @@ TEST_P(WaylandSubsurfaceTest, OneWaylandSubsurfaceNonInteger) {
 TEST_P(WaylandSubsurfaceTest, NoDuplicateSubsurfaceRequests) {
   auto subsurfaces = RequestWaylandSubsurface(3);
   for (auto* subsurface : subsurfaces) {
-    subsurface->ConfigureAndShowSurface(gfx::RectF(1.f, 2.f, 10.f, 20.f),
-                                        gfx::RectF(0.f, 0.f, 800.f, 600.f),
-                                        absl::nullopt, 1.f, nullptr, nullptr);
+    subsurface->ConfigureAndShowSurface(
+        gfx::RectF(1.f, 2.f, 10.f, 20.f), gfx::RectF(0.f, 0.f, 800.f, 600.f),
+        absl::nullopt, gfx::OVERLAY_TRANSFORM_NONE, 1.f, nullptr, nullptr);
   }
   connection_->Flush();
 
@@ -4237,13 +4237,13 @@ TEST_P(WaylandSubsurfaceTest, NoDuplicateSubsurfaceRequests) {
   // Stack subsurfaces[0] to be from bottom to top, and change its position.
   subsurfaces[0]->ConfigureAndShowSurface(
       gfx::RectF(0.f, 0.f, 10.f, 20.f), gfx::RectF(0.f, 0.f, 800.f, 600.f),
-      absl::nullopt, 1.f, subsurfaces[2], nullptr);
+      absl::nullopt, gfx::OVERLAY_TRANSFORM_NONE, 1.f, subsurfaces[2], nullptr);
   subsurfaces[1]->ConfigureAndShowSurface(
       gfx::RectF(1.f, 2.f, 10.f, 20.f), gfx::RectF(0.f, 0.f, 800.f, 600.f),
-      absl::nullopt, 1.f, nullptr, subsurfaces[2]);
+      absl::nullopt, gfx::OVERLAY_TRANSFORM_NONE, 1.f, nullptr, subsurfaces[2]);
   subsurfaces[2]->ConfigureAndShowSurface(
       gfx::RectF(1.f, 2.f, 10.f, 20.f), gfx::RectF(0.f, 0.f, 800.f, 600.f),
-      absl::nullopt, 1.f, nullptr, subsurfaces[0]);
+      absl::nullopt, gfx::OVERLAY_TRANSFORM_NONE, 1.f, nullptr, subsurfaces[0]);
   connection_->Flush();
 
   VerifyAndClearExpectations();
@@ -4258,7 +4258,8 @@ TEST_P(WaylandWindowTest, NoDuplicateViewporterRequests) {
                                   /*supports_viewporter=*/true,
                                   /*supports_acquire_fence=*/false,
                                   /*supports_overlays=*/true,
-                                  kAugmentedSurfaceNotSupportedVersion);
+                                  kAugmentedSurfaceNotSupportedVersion,
+                                  /*supports_single_pixel_buffer=*/true);
 
   // Setup wl_buffers.
   constexpr uint32_t buffer_id = 1;
@@ -4784,6 +4785,78 @@ TEST_P(WaylandWindowTest, SetShape) {
     EXPECT_FALSE(zaura_toplevel->shape().has_value());
   });
 }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// Asserts the server receives the correct height when `SetTopInset()` is called
+// for toplevel windows.
+TEST_P(WaylandWindowTest, SetTopInset) {
+  // `SetTopInset()` is only supported with zaura_shell.
+  if (!IsAuraShellEnabled()) {
+    GTEST_SKIP();
+  }
+
+  MockWaylandPlatformWindowDelegate delegate;
+  std::unique_ptr<WaylandWindow> toplevel_window =
+      CreateWaylandWindowWithParams(PlatformWindowType::kWindow,
+                                    gfx::Rect(300, 300), &delegate);
+
+  toplevel_window->AsWaylandToplevelWindow()->SetTopInset(32);
+
+  // Validate the server has received the appropriate top inset for the
+  // toplevel.
+  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
+    auto* surface = server->GetObject<wl::MockSurface>(
+        toplevel_window->root_surface()->get_surface_id());
+    ASSERT_TRUE(surface);
+
+    wl::TestZAuraToplevel* zaura_toplevel =
+        surface->xdg_surface()->xdg_toplevel()->zaura_toplevel();
+    ASSERT_TRUE(zaura_toplevel);
+    EXPECT_EQ(32, zaura_toplevel->top_inset());
+  });
+
+  toplevel_window->AsWaylandToplevelWindow()->SetTopInset(0);
+
+  // Validate the server has received the appropriate top inset for the
+  // toplevel.
+  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
+    auto* surface = server->GetObject<wl::MockSurface>(
+        toplevel_window->root_surface()->get_surface_id());
+    ASSERT_TRUE(surface);
+
+    wl::TestZAuraToplevel* zaura_toplevel =
+        surface->xdg_surface()->xdg_toplevel()->zaura_toplevel();
+    ASSERT_TRUE(zaura_toplevel);
+    EXPECT_EQ(0, zaura_toplevel->top_inset());
+  });
+}
+
+// Tests that the platform window gets the notification when overview mode
+// changes.
+TEST_P(WaylandWindowTest, OverviewMode) {
+  // Only supported with zaura_shell.
+  if (!IsAuraShellEnabled()) {
+    GTEST_SKIP();
+  }
+
+  testing::NiceMock<MockWaylandPlatformWindowDelegate> delegate;
+  std::unique_ptr<WaylandWindow> toplevel_window =
+      CreateWaylandWindowWithParams(PlatformWindowType::kWindow,
+                                    gfx::Rect(300, 300), &delegate);
+
+  EXPECT_CALL(delegate, OnOverviewModeChanged(Eq(true))).Times(1);
+  PostToServerAndWait([](wl::TestWaylandServerThread* server) {
+    auto* const zaura_shell = server->zaura_shell()->resource();
+    zaura_shell_send_set_overview_mode(zaura_shell);
+  });
+
+  EXPECT_CALL(delegate, OnOverviewModeChanged(Eq(false))).Times(1);
+  PostToServerAndWait([](wl::TestWaylandServerThread* server) {
+    auto* const zaura_shell = server->zaura_shell()->resource();
+    zaura_shell_send_unset_overview_mode(zaura_shell);
+  });
+}
+#endif
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandWindowTest,

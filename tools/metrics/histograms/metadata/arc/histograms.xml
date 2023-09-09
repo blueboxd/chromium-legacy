@@ -127,8 +127,6 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <variants name="ArcUserTypes">
-  <variant name=".ActiveDirectory"
-      summary="User with active directory account"/>
   <variant name=".Child" summary="User with child accounts."/>
   <variant name=".DemoMode"
       summary="Demo devices with a demo mode robot account."/>
@@ -189,38 +187,45 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Arc.AbiMigration.BootTime" units="ms"
-    expires_after="2022-08-03">
+    expires_after="2024-07-13">
   <owner>vraheja@chromium.org</owner>
   <owner>arc-core@google.com</owner>
-  <summary>Time taken for ARC to boot during an Abi Migration event.</summary>
+  <summary>
+    Time taken for ARC to boot during an Abi Migration event. Warning: this
+    histogram was expired from 08/04/2022 to 07/12/2023; data may be missing.
+  </summary>
 </histogram>
 
 <histogram name="Arc.AbiMigration.DowngradeDelay" units="ms"
-    expires_after="2022-08-03">
+    expires_after="2024-07-13">
   <owner>vraheja@chromium.org</owner>
   <owner>arc-core@google.com</owner>
   <summary>
     Time taken by ArcAbiMigrationService specifically to downgrade system
-    packages.
+    packages. Warning: this histogram was expired from 08/04/2022 to 07/12/2023;
+    data may be missing.
   </summary>
 </histogram>
 
 <histogram name="Arc.AbiMigration.Event" enum="ArcCorePriAbiMigEvent"
-    expires_after="2022-08-24">
+    expires_after="2024-07-13">
   <owner>vraheja@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
-    Records event type for ArcAbiMigrationService during Abi Migration.
+    Records event type for ArcAbiMigrationService during Abi Migration. Warning:
+    this histogram was expired from 08/04/2022 to 07/12/2023; data may be
+    missing.
   </summary>
 </histogram>
 
 <histogram name="Arc.AbiMigration.FailedAttempts" units="units"
-    expires_after="2022-08-24">
+    expires_after="2024-07-13">
   <owner>vraheja@chromium.org</owner>
   <owner>arc-core@google.com</owner>
   <summary>
     Records the number of failed attempts in trying to perform Primary Abi
-    Migration.
+    Migration. Warning: this histogram was expired from 08/04/2022 to
+    07/12/2023; data may be missing.
   </summary>
 </histogram>
 
@@ -237,7 +242,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Accessibility.WindowCount" enum="ArcAccessibilityFeature"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>sahok@chromium.org</owner>
   <owner>arc-framework@google.com</owner>
   <summary>
@@ -269,14 +274,14 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Arc.AndroidBootTime" units="ms" expires_after="2023-11-05">
+<histogram name="Arc.AndroidBootTime" units="ms" expires_after="2024-01-07">
   <owner>khmel@google.com</owner>
   <owner>arc-performance@google.com</owner>
   <summary>The time elapsed for booting up the ARC instance.</summary>
 </histogram>
 
 <histogram name="Arc.AndroidData.PerApp.Size" units="KB"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>momohatt@google.com</owner>
   <owner>arc-storage@google.com</owner>
   <summary>
@@ -328,7 +333,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.AndroidData.TraversalDuration" units="ms"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>momohatt@google.com</owner>
   <owner>arc-storage@google.com</owner>
   <summary>
@@ -444,7 +449,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.AppCount.HasInstalledOrUnknownApp" enum="Boolean"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>khmel@google.com</owner>
   <owner>arcvm-eng@google.com</owner>
   <summary>
@@ -535,7 +540,6 @@ chromium-metrics-reviews@google.com.
     expires_after="2023-12-10">
   <owner>thanhdng@chromium.org</owner>
   <owner>tby@chromium.org</owner>
-  <owner>wrong@chromium.org</owner>
   <summary>
     Record a reason when an arc application completes installation successfully,
     including policy based applications, default applications and user prompted
@@ -578,15 +582,17 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.AppsInstalledAtStartup" units="App Count"
-    expires_after="M114">
+    expires_after="2024-07-11">
   <owner>jhorwich@google.com</owner>
+  <owner>arc-core@google.com</owner>
   <summary>
     Total number of ARC apps installed on a device measured at startup. Note:
     This includes launchable apps that are installed by default, such as Play
     Store and Settings, as well as any vendor specific apps.
 
     Warning: this histogram was expired after M92 and brought back 2021-09-17;
-    expired after M99 and brought back 2022-12-07; data may be missing.
+    expired after M99 and brought back 2022-12-07, then expired after M114 and
+    brought back 2023-07-11; data may be missing.
   </summary>
 </histogram>
 
@@ -630,7 +636,6 @@ chromium-metrics-reviews@google.com.
     expires_after="2023-06-04">
   <owner>thanhdng@chromium.org</owner>
   <owner>tby@chromium.org</owner>
-  <owner>wrong@chromium.org</owner>
   <summary>
     Record a reason why an application was uninstalled when uninstall is
     completed. Warning: this histogram was expired from 09/01/2021 to
@@ -726,7 +731,7 @@ chromium-metrics-reviews@google.com.
   <token key="ArcUserTypes" variants="ArcUserTypes"/>
 </histogram>
 
-<histogram name="Arc.Auth.NumAccounts" units="count" expires_after="2023-11-12">
+<histogram name="Arc.Auth.NumAccounts" units="count" expires_after="2024-01-14">
   <owner>anastasiian@google.com</owner>
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
@@ -736,7 +741,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Arc.Auth.PercentAccounts" units="%" expires_after="2023-11-12">
+<histogram name="Arc.Auth.PercentAccounts" units="%" expires_after="2024-01-14">
   <owner>anastasiian@google.com</owner>
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
@@ -772,7 +777,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Auth.RequestAccountInfoResult.Secondary"
-    enum="ArcAuthCodeStatus" expires_after="2023-10-24">
+    enum="ArcAuthCodeStatus" expires_after="2023-12-24">
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -856,7 +861,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.ClipboardDragDrop" enum="ArcClipboardDragDropEvent"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>yhanada@google.com</owner>
   <owner>arc-framework@google.com</owner>
   <summary>The number of clipboard and drag-and-drop events.</summary>
@@ -962,7 +967,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.CompatMode.RightClickConversion"
-    enum="ArcRightClickConversionResult" expires_after="2023-10-22">
+    enum="ArcRightClickConversionResult" expires_after="2023-12-24">
   <owner>yhanada@google.com</owner>
   <owner>arc-framework@google.com</owner>
   <summary>
@@ -1110,7 +1115,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.DelayedActivation.ActivationIsDelayed" enum="Boolean"
-    expires_after="2023-10-27">
+    expires_after="2023-12-31">
   <owner>hashimoto@chromium.org</owner>
   <owner>yuholong@chromium.org</owner>
   <owner>arcvm-eng@google.com</owner>
@@ -1122,7 +1127,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.DelayedActivation.Delay" units="ms"
-    expires_after="2023-10-27">
+    expires_after="2023-12-31">
   <owner>hashimoto@chromium.org</owner>
   <owner>yuholong@chromium.org</owner>
   <owner>arcvm-eng@google.com</owner>
@@ -1221,7 +1226,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.FirstAppLaunchDelay.TimeDelta" units="ms"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>khmel@google.com</owner>
   <owner>arc-performance@google.com</owner>
   <summary>
@@ -1235,7 +1240,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.FirstAppLaunchDelay.TimeDeltaUntilAppLaunch" units="ms"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>khmel@google.com</owner>
   <owner>alanding@google.com</owner>
   <summary>
@@ -1643,7 +1648,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Net.ArcNetworkEvent" enum="ArcNetworkEvent"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>hugobenichi@google.com</owner>
   <owner>cros-networking@google.com</owner>
   <summary>
@@ -1654,7 +1659,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Net.DnsQuery.AndroidApi" enum="BooleanSuccess"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -1663,7 +1668,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Net.DnsQuery.Other" enum="BooleanSuccess"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -1672,7 +1677,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Notifications.ActionEnabled" enum="BooleanEnabled"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>yaoqq@google.com</owner>
   <owner>arc-framework@google.com</owner>
   <summary>
@@ -1706,7 +1711,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Notifications.IsCustomNotification"
-    enum="BooleanIsCustomNotification" expires_after="2023-10-22">
+    enum="BooleanIsCustomNotification" expires_after="2023-12-24">
   <owner>shuminghao@google.com</owner>
   <owner>arc-framework@google.com</owner>
   <summary>
@@ -1715,14 +1720,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Notifications.Style" enum="ArcNotificationStyle"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>yaoqq@google.com</owner>
   <owner>arc-framework@google.com</owner>
   <summary>Records the style of an Arc notification when it's created.</summary>
 </histogram>
 
 <histogram name="Arc.OptInAction" enum="ArcOptInAction"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -1739,7 +1744,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.OptInNetworkErrorAction" enum="ArcOptInNetworkErrorAction"
-    expires_after="2023-08-13">
+    expires_after="2024-08-13">
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -1791,9 +1796,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.PlayAutoInstallRequest.State{ArcUserTypes}"
-    enum="ArcPlayAutoInstallRequestState" expires_after="2023-08-01">
+    enum="ArcPlayAutoInstallRequestState" expires_after="2024-07-01">
   <owner>jhorwich@google.com</owner>
   <owner>khmel@google.com</owner>
+  <owner>arc-core@google.com</owner>
   <summary>
     State of PlayAutoInstall flow after the request. {ArcUserTypes}
   </summary>
@@ -1803,9 +1809,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.PlayAutoInstallRequest.TimeDelta{ArcUserTypes}" units="ms"
-    expires_after="2023-08-01">
+    expires_after="2024-07-01">
   <owner>jhorwich@google.com</owner>
   <owner>khmel@google.com</owner>
+  <owner>arc-core@google.com</owner>
   <summary>
     Elapsed time from the when the PlayAutoInstall request was issued and
     completed. {ArcUserTypes}
@@ -1839,7 +1846,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.PlayStoreLaunchWithinAWeek" enum="BooleanUsage"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>rsorokin@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -1940,7 +1947,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Policy.Keys" enum="ArcPolicyKey"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>mhasank@google.com</owner>
   <owner>arc-commercial@google.com</owner>
   <summary>
@@ -2109,7 +2116,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Runtime.Performance.Generic.FirstFrameRendered" units="ms"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>khmel@google.com</owner>
   <owner>alanding@google.com</owner>
   <summary>
@@ -2130,7 +2137,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Runtime.Performance.Generic.Jankiness" units="%"
-    expires_after="2023-11-05">
+    expires_after="2024-01-07">
   <owner>khmel@google.com</owner>
   <owner>alanding@google.com</owner>
   <summary>
@@ -2156,7 +2163,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.SdkVersionUpgradeType" enum="ArcSdkVersionUpgradeType"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>niwa@google.com</owner>
   <owner>arcvm-eng@google.com</owner>
   <summary>
@@ -2180,7 +2187,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Session.HasWebViewUsage" enum="Boolean"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>hungmn@google.com</owner>
   <owner>khmel@google.com</owner>
   <owner>arc-performance@google.com</owner>
@@ -2284,7 +2291,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.SystemHealth.Upgrade.PackagesDeleted"
-    enum="BooleanDeletedOrNot" expires_after="2023-08-29">
+    enum="BooleanDeletedOrNot" expires_after="2024-08-29">
   <owner>mhasank@chromium.org</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -2293,7 +2300,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.SystemHealth.Upgrade.TimeDelta" units="ms"
-    expires_after="2023-08-29">
+    expires_after="2024-08-29">
   <owner>mhasank@chromium.org</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -2696,22 +2703,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Arc.VolumeMounter.MountFailureCount" units="failures"
-    expires_after="2023-04-19">
-  <owner>youkichihosoi@google.com</owner>
-  <owner>arc-storage@google.com</owner>
-  <summary>
-    Counts the number of mount failures for a volume shared with ARC. This is
-    recorded when a volume is successfully mounted by ARC, or when ARC gives up
-    on mounting a volume. Samples in the underflow bucket (value 0) indicate
-    that ARC successfully mounted the volume without any failure. Samples in the
-    overflow bucket indicate that ARC stopped trying to mount the volume after
-    reaching the retry threshold. Samples in between them with value n indicate
-    that ARC successfully mounted the volume after n failures (= n retries).
-    Emitted only on ARC-enabled Chrome OS devices.
-  </summary>
-</histogram>
-
 <histogram name="Arc.VpnServiceBuilderCompatApisCounter"
     enum="VpnServiceBuilderCompatApisList" expires_after="2023-10-24">
   <owner>mhasank@google.com</owner>
@@ -2756,25 +2747,6 @@ chromium-metrics-reviews@google.com.
     Number of ARC app ghost window launches by ArcWindowPredictor. Counted when
     user manually launches ARC app when ARC is still in boot stage.
   </summary>
-</histogram>
-
-<histogram name="ArcAuth.CheckinTime" units="ms" expires_after="M87">
-<!-- Deprecated, used to access legacy data -->
-
-  <owner>mhasank@google.com</owner>
-  <owner>arc-core@google.com</owner>
-  <summary>
-    Elapsed time waiting for the check-in task to be completed. This is recorded
-    in case check-in task is completed successfully.
-  </summary>
-</histogram>
-
-<histogram name="ArcAuth.SignInTime" units="ms" expires_after="M87">
-<!-- Deprecated, used to access legacy data -->
-
-  <owner>mhasank@google.com</owner>
-  <owner>arc-core@google.com</owner>
-  <summary>Elapsed time waiting for GMS sign-in to complete.</summary>
 </histogram>
 
 </histograms>

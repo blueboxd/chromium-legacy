@@ -7,6 +7,7 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/containers/flat_tree.h"
 #include "base/i18n/string_search.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_event.h"
@@ -22,9 +23,16 @@
 
 namespace ui {
 
-AutomationTreeManagerOwner::AutomationTreeManagerOwner() = default;
+AutomationTreeManagerOwner::AutomationTreeManagerOwner() : receiver_(this) {}
 
 AutomationTreeManagerOwner::~AutomationTreeManagerOwner() = default;
+
+mojo::PendingAssociatedRemote<ax::mojom::Automation>
+AutomationTreeManagerOwner::GetPendingRemote() {
+  mojo::PendingAssociatedRemote<ax::mojom::Automation> pending_remote;
+  receiver_.Bind(pending_remote.InitWithNewEndpointAndPassReceiver());
+  return pending_remote;
+}
 
 void AutomationTreeManagerOwner::SendNodesRemovedEvent(
     AXTree* tree,
@@ -1013,6 +1021,9 @@ void AutomationTreeManagerOwner::OnAccessibilityEvents(
     const std::vector<AXTreeUpdate>& updates,
     const gfx::Point& mouse_location,
     bool is_active_profile) {
+  // TODO(crbug.com/1441696): Refactor
+  // AutomationTreeManagerOwner::OnAccessibilityEvents logic into
+  // AutomationTreeManagerOwner::DispatchAccessibilityEvents.
   is_active_profile_ = is_active_profile;
   AutomationAXTreeWrapper* tree_wrapper =
       GetAutomationAXTreeWrapperFromTreeID(tree_id);
@@ -1138,5 +1149,40 @@ void AutomationTreeManagerOwner::UpdateOverallTreeChangeObserverFilter() {
   for (const auto& observer : tree_change_observers_)
     tree_change_observer_overall_filter_ |= 1 << observer.filter;
 }
+
+void AutomationTreeManagerOwner::DispatchTreeDestroyedEvent(
+    const ui::AXTreeID& tree_id) {
+  GetAutomationV8Bindings()->SendTreeDestroyedEvent(tree_id);
+}
+
+void AutomationTreeManagerOwner::DispatchAccessibilityEvents(
+    const ui::AXTreeID& tree_id,
+    const std::vector<ui::AXTreeUpdate>& updates,
+    const gfx::Point& mouse_location,
+    const std::vector<ui::AXEvent>& events) {
+  OnAccessibilityEvents(tree_id, events, updates, mouse_location,
+                        is_active_profile_);
+}
+
+void AutomationTreeManagerOwner::DispatchAccessibilityLocationChange(
+    const ui::AXTreeID& tree_id,
+    int32_t node_id,
+    const ui::AXRelativeBounds& bounds) {
+  OnAccessibilityLocationChange(tree_id, node_id, bounds);
+}
+
+void AutomationTreeManagerOwner::DispatchActionResult(
+    const ui::AXActionData& data,
+    bool result) {
+  GetAutomationV8Bindings()->SendActionResultEvent(data, result);
+}
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+void AutomationTreeManagerOwner::DispatchGetTextLocationResult(
+    const ui::AXActionData& data,
+    const absl::optional<gfx::Rect>& rect) {
+  GetAutomationV8Bindings()->SendGetTextLocationResult(data, rect);
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace ui

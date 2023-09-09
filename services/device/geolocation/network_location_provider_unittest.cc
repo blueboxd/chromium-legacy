@@ -20,8 +20,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
-#include "base/test/repeating_test_future.h"
 #include "base/test/task_environment.h"
+#include "base/test/test_future.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "net/base/net_errors.h"
@@ -30,6 +30,7 @@
 #include "services/device/geolocation/mock_wifi_data_provider.h"
 #include "services/device/geolocation/wifi_data_provider.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"
+#include "services/device/public/mojom/geolocation_internals.mojom.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -42,7 +43,14 @@
 
 namespace device {
 
-using ::base::test::RepeatingTestFuture;
+using ::base::test::TestFuture;
+
+mojom::NetworkLocationDiagnosticsPtr GetNetworkLocationDiagnostics(
+    LocationProvider& provider) {
+  auto diagnostics = mojom::GeolocationDiagnostics::New();
+  provider.FillDiagnostics(*diagnostics);
+  return std::move(diagnostics->network_location_diagnostics);
+}
 
 // Records the most recent position update and counts the number of times
 // OnLocationUpdate is called.
@@ -97,8 +105,9 @@ class GeolocationNetworkProviderTest : public testing::Test {
         base::SingleThreadTaskRunner::GetCurrentDefault(), api_key,
         &position_cache_);
 #endif
-    if (set_permission_granted)
+    if (set_permission_granted) {
       provider->OnPermissionGranted();
+    }
 
     return provider;
   }
@@ -111,7 +120,8 @@ class GeolocationNetworkProviderTest : public testing::Test {
 
  protected:
   GeolocationNetworkProviderTest()
-      : wifi_data_provider_(MockWifiDataProvider::CreateInstance()) {
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
+        wifi_data_provider_(MockWifiDataProvider::CreateInstance()) {
     // TODO(joth): Really these should be in SetUp, not here, but they take no
     // effect on Mac OS Release builds if done there. I kid not. Figure out why.
     WifiDataProviderHandle::SetFactoryForTesting(
@@ -125,7 +135,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
   static WifiData CreateReferenceWifiScanData(int ap_count) {
     WifiData data;
     for (int i = 0; i < ap_count; ++i) {
-      AccessPointData ap;
+      mojom::AccessPointData ap;
       ap.mac_address = base::StringPrintf("%02d-34-56-78-54-32", i);
       ap.radio_signal_strength = ap_count - i;
       ap.channel = IndexToChannel(i);
@@ -138,7 +148,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
   static WifiData CreateReferenceWifiScanDataWithNoMACAddress(int ap_count) {
     WifiData data;
     for (int i = 0; i < ap_count; ++i) {
-      AccessPointData ap;
+      mojom::AccessPointData ap;
       ap.radio_signal_strength = ap_count - i;
       ap.channel = IndexToChannel(i);
       ap.signal_to_noise = i + 42;
@@ -193,9 +203,10 @@ class GeolocationNetworkProviderTest : public testing::Test {
                                               const base::Value::Dict& dict,
                                               base::Value::List* output_list) {
     const base::Value::List* list = dict.FindList(field);
-    if (!list)
+    if (!list) {
       return testing::AssertionFailure() << "Dictionary " << PrettyJson(dict)
                                          << " is missing list field " << field;
+    }
     *output_list = list->Clone();
     return testing::AssertionSuccess();
   }
@@ -206,19 +217,22 @@ class GeolocationNetworkProviderTest : public testing::Test {
       const base::Value::Dict& actual) {
     const base::Value* expected_value = expected.Find(field);
     const base::Value* actual_value = actual.Find(field);
-    if (!expected_value)
+    if (!expected_value) {
       return testing::AssertionFailure()
              << "Expected dictionary " << PrettyJson(expected)
              << " is missing field " << field;
-    if (!actual_value)
+    }
+    if (!actual_value) {
       return testing::AssertionFailure()
              << "Actual dictionary " << PrettyJson(actual)
              << " is missing field " << field;
-    if (*expected_value != *actual_value)
+    }
+    if (*expected_value != *actual_value) {
       return testing::AssertionFailure()
              << "Field " << field
              << " mismatch: " << PrettyJson(*expected_value)
              << " != " << PrettyJson(*actual_value);
+    }
     return testing::AssertionSuccess();
   }
 
@@ -269,7 +283,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
     }
   }
 
-  const base::test::SingleThreadTaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   const scoped_refptr<MockWifiDataProvider> wifi_data_provider_;
   FakePositionCache position_cache_;
@@ -556,11 +570,11 @@ TEST_F(GeolocationNetworkProviderTest, NetworkRequestServiceBadRequest) {
   provider->StartProvider(false);
   ASSERT_EQ(1, test_url_loader_factory_.NumPending());
 
-  RepeatingTestFuture<mojom::GeopositionResultPtr> future;
+  TestFuture<mojom::GeopositionResultPtr> future;
   provider->SetUpdateCallback(
       base::BindLambdaForTesting([&future](const LocationProvider* provider,
                                            mojom::GeopositionResultPtr result) {
-        future.AddValue(std::move(result));
+        future.SetValue(std::move(result));
       }));
   const std::string& request_url =
       test_url_loader_factory_.pending_requests()->back().request.url.spec();
@@ -585,11 +599,11 @@ TEST_F(GeolocationNetworkProviderTest, NetworkRequestResponseMalformed) {
   provider->StartProvider(false);
   ASSERT_EQ(1, test_url_loader_factory_.NumPending());
 
-  RepeatingTestFuture<mojom::GeopositionResultPtr> future;
+  TestFuture<mojom::GeopositionResultPtr> future;
   provider->SetUpdateCallback(
       base::BindLambdaForTesting([&future](const LocationProvider* provider,
                                            mojom::GeopositionResultPtr result) {
-        future.AddValue(std::move(result));
+        future.SetValue(std::move(result));
       }));
   const std::string& request_url =
       test_url_loader_factory_.pending_requests()->back().request.url.spec();
@@ -907,6 +921,47 @@ TEST_F(GeolocationNetworkProviderTest, LastPositionNotUsedNewData) {
 
   // Check that a network request is pending.
   EXPECT_EQ(1, test_url_loader_factory_.NumPending());
+}
+
+TEST_F(GeolocationNetworkProviderTest, DiagnosticsEmpty) {
+  auto provider = CreateProvider(/*set_permission_granted=*/true);
+  auto diagnostics = GetNetworkLocationDiagnostics(*provider);
+  ASSERT_TRUE(diagnostics);
+  EXPECT_TRUE(diagnostics->access_point_data.empty());
+  EXPECT_FALSE(diagnostics->wifi_timestamp);
+}
+
+TEST_F(GeolocationNetworkProviderTest, DiagnosticsNoAccessPoints) {
+  wifi_data_provider_->set_got_data(false);  // No initial Wi-Fi data.
+  auto provider = CreateProvider(/*set_permission_granted=*/true);
+  provider->StartProvider(/*high_accuracy=*/false);
+
+  // A Wi-Fi scan completes without finding any access points.
+  wifi_data_provider_->SetData(/*new_data=*/{});
+  base::RunLoop().RunUntilIdle();
+
+  auto diagnostics = GetNetworkLocationDiagnostics(*provider);
+  ASSERT_TRUE(diagnostics);
+  EXPECT_TRUE(diagnostics->access_point_data.empty());
+  EXPECT_FALSE(diagnostics->wifi_timestamp);
+}
+
+TEST_F(GeolocationNetworkProviderTest, DiagnosticsAccessPointData) {
+  wifi_data_provider_->set_got_data(false);  // No initial Wi-Fi data.
+  auto provider = CreateProvider(/*set_permission_granted=*/true);
+  provider->StartProvider(/*high_accuracy=*/false);
+
+  // A Wi-Fi scan completes after finding access points.
+  constexpr size_t kApCount = 6;
+  wifi_data_provider_->SetData(CreateReferenceWifiScanData(kApCount));
+  const auto wifi_time = base::Time::Now();
+  base::RunLoop().RunUntilIdle();
+
+  auto diagnostics = GetNetworkLocationDiagnostics(*provider);
+  ASSERT_TRUE(diagnostics);
+  EXPECT_EQ(kApCount, diagnostics->access_point_data.size());
+  ASSERT_TRUE(diagnostics->wifi_timestamp);
+  EXPECT_EQ(wifi_time, *diagnostics->wifi_timestamp);
 }
 
 }  // namespace device

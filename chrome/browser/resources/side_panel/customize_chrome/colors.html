@@ -75,14 +75,32 @@
         background-color="[[defaultColor_.background]]"
         base-color="[[defaultColor_.base]]"
         foreground-color="[[defaultColor_.foreground]]"
-        background-color-hidden="[[themeHasBackgroundImage_(theme_)]]"
+        background-color-hidden="[[!showBackgroundColor_]]"
         title="$i18n{defaultColorName}"
         aria-label="$i18n{defaultColorName}"
         role="radio"
         checked="[[isDefaultColorSelected_]]"
+        checkmark-border-hidden="[[isChromeRefresh2023_]]"
         aria-checked$="[[boolToString_(isDefaultColorSelected_)]]"
         tabindex$="[[tabIndex_(isDefaultColorSelected_)]]"
         on-click="onDefaultColorClick_"
+        basic-color>
+    </customize-chrome-color>
+  </template>
+  <template is="dom-if" if="[[isChromeRefresh2023_]]" restamp>
+    <customize-chrome-color
+        id="greyDefaultColor"
+        background-color="[[greyDefaultColor_.background]]"
+        base-color="[[greyDefaultColor_.base]]"
+        foreground-color="[[greyDefaultColor_.foreground]]"
+        title="$i18n{greyDefaultColorName}"
+        aria-label="$i18n{greyDefaultColorName}"
+        role="radio"
+        checked="[[isGreyDefaultColorSelected_]]"
+        checkmark-border-hidden="[[isChromeRefresh2023_]]"
+        aria-checked$="[[boolToString_(isGreyDefaultColorSelected_)]]"
+        tabindex$="[[tabIndex_(isGreyDefaultColorSelected_)]]"
+        on-click="onGreyDefaultColorClick_"
         basic-color>
     </customize-chrome-color>
   </template>
@@ -95,6 +113,7 @@
         aria-label="$i18n{mainColorName}"
         role="radio"
         checked="[[isMainColorSelected_]]"
+        checkmark-border-hidden="[[isChromeRefresh2023_]]"
         aria-checked$="[[boolToString_(isMainColorSelected_)]]"
         tabindex$="[[tabIndex_(isMainColorSelected_)]]"
         on-click="onMainColorClick_"
@@ -107,14 +126,15 @@
         background-color="[[item.background]]"
         base-color="[[item.base]]"
         foreground-color="[[item.foreground]]"
-        background-color-hidden="[[themeHasBackgroundImage_(theme_)]]"
+        background-color-hidden="[[!showBackgroundColor_]]"
         title="[[item.name]]"
         aria-label$="[[item.name]]"
         role="radio"
-        checked="[[isChromeColorSelected_(item.seed, selectedColor_)]]"
+        checked="[[isChromeColorSelected_(item.seed, item.variant, selectedColor_)]]"
+        checkmark-border-hidden="[[isChromeRefresh2023_]]"
         aria-checked$=
-            "[[getChromeColorCheckedStatus_(item.seed, selectedColor_)]]"
-        tabindex$="[[chromeColorTabIndex_(item.seed, selectedColor_)]]"
+            "[[getChromeColorCheckedStatus_(item.seed, item.variant, selectedColor_)]]"
+        tabindex$="[[chromeColorTabIndex_(item.seed, item.variant, selectedColor_)]]"
         on-click="onChromeColorClick_"
         basic-color>
     </customize-chrome-color>
@@ -130,8 +150,9 @@
         id="customColor"
         background-color="[[customColor_.background]]"
         foreground-color="[[customColor_.foreground]]"
-        background-color-hidden="[[themeHasBackgroundImage_(theme_)]]"
+        background-color-hidden="[[!showCustomColorBackgroundColor_]]"
         checked="[[isCustomColorSelected_]]"
+        checkmark-border-hidden="[[isChromeRefresh2023_]]"
         basic-color>
     </customize-chrome-color>
     <div id="colorPickerIcon"></div>

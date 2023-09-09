@@ -21,6 +21,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
+import org.chromium.base.ResettersForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -545,12 +546,12 @@ public class MultiInstanceManager
         return !CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_TAB_MERGING_FOR_TESTING);
     }
 
-    @VisibleForTesting
     public void setCurrentDisplayIdForTesting(int displayId) {
+        var oldValue = mDisplayId;
         mDisplayId = displayId;
+        ResettersForTesting.register(() -> mDisplayId = oldValue);
     }
 
-    @VisibleForTesting
     public DisplayManager.DisplayListener getDisplayListenerForTesting() {
         return mDisplayListener;
     }
@@ -560,12 +561,10 @@ public class MultiInstanceManager
         sTestDisplayIds = testDisplayIds;
     }
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
     public TabModelSelectorTabModelObserver getTabModelObserverForTesting() {
         return mTabModelObserver;
     }
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
     public void setTabModelObserverForTesting(TabModelSelectorTabModelObserver tabModelObserver) {
         mTabModelObserver = tabModelObserver;
     }

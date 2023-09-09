@@ -34,6 +34,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.view.ViewCompat;
 
+import org.chromium.base.ResettersForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
@@ -186,9 +187,9 @@ public class CardUnmaskPrompt implements EmptyTextWatcher, OnClickListener,
                     R.dimen.card_unmask_dialog_credit_card_icon_end_margin,
                     /* cardNameAndNumberTextAppearance= */ R.style.TextAppearance_TextLarge_Primary,
                     /* cardLabelTextAppearance= */ R.style.TextAppearance_TextMedium_Secondary,
-                    /* showCustomIcon= */
-                    AutofillUiUtils.shouldShowCustomIcon(
-                            cardArtUrl, /* isVirtualCard= */ isVirtualCard));
+                    /* showCustomIcon= */ isVirtualCard
+                            || ChromeFeatureList.isEnabled(
+                                    ChromeFeatureList.AUTOFILL_ENABLE_CARD_ART_IMAGE));
         } else {
             mMainView = inflater.inflate(R.layout.autofill_card_unmask_prompt, null);
         }
@@ -198,6 +199,9 @@ public class CardUnmaskPrompt implements EmptyTextWatcher, OnClickListener,
         mInstructions.setText(instructions);
         mNoRetryErrorMessage = (TextView) mMainView.findViewById(R.id.no_retry_error_message);
         mCardUnmaskInput = (EditText) mMainView.findViewById(R.id.card_unmask_input);
+        if (isVirtualCard) {
+            mCardUnmaskInput.setHint("");
+        }
         mMonthInput = (EditText) mMainView.findViewById(R.id.expiration_month);
         mYearInput = (EditText) mMainView.findViewById(R.id.expiration_year);
         mExpirationContainer = mMainView.findViewById(R.id.expiration_container);
@@ -621,12 +625,12 @@ public class CardUnmaskPrompt implements EmptyTextWatcher, OnClickListener,
                 "Autofill.CardUnmask.ScreenLockCheckBox.UserChecked", isChecked);
     }
 
-    @VisibleForTesting
     public static void setObserverForTest(CardUnmaskObserverForTest observerForTest) {
+        var oldValue = sObserverForTest;
         sObserverForTest = observerForTest;
+        ResettersForTesting.register(() -> sObserverForTest = oldValue);
     }
 
-    @VisibleForTesting
     public PropertyModel getDialogForTest() {
         return mDialogModel;
     }

@@ -180,12 +180,6 @@ PasswordAccessoryControllerImpl::GetSheetData() const {
         credential_cache_->GetCredentialStore(origin).GetCredentials();
     info_to_add.reserve(suggestions.size());
     for (const auto& credential : suggestions) {
-      if (credential.match_type() ==
-              password_manager_util::GetLoginMatchType::kPSL &&
-          !base::FeatureList::IsEnabled(
-              autofill::features::kAutofillKeyboardAccessory)) {
-        continue;  // PSL origins have no representation in V1. Don't show them!
-      }
       info_to_add.push_back(
           TranslateCredentials(is_password_field, origin, credential));
     }
@@ -423,23 +417,16 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
     sheet_provides_value = true;
   }
 
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillKeyboardAccessory)) {
-    DCHECK(source_observer_);
-    // The all passwords sheet could cover this but if it's still loading, use
-    // this data as the next closest proxy to minimize delayed updates UI.
-    sheet_provides_value |=
-        !credential_cache_->GetCredentialStore(origin).GetCredentials().empty();
-    // The "Manage Passwords" entry point doesn't justify showing this fallback
-    // sheet for non-password fields.
-    source_observer_.Run(this, IsFillingSourceAvailable(
-                                   autofill::IsFillable(focused_field_type) &&
-                                   sheet_provides_value));
-  } else {
-    absl::optional<AccessorySheetData> data = GetSheetData();
-    DCHECK(data.has_value());
-    GetManualFillingController()->RefreshSuggestions(std::move(data.value()));
-  }
+  DCHECK(source_observer_);
+  // The all passwords sheet could cover this but if it's still loading, use
+  // this data as the next closest proxy to minimize delayed updates UI.
+  sheet_provides_value |=
+      !credential_cache_->GetCredentialStore(origin).GetCredentials().empty();
+  // The "Manage Passwords" entry point doesn't justify showing this fallback
+  // sheet for non-password fields.
+  source_observer_.Run(
+      this, IsFillingSourceAvailable(autofill::IsFillable(focused_field_type) &&
+                                     sheet_provides_value));
 }
 
 void PasswordAccessoryControllerImpl::OnGenerationRequested(
@@ -483,7 +470,8 @@ PasswordAccessoryControllerImpl::PasswordAccessoryControllerImpl(
     password_manager::PasswordManagerClient* password_client,
     PasswordDriverSupplierForFocusedFrame driver_supplier,
     ShowMigrationWarningCallback show_migration_warning_callback)
-    : content::WebContentsUserData<PasswordAccessoryControllerImpl>(
+    : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<PasswordAccessoryControllerImpl>(
           *web_contents),
       credential_cache_(credential_cache),
       manual_filling_controller_(std::move(manual_filling_controller)),
@@ -491,6 +479,13 @@ PasswordAccessoryControllerImpl::PasswordAccessoryControllerImpl(
       driver_supplier_(std::move(driver_supplier)),
       show_migration_warning_callback_(
           std::move(show_migration_warning_callback)) {}
+
+void PasswordAccessoryControllerImpl::WebContentsDestroyed() {
+  // Remove itself to avoid that pointers to other `WebContentsUserData` objects
+  // become invalid.
+  GetWebContents().RemoveUserData(UserDataKey());
+  // Do not add code - `this` is now destroyed.
+}
 
 void PasswordAccessoryControllerImpl::ChangeCurrentOriginSavePasswordsStatus(
     bool saving_enabled) {
@@ -534,10 +529,6 @@ bool PasswordAccessoryControllerImpl::ShouldShowRecoveryToggle(
     const url::Origin& origin) const {
   if (!base::FeatureList::IsEnabled(
           password_manager::features::kRecoverFromNeverSaveAndroid)) {
-    return false;
-  }
-  if (!base::FeatureList::IsEnabled(
-          autofill::features::kAutofillKeyboardAccessory)) {
     return false;
   }
   return password_client_->IsSavingAndFillingEnabled(origin.GetURL());

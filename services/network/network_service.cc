@@ -19,15 +19,11 @@
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
-#include "base/functional/callback_helpers.h"
-#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/sequenced_task_runner.h"
-#include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -36,6 +32,7 @@
 #include "build/chromeos_buildflags.h"
 #include "components/network_session_configurator/common/network_features.h"
 #include "components/os_crypt/sync/os_crypt.h"
+#include "components/privacy_sandbox/masked_domain_list/masked_domain_list.pb.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/scoped_message_error_crash_key.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
@@ -75,6 +72,7 @@
 #include "services/network/net_log_exporter.h"
 #include "services/network/net_log_proxy_sink.h"
 #include "services/network/network_context.h"
+#include "services/network/network_service_proxy_allow_list.h"
 #include "services/network/public/cpp/crash_keys.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/initiator_lock_compatibility.h"
@@ -224,16 +222,6 @@ void HandleBadMessage(const std::string& error) {
   network::debug::ClearDeserializationCrashKeyString();
 }
 
-// Runs `results_cb` on `sequenced_task_runner` with an empty result and
-// net::ERR_ABORTED.
-void AsyncResolveSystemDnsWithEmptyResult(
-    scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner,
-    net::SystemDnsResultsCallback results_cb) {
-  sequenced_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(std::move(results_cb), net::AddressList(), 0,
-                                net::ERR_ABORTED));
-}
-
 void ResolveSystemDnsWithMojo(
     const mojo::Remote<mojom::SystemDnsResolver>& system_dns_override,
     const absl::optional<std::string>& hostname,
@@ -241,17 +229,10 @@ void ResolveSystemDnsWithMojo(
     net::HostResolverFlags flags,
     net::SystemDnsResultsCallback results_cb,
     net::handles::NetworkHandle network) {
-  std::pair<net::SystemDnsResultsCallback, net::SystemDnsResultsCallback>
-      duplicated_results_cbs = base::SplitOnceCallback(std::move(results_cb));
-  // In the case that the callback is dropped without ever being run (if
-  // `system_dns_override` disconnects), `results_cb` should run asynchronously
-  // with an empty result. `results_cb` should never be run synchronously.
-  base::OnceClosure drop_handler =
-      base::BindOnce(&AsyncResolveSystemDnsWithEmptyResult,
-                     base::SequencedTaskRunner::GetCurrentDefault(),
-                     std::move(duplicated_results_cbs.second));
-  auto results_cb_with_default_invoke = mojo::WrapCallbackWithDropHandler(
-      std::move(duplicated_results_cbs.first), std::move(drop_handler));
+  auto results_cb_with_default_invoke =
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          std::move(results_cb), net::AddressList(), 0,
+          net::ERR_DNS_REQUEST_CANCELLED);
   system_dns_override->Resolve(hostname, addr_family, flags, network,
                                std::move(results_cb_with_default_invoke));
 }
@@ -474,6 +455,9 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
   first_party_sets_manager_ =
       std::make_unique<FirstPartySetsManager>(params->first_party_sets_enabled);
 
+  network_service_proxy_allow_list_ =
+      std::make_unique<NetworkServiceProxyAllowList>();
+
 #if BUILDFLAG(IS_CT_SUPPORTED)
   constexpr size_t kMaxSCTAuditingCacheEntries = 1024;
   sct_auditing_cache_ =
@@ -505,8 +489,6 @@ NetworkService::~NetworkService() {
 
   if (initialized_)
     trace_net_log_observer_.StopWatchForTraceStart();
-
-  net::SetSystemDnsResolverOverride(base::NullCallback());
 }
 
 void NetworkService::ReplaceSystemDnsConfigForTesting(
@@ -645,6 +627,15 @@ void NetworkService::SetSSLKeyLogFile(base::File file) {
 void NetworkService::CreateNetworkContext(
     mojo::PendingReceiver<mojom::NetworkContext> receiver,
     mojom::NetworkContextParamsPtr params) {
+  // If a custom proxy config is already set, the Masked Domain List proxy
+  // configs should not be used.
+  if (network_service_proxy_allow_list_->IsEnabled() &&
+      params->initial_custom_proxy_config.is_null() &&
+      !params->custom_proxy_config_client_receiver.is_valid()) {
+    params->initial_custom_proxy_config =
+        network_service_proxy_allow_list_->GetCustomProxyConfig();
+  }
+
   owned_network_contexts_.emplace(std::make_unique<NetworkContext>(
       this, std::move(receiver), std::move(params),
       base::BindOnce(&NetworkService::OnNetworkContextConnectionClosed,
@@ -905,6 +896,15 @@ void NetworkService::UpdateKeyPinsList(mojom::PinListPtr pin_list,
     if (state) {
       state->UpdatePinList(pinsets_, host_pins_, pins_list_update_time_);
     }
+  }
+}
+
+void NetworkService::UpdateMaskedDomainList(const std::string& raw_mdl) {
+  auto mdl = masked_domain_list::MaskedDomainList();
+  if (mdl.ParseFromString(raw_mdl)) {
+    network_service_proxy_allow_list_->UseMaskedDomainList(mdl);
+  } else {
+    LOG(ERROR) << "Unable to parse MDL in NetworkService";
   }
 }
 

@@ -92,6 +92,8 @@ class FloatingWorkspaceService : public KeyedService,
 
   void MaybeCloseNotification();
 
+  std::vector<const ash::DeskTemplate*> GetFloatingWorkspaceTemplateEntries();
+
  protected:
   std::unique_ptr<DeskTemplate> previously_captured_desk_template_;
   // Indicate if it is a testing class.
@@ -182,6 +184,12 @@ class FloatingWorkspaceService : public KeyedService,
   void MaybeHandleDownloadTimeOut();
 
   void SendNotification(const std::string& id);
+
+  // Performs garbage collection of stale floating workspace templates. A
+  // floating workspace template is considered stale if it's older than 30
+  // days. The only exception is if it's the only floating workspace
+  // template associated with the current user, which we want to keep.
+  void DoGarbageCollection(const DeskTemplate* exclude_template);
 
   const raw_ptr<Profile, ExperimentalAsh> profile_;
 

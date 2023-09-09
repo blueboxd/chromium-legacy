@@ -8,13 +8,11 @@
 #include "base/component_export.h"
 #include "base/time/tick_clock.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_response_status.h"
-#include "dbus/dbus_result.h"
 
 namespace ash::hermes_metrics {
 
 void COMPONENT_EXPORT(CHROMEOS_NETWORK)
-    LogInstallViaQrCodeResult(HermesResponseStatus status,
-                              dbus::DBusResult dbus_result);
+    LogInstallViaQrCodeResult(HermesResponseStatus status);
 
 void COMPONENT_EXPORT(CHROMEOS_NETWORK)
     LogInstallPendingProfileResult(HermesResponseStatus status);

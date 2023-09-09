@@ -126,18 +126,16 @@ bool GetSettingManagedByUser(const GURL& url,
                              ContentSetting* out_setting) {
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile);
-  SettingSource source;
+  SettingInfo info;
   ContentSetting setting;
   if (type == ContentSettingsType::COOKIES) {
     // TODO(crbug.com/1386190): Consider whether the following check should
     // somehow determine real CookieSettingOverrides rather than default to
     // none.
     setting = CookieSettingsFactory::GetForProfile(profile)->GetCookieSetting(
-        url, url, net::CookieSettingOverrides(), &source);
+        url, url, net::CookieSettingOverrides(), &info);
   } else {
-    SettingInfo info;
     setting = map->GetContentSetting(url, url, type, &info);
-    source = info.source;
   }
 
   if (out_setting)
@@ -145,7 +143,7 @@ bool GetSettingManagedByUser(const GURL& url,
 
   // Prevent creation of content settings for illegal urls like about:blank by
   // disallowing user management.
-  return source == SETTING_SOURCE_USER &&
+  return info.source == SETTING_SOURCE_USER &&
          map->CanSetNarrowestContentSetting(url, url, type);
 }
 
@@ -703,6 +701,12 @@ ContentSettingStorageAccessBubbleModel::ContentSettingStorageAccessBubbleModel(
     WebContents* web_contents)
     : ContentSettingBubbleModel(delegate, web_contents) {
   set_title(l10n_util::GetStringUTF16(IDS_SITE_SETTINGS_TYPE_STORAGE_ACCESS));
+
+  // TODO(crbug.com/1433644): Consider to add subtitles to all permissions.
+  set_subtitle(url_formatter::FormatUrlForSecurityDisplay(
+      web_contents->GetURL(),
+      url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
+
   set_message(l10n_util::GetStringFUTF16(
       IDS_STORAGE_ACCESS_PERMISSION_BUBBLE_MESSAGE,
       url_formatter::FormatUrlForSecurityDisplay(
@@ -713,6 +717,11 @@ ContentSettingStorageAccessBubbleModel::ContentSettingStorageAccessBubbleModel(
       PageSpecificContentSettings::GetForFrame(&GetPage().GetMainDocument());
   set_site_list(page_content_settings->GetTwoSiteRequests(
       ContentSettingsType::STORAGE_ACCESS));
+
+  set_manage_text_style(ManageTextStyle::kHoverButton);
+  set_manage_text(l10n_util::GetStringUTF16(IDS_STORAGE_ACCESS_MANAGE_TEXT));
+  set_manage_tooltip(
+      l10n_util::GetStringUTF16(IDS_STORAGE_ACCESS_MANAGE_TOOLTIP));
 }
 
 ContentSettingStorageAccessBubbleModel::
@@ -904,8 +913,7 @@ const blink::MediaStreamDevice& GetMediaDeviceById(
 ContentSettingMediaStreamBubbleModel::ContentSettingMediaStreamBubbleModel(
     Delegate* delegate,
     WebContents* web_contents)
-    : ContentSettingBubbleModel(delegate, web_contents),
-      state_(PageSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED) {
+    : ContentSettingBubbleModel(delegate, web_contents) {
   // TODO(msramek): The media bubble has three states - mic only, camera only,
   // and both. There is a lot of duplicated code which does the same thing
   // for camera and microphone separately. Consider refactoring it to avoid
@@ -1006,19 +1014,19 @@ void ContentSettingMediaStreamBubbleModel::OnDoneButtonClicked() {
 }
 
 bool ContentSettingMediaStreamBubbleModel::MicrophoneAccessed() const {
-  return (state_ & PageSpecificContentSettings::MICROPHONE_ACCESSED) != 0;
+  return state_.Has(PageSpecificContentSettings::kMicrophoneAccessed);
 }
 
 bool ContentSettingMediaStreamBubbleModel::CameraAccessed() const {
-  return (state_ & PageSpecificContentSettings::CAMERA_ACCESSED) != 0;
+  return state_.Has(PageSpecificContentSettings::kCameraAccessed);
 }
 
 bool ContentSettingMediaStreamBubbleModel::MicrophoneBlocked() const {
-  return (state_ & PageSpecificContentSettings::MICROPHONE_BLOCKED) != 0;
+  return state_.Has(PageSpecificContentSettings::kMicrophoneBlocked);
 }
 
 bool ContentSettingMediaStreamBubbleModel::CameraBlocked() const {
-  return (state_ & PageSpecificContentSettings::CAMERA_BLOCKED) != 0;
+  return state_.Has(PageSpecificContentSettings::kCameraBlocked);
 }
 
 void ContentSettingMediaStreamBubbleModel::SetIsUserModifiable() {
@@ -1088,8 +1096,8 @@ void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
   DCHECK(CameraAccessed() || MicrophoneAccessed());
   int radio_allow_label_id = 0;
   int radio_block_label_id = 0;
-  if (state_ & (PageSpecificContentSettings::MICROPHONE_BLOCKED |
-                PageSpecificContentSettings::CAMERA_BLOCKED)) {
+  if (state_.Has(PageSpecificContentSettings::kMicrophoneBlocked) ||
+      state_.Has(PageSpecificContentSettings::kCameraBlocked)) {
     if (network::IsUrlPotentiallyTrustworthy(url)) {
       radio_item_setting_[0] = CONTENT_SETTING_ALLOW;
       radio_allow_label_id = IDS_BLOCKED_MEDIASTREAM_CAMERA_ALLOW;

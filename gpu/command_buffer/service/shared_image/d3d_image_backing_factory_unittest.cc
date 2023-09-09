@@ -15,7 +15,6 @@
 #include "base/test/test_timeouts.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_utils.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/shared_image_format.h"
 #include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -672,11 +671,11 @@ TEST_F(D3DImageBackingFactoryTest, Dawn_SkiaGL) {
     // Create a DawnImageRepresentation.
     auto dawn_representation =
         shared_image_representation_factory_->ProduceDawn(
-            mailbox, device.Get(), WGPUBackendType_D3D12, {});
+            mailbox, device, wgpu::BackendType::D3D12, {});
     ASSERT_TRUE(dawn_representation);
 
     auto scoped_access = dawn_representation->BeginScopedAccess(
-        WGPUTextureUsage_RenderAttachment,
+        wgpu::TextureUsage::RenderAttachment,
         SharedImageRepresentation::AllowUnclearedAccess::kYes);
     ASSERT_TRUE(scoped_access);
 
@@ -774,20 +773,20 @@ void D3DImageBackingFactoryTest::DawnConcurrentReadTestHelper(
     const gfx::Size& size,
     const std::vector<uint8_t>& expected_color) {
   auto dawn_representation1 = shared_image_representation_factory_->ProduceDawn(
-      mailbox, device.Get(), WGPUBackendType_D3D12, {});
+      mailbox, device, wgpu::BackendType::D3D12, {});
   ASSERT_TRUE(dawn_representation1);
 
   auto dawn_access1 = dawn_representation1->BeginScopedAccess(
-      WGPUTextureUsage_CopySrc,
+      wgpu::TextureUsage::CopySrc,
       SharedImageRepresentation::AllowUnclearedAccess::kNo);
   ASSERT_TRUE(dawn_access1);
 
   auto dawn_representation2 = shared_image_representation_factory_->ProduceDawn(
-      mailbox, device.Get(), WGPUBackendType_D3D12, {});
+      mailbox, device, wgpu::BackendType::D3D12, {});
   ASSERT_TRUE(dawn_representation2);
 
   auto dawn_access2 = dawn_representation2->BeginScopedAccess(
-      WGPUTextureUsage_CopySrc,
+      wgpu::TextureUsage::CopySrc,
       SharedImageRepresentation::AllowUnclearedAccess::kNo);
   ASSERT_TRUE(dawn_access2);
 
@@ -890,11 +889,11 @@ TEST_F(D3DImageBackingFactoryTest, Dawn_ConcurrentReads) {
   {
     auto dawn_representation =
         shared_image_representation_factory_->ProduceDawn(
-            mailbox, device.Get(), WGPUBackendType_D3D12, {});
+            mailbox, device, wgpu::BackendType::D3D12, {});
     ASSERT_TRUE(dawn_representation);
 
     auto scoped_access = dawn_representation->BeginScopedAccess(
-        WGPUTextureUsage_RenderAttachment,
+        wgpu::TextureUsage::RenderAttachment,
         SharedImageRepresentation::AllowUnclearedAccess::kNo);
     ASSERT_TRUE(scoped_access);
 
@@ -1010,11 +1009,11 @@ TEST_F(D3DImageBackingFactoryTest, GL_Dawn_Skia_UnclearTexture) {
   {
     auto dawn_representation =
         shared_image_representation_factory_->ProduceDawn(
-            mailbox, device.Get(), WGPUBackendType_D3D12, {});
+            mailbox, device, wgpu::BackendType::D3D12, {});
     ASSERT_TRUE(dawn_representation);
 
     auto dawn_scoped_access = dawn_representation->BeginScopedAccess(
-        WGPUTextureUsage_RenderAttachment,
+        wgpu::TextureUsage::RenderAttachment,
         SharedImageRepresentation::AllowUnclearedAccess::kYes);
     ASSERT_TRUE(dawn_scoped_access);
 
@@ -1102,11 +1101,11 @@ TEST_F(D3DImageBackingFactoryTest, UnclearDawn_SkiaFails) {
   {
     auto dawn_representation =
         shared_image_representation_factory_->ProduceDawn(
-            mailbox, device.Get(), WGPUBackendType_D3D12, {});
+            mailbox, device, wgpu::BackendType::D3D12, {});
     ASSERT_TRUE(dawn_representation);
 
     auto dawn_scoped_access = dawn_representation->BeginScopedAccess(
-        WGPUTextureUsage_RenderAttachment,
+        wgpu::TextureUsage::RenderAttachment,
         SharedImageRepresentation::AllowUnclearedAccess::kYes);
     ASSERT_TRUE(dawn_scoped_access);
 
@@ -1367,13 +1366,13 @@ TEST_F(D3DImageBackingFactoryTest, Dawn_ReuseExternalImage) {
   DawnProcTable procs = dawn::native::GetProcs();
   dawnProcSetProcs(&procs);
 
-  const WGPUTextureUsage texture_usage = WGPUTextureUsage_RenderAttachment;
+  const wgpu::TextureUsage texture_usage = wgpu::TextureUsage::RenderAttachment;
 
   // Create the first Dawn texture then clear it to green.
   {
     auto dawn_representation =
         shared_image_representation_factory_->ProduceDawn(
-            mailbox, device.Get(), WGPUBackendType_D3D12, {});
+            mailbox, device, wgpu::BackendType::D3D12, {});
     ASSERT_TRUE(dawn_representation);
 
     auto scoped_access = dawn_representation->BeginScopedAccess(
@@ -1409,7 +1408,7 @@ TEST_F(D3DImageBackingFactoryTest, Dawn_ReuseExternalImage) {
   {
     auto dawn_representation =
         shared_image_representation_factory_->ProduceDawn(
-            mailbox, device.Get(), WGPUBackendType_D3D12, {});
+            mailbox, device, wgpu::BackendType::D3D12, {});
     ASSERT_TRUE(dawn_representation);
 
     // Check again that the texture is still green
@@ -1498,7 +1497,7 @@ TEST_F(D3DImageBackingFactoryTest, Dawn_HasLastRef) {
   dawnProcSetProcs(&procs);
 
   auto dawn_representation = shared_image_representation_factory_->ProduceDawn(
-      mailbox, device.Get(), WGPUBackendType_D3D12, {});
+      mailbox, device, wgpu::BackendType::D3D12, {});
   ASSERT_NE(dawn_representation, nullptr);
 
   // Creating the Skia representation will also create a temporary GL texture.

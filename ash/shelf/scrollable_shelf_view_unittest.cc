@@ -1388,6 +1388,54 @@ TEST_F(ScrollableShelfViewWithAppScalingTest,
   EXPECT_EQ(HotseatDensity::kNormal, hotseat_widget->target_hotseat_density());
 }
 
+TEST_F(ScrollableShelfViewWithAppScalingTest, TabletModeTransition) {
+  PopulateAppShortcut(kAppCountWithShowingDateTray);
+
+  HotseatWidget* hotseat_widget =
+      GetPrimaryShelf()->shelf_widget()->hotseat_widget();
+  EXPECT_EQ(HotseatDensity::kNormal, hotseat_widget->target_hotseat_density());
+
+  // Pin an app icon and verify that app scaling is turned on.
+  const ShelfID shelf_id = AddAppShortcut();
+  EXPECT_EQ(HotseatDensity::kSemiDense,
+            hotseat_widget->target_hotseat_density());
+
+  // Switch to clamshell and verify that hotseat density reverts to normal.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  EXPECT_EQ(HotseatDensity::kNormal, hotseat_widget->target_hotseat_density());
+
+  // Go back to tablet mode, and verify density gets updated.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  EXPECT_EQ(HotseatDensity::kSemiDense,
+            hotseat_widget->target_hotseat_density());
+}
+
+TEST_F(ScrollableShelfViewWithAppScalingTest,
+       TabletModeTransitionWithVerticalShelf) {
+  PrefService* const prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  SetShelfAlignmentPref(prefs, GetPrimaryDisplay().id(), ShelfAlignment::kLeft);
+
+  PopulateAppShortcut(kAppCountWithShowingDateTray);
+  HotseatWidget* hotseat_widget =
+      GetPrimaryShelf()->shelf_widget()->hotseat_widget();
+  EXPECT_EQ(HotseatDensity::kNormal, hotseat_widget->target_hotseat_density());
+
+  // Pin an app icon and verify that app scaling is turned on.
+  const ShelfID shelf_id = AddAppShortcut();
+  EXPECT_EQ(HotseatDensity::kSemiDense,
+            hotseat_widget->target_hotseat_density());
+
+  // Switch to clamshell and verify that hotseat density reverts to normal.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  EXPECT_EQ(HotseatDensity::kNormal, hotseat_widget->target_hotseat_density());
+
+  // Go back to tablet mode, and verify density gets updated.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  EXPECT_EQ(HotseatDensity::kSemiDense,
+            hotseat_widget->target_hotseat_density());
+}
+
 // Verifies that right-click on scroll arrows shows shelf's context menu
 // (https://crbug.com/1324741).
 TEST_F(ScrollableShelfViewTest, RightClickArrows) {
@@ -1547,10 +1595,15 @@ TEST_F(ScrollableShelfViewDeskButtonTest, ButtonRespondsToOverflowStateChange) {
 
   // Keep adding apps until the desk button shrinks, and track the ID of the
   // last added app so that we can remove it later.
+  // Set the upper limit on number of apps to avoid infinite loop if the desk
+  // button does not shrink.
   ShelfID last_app_id;
+  size_t number_of_apps = 0u;
   while (desk_button_widget->is_expanded()) {
     last_app_id = AddAppShortcut();
     WaitForShelfAnimation();
+    ++number_of_apps;
+    ASSERT_LT(number_of_apps, 50u);
   }
 
   EXPECT_EQ(ScrollableShelfView::LayoutStrategy::kNotShowArrowButtons,

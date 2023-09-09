@@ -15,6 +15,7 @@
 #import "base/metrics/histogram_macros.h"
 #import "base/path_service.h"
 #import "base/strings/sys_string_conversions.h"
+#import "base/task/sequenced_task_runner.h"
 #import "components/component_updater/component_updater_service.h"
 #import "components/component_updater/installer_policies/autofill_states_component_installer.h"
 #import "components/component_updater/installer_policies/on_device_head_suggest_component_installer.h"
@@ -72,7 +73,6 @@
 #import "ios/chrome/browser/download/download_directory_util.h"
 #import "ios/chrome/browser/external_files/external_file_remover_factory.h"
 #import "ios/chrome/browser/external_files/external_file_remover_impl.h"
-#import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/mailto_handler/mailto_handler_service.h"
@@ -83,7 +83,6 @@
 #import "ios/chrome/browser/metrics/window_configuration_recorder.h"
 #import "ios/chrome/browser/omaha/omaha_service.h"
 #import "ios/chrome/browser/passwords/password_manager_util_ios.h"
-#import "ios/chrome/browser/shared/model/paths/paths.h"
 #import "ios/chrome/browser/promos_manager/promos_manager_factory.h"
 #import "ios/chrome/browser/screenshot/screenshot_metrics_recorder.h"
 #import "ios/chrome/browser/search_engines/extension_search_engine_data_updater.h"
@@ -102,6 +101,7 @@
 #import "ios/chrome/browser/shared/model/browser/browser_provider.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state_manager.h"
+#import "ios/chrome/browser/shared/model/paths/paths.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
@@ -147,6 +147,10 @@
 #if BUILDFLAG(IOS_ENABLE_SANDBOX_DUMP)
 #import "ios/chrome/app/dump_documents_statistics.h"
 #endif  // BUILDFLAG(IOS_ENABLE_SANDBOX_DUMP)
+
+// To get access to UseSessionSerializationOptimizations().
+// TODO(crbug.com/1383087): remove once the feature is fully launched.
+#import "ios/web/common/features.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -721,7 +725,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 - (void)sceneState:(SceneState*)sceneState
     transitionedToActivationLevel:(SceneActivationLevel)level {
-  if (level == SceneActivationLevelUnattached) {
+  if (level <= SceneActivationLevelDisconnected) {
     [sceneState removeObserver:self];
   } else if (level > SceneActivationLevelBackground) {
     // Stop observing all scenes since we only needed to know when the app
@@ -807,7 +811,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // connected scene states as disconnected in order to allow services to
   // properly unregister their observers and tear down remaining UI.
   for (SceneState* sceneState in self.appState.connectedScenes) {
-    sceneState.activationLevel = SceneActivationLevelUnattached;
+    sceneState.activationLevel = SceneActivationLevelDisconnected;
   }
 
 #if BUILDFLAG(FAST_APP_TERMINATE_ENABLED)
@@ -824,7 +828,12 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
         dispatch_semaphore_signal(semaphore);
       }
     };
-    [[SessionServiceIOS sharedService] shutdownWithCompletion:completionBlock];
+    if (!web::features::UseSessionSerializationOptimizations()) {
+      [[SessionServiceIOS sharedService]
+          shutdownWithCompletion:completionBlock];
+    } else {
+      completionBlock();
+    }
 
     if (metrics) {
       metrics->Stop();
@@ -1404,9 +1413,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   BOOL isPasswordSyncEnabled =
       password_manager_util::IsPasswordSyncNormalEncryptionEnabled(syncService);
   if (isPasswordSyncEnabled) {
-    UpdateFaviconsStorage(
-        IOSChromeFaviconLoaderFactory::GetForBrowserState(browserState),
-        /*sync_enabled=*/isPasswordSyncEnabled);
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, base::BindOnce(&UpdateFaviconsStorageForBrowserState,
+                                  browserState->AsWeakPtr(),
+                                  /*sync_enabled=*/isPasswordSyncEnabled));
   }
 }
 #endif

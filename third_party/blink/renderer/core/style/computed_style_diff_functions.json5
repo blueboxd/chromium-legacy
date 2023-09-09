@@ -76,7 +76,7 @@
         name: "DiffNeedsFullLayoutAndPaintInvalidation",
         fields_to_diff: ["padding-top", "padding-left", "padding-right",
                 "padding-bottom", "appearance", "-webkit-line-clamp",
-                "text-overflow", "shape-margin", "order", "-webkit-highlight",
+                "text-overflow", "shape-margin", "order",
                 "text-indent", "text-align-last", "EffectiveZoom",
                 "word-break", "overflow-wrap", "-webkit-line-break",
                 "-webkit-text-security",
@@ -107,7 +107,7 @@
                 "CssDominantBaseline", "text-anchor",
                 "stroke-width", "stroke-miterlimit", "stroke-linecap", "stroke-linejoin",
                 "marker-end", "marker-mid", "marker-start", "scrollbar-width", "object-view-box",
-                "position-fallback"],
+                "position-fallback", "position-fallback-bounds"],
         methods_to_diff: [
           {
             method: "BorderLeftWidth()",
@@ -341,10 +341,6 @@
             predicate: "a.StrokeDashArrayDataEquivalent(b)",
             field_dependencies: ["stroke-dasharray"]
           },
-	  {
-	    predicate: "a.AnchorScrollDataEquivalent(b)",
-	    field_dependencies: ["anchor-scroll"],
-	  },
         ]
     },
     {

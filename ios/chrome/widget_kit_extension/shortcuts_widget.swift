@@ -102,6 +102,8 @@ struct ShortcutsWidget: Widget {
         : Text("IDS_IOS_WIDGET_KIT_EXTENSION_SHORTCUTS_DESCRIPTION_IPAD")
     )
     .supportedFamilies([.systemMedium])
+    .crDisfavoredLocations()
+    .crContentMarginsDisabled()
   }
 }
 
@@ -212,8 +214,7 @@ struct ShortcutsWidgetEntryView: View {
     let maxNumberOfShortcuts = 4
     let numberOfShortcuts = min(ntpTiles.count, maxNumberOfShortcuts)
 
-    ForEach(0..<numberOfShortcuts) {
-      index in
+    ForEach(0..<numberOfShortcuts, id: \.self) { index in
       HStack(spacing: 0.5) {
         Link(destination: ntpTiles[index].url) {
           WebsiteLogo(ntpTile: ntpTiles[index])
@@ -229,18 +230,14 @@ struct ShortcutsWidgetEntryView: View {
   }
 
   var body: some View {
-    VStack {
-      ZStack {
-        Colors.widgetBackgroundColor.unredacted()
-        VStack {
-          searchBar
-        }.frame(height: Dimensions.searchAreaHeight)
-      }
+    VStack(spacing: 0) {
+      searchBar.frame(height: Dimensions.searchAreaHeight)
       ZStack {
         Rectangle()
           .foregroundColor(Colors.widgetMostVisitedSitesRow)
           .frame(minWidth: 0, maxWidth: .infinity)
           .accessibilityLabel(Strings.widgetDisplayName)
+          .applyShowWidgetContainerBackground()
         HStack {
           let ntpTiles = Array(entry.mostVisitedSites.values).sorted()
 
@@ -260,8 +257,12 @@ struct ShortcutsWidgetEntryView: View {
         }
         .frame(minWidth: 0, maxWidth: .infinity)
       }
-      Spacer()
-    }.background(Colors.widgetMostVisitedSitesRow)
+      .frame(maxHeight: .infinity)
+    }
+    .crContainerBackground(
+      Colors.widgetBackgroundColor.unredacted()
+    )
+
   }
 }
 

@@ -19,4 +19,16 @@ import UIKit
         model: model, uiConfiguration: uiConfiguration, metricsHandler: metricsHandler),
       uiConfiguration: uiConfiguration)
   }
+
+  public static func makeActionCustomizationViewController(
+    withActionModel actionModel: ActionCustomizationModel,
+    destinationModel: DestinationCustomizationModel,
+    uiConfiguration: OverflowMenuUIConfiguration
+  ) -> UIViewController {
+    return OverflowMenuHostingController(
+      rootView: ActionCustomizationView(
+        actionCustomizationModel: actionModel, destinationCustomizationModel: destinationModel,
+        uiConfiguration: uiConfiguration),
+      uiConfiguration: uiConfiguration)
+  }
 }

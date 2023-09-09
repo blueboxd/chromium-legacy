@@ -59,6 +59,7 @@
 <translation id="3984746313391923992">Organisaatiosi edellyttää, että et kirjaudu sisään Chromeen.</translation>
 <translation id="3988789688219830639">Google Chrome ei voi käyttää kuviasi tai videoitasi. Anna käyttöoikeus kohdassa iOS-asetukset &gt; Tietosuoja &gt; Kuvat.</translation>
 <translation id="4064699917955374540">Chrome-datan käyttö ja tallennus Google-tilillä edellyttää, että vahvistat henkilöllisyytesi.</translation>
+<translation id="4093042601582616698">Tehdäänkö Chromesta oletusselain?</translation>
 <translation id="417201473131094001">Ei tueta Chrome Canaryssa</translation>
 <translation id="4233521129555661685"><ph name="USER_EMAIL1" /> käytti Chromea, ja hänen käyttämiä kirjanmerkkejä, salasanoja ja muita asetuksia jäi laitteelle.</translation>
 <translation id="424864128008805179">Kirjaudutaanko ulos Chromesta?</translation>
@@ -69,7 +70,6 @@
 <translation id="4636900170638246267">Kirjaudu tälle sivustolle ja Chromeen.</translation>
 <translation id="4698415050768537821">Chrome ei voinut tarkistaa kaikkia salasanoja. Yritä uudelleen huomenna tai <ph name="BEGIN_LINK" />tarkista salasanat Google-tililtä<ph name="END_LINK" />.</translation>
 <translation id="4819268619367838612">Chrome lähettää käyttö- ja kaatumisdataa Googlelle sovelluksen kehittämiseksi. <ph name="BEGIN_LINK" />Muokkaa<ph name="END_LINK" /></translation>
-<translation id="4830799082179398588">Tehdäänkö Chromesta oletusselain?</translation>
 <translation id="484033449593719797">Ei tueta Chrome Betassa</translation>
 <translation id="4840404732697892756">Google Salasanat voi tarkistaa salasanasi, kun kirjaudut sisään Google-tililläsi.</translation>
 <translation id="4903674399067644695">Tässä kortissa on ehdotuksia Chromen hyödyntämiseen parhaalla mahdollisella tavalla.</translation>

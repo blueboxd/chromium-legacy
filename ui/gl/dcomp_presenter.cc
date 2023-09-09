@@ -51,6 +51,7 @@ DCompPresenter::DCompPresenter(
       max_pending_frames_(settings.max_pending_frames),
       layer_tree_(std::make_unique<DCLayerTree>(
           settings.disable_nv12_dynamic_textures,
+          settings.disable_vp_auto_hdr,
           settings.disable_vp_scaling,
           settings.disable_vp_super_resolution,
           settings.force_dcomp_triple_buffer_video_swap_chain,
@@ -169,6 +170,10 @@ bool DCompPresenter::SetDrawRectangle(const gfx::Rect& rect) {
   // Do not create query for empty damage so that 3D engine is not used when
   // only presenting video in overlay.
   create_query_this_frame_ = !rect.IsEmpty();
+  return true;
+}
+
+bool DCompPresenter::SupportsViewporter() const {
   return true;
 }
 

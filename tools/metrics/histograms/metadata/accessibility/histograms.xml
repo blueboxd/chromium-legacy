@@ -361,7 +361,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.Android.UserFontSizePref.Change" units="%"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>twellington@chromium.org</owner>
   <owner>skym@chromium.org</owner>
   <summary>
@@ -372,7 +372,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.Android.UserFontSizePref.OnStartup" units="%"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>twellington@chromium.org</owner>
   <owner>skym@chromium.org</owner>
   <summary>
@@ -539,6 +539,40 @@ chromium-metrics-reviews@google.com.
   <summary>
     Whether the Chrome OS caret highlighting is on (logged once 45 secs after
     startup).
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.CrosColorCorrection" enum="BooleanEnabled"
+    expires_after="2024-06-14">
+  <owner>katie@chromium.org</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Whether the Chrome OS color correction settings are on (logged once 45 secs
+    after startup).
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.CrosColorCorrection.FilterAmount" units="%"
+    expires_after="2024-06-14">
+  <owner>katie@chromium.org</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    The color correction filter intensity chosen by the user. Logged once, 45
+    seconds after startup. For how users adjust the setting from settings, see
+    ChromeOS.Settings.Accessibility.ColorCorrection.FilterAmount, which logs
+    each time the setting changes.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.CrosColorCorrection.FilterType"
+    enum="ColorCorrectionFilterTypes" expires_after="2024-06-14">
+  <owner>katie@chromium.org</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    The color correction filter type chosen by the user. Logged once, 45 seconds
+    after startup. For how users adjust the setting from settings, see
+    ChromeOS.Settings.Accessibility.ColorCorrection.FilterType, which logs each
+    time the setting changes.
   </summary>
 </histogram>
 
@@ -1458,6 +1492,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Accessibility.LiveCaption.MaskOffensiveWords" enum="Boolean"
+    expires_after="2023-11-30">
+  <owner>abigailbklein@google.com</owner>
+  <owner>evliu@google.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Records when a user toggles the &quot;hide profanity&quot; option in
+    settings.
+  </summary>
+</histogram>
+
 <histogram name="Accessibility.LiveCaption.Session2"
     enum="LiveCaptionSessionEvent" expires_after="2023-11-30">
   <owner>katie@chromium.org</owner>
@@ -1551,6 +1596,26 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Accessibility.LiveTranslate.SourceLanguage"
+    enum="LocaleCodeISO639" expires_after="2024-02-01">
+  <owner>evliu@google.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Records the source language of a request to the Cloud Translate service.
+    Recorded once per call to the Cloud Translate service.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.LiveTranslate.TargetLanguage"
+    enum="LocaleCodeISO639" expires_after="2024-02-01">
+  <owner>evliu@google.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Records the target language of a request to the Cloud Translate service.
+    Recorded once per call to the Cloud Translate service.
+  </summary>
+</histogram>
+
 <histogram name="Accessibility.Mac.ScreenReader{AccessibilityEveryReport}"
     enum="BooleanEnabled" expires_after="never">
 <!-- expires-never: usage drives a11y prioritization in browser and content. -->
@@ -1642,6 +1707,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Accessibility.PdfOcr.MostDetectedLanguageInOcrData"
+    enum="LocaleCodeISO639" expires_after="2024-06-01">
+  <owner>kyungjunlee@google.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Records the language that is detected most in each OCR data when a PDF
+    accessibility tree receives the OCR data from the OCR model.
+  </summary>
+</histogram>
+
 <histogram name="Accessibility.PdfOcr.PDFImages" enum="PdfOcrRequestStatus"
     expires_after="2024-06-01">
   <owner>kyungjunlee@google.com</owner>
@@ -1656,6 +1731,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Accessibility.PdfOcr.UserAcceptLanguage"
+    enum="LocaleCodeISO639" expires_after="2024-06-01">
+  <owner>kyungjunlee@google.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Records user accept languages when PDF OCR first runs for the always mode
+    after user login; or whenever the user uses the once mode to extract text
+    from a PDF file.
+  </summary>
+</histogram>
+
 <histogram name="Accessibility.PdfOcr.UserSelection" enum="PdfOcrUserSelection"
     expires_after="2024-02-01">
   <owner>kyungjunlee@google.com</owner>
@@ -1663,6 +1749,21 @@ chromium-metrics-reviews@google.com.
   <summary>
     Tracks the PDF OCR menu item that the user selects to turn on or off the PDF
     OCR feature.
+  </summary>
+</histogram>
+
+<histogram
+    name="Accessibility.Performance.AXObjectCacheImpl.RedundantSerializations"
+    units="count" expires_after="2023-12-10">
+  <owner>aleventhal@chromium.org</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Tracks how many Blink accessibility nodes are being redundantly serialized
+    whenever the renderer process sends a batch of AXTreeUpdates to the browser
+    process.
+
+    Logged every time the document layout is clean and we need update the the
+    accessibility tree.
   </summary>
 </histogram>
 
@@ -1943,6 +2044,16 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Accessibility.ScreenAI.Component.InstallRetries" units="count"
+    expires_after="2024-05-01">
+  <owner>rhalavati@chromium.org</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Records the number of times that the component installation has failed as
+    DLC service was busy and retried before successful install.
+  </summary>
+</histogram>
+
 <histogram name="Accessibility.ScreenAI.Component.{Action}"
     enum="BooleanSuccess" expires_after="2024-05-01">
   <owner>rhalavati@chromium.org</owner>
@@ -1981,6 +2092,19 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.ScreenAI.OCR.ImageSize" units="count"
+    expires_after="2023-11-30">
+  <obsolete>
+    Removed in July 2023 in favor of Accessibility.ScreenAI.OCR.ImageSize10M
+    which has a higher max value.
+  </obsolete>
+  <owner>rhalavati@chromium.org</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Records the number of pixels in the passed image to OCR request.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.ScreenAI.OCR.ImageSize10M" units="count"
     expires_after="2023-11-30">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
@@ -2052,7 +2176,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.WebSpeech.Duration" units="ms"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>evliu@google.com</owner>
   <owner>chrome-media-ux@google.com</owner>
   <summary>
@@ -2077,18 +2201,6 @@ chromium-metrics-reviews@google.com.
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
     Tracks properties requested via UI Automation GetPropertyValue().
-  </summary>
-</histogram>
-
-<histogram name="Accessibility.WinHighContrastTheme"
-    enum="AccessibilityHighContrastColorScheme" expires_after="2022-12-25">
-  <owner>aleventhal@chromium.org</owner>
-  <owner>almaher@microsoft.com</owner>
-  <owner>weblayoutdev@microsoft.com</owner>
-  <summary>
-    Tracks which Windows high contrast theme is set in system settings (logged
-    once 45 secs after startup). AccessibilityHighContrastColorScheme::None
-    indicates that high contrast mode is not enabled.
   </summary>
 </histogram>
 
@@ -2246,7 +2358,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DomDistiller.ReaderShownForPageLoad" enum="Boolean"
-    expires_after="2023-09-10">
+    expires_after="2024-01-07">
   <owner>mdjones@chromium.org</owner>
   <summary>
     Records if the panel became visible at any point after a page was navigated.
@@ -2285,20 +2397,6 @@ chromium-metrics-reviews@google.com.
     is not visible. This is not recorded when the user opens a distillable page
     but does not switch to Reader Mode from that page (via the omnibox icon or
     menu option).
-  </summary>
-</histogram>
-
-<histogram name="DomDistiller.Time.ActivelyViewingReaderModePage" units="ms"
-    expires_after="2021-08-19">
-  <owner>katie@chromium.org</owner>
-  <owner>chrome-a11y-core@chromium.org</owner>
-  <summary>
-    Records the amount of active time a user spent on a Reader Mode page. Active
-    time is the time the Reader Mode page was visible, not the total time the
-    page was open: the timer is paused when the page is not visible. This is
-    recorded regardless of how a user enters the page: e.g. using the
-    forward/back buttons, entering the URL directly, or coming from a
-    distillable page all start the timer equally.
   </summary>
 </histogram>
 
@@ -2366,16 +2464,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="DomDistiller.Time.RunJavaScript" units="ms"
-    expires_after="M77">
-  <owner>wychen@chromium.org</owner>
-  <summary>
-    Time spent in ExecuteJavaScript() in DomDistiller. It includes JavaScript
-    code transmission through IPC, parsing, compilation, execution, and
-    returning the JSON back through IPC.
-  </summary>
-</histogram>
-
 <histogram name="DomDistiller.Time.ViewerLoading" units="ms"
     expires_after="M77">
   <owner>wychen@chromium.org</owner>
@@ -2385,7 +2473,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DomDistiller.Time.ViewingReaderModePage" units="ms"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>mdjones@chromium.org</owner>
   <summary>
     Records the amount of time a user spent on a Reader Mode Page.

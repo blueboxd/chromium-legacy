@@ -3,7 +3,6 @@
 <translationbundle lang="sl">
 <translation id="1075622780330595106">Toliko zavihkov nedavno niste uporabljali: <ph name="NUMBER_OF_TABS" />. Ali jih želite zapreti?</translation>
 <translation id="125153950246128346">Dotaknite se, če želite prikazati drug zavihek</translation>
-<translation id="1403228085774130835">Zaprte zavihke najdete med nedavnimi zavihki v glavnem meniju Chroma.</translation>
 <translation id="1455506303394048917">Vaša dejavnost na teh anonimnih zavihkih bo izbrisana iz te naprave.</translation>
 <translation id="1499635324672558517">Želite zapreti vse anonimne zavihke?</translation>
 <translation id="1657719826150349398">Premakni zavihek navzdol</translation>
@@ -47,6 +46,7 @@
 <translation id="5073204694187207510">Skrij celozaslonsko mrežo</translation>
 <translation id="5076161749301278626">Si želite ogledati mnenja o trgovini?</translation>
 <translation id="5082793167783849073">Hitro primerjate strani tako, da ustvarite skupino. Če želite začeti, se dotaknite povezave in jo pridržite.</translation>
+<translation id="5339733443032484186">Zadnji zavihek</translation>
 <translation id="5490235265819901748">Skupina zavihkov je razširjena</translation>
 <translation id="5494920125229734069">Izberi vse</translation>
 <translation id="5556417849629758491">Ogled podatkov o trgovini, možnosti so na voljo pri vrhu zaslona</translation>

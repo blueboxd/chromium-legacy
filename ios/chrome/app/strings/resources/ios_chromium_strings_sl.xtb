@@ -42,7 +42,6 @@
 <translation id="2942241131342758843">Uporabljajte Chromium kot privzeto možnost odpiranja povezav, iskanja v pripomočkih in samodejnega izpolnjevanja gesel v drugih aplikacijah.</translation>
 <translation id="2977470724722393594">Chromium je posodobljen</translation>
 <translation id="3102849287235003384">Če se želite odjaviti iz računa Google na vseh spletnih mestih, <ph name="BEGIN_LINK" />se odjavite iz Chromiuma<ph name="END_LINK" />.</translation>
-<translation id="3115956258722352278">Želite nastaviti Chromium kot privzeti brskalnik?</translation>
 <translation id="3256316712990552818">Kopirano v Chromium</translation>
 <translation id="3344973607274501920">Chromiumu ni uspelo preveriti vaših gesel. Poskusite preveriti internetno povezavo.</translation>
 <translation id="3472200483164753384">Ni podprto v Chromiumu Canary</translation>
@@ -128,6 +127,7 @@
 <translation id="8013573822802650211">Če si želite ogledati zavihke iz naprav, v katerih uporabljate Chromium, se prijavite v vseh napravah</translation>
 <translation id="8071041515667087705">Odprite nastavitve za Chromium.</translation>
 <translation id="8073677936375100957">Ali želite izbrisati podatke v Chromiumu iz te naprave?</translation>
+<translation id="8235427517854598594">Želite nastaviti Chromium kot privzeti brskalnik?</translation>
 <translation id="8240981428553046115">Chromium ni mogel preveriti, ali so na voljo posodobitve. Poskusite pozneje.</translation>
 <translation id="8409374867500149834">Uporabljate Chromiumovo najmočnejšo zaščito pred škodljivimi spletnimi mesti.</translation>
 <translation id="858114650497379505">Gesla, ki ste jih shranili v upravitelju gesel, lahko uporabite v drugih aplikacijah v iPhonu.</translation>

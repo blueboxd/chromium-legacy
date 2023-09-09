@@ -25,7 +25,6 @@
 #include "content/browser/attribution_reporting/attribution_interop_parser.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
-#include "content/browser/attribution_reporting/destination_throttler.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "net/base/schemeful_site.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -90,11 +89,18 @@ bool operator==(const AttributionConfig::AggregateLimit& a,
   return tie(a) == tie(b);
 }
 
+bool operator==(const AttributionConfig::DestinationRateLimit& a,
+                const AttributionConfig::DestinationRateLimit& b) {
+  return a.max_total == b.max_total &&
+         a.max_per_reporting_site == b.max_per_reporting_site &&
+         a.rate_limit_window == b.rate_limit_window;
+}
+
 bool operator==(const AttributionConfig& a, const AttributionConfig& b) {
   const auto tie = [](const AttributionConfig& config) {
     return std::make_tuple(config.max_sources_per_origin, config.rate_limit,
                            config.event_level_limit, config.aggregate_limit,
-                           config.throttler_policy);
+                           config.destination_rate_limit);
   };
   return tie(a) == tie(b);
 }
@@ -595,11 +601,11 @@ TEST(AttributionInteropParserTest, ValidConfig) {
        })},
       {R"json({"max_destinations_per_rate_limit_window_reporting_site":"100"})json",
        false, AttributionConfigWith([](AttributionConfig& c) {
-         c.throttler_policy = {.max_per_reporting_site = 100};
+         c.destination_rate_limit = {.max_per_reporting_site = 100};
        })},
       {R"json({"max_destinations_per_rate_limit_window":"100"})json", false,
        AttributionConfigWith([](AttributionConfig& c) {
-         c.throttler_policy = {.max_total = 100};
+         c.destination_rate_limit = {.max_total = 100};
        })},
       {R"json({"rate_limit_time_window":"30"})json", false,
        AttributionConfigWith([](AttributionConfig& c) {
@@ -681,19 +687,31 @@ TEST(AttributionInteropParserTest, ValidConfig) {
        })},
       {R"json({"max_aggregatable_reports_per_destination":"10"})json", false,
        AttributionConfigWith([](AttributionConfig& c) {
-         c.aggregate_limit = {.max_reports_per_destination = 10};
+         c.aggregate_limit =
+             AggregateLimitWith([](AttributionConfig::AggregateLimit& a) {
+               a.max_reports_per_destination = 10;
+             });
        })},
       {R"json({"aggregatable_budget_per_source":"100"})json", false,
        AttributionConfigWith([](AttributionConfig& c) {
-         c.aggregate_limit = {.aggregatable_budget_per_source = 100};
+         c.aggregate_limit =
+             AggregateLimitWith([](AttributionConfig::AggregateLimit& a) {
+               a.aggregatable_budget_per_source = 100;
+             });
        })},
       {R"json({"aggregatable_report_min_delay":"0"})json", false,
        AttributionConfigWith([](AttributionConfig& c) {
-         c.aggregate_limit = {.min_delay = base::TimeDelta()};
+         c.aggregate_limit =
+             AggregateLimitWith([](AttributionConfig::AggregateLimit& a) {
+               a.min_delay = base::TimeDelta();
+             });
        })},
       {R"json({"aggregatable_report_delay_span":"0"})json", false,
        AttributionConfigWith([](AttributionConfig& c) {
-         c.aggregate_limit = {.delay_span = base::TimeDelta()};
+         c.aggregate_limit =
+             AggregateLimitWith([](AttributionConfig::AggregateLimit& a) {
+               a.delay_span = base::TimeDelta();
+             });
        })},
       {R"json({
         "max_sources_per_origin":"10",
@@ -735,12 +753,16 @@ TEST(AttributionInteropParserTest, ValidConfig) {
                e.max_reports_per_destination = 10;
                e.max_attributions_per_navigation_source = 5;
                e.max_attributions_per_event_source = 1;
-             }),
-         c.aggregate_limit = {.max_reports_per_destination = 10,
-                              .aggregatable_budget_per_source = 1000,
-                              .min_delay = base::Minutes(10),
-                              .delay_span = base::Minutes(20)},
-         c.throttler_policy = {.max_total = 2, .max_per_reporting_site = 1};
+             });
+         c.aggregate_limit =
+             AggregateLimitWith([](AttributionConfig::AggregateLimit& a) {
+               a.max_reports_per_destination = 10;
+               a.aggregatable_budget_per_source = 1000;
+               a.min_delay = base::Minutes(10);
+               a.delay_span = base::Minutes(20);
+             });
+         c.destination_rate_limit = {.max_total = 2,
+                                     .max_per_reporting_site = 1};
        })}};
 
   for (const auto& test_case : kTestCases) {

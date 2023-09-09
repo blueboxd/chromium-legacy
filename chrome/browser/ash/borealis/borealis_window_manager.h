@@ -50,9 +50,8 @@ class BorealisWindowManager : public apps::InstanceRegistry::Observer {
   // Returns true if this window's ID belongs to a borealis VM.
   static bool IsBorealisWindowId(const std::string& window_id);
 
-  // Determines if a newly created window should be minimized on creation.
-  // TODO(b/210569001): this is intended to be a temporary solution.
-  static bool ShouldNewWindowBeMinimized(const std::string& window_id);
+  // Whether this window belongs to a Steam game within the Borealis VM.
+  static bool IsSteamGameWindow(Profile* profile, const aura::Window* window);
 
   // Returns true when the given |app_id| is for an anonymous borealis app.
   static bool IsAnonymousAppId(const std::string& app_id);

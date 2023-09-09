@@ -63,6 +63,17 @@ class SharedDictionaryManagerOnDisk : public SharedDictionaryManager {
                  base::Time end_time,
                  base::RepeatingCallback<bool(const GURL&)> url_matcher,
                  base::OnceClosure callback) override;
+  void ClearDataForIsolationKey(
+      const net::SharedDictionaryIsolationKey& isolation_key,
+      base::OnceClosure callback) override;
+  void GetUsageInfo(base::OnceCallback<
+                    void(const std::vector<net::SharedDictionaryUsageInfo>&)>
+                        callback) override;
+  void GetSharedDictionaryInfo(
+      const net::SharedDictionaryIsolationKey& isolation_key,
+      base::OnceCallback<
+          void(std::vector<network::mojom::SharedDictionaryInfoPtr>)> callback)
+      override;
 
   SharedDictionaryDiskCache& disk_cache() { return disk_cache_; }
   net::SQLitePersistentSharedDictionaryStore& metadata_store() {
@@ -83,6 +94,10 @@ class SharedDictionaryManagerOnDisk : public SharedDictionaryManager {
   // time.
   void MaybePostMismatchingEntryDeletionTask();
 
+  // Posts a ExpiredDictionaryDeletionTask if there is no ongoing or queued
+  // MismatchingEntryDeletionTask.
+  void MaybePostExpiredDictionaryDeletionTask();
+
  private:
   class SerializedTask {
    public:
@@ -97,11 +112,13 @@ class SharedDictionaryManagerOnDisk : public SharedDictionaryManager {
   };
 
   class ClearDataTask;
+  class ClearDataForIsolationKeyTask;
   class MismatchingEntryDeletionTask;
   class CacheEvictionTask;
   class ExpiredDictionaryDeletionTask;
 
   class ClearDataTaskInfo;
+  class ClearDataForIsolationKeyTaskInfo;
   class MismatchingEntryDeletionTaskInfo;
   class CacheEvictionTaskInfo;
   class ExpiredDictionaryDeletionTaskInfo;
@@ -129,7 +146,6 @@ class SharedDictionaryManagerOnDisk : public SharedDictionaryManager {
   void MaybeStartSerializedTask();
 
   void MaybePostCacheEvictionTask();
-  void MaybePostExpiredDictionaryDeletionTask();
 
   void OnDictionaryDeleted(
       const std::set<base::UnguessableToken>& disk_cache_key_tokens,

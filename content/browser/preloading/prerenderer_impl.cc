@@ -5,6 +5,7 @@
 #include "content/browser/preloading/prerenderer_impl.h"
 
 #include "content/browser/preloading/preloading.h"
+#include "content/browser/preloading/preloading_attempt_impl.h"
 #include "content/browser/preloading/prerender/prerender_attributes.h"
 #include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/browser/preloading/prerender/prerender_host_registry.h"
@@ -139,7 +140,7 @@ void PrerendererImpl::ProcessCandidatesForPrerender(
     // For now, start the first candidate for a URL only if there are no
     // matching prerenders. We could be cleverer in the future.
     if (matching_prerenders.empty()) {
-      DCHECK_GT(matching_candidates.size(), 0u);
+      CHECK_GT(matching_candidates.size(), 0u);
       candidates_to_start.push_back(std::move(matching_candidates[0]));
     }
 
@@ -148,9 +149,9 @@ void PrerendererImpl::ProcessCandidatesForPrerender(
     started_it = equal_prerender_end;
   }
 
-  registry_->CancelHosts(
-      removed_prerender_rules,
-      PrerenderCancellationReason(PrerenderFinalStatus::kTriggerDestroyed));
+  registry_->CancelHosts(removed_prerender_rules,
+                         PrerenderCancellationReason(
+                             PrerenderFinalStatus::kSpeculationRuleRemoved));
   {
     base::flat_set<int> removed_prerender_rules_set(
         removed_prerender_rules.begin(), removed_prerender_rules.end());
@@ -179,7 +180,11 @@ void PrerendererImpl::ProcessCandidatesForPrerender(
 
 bool PrerendererImpl::MaybePrerender(
     const blink::mojom::SpeculationCandidatePtr& candidate) {
-  DCHECK_EQ(candidate->action, blink::mojom::SpeculationAction::kPrerender);
+  CHECK_EQ(candidate->action, blink::mojom::SpeculationAction::kPrerender);
+
+  // Prerendering frames should not trigger any prerender request.
+  CHECK(!render_frame_host_->IsInLifecycleState(
+      RenderFrameHost::LifecycleState::kPrerendering));
 
   if (!registry_)
     return false;
@@ -195,9 +200,11 @@ bool PrerendererImpl::MaybePrerender(
   // this prerendering attempt.
   PreloadingURLMatchCallback same_url_matcher =
       PreloadingData::GetSameURLMatcher(candidate->url);
-  PreloadingAttempt* preloading_attempt = preloading_data->AddPreloadingAttempt(
-      GetPredictorForSpeculationRules(candidate->injection_world),
-      PreloadingType::kPrerender, std::move(same_url_matcher));
+  auto* preloading_attempt =
+      static_cast<PreloadingAttemptImpl*>(preloading_data->AddPreloadingAttempt(
+          GetPredictorForSpeculationRules(candidate->injection_world),
+          PreloadingType::kPrerender, std::move(same_url_matcher)));
+  preloading_attempt->SetSpeculationEagerness(candidate->eagerness);
 
   auto [begin, end] = base::ranges::equal_range(
       started_prerenders_.begin(), started_prerenders_.end(), candidate->url,

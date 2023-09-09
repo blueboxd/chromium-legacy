@@ -33,6 +33,8 @@
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/system/scheduled_feature/scheduled_feature.h"
 #include "ash/wallpaper/online_wallpaper_manager.h"
+#include "ash/wallpaper/views/wallpaper_view.h"
+#include "ash/wallpaper/views/wallpaper_widget_controller.h"
 #include "ash/wallpaper/wallpaper_blur_manager.h"
 #include "ash/wallpaper/wallpaper_constants.h"
 #include "ash/wallpaper/wallpaper_drag_drop_delegate.h"
@@ -45,8 +47,6 @@
 #include "ash/wallpaper/wallpaper_utils/wallpaper_file_utils.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resizer.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resolution.h"
-#include "ash/wallpaper/wallpaper_view.h"
-#include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wallpaper/wallpaper_window_state_manager.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -102,10 +102,6 @@ constexpr base::TimeDelta kWallpaperReloadDelay = base::Milliseconds(100);
 
 // How long to wait for resizing of the the wallpaper.
 constexpr base::TimeDelta kCompositorLockTimeout = base::Milliseconds(750);
-
-// Duration of the lock animation performed when pressing a lock button.
-constexpr base::TimeDelta kLockAnimationBlurAnimationDuration =
-    base::Milliseconds(100);
 
 // Duration of the cross fade animation when loading wallpaper.
 constexpr base::TimeDelta kWallpaperLoadAnimationDuration =
@@ -460,7 +456,8 @@ SkColor WallpaperControllerImpl::GetKMeanColor() const {
 }
 
 absl::optional<SkColor> WallpaperControllerImpl::GetCachedWallpaperColorForUser(
-    const AccountId& account_id) const {
+    const AccountId& account_id,
+    bool should_use_k_means) const {
   if (!chromeos::features::IsJellyEnabled()) {
     return {};
   }
@@ -468,7 +465,8 @@ absl::optional<SkColor> WallpaperControllerImpl::GetCachedWallpaperColorForUser(
   if (!pref_manager_->GetLocalWallpaperInfo(account_id, &info)) {
     return {};
   }
-  return pref_manager_->GetCelebiColor(info.location);
+  return should_use_k_means ? pref_manager_->GetCachedKMeanColor(info.location)
+                            : pref_manager_->GetCelebiColor(info.location);
 }
 
 gfx::ImageSkia WallpaperControllerImpl::GetWallpaper() const {
@@ -589,49 +587,25 @@ void WallpaperControllerImpl::ShowWallpaperImage(const gfx::ImageSkia& image,
 }
 
 void WallpaperControllerImpl::UpdateWallpaperBlurForLockState(bool blur) {
-  if (!blur_manager_->IsBlurAllowedForLockState(GetWallpaperType())) {
-    return;
-  }
-
-  bool changed = is_wallpaper_blurred_for_lock_state_ != blur;
-  float blur_sigma =
-      blur ? wallpaper_constants::kLockLoginBlur : wallpaper_constants::kClear;
-  if (IsOobeWallpaper()) {
-    blur_sigma = wallpaper_constants::kOobeBlur;
-  }
-  // is_wallpaper_blurrred_for_lock_state_ may already be updated in
-  // InstallDesktopController. Always try to update, then invoke observer
-  // if something changed.
-  for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
-    changed |=
-        root_window_controller->wallpaper_widget_controller()->SetWallpaperBlur(
-            blur_sigma, kLockAnimationBlurAnimationDuration);
-  }
-
-  is_wallpaper_blurred_for_lock_state_ = blur;
+  bool changed =
+      blur_manager_->UpdateWallpaperBlurForLockState(blur, GetWallpaperType());
   if (changed) {
-    for (auto& observer : observers_)
+    for (auto& observer : observers_) {
       observer.OnWallpaperBlurChanged();
+    }
   }
 }
 
 void WallpaperControllerImpl::RestoreWallpaperBlurForLockState(float blur) {
-  if (!blur_manager_->IsBlurAllowedForLockState(GetWallpaperType())) {
+  const WallpaperType wallpaper_type = GetWallpaperType();
+  if (!blur_manager_->IsBlurAllowedForLockState(wallpaper_type)) {
     return;
   }
 
-  // |is_wallpaper_blurrred_for_lock_state_| may already be updated in
-  // InstallDesktopController. Always try to update, then invoke observer
-  // if something changed.
-  for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
-    root_window_controller->wallpaper_widget_controller()->SetWallpaperBlur(
-        blur, kLockAnimationBlurAnimationDuration);
-  }
-
-  DCHECK(is_wallpaper_blurred_for_lock_state_);
-  is_wallpaper_blurred_for_lock_state_ = false;
-  for (auto& observer : observers_)
+  blur_manager_->RestoreWallpaperBlurForLockState(blur, wallpaper_type);
+  for (auto& observer : observers_) {
     observer.OnWallpaperBlurChanged();
+  }
 }
 
 bool WallpaperControllerImpl::ShouldApplyShield() const {
@@ -808,6 +782,9 @@ void WallpaperControllerImpl::SetDecodedCustomWallpaper(
     return;
   }
 
+  for (auto& observer : observers_) {
+    observer.OnUserSetWallpaper(account_id);
+  }
   wallpaper_metrics_manager_->LogWallpaperResult(WallpaperType::kCustomized,
                                                  SetWallpaperResult::kSuccess);
 
@@ -1440,7 +1417,7 @@ void WallpaperControllerImpl::LoadPreviewImage(
 }
 
 bool WallpaperControllerImpl::IsWallpaperBlurredForLockState() const {
-  return is_wallpaper_blurred_for_lock_state_;
+  return blur_manager_->is_wallpaper_blurred_for_lock_state();
 }
 
 bool WallpaperControllerImpl::IsActiveUserWallpaperControlledByPolicy() {
@@ -1629,7 +1606,7 @@ void WallpaperControllerImpl::OnCheckpointChanged(
   }
   AccountId account_id = GetActiveAccountId();
   WallpaperInfo info;
-  if (!pref_manager_->GetLocalWallpaperInfo(account_id, &info)) {
+  if (!pref_manager_->GetUserWallpaperInfo(account_id, &info)) {
     return;
   }
   if (!IsOnlineWallpaper(info.type)) {
@@ -1696,10 +1673,10 @@ void WallpaperControllerImpl::OnActiveUserPrefServiceChanged(
         pref_manager_->GetSyncedWallpaperInfo(account_id, &synced_info);
     bool has_local_info =
         pref_manager_->GetLocalWallpaperInfo(account_id, &local_info);
-    session_manager::SessionState session_state =
-        Shell::Get()->session_controller()->GetSessionState();
-    if (session_state == session_manager::SessionState::OOBE &&
-        !has_synced_info && has_local_info &&
+    DVLOG(1) << " has_synced_info=" << has_synced_info
+             << " has_local_info=" << has_local_info
+             << " is_oobe_state=" << IsOobeState();
+    if (IsOobeState() && !has_synced_info && has_local_info &&
         local_info.type == WallpaperType::kDefault &&
         features::IsTimeOfDayWallpaperEnabled()) {
       // Sets the time of day wallpaper as the default wallpaper on active user
@@ -1743,6 +1720,10 @@ void WallpaperControllerImpl::CreateEmptyWallpaperForTesting() {
   current_wallpaper_.reset();
   wallpaper_mode_ = WALLPAPER_IMAGE;
   UpdateWallpaperForAllRootWindows(/*lock_state_changed=*/false);
+  // Simulate default color sampling behavior.
+  SetCalculatedColors(WallpaperCalculatedColors(
+      /*prominent_colors=*/{}, /*k_means=*/SK_ColorWHITE,
+      /*celebi=*/gfx::kGoogleBlue400));
 }
 
 void WallpaperControllerImpl::ReloadWallpaperForTesting(bool clear_cache) {
@@ -1774,13 +1755,13 @@ void WallpaperControllerImpl::UpdateWallpaperForRootWindow(
   float blur = wallpaper_widget_controller->GetWallpaperBlur();
 
   if (lock_state_changed || new_root) {
-    const bool is_wallpaper_blurred_for_lock_state =
+    const bool should_wallpaper_blur_for_lock_state =
         Shell::Get()->session_controller()->IsUserSessionBlocked() &&
         blur_manager_->IsBlurAllowedForLockState(GetWallpaperType());
-    if (is_wallpaper_blurred_for_lock_state_ !=
-        is_wallpaper_blurred_for_lock_state) {
-      is_wallpaper_blurred_for_lock_state_ =
-          is_wallpaper_blurred_for_lock_state;
+    if (IsWallpaperBlurredForLockState() !=
+        should_wallpaper_blur_for_lock_state) {
+      blur_manager_->set_is_wallpaper_blurred_for_lock_state(
+          should_wallpaper_blur_for_lock_state);
       for (auto& observer : observers_)
         observer.OnWallpaperBlurChanged();
     }
@@ -1790,7 +1771,7 @@ void WallpaperControllerImpl::UpdateWallpaperForRootWindow(
     if (IsOobeWallpaper()) {
       blur = wallpaper_constants::kOobeBlur;
     } else {
-      blur = is_wallpaper_blurred_for_lock_state
+      blur = should_wallpaper_blur_for_lock_state
                  ? wallpaper_constants::kLockLoginBlur
                  : wallpaper_constants::kClear;
     }
@@ -2004,6 +1985,9 @@ void WallpaperControllerImpl::OnOnlineWallpaperDecoded(
     LOG(ERROR) << "Failed to decode online wallpaper.";
     return;
   } else {
+    for (auto& observer : observers_) {
+      observer.OnUserSetWallpaper(params.account_id);
+    }
     wallpaper_metrics_manager_->LogWallpaperResult(
         WallpaperType::kOnline, SetWallpaperResult::kSuccess);
   }
@@ -2045,22 +2029,29 @@ void WallpaperControllerImpl::SetOnlineWallpaperImpl(
 }
 
 void WallpaperControllerImpl::ShowOobeWallpaper() {
-  if (ash::features::IsOobeSimonEnabled()) {
-    const base::FilePath simon_file_path = base::FilePath(
+  base::FilePath file_path;
+  if (features::IsOobeSimonEnabled()) {
+    file_path = base::FilePath(
         FILE_PATH_LITERAL("/usr/share/chromeos-assets/animated_splash_screen/"
                           "oobe_wallpaper.jpg"));
-    if (!cached_oobe_wallpaper_.image.isNull() &&
-        cached_oobe_wallpaper_.file_path == simon_file_path) {
-      OnOobeWallpaperDecoded(simon_file_path, cached_oobe_wallpaper_.image);
-    } else {
-      ReadAndDecodeWallpaper(
-          base::BindOnce(&WallpaperControllerImpl::OnOobeWallpaperDecoded,
-                         weak_factory_.GetWeakPtr(), simon_file_path),
-          simon_file_path);
-    }
+  } else if (features::IsOobeJellyModalEnabled()) {
+    file_path =
+        base::FilePath(FILE_PATH_LITERAL("/usr/share/chromeos-assets/wallpaper/"
+                                         "oobe_wallpaper.jpg"));
   } else {
     OnOobeWallpaperDecoded(base::FilePath(),
                            CreateSolidColorWallpaper(kOobeWallpaperColor));
+    return;
+  }
+
+  if (!cached_oobe_wallpaper_.image.isNull() &&
+      cached_oobe_wallpaper_.file_path == file_path) {
+    OnOobeWallpaperDecoded(file_path, cached_oobe_wallpaper_.image);
+  } else {
+    ReadAndDecodeWallpaper(
+        base::BindOnce(&WallpaperControllerImpl::OnOobeWallpaperDecoded,
+                       weak_factory_.GetWeakPtr(), file_path),
+        file_path);
   }
 }
 
@@ -2253,6 +2244,11 @@ void WallpaperControllerImpl::OnGooglePhotosWallpaperDecoded(
                                       ? SetWallpaperResult::kDecodingError
                                       : SetWallpaperResult::kSuccess;
     wallpaper_metrics_manager_->LogWallpaperResult(info.type, wallpaper_result);
+    if (wallpaper_result == SetWallpaperResult::kSuccess) {
+      for (auto& observer : observers_) {
+        observer.OnUserSetWallpaper(account_id);
+      }
+    }
   }
   std::move(callback).Run(!image.isNull());
   OnWallpaperDecoded(account_id, path, info, /*show_wallpaper=*/true, image);
@@ -2283,6 +2279,9 @@ void WallpaperControllerImpl::OnGooglePhotosWallpaperDownloaded(
   // propagation of `CurrentWallpaper` to the WebUI.
   wallpaper_metrics_manager_->LogWallpaperResult(
       WallpaperType::kOnceGooglePhotos, SetWallpaperResult::kSuccess);
+  for (auto& observer : observers_) {
+    observer.OnUserSetWallpaper(params.account_id);
+  }
   std::move(callback).Run(true);
 
   bool is_active_user = IsActiveUser(params.account_id);
@@ -2619,18 +2618,11 @@ bool WallpaperControllerImpl::ShouldCalculateColors() const {
   if (image.isNull()) {
     return false;
   }
-
+  if (IsOobeState()) {
+    return true;
+  }
   session_manager::SessionState session_state =
       Shell::Get()->session_controller()->GetSessionState();
-  // Default OOBE flow
-  if (session_state == session_manager::SessionState::OOBE) {
-    return true;
-  }
-  // OOBE enterprise enrollment -> add person flow
-  if (session_state == session_manager::SessionState::LOGIN_PRIMARY &&
-      oobe_state_ != OobeDialogState::HIDDEN) {
-    return true;
-  }
   // Active session
   if (session_state == session_manager::SessionState::ACTIVE) {
     return true;
@@ -2836,7 +2828,9 @@ void WallpaperControllerImpl::SyncLocalAndRemotePrefs(
     SaveWallpaperToDriveFsAndSyncInfo(account_id, source);
     return;
   }
-  if (!WallpaperPrefManager::ShouldSyncIn(synced_info, local_info)) {
+
+  if (!WallpaperPrefManager::ShouldSyncIn(synced_info, local_info,
+                                          IsOobeState())) {
     return;
   }
   HandleWallpaperInfoSyncedIn(account_id, synced_info);
@@ -3069,14 +3063,6 @@ void WallpaperControllerImpl::OnDriveFsWallpaperChange(
   }
 }
 
-PrefService* WallpaperControllerImpl::GetUserPrefServiceSyncable(
-    const AccountId& account_id) const {
-  if (!wallpaper_controller_client_->IsWallpaperSyncEnabled(account_id))
-    return nullptr;
-  return Shell::Get()->session_controller()->GetUserPrefServiceForUser(
-      account_id);
-}
-
 void WallpaperControllerImpl::HandleDailyWallpaperInfoSyncedIn(
     const AccountId& account_id,
     const WallpaperInfo& info) {
@@ -3158,6 +3144,21 @@ void WallpaperControllerImpl::CleanUpBeforeSettingUserWallpaperInfo(
     sequenced_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&DeleteGooglePhotosCache, account_id));
   }
+}
+
+bool WallpaperControllerImpl::IsOobeState() const {
+  session_manager::SessionState session_state =
+      Shell::Get()->session_controller()->GetSessionState();
+  // Default OOBE flow
+  const bool is_default_oobe_flow =
+      session_state == session_manager::SessionState::OOBE;
+  // OOBE enterprise enrollment -> add person flow
+  const bool is_add_person_flow =
+      session_state == session_manager::SessionState::LOGIN_PRIMARY &&
+      oobe_state_ != OobeDialogState::HIDDEN;
+  DVLOG(1) << __func__ << " is_default_oobe_flow=" << is_default_oobe_flow
+           << " is_add_person_flow" << is_add_person_flow;
+  return is_default_oobe_flow || is_add_person_flow;
 }
 
 }  // namespace ash

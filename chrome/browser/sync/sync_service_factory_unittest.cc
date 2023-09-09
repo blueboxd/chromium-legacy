@@ -15,6 +15,8 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
+#include "chrome/browser/trusted_vault/trusted_vault_service_factory.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
@@ -57,6 +59,8 @@ class SyncServiceFactoryTest : public testing::Test {
                               FaviconServiceFactory::GetDefaultFactory());
     builder.AddTestingFactory(HistoryServiceFactory::GetInstance(),
                               HistoryServiceFactory::GetDefaultFactory());
+    builder.AddTestingFactory(TrustedVaultServiceFactory::GetInstance(),
+                              TrustedVaultServiceFactory::GetDefaultFactory());
     builder.AddTestingFactory(SyncServiceFactory::GetInstance(),
                               SyncServiceFactory::GetDefaultFactory());
     // Some services will only be created if there is a WebDataService.
@@ -86,7 +90,7 @@ class SyncServiceFactoryTest : public testing::Test {
 
   // Returns the collection of default datatypes.
   syncer::ModelTypeSet DefaultDatatypes() {
-    static_assert(48 == syncer::GetNumModelTypes(),
+    static_assert(49 == syncer::GetNumModelTypes(),
                   "When adding a new type, you probably want to add it here as "
                   "well (assuming it is already enabled).");
 
@@ -150,6 +154,10 @@ class SyncServiceFactoryTest : public testing::Test {
     // is null for testing and hence no controller gets instantiated.
     datatypes.Put(syncer::AUTOFILL);
     datatypes.Put(syncer::AUTOFILL_PROFILE);
+    if (base::FeatureList::IsEnabled(
+            syncer::kSyncAutofillWalletCredentialData)) {
+      datatypes.Put(syncer::AUTOFILL_WALLET_CREDENTIAL);
+    }
     datatypes.Put(syncer::AUTOFILL_WALLET_DATA);
     datatypes.Put(syncer::AUTOFILL_WALLET_METADATA);
     datatypes.Put(syncer::AUTOFILL_WALLET_OFFER);

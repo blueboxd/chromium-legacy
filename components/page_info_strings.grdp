@@ -435,8 +435,8 @@
     <message name="IDS_PAGE_INFO_USB_DEVICE_ALLOWED_BY_POLICY_LABEL" desc="The label displayed underneath the device name to inform the user that the item listed is refering to a USB device explicitly allowed by the user's enterprise policy.">
       USB device allowed by your administrator
     </message>
-    <message name="IDS_PAGE_INFO_DELETE_USB_DEVICE" desc="The tooltip displayed when hovering over the button that will remove permission to access a USB device that the user previously granted to the site.">
-      Revoke access
+    <message name="IDS_PAGE_INFO_DELETE_USB_DEVICE_WITH_NAME" desc="The tooltip displayed when hovering over the button that will remove permission to access a USB device that the user previously granted to the site.">
+      Revoke access for <ph name="DEVICE_NAME">$1<ex>USB Keyboard</ex></ph>
     </message>
     <message name="IDS_PAGE_INFO_SERIAL_PORT_SECONDARY_LABEL" desc="The label displayed underneath the port name to inform the user that the permission listed refers to a serial port.">
       Serial port
@@ -444,14 +444,14 @@
     <message name="IDS_PAGE_INFO_SERIAL_PORT_ALLOWED_BY_POLICY_LABEL" desc="The label displayed underneath the device name to inform the user that the item listed is refering to a serial port explicitly allowed by the user's enterprise policy.">
       Serial port allowed by your administrator
     </message>
-    <message name="IDS_PAGE_INFO_DELETE_SERIAL_PORT" desc="The tooltip displayed when hovering over the button that will remove permission to access a serial port that the user previously granted to the site.">
-      Revoke access
+    <message name="IDS_PAGE_INFO_DELETE_SERIAL_PORT_WITH_NAME" desc="The tooltip displayed when hovering over the button that will remove permission to access a serial port that the user previously granted to the site.">
+      Revoke access for <ph name="PORT_NAME">$1<ex>COM1</ex></ph>
     </message>
     <message name="IDS_PAGE_INFO_BLUETOOTH_DEVICE_SECONDARY_LABEL" desc="The label displayed underneath the device name to inform the user that the item refers to a Bluetooth device.">
       Bluetooth device
     </message>
-    <message name="IDS_PAGE_INFO_DELETE_BLUETOOTH_DEVICE" desc="The tooltip displayed when hovering over the button that will remove permission to access a Bluetooth device that the user previously granted to the site.">
-      Revoke access
+    <message name="IDS_PAGE_INFO_DELETE_BLUETOOTH_DEVICE_WITH_NAME" desc="The tooltip displayed when hovering over the button that will remove permission to access a Bluetooth device that the user previously granted to the site.">
+      Revoke access for <ph name="DEVICE_NAME">$1<ex>Pixel Buds Pro</ex></ph>
     </message>
     <message name="IDS_PAGE_INFO_HID_DEVICE_SECONDARY_LABEL" desc="The label displayed underneath the device name to inform the user that the permission listed refers to a HID device.">
       HID device
@@ -459,8 +459,8 @@
     <message name="IDS_PAGE_INFO_HID_DEVICE_ALLOWED_BY_POLICY_LABEL" desc="The label displayed underneath the device name to inform the user that the item listed is refering to a HID device explicitly allowed by the user's enterprise policy.">
       HID device allowed by your administrator
     </message>
-    <message name="IDS_PAGE_INFO_DELETE_HID_DEVICE" desc="The tooltip displayed when hovering over the button that will remove permission to access a HID device that the user previously granted to the site.">
-      Revoke access
+    <message name="IDS_PAGE_INFO_DELETE_HID_DEVICE_WITH_NAME" desc="The tooltip displayed when hovering over the button that will remove permission to access a HID device that the user previously granted to the site.">
+      Revoke access for <ph name="DEVICE_NAME">$1<ex>Stadia Controller</ex></ph>
     </message>
 
     <!-- Site settings link -->
@@ -789,6 +789,35 @@
   </message>
   <message name="IDS_PAGE_INFO_AD_PRIVACY_SUBPAGE_MANAGE_BUTTON" desc="A button label that opens the Ad privacy page, allowing a user to turn on / off the ad privacy settings and to manage the topics and sites that influence ad personalization.">
     Manage ad privacy
+  </message>
+
+  <!-- User Bypass strings -->
+  <!-- TODO(crbug.com/1446230): Update strings and mark as translateable when finalized -->
+  <message name="IDS_PAGE_INFO_COOKIES_SITE_NOT_WORKING_TITLE" translateable="false" desc="">
+    Site not working?
+  </message>
+  <message name="IDS_PAGE_INFO_COOKIES_SITE_NOT_WORKING_DESCRIPTION_TEMPORARY" translateable="false" desc="">
+    Try temporarily allowing third-party cookies, which means less protection but site features are more likely to work
+  </message>
+  <message name="IDS_PAGE_INFO_COOKIES_SITE_NOT_WORKING_DESCRIPTION_PERMANENT" translateable="false" desc="">
+    Try allowing third-party cookies, which means less protection but site features are more likely to work
+  </message>
+  <message name="IDS_PAGE_INFO_COOKIES_THIRD_PARTY_COOKIES_LABEL" translateable="false" desc="">
+    Third-party cookies
+  </message>
+  <message name="IDS_PAGE_INFO_COOKIES_BLOCKING_RESTART_TITLE" translateable="false" desc="">
+    {COUNT, plural,
+              =1 {1 day until Chrome starts blocking cookies again}
+              other {# days until Chrome starts blocking cookies again}}
+  </message>
+  <message name="IDS_PAGE_INFO_COOKIES_BLOCKING_RESTART_DESCRIPTION_TODAY" translateable="false" desc="">
+    You allowed this site to use third-party cookies. This means that most site features should work, but you have less protection.
+  </message>
+  <message name="IDS_PAGE_INFO_COOKIES_PERMANENT_ALLOWED_TITLE" translateable="false" desc="">
+    You allowed third-party cookies for this site
+  </message>
+  <message name="IDS_PAGE_INFO_COOKIES_PERMANENT_ALLOWED_DESCRIPTION" translateable="false" desc="">
+    This means that most site features should work, but you have less protection
   </message>
 
 </grit-part>

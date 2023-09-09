@@ -22,6 +22,8 @@ PrefsAshObserver::~PrefsAshObserver() = default;
 void PrefsAshObserver::Init() {
   // Initial values are obtained when the observers are created, there is no
   // need to do so explcitly.
+
+  // Local state prefs:
   doh_mode_observer_ = std::make_unique<CrosapiPrefObserver>(
       crosapi::mojom::PrefPath::kDnsOverHttpsMode,
       base::BindRepeating(&PrefsAshObserver::OnDnsOverHttpsModeChanged,
@@ -45,9 +47,45 @@ void PrefsAshObserver::Init() {
           crosapi::mojom::PrefPath::
               kAccessToGetAllScreensMediaInSessionAllowedForUrls,
           base::BindRepeating(
-              &PrefsAshObserver::
-                  OnAccessToGetAllScreensMediaInSessionAllowedForUrlsChanged,
-              base::Unretained(this)));
+              &PrefsAshObserver::OnUserProfileValueChanged,
+              base::Unretained(this),
+              prefs::
+                  kManagedAccessToGetAllScreensMediaInSessionAllowedForUrls));
+
+  pdf_ocr_always_active_observer_ = std::make_unique<CrosapiPrefObserver>(
+      crosapi::mojom::PrefPath::kAccessibilityPdfOcrAlwaysActive,
+      base::BindRepeating(&PrefsAshObserver::OnPdfOcrAlwaysActiveChanged,
+                          base::Unretained(this)));
+
+  // User prefs (need caching before user profile is initialized):
+  post_profile_initialized_handlers_
+      [prefs::kManagedAccessToGetAllScreensMediaInSessionAllowedForUrls] =
+          base::BindRepeating(PrefsAshObserver::ListChangedHandler);
+}
+
+void PrefsAshObserver::InitPostProfileInitialized(Profile* profile) {
+  if (!profile || !profile->IsMainProfile()) {
+    DVLOG(1) << "No primary user profile";
+    return;
+  }
+
+  PrefService* const pref_service = profile->GetPrefs();
+  CHECK(pref_service);
+
+  auto pre_profile_initialized_values =
+      std::move(pre_profile_initialized_values_);
+  for (auto& [pref_name, value] : pre_profile_initialized_values) {
+    if (post_profile_initialized_handlers_.find(pref_name) ==
+        post_profile_initialized_handlers_.end()) {
+      DVLOG(1) << "Post profile handler was not found";
+      continue;
+    }
+    const auto& post_profile_initialized_handler =
+        post_profile_initialized_handlers_[pref_name];
+    post_profile_initialized_handler.Run(pref_service, pref_name,
+                                         std::move(value));
+  }
+  is_profile_initialized_ = true;
 }
 
 void PrefsAshObserver::OnDnsOverHttpsModeChanged(base::Value value) {
@@ -90,15 +128,36 @@ void PrefsAshObserver::OnDnsOverHttpsSaltChanged(base::Value value) {
   local_state_->SetString(prefs::kDnsOverHttpsSalt, value.GetString());
 }
 
-void PrefsAshObserver::
-    OnAccessToGetAllScreensMediaInSessionAllowedForUrlsChanged(
-        base::Value value) {
-  base::Value::List* const allowed_origins = value.GetIfList();
-  if (!allowed_origins) {
-    LOG(ERROR) << "Unexpected value for allowed origins";
+void PrefsAshObserver::OnUserProfileValueChanged(const std::string& target_pref,
+                                                 base::Value value) {
+  if (is_profile_initialized_) {
+    if (post_profile_initialized_handlers_.find(target_pref) ==
+        post_profile_initialized_handlers_.end()) {
+      DVLOG(1) << "Post profile handler was not found";
+      return;
+    }
+    post_profile_initialized_handlers_[target_pref].Run(
+        ProfileManager::GetPrimaryUserProfile()->GetPrefs(), target_pref,
+        std::move(value));
+  } else {
+    pre_profile_initialized_values_[target_pref] = std::move(value);
+  }
+}
+
+void PrefsAshObserver::ListChangedHandler(PrefService* pref_service,
+                                          const std::string& pref_name,
+                                          base::Value value) {
+  CHECK(pref_service);
+  const base::Value::List* const value_list = value.GetIfList();
+  if (!value_list) {
+    DVLOG(1) << "Passed value is not a list";
     return;
   }
 
+  pref_service->SetList(pref_name, value_list->Clone());
+}
+
+void PrefsAshObserver::OnPdfOcrAlwaysActiveChanged(base::Value value) {
   Profile* const profile = ProfileManager::GetPrimaryUserProfile();
   if (!profile) {
     LOG(ERROR) << "No primary user profile";
@@ -111,7 +170,12 @@ void PrefsAshObserver::
     return;
   }
 
-  pref_service->SetList(
-      prefs::kManagedAccessToGetAllScreensMediaInSessionAllowedForUrls,
-      allowed_origins->Clone());
+  if (!value.is_bool()) {
+    LOG(WARNING) << "Unexpected value type: "
+                 << base::Value::GetTypeName(value.type());
+    return;
+  }
+
+  pref_service->SetBoolean(::prefs::kAccessibilityPdfOcrAlwaysActive,
+                           value.GetBool());
 }

@@ -257,7 +257,7 @@ if (android_64bit_target_cpu) {
   }
 }
 
-if (is_official_build) {
+if (is_official_build && !skip_secondary_abi_for_cq) {
   # Used for binary size monitoring.
   create_app_bundle_minimal_apks("trichrome_webview_minimal_apks") {
     deps = [ ":trichrome_webview_bundle" ]
@@ -393,24 +393,20 @@ template("webview_alternate_library") {
   }
 }
 
-if (defined(android_secondary_abi_toolchain)) {
+if (android_64bit_target_cpu && !skip_secondary_abi_for_cq) {
   # Note here that on a given system, the webview-only library needs the same
   # library name as the browser library, since the system webview factory will
   # differentiate only by ABI.
-  if (current_toolchain == android_secondary_abi_toolchain) {
+  webview_alternate_library("monochrome_64") {
     # This target is the 32-bit WebView library that pairs with a 64-bit
     # browser. It is suffixed with _64 because its name must match the 64-bit
     # browser library.
-    webview_alternate_library("monochrome_64") {
-    }
-  } else {
-    # Inverse of above, for the original 32-bit case.
-    webview_alternate_library("monochrome") {
-    }
+    enable_target = current_toolchain == android_secondary_abi_toolchain
   }
-} else {
-  # 32-bit WebView library used in 32-bit only builds of 64/32 targets.
-  webview_alternate_library("monochrome_64") {
+
+  # Inverse of above, for the original 32-bit case.
+  webview_alternate_library("monochrome") {
+    enable_target = current_toolchain != android_secondary_abi_toolchain
   }
 }
 
@@ -627,6 +623,7 @@ android_library("browser_java") {
     "//components/embedder_support/android:util_java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/embedder_support/android/metrics:java",
+    "//components/environment_integrity/android:java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/navigation_interception/android:navigation_interception_java",
     "//components/policy/android:policy_java",
@@ -766,6 +763,7 @@ android_library("common_java") {
     "//components/feature_engagement/public:public_java",
     "//components/metrics:metrics_java",
     "//components/network_session_configurator/android:network_session_configurator_java",
+    "//components/permissions/android:core_java",
     "//components/variations:variations_java",
     "//components/viz:viz_java",
     "//content/public/android:content_java",

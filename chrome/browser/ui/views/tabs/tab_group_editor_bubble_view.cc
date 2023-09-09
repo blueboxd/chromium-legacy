@@ -433,12 +433,24 @@ gfx::Rect TabGroupEditorBubbleView::GetAnchorRect() const {
 }
 
 void TabGroupEditorBubbleView::AddedToWidget() {
-  if (!move_menu_item_->GetEnabled()) {
-    const SkColor disabled_color = move_menu_item_->GetCurrentTextColor();
-    move_menu_item_->SetImageModel(
-        views::Button::STATE_DISABLED,
-        ui::ImageModel::FromVectorIcon(kMoveGroupToNewWindowIcon,
-                                       disabled_color));
+  for (views::LabelButton* menu_item : menu_items_) {
+    const bool enabled = menu_item->GetEnabled();
+    views::Button::ButtonState button_state =
+        enabled ? views::Button::STATE_NORMAL : views::Button::STATE_DISABLED;
+
+    const SkColor text_color = menu_item->GetCurrentTextColor();
+    const SkColor icon_color =
+        enabled ? color_utils::DeriveDefaultIconColor(text_color) : text_color;
+
+    const ui::ImageModel& old_image_model =
+        menu_item->GetImageModel(button_state);
+    if (!old_image_model.IsEmpty() && old_image_model.IsVectorIcon()) {
+      ui::VectorIconModel vector_icon_model = old_image_model.GetVectorIcon();
+      const gfx::VectorIcon* icon = vector_icon_model.vector_icon();
+      const ui::ImageModel new_image_model =
+          ui::ImageModel::FromVectorIcon(*icon, icon_color);
+      menu_item->SetImageModel(button_state, new_image_model);
+    }
   }
 }
 
@@ -521,16 +533,16 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
         std::make_unique<views::ToggleButton>(
             base::BindRepeating(&TabGroupEditorBubbleView::OnSaveTogglePressed,
                                 base::Unretained(this))));
-    save_group_toggle_->SetAccessibleName(
-        l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_SAVE_GROUP));
-    save_group_toggle_->SetProperty(views::kElementIdentifierKey,
-                                    kTabGroupEditorBubbleSaveToggleId);
 
     const SavedTabGroupKeyedService* const saved_tab_group_service =
         SavedTabGroupServiceFactory::GetForProfile(browser_->profile());
+    CHECK(saved_tab_group_service);
 
     save_group_toggle_->SetIsOn(
         saved_tab_group_service->model()->Contains(group_));
+    save_group_toggle_->SetAccessibleName(GetSaveToggleAccessibleName());
+    save_group_toggle_->SetProperty(views::kElementIdentifierKey,
+                                    kTabGroupEditorBubbleSaveToggleId);
   }
 
   views::LabelButton* const new_tab_menu_item = AddChildView(CreateMenuItem(
@@ -539,23 +551,25 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
       base::BindRepeating(&TabGroupEditorBubbleView::NewTabInGroupPressed,
                           base::Unretained(this)),
       ui::ImageModel::FromVectorIcon(kNewTabInGroupIcon)));
+  menu_items_.push_back(new_tab_menu_item);
 
-  AddChildView(CreateMenuItem(
+  menu_items_.push_back(AddChildView(CreateMenuItem(
       TAB_GROUP_HEADER_CXMENU_UNGROUP,
       l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_UNGROUP),
       base::BindRepeating(&TabGroupEditorBubbleView::UngroupPressed,
                           base::Unretained(this), header_view),
-      ui::ImageModel::FromVectorIcon(kUngroupIcon)));
+      ui::ImageModel::FromVectorIcon(kUngroupIcon))));
 
-  views::LabelButton* const close_group_menu_item = AddChildView(CreateMenuItem(
+  views::LabelButton* close_group_menu_item = AddChildView(CreateMenuItem(
       TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP, GetTextForCloseButton(),
       base::BindRepeating(&TabGroupEditorBubbleView::CloseGroupPressed,
                           base::Unretained(this)),
       ui::ImageModel::FromVectorIcon(kCloseGroupIcon)));
   close_group_menu_item->SetProperty(views::kElementIdentifierKey,
                                      kTabGroupEditorBubbleCloseGroupButtonId);
+  menu_items_.push_back(close_group_menu_item);
 
-  move_menu_item_ = AddChildView(CreateMenuItem(
+  views::LabelButton* move_menu_item = AddChildView(CreateMenuItem(
       TAB_GROUP_HEADER_CXMENU_MOVE_GROUP_TO_NEW_WINDOW,
       l10n_util::GetStringUTF16(
           IDS_TAB_GROUP_HEADER_CXMENU_MOVE_GROUP_TO_NEW_WINDOW),
@@ -563,9 +577,10 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
           &TabGroupEditorBubbleView::MoveGroupToNewWindowPressed,
           base::Unretained(this)),
       ui::ImageModel::FromVectorIcon(kMoveGroupToNewWindowIcon)));
-  move_menu_item_->SetEnabled(
+  move_menu_item->SetEnabled(
       tab_strip_model->count() !=
       tab_strip_model->group_model()->GetTabGroup(group_)->tab_count());
+  menu_items_.push_back(move_menu_item);
 
   // Setting up the layout.
 
@@ -679,6 +694,12 @@ const std::u16string TabGroupEditorBubbleView::GetTextForCloseButton() {
                    IDS_TAB_GROUP_HEADER_CXMENU_DELETE_GROUP);
 }
 
+const std::u16string TabGroupEditorBubbleView::GetSaveToggleAccessibleName() {
+  return l10n_util::GetStringUTF16(
+      save_group_toggle_->GetIsOn() ? IDS_TAB_GROUP_HEADER_CXMENU_UNSAVE_GROUP
+                                    : IDS_TAB_GROUP_HEADER_CXMENU_SAVE_GROUP);
+}
+
 void TabGroupEditorBubbleView::OnSaveTogglePressed() {
   SavedTabGroupKeyedService* const saved_tab_group_service =
       SavedTabGroupServiceFactory::GetForProfile(browser_->profile());
@@ -694,6 +715,7 @@ void TabGroupEditorBubbleView::OnSaveTogglePressed() {
     saved_tab_group_service->UnsaveGroup(group_);
   }
 
+  save_group_toggle_->SetAccessibleName(GetSaveToggleAccessibleName());
   UpdateGroup();
 }
 

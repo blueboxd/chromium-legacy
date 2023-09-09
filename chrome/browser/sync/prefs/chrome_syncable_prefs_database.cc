@@ -16,6 +16,7 @@
 #include "components/privacy_sandbox/privacy_sandbox_prefs.h"
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/supervised_user/core/common/buildflags.h"
+#include "components/sync/base/model_type.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_pref_names.h"
@@ -50,7 +51,7 @@ enum {
   // common_syncable_prefs_database.cc and
   // ios_chrome_syncable_prefs_database.cc.
   kAppLanguagePromptShown = 100000,
-  kPrefExplicitLanguageAskShown = 100001,
+  // kPrefExplicitLanguageAskShown = 100001,  // depreccated
   kContextualSearchEnabled = 100002,
   kContextualSearchWasFullyPrivacyEnabled = 100003,
   kAccessibilityImageLabelsEnabledAndroid = 100004,
@@ -251,15 +252,24 @@ enum {
   kDynamicColorSeedColor = 100197,
   kLongPressDiacritics = 100198,
   kSidePanelCompanionEntryPinnedToToolbar = 100199,
-  kAccessibilityColorFiltering = 100200,
+  kAccessibilityColorCorrectionEnabled = 100200,
   kAccessibilityColorVisionCorrectionAmount = 100201,
-  kAccessibilityColorVisionDeficiencyType = 100202,
+  kAccessibilityColorVisionCorrectionType = 100202,
   kShowDeskButtonInShelf = 100203,
   kOsDogfoodGroupsSyncPrefName = 100204,
   kProjectorSWAUIPrefsMigrated = 100205,
   kiOSPasswordPromoLastImpressionTimestamp = 100206,
   kiOSPasswordPromoImpressionsCounter = 100207,
   kiOSPasswordPromoOptOut = 100208,
+  kDynamicColorUseKMeans = 100209,
+  kRemapToRightClickNotificationsRemaining = 100210,
+  kSixPackKeyDeleteNotificationsRemaining = 100211,
+  kSixPackKeyHomeNotificationsRemaining = 100212,
+  kSixPackKeyEndNotificationsRemaining = 100213,
+  kSixPackKeyPageUpNotificationsRemaining = 100214,
+  kSixPackKeyPageDownNotificationsRemaining = 100215,
+  kSixPackKeyInsertNotificationsRemaining = 100216,
+  kLiveCaptionMaskOffensiveWords = 100217,
   // See components/sync_preferences/README.md about adding new entries here.
   // vvvvv IMPORTANT! vvvvv
   // Note to the reviewer: IT IS YOUR RESPONSIBILITY to ensure that new syncable
@@ -271,14 +281,11 @@ enum {
 
 const auto& SyncablePreferences() {
   // Non-iOS specific list of syncable preferences.
-  static const auto kChromeSyncablePrefsAllowlist = base::MakeFixedFlatMap<
+  static constexpr auto kChromeSyncablePrefsAllowlist = base::MakeFixedFlatMap<
       base::StringPiece, sync_preferences::SyncablePrefMetadata>({
 #if BUILDFLAG(IS_ANDROID)
     {language::prefs::kAppLanguagePromptShown,
      {syncable_prefs_ids::kAppLanguagePromptShown, syncer::PREFERENCES, false}},
-        {translate::TranslatePrefs::kPrefExplicitLanguageAskShown,
-         {syncable_prefs_ids::kPrefExplicitLanguageAskShown,
-          syncer::PREFERENCES, false}},
         {prefs::kContextualSearchEnabled,
          {syncable_prefs_ids::kContextualSearchEnabled, syncer::PREFERENCES,
           false}},
@@ -337,6 +344,9 @@ const auto& SyncablePreferences() {
         {prefs::kLiveCaptionMediaFoundationRendererErrorSilenced,
          {syncable_prefs_ids::kLiveCaptionMediaFoundationRendererErrorSilenced,
           syncer::PREFERENCES, false}},
+        {prefs::kLiveCaptionMaskOffensiveWords,
+         {syncable_prefs_ids::kLiveCaptionMaskOffensiveWords,
+          syncer::PREFERENCES, false}},
         {prefs::kShowHomeButton,
          {syncable_prefs_ids::kShowHomeButton, syncer::PREFERENCES, false}},
         {prefs::kSidePanelCompanionEntryPinnedToToolbar,
@@ -387,14 +397,14 @@ const auto& SyncablePreferences() {
         {ash::prefs::kAccessibilityAutoclickStabilizePosition,
          {syncable_prefs_ids::kAccessibilityAutoclickStabilizePosition,
           syncer::OS_PREFERENCES, false}},
-        {ash::prefs::kAccessibilityColorFiltering,
-         {syncable_prefs_ids::kAccessibilityColorFiltering,
+        {ash::prefs::kAccessibilityColorCorrectionEnabled,
+         {syncable_prefs_ids::kAccessibilityColorCorrectionEnabled,
           syncer::OS_PREFERENCES, false}},
         {ash::prefs::kAccessibilityColorVisionCorrectionAmount,
          {syncable_prefs_ids::kAccessibilityColorVisionCorrectionAmount,
           syncer::OS_PREFERENCES, false}},
-        {ash::prefs::kAccessibilityColorVisionDeficiencyType,
-         {syncable_prefs_ids::kAccessibilityColorVisionDeficiencyType,
+        {ash::prefs::kAccessibilityColorVisionCorrectionType,
+         {syncable_prefs_ids::kAccessibilityColorVisionCorrectionType,
           syncer::OS_PREFERENCES, false}},
         {ash::prefs::kAccessibilityCursorColor,
          {syncable_prefs_ids::kAccessibilityCursorColor, syncer::OS_PREFERENCES,
@@ -474,6 +484,9 @@ const auto& SyncablePreferences() {
           false}},
         {ash::prefs::kDynamicColorSeedColor,
          {syncable_prefs_ids::kDynamicColorSeedColor, syncer::OS_PREFERENCES,
+          false}},
+        {ash::prefs::kDynamicColorUseKMeans,
+         {syncable_prefs_ids::kDynamicColorUseKMeans, syncer::OS_PREFERENCES,
           false}},
         {ash::prefs::kEnableAutoScreenLock,
          {syncable_prefs_ids::kEnableAutoScreenLock, syncer::OS_PREFERENCES,
@@ -565,6 +578,9 @@ const auto& SyncablePreferences() {
         {ash::prefs::kProjectorSWAUIPrefsMigrated,
          {syncable_prefs_ids::kProjectorSWAUIPrefsMigrated,
           syncer::OS_PREFERENCES, false}},
+        {ash::prefs::kRemapToRightClickNotificationsRemaining,
+         {syncable_prefs_ids::kRemapToRightClickNotificationsRemaining,
+          syncer::OS_PREFERENCES, false}},
         {ash::prefs::kShelfAlignment,
          {syncable_prefs_ids::kShelfAlignment, syncer::OS_PREFERENCES, false}},
         {ash::prefs::kShelfAutoHideBehavior,
@@ -573,6 +589,24 @@ const auto& SyncablePreferences() {
         {ash::prefs::kShowDeskButtonInShelf,
          {syncable_prefs_ids::kShowDeskButtonInShelf, syncer::OS_PREFERENCES,
           false}},
+        {ash::prefs::kSixPackKeyDeleteNotificationsRemaining,
+         {syncable_prefs_ids::kSixPackKeyDeleteNotificationsRemaining,
+          syncer::OS_PREFERENCES, false}},
+        {ash::prefs::kSixPackKeyEndNotificationsRemaining,
+         {syncable_prefs_ids::kSixPackKeyEndNotificationsRemaining,
+          syncer::OS_PREFERENCES, false}},
+        {ash::prefs::kSixPackKeyHomeNotificationsRemaining,
+         {syncable_prefs_ids::kSixPackKeyHomeNotificationsRemaining,
+          syncer::OS_PREFERENCES, false}},
+        {ash::prefs::kSixPackKeyInsertNotificationsRemaining,
+         {syncable_prefs_ids::kSixPackKeyInsertNotificationsRemaining,
+          syncer::OS_PREFERENCES, false}},
+        {ash::prefs::kSixPackKeyPageDownNotificationsRemaining,
+         {syncable_prefs_ids::kSixPackKeyPageDownNotificationsRemaining,
+          syncer::OS_PREFERENCES, false}},
+        {ash::prefs::kSixPackKeyPageUpNotificationsRemaining,
+         {syncable_prefs_ids::kSixPackKeyPageUpNotificationsRemaining,
+          syncer::OS_PREFERENCES, false}},
         {ash::prefs::kSuggestedContentEnabled,
          {syncable_prefs_ids::kSuggestedContentEnabled, syncer::OS_PREFERENCES,
           false}},

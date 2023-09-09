@@ -33,7 +33,6 @@
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_proto_utils.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
-#include "chrome/browser/web_applications/web_app_sources.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/protocol_handler_info.h"
@@ -43,14 +42,15 @@
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/common/permissions_policy/origin_with_possible_wildcards.h"
 #include "third_party/blink/public/common/permissions_policy/policy_helper_public.h"
-#include "third_party/blink/public/common/url_pattern.h"
+#include "third_party/blink/public/common/safe_url_pattern.h"
 #include "third_party/blink/public/mojom/manifest/capture_links.mojom.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
-#include "third_party/blink/public/mojom/url_pattern.mojom.h"
+#include "third_party/blink/public/mojom/safe_url_pattern.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -463,27 +463,27 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
 
   local_data->set_name(web_app.untranslated_name());
 
-  DCHECK(web_app.sources_.any() || web_app.is_uninstalling());
+  DCHECK(!web_app.sources_.Empty() || web_app.is_uninstalling());
   local_data->mutable_sources()->set_system(
-      web_app.sources_[WebAppManagement::kSystem]);
+      web_app.sources_.Has(WebAppManagement::kSystem));
   local_data->mutable_sources()->set_policy(
-      web_app.sources_[WebAppManagement::kPolicy]);
+      web_app.sources_.Has(WebAppManagement::kPolicy));
   local_data->mutable_sources()->set_web_app_store(
-      web_app.sources_[WebAppManagement::kWebAppStore]);
+      web_app.sources_.Has(WebAppManagement::kWebAppStore));
   local_data->mutable_sources()->set_sync(
-      web_app.sources_[WebAppManagement::kSync]);
+      web_app.sources_.Has(WebAppManagement::kSync));
   local_data->mutable_sources()->set_default_(
-      web_app.sources_[WebAppManagement::kDefault]);
+      web_app.sources_.Has(WebAppManagement::kDefault));
   local_data->mutable_sources()->set_sub_app(
-      web_app.sources_[WebAppManagement::kSubApp]);
+      web_app.sources_.Has(WebAppManagement::kSubApp));
   local_data->mutable_sources()->set_kiosk(
-      web_app.sources_[WebAppManagement::kKiosk]);
+      web_app.sources_.Has(WebAppManagement::kKiosk));
   local_data->mutable_sources()->set_command_line(
-      web_app.sources_[WebAppManagement::kCommandLine]);
+      web_app.sources_.Has(WebAppManagement::kCommandLine));
   local_data->mutable_sources()->set_oem(
-      web_app.sources_[WebAppManagement::kOem]);
+      web_app.sources_.Has(WebAppManagement::kOem));
   local_data->mutable_sources()->set_one_drive_integration(
-      web_app.sources_[WebAppManagement::kOneDriveIntegration]);
+      web_app.sources_.Has(WebAppManagement::kOneDriveIntegration));
 
   local_data->set_is_locally_installed(web_app.is_locally_installed());
 
@@ -677,10 +677,8 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
         shortcut_icon_info_proto->set_size_in_px(icon_info.square_size_px);
       }
     }
-  }
 
-  for (const IconSizes& icon_sizes :
-       web_app.downloaded_shortcuts_menu_icons_sizes()) {
+    const IconSizes& icon_sizes = shortcut_info.downloaded_icon_sizes;
     DownloadedShortcutsMenuIconSizesProto* icon_sizes_proto =
         local_data->add_downloaded_shortcuts_menu_icons_sizes();
     for (const SquareSizePx& icon_size :
@@ -837,7 +835,7 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
             AppImageResourceToProto(image_resource);
       }
 
-      const std::vector<blink::UrlPattern>& scope_patterns =
+      const std::vector<blink::SafeUrlPattern>& scope_patterns =
           absl::get<blink::Manifest::HomeTabParams>(tab_strip.home_tab)
               .scope_patterns;
       for (const auto& pattern : scope_patterns) {
@@ -898,6 +896,9 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     }
   }
 
+  local_data->set_is_default_app_for_supported_links(
+      web_app.is_default_app_for_supported_links());
+
   return local_data;
 }
 
@@ -939,30 +940,32 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     return nullptr;
   }
 
-  WebAppSources sources;
-  sources[WebAppManagement::kSystem] = local_data.sources().system();
-  sources[WebAppManagement::kPolicy] = local_data.sources().policy();
-  sources[WebAppManagement::kWebAppStore] =
-      local_data.sources().web_app_store();
-  sources[WebAppManagement::kSync] = local_data.sources().sync();
-  sources[WebAppManagement::kDefault] = local_data.sources().default_();
-  sources[WebAppManagement::kOem] = local_data.sources().oem();
+  WebAppManagementTypes sources;
+  sources.PutOrRemove(WebAppManagement::kSystem, local_data.sources().system());
+  sources.PutOrRemove(WebAppManagement::kPolicy, local_data.sources().policy());
+  sources.PutOrRemove(WebAppManagement::kWebAppStore,
+                      local_data.sources().web_app_store());
+  sources.PutOrRemove(WebAppManagement::kSync, local_data.sources().sync());
+  sources.PutOrRemove(WebAppManagement::kDefault,
+                      local_data.sources().default_());
+  sources.PutOrRemove(WebAppManagement::kOem, local_data.sources().oem());
   if (local_data.sources().has_sub_app()) {
-    sources[WebAppManagement::kSubApp] = local_data.sources().sub_app();
+    sources.PutOrRemove(WebAppManagement::kSubApp,
+                        local_data.sources().sub_app());
   }
   if (local_data.sources().has_kiosk()) {
-    sources[WebAppManagement::kKiosk] = local_data.sources().kiosk();
+    sources.PutOrRemove(WebAppManagement::kKiosk, local_data.sources().kiosk());
   }
   if (local_data.sources().has_command_line()) {
-    sources[WebAppManagement::kCommandLine] =
-        local_data.sources().command_line();
+    sources.PutOrRemove(WebAppManagement::kCommandLine,
+                        local_data.sources().command_line());
   }
   if (local_data.sources().has_one_drive_integration()) {
-    sources[WebAppManagement::kOneDriveIntegration] =
-        local_data.sources().one_drive_integration();
+    sources.PutOrRemove(WebAppManagement::kOneDriveIntegration,
+                        local_data.sources().one_drive_integration());
   }
-  if (!sources.any() && !local_data.is_uninstalling()) {
-    DLOG(ERROR) << "WebApp proto parse error: no any source in sources field, "
+  if (sources.Empty() && !local_data.is_uninstalling()) {
+    DLOG(ERROR) << "WebApp proto parse error: no source in sources field, "
                    "and is_uninstalling isn't true.";
     return nullptr;
   }
@@ -1317,8 +1320,14 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     DLOG(ERROR) << "WebApp proto had more downloaded shortcut icons than infos";
     return nullptr;
   }
-  web_app->SetShortcutsMenuInfo(std::move(shortcuts_menu_item_infos),
-                                std::move(shortcuts_menu_icons_sizes));
+  CHECK_EQ(shortcuts_menu_item_infos.size(), shortcuts_menu_icons_sizes.size());
+  for (size_t i = 0; i < shortcut_menu_item_size; ++i) {
+    shortcuts_menu_item_infos[i].downloaded_icon_sizes =
+        std::move(shortcuts_menu_icons_sizes[i]);
+  }
+  // All elements have been moved.
+  shortcuts_menu_icons_sizes.clear();
+  web_app->SetShortcutsMenuInfo(std::move(shortcuts_menu_item_infos));
 
   std::vector<std::string> additional_search_terms;
   for (const std::string& additional_search_term :
@@ -1635,6 +1644,11 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
 
     web_app->SetIsolationData(WebApp::IsolationData(
         *location, version, controlled_frame_partitions, pending_update_info));
+  }
+
+  if (local_data.has_is_default_app_for_supported_links()) {
+    web_app->SetIsDefaultAppForSupportedLinks(
+        local_data.is_default_app_for_supported_links());
   }
 
   return web_app;

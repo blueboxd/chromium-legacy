@@ -448,8 +448,13 @@ BASE_FEATURE(kChromeRefresh2023,
              "ChromeRefresh2023",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kChromeRefreshSecondary2023,
+             "ChromeRefreshSecondary2023",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 bool IsChromeRefresh2023() {
-  return base::FeatureList::IsEnabled(kChromeRefresh2023);
+  return base::FeatureList::IsEnabled(kChromeRefresh2023) ||
+         base::FeatureList::IsEnabled(kChromeRefreshSecondary2023);
 }
 
 BASE_FEATURE(kChromeWebuiRefresh2023,
@@ -458,7 +463,8 @@ BASE_FEATURE(kChromeWebuiRefresh2023,
 
 bool IsChromeWebuiRefresh2023() {
   return IsChromeRefresh2023() &&
-         base::FeatureList::IsEnabled(kChromeWebuiRefresh2023);
+         (base::FeatureList::IsEnabled(kChromeWebuiRefresh2023) ||
+          base::FeatureList::IsEnabled(kChromeRefreshSecondary2023));
 }
 
 constexpr base::FeatureParam<ChromeRefresh2023Level>::Option
@@ -472,6 +478,12 @@ const base::FeatureParam<ChromeRefresh2023Level> kChromeRefresh2023Level(
     &kChromeRefresh2023LevelOption);
 
 ChromeRefresh2023Level GetChromeRefresh2023Level() {
+  // For simplicity, the secondary field trial to enable chrome refresh will
+  // also enable the omnibox refresh.
+  if (base::FeatureList::IsEnabled(kChromeRefreshSecondary2023)) {
+    return ChromeRefresh2023Level::kLevel2;
+  }
+
   static const ChromeRefresh2023Level level =
       IsChromeRefresh2023() ? kChromeRefresh2023Level.Get()
                             : ChromeRefresh2023Level::kDisabled;

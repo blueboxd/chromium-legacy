@@ -168,7 +168,7 @@ const char* WhatsNewTypeToString(WhatsNewType type) {
       return "ChromeActions";
     case WhatsNewType::kMiniMaps:
       return "MiniMaps";
-    default:
+    case WhatsNewType::kError:
       return nil;
   };
 }

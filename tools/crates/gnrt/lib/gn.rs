@@ -4,10 +4,10 @@
 
 //! GN build file generation.
 
-use crate::config::{BuildConfig, CrateConfig};
+use crate::config::{config_field, BuildConfig};
+use crate::crates::CrateFiles;
 use crate::crates::*;
 use crate::deps;
-use crate::manifest::CargoPackage;
 use crate::paths;
 use crate::platforms;
 
@@ -55,6 +55,8 @@ pub struct RuleConcrete {
     pub epoch: Option<Epoch>,
     pub crate_type: String,
     pub crate_root: String,
+    pub sources: Vec<String>,
+    pub inputs: Vec<String>,
     pub no_std: bool,
     pub edition: String,
     pub cargo_pkg_version: String,
@@ -85,6 +87,7 @@ pub struct RuleConcrete {
 ///
 /// For undocumented fields, refer to the docs in the above file.
 #[derive(Debug)]
+#[allow(clippy::large_enum_variant)]
 pub enum Rule {
     Concrete {
         common: RuleCommon,
@@ -142,32 +145,42 @@ pub struct PerCrateMetadata {
 ///   script for each package.
 /// * `deps_visibility` is the visibility for each package, defining if it can
 ///   be used outside of third-party code and outside of tests.
-pub fn build_files_from_chromium_deps<'a, 'b, Iter, GetManifest>(
+pub fn build_files_from_chromium_deps<'a, 'b, Iter, GetFiles>(
     deps: Iter,
     paths: &paths::ChromiumPaths,
     metadatas: &HashMap<VendoredCrate, PerCrateMetadata>,
-    get_manifest: GetManifest,
+    get_files: GetFiles,
 ) -> HashMap<VendoredCrate, BuildFile>
 where
     Iter: IntoIterator<Item = &'a deps::Package>,
-    GetManifest: Fn(&VendoredCrate) -> &'b CargoPackage,
+    GetFiles: Fn(&VendoredCrate) -> &'b CrateFiles,
 {
     deps.into_iter()
         .filter_map(|dep| {
             let crate_id = dep.crate_id();
             let metadata = metadatas.get(&crate_id).cloned().unwrap_or_default();
-            make_build_file_for_chromium_dep(dep, paths, get_manifest(&crate_id), metadata)
+            make_build_file_for_chromium_dep(dep, paths, get_files(&crate_id), metadata)
         })
         .collect()
 }
 
-pub fn build_file_from_std_deps<'a, 'b, Iter: IntoIterator<Item = &'a deps::Package>>(
+pub fn build_file_from_std_deps<'a, 'b, Iter, GetFiles>(
     deps: Iter,
     paths: &'b paths::ChromiumPaths,
     extra_config: &'b BuildConfig,
-) -> BuildFile {
-    let rules =
-        deps.into_iter().map(|dep| build_rule_from_std_dep(dep, paths, extra_config)).collect();
+    get_files: GetFiles,
+) -> BuildFile
+where
+    Iter: IntoIterator<Item = &'a deps::Package>,
+    GetFiles: Fn(&VendoredCrate) -> &'b CrateFiles,
+{
+    let rules = deps
+        .into_iter()
+        .map(|dep| {
+            let crate_id = dep.crate_id();
+            build_rule_from_std_dep(dep, paths, get_files(&crate_id), extra_config)
+        })
+        .collect();
 
     BuildFile { rules }
 }
@@ -175,13 +188,13 @@ pub fn build_file_from_std_deps<'a, 'b, Iter: IntoIterator<Item = &'a deps::Pack
 pub fn build_rule_from_std_dep(
     dep: &deps::Package,
     paths: &paths::ChromiumPaths,
+    details: &CrateFiles,
     extra_config: &BuildConfig,
 ) -> (String, Rule) {
     // Used by reference if the provided crate config is empty.
     let default_crate_config = Default::default();
     let crate_config =
         extra_config.per_crate_config.get(&*dep.package_name).unwrap_or(&default_crate_config);
-    let all_config = &extra_config.all_config;
 
     let lib_target = dep.lib_target.as_ref().expect("dependency had no lib target");
     let crate_root_from_src = paths.to_gn_abs_path(&lib_target.root).unwrap();
@@ -189,16 +202,20 @@ pub fn build_rule_from_std_dep(
         .build_script
         .as_ref()
         .filter(|_| !crate_config.skip_build_rs)
-        .map(|p| paths.to_gn_abs_path(&p).unwrap());
-    let normalize_target_name = |package_name: &str| package_name.replace("-", "_");
+        .map(|p| paths.to_gn_abs_path(p).unwrap());
+    let normalize_target_name = |package_name: &str| package_name.replace('-', "_");
     let cargo_pkg_authors =
         if dep.authors.is_empty() { None } else { Some(dep.authors.join(", ")) };
 
-    // Helper macro to iterate over a particular config field: first the
-    // crate-specific one, then the overall one.
+    // Helper macro to use the config macro with less repetition.
     macro_rules! config_field {
         ($field:ident) => {
-            do_concat_field(|c| &c.$field, &crate_config, &all_config)
+            crate::config::config_field!(
+                &extra_config,
+                &*dep.package_name,
+                $field,
+                &default_crate_config
+            )
         };
     }
 
@@ -234,6 +251,16 @@ pub fn build_rule_from_std_dep(
     let mut rule = RuleConcrete {
         crate_type: "rlib".to_string(),
         crate_root: format!("//{crate_root_from_src}"),
+        sources: details
+            .sources
+            .iter()
+            .map(|p| format!("//{}", paths.to_gn_abs_path(p).unwrap().to_string()))
+            .collect(),
+        inputs: details
+            .inputs
+            .iter()
+            .map(|p| format!("//{}", paths.to_gn_abs_path(p).unwrap().to_string()))
+            .collect(),
         no_std: true,
         edition: dep.edition.clone(),
         cargo_pkg_version: dep.version.to_string(),
@@ -274,7 +301,7 @@ pub fn build_rule_from_std_dep(
     for dep_of_dep in dep
         .dependencies
         .iter()
-        .filter(|d| exclude_deps.iter().find(|e| e.as_str() == &*d.package_name).is_none())
+        .filter(|d| !exclude_deps.iter().any(|e| e.as_str() == &*d.package_name))
     {
         let cond = match &dep_of_dep.platform {
             None => Condition::Always,
@@ -298,50 +325,35 @@ pub fn build_rule_from_std_dep(
     )
 }
 
-/// Combine a field from `crate_config` and `all_config`, in order. This can be
-/// used to combine config lists, or get the first set `Option<_>` of the two
-/// configs.
-fn do_concat_field<
-    'a,
-    T: 'a,
-    Field: 'a + IntoIterator<Item = T>,
-    F: Fn(&'a CrateConfig) -> Field,
->(
-    field_mapper: F,
-    crate_config: &'a CrateConfig,
-    all_config: &'a CrateConfig,
-) -> impl Iterator<Item = T> {
-    field_mapper(crate_config).into_iter().chain(field_mapper(all_config).into_iter())
-}
-
 /// Generate the `BuildFile` for `dep`, or return `None` if no rules would be
 /// present.
-fn make_build_file_for_chromium_dep<'a>(
+fn make_build_file_for_chromium_dep(
     dep: &deps::Package,
     paths: &paths::ChromiumPaths,
-    manifest: &CargoPackage,
+    details: &CrateFiles,
     metadata: PerCrateMetadata,
 ) -> Option<(VendoredCrate, BuildFile)> {
     let third_party_path_str = paths.third_party.to_str().unwrap();
     let crate_id = dep.crate_id();
-    let crate_abs_path =
-        paths.root.join(paths.third_party.join(ThirdPartySource::build_path(&crate_id)));
+    let crate_path_from_chromium_src =
+        paths.third_party.join(ThirdPartySource::build_path(&crate_id));
+    let crate_abs_path = paths.root.join(&crate_path_from_chromium_src);
 
     let to_gn_path = |abs_path: &Path| {
         abs_path.strip_prefix(&crate_abs_path).unwrap().to_string_lossy().into_owned()
     };
 
-    let cargo_pkg_description = manifest.description.clone();
+    let cargo_pkg_description = dep.description.clone();
     let cargo_pkg_authors =
-        if manifest.authors.is_empty() { None } else { Some(manifest.authors.join(", ")) };
+        if dep.authors.is_empty() { None } else { Some(dep.authors.join(", ")) };
 
     // Template for all the rules in a build file. Several fields are
     // the same for all of a package's rules.
     let mut rule_template = RuleConcrete {
-        edition: manifest.edition.to_string(),
-        cargo_pkg_version: manifest.version.to_string(),
-        cargo_pkg_authors: cargo_pkg_authors,
-        cargo_pkg_name: manifest.name.clone(),
+        edition: dep.edition.to_string(),
+        cargo_pkg_version: dep.version.to_string(),
+        cargo_pkg_authors,
+        cargo_pkg_name: dep.package_name.clone(),
         cargo_pkg_description,
         build_root: dep.build_script.as_ref().map(|p| to_gn_path(p.as_path())),
         build_script_outputs: metadata.build_script_outputs,
@@ -401,6 +413,10 @@ fn make_build_file_for_chromium_dep<'a>(
         let mut bin_rule = rule_template.clone();
         bin_rule.crate_type = "bin".to_string();
         bin_rule.crate_root = to_gn_path(bin_target.root.as_path());
+        bin_rule.sources =
+            details.sources.iter().map(|p| format!("//{}", p.display().to_string())).collect();
+        bin_rule.inputs =
+            details.inputs.iter().map(|p| format!("//{}", p.display().to_string())).collect();
         bin_rule.features = match dep.dependency_kinds.get(&deps::DependencyKind::Normal) {
             Some(per_kind_info) => per_kind_info.features.clone(),
             // As a hack, fill in empty feature set. This happens
@@ -455,6 +471,10 @@ fn make_build_file_for_chromium_dep<'a>(
             lib_details.epoch = Some(Epoch::from_version(&crate_id.version));
             lib_details.crate_type = lib_target.lib_type.to_string();
             lib_details.crate_root = to_gn_path(lib_target.root.as_path());
+            lib_details.sources =
+                details.sources.iter().map(|p| format!("//{}", p.display().to_string())).collect();
+            lib_details.inputs =
+                details.inputs.iter().map(|p| format!("//{}", p.display().to_string())).collect();
             lib_details.features = per_kind_info.features.clone();
             lib_details.gn_variables_lib = metadata.gn_variables.clone();
 
@@ -522,12 +542,12 @@ fn write_build_file<W: Write>(
     if with_preamble {
         writeln!(writer, "{COPYRIGHT_HEADER}\n")?;
         writeln!(writer, r#"import("//build/rust/cargo_crate.gni")"#)?;
-        writeln!(writer, "")?;
+        writeln!(writer)?;
     }
 
     for (name, rule) in &build_file.rules {
         // Don't use writeln!, each rule adds a trailing newline.
-        write!(writer, "{}", RuleFormatter { rule: &rule, name: &name })?;
+        write!(writer, "{}", RuleFormatter { rule, name })?;
     }
     Ok(())
 }
@@ -541,9 +561,9 @@ struct RuleFormatter<'a> {
 impl<'a> fmt::Display for RuleFormatter<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.rule {
-            Rule::Concrete { common, details } => write_concrete(f, &self.name, common, details),
+            Rule::Concrete { common, details } => write_concrete(f, self.name, common, details),
             Rule::Group { common, concrete_target } => {
-                write_group(f, &self.name, common, concrete_target)
+                write_group(f, self.name, common, concrete_target)
             }
         }
     }
@@ -572,13 +592,22 @@ fn write_concrete<W: Write>(
     }
 
     writeln!(writer, "crate_root = \"{}\"", details.crate_root)?;
+    writeln!(writer, "sources = [")?;
+    for s in &details.sources {
+        writeln!(writer, "    \"{}\",", s)?;
+    }
+    writeln!(writer, "]")?;
+    writeln!(writer, "inputs = [")?;
+    for s in &details.inputs {
+        writeln!(writer, "    \"{}\",", s)?;
+    }
+    writeln!(writer, "]")?;
     if details.no_std {
         writeln!(writer, "no_std = true")?;
     }
     // TODO(crbug.com/1291994): actually support unit test generation.
     writeln!(writer, "\n# Unit tests skipped. Generate with --with-tests to include them.")?;
     writeln!(writer, "build_native_rust_unit_tests = false")?;
-    writeln!(writer, "sources = [ \"{}\" ]", details.crate_root)?;
     writeln!(writer, "edition = \"{}\"", details.edition)?;
     writeln!(writer, "cargo_pkg_version = \"{}\"", details.cargo_pkg_version)?;
     if let Some(authors) = &details.cargo_pkg_authors {
@@ -658,7 +687,7 @@ fn write_concrete<W: Write>(
     }
 
     if let Some(raw_gn) = &details.gn_variables_lib {
-        writeln!(writer, "{}", raw_gn)?;
+        writeln!(writer, "{raw_gn}")?;
     }
 
     writeln!(writer, "}}")
@@ -837,7 +866,7 @@ pub fn platform_to_condition(platform: &platforms::Platform) -> String {
 pub fn cfg_expr_to_condition(cfg_expr: &cargo_platform::CfgExpr) -> String {
     match cfg_expr {
         cargo_platform::CfgExpr::Not(expr) => {
-            format!("!({})", cfg_expr_to_condition(&expr))
+            format!("!({})", cfg_expr_to_condition(expr))
         }
         cargo_platform::CfgExpr::All(exprs) => exprs
             .iter()
@@ -865,7 +894,7 @@ pub fn cfg_to_condition(cfg: &cargo_platform::Cfg) -> String {
         },
         cargo_platform::Cfg::KeyPair(key, value) => {
             assert_eq!(key, "target_os");
-            target_os_to_condition(&value)
+            target_os_to_condition(value)
         }
     }
     .to_string()
@@ -891,7 +920,7 @@ fn target_os_to_condition(target_os: &str) -> &'static str {
     panic!("target os {target_os} not found")
 }
 
-static TRIPLE_TO_GN_CONDITION: &'static [(&'static str, &'static str)] = &[
+static TRIPLE_TO_GN_CONDITION: &[(&str, &str)] = &[
     ("i686-linux-android", "is_android && target_cpu == \"x86\""),
     ("x86_64-linux-android", "is_android && target_cpu == \"x64\""),
     ("armv7-linux-android", "is_android && target_cpu == \"arm\""),
@@ -910,7 +939,7 @@ static TRIPLE_TO_GN_CONDITION: &'static [(&'static str, &'static str)] = &[
     ("aarch64-apple-darwin", "is_mac && target_cpu == \"arm64\""),
 ];
 
-static TARGET_OS_TO_GN_CONDITION: &'static [(&'static str, &'static str)] = &[
+static TARGET_OS_TO_GN_CONDITION: &[(&str, &str)] = &[
     ("android", "is_android"),
     ("darwin", "is_mac"),
     ("fuchsia", "is_fuchsia"),
@@ -919,12 +948,11 @@ static TARGET_OS_TO_GN_CONDITION: &'static [(&'static str, &'static str)] = &[
     ("windows", "is_win"),
 ];
 
-static COPYRIGHT_HEADER: &'static str = "# Copyright 2023 The Chromium Authors
+static COPYRIGHT_HEADER: &str = "# Copyright 2023 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.";
 
-static VISIBILITY_CONSTRAINT: &'static str =
-    "# Only for usage from third-party crates. Add the crate to
+static VISIBILITY_CONSTRAINT: &str = "# Only for usage from third-party crates. Add the crate to
 # third_party.toml to use it from first-party code.
 visibility = [ \"//third_party/rust/*\" ]";
 
@@ -946,6 +974,11 @@ mod tests {
                         epoch: Some(Epoch::Major(1)),
                         crate_type: "rlib".to_string(),
                         crate_root: "crate/src/lib.rs".to_string(),
+                        sources: vec![
+                            "crate/src/lib.rs".to_string(),
+                            "crate/src/more.rs".to_string(),
+                        ],
+                        inputs: vec!["crate/src/docs.md".to_string()],
                         no_std: false,
                         edition: "2021".to_string(),
                         cargo_pkg_version: "1.2.3".to_string(),
@@ -1001,10 +1034,16 @@ crate_name = "foo"
 epoch = "1"
 crate_type = "rlib"
 crate_root = "crate/src/lib.rs"
+sources = [
+    "crate/src/lib.rs",
+    "crate/src/more.rs",
+]
+inputs = [
+    "crate/src/docs.md",
+]
 
 # Unit tests skipped. Generate with --with-tests to include them.
 build_native_rust_unit_tests = false
-sources = [ "crate/src/lib.rs" ]
 edition = "2021"
 cargo_pkg_version = "1.2.3"
 cargo_pkg_authors = "Somebody <somebody@foo.org>"
@@ -1063,6 +1102,7 @@ variables = []
                             epoch: Some(Epoch::Major(1)),
                             crate_type: "rlib".to_string(),
                             crate_root: "crate/src/lib.rs".to_string(),
+                            sources: vec!["crate/src/lib.rs".to_string()],
                             edition: "2021".to_string(),
                             cargo_pkg_version: "1.2.3".to_string(),
                             cargo_pkg_name: "foo".to_string(),
@@ -1096,10 +1136,14 @@ crate_type = "rlib"
 # third_party.toml to use it from first-party code.
 visibility = [ "//third_party/rust/*" ]
 crate_root = "crate/src/lib.rs"
+sources = [
+    "crate/src/lib.rs",
+]
+inputs = [
+]
 
 # Unit tests skipped. Generate with --with-tests to include them.
 build_native_rust_unit_tests = false
-sources = [ "crate/src/lib.rs" ]
 edition = "2021"
 cargo_pkg_version = "1.2.3"
 cargo_pkg_name = "foo"
@@ -1122,6 +1166,7 @@ testonly = true
                         epoch: Some(Epoch::Major(1)),
                         crate_type: "rlib".to_string(),
                         crate_root: "crate/src/lib.rs".to_string(),
+                        sources: vec!["crate/src/lib.rs".to_string()],
                         edition: "2021".to_string(),
                         cargo_pkg_version: "1.2.3".to_string(),
                         cargo_pkg_name: "foo".to_string(),
@@ -1183,10 +1228,14 @@ crate_name = "foo"
 epoch = "1"
 crate_type = "rlib"
 crate_root = "crate/src/lib.rs"
+sources = [
+    "crate/src/lib.rs",
+]
+inputs = [
+]
 
 # Unit tests skipped. Generate with --with-tests to include them.
 build_native_rust_unit_tests = false
-sources = [ "crate/src/lib.rs" ]
 edition = "2021"
 cargo_pkg_version = "1.2.3"
 cargo_pkg_name = "foo"
@@ -1245,7 +1294,7 @@ build_script_outputs = [
         // do this by default since it might not work on all terminals.
         let color_arg = format!(
             "--color={option}",
-            option = std::env::var("DIFF_COLOR").map(|s| s).unwrap_or("never".to_string()),
+            option = std::env::var("DIFF_COLOR").unwrap_or("never".to_string()),
         );
 
         // Closure to invoke diff on the inputs. This is wrapped in a closure so

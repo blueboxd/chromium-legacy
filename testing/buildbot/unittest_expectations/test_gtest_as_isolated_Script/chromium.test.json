@@ -9,11 +9,12 @@
         },
         "script": "foo.py",
         "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimensions": {
-            "kvm": "1",
-            "os": "Linux"
-          }
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Linux"
+            }
+          ]
         },
         "test": "foo_test",
         "test_id_prefix": "ninja://chrome/test:foo_test/",

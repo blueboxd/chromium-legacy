@@ -53,6 +53,7 @@
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+class PaymentsSuggestionBottomSheetMediatorTest;
 class Profile;
 class PrefService;
 class RemoveAutofillTester;
@@ -79,6 +80,11 @@ namespace autofill {
 // Handles loading and saving Autofill profile information to the web database.
 // This class also stores the profiles loaded from the database for use during
 // Autofill.
+// The `PersonalDataManager` is a `KeyedService`. However, no separate instance
+// exists for incognito mode. In incognito mode the original profile's
+// `PersonalDataManager` is used. It is the responsibility of the consumers of
+// the `PersonalDataManager` to ensure that no data from an incognito session is
+// persisted unintentionally.
 class PersonalDataManager : public KeyedService,
                             public WebDataServiceConsumer,
                             public AutofillWebDataServiceObserverOnUISequence,
@@ -117,9 +123,7 @@ class PersonalDataManager : public KeyedService,
   // |pref_service| must outlive this instance. |sync_service| is either null
   // (sync disabled by CLI) or outlives this object, it may not have started yet
   // but its preferences can already be queried. |image_fetcher| is to fetch the
-  // customized images for autofill data. |is_off_the_record| informs this
-  // instance whether the user is currently operating in an off-the-record
-  // context.
+  // customized images for autofill data.
   void Init(scoped_refptr<AutofillWebDataService> profile_database,
             scoped_refptr<AutofillWebDataService> account_database,
             PrefService* pref_service,
@@ -128,8 +132,7 @@ class PersonalDataManager : public KeyedService,
             history::HistoryService* history_service,
             syncer::SyncService* sync_service,
             StrikeDatabaseBase* strike_database,
-            AutofillImageFetcher* image_fetcher,
-            bool is_off_the_record);
+            AutofillImageFetcher* image_fetcher);
 
   // KeyedService:
   void Shutdown() override;
@@ -150,6 +153,8 @@ class PersonalDataManager : public KeyedService,
 
   // SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync) override;
+  void OnSyncPaymentsIntegrationEnabledChanged(
+      syncer::SyncService* sync) override;
   void OnSyncShutdown(syncer::SyncService* sync) override;
 
   // AccountInfoGetter:
@@ -233,13 +238,21 @@ class PersonalDataManager : public KeyedService,
   // function determines if the `country_code` is eligible.
   bool IsCountryEligibleForAccountStorage(base::StringPiece country_code) const;
 
+  // Migrates a given kLocalOrSyncable `profile` to source kAccount. This has
+  // multiple side-effects for the profile:
+  // - It is stored in a different backend.
+  // - It receives a new GUID.
+  // Like all database operations, the migration happens asynchronously.
+  // `profile` (the kLocalOrSyncable one) will not be available in the
+  // PersonalDataManager anymore once the migrating has finished.
+  void MigrateProfileToAccount(const AutofillProfile& profile);
+
   // Adds `iban` to the web database as a local IBAN. Returns the guid of
   // `iban` if the add is successful, or an empty string otherwise.
   // Below conditions should be met before adding `iban` to the database:
   // 1) IBAN saving must be enabled.
-  // 2) `is_off_the_record_` is false.
-  // 3) No IBAN exists in `local_ibans_` which has the same guid as`iban`.
-  // 4) Local database is available.
+  // 2) No IBAN exists in `local_ibans_` which has the same guid as`iban`.
+  // 3) Local database is available.
   virtual std::string AddIBAN(const IBAN& iban);
 
   // Updates `iban` which already exists in the web database. This can only
@@ -270,6 +283,12 @@ class PersonalDataManager : public KeyedService,
   // Looks up the cards by server_id.
   virtual void UpdateServerCardsMetadata(
       const std::vector<CreditCard>& credit_cards);
+
+  // Methods to add, update, remove, clear server cvc in the web database.
+  void AddServerCvc(int64_t instrument_id, const std::u16string& cvc);
+  void UpdateServerCvc(int64_t instrument_id, const std::u16string& cvc);
+  void RemoveServerCvc(int64_t instrument_id);
+  void ClearServerCvcs();
 
   // Resets the card for |guid| to the masked state.
   void ResetFullServerCard(const std::string& guid);
@@ -404,7 +423,7 @@ class PersonalDataManager : public KeyedService,
       const AutofillType& type,
       const std::u16string& field_contents,
       bool field_is_autofilled,
-      const std::vector<ServerFieldType>& field_types);
+      const ServerFieldTypeSet& field_types);
 
   // Returns the credit cards to suggest to the user. Those have been deduped
   // and ordered by frecency with the expired cards put at the end of the
@@ -540,11 +559,8 @@ class PersonalDataManager : public KeyedService,
   // Returns the value of the AutofillIBANEnabled pref.
   virtual bool IsAutofillIBANEnabled() const;
 
-  // Returns the value of the AutofillWalletImportEnabled pref.
+  // Returns whether sync's integration with payments is on.
   virtual bool IsAutofillWalletImportEnabled() const;
-
-  // Returns true if the PDM is in the off-the-record mode.
-  bool IsOffTheRecord() { return is_off_the_record_; }
 
   // Partitions `new_profiles` by their sources and sets
   // `synced_local_profiles_` and `account_profiles_` to the corresponding
@@ -625,8 +641,8 @@ class PersonalDataManager : public KeyedService,
   bool ShouldShowPaymentMethodsMandatoryReauthPromo();
   void IncrementPaymentMethodsMandatoryReauthPromoShownCounter();
 
-  // Returns true if the user pref to store and autofill CVC is enabled.
-  virtual bool IsPaymentCvcStorageAndFillingEnabled();
+  // Returns true if the user pref to store CVC is enabled.
+  virtual bool IsPaymentCvcStorageEnabled();
 
   // Used to automatically import addresses without a prompt. Should only be
   // set to true in tests.
@@ -635,9 +651,6 @@ class PersonalDataManager : public KeyedService,
   }
   bool auto_accept_address_imports_for_testing() {
     return auto_accept_address_imports_for_testing_;
-  }
-  void set_is_off_the_record_for_testing(bool is_off_the_record) {
-    is_off_the_record_ = is_off_the_record;
   }
 
  protected:
@@ -692,6 +705,7 @@ class PersonalDataManager : public KeyedService,
   friend class autofill::PersonalDataManagerFactory;
   friend class AutofillMetricsTest;
   friend class FormDataImporterTestBase;
+  friend class ::PaymentsSuggestionBottomSheetMediatorTest;
   friend class PersonalDataManagerTest;
   friend class PersonalDataManagerTestBase;
   friend class PersonalDataManagerHelper;
@@ -886,9 +900,6 @@ class PersonalDataManager : public KeyedService,
   // Prefers verified profiles over unverified ones.
   std::string MostCommonCountryCodeFromProfiles() const;
 
-  // Called when the value of prefs::kAutofillWalletImportEnabled changes.
-  void EnableWalletIntegrationPrefChanged();
-
   // Called when the value of prefs::kAutofillCreditCardEnabled or
   // prefs::kAutofillProfileEnabled changes.
   void EnableAutofillPrefChanged();
@@ -1020,10 +1031,6 @@ class PersonalDataManager : public KeyedService,
   // The image fetcher to fetch customized images for Autofill data.
   raw_ptr<AutofillImageFetcher> image_fetcher_ = nullptr;
 
-  // Whether the user is currently operating in an off-the-record context.
-  // Default value is false.
-  bool is_off_the_record_ = false;
-
   // Whether we have already logged the stored profile, credit card, IBAN, offer
   // and virtual card usage metrics this session.
   mutable bool has_logged_stored_data_metrics_ = false;
@@ -1033,9 +1040,6 @@ class PersonalDataManager : public KeyedService,
 
   // An observer to listen for changes to prefs::kAutofillProfileEnabled.
   std::unique_ptr<BooleanPrefMember> profile_enabled_pref_;
-
-  // An observer to listen for changes to prefs::kAutofillWalletImportEnabled.
-  std::unique_ptr<BooleanPrefMember> wallet_enabled_pref_;
 
   // The database that is used to count guid-keyed strikes to suppress the
   // migration-prompt of new profiles.

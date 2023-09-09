@@ -12,7 +12,7 @@
 #include "ui/color/color_recipe.h"
 
 void AddMaterialSidePanelColorMixer(ui::ColorProvider* provider,
-                                    const ui::ColorProviderManager::Key& key) {
+                                    const ui::ColorProviderKey& key) {
   ui::ColorMixer& mixer = provider->AddMixer();
   mixer[kColorSidePanelContentBackground] = {ui::kColorSysBaseContainer};
   mixer[kColorSidePanelEntryIcon] = {ui::kColorSysPrimary};
@@ -32,7 +32,7 @@ void AddMaterialSidePanelColorMixer(ui::ColorProvider* provider,
   mixer[kColorSidePanelCardSecondaryForeground] = {
       ui::kColorSysOnSurfaceSubtle};
   mixer[kColorSidePanelDivider] = {ui::kColorSysDivider};
-  mixer[kColorSidePanelScrollbarThumb] = {ui::kColorSysPrimary};
+  mixer[kColorSidePanelScrollbarThumb] = {ui::kColorSysTonalOutline};
 
   /* Dialogs within the side panel. */
   mixer[kColorSidePanelDialogBackground] = {ui::kColorSysSurface};
@@ -47,6 +47,11 @@ void AddMaterialSidePanelColorMixer(ui::ColorProvider* provider,
   mixer[kColorSidePanelMenuDivider] = {ui::kColorSysDivider};
   mixer[kColorSidePanelMenuForeground] = {ui::kColorSysOnSurface};
   mixer[kColorSidePanelMenuIcon] = {ui::kColorSysOnSurfaceSubtle};
+
+  /* Toasts within the side panel. */
+  mixer[kColorSidePanelToastBackground] = {ui::kColorSysInverseSurface};
+  mixer[kColorSidePanelToastButton] = {ui::kColorSysInversePrimary};
+  mixer[kColorSidePanelToastForeground] = {ui::kColorSysInverseOnSurface};
 
   mixer[kColorSidePanelBadgeBackground] = {ui::kColorSysNeutralContainer};
   mixer[kColorSidePanelBadgeBackgroundUpdated] = {
@@ -80,16 +85,36 @@ void AddMaterialSidePanelColorMixer(ui::ColorProvider* provider,
       ui::kColorSysOnSurfaceSubtle};
 
   /* Customize Chrome */
+  mixer[kColorSidePanelCustomizeChromeClassicChromeTileBorder] = {
+      ui::kColorSysTonalContainer};
   mixer[kColorSidePanelCustomizeChromeColorPickerCheckmarkBackground] = {
       ui::kColorSysOnSurface};
   mixer[kColorSidePanelCustomizeChromeColorPickerCheckmarkForeground] = {
       ui::kColorSysInverseOnSurface};
   mixer[kColorSidePanelCustomizeChromeColorPickerOptionBackground] = {
       ui::kColorSysNeutralContainer};
+  mixer[kColorSidePanelCustomizeChromeCornerNtpBackground] = {
+      ui::kColorSysTonalContainer};
   mixer[kColorSidePanelCustomizeChromeCustomOptionBackground] = {
       ui::kColorSysTertiaryContainer};
   mixer[kColorSidePanelCustomizeChromeCustomOptionForeground] = {
       ui::kColorSysOnTertiaryContainer};
+  mixer[kColorSidePanelCustomizeChromeMiniNtpActiveTab] = {ui::kColorSysBase};
+  mixer[kColorSidePanelCustomizeChromeMiniNtpArrowsAndRefreshButton] = {
+      ui::kColorSysOnSurfaceSecondary};
+  mixer[kColorSidePanelCustomizeChromeMiniNtpBackground] = {ui::kColorSysBase};
+  mixer[kColorSidePanelCustomizeChromeMiniNtpBorder] = {
+      ui::kColorSysSurfaceVariant};
+  mixer[kColorSidePanelCustomizeChromeMiniNtpCaron] = {
+      ui::kColorSysOnSurfacePrimary};
+  mixer[kColorSidePanelCustomizeChromeMiniNtpCaronContainer] = {
+      ui::kColorSysHeaderContainer};
+  mixer[kColorSidePanelCustomizeChromeMiniNtpChromeLogo] = {
+      ui::kColorSysOnSurface};
+  mixer[kColorSidePanelCustomizeChromeMiniNtpOmnibox] = {
+      ui::kColorSysOmniboxContainer};
+  mixer[kColorSidePanelCustomizeChromeMiniNtpTabStripBackground] = {
+      ui::kColorSysHeader};
   mixer[kColorSidePanelCustomizeChromeThemeBackground] = {
       ui::kColorSysBaseContainerElevated};
   mixer[kColorSidePanelCustomizeChromeThemeCheckmarkBackground] = {
@@ -98,7 +123,7 @@ void AddMaterialSidePanelColorMixer(ui::ColorProvider* provider,
       ui::kColorSysOnPrimary};
   mixer[kColorSidePanelCustomizeChromeThemeSnapshotBackground] = {
       ui::kColorSysTonalContainer};
-  mixer[kColorSidePanelCustomizeChromeWebStoreOptionBorder] = {
+  mixer[kColorSidePanelCustomizeChromeWebStoreBorder] = {
       ui::kColorSysNeutralOutline};
 
   // Note anything below here will only apply if themes aren't being used.

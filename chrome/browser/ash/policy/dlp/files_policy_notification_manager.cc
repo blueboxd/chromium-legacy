@@ -24,8 +24,7 @@
 #include "chrome/browser/ash/file_manager/url_util.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/policy/dlp/dialogs/files_policy_dialog.h"
-#include "chrome/browser/ash/policy/dlp/dialogs/files_policy_error_dialog.h"
-#include "chrome/browser/ash/policy/dlp/dialogs/files_policy_warn_dialog.h"
+#include "chrome/browser/ash/policy/dlp/files_policy_string_util.h"
 #include "chrome/browser/chromeos/policy/dlp/dialogs/policy_dialog_base.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_confidential_file.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_file_destination.h"
@@ -38,10 +37,8 @@
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chromeos/dbus/dlp/dlp_service.pb.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_context.h"
-#include "storage/browser/file_system/file_system_url.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -56,101 +53,117 @@ const base::TimeDelta kOpenFilesAppTimeout = base::Milliseconds(3000);
 
 constexpr char kDlpFilesNotificationId[] = "dlp_files";
 
-// TODO(b/279435843): Replace with translation strings.
-std::u16string GetNotificationTitle(dlp::FileAction action,
-                                    NotificationType type) {
-  switch (action) {
-    case dlp::FileAction::kDownload:
-      return type == NotificationType::kError
-                 ? l10n_util::GetStringUTF16(
-                       IDS_POLICY_DLP_FILES_DOWNLOAD_BLOCK_TITLE)
-                 : u"Review is required before downloading";
-    case dlp::FileAction::kUpload:
-      return type == NotificationType::kError
-                 ? l10n_util::GetStringUTF16(
-                       IDS_POLICY_DLP_FILES_UPLOAD_BLOCK_TITLE)
-                 : u"Review is required before uploading";
-    case dlp::FileAction::kOpen:
-    case dlp::FileAction::kShare:
-      return type == NotificationType::kError
-                 ? l10n_util::GetStringUTF16(
-                       IDS_POLICY_DLP_FILES_OPEN_BLOCK_TITLE)
-                 : u"Review is required before opening";
-    case dlp::FileAction::kCopy:
-      return type == NotificationType::kError
-                 ? u"Blocked copy"
-                 : u"Review is required before copying";
-    case dlp::FileAction::kMove:
-      return type == NotificationType::kError
-                 ? u"Blocked move"
-                 : u"Review is required before moving";
-    case dlp::FileAction::kTransfer:
-      return type == NotificationType::kError
-                 ? u"Blocked transfer"
-                 : u"Review is required before transferring";
-    case dlp::FileAction::kUnknown:
-      NOTREACHED_NORETURN();
+std::u16string GetNotificationTitle(NotificationType type,
+                                    dlp::FileAction action,
+
+                                    absl::optional<size_t> file_count) {
+  switch (type) {
+    case NotificationType::kError:
+      CHECK(file_count.has_value());
+      return policy::files_string_util::GetBlockTitle(action,
+                                                      file_count.value());
+    case NotificationType::kWarning:
+      return policy::files_string_util::GetWarnTitle(action);
   }
 }
 
-// TODO(b/279435843): Replace with translation strings.
-std::u16string GetNotificationMessage(size_t file_count,
-                                      NotificationType type) {
-  if (type == NotificationType::kError) {
-    return file_count == 1 ? u"File was blocked"
-                           : u"Review for further details";
+// Returns the message for notification of `type` and with `file_count`
+// blocked/warned files. `first_file` is the name of the first restricted file
+// and is only used for single file notifications. `policy` is the block reason
+// of the first restricted file and is only used for single file block
+// notifications.
+std::u16string GetNotificationMessage(NotificationType type,
+                                      size_t file_count,
+                                      const std::u16string& first_file,
+                                      absl::optional<Policy> policy) {
+  switch (type) {
+    case NotificationType::kError:
+      CHECK(policy.has_value());
+      return file_count > 1
+                 ? l10n_util::GetStringUTF16(IDS_POLICY_DLP_FILES_BLOCK_MESSAGE)
+                 : policy::files_string_util::GetBlockReasonMessage(
+                       policy.value(), file_count, first_file);
+    case NotificationType::kWarning:
+      const std::u16string placeholder_value =
+          file_count == 1 ? first_file : base::NumberToString16(file_count);
+      return base::ReplaceStringPlaceholders(
+          l10n_util::GetPluralStringFUTF16(IDS_POLICY_DLP_FILES_WARN_MESSAGE,
+                                           file_count),
+          placeholder_value,
+          /*offset=*/nullptr);
   }
-  // kWarning
-  return file_count == 1 ? u"File may contain sensitive content"
-                         : u"Files may contain sensitive content";
 }
 
-// TODO(b/279435843): Replace with translation strings.
-std::u16string GetOkButton(dlp::FileAction action,
-                           size_t file_count,
-                           NotificationType type) {
+std::u16string GetOkButton(NotificationType type,
+                           dlp::FileAction action,
+                           size_t file_count) {
   // Multiple files - both warnings and errors have a Review button.
   if (file_count > 1) {
-    return u"Review";
+    return l10n_util::GetStringUTF16(IDS_POLICY_DLP_FILES_REVIEW_BUTTON);
   }
   // Single file - button text depends on the type.
-  if (type == NotificationType::kError) {
-    return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
-  }
-
-  DCHECK(type == NotificationType::kWarning);
-  switch (action) {
-    case dlp::FileAction::kDownload:
-      return l10n_util::GetStringUTF16(
-          IDS_POLICY_DLP_FILES_DOWNLOAD_WARN_CONTINUE_BUTTON);
-    case dlp::FileAction::kUpload:
-      return l10n_util::GetStringUTF16(
-          IDS_POLICY_DLP_FILES_UPLOAD_WARN_CONTINUE_BUTTON);
-    case dlp::FileAction::kCopy:
-      return l10n_util::GetStringUTF16(
-          IDS_POLICY_DLP_FILES_COPY_WARN_CONTINUE_BUTTON);
-    case dlp::FileAction::kMove:
-      return l10n_util::GetStringUTF16(
-          IDS_POLICY_DLP_FILES_MOVE_WARN_CONTINUE_BUTTON);
-    case dlp::FileAction::kOpen:
-    case dlp::FileAction::kShare:
-      return l10n_util::GetStringUTF16(
-          IDS_POLICY_DLP_FILES_OPEN_WARN_CONTINUE_BUTTON);
-    case dlp::FileAction::kTransfer:
-    case dlp::FileAction::kUnknown:
-      // TODO(crbug.com/1361900): Set proper text when file action is unknown.
-      return l10n_util::GetStringUTF16(
-          IDS_POLICY_DLP_FILES_TRANSFER_WARN_CONTINUE_BUTTON);
+  switch (type) {
+    case NotificationType::kError:
+      return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+    case NotificationType::kWarning:
+      return policy::files_string_util::GetContinueAnywayButton(action);
   }
 }
 
-// TODO(b/279435843): Replace with translation strings.
 std::u16string GetCancelButton(NotificationType type) {
   switch (type) {
     case NotificationType::kError:
-      return u"Dismiss";
+      return l10n_util::GetStringUTF16(IDS_POLICY_DLP_FILES_DISMISS_BUTTON);
     case NotificationType::kWarning:
       return l10n_util::GetStringUTF16(IDS_POLICY_DLP_WARN_CANCEL_BUTTON);
+  }
+}
+
+// TODO(b/279435843): Replace with translation strings.
+std::u16string GetTimeoutNotificationTitle(dlp::FileAction action) {
+  switch (action) {
+    case dlp::FileAction::kDownload:
+      return u"Download cancelled";
+    case dlp::FileAction::kTransfer:
+    case dlp::FileAction::kUnknown:
+      // kUnknown is used for internal checks - treat as kTransfer.
+      return u"Transfer cancelled";
+    case dlp::FileAction::kUpload:
+      return u"Upload cancelled";
+    case dlp::FileAction::kCopy:
+      return u"Copy cancelled";
+    case dlp::FileAction::kMove:
+      return u"Move cancelled";
+    case dlp::FileAction::kOpen:
+    case dlp::FileAction::kShare:
+      return u"Open cancelled";
+  }
+}
+
+// TODO(b/279435843): Replace with translation strings.
+std::u16string GetTimeoutNotificationMessage(dlp::FileAction action) {
+  switch (action) {
+    case dlp::FileAction::kDownload:
+      return u"Confirmation was required to continue downloading your files. "
+             u"Please try again";
+    case dlp::FileAction::kTransfer:
+    case dlp::FileAction::kUnknown:
+      // kUnknown is used for internal checks - treat as kTransfer.
+      return u"Confirmation was required to continue transferring your files. "
+             u"Please try again";
+    case dlp::FileAction::kUpload:
+      return u"Confirmation was required to continue uploading your files. "
+             u"Please try again";
+    case dlp::FileAction::kCopy:
+      return u"Confirmation was required to continue copying your files. "
+             u"Please try again";
+    case dlp::FileAction::kMove:
+      return u"Confirmation was required to continue moving your files. "
+             u"Please try again";
+    case dlp::FileAction::kOpen:
+    case dlp::FileAction::kShare:
+      return u"Confirmation was required to continue opening your files. "
+             u"Please try again";
   }
 }
 
@@ -194,6 +207,11 @@ class PolicyNotificationClickHandler
       base::OnceCallback<void(absl::optional<int>)> callback)
       : callback_(std::move(callback)) {}
 
+  void Close(bool by_user) override {
+    // Treat any close reason as the user clicking the Cancel button.
+    Click(NotificationButton::CANCEL, /*reply=*/absl::nullopt);
+  }
+
   // message_center::NotificationDelegate overrides:
   void Click(const absl::optional<int>& button_index,
              const absl::optional<std::u16string>& reply) override {
@@ -202,6 +220,7 @@ class PolicyNotificationClickHandler
       return;
     }
 
+    // The callback might have already been invoked earlier, so check first.
     if (callback_) {
       std::move(callback_).Run(button_index);
     }
@@ -232,6 +251,17 @@ FilesPolicyNotificationManager::FilesPolicyNotificationManager(
 
 FilesPolicyNotificationManager::~FilesPolicyNotificationManager() = default;
 
+void FilesPolicyNotificationManager::Shutdown() {
+  file_manager::VolumeManager* const volume_manager =
+      file_manager::VolumeManager::Get(Profile::FromBrowserContext(context_));
+  if (volume_manager) {
+    auto* io_task_controller = volume_manager->io_task_controller();
+    if (io_task_controller) {
+      io_task_controller->RemoveObserver(this);
+    }
+  }
+}
+
 void FilesPolicyNotificationManager::ShowDlpBlockedFiles(
     absl::optional<file_manager::io_task::IOTaskId> task_id,
     std::vector<base::FilePath> blocked_files,
@@ -239,9 +269,12 @@ void FilesPolicyNotificationManager::ShowDlpBlockedFiles(
   // If `task_id` has value, the corresponding IOTask should be updated
   // accordingly.
   if (task_id.has_value()) {
+    // Sometimes DLP checks are done before FilesPolicyNotificationManager is
+    // lazily created, so the task is not tracked and the blocked files won't
+    // be added. On the other hand, the IO task may be aborted/canceled
+    // already so the info saved may be not needed anymore.
     if (!HasIOTask(task_id.value())) {
-      // Task already completed and removed.
-      return;
+      AddIOTask(task_id.value(), action);
     }
     for (const auto& file : blocked_files) {
       io_tasks_.at(task_id.value())
@@ -268,10 +301,25 @@ void FilesPolicyNotificationManager::ShowDlpWarning(
   }
 }
 
-void FilesPolicyNotificationManager::ShowsFilesPolicyNotification(
+void FilesPolicyNotificationManager::ShowFilesPolicyNotification(
     const std::string& notification_id,
     const file_manager::io_task::ProgressStatus& status) {
-  file_manager::io_task::IOTaskId id(status.task_id);
+  const file_manager::io_task::IOTaskId id(status.task_id);
+  if (!HasIOTask(id)) {
+    // Task probably timed out.
+    return;
+  }
+  const dlp::FileAction action =
+      status.type == file_manager::io_task::OperationType::kCopy
+          ? dlp::FileAction::kCopy
+          : dlp::FileAction::kMove;
+
+  if (status.HasPolicyError() &&
+      status.policy_error->type ==
+          file_manager::io_task::PolicyErrorType::kDlpWarningTimeout) {
+    ShowDlpWarningTimeoutNotification(action, notification_id);
+    return;
+  }
   auto callback =
       status.HasWarning()
           ? base::BindRepeating(&FilesPolicyNotificationManager::
@@ -281,26 +329,30 @@ void FilesPolicyNotificationManager::ShowsFilesPolicyNotification(
                                     HandleFilesPolicyErrorNotificationClick,
                                 weak_factory_.GetWeakPtr(), id,
                                 notification_id);
-  // The notification should stay visible until actioned upon.
   message_center::RichNotificationData optional_fields;
   optional_fields.never_timeout = true;
-  const dlp::FileAction action =
-      status.type == file_manager::io_task::OperationType::kCopy
-          ? dlp::FileAction::kCopy
-          : dlp::FileAction::kMove;
   const NotificationType type = status.HasWarning() ? NotificationType::kWarning
                                                     : NotificationType::kError;
-  // TODO(aidazolic): Use # warned/blocked files for strings, not total.
-  const size_t file_count = status.sources.size();
+  size_t file_count;
+  std::u16string file_name;
+  absl::optional<Policy> policy;
+  if (status.HasWarning()) {
+    file_count = io_tasks_.at(id).warning_info->files.size();
+    file_name = io_tasks_.at(id).warning_info->files.begin()->title;
+  } else {
+    file_count = io_tasks_.at(id).blocked_files.size();
+    file_name = io_tasks_.at(id).blocked_files.begin()->first.title;
+    policy = io_tasks_.at(id).blocked_files.begin()->second;
+  }
   auto notification = file_manager::CreateSystemNotification(
-      notification_id, GetNotificationTitle(action, type),
-      GetNotificationMessage(status.sources.size(), type),
+      notification_id, GetNotificationTitle(type, action, file_count),
+      GetNotificationMessage(type, file_count, file_name, policy),
       base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
           std::move(callback)),
       optional_fields);
   notification->set_buttons(
       {message_center::ButtonInfo(GetCancelButton(type)),
-       message_center::ButtonInfo(GetOkButton(action, file_count, type))});
+       message_center::ButtonInfo(GetOkButton(type, action, file_count))});
   auto* profile = Profile::FromBrowserContext(context_);
   DCHECK(profile);
   NotificationDisplayServiceFactory::GetForProfile(profile)->Display(
@@ -324,7 +376,7 @@ void FilesPolicyNotificationManager::ShowDialog(
     return;
   }
 
-  // No window found, so open a new one. This should notify us by through
+  // No window found, so open a new one. This should notify us through
   // OnBrowserSetLastActive() to show the dialog.
   LaunchFilesApp(std::make_unique<DialogInfo>(
       base::BindOnce(&FilesPolicyNotificationManager::ShowDialogForIOTask,
@@ -332,6 +384,30 @@ void FilesPolicyNotificationManager::ShowDialog(
       task_id,
       base::BindOnce(&FilesPolicyNotificationManager::OnIOTaskTimedOut,
                      weak_factory_.GetWeakPtr(), task_id)));
+}
+
+void FilesPolicyNotificationManager::ShowDlpWarningTimeoutNotification(
+    dlp::FileAction action,
+    absl::optional<std::string> notification_id) {
+  if (!notification_id.has_value()) {
+    notification_id = GetNotificationId(notification_count_++);
+  }
+  // The notification should stay visible until dismissed.
+  message_center::RichNotificationData optional_fields;
+  optional_fields.never_timeout = true;
+  auto notification = file_manager::CreateSystemNotification(
+      notification_id.value(), GetTimeoutNotificationTitle(action),
+      GetTimeoutNotificationMessage(action),
+      base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
+          base::BindRepeating(&Dismiss, context_, notification_id.value())),
+      optional_fields);
+  notification->set_buttons(
+      {message_center::ButtonInfo(GetCancelButton(NotificationType::kError))});
+  auto* profile = Profile::FromBrowserContext(context_);
+  DCHECK(profile);
+  NotificationDisplayServiceFactory::GetForProfile(profile)->Display(
+      NotificationHandler::Type::TRANSIENT, *notification,
+      /*metadata=*/nullptr);
 }
 
 bool FilesPolicyNotificationManager::HasIOTask(
@@ -376,41 +452,44 @@ void FilesPolicyNotificationManager::HandleDlpWarningNotificationClick(
     return;
   }
 
-  if (button_index == NotificationButton::CANCEL) {
-    std::move(callback).Run(/*should_proceed=*/false);
-  }
-
-  if (button_index == NotificationButton::OK) {
-    DCHECK(files.size() >= 1);
-
-    if (files.size() == 1) {
-      // Action anyway.
-      std::move(callback).Run(/*should_proceed=*/true);
-    } else {
-      // Review.
-      FileTaskInfo info(action);
-      info.destination = destination;
-      info.warning_info.emplace(
-          std::move(files), Policy::kDlp, std::move(callback),
-          base::BindOnce(
-              &FilesPolicyNotificationManager::OnNonIOTaskWarningDialogClicked,
-              weak_factory_.GetWeakPtr(), notification_id, Policy::kDlp));
-      non_io_tasks_.emplace(notification_id, std::move(info));
-      // Always open the Files app. This should notify us by through
-      // OnBrowserSetLastActive() to show the dialog.
-      LaunchFilesApp(std::make_unique<DialogInfo>(
-          base::BindOnce(
-              &FilesPolicyNotificationManager::ShowDialogForNonIOTask,
-              weak_factory_.GetWeakPtr(), notification_id,
-              FilesDialogType::kWarning),
-          notification_id,
-          base::BindOnce(&FilesPolicyNotificationManager::OnNonIOTaskTimedOut,
-                         weak_factory_.GetWeakPtr(), notification_id)));
-    }
-  }
-
-  // Dismiss the notification.
   Dismiss(context_, notification_id);
+
+  switch (button_index.value()) {
+    case NotificationButton::CANCEL:
+      std::move(callback).Run(/*should_proceed=*/false);
+      break;
+    case NotificationButton::OK:
+      DCHECK(files.size() >= 1);
+
+      if (files.size() == 1) {
+        // Action anyway.
+        std::move(callback).Run(/*should_proceed=*/true);
+      } else {
+        // Review.
+        FileTaskInfo info(action);
+        info.destination = destination;
+        info.warning_info.emplace(
+            std::move(files), Policy::kDlp, std::move(callback),
+            base::BindOnce(&FilesPolicyNotificationManager::
+                               OnNonIOTaskWarningDialogClicked,
+                           weak_factory_.GetWeakPtr(), notification_id,
+                           Policy::kDlp));
+        non_io_tasks_.emplace(notification_id, std::move(info));
+        // Always open the Files app. This should notify us through
+        // OnBrowserSetLastActive() to show the dialog.
+        LaunchFilesApp(std::make_unique<DialogInfo>(
+            base::BindOnce(
+                &FilesPolicyNotificationManager::ShowDialogForNonIOTask,
+                weak_factory_.GetWeakPtr(), notification_id,
+                FilesDialogType::kWarning),
+            notification_id,
+            base::BindOnce(&FilesPolicyNotificationManager::OnNonIOTaskTimedOut,
+                           weak_factory_.GetWeakPtr(), notification_id)));
+      }
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 void FilesPolicyNotificationManager::HandleDlpErrorNotificationClick(
@@ -422,42 +501,44 @@ void FilesPolicyNotificationManager::HandleDlpErrorNotificationClick(
     return;
   }
 
-  if (button_index == NotificationButton::CANCEL) {
-    Dismiss(context_, notification_id);
-  }
-
-  if (button_index == NotificationButton::OK) {
-    DCHECK(files.size() >= 1);
-
-    if (files.size() == 1) {
-      // Learn more.
-      ash::NewWindowDelegate::GetPrimary()->OpenUrl(
-          GURL(dlp::kDlpLearnMoreUrl),
-          ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction,
-          ash::NewWindowDelegate::Disposition::kNewForegroundTab);
-    } else {
-      // Review.
-      FileTaskInfo info(action);
-      for (const auto& file : files) {
-        info.blocked_files.emplace(DlpConfidentialFile(file.file_path),
-                                   Policy::kDlp);
-      }
-      non_io_tasks_.emplace(notification_id, std::move(info));
-      // Always open the Files app. This should notify us by through
-      // OnBrowserSetLastActive() to show the dialog.
-      LaunchFilesApp(std::make_unique<DialogInfo>(
-          base::BindOnce(
-              &FilesPolicyNotificationManager::ShowDialogForNonIOTask,
-              weak_factory_.GetWeakPtr(), notification_id,
-              FilesDialogType::kError),
-          notification_id,
-          base::BindOnce(&FilesPolicyNotificationManager::OnNonIOTaskTimedOut,
-                         weak_factory_.GetWeakPtr(), notification_id)));
-    }
-  }
-
-  // Dismiss the notification.
   Dismiss(context_, notification_id);
+
+  switch (button_index.value()) {
+    case NotificationButton::CANCEL:
+      // Nothing more to do.
+      break;
+    case NotificationButton::OK:
+      DCHECK(files.size() >= 1);
+
+      if (files.size() == 1) {
+        // Learn more.
+        ash::NewWindowDelegate::GetPrimary()->OpenUrl(
+            GURL(dlp::kDlpLearnMoreUrl),
+            ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction,
+            ash::NewWindowDelegate::Disposition::kNewForegroundTab);
+      } else {
+        // Review.
+        FileTaskInfo info(action);
+        for (const auto& file : files) {
+          info.blocked_files.emplace(DlpConfidentialFile(file.file_path),
+                                     Policy::kDlp);
+        }
+        non_io_tasks_.emplace(notification_id, std::move(info));
+        // Always open the Files app. This should notify us through
+        // OnBrowserSetLastActive() to show the dialog.
+        LaunchFilesApp(std::make_unique<DialogInfo>(
+            base::BindOnce(
+                &FilesPolicyNotificationManager::ShowDialogForNonIOTask,
+                weak_factory_.GetWeakPtr(), notification_id,
+                FilesDialogType::kError),
+            notification_id,
+            base::BindOnce(&FilesPolicyNotificationManager::OnNonIOTaskTimedOut,
+                           weak_factory_.GetWeakPtr(), notification_id)));
+      }
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 FilesPolicyNotificationManager::WarningInfo::WarningInfo(
@@ -532,21 +613,21 @@ void FilesPolicyNotificationManager::HandleFilesPolicyWarningNotificationClick(
     LOG(WARNING) << "Warning notification clicked but no warning info found";
     return;
   }
+  Dismiss(context_, notification_id);
 
-  if (button_index.value() == NotificationButton::CANCEL) {
-    Cancel(task_id);
-    Dismiss(context_, notification_id);
-  }
-
-  if (button_index.value() == NotificationButton::OK) {
-    if (io_tasks_.at(task_id).warning_info->files.size() == 1) {
-      // Single file - proceed.
-      Resume(task_id);
-    } else {
-      // Multiple files - review.
-      ShowDialog(task_id, FilesDialogType::kWarning);
-    }
-    Dismiss(context_, notification_id);
+  switch (button_index.value()) {
+    case NotificationButton::CANCEL:
+      Cancel(task_id);
+      break;
+    case NotificationButton::OK:
+      if (io_tasks_.at(task_id).warning_info->files.size() == 1) {
+        // Single file - proceed.
+        Resume(task_id);
+      } else {
+        // Multiple files - review.
+        ShowDialog(task_id, FilesDialogType::kWarning);
+      }
+      break;
   }
 }
 
@@ -566,24 +647,30 @@ void FilesPolicyNotificationManager::HandleFilesPolicyErrorNotificationClick(
     return;
   }
 
-  if (button_index.value() == NotificationButton::CANCEL) {
-    Dismiss(context_, notification_id);
-  }
-
-  if (button_index.value() == NotificationButton::OK) {
-    if (io_tasks_.at(task_id).blocked_files.size() == 1) {
-      // Single file - open help page.
-      // TODO(b/283786134): Open page based on policy.
-      ash::NewWindowDelegate::GetPrimary()->OpenUrl(
-          GURL(dlp::kDlpLearnMoreUrl),
-          ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction,
-          ash::NewWindowDelegate::Disposition::kNewForegroundTab);
-    } else {
-      // Multiple files - review.
-      ShowDialog(task_id, FilesDialogType::kError);
-    }
-  }
   Dismiss(context_, notification_id);
+
+  switch (button_index.value()) {
+    case NotificationButton::CANCEL:
+      io_tasks_.erase(task_id);
+      return;
+    case NotificationButton::OK:
+      if (io_tasks_.at(task_id).blocked_files.size() == 1) {
+        // Single file - open help page.
+        // TODO(b/283786134): Open page based on policy.
+        ash::NewWindowDelegate::GetPrimary()->OpenUrl(
+            GURL(dlp::kDlpLearnMoreUrl),
+            ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction,
+            ash::NewWindowDelegate::Disposition::kNewForegroundTab);
+        // Only delete if we don't need to show the dialog.
+        io_tasks_.erase(task_id);
+      } else {
+        // Multiple files - review.
+        ShowDialog(task_id, FilesDialogType::kError);
+      }
+      return;
+    default:
+      NOTREACHED();
+  }
 }
 
 void FilesPolicyNotificationManager::ShowDialogForIOTask(
@@ -596,6 +683,9 @@ void FilesPolicyNotificationManager::ShowDialogForIOTask(
   }
 
   ShowFilesPolicyDialog(std::ref(io_tasks_.at(task_id)), type, modal_parent);
+  if (type == FilesDialogType::kError) {
+    io_tasks_.erase(task_id);
+  }
 }
 
 void FilesPolicyNotificationManager::ShowDialogForNonIOTask(
@@ -626,22 +716,17 @@ void FilesPolicyNotificationManager::ShowFilesPolicyDialog(
       if (info.blocked_files.empty()) {
         return;
       }
-      // TODO(b/285568353): Remove destination.
-      FilesPolicyDialog::CreateErrorDialog(
-          info.blocked_files,
-          info.destination.value_or(DlpFileDestination("https://example.com")),
-          info.action, modal_parent);
+      FilesPolicyDialog::CreateErrorDialog(info.blocked_files, info.action,
+                                           modal_parent);
       break;
     case FilesDialogType::kWarning:
       if (!info.warning_info.has_value()) {
         return;
       }
-      CHECK(info.destination.has_value());
       CHECK(!info.warning_info->warning_callback.is_null());
       FilesPolicyDialog::CreateWarnDialog(
           std::move(info.warning_info->dialog_callback),
-          info.warning_info->files, info.destination.value(), info.action,
-          modal_parent);
+          info.warning_info->files, info.action, modal_parent);
       break;
   }
   // TODO(ayaelattar): Timeout after total 5 minutes.
@@ -713,7 +798,10 @@ void FilesPolicyNotificationManager::OnIOTaskStatus(
   if (!HasIOTask(status.task_id) &&
       status.state == file_manager::io_task::State::kQueued) {
     AddIOTask(status.task_id, action);
-  } else if (HasIOTask(status.task_id) && status.IsCompleted()) {
+    return;
+  }
+
+  if (HasIOTask(status.task_id) && status.IsCompleted()) {
     if (status.state == file_manager::io_task::State::kCancelled &&
         HasWarning(status.task_id)) {
       CHECK(!io_tasks_.at(status.task_id)
@@ -722,8 +810,10 @@ void FilesPolicyNotificationManager::OnIOTaskStatus(
           .Run(/*should_proceed=*/false);
       io_tasks_.at(status.task_id).warning_info.reset();
     }
-    // If it's in a terminal state, stop observing.
-    io_tasks_.erase(status.task_id);
+    // Remove only if the IOTask doesn't have any blocked file.
+    if (!HasBlockedFiles(status.task_id)) {
+      io_tasks_.erase(status.task_id);
+    }
   }
 }
 
@@ -809,8 +899,8 @@ void FilesPolicyNotificationManager::Resume(
     return;
   }
   file_manager::io_task::ResumeParams params;
-  params.policy_params->type =
-      io_tasks_.at(task_id).warning_info->warning_reason;
+  params.policy_params = file_manager::io_task::PolicyResumeParams(
+      io_tasks_.at(task_id).warning_info->warning_reason);
   io_task_controller->Resume(task_id, std::move(params));
 }
 
@@ -828,17 +918,6 @@ void FilesPolicyNotificationManager::Cancel(
   io_task_controller->Cancel(task_id);
 }
 
-void FilesPolicyNotificationManager::Shutdown() {
-  file_manager::VolumeManager* const volume_manager =
-      file_manager::VolumeManager::Get(Profile::FromBrowserContext(context_));
-  if (volume_manager) {
-    auto* io_task_controller = volume_manager->io_task_controller();
-    if (io_task_controller) {
-      io_task_controller->RemoveObserver(this);
-    }
-  }
-}
-
 void FilesPolicyNotificationManager::ShowDlpBlockNotification(
     std::vector<base::FilePath> blocked_files,
     dlp::FileAction action) {
@@ -850,8 +929,12 @@ void FilesPolicyNotificationManager::ShowDlpBlockNotification(
     message_center::RichNotificationData optional_fields;
     optional_fields.never_timeout = true;
     notification = file_manager::CreateSystemNotification(
-        notification_id, GetNotificationTitle(action, NotificationType::kError),
-        GetNotificationMessage(blocked_files.size(), NotificationType::kError),
+        notification_id,
+        GetNotificationTitle(NotificationType::kError, action,
+                             blocked_files.size()),
+        GetNotificationMessage(
+            NotificationType::kError, blocked_files.size(),
+            blocked_files.begin()->BaseName().LossyDisplayName(), Policy::kDlp),
         base::MakeRefCounted<PolicyNotificationClickHandler>(base::BindOnce(
             &FilesPolicyNotificationManager::HandleDlpErrorNotificationClick,
             weak_factory_.GetWeakPtr(), notification_id,
@@ -861,8 +944,8 @@ void FilesPolicyNotificationManager::ShowDlpBlockNotification(
         optional_fields);
     notification->set_buttons(
         {message_center::ButtonInfo(GetCancelButton(NotificationType::kError)),
-         message_center::ButtonInfo(GetOkButton(action, blocked_files.size(),
-                                                NotificationType::kError))});
+         message_center::ButtonInfo(GetOkButton(
+             NotificationType::kError, action, blocked_files.size()))});
   } else {
     std::u16string title;
     std::u16string message;
@@ -924,14 +1007,18 @@ void FilesPolicyNotificationManager::ShowDlpWarningNotification(
     std::vector<message_center::ButtonInfo> buttons = {
         message_center::ButtonInfo(GetCancelButton(NotificationType::kWarning)),
         message_center::ButtonInfo(
-            GetOkButton(action, files.size(), NotificationType::kWarning))};
+            GetOkButton(NotificationType::kWarning, action, files.size()))};
     // The notification should stay visible until actioned upon.
     message_center::RichNotificationData optional_fields;
     optional_fields.never_timeout = true;
     auto notification = file_manager::CreateSystemNotification(
         notification_id,
-        GetNotificationTitle(action, NotificationType::kWarning),
-        GetNotificationMessage(files.size(), NotificationType::kWarning),
+        GetNotificationTitle(NotificationType::kWarning, action,
+                             /*file_count=*/absl::nullopt),
+        GetNotificationMessage(
+            NotificationType::kWarning, files.size(),
+            warning_files.begin()->BaseName().LossyDisplayName(),
+            absl::nullopt),
         base::MakeRefCounted<PolicyNotificationClickHandler>(base::BindOnce(
             &FilesPolicyNotificationManager::HandleDlpWarningNotificationClick,
             weak_factory_.GetWeakPtr(), std::move(notification_id),
@@ -948,8 +1035,8 @@ void FilesPolicyNotificationManager::ShowDlpWarningNotification(
         std::move(callback),
         std::vector<DlpConfidentialFile>{warning_files.begin(),
                                          warning_files.end()},
-        destination, action,
-        /*modal_parent=*/nullptr);
+        action,
+        /*modal_parent=*/nullptr, destination);
   }
   // TODO(ayaelattar): Timeout after total 5 minutes.
 }
@@ -961,10 +1048,17 @@ void FilesPolicyNotificationManager::PauseIOTask(
     dlp::FileAction action,
     Policy warning_reason) {
   auto* io_task_controller = GetIOTaskController(context_);
-  if (!io_task_controller || !HasIOTask(task_id)) {
+  if (!io_task_controller) {
     // Proceed because the IO task can't be paused.
     std::move(callback).Run(/*should_proceed=*/true);
     return;
+  }
+  // Sometimes DLP checks are done before FilesPolicyNotificationManager is
+  // lazily created, so the task is not tracked and the pausing won't happen. On
+  // the other hand, the IO task may be aborted/canceled already so the info
+  // saved may be not needed anymore.
+  if (!HasIOTask(task_id)) {
+    AddIOTask(task_id, action);
   }
 
   io_tasks_.at(task_id).warning_info.emplace(
@@ -974,10 +1068,12 @@ void FilesPolicyNotificationManager::PauseIOTask(
           weak_factory_.GetWeakPtr(), task_id, warning_reason));
 
   file_manager::io_task::PauseParams pause_params;
-  pause_params.policy_params =
-      file_manager::io_task::PolicyPauseParams(Policy::kDlp);
-  // TODO(b/285880274): Pass number of files on PolicyPauseParams because it's
-  // needed for the strings.
+  pause_params.policy_params = file_manager::io_task::PolicyPauseParams(
+      Policy::kDlp, io_tasks_.at(task_id).warning_info->files.size(),
+      io_tasks_.at(task_id)
+          .warning_info->files.begin()
+          ->file_path.BaseName()
+          .value());
   io_task_controller->Pause(task_id, std::move(pause_params));
   // TODO(ayaelattar): Timeout after total 5 minutes.
 }

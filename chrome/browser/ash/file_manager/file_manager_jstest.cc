@@ -158,10 +158,6 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTasks) {
   RunTestURL("foreground/js/file_tasks_unittest.js");
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, GuestOsController) {
-  RunTestURL("foreground/js/guest_os_controller_unittest.js");
-}
-
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTransferController) {
   RunTestURL("foreground/js/file_transfer_controller_unittest.js");
 }
@@ -368,6 +364,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, NudgeContainer) {
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, SearchContainer) {
   RunTestURL("containers/search_container_unittest.js");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, XfBulkPinningDialog) {
+  RunTestURL("widgets/xf_bulk_pinning_dialog_unittest.js");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, XfConflictDialog) {

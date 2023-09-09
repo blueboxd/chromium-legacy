@@ -238,7 +238,7 @@ viz::FrameSinkId GetRemoteFrameSinkId(const HitTestResult& result) {
   if (!object->IsBox())
     return viz::FrameSinkId();
 
-  LayoutPoint local_point(ToRoundedPoint(result.LocalPoint()));
+  PhysicalOffset local_point(ToRoundedPoint(result.LocalPoint()));
   if (!To<LayoutBox>(object)->ComputedCSSContentBoxRect().Contains(local_point))
     return viz::FrameSinkId();
 
@@ -1265,13 +1265,20 @@ void WebFrameWidgetImpl::SendScrollEndEventFromImplSide(
 
   Node* target_node = View()->FindNodeFromScrollableCompositorElementId(
       scroll_latched_element_id);
+  bool target_is_root_scroller = false;
+  if (View()->MainFrameImpl()) {
+    Node* document_node = View()->MainFrameImpl()->GetDocument();
+    if (target_node == document_node) {
+      target_is_root_scroller = true;
+    }
+  }
   if (target_node) {
     // Scrolls consumed entirely by the VisualViewport and not the
     // LayoutViewport should not trigger scrollends on the document. The
     // VisualViewport currently handles scroll but not scrollends. If that
     // changes, we should consider firing scrollend at the visualviewport
     // instead of simply bailing.
-    if (affects_outer_viewport || !target_node->IsDocumentNode()) {
+    if (affects_outer_viewport || !target_is_root_scroller) {
       target_node->GetDocument().EnqueueScrollEndEventForNode(target_node);
     }
   }
@@ -1447,10 +1454,15 @@ WebFrameWidgetImpl::AllocateNewLayerTreeFrameSink() {
 
 void WebFrameWidgetImpl::ReportLongAnimationFrameTiming(
     AnimationFrameTimingInfo* timing_info) {
+  WebSecurityOrigin root_origin = local_root_->GetSecurityOrigin();
   ForEachLocalFrameControlledByWidget(
       local_root_->GetFrame(), [&](WebLocalFrameImpl* local_frame) {
-        DOMWindowPerformance::performance(*local_frame->GetFrame()->DomWindow())
-            ->ReportLongAnimationFrameTiming(timing_info);
+        if (local_frame == local_root_ ||
+            !local_frame->GetSecurityOrigin().IsSameOriginWith(root_origin)) {
+          DOMWindowPerformance::performance(
+              *local_frame->GetFrame()->DomWindow())
+              ->ReportLongAnimationFrameTiming(timing_info);
+        }
       });
 }
 
@@ -4311,8 +4323,7 @@ void WebFrameWidgetImpl::DidUpdateSurfaceAndScreen(
   const bool window_screen_has_changed =
       !Screen::AreWebExposedScreenPropertiesEqual(
           previous_original_screen_infos.current(),
-          original_screen_infos.current(),
-          !RuntimeEnabledFeatures::FullscreenScreenSizeMatchesDisplayEnabled());
+          original_screen_infos.current());
 
   // Update Screens interface data before firing any events. The API is designed
   // to offer synchronous access to the most up-to-date cached screen

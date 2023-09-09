@@ -19,7 +19,7 @@
 #include "chrome/browser/ash/login/users/affiliation.h"
 #include "chrome/browser/ash/login/users/avatar/user_image_manager_registry.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
-#include "chrome/browser/ash/login/users/multi_profile_user_controller_delegate.h"
+#include "chrome/browser/ash/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/ash/policy/core/device_local_account.h"
 #include "chrome/browser/ash/policy/core/device_local_account_policy_service.h"
 #include "chrome/browser/ash/policy/handlers/minimum_version_policy_handler.h"
@@ -55,8 +55,7 @@ class ChromeUserManagerImpl
       public DeviceSettingsService::Observer,
       public policy::DeviceLocalAccountPolicyService::Observer,
       public policy::MinimumVersionPolicyHandler::Observer,
-      public ProfileManagerObserver,
-      public MultiProfileUserControllerDelegate {
+      public ProfileManagerObserver {
  public:
   ChromeUserManagerImpl(const ChromeUserManagerImpl&) = delete;
   ChromeUserManagerImpl& operator=(const ChromeUserManagerImpl&) = delete;
@@ -185,9 +184,6 @@ class ChromeUserManagerImpl
   // associated with that username.
   void UpdatePublicAccountDisplayName(const std::string& user_id);
 
-  // MultiProfileUserControllerDelegate implementation:
-  void OnUserNotAllowed(const std::string& user_email) override;
-
   // Update the number of users.
   void UpdateNumberOfUsers();
 
@@ -200,7 +196,19 @@ class ChromeUserManagerImpl
       const AccountId& account_id,
       const policy::DeviceLocalAccount::Type type) const;
 
-  void UpdateOwnerId();
+  // Invoked as soon as the definitive device ownership is initialized. The
+  // device owner is first determined by either login with a user account or
+  // enterprise enrollment. After every reboot this value needs to be fetched so
+  // that this class holds the correct owner id.
+  void OnDeviceOwnershipInitialized();
+
+  // Goes through the list of users and removes users that are marked as
+  // ephemeral. This method must only be called after the device owner was
+  // initialized. Returns whether some user state was changed or not.
+  bool CleanEphemeralUsers();
+
+  // Returns whether the device owner is yet initialized or not.
+  bool IsDeviceOwnerInitialized();
 
   // Remove non cryptohome data associated with the given `account_id` after
   // having removed all external data (such as wallpapers and avatars)
@@ -237,7 +245,7 @@ class ChromeUserManagerImpl
   base::CallbackListSubscription ephemeral_users_enabled_subscription_;
   base::CallbackListSubscription local_accounts_subscription_;
 
-  std::unique_ptr<MultiProfileUserController> multi_profile_user_controller_;
+  MultiProfileUserController multi_profile_user_controller_;
 
   std::vector<std::unique_ptr<policy::CloudExternalDataPolicyHandler>>
       cloud_external_data_policy_handlers_;
@@ -248,6 +256,7 @@ class ChromeUserManagerImpl
   base::RepeatingClosure remove_non_cryptohome_data_barrier_;
 
   std::unique_ptr<MountPerformer> mount_performer_;
+  bool is_device_owner_initialized_{false};
 
   base::WeakPtrFactory<ChromeUserManagerImpl> weak_factory_{this};
 };

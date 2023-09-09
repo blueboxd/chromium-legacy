@@ -11,16 +11,18 @@
 #include "ash/ash_export.h"
 #include "base/functional/callback_forward.h"
 
+class GURL;
+
 namespace ash {
 
-struct GlanceablesClassroomStudentAssignment;
+struct GlanceablesClassroomAssignment;
 
 // Interface for the classroom browser client.
 class ASH_EXPORT GlanceablesClassroomClient {
  public:
   using IsRoleEnabledCallback = base::OnceCallback<void(bool active)>;
-  using GetStudentAssignmentsCallback = base::OnceCallback<void(
-      std::vector<std::unique_ptr<GlanceablesClassroomStudentAssignment>>
+  using GetAssignmentsCallback = base::OnceCallback<void(
+      std::vector<std::unique_ptr<GlanceablesClassroomAssignment>>
           assignments)>;
 
   virtual ~GlanceablesClassroomClient() = default;
@@ -32,13 +34,34 @@ class ASH_EXPORT GlanceablesClassroomClient {
   // Return student assignments based on different due date/time and submission
   // state filters.
   virtual void GetCompletedStudentAssignments(
-      GetStudentAssignmentsCallback callback) = 0;
+      GetAssignmentsCallback callback) = 0;
   virtual void GetStudentAssignmentsWithApproachingDueDate(
-      GetStudentAssignmentsCallback callback) = 0;
+      GetAssignmentsCallback callback) = 0;
   virtual void GetStudentAssignmentsWithMissedDueDate(
-      GetStudentAssignmentsCallback callback) = 0;
+      GetAssignmentsCallback callback) = 0;
   virtual void GetStudentAssignmentsWithoutDueDate(
-      GetStudentAssignmentsCallback callback) = 0;
+      GetAssignmentsCallback callback) = 0;
+
+  // Returns `true` if current teacher has least one classroom course
+  // as a teacher.
+  virtual void IsTeacherRoleActive(IsRoleEnabledCallback callback) = 0;
+
+  // Return teacher assignments based on different due date/time and graded
+  // state filter.
+  virtual void GetTeacherAssignmentsWithApproachingDueDate(
+      GetAssignmentsCallback callback) = 0;
+  virtual void GetTeacherAssignmentsRecentlyDue(
+      GetAssignmentsCallback callback) = 0;
+  virtual void GetTeacherAssignmentsWithoutDueDate(
+      GetAssignmentsCallback callback) = 0;
+  virtual void GetGradedTeacherAssignments(GetAssignmentsCallback callback) = 0;
+
+  // Opens classroom url.
+  virtual void OpenUrl(const GURL& url) const = 0;
+
+  // Method called when the glanceables bubble UI closes. The client can use
+  // this as a signal to invalidate cached classroom data.
+  virtual void OnGlanceablesBubbleClosed() = 0;
 };
 
 }  // namespace ash

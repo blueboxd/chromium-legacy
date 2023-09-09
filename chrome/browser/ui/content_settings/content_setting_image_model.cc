@@ -358,8 +358,8 @@ void GetIconChromeRefresh(ContentSettingsType type,
                       : &vector_icons::kSensorsChromeRefreshIcon;
       return;
     case ContentSettingsType::POPUPS:
-      *icon = blocked ? &kOpenInNewOffChromeRefreshIcon
-                      : &kOpenInNewChromeRefreshIcon;
+      *icon =
+          blocked ? &vector_icons::kIframeOffIcon : &vector_icons::kIframeIcon;
       return;
     default:
       NOTREACHED();
@@ -615,9 +615,13 @@ void ContentSettingImageModel::SetIcon(ContentSettingsType type, bool blocked) {
 }
 
 void ContentSettingImageModel::SetFramebustBlockedIcon() {
-  // TODO(https://crbug.com/1447073): Set a cr23 icon for blocked redirect.
-  icon_ = &kBlockedRedirectIcon;
-  icon_badge_ = &vector_icons::kBlockedBadgeIcon;
+  if (features::IsChromeRefresh2023()) {
+    icon_ = &kOpenInNewOffChromeRefreshIcon;
+    icon_badge_ = &gfx::kNoneIcon;
+  } else {
+    icon_ = &kBlockedRedirectIcon;
+    icon_badge_ = &vector_icons::kBlockedBadgeIcon;
+  }
 }
 
 // Generic blocked content settings --------------------------------------------
@@ -932,8 +936,9 @@ bool ContentSettingMediaImageModel::UpdateAndGetVisibility(
 
   // If neither the microphone nor the camera stream was accessed then no icon
   // is displayed in the omnibox.
-  if (state_ == PageSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED)
+  if (state_.Empty()) {
     return false;
+  }
 
 #if BUILDFLAG(IS_MAC)
   // Don't show an icon when the user has not made a decision yet for
@@ -1050,19 +1055,19 @@ bool ContentSettingMediaImageModel::UpdateAndGetVisibility(
 }
 
 bool ContentSettingMediaImageModel::IsMicAccessed() {
-  return ((state_ & PageSpecificContentSettings::MICROPHONE_ACCESSED) != 0);
+  return state_.Has(PageSpecificContentSettings::kMicrophoneAccessed);
 }
 
 bool ContentSettingMediaImageModel::IsCamAccessed() {
-  return ((state_ & PageSpecificContentSettings::CAMERA_ACCESSED) != 0);
+  return state_.Has(PageSpecificContentSettings::kCameraAccessed);
 }
 
 bool ContentSettingMediaImageModel::IsMicBlockedOnSiteLevel() {
-  return ((state_ & PageSpecificContentSettings::MICROPHONE_BLOCKED) != 0);
+  return state_.Has(PageSpecificContentSettings::kMicrophoneBlocked);
 }
 
 bool ContentSettingMediaImageModel::IsCameraBlockedOnSiteLevel() {
-  return ((state_ & PageSpecificContentSettings::CAMERA_BLOCKED) != 0);
+  return state_.Has(PageSpecificContentSettings::kCameraBlocked);
 }
 
 #if BUILDFLAG(IS_MAC)
@@ -1212,7 +1217,9 @@ bool ContentSettingStorageAccessImageModel::UpdateAndGetVisibility(
   // TODO(crbug.com/1433644): Update icon and tooltips.
   SetIcon(ContentSettingsType::COOKIES, /*blocked=*/has_blocked_requests);
   // set_explanatory_string_id(IDS_BLOCKED_POPUPS_EXPLANATORY_TEXT);
-  // set_tooltip(l10n_util::GetStringUTF16(IDS_BLOCKED_POPUPS_TOOLTIP));
+  set_tooltip(l10n_util::GetStringUTF16(
+      has_blocked_requests ? IDS_STORAGE_ACCESS_PERMISSION_BLOCKED_TOOLTIP
+                           : IDS_STORAGE_ACCESS_PERMISSION_ALLOWED_TOOLTIP));
   return true;
 }
 
@@ -1284,7 +1291,7 @@ ContentSettingNotificationsImageModel::CreateBubbleModelImpl(
 // Base class ------------------------------------------------------------------
 
 gfx::Image ContentSettingImageModel::GetIcon(SkColor icon_color) const {
-  int icon_size = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
+  int icon_size = GetLayoutConstant(LOCATION_BAR_TRAILING_ICON_SIZE);
   return gfx::Image(gfx::CreateVectorIconWithBadge(*icon_, icon_size,
                                                    icon_color, *icon_badge_));
 }

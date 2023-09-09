@@ -1,7 +1,7 @@
 include_rules = [
-  "+components/file_access",
   "+components/services/filesystem",
   "+mojo/public",
   "+third_party/ced",
+  "+third_party/zlib",
   "+third_party/zlib/google",
 ]

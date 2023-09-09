@@ -13,6 +13,7 @@
 #include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/process/process_iterator.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/test/bind.h"
@@ -30,7 +31,7 @@
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util/linux_util.h"
 #include "chrome/updater/util/posix_util.h"
-#include "chrome/updater/util/unittest_util.h"
+#include "chrome/updater/util/unit_test_util.h"
 #include "chrome/updater/util/util.h"
 #include "components/crx_file/crx_verifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,19 +68,14 @@ absl::optional<base::FilePath> GetInstalledExecutablePath(UpdaterScope scope) {
   return path->Append(GetExecutableRelativePath());
 }
 
-bool WaitForUpdaterExit(UpdaterScope scope) {
+bool WaitForUpdaterExit(UpdaterScope /*scope*/) {
+  const std::set<base::FilePath::StringType> process_names =
+      GetTestProcessNames();
   return WaitFor(
-      base::BindRepeating(
-          [](UpdaterScope scope) {
-            return !base::NamedProcessIterator(
-                        GetExecutableRelativePath().MaybeAsASCII(), nullptr)
-                        .NextProcessEntry() &&
-                   !base::NamedProcessIterator(kLauncherName, nullptr)
-                        .NextProcessEntry();
-          },
-          scope),
-      base::BindLambdaForTesting(
-          [] { VLOG(0) << "Still waiting for updater to exit..."; }));
+      [&process_names]() {
+        return base::ranges::none_of(process_names, IsProcessRunning);
+      },
+      [] { VLOG(0) << "Still waiting for updater to exit..."; });
 }
 
 void Uninstall(UpdaterScope scope) {
@@ -148,7 +144,7 @@ void EnterTestMode(const GURL& update_url,
                   .SetDeviceManagementURL(device_management_url.spec())
                   .SetUseCUP(false)
                   .SetInitialDelay(base::Milliseconds(100))
-                  .SetServerKeepAliveTime(base::Seconds(1))
+                  .SetServerKeepAliveTime(base::Seconds(2))
                   .SetCrxVerifierFormat(crx_file::VerifierFormat::CRX3)
                   .SetOverinstallTimeout(TestTimeouts::action_timeout())
                   .SetIdleCheckPeriod(idle_timeout)

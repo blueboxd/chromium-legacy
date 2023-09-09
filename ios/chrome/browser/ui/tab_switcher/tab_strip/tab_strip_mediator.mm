@@ -110,22 +110,22 @@ NSString* GetActiveTabId(WebStateList* web_state_list) {
 
 - (void)didChangeWebStateList:(WebStateList*)webStateList
                        change:(const WebStateListChange&)change
-                    selection:(const WebStateSelection&)selection {
+                       status:(const WebStateListStatus&)status {
   DCHECK_EQ(_webStateList, webStateList);
   if (webStateList->IsBatchInProgress()) {
     return;
   }
 
   switch (change.type()) {
-    case WebStateListChange::Type::kSelectionOnly:
+    case WebStateListChange::Type::kStatusOnly:
       // TODO(crbug.com/1442546): Move the implementation from
       // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason to
       // here. Note that here is reachable only when `reason` ==
       // ActiveWebStateChangeReason::Activated.
       break;
     case WebStateListChange::Type::kDetach:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // webStateList:didDetachWebState:atIndex: to here.
+    case WebStateListChange::Type::kInsert:
+      [self populateConsumerItems];
       break;
     case WebStateListChange::Type::kMove:
       // Do nothing when a WebState is moved.
@@ -133,22 +133,7 @@ NSString* GetActiveTabId(WebStateList* web_state_list) {
     case WebStateListChange::Type::kReplace:
       // Do nothing when a WebState is replaced.
       break;
-    case WebStateListChange::Type::kInsert: {
-      [self populateConsumerItems];
-      break;
-    }
   }
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    didDetachWebState:(web::WebState*)webState
-              atIndex:(int)atIndex {
-  DCHECK_EQ(_webStateList, webStateList);
-  if (webStateList->IsBatchInProgress()) {
-    return;
-  }
-
-  [self populateConsumerItems];
 }
 
 - (void)webStateList:(WebStateList*)webStateList

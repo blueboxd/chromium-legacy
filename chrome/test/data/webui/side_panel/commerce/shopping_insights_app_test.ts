@@ -8,7 +8,6 @@ import 'chrome://shopping-insights-side-panel.top-chrome/app.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {String16} from 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-webui.js';
 import {ShoppingInsightsAppElement} from 'chrome://shopping-insights-side-panel.top-chrome/app.js';
-import {PriceTrackingSection} from 'chrome://shopping-insights-side-panel.top-chrome/price_tracking_section.js';
 import {ShoppingListApiProxyImpl} from 'chrome://shopping-insights-side-panel.top-chrome/shared/commerce/shopping_list_api_proxy.js';
 import {PageCallbackRouter, PriceInsightsInfo, PriceInsightsInfo_PriceBucket, ProductInfo} from 'chrome://shopping-insights-side-panel.top-chrome/shared/shopping_list.mojom-webui.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
@@ -323,9 +322,6 @@ suite('ShoppingInsightsAppTest', () => {
       shoppingListApi.setResultFor(
           'isShoppingListEligible', Promise.resolve({eligible: eligible}));
       shoppingListApi.setResultFor(
-          'getProductInfoForCurrentUrl',
-          Promise.resolve({productInfo: productInfo}));
-      shoppingListApi.setResultFor(
           'getPriceInsightsInfoForCurrentUrl',
           Promise.resolve({priceInsightsInfo: priceInsights1}));
       shoppingListApi.setResultFor(
@@ -344,13 +340,10 @@ suite('ShoppingInsightsAppTest', () => {
       await shoppingListApi.whenCalled('isShoppingListEligible');
       await flushTasks();
 
-      const section = shoppingInsightsApp.shadowRoot!.querySelector(
-                          '#priceTrackingSection') as PriceTrackingSection;
-      assertEquals(isVisible(section), eligible);
-      if (eligible) {
-        assertEquals(section.priceInsightsInfo, priceInsights1);
-        assertEquals(section.productInfo, productInfo);
-      }
+      assertEquals(
+          isVisible(shoppingInsightsApp.shadowRoot!.querySelector(
+              '#priceTrackingSection')),
+          eligible);
     });
   });
 });

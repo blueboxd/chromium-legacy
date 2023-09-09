@@ -66,7 +66,6 @@ NavigationItemImpl::~NavigationItemImpl() {
 NavigationItemImpl::NavigationItemImpl(
     const proto::NavigationItemStorage& storage)
     : unique_id_(GetUniqueIDInConstructor()),
-      original_request_url_(storage.url()),
       referrer_(ReferrerFromProto(storage.referrer())),
       title_(base::UTF8ToUTF16(storage.title())),
       // Use reload transition type to avoid incorrect increase for other
@@ -76,16 +75,25 @@ NavigationItemImpl::NavigationItemImpl(
       user_agent_type_(UserAgentTypeFromProto(storage.user_agent())),
       http_request_headers_(
           HttpRequestHeadersFromProto(storage.http_request_headers())) {
+  // While the virtual URL is persisted, the original request URL and the
+  // non-virtual URL needs to be set upon NavigationItem creation. Since
+  // GetVirtualURL() returns `url_` for the non-overridden case, this will
+  // also update the virtual URL reported by this object.
+  url_ = original_request_url_ = GURL(storage.url());
+
   // In the cases where the URL to be restored is not an HTTP URL, it is
   // very likely that we can't restore the page (e.g. for files, it could
   // be an external PDF that has been deleted), don't restore it to avoid
   // issues.
   const GURL virtual_url(storage.virtual_url());
-  if (original_request_url_.SchemeIsHTTPOrHTTPS()) {
-    url_ = original_request_url_;
-    virtual_url_ = virtual_url;
+  if (url_.SchemeIsHTTPOrHTTPS()) {
+    if (virtual_url.is_valid() && virtual_url != url_) {
+      virtual_url_ = virtual_url;
+    }
   } else {
-    url_ = virtual_url;
+    if (virtual_url.is_valid()) {
+      url_ = virtual_url;
+    }
   }
 }
 
@@ -368,7 +376,7 @@ NSString* NavigationItemImpl::GetDescription() const {
           base::UTF16ToUTF8(title_).c_str(), transition_type_,
           GetUserAgentTypeDescription(user_agent_type_).c_str(),
           is_created_from_hash_change_ ? @"true" : @"false",
-          navigation_initiation_type_,
+          static_cast<int>(navigation_initiation_type_),
           GetHttpsUpgradeTypeDescription(https_upgrade_type_).c_str()];
 }
 #endif

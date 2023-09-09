@@ -181,8 +181,24 @@ void AccountSelectionViewAndroid::ShowFailureDialog(
     const std::string& top_frame_for_display,
     const absl::optional<std::string>& iframe_for_display,
     const std::string& idp_for_display,
+    const blink::mojom::RpContext& rp_context,
     const content::IdentityProviderMetadata& idp_metadata) {
-  // TODO(crbug.com/1357790): add support on Android.
+  if (!RecreateJavaObject()) {
+    // It's possible that the constructor cannot access the bottom sheet clank
+    // component. That case may be temporary but we can't let users in a
+    // waiting state so report that AccountSelectionView is dismissed instead.
+    delegate_->OnDismiss(DismissReason::kOther);
+    return;
+  }
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> idp_metadata_obj =
+      ConvertToJavaIdentityProviderMetadata(env, idp_metadata);
+  Java_AccountSelectionBridge_showFailureDialog(
+      env, java_object_internal_,
+      ConvertUTF8ToJavaString(env, top_frame_for_display),
+      ConvertUTF8ToJavaString(env, iframe_for_display.value_or("")),
+      ConvertUTF8ToJavaString(env, idp_for_display), idp_metadata_obj,
+      ConvertRpContextToJavaString(env, rp_context));
 }
 
 std::string AccountSelectionViewAndroid::GetTitle() const {
@@ -205,12 +221,16 @@ absl::optional<std::string> AccountSelectionViewAndroid::GetSubtitle() const {
 
 content::WebContents* AccountSelectionViewAndroid::ShowModalDialog(
     const GURL& url) {
-  // TODO(crbug.com/1429083): Support the AuthZ modal dialog on Android.
-  return nullptr;
+  JNIEnv* env = AttachCurrentThread();
+  return content::WebContents::FromJavaWebContents(
+      Java_AccountSelectionBridge_showModalDialog(
+          env, java_object_internal_,
+          url::GURLAndroid::FromNativeGURL(env, url)));
 }
 
 void AccountSelectionViewAndroid::CloseModalDialog() {
-  // TODO(crbug.com/1430830): Support IDP sign-in modal dialog on Android.
+  JNIEnv* env = AttachCurrentThread();
+  Java_AccountSelectionBridge_closeModalDialog(env, java_object_internal_);
 }
 
 void AccountSelectionViewAndroid::OnAccountSelected(
@@ -234,6 +254,10 @@ void AccountSelectionViewAndroid::OnDismiss(JNIEnv* env, jint dismiss_reason) {
   delegate_->OnDismiss(static_cast<DismissReason>(dismiss_reason));
 }
 
+void AccountSelectionViewAndroid::OnSignInToIdp(JNIEnv* env) {
+  delegate_->OnSigninToIdP();
+}
+
 bool AccountSelectionViewAndroid::RecreateJavaObject() {
   if (delegate_->GetNativeView() == nullptr ||
       delegate_->GetNativeView()->GetWindowAndroid() == nullptr) {
@@ -245,6 +269,7 @@ bool AccountSelectionViewAndroid::RecreateJavaObject() {
   }
   java_object_internal_ = Java_AccountSelectionBridge_create(
       AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
+      delegate_->GetWebContents()->GetJavaWebContents(),
       delegate_->GetNativeView()->GetWindowAndroid()->GetJavaObject());
   return !!java_object_internal_;
 }

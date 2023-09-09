@@ -10,6 +10,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/functional/callback_helpers.h"
+#include "base/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -27,6 +28,7 @@
 #include "extensions/common/extension_id.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/vector_icon_types.h"
@@ -460,7 +462,7 @@ ExtensionsMenuMainPageView::ExtensionsMenuMainPageView(
       .AddChildren(
           // Subheader section.
           views::Builder<views::FlexLayoutView>()
-              .SetCrossAxisAlignment(views::LayoutAlignment::kStart)
+              .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
               // Add top dialog margins, since its the first element, and
               // horizontal dialog margins. Bottom margin will be added by the
               // next view (in general, vertical margins should be added by the
@@ -514,10 +516,16 @@ ExtensionsMenuMainPageView::ExtensionsMenuMainPageView(
                       views::CreateVectorImageButtonWithNativeTheme(
                           base::BindRepeating(
                               [](Browser* browser) {
+                                base::RecordAction(base::UserMetricsAction(
+                                    "Extensions.Menu."
+                                    "ExtensionsSettingsOpened"));
                                 chrome::ShowExtensions(browser);
                               },
                               browser_),
-                          vector_icons::kSettingsIcon, icon_size))
+                          features::IsChromeRefresh2023()
+                              ? vector_icons::kSettingsChromeRefreshIcon
+                              : vector_icons::kSettingsIcon,
+                          icon_size))
                       .SetProperty(
                           views::kMarginsKey,
                           gfx::Insets::TLBR(0, horizontal_spacing, 0, 0))

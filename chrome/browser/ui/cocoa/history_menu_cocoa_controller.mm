@@ -23,6 +23,10 @@
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/window_open_disposition.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using content::OpenURLParams;
 using content::Referrer;
 
@@ -65,7 +69,8 @@ void OpenURLForItem(HistoryMenuBridge::HistoryItem node,
 }  // namespace
 
 @implementation HistoryMenuCocoaController {
-  raw_ptr<HistoryMenuBridge, DanglingUntriaged> _bridge;  // weak; owns us
+  raw_ptr<HistoryMenuBridge, AcrossTasksDanglingUntriaged>
+      _bridge;  // weak; owns us
 }
 
 - (instancetype)initWithBridge:(HistoryMenuBridge*)bridge {

@@ -28,7 +28,8 @@ class EditLabel : public views::LabelButton {
   EditLabel& operator=(const EditLabel&) = delete;
   ~EditLabel() override;
 
-  void OnActionUpdated();
+  void OnActionInputBindingUpdated();
+  // Returns true if the EditLabel shows "?".
   bool IsInputUnbound();
 
  private:
@@ -36,11 +37,11 @@ class EditLabel : public views::LabelButton {
 
   void Init();
   void SetTextLabel(const std::u16string& text);
+  void SetNameTagState(bool is_error, const std::u16string& error_tooltip);
   std::u16string CalculateAccessibleName();
 
   void SetToDefault();
   void SetToFocused();
-  void SetToUnbound();
 
   // views::View:
   void OnFocus() override;

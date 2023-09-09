@@ -36,7 +36,7 @@ GL_EXPORT IDCompositionDevice3* GetDirectCompositionDevice();
 GL_EXPORT bool DirectCompositionSupported();
 
 // Returns true if video overlays are supported and should be used. Overridden
-// with --enable_direct_composition_video_overlays=1 and
+// with --enable-direct-composition-video-overlays and
 // --disable_direct_composition_video_overlays=1. This function is thread safe.
 GL_EXPORT bool DirectCompositionOverlaysSupported();
 
@@ -77,6 +77,9 @@ GL_EXPORT UINT GetDXGIWaitableSwapChainMaxQueuedFrames();
 
 // Returns true if there is an HDR capable display connected.
 GL_EXPORT bool DirectCompositionSystemHDREnabled();
+
+// Returns true if the window is displayed on an HDR capable display.
+GL_EXPORT bool DirectCompositionMonitorHDREnabled(HWND window);
 
 // Returns the collected DXGI information.
 GL_EXPORT gfx::mojom::DXGIInfoPtr GetDirectCompositionHDRMonitorDXGIInfo();

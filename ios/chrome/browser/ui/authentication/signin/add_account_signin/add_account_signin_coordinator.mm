@@ -73,7 +73,7 @@ using signin_metrics::PromoAction;
 
 #pragma mark - SigninCoordinator
 
-- (void)interruptWithAction:(SigninCoordinatorInterruptAction)action
+- (void)interruptWithAction:(SigninCoordinatorInterrupt)action
                  completion:(ProceduralBlock)completion {
   if (self.userSigninCoordinator) {
     DCHECK(!self.addAccountSigninManager);
@@ -87,17 +87,8 @@ using signin_metrics::PromoAction;
   }
 
   DCHECK(self.addAccountSigninManager);
-  switch (action) {
-    case SigninCoordinatorInterruptActionNoDismiss:
-    case SigninCoordinatorInterruptActionDismissWithoutAnimation:
-      [self.addAccountSigninManager interruptAddAccountAnimated:NO
-                                                     completion:completion];
-      break;
-    case SigninCoordinatorInterruptActionDismissWithAnimation:
-      [self.addAccountSigninManager interruptAddAccountAnimated:YES
-                                                     completion:completion];
-      break;
-  }
+  [self.addAccountSigninManager interruptWithAction:action
+                                         completion:completion];
 }
 
 #pragma mark - ChromeCoordinator
@@ -124,7 +115,7 @@ using signin_metrics::PromoAction;
           << base::SysNSStringToUTF8([self description]);
       userEmail = base::SysUTF8ToNSString(primaryAccount.email);
       break;
-    case AddAccountSigninIntent::kAddNewAccount:
+    case AddAccountSigninIntent::kAddAccount:
       // The user wants to add a new account, don't pre-fill any email.
       break;
     case AddAccountSigninIntent::kSigninAndSyncReauth:
@@ -216,7 +207,7 @@ using signin_metrics::PromoAction;
     case AddAccountSigninIntent::kSigninAndSyncReauth:
       [self presentUserConsentWithIdentity:identity];
       break;
-    case AddAccountSigninIntent::kAddNewAccount:
+    case AddAccountSigninIntent::kAddAccount:
     case AddAccountSigninIntent::kPrimaryAccountReauth:
       [self addAccountDoneWithSigninResult:signinResult identity:identity];
       break;
@@ -294,7 +285,8 @@ using signin_metrics::PromoAction;
                        @"userSigninCoordinator: %p, addAccountSigninManager: "
                        @"%p, alertCoordinator: %p>",
                        self.class.description, self,
-                       static_cast<int>(self.signinIntent), self.accessPoint,
+                       static_cast<int>(self.signinIntent),
+                       static_cast<int>(self.accessPoint),
                        self.userSigninCoordinator, self.addAccountSigninManager,
                        self.alertCoordinator];
 }

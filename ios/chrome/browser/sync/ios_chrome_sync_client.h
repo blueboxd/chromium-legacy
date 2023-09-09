@@ -9,7 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task/single_thread_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "components/browser_sync/browser_sync_client.h"
 #include "components/trusted_vault/trusted_vault_client.h"
 
@@ -49,6 +49,9 @@ class IOSChromeSyncClient : public browser_sync::BrowserSyncClient {
       override;
   sync_preferences::PrefServiceSyncable* GetPrefServiceSyncable() override;
   sync_sessions::SessionSyncService* GetSessionSyncService() override;
+  password_manager::PasswordReceiverService* GetPasswordReceiverService()
+      override;
+  password_manager::PasswordSenderService* GetPasswordSenderService() override;
   syncer::DataTypeController::TypeVector CreateDataTypeControllers(
       syncer::SyncService* sync_service) override;
   invalidation::InvalidationService* GetInvalidationService() override;
@@ -67,8 +70,6 @@ class IOSChromeSyncClient : public browser_sync::BrowserSyncClient {
   // The sync api component factory in use by this client.
   std::unique_ptr<browser_sync::SyncApiComponentFactoryImpl> component_factory_;
 
-  std::unique_ptr<trusted_vault::TrustedVaultClient> trusted_vault_client_;
-
   // Members that must be fetched on the UI thread but accessed on their
   // respective backend threads.
   scoped_refptr<autofill::AutofillWebDataService> profile_web_data_service_;
@@ -79,7 +80,7 @@ class IOSChromeSyncClient : public browser_sync::BrowserSyncClient {
       account_password_store_;
 
   // The task runner for the `web_data_service_`, if any.
-  scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
+  scoped_refptr<base::SequencedTaskRunner> db_thread_;
 };
 
 #endif  // IOS_CHROME_BROWSER_SYNC_IOS_CHROME_SYNC_CLIENT_H__

@@ -5,27 +5,35 @@
 #ifndef CHROMEOS_ASH_COMPONENTS_SCALABLE_IPH_SCALABLE_IPH_DELEGATE_H_
 #define CHROMEOS_ASH_COMPONENTS_SCALABLE_IPH_SCALABLE_IPH_DELEGATE_H_
 
+#include "base/observer_list_types.h"
 #include "chromeos/ash/components/scalable_iph/iph_session.h"
+#include "chromeos/ash/components/scalable_iph/scalable_iph_constants.h"
 
 namespace scalable_iph {
 
-// `ScalableIphDelegate` is responsible to delivering IPH. `ScalableIph` class
-// is responsible to triggering an IPH. After the class has decided to trigger
-// an IPH, this delegate is responsible to deliver it.
+// `ScalableIphDelegate` is responsible to delegate tasks to Chrome or Ash. In
+// contrast, `ScalableIph` is responsible to decide on which/when to trigger an
+// IPH.
+//
+// This delegate is responsible for:
+// - Show an IPH with a request from `ScalableIph`.
+// - Observe events in Ash, e.g. Network state change, etc.
 class ScalableIphDelegate {
  public:
-  // Have a virtul destructor as we can put `ScalableIphDelegate` in unique_ptr.
-  virtual ~ScalableIphDelegate() = default;
+  // Observer for observing events in Ash.
+  class Observer : public base::CheckedObserver {
+   public:
+    virtual void OnConnectionChanged(bool online) {}
 
-  // TODO(b/284158779): Details of the interface TBD.
-  enum class ActionType {
-    // `kNoActionInvalid` is used as an initial value. This should not be used
-    // in prod.
-    kNoActionInvalid,
+    // TODO(b/283863495): Add device unlock event.
   };
 
+  // Have a virtual destructor as we can put `ScalableIphDelegate` in
+  // unique_ptr.
+  virtual ~ScalableIphDelegate() = default;
+
   struct Action {
-    ActionType action_type = ActionType::kNoActionInvalid;
+    ActionType action_type = ActionType::kInvalid;
 
     // An event name notified to the feature engagement framework on the
     // execution of this action. Typically this event name will be set to
@@ -46,6 +54,12 @@ class ScalableIphDelegate {
   };
 
   struct BubbleParams {
+    BubbleParams();
+    BubbleParams(const BubbleParams&);
+    BubbleParams& operator=(const BubbleParams&);
+    ~BubbleParams();
+
+    std::string bubble_id;
     std::string text;
     BubbleIcon icon = BubbleIcon::kNoIcon;
     Button button;
@@ -53,7 +67,21 @@ class ScalableIphDelegate {
     bool operator==(const BubbleParams& params) const = default;
   };
 
+  // TODO(b/284158831): Define types of notifications, such as wallpaper,
+  // printer, etc.
+  enum class NotificationImageType {
+    kNoImage = 0,
+    kWallpaper,
+  };
+
   struct NotificationParams {
+    NotificationParams();
+    NotificationParams(const NotificationParams&);
+    NotificationParams& operator=(const NotificationParams&);
+    ~NotificationParams();
+
+    NotificationImageType image_type = NotificationImageType::kNoImage;
+    std::string notification_id;
     std::string title;
     std::string text;
     Button button;
@@ -76,6 +104,22 @@ class ScalableIphDelegate {
   // IPH to a user with specified behavior via `NotificationParams`.
   virtual void ShowNotification(const NotificationParams& params,
                                 std::unique_ptr<IphSession> iph_session) = 0;
+
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
+
+  // Returns true if a device is online.
+  virtual bool IsOnline() = 0;
+
+  // Returns client age in days. The day count starts from 0. Day 0 means the
+  // first 24 hours. Note that this can return a negative number if a profile
+  // creation time is in a future time for some reason, e.g. Clock has changed.
+  virtual int ClientAgeInDays() = 0;
+
+  // Performs `action_type` in Ash or Chrome. This method is for `ScalableIph`
+  // keyed service to delegate actions. Other code (e.g. Ui code) MUST use
+  // `PerformAction` in `IphSession` or `ScalableIph`.
+  virtual void PerformActionForScalableIph(ActionType action_type) = 0;
 };
 
 }  // namespace scalable_iph

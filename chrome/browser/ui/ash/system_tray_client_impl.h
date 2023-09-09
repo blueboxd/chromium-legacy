@@ -60,6 +60,7 @@ class SystemTrayClientImpl : public ash::SystemTrayClient,
 
   // ash::SystemTrayClient:
   void ShowSettings(int64_t display_id) override;
+  void ShowAccountSettings() override;
   void ShowBluetoothSettings() override;
   void ShowBluetoothSettings(const std::string& device_id) override;
   void ShowBluetoothPairingDialog(
@@ -112,6 +113,8 @@ class SystemTrayClientImpl : public ash::SystemTrayClient,
   void ShowEolInfoPage() override;
   void RecordEolNoticeShown() override;
   bool IsUserFeedbackEnabled() override;
+  void ShowTouchpadSettings() override;
+  void ShowRemapKeysSubpage(int device_id) override;
 
  protected:
   // Used by mocks in tests.

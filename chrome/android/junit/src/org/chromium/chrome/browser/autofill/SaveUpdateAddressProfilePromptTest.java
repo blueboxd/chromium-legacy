@@ -17,7 +17,6 @@ import android.widget.TextView;
 
 import androidx.test.filters.SmallTest;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -34,7 +33,6 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
-import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.editors.AddressEditorCoordinator;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -93,7 +91,7 @@ public class SaveUpdateAddressProfilePromptTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         PersonalDataManager.setInstanceForTesting(mPersonalDataManager);
-        SyncServiceFactory.overrideForTests(mSyncService);
+        SyncServiceFactory.setInstanceForTesting(mSyncService);
         IdentityServicesProvider.setInstanceForTests(mIdentityServicesProvider);
         when(mIdentityServicesProvider.getIdentityManager(any())).thenReturn(mIdentityManager);
 
@@ -104,11 +102,6 @@ public class SaveUpdateAddressProfilePromptTest {
         mJniMocker.mock(
                 SaveUpdateAddressProfilePromptControllerJni.TEST_HOOKS, mPromptControllerJni);
         mJniMocker.mock(AutofillProfileBridgeJni.TEST_HOOKS, mAutofillProfileBridgeJni);
-    }
-
-    @After
-    public void tearDown() {
-        PersonalDataManager.setInstanceForTesting(null);
     }
 
     private void createAndShowPrompt(boolean isUpdate) {

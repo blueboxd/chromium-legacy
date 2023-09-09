@@ -46,6 +46,7 @@
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/test/fake_window_state.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -53,6 +54,7 @@
 #include "ash/wm/work_area_insets.h"
 #include "ash/wm/workspace/backdrop_controller.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
+#include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace_controller_test_api.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
@@ -2195,6 +2197,13 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropForSplitViewTest) {
     EXPECT_TRUE(child->IsVisible());
   }
 
+  BackdropController* backdrop_controller =
+      GetActiveWorkspaceController(Shell::GetPrimaryRootWindow())
+          ->layout_manager()
+          ->backdrop_controller();
+  ASSERT_EQ(backdrop_controller->backdrop_window(),
+            default_container()->children()[0]);
+
   EXPECT_EQ(window1.get(), default_container()->children()[1]);
   EXPECT_EQ(default_container()->bounds(),
             default_container()->children()[0]->bounds());
@@ -2204,6 +2213,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropForSplitViewTest) {
   // container. Its bounds should be the same as the snapped window's bounds.
   split_view_controller()->SnapWindow(
       window1.get(), SplitViewController::SnapPosition::kPrimary);
+
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   // One of the windows in the default container is the overview
   // no_windows_widget window. Exclude it.
@@ -2258,37 +2268,6 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropForSplitViewTest) {
             default_container()->children()[0]->bounds());
 }
 
-namespace {
-
-class TestState : public WindowState::State {
- public:
-  TestState() = default;
-
-  TestState(const TestState&) = delete;
-  TestState& operator=(const TestState&) = delete;
-
-  ~TestState() override = default;
-
-  // WindowState::State overrides:
-  void OnWMEvent(WindowState* window_state, const WMEvent* event) override {
-    if (event->type() == WM_EVENT_SYSTEM_UI_AREA_CHANGED)
-      num_system_ui_area_changes_++;
-  }
-  WindowStateType GetType() const override { return WindowStateType::kNormal; }
-  void AttachState(WindowState* window_state,
-                   WindowState::State* previous_state) override {}
-  void DetachState(WindowState* window_state) override {}
-
-  int num_system_ui_area_changes() const { return num_system_ui_area_changes_; }
-
-  void reset_num_system_ui_area_changes() { num_system_ui_area_changes_ = 0; }
-
- private:
-  int num_system_ui_area_changes_ = 0;
-};
-
-}  // namespace
-
 class WorkspaceLayoutManagerSystemUiAreaTest : public AshTestBase {
  public:
   WorkspaceLayoutManagerSystemUiAreaTest() = default;
@@ -2307,9 +2286,10 @@ class WorkspaceLayoutManagerSystemUiAreaTest : public AshTestBase {
 
     window_ = CreateTestWindowInShellWithBounds(gfx::Rect(0, 0, 100, 100));
     WindowState* window_state = WindowState::Get(window_);
-    test_state_ = new TestState();
-    window_state->SetStateObject(
-        std::unique_ptr<WindowState::State>(test_state_));
+    auto test_state =
+        std::make_unique<FakeWindowState>(WindowStateType::kNormal);
+    test_state_ = test_state.get();
+    window_state->SetStateObject(std::move(test_state));
   }
 
   void TearDown() override {
@@ -2319,11 +2299,11 @@ class WorkspaceLayoutManagerSystemUiAreaTest : public AshTestBase {
 
  protected:
   aura::Window* window() { return window_; }
-  TestState* test_state() { return test_state_; }
+  FakeWindowState* test_state() { return test_state_; }
 
  private:
   raw_ptr<aura::Window, ExperimentalAsh> window_ = nullptr;
-  raw_ptr<TestState, ExperimentalAsh> test_state_ = nullptr;
+  raw_ptr<FakeWindowState, ExperimentalAsh> test_state_ = nullptr;
 };
 
 // Expect that showing and hiding the unified system tray triggers a system ui

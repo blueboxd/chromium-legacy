@@ -14,9 +14,10 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/permissions/notification_permission_review_service_factory.h"
-#include "chrome/browser/permissions/unused_site_permissions_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/safety_hub/notification_permission_review_service_factory.h"
+#include "chrome/browser/ui/safety_hub/unused_site_permissions_service.h"
+#include "chrome/browser/ui/safety_hub/unused_site_permissions_service_factory.h"
 #include "chrome/browser/ui/webui/settings/site_settings_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
@@ -25,7 +26,6 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/permissions/constants.h"
-#include "components/permissions/unused_site_permissions_service.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -118,7 +118,7 @@ void SafetyHubHandler::HandleAllowPermissionsAgainForUnusedSite(
   CHECK(args[0].is_string());
   const std::string& origin_str = args[0].GetString();
 
-  permissions::UnusedSitePermissionsService* service =
+  UnusedSitePermissionsService* service =
       UnusedSitePermissionsServiceFactory::GetForProfile(profile_);
 
   url::Origin origin = url::Origin::Create(GURL(origin_str));
@@ -134,7 +134,7 @@ void SafetyHubHandler::HandleUndoAllowPermissionsAgainForUnusedSite(
 
   auto [origin, permissions, constraints] =
       GetUnusedSitePermissionsFromDict(args[0].GetDict());
-  permissions::UnusedSitePermissionsService* service =
+  UnusedSitePermissionsService* service =
       UnusedSitePermissionsServiceFactory::GetForProfile(profile_);
 
   service->UndoRegrantPermissionsForOrigin(permissions, constraints, origin);
@@ -144,7 +144,7 @@ void SafetyHubHandler::HandleUndoAllowPermissionsAgainForUnusedSite(
 
 void SafetyHubHandler::HandleAcknowledgeRevokedUnusedSitePermissionsList(
     const base::Value::List& args) {
-  permissions::UnusedSitePermissionsService* service =
+  UnusedSitePermissionsService* service =
       UnusedSitePermissionsServiceFactory::GetForProfile(profile_);
   service->ClearRevokedPermissionsList();
 
@@ -157,7 +157,7 @@ void SafetyHubHandler::HandleUndoAcknowledgeRevokedUnusedSitePermissionsList(
   CHECK(args[0].is_list());
 
   const base::Value::List& unused_site_permissions_list = args[0].GetList();
-  permissions::UnusedSitePermissionsService* service =
+  UnusedSitePermissionsService* service =
       UnusedSitePermissionsServiceFactory::GetForProfile(profile_);
 
   for (const auto& unused_site_permissions_js : unused_site_permissions_list) {
@@ -182,11 +182,8 @@ base::Value::List SafetyHubHandler::PopulateUnusedSitePermissionsData() {
   HostContentSettingsMap* hcsm =
       HostContentSettingsMapFactory::GetForProfile(profile_);
 
-  ContentSettingsForOneType settings;
-  hcsm->GetSettingsForOneType(
-      ContentSettingsType::REVOKED_UNUSED_SITE_PERMISSIONS, &settings);
-
-  for (const auto& revoked_permissions : settings) {
+  for (const auto& revoked_permissions : hcsm->GetSettingsForOneType(
+           ContentSettingsType::REVOKED_UNUSED_SITE_PERMISSIONS)) {
     base::Value::Dict revoked_permission_value;
     revoked_permission_value.Set(
         site_settings::kOrigin, revoked_permissions.primary_pattern.ToString());
@@ -200,21 +197,9 @@ base::Value::List SafetyHubHandler::PopulateUnusedSitePermissionsData() {
         stored_value.GetDict().FindList(permissions::kRevokedKey)->Clone();
     base::Value::List permissions_value_list;
     for (base::Value& type : type_list) {
-      base::StringPiece permission_str =
+      permissions_value_list.Append(
           site_settings::ContentSettingsTypeToGroupName(
-              static_cast<ContentSettingsType>(type.GetInt()));
-      if (!permission_str.empty()) {
-        permissions_value_list.Append(permission_str);
-      }
-    }
-
-    // Some permissions have no readable name, although Safety Hub revokes them.
-    // To prevent crashes, if there is no permission to be shown in the UI, the
-    // origin will not be added to the revoked permissions list.
-    // TODO(crbug.com/1459305): Remove this after adding check for
-    // ContentSettingsTypeToGroupName.
-    if (permissions_value_list.empty()) {
-      continue;
+              static_cast<ContentSettingsType>(type.GetInt())));
     }
 
     revoked_permission_value.Set(

@@ -45,7 +45,7 @@ public class SyncServiceImpl extends SyncService {
      * This is a subset of the native UserSelectableTypeSet.
      */
     private static final int[] ALL_SELECTABLE_TYPES = new int[] {UserSelectableType.AUTOFILL,
-            UserSelectableType.BOOKMARKS, UserSelectableType.PASSWORDS,
+            UserSelectableType.PAYMENTS, UserSelectableType.BOOKMARKS, UserSelectableType.PASSWORDS,
             UserSelectableType.PREFERENCES, UserSelectableType.TABS, UserSelectableType.HISTORY};
 
     @CalledByNative
@@ -145,6 +145,12 @@ public class SyncServiceImpl extends SyncService {
     public boolean isTypeManagedByPolicy(@UserSelectableType int type) {
         ThreadUtils.assertOnUiThread();
         return SyncServiceImplJni.get().isTypeManagedByPolicy(mSyncServiceAndroidBridge, type);
+    }
+
+    @Override
+    public boolean isTypeManagedByCustodian(@UserSelectableType int type) {
+        ThreadUtils.assertOnUiThread();
+        return SyncServiceImplJni.get().isTypeManagedByCustodian(mSyncServiceAndroidBridge, type);
     }
 
     @Override
@@ -422,6 +428,7 @@ public class SyncServiceImpl extends SyncService {
         int[] getActiveDataTypes(long nativeSyncServiceAndroidBridge);
         int[] getSelectedTypes(long nativeSyncServiceAndroidBridge);
         boolean isTypeManagedByPolicy(long nativeSyncServiceAndroidBridge, int type);
+        boolean isTypeManagedByCustodian(long nativeSyncServiceAndroidBridge, int type);
         void setSelectedTypes(long nativeSyncServiceAndroidBridge, boolean syncEverything,
                 int[] userSelectableTypeArray);
         boolean isCustomPassphraseAllowed(long nativeSyncServiceAndroidBridge);

@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "components/content_settings/core/common/content_settings.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/page_info/core/features.h"
 #include "components/page_info/page_info.h"
@@ -368,8 +367,6 @@ std::u16string GetPermissionAskStateString(ContentSettingsType type) {
 }
 
 }  // namespace
-
-PageInfoUI::CookieInfo::CookieInfo() : allowed(-1), blocked(-1) {}
 
 PageInfoUI::CookiesNewInfo::CookiesNewInfo() = default;
 
@@ -821,7 +818,6 @@ void PageInfoUI::ToggleBetweenAllowAndBlock(
     case CONTENT_SETTING_DEFAULT: {
       CreateOppositeToDefaultSiteException(permission,
                                            opposite_to_block_setting);
-
       // If one-time permissions are supported, permission should go from
       // default state to allow once state, not directly to allow.
       if (permissions::PermissionUtil::CanPermissionBeAllowedOnce(

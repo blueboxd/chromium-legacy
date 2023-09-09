@@ -18,6 +18,7 @@
 #import "components/bookmarks/managed/managed_bookmark_service.h"
 #import "components/prefs/pref_service.h"
 #import "components/strings/grit/components_strings.h"
+#import "components/sync/base/features.h"
 #import "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/bookmarks/account_bookmark_model_factory.h"
 #import "ios/chrome/browser/bookmarks/bookmark_model_bridge_observer.h"
@@ -251,8 +252,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
             ->AsWeakPtr();
     _profileBookmarkModelBridge = std::make_unique<BookmarkModelBridge>(
         self, _profileBookmarkModel.get());
-    if (base::FeatureList::IsEnabled(
-            bookmarks::kEnableBookmarksAccountStorage)) {
+    if (base::FeatureList::IsEnabled(syncer::kEnableBookmarksAccountStorage)) {
       _accountBookmarkModel =
           ios::AccountBookmarkModelFactory::GetForBrowserState(_browserState)
               ->AsWeakPtr();
@@ -263,8 +263,12 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   return self;
 }
 
+- (void)dealloc {
+  // TODO(crbug.com/1454777)
+  DUMP_WILL_BE_CHECK(!_browser);
+}
+
 - (void)shutdown {
-  [self.editingFolderCell stopEdit];
   [self stopFolderChooserCoordinator];
   [self.bookmarksCoordinator stop];
   self.bookmarksCoordinator = nil;
@@ -273,10 +277,13 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   self.mediator = nil;
   self.browser = nullptr;
   self.browserState = nullptr;
+  [self.searchController dismissViewControllerAnimated:YES completion:nil];
   _profileBookmarkModel = nullptr;
   _profileBookmarkModelBridge.reset();
   _accountBookmarkModel = nullptr;
   _accountBookmarkModelBridge.reset();
+  [self.sharingCoordinator stop];
+  self.sharingCoordinator = nil;
 }
 
 - (void)setExternalBookmark:(const bookmarks::BookmarkNode*)node {

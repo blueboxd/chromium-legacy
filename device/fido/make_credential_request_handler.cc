@@ -12,6 +12,7 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
+#include "base/json/json_writer.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -429,7 +430,7 @@ MakeCredentialRequestHandler::MakeCredentialRequestHandler(
       options_.authenticator_attachment;
 
   base::flat_set<FidoTransportProtocol> allowed_transports =
-      GetTransportsAllowedByRP(options.authenticator_attachment);
+      GetTransportsAllowedByRP(options_.authenticator_attachment);
 
 #if BUILDFLAG(IS_CHROMEOS)
   // Attempt to instantiate the ChromeOS platform authenticator for
@@ -447,6 +448,14 @@ MakeCredentialRequestHandler::MakeCredentialRequestHandler(
       fido_discovery_factory,
       base::STLSetIntersection<base::flat_set<FidoTransportProtocol>>(
           supported_transports, allowed_transports));
+  std::string json_string;
+  if (!options_.json ||
+      !base::JSONWriter::WriteWithOptions(
+          *options_.json->value, base::JsonOptions::OPTIONS_PRETTY_PRINT,
+          &json_string)) {
+    json_string = "no JSON";
+  }
+  FIDO_LOG(EVENT) << "Starting MakeCredential flow: " << json_string;
   Start();
 }
 
@@ -1035,11 +1044,16 @@ void MakeCredentialRequestHandler::SpecializeRequestForAuthenticator(
     request->large_blob_key = want_large_blob;
   }
 
-  if (request->resident_key_required || auth_options.always_uv) {
-    request->user_verification = UserVerificationRequirement::kRequired;
-  } else {
-    request->user_verification = options_.user_verification;
-  }
+  // "Upgrade" uv to `required` for discoverable credentials on non-platform
+  // authenticators, and on security keys that have the `alwaysUv` config
+  // enabled.
+  const bool upgrade_uv = (request->resident_key_required &&
+                           authenticator->AuthenticatorTransport() !=
+                               FidoTransportProtocol::kInternal) ||
+                          auth_options.always_uv;
+  request->user_verification = upgrade_uv
+                                   ? UserVerificationRequirement::kRequired
+                                   : options_.user_verification;
 
   if (options_.cred_protect_request &&
       authenticator->Options().supports_cred_protect) {

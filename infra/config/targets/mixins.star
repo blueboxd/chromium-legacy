@@ -235,12 +235,14 @@ targets.mixin(
         "--magic-vm-cache=magic_cros_vm_cache",
     ],
     swarming = targets.swarming(
-        dimensions = {
-            "cpu": "x86",
-            "kvm": "1",
-            "os": "Ubuntu-18.04",
-            "pool": "chromium.tests",
-        },
+        dimension_sets = [
+            {
+                "cpu": "x86",
+                "kvm": "1",
+                "os": "Ubuntu-22.04",
+                "pool": "chromium.tests",
+            },
+        ],
         optional_dimensions = {
             60: {
                 "caches": "cros_vm",
@@ -266,13 +268,15 @@ targets.mixin(
         "--magic-vm-cache=magic_cros_vm_cache",
     ],
     swarming = targets.swarming(
-        dimensions = {
-            "cpu": "x86",
-            "kvm": "1",
-            "gce": "1",
-            "os": "Ubuntu-18.04",
-            "pool": "chrome.tests",
-        },
+        dimension_sets = [
+            {
+                "cpu": "x86",
+                "kvm": "1",
+                "gce": "1",
+                "os": "Ubuntu-22.04",
+                "pool": "chrome.tests",
+            },
+        ],
         optional_dimensions = {
             60: {
                 "caches": "cros_vm",
@@ -295,13 +299,15 @@ targets.mixin(
         "--magic-vm-cache=magic_cros_vm_cache",
     ],
     swarming = targets.swarming(
-        dimensions = {
-            "cpu": "x86",
-            "kvm": "1",
-            "gce": "1",
-            "os": "Ubuntu-18.04",
-            "pool": "chrome.tests.finch",
-        },
+        dimension_sets = [
+            {
+                "cpu": "x86",
+                "kvm": "1",
+                "gce": "1",
+                "os": "Ubuntu-22.04",
+                "pool": "chrome.tests.finch",
+            },
+        ],
         optional_dimensions = {
             60: {
                 "caches": "cros_vm",
@@ -355,13 +361,15 @@ targets.mixin(
         "--magic-vm-cache=magic_cros_reven_vm_cache",
     ],
     swarming = targets.swarming(
-        dimensions = {
-            "cpu": "x86",
-            "kvm": "1",
-            "gce": "1",
-            "os": "Ubuntu-18.04",
-            "pool": "chrome.tests",
-        },
+        dimension_sets = [
+            {
+                "cpu": "x86",
+                "kvm": "1",
+                "gce": "1",
+                "os": "Ubuntu-18.04",
+                "pool": "chrome.tests",
+            },
+        ],
         optional_dimensions = {
             60: {
                 "caches": "cros_reven_vm",
@@ -651,15 +659,6 @@ targets.mixin(
 )
 
 targets.mixin(
-    name = "linux-bionic",
-    swarming = targets.swarming(
-        dimensions = {
-            "os": "Ubuntu-18.04",
-        },
-    ),
-)
-
-targets.mixin(
     name = "linux-focal",
     swarming = targets.swarming(
         dimensions = {
@@ -682,6 +681,15 @@ targets.mixin(
     swarming = targets.swarming(
         dimensions = {
             "os": "Ubuntu-22.04|Ubuntu-18.04",
+        },
+    ),
+)
+
+targets.mixin(
+    name = "linux-jammy-or-focal",
+    swarming = targets.swarming(
+        dimensions = {
+            "os": "Ubuntu-22.04|Ubuntu-20.04",
         },
     ),
 )
@@ -787,26 +795,6 @@ targets.mixin(
     args = [
         "mac-release/sizes",
     ],
-)
-
-targets.mixin(
-    name = "mac_10.13",
-    swarming = targets.swarming(
-        dimensions = {
-            "cpu": "x86-64",
-            "os": "Mac-10.13.6",
-        },
-    ),
-)
-
-targets.mixin(
-    name = "mac_10.14",
-    swarming = targets.swarming(
-        dimensions = {
-            "cpu": "x86-64",
-            "os": "Mac-10.14.6",
-        },
-    ),
 )
 
 targets.mixin(
@@ -965,7 +953,7 @@ targets.mixin(
         dimensions = {
             "cpu": "x86-64",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1",
+            "os": "Mac-13.4.1",
             "display_attached": "1",
         },
     ),
@@ -1007,7 +995,7 @@ targets.mixin(
             "cpu": "x86-64",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.4.1",
             "pool": "chromium.tests.gpu",
             "display_attached": "1",
         },
@@ -1036,7 +1024,7 @@ targets.mixin(
             "cpu": "x86-64",
             "gpu": "10de:0fe9",
             "hidpi": "1",
-            "os": "Mac-10.14.6",
+            "os": "Mac-11.7.7",
             "pool": "chromium.tests.gpu",
             "display_attached": "1",
         },
@@ -1064,7 +1052,7 @@ targets.mixin(
             targets.cipd_package(
                 package = "infra/tools/mac_toolchain/${platform}",
                 location = ".",
-                revision = "git_revision:0ecab437ae2532a879b1203efc48f54bc6cadb77",
+                revision = "git_revision:59ddedfe3849abf560cbe0b41bb8e431041cd2bb",
             ),
         ],
     ),
@@ -1075,10 +1063,12 @@ targets.mixin(
 targets.mixin(
     name = "mac_x64",
     swarming = targets.swarming(
-        dimensions = {
-            "os": "Mac-12",
-            "cpu": "x86-64",
-        },
+        dimension_sets = [
+            {
+                "os": "Mac-12",
+                "cpu": "x86-64",
+            },
+        ],
     ),
 )
 
@@ -1165,19 +1155,19 @@ targets.mixin(
 targets.mixin(
     name = "oreo-x86-emulator",
     args = [
-        "--avd-config=../../tools/android/avd/proto/generic_android27.textpb",
+        "--avd-config=../../tools/android/avd/proto/generic_android26.textpb",
     ],
     swarming = targets.swarming(
         # soft affinity so that bots with caches will be picked first
         optional_dimensions = {
             60: {
-                "caches": "generic_android27",
+                "caches": "generic_android26",
             },
         },
         named_caches = [
             swarming.cache(
-                name = "generic_android27",
-                path = ".android_emulator/generic_android27",
+                name = "generic_android26",
+                path = ".android_emulator/generic_android26",
             ),
         ],
     ),
@@ -1474,6 +1464,23 @@ targets.mixin(
 )
 
 targets.mixin(
+    name = "win10_intel_uhd_630_stable_dimension_set",
+    # We use explicit 'dimension_sets' instead of 'dimensions' since this is
+    # used in conjunction with 'win10_nvidia_gtx_1660_stable_dimension_set'
+    # to trigger tests on multiple configurations.
+    swarming = targets.swarming(
+        dimension_sets = [
+            {
+                "display_attached": "1",
+                "gpu": "8086:9bc5-31.0.101.2111",
+                "os": "Windows-10",
+                "pool": "chromium.tests.gpu",
+            },
+        ],
+    ),
+)
+
+targets.mixin(
     name = "win10_nvidia_gtx_1660_experimental",
     swarming = targets.swarming(
         dimensions = {
@@ -1498,6 +1505,23 @@ targets.mixin(
             "os": "Windows-10-18363",
             "pool": "chromium.tests.gpu",
         },
+    ),
+)
+
+# Version of win10_nvidia_gtx_1660_stable that uses 'dimension_sets'
+# instead of 'dimensions' so it can be used to trigger tests on multiple
+# configurations.
+targets.mixin(
+    name = "win10_nvidia_gtx_1660_stable_dimension_set",
+    swarming = targets.swarming(
+        dimension_sets = [
+            {
+                "display_attached": "1",
+                "gpu": "10de:2184-27.21.14.5638",
+                "os": "Windows-10-18363",
+                "pool": "chromium.tests.gpu",
+            },
+        ],
     ),
 )
 
@@ -1581,12 +1605,12 @@ targets.mixin(
     name = "xcode_15_beta",
     args = [
         "--xcode-build-version",
-        "15a5160n",
+        "15a5195m",
     ],
     swarming = targets.swarming(
         named_caches = [
             swarming.cache(
-                name = "xcode_ios_15a5160n",
+                name = "xcode_ios_15a5195m",
                 path = "Xcode.app",
             ),
         ],

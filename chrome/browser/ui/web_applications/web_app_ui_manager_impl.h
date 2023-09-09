@@ -36,8 +36,6 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
   WebAppUiManagerImpl& operator=(const WebAppUiManagerImpl&) = delete;
   ~WebAppUiManagerImpl() override;
 
-  void SetSubsystems(WebAppSyncBridge* sync_bridge,
-                     OsIntegrationManager* os_integration_manager) override;
   void Start() override;
   void Shutdown() override;
 
@@ -72,14 +70,16 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
       const SkBitmap& new_icon,
       content::WebContents* web_contents,
       web_app::AppIdentityDialogCallback callback) override;
-
   base::Value LaunchWebApp(apps::AppLaunchParams params,
                            LaunchWebAppWindowSetting launch_setting,
                            Profile& profile,
                            LaunchWebAppCallback callback,
                            AppLock& lock) override;
-  void MaybeTransferAppAttributes(const AppId& from_extension_or_app,
-                                  const AppId& to_app) override;
+#if BUILDFLAG(IS_CHROMEOS)
+  void MigrateLauncherState(const AppId& from_app_id,
+                            const AppId& to_app_id,
+                            base::OnceClosure callback) override;
+#endif
   content::WebContents* CreateNewTab() override;
   void TriggerInstallDialog(content::WebContents* web_contents) override;
 
@@ -106,10 +106,6 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
   std::unique_ptr<WebAppDialogManager> dialog_manager_;
 
   const raw_ptr<Profile> profile_;
-
-  raw_ptr<WebAppSyncBridge> sync_bridge_ = nullptr;
-  raw_ptr<OsIntegrationManager, DanglingUntriaged> os_integration_manager_ =
-      nullptr;
 
   std::map<AppId, std::vector<base::OnceClosure>> windows_closed_requests_map_;
   std::map<AppId, size_t> num_windows_for_apps_map_;

@@ -8,7 +8,6 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -202,18 +201,19 @@ bool CanShare() {
 
     NSSharingService* service =
         base::mac::ObjCCastStrict<NSSharingService>([sender representedObject]);
-    [service setDelegate:self];
-    [service setSubject:title];
+    service.delegate = self;
+    service.subject = title;
 
-    NSArray* itemsToShare;
-    if ([[service name] isEqual:NSSharingServiceNamePostOnTwitter]) {
-      // The Twitter share service expects the title as an additional share item.
-      // This is the same approach system apps use.
-      itemsToShare = @[ url, title ];
+    NSArray* itemsToShare = @[ url ];
+    if (@available(macOS 10.14, *)) {
     } else {
-      itemsToShare = @[ url ];
+      if ([[service name] isEqual:NSSharingServiceNamePostOnTwitter]) {
+        // The Twitter share service expects the title as an additional share
+        // item. This is the same approach system apps use.
+        itemsToShare = @[ url, title ];
+      }
     }
-  
+
     if ([[service name] isEqual:kRemindersSharingServiceName]) {
       _activity = [[NSUserActivity alloc]
           initWithActivityType:*NSUserActivityTypeBrowsingWebStr];
@@ -221,6 +221,8 @@ bool CanShare() {
       if ([url.scheme hasPrefix:@"http"]) {
         [_activity setWebpageURL:url];
       }
+      [_activity setTitle:title];
+      [_activity becomeCurrent];
       [service performWithItems:itemsToShare];
     }
   }
@@ -248,7 +250,7 @@ bool CanShare() {
   BOOL isMail = [[service name] isEqual:NSSharingServiceNameComposeEmail];
   NSString* keyEquivalent = isMail ? [self keyEquivalentForMail] : @"";
   NSString* title = isMail ? l10n_util::GetNSString(IDS_EMAIL_LINK_MAC)
-                           : @available(macOS 10.9,*)?service.menuItemTitle:service.title;
+                           : service.menuItemTitle;
   NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:title
                                                 action:@selector(performShare:)
                                          keyEquivalent:keyEquivalent];

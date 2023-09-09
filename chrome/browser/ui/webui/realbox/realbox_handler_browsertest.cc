@@ -173,7 +173,8 @@ class RealboxSearchBrowserTestPage : public omnibox::mojom::Page {
   // omnibox::mojom::Page
   void AutocompleteResultChanged(
       omnibox::mojom::AutocompleteResultPtr result) override {}
-  void SelectMatchAtLine(uint8_t line) override {}
+  void UpdateSelection(
+      omnibox::mojom::OmniboxPopupSelectionPtr selection) override {}
   mojo::PendingRemote<omnibox::mojom::Page> GetRemotePage() {
     return receiver_.BindNewPipeAndPassRemote();
   }
@@ -189,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(RealboxSearchPreloadBrowserTest, SearchPreloadSuccess) {
   RealboxHandler realbox_handler = RealboxHandler(
       remote_page_handler.BindNewPipeAndPassReceiver(), browser()->profile(),
       GetWebContents(), /*metrics_reporter=*/nullptr,
-      /*is_omnibox_popup_handler=*/false);
+      /*omnibox_controller=*/nullptr);
   realbox_handler.SetPage(page.GetRemotePage());
   content::test::PrerenderHostRegistryObserver registry_observer(
       *GetWebContents());
@@ -198,8 +199,7 @@ IN_PROC_BROWSER_TEST_F(RealboxSearchPreloadBrowserTest, SearchPreloadSuccess) {
   std::string search_terms = "prerender";
   AddNewSuggestionRule(input_query, {search_terms}, /*prefetch_index=*/0,
                        /*prerender_index=*/0);
-  GURL prerender_url = GetSearchServerQueryURL(search_terms + "&pf=cs&");
-
+  auto [_, prerender_url] = GetSearchPrefetchAndNonPrefetch(search_terms);
   // Fake a WebUI input.
   remote_page_handler->QueryAutocomplete(base::ASCIIToUTF16(input_query),
                                          /*prevent_inline_autocomplete=*/false);

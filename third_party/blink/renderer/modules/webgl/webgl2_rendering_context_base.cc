@@ -4920,9 +4920,11 @@ ScriptValue WebGL2RenderingContextBase::getIndexedParameter(
   }
 }
 
-Vector<GLuint> WebGL2RenderingContextBase::getUniformIndices(
+absl::optional<Vector<GLuint>> WebGL2RenderingContextBase::getUniformIndices(
     WebGLProgram* program,
     const Vector<String>& uniform_names) {
+  // TODO(https://crbug.com/1465002): This should return absl::nullopt
+  // if there is an error.
   Vector<GLuint> result;
   if (!ValidateWebGLProgramOrShader("getUniformIndices", program))
     return result;
@@ -5440,6 +5442,17 @@ ScriptValue WebGL2RenderingContextBase::getParameter(ScriptState* script_state,
       SynthesizeGLError(GL_INVALID_ENUM, "getParameter",
                         "invalid parameter name, "
                         "WEBGL_clip_cull_distance not enabled");
+      return ScriptValue::CreateNull(script_state->GetIsolate());
+    case GL_MAX_PIXEL_LOCAL_STORAGE_PLANES_ANGLE:
+    case GL_MAX_COLOR_ATTACHMENTS_WITH_ACTIVE_PIXEL_LOCAL_STORAGE_ANGLE:
+    case GL_MAX_COMBINED_DRAW_BUFFERS_AND_PIXEL_LOCAL_STORAGE_PLANES_ANGLE:
+    case GL_PIXEL_LOCAL_STORAGE_ACTIVE_PLANES_ANGLE:
+      if (ExtensionEnabled(kWebGLShaderPixelLocalStorageName)) {
+        return GetUnsignedIntParameter(script_state, pname);
+      }
+      SynthesizeGLError(GL_INVALID_ENUM, "getParameter",
+                        "invalid parameter name, "
+                        "WEBGL_shader_pixel_local_storage not enabled");
       return ScriptValue::CreateNull(script_state->GetIsolate());
 
     default:

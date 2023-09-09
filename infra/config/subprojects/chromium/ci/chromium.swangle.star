@@ -17,6 +17,7 @@ ci.defaults.set(
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = reclient.jobs.DEFAULT,
     service_account = ci.gpu.SERVICE_ACCOUNT,
+    shadow_service_account = ci.gpu.SHADOW_SERVICE_ACCOUNT,
 )
 
 consoles.console_view(
@@ -61,7 +62,6 @@ ci.gpu.linux_builder(
         category = "Chromium|Linux",
         short_name = "x64",
     ),
-    list_view = "chromium.gpu.experimental",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -88,10 +88,11 @@ ci.gpu.linux_builder(
         run_tests_serially = True,
     ),
     # Uncomment this entry when this experimental tester is actually in use.
-    console_view_entry = consoles.console_view_entry(
-        category = "Chromium|Linux",
-        short_name = "exp",
-    ),
+    # console_view_entry = consoles.console_view_entry(
+    #     category = "Chromium|Linux",
+    #     short_name = "exp",
+    # ),
+    list_view = "chromium.gpu.experimental",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -166,10 +167,10 @@ ci.gpu.linux_builder(
         run_tests_serially = True,
     ),
     # Uncomment this entry when this experimental tester is actually in use.
-    console_view_entry = consoles.console_view_entry(
-        category = "DEPS|Linux",
-        short_name = "exp",
-    ),
+    # console_view_entry = consoles.console_view_entry(
+    #     category = "DEPS|Linux",
+    #     short_name = "exp",
+    # ),
     list_view = "chromium.gpu.experimental",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )

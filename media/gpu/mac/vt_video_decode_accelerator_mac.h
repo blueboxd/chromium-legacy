@@ -52,7 +52,7 @@ class VP9ConfigChangeDetector;
 class VP9SuperFrameBitstreamFilter;
 
 // Preload VideoToolbox libraries, needed for sandbox warmup.
-MEDIA_GPU_EXPORT bool InitializeVideoToolbox();
+MEDIA_GPU_EXPORT void InitializeVideoToolbox();
 
 // VideoToolbox.framework implementation of the VideoDecodeAccelerator
 // interface for macOS.
@@ -234,7 +234,8 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
   const gpu::GpuDriverBugWorkarounds workarounds_;
   std::unique_ptr<MediaLog> media_log_;
 
-  raw_ptr<VideoDecodeAccelerator::Client, DanglingUntriaged> client_ = nullptr;
+  raw_ptr<VideoDecodeAccelerator::Client, AcrossTasksDanglingUntriaged>
+      client_ = nullptr;
   State state_ = STATE_DECODING;
 
   // Queue of pending flush tasks. This is used to drop frames when a reset

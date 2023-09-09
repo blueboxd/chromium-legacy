@@ -35,8 +35,8 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.autofill.AutofillProfile;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
-import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.Source;
 import org.chromium.chrome.browser.autofill.editors.EditorDialogView;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -731,7 +731,7 @@ public class AutofillProfilesFragmentTest {
 
     private void setUpMockSyncService(boolean enabled, Set<Integer> selectedTypes) {
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> SyncServiceFactory.overrideForTests(mSyncService));
+                () -> SyncServiceFactory.setInstanceForTesting(mSyncService));
         when(mSyncService.isSyncFeatureEnabled()).thenReturn(enabled);
         when(mSyncService.getSelectedTypes()).thenReturn(selectedTypes);
     }

@@ -1,6 +1,6 @@
 {
-  "version": "24.15",
-  "log_list_timestamp": "2023-08-25T12:59:10Z",
+  "version": "22.49",
+  "log_list_timestamp": "2023-07-21T12:53:51Z",
   "operators": [
     {
       "name": "Google",
@@ -78,9 +78,11 @@
       "name": "Cloudflare",
       "email": [
         "ct-logs@cloudflare.com",
-        "mihir@cloudflare.com",
-        "dkozlov@cloudflare.com",
-        "leland@cloudflare.com"
+        "brendan@cloudflare.com",
+        "nick@cloudflare.com",
+        "pat@cloudflare.com",
+        "zi@cloudflare.com",
+        "ivan@cloudflare.com"
       ],
       "logs": [
         {
@@ -178,8 +180,8 @@
           "url": "https://nessie2023.ct.digicert.com/log/",
           "mmd": 86400,
           "state": {
-            "retired": {
-              "timestamp": "2023-08-25T00:00:00Z"
+            "usable": {
+              "timestamp": "2019-10-31T19:22:00Z"
             }
           },
           "temporal_interval": {

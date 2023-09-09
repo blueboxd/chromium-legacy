@@ -153,7 +153,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.Android.RealTimeAllowlist.IsInAllowlistElapsed"
-    units="ms" expires_after="2023-10-26">
+    units="ms" expires_after="2023-12-31">
   <owner>skrakowi@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -199,7 +199,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SafeBrowsing.Android.RealTimeAllowlist.PopulateResourceFileElapsed"
-    units="ms" expires_after="2023-10-26">
+    units="ms" expires_after="2023-12-31">
   <owner>skrakowi@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -240,7 +240,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.BlockingPage.RequestDestination"
-    enum="RequestDestination" expires_after="2023-11-12">
+    enum="RequestDestination" expires_after="2024-01-14">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -253,7 +253,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.BrowserThrottle.CheckerOnIOLifetime" units="ms"
-    expires_after="2023-10-08">
+    expires_after="2024-01-07">
   <owner>thefrog@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -264,7 +264,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SafeBrowsing.BrowserThrottle.FastRequestFromNetwork.RequestDestination"
-    enum="RequestDestination" expires_after="2023-10-22">
+    enum="RequestDestination" expires_after="2023-12-24">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -301,7 +301,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.BrowserThrottle.RedirectedExtensionUrlScheme"
-    enum="SafeBrowsingUrlScheme" expires_after="2023-11-12">
+    enum="SafeBrowsingUrlScheme" expires_after="2024-01-14">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -314,7 +314,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.BrowserThrottle.RedirectedOriginalUrlScheme"
-    enum="SafeBrowsingUrlScheme" expires_after="2023-10-22">
+    enum="SafeBrowsingUrlScheme" expires_after="2023-12-24">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -368,9 +368,11 @@ chromium-metrics-reviews@google.com.
   <token key="UserCategory">
     <variant name=".ConsumerFullUrlLookup" summary="consumer real time"/>
     <variant name=".EnterpriseFullUrlLookup" summary="enterprise real time"/>
-    <variant name=".HashBasedCheck" summary="hash-based"/>
+    <variant name=".HashPrefixDatabaseCheck" summary="hash-prefix database"/>
+    <variant name=".HashPrefixRealTimeCheck" summary="hash-prefix real-time"/>
     <variant name=".NoneFullUrlLookup"
         summary="neither consumer nor enterprise"/>
+    <variant name=".SkippedCheck" summary="skipped"/>
   </token>
 </histogram>
 
@@ -385,21 +387,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram
-    name="SafeBrowsing.BrowserThrottle.{RequestType}AfterWillProcessResponse"
-    units="BooleanYesNo" expires_after="2023-08-02">
-  <owner>thefrog@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    Records whether {RequestType} was called after WillProcessResponse. Logged
-    each time {RequestType} is called.
-  </summary>
-  <token key="RequestType">
-    <variant name="WillRedirectRequest" summary="WillRedirectRequest"/>
-    <variant name="WillStartRequest" summary="WillStartRequest"/>
-  </token>
-</histogram>
-
 <histogram name="SafeBrowsing.CheckBrowseUrl.HasLocalMatch"
     enum="BooleanMatched" expires_after="2023-12-10">
   <owner>vakh@chromium.org</owner>
@@ -412,7 +399,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.CheckUrl.Timeout" enum="BooleanTimedOut"
-    expires_after="2023-11-05">
+    expires_after="2024-01-07">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -422,7 +409,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.CheckUrl.UrlScheme" enum="SafeBrowsingUrlScheme"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>thefrog@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -476,15 +463,34 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="SafeBrowsing.ClientSafeBrowsingReport.HasThreatDetailsForTab"
+<histogram
+    name="SafeBrowsing.ClientSafeBrowsingReport.HasThreatDetailsForTab{TriggerType}"
     enum="BooleanAvailable" expires_after="2023-11-12">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Records whether a threat details job is running on the current tab before
-    sending client safe browsing report. The job can be already deleted if the
-    current tab is closed directly before the report is sent. Only log if the
-    report should be sent.
+    sending {TriggerType} client safe browsing report. The job can be already
+    deleted if the current tab is closed directly before the report is sent.
+    Only log if the report should be sent.
+  </summary>
+  <token key="TriggerType">
+    <variant name="" summary="any"/>
+    <variant name=".SecurityInterstitial" summary="security interstitial"/>
+  </token>
+</histogram>
+
+<histogram
+    name="SafeBrowsing.ClientSafeBrowsingReport.HasThreatDetailsInContainer.SecurityInterstitial"
+    enum="BooleanAvailable" expires_after="2024-01-07">
+  <owner>xinghuilu@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Records whether a threat details job is found in the data collector
+    container before sending security interstitial client safe browsing report.
+    The report will not be sent if it is unavailable. Only log if the report
+    should be sent and there is an available collector in the data collector
+    map.
   </summary>
 </histogram>
 
@@ -525,7 +531,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.ClientSafeBrowsingReport.RequestHasToken"
-    enum="BooleanSent" expires_after="2023-10-22">
+    enum="BooleanSent" expires_after="2023-12-24">
   <owner>thefrog@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -536,7 +542,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.ClientSidePhishingDetection.AllowlistMatchResult"
-    enum="SafeBrowsingAllowlistAsyncMatch" expires_after="2023-11-12">
+    enum="SafeBrowsingAllowlistAsyncMatch" expires_after="2024-01-14">
   <owner>thefrog@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -586,33 +592,6 @@ chromium-metrics-reviews@google.com.
     (via keypress), or leaves the page without interacting. Only recorded when
     user has not disabled URL elision via &quot;Always Show Full URLs&quot;
     context menu item, or by installing the Suspicious Site Reporter extension.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DelayedWarnings.TimeOnPage" units="ms"
-    expires_after="M89">
-  <owner>meacer@chromium.org</owner>
-  <owner>estark@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    Records how long a user in the Delayed Warnings experiment group spends on a
-    page with a delayed SafeBrowsing phishing warning. The time is recorded from
-    when the page loads to when the warning is shown or the user leaves the
-    page, whichever comes first. Only recorded when user has not disabled URL
-    elision via &quot;Always Show Full URLs&quot; context menu item, or by
-    installing the Suspicious Site Reporter extension.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DelayedWarnings.TimeOnPage_UrlElisionDisabled"
-    units="ms" expires_after="M89">
-  <owner>meacer@chromium.org</owner>
-  <owner>estark@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    Same as SafeBrowsing.DelayedWarnings.TimeOnPage but only recorded when user
-    has disabled URL elision via &quot;Always Show Full URLs&quot; context menu
-    item, or by installing the Suspicious Site Reporter extension.
   </summary>
 </histogram>
 
@@ -747,8 +726,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.ExtensionTelemetry.FileData.CollectionDuration"
-    units="ms" expires_after="2023-12-04">
-  <owner>richche@chromium.org</owner>
+    units="ms" expires_after="2024-07-23">
+  <owner>richche@google.com</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Extension telemetry includes file data such as file hashes for off-store
@@ -763,8 +742,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SafeBrowsing.ExtensionTelemetry.FileData.LargestFileSizeObserved"
-    units="bytes" expires_after="2023-07-23">
-  <owner>richche@chromium.org</owner>
+    units="bytes" expires_after="2024-07-23">
+  <owner>richche@google.com</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Extension telemetry includes file data such as file hashes for off-store
@@ -776,8 +755,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.ExtensionTelemetry.FileData.NumFilesFound"
-    units="files" expires_after="2023-12-04">
-  <owner>richche@chromium.org</owner>
+    units="files" expires_after="2024-07-23">
+  <owner>richche@google.com</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Extension telemetry includes file data such as file hashes for off-store
@@ -791,8 +770,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SafeBrowsing.ExtensionTelemetry.FileData.NumFilesOverProcessingLimit"
-    units="files" expires_after="2023-12-04">
-  <owner>richche@chromium.org</owner>
+    units="files" expires_after="2024-07-23">
+  <owner>richche@google.com</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Extension telemetry includes file data such as file hashes for off-store
@@ -805,8 +784,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SafeBrowsing.ExtensionTelemetry.FileData.NumFilesOverSizeLimit"
-    units="files" expires_after="2023-12-04">
-  <owner>richche@chromium.org</owner>
+    units="files" expires_after="2024-07-23">
+  <owner>richche@google.com</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Extension telemetry includes file data such as file hashes for off-store
@@ -818,8 +797,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.ExtensionTelemetry.FileData.NumFilesProcessed"
-    units="files" expires_after="2023-12-04">
-  <owner>richche@chromium.org</owner>
+    units="files" expires_after="2024-07-23">
+  <owner>richche@google.com</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Extension telemetry includes file data such as file hashes for off-store
@@ -832,8 +811,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SafeBrowsing.ExtensionTelemetry.FileData.NumOffstoreExtensions"
-    units="extensions" expires_after="2023-12-04">
-  <owner>richche@chromium.org</owner>
+    units="extensions" expires_after="2024-07-23">
+  <owner>richche@google.com</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Extension telemetry includes file data such as file hashes for off-store
@@ -845,8 +824,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.ExtensionTelemetry.FileData.ProcessedFileSize"
-    units="bytes" expires_after="2023-12-04">
-  <owner>richche@chromium.org</owner>
+    units="bytes" expires_after="2024-07-23">
+  <owner>richche@google.com</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Extension telemetry includes file data such as file hashes for off-store
@@ -857,8 +836,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.ExtensionTelemetry.FileData.ValidExtension"
-    enum="BooleanValid" expires_after="2023-07-23">
-  <owner>richche@chromium.org</owner>
+    enum="BooleanValid" expires_after="2024-07-23">
+  <owner>richche@google.com</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Extension telemetry includes file data such as file hashes for off-store
@@ -883,7 +862,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SafeBrowsing.ExtensionTelemetry.NetworkRequestResponseCodeOrError"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-10-22">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-12-24">
   <owner>anunoy@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -897,7 +876,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.ExtensionTelemetry.RetriesTillUploadSuccess"
-    units="retries" expires_after="2023-11-12">
+    units="retries" expires_after="2024-01-14">
   <owner>anunoy@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -909,7 +888,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.ExtensionTelemetry.Signals.Discarded"
-    enum="SBExtensionTelemetrySignalsSignalType" expires_after="2023-10-15">
+    enum="SBExtensionTelemetrySignalsSignalType" expires_after="2023-12-31">
   <owner>anunoy@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -937,7 +916,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.ExtensionTelemetry.UploadSize" units="bytes"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>anunoy@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -948,7 +927,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.ExtensionTelemetry.UploadSuccess"
-    enum="BooleanSuccess" expires_after="2023-10-22">
+    enum="BooleanSuccess" expires_after="2023-12-24">
   <owner>anunoy@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -978,7 +957,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.FileTypeUpdate.DynamicUpdateResult"
-    enum="SBFileTypeUpdateResult" expires_after="2023-11-05">
+    enum="SBFileTypeUpdateResult" expires_after="2024-01-07">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1006,7 +985,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.FileTypeUpdate.ResourceBundleResult"
-    enum="SBFileTypeUpdateResult" expires_after="2023-11-12">
+    enum="SBFileTypeUpdateResult" expires_after="2024-01-14">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1019,7 +998,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.FileTypeUpdate.ResourceBundleVersion"
-    units="FileTypePolicies Version" expires_after="2023-11-12">
+    units="FileTypePolicies Version" expires_after="2024-01-14">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1028,6 +1007,16 @@ chromium-metrics-reviews@google.com.
 
     This is for the file types loaded from the resource bundle packaged with
     Chrome, which is always loaded at startup.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.HitReport.IsSubresource"
+    enum="BooleanIsSubresource" expires_after="2024-01-07">
+  <owner>xinghuilu@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Records whether a hit report is triggered by a subresource. Logged when a
+    hit report is sent.
   </summary>
 </histogram>
 
@@ -1118,7 +1107,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.HPRT.CacheHitAllPrefixesIfNoQueryParams"
-    enum="BooleanCacheHit" expires_after="2023-10-22">
+    enum="BooleanCacheHit" expires_after="2023-12-24">
   <owner>thefrog@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1164,6 +1153,26 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.HPRT.Ineligible.{IneligibleReason}"
+    enum="BooleanIneligible" expires_after="2023-12-23">
+  <owner>thefrog@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Logs whether hash-prefix real-time lookups are ineligible due to
+    {IneligibleReason}. Logged when a browser URL loader throttle is created.
+    There may be multiple reasons why the lookups are ineligible, but this
+    reason is one of them.
+  </summary>
+  <token key="IneligibleReason">
+    <variant name="IneligibleForSession"
+        summary="the feature being disabled for the session"/>
+    <variant name="NotAllowedByPolicy" summary="not being allowed by policy"/>
+    <variant name="NotStandardProtection"
+        summary="not having standard protection"/>
+    <variant name="OffTheRecord" summary="being off the record"/>
+  </token>
+</histogram>
+
 <histogram name="SafeBrowsing.HPRT.IsLookupServiceFound" enum="BooleanFound"
     expires_after="2023-12-04">
   <owner>thefrog@chromium.org</owner>
@@ -1188,7 +1197,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.HPRT.Network.HttpResponseCode.{NetError}"
-    enum="HttpResponseCode" expires_after="2023-07-25">
+    enum="HttpResponseCode" expires_after="2023-10-25">
   <owner>thefrog@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1214,7 +1223,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.HPRT.Network.Result.WhenEnteringBackoff"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-11-12">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2024-01-14">
   <owner>thefrog@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1465,6 +1474,31 @@ chromium-metrics-reviews@google.com.
   <token key="MaybeRedirects" variants="HPRTExperimentMaybeRedirects"/>
 </histogram>
 
+<histogram name="SafeBrowsing.IOS.IsCheckCompletedOnShouldAllowResponse"
+    enum="BooleanCompleted" expires_after="2024-06-27">
+  <owner>ajuma@chromium.org</owner>
+  <owner>joemerramos@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Logs whether the Safe Browsing check is completed when a navigation response
+    has arrived. If not, the navigation will be deferred until the Safe Browsing
+    check is completed. Logs on each navigation response policy callback.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.IOS.TotalDelay" units="ms"
+    expires_after="2024-06-27">
+  <owner>ajuma@chromium.org</owner>
+  <owner>joemerramos@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Logs the latency between when a navigation response policy decision was
+    deferred by Safe Browsing check and when the check is completed. Logs each
+    time that a navigation was deferred by Safe Browsing check and the Safe
+    Browsing check doesn't block the URL.
+  </summary>
+</histogram>
+
 <histogram name="SafeBrowsing.LocalBinaryUploadRequest.DlpResult"
     enum="BooleanSuccess" expires_after="2023-10-20">
   <owner>rogerta@chromium.org</owner>
@@ -1512,7 +1546,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.MetricsCollectorEventCountAtCleanup"
-    units="events" expires_after="2023-11-12">
+    units="events" expires_after="2024-01-14">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1531,7 +1565,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SafeBrowsing.NavigationObserver.NavigationEventsRecordedLength"
-    units="count" expires_after="2023-10-22">
+    units="count" expires_after="2023-12-24">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1551,7 +1585,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.PageLoadToken.Duration" units="ms"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1573,7 +1607,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.PageLoadToken.PasswordProtectionHasToken"
-    enum="BooleanExists" expires_after="2023-10-22">
+    enum="BooleanExists" expires_after="2023-12-24">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1583,7 +1617,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.PageLoadToken.RealTimeCheckHasToken"
-    enum="BooleanExists" expires_after="2023-10-22">
+    enum="BooleanExists" expires_after="2023-12-24">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1593,7 +1627,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.PageLoadToken.TokenCount" units="entries"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1636,7 +1670,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.Pref.Daily.Extended" enum="BooleanEnabled"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1705,7 +1739,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.Pref.MainProfile.SafeBrowsingState"
-    enum="SafeBrowsingState" expires_after="2023-10-22">
+    enum="SafeBrowsingState" expires_after="2023-12-24">
   <owner>jeffcyr@google.com</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1738,7 +1772,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SafeBrowsing.RendererThrottle.IsCheckCompletedOnProcessResponse"
-    enum="BooleanCompleted" expires_after="2023-10-22">
+    enum="BooleanCompleted" expires_after="2023-12-24">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1751,7 +1785,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.RendererThrottle.TotalDelay" units="ms"
-    expires_after="2023-12-17">
+    expires_after="2024-01-14">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1763,7 +1797,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.RendererThrottle.TotalDelay3" units="ms"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1790,7 +1824,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.RT.AllStoresAvailable" enum="BooleanAvailable"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1812,7 +1846,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.RT.CacheManager.CleanUpTime" units="ms"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1822,7 +1856,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.RT.CacheManager.RealTimeVerdictCount"
-    units="entries" expires_after="2023-11-12">
+    units="entries" expires_after="2024-01-14">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1832,7 +1866,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.RT.CanCheckDatabase" enum="BooleanEnabled"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1853,7 +1887,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.RT.ConsumerVersionReason"
-    enum="SafeBrowsingRTConsumerVersionReason" expires_after="2023-11-12">
+    enum="SafeBrowsingRTConsumerVersionReason" expires_after="2024-01-14">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1866,7 +1900,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.RT.GetCache.FallbackThreatType"
-    enum="SBThreatType" expires_after="2023-10-22">
+    enum="SBThreatType" expires_after="2023-12-24">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1902,7 +1936,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.RT.GetCacheResultIsFromPastSession"
-    enum="Boolean" expires_after="2023-11-12">
+    enum="Boolean" expires_after="2024-01-14">
   <owner>thefrog@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1923,7 +1957,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.RT.HasTokenFromFetcher" enum="BooleanHasToken"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2027,7 +2061,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.RT.Network.Result"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-10-22">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-12-24">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2054,7 +2088,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.RT.Network.Time" units="ms"
-    expires_after="2023-11-05">
+    expires_after="2024-01-07">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2098,7 +2132,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.RT.RequestDestinations.Checked"
-    enum="RequestDestination" expires_after="2023-11-12">
+    enum="RequestDestination" expires_after="2024-01-14">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2109,7 +2143,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.RT.RequestDestinations.Requested"
-    enum="RequestDestination" expires_after="2023-11-12">
+    enum="RequestDestination" expires_after="2024-01-14">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2159,7 +2193,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.RT.ThreatInfoSize" units="verdicts"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2170,7 +2204,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="SafeBrowsing.Settings.UserAction"
-    enum="SafeBrowsingSettingsUserAction" expires_after="2023-10-22">
+    enum="SafeBrowsingSettingsUserAction" expires_after="2023-12-24">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2194,7 +2228,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SafeBrowsing.TailoredSecurity.ConsentedDesktopDialogEnabledOutcome"
-    enum="SafeBrowsingTailoredSecurityOutcome" expires_after="2023-10-22">
+    enum="SafeBrowsingTailoredSecurityOutcome" expires_after="2023-12-24">
   <owner>jacastro@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -2238,7 +2272,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="SafeBrowsing.TailoredSecurity.SyncPromptEnabledNotificationResult2"
     enum="SafeBrowsingTailoredSecurityNotificationResult"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>jacastro@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2325,7 +2359,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SafeBrowsing.TailoredSecurityUnconsentedPromotionNotificationOutcome"
-    enum="SafeBrowsingTailoredSecurityOutcome" expires_after="2023-11-12">
+    enum="SafeBrowsingTailoredSecurityOutcome" expires_after="2024-01-14">
   <owner>jacastro@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2362,7 +2396,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.Triggers.AdSampler.Action"
-    enum="AdSamplerTriggerAction" expires_after="2023-11-05">
+    enum="AdSamplerTriggerAction" expires_after="2024-01-07">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2373,7 +2407,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.Triggers.SuspiciousSite.Event"
-    enum="SuspiciousSiteTriggerEvent" expires_after="2023-10-22">
+    enum="SuspiciousSiteTriggerEvent" expires_after="2023-12-24">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2393,7 +2427,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.V4Database.Size" units="KB"
-    expires_after="2023-11-19">
+    expires_after="2024-01-14">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2419,7 +2453,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="SafeBrowsing.V4Database.SizeLinear{ThreatType}" units="MB"
     expires_after="2023-11-11">
-  <owner>richche@chromium.org</owner>
+  <owner>richche@google.com</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     The size of {ThreatType} SafeBrowsing database or file on disk in megabytes,
@@ -2444,16 +2478,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SafeBrowsing.V4DatabaseOpen.Time" units="ms"
-    expires_after="M77">
-  <owner>vakh@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    The time it takes to parse and load the SafeBrowsing database from disk, in
-    milliseconds.
-  </summary>
-</histogram>
-
 <histogram name="SafeBrowsing.V4GetHash.CacheFullyHit" enum="BooleanCacheHit"
     expires_after="2023-12-17">
   <owner>thefrog@chromium.org</owner>
@@ -2465,7 +2489,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.V4GetHash.CacheHit.Result"
-    enum="SafeBrowsingV4FullHashCacheResult" expires_after="2023-11-05">
+    enum="SafeBrowsingV4FullHashCacheResult" expires_after="2024-01-07">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>Track cache hits for V4 full hashes.</summary>
@@ -2481,7 +2505,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.V4GetHash.CountOfPrefixes" units="prefixes"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2506,7 +2530,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.V4GetHash.Network.Time" units="ms"
-    expires_after="2023-11-05">
+    expires_after="2024-01-07">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2530,7 +2554,7 @@ Safe Browsing lookup mechanism is working as expected -->
 </histogram>
 
 <histogram name="SafeBrowsing.V4GetHash.Result"
-    enum="SafeBrowsingV4OperationResult" expires_after="2023-11-05">
+    enum="SafeBrowsingV4OperationResult" expires_after="2024-01-07">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2645,7 +2669,7 @@ and applied correctly. -->
 </histogram>
 
 <histogram name="SafeBrowsing.V4ProcessPartialUpdate.ApplyUpdate.Result"
-    enum="SafeBrowsingV4ApplyUpdateResult" expires_after="2023-11-05">
+    enum="SafeBrowsingV4ApplyUpdateResult" expires_after="2024-01-07">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2698,7 +2722,7 @@ and applied correctly. -->
 </histogram>
 
 <histogram name="SafeBrowsing.V4ProcessPartialUpdate.RemovalsHashesCount"
-    units="entries" expires_after="2023-11-12">
+    units="entries" expires_after="2024-01-14">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2748,7 +2772,7 @@ and applied correctly. -->
 </histogram>
 
 <histogram name="SafeBrowsing.V4Store.IsStoreValid" enum="BooleanValid"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2760,7 +2784,7 @@ and applied correctly. -->
 </histogram>
 
 <histogram name="SafeBrowsing.V4StoreRead.Result"
-    enum="SafeBrowsingV4StoreReadResult" expires_after="2023-10-22">
+    enum="SafeBrowsingV4StoreReadResult" expires_after="2023-12-24">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2785,7 +2809,7 @@ security at risk. -->
 </histogram>
 
 <histogram name="SafeBrowsing.V4UnusedStoreFileExists.{Store}"
-    enum="BooleanExists" expires_after="2023-08-26">
+    enum="BooleanExists" expires_after="2023-10-26">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -2799,7 +2823,7 @@ security at risk. -->
 </histogram>
 
 <histogram name="SafeBrowsing.V4Update.Network.Result"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-10-22">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-12-24">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2824,7 +2848,7 @@ risk. -->
 </histogram>
 
 <histogram name="SafeBrowsing.V4Update.ResponseSizeKB" units="KB"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2963,7 +2987,7 @@ failing to fetch the updates which puts users' security at risk. -->
 </histogram>
 
 <histogram name="SafeBrowsingBinaryUploadRequest.Duration" units="ms"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2974,7 +2998,7 @@ failing to fetch the updates which puts users' security at risk. -->
 </histogram>
 
 <histogram name="SafeBrowsingBinaryUploadRequest.MalwareResult"
-    enum="BooleanSuccess" expires_after="2023-11-12">
+    enum="BooleanSuccess" expires_after="2024-01-14">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2985,7 +3009,7 @@ failing to fetch the updates which puts users' security at risk. -->
 </histogram>
 
 <histogram name="SafeBrowsingBinaryUploadRequest.Result"
-    enum="SafeBrowsingBinaryUploadResult" expires_after="2023-11-12">
+    enum="SafeBrowsingBinaryUploadResult" expires_after="2024-01-14">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2996,7 +3020,7 @@ failing to fetch the updates which puts users' security at risk. -->
 </histogram>
 
 <histogram name="SafeBrowsingBinaryUploadRequest.TimeToGetFCMToken" units="ms"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>

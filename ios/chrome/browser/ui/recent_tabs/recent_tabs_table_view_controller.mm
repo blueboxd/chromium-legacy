@@ -202,6 +202,11 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   return self;
 }
 
+- (void)dealloc {
+  // TODO(crbug.com/1454777)
+  DUMP_WILL_BE_CHECK(!self.signinPromoViewMediator);
+}
+
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.view.accessibilityIdentifier =
@@ -1204,6 +1209,8 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
       [illustratedCell.button addTarget:self
                                  action:@selector(updateSyncState)
                        forControlEvents:UIControlEventTouchUpInside];
+      illustratedCell.button.accessibilityIdentifier =
+          kRecentTabsTabSyncOffButtonAccessibilityIdentifier;
   }
   // Hide the separator between this cell and the SignIn Promo.
   if (itemTypeSelected == ItemTypeOtherDevicesSignedOut) {
@@ -1518,8 +1525,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
       self.searchTerms = @"";
     }
     new_tab_page_uma::RecordAction(
-        self.browserState->IsOffTheRecord(),
-        self.webStateList->GetActiveWebState(),
+        self.isIncognito, self.webStateList->GetActiveWebState(),
         new_tab_page_uma::ACTION_OPENED_FOREIGN_SESSION);
     std::unique_ptr<web::WebState> web_state =
         session_util::CreateWebStateWithNavigationEntries(
@@ -1564,8 +1570,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
         "MobileRecentTabManagerRecentTabOpenedSearchResult"));
   }
   new_tab_page_uma::RecordAction(
-      self.browserState->IsOffTheRecord(),
-      self.webStateList->GetActiveWebState(),
+      self.isIncognito, self.webStateList->GetActiveWebState(),
       new_tab_page_uma::ACTION_OPENED_RECENTLY_CLOSED_ENTRY);
 
   // If RecentTabs is being displayed from incognito, the resulting tab will

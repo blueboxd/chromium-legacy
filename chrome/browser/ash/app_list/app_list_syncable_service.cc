@@ -93,6 +93,10 @@ void GetSyncSpecificsFromSyncItem(const AppListSyncableService::SyncItem* item,
   specifics->set_item_pin_ordinal(item->item_pin_ordinal.IsValid()
                                       ? item->item_pin_ordinal.ToInternalValue()
                                       : std::string());
+  if (item->is_user_pinned.has_value() &&
+      ash::features::IsRemoveStalePolicyPinnedAppsFromShelfEnabled()) {
+    specifics->set_is_user_pinned(*item->is_user_pinned);
+  }
 
   if (item->item_color.IsValid()) {
     specifics->mutable_item_color()->set_background_color(
@@ -176,27 +180,26 @@ void UpdateSyncItemInLocalStorage(
   ScopedDictPrefUpdate pref_update(profile->GetPrefs(),
                                    prefs::kAppListLocalState);
   base::Value::Dict* dict_item = pref_update->EnsureDict(sync_item->item_id);
-  dict_item->Set(kNameKey, base::Value(sync_item->item_name));
-  dict_item->Set(kParentIdKey, base::Value(sync_item->parent_id));
-  dict_item->Set(kPositionKey,
-                 base::Value(sync_item->item_ordinal.IsValid()
-                                 ? sync_item->item_ordinal.ToInternalValue()
-                                 : std::string()));
+  dict_item->Set(kNameKey, sync_item->item_name);
+  dict_item->Set(kParentIdKey, sync_item->parent_id);
+  dict_item->Set(kPositionKey, sync_item->item_ordinal.IsValid()
+                                   ? sync_item->item_ordinal.ToInternalValue()
+                                   : std::string());
   dict_item->Set(kPinPositionKey,
-                 base::Value(sync_item->item_pin_ordinal.IsValid()
-                                 ? sync_item->item_pin_ordinal.ToInternalValue()
-                                 : std::string()));
-  dict_item->Set(kTypeKey, base::Value(static_cast<int>(sync_item->item_type)));
+                 sync_item->item_pin_ordinal.IsValid()
+                     ? sync_item->item_pin_ordinal.ToInternalValue()
+                     : std::string());
+  dict_item->Set(kTypeKey, static_cast<int>(sync_item->item_type));
   dict_item->Set(kEmptyItemOrdinalFixable,
-                 base::Value(sync_item->item_ordinal.IsValid() ||
-                             sync_item->empty_item_ordinal_fixable));
+                 sync_item->item_ordinal.IsValid() ||
+                     sync_item->empty_item_ordinal_fixable);
 
   // Handle the item color.
   if (sync_item->item_color.IsValid()) {
     dict_item->Set(kBackgroundColorKey,
-                   base::Value(sync_pb::AppListSpecifics::ColorGroup_Name(
-                       sync_item->item_color.background_color())));
-    dict_item->Set(kHueKey, base::Value(sync_item->item_color.hue()));
+                   sync_pb::AppListSpecifics::ColorGroup_Name(
+                       sync_item->item_color.background_color()));
+    dict_item->Set(kHueKey, sync_item->item_color.hue());
   } else if (dict_item->Find(kBackgroundColorKey)) {
     dict_item->Remove(kBackgroundColorKey);
     DCHECK(dict_item->Find(kHueKey));
@@ -427,45 +430,44 @@ void AppListSyncableService::InitFromLocalStorage() {
   const base::Value::Dict& local_items =
       profile_->GetPrefs()->GetDict(prefs::kAppListLocalState);
 
-  for (const auto item : local_items) {
-    if (!item.second.is_dict()) {
-      LOG(ERROR) << "Dictionary not found for " << item.first + ".";
+  for (auto [item_id, item] : local_items) {
+    auto* item_dict = item.GetIfDict();
+    if (!item_dict) {
+      LOG(ERROR) << "Dictionary not found for " << item_id + ".";
       continue;
     }
-    const base::Value::Dict& item_dict = item.second.GetDict();
-    absl::optional<int> type = item_dict.FindInt(kTypeKey);
+    absl::optional<int> type = item_dict->FindInt(kTypeKey);
     if (!type) {
-      LOG(ERROR) << "Item type is not set in local storage for " << item.second
+      LOG(ERROR) << "Item type is not set in local storage for " << *item_dict
                  << ".";
       continue;
     }
 
     SyncItem* sync_item = CreateSyncItem(
-        item.first,
+        item_id,
         static_cast<sync_pb::AppListSpecifics::AppListItemType>(*type));
 
-    const std::string* maybe_item_name = item_dict.FindString(kNameKey);
+    const std::string* maybe_item_name = item_dict->FindString(kNameKey);
     if (maybe_item_name)
       sync_item->item_name = *maybe_item_name;
-    const std::string* maybe_parent_id = item_dict.FindString(kParentIdKey);
+    const std::string* maybe_parent_id = item_dict->FindString(kParentIdKey);
     if (maybe_parent_id)
       sync_item->parent_id = *maybe_parent_id;
 
-    const std::string* position = item_dict.FindString(kPositionKey);
-    const std::string* pin_position = item_dict.FindString(kPinPositionKey);
+    const std::string* position = item_dict->FindString(kPositionKey);
+    const std::string* pin_position = item_dict->FindString(kPinPositionKey);
     if (position && !position->empty())
       sync_item->item_ordinal = syncer::StringOrdinal(*position);
     if (pin_position && !pin_position->empty())
       sync_item->item_pin_ordinal = syncer::StringOrdinal(*pin_position);
 
     sync_item->empty_item_ordinal_fixable =
-        item_dict.FindBool(kEmptyItemOrdinalFixable).value_or(true);
+        item_dict->FindBool(kEmptyItemOrdinalFixable).value_or(true);
 
     // Fetch icon colors from `dict_item` if any.
-    if (item_dict.contains(kBackgroundColorKey)) {
+    if (auto* background_color_internal_string =
+            item_dict->FindString(kBackgroundColorKey)) {
       // Retrieve the background color.
-      const std::string* background_color_internal_string =
-          item_dict.FindString(kBackgroundColorKey);
       sync_pb::AppListSpecifics::ColorGroup background_color;
       sync_pb::AppListSpecifics::ColorGroup_Parse(
           background_color_internal_string ? *background_color_internal_string
@@ -473,9 +475,9 @@ void AppListSyncableService::InitFromLocalStorage() {
           &background_color);
 
       // Retrieve the hue.
-      DCHECK(item_dict.Find(kHueKey));
+      DCHECK(item_dict->Find(kHueKey));
       int hue =
-          item_dict.FindInt(kHueKey).value_or(ash::IconColor::kHueInvalid);
+          item_dict->FindInt(kHueKey).value_or(ash::IconColor::kHueInvalid);
 
       sync_item->item_color = ash::IconColor(background_color, hue);
 
@@ -577,6 +579,7 @@ bool AppListSyncableService::TransferItemAttributes(
   attributes->item_ordinal = from_item->item_ordinal;
   attributes->item_pin_ordinal = from_item->item_pin_ordinal;
   attributes->item_color = from_item->item_color;
+  attributes->is_user_pinned = from_item->is_user_pinned;
 
   SyncItem* to_item = FindSyncItem(to_app_id);
   if (to_item) {
@@ -606,6 +609,7 @@ void AppListSyncableService::ApplyAppAttributes(
   item->parent_id = attributes->parent_id;
   item->item_ordinal = attributes->item_ordinal;
   item->item_pin_ordinal = attributes->item_pin_ordinal;
+  item->is_user_pinned = attributes->is_user_pinned;
   item->item_color = attributes->item_color;
 
   UpdateSyncItemInLocalStorage(profile_, item);
@@ -675,8 +679,10 @@ void AppListSyncableService::AddItem(
     VLOG(2) << this << ": AddItem: " << sync_item->ToString() << " Folder: '"
             << folder_id << "'";
 
-    if (folder_id == ash::kCrostiniFolderId)
-      MaybeAddOrUpdateCrostiniFolderSyncData();
+    if (folder_id == ash::kCrostiniFolderId ||
+        folder_id == ash::kBruschettaFolderId) {
+      MaybeAddOrUpdateGuestOsFolderSyncData(folder_id);
+    }
 
     // Create a folder if `app_item`'s parent folder does not exist.
     if (!folder_id.empty()) {
@@ -745,9 +751,13 @@ syncer::StringOrdinal AppListSyncableService::GetPinPosition(
 
 void AppListSyncableService::SetPinPosition(
     const std::string& app_id,
-    const syncer::StringOrdinal& item_pin_ordinal) {
+    const syncer::StringOrdinal& item_pin_ordinal,
+    bool pinned_by_policy) {
+  DCHECK(item_pin_ordinal.IsValid());
+
   // Pin position can be set only after model is built.
   DCHECK(IsInitialized());
+
   SyncItem* sync_item = FindSyncItem(app_id);
   SyncChange::SyncChangeType sync_change_type;
   if (sync_item) {
@@ -763,8 +773,26 @@ void AppListSyncableService::SetPinPosition(
   }
 
   sync_item->item_pin_ordinal = item_pin_ordinal;
+
   UpdateSyncItemInLocalStorage(profile_, sync_item);
   SendSyncChange(sync_item, sync_change_type);
+}
+
+void AppListSyncableService::RemovePinPosition(const std::string& app_id) {
+  // Pin position can be set only after model is built.
+  DCHECK(IsInitialized());
+
+  SyncItem* sync_item = FindSyncItem(app_id);
+  // No need to default-initialize already removed items.
+  if (!sync_item) {
+    return;
+  }
+
+  sync_item->item_pin_ordinal = syncer::StringOrdinal();
+  sync_item->is_user_pinned = absl::nullopt;
+
+  UpdateSyncItemInLocalStorage(profile_, sync_item);
+  SendSyncChange(sync_item, syncer::SyncChange::SyncChangeType::ACTION_UPDATE);
 }
 
 void AppListSyncableService::AddOrUpdateFromSyncItem(
@@ -882,12 +910,11 @@ syncer::StringOrdinal AppListSyncableService::GetDefaultOemFolderPosition()
 
 syncer::StringOrdinal AppListSyncableService::GetLastPosition() const {
   syncer::StringOrdinal largest_ordinal;
-  for (const auto& it : sync_items_) {
-    const SyncItem* item = it.second.get();
-    if (item->item_ordinal.IsValid() &&
+  for (const auto& [item_id, sync_item] : sync_items_) {
+    if (sync_item->item_ordinal.IsValid() &&
         (!largest_ordinal.IsValid() ||
-         item->item_ordinal.GreaterThan(largest_ordinal))) {
-      largest_ordinal = item->item_ordinal;
+         sync_item->item_ordinal.GreaterThan(largest_ordinal))) {
+      largest_ordinal = sync_item->item_ordinal;
     }
   }
   if (largest_ordinal.IsValid())
@@ -902,12 +929,12 @@ syncer::StringOrdinal AppListSyncableService::GetPositionAfterApp(
     return syncer::StringOrdinal();
 
   syncer::StringOrdinal next_item;
-  for (const auto& it : sync_items_) {
-    const SyncItem* item = it.second.get();
-    if (item->item_ordinal.IsValid() &&
-        item->item_ordinal.GreaterThan(app_item->item_ordinal) &&
-        (!next_item.IsValid() || next_item.GreaterThan(item->item_ordinal))) {
-      next_item = item->item_ordinal;
+  for (const auto& [item_id, sync_item] : sync_items_) {
+    if (sync_item->item_ordinal.IsValid() &&
+        sync_item->item_ordinal.GreaterThan(app_item->item_ordinal) &&
+        (!next_item.IsValid() ||
+         next_item.GreaterThan(sync_item->item_ordinal))) {
+      next_item = sync_item->item_ordinal;
     }
   }
 
@@ -944,7 +971,7 @@ void AppListSyncableService::RemoveSyncItem(const std::string& id) {
   }
 
   // Check for existing RemoveDefault sync item.
-  SyncItem* sync_item = iter->second.get();
+  const auto& [item_id, sync_item] = *iter;
   sync_pb::AppListSpecifics::AppListItemType type = sync_item->item_type;
   if (type == sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP) {
     // RemoveDefault item exists, just return.
@@ -953,21 +980,21 @@ void AppListSyncableService::RemoveSyncItem(const std::string& id) {
   }
 
   // Check if we're asked to remove a default-installed app.
-  if (InterceptDeleteDefaultApp(sync_item))
+  if (InterceptDeleteDefaultApp(sync_item.get())) {
     return;
+  }
 
-  DeleteSyncItem(iter->first);
+  DeleteSyncItem(item_id);
 }
 
 void AppListSyncableService::ResolveFolderPositions() {
   VLOG(2) << "ResolveFolderPositions.";
-  for (const auto& sync_pair : sync_items_) {
-    SyncItem* sync_item = sync_pair.second.get();
+  for (const auto& [item_id, sync_item] : sync_items_) {
     if (sync_item->item_type != sync_pb::AppListSpecifics::TYPE_FOLDER)
       continue;
 
     model_updater_->UpdateAppItemFromSyncItem(
-        sync_item,
+        sync_item.get(),
         sync_item->item_id !=
             ash::kOemFolderId,  // Don't sync oem folder's name.
         false);                 // Don't sync its folder here.
@@ -976,8 +1003,9 @@ void AppListSyncableService::ResolveFolderPositions() {
 
 void AppListSyncableService::PruneEmptySyncFolders() {
   std::set<std::string> parent_ids;
-  for (const auto& sync_pair : sync_items_)
-    parent_ids.insert(sync_pair.second->parent_id);
+  for (const auto& [item_id, sync_item] : sync_items_) {
+    parent_ids.insert(sync_item->parent_id);
+  }
 
   for (auto iter = sync_items_.begin(); iter != sync_items_.end();) {
     SyncItem* sync_item = (iter++)->second.get();
@@ -1050,15 +1078,14 @@ AppListSyncableService::MergeDataAndStartSyncing(
 
   // Copy all sync items to |unsynced_items|.
   std::set<std::string> unsynced_items;
-  for (const auto& sync_pair : sync_items_)
-    unsynced_items.insert(sync_pair.first);
+  for (const auto& [item_id, sync_item] : sync_items_) {
+    unsynced_items.insert(item_id);
+  }
 
   // Create SyncItem entries for initial_sync_data.
-  for (syncer::SyncDataList::const_iterator iter = initial_sync_data.begin();
-       iter != initial_sync_data.end(); ++iter) {
-    const syncer::SyncData& data = *iter;
-    const std::string& item_id = data.GetSpecifics().app_list().item_id();
-    const sync_pb::AppListSpecifics& specifics = data.GetSpecifics().app_list();
+  for (const auto& data : initial_sync_data) {
+    const auto& specifics = data.GetSpecifics().app_list();
+    const std::string& item_id = specifics.item_id();
     DVLOG(2) << this << "  Initial Sync Item: " << item_id
              << " Type: " << specifics.item_type();
     DCHECK_EQ(syncer::APP_LIST, data.GetDataType());
@@ -1077,9 +1104,8 @@ AppListSyncableService::MergeDataAndStartSyncing(
 
   // Send unsynced items.
   syncer::SyncChangeList change_list;
-  for (std::set<std::string>::iterator iter = unsynced_items.begin();
-       iter != unsynced_items.end(); ++iter) {
-    SyncItem* sync_item = FindSyncItem(*iter);
+  for (const auto& item_id : unsynced_items) {
+    SyncItem* sync_item = FindSyncItem(item_id);
     // Sync can cause an item to change folders, causing an unsynced folder
     // item to be removed.
     if (!sync_item)
@@ -1102,8 +1128,7 @@ AppListSyncableService::MergeDataAndStartSyncing(
 
   // Fix items that do not contain valid app list position, required for
   // builds prior to M53 (crbug.com/677647).
-  for (const auto& sync_pair : sync_items_) {
-    SyncItem* sync_item = sync_pair.second.get();
+  for (const auto& [item_id, sync_item] : sync_items_) {
     if (sync_item->item_type != sync_pb::AppListSpecifics::TYPE_APP ||
         sync_item->item_ordinal.IsValid() ||
         !sync_item->empty_item_ordinal_fixable) {
@@ -1113,7 +1138,7 @@ AppListSyncableService::MergeDataAndStartSyncing(
     const ChromeAppListItem* app_item =
         model_updater_->FindItem(sync_item->item_id);
     if (app_item) {
-      if (UpdateSyncItemFromAppItem(app_item, sync_item)) {
+      if (UpdateSyncItemFromAppItem(app_item, sync_item.get())) {
         VLOG(2) << "Fixing sync item from existing app: " << sync_item;
       } else {
         sync_item->item_ordinal = syncer::StringOrdinal::CreateInitialOrdinal();
@@ -1126,7 +1151,7 @@ AppListSyncableService::MergeDataAndStartSyncing(
               << sync_item;
     }
     change_list.push_back(SyncChange(FROM_HERE, SyncChange::ACTION_UPDATE,
-                                     GetSyncDataFromSyncItem(sync_item)));
+                                     GetSyncDataFromSyncItem(sync_item.get())));
   }
 
   sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
@@ -1150,9 +1175,9 @@ void AppListSyncableService::StopSyncing(syncer::ModelType type) {
 syncer::SyncDataList AppListSyncableService::GetAllSyncDataForTesting() const {
   VLOG(2) << this << ": GetAllSyncData: " << sync_items_.size();
   syncer::SyncDataList list;
-  for (auto iter = sync_items_.begin(); iter != sync_items_.end(); ++iter) {
-    VLOG(2) << this << " -> SYNC: " << iter->second->ToString();
-    list.push_back(GetSyncDataFromSyncItem(iter->second.get()));
+  for (const auto& [item_id, sync_item] : sync_items_) {
+    VLOG(2) << this << " -> SYNC: " << sync_item->ToString();
+    list.push_back(GetSyncDataFromSyncItem(sync_item.get()));
   }
   return list;
 }
@@ -1168,9 +1193,7 @@ absl::optional<syncer::ModelError> AppListSyncableService::ProcessSyncChanges(
   HandleUpdateStarted();
 
   VLOG(2) << this << ": ProcessSyncChanges: " << change_list.size();
-  for (syncer::SyncChangeList::const_iterator iter = change_list.begin();
-       iter != change_list.end(); ++iter) {
-    const SyncChange& change = *iter;
+  for (const auto& change : change_list) {
     VLOG(2) << this << "  Change: "
             << change.sync_data().GetSpecifics().app_list().item_id() << " ("
             << change.change_type() << ")";
@@ -1423,12 +1446,13 @@ void AppListSyncableService::DeleteSyncItemSpecifics(
     return;
 
   // Check if we're asked to remove a default-installed app.
-  if (InterceptDeleteDefaultApp(iter->second.get()))
+  auto* sync_item = iter->second.get();
+  if (InterceptDeleteDefaultApp(sync_item)) {
     return;
+  }
 
-  sync_pb::AppListSpecifics::AppListItemType item_type =
-      iter->second->item_type;
-  VLOG(2) << this << " <- SYNC DELETE: " << iter->second->ToString();
+  sync_pb::AppListSpecifics::AppListItemType item_type = sync_item->item_type;
+  VLOG(2) << this << " <- SYNC DELETE: " << sync_item->ToString();
   RemoveSyncItemFromLocalStorage(profile_, item_id);
   sync_items_.erase(iter);
 
@@ -1469,9 +1493,13 @@ std::string AppListSyncableService::SyncItem::ToString() const {
   } else {
     res += " { " + item_name + " }";
     res += " [" + item_ordinal.ToDebugString() + "]";
-    if (!parent_id.empty())
+    if (!parent_id.empty()) {
       res += " <" + parent_id.substr(0, 8) + ">";
-    res += " [" + item_pin_ordinal.ToDebugString() + "]";
+    }
+    res += " [" + item_pin_ordinal.ToDebugString() + "(up=" +
+           (is_user_pinned.has_value() ? (*is_user_pinned ? "true" : "false")
+                                       : "?") +
+           ")]";
   }
 
   if (item_color.IsValid()) {
@@ -1490,17 +1518,15 @@ std::vector<AppListSyncableService::SyncItem*>
 AppListSyncableService::GetSortedTopLevelSyncItems() const {
   // Filter out items in folder.
   std::vector<SyncItem*> sync_items;
-  for (const auto& sync_pair : sync_items_) {
-    const auto* sync_item = sync_pair.second.get();
-    if (IsTopLevelAppItem(*sync_item) && sync_item->item_ordinal.IsValid())
-      sync_items.emplace_back(sync_pair.second.get());
+  for (const auto& [item_id, sync_item] : sync_items_) {
+    if (IsTopLevelAppItem(*sync_item) && sync_item->item_ordinal.IsValid()) {
+      sync_items.emplace_back(sync_item.get());
+    }
   }
 
   // Sort remaining items based on their positions.
-  std::sort(sync_items.begin(), sync_items.end(),
-            [](SyncItem* const& item1, SyncItem* const& item2) -> bool {
-              return item1->item_ordinal.LessThan(item2->item_ordinal);
-            });
+  base::ranges::sort(sync_items, syncer::StringOrdinal::LessThanFn(),
+                     &SyncItem::item_ordinal);
   return sync_items;
 }
 
@@ -1697,38 +1723,45 @@ void AppListSyncableService::EnsureOemFolderExists() {
   model_updater_->AddItem(std::move(oem_folder));
 }
 
-void AppListSyncableService::MaybeAddOrUpdateCrostiniFolderSyncData() {
-  const std::string crostini_folder_id = ash::kCrostiniFolderId;
-  if (model_updater_->FindItem(crostini_folder_id)) {
-    // The Crostini folder exists. Therefore its sync data is update-to-date.
+void AppListSyncableService::MaybeAddOrUpdateGuestOsFolderSyncData(
+    const std::string& folder_id) {
+  if (model_updater_->FindItem(folder_id)) {
+    // The folder exists. Therefore its sync data is up-to-date.
     return;
   }
 
-  ChromeAppListItem crostini_folder(profile_, crostini_folder_id,
-                                    model_updater_.get());
-  crostini_folder.SetChromeName(
-      l10n_util::GetStringUTF8(IDS_APP_LIST_CROSTINI_DEFAULT_FOLDER_NAME));
-  crostini_folder.SetIsSystemFolder(true);
-  crostini_folder.SetChromeIsFolder(true);
+  int folder_name_resource = 0;
+  if (folder_id == ash::kCrostiniFolderId) {
+    folder_name_resource = IDS_APP_LIST_CROSTINI_DEFAULT_FOLDER_NAME;
+  } else if (folder_id == ash::kBruschettaFolderId) {
+    folder_name_resource = IDS_APP_LIST_BRUSCHETTA_DEFAULT_FOLDER_NAME;
+  } else {
+    return;
+  }
+  ChromeAppListItem folder(profile_, folder_id, model_updater_.get());
+  folder.SetChromeName(l10n_util::GetStringUTF8(folder_name_resource));
+  folder.SetIsSystemFolder(true);
+  folder.SetChromeIsFolder(true);
 
   // Calculate the Crostini folder's position.
-  const SyncItem* current_sync_data = GetSyncItem(crostini_folder_id);
+  const SyncItem* current_sync_data = GetSyncItem(folder_id);
   if (current_sync_data) {
     const syncer::StringOrdinal& item_position =
         current_sync_data->item_ordinal;
     DCHECK(item_position.IsValid());
-    crostini_folder.SetChromePosition(item_position);
+    folder.SetChromePosition(item_position);
   } else {
-    InitNewItemPosition(&crostini_folder);
+    InitNewItemPosition(&folder);
   }
 
-  // Add or update the Crostini folder's sync data.
+  // Add or update the folder's sync data.
   // Note that we cannot call `AddOrUpdateFromSyncItem()` here because
-  // the Crostini folder is not added to `model_updater_` yet.
-  if (current_sync_data)
-    UpdateSyncItem(&crostini_folder);
-  else
-    CreateSyncItemFromAppItem(&crostini_folder);
+  // the folder is not added to `model_updater_` yet.
+  if (current_sync_data) {
+    UpdateSyncItem(&folder);
+  } else {
+    CreateSyncItemFromAppItem(&folder);
+  }
 }
 
 bool AppListSyncableService::MaybeCreateFolderBeforeAddingItem(

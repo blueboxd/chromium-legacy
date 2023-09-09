@@ -17,7 +17,7 @@
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/optimization_guide/core/optimization_guide_decision.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
-#include "components/optimization_guide/core/test_new_optimization_guide_decider.h"
+#include "components/optimization_guide/core/test_optimization_guide_decider.h"
 #include "components/optimization_guide/proto/common_types.pb.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto/salient_image_metadata.pb.h"
@@ -38,7 +38,7 @@ using testing::ElementsAre;
 namespace optimization_guide {
 namespace {
 
-class ImageServiceTestOptGuide : public TestNewOptimizationGuideDecider {
+class ImageServiceTestOptGuide : public TestOptimizationGuideDecider {
  public:
   void CanApplyOptimizationOnDemand(
       const std::vector<GURL>& urls,
@@ -80,6 +80,7 @@ class ImageServiceTest : public testing::Test {
 
     template_url_service_ = std::make_unique<TemplateURLService>(nullptr, 0);
     remote_suggestions_service_ = std::make_unique<RemoteSuggestionsService>(
+        /*document_suggestions_service=*/nullptr,
         test_url_loader_factory_.GetSafeWeakWrapper());
     test_opt_guide_ =
         std::make_unique<optimization_guide::ImageServiceTestOptGuide>();
@@ -435,6 +436,7 @@ class DisabledOptGuideImageServiceTest : public ImageServiceTest {
 
     template_url_service_ = std::make_unique<TemplateURLService>(nullptr, 0);
     remote_suggestions_service_ = std::make_unique<RemoteSuggestionsService>(
+        /*document_suggestions_service=*/nullptr,
         test_url_loader_factory_.GetSafeWeakWrapper());
     test_opt_guide_ =
         std::make_unique<optimization_guide::ImageServiceTestOptGuide>();

@@ -25,12 +25,15 @@ String CSSScopeRule::PreludeText() const {
     result.Append('(');
     result.Append(CSSSelectorList::SelectorsText(scope.From()));
     result.Append(')');
+  }
 
-    if (scope.To()) {
-      result.Append(" to (");
-      result.Append(CSSSelectorList::SelectorsText(scope.To()));
-      result.Append(')');
+  if (scope.To()) {
+    if (!result.empty()) {
+      result.Append(" ");
     }
+    result.Append("to (");
+    result.Append(CSSSelectorList::SelectorsText(scope.To()));
+    result.Append(')');
   }
 
   return result.ReleaseString();
@@ -46,6 +49,19 @@ String CSSScopeRule::cssText() const {
   }
   AppendCSSTextForItems(result);
   return result.ReleaseString();
+}
+
+String CSSScopeRule::start() const {
+  const StyleScope& scope =
+      To<StyleRuleScope>(*group_rule_.Get()).GetStyleScope();
+  return scope.From() ? CSSSelectorList::SelectorsText(scope.From())
+                      : g_null_atom;
+}
+
+String CSSScopeRule::end() const {
+  const StyleScope& scope =
+      To<StyleRuleScope>(*group_rule_.Get()).GetStyleScope();
+  return scope.To() ? CSSSelectorList::SelectorsText(scope.To()) : g_null_atom;
 }
 
 void CSSScopeRule::SetPreludeText(const ExecutionContext* execution_context,

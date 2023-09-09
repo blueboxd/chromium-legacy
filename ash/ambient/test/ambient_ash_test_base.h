@@ -47,7 +47,7 @@ namespace {
 
 // The default factor to multiply ambient timeouts by. Slightly greater than 1
 // to reduce flakiness by making sure the timeouts have expired.
-inline constexpr float kDefaultFastForwardFactor = 1.01;
+inline constexpr float kDefaultFastForwardFactor = 1.001;
 
 }  // namespace
 
@@ -169,6 +169,9 @@ class AmbientAshTestBase : public AshTestBase {
   // scaled by `factor`.
   void FastForwardByBackgroundLockScreenTimeout(
       float factor = kDefaultFastForwardFactor);
+
+  // Advance the task environment timer to screen saver duration in minutes.
+  void FastForwardByDurationInMinutes(int minutes);
 
   void SetPowerStateCharging();
   void SetPowerStateDischarging();

@@ -164,18 +164,13 @@ public class FeedSurfaceMediatorTest {
         Profile.setLastUsedProfileForTesting(mProfileMock);
         IdentityServicesProvider.setInstanceForTests(mIdentityService);
         TemplateUrlServiceFactory.setInstanceForTesting(mUrlService);
-        SignInPromo.setDisablePromoForTests(true);
+        SignInPromo.setDisablePromoForTesting(true);
     }
 
     @After
     public void tearDown() {
         if (mFeedSurfaceMediator != null) mFeedSurfaceMediator.destroy();
         FeedSurfaceMediator.setPrefForTest(null, null);
-        FeedFeatures.setFakePrefsForTest(null);
-        Profile.setLastUsedProfileForTesting(null);
-        IdentityServicesProvider.setInstanceForTests(null);
-        TemplateUrlServiceFactory.setInstanceForTesting(null);
-        SignInPromo.setDisablePromoForTests(false);
     }
 
     @Test

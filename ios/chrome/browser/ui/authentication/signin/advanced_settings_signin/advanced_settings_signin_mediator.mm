@@ -61,15 +61,13 @@ using unified_consent::metrics::RecordSyncSetupDataTypesHistrogam;
     case SigninCoordinatorResultSuccess: {
       RecordAction(
           UserMetricsAction("Signin_Signin_ConfirmAdvancedSyncSettings"));
-      RecordSyncSetupDataTypesHistrogam(self.syncService->GetUserSettings(),
-                                        self.prefService);
+      RecordSyncSetupDataTypesHistrogam(self.syncService->GetUserSettings());
       break;
     }
     case SigninCoordinatorResultCanceledByUser:
       // Canceling from the advanced sync settings view is not possible.
       NOTREACHED();
       break;
-    case SigninCoordinatorResultDisabled:
     case SigninCoordinatorResultInterrupted:
       RecordAction(
           UserMetricsAction("Signin_Signin_AbortAdvancedSyncSettings"));
@@ -91,8 +89,6 @@ using unified_consent::metrics::RecordSyncSetupDataTypesHistrogam;
     case IdentitySigninStateSignedInWithSyncDisabled: {
       // Sync consent is not granted in Advanced Settings, therefore
       // there should be no syncing identity.
-      DCHECK(!self.authenticationService->GetPrimaryIdentity(
-          signin::ConsentLevel::kSync));
       break;
     }
     case IdentitySigninStateSignedInWithSyncEnabled: {

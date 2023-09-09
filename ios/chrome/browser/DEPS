@@ -73,7 +73,8 @@ include_rules = [
   "+components/policy/policy_constants.h",
   "+components/policy/proto/device_management_backend.pb.h",
   "+components/pref_registry",
-  "+components/startup_metric_utils",
+  "+components/startup_metric_utils/browser",
+  "+components/startup_metric_utils/common",
   "+components/prefs",
   "+components/profile_metrics",
   "+components/proxy_config",
@@ -159,6 +160,9 @@ include_rules = [
   # Those depend on //content; exclude them.
   "-components/metrics/gpu",
   "-components/sessions/content",
+
+  # Features should add explicit dependencies.
+  "-ios/chrome/browser",
 
   # Shared dependencies.
   "+ios/chrome/browser/shared/model",

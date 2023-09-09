@@ -5,6 +5,7 @@
 #include "chrome/browser/browser_features.h"
 
 #include "base/feature_list.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 
@@ -169,8 +170,21 @@ BASE_FEATURE(kWebUsbDeviceDetection,
 // Enables Certificate Transparency on Android.
 BASE_FEATURE(kCertificateTransparencyAndroid,
              "CertificateTransparencyAndroid",
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
              base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#else
+// Enables Certificate Transparency on Desktop.
+BASE_FEATURE(kCertificateTransparencyAskBeforeEnabling,
+             "CertificateTransparencyAskBeforeEnabling",
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 BASE_FEATURE(kLargeFaviconFromGoogle,
              "LargeFaviconFromGoogle",
@@ -241,6 +255,11 @@ BASE_FEATURE(kBookmarkTriggerForPrerender2,
              "BookmarkTriggerForPrerender2",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables New Tab Page trigger prerendering.
+BASE_FEATURE(kNewTabPageTriggerForPrerender2,
+             "NewTabPageTriggerForPrerender2",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kSupportSearchSuggestionForPrerender2,
              "SupportSearchSuggestionForPrerender2",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -253,7 +272,7 @@ const base::FeatureParam<SearchSuggestionPrerenderImplementationType>::Option
 const base::FeatureParam<SearchSuggestionPrerenderImplementationType>
     kSearchSuggestionPrerenderImplementationTypeParam{
         &kSupportSearchSuggestionForPrerender2, "implementation_type",
-        SearchSuggestionPrerenderImplementationType::kIgnorePrefetch,
+        SearchSuggestionPrerenderImplementationType::kUsePrefetch,
         &search_suggestion_implementation_types};
 
 const base::FeatureParam<SearchPreloadShareableCacheType>::Option
@@ -265,6 +284,10 @@ const base::FeatureParam<SearchPreloadShareableCacheType>
         &kSupportSearchSuggestionForPrerender2, "shareable_cache",
         SearchPreloadShareableCacheType::kEnabled,
         &search_preload_shareable_cache_types};
+
+BASE_FEATURE(kPrerenderDSEHoldback,
+             "PrerenderDSEHoldback",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAutocompleteActionPredictorConfidenceCutoff,
              "AutocompleteActionPredictorConfidenceCutoff",

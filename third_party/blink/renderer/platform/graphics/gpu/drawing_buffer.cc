@@ -327,6 +327,9 @@ void DrawingBuffer::SetIsInHiddenPage(bool hidden) {
   if (is_hidden_)
     recycled_color_buffer_queue_.clear();
 
+  // Make sure to interrupt pixel local storage.
+  ScopedStateRestorer scoped_state_restorer(this);
+
   if (base::FeatureList::IsEnabled(features::kCanvasFreeMemoryWhenHidden)) {
     auto* context_support = ContextProvider()->ContextSupport();
     if (context_support)
@@ -337,13 +340,10 @@ void DrawingBuffer::SetIsInHiddenPage(bool hidden) {
   gl_->Flush();
 }
 
-void DrawingBuffer::SetHDRConfiguration(
-    gfx::HDRMode hdr_mode,
-    absl::optional<gfx::HDRMetadata> hdr_metadata) {
-  hdr_mode_ = hdr_mode;
+void DrawingBuffer::SetHdrMetadata(const gfx::HDRMetadata& hdr_metadata) {
   hdr_metadata_ = hdr_metadata;
   if (layer_)
-    layer_->SetHDRConfiguration(hdr_mode_, hdr_metadata_);
+    layer_->SetHdrMetadata(hdr_metadata_);
 }
 
 void DrawingBuffer::SetFilterQuality(
@@ -848,7 +848,7 @@ DrawingBuffer::ColorBuffer::ColorBuffer(
 
 DrawingBuffer::ColorBuffer::~ColorBuffer() {
   if (base::PlatformThread::CurrentRef() != owning_thread_ref ||
-      !drawing_buffer || drawing_buffer->destroyed()) {
+      !drawing_buffer) {
     // If the context has been destroyed no cleanup is necessary since all
     // resources below are automatically destroyed. Note that if a ColorBuffer
     // is being destroyed on a different thread, it implies that the owning
@@ -858,8 +858,23 @@ DrawingBuffer::ColorBuffer::~ColorBuffer() {
   }
 
   gpu::gles2::GLES2Interface* gl = drawing_buffer->gl_;
-  gpu::SharedImageInterface* sii =
-      drawing_buffer->ContextProvider()->SharedImageInterface();
+  if (!gl) {
+    // Guard against in-flight destruction of the DrawingBuffer, while
+    // still performing cleanup during BeginDestruction().
+    return;
+  }
+  WebGraphicsContext3DProvider* provider = drawing_buffer->ContextProvider();
+  if (!provider) {
+    // Guard against in-flight destruction of the DrawingBuffer, while
+    // still performing cleanup during BeginDestruction().
+    return;
+  }
+  gpu::SharedImageInterface* sii = provider->SharedImageInterface();
+  if (!sii) {
+    // Guard against in-flight destruction of the DrawingBuffer, while
+    // still performing cleanup during BeginDestruction().
+    return;
+  }
 
   sii->DestroySharedImage(receive_sync_token, mailbox);
   gpu_memory_buffer.reset();
@@ -1175,7 +1190,7 @@ cc::Layer* DrawingBuffer::CcLayer() {
       layer_->SetPremultipliedAlpha(requested_alpha_type_ !=
                                     kUnpremul_SkAlphaType);
     }
-    layer_->SetHDRConfiguration(hdr_mode_, hdr_metadata_);
+    layer_->SetHdrMetadata(hdr_metadata_);
     layer_->SetNearestNeighbor(filter_quality_ ==
                                cc::PaintFlags::FilterQuality::kNone);
 
@@ -1195,6 +1210,7 @@ void DrawingBuffer::ClearCcLayer() {
 
 void DrawingBuffer::BeginDestruction() {
   DCHECK(!destruction_in_progress_);
+  destruction_in_progress_ = true;
 
   ClearCcLayer();
   recycled_color_buffer_queue_.clear();
@@ -1228,10 +1244,6 @@ void DrawingBuffer::BeginDestruction() {
   fbo_ = 0;
 
   client_ = nullptr;
-
-  // Mark destruction in progress after the color buffers have been
-  // deleted.
-  destruction_in_progress_ = true;
 }
 
 bool DrawingBuffer::ReallocateDefaultFramebuffer(const gfx::Size& size,
@@ -1620,7 +1632,9 @@ void DrawingBuffer::ResolveIfNeeded() {
         // content the application expects to be preserved, but which can not
         // be. Forcing a lost context is the only option to keep applications
         // rendering correctly.
-        client_->DrawingBufferClientForceLostContextWithAutoRecovery();
+        client_->DrawingBufferClientForceLostContextWithAutoRecovery(
+            "Losing WebGL context because multisampled renderbuffers were "
+            "allocated, to work around macOS OpenGL driver bugs");
       } else if (WantExplicitResolve()) {
         ReallocateMultisampleRenderbuffer(size_);
 
@@ -2086,6 +2100,12 @@ DrawingBuffer::ScopedStateRestorer::ScopedStateRestorer(
   // If this is a nested restorer, save the previous restorer.
   previous_state_restorer_ = drawing_buffer->state_restorer_;
   drawing_buffer_->state_restorer_ = this;
+
+  Client* client = drawing_buffer_->client_;
+  if (!client) {
+    return;
+  }
+  client->DrawingBufferClientInterruptPixelLocalStorage();
 }
 
 DrawingBuffer::ScopedStateRestorer::~ScopedStateRestorer() {
@@ -2111,6 +2131,7 @@ DrawingBuffer::ScopedStateRestorer::~ScopedStateRestorer() {
     client->DrawingBufferClientRestorePixelUnpackBufferBinding();
   if (pixel_pack_buffer_binding_dirty_)
     client->DrawingBufferClientRestorePixelPackBufferBinding();
+  client->DrawingBufferClientRestorePixelLocalStorage();
 }
 
 bool DrawingBuffer::ShouldUseChromiumImage() {

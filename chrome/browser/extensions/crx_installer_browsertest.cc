@@ -148,7 +148,7 @@ class MockInstallPrompt : public ExtensionInstallPrompt {
   }
 
  private:
-  raw_ptr<MockPromptProxy, DanglingUntriaged> proxy_;
+  raw_ptr<MockPromptProxy, AcrossTasksDanglingUntriaged> proxy_;
 };
 
 MockPromptProxy::MockPromptProxy(

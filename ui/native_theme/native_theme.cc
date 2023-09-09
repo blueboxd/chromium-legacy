@@ -18,16 +18,22 @@
 #include "ui/color/color_id.h"
 #include "ui/color/color_metrics.h"
 #include "ui/color/color_provider.h"
-#include "ui/color/color_provider_manager.h"
+#include "ui/color/color_provider_key.h"
 #include "ui/color/color_provider_utils.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme_utils.h"
 
 namespace ui {
 
+#if BUILDFLAG(IS_APPLE)
+NativeTheme::ExtraParams::ExtraParams() : scrollbar_extra() {
+  memset(this, 0, sizeof(*this));
+}
+#else
 NativeTheme::ExtraParams::ExtraParams() {
   memset(this, 0, sizeof(*this));
 }
+#endif
 
 NativeTheme::ExtraParams::ExtraParams(const ExtraParams& other) {
   memcpy(this, &other, sizeof(*this));
@@ -40,18 +46,18 @@ bool NativeTheme::SystemDarkModeSupported() {
 }
 #endif
 
-ColorProviderManager::Key NativeTheme::GetColorProviderKey(
-    scoped_refptr<ColorProviderManager::ThemeInitializerSupplier> custom_theme,
+ColorProviderKey NativeTheme::GetColorProviderKey(
+    scoped_refptr<ColorProviderKey::ThemeInitializerSupplier> custom_theme,
     bool use_custom_frame) const {
-  return ColorProviderManager::Key(
+  return ColorProviderKey(
       (GetDefaultSystemColorScheme() == ColorScheme::kDark)
-          ? ColorProviderManager::ColorMode::kDark
-          : ColorProviderManager::ColorMode::kLight,
-      UserHasContrastPreference() ? ColorProviderManager::ContrastMode::kHigh
-                                  : ColorProviderManager::ContrastMode::kNormal,
+          ? ColorProviderKey::ColorMode::kDark
+          : ColorProviderKey::ColorMode::kLight,
+      UserHasContrastPreference() ? ColorProviderKey::ContrastMode::kHigh
+                                  : ColorProviderKey::ContrastMode::kNormal,
       system_theme_,
-      use_custom_frame ? ui::ColorProviderManager::FrameType::kChromium
-                       : ui::ColorProviderManager::FrameType::kNative,
+      use_custom_frame ? ui::ColorProviderKey::FrameType::kChromium
+                       : ui::ColorProviderKey::FrameType::kNative,
       user_color_, scheme_variant_, /*is_grayscale=*/false,
       std::move(custom_theme));
 }
@@ -139,6 +145,7 @@ NativeTheme::NativeTheme(bool should_use_dark_colors,
     : should_use_dark_colors_(should_use_dark_colors || IsForcedDarkMode()),
       system_theme_(system_theme),
       forced_colors_(IsForcedHighContrast()),
+      prefers_reduced_transparency_(false),
       preferred_color_scheme_(CalculatePreferredColorScheme()),
       preferred_contrast_(CalculatePreferredContrast()) {}
 
@@ -172,6 +179,10 @@ NativeTheme::PageColors NativeTheme::GetPageColors() const {
 
 NativeTheme::PreferredColorScheme NativeTheme::GetPreferredColorScheme() const {
   return preferred_color_scheme_;
+}
+
+bool NativeTheme::GetPrefersReducedTransparency() const {
+  return prefers_reduced_transparency_;
 }
 
 NativeTheme::PreferredContrast NativeTheme::GetPreferredContrast() const {
@@ -272,6 +283,8 @@ void NativeTheme::ColorSchemeNativeThemeObserver::OnNativeThemeUpdated(
     ui::NativeTheme* observed_theme) {
   bool should_use_dark_colors = observed_theme->ShouldUseDarkColors();
   bool forced_colors = observed_theme->InForcedColorsMode();
+  bool prefers_reduced_transparency =
+      observed_theme->GetPrefersReducedTransparency();
   PreferredColorScheme preferred_color_scheme =
       observed_theme->GetPreferredColorScheme();
   PreferredContrast preferred_contrast = observed_theme->GetPreferredContrast();
@@ -291,6 +304,12 @@ void NativeTheme::ColorSchemeNativeThemeObserver::OnNativeThemeUpdated(
   }
   if (theme_to_update_->GetPreferredContrast() != preferred_contrast) {
     theme_to_update_->SetPreferredContrast(preferred_contrast);
+    notify_observers = true;
+  }
+  if (theme_to_update_->GetPrefersReducedTransparency() !=
+      prefers_reduced_transparency) {
+    theme_to_update_->set_prefers_reduced_transparency(
+        prefers_reduced_transparency);
     notify_observers = true;
   }
 

@@ -230,6 +230,8 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
     mojo::PendingRemote<network::mojom::CookieAccessObserver> cookie_observer,
     mojo::PendingRemote<network::mojom::TrustTokenAccessObserver>
         trust_token_observer,
+    mojo::PendingRemote<network::mojom::SharedDictionaryAccessObserver>
+        shared_dictionary_observer,
     mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>
         url_loader_network_observer,
     mojo::PendingRemote<network::mojom::DevToolsObserver> devtools_observer,
@@ -247,6 +249,8 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->trusted_params->cookie_observer = std::move(cookie_observer);
   new_request->trusted_params->trust_token_observer =
       std::move(trust_token_observer);
+  new_request->trusted_params->shared_dictionary_observer =
+      std::move(shared_dictionary_observer);
   new_request->trusted_params->url_loader_network_observer =
       std::move(url_loader_network_observer);
   new_request->trusted_params->devtools_observer = std::move(devtools_observer);
@@ -1025,7 +1029,7 @@ void NavigationURLLoaderImpl::OnComplete(
   // URLLoaderClient has already been transferred to the renderer process and
   // OnComplete is not expected to be called here.
   if (status.error_code == net::OK) {
-    SCOPED_CRASH_KEY_STRING256("NavigationURLLoader::Complete", "url",
+    SCOPED_CRASH_KEY_STRING256("NavigationURLLoader_Complete", "url",
                                url_.spec());
     base::debug::DumpWithoutCrashing();
     return;
@@ -1308,6 +1312,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     mojo::PendingRemote<network::mojom::CookieAccessObserver> cookie_observer,
     mojo::PendingRemote<network::mojom::TrustTokenAccessObserver>
         trust_token_observer,
+    mojo::PendingRemote<network::mojom::SharedDictionaryAccessObserver>
+        shared_dictionary_observer,
     mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>
         url_loader_network_observer,
     mojo::PendingRemote<network::mojom::DevToolsObserver> devtools_observer,
@@ -1354,8 +1360,9 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
 
   resource_request_ = CreateResourceRequest(
       *request_info_, frame_tree_node, std::move(cookie_observer),
-      std::move(trust_token_observer), std::move(url_loader_network_observer),
-      std::move(devtools_observer), std::move(accept_ch_frame_observer));
+      std::move(trust_token_observer), std::move(shared_dictionary_observer),
+      std::move(url_loader_network_observer), std::move(devtools_observer),
+      std::move(accept_ch_frame_observer));
 
   std::string accept_langs =
       GetContentClient()->browser()->GetAcceptLangs(browser_context_);

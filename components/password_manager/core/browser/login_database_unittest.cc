@@ -48,9 +48,9 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
-using autofill::GaiaIdHash;
 using base::ASCIIToUTF16;
 using base::UTF16ToASCII;
+using signin::GaiaIdHash;
 using ::testing::_;
 using ::testing::ElementsAre;
 using ::testing::Eq;
@@ -112,7 +112,10 @@ PasswordForm GenerateExamplePasswordForm() {
   form.in_store = PasswordForm::Store::kProfileStore;
   form.moving_blocked_for_list.push_back(GaiaIdHash::FromGaiaId("user1"));
   form.moving_blocked_for_list.push_back(GaiaIdHash::FromGaiaId("user2"));
-
+  form.sender_email = u"sender@gmail.com";
+  form.sender_name = u"Cool Sender";
+  form.date_received = base::Time::Now() - base::Hours(1);
+  form.sharing_notification_displayed = true;
   return form;
 }
 
@@ -433,7 +436,6 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatching) {
                              /*should_PSL_matching_apply=*/true, &result));
   ASSERT_EQ(1U, result.size());
   EXPECT_EQ("https://foo.com/", result[0]->signon_realm);
-  EXPECT_TRUE(result[0]->is_public_suffix_match);
 
   // Do an exact match by excluding psl matches.
   result.clear();
@@ -479,9 +481,6 @@ TEST_F(LoginDatabaseTest, TestFederatedMatching) {
                                      GURL("https://foo.com/")};
   EXPECT_TRUE(db().GetLogins(form_request, /*should_PSL_matching_apply=*/true,
                              &result));
-  // Both forms are matched, only form2 is a PSL match.
-  form.is_public_suffix_match = false;
-  form2.is_public_suffix_match = true;
   EXPECT_THAT(result,
               UnorderedElementsAre(Pointee(HasPrimaryKeyAndEquals(form)),
                                    Pointee(HasPrimaryKeyAndEquals(form2))));
@@ -491,9 +490,6 @@ TEST_F(LoginDatabaseTest, TestFederatedMatching) {
   form_request.signon_realm = "https://mobile.foo.com/";
   EXPECT_TRUE(db().GetLogins(form_request, /*should_PSL_matching_apply=*/true,
                              &result));
-  // Both forms are matched, only form is a PSL match.
-  form.is_public_suffix_match = true;
-  form2.is_public_suffix_match = false;
   EXPECT_THAT(result,
               UnorderedElementsAre(Pointee(HasPrimaryKeyAndEquals(form)),
                                    Pointee(HasPrimaryKeyAndEquals(form2))));
@@ -632,7 +628,6 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainGoogle) {
       db().GetLogins(form2, /*should_PSL_matching_apply=*/true, &result));
   ASSERT_EQ(1U, result.size());
   EXPECT_EQ(form.signon_realm, result[0]->signon_realm);
-  EXPECT_TRUE(result[0]->is_public_suffix_match);
 
   // There should be no PSL match on other subdomains.
   PasswordFormDigest form3 = {PasswordForm::Scheme::kHtml,
@@ -685,7 +680,6 @@ TEST_F(LoginDatabaseTest, TestFederatedMatchingWithoutPSLMatching) {
   form_request.signon_realm = form2.signon_realm;
   EXPECT_TRUE(db().GetLogins(form_request, /*should_PSL_matching_apply=*/false,
                              &result));
-  form.is_public_suffix_match = true;
   EXPECT_THAT(result, ElementsAre(Pointee(HasPrimaryKeyAndEquals(form2))));
 }
 
@@ -712,7 +706,6 @@ TEST_F(LoginDatabaseTest, TestFederatedPSLMatching) {
   std::vector<std::unique_ptr<PasswordForm>> result;
   EXPECT_TRUE(db().GetLogins(form_request, /*should_PSL_matching_apply=*/true,
                              &result));
-  form.is_public_suffix_match = true;
   EXPECT_THAT(result, ElementsAre(Pointee(HasPrimaryKeyAndEquals(form))));
 }
 
@@ -746,7 +739,6 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingDifferentSites) {
       db().GetLogins(form2, /*should_PSL_matching_apply=*/true, &result));
   EXPECT_EQ(1U, result.size());
   EXPECT_EQ("https://foo.com/", result[0]->signon_realm);
-  EXPECT_TRUE(result[0]->is_public_suffix_match);
   result.clear();
 
   // Add baz.com desktop site.
@@ -772,7 +764,6 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingDifferentSites) {
       db().GetLogins(form3, /*should_PSL_matching_apply=*/true, &result));
   EXPECT_EQ(1U, result.size());
   EXPECT_EQ("https://baz.com/", result[0]->signon_realm);
-  EXPECT_TRUE(result[0]->is_public_suffix_match);
 }
 
 PasswordForm GetFormWithNewSignonRealm(PasswordForm form,
@@ -1625,14 +1616,12 @@ TEST_F(LoginDatabaseTest, ReportAccountStoreMetricsTest) {
       "PasswordManager.AccountStore.InaccessiblePasswords3", 0, 1);
 }
 
-class LoginDatabaseSyncMetadataTest
-    : public LoginDatabaseTest,
-      public testing::WithParamInterface<syncer::ModelType> {
+class LoginDatabaseSyncMetadataTest : public LoginDatabaseTest {
  public:
-  syncer::ModelType SyncModelType() { return GetParam(); }
+  syncer::ModelType SyncModelType() { return syncer::PASSWORDS; }
 };
 
-TEST_P(LoginDatabaseSyncMetadataTest, NoMetadata) {
+TEST_F(LoginDatabaseSyncMetadataTest, NoMetadata) {
   std::unique_ptr<syncer::MetadataBatch> metadata_batch =
       db().password_sync_metadata_store().GetAllSyncMetadata(SyncModelType());
   ASSERT_THAT(metadata_batch, testing::NotNull());
@@ -1641,7 +1630,7 @@ TEST_P(LoginDatabaseSyncMetadataTest, NoMetadata) {
             metadata_batch->GetModelTypeState().SerializeAsString());
 }
 
-TEST_P(LoginDatabaseSyncMetadataTest, GetAllSyncMetadata) {
+TEST_F(LoginDatabaseSyncMetadataTest, GetAllSyncMetadata) {
   sync_pb::EntityMetadata metadata;
   PasswordStoreSync::MetadataStore& password_sync_metadata_store =
       db().password_sync_metadata_store();
@@ -1692,7 +1681,7 @@ TEST_P(LoginDatabaseSyncMetadataTest, GetAllSyncMetadata) {
       sync_pb::ModelTypeState_InitialSyncState_INITIAL_SYNC_STATE_UNSPECIFIED);
 }
 
-TEST_P(LoginDatabaseSyncMetadataTest, DeleteAllSyncMetadata) {
+TEST_F(LoginDatabaseSyncMetadataTest, DeleteAllSyncMetadata) {
   sync_pb::EntityMetadata metadata;
   PasswordStoreSync::MetadataStore& password_sync_metadata_store =
       db().password_sync_metadata_store();
@@ -1728,7 +1717,7 @@ TEST_P(LoginDatabaseSyncMetadataTest, DeleteAllSyncMetadata) {
   EXPECT_EQ(empty_metadata_batch->TakeAllMetadata().size(), 0u);
 }
 
-TEST_P(LoginDatabaseSyncMetadataTest, WriteThenDeleteSyncMetadata) {
+TEST_F(LoginDatabaseSyncMetadataTest, WriteThenDeleteSyncMetadata) {
   sync_pb::EntityMetadata metadata;
   PasswordStoreSync::MetadataStore& password_sync_metadata_store =
       db().password_sync_metadata_store();
@@ -1768,12 +1757,6 @@ TEST_P(LoginDatabaseSyncMetadataTest, WriteThenDeleteSyncMetadata) {
   EXPECT_EQ(sync_pb::ModelTypeState().SerializeAsString(),
             metadata_batch->GetModelTypeState().SerializeAsString());
 }
-
-INSTANTIATE_TEST_SUITE_P(
-    SyncModelTypes,
-    LoginDatabaseSyncMetadataTest,
-    testing::Values(syncer::PASSWORDS,
-                    syncer::INCOMING_PASSWORD_SHARING_INVITATION));
 
 #if BUILDFLAG(IS_POSIX)
 // Only the current user has permission to read the database.

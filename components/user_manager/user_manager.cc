@@ -46,11 +46,17 @@ void UserManager::Observer::OnUserRemoved(const AccountId& account_id,
 
 void UserManager::Observer::OnUserToBeRemoved(const AccountId& account_id) {}
 
+void UserManager::Observer::OnUserNotAllowed(const std::string& user_email) {}
+
 void UserManager::UserSessionStateObserver::ActiveUserChanged(
     User* active_user) {}
 
 void UserManager::UserSessionStateObserver::UserAddedToSession(
     const User* active_user) {}
+
+void UserManager::UserSessionStateObserver::OnLoginStateUpdated(
+    const User* active_user,
+    bool is_current_user_owner) {}
 
 UserManager::UserSessionStateObserver::~UserSessionStateObserver() {}
 

@@ -28,8 +28,8 @@ class MockFastCheckoutClient : public FastCheckoutClient {
               OnNavigation,
               (const GURL& url, bool is_cart_or_checkout_url),
               (override));
-  MOCK_METHOD(autofill::FastCheckoutTriggerOutcome,
-              CanRun,
+  MOCK_METHOD(bool,
+              IsSupported,
               (const autofill::FormData&,
                const autofill::FormFieldData&,
                const autofill::AutofillManager&),

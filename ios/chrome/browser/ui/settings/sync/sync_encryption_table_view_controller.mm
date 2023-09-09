@@ -13,7 +13,7 @@
 #import "components/google/core/common/google_util.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/base/command_line_switches.h"
-#import "components/sync/base/sync_prefs.h"
+#import "components/sync/service/sync_prefs.h"
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
 #import "ios/chrome/browser/net/crurl.h"
@@ -90,6 +90,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _syncObserver = std::make_unique<SyncObserverBridge>(self, syncService);
   }
   return self;
+}
+
+- (void)dealloc {
+  // TODO(crbug.com/1454777)
+  DUMP_WILL_BE_CHECK(_settingsAreDismissed);
 }
 
 - (void)viewDidLoad {

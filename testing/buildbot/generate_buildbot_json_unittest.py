@@ -42,10 +42,8 @@ class TestCase(fake_filesystem_unittest.TestCase):
     self.set_args()
 
   def set_args(self, *args):
-    self.args = generate_buildbot_json.BBJSONGenerator.parse_args((
-        '--output-dir',
-        self.output_dir,
-    ) + args)
+    self.args = generate_buildbot_json.BBJSONGenerator.parse_args(
+        args + ('--output-dir', self.output_dir))
 
   def regen_test_json(self, fakebb):
     """Regenerates a unittest's json files.
@@ -137,10 +135,12 @@ FOO_GTESTS_WATERFALL = """\
     'machines': {
       'Fake Tester': {
         'swarming': {
-          'dimensions':{
-            'kvm': '1',
-            'os': 'Linux',
-          },
+          'dimension_sets': [
+            {
+              'kvm': '1',
+              'os': 'Linux',
+            },
+          ],
         },
         'test_suites': {
           'gtest_tests': 'foo_tests',
@@ -160,9 +160,11 @@ FOO_GTESTS_WITH_ENABLE_FEATURES_WATERFALL = """\
     'machines': {
       'Fake Tester': {
         'swarming': {
-          'dimensions': {
-            'os': 'Linux',
-          },
+          'dimension_sets': [
+            {
+              'os': 'Linux',
+            }
+          ],
         },
         'test_suites': {
           'gtest_tests': 'foo_tests',
@@ -185,9 +187,11 @@ FOO_CHROMEOS_TRIGGER_SCRIPT_WATERFALL = """\
     'machines': {
       'Fake Tester': {
         'swarming': {
-          'dimensions': {
-            "device_type": "foo_device",
-          },
+          'dimension_sets': [
+            {
+              "device_type": "foo_device",
+            },
+          ],
         },
         'test_suites': {
           'gtest_tests': 'foo_tests',
@@ -209,9 +213,11 @@ FOO_LINUX_GTESTS_WATERFALL = """\
       'Fake Tester': {
         'os_type': 'linux',
         'swarming': {
-          'dimensions': {
-            'os': 'Linux',
-          },
+          'dimension_sets': [
+            {
+              'os': 'Linux',
+            }
+          ],
         },
         'test_suites': {
           'gtest_tests': 'foo_tests',
@@ -376,9 +382,11 @@ FOO_GPU_TELEMETRY_TEST_WATERFALL = """\
         'os_type': 'win',
         'browser_config': 'release',
         'swarming': {
-          'dimensions': {
-            'gpu': '10de:1cb3',
-          },
+          'dimension_sets': [
+            {
+              'gpu': '10de:1cb3',
+            },
+          ],
         },
         'test_suites': {
           'gpu_telemetry_tests': 'composition_tests',
@@ -400,9 +408,11 @@ FOO_GPU_TELEMETRY_TEST_WATERFALL_ANDROID = """\
         'os_type': 'android',
         'browser_config': 'android-chromium',
         'swarming': {
-          'dimensions': {
-            'device_type': 'bullhead',
-          },
+          'dimension_sets': [
+            {
+              'device_type': 'bullhead',
+            },
+          ],
         },
         'test_suites': {
           'gpu_telemetry_tests': 'composition_tests',
@@ -424,9 +434,11 @@ FOO_GPU_TELEMETRY_TEST_WATERFALL_ANDROID_WEBVIEW = """\
         'os_type': 'android',
         'browser_config': 'not-a-real-browser',
         'swarming': {
-          'dimensions': {
-            'device_type': 'bullhead',
-          },
+          'dimension_sets': [
+            {
+              'device_type': 'bullhead',
+            },
+          ],
         },
         'test_suites': {
           'android_webview_gpu_telemetry_tests': 'composition_tests',
@@ -448,9 +460,11 @@ FOO_GPU_TELEMETRY_TEST_WATERFALL_FUCHSIA = """\
         'os_type': 'fuchsia',
         'browser_config': 'fuchsia-chrome',
         'swarming': {
-          'dimensions': {
-            'kvm': '1',
-          },
+          'dimension_sets': [
+            {
+              'kvm': '1',
+            },
+          ],
         },
         'test_suites': {
           'gpu_telemetry_tests': 'composition_tests',
@@ -472,9 +486,11 @@ FOO_GPU_TELEMETRY_TEST_WATERFALL_CAST_STREAMING = """\
         'os_type': 'fuchsia',
         'browser_config': 'not-a-real-browser',
         'swarming': {
-          'dimensions': {
-            'kvm': '1',
-          },
+          'dimension_sets': [
+            {
+              'kvm': '1',
+            },
+          ],
         },
         'test_suites': {
           'cast_streaming_tests': 'composition_tests',
@@ -519,9 +535,11 @@ NVIDIA_GPU_TELEMETRY_TEST_WATERFALL = """\
         'os_type': 'win',
         'browser_config': 'release',
         'swarming': {
-          'dimensions': {
-            'gpu': '10de:1cb3-26.21.14.3102',
-          },
+          'dimension_sets': [
+            {
+              'gpu': '10de:1cb3-26.21.14.3102',
+            },
+          ],
         },
         'test_suites': {
           'gpu_telemetry_tests': 'composition_tests',
@@ -543,9 +561,11 @@ INTEL_GPU_TELEMETRY_TEST_WATERFALL = """\
         'os_type': 'win',
         'browser_config': 'release',
         'swarming': {
-          'dimensions': {
-            'gpu': '8086:5912-24.20.100.6286',
-          },
+          'dimension_sets': [
+            {
+              'gpu': '8086:5912-24.20.100.6286',
+            },
+          ],
         },
         'test_suites': {
           'gpu_telemetry_tests': 'composition_tests',
@@ -567,9 +587,11 @@ INTEL_UHD_GPU_TELEMETRY_TEST_WATERFALL = """\
         'os_type': 'win',
         'browser_config': 'release',
         'swarming': {
-          'dimensions': {
-            'gpu': '8086:3e92-24.20.100.6286',
-          },
+          'dimension_sets': [
+            {
+              'gpu': '8086:3e92-24.20.100.6286',
+            },
+          ],
         },
         'test_suites': {
           'gpu_telemetry_tests': 'composition_tests',
@@ -591,10 +613,12 @@ GPU_TELEMETRY_TEST_VARIANTS_WATERFALL = """\
         'os_type': 'win',
         'browser_config': 'release',
         'swarming': {
-          'dimensions': {
-            'gpu': '8086:3e92-24.20.100.6286',
-            'os': 'Linux',
-          },
+          'dimension_sets': [
+            {
+              'gpu': '8086:3e92-24.20.100.6286',
+              'os': 'Linux',
+            },
+          ],
         },
         'test_suites': {
           'gpu_telemetry_tests': 'matrix_tests',
@@ -657,11 +681,13 @@ ANDROID_WATERFALL = """\
           'bar_test',
         ],
         'swarming': {
-          'dimensions': {
-            'device_os': 'KTU84P',
-            'device_type': 'hammerhead',
-            'os': 'Android',
-          },
+          'dimension_sets': [
+            {
+              'device_os': 'KTU84P',
+              'device_type': 'hammerhead',
+              'os': 'Android',
+            },
+          ],
         },
         'os_type': 'android',
         'skip_merge_script': True,
@@ -671,12 +697,14 @@ ANDROID_WATERFALL = """\
       },
       'Fake Android L Tester': {
         'swarming': {
-          'dimensions': {
-            'device_os': 'LMY41U',
-            'device_os_type': 'user',
-            'device_type': 'hammerhead',
-            'os': 'Android',
-          },
+          'dimension_sets': [
+            {
+              'device_os': 'LMY41U',
+              'device_os_type': 'user',
+              'device_type': 'hammerhead',
+              'os': 'Android',
+            },
+          ],
         },
         'os_type': 'android',
         'skip_merge_script': True,
@@ -687,11 +715,13 @@ ANDROID_WATERFALL = """\
       },
       'Fake Android M Tester': {
         'swarming': {
-          'dimensions': {
-            'device_os': 'MMB29Q',
-            'device_type': 'bullhead',
-            'os': 'Android',
-          },
+          'dimension_sets': [
+            {
+              'device_os': 'MMB29Q',
+              'device_type': 'bullhead',
+              'os': 'Android',
+            },
+          ],
         },
         'os_type': 'android',
         'use_swarming': False,
@@ -730,9 +760,11 @@ MATRIX_GTEST_SUITE_WATERFALL = """\
     'machines': {
       'Fake Tester': {
         'swarming': {
-          'dimensions': {
-            'os': 'Linux',
-          },
+          'dimension_sets': [
+            {
+              'os': 'Linux',
+            },
+          ],
         },
         'test_suites': {
           'gtest_tests': 'matrix_tests',
@@ -767,10 +799,12 @@ FOO_TEST_SUITE = """\
     'foo_tests': {
       'foo_test': {
         'swarming': {
-          'dimensions': {
-            'integrity': 'high',
-            'os': 'Linux',
-          },
+          'dimension_sets': [
+            {
+              'integrity': 'high',
+              'os': 'Linux',
+            }
+          ],
           'expiration': 120,
         },
       },
@@ -809,24 +843,6 @@ FOO_TEST_SUITE_WITH_ARGS = """\
         'args': [
           '--c_arg',
         ],
-      },
-    },
-  },
-}
-"""
-
-FOO_TEST_SUITE_WITH_SWARMING_DIMENSION_SETS = """\
-{
-  'basic_suites': {
-    'foo_tests': {
-      'foo_test': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'foo': 'bar',
-            },
-          ],
-        },
       },
     },
   },
@@ -887,9 +903,11 @@ FOO_TEST_SUITE_WITH_REMOVE_WATERFALL_MIXIN = """\
       'foo_test': {
         'remove_mixins': ['waterfall_mixin'],
         'swarming': {
-          'dimensions': {
-            'integrity': 'high',
-          },
+          'dimension_sets': [
+            {
+              'integrity': 'high',
+            }
+          ],
           'expiration': 120,
         },
       },
@@ -905,9 +923,11 @@ FOO_TEST_SUITE_WITH_REMOVE_BUILDER_MIXIN = """\
       'foo_test': {
         'remove_mixins': ['builder_mixin'],
         'swarming': {
-          'dimensions': {
-            'integrity': 'high',
-          },
+          'dimension_sets': [
+            {
+              'integrity': 'high',
+            }
+          ],
           'expiration': 120,
         },
       },
@@ -937,18 +957,22 @@ GOOD_COMPOSITION_TEST_SUITES = """\
     'bar_tests': {
       'bar_test': {
         'swarming': {
-          'dimensions': {
-            'os': 'Linux',
-          },
+          'dimension_sets': [
+            {
+              'os': 'Linux',
+            }
+          ],
         },
       },
     },
     'foo_tests': {
       'foo_test': {
         'swarming': {
-          'dimensions': {
-            'os': 'Linux',
-          },
+          'dimension_sets': [
+            {
+              'os': 'Linux',
+            }
+          ],
         },
       },
     },
@@ -1069,18 +1093,22 @@ COMPOSITION_SUITE_WITH_NAME_NOT_ENDING_IN_TEST = """\
     'foo_tests': {
       'foo': {
         'swarming': {
-          'dimensions': {
-            'os': 'Linux',
-          },
+          'dimension_sets': [
+            {
+              'os': 'Linux',
+            }
+          ],
         },
       },
     },
     'bar_tests': {
       'bar_test': {
         'swarming': {
-          'dimensions': {
-            'os': 'Linux',
-          },
+          'dimension_sets': [
+            {
+              'os': 'Linux',
+            }
+          ],
         },
       },
     },
@@ -1100,9 +1128,11 @@ COMPOSITION_SUITE_WITH_GPU_ARGS = """\
     'foo_tests': {
       'foo': {
         'swarming': {
-          'dimensions': {
-            'os': 'Linux',
-          },
+          'dimension_sets': [
+            {
+              'os': 'Linux',
+            }
+          ],
         },
         'args': [
           '--gpu-vendor-id',
@@ -1115,9 +1145,11 @@ COMPOSITION_SUITE_WITH_GPU_ARGS = """\
     'bar_tests': {
       'bar_test': {
         'swarming': {
-          'dimensions': {
-            'os': 'Linux',
-          },
+          'dimension_sets': [
+            {
+              'os': 'Linux',
+            }
+          ],
         },
       },
     },
@@ -1319,9 +1351,11 @@ FOO_TEST_EXPLICIT_NONE_EXCEPTIONS = """\
     'modifications': {
       'Fake Tester': {
         'swarming': {
-          'dimensions': {
-            'integrity': None,
-          },
+          'dimension_sets': [
+            {
+              'integrity': None,
+            },
+          ],
         },
       },
     },
@@ -1692,21 +1726,11 @@ GN_ISOLATE_MAP_USING_IMPLICIT_NAME="""\
 class UnitTest(TestCase):
   def test_base_generator(self):
     # Only needed for complete code coverage.
-    self.assertRaises(NotImplementedError,
-                      generate_buildbot_json.BaseGenerator(None).generate,
-                      None, None, None, None)
-    self.assertRaises(NotImplementedError,
-                      generate_buildbot_json.BaseGenerator(None).sort,
-                      None)
-
-  def test_dimension_sets_causes_error(self):
-    fbb = FakeBBGen(self.args, FOO_GTESTS_BUILDER_MIXIN_WATERFALL,
-                    FOO_TEST_SUITE_WITH_SWARMING_DIMENSION_SETS, LUCI_MILO_CFG)
-    fbb.check_input_file_consistency(verbose=True)
-    with self.assertRaisesRegex(generate_buildbot_json.BBGenErr,
-                                r'.*dimension_sets is no longer supported.*'):
-      fbb.check_output_file_consistency(verbose=True)
-    self.assertFalse(fbb.printed_lines)
+    with self.assertRaises(NotImplementedError):
+      generate_buildbot_json.BaseGenerator(None).generate(
+          None, None, None, None)
+    with self.assertRaises(NotImplementedError):
+      generate_buildbot_json.BaseGenerator(None).sort(None)
 
   def test_good_test_suites_are_ok(self):
     fbb = FakeBBGen(self.args, FOO_GTESTS_WATERFALL, FOO_TEST_SUITE,
@@ -2293,9 +2317,11 @@ FOO_GTESTS_WATERFALL_MIXIN_WATERFALL = """\
     'machines': {
       'Fake Tester': {
         'swarming': {
-          'dimensions': {
-            'os': 'Linux',
-          },
+          'dimension_sets': [
+            {
+              'os': 'Linux',
+            }
+          ],
         },
         'test_suites': {
           'gtest_tests': 'foo_tests',
@@ -2316,9 +2342,11 @@ FOO_GTESTS_BUILDER_MIXIN_WATERFALL = """\
       'Fake Tester': {
         'mixins': ['builder_mixin'],
         'swarming': {
-          'dimensions': {
-            'os': 'Linux',
-          },
+          'dimension_sets': [
+            {
+              'os': 'Linux',
+            }
+          ],
         },
         'test_suites': {
           'gtest_tests': 'foo_tests',
@@ -2340,10 +2368,35 @@ FOO_LINUX_GTESTS_BUILDER_MIXIN_WATERFALL = """\
         'os_type': 'linux',
         'mixins': ['builder_mixin'],
         'swarming': {
-          'dimensions': {
-            'os': 'Linux',
-          },
+          'dimension_sets': [
+            {
+              'os': 'Linux',
+            }
+          ],
         },
+        'test_suites': {
+          'gtest_tests': 'foo_tests',
+        },
+      },
+    },
+  },
+]
+"""
+
+FOO_GTESTS_DIMENSION_SETS_MIXIN_WATERFALL = """\
+[
+  {
+    'project': 'chromium',
+    'bucket': 'ci',
+    'name': 'chromium.test',
+    'machines': {
+      'Fake Tester': {
+        'mixins': [
+          'dimension_set_mixin_1',
+          'dimension_set_mixin_2',
+          'duplicate_dimension_set_mixin_1',
+          'dimension_mixin',
+        ],
         'test_suites': {
           'gtest_tests': 'foo_tests',
         },
@@ -2498,9 +2551,11 @@ FOO_GTESTS_SORTING_MIXINS_WATERFALL = """\
     'machines': {
       'Fake Tester': {
         'swarming': {
-          'dimensions': {
-            'kvm': '1',
-          },
+          'dimension_sets': [
+            {
+              'kvm': '1',
+            },
+          ],
         },
         'test_suites': {
           'gtest_tests': 'foo_tests',
@@ -2517,10 +2572,12 @@ FOO_TEST_SUITE_WITH_MIXIN = """\
     'foo_tests': {
       'foo_test': {
         'swarming': {
-          'dimensions': {
-            'integrity': 'high',
-            'os': 'Linux',
-          },
+          'dimension_sets': [
+            {
+              'integrity': 'high',
+              'os': 'Linux',
+            }
+          ],
           'expiration': 120,
         },
         'mixins': ['test_mixin'],
@@ -2542,6 +2599,25 @@ MIXIN_ARGS_NOT_LIST = """\
 {
   'builder_mixin': {
     'args': 'I am not a list',
+  },
+}
+"""
+
+MIXIN_LINUX_ARGS = """\
+{
+  'builder_mixin': {
+    'args': [ '--mixin-argument' ],
+    'linux_args': [ '--linux-mixin-argument' ],
+  },
+}
+"""
+
+MIXIN_APPEND = """\
+{
+  'builder_mixin': {
+    '$mixin_append': {
+      'args': [ '--mixin-argument' ],
+    },
   },
 }
 """
@@ -2593,66 +2669,42 @@ SWARMING_NAMED_CACHES = """\
 }
 """
 
-SWARMING_MIXINS_APPEND = """\
+SWARMING_MIXINS_DIMENSION_SETS = """\
 {
-  'builder_mixin': {
-    '$mixin_append': {
-      'args': [ '--mixin-argument' ],
-      'linux_args': [ '--linux-mixin-argument' ],
+  'dimension_set_mixin_1': {
+    'swarming': {
+      'dimension_sets': [
+        {
+          'os': 'Linux',
+          'value': 'ds1',
+        },
+      ],
     },
   },
-}
-"""
-
-SWARMING_MIXINS_APPEND_NOT_LIST = """\
-{
-  'builder_mixin': {
-    '$mixin_append': {
-      'args': 'I am not a list',
+  'dimension_set_mixin_2': {
+    'swarming': {
+      'dimension_sets': [
+        {
+          'os': 'Linux',
+          'value': 'ds2',
+        },
+      ],
     },
   },
-}
-"""
-
-SWARMING_MIXINS_APPEND_TO_SWARMING = """\
-{
-  'builder_mixin': {
-    '$mixin_append': {
-      'swarming': [ 'swarming!' ],
+  'duplicate_dimension_set_mixin_1': {
+    'swarming': {
+      'dimension_sets': [
+        {
+          'os': 'Linux',
+          'value': 'ds1',
+        },
+      ],
     },
   },
-}
-"""
-
-SWARMING_MIXINS_APPEND_NAMED_CACHES = """\
-{
-  'builder_mixin': {
-    '$mixin_append': {
-      'swarming': {
-        'named_caches': [
-          {
-            'name': 'cache',
-            'file': 'cache_file',
-          },
-        ]
-      },
-    },
-  },
-}
-"""
-
-SWARMING_MIXINS_APPEND_OTHER_KEYS_WITH_NAMED_CACHES = """\
-{
-  'builder_mixin': {
-    '$mixin_append': {
-      'swarming': {
-        'named_caches': [
-          {
-            'name': 'cache',
-            'file': 'cache_file',
-          },
-        ],
-        'other_key': 'some value',
+  'dimension_mixin': {
+    'swarming': {
+      'dimensions': {
+        'other_value': 'dimension_mixin',
       },
     },
   },
@@ -2896,22 +2948,15 @@ class MixinTests(TestCase):
         '<snip>',
     ])
 
-  def test_mixin_append_args(self):
+  def test_mixin_append(self):
     fbb = FakeBBGen(self.args,
                     FOO_GTESTS_BUILDER_MIXIN_WATERFALL,
                     FOO_TEST_SUITE_WITH_ARGS,
                     LUCI_MILO_CFG,
-                    mixins=SWARMING_MIXINS_APPEND)
-    fbb.check_output_file_consistency(verbose=True)
-    self.assertFalse(fbb.printed_lines)
-
-  def test_mixin_append_linux_args(self):
-    fbb = FakeBBGen(self.args,
-                    FOO_LINUX_GTESTS_BUILDER_MIXIN_WATERFALL,
-                    FOO_TEST_SUITE_WITH_ARGS,
-                    LUCI_MILO_CFG,
-                    mixins=SWARMING_MIXINS_APPEND)
-    fbb.check_output_file_consistency(verbose=True)
+                    mixins=MIXIN_APPEND)
+    with self.assertRaisesRegex(generate_buildbot_json.BBGenErr,
+                                r'.*\$mixin_append is no longer supported.*'):
+      fbb.check_input_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
   def test_swarming_named_caches(self):
@@ -2921,39 +2966,6 @@ class MixinTests(TestCase):
                     LUCI_MILO_CFG,
                     mixins=SWARMING_NAMED_CACHES)
     fbb.check_output_file_consistency(verbose=True)
-    self.assertFalse(fbb.printed_lines)
-
-  def test_mixin_append_swarming_named_caches(self):
-    fbb = FakeBBGen(self.args,
-                    FOO_GTESTS_BUILDER_MIXIN_WATERFALL,
-                    FOO_TEST_SUITE_WITH_SWARMING_NAMED_CACHES,
-                    LUCI_MILO_CFG,
-                    mixins=SWARMING_MIXINS_APPEND_NAMED_CACHES)
-    fbb.check_output_file_consistency(verbose=True)
-    self.assertFalse(fbb.printed_lines)
-
-  def test_mixin_append_swarming_error(self):
-    fbb = FakeBBGen(self.args,
-                    FOO_GTESTS_BUILDER_MIXIN_WATERFALL,
-                    FOO_TEST_SUITE_WITH_ARGS,
-                    LUCI_MILO_CFG,
-                    mixins=SWARMING_MIXINS_APPEND_OTHER_KEYS_WITH_NAMED_CACHES)
-    with self.assertRaisesRegex(
-        generate_buildbot_json.BBGenErr,
-        'Only named_caches is supported under swarming key in '
-        '\$mixin_append, but there are: \[\'named_caches\', \'other_key\'\]'):
-      fbb.check_output_file_consistency(verbose=True)
-    self.assertFalse(fbb.printed_lines)
-
-  def test_mixin_append_mixin_field_not_list(self):
-    fbb = FakeBBGen(self.args,
-                    FOO_GTESTS_BUILDER_MIXIN_WATERFALL,
-                    FOO_TEST_SUITE_WITH_ARGS,
-                    LUCI_MILO_CFG,
-                    mixins=SWARMING_MIXINS_APPEND_NOT_LIST)
-    with self.assertRaisesRegex(generate_buildbot_json.BBGenErr,
-                                'Key "args" in \$mixin_append must be a list.'):
-      fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
   def test_args_field_not_list(self):
@@ -2976,16 +2988,13 @@ class MixinTests(TestCase):
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
-  def test_mixin_append_test_field_not_list(self):
+  def test_linux_args_field_merging(self):
     fbb = FakeBBGen(self.args,
-                    FOO_GTESTS_BUILDER_MIXIN_WATERFALL,
-                    FOO_TEST_SUITE,
+                    FOO_LINUX_GTESTS_BUILDER_MIXIN_WATERFALL,
+                    FOO_TEST_SUITE_WITH_ARGS,
                     LUCI_MILO_CFG,
-                    mixins=SWARMING_MIXINS_APPEND_TO_SWARMING)
-    with self.assertRaisesRegex(
-        generate_buildbot_json.BBGenErr,
-        'Cannot apply \$mixin_append to non-list "swarming".'):
-      fbb.check_output_file_consistency(verbose=True)
+                    mixins=MIXIN_LINUX_ARGS)
+    fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
   def test_remove_mixin_builder_remove_waterfall(self):
@@ -3015,6 +3024,15 @@ class MixinTests(TestCase):
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
+  def test_dimension_sets_application(self):
+    fbb = FakeBBGen(self.args,
+                    FOO_GTESTS_DIMENSION_SETS_MIXIN_WATERFALL,
+                    FOO_TEST_SUITE_NO_DIMENSIONS,
+                    LUCI_MILO_CFG,
+                    mixins=SWARMING_MIXINS_DIMENSION_SETS)
+    fbb.check_output_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
 TEST_SUITE_WITH_PARAMS = """\
 {
   'basic_suites': {
@@ -3022,18 +3040,22 @@ TEST_SUITE_WITH_PARAMS = """\
       'bar_test': {
         'args': ['--no-xvfb'],
         'swarming': {
-          'dimensions': {
-            'device_os': 'NMF26U'
-          },
+          'dimension_sets': [
+            {
+              'device_os': 'NMF26U'
+            }
+          ],
         },
         'should_retry_with_patch': False,
         'name': 'bar_test'
       },
       'bar_test_test': {
         'swarming': {
-          'dimensions': {
-            'kvm': '1'
-          },
+          'dimension_sets': [
+            {
+              'kvm': '1'
+            }
+          ],
           'hard_timeout': 1000
         },
         'should_retry_with_patch': True
@@ -3047,9 +3069,11 @@ TEST_SUITE_WITH_PARAMS = """\
           '--verbose'
         ],
         'swarming': {
-          'dimensions': {
-            'device_os': 'MMB29Q'
-          },
+          'dimension_sets': [
+            {
+              'device_os': 'MMB29Q'
+            }
+          ],
           'hard_timeout': 1800
         }
       },
@@ -3069,131 +3093,115 @@ TEST_SUITE_WITH_PARAMS = """\
 }
 """
 TEST_QUERY_BOTS_OUTPUT = {
-  "Fake Android M Tester": {
-    "gtest_tests": [
-      {
-        "test": "foo_test",
-      }
-    ]
-  },
-  "Fake Android L Tester": {
-    "gtest_tests": [
-      {
-        "test": "foo_test",
-        "args": [
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
-        ],
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "dimensions": {
-            "device_os": "LMY41U",
-            "device_os_type": "user",
-            "device_type": "hammerhead",
-            'os': 'Android'
-          },
-          "can_use_on_swarming_builders": True
-        }
-      }
-    ]
-  },
-  "Fake Android K Tester": {
-    "additional_compile_targets": ["bar_test"],
-    "gtest_tests": [
-      {
-        "test": "foo_test",
-        "args": [
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
-        ],
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "dimensions": {
-            "device_os": "KTU84P",
-            "device_os_type": "userdebug",
-            "device_type": "hammerhead",
-            "os": "Android",
-          },
-          "can_use_on_swarming_builders": True,
-          "output_links": [
-            {
-              "link": ["https://luci-logdog.appspot.com/v/?s",
-              "=android%2Fswarming%2Flogcats%2F",
-              "${TASK_ID}%2F%2B%2Funified_logcats"],
-              "name": "shard #${SHARD_INDEX} logcats"
+    "Fake Android M Tester": {
+        "gtest_tests": [{
+            "test": "foo_test",
+        }]
+    },
+    "Fake Android L Tester": {
+        "gtest_tests": [{
+            "test":
+            "foo_test",
+            "args": [
+                "--gs-results-bucket=chromium-result-details",
+                "--recover-devices"
+            ],
+            "merge": {
+                "script": "//testing/merge_scripts/standard_gtest_merge.py"
+            },
+            "swarming": {
+                "dimension_sets": [{
+                    "device_os": "LMY41U",
+                    "device_os_type": "user",
+                    "device_type": "hammerhead",
+                    'os': 'Android'
+                }]
             }
-          ]
-        }
-      }
-    ]
-  },
-  "Android Builder": {
-    "additional_compile_targets": ["bar_test"]
-  }
+        }]
+    },
+    "Fake Android K Tester": {
+        "additional_compile_targets": ["bar_test"],
+        "gtest_tests": [{
+            "test":
+            "foo_test",
+            "args": [
+                "--gs-results-bucket=chromium-result-details",
+                "--recover-devices"
+            ],
+            "merge": {
+                "script": "//testing/merge_scripts/standard_gtest_merge.py"
+            },
+            "swarming": {
+                "dimension_sets": [{
+                    "device_os": "KTU84P",
+                    "device_os_type": "userdebug",
+                    "device_type": "hammerhead",
+                    "os": "Android",
+                }],
+                "output_links": [{
+                    "link": [
+                        "https://luci-logdog.appspot.com/v/?s",
+                        "=android%2Fswarming%2Flogcats%2F",
+                        "${TASK_ID}%2F%2B%2Funified_logcats"
+                    ],
+                    "name":
+                    "shard #${SHARD_INDEX} logcats"
+                }]
+            }
+        }]
+    },
+    "Android Builder": {
+        "additional_compile_targets": ["bar_test"]
+    }
 }
 TEST_QUERY_BOTS_TESTS_OUTPUT = {
-  "Fake Android M Tester": [
-    {
-      "test": "foo_test",
-    }
-  ],
-  "Fake Android L Tester": [
-    {
-      "test": "foo_test",
-      "args": [
-        "--gs-results-bucket=chromium-result-details",
-        "--recover-devices"
-      ],
-      "merge": {
-        "script": "//testing/merge_scripts/standard_gtest_merge.py"
-      },
-      "swarming": {
-        "dimensions": {
-          "device_os": "LMY41U",
-          "device_os_type": "user",
-          "device_type": "hammerhead",
-          "os": "Android"
+    "Fake Android M Tester": [{
+        "test": "foo_test",
+    }],
+    "Fake Android L Tester": [{
+        "test":
+        "foo_test",
+        "args":
+        ["--gs-results-bucket=chromium-result-details", "--recover-devices"],
+        "merge": {
+            "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "can_use_on_swarming_builders": True
-      }
-    }
-  ],
-  "Android Builder": [],
-  "Fake Android K Tester": [
-    {
-      "test": "foo_test",
-      "args": [
-        "--gs-results-bucket=chromium-result-details",
-        "--recover-devices"
-      ],
-      "merge": {
-        "script": "//testing/merge_scripts/standard_gtest_merge.py"
-      },
-      "swarming": {
-        "dimensions": {
-          "device_os": "KTU84P",
-          "device_os_type": "userdebug",
-          "device_type": "hammerhead",
-          "os": "Android"
+        "swarming": {
+            "dimension_sets": [{
+                "device_os": "LMY41U",
+                "device_os_type": "user",
+                "device_type": "hammerhead",
+                "os": "Android"
+            }]
+        }
+    }],
+    "Android Builder": [],
+    "Fake Android K Tester": [{
+        "test":
+        "foo_test",
+        "args":
+        ["--gs-results-bucket=chromium-result-details", "--recover-devices"],
+        "merge": {
+            "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "can_use_on_swarming_builders": True,
-        "output_links": [
-          {
-            "link": [
-              "https://luci-logdog.appspot.com/v/?s",
-              "=android%2Fswarming%2Flogcats%2F",
-              "${TASK_ID}%2F%2B%2Funified_logcats"
-            ],
-            "name": "shard #${SHARD_INDEX} logcats"
-          }
-        ]
-      }
-    }
-  ]
+        "swarming": {
+            "dimension_sets": [{
+                "device_os": "KTU84P",
+                "device_os_type": "userdebug",
+                "device_type": "hammerhead",
+                "os": "Android"
+            }],
+            "output_links": [{
+                "link": [
+                    "https://luci-logdog.appspot.com/v/?s",
+                    "=android%2Fswarming%2Flogcats%2F",
+                    "${TASK_ID}%2F%2B%2Funified_logcats"
+                ],
+                "name":
+                "shard #${SHARD_INDEX} logcats"
+            }]
+        }
+    }]
 }
 
 TEST_QUERY_BOT_OUTPUT = {
@@ -3209,13 +3217,14 @@ TEST_QUERY_BOT_OUTPUT = {
         "script": "//testing/merge_scripts/standard_gtest_merge.py"
       },
       "swarming": {
-        "dimensions": {
-          "device_os": "KTU84P",
-          "device_os_type": "userdebug",
-          "device_type": "hammerhead",
-          "os": "Android"
-        },
-        "can_use_on_swarming_builders": True,
+        "dimension_sets": [
+          {
+            "device_os": "KTU84P",
+            "device_os_type": "userdebug",
+            "device_type": "hammerhead",
+            "os": "Android"
+          }
+        ],
         "output_links": [
           {
             "link": ["https://luci-logdog.appspot.com/v/?s",
@@ -3229,41 +3238,37 @@ TEST_QUERY_BOT_OUTPUT = {
     }
   ]
 }
-TEST_QUERY_BOT_TESTS_OUTPUT = [
-  {
-    "test": "foo_test",
-    "args": [
-      "--gs-results-bucket=chromium-result-details",
-      "--recover-devices"
-    ],
+TEST_QUERY_BOT_TESTS_OUTPUT = [{
+    "test":
+    "foo_test",
+    "args":
+    ["--gs-results-bucket=chromium-result-details", "--recover-devices"],
     "merge": {
-      "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        "script": "//testing/merge_scripts/standard_gtest_merge.py"
     },
     "swarming": {
-      "dimensions": {
-        "device_os": "LMY41U",
-        "device_os_type": "user",
-        "device_type": "hammerhead",
-        "os": "Android"
-      },
-      "can_use_on_swarming_builders": True
+        "dimension_sets": [{
+            "device_os": "LMY41U",
+            "device_os_type": "user",
+            "device_type": "hammerhead",
+            "os": "Android"
+        }]
     }
-  }
-]
+}]
 
 TEST_QUERY_TESTS_OUTPUT = {
     "bar_test": {
         'swarming': {
-            'dimensions': {
+            'dimension_sets': [{
                 'os': 'Linux'
-            },
+            }]
         }
     },
     "foo_test": {
         'swarming': {
-            'dimensions': {
+            'dimension_sets': [{
                 'os': 'Linux'
-            },
+            }]
         }
     }
 }
@@ -3278,7 +3283,7 @@ TEST_QUERY_TESTS_PARAMS_OUTPUT = ['bar_test_test']
 
 TEST_QUERY_TESTS_PARAMS_FALSE_OUTPUT = ['bar_test']
 
-TEST_QUERY_TEST_OUTPUT = {'swarming': {'dimensions': {'os': 'Linux'}}}
+TEST_QUERY_TEST_OUTPUT = {'swarming': {'dimension_sets': [{'os': 'Linux'}]}}
 
 TEST_QUERY_TEST_BOTS_OUTPUT = [
     "Fake Android K Tester",
@@ -3827,9 +3832,11 @@ MATRIX_COMPOUND_MISSING_IDENTIFIER = """\
         'variants': [
           {
             'swarming': {
-              'dimensions': {
-                'foo': 'bar',
-              },
+              'dimension_sets': [
+                {
+                  'foo': 'bar',
+                },
+              ],
             },
           },
         ],
@@ -3853,9 +3860,11 @@ MATRIX_COMPOUND_EMPTY_IDENTIFIER = """\
           {
             'identifier': '',
             'swarming': {
-              'dimensions': {
-                'foo': 'empty identifier not allowed',
-              },
+              'dimension_sets': [
+                {
+                  'foo': 'empty identifier not allowed',
+                },
+              ],
             },
           },
         ],
@@ -3879,9 +3888,11 @@ MATRIX_COMPOUND_TRAILING_IDENTIFIER = """\
           {
             'identifier': ' ',
             'swarming': {
-              'dimensions': {
-                'foo': 'strip to empty not allowed',
-              },
+              'dimension_sets': [
+                {
+                  'foo': 'strip to empty not allowed',
+                },
+              ],
             },
           },
         ],
@@ -3891,9 +3902,11 @@ MATRIX_COMPOUND_TRAILING_IDENTIFIER = """\
           {
             'identifier': 'id ',
             'swarming': {
-              'dimensions': {
-                'foo': 'trailing whitespace not allowed',
-              },
+              'dimension_sets': [
+                {
+                  'foo': 'trailing whitespace not allowed',
+                },
+              ],
             },
           },
         ],
@@ -4094,9 +4107,11 @@ MATRIX_COMPOUND_TARGETS_ARGS = """\
             'identifier': 'swarming',
             'swarming': {
               'a': 'b',
-              'dimensions': {
-                'hello': 'world',
-              },
+              'dimension_sets': [
+                {
+                  'hello': 'world',
+                }
+              ]
             }
           },
           {
@@ -4134,9 +4149,11 @@ MATRIX_COMPOUND_TARGETS_MIXINS = """\
             'identifier': 'swarming',
             'swarming': {
               'a': 'b',
-              'dimensions': {
-                'hello': 'world',
-              },
+              'dimension_sets': [
+                {
+                  'hello': 'world',
+                }
+              ]
             }
           },
           {
@@ -4157,9 +4174,11 @@ MATRIX_COMPOUND_TARGETS_SWARMING = """\
       'swarming_test': {
         'swarming': {
           'foo': 'bar',
-          'dimensions': {
-            'foo': 'bar',
-          },
+          'dimension_sets': [
+            {
+              'foo': 'bar',
+            },
+          ],
         },
       },
     }
@@ -4685,9 +4704,7 @@ NO_DIMENSIONS_GTESTS_WATERFALL = """\
     'name': 'chromium.test',
     'machines': {
       'Mac': {
-        'swarming': {
-          'can_use_on_swarming_builders': True,
-        },
+        'swarming': {},
         'test_suites': {
           'gtest_tests': 'foo_tests',
         },
@@ -4706,9 +4723,11 @@ NO_OS_GTESTS_WATERFALL = """\
     'machines': {
       'Mac': {
         'swarming': {
-          'dimensions': {
-            'foo': 'bar',
-          },
+          'dimension_sets': [
+            {
+              'foo': 'bar',
+            },
+          ],
         },
         'test_suites': {
           'gtest_tests': 'foo_tests',
@@ -4728,9 +4747,11 @@ MAC_ISOLATED_SCRIPTS_WATERFALL = """\
     'machines': {
       'Mac': {
         'swarming': {
-          'dimensions': {
-            'os': 'Mac',
-          },
+          'dimension_sets': [
+            {
+              'os': 'Mac',
+            },
+          ],
         },
         'test_suites': {
           'isolated_scripts': 'foo_tests',
@@ -4755,30 +4776,27 @@ class SwarmingTests(TestCase):
     fbb = FakeBBGen(self.args, NO_DIMENSIONS_GTESTS_WATERFALL, MAC_TEST_SUITE,
                     MAC_LUCI_MILO_CFG)
     fbb.check_input_file_consistency(verbose=True)
-    self.assertRaisesRegex(generate_buildbot_json.BBGenErr,
-                           'os must be specified for all swarmed tests',
-                           fbb.check_output_file_consistency,
-                           verbose=True)
+    with self.assertRaisesRegex(generate_buildbot_json.BBGenErr,
+                                'os must be specified for all swarmed tests'):
+      fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
   def test_builder_with_no_os_dimension_fails(self):
     fbb = FakeBBGen(self.args, NO_OS_GTESTS_WATERFALL, MAC_TEST_SUITE,
                     MAC_LUCI_MILO_CFG)
     fbb.check_input_file_consistency(verbose=True)
-    self.assertRaisesRegex(generate_buildbot_json.BBGenErr,
-                           'os must be specified for all swarmed tests',
-                           fbb.check_output_file_consistency,
-                           verbose=True)
+    with self.assertRaisesRegex(generate_buildbot_json.BBGenErr,
+                                'os must be specified for all swarmed tests'):
+      fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
   def test_mac_builder_with_no_cpu_dimension_in_isolated_script_fails(self):
     fbb = FakeBBGen(self.args, MAC_ISOLATED_SCRIPTS_WATERFALL, MAC_TEST_SUITE,
                     MAC_LUCI_MILO_CFG)
     fbb.check_input_file_consistency(verbose=True)
-    self.assertRaisesRegex(generate_buildbot_json.BBGenErr,
-                           'cpu must be specified for mac',
-                           fbb.check_output_file_consistency,
-                           verbose=True)
+    with self.assertRaisesRegex(generate_buildbot_json.BBGenErr,
+                                'cpu must be specified for mac'):
+      fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
 

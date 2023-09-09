@@ -13,13 +13,13 @@
 #include "chrome/browser/fast_checkout/fast_checkout_accessibility_service_impl.h"
 #include "chrome/browser/fast_checkout/fast_checkout_capabilities_fetcher_factory.h"
 #include "chrome/browser/fast_checkout/fast_checkout_delegate_impl.h"
+#include "chrome/browser/fast_checkout/fast_checkout_enums.h"
 #include "chrome/browser/fast_checkout/fast_checkout_personal_data_helper_impl.h"
 #include "chrome/browser/fast_checkout/fast_checkout_trigger_validator_impl.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/content/browser/content_autofill_client.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
-#include "components/autofill/core/browser/ui/fast_checkout_enums.h"
 #include "components/autofill/core/common/dense_set.h"
 #include "components/autofill/core/common/signatures.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -28,10 +28,6 @@
 #include "url/gurl.h"
 
 namespace {
-using ::autofill::FastCheckoutRunOutcome;
-using ::autofill::FastCheckoutTriggerOutcome;
-using ::autofill::FastCheckoutUIState;
-
 constexpr base::TimeDelta kSleepBetweenTriggerFormExtractionCalls =
     base::Seconds(1);
 constexpr base::TimeDelta kTimeout = base::Minutes(30);
@@ -182,6 +178,10 @@ bool FastCheckoutClientImpl::TryToStart(
   FastCheckoutTriggerOutcome trigger_outcome = trigger_validator_->ShouldRun(
       form, field, fast_checkout_ui_state_, is_running_, *autofill_manager);
 
+  if (trigger_outcome != FastCheckoutTriggerOutcome::kUnsupportedFieldType) {
+    base::UmaHistogramEnumeration(kUmaKeyFastCheckoutTriggerOutcome,
+                                  trigger_outcome);
+  }
   if (trigger_outcome != FastCheckoutTriggerOutcome::kSuccess) {
     return false;
   }
@@ -669,12 +669,13 @@ void FastCheckoutClientImpl::OnNavigation(const GURL& url,
   }
 }
 
-FastCheckoutTriggerOutcome FastCheckoutClientImpl::CanRun(
+bool FastCheckoutClientImpl::IsSupported(
     const autofill::FormData& form,
     const autofill::FormFieldData& field,
     const autofill::AutofillManager& autofill_manager) const {
   return trigger_validator_->ShouldRun(form, field, fast_checkout_ui_state_,
-                                       is_running_, autofill_manager);
+                                       is_running_, autofill_manager) ==
+         FastCheckoutTriggerOutcome::kSuccess;
 }
 
 bool FastCheckoutClientImpl::IsNotShownYet() const {

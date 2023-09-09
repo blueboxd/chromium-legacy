@@ -43,8 +43,7 @@ using CookieAccessResultList = std::vector<CookieWithAccessResult>;
 struct NET_EXPORT CookieAccessParams {
   CookieAccessParams() = delete;
   CookieAccessParams(CookieAccessSemantics access_semantics,
-                     bool delegate_treats_url_as_trustworthy,
-                     CookieSamePartyStatus same_party_status);
+                     bool delegate_treats_url_as_trustworthy);
 
   // |access_semantics| is the access mode of the cookie access check.
   CookieAccessSemantics access_semantics = CookieAccessSemantics::UNKNOWN;
@@ -52,10 +51,6 @@ struct NET_EXPORT CookieAccessParams {
   // CookieAccessDelegate has authorized access to secure cookies from URLs
   // which might not otherwise be able to do so.
   bool delegate_treats_url_as_trustworthy = false;
-  // |same_party_status| indicates whether, and how, SameParty restrictions
-  // should be enforced.
-  CookieSamePartyStatus same_party_status =
-      CookieSamePartyStatus::kNoSamePartyEnforcement;
 };
 
 class NET_EXPORT CanonicalCookie {
@@ -536,14 +531,6 @@ class NET_EXPORT CanonicalCookie {
 
   // Returns whether the cookie was created at most |age_threshold| ago.
   bool IsRecentlyCreated(base::TimeDelta age_threshold) const;
-
-  // Returns true iff the cookie does not violate any rules associated with
-  // creating a cookie with the SameParty attribute. In particular, if a cookie
-  // has SameParty, then it must be Secure and must not be SameSite=Strict.
-  static bool IsCookieSamePartyValid(const ParsedCookie& parsed_cookie);
-  static bool IsCookieSamePartyValid(bool is_same_party,
-                                     bool is_secure,
-                                     CookieSameSite same_site);
 
   // Returns true iff the cookie is a partitioned cookie with a nonce or that
   // does not violate the semantics of the Partitioned attribute:

@@ -195,6 +195,7 @@ fontVariantCaps
 fontVariantEastAsian
 fontVariantLigatures
 fontVariantNumeric
+fontVariantPosition
 fontVariationSettings
 fontWeight
 forcedColorAdjust
@@ -305,6 +306,7 @@ overflowClipMargin
 overflowWrap
 overflowX
 overflowY
+overlay
 overrideColors
 overscrollBehavior
 overscrollBehaviorBlock
@@ -529,7 +531,6 @@ webkitFlexShrink
 webkitFlexWrap
 webkitFontFeatureSettings
 webkitFontSmoothing
-webkitHighlight
 webkitHyphenateCharacter
 webkitJustifyContent
 webkitLineBreak

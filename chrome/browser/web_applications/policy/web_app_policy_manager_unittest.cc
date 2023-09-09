@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/extend.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/json/json_reader.h"
@@ -51,7 +52,12 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/system_web_apps/test_support/test_system_web_app_manager.h"
+#include "components/user_manager/scoped_user_manager.h"
+#include "components/user_manager/user_names.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -103,7 +109,8 @@ base::Value::Dict GetWindowedItem() {
       .Set(kDefaultLaunchContainerKey, kDefaultLaunchContainerWindowValue);
 }
 
-ExternalInstallOptions GetWindowedInstallOptions() {
+ExternalInstallOptions GetWindowedInstallOptions(
+    bool wait_for_windows_closed = false) {
   ExternalInstallOptions options(GURL(kWindowedUrl),
                                  mojom::UserDisplayMode::kStandalone,
                                  ExternalInstallSource::kExternalPolicy);
@@ -111,8 +118,7 @@ ExternalInstallOptions GetWindowedInstallOptions() {
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;
-  options.reinstall_placeholder = true;
-  options.wait_for_windows_closed = true;
+  options.wait_for_windows_closed = wait_for_windows_closed;
   return options;
 }
 
@@ -122,7 +128,8 @@ base::Value::Dict GetTabbedItem() {
       .Set(kDefaultLaunchContainerKey, kDefaultLaunchContainerTabValue);
 }
 
-ExternalInstallOptions GetTabbedInstallOptions() {
+ExternalInstallOptions GetTabbedInstallOptions(
+    bool wait_for_windows_closed = false) {
   ExternalInstallOptions options(GURL(kTabbedUrl),
                                  mojom::UserDisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
@@ -130,8 +137,7 @@ ExternalInstallOptions GetTabbedInstallOptions() {
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;
-  options.reinstall_placeholder = true;
-  options.wait_for_windows_closed = true;
+  options.wait_for_windows_closed = wait_for_windows_closed;
   return options;
 }
 
@@ -139,7 +145,8 @@ base::Value::Dict GetNoContainerItem() {
   return base::Value::Dict().Set(kUrlKey, kNoContainerUrl);
 }
 
-ExternalInstallOptions GetNoContainerInstallOptions() {
+ExternalInstallOptions GetNoContainerInstallOptions(
+    bool wait_for_windows_closed = false) {
   ExternalInstallOptions options(GURL(kNoContainerUrl),
                                  mojom::UserDisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
@@ -147,8 +154,7 @@ ExternalInstallOptions GetNoContainerInstallOptions() {
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;
-  options.reinstall_placeholder = true;
-  options.wait_for_windows_closed = true;
+  options.wait_for_windows_closed = wait_for_windows_closed;
   return options;
 }
 
@@ -156,7 +162,8 @@ base::Value::Dict GetCreateDesktopShortcutDefaultItem() {
   return base::Value::Dict().Set(kUrlKey, kNoContainerUrl);
 }
 
-ExternalInstallOptions GetCreateDesktopShortcutDefaultInstallOptions() {
+ExternalInstallOptions GetCreateDesktopShortcutDefaultInstallOptions(
+    bool wait_for_windows_closed = false) {
   ExternalInstallOptions options(GURL(kNoContainerUrl),
                                  mojom::UserDisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
@@ -164,8 +171,7 @@ ExternalInstallOptions GetCreateDesktopShortcutDefaultInstallOptions() {
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;
-  options.reinstall_placeholder = true;
-  options.wait_for_windows_closed = true;
+  options.wait_for_windows_closed = wait_for_windows_closed;
   return options;
 }
 
@@ -175,7 +181,8 @@ base::Value::Dict GetCreateDesktopShortcutFalseItem() {
       .Set(kCreateDesktopShortcutKey, false);
 }
 
-ExternalInstallOptions GetCreateDesktopShortcutFalseInstallOptions() {
+ExternalInstallOptions GetCreateDesktopShortcutFalseInstallOptions(
+    bool wait_for_windows_closed = false) {
   ExternalInstallOptions options(GURL(kNoContainerUrl),
                                  mojom::UserDisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
@@ -183,8 +190,7 @@ ExternalInstallOptions GetCreateDesktopShortcutFalseInstallOptions() {
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;
-  options.reinstall_placeholder = true;
-  options.wait_for_windows_closed = true;
+  options.wait_for_windows_closed = wait_for_windows_closed;
   return options;
 }
 
@@ -194,7 +200,8 @@ base::Value::Dict GetCreateDesktopShortcutTrueItem() {
       .Set(kCreateDesktopShortcutKey, true);
 }
 
-ExternalInstallOptions GetCreateDesktopShortcutTrueInstallOptions() {
+ExternalInstallOptions GetCreateDesktopShortcutTrueInstallOptions(
+    bool wait_for_windows_closed = false) {
   ExternalInstallOptions options(GURL(kNoContainerUrl),
                                  mojom::UserDisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
@@ -202,8 +209,7 @@ ExternalInstallOptions GetCreateDesktopShortcutTrueInstallOptions() {
   options.add_to_desktop = true;
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;
-  options.reinstall_placeholder = true;
-  options.wait_for_windows_closed = true;
+  options.wait_for_windows_closed = wait_for_windows_closed;
   return options;
 }
 
@@ -230,7 +236,8 @@ base::Value::Dict GetFallbackAppNameItem() {
       .Set(kFallbackAppNameKey, kDefaultFallbackAppName);
 }
 
-ExternalInstallOptions GetFallbackAppNameInstallOptions() {
+ExternalInstallOptions GetFallbackAppNameInstallOptions(
+    bool wait_for_windows_closed = false) {
   ExternalInstallOptions options(GURL(kWindowedUrl),
                                  mojom::UserDisplayMode::kStandalone,
                                  ExternalInstallSource::kExternalPolicy);
@@ -238,8 +245,7 @@ ExternalInstallOptions GetFallbackAppNameInstallOptions() {
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;
-  options.reinstall_placeholder = true;
-  options.wait_for_windows_closed = true;
+  options.wait_for_windows_closed = wait_for_windows_closed;
   options.fallback_app_name = kDefaultFallbackAppName;
   return options;
 }
@@ -251,7 +257,9 @@ base::Value::Dict GetCustomAppNameItem(std::string name) {
       .Set(kCustomNameKey, std::move(name));
 }
 
-ExternalInstallOptions GetCustomAppNameInstallOptions(std::string name) {
+ExternalInstallOptions GetCustomAppNameInstallOptions(
+    std::string name,
+    bool wait_for_windows_closed = false) {
   ExternalInstallOptions options(GURL(kWindowedUrl),
                                  mojom::UserDisplayMode::kStandalone,
                                  ExternalInstallSource::kExternalPolicy);
@@ -259,8 +267,7 @@ ExternalInstallOptions GetCustomAppNameInstallOptions(std::string name) {
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;
-  options.reinstall_placeholder = true;
-  options.wait_for_windows_closed = true;
+  options.wait_for_windows_closed = wait_for_windows_closed;
   options.override_name = std::move(name);
   return options;
 }
@@ -276,7 +283,8 @@ base::Value::Dict GetCustomAppIconItem(bool secure = true) {
                .Set(kCustomIconHashKey, kDefaultCustomIconHash));
 }
 
-ExternalInstallOptions GetCustomAppIconInstallOptions() {
+ExternalInstallOptions GetCustomAppIconInstallOptions(
+    bool wait_for_windows_closed = false) {
   ExternalInstallOptions options(GURL(kWindowedUrl),
                                  mojom::UserDisplayMode::kStandalone,
                                  ExternalInstallSource::kExternalPolicy);
@@ -284,8 +292,7 @@ ExternalInstallOptions GetCustomAppIconInstallOptions() {
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
   options.install_placeholder = true;
-  options.reinstall_placeholder = true;
-  options.wait_for_windows_closed = true;
+  options.wait_for_windows_closed = wait_for_windows_closed;
   options.override_icon_url = GURL(kDefaultCustomIconUrl);
   return options;
 }
@@ -310,8 +317,26 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness,
 
   void SetUp() override {
     BuildAndInitFeatureList();
-    ChromeRenderViewHostTestHarness::SetUp();
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    // Set up user manager to so that Lacros mode can be enabled.
+    // Need to run the ChromeRenderViewHostTestHarness::SetUp() after the fake
+    // user manager set up so that the scoped_user_manager can be destructed in
+    // the correct order.
+    // TODO(crbug.com/1463865): Consider setting up a fake user in all Ash web
+    // app tests.
+    auto user_manager = std::make_unique<ash::FakeChromeUserManager>();
+    auto* fake_user_manager = user_manager.get();
+    scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::move(user_manager));
+    auto* user = fake_user_manager->AddUser(user_manager::StubAccountId());
+    fake_user_manager->UserLoggedIn(user_manager::StubAccountId(),
+                                    user->username_hash(),
+                                    /*browser_restart=*/false,
+                                    /*is_child=*/false);
+#endif
+
+    ChromeRenderViewHostTestHarness::SetUp();
     provider_ = FakeWebAppProvider::Get(profile());
 
     auto fake_externally_managed_app_manager =
@@ -373,6 +398,11 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness,
 #endif
 
     test::AwaitStartWebAppProviderAndSubsystems(profile());
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    ASSERT_EQ(GetParam().lacros_params == TestLacrosParam::kLacrosEnabled,
+              crosapi::browser_util::IsLacrosEnabled());
+#endif
   }
 
   void TearDown() override {
@@ -407,11 +437,14 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness,
     enabled_features.push_back(
         features::kDesktopPWAsEnforceWebAppSettingsPolicy);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    std::vector<base::test::FeatureRef> lacros_flags = {
+        ash::features::kLacrosSupport, ash::features::kLacrosPrimary,
+        ash::features::kLacrosOnly,
+        ash::features::kLacrosProfileMigrationForceOff};
     if (GetParam().lacros_params == TestLacrosParam::kLacrosEnabled) {
-      enabled_features.push_back(features::kWebAppsCrosapi);
+      base::Extend(enabled_features, lacros_flags);
     } else if (GetParam().lacros_params == TestLacrosParam::kLacrosDisabled) {
-      disabled_features.push_back(features::kWebAppsCrosapi);
-      disabled_features.push_back(ash::features::kLacrosPrimary);
+      base::Extend(disabled_features, lacros_flags);
     }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -478,12 +511,12 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness,
   }
 
   void RegisterApp(std::unique_ptr<web_app::WebApp> web_app) {
-    ScopedRegistryUpdate update(&sync_bridge());
+    ScopedRegistryUpdate update = sync_bridge().BeginUpdate();
     update->CreateApp(std::move(web_app));
   }
 
   void UnregisterApp(const AppId& app_id) {
-    ScopedRegistryUpdate update(&sync_bridge());
+    ScopedRegistryUpdate update = sync_bridge().BeginUpdate();
     update->DeleteApp(app_id);
   }
 
@@ -518,6 +551,7 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness,
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<ash::TestSystemWebAppManager> test_system_app_manager_;
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
 #endif
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -1021,10 +1055,9 @@ TEST_P(WebAppPolicyManagerTest, ReinstallPlaceholderAppSuccess) {
   EXPECT_EQ(future.Get<1>().code,
             webapps::InstallResultCode::kSuccessNewInstall);
 
-  auto reinstall_options = GetWindowedInstallOptions();
+  auto reinstall_options =
+      GetWindowedInstallOptions(/*wait_for_windows_closed=*/true);
   reinstall_options.install_placeholder = false;
-  reinstall_options.reinstall_placeholder = true;
-  reinstall_options.wait_for_windows_closed = true;
   expected_options_list.push_back(std::move(reinstall_options));
 
   EXPECT_EQ(expected_options_list, install_options_list);
@@ -1091,10 +1124,9 @@ TEST_P(WebAppPolicyManagerTest, ReinstallPlaceholderAppWithFallbackAppName) {
   EXPECT_EQ(future.Get<1>().code,
             webapps::InstallResultCode::kSuccessNewInstall);
 
-  auto reinstall_options = GetFallbackAppNameInstallOptions();
+  auto reinstall_options =
+      GetFallbackAppNameInstallOptions(/*wait_for_windows_closed=*/true);
   reinstall_options.install_placeholder = false;
-  reinstall_options.reinstall_placeholder = true;
-  reinstall_options.wait_for_windows_closed = true;
   expected_options_list.push_back(std::move(reinstall_options));
 
   EXPECT_EQ(expected_options_list, install_options_list);
@@ -1221,16 +1253,24 @@ TEST_P(WebAppPolicyManagerTest, DisableSystemWebApps) {
   auto disabled_apps = policy_manager().GetDisabledSystemWebApps();
   EXPECT_TRUE(disabled_apps.empty());
 
-  // Add camera to system features disable list policy.
-  base::Value::List disabled_apps_list;
-  disabled_apps_list.Append(static_cast<int>(policy::SystemFeature::kCamera));
+  // Add supported system web apps to system features disable list policy.
   testing_local_state_.Get()->SetUserPref(
       policy::policy_prefs::kSystemFeaturesDisableList,
-      std::move(disabled_apps_list));
+      base::Value::List()
+          .Append(static_cast<int>(policy::SystemFeature::kCamera))
+          .Append(static_cast<int>(policy::SystemFeature::kOsSettings))
+          .Append(static_cast<int>(policy::SystemFeature::kScanning))
+          .Append(static_cast<int>(policy::SystemFeature::kExplore))
+          .Append(static_cast<int>(policy::SystemFeature::kCrosh))
+          .Append(static_cast<int>(policy::SystemFeature::kTerminal))
+          .Append(static_cast<int>(policy::SystemFeature::kGallery)));
   base::RunLoop().RunUntilIdle();
 
-  std::set<ash::SystemWebAppType> expected_disabled_apps;
-  expected_disabled_apps.insert(ash::SystemWebAppType::CAMERA);
+  const std::set<ash::SystemWebAppType> expected_disabled_apps{
+      ash::SystemWebAppType::CAMERA,   ash::SystemWebAppType::SETTINGS,
+      ash::SystemWebAppType::SCANNING, ash::SystemWebAppType::HELP,
+      ash::SystemWebAppType::CROSH,    ash::SystemWebAppType::TERMINAL,
+      ash::SystemWebAppType::MEDIA};
 
   disabled_apps = policy_manager().GetDisabledSystemWebApps();
   EXPECT_EQ(disabled_apps, expected_disabled_apps);
@@ -1379,22 +1419,22 @@ TEST_P(WebAppPolicyManagerTest, WebAppSettingsPreventClose) {
     {
       "manifest_id": "https://windowed.example/",
       "run_on_os_login": "run_windowed",
-      "prevent_close": true
+      "prevent_close_after_run_on_os_login": true
     },
     {
       "manifest_id": "https://tabbed.example/",
       "run_on_os_login": "blocked",
-      "prevent_close": true
+      "prevent_close_after_run_on_os_login": true
     },
     {
       "manifest_id": "https://no-container.example/",
       "run_on_os_login": "unsupported_value",
-      "prevent_close": true
+      "prevent_close_after_run_on_os_login": true
     },
     {
       "manifest_id": "bad.uri",
       "run_on_os_login": "allowed",
-      "prevent_close": true
+      "prevent_close_after_run_on_os_login": true
     }
   ])";
 

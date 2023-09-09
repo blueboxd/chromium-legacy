@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_IOSURFACE_IMAGE_BACKING_H_
 #define GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_IOSURFACE_IMAGE_BACKING_H_
 
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/shared_image/gl_texture_image_backing_helper.h"
@@ -183,35 +184,31 @@ class DawnIOSurfaceRepresentation : public DawnImageRepresentation {
   DawnIOSurfaceRepresentation(SharedImageManager* manager,
                               SharedImageBacking* backing,
                               MemoryTypeTracker* tracker,
-                              WGPUDevice device,
+                              wgpu::Device device,
                               gfx::ScopedIOSurface io_surface,
                               const gfx::Size& io_surface_size,
-                              WGPUTextureFormat wgpu_format,
-                              std::vector<WGPUTextureFormat> view_formats);
+                              wgpu::TextureFormat wgpu_format,
+                              std::vector<wgpu::TextureFormat> view_formats);
   ~DawnIOSurfaceRepresentation() override;
 
-  WGPUTexture BeginAccess(WGPUTextureUsage usage) final;
+  wgpu::Texture BeginAccess(wgpu::TextureUsage usage) final;
   void EndAccess() final;
 
  private:
-  const WGPUDevice device_;
+  const wgpu::Device device_;
   const gfx::ScopedIOSurface io_surface_;
   const gfx::Size io_surface_size_;
-  const WGPUTextureFormat wgpu_format_;
-  const std::vector<WGPUTextureFormat> view_formats_;
-
-  WGPUTexture texture_ = nullptr;
-
-  // TODO(cwallez@chromium.org): Load procs only once when the factory is
-  // created and pass a pointer to them around?
-  DawnProcTable dawn_procs_;
+  const wgpu::TextureFormat wgpu_format_;
+  const std::vector<wgpu::TextureFormat> view_formats_;
+  wgpu::Texture texture_;
 };
 #endif  // BUILDFLAG(USE_DAWN)
 
 // This class is only put into unique_ptrs and is never copied or assigned.
 class SharedEventAndSignalValue : public BackpressureMetalSharedEvent {
  public:
-  SharedEventAndSignalValue(id shared_event, uint64_t signaled_value);
+  SharedEventAndSignalValue(id<MTLSharedEvent> shared_event,
+                            uint64_t signaled_value);
   ~SharedEventAndSignalValue() override;
   SharedEventAndSignalValue(const SharedEventAndSignalValue& other) = delete;
   SharedEventAndSignalValue(SharedEventAndSignalValue&& other) = delete;
@@ -220,14 +217,13 @@ class SharedEventAndSignalValue : public BackpressureMetalSharedEvent {
 
   bool HasCompleted() const override;
 
-  // Return value is actually id<MTLSharedEvent>.
-  id shared_event() const { return shared_event_; }
+  id<MTLSharedEvent> shared_event() const { return shared_event_; }
 
   // This is the value which will be signaled on the associated MTLSharedEvent.
   uint64_t signaled_value() const { return signaled_value_; }
 
  private:
-  id shared_event_;
+  base::scoped_nsprotocol<id<MTLSharedEvent>> shared_event_;
   uint64_t signaled_value_;
 };
 
@@ -258,7 +254,8 @@ class GPU_GLES2_EXPORT IOSurfaceImageBacking
   std::unique_ptr<gfx::GpuFence> GetLastWriteGpuFence();
   void SetReleaseFence(gfx::GpuFenceHandle release_fence);
 
-  void AddSharedEventAndSignalValue(id sharedEvent, uint64_t signalValue);
+  void AddSharedEventAndSignalValue(id<MTLSharedEvent> sharedEvent,
+                                    uint64_t signalValue);
   std::vector<std::unique_ptr<SharedEventAndSignalValue>> TakeSharedEvents();
 
  private:
@@ -285,9 +282,9 @@ class GPU_GLES2_EXPORT IOSurfaceImageBacking
   std::unique_ptr<DawnImageRepresentation> ProduceDawn(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
-      WGPUDevice device,
-      WGPUBackendType backend_type,
-      std::vector<WGPUTextureFormat> view_formats) final;
+      const wgpu::Device& device,
+      wgpu::BackendType backend_type,
+      std::vector<wgpu::TextureFormat> view_formats) final;
   std::unique_ptr<SkiaGaneshImageRepresentation> ProduceSkiaGanesh(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,

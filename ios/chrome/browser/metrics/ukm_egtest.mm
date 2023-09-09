@@ -43,6 +43,12 @@ using chrome_test_util::SettingsDoneButton;
 - (void)setUp {
   [super setUp];
 
+  // These tests enable Chrome Sync through Recent Tabs. If there are too many
+  // tabs in the list, the button at the bottom of the view is offscreen and its
+  // animation causes tests to hang for the same reasons as crbug.com/640977.
+  // Clear browsing history to ensure that there are no recent tabs.
+  [ChromeEarlGrey clearBrowsingHistory];
+
   [ChromeEarlGrey
       waitForSyncEngineInitialized:NO
                        syncTimeout:syncher::kSyncUKMOperationsTimeout];

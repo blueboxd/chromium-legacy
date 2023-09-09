@@ -20,10 +20,13 @@
 #include "chrome/browser/dips/dips_service.h"
 #include "chrome/browser/dips/dips_utils.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
+#include "content/public/browser/allow_service_worker_result.h"
 #include "content/public/browser/cookie_access_details.h"
+#include "content/public/browser/dedicated_worker_service.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_handle_user_data.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/shared_worker_service.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -119,6 +122,15 @@ class DIPSRedirectContext {
 
   size_t GetRedirectChainLength() {
     return redirects_.size() + redirect_prefix_count_;
+  }
+
+  bool HasSiteInRedirectChain(const std::string& site) {
+    for (const auto& redirect : redirects_) {
+      if (GetSiteForDIPS(redirect->url) == site) {
+        return true;
+      }
+    }
+    return false;
   }
 
  private:
@@ -237,6 +249,9 @@ class DIPSBounceDetector {
   void OnServerCookiesAccessed(DIPSNavigationHandle* navigation_handle,
                                const GURL& url,
                                CookieOperation op);
+  void RecordRedirectHeuristic(const ukm::SourceId& source_id,
+                               const content::CookieAccessDetails& details);
+  void OnWorkerInitialized(const GURL& url);
   void DidFinishNavigation(DIPSNavigationHandle* navigation_handle);
   // Only records a new user activation event once per
   // |kTimestampUpdateInterval| for a given page.
@@ -276,6 +291,8 @@ class DIPSWebContentsObserver
     : public content_settings::PageSpecificContentSettings::SiteDataObserver,
       public content::WebContentsObserver,
       public content::WebContentsUserData<DIPSWebContentsObserver>,
+      public content::SharedWorkerService::Observer,
+      public content::DedicatedWorkerService::Observer,
       public DIPSBounceDetectorDelegate {
  public:
   static void MaybeCreateForWebContents(content::WebContents* web_contents);
@@ -327,6 +344,14 @@ class DIPSWebContentsObserver
                          const content::CookieAccessDetails& details) override;
   void OnCookiesAccessed(content::NavigationHandle* navigation_handle,
                          const content::CookieAccessDetails& details) override;
+  void OnServiceWorkerAccessed(
+      content::RenderFrameHost* render_frame_host,
+      const GURL& scope,
+      content::AllowServiceWorkerResult allowed) override;
+  void OnServiceWorkerAccessed(
+      content::NavigationHandle* navigation_handle,
+      const GURL& scope,
+      content::AllowServiceWorkerResult allowed) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void FrameReceivedUserActivation(
@@ -341,6 +366,36 @@ class DIPSWebContentsObserver
       const content_settings::AccessDetails& access_details) override;
   void OnStatefulBounceDetected() override;
   // End SiteDataObserver overrides.
+
+  // Start SharedWorkerService.Observer overrides:
+  void OnClientAdded(
+      const blink::SharedWorkerToken& token,
+      content::GlobalRenderFrameHostId render_frame_host_id) override;
+  void OnWorkerCreated(const blink::SharedWorkerToken& token,
+                       int worker_process_id,
+                       const base::UnguessableToken& dev_tools_token) override {
+  }
+  void OnBeforeWorkerDestroyed(const blink::SharedWorkerToken& token) override {
+  }
+  void OnClientRemoved(
+      const blink::SharedWorkerToken& token,
+      content::GlobalRenderFrameHostId render_frame_host_id) override {}
+  using content::SharedWorkerService::Observer::OnFinalResponseURLDetermined;
+  // End SharedWorkerService.Observer overrides.
+
+  // Start DedicatedWorkerService.Observer overrides:
+  void OnWorkerCreated(
+      const blink::DedicatedWorkerToken& worker_token,
+      int worker_process_id,
+      content::GlobalRenderFrameHostId ancestor_render_frame_host_id) override;
+  void OnBeforeWorkerDestroyed(
+      const blink::DedicatedWorkerToken& worker_token,
+      content::GlobalRenderFrameHostId ancestor_render_frame_host_id) override {
+  }
+  void OnFinalResponseURLDetermined(
+      const blink::DedicatedWorkerToken& worker_token,
+      const GURL& url) override {}
+  // End DedicatedWorkerService.Observer overrides.
 
   // raw_ptr<> is safe here because DIPSService is a KeyedService, associated
   // with the BrowserContext/Profile which will outlive the WebContents that

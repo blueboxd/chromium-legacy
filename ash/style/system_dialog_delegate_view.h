@@ -8,10 +8,12 @@
 #include <string>
 
 #include "ash/ash_export.h"
+#include "ash/style/pill_button.h"
 #include "ash/style/system_shadow.h"
 #include "base/functional/callback_forward.h"
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/layout/layout_types.h"
 #include "ui/views/metadata/view_factory.h"
@@ -131,6 +133,10 @@ class ASH_EXPORT SystemDialogDelegateView : public views::WidgetDelegateView {
   void OnWidgetInitialized() override;
   void OnWorkAreaChanged() override;
 
+  // Helper function to access buttons for tests.
+  const PillButton* GetAcceptButtonForTesting() const;
+  const PillButton* GetCancelButtonForTesting() const;
+
  protected:
   virtual void UpdateDialogSize();
 
@@ -198,6 +204,7 @@ VIEW_BUILDER_VIEW_TYPE_PROPERTY(views::View, MiddleContentView)
 VIEW_BUILDER_VIEW_TYPE_PROPERTY(views::View, AdditionalViewInButtonRow)
 VIEW_BUILDER_PROPERTY(views::LayoutAlignment, TopContentAlignment)
 VIEW_BUILDER_PROPERTY(views::LayoutAlignment, MiddleContentAlignment)
+VIEW_BUILDER_PROPERTY(ui::ModalType, ModalType)
 END_VIEW_BUILDER
 
 }  // namespace ash

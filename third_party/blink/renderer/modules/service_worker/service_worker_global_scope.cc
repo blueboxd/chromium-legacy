@@ -86,6 +86,7 @@
 #include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script_url.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
+#include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
 #include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
@@ -1560,8 +1561,9 @@ void ServiceWorkerGlobalScope::StartFetchEvent(
 void ServiceWorkerGlobalScope::SetFetchHandlerExistence(
     FetchHandlerExistence fetch_handler_existence) {
   DCHECK(IsContextThread());
-  if (fetch_handler_existence == FetchHandlerExistence::EXISTS)
-    GetThread()->GetIsolate()->IsolateInForegroundNotification();
+  if (fetch_handler_existence == FetchHandlerExistence::EXISTS) {
+    GetThread()->GetWorkerBackingThread().SetForegrounded();
+  }
 }
 
 void ServiceWorkerGlobalScope::DispatchFetchEventForSubresource(
@@ -2674,10 +2676,10 @@ ServiceWorkerGlobalScope::FetchHandlerType() {
 
   // TODO(crbug.com/1349613): revisit the way to implement this.
   // The following code returns kEmptyFetchHandler if all handlers are nop.
-  for (RegisteredEventListener& e : *elv) {
+  for (RegisteredEventListener* e : *elv) {
     EventTarget* et = EventTarget::Create(script_state);
     v8::Local<v8::Value> v =
-        To<JSBasedEventListener>(e.Callback())->GetListenerObject(*et);
+        To<JSBasedEventListener>(e->Callback())->GetListenerObject(*et);
     if (v.IsEmpty() || !v->IsFunction() ||
         !v.As<v8::Function>()->Experimental_IsNopFunction()) {
       return mojom::blink::ServiceWorkerFetchHandlerType::kNotSkippable;

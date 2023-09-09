@@ -417,8 +417,6 @@ ACTION_P(QuitMessageLoop, loop) {
   loop->Quit();
 }
 
-enum UserMode { USER_MODE_NORMAL, USER_MODE_INCOGNITO };
-
 class PersonalDataLoadedObserverMock : public PersonalDataManagerObserver {
  public:
   PersonalDataLoadedObserverMock() = default;
@@ -492,7 +490,7 @@ class FormDataImporterTestBase {
  protected:
   FormDataImporterTestBase() : autofill_table_(nullptr) {}
 
-  void ResetPersonalDataManager(UserMode user_mode) {
+  void ResetPersonalDataManager() {
     // Before invalidating the `personal_data_manager_`, the `autofill_client_`s
     // FormDataImporter needs to be reset, because it stores a weak pointer to
     // `personal_data_manager_` that otherwise points to garbage.
@@ -511,10 +509,9 @@ class FormDataImporterTestBase {
         /*local_state=*/prefs_.get(),
         /*identity_manager=*/identity_test_env_.identity_manager(),
         /*history_service=*/nullptr,
-        /*sync_service=*/nullptr,
+        /*sync_service=*/&sync_service_,
         /*strike_database=*/nullptr,
-        /*image_fetcher=*/nullptr,
-        /*is_off_the_record=*/(user_mode == USER_MODE_INCOGNITO));
+        /*image_fetcher=*/nullptr);
     personal_data_manager_->AddObserver(&personal_data_observer_);
 
     WaitForOnPersonalDataChanged();
@@ -557,7 +554,7 @@ class FormDataImporterTestBase {
 
     test::DisableSystemServices(prefs_.get());
     // This will also initialize the `form_data_importer()`.
-    ResetPersonalDataManager(USER_MODE_NORMAL);
+    ResetPersonalDataManager();
 
     // Reset the deduping pref to its default value.
     personal_data_manager_->pref_service_->SetInteger(
@@ -765,6 +762,7 @@ class FormDataImporterTestBase {
   test::AutofillUnitTestEnvironment autofill_test_environment_;
   std::unique_ptr<PrefService> prefs_;
   signin::IdentityTestEnvironment identity_test_env_;
+  syncer::TestSyncService sync_service_;
   scoped_refptr<AutofillWebDataService> autofill_database_service_;
   scoped_refptr<WebDatabaseService> web_database_;
   raw_ptr<AutofillTable> autofill_table_;  // weak ref
@@ -1773,7 +1771,7 @@ TEST_P(FormDataImporterTest, ExtractCreditCard_InvalidCardNumber) {
 
   // Since no refresh is expected, reload the data from the database to make
   // sure no changes were written out.
-  ResetPersonalDataManager(USER_MODE_NORMAL);
+  ResetPersonalDataManager();
 
   ASSERT_EQ(0U, personal_data_manager_->GetCreditCards().size());
 }
@@ -2161,7 +2159,7 @@ TEST_P(FormDataImporterTest, ExtractCreditCard_EmptyCardWithConflict) {
 
   // Since no refresh is expected, reload the data from the database to make
   // sure no changes were written out.
-  ResetPersonalDataManager(USER_MODE_NORMAL);
+  ResetPersonalDataManager();
 
   // No change is expected.
   CreditCard expected2(base::Uuid::GenerateRandomV4().AsLowercaseString(),
@@ -2208,7 +2206,7 @@ TEST_P(FormDataImporterTest, ExtractCreditCard_MissingInfoInNew) {
 
   // Since no refresh is expected, reload the data from the database to make
   // sure no changes were written out.
-  ResetPersonalDataManager(USER_MODE_NORMAL);
+  ResetPersonalDataManager();
 
   // No change is expected.
   CreditCard expected2(base::Uuid::GenerateRandomV4().AsLowercaseString(),
@@ -2234,7 +2232,7 @@ TEST_P(FormDataImporterTest, ExtractCreditCard_MissingInfoInNew) {
 
   // Since no refresh is expected, reload the data from the database to make
   // sure no changes were written out.
-  ResetPersonalDataManager(USER_MODE_NORMAL);
+  ResetPersonalDataManager();
 
   // No change is expected.
   CreditCard expected3(base::Uuid::GenerateRandomV4().AsLowercaseString(),
@@ -2319,7 +2317,7 @@ TEST_P(FormDataImporterTest, ExtractCreditCard_SameCardWithSeparators) {
 
   // Since no refresh is expected, reload the data from the database to make
   // sure no changes were written out.
-  ResetPersonalDataManager(USER_MODE_NORMAL);
+  ResetPersonalDataManager();
 
   // Expect that no new card is saved.
   const std::vector<CreditCard*>& results2 =
@@ -2360,7 +2358,7 @@ TEST_P(FormDataImporterTest,
 
   // Since no refresh is expected, reload the data from the database to make
   // sure no changes were written out.
-  ResetPersonalDataManager(USER_MODE_NORMAL);
+  ResetPersonalDataManager();
 
   // Expect that the saved credit card is not modified.
   const std::vector<CreditCard*>& results =
@@ -4199,7 +4197,7 @@ TEST_F(FormDataImporterNonParameterizedTest,
   extracted_credit_card.SetNetworkForMaskedCard(kAmericanExpressCard);
   extracted_credit_card.set_instrument_id(1111);
   extracted_credit_card.set_virtual_card_enrollment_state(
-      CreditCard::VirtualCardEnrollmentState::UNENROLLED_AND_ELIGIBLE);
+      CreditCard::VirtualCardEnrollmentState::kUnenrolledAndEligible);
   absl::optional<std::string> extracted_upi_id;
   std::unique_ptr<FormStructure> form_structure =
       ConstructDefaultCreditCardFormStructure();

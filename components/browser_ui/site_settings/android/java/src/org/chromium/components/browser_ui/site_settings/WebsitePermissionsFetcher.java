@@ -10,7 +10,6 @@ import static org.chromium.components.browser_ui.site_settings.WebsitePreference
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
@@ -269,6 +268,8 @@ public class WebsitePermissionsFetcher {
             queue.add(new LocalStorageInfoFetcher());
             // Website storage is per-host.
             queue.add(new WebStorageInfoFetcher());
+            // Shared Dictionary info is per {origin, top level site}.
+            queue.add(new SharedDictionaryInfoFetcher());
         }
 
         private void addFetcherForContentSettingsType(
@@ -498,6 +499,27 @@ public class WebsitePermissionsFetcher {
             }
         }
 
+        private class SharedDictionaryInfoFetcher extends Task {
+            @Override
+            public void runAsync(final TaskQueue queue) {
+                mWebsitePreferenceBridge.fetchSharedDictionaryInfo(
+                        mBrowserContextHandle, new Callback<ArrayList>() {
+                            @Override
+                            public void onResult(ArrayList result) {
+                                @SuppressWarnings("unchecked")
+                                ArrayList<SharedDictionaryInfo> infoArray = result;
+
+                                for (SharedDictionaryInfo info : infoArray) {
+                                    String origin = info.getOrigin();
+                                    if (origin == null) continue;
+                                    findOrCreateSite(origin, null).addSharedDictionaryInfo(info);
+                                }
+                                queue.next();
+                            }
+                        });
+            }
+        }
+
         private class CookiesInfoFetcher extends Task {
             @Override
             public void runAsync(final TaskQueue queue) {
@@ -584,7 +606,6 @@ public class WebsitePermissionsFetcher {
         }
     }
 
-    @VisibleForTesting
     public void setWebsitePreferenceBridgeForTesting(
             WebsitePreferenceBridge websitePreferenceBridge) {
         mWebsitePreferenceBridge = websitePreferenceBridge;

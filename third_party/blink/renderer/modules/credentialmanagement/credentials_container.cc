@@ -518,7 +518,8 @@ DOMException* AuthenticatorStatusToDOMException(
   return nullptr;
 }
 
-// Abort an ongoing FederatedCredential login() operation.
+// Abort an ongoing IdentityCredential request. This will only be called before
+// the request finishes due to `scoped_abort_state`.
 void AbortIdentityCredentialRequest(ScriptState* script_state) {
   if (!script_state->ContextIsValid())
     return;
@@ -543,8 +544,16 @@ void OnRequestToken(ScriptPromiseResolver* resolver,
       return;
     }
     case RequestTokenStatus::kErrorCanceled: {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kAbortError, "The request has been aborted."));
+      AbortSignal* signal =
+          scoped_abort_state ? scoped_abort_state->Signal() : nullptr;
+      if (signal && signal->aborted()) {
+        auto* script_state = resolver->GetScriptState();
+        ScriptState::Scope script_state_scope(script_state);
+        resolver->Reject(signal->reason(script_state));
+      } else {
+        resolver->Reject(MakeGarbageCollected<DOMException>(
+            DOMExceptionCode::kAbortError, "The request has been aborted."));
+      }
       return;
     }
     case RequestTokenStatus::kError: {
@@ -1004,6 +1013,17 @@ bool IsPaymentExtensionValid(const CredentialCreationOptions* options,
   return true;
 }
 
+const char* validatePRFInputs(
+    const blink::AuthenticationExtensionsPRFValues& values) {
+  constexpr size_t kMaxInputSize = 256;
+  if (DOMArrayPiece(values.first()).ByteLength() > kMaxInputSize ||
+      (values.hasSecond() &&
+       DOMArrayPiece(values.second()).ByteLength() > kMaxInputSize)) {
+    return "'prf' extension contains excessively large input";
+  }
+  return nullptr;
+}
+
 const char* validateGetPublicKeyCredentialPRFExtension(
     const AuthenticationExtensionsPRFInputs& prf,
     const HeapVector<Member<PublicKeyCredentialDescriptor>>&
@@ -1019,6 +1039,13 @@ const char* validateGetPublicKeyCredentialPRFExtension(
     return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end());
   };
   std::sort(cred_ids.begin(), cred_ids.end(), compare);
+
+  if (prf.hasEval()) {
+    const char* error = validatePRFInputs(*prf.eval());
+    if (error != nullptr) {
+      return error;
+    }
+  }
 
   if (prf.hasEvalByCredential()) {
     for (const auto& pair : prf.evalByCredential()) {
@@ -1037,6 +1064,10 @@ const char* validateGetPublicKeyCredentialPRFExtension(
                               compare)) {
         return "'prf' extension contains 'evalByCredential' key that doesn't "
                "match any in allowedCredentials";
+      }
+      const char* error = validatePRFInputs(*pair.second);
+      if (error != nullptr) {
+        return error;
       }
     }
   }
@@ -1130,8 +1161,7 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
     required_origin_type = RequiredOriginType::
         kSecureAndPermittedByWebOTPAssertionPermissionsPolicy;
   } else if (options->hasIdentity() && options->identity()->hasProviders() &&
-             options->identity()->providers().size() == 1 &&
-             RuntimeEnabledFeatures::FedCmIframeSupportEnabled(context)) {
+             options->identity()->providers().size() == 1) {
     required_origin_type =
         RequiredOriginType::kSecureAndPermittedByFederatedPermissionsPolicy;
   }
@@ -1339,11 +1369,6 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
     // TODO(https://crbug.com/1441075): Ideally the logic should be handled in
     // CredentialManager via Get. However currently it's only for password
     // management and we should refactor the logic to make it generic.
-    if (!RuntimeEnabledFeatures::FedCmEnabled(context)) {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotSupportedError, "FedCM is not supported"));
-      return promise;
-    }
 
     ContentSecurityPolicy* policy =
         resolver->GetExecutionContext()
@@ -1378,8 +1403,7 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
     int provider_index = 0;
     Vector<mojom::blink::IdentityProviderPtr> identity_provider_ptrs;
     for (const auto& provider : options->identity()->providers()) {
-      if (RuntimeEnabledFeatures::FedCmLoginHintEnabled() &&
-          provider->hasLoginHint()) {
+      if (provider->hasLoginHint()) {
         UseCounter::Count(resolver->GetExecutionContext(),
                           WebFeature::kFedCmLoginHint);
       }
@@ -1434,15 +1458,13 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
     }
 
     mojom::blink::RpContext rp_context = mojom::blink::RpContext::kSignIn;
-    if (RuntimeEnabledFeatures::FedCmRpContextEnabled()) {
-      if (options->identity()->hasContext()) {
-        UseCounter::Count(resolver->GetExecutionContext(),
-                          WebFeature::kFedCmRpContext);
-        rp_context = mojo::ConvertTo<mojom::blink::RpContext>(
-            options->identity()->context());
-      }
-      base::UmaHistogramEnumeration("Blink.FedCm.RpContext", rp_context);
+    if (options->identity()->hasContext()) {
+      UseCounter::Count(resolver->GetExecutionContext(),
+                        WebFeature::kFedCmRpContext);
+      rp_context = mojo::ConvertTo<mojom::blink::RpContext>(
+          options->identity()->context());
     }
+    base::UmaHistogramEnumeration("Blink.FedCm.RpContext", rp_context);
 
     CredentialMediationRequirement mediation_requirement;
     if (options->mediation() == "conditional") {

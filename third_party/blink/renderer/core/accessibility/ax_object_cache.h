@@ -54,9 +54,10 @@ class HTMLOptionElement;
 class HTMLTableElement;
 class HTMLFrameOwnerElement;
 class HTMLSelectElement;
-class LayoutRect;
+class LayoutBlockFlow;
 class LocalFrameView;
 class NGAbstractInlineTextBox;
+struct PhysicalRect;
 
 class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
  public:
@@ -110,11 +111,14 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   virtual const Element* RootAXEditableElement(const Node*) = 0;
 
   // Called when aspects of the style (e.g. color, alignment) change.
-  virtual void StyleChanged(const LayoutObject*) = 0;
+  virtual void StyleChanged(const LayoutObject*,
+                            bool visibility_or_inertness_changed = false) = 0;
 
   // Called by a node when text or a text equivalent (e.g. alt) attribute is
   // changed.
   virtual void TextChanged(const LayoutObject*) = 0;
+  // Called when the NGOffsetMapping is invalidated for the given object.
+  virtual void TextOffsetsChanged(const LayoutBlockFlow*) = 0;
   virtual void DocumentTitleChanged() = 0;
   // Called when a layout tree for a node has just been attached, so we can make
   // sure we have the right subclass of AXObject.
@@ -131,6 +135,9 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
                                              Element* new_focused_node) = 0;
   virtual void HandleInitialFocus() = 0;
   virtual void HandleEditableTextContentChanged(Node*) = 0;
+  virtual void HandleDeletionOrInsertionInTextField(
+      const SelectionInDOMTree& changed_selection,
+      bool is_deletion) = 0;
   virtual void HandleTextMarkerDataAdded(Node* start, Node* end) = 0;
   virtual void HandleTextFormControlChanged(Node*) = 0;
   virtual void HandleValueChanged(Node*) = 0;
@@ -143,9 +150,9 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   virtual void HandleClicked(Node*) = 0;
   virtual void HandleValidationMessageVisibilityChanged(
       const Node* form_control) = 0;
-  virtual void HandleEventListenerAdded(const Node& node,
+  virtual void HandleEventListenerAdded(Node& node,
                                         const AtomicString& event_type) = 0;
-  virtual void HandleEventListenerRemoved(const Node& node,
+  virtual void HandleEventListenerRemoved(Node& node,
                                           const AtomicString& event_type) = 0;
 
   // Handle any notifications which arrived while layout was dirty.
@@ -164,7 +171,7 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
 
   virtual void SetCanvasObjectBounds(HTMLCanvasElement*,
                                      Element*,
-                                     const LayoutRect&) = 0;
+                                     const PhysicalRect&) = 0;
 
   virtual void InlineTextBoxesUpdated(LayoutObject*) = 0;
 

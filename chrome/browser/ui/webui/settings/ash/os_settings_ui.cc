@@ -19,9 +19,9 @@
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_factory.h"
-#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager.h"
-#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager_factory.h"
-#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_utils.h"
+#include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_manager.h"
+#include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_manager_factory.h"
+#include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_utils.h"
 #include "chrome/browser/nearby_sharing/contacts/nearby_share_contact_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_receive_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_share_settings.h"
@@ -297,6 +297,12 @@ void OSSettingsUI::BindInterface(
   auth::BindToPinFactorEditor(std::move(receiver),
                               quick_unlock::QuickUnlockFactory::GetDelegate(),
                               *pin_backend);
+}
+
+void OSSettingsUI::BindInterface(
+    mojo::PendingReceiver<auth::mojom::PasswordFactorEditor> receiver) {
+  auth::BindToPasswordFactorEditor(
+      std::move(receiver), quick_unlock::QuickUnlockFactory::GetDelegate());
 }
 
 void OSSettingsUI::BindInterface(

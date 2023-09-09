@@ -70,6 +70,7 @@ class ExecutionContext;
 class FormData;
 class PrivateToken;
 class ScriptState;
+class ScriptValue;
 class TextResourceDecoder;
 class ThreadableLoader;
 class URLSearchParams;
@@ -153,11 +154,9 @@ class CORE_EXPORT XMLHttpRequest final
   void overrideMimeType(const AtomicString& override, ExceptionState&);
   String getAllResponseHeaders() const;
   const AtomicString& getResponseHeader(const AtomicString&) const;
-  v8::Local<v8::String> responseText(ExceptionState&);
-  v8::Local<v8::String> ResponseJSONSource();
+  String responseText(ExceptionState&);
   Document* responseXML(ExceptionState&);
-  Blob* ResponseBlob();
-  DOMArrayBuffer* ResponseArrayBuffer();
+  ScriptValue response(ScriptState*, ExceptionState&);
   unsigned timeout() const {
     return static_cast<unsigned>(timeout_.InMilliseconds());
   }
@@ -166,9 +165,6 @@ class CORE_EXPORT XMLHttpRequest final
   String responseType();
   void setResponseType(const String&, ExceptionState&);
   String responseURL();
-  DOMException* privateTokenOperationError() const {
-    return trust_token_operation_error_;
-  }
 
   // For Inspector.
   void SendForInspectorXHRReplay(scoped_refptr<EncodedFormData>,
@@ -211,6 +207,10 @@ class CORE_EXPORT XMLHttpRequest final
   void NotifyParserStopped() override;
 
   void EndLoading();
+
+  v8::Local<v8::Value> ResponseJSON(v8::Isolate*, ExceptionState&);
+  Blob* ResponseBlob();
+  DOMArrayBuffer* ResponseArrayBuffer();
 
   // Returns the MIME type part of mime_type_override_ if present and
   // successfully parsed, or returns one of the "Content-Type" header value
@@ -311,7 +311,6 @@ class CORE_EXPORT XMLHttpRequest final
   AtomicString method_;
   HTTPHeaderMap request_headers_;
   network::mojom::blink::TrustTokenParamsPtr trust_token_params_;
-  Member<DOMException> trust_token_operation_error_;
   // Not converted to ASCII lowercase. Must be lowered later or compared
   // using case insensitive comparison functions if needed.
   AtomicString mime_type_override_;

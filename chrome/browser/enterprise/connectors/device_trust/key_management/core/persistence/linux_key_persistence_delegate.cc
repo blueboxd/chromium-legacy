@@ -18,7 +18,6 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/posix/eintr_wrapper.h"
@@ -178,7 +177,7 @@ bool LinuxKeyPersistenceDelegate::StoreKeyPair(
                        "the signing key storage.");
 }
 
-scoped_refptr<SigningKeyPair> LinuxKeyPersistenceDelegate::LoadKeyPair() {
+std::unique_ptr<SigningKeyPair> LinuxKeyPersistenceDelegate::LoadKeyPair() {
   std::string file_content;
   if (!base::ReadFileToStringWithMaxSize(GetSigningKeyFilePath(), &file_content,
                                          kMaxBufferSize)) {
@@ -252,11 +251,11 @@ scoped_refptr<SigningKeyPair> LinuxKeyPersistenceDelegate::LoadKeyPair() {
     return nullptr;
   }
 
-  return base::MakeRefCounted<SigningKeyPair>(std::move(signing_key),
-                                              BPKUR::CHROME_BROWSER_OS_KEY);
+  return std::make_unique<SigningKeyPair>(std::move(signing_key),
+                                          BPKUR::CHROME_BROWSER_OS_KEY);
 }
 
-scoped_refptr<SigningKeyPair> LinuxKeyPersistenceDelegate::CreateKeyPair() {
+std::unique_ptr<SigningKeyPair> LinuxKeyPersistenceDelegate::CreateKeyPair() {
   // TODO (http://b/210343211): TPM support for linux.
   auto provider = std::make_unique<ECSigningKeyProvider>();
   auto algorithm = {crypto::SignatureVerifier::ECDSA_SHA256};
@@ -271,8 +270,8 @@ scoped_refptr<SigningKeyPair> LinuxKeyPersistenceDelegate::CreateKeyPair() {
     return nullptr;
   }
 
-  return base::MakeRefCounted<SigningKeyPair>(std::move(signing_key),
-                                              BPKUR::CHROME_BROWSER_OS_KEY);
+  return std::make_unique<SigningKeyPair>(std::move(signing_key),
+                                          BPKUR::CHROME_BROWSER_OS_KEY);
 }
 
 // static

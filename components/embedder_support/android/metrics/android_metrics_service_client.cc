@@ -10,6 +10,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/barrier_closure.h"
 #include "base/base_paths_android.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -524,10 +525,29 @@ std::string AndroidMetricsServiceClient::GetVersionString() {
   return metrics::GetVersionString();
 }
 
+void AndroidMetricsServiceClient::MergeSubprocessHistograms() {
+  // TODO(crbug.com/1293026): Move this to a shared place to not have to
+  // duplicate the code across different `MetricsServiceClient`s.
+
+  // Synchronously fetch subprocess histograms that live in shared memory.
+  base::StatisticsRecorder::ImportProvidedHistogramsSync();
+
+  // Asynchronously fetch subprocess histograms that do not live in shared
+  // memory (e.g., they were emitted before the shared memory was set up).
+  content::FetchHistogramsAsynchronously(
+      base::SingleThreadTaskRunner::GetCurrentDefault(),
+      /*callback=*/base::DoNothing(),
+      /*wait_time=*/base::Milliseconds(kMaxHistogramGatheringWaitDuration));
+}
+
 void AndroidMetricsServiceClient::CollectFinalMetricsForLog(
     base::OnceClosure done_callback) {
+  auto barrier_closure =
+      base::BarrierClosure(/*num_closures=*/2, std::move(done_callback));
+
   // Merge histograms from metrics providers into StatisticsRecorder.
-  base::StatisticsRecorder::ImportProvidedHistograms();
+  base::StatisticsRecorder::ImportProvidedHistograms(
+      /*async=*/true, /*done_callback=*/barrier_closure);
 
   base::TimeDelta timeout =
       base::Milliseconds(kMaxHistogramGatheringWaitDuration);
@@ -537,7 +557,7 @@ void AndroidMetricsServiceClient::CollectFinalMetricsForLog(
   // calling us back on the task.
   content::FetchHistogramsAsynchronously(
       base::SingleThreadTaskRunner::GetCurrentDefault(),
-      CreateChainedClosure(std::move(done_callback),
+      CreateChainedClosure(barrier_closure,
                            on_final_metrics_collected_listener_),
       timeout);
 

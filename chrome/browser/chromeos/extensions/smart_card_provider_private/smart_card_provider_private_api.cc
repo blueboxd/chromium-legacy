@@ -17,6 +17,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_event_histogram_value.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/smart_card.mojom.h"
 
@@ -34,6 +35,8 @@ using device::mojom::SmartCardStatus;
 using device::mojom::SmartCardStatusChangeResult;
 using device::mojom::SmartCardStatusResult;
 using device::mojom::SmartCardSuccess;
+using device::mojom::SmartCardTransactionResult;
+using device::mojom::SmartCardTransactionResultPtr;
 
 namespace {
 device::mojom::SmartCardResultPtr ProviderResultCodeToSmartCardResult(
@@ -145,6 +148,7 @@ ToSmartCardProviderReaderStateOutVector(
     mojom_reader_state->reader = std::move(reader_state.reader);
     mojom_reader_state->event_state =
         ToSmartCardProviderReaderStateFlags(reader_state.event_state);
+    mojom_reader_state->event_count = reader_state.event_count;
     mojom_reader_state->answer_to_reset = std::move(reader_state.atr);
 
     result_vector.push_back(std::move(mojom_reader_state));
@@ -184,6 +188,7 @@ base::Value::Dict ToValue(
 
   to_value_result.Set("reader", state_in.reader);
   to_value_result.Set("currentState", ToValue(*state_in.current_state.get()));
+  to_value_result.Set("currentCount", state_in.current_count);
 
   return to_value_result;
 }
@@ -324,6 +329,11 @@ struct SmartCardProviderPrivateAPI::ContextData {
   ContextData(const ContextData&) = delete;
   ContextData& operator=(const ContextData&) = delete;
 
+  bool HasActiveTransaction(Handle handle) const {
+    auto it = handles_map.find(handle);
+    return it != handles_map.end() ? it->second : false;
+  }
+
   // A PC/SC context can only handle one request at a time (exception being
   // SCardCancel()).
   // Thus we have to make sure not to send a request on a ContextId which has an
@@ -337,6 +347,11 @@ struct SmartCardProviderPrivateAPI::ContextData {
 
   // All device::mojom::SmartCardConnection receivers created on this context.
   std::set<mojo::ReceiverId> connection_receiver_ids;
+
+  // Maps a valid PC/SC Handle to whether it has an active transaction. Ie,
+  // transactions begun by the browser and that, therefore, the browser should
+  // also end.
+  std::map<Handle, bool> handles_map;
 };
 
 // static
@@ -365,6 +380,10 @@ SmartCardProviderPrivateAPI::SmartCardProviderPrivateAPI(
 
   connection_receivers_.set_disconnect_handler(base::BindRepeating(
       &SmartCardProviderPrivateAPI::OnMojoConnectionDisconnected,
+      weak_ptr_factory_.GetWeakPtr()));
+
+  transaction_receivers_.set_disconnect_handler(base::BindRepeating(
+      &SmartCardProviderPrivateAPI::OnMojoTransactionDisconnected,
       weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -422,6 +441,10 @@ void SmartCardProviderPrivateAPI::OnMojoContextDisconnected() {
 
 void SmartCardProviderPrivateAPI::OnMojoConnectionDisconnected() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (disconnect_observer_) {
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, disconnect_observer_);
+  }
 
   auto callback =
       base::BindOnce(&SmartCardProviderPrivateAPI::OnScardHandleDisconnected,
@@ -431,12 +454,62 @@ void SmartCardProviderPrivateAPI::OnMojoConnectionDisconnected() {
   CHECK(context_id);
   CHECK(handle);
 
+  if (!context_data_map_.contains(context_id)) {
+    return;
+  }
+
+  ContextData& context_data = GetContextData(context_id);
+
+  const auto handles_it = context_data.handles_map.find(handle);
+
+  if (handles_it == context_data.handles_map.end()) {
+    // Already disconnected.
+    return;
+  }
+
+  // If there's an active transaction, end it before disconnecting.
+  if (handles_it->second) {
+    EndTransactionInternal(
+        context_id, handle, context_data,
+        device::mojom::SmartCardDisposition::kLeave,
+        base::BindOnce(&SmartCardProviderPrivateAPI::OnEndTransactionDone,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
   RunOrQueueRequest(
       context_id,
       base::BindOnce(&SmartCardProviderPrivateAPI::SendDisconnect,
                      weak_ptr_factory_.GetWeakPtr(), context_id, handle,
                      device::mojom::SmartCardDisposition::kLeave,
                      std::move(callback)));
+}
+
+void SmartCardProviderPrivateAPI::OnMojoTransactionDisconnected() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  const auto& [scard_context, handle] =
+      transaction_receivers_.current_context();
+  if (!context_data_map_.contains(scard_context)) {
+    return;
+  }
+
+  ContextData& context_data = GetContextData(scard_context);
+  if (!context_data.HasActiveTransaction(handle)) {
+    return;
+  }
+
+  EndTransactionInternal(
+      scard_context, handle, context_data,
+      device::mojom::SmartCardDisposition::kLeave,
+      base::BindOnce(&SmartCardProviderPrivateAPI::OnEndTransactionDone,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void SmartCardProviderPrivateAPI::OnEndTransactionDone(
+    device::mojom::SmartCardResultPtr result) {
+  if (result->is_error()) {
+    LOG(WARNING) << "EndTransaction call failed: " << result->get_error();
+  }
 }
 
 void SmartCardProviderPrivateAPI::OnScardHandleDisconnected(
@@ -606,6 +679,45 @@ void SmartCardProviderPrivateAPI::SendStatus(ContextId scard_context,
       &SmartCardProviderPrivateAPI::OnStatusTimeout,
       /*event_arguments=*/
       base::Value::List().Append(handle.GetUnsafeValue()));
+}
+
+void SmartCardProviderPrivateAPI::SendBeginTransaction(
+    ContextId scard_context,
+    Handle handle,
+    BeginTransactionCallback callback) {
+  auto process_result = base::BindOnce(
+      &SmartCardProviderPrivateAPI::ProcessBeginTransactionResult,
+      weak_ptr_factory_.GetWeakPtr(), scard_context, handle);
+
+  DispatchEventWithTimeout(
+      scard_context, scard_api::OnBeginTransactionRequested::kEventName,
+      extensions::events::
+          SMART_CARD_PROVIDER_PRIVATE_ON_BEGIN_TRANSACTION_REQUESTED,
+      std::move(process_result), std::move(callback),
+      &SmartCardProviderPrivateAPI::OnBeginTransactionTimeout,
+      /*event_arguments=*/
+      base::Value::List().Append(handle.GetUnsafeValue()));
+}
+
+void SmartCardProviderPrivateAPI::SendEndTransaction(
+    ContextId scard_context,
+    Handle handle,
+    device::mojom::SmartCardDisposition disposition,
+    EndTransactionCallback callback) {
+  auto process_result =
+      base::BindOnce(&SmartCardProviderPrivateAPI::ProcessPlainResult,
+                     weak_ptr_factory_.GetWeakPtr());
+
+  DispatchEventWithTimeout(
+      scard_context, scard_api::OnEndTransactionRequested::kEventName,
+      extensions::events::
+          SMART_CARD_PROVIDER_PRIVATE_ON_END_TRANSACTION_REQUESTED,
+      std::move(process_result), std::move(callback),
+      &SmartCardProviderPrivateAPI::OnEndTransactionTimeout,
+      /*event_arguments=*/
+      base::Value::List()
+          .Append(handle.GetUnsafeValue())
+          .Append(ToValue(disposition)));
 }
 
 void SmartCardProviderPrivateAPI::ReportResult(
@@ -801,9 +913,16 @@ void SmartCardProviderPrivateAPI::ProcessConnectResult(
           result_args);
 
   if (result->is_success()) {
+    Handle handle = std::get<Handle>(handle_and_protocol);
+
     connect_result = CreateSmartCardConnection(
-        scard_context, std::get<Handle>(handle_and_protocol),
+        scard_context, handle,
         std::get<device::mojom::SmartCardProtocol>(handle_and_protocol));
+
+    auto& context_data = GetContextData(scard_context);
+    CHECK(!context_data.handles_map.contains(handle));
+    // Handle exists but it has no active transaction.
+    context_data.handles_map[handle] = false;
   } else {
     connect_result = SmartCardConnectResult::NewError(result->get_error());
   }
@@ -860,6 +979,50 @@ void SmartCardProviderPrivateAPI::ProcessStatusResult(
                ? SmartCardStatusResult::NewStatus(SmartCardStatus::New(
                      reader_name, state, protocol, std::move(answer_to_reset)))
                : SmartCardStatusResult::NewError(result->get_error()));
+}
+
+device::mojom::SmartCardTransactionResultPtr
+SmartCardProviderPrivateAPI::CreateSmartCardTransaction(ContextId scard_context,
+                                                        Handle handle) {
+  mojo::PendingAssociatedRemote<device::mojom::SmartCardTransaction>
+      transaction_remote;
+  transaction_receivers_.Add(
+      this, transaction_remote.InitWithNewEndpointAndPassReceiver(),
+      {scard_context, handle});
+
+  return SmartCardTransactionResult::NewTransaction(
+      std::move(transaction_remote));
+}
+
+void SmartCardProviderPrivateAPI::ProcessBeginTransactionResult(
+    ContextId scard_context,
+    Handle handle,
+    ResultArgs result_args,
+    device::mojom::SmartCardResultPtr result,
+    SmartCardCallback callback) {
+  CHECK(std::holds_alternative<std::monostate>(result_args));
+  CHECK(std::holds_alternative<BeginTransactionCallback>(callback));
+
+  SmartCardTransactionResultPtr transaction_result;
+
+  if (result->is_success()) {
+    auto& context_data = GetContextData(scard_context);
+
+    auto handles_it = context_data.handles_map.find(handle);
+    // Entry must have been created already by SmartCardConnection
+    CHECK(handles_it != context_data.handles_map.end());
+    // Only register an active transaction once the BeginTransaction
+    // PC/SC call is known to have succeeded.
+    handles_it->second = true;
+
+    transaction_result = CreateSmartCardTransaction(scard_context, handle);
+  } else {
+    transaction_result =
+        SmartCardTransactionResult::NewError(result->get_error());
+  }
+
+  std::move(std::get<BeginTransactionCallback>(callback))
+      .Run(std::move(transaction_result));
 }
 
 void SmartCardProviderPrivateAPI::SetResponseTimeLimitForTesting(
@@ -1103,6 +1266,19 @@ void SmartCardProviderPrivateAPI::Disconnect(
   CHECK(context_id);
   CHECK(handle);
 
+  // Consider the handle no longer valid irrespective of whether the Disconnect
+  // PC/SC call actually succeeds in the end as any PC/SC failure of this call
+  // is non-recoverable (eg "no service" or "invalid handle").
+  //
+  // Also note that the handles_map might no longer exist if this method has
+  // already been called once. Nothing stops the user from calling this multiple
+  // times.
+  //
+  // We also don't care whether there's an active transaction for this
+  // connection. If the user decides to disconnect without ending the
+  // transaction first, let it be so.
+  GetContextData(context_id).handles_map.erase(handle);
+
   RunOrQueueRequest(context_id,
                     base::BindOnce(&SmartCardProviderPrivateAPI::SendDisconnect,
                                    weak_ptr_factory_.GetWeakPtr(), context_id,
@@ -1191,6 +1367,60 @@ void SmartCardProviderPrivateAPI::Status(StatusCallback callback) {
                                    handle, std::move(callback)));
 }
 
+void SmartCardProviderPrivateAPI::BeginTransaction(
+    BeginTransactionCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  const auto& [context_id, handle] = connection_receivers_.current_context();
+  CHECK(context_id);
+  CHECK(handle);
+
+  RunOrQueueRequest(
+      context_id,
+      base::BindOnce(&SmartCardProviderPrivateAPI::SendBeginTransaction,
+                     weak_ptr_factory_.GetWeakPtr(), context_id, handle,
+                     std::move(callback)));
+}
+
+void SmartCardProviderPrivateAPI::EndTransaction(
+    device::mojom::SmartCardDisposition disposition,
+    EndTransactionCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Note that nothing stops the mojo remote from calling EndTransaction
+  // multiple times. If there's no active transaction the PC/SC stack will
+  // answer with an error, which we will forward to the mojo remote caller.
+
+  const auto& [scard_context, handle] =
+      transaction_receivers_.current_context();
+
+  EndTransactionInternal(scard_context, handle, GetContextData(scard_context),
+                         disposition, std::move(callback));
+}
+
+void SmartCardProviderPrivateAPI::EndTransactionInternal(
+    ContextId scard_context,
+    Handle handle,
+    ContextData& context_data,
+    device::mojom::SmartCardDisposition disposition,
+    EndTransactionCallback callback) {
+  auto it = context_data.handles_map.find(handle);
+  // Entry must have been created already by SmartCardConnection
+  CHECK(it != context_data.handles_map.end());
+  // BeginTransaction must have set it to true.
+  CHECK_EQ(it->second, true);
+  // Consider it no longer active irrespective of whether the EndTransaction
+  // PC/SC call actually succeeds in the end as there's nothing the browser can
+  // do if it fails.
+  it->second = false;
+
+  RunOrQueueRequest(
+      scard_context,
+      base::BindOnce(&SmartCardProviderPrivateAPI::SendEndTransaction,
+                     weak_ptr_factory_.GetWeakPtr(), scard_context, handle,
+                     disposition, std::move(callback)));
+}
+
 bool SmartCardProviderPrivateAPI::IsContextBusy(ContextId scard_context) const {
   // I expect no more than a dozen contexts in a profile at any given time (in
   // most cases much less than that). Thus the cost traversing the map is
@@ -1275,6 +1505,16 @@ ON_TIMEOUT_IMPL(
                     device::mojom::SmartCardProtocol::kUndefined,
                     std::vector<uint8_t>()),
     SmartCardResult::NewError(SmartCardError::kNoService))
+
+ON_TIMEOUT_IMPL(BeginTransaction,
+                ReportResult,
+                std::monostate(),
+                SmartCardResult::NewError(SmartCardError::kNoService))
+
+ON_TIMEOUT_IMPL(EndTransaction,
+                ReportResult,
+                std::monostate(),
+                SmartCardResult::NewError(SmartCardError::kNoService))
 
 #undef ON_TIMEOUT_IMPL
 

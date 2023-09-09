@@ -101,6 +101,7 @@ import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingButtonController;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.readaloud.ReadAloudController;
 import org.chromium.chrome.browser.recent_tabs.RestoreTabsFeatureHelper;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.segmentation_platform.ContextualPageActionController;
@@ -144,7 +145,6 @@ import org.chromium.chrome.browser.ui.fold_transitions.FoldTransitionController;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController.StatusBarColorProvider;
-import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.components.browser_ui.accessibility.PageZoomCoordinator;
 import org.chromium.components.browser_ui.accessibility.PageZoomCoordinatorDelegate;
@@ -311,6 +311,8 @@ public class RootUiCoordinator
     private final BackPressManager mBackPressManager;
     private final boolean mIsIncognitoReauthPendingOnRestore;
     protected final ExpandedSheetHelper mExpandedBottomSheetHelper;
+    private final ObservableSupplierImpl<ReadAloudController> mReadAloudControllerSupplier =
+            new ObservableSupplierImpl<>();
     @Nullable
     private PageZoomCoordinator mPageZoomCoordinator;
     private AppMenuObserver mAppMenuObserver;
@@ -674,6 +676,10 @@ public class RootUiCoordinator
             mRestoreTabsFeatureHelper = null;
         }
 
+        if (mReadAloudControllerSupplier.hasValue()) {
+            mReadAloudControllerSupplier.get().destroy();
+            mReadAloudControllerSupplier.set(null);
+        }
         mActivity = null;
     }
 
@@ -811,6 +817,12 @@ public class RootUiCoordinator
                         LoadIfNeededCaller.ON_FINISH_NATIVE_INITIALIZATION);
             }
         }
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.READALOUD)) {
+            ReadAloudController controller = new ReadAloudController(
+                    mProfileSupplier, mTabModelSelectorSupplier.get().getModel(false));
+            mReadAloudControllerSupplier.set(controller);
+        }
     }
 
     private void initIncognitoReauthController() {
@@ -885,7 +897,7 @@ public class RootUiCoordinator
 
             mHistoryClustersCoordinator = new HistoryClustersCoordinator(profile, mActivity,
                     TemplateUrlServiceFactory.getForProfile(profile), historyClustersDelegate,
-                    ChromeAccessibilityUtil.get(), mSnackbarManagerSupplier.get());
+                    mSnackbarManagerSupplier.get());
         }
     }
 
@@ -1637,6 +1649,14 @@ public class RootUiCoordinator
     }
 
     /**
+     * Returns the supplier of {@link ReadAloudController}.
+     */
+    @NonNull
+    public Supplier<ReadAloudController> getReadAloudControllerSupplier() {
+        return mReadAloudControllerSupplier;
+    }
+
+    /**
      * Saves relevant information that will be used to restore the UI state after the activity is
      * recreated. This is expected to be invoked in {@code Activity#onSaveInstanceState(Bundle)}.
      *
@@ -1670,22 +1690,18 @@ public class RootUiCoordinator
 
     // Testing methods
 
-    @VisibleForTesting
     public AppMenuCoordinator getAppMenuCoordinatorForTesting() {
         return mAppMenuCoordinator;
     }
 
-    @VisibleForTesting
     public ScrimCoordinator getScrimCoordinatorForTesting() {
         return mScrimCoordinator;
     }
 
-    @VisibleForTesting
     public OneshotSupplier<LayoutStateProvider> getLayoutStateProviderForTesting() {
         return mLayoutStateProviderOneShotSupplier;
     }
 
-    @VisibleForTesting
     public void destroyActivityForTesting() {
         // Actually destroying or finishing the activity hinders the shutdown process after
         // a test is done. Just null it out to give an effect of |onDestroy| being invoked.

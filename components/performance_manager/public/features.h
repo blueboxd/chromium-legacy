@@ -150,10 +150,9 @@ BASE_DECLARE_FEATURE(kForceHeuristicMemorySaver);
 
 // This enables the UI for the multi-state version of high efficiency mode.
 BASE_DECLARE_FEATURE(kHighEfficiencyMultistateMode);
-// When true, the default value of the memory saver pref will be the heuristic
-// based option, and a recommended badge will be shown in the UI. When false,
-// the default will be the disabled state.
-extern const base::FeatureParam<bool> kHighEfficiencyDefaultHeuristicMode;
+// When true, a recommended badge will be shown next to the heuristic memory
+// saver option.
+extern const base::FeatureParam<bool> kHighEfficiencyShowRecommendedBadge;
 
 // This shows more information about discarded tabs in the tab strip and
 // hovercards.
@@ -192,6 +191,11 @@ extern const base::FeatureParam<int> kDiscardedTabTreatmentOption;
 
 // Threshold for when memory usage is labeled as "high".
 extern const base::FeatureParam<int> kMemoryUsageInHovercardsHighThresholdBytes;
+
+// When true, memory usage metrics will be fetched after a navigation is idle
+// in addition to every 2 minutes.
+extern const base::FeatureParam<bool>
+    kMemoryUsageInHovercardsUpdateOnNavigation;
 
 enum class DiscardTabTreatmentOptions {
   kNone = 0,

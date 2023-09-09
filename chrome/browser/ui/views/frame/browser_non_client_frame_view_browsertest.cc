@@ -90,7 +90,7 @@ class BrowserNonClientFrameViewBrowserTest
     manifest.has_theme_color = true;
     manifest.theme_color = app_theme_color_;
 
-    auto web_app_info = std::make_unique<WebAppInstallInfo>();
+    auto web_app_info = std::make_unique<web_app::WebAppInstallInfo>();
     GURL manifest_url = embedded_test_server()->GetURL("/manifest");
     web_app::UpdateWebAppInfoFromManifest(manifest, manifest_url,
                                           web_app_info.get());
@@ -115,9 +115,11 @@ class BrowserNonClientFrameViewBrowserTest
 
  protected:
   SkColor app_theme_color_ = SK_ColorBLUE;
-  raw_ptr<Browser, DanglingUntriaged> app_browser_ = nullptr;
-  raw_ptr<BrowserView, DanglingUntriaged> app_browser_view_ = nullptr;
-  raw_ptr<content::WebContents, DanglingUntriaged> web_contents_ = nullptr;
+  raw_ptr<Browser, AcrossTasksDanglingUntriaged> app_browser_ = nullptr;
+  raw_ptr<BrowserView, AcrossTasksDanglingUntriaged> app_browser_view_ =
+      nullptr;
+  raw_ptr<content::WebContents, AcrossTasksDanglingUntriaged> web_contents_ =
+      nullptr;
   autofill::TestAutofillManagerInjector<TestAutofillManager>
       autofill_manager_injector_;
 

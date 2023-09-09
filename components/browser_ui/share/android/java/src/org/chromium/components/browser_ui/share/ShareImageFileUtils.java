@@ -539,11 +539,7 @@ public class ShareImageFileUtils {
             new AsyncTask<Uri>() {
                 @Override
                 protected Uri doInBackground() {
-                    try {
-                        return ContentUriUtils.getContentUriFromFile(new File(path));
-                    } catch (IllegalArgumentException e) {
-                        return null;
-                    }
+                    return ContentUriUtils.getContentUriFromFile(new File(path));
                 }
 
                 @Override

@@ -304,8 +304,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfExtensionLoadedWhileOldPdfCloses) {
   // the middle of initialization. In https://crbug.com/1295431, the extension
   // process exited here and caused a crash when the second PDF resumed.
   EXPECT_EQ(2U, GetGuestViewManager()->GetCurrentGuestCount());
-  ASSERT_TRUE(browser()->tab_strip_model()->CloseWebContentsAt(
-      0, TabCloseTypes::CLOSE_USER_GESTURE));
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+  browser()->tab_strip_model()->CloseWebContentsAt(
+      0, TabCloseTypes::CLOSE_USER_GESTURE);
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
   // `TestGuestViewManager` manages the guests by the order of creation.
   GetGuestViewManager()->WaitForFirstGuestDeleted();
   EXPECT_EQ(1U, GetGuestViewManager()->GetCurrentGuestCount());
@@ -693,7 +695,14 @@ IN_PROC_BROWSER_TEST_F(PDFPluginDisabledTest,
   ValidateSingleSuccessfulDownloadAndNoPDFPluginLaunch();
 }
 
-IN_PROC_BROWSER_TEST_F(PDFPluginDisabledTest, IframePdfPlaceholderWithCSP) {
+#if BUILDFLAG(IS_CHROMEOS)
+// TODO(crbug.com/1465295): Deflake and reenable the test.
+#define MAYBE_IframePdfPlaceholderWithCSP DISABLED_IframePdfPlaceholderWithCSP
+#else
+#define MAYBE_IframePdfPlaceholderWithCSP IframePdfPlaceholderWithCSP
+#endif
+IN_PROC_BROWSER_TEST_F(PDFPluginDisabledTest,
+                       MAYBE_IframePdfPlaceholderWithCSP) {
   // Navigate to a page that uses <iframe> to embed a PDF as a plugin.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/pdf/pdf_iframe_csp.html")));

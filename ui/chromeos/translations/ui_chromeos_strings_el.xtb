@@ -38,6 +38,7 @@
 <translation id="1297922636971898492">Το Google Drive δεν είναι διαθέσιμο αυτήν τη στιγμή. Η μεταφόρτωση θα ξεκινήσει ξανά, όταν το Google Drive είναι και πάλι διαθέσιμο.</translation>
 <translation id="1307931752636661898">Δεν είναι δυνατή η προβολή αρχείων Linux</translation>
 <translation id="1313405956111467313">Αυτόματη διαμόρφωση διακομιστή μεσολάβησης</translation>
+<translation id="134645005685694099">Η συσκευή σας δεν διαθέτει αρκετό αποθηκευτικό χώρο για να παραμείνει ενεργοποιημένος ο συγχρονισμός αρχείων. Τα νέα αρχεία δεν θα συγχρονίζονται πλέον αυτόματα.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
 <translation id="1358735829858566124">Το αρχείο ή ο κατάλογος δεν μπορούν να χρησιμοποιηθούν.</translation>
 <translation id="1363028406613469049">Κομμάτι</translation>
@@ -132,7 +133,7 @@
 <translation id="2084108471225856927">Ρυθμίσεις συσκευής</translation>
 <translation id="2084809735218147718">Άτομο που λέει ευχαριστώ στη νοηματική γλώσσα</translation>
 <translation id="2088690981887365033">Δίκτυο VPN</translation>
-<translation id="2089751716171649322">Εύκολη πρόσβαση στα αρχεία σας στο Google Drive όταν είστε εκτός σύνδεσης</translation>
+<translation id="209653272837065803">Ο αποθηκευτικός χώρος δεν επαρκεί για να συνεχιστεί ο συγχρονισμός αρχείων</translation>
 <translation id="2111134541987263231">Ενεργοποιήστε την επιλογή <ph name="BEGIN_BOLD" />Να επιτρέπεται στην ανώνυμη περιήγηση<ph name="END_BOLD" />.</translation>
 <translation id="2114191879048183086"><ph name="NUMBER_OF_ITEMS" /> στοιχεία θα διαγραφούν και δεν θα είστε σε θέση να τα επαναφέρετε.</translation>
 <translation id="2122305276694332719">Η αυτόματη σύνδεση σε ένα κρυφό δίκτυο επιτρέπει σε άλλα άτομα να βλέπουν τη συσκευή σας και ορισμένες ρυθμίσεις δικτύου σας και δεν συνιστάται.</translation>
@@ -149,9 +150,11 @@
 <translation id="2198315389084035571">Απλοποιημένα Κινεζικά</translation>
 <translation id="22085916256174561">Κορεατικά</translation>
 <translation id="2208919847696382164">Εγκατάσταση με Linux</translation>
+<translation id="2215692307449050019">Χαμηλή στάθμη μπαταρίας. Ο συγχρονισμός αρχείων θα συνεχιστεί όταν η συσκευή συνδεθεί στην παροχή ρεύματος.</translation>
 <translation id="2225536596944493418">Είστε βέβαιοι ότι θέλετε να διαγράψετε <ph name="NUMBER_OF_ITEMS" /> στοιχεία;</translation>
 <translation id="2230062665678605299">Δεν είναι δυνατή η δημιουργία του φακέλου "<ph name="FOLDER_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
 <translation id="2239068707900391003">Άτομο με καφέ</translation>
+<translation id="2247561763838186830">Αποσυνδεθήκατε</translation>
 <translation id="2251368349685848079">Επαναφορά από τον κάδο</translation>
 <translation id="2278133026967558505">Πρόσβαση στο αρχείο από όλους τους ιστοτόπους και τα URL</translation>
 <translation id="2282155092769082568">Αυτόματη διαμόρφωση URL</translation>
@@ -166,6 +169,7 @@
 <translation id="2325650632570794183">Αυτός ο τύπος αρχείου δεν υποστηρίζεται. Επισκεφτείτε το Chrome Web Store για να εντοπίσετε μια εφαρμογή που να μπορεί να ανοίξει αυτόν τον τύπο αρχείου.</translation>
 <translation id="2326539130272988168">Βουλγαρικά</translation>
 <translation id="2337715497728194187">Κοινοποίηση στο Bruschetta</translation>
+<translation id="233822363739146957">Ο αποθηκευτικός χώρος δεν επαρκεί για τον συγχρονισμό όλων των αρχείων σας</translation>
 <translation id="23721837607121582">Λήψη προφίλ κινητού, Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">Εναλλαγή σε προβολή λίστας</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> φάκελοι κοινόχρηστοι με Linux</translation>
@@ -183,6 +187,7 @@
 <translation id="2464089476039395325">Διακομιστής μεσολάβησης HTTP</translation>
 <translation id="2467267713099745100">Δίκτυο <ph name="NETWORK_TYPE" />, ανενεργό</translation>
 <translation id="2468402215065996499">Ταμαγκότσι</translation>
+<translation id="2468470447085858632">Αποκτήστε πρόσβαση στα αρχεία σας στο Google Drive όταν είστε εκτός σύνδεσης με τον συγχρονισμό αρχείων</translation>
 <translation id="2470939964922472929">Έγινε εισαγωγή εσφαλμένου PIN πάρα πολλές φορές. Για να ρυθμίσετε ένα νέο PIN, εισαγάγετε το προσωπικό κλειδί ξεκλειδώματος 8 ψηφίων (PUK) που παρασχέθηκε από την εταιρεία κινητής τηλεφωνίας σας.</translation>
 <translation id="2500392669976258912">Φωνητική εισαγωγή Γκουγιαράτι</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -218,6 +223,7 @@
 <translation id="2782104745158847185">Παρουσιάστηκε σφάλμα κατά την εγκατάσταση της εφαρμογής Linux</translation>
 <translation id="2802583107108007218">Μάθετε περισσότερα σχετικά με αυτούς τους περιορισμούς</translation>
 <translation id="2803375539583399270">Εισαγωγή PIN</translation>
+<translation id="2819519502129272135">Ο συγχρονισμός αρχείων έχει απενεργοποιηθεί</translation>
 <translation id="2820957248982571256">Σάρωση…</translation>
 <translation id="2830077785865012357">Κινεζικά Zhuyin</translation>
 <translation id="2843806747483486897">Αλλαγή προεπιλογής...</translation>
@@ -305,7 +311,6 @@
 <translation id="3479552764303398839">Όχι τώρα</translation>
 <translation id="3486821258960016770">Μογγολικά</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> σφάλματα.</translation>
-<translation id="3501954296166022751">Τα αρχεία σας στο Google Drive είναι διαθέσιμα εκτός σύνδεσης</translation>
 <translation id="3509680540198371098">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Ισχύς σήματος <ph name="SIGNAL_STRENGTH" />%, Λεπτομέρειες</translation>
 <translation id="3511705761158917664">Προετοιμασία για συγχρονισμό <ph name="NUMBER_OF_ITEMS" /> στοιχείων…</translation>
 <translation id="3522708245912499433">Πορτογαλικά</translation>
@@ -364,6 +369,7 @@
 <translation id="3906232975181435906">Εγκατάσταση προφίλ κινητού, Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Επικόλληση</translation>
+<translation id="3950820424414687140">Σύνδεση</translation>
 <translation id="3952872973865944257">Φωνητική εισαγωγή Τελούγκου</translation>
 <translation id="3958548648197196644">Ακτινίδιο</translation>
 <translation id="397105322502079400">Υπολογισμός…</translation>
@@ -377,6 +383,7 @@
 <translation id="4040753847560036377">Εσφαλμένος κωδικός PUK</translation>
 <translation id="4057991113334098539">Ενεργοποίηση...</translation>
 <translation id="4092890906744441904">Ιρλανδικά</translation>
+<translation id="4124731372776320263">Συγχρονισμός 1 αρχείου Drive</translation>
 <translation id="4124935795427217608">Μονόκερος</translation>
 <translation id="4131235941541910880">Μεταφέρετε τα στοιχεία που δεν θέλετε στον κάδο</translation>
 <translation id="4134804435730168042">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, Ενεργοποίηση μετά τη ρύθμιση συσκευής</translation>
@@ -426,6 +433,7 @@
 <translation id="4432921877815220091">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Ενεργοποίηση μετά τη ρύθμιση της συσκευής, Διαχειριζόμενο από τον διαχειριστή σας</translation>
 <translation id="4439427728133035643">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Ισχύς σήματος <ph name="SIGNAL_STRENGTH" />%, Σύνδεση</translation>
 <translation id="4442424173763614572">Η αναζήτηση DNS απέτυχε</translation>
+<translation id="4445896958353114391">Γίνεται συγχρονισμός αρχείων</translation>
 <translation id="4462159676511157176">Προσαρμοσμένοι διακομιστές ονομάτων</translation>
 <translation id="4465725236958772856">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Διαχειριζόμενο από τον διαχειριστή σας, Σύνδεση</translation>
 <translation id="4470564870223067757">Σύνολο Χανγκίλ 2</translation>
@@ -447,6 +455,7 @@
 <translation id="4599600860674643278">Έγινε επαναφορά του φίλτρου.</translation>
 <translation id="4603392156942865207">Αντιγραφή αρχείου <ph name="FILE_NAME" /> στον φάκελο <ph name="FOLDER_NAME" /></translation>
 <translation id="4631887759990505102">Καλλιτέχνης</translation>
+<translation id="4635373743001040938">Ο αποθηκευτικός χώρος ήταν εξαιρετικά περιορισμένος. Ο συγχρονισμός αρχείων απενεργοποιήθηκε.</translation>
 <translation id="4642769377300286600">Εγκατάσταση προφίλ κινητού, Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="4646813851450205600">Τσεχικά με πληκτρολόγιο QWERTY</translation>
 <translation id="4656777537938206294">Κάντε τα αρχεία διαθέσιμα εκτός σύνδεσης</translation>
@@ -502,6 +511,7 @@
 <translation id="4961158930123534723">Μοιραστήκατε έναν φάκελο με το Parallels Desktop.</translation>
 <translation id="496656650103537022">Έγινε επαναφορά του αρχείου <ph name="FILE_NAME" /></translation>
 <translation id="4969785127455456148">Λεύκωμα</translation>
+<translation id="4972330214479971536">Δεν ήταν δυνατή η ολοκλήρωση της ρύθμισης συγχρονισμού αρχείων</translation>
 <translation id="4973523518332075481">Χρησιμοποιήστε ένα όνομα το οποίο αποτελείται από <ph name="MAX_LENGTH" /> χαρακτήρες ή λιγότερους</translation>
 <translation id="4973970068702235170">Αποτυχία συμπίεσης, μη αναμενόμενο σφάλμα: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Ιαπωνικά</translation>
@@ -526,6 +536,7 @@
 <translation id="5102922915594634436">Διαχείριση συγχρονισμένων φακέλων</translation>
 <translation id="5109254780565519649">Παρουσιάστηκε σφάλμα. Ενδέχεται να μην έγινε επαναφορά ορισμένων στοιχείων.</translation>
 <translation id="5110329002213341433">Αγγλικά (Καναδά)</translation>
+<translation id="5119780910075847424">Ο συγχρονισμός τέθηκε σε παύση</translation>
 <translation id="5123433949759960244">Μπάλα μπάσκετ</translation>
 <translation id="5129662217315786329">Πολωνικά
 </translation>
@@ -578,6 +589,7 @@
 <translation id="5428105026674456456">Ισπανικά
 </translation>
 <translation id="5438282218546237410">Δεν υπάρχουν αποτελέσματα για <ph name="SEARCH_TERM" />.</translation>
+<translation id="5447680084201416734">Ο αποθηκευτικός χώρος δεν επαρκεί.</translation>
 <translation id="5449551289610225147">Μη έγκυρος κωδικός πρόσβασης</translation>
 <translation id="5459064203055649751">Υπάρχει ήδη ένα αρχείο <ph name="FILENAME" />. Θέλετε να το αντικαταστήσετε με το αρχείο που μετακινείτε;</translation>
 <translation id="5463231940765244860">Εισαγωγή</translation>
@@ -588,7 +600,6 @@
 <translation id="5494920125229734069">Επιλογή όλων</translation>
 <translation id="5500122897333236901">Ισλανδικά</translation>
 <translation id="5508696409934741614">Τελείες</translation>
-<translation id="5519161320735100193">Ρυθμίσεις Google Drive</translation>
 <translation id="5522908512596376669">Η λίστα αρχείων έχει αλλάξει σε προβολή λίστας.</translation>
 <translation id="5524517123096967210">Δεν ήταν δυνατή η ανάγνωση του αρχείου.</translation>
 <translation id="5533102081734025921">Εικόνα <ph name="IMAGE_TYPE" /></translation>
@@ -616,6 +627,7 @@
 <translation id="5720028165859493293">Το αρχείο <ph name="FILE_NAME" /> μετακινήθηκε στον κάδο</translation>
 <translation id="5724172041621205163">Ταϊλανδικά με πληκτρολόγιο Pattachote</translation>
 <translation id="57383366388012121">Προηγούμενος μήνας</translation>
+<translation id="575175778971367197">Δεν είναι δυνατός ο συγχρονισμός του αρχείου αυτήν τη στιγμή</translation>
 <translation id="5756666464756035725">QWERTY Ουγγρικών</translation>
 <translation id="5760252553414789727">Επιλέχθηκαν <ph name="SELECTED_FILES_COUNT" /> στοιχεία</translation>
 <translation id="5763377084591234761">Γερμανικά (Ελβετία)</translation>
@@ -705,6 +717,7 @@
 <translation id="6423031066725912715">Βιετναμικά με πληκτρολόγιο TCVN</translation>
 <translation id="6430271654280079150">Απομένει 1 ακόμη προσπάθεια.</translation>
 <translation id="643243556292470964">Τα διαγραμμένα αρχεία μετακινούνται τώρα στον κάδο</translation>
+<translation id="6438480100790416671">Έλεγχος αποθηκευτικού χώρου…</translation>
 <translation id="6485131920355264772">Αποτυχία ανάκτησης των πληροφοριών χώρου</translation>
 <translation id="6495925982925244349">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Ισχύς σήματος <ph name="SIGNAL_STRENGTH" />%, Διαχειριζόμενο από τον διαχειριστή σας, Λεπτομέρειες</translation>
 <translation id="649877868557234318">Εξαγωγή του αρχείου <ph name="FILE_NAME" /> στον φάκελο <ph name="FOLDER_NAME" /></translation>
@@ -717,6 +730,7 @@
 <translation id="6558280019477628686">Παρουσιάστηκε σφάλμα. Ορισμένα στοιχεία ενδέχεται να μην έχουν διαγραφεί.</translation>
 <translation id="656398493051028875">Διαγραφή αρχείου "<ph name="FILENAME" />"…</translation>
 <translation id="6581162200855843583">Σύνδεσμος του Google Drive</translation>
+<translation id="6588648400954570689">Ρυθμίσεις συγχρονισμού αρχείων</translation>
 <translation id="6594855146910089723">Αυτός ο φάκελος χρησιμοποιείται από κοινού με το Linux και το Parallels Desktop.</translation>
 <translation id="6607272825297743757">Πληροφορίες αρχείου</translation>
 <translation id="6609332149380188670">Μοιραστήκατε <ph name="NUMBER_OF_ITEMS" /> φακέλους με το Parallels Desktop.</translation>
@@ -809,6 +823,7 @@
 <translation id="7256405249507348194">Μη αναγνωρίσιμο σφάλμα: <ph name="DESC" /></translation>
 <translation id="7268659760406822741">Διαθέσιμες υπηρεσίες</translation>
 <translation id="7291818353625820805">Θέλετε να επαναλαμβάνεται το πάτημα των πλήκτρων; Απενεργοποίηση σημαδιών τονισμού στις Ρυθμίσεις πληκτρολογίου</translation>
+<translation id="729236380049459563">Ο συγχρονισμός αρχείων είναι ενεργός</translation>
 <translation id="7292816689782057017">Η πολιτική διαχειριστή περιορίζει την αποθήκευση σε ορισμένες τοποθεσίες.</translation>
 <translation id="7294063083760278948">Μεταγραφή σε Τελούγκου</translation>
 <translation id="7295662345261934369">Κοινοποίηση σε άλλα άτομα</translation>
@@ -816,6 +831,7 @@
 <translation id="7309413087278791451">Γερμανικά (Βέλγιο)</translation>
 <translation id="7339898014177206373">Νέο παράθυρο</translation>
 <translation id="7343393116438664539">Βιετναμικά Telex</translation>
+<translation id="7347346221088620549">Κρυπτογραφημένο αρχείο</translation>
 <translation id="7357762654218998920">Δεν υποστηρίζεται αυτός ο τύπος αρχείου. <ph name="BEGIN_LINK_HELP" />Μάθετε περισσότερα<ph name="END_LINK_HELP" /> σχετικά με το άνοιγμα αρχείων στο Chrome OS.</translation>
 <translation id="7359359531237882347">Αντιγραφή <ph name="NUMBER_OF_ITEMS" /> στοιχείων…</translation>
 <translation id="7375951387215729722">Η λίστα αρχείων ταξινομήθηκε κατά <ph name="COLUMN_NAME" /> σε φθίνουσα σειρά.</translation>
@@ -845,6 +861,7 @@
 </translation>
 <translation id="7551643184018910560">Καρφίτσωμα στο ράφι</translation>
 <translation id="7553492409867692754">Παραχωρήστε στις εφαρμογές Linux άδεια πρόσβασης σε αρχεία στον φάκελο <ph name="FOLDER_NAME" /></translation>
+<translation id="7555339735447658365">Είστε εκτός σύνδεσης. Ο συγχρονισμός αρχείων θα συνεχιστεί όταν συνδεθείτε στο διαδίκτυο</translation>
 <translation id="7589661784326793847">Περιμένετε λίγο</translation>
 <translation id="7592775719802218421">Το αρχείο <ph name="FILE_NAME" /> γίνεται διαθέσιμο εκτός σύνδεσης.</translation>
 <translation id="7600126690270271294">Σερβικά</translation>
@@ -908,10 +925,10 @@
 <translation id="7972920761225148017">Γαλλικά (Ελβετία)</translation>
 <translation id="7973962044839454485">Αποτυχία ελέγχου ταυτότητας PPP λόγω εσφαλμένου ονόματος χρήστη ή κωδικού πρόσβασης</translation>
 <translation id="7980421588063892270">Αγγλικά (ΗΠΑ) με πληκτρολόγιο Colemak</translation>
-<translation id="7985008041109611710">Γίνεται συγχρονισμός <ph name="NUMBER_OF_FILES_SYNCING" /> αρχείων</translation>
 <translation id="8000066093800657092">Κανένα δίκτυο</translation>
 <translation id="8008366997883261463">Τεριέ Τζακ Ράσελ</translation>
 <translation id="8028993641010258682">Μέγεθος</translation>
+<translation id="8034974485549318493">Για την αρχική ρύθμιση θα πρέπει να συνδεθείτε στο διαδίκτυο προκειμένου να γίνει συγχρονισμός των αρχείων.</translation>
 <translation id="803771048473350947">Αρχείο</translation>
 <translation id="8038111231936746805">(προεπιλογή)</translation>
 <translation id="8042602468072383151">Ήχος <ph name="AUDIO_TYPE" /></translation>
@@ -923,6 +940,7 @@
 <translation id="8087576439476816834">Λήψη του προφίλ <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">Κοινόχρηστο με εμένα</translation>
 <translation id="8116072619078571545">Παγωμένο νερό</translation>
+<translation id="8124093710070495550">Πρόβλημα συγχρονισμού</translation>
 <translation id="8128733386027980860">Αγγλικά (ΗΠΑ) με πληκτρολόγιο Dvorak</translation>
 <translation id="8137331602592933310">Το "<ph name="FILENAME" />" έχει χρησιμοποιηθεί από κοινού με εσάς. Δεν μπορείτε να το διαγράψετε, επειδή δεν σας ανήκει.</translation>
 <translation id="8138705869659070104">Ενεργοποίηση μετά τη ρύθμιση της συσκευής</translation>
@@ -932,9 +950,11 @@
 <translation id="8154842056504218462">Επιλέχθηκαν όλες οι καταχωρίσεις.</translation>
 <translation id="8157684860301034423">Αποτυχία ανάκτησης των πληροφοριών της εφαρμογής.</translation>
 <translation id="8175731104491895765">Γαλλικά (Βέλγιο)</translation>
+<translation id="8175799081768705361">Συγχρονισμός <ph name="NUMBER_OF_FILES_SYNCING" /> αρχείων Drive</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">Μοντέλο της συσκευής</translation>
 <translation id="8223479393428528563">Για να αποθηκεύσετε αυτά τα αρχεία για χρήση εκτός σύνδεσης, συνδεθείτε ξανά στο διαδίκτυο, κάντε δεξί κλικ στα αρχεία και ενεργοποιήστε την επιλογή <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
+<translation id="8241139360630443550">Προβολή αποθηκευτικού χώρου</translation>
 <translation id="8249296373107784235">Ματαίωση</translation>
 <translation id="8250690786522693009">Λατινικά</translation>
 <translation id="8250920743982581267">Έγγραφα</translation>
@@ -966,6 +986,7 @@
 <translation id="8404498045299006085">Διατήρηση όλων</translation>
 <translation id="8408068190360279472">Δίκτυο <ph name="NETWORK_TYPE" />, σύνδεση σε εξέλιξη</translation>
 <translation id="8425213833346101688">Αλλαγή</translation>
+<translation id="8428213095426709021">Ρυθμίσεις</translation>
 <translation id="8431909052837336408">Αλλαγή αριθμού PIN της κάρτας SIM</translation>
 <translation id="8437209419043462667">ΗΠΑ</translation>
 <translation id="8452135315243592079">Κάρτα SIM που λείπει</translation>
@@ -1003,6 +1024,7 @@
 <translation id="8609695766746872526">Ισλανδικά</translation>
 <translation id="863903787380594467">Εσφαλμένο PIN. Απομένουν <ph name="RETRIES" /> προσπάθειες.</translation>
 <translation id="8639391553632924850"><ph name="INPUT_LABEL" /> - Θύρα</translation>
+<translation id="8656407365183407932">Τα αρχεία εκτός σύνδεσης έπρεπε να καταργηθούν</translation>
 <translation id="8656768832129462377">Να μην ελέγχεται</translation>
 <translation id="8688591111840995413">Μη αποδεκτός κωδικός πρόσβασης</translation>
 <translation id="8698464937041809063">Σχέδιο Google</translation>
@@ -1036,10 +1058,12 @@
 </translation>
 <translation id="8949925099261528566">Συνδέθηκε, χωρίς σύνδεση στο διαδίκτυο</translation>
 <translation id="8965697826696209160">Δεν υπάρχει αρκετός χώρος.</translation>
+<translation id="8970887620466824814">Προέκυψε πρόβλημα.</translation>
 <translation id="8971742885766657349">Συγχρονισμός - <ph name="PERCENT" />%</translation>
 <translation id="8997962250644902079">Κινεζικά (Παραδοσιακά) Pinyin</translation>
 <translation id="8998871447376656508">Ο ελεύθερος χώρος στο Google Drive δεν επαρκεί για την ολοκλήρωση της μεταφόρτωσης.</translation>
 <translation id="9003940392834790328">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Ισχύς σήματος <ph name="SIGNAL_STRENGTH" />%, Διαχειριζόμενο από τον διαχειριστή, Λεπτομέρειες</translation>
+<translation id="9007990314804111233">Συνδεθείτε στον λογαριασμό σας Microsoft</translation>
 <translation id="9017798300203431059">Φωνητικό Ρωσικά</translation>
 <translation id="9034924485347205037">Αρχεία Linux</translation>
 <translation id="9035012421917565900">Τα στοιχεία δεν είναι δυνατό να επιστρέψουν στο "<ph name="DESTINATION_NAME" />", επομένως δεν θα μπορείτε να αναιρέσετε αυτήν την ενέργεια.</translation>
@@ -1070,7 +1094,6 @@
 <translation id="9213073329713032541">Η εγκατάσταση ξεκίνησε με επιτυχία.</translation>
 <translation id="9219103736887031265">Εικόνες</translation>
 <translation id="9219908252191632183">Σεληνιακό τοπίο</translation>
-<translation id="937795003075802289">Γίνεται συγχρονισμός 1 αρχείου</translation>
 <translation id="938470336146445890">Εγκαταστήστε ένα πιστοποιητικό χρήστη.</translation>
 <translation id="939736085109172342">Νέος φάκελος</translation>
 <translation id="943972244133411984">Τροποποιήθηκε από</translation>

@@ -284,8 +284,9 @@ quic::WriteResult QuicChromiumPacketWriter::Flush() {
   return quic::WriteResult(quic::WRITE_STATUS_OK, 0);
 }
 
-bool QuicChromiumPacketWriter::OnSocketClosed(DatagramClientSocket* socket) {
-  if (socket_ == socket) {
+bool QuicChromiumPacketWriter::OnSocketClosed(
+    std::unique_ptr<DatagramClientSocket> socket) {
+  if (socket_.get() == socket.get()) {
     socket_ = nullptr;
     return true;
   }

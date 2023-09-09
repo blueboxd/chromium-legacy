@@ -129,6 +129,12 @@ const base::FeatureParam<std::string>
         "DisableIncreaseBufferCountForHighFrameRate", ""};
 #endif
 
+// Use shorter timeout when performDeferredCleanup, and enable
+// performDeferredCleanup for Android WebView.
+BASE_FEATURE(kAggressiveSkiaGpuResourcePurge,
+             "AggressiveSkiaGpuResourcePurge",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enable GPU Rasterization by default. This can still be overridden by
 // --enable-gpu-rasterization or --disable-gpu-rasterization.
 // DefaultEnableGpuRasterization has launched on Mac, Windows, ChromeOS,
@@ -147,7 +153,7 @@ BASE_FEATURE(kDefaultEnableGpuRasterization,
 BASE_FEATURE(kCanvasOopRasterization,
              "CanvasOopRasterization",
 #if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_IOS) || BUILDFLAG(IS_WIN) || \
-    (BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64))
+    (BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64)) || BUILDFLAG(IS_ANDROID)
              base::FEATURE_ENABLED_BY_DEFAULT
 #else
              base::FEATURE_DISABLED_BY_DEFAULT
@@ -413,6 +419,14 @@ BASE_FEATURE(kGpuCleanupInBackground,
              "GpuCleanupInBackground",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+#if BUILDFLAG(IS_ANDROID)
+// When enabled, the validating command decoder always returns true
+// from IsGL_REDSupportedOnFBOs in feature_info.cc on Android.
+BASE_FEATURE(kCmdDecoderSkipGLRedMesaWorkaroundOnAndroid,
+             "CmdDecoderSkipGLRedMesaWorkaroundOnAndroid",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif
+
 bool UseGles2ForOopR() {
 #if BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_X86_FAMILY)
   // GLES3 is not supported on emulators with passthrough. crbug.com/1423712
@@ -571,6 +585,8 @@ bool IsAImageReaderEnabled() {
   // Device Hammer_Energy_2 seems to be very crash with image reader during
   // gl::GLImageEGL::BindTexImage(). Disable image reader on that device for
   // now. crbug.com/1323921
+  // TODO(crbug.com/1323921): Can we revisit this now that GLImage no longer
+  // exists?
   if (IsDeviceBlocked(base::android::BuildInfo::GetInstance()->device(),
                       "Hammer_Energy_2")) {
     return false;

@@ -269,6 +269,12 @@ void WebViewAutofillClientIOS::ConfirmSaveAddressProfile(
                             callback:std::move(callback)];
 }
 
+void WebViewAutofillClientIOS::ShowDeleteAddressProfileDialog() {
+  // Please note: This method is only implemented on desktop and therefore
+  // unreachable here.
+  NOTREACHED();
+}
+
 bool WebViewAutofillClientIOS::HasCreditCardScanFeature() {
   return false;
 }
@@ -313,15 +319,16 @@ void WebViewAutofillClientIOS::PinPopupView() {
   NOTIMPLEMENTED();
 }
 
-AutofillClient::PopupOpenArgs WebViewAutofillClientIOS::GetReopenPopupArgs()
-    const {
+AutofillClient::PopupOpenArgs WebViewAutofillClientIOS::GetReopenPopupArgs(
+    AutofillSuggestionTriggerSource trigger_source) const {
   NOTIMPLEMENTED();
   return {};
 }
 
 void WebViewAutofillClientIOS::UpdatePopup(
     const std::vector<Suggestion>& suggestions,
-    PopupType popup_type) {
+    PopupType popup_type,
+    AutofillSuggestionTriggerSource trigger_source) {
   NOTIMPLEMENTED();
 }
 

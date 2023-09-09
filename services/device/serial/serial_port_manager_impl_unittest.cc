@@ -104,12 +104,11 @@ class SerialPortManagerImplTest : public DeviceServiceTestBase {
     // Resetting `manager_` will delete the BluetoothSerialDeviceEnumerator
     // which will enqueue the deletion of a `SequenceBound` helper.
     manager_.reset();
-    // Reset the DeviceService to ensure cleanup of any AdapterHelper related
-    // tasks.
-    DestroyDeviceService();
     // Wait for any `SequenceBound` objects have been destroyed
     // to avoid tripping leak detection.
-    task_environment_.RunUntilIdle();
+    base::RunLoop run_loop;
+    adapter_task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
   }
 
   // Since not all functions need to use a MockBluetoothAdapter, this function
@@ -201,7 +200,6 @@ class SerialPortManagerImplTest : public DeviceServiceTestBase {
 // This is to simply test that we can enumerate devices on the platform without
 // hanging or crashing.
 TEST_F(SerialPortManagerImplTest, SimpleEnumerationTest) {
-  SetupBluetoothEnumerator();
   // DeviceService has its own instance of SerialPortManagerImpl that is used to
   // bind the receiver over the one created for this test.
   mojo::Remote<mojom::SerialPortManager> port_manager;
@@ -236,7 +234,6 @@ TEST_F(SerialPortManagerImplTest, GetDevices) {
 }
 
 TEST_F(SerialPortManagerImplTest, OpenUnknownPort) {
-  SetupBluetoothEnumerator();
   mojo::Remote<mojom::SerialPortManager> port_manager;
   Bind(port_manager.BindNewPipeAndPassReceiver());
 

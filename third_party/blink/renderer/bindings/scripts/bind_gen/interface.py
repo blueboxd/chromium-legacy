@@ -1810,8 +1810,7 @@ def make_v8_set_return_value(cg_context):
                  "${blink_receiver});")
 
     if return_type.is_promise:
-        return T("bindings::V8SetReturnValue"
-                 "(${info}, ${return_value}.V8Value());")
+        return T("bindings::V8SetReturnValue(${info}, ${return_value});")
 
     return T("bindings::V8SetReturnValue(${info}, ${v8_return_value});")
 
@@ -6020,8 +6019,7 @@ def make_install_interface_template(cg_context, function_name, class_name,
             T("""\
 // HTMLAllCollection-specific settings
 // https://html.spec.whatwg.org/C/#the-htmlallcollection-interface
-${instance_object_template}->SetCallAsFunctionHandler(
-    ${class_name}::LegacyCallCustom);
+${instance_object_template}->SetCallAsFunctionHandler(ItemOperationCallback);
 ${instance_object_template}->MarkAsUndetectable();
 """))
 
@@ -7511,10 +7509,6 @@ def generate_class_like(class_like,
                 return_type="void",
                 static=True))
 
-    if class_like.identifier == "HTMLAllCollection":
-        add_custom_callback_impl_decl(
-            name=name_style.func("LegacyCallCustom"),
-            arg_decls=["const v8::FunctionCallbackInfo<v8::Value>&"])
     for attribute in class_like.attributes:
         custom_values = attribute.extended_attributes.values_of("Custom")
         is_cross_origin = "CrossOrigin" in attribute.extended_attributes

@@ -18,6 +18,7 @@
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_events.mojom.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_exception.mojom.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
+#include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_routines.mojom.h"
 #include "chromeos/services/network_health/public/mojom/network_health.mojom.h"
 #include "chromeos/services/network_health/public/mojom/network_health_types.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -78,7 +79,8 @@ class ServiceProvider
 // FakeCrosHealthd.
 class FakeCrosHealthd final : public mojom::CrosHealthdDiagnosticsService,
                               public mojom::CrosHealthdEventService,
-                              public mojom::CrosHealthdProbeService {
+                              public mojom::CrosHealthdProbeService,
+                              public mojom::CrosHealthdRoutinesService {
  public:
   // Stores the params passed to `GetRoutineUpdate`.
   struct RoutineUpdateParams {
@@ -271,11 +273,11 @@ class FakeCrosHealthd final : public mojom::CrosHealthdDiagnosticsService,
   void RunPrivacyScreenRoutine(
       bool target_state,
       RunPrivacyScreenRoutineCallback callback) override;
-  void RunLedLitUpRoutine(
-      mojom::LedName name,
-      mojom::LedColor color,
-      mojo::PendingRemote<mojom::LedLitUpRoutineReplier> replier,
-      RunLedLitUpRoutineCallback callback) override;
+  void DEPRECATED_RunLedLitUpRoutine(
+      mojom::DEPRECATED_LedName name,
+      mojom::DEPRECATED_LedColor color,
+      mojo::PendingRemote<mojom::DEPRECATED_LedLitUpRoutineReplier> replier,
+      DEPRECATED_RunLedLitUpRoutineCallback callback) override;
   void RunEmmcLifetimeRoutine(RunEmmcLifetimeRoutineCallback callback) override;
   void RunAudioSetVolumeRoutine(
       uint64_t node_id,
@@ -299,6 +301,7 @@ class FakeCrosHealthd final : public mojom::CrosHealthdDiagnosticsService,
   void RunPowerButtonRoutine(uint32_t timeout_seconds,
                              RunPowerButtonRoutineCallback callback) override;
   void RunAudioDriverRoutine(RunAudioDriverRoutineCallback callback) override;
+  void RunUfsLifetimeRoutine(RunUfsLifetimeRoutineCallback callback) override;
 
   // CrosHealthdEventService overrides:
   void DEPRECATED_AddBluetoothObserver(
@@ -365,6 +368,8 @@ class FakeCrosHealthd final : public mojom::CrosHealthdDiagnosticsService,
       this};
   internal::ServiceProvider<mojom::CrosHealthdProbeService> probe_provider_{
       this};
+  internal::ServiceProvider<mojom::CrosHealthdRoutinesService>
+      routines_provider_{this};
 
   // Collection of registered network observers.
   mojo::RemoteSet<chromeos::network_health::mojom::NetworkEventsObserver>

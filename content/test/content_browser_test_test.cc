@@ -22,6 +22,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "content/public/browser/network_service_util.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -60,12 +61,11 @@ base::CommandLine CreateCommandLine() {
   const base::CommandLine& cmdline = *base::CommandLine::ForCurrentProcess();
   base::CommandLine command_line = base::CommandLine(cmdline.GetProgram());
 #if BUILDFLAG(IS_OZONE)
-  const char* kSwitchesToCopy[] = {
+  static const char* const kSwitchesToCopy[] = {
       // Keep the kOzonePlatform switch that the Ozone must use.
       switches::kOzonePlatform,
   };
-  command_line.CopySwitchesFrom(cmdline, kSwitchesToCopy,
-                                std::size(kSwitchesToCopy));
+  command_line.CopySwitchesFrom(cmdline, kSwitchesToCopy);
 #endif
   return command_line;
 }
@@ -171,8 +171,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MAYBE_BrowserCrashCallStack) {
   // A browser process immediate crash can race the initialization of the
   // network service process and leave the process hanging, so run the network
   // service in-process.
-  new_test.AppendSwitchASCII(switches::kEnableFeatures,
-                             features::kNetworkServiceInProcess.name);
+  ForceInProcessNetworkService();
 
   std::string output;
   base::GetAppOutputAndError(new_test, &output);

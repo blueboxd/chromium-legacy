@@ -64,6 +64,7 @@
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkColorType.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
@@ -875,9 +876,18 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputRGBAInMemory(
   // Skia readback could be synchronous. Incremement counter in case
   // ReadbackCompleted is called immediately.
   num_readbacks_pending_++;
-  surface->asyncRescaleAndReadPixels(
-      dst_info, src_rect, SkSurface::RescaleGamma::kSrc, rescale_mode,
-      &CopyOutputResultSkiaRGBA::OnReadbackDone, context.release());
+  if (auto* graphite_context = context_state_->graphite_context()) {
+    // SkImage/SkSurface asyncRescaleAndReadPixels methods won't be implemented
+    // for Graphite. Instead the equivalent methods will be on Graphite Context.
+    graphite_context->asyncRescaleAndReadPixels(
+        surface, dst_info, src_rect, SkSurface::RescaleGamma::kSrc,
+        rescale_mode, &CopyOutputResultSkiaRGBA::OnReadbackDone,
+        context.release());
+  } else {
+    surface->asyncRescaleAndReadPixels(
+        dst_info, src_rect, SkSurface::RescaleGamma::kSrc, rescale_mode,
+        &CopyOutputResultSkiaRGBA::OnReadbackDone, context.release());
+  }
 }
 
 void SkiaOutputSurfaceImplOnGpu::CopyOutputRGBA(
@@ -1179,6 +1189,7 @@ void SkiaOutputSurfaceImplOnGpu::BlendBitmapOverlays(
   }
 }
 
+// TODO(crbug.com/1452092): Make this path work with Graphite.
 void SkiaOutputSurfaceImplOnGpu::CopyOutputNV12(
     SkSurface* surface,
     copy_output::RenderPassGeometry geometry,
@@ -1670,7 +1681,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     source_selection.Intersect(sampling_selection);
   }
 
-  SkIRect src_rect =
+  const SkIRect src_rect =
       SkIRect::MakeXYWH(source_selection.x(), source_selection.y(),
                         source_selection.width(), source_selection.height());
   switch (request->result_format()) {
@@ -1682,19 +1693,29 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
           << "SkSurface::asyncRescaleAndReadPixelsYUV420() requires "
              "destination height to be even!";
 
-      std::unique_ptr<ReadPixelsContext> context =
-          std::make_unique<ReadPixelsContext>(std::move(request),
-                                              geometry.result_selection,
-                                              color_space, weak_ptr_);
+      const SkISize dst_size =
+          SkISize::Make(geometry.result_selection.width(),
+                        geometry.result_selection.height());
+      auto context = std::make_unique<ReadPixelsContext>(
+          std::move(request), geometry.result_selection, color_space,
+          weak_ptr_);
       // Skia readback could be synchronous. Incremement counter in case
       // ReadbackCompleted is called immediately.
       num_readbacks_pending_++;
-      surface->asyncRescaleAndReadPixelsYUV420(
-          kRec709_SkYUVColorSpace, SkColorSpace::MakeSRGB(), src_rect,
-          {geometry.result_selection.width(),
-           geometry.result_selection.height()},
-          SkSurface::RescaleGamma::kSrc, rescale_mode,
-          &CopyOutputResultSkiaYUV::OnReadbackDone, context.release());
+      if (auto* graphite_context = context_state_->graphite_context()) {
+        // SkImage/SkSurface asyncRescaleAndReadPixels methods won't be
+        // implemented for Graphite. Instead the equivalent methods will be on
+        // Graphite Context.
+        graphite_context->asyncRescaleAndReadPixelsYUV420(
+            surface, kRec709_SkYUVColorSpace, SkColorSpace::MakeSRGB(),
+            src_rect, dst_size, SkSurface::RescaleGamma::kSrc, rescale_mode,
+            &CopyOutputResultSkiaYUV::OnReadbackDone, context.release());
+      } else {
+        surface->asyncRescaleAndReadPixelsYUV420(
+            kRec709_SkYUVColorSpace, SkColorSpace::MakeSRGB(), src_rect,
+            dst_size, SkSurface::RescaleGamma::kSrc, rescale_mode,
+            &CopyOutputResultSkiaYUV::OnReadbackDone, context.release());
+      }
       break;
     }
     case CopyOutputRequest::ResultFormat::NV12_PLANES:
@@ -1734,8 +1755,7 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
   for (auto* context : image_contexts) {
     if (buffer_capture()) {
       AttemptDebuggerBufferCapture(context, context_state_.get(),
-                                   shared_image_representation_factory_.get(),
-                                   gr_context());
+                                   shared_image_representation_factory_.get());
     }
 
     // Prepare for accessing render pass.
@@ -2080,12 +2100,14 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
         GetDidSwapBuffersCompleteCallback());
     AddChildWindowToBrowser(output_device->GetChildSurfaceHandle());
     output_device_ = std::move(output_device);
-#elif BUILDFLAG(IS_MAC)
+#elif BUILDFLAG(IS_APPLE)
     presenter_ = dependency_->CreatePresenter(weak_ptr_factory_.GetWeakPtr(),
                                               gl::GLSurfaceFormat());
+#if BUILDFLAG(IS_MAC)
     if (features::UseGpuVsync()) {
       presenter_->SetVSyncDisplayID(renderer_settings_.display_id);
     }
+#endif
     output_device_ = std::make_unique<SkiaOutputDeviceBufferQueue>(
         std::make_unique<OutputPresenterGL>(
             presenter_, dependency_, shared_image_factory_.get(),
@@ -2396,7 +2418,12 @@ void SkiaOutputSurfaceImplOnGpu::CheckReadbackCompletion() {
   if (num_readbacks_pending_ == 0 || !MakeCurrent(/*need_framebuffer=*/false))
     return;
 
-  gr_context()->checkAsyncWorkCompletion();
+  if (auto* graphite_context = context_state_->graphite_context()) {
+    graphite_context->checkAsyncWorkCompletion();
+  } else {
+    CHECK(gr_context());
+    gr_context()->checkAsyncWorkCompletion();
+  }
   ScheduleCheckReadbackCompletion();
 }
 

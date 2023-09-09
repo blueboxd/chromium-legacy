@@ -993,15 +993,15 @@ TEST(CreditCardTest, Compare) {
   b.set_record_type(MASKED_SERVER_CARD);
 
   // Card with UNKNOWN_ISSUER is different from GOOGLE issued card.
-  a.set_card_issuer(CreditCard::ISSUER_UNKNOWN);
-  b.set_card_issuer(CreditCard::GOOGLE);
+  a.set_card_issuer(CreditCard::Issuer::kIssuerUnknown);
+  b.set_card_issuer(CreditCard::Issuer::kGoogle);
   EXPECT_GT(0, a.Compare(b));
   // Card with UNKNOWN_ISSUER is different from EXTERNAL_ISSUER issued card.
-  a.set_card_issuer(CreditCard::ISSUER_UNKNOWN);
-  b.set_card_issuer(CreditCard::EXTERNAL_ISSUER);
+  a.set_card_issuer(CreditCard::Issuer::kIssuerUnknown);
+  b.set_card_issuer(CreditCard::Issuer::kExternalIssuer);
   EXPECT_GT(0, a.Compare(b));
-  a.set_card_issuer(CreditCard::EXTERNAL_ISSUER);
-  b.set_card_issuer(CreditCard::EXTERNAL_ISSUER);
+  a.set_card_issuer(CreditCard::Issuer::kExternalIssuer);
+  b.set_card_issuer(CreditCard::Issuer::kExternalIssuer);
 
   // Difference in issuer id.
   a.set_issuer_id("amex");
@@ -1804,7 +1804,7 @@ INSTANTIATE_TEST_SUITE_P(
         // It's then modified to fit the correct pattern based on the Elo regex,
         // sourced from the Elo documentation.
         GetCardNetworkTestCase{"5067071446391278", kEloCard, true},
-        GetCardNetworkTestCase{"6362970000457013", kEloCard, true},
+        GetCardNetworkTestCase{"6277800000457016", kEloCard, true},
 
         // These sample numbers were created by taking the expected card prefix,
         // filling out the required number of digits, and editing the last digit
@@ -1896,7 +1896,7 @@ INSTANTIATE_TEST_SUITE_P(
         GetCardNetworkTestCase{"6011", kDiscoverCard, false},
         GetCardNetworkTestCase{"62", kUnionPay, false},
         GetCardNetworkTestCase{"627780", kEloCard, false},
-        GetCardNetworkTestCase{"636297", kEloCard, false},
+        GetCardNetworkTestCase{"636368", kEloCard, false},
         GetCardNetworkTestCase{"644", kDiscoverCard, false},
         GetCardNetworkTestCase{"645", kDiscoverCard, false},
         GetCardNetworkTestCase{"646", kDiscoverCard, false},
@@ -2256,18 +2256,7 @@ INSTANTIATE_TEST_SUITE_P(
                                        CreditCard::FULL_SERVER_CARD}));
 
 #if BUILDFLAG(IS_ANDROID)
-class CreditCardTestForKeyboardAccessory : public testing::Test {
- public:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        autofill::features::kAutofillKeyboardAccessory);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-TEST_F(CreditCardTestForKeyboardAccessory, GetObfuscatedStringForCardDigits) {
+TEST(CreditCardTestForKeyboardAccessory, GetObfuscatedStringForCardDigits) {
   const std::u16string digits = u"1235";
   const std::u16string expected =
       std::u16string() + base::i18n::kLeftToRightEmbeddingMark +

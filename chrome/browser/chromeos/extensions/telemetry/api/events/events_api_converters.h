@@ -34,6 +34,9 @@ api::os_events::LidEventInfo UncheckedConvertPtr(
 api::os_events::UsbEventInfo UncheckedConvertPtr(
     crosapi::mojom::TelemetryUsbEventInfoPtr ptr);
 
+api::os_events::HdmiEventInfo UncheckedConvertPtr(
+    crosapi::mojom::TelemetryHdmiEventInfoPtr ptr);
+
 api::os_events::SdCardEventInfo UncheckedConvertPtr(
     crosapi::mojom::TelemetrySdCardEventInfoPtr ptr);
 
@@ -57,6 +60,15 @@ api::os_events::TouchpadConnectedEventInfo UncheckedConvertPtr(
 
 api::os_events::TouchPointInfo UncheckedConvertPtr(
     crosapi::mojom::TelemetryTouchPointInfoPtr ptr);
+
+api::os_events::StylusTouchPointInfo UncheckedConvertPtr(
+    crosapi::mojom::TelemetryStylusTouchPointInfoPtr ptr);
+
+api::os_events::StylusTouchEventInfo UncheckedConvertPtr(
+    crosapi::mojom::TelemetryStylusTouchEventInfoPtr ptr);
+
+api::os_events::StylusConnectedEventInfo UncheckedConvertPtr(
+    crosapi::mojom::TelemetryStylusConnectedEventInfoPtr ptr);
 
 }  // namespace unchecked
 
@@ -90,6 +102,9 @@ api::os_events::LidEvent Convert(
 api::os_events::UsbEvent Convert(
     crosapi::mojom::TelemetryUsbEventInfo::State state);
 
+api::os_events::HdmiEvent Convert(
+    crosapi::mojom::TelemetryHdmiEventInfo::State state);
+
 api::os_events::SdCardEvent Convert(
     crosapi::mojom::TelemetrySdCardEventInfo::State state);
 
@@ -110,10 +125,10 @@ crosapi::mojom::TelemetryEventCategoryEnum Convert(
 
 int Convert(uint32_t input);
 
-template <class OutputT,
-          class InputT,
-          std::enable_if_t<std::is_enum_v<InputT> || std::is_integral_v<InputT>,
-                           bool> = true>
+template <class InputT,
+          class OutputT = decltype(Convert(std::declval<InputT>())),
+          class = std::enable_if_t<std::is_enum_v<InputT> ||
+                                   std::is_integral_v<InputT>>>
 std::vector<OutputT> ConvertVector(std::vector<InputT> input) {
   std::vector<OutputT> output;
   for (auto elem : input) {
@@ -122,7 +137,10 @@ std::vector<OutputT> ConvertVector(std::vector<InputT> input) {
   return output;
 }
 
-template <class OutputT, class InputT>
+template <class InputT,
+          class OutputT =
+              decltype(unchecked::UncheckedConvertPtr(std::declval<InputT>())),
+          class = std::enable_if_t<std::is_default_constructible_v<OutputT>>>
 OutputT ConvertStructPtr(InputT input) {
   return (!input.is_null()) ? unchecked::UncheckedConvertPtr(std::move(input))
                             : OutputT();

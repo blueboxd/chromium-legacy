@@ -531,6 +531,8 @@ data/accessibility/aria/aria-columnheader-expected-blink.txt
 data/accessibility/aria/aria-columnheader-expected-mac.txt
 data/accessibility/aria/aria-columnheader-expected-win.txt
 data/accessibility/aria/aria-columnheader.html
+data/accessibility/aria/aria-combobox-dynamic-expected-blink.txt
+data/accessibility/aria/aria-combobox-dynamic.html
 data/accessibility/aria/aria-combobox-expected-android-external.txt
 data/accessibility/aria/aria-combobox-expected-android.txt
 data/accessibility/aria/aria-combobox-expected-auralinux.txt
@@ -679,6 +681,7 @@ data/accessibility/aria/aria-errormessage-expected-android-external.txt
 data/accessibility/aria/aria-errormessage-expected-auralinux-xenial.txt
 data/accessibility/aria/aria-errormessage-expected-auralinux.txt
 data/accessibility/aria/aria-errormessage-expected-blink.txt
+data/accessibility/aria/aria-errormessage-expected-mac.txt
 data/accessibility/aria/aria-errormessage-expected-uia-win.txt
 data/accessibility/aria/aria-errormessage-expected-win.txt
 data/accessibility/aria/aria-errormessage.html
@@ -3066,6 +3069,7 @@ data/accessibility/html/form-expected-uia-win.txt
 data/accessibility/html/form-expected-win.txt
 data/accessibility/html/form-validation-message-after-hide-timeout-expected-blink.txt
 data/accessibility/html/form-validation-message-after-hide-timeout.html
+data/accessibility/html/form-validation-message-expected-auralinux.txt
 data/accessibility/html/form-validation-message-expected-blink.txt
 data/accessibility/html/form-validation-message-expected-fuchsia.txt
 data/accessibility/html/form-validation-message-expected-mac.txt
@@ -4431,6 +4435,8 @@ data/accessibility/html/tabindex-expose-children-expected-mac.txt
 data/accessibility/html/tabindex-expose-children-expected-uia-win.txt
 data/accessibility/html/tabindex-expose-children-expected-win.txt
 data/accessibility/html/tabindex-expose-children.html
+data/accessibility/html/table-canvas-fallback-expected-blink.txt
+data/accessibility/html/table-canvas-fallback.html
 data/accessibility/html/table-column-remove-expected-blink.txt
 data/accessibility/html/table-column-remove-expected-fuchsia.txt
 data/accessibility/html/table-column-remove.html
@@ -4449,6 +4455,8 @@ data/accessibility/html/table-headers-empty-first-cell.html
 data/accessibility/html/table-headers-on-all-sides-expected-blink.txt
 data/accessibility/html/table-headers-on-all-sides-expected-fuchsia.txt
 data/accessibility/html/table-headers-on-all-sides.html
+data/accessibility/html/table-headers-row-role-dynamic-expected-blink.txt
+data/accessibility/html/table-headers-row-role-dynamic.html
 data/accessibility/html/table-layout-expected-android-external.txt
 data/accessibility/html/table-layout-expected-android.txt
 data/accessibility/html/table-layout-expected-auralinux.txt
@@ -4521,6 +4529,8 @@ data/accessibility/html/table-thead-tbody-tfoot-expected-fuchsia.txt
 data/accessibility/html/table-thead-tbody-tfoot-expected-mac.txt
 data/accessibility/html/table-thead-tbody-tfoot-expected-win.txt
 data/accessibility/html/table-thead-tbody-tfoot.html
+data/accessibility/html/table-with-pseudo-elements-expected-blink.txt
+data/accessibility/html/table-with-pseudo-elements.html
 data/accessibility/html/text-align-expected-android-external.txt
 data/accessibility/html/text-align-expected-auralinux.txt
 data/accessibility/html/text-align-expected-blink.txt
@@ -4641,6 +4651,8 @@ data/accessibility/html/wbr-expected-mac.txt
 data/accessibility/html/wbr-expected-uia-win.txt
 data/accessibility/html/wbr-expected-win.txt
 data/accessibility/html/wbr.html
+data/accessibility/html/whitespace-dynamic-expected-blink.txt
+data/accessibility/html/whitespace-dynamic.html
 data/accessibility/html/window-crops-items-expected-blink.txt
 data/accessibility/html/window-crops-items.html
 data/accessibility/language-detection/dynamic-basic-expected-blink.txt
@@ -4876,11 +4888,6 @@ data/accessibility/mathml/maction-node-expected-auralinux.txt
 data/accessibility/mathml/maction-node-expected-blink.txt
 data/accessibility/mathml/maction-node-expected-mac.txt
 data/accessibility/mathml/maction.html
-data/accessibility/mathml/math-disabled-node-expected-auralinux.txt
-data/accessibility/mathml/math-disabled-node-expected-blink.txt
-data/accessibility/mathml/math-disabled-node-expected-mac.txt
-data/accessibility/mathml/math-disabled-node-expected-win.txt
-data/accessibility/mathml/math-disabled.html
 data/accessibility/mathml/math-node-expected-auralinux.txt
 data/accessibility/mathml/math-node-expected-blink.txt
 data/accessibility/mathml/math-node-expected-mac.txt
@@ -5123,6 +5130,7 @@ data/attribution_reporting/databases/version_51.sql
 data/attribution_reporting/databases/version_52.sql
 data/attribution_reporting/databases/version_53.sql
 data/attribution_reporting/databases/version_54.sql
+data/attribution_reporting/databases/version_55.sql
 data/attribution_reporting/inject_cross_app_web_third_party_ot.js
 data/attribution_reporting/interop/aggregatable_budget.json
 data/attribution_reporting/interop/aggregatable_contributions_creation.json
@@ -5135,7 +5143,7 @@ data/attribution_reporting/interop/config_trigger_data_cardinality.json
 data/attribution_reporting/interop/dedup_key.json
 data/attribution_reporting/interop/default_config.json
 data/attribution_reporting/interop/destination_limit.json
-data/attribution_reporting/interop/destination_throttle_limit.json
+data/attribution_reporting/interop/destination_rate_limit.json
 data/attribution_reporting/interop/event_level_report_time.json
 data/attribution_reporting/interop/event_level_storage_limit.json
 data/attribution_reporting/interop/event_level_trigger_filter_data.json
@@ -5203,6 +5211,7 @@ data/back_forward_cache/disallowed_path.html
 data/back_forward_cache/dom_content_loaded_promise.js
 data/back_forward_cache/empty.html
 data/back_forward_cache/empty.js
+data/back_forward_cache/page_with_blocking_feature.html
 data/back_forward_cache/page_with_broadcastchannel.html
 data/back_forward_cache/page_with_cross_origin_subframe_with_pageshow.html
 data/back_forward_cache/page_with_dedicated_worker.html
@@ -5253,6 +5262,7 @@ data/blank.jpg
 data/blob_storage/blob_creation_and_slicing.html
 data/blob_storage/common.js
 data/body_overflow_hidden.html
+data/browsing_data/embedded_site_data.html
 data/browsing_data/embeds_storage_accessor.html
 data/browsing_data/empty.js
 data/browsing_data/empty_worker.js
@@ -5272,6 +5282,7 @@ data/browsing_topics/service_worker_factory.html
 data/browsing_topics/topics_service_worker.js
 data/browsing_topics/v0.init_too_old.sql
 data/browsing_topics/v1.init_too_new.sql
+data/browsing_topics/v1.no_hashed_to_unhashed_domains_table.sql
 data/browsing_topics/v1.sql
 data/cache_storage/invalid_bucket_id/0430f1a484a0ea6d8de562488c5fbeec0111d16f/ba31f73b-95e8-44fb-a273-265e7e76f5ab/3767fbd3edc759b5_0
 data/cache_storage/invalid_bucket_id/0430f1a484a0ea6d8de562488c5fbeec0111d16f/ba31f73b-95e8-44fb-a273-265e7e76f5ab/index
@@ -5883,6 +5894,7 @@ data/gpu/webcodecs/encode.html
 data/gpu/webcodecs/encoding-modes.html
 data/gpu/webcodecs/encoding-rate-control.html
 data/gpu/webcodecs/encoding-rate-control.js
+data/gpu/webcodecs/frame-qp-encoding.html
 data/gpu/webcodecs/svc.html
 data/gpu/webcodecs/tex-image-2d.html
 data/gpu/webcodecs/webcodecs_common.js
@@ -6190,11 +6202,12 @@ data/locks/dedicated_worker.js
 data/locks/locks.html
 data/locks/service_worker.js
 data/locks/shared_worker.js
+data/long_response_body.html
 data/mac/mac_system_hotkeys.plist
 data/mac/mac_system_hotkeys_sparse.plist
 data/manifest/404-manifest.html
-data/manifest/dummy-manifest.html
-data/manifest/dummy-manifest.json
+data/manifest/sample-manifest.html
+data/manifest/sample-manifest.json
 data/manifest/dynamic-manifest.html
 data/manifest/empty-manifest.html
 data/manifest/empty-manifest.json
@@ -6703,8 +6716,14 @@ data/set_cookie.html.mock-http-headers
 data/set_document_cookie.html
 data/shared_dictionary/blank.html
 data/shared_dictionary/fetch_dictionary.js
+data/shared_dictionary/path/compressed.data
+data/shared_dictionary/path/compressed.data.mock-http-headers
 data/shared_dictionary/test.dict
 data/shared_dictionary/test.dict.mock-http-headers
+data/shared_dictionary/test_dict.html
+data/shared_dictionary/test_dict.html.mock-http-headers
+data/shared_dictionary/test_no_acao.dict
+data/shared_dictionary/test_no_acao.dict.mock-http-headers
 data/shared_storage/customizable_module.js
 data/shared_storage/customizable_script.js
 data/shared_storage/erroneous_function_module.js

@@ -97,17 +97,6 @@ const size_t kMaxRetryAttempts = 2;
 // looping forever, bound the number of restarts.
 const size_t kMaxRestarts = 32;
 
-void SetProxyInfoInReponse(const ProxyInfo& proxy_info,
-                           HttpResponseInfo* response_info) {
-  response_info->was_fetched_via_proxy = !proxy_info.is_direct();
-  if (response_info->was_fetched_via_proxy && !proxy_info.is_empty())
-    response_info->proxy_server = proxy_info.proxy_server();
-  else if (!response_info->was_fetched_via_proxy && proxy_info.is_direct())
-    response_info->proxy_server = ProxyServer::Direct();
-  else
-    response_info->proxy_server = ProxyServer();
-}
-
 // Returns true when Early Hints are allowed on the given protocol.
 bool EarlyHintsAreAllowedOn(HttpResponseInfo::ConnectionInfo connection_info) {
   switch (connection_info) {
@@ -598,6 +587,17 @@ void HttpNetworkTransaction::SetResponseHeadersCallback(
   response_headers_callback_ = std::move(callback);
 }
 
+void HttpNetworkTransaction::SetModifyRequestHeadersCallback(
+    base::RepeatingCallback<void(net::HttpRequestHeaders*)> callback) {
+  modify_headers_callbacks_ = std::move(callback);
+}
+
+void HttpNetworkTransaction::SetIsSharedDictionaryReadAllowedCallback(
+    base::RepeatingCallback<bool()> callback) {
+  // This method should not be called for this class.
+  NOTREACHED();
+}
+
 int HttpNetworkTransaction::ResumeNetworkStart() {
   DCHECK_EQ(next_state_, STATE_CREATE_STREAM);
   return DoLoop(OK);
@@ -633,7 +633,7 @@ void HttpNetworkTransaction::OnStreamReady(const SSLConfig& used_ssl_config,
       stream_request_->alternate_protocol_usage();
   response_.was_fetched_via_spdy = stream_request_->using_spdy();
   response_.dns_aliases = stream_->GetDnsAliases();
-  SetProxyInfoInReponse(used_proxy_info, &response_);
+  SetProxyInfoInResponse(used_proxy_info, &response_);
   OnIOComplete(OK);
 }
 
@@ -664,7 +664,7 @@ void HttpNetworkTransaction::OnStreamFailed(
   server_ssl_config_ = used_ssl_config;
   net_error_details_ = net_error_details;
   proxy_info_ = used_proxy_info;
-  SetProxyInfoInReponse(used_proxy_info, &response_);
+  SetProxyInfoInResponse(used_proxy_info, &response_);
   response_.resolve_error_info = resolve_error_info;
 
   OnIOComplete(result);
@@ -703,7 +703,7 @@ void HttpNetworkTransaction::OnNeedsProxyAuth(
   response_.headers = proxy_response.headers;
   response_.auth_challenge = proxy_response.auth_challenge;
   response_.did_use_http_auth = proxy_response.did_use_http_auth;
-  SetProxyInfoInReponse(used_proxy_info, &response_);
+  SetProxyInfoInResponse(used_proxy_info, &response_);
 
   if (!ContentEncodingsValid()) {
     DoCallback(ERR_CONTENT_DECODING_FAILED);
@@ -1102,6 +1102,10 @@ int HttpNetworkTransaction::BuildRequestHeaders(
         &request_headers_);
 
   request_headers_.MergeFrom(request_->extra_headers);
+
+  if (modify_headers_callbacks_) {
+    modify_headers_callbacks_.Run(&request_headers_);
+  }
 
   response_.did_use_http_auth =
       request_headers_.HasHeader(HttpRequestHeaders::kAuthorization) ||
@@ -1697,12 +1701,6 @@ HttpNetworkTransaction::GetRetryReasonForIOError(int error) {
       return RetryReason::kHttp2PingFailed;
     case ERR_HTTP2_SERVER_REFUSED_STREAM:
       return RetryReason::kHttp2ServerRefusedStream;
-    case ERR_HTTP2_PUSHED_STREAM_NOT_AVAILABLE:
-      return RetryReason::kHttp2PushedStreamNotAvailable;
-    case ERR_HTTP2_CLAIMED_PUSHED_STREAM_RESET_BY_SERVER:
-      return RetryReason::kHttp2ClaimedPushedStreamResetByServer;
-    case ERR_HTTP2_PUSHED_RESPONSE_DOES_NOT_MATCH:
-      return RetryReason::kHttp2PushedResponseDoesNotMatch;
     case ERR_QUIC_HANDSHAKE_FAILED:
       return RetryReason::kQuicHandshakeFailed;
     case ERR_QUIC_GOAWAY_REQUEST_CAN_BE_RETRIED:
@@ -1770,9 +1768,6 @@ int HttpNetworkTransaction::HandleIOError(int error) {
       break;
     case RetryReason::kHttp2PingFailed:
     case RetryReason::kHttp2ServerRefusedStream:
-    case RetryReason::kHttp2PushedStreamNotAvailable:
-    case RetryReason::kHttp2ClaimedPushedStreamResetByServer:
-    case RetryReason::kHttp2PushedResponseDoesNotMatch:
     case RetryReason::kQuicHandshakeFailed:
     case RetryReason::kQuicGoawayRequestCanBeRetried:
       if (HasExceededMaxRetries())
@@ -1864,7 +1859,7 @@ void HttpNetworkTransaction::ResetStateForAuthRestart() {
   headers_valid_ = false;
   request_headers_.Clear();
   response_ = HttpResponseInfo();
-  SetProxyInfoInReponse(proxy_info_, &response_);
+  SetProxyInfoInResponse(proxy_info_, &response_);
   establishing_tunnel_ = false;
   remote_endpoint_ = IPEndPoint();
   net_error_details_.quic_broken = false;
@@ -2100,6 +2095,21 @@ void HttpNetworkTransaction::RecordQuicProtocolErrorMetrics(
   }
   base::UmaHistogramSparse(histogram + ".QuicErrorCode", *connection_error);
   base::UmaHistogramSparse(histogram + ".QuicStreamErrorCode", *stream_error);
+}
+
+// static
+void HttpNetworkTransaction::SetProxyInfoInResponse(
+    const ProxyInfo& proxy_info,
+    HttpResponseInfo* response_info) {
+  response_info->was_fetched_via_proxy = !proxy_info.is_direct();
+  response_info->was_ip_protected = proxy_info.is_for_ip_protection();
+  if (response_info->was_fetched_via_proxy && !proxy_info.is_empty()) {
+    response_info->proxy_server = proxy_info.proxy_server();
+  } else if (!response_info->was_fetched_via_proxy && proxy_info.is_direct()) {
+    response_info->proxy_server = ProxyServer::Direct();
+  } else {
+    response_info->proxy_server = ProxyServer();
+  }
 }
 
 }  // namespace net

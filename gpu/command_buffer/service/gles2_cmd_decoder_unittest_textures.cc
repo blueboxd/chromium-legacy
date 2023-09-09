@@ -7,7 +7,6 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/id_allocator.h"
@@ -28,10 +27,6 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_mock.h"
 #include "ui/gl/gl_surface_stub.h"
-
-#if BUILDFLAG(IS_OZONE)
-#include "gpu/command_buffer/service/shared_image/gl_image_native_pixmap.h"
-#endif
 
 #if !defined(GL_DEPTH24_STENCIL8)
 #define GL_DEPTH24_STENCIL8 0x88F0
@@ -3356,19 +3351,10 @@ TEST_P(GLES2DecoderManualInitTest, DrawWithGLImageExternal) {
   InitDecoder(init);
 
   TextureRef* texture_ref = GetTexture(client_texture_id_);
-#if BUILDFLAG(IS_OZONE)
-  scoped_refptr<GLImageNativePixmap> image(
-      GLImageNativePixmap::CreateForTesting(gfx::Size()));
-#endif
   group().texture_manager()->SetTarget(texture_ref, GL_TEXTURE_EXTERNAL_OES);
   group().texture_manager()->SetLevelInfo(texture_ref, GL_TEXTURE_EXTERNAL_OES,
                                           0, GL_RGBA, 1, 1, 1, 0, GL_RGBA,
                                           GL_UNSIGNED_BYTE, gfx::Rect(1, 1));
-#if BUILDFLAG(IS_OZONE)
-  group().texture_manager()->SetBoundLevelImage(
-      texture_ref, GL_TEXTURE_EXTERNAL_OES, 0, image.get());
-#endif
-
   DoBindTexture(GL_TEXTURE_EXTERNAL_OES, client_texture_id_, kServiceTextureId);
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 

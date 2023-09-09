@@ -58,10 +58,7 @@
 #pragma mark - InfobarOverlayRequestMediator
 
 - (void)bannerInfobarButtonWasPressed:(UIButton*)sender {
-  // This can happen if the user quickly navigates to another website while the
-  // banner is still appearing, causing the banner to be triggered before being
-  // removed.
-  if (!self.passwordDelegate) {
+  if (!self.request) {
     return;
   }
 

@@ -99,6 +99,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "media/base/mime_util.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -360,8 +361,6 @@ blink::mojom::NavigationType GetNavigationType(
       return blink::mojom::NavigationType::RELOAD;
     case ReloadType::BYPASSING_CACHE:
       return blink::mojom::NavigationType::RELOAD_BYPASSING_CACHE;
-    case ReloadType::ORIGINAL_REQUEST_URL:
-      return blink::mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL;
     case ReloadType::NONE:
       break;  // Fall through to rest of function.
   }
@@ -1196,9 +1195,14 @@ void NavigationControllerImpl::GoToOffsetFromRenderer(
     RenderFrameHostImpl* initiator_rfh,
     absl::optional<blink::scheduler::TaskAttributionId>
         soft_navigation_heuristics_task_id) {
-  // Note: This is actually reached in unit tests.
-  if (!CanGoToOffset(offset))
+  // If the renderer sent an out-of-bounds offset, cancel and notify the
+  // renderer.
+  if (!CanGoToOffset(offset)) {
+    initiator_rfh->GetAssociatedLocalFrame()->TraverseCancelled(
+        /*navigation_api_key=*/std::string(),
+        blink::mojom::TraverseCancelledReason::kNotFound);
     return;
+  }
 
   GoToIndex(GetIndexForOffset(offset), initiator_rfh,
             soft_navigation_heuristics_task_id,
@@ -1314,6 +1318,32 @@ base::WeakPtr<NavigationHandle> NavigationControllerImpl::LoadURLWithParams(
   return NavigateWithoutEntry(params);
 }
 
+void NavigationControllerImpl::LoadOriginalRequestURL() {
+  // If the original request URL is not valid, matches the current URL, or
+  // involves POST data, then simply reload. The POST check avoids issues with
+  // sending data to the wrong page.
+  const GURL& last_committed_url = GetLastCommittedEntry()->GetURL();
+  const GURL& original_request_url =
+      GetLastCommittedEntry()->GetOriginalRequestURL();
+  if (!original_request_url.is_valid() ||
+      original_request_url == last_committed_url ||
+      GetLastCommittedEntry()->GetHasPostData()) {
+    Reload(ReloadType::NORMAL, true);
+    return;
+  }
+
+  // Otherwise, attempt to load the original request URL without any of the
+  // other data from the current NavigationEntry, replacing the current entry.
+  // Loading the original URL is useful in cases such as modifying the user
+  // agent.
+  std::unique_ptr<NavigationController::LoadURLParams> load_params =
+      std::make_unique<NavigationController::LoadURLParams>(
+          original_request_url);
+  load_params->should_replace_current_entry = true;
+  load_params->transition_type = ui::PAGE_TRANSITION_RELOAD;
+  LoadURLWithParams(*load_params.get());
+}
+
 bool NavigationControllerImpl::PendingEntryMatchesRequest(
     NavigationRequest* request) const {
   return pending_entry_ &&
@@ -1366,17 +1396,14 @@ bool NavigationControllerImpl::RendererDidNavigate(
 #if BUILDFLAG(IS_ANDROID)
   // TODO(crbug.com/1266277): Clean up the logic of setting
   // |overriding_user_agent_changed| post-launch.
-  if (base::FeatureList::IsEnabled(features::kRequestDesktopSiteExceptions) ||
-      base::FeatureList::IsEnabled(features::kRequestDesktopSiteAdditions)) {
-    // Must honor user agent overrides in the |navigation_request|, such as
-    // from things like RequestDesktopSiteWebContentsObserverAndroid. As a
-    // result, besides comparing |pending_entry_|'s user agent against
-    // LastCommittedEntry's, also need to compare |navigation_request|'s user
-    // agent against LastCommittedEntry's.
-    if (navigation_request->is_overriding_user_agent() !=
-        GetLastCommittedEntry()->GetIsOverridingUserAgent()) {
-      overriding_user_agent_changed = true;
-    }
+  // Must honor user agent overrides in the |navigation_request|, such as
+  // from things like RequestDesktopSiteWebContentsObserverAndroid. As a
+  // result, besides comparing |pending_entry_|'s user agent against
+  // LastCommittedEntry's, also need to compare |navigation_request|'s user
+  // agent against LastCommittedEntry's.
+  if (navigation_request->is_overriding_user_agent() !=
+      GetLastCommittedEntry()->GetIsOverridingUserAgent()) {
+    overriding_user_agent_changed = true;
   }
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -2623,10 +2650,6 @@ void NavigationControllerImpl::NotifyUserActivation() {
   // When a user activation occurs, ensure that all adjacent entries for the
   // same document clear their skippable bit, so that the history manipulation
   // intervention does not apply to them.
-  if (base::FeatureList::IsEnabled(
-          features::kDebugHistoryInterventionNoUserActivation)) {
-    return;
-  }
 
   SetSkippableForSameDocumentEntries(GetLastCommittedEntryIndex(), false);
 }
@@ -4027,15 +4050,6 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
   DCHECK(!entry->IsInitialEntryNotForSynchronousAboutBlank());
 
   Referrer dest_referrer = frame_entry->referrer();
-  if (reload_type == ReloadType::ORIGINAL_REQUEST_URL &&
-      entry->GetOriginalRequestURL().is_valid() && !entry->GetHasPostData()) {
-    // We may have been redirected when navigating to the current URL.
-    // Use the URL the user originally intended to visit as signaled by the
-    // ReloadType, if it's valid and if a POST wasn't involved; the latter
-    // case avoids issues with sending data to the wrong page.
-    dest_url = entry->GetOriginalRequestURL();
-    dest_referrer = Referrer();
-  }
 
   if (frame_tree_node->render_manager()->is_attaching_inner_delegate()) {
     // Avoid starting any new navigations since this node is now preparing for
@@ -4212,8 +4226,7 @@ base::WeakPtr<NavigationHandle>
 NavigationControllerImpl::LoadPostCommitErrorPage(
     RenderFrameHost* render_frame_host,
     const GURL& url,
-    const std::string& error_page_html,
-    net::Error error) {
+    const std::string& error_page_html) {
   RenderFrameHostImpl* rfhi =
       static_cast<RenderFrameHostImpl*>(render_frame_host);
 
@@ -4261,7 +4274,7 @@ NavigationControllerImpl::LoadPostCommitErrorPage(
           false /* is_form_submission */, nullptr /* navigation_ui_data */,
           absl::nullopt /* impression */, false /* is_pdf */);
   navigation_request->set_post_commit_error_page_html(error_page_html);
-  navigation_request->set_net_error(error);
+  navigation_request->set_net_error(net::ERR_BLOCKED_BY_CLIENT);
   node->TakeNavigationRequest(std::move(navigation_request));
   DCHECK(node->navigation_request());
 

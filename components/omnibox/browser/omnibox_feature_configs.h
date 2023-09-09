@@ -18,11 +18,10 @@ regressions. 3 steps:
 
   // omnibox_feature_configs.h
 
-  struct MyFeature {
+  struct MyFeature : Config<MyFeature> {
     DECLARE_FEATURE(kMyFeature);
 
     MyFeature();
-    static const MyFeature& Get();
 
     bool enabled;
     int my_param;
@@ -38,12 +37,6 @@ regressions. 3 steps:
     enabled = base::FeatureList::IsEnabled(omnibox::kMyFeature);
     my_param =
         base::FeatureParam<int>(&omnibox::kMyFeature, "my_param", 0).Get();
-  }
-
-  // static
-  const MyFeature& MyFeature::Get() {
-    static MyFeature config;
-    return config;
   }
 
 
@@ -69,10 +62,19 @@ regressions. 3 steps:
 // A substitute for `BASE_DECLARE_FEATURE` for nesting in structs.
 #define DECLARE_FEATURE(feature) static CONSTINIT const base::Feature feature
 
-// Util for overriding configs in tests. `T` must have a `static const T& Get()`
-// method.
+// Base class other configs should inherit from.
 template <class T>
-class ScopedConfigForTesting {
+class Config {
+ public:
+  static const T& Get() {
+    static T config;
+    return config;
+  }
+};
+
+// Util for overriding configs in tests.
+template <class T>
+class ScopedConfigForTesting : Config<T> {
  public:
   ScopedConfigForTesting() : original_config_(T::Get()) { Reset(); }
   ScopedConfigForTesting(const ScopedConfigForTesting&) = delete;
@@ -86,17 +88,41 @@ class ScopedConfigForTesting {
 
 // Add new configs below, ordered alphabetically.
 
+// If enabled, adds recent calc suggestions.
+struct CalcProvider : Config<CalcProvider> {
+  DECLARE_FEATURE(kCalcProvider);
+  CalcProvider();
+  bool enabled;
+  // The base score of calc suggestions.
+  int score;
+  // Number of calc suggestions to show.
+  size_t max_matches;
+  // Number of inputs that aren't a clear calculator-y input to continue showing
+  // calc suggestions for.
+  size_t num_non_calc_inputs;
+};
+
 // If enabled, the shortcut provider is more aggressive in scoring.
-struct ShortcutBoosting {
+struct ShortcutBoosting : Config<ShortcutBoosting> {
   DECLARE_FEATURE(kShortcutBoost);
   ShortcutBoosting();
-  static const ShortcutBoosting& Get();
   bool enabled;
   // The scores to use for boosting search and URL suggestions respectively.
   // Setting to 0 will prevent boosting.
   int search_score;
   int url_score;
   bool counterfactual;
+  // Shortcuts are boosted if either:
+  // 1) They are the top shortcut.
+  // 2) OR they have more hits than `non_top_hit_threshold`. If this is 1, then
+  //    all shortcuts are boosted, since all have at least 1 hit. If 0
+  //    (default), then no shortcuts will be boosted through (2) - only the top
+  //    shortcut will be boosted.
+  int non_top_hit_threshold;
+  // If enabled, boosted shortcuts will be grouped with searches. Unboosted
+  // shortcuts are grouped with URLs, like traditionally, regardless of
+  // `group_with_searches`.
+  bool group_with_searches;
 };
 
 }  // namespace omnibox_feature_configs

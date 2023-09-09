@@ -260,6 +260,8 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=3560
         'ChromeDriverTest.testTakeLargeElementViewportScreenshot',
         'ChromeDriverTest.testTakeLargeElementFullPageScreenshot'
+        # Pipe are supported only on Posix platforms crbug.com/chromedriver/3480
+        'ChromeSwitchesCapabilityTest.testRemoteDebuggingPipe',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
@@ -273,6 +275,8 @@ _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
         'ChromeDriverTest.testSwitchToWindow',
         # Feature not yet supported in this version
         'ChromeDriverTest.testGenerateTestReport',
+        # Pipe are supported only on Posix platforms crbug.com/chromedriver/3480
+        'ChromeSwitchesCapabilityTest.testRemoteDebuggingPipe',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_beta'] = (
@@ -284,6 +288,8 @@ _ANDROID_NEGATIVE_FILTER['chrome_beta'] = (
         'ChromeDriverTest.testSwitchToWindow',
         # Feature not yet supported in this version
         'ChromeDriverTest.testGenerateTestReport',
+        # Pipe are supported only on Posix platforms crbug.com/chromedriver/3480
+        'ChromeSwitchesCapabilityTest.testRemoteDebuggingPipe',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chromium'] = (
@@ -323,6 +329,8 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         'ChromeDriverTest.testUnexpectedAlertOpenExceptionMessage',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2332
         'ChromeDriverTestLegacy.testTouchScrollElement',
+        # Pipe are supported only on Posix platforms crbug.com/chromedriver/3480
+        'ChromeSwitchesCapabilityTest.testRemoteDebuggingPipe',
     ]
 )
 
@@ -694,6 +702,10 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     close_returned_handles = self._driver.CloseWindow()
     self.assertRaises(chromedriver.NoSuchWindow,
                       self._driver.GetCurrentWindowHandle)
+    with self.assertRaises(chromedriver.NoSuchWindow):
+      self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    with self.assertRaises(chromedriver.NoSuchWindow):
+      self._driver.FindElement('css selector', '#link')
     new_handles = self._driver.GetWindowHandles()
     self.assertEqual(close_returned_handles, new_handles)
     for old_handle in old_handles:
@@ -720,6 +732,10 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.ExecuteScript('window.close()')
     with self.assertRaises(chromedriver.NoSuchWindow):
       self._driver.GetTitle()
+    with self.assertRaises(chromedriver.NoSuchWindow):
+      self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    with self.assertRaises(chromedriver.NoSuchWindow):
+      self._driver.FindElement('css selector', '#link')
 
   def testGetWindowHandles(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
@@ -852,6 +868,12 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     """
     result = self._driver.ExecuteScript(script)
     self.assertEqual(result['toJSON'], 'text')
+
+  def testExecuteScriptWithDeletedGlobalJSON(self):
+    """Tests that deleted global JSON object does not affect serialization"""
+    result = self._driver.ExecuteScript('delete JSON; return 321')
+    self.assertIsInstance(result, int)
+    self.assertEqual(result, 321)
 
   def testExecuteScriptStaleElement1(self):
     # Test the standard compliance of error handling
@@ -3571,6 +3593,45 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
                                    '--user-data-dir=%s' % temp_dir,
                                ])
 
+  def testFindElementWhileNavigating(self):
+    """A regression test for chromedriver:4459.
+       The error manifests itself in flakiness rate >= 75%.
+       This test creates a situation where a page keeps navigating
+       while the client tries to find an element that will only appear
+       after the last navigation. All such attempts to find an element
+       must fail with NoSuchElement error. Other error codes,
+       like NoSuchWindow, indicate a bug in ChromeDriver.
+    """
+    # iteration_count >= ceil(log(1 - 0.75) / log(1 - p))
+    # where 'p' - probability of the iteration failure, found experimentally.
+    iteration_count = 8
+    for k in range(0, iteration_count):
+      self._http_server.SetDataForPath('/page_%d.html' % k,
+       bytes("""
+       <html><body>
+       <script>
+         let index = %d;
+         let url_base = "%s";
+         let iteration_count = %d;
+         if (index < iteration_count - 1) {
+           let url = url_base + "/page_" + (index + 1) + ".html";
+           setTimeout(()=>{location.assign(url)}, 300);
+         } else {
+           let div = document.createElement("div");
+           div.id = "done";
+           document.body.appendChild(div);
+         }
+       </script>
+       </body></html>""" % (k, self._http_server.GetUrl(), iteration_count),
+       'utf-8'))
+    self._driver.Load(self.GetHttpUrlForFile('/page_0.html'))
+    while True:
+      try:
+        self._driver.FindElement('css selector', '#done')
+        break
+      except chromedriver.NoSuchElement:
+        pass
+
 
 class ChromeDriverBackgroundTest(ChromeDriverBaseTestWithWebServer):
   def setUp(self):
@@ -4738,6 +4799,28 @@ class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):
     else:  # Else clause gets invoked if "break" never happens.
       raise  # This re-raises the most recent exception.
 
+  def testRemoteDebuggingPipe(self):
+    """Tests that passing --remote-debugging-pipe through capabilities works.
+    """
+    pipe_flag = 'remote-debugging-pipe'
+    driver = self.CreateDriver(chrome_switches=[pipe_flag])
+    driver.Load('chrome:version')
+    command_line = driver.FindElement('css selector',
+                                      '#command_line').GetText()
+    self.assertIn(pipe_flag, command_line)
+
+  def testUnspportedRemoteDebuggingPipe(self):
+    """Tests that passing --remote-debugging-pipe through capabilities works.
+    """
+    # CBOR mode is not yet supported
+    with self.assertRaisesRegex(chromedriver.ChromeDriverException,
+                                "only ASCIIZ protocol mode is supported"):
+      self.CreateDriver(chrome_switches=["remote-debugging-pipe=cbor"])
+    # Invalid mode value
+    with self.assertRaisesRegex(chromedriver.ChromeDriverException,
+                                "only ASCIIZ protocol mode is supported"):
+      self.CreateDriver(chrome_switches=["remote-debugging-pipe=xyz"])
+
 
 class ChromeDesiredCapabilityTest(ChromeDriverBaseTest):
   """Tests that chromedriver properly processes desired capabilities."""
@@ -5152,9 +5235,10 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTestWithWebServer):
     self.assertFalse(driver.w3c_compliant)
 
   def testClientHintsMobileLegacy(self):
-    expected_ua = 'Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Bui'
-    'ld/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chr'
-    'ome/18.0.1025.166 Mobile Safari/535.19'
+    expected_ua = ''.join(['Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5',
+                          'Build/JOP40D) AppleWebKit/535.19',
+                          '(KHTML, like Gecko) Chrome/18.0.1025.166 Mobile',
+                           'Safari/535.19'])
     driver = self.CreateDriver(
         mobile_emulation = {
             'deviceMetrics': {'width': 360, 'height': 640, 'pixelRatio': 3},
@@ -5205,6 +5289,7 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTestWithWebServer):
                 'platformVersion': '17',
                 'architecture': 'arm',
                 'bitness': '32',
+                'mobile': True,
                 'model': 'Special',
             }
         })
@@ -5488,7 +5573,8 @@ class LaunchDesktopTest(ChromeDriverBaseTest):
       with open(dev_tools_port_file, 'w') as fd:
         fd.write('34\n/devtools/browser/2dab5fb1-5571-40d8-a6ad-98823bc5ff84')
       driver = self.CreateDriver(
-          chrome_switches=['user-data-dir=' + user_data_dir])
+          chrome_switches=['user-data-dir=' + user_data_dir,
+                           '--remote-debugging-port=0'])
       with open(dev_tools_port_file, 'r') as fd:
         port = int(fd.readlines()[0])
       # Ephemeral ports are always high numbers.
@@ -5510,10 +5596,12 @@ class LaunchDesktopTest(ChromeDriverBaseTest):
       os.close(file_descriptor)
       os.chmod(path, 0o777)
       exception_raised = False
+      switches = ['--remote-debugging-port=0']
       try:
         driver = chromedriver.ChromeDriver(_CHROMEDRIVER_SERVER_URL,
                                            _CHROMEDRIVER_SERVER_PID,
                                            chrome_binary=path,
+                                           chrome_switches=switches,
                                            test_name=self.id())
       except Exception as e:
         self.assertIn('Chrome failed to start', str(e))

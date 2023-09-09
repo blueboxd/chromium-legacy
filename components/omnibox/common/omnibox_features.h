@@ -5,10 +5,7 @@
 #ifndef COMPONENTS_OMNIBOX_COMMON_OMNIBOX_FEATURES_H_
 #define COMPONENTS_OMNIBOX_COMMON_OMNIBOX_FEATURES_H_
 
-#include <string>
-
 #include "base/feature_list.h"
-#include "base/metrics/field_trial_params.h"
 
 namespace omnibox {
 
@@ -43,7 +40,6 @@ BASE_DECLARE_FEATURE(kOmniboxMaxURLMatches);
 BASE_DECLARE_FEATURE(kDynamicMaxAutocomplete);
 
 // Entity suggestion disambiguation.
-BASE_DECLARE_FEATURE(kDisambiguateEntitySuggestions);
 BASE_DECLARE_FEATURE(kDisambiguateTabMatchingForEntitySuggestions);
 
 // Local history zero-prefix (aka zero-suggest) and prefix suggestions.
@@ -76,6 +72,8 @@ BASE_DECLARE_FEATURE(kStoreTitleInContentsAndUrlInDescription);
 
 // Document provider and domain suggestions
 BASE_DECLARE_FEATURE(kDocumentProvider);
+BASE_DECLARE_FEATURE(kDocumentProviderNoSetting);
+BASE_DECLARE_FEATURE(kDocumentProviderNoSyncRequirement);
 BASE_DECLARE_FEATURE(kDomainSuggestions);
 
 // Suggestions UI - these affect the UI or function of the suggestions popup.
@@ -108,24 +106,11 @@ BASE_DECLARE_FEATURE(kOmniboxAssistantVoiceSearch);
 
 BASE_DECLARE_FEATURE(kOmniboxCR23SteadyStateIcons);
 BASE_DECLARE_FEATURE(kOmniboxSteadyStateBackgroundColor);
-// These feature params are located here, as opposed to omnibox_field_trial.h,
-// in order to permit inclusion into (non-Omnibox) color mixer code.
-extern const base::FeatureParam<std::string> kOmniboxDarkBackgroundColor;
-extern const base::FeatureParam<std::string> kOmniboxDarkBackgroundColorHovered;
-extern const base::FeatureParam<std::string> kOmniboxLightBackgroundColor;
-extern const base::FeatureParam<std::string>
-    kOmniboxLightBackgroundColorHovered;
 
 BASE_DECLARE_FEATURE(kOmniboxSteadyStateHeight);
 BASE_DECLARE_FEATURE(kOmniboxSteadyStateTextStyle);
 
 BASE_DECLARE_FEATURE(kOmniboxSteadyStateTextColor);
-// These feature params are located here, as opposed to omnibox_field_trial.h,
-// in order to permit inclusion into (non-Omnibox) color mixer code.
-extern const base::FeatureParam<std::string> kOmniboxTextColorDarkMode;
-extern const base::FeatureParam<std::string> kOmniboxTextColorDimmedDarkMode;
-extern const base::FeatureParam<std::string> kOmniboxTextColorLightMode;
-extern const base::FeatureParam<std::string> kOmniboxTextColorDimmedLightMode;
 
 BASE_DECLARE_FEATURE(kDiscardTemporaryInputOnTabSwitch);
 BASE_DECLARE_FEATURE(kRedoCurrentMatch);

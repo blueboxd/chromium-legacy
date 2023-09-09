@@ -249,6 +249,15 @@ float MediaValues::CalculateIcSize(LocalFrame* frame) {
       .Ic(/* zoom */ 1.0f);
 }
 
+float MediaValues::CalculateCapSize(LocalFrame* frame) {
+  DCHECK(frame);
+  DCHECK(frame->GetDocument());
+  const ComputedStyle* style = frame->GetDocument()->GetComputedStyle();
+  DCHECK(style);
+  return CSSToLengthConversionData::FontSizes(style->GetFontSizeStyle(), style)
+      .Cap(/* zoom */ 1.0f);
+}
+
 float MediaValues::CalculateLineHeight(LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetDocument());
@@ -376,6 +385,17 @@ bool MediaValues::CalculatePrefersReducedData(LocalFrame* frame) {
   absl::optional<bool> override_value =
       overrides ? overrides->GetPrefersReducedData() : absl::nullopt;
   return override_value.value_or(GetNetworkStateNotifier().SaveDataEnabled());
+}
+
+bool MediaValues::CalculatePrefersReducedTransparency(LocalFrame* frame) {
+  DCHECK(frame);
+  DCHECK(frame->GetSettings());
+  const MediaFeatureOverrides* overrides =
+      frame->GetPage()->GetMediaFeatureOverrides();
+  absl::optional<bool> override_value =
+      overrides ? overrides->GetPrefersReducedTransparency() : absl::nullopt;
+  return override_value.value_or(
+      frame->GetSettings()->GetPrefersReducedTransparency());
 }
 
 ForcedColors MediaValues::CalculateForcedColors(LocalFrame* frame) {

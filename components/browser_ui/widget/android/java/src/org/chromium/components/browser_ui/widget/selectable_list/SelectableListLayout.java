@@ -17,7 +17,6 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
-import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
 import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -257,6 +256,13 @@ public class SelectableListLayout<E> extends FrameLayout
         // Initialize and inflate empty state view stub.
         ViewStub emptyViewStub = findViewById(R.id.empty_state_view_stub);
         View emptyStateView = emptyViewStub.inflate();
+        int bottomMargin = getContext().getResources().getDimensionPixelSize(
+                                   R.dimen.selectable_list_toolbar_height)
+                / 2;
+        FrameLayout.LayoutParams emptyViewParams =
+                (FrameLayout.LayoutParams) emptyStateView.getLayoutParams();
+        emptyViewParams.bottomMargin = bottomMargin;
+        emptyStateView.setLayoutParams(emptyViewParams);
 
         // Initialize empty state resource.
         mEmptyView = emptyStateView.findViewById(R.id.empty_state_text_title);
@@ -423,7 +429,6 @@ public class SelectableListLayout<E> extends FrameLayout
         mToolbar.setSearchEnabled(mAdapter.getItemCount() != 0);
     }
 
-    @VisibleForTesting
     public View getToolbarShadowForTests() {
         return mToolbarShadow;
     }

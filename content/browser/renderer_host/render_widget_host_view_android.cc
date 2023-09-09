@@ -1467,7 +1467,7 @@ void RenderWidgetHostViewAndroid::ResetGestureDetection() {
   }
 }
 
-void RenderWidgetHostViewAndroid::OnDidNavigateMainFrameToNewPage() {
+void RenderWidgetHostViewAndroid::DidNavigateMainFramePreCommit() {
   // Move to front only if we are the primary page (we don't want to receive
   // events in the Prerender). GetMainRenderFrameHost() may be null in
   // tests.
@@ -1481,7 +1481,25 @@ void RenderWidgetHostViewAndroid::OnDidNavigateMainFrameToNewPage() {
   }
   ResetGestureDetection();
   if (delegated_frame_host_)
-    delegated_frame_host_->OnNavigateToNewPage();
+    delegated_frame_host_->DidNavigateMainFramePreCommit();
+}
+
+void RenderWidgetHostViewAndroid::DidEnterBackForwardCache() {
+  local_surface_id_allocator_.GenerateId();
+  delegated_frame_host_->DidEnterBackForwardCache();
+  // If we have the fallback content timer running, force it to stop. Else, when
+  // the page is restored the timer could also fire, setting whatever
+  // `DelegatedFrameHostAndroid::first_local_surface_id_after_navigation_`
+  // as the fallback to our Surfacelayer.
+  //
+  // This is safe for BFCache restore because we will supply specific fallback
+  // surfaces for BFCache.
+  //
+  // We do not want to call this in `RWHImpl::WasHidden()` because in the case
+  // of `Visibility::OCCLUDED` we still want to keep the timer running.
+  //
+  // Called after to prevent prematurely evict the BFCached surface.
+  host()->ForceFirstFrameAfterNavigationTimeout();
 }
 
 void RenderWidgetHostViewAndroid::SetDoubleTapSupportEnabled(bool enabled) {
@@ -2697,6 +2715,17 @@ void RenderWidgetHostViewAndroid::OnAnimate(base::TimeTicks begin_frame_time) {
     SetNeedsAnimate();
 }
 
+void RenderWidgetHostViewAndroid::OnUnfoldStarted(
+    base::TimeTicks unfold_begin_time) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewAndroid::OnUnfoldStarted");
+  host()->RequestSuccessfulPresentationTimeForNextFrame(
+      blink::mojom::RecordContentToVisibleTimeRequest::New(
+          unfold_begin_time, /*destination_is_loaded=*/false,
+          /*show_reason_tab_switching=*/false,
+          /*show_reason_bfcache_restore=*/false,
+          /*show_reason_unfolding=*/true));
+}
+
 void RenderWidgetHostViewAndroid::OnActivityStopped() {
   TRACE_EVENT0("browser", "RenderWidgetHostViewAndroid::OnActivityStopped");
   DCHECK(observing_root_window_);
@@ -2711,6 +2740,16 @@ void RenderWidgetHostViewAndroid::OnActivityStarted() {
   ShowInternal();
 }
 
+void RenderWidgetHostViewAndroid::SetTextHandlesHiddenForDropdownMenu(
+    bool hide_handles) {
+  if (!touch_selection_controller_ ||
+      handles_hidden_by_dropdown_menu_ == hide_handles) {
+    return;
+  }
+  handles_hidden_by_dropdown_menu_ = hide_handles;
+  SetTextHandlesHiddenInternal();
+}
+
 void RenderWidgetHostViewAndroid::SetTextHandlesHiddenForStylus(
     bool hide_handles) {
   if (!touch_selection_controller_ || handles_hidden_by_stylus_ == hide_handles)
@@ -2723,7 +2762,8 @@ void RenderWidgetHostViewAndroid::SetTextHandlesHiddenInternal() {
   if (!touch_selection_controller_)
     return;
   touch_selection_controller_->SetTemporarilyHidden(
-      handles_hidden_by_stylus_ || handles_hidden_by_selection_ui_);
+      handles_hidden_by_dropdown_menu_ || handles_hidden_by_stylus_ ||
+      handles_hidden_by_selection_ui_);
 }
 
 void RenderWidgetHostViewAndroid::OnStylusSelectBegin(float x0,

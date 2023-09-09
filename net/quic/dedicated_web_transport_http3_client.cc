@@ -69,12 +69,15 @@ std::unique_ptr<quic::ProofVerifier> CreateProofVerifier(
     URLRequestContext* context,
     const WebTransportParameters& parameters) {
   if (parameters.server_certificate_fingerprints.empty()) {
+    std::set<std::string> hostnames_to_allow_unknown_roots = HostsFromOrigins(
+        context->quic_context()->params()->origins_to_force_quic_on);
+    if (context->quic_context()->params()->webtransport_developer_mode) {
+      hostnames_to_allow_unknown_roots.insert("");
+    }
     return std::make_unique<ProofVerifierChromium>(
         context->cert_verifier(), context->ct_policy_enforcer(),
         context->transport_security_state(), context->sct_auditing_delegate(),
-        HostsFromOrigins(
-            context->quic_context()->params()->origins_to_force_quic_on),
-        anonymization_key);
+        std::move(hostnames_to_allow_unknown_roots), anonymization_key);
   }
 
   auto verifier =
@@ -183,7 +186,17 @@ class DedicatedWebTransportHttp3ClientSession
     return true;
   }
 
-  bool ShouldNegotiateWebTransport() override { return true; }
+  quic::WebTransportHttp3VersionSet LocallySupportedWebTransportVersions()
+      const override {
+    quic::WebTransportHttp3VersionSet versions =
+        quic::WebTransportHttp3VersionSet(
+            {quic::WebTransportHttp3Version::kDraft02});
+    if (base::FeatureList::IsEnabled(features::kAlpsForHttp2)) {
+      versions.Set(quic::WebTransportHttp3Version::kDraft07);
+    }
+    return versions;
+  }
+
   quic::HttpDatagramSupport LocalHttpDatagramSupport() override {
     return quic::HttpDatagramSupport::kRfcAndDraft04;
   }
@@ -280,6 +293,37 @@ void RecordNegotiatedHttpDatagramSupport(quic::HttpDatagramSupport support) {
   }
   base::UmaHistogramEnumeration(
       "Net.WebTransport.NegotiatedHttpDatagramVersion", negotiated);
+}
+
+const char* WebTransportHttp3VersionString(
+    quic::WebTransportHttp3Version version) {
+  switch (version) {
+    case quic::WebTransportHttp3Version::kDraft02:
+      return "draft-02";
+    case quic::WebTransportHttp3Version::kDraft07:
+      return "draft-07";
+  }
+}
+
+enum class NegotiatedWebTransportVersion {
+  kDraft02 = 0,
+  kDraft07 = 1,
+  kMaxValue = kDraft07,
+};
+
+void RecordNegotiatedWebTransportVersion(
+    quic::WebTransportHttp3Version version) {
+  NegotiatedWebTransportVersion negotiated;
+  switch (version) {
+    case quic::WebTransportHttp3Version::kDraft02:
+      negotiated = NegotiatedWebTransportVersion::kDraft02;
+      break;
+    case quic::WebTransportHttp3Version::kDraft07:
+      negotiated = NegotiatedWebTransportVersion::kDraft07;
+      break;
+  }
+  base::UmaHistogramEnumeration(
+      "Net.WebTransport.NegotiatedWebTransportVersion", negotiated);
 }
 
 }  // namespace
@@ -761,8 +805,24 @@ void DedicatedWebTransportHttp3Client::SetErrorIfNecessary(
 }
 
 void DedicatedWebTransportHttp3Client::OnSessionReady() {
+  CHECK(session_->SupportsWebTransport());
+
   session_ready_ = true;
+
+  RecordNegotiatedWebTransportVersion(
+      *session_->SupportedWebTransportVersion());
   RecordNegotiatedHttpDatagramSupport(session_->http_datagram_support());
+  net_log_.AddEvent(NetLogEventType::QUIC_SESSION_WEBTRANSPORT_SESSION_READY,
+                    [&] {
+                      base::Value::Dict dict;
+                      dict.Set("http_datagram_version",
+                               quic::HttpDatagramSupportToString(
+                                   session_->http_datagram_support()));
+                      dict.Set("webtransport_http3_version",
+                               WebTransportHttp3VersionString(
+                                   *session_->SupportedWebTransportVersion()));
+                      return dict;
+                    });
 }
 
 void DedicatedWebTransportHttp3Client::OnSessionClosed(

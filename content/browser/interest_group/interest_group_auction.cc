@@ -16,6 +16,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base64url.h"
 #include "base/check.h"
 #include "base/containers/cxx20_erase_vector.h"
 #include "base/functional/bind.h"
@@ -36,6 +37,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_id_helper.h"
+#include "content/browser/interest_group/ad_auction_page_data.h"
 #include "content/browser/interest_group/auction_metrics_recorder.h"
 #include "content/browser/interest_group/auction_process_manager.h"
 #include "content/browser/interest_group/auction_result.h"
@@ -54,9 +56,11 @@
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
 #include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom.h"
 #include "content/services/auction_worklet/public/mojom/seller_worklet.mojom.h"
+#include "crypto/sha2.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "net/third_party/quiche/src/quiche/oblivious_http/buffers/oblivious_http_response.h"
 #include "services/network/public/mojom/client_security_state.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -964,6 +968,55 @@ class InterestGroupAuction::BuyerHelper
     for (const auto& bid_state : bid_states_) {
       FinishGenerateBidIfReady(bid_state.get());
     }
+  }
+
+  std::unique_ptr<Bid> TryToCreateBidFromServerResponse(
+      InterestGroupAuction::Bid::BidRole bid_role,
+      double bid,
+      blink::AdDescriptor ad_descriptor,
+      std::vector<blink::AdDescriptor> ad_component_descriptors) {
+    CHECK_EQ(1u, bid_states_.size());
+    BidState* bid_state = bid_states_[0].get();
+    bid_state->made_bid = true;
+
+    auction_worklet::mojom::KAnonymityBidMode kanon_mode =
+        auction_->kanon_mode();
+    bid_state->kanon_keys = ComputeKAnon(*bid_state->bidder, kanon_mode);
+
+    // Check bid validity.
+    const blink::InterestGroup& interest_group =
+        bid_state->bidder->interest_group;
+
+    // 1. Ads must be in the interest group (at specified k-anon level)
+    const blink::InterestGroup::Ad* matching_ad = FindMatchingAd(
+        *interest_group.ads, bid_state->kanon_keys, interest_group, bid_role,
+        /*is_component_ad=*/false, ad_descriptor);
+    if (!matching_ad) {
+      // Bid render url must match the interest group.
+      return nullptr;
+    }
+    for (const auto& ad_component_descriptor : ad_component_descriptors) {
+      const blink::InterestGroup::Ad* matching_ad_component = FindMatchingAd(
+          *interest_group.ad_components, bid_state->kanon_keys, interest_group,
+          bid_role, /*is_component_ad=*/true, ad_component_descriptor);
+      if (!matching_ad_component) {
+        // Bid ad components must match the interest group.
+        return nullptr;
+      }
+    }
+
+    // 2. Reporting URLs must be okay
+    // TODO(1457931): Implement reporting
+
+    return std::make_unique<Bid>(
+        bid_role, matching_ad->metadata.value_or(""), bid,
+        /*bid_currency=*/absl::nullopt,
+        /*ad_cost=*/absl::nullopt, std::move(ad_descriptor),
+        std::move(ad_component_descriptors),
+        /*modeling_signals=*/absl::nullopt,
+        /*bid_duration=*/base::Seconds(0),
+        /*bidding_signals_data_version=*/absl::nullopt, matching_ad, bid_state,
+        auction_);
   }
 
  private:
@@ -1970,6 +2023,80 @@ void InterestGroupAuction::StartBiddingAndScoringPhase(
   }
 }
 
+void InterestGroupAuction::StartFromServerResponse(
+    mojo_base::BigBuffer response,
+    AdAuctionPageData* ad_auction_page_data,
+    AuctionPhaseCompletionCallback bidding_and_scoring_phase_callback) {
+  bidding_and_scoring_phase_callback_ =
+      std::move(bidding_and_scoring_phase_callback);
+
+  // Check that response was witnessed by seller origin.
+  std::array<uint8_t, crypto::kSHA256Length> hash =
+      crypto::SHA256Hash(response.byte_span());
+  if (!ad_auction_page_data->WitnessedAuctionResultForOrigin(
+          config_->seller,
+          std::string(reinterpret_cast<char*>(hash.data()), hash.size()))) {
+    // If it wasn't witnessed then we don't know that it came from the server.
+    OnBiddingAndScoringComplete(
+        AuctionResult::kInvalidServerResponse,
+        {base::StrCat(
+            {"runAdAuction(): Server response was not witnessed from ",
+             config_->seller.Serialize()})});
+    return;
+  }
+
+  AdAuctionRequestContext* request_context =
+      ad_auction_page_data->GetContextForAdAuctionRequest(
+          config_->server_response->request_id);
+  if (!request_context) {
+    // The corresponding context for the requested blob couldn't be found.
+    OnBiddingAndScoringComplete(
+        AuctionResult::kInvalidServerResponse,
+        {base::StrCat(
+            {"runAdAuction(): No corresponding request with ID: ",
+             config_->server_response->request_id.AsLowercaseString()})});
+    return;
+  }
+
+  // The auction must be for the same seller that requested the blob.
+  if (request_context->seller != config_->seller) {
+    OnBiddingAndScoringComplete(
+        AuctionResult::kInvalidServerResponse,
+        {"runAdAuction(): Seller in response doesn't match request"});
+    return;
+  }
+
+  auto maybe_response =
+      quiche::ObliviousHttpResponse::CreateClientObliviousResponse(
+          std::string(reinterpret_cast<char*>(response.data()),
+                      response.size()),
+          request_context->context);
+  if (!maybe_response.ok()) {
+    // We couldn't decrypt the response.
+    OnBiddingAndScoringComplete(
+        AuctionResult::kInvalidServerResponse,
+        {"runAdAuction(): Could not decrypt server response"});
+    return;
+  }
+  const std::string& plaintext_response = maybe_response->GetPlaintextData();
+  absl::optional<base::span<const uint8_t>> compressed_response =
+      ExtractCompressedBiddingAndAuctionResponse(
+          base::as_bytes(base::make_span(plaintext_response)));
+  if (!compressed_response) {
+    OnBiddingAndScoringComplete(
+        AuctionResult::kInvalidServerResponse,
+        {"runAdAuction(): Could not parse response framing"});
+    return;
+  }
+  auto decoder = std::make_unique<data_decoder::DataDecoder>();
+  data_decoder::DataDecoder* tmp_decoder = decoder.get();
+  tmp_decoder->GzipUncompress(
+      std::move(compressed_response).value(),
+      base::BindOnce(&InterestGroupAuction::OnDecompressedServerResponse,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(decoder),
+                     request_context));
+}
+
 std::unique_ptr<InterestGroupAuctionReporter>
 InterestGroupAuction::CreateReporter(
     BrowserContext* browser_context,
@@ -2123,13 +2250,30 @@ InterestGroupAuction::CreateReporter(
   TakeDebugReportUrlsAndFillInPrivateAggregationRequests(
       debug_win_report_urls, debug_loss_report_urls);
 
+  bool bid_is_kanon;
+  switch (kanon_mode_) {
+    case auction_worklet::mojom::KAnonymityBidMode::kSimulate:
+      // Check if the winner was k-anon, since we use the non-kanonymous winner
+      // in simulate mode.
+      bid_is_kanon = NonKAnonWinnerIsKAnon();
+      break;
+    case auction_worklet::mojom::KAnonymityBidMode::kEnforce:
+      // We always have a winner when we get here.
+      bid_is_kanon = true;
+      break;
+    case auction_worklet::mojom::KAnonymityBidMode::kNone:
+      // Set to false due to enforcement is completely off.
+      bid_is_kanon = false;
+      break;
+  }
+
   return std::make_unique<InterestGroupAuctionReporter>(
       interest_group_manager_, auction_worklet_manager_, browser_context,
       private_aggregation_manager,
       maybe_log_private_aggregation_web_features_callback_,
       std::move(auction_config), main_frame_origin, frame_origin,
       std::move(client_security_state), std::move(url_loader_factory),
-      kanon_mode_, std::move(winning_bid_info),
+      kanon_mode_, bid_is_kanon, std::move(winning_bid_info),
       std::move(top_level_seller_winning_bid_info),
       std::move(component_seller_winning_bid_info),
       std::move(interest_groups_that_bid), std::move(debug_win_report_urls),
@@ -2207,6 +2351,12 @@ size_t InterestGroupAuction::NumPotentialBidders() const {
 void InterestGroupAuction::GetInterestGroupsThatBidAndReportBidCounts(
     blink::InterestGroupSet& interest_groups) const {
   if (!all_bids_scored_) {
+    return;
+  }
+
+  if (saved_response_) {
+    interest_groups.insert(saved_response_->bidding_groups.begin(),
+                           saved_response_->bidding_groups.end());
     return;
   }
 
@@ -2388,6 +2538,7 @@ bool InterestGroupAuction::HasNonKAnonWinner() const {
     case AuctionResult::kSellerWorkletCrashed:
     case AuctionResult::kSellerRejected:
     case AuctionResult::kComponentLostAuction:
+    case AuctionResult::kInvalidServerResponse:
       return false;
   }
 }
@@ -2941,7 +3092,7 @@ void InterestGroupAuction::RequestSellerWorklet() {
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "request_seller_worklet",
                                     *trace_id_);
   auction_worklet_manager_->RequestSellerWorklet(
-      config_->decision_logic_url, config_->trusted_scoring_signals_url,
+      *config_->decision_logic_url, config_->trusted_scoring_signals_url,
       config_->seller_experiment_group_id,
       base::BindOnce(&InterestGroupAuction::OnSellerWorkletReceived,
                      base::Unretained(this)),
@@ -3596,6 +3747,141 @@ AuctionWorkletManager::WorkletKey InterestGroupAuction::BidderWorkletKey(
       interest_group.bidding_url.value_or(GURL()),
       interest_group.bidding_wasm_helper_url,
       interest_group.trusted_bidding_signals_url, experiment_group_id);
+}
+
+void InterestGroupAuction::OnDecompressedServerResponse(
+    std::unique_ptr<data_decoder::DataDecoder> decoder,
+    AdAuctionRequestContext* request_context,
+    base::expected<mojo_base::BigBuffer, std::string> result) {
+  if (!result.has_value()) {
+    // We couldn't unzip the response.
+    OnBiddingAndScoringComplete(
+        AuctionResult::kBadMojoMessage,
+        {"runAdAuction(): Could not decompress server response"});
+    return;
+  }
+  base::span<const uint8_t> result_span = result.value().byte_span();
+  data_decoder::DataDecoder* tmp_decoder = decoder.get();
+  tmp_decoder->ParseCbor(
+      result_span, base::BindOnce(&InterestGroupAuction::OnParsedServerResponse,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  std::move(decoder), request_context));
+
+  // `result` falls out of scope, deallocating the buffer with the decompressed
+  // response. This is okay because `DataDecoder::ParseCbor` made a copy before
+  // it returned (via implicit construction of mojo_base::BigBuffer).
+}
+
+void InterestGroupAuction::OnParsedServerResponse(
+    std::unique_ptr<data_decoder::DataDecoder> decoder,
+    AdAuctionRequestContext* request_context,
+    data_decoder::DataDecoder::ValueOrError result) {
+  if (!result.has_value()) {
+    // We couldn't parse the CBOR of the response.
+    OnBiddingAndScoringComplete(
+        AuctionResult::kInvalidServerResponse,
+        {"runAdAuction(): Could not parse server response"});
+    return;
+  }
+  absl::optional<BiddingAndAuctionResponse> response =
+      BiddingAndAuctionResponse::TryParse(std::move(result).value(),
+                                          request_context->group_names);
+  if (!response) {
+    // We couldn't recognize the structure of the response.
+    OnBiddingAndScoringComplete(
+        AuctionResult::kInvalidServerResponse,
+        {"runAdAuction(): Could not parse server response"});
+    return;
+  }
+  std::vector<std::string> errors;
+  if (response->error) {
+    errors.push_back(base::StrCat({"runAdAuction(): ", *response->error}));
+  }
+  if (response->is_chaff) {
+    // This is a place-holder response because there was no winner.
+    OnBiddingAndScoringComplete(AuctionResult::kNoBids, errors);
+    return;
+  }
+  if (response->bid && !IsValidBid(*response->bid)) {
+    errors.push_back(base::StrCat({"runAdAuction(): Invalid bid value ",
+                                   base::NumberToString(*response->bid)}));
+    OnBiddingAndScoringComplete(AuctionResult::kNoBids, errors);
+    return;
+  }
+  any_bid_made_ = !response->bidding_groups.empty();
+
+  blink::InterestGroupKey winning_group(response->interest_group_owner,
+                                        response->interest_group_name);
+  // Winning group must be a bidder.
+  if (!base::Contains(response->bidding_groups, winning_group)) {
+    errors.push_back("runAdAuction(): Winning group must be a bidder");
+    OnBiddingAndScoringComplete(AuctionResult::kInvalidServerResponse, errors);
+    return;
+  }
+
+  interest_group_manager_->GetInterestGroup(
+      winning_group, base::BindOnce(&InterestGroupAuction::OnLoadedWinningGroup,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    std::move(response).value()));
+}
+
+void InterestGroupAuction::OnLoadedWinningGroup(
+    BiddingAndAuctionResponse response,
+    absl::optional<StorageInterestGroup> maybe_group) {
+  if (!maybe_group) {
+    OnBiddingAndScoringComplete(
+        AuctionResult::kInvalidServerResponse,
+        {"runAdAuction(): Could not load winning interest group"});
+    return;
+  }
+  std::vector<blink::AdDescriptor> ad_components;
+  base::ranges::transform(
+      response.ad_components, std::back_inserter(ad_components),
+      [](const GURL& url) { return blink::AdDescriptor(url); });
+
+  if (!maybe_group->interest_group.bidding_url) {
+    // Groups must have a bidding logic URL to bid.
+    OnBiddingAndScoringComplete(
+        AuctionResult::kInvalidServerResponse,
+        {"runAdAuction(): Winning group doesn't have a bidding URL"});
+    return;
+  }
+  all_bids_scored_ = true;
+
+  std::vector<StorageInterestGroup> groups;
+  groups.emplace_back(std::move(*maybe_group));
+
+  auto buyer_helper = std::make_unique<BuyerHelper>(this, std::move(groups));
+  std::unique_ptr<Bid> bid = buyer_helper->TryToCreateBidFromServerResponse(
+      Bid::BidRole::kUnenforcedKAnon,  // TODO(behamilton): Fix this.
+      response.bid.value_or(0.00001),
+      /*ad_descriptor=*/
+      blink::AdDescriptor(response.ad_render_url),
+      /*ad_component_descriptors=*/std::move(ad_components));
+  buyer_helpers_.emplace_back(std::move(buyer_helper));
+
+  if (!bid) {
+    OnBiddingAndScoringComplete(
+        AuctionResult::kInvalidServerResponse,
+        {"runAdAuction(): Couldn't reconstruct winning bid"});
+    return;
+  }
+
+  SubresourceUrlBuilderIfReady();  // This is required for some reason.
+
+  UpdateAuctionLeaders(
+      std::move(bid), response.score.value_or(0.00001),
+      // TODO(1457241): Use correct modified bid params for multi-level auction.
+      /*component_auction_modified_bid_params=*/
+      nullptr,
+      /*bid_in_seller_currency=*/absl::nullopt,
+      /*scoring_signals_data_version=*/absl::nullopt,
+      // TODO(behamilton): Properly support k-anonymity here
+      non_kanon_enforced_auction_leader_);
+
+  saved_response_ = std::move(response);
+
+  OnBiddingAndScoringComplete(AuctionResult::kSuccess);
 }
 
 }  // namespace content

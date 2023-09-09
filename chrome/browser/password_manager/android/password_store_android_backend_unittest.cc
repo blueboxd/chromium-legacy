@@ -7,13 +7,13 @@
 #include <memory>
 #include <vector>
 
-#include "base/android/scoped_java_ref.h"
 #include "base/functional/callback_forward.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
@@ -23,8 +23,10 @@
 #include "chrome/browser/password_manager/android/password_store_android_backend_dispatcher_bridge.h"
 #include "chrome/browser/password_manager/android/password_store_android_backend_receiver_bridge.h"
 #include "chrome/browser/password_manager/android/password_sync_controller_delegate_android.h"
-#include "chrome/browser/password_manager/android/password_sync_controller_delegate_bridge_impl.h"
+#include "components/password_manager/core/browser/affiliation/fake_affiliation_service.h"
+#include "components/password_manager/core/browser/affiliation/mock_affiliated_match_helper.h"
 #include "components/password_manager/core/browser/android_backend_error.h"
+#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_android_backend_api_error_codes.h"
@@ -55,6 +57,8 @@ const std::u16string kTestPassword(u"S3cr3t");
 constexpr char kTestUrl[] = "https://example.com";
 constexpr base::Time kTestDateCreated = base::Time::FromTimeT(1500);
 constexpr base::TimeDelta kTestLatencyDelta = base::Milliseconds(123u);
+constexpr const char kTestAndroidRealm[] =
+    "android://hash@com.example.android/";
 constexpr char kBackendErrorCodeMetric[] =
     "PasswordManager.PasswordStoreAndroidBackend.ErrorCode";
 constexpr char kUnenrollmentHistogram[] =
@@ -101,11 +105,10 @@ std::vector<std::unique_ptr<PasswordForm>> CreateTestLogins() {
   std::vector<std::unique_ptr<PasswordForm>> forms;
   forms.push_back(CreateEntry("Todd Tester", "S3cr3t",
                               GURL(u"https://example.com"),
-                              /*psl=*/false,
-                              /*affiliation=*/false));
+                              PasswordForm::MatchType::kExact));
   forms.push_back(CreateEntry("Marcus McSpartanGregor", "S0m3th1ngCr34t1v3",
-                              GURL(u"https://m.example.com"), /*psl=*/true,
-                              /*affiliation=*/false));
+                              GURL(u"https://m.example.com"),
+                              PasswordForm::MatchType::kPSL));
   return forms;
 }
 
@@ -282,12 +285,14 @@ class PasswordStoreAndroidBackendTest : public testing::Test {
 TEST_F(PasswordStoreAndroidBackendTest, CallsCompletionCallbackAfterInit) {
   base::MockCallback<base::OnceCallback<void(bool)>> completion_callback;
   EXPECT_CALL(completion_callback, Run(true));
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), completion_callback.Get());
 }
 
 TEST_F(PasswordStoreAndroidBackendTest, CallsBridgeForLogins) {
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
   EnableSyncForTestAccount();
   backend().OnSyncServiceInitialized(sync_service());
@@ -307,7 +312,8 @@ TEST_F(PasswordStoreAndroidBackendTest, CallsBridgeForLogins) {
 
 TEST_F(PasswordStoreAndroidBackendTest, FillMatchingLoginsNoPSL) {
   base::HistogramTester histogram_tester;
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
   base::MockCallback<LoginsOrErrorReply> mock_reply;
 
@@ -361,7 +367,8 @@ TEST_F(PasswordStoreAndroidBackendTest, FillMatchingLoginsNoPSL) {
 
 TEST_F(PasswordStoreAndroidBackendTest, FillMatchingLoginsPSL) {
   base::HistogramTester histogram_tester;
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
   base::MockCallback<LoginsOrErrorReply> mock_reply;
 
@@ -414,7 +421,8 @@ TEST_F(PasswordStoreAndroidBackendTest, FillMatchingLoginsPSL) {
 
 TEST_F(PasswordStoreAndroidBackendTest, FillMatchingLoginsGooglePSLMatch) {
   base::HistogramTester histogram_tester;
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
   base::MockCallback<LoginsOrErrorReply> mock_reply;
 
@@ -447,7 +455,8 @@ TEST_F(PasswordStoreAndroidBackendTest, FillMatchingLoginsGooglePSLMatch) {
 }
 
 TEST_F(PasswordStoreAndroidBackendTest, CallsBridgeForAutofillableLogins) {
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
   base::MockCallback<LoginsOrErrorReply> mock_reply;
   EXPECT_CALL(*bridge_helper(), GetAutofillableLogins).WillOnce(Return(kJobId));
@@ -461,7 +470,8 @@ TEST_F(PasswordStoreAndroidBackendTest, CallsBridgeForAutofillableLogins) {
 }
 
 TEST_F(PasswordStoreAndroidBackendTest, CallsBridgeForLoginsForAccount) {
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
   base::MockCallback<LoginsOrErrorReply> mock_reply;
   EXPECT_CALL(*bridge_helper(), GetAllLogins).WillOnce(Return(kJobId));
@@ -477,7 +487,8 @@ TEST_F(PasswordStoreAndroidBackendTest, CallsBridgeForLoginsForAccount) {
 
 TEST_F(PasswordStoreAndroidBackendTest, CallsBridgeForRemoveLogin) {
   DisableSyncFeature();
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
   const JobId kRemoveLoginJobId{13388};
   base::MockCallback<PasswordChangesOrErrorReply> mock_reply;
@@ -500,7 +511,8 @@ TEST_F(PasswordStoreAndroidBackendTest, CallsBridgeForRemoveLogin) {
 TEST_F(PasswordStoreAndroidBackendTest,
        CallsBridgeForRemoveLoginsByURLAndTime) {
   base::HistogramTester histogram_tester;
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
   base::MockCallback<PasswordChangesOrErrorReply> mock_deletion_reply;
   base::RepeatingCallback<bool(const GURL&)> url_filter = base::BindRepeating(
@@ -552,7 +564,8 @@ TEST_F(PasswordStoreAndroidBackendTest,
 TEST_F(PasswordStoreAndroidBackendTest,
        CallsBridgeForRemoveLoginsCreatedBetween) {
   base::HistogramTester histogram_tester;
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
   base::MockCallback<PasswordChangesOrErrorReply> mock_deletion_reply;
   base::Time delete_begin = base::Time::FromTimeT(1000);
@@ -598,7 +611,8 @@ TEST_F(PasswordStoreAndroidBackendTest,
 }
 
 TEST_F(PasswordStoreAndroidBackendTest, CallsBridgeForAddLogin) {
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
   EnableSyncForTestAccount();
   backend().OnSyncServiceInitialized(sync_service());
@@ -623,7 +637,8 @@ TEST_F(PasswordStoreAndroidBackendTest, CallsBridgeForAddLogin) {
 
 TEST_F(PasswordStoreAndroidBackendTest, CallsBridgeForUpdateLogin) {
   DisableSyncFeature();
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
   const JobId kUpdateLoginJobId{13388};
   base::MockCallback<PasswordChangesOrErrorReply> mock_reply;
@@ -647,7 +662,8 @@ TEST_F(PasswordStoreAndroidBackendTest,
   // INTERNAL_ERROR is neither in ignored nor retriable error lists by default.
   base::HistogramTester histogram_tester;
 
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
   backend().OnSyncServiceInitialized(sync_service());
 
@@ -691,7 +707,8 @@ TEST_F(PasswordStoreAndroidBackendTest,
        OnExternalIgnoredErrorNotCausingExperimentUnenrollment) {
   base::HistogramTester histogram_tester;
 
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
   backend().OnSyncServiceInitialized(sync_service());
 
@@ -736,7 +753,8 @@ TEST_F(
     OnUnretriableOperationWithExternalRetriableErrorOnCausesExperimentUnenrollment) {
   base::HistogramTester histogram_tester;
 
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
   backend().OnSyncServiceInitialized(sync_service());
 
@@ -801,7 +819,8 @@ TEST_F(PasswordStoreAndroidBackendTest,
        OnNetworkErrorRetriableStopsRetryingAfterTimeout) {
   base::HistogramTester histogram_tester;
 
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
   backend().OnSyncServiceInitialized(sync_service());
 
@@ -882,7 +901,8 @@ TEST_F(PasswordStoreAndroidBackendTest,
        OnNetworkErrorRetriableStopsRetryingAfterSuccess) {
   base::HistogramTester histogram_tester;
 
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
   backend().OnSyncServiceInitialized(sync_service());
 
@@ -940,7 +960,8 @@ TEST_F(PasswordStoreAndroidBackendTest,
 
 TEST_F(PasswordStoreAndroidBackendTest,
        OnExternalAuthErrorNotCausingExperimentUnenrollmentButSuspendsSaving) {
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
   backend().OnSyncServiceInitialized(sync_service());
   ASSERT_FALSE(prefs()->GetBoolean(
@@ -969,7 +990,8 @@ TEST_F(PasswordStoreAndroidBackendTest,
 
 TEST_F(PasswordStoreAndroidBackendTest,
        ResetTemporarySavingSuspensionAfterSuccessfulLogin) {
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
   backend().OnSyncServiceInitialized(sync_service());
   prefs()->SetBoolean(prefs::kSavePasswordsSuspendedByError, true);
@@ -990,7 +1012,8 @@ TEST_F(PasswordStoreAndroidBackendTest,
        OnExternalPassphraseRequiredCausingExperimentUnenrollment) {
   base::HistogramTester histogram_tester;
 
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
   backend().OnSyncServiceInitialized(sync_service());
 
@@ -1035,7 +1058,8 @@ TEST_F(PasswordStoreAndroidBackendTest,
        OnExternalErrorInCombinationWithNoSyncError) {
   base::HistogramTester histogram_tester;
 
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
   backend().OnSyncServiceInitialized(sync_service());
 
@@ -1062,7 +1086,8 @@ TEST_F(PasswordStoreAndroidBackendTest,
        OnExternalErrorInCombinationWithPersistentSyncError) {
   base::HistogramTester histogram_tester;
 
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
   backend().OnSyncServiceInitialized(sync_service());
 
@@ -1087,7 +1112,8 @@ TEST_F(PasswordStoreAndroidBackendTest,
 TEST_F(PasswordStoreAndroidBackendTest, DisableAutoSignInForOrigins) {
   base::HistogramTester histogram_tester;
 
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
   EnableSyncForTestAccount();
   backend().OnSyncServiceInitialized(sync_service());
@@ -1167,7 +1193,8 @@ TEST_F(PasswordStoreAndroidBackendTest, RemoveAllLocalLogins) {
 
   backend().OnSyncServiceInitialized(sync_service());
   EnableSyncForTestAccount();
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
 
   const JobId kGetLoginsJobId{13387};
@@ -1201,7 +1228,8 @@ TEST_F(PasswordStoreAndroidBackendTest, RemoveAllLocalLogins) {
 TEST_F(PasswordStoreAndroidBackendTest, RemoveAllLocalLoginsSuccessMetrics) {
   base::HistogramTester histogram_tester;
 
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
   EnableSyncForTestAccount();
   backend().OnSyncServiceInitialized(sync_service());
@@ -1256,6 +1284,7 @@ TEST_F(PasswordStoreAndroidBackendTest, NotifyStoreOnForegroundSessionStart) {
   base::MockCallback<PasswordStoreBackend::RemoteChangesReceived>
       store_notification_trigger;
   backend().InitBackend(
+      nullptr,
       /*remote_form_changes_received=*/store_notification_trigger.Get(),
       /*sync_enabled_or_disabled_cb=*/base::DoNothing(),
       /*completion=*/base::DoNothing());
@@ -1275,7 +1304,8 @@ TEST_F(PasswordStoreAndroidBackendTest, NotifyStoreOnForegroundSessionStart) {
 
 TEST_F(PasswordStoreAndroidBackendTest,
        AttachesObserverOnSyncServiceInitialized) {
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
   backend().OnSyncServiceInitialized(sync_service());
 
@@ -1288,7 +1318,8 @@ TEST_F(PasswordStoreAndroidBackendTest, RecordClearedZombieTaskWithoutLatency) {
   const std::string kDurationMetric = DurationMetricName("AddLoginAsync");
   const std::string kSuccessMetric = SuccessMetricName("AddLoginAsync");
   base::HistogramTester histogram_tester;
-  backend().InitBackend(/*remote_form_changes_received=*/base::DoNothing(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        /*remote_form_changes_received=*/base::DoNothing(),
                         /*sync_enabled_or_disabled_cb=*/base::DoNothing(),
                         /*completion=*/base::DoNothing());
 
@@ -1334,7 +1365,8 @@ TEST_F(PasswordStoreAndroidBackendTest, RecordsRequestStartAndEndMetric) {
   const char kStartedMetric[] =
       "PasswordManager.PasswordStoreAndroidBackend.AddLoginAsync";
   base::HistogramTester histogram_tester;
-  backend().InitBackend(/*remote_form_changes_received=*/base::DoNothing(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        /*remote_form_changes_received=*/base::DoNothing(),
                         /*sync_enabled_or_disabled_cb=*/base::DoNothing(),
                         /*completion=*/base::DoNothing());
 
@@ -1396,7 +1428,8 @@ TEST_F(PasswordStoreAndroidBackendTest, RecordInactiveStatusUnenrolled) {
 
 TEST_F(PasswordStoreAndroidBackendTest, FillMatchingLoginsWithSchemeMismatch) {
   base::HistogramTester histogram_tester;
-  backend().InitBackend(PasswordStoreAndroidBackend::RemoteChangesReceived(),
+  backend().InitBackend(/*affiliated_match_helper=*/nullptr,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
                         base::RepeatingClosure(), base::DoNothing());
   base::MockCallback<LoginsOrErrorReply> mock_reply;
 
@@ -1427,6 +1460,64 @@ TEST_F(PasswordStoreAndroidBackendTest, FillMatchingLoginsWithSchemeMismatch) {
   RunUntilIdle();
 }
 
+TEST_F(PasswordStoreAndroidBackendTest, GetGroupedMatchingLoginsAsync) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{},
+      /*disabled_features=*/{features::kFillingAcrossGroupedSites,
+                             features::kFillingAcrossAffiliatedWebsites});
+
+  FakeAffiliationService fake_affiliation_service;
+  MockAffiliatedMatchHelper mock_affiliated_match_helper(
+      &fake_affiliation_service);
+  backend().InitBackend(&mock_affiliated_match_helper,
+                        PasswordStoreAndroidBackend::RemoteChangesReceived(),
+                        base::RepeatingClosure(), base::DoNothing());
+  base::MockCallback<LoginsOrErrorReply> mock_reply;
+
+  const JobId kFirstJobId{1337};
+  const JobId kSecondJobId{2903};
+  EXPECT_CALL(*bridge_helper(), GetLoginsForSignonRealm("test.com", _))
+      .WillOnce(Return(kFirstJobId));
+  EXPECT_CALL(*bridge_helper(), GetLoginsForSignonRealm(kTestAndroidRealm, _))
+      .WillOnce(Return(kSecondJobId));
+
+  std::string TestURL1("https://a.test.com/");
+  PasswordFormDigest form_digest(PasswordForm::Scheme::kHtml, TestURL1,
+                                 GURL(TestURL1));
+
+  std::vector<std::string> affiliated_android_realms;
+  affiliated_android_realms.push_back(kTestAndroidRealm);
+  mock_affiliated_match_helper.ExpectCallToGetAffiliatedAndGrouped(
+      form_digest, affiliated_android_realms);
+  mock_affiliated_match_helper
+      .ExpectCallToInjectAffiliationAndBrandingInformation({});
+  backend().GetGroupedMatchingLoginsAsync(form_digest, mock_reply.Get());
+
+  // Imitate login retrieval.
+  PasswordForm exact_match = CreateTestLogin(
+      kTestUsername, kTestPassword, "https://a.test.com/", kTestDateCreated);
+  PasswordForm psl_match = CreateTestLogin(
+      kTestUsername, kTestPassword, "https://b.test.com/", kTestDateCreated);
+  PasswordForm android_match = CreateTestLogin(
+      kTestUsername, kTestPassword, kTestAndroidRealm, kTestDateCreated);
+
+  // Retrieving logins for the last form should trigger the final callback.
+  LoginsResult expected_logins;
+  expected_logins.push_back(std::make_unique<PasswordForm>(exact_match));
+  expected_logins.back()->match_type = PasswordForm::MatchType::kExact;
+  expected_logins.push_back(std::make_unique<PasswordForm>(psl_match));
+  expected_logins.back()->match_type = PasswordForm::MatchType::kPSL;
+  expected_logins.push_back(std::make_unique<PasswordForm>(android_match));
+  expected_logins.back()->match_type = PasswordForm::MatchType::kAffiliated;
+
+  EXPECT_CALL(mock_reply, Run(LoginsResultsOrErrorAre(&expected_logins)));
+
+  consumer().OnCompleteWithLogins(kFirstJobId, {exact_match, psl_match});
+  consumer().OnCompleteWithLogins(kSecondJobId, {android_match});
+  RunUntilIdle();
+}
+
 class PasswordStoreAndroidBackendTestForMetrics
     : public PasswordStoreAndroidBackendTest,
       public testing::WithParamInterface<bool> {
@@ -1438,7 +1529,7 @@ class PasswordStoreAndroidBackendTestForMetrics
 TEST_P(PasswordStoreAndroidBackendTestForMetrics, GetAllLoginsAsyncMetrics) {
   base::HistogramTester histogram_tester;
   backend().InitBackend(
-      PasswordStoreAndroidBackend::RemoteChangesReceived(),
+      nullptr, PasswordStoreAndroidBackend::RemoteChangesReceived(),
       /*sync_enabled_or_disabled_cb=*/base::RepeatingClosure(),
       /*completion=*/base::DoNothing());
 
@@ -1484,7 +1575,7 @@ TEST_P(PasswordStoreAndroidBackendTestForMetrics, GetAllLoginsAsyncMetrics) {
 TEST_P(PasswordStoreAndroidBackendTestForMetrics, AddLoginAsyncMetrics) {
   base::HistogramTester histogram_tester;
   backend().InitBackend(
-      PasswordStoreAndroidBackend::RemoteChangesReceived(),
+      nullptr, PasswordStoreAndroidBackend::RemoteChangesReceived(),
       /*sync_enabled_or_disabled_cb=*/base::RepeatingClosure(),
       /*completion=*/base::DoNothing());
 
@@ -1530,7 +1621,7 @@ TEST_P(PasswordStoreAndroidBackendTestForMetrics, AddLoginAsyncMetrics) {
 TEST_P(PasswordStoreAndroidBackendTestForMetrics, UpdateLoginAsyncMetrics) {
   base::HistogramTester histogram_tester;
   backend().InitBackend(
-      PasswordStoreAndroidBackend::RemoteChangesReceived(),
+      nullptr, PasswordStoreAndroidBackend::RemoteChangesReceived(),
       /*sync_enabled_or_disabled_cb=*/base::RepeatingClosure(),
       /*completion=*/base::DoNothing());
 
@@ -1578,7 +1669,7 @@ TEST_P(PasswordStoreAndroidBackendTestForMetrics, UpdateLoginAsyncMetrics) {
 TEST_P(PasswordStoreAndroidBackendTestForMetrics, RemoveLoginAsyncMetrics) {
   base::HistogramTester histogram_tester;
   backend().InitBackend(
-      PasswordStoreAndroidBackend::RemoteChangesReceived(),
+      nullptr, PasswordStoreAndroidBackend::RemoteChangesReceived(),
       /*sync_enabled_or_disabled_cb=*/base::RepeatingClosure(),
       /*completion=*/base::DoNothing());
 
@@ -1626,7 +1717,7 @@ TEST_P(PasswordStoreAndroidBackendTestForMetrics,
        GetAutofillableLoginsAsyncMetrics) {
   base::HistogramTester histogram_tester;
   backend().InitBackend(
-      PasswordStoreAndroidBackend::RemoteChangesReceived(),
+      nullptr, PasswordStoreAndroidBackend::RemoteChangesReceived(),
       /*sync_enabled_or_disabled_cb=*/base::RepeatingClosure(),
       /*completion=*/base::DoNothing());
 

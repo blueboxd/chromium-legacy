@@ -23,7 +23,8 @@ struct AnchoredNudgeData;
 // The System Nudge view. (go/cros-educationalnudge-spec)
 // This view supports different configurations depending on the provided
 // nudge data parameters. It will always have a body text, and may have a
-// leading image view, a title text, and up to two buttons.
+// leading image view, a title text, and up to two buttons placed on the bottom.
+// If `use_toast_style` is true, the nudge will look like go/toast-style-spec.
 class ASH_EXPORT SystemNudgeView : public views::FlexLayoutView {
  public:
   METADATA_HEADER(SystemNudgeView);
@@ -36,7 +37,7 @@ class ASH_EXPORT SystemNudgeView : public views::FlexLayoutView {
   views::ImageView* image_view() const { return image_view_; }
   views::Label* body_label() const { return body_label_; }
   views::Label* title_label() const { return title_label_; }
-  views::LabelButton* dismiss_button() const { return dismiss_button_; }
+  views::LabelButton* first_button() const { return first_button_; }
   views::LabelButton* second_button() const { return second_button_; }
 
  private:
@@ -44,11 +45,16 @@ class ASH_EXPORT SystemNudgeView : public views::FlexLayoutView {
   raw_ptr<views::ImageView> image_view_ = nullptr;
   raw_ptr<views::Label> body_label_ = nullptr;
   raw_ptr<views::Label> title_label_ = nullptr;
-  raw_ptr<views::LabelButton> dismiss_button_ = nullptr;
+  raw_ptr<views::LabelButton> first_button_ = nullptr;
   raw_ptr<views::LabelButton> second_button_ = nullptr;
 
   // Sets the maximum width for `title_label_` and `body_label_`.
   void SetLabelsMaxWidth(int max_width);
+
+  // Updates the margins for a toast style nudge, along with the label's max
+  // width and rounded corners value. `with_button` specifies if the nudge has a
+  // button or not, since margins will be different.
+  void UpdateToastStyleMargins(bool with_button);
 };
 
 }  // namespace ash

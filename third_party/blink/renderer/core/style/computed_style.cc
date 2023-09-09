@@ -706,16 +706,6 @@ bool ComputedStyle::InheritedDataShared(const ComputedStyle& other) const {
   return ComputedStyleBase::InheritedDataShared(other);
 }
 
-static bool DependenceOnContentHeightHasChanged(const ComputedStyle& a,
-                                                const ComputedStyle& b) {
-  // If top or bottom become auto/non-auto then it means we either have to solve
-  // height based on the content or stop doing so
-  // (http://www.w3.org/TR/CSS2/visudet.html#abs-non-replaced-height)
-  // - either way requires a layout.
-  return a.LogicalTop().IsAuto() != b.LogicalTop().IsAuto() ||
-         a.LogicalBottom().IsAuto() != b.LogicalBottom().IsAuto();
-}
-
 StyleDifference ComputedStyle::VisualInvalidationDiff(
     const Document& document,
     const ComputedStyle& other) const {
@@ -741,8 +731,7 @@ StyleDifference ComputedStyle::VisualInvalidationDiff(
   }
 
   if (!diff.NeedsFullLayout() && !MarginEqual(other)) {
-    // Relative-positioned elements collapse their margins so need a full
-    // layout.
+    // Inflow elements participate in margin-collapsing so need a full layout.
     if (HasOutOfFlowPosition()) {
       diff.SetNeedsPositionedMovementLayout();
     } else {
@@ -752,13 +741,7 @@ StyleDifference ComputedStyle::VisualInvalidationDiff(
 
   if (!diff.NeedsFullLayout() && GetPosition() != EPosition::kStatic &&
       !OffsetEqual(other)) {
-    // Optimize for the case where a positioned layer is moving but not changing
-    // size.
-    if (DependenceOnContentHeightHasChanged(*this, other)) {
-      diff.SetNeedsFullLayout();
-    } else {
-      diff.SetNeedsPositionedMovementLayout();
-    }
+    diff.SetNeedsPositionedMovementLayout();
   }
 
   AdjustDiffForNeedsPaintInvalidation(other, diff, document);
@@ -1344,14 +1327,14 @@ void ComputedStyle::LoadDeferredImages(Document& document) const {
 void ComputedStyle::ApplyTransform(
     gfx::Transform& result,
     const LayoutBox* box,
-    PhysicalSize border_box_size,
+    const PhysicalRect& reference_box,
     ApplyTransformOperations apply_operations,
     ApplyTransformOrigin apply_origin,
     ApplyMotionPath apply_motion_path,
     ApplyIndependentTransformProperties apply_independent_transform_properties)
     const {
-  ApplyTransform(result, box, gfx::RectF(gfx::SizeF(border_box_size)),
-                 apply_operations, apply_origin, apply_motion_path,
+  ApplyTransform(result, box, gfx::RectF(reference_box), apply_operations,
+                 apply_origin, apply_motion_path,
                  apply_independent_transform_properties);
 }
 
@@ -1425,31 +1408,31 @@ bool ComputedStyle::HasFilters() const {
 
 namespace {
 
-gfx::SizeF GetReferenceBoxSize(const LayoutBox* box, CoordBox coord_box) {
+gfx::RectF GetReferenceBox(const LayoutBox* box, CoordBox coord_box) {
   if (box) {
     if (const LayoutBlock* containing_block = box->ContainingBlock()) {
       // In SVG contexts, all values behave as view-box.
       if (box->IsSVG()) {
-        return SVGLengthContext(To<SVGElement>(box->GetNode()))
-            .ResolveViewport();
+        return gfx::RectF(
+            SVGLengthContext(To<SVGElement>(box->GetNode())).ResolveViewport());
       }
       // https://drafts.csswg.org/css-box-4/#typedef-coord-box
       switch (coord_box) {
         case CoordBox::kFillBox:
         case CoordBox::kContentBox:
-          return gfx::SizeF(containing_block->PhysicalContentBoxSize());
+          return gfx::RectF(containing_block->PhysicalContentBoxRect());
         case CoordBox::kPaddingBox:
-          return gfx::SizeF(containing_block->PhysicalPaddingBoxRect().size);
+          return gfx::RectF(containing_block->PhysicalPaddingBoxRect());
         case CoordBox::kViewBox:
         case CoordBox::kStrokeBox:
         case CoordBox::kBorderBox:
-          return gfx::SizeF(containing_block->BorderBoxRect().Size());
+          return gfx::RectF(containing_block->PhysicalBorderBoxRect());
       }
     }
   }
   // As the motion path calculations can be called before all the layout
   // has been correctly calculated, we can end up here.
-  return {0.0, 0.0};
+  return gfx::RectF();
 }
 
 gfx::PointF GetOffsetFromContainingBlock(const LayoutBox* box) {
@@ -1465,11 +1448,11 @@ gfx::PointF GetOffsetFromContainingBlock(const LayoutBox* box) {
 
 // https://drafts.fxtf.org/motion/#offset-position-property
 gfx::PointF GetStartingPointOfThePath(
-    const gfx::PointF& offset_from_containing_block,
+    const gfx::PointF& offset_from_reference_box,
     const LengthPoint& offset_position,
     const gfx::SizeF& reference_box_size) {
   if (offset_position.X().IsAuto()) {
-    return offset_from_containing_block;
+    return offset_from_reference_box;
   }
   if (offset_position.X().IsNone()) {
     // Currently all the use cases will behave as "at center".
@@ -1580,10 +1563,11 @@ void ComputedStyle::ApplyMotionPathTransform(float origin_x,
         break;
       }
       case BasicShape::kStyleRayType: {
-        const gfx::PointF offset_from_containing_block =
-            GetOffsetFromContainingBlock(box);
-        const gfx::SizeF reference_box_size =
-            GetReferenceBoxSize(box, coord_box);
+        const gfx::RectF reference_box = GetReferenceBox(box, coord_box);
+        const gfx::PointF offset_from_reference_box =
+            GetOffsetFromContainingBlock(box) -
+            reference_box.OffsetFromOrigin();
+        const gfx::SizeF& reference_box_size = reference_box.size();
         const StyleRay& ray = To<StyleRay>(basic_shape);
         // Specifies the origin of the ray, where the ray’s line begins (the 0%
         // position). It’s resolved by using the <position> to position a 0x0
@@ -1599,13 +1583,13 @@ void ComputedStyle::ApplyMotionPathTransform(float origin_x,
               ray.CenterX(), ray.CenterY(), reference_box_size);
         } else {
           starting_point = GetStartingPointOfThePath(
-              offset_from_containing_block, position, reference_box_size);
+              offset_from_reference_box, position, reference_box_size);
         }
         path_position = CalculatePointAndTangentOnRay(ray, box, starting_point,
                                                       reference_box_size);
         // `path_position.point` is now relative to the containing block.
         // Make it relative to the box.
-        path_position.point -= offset_from_containing_block.OffsetFromOrigin();
+        path_position.point -= offset_from_reference_box.OffsetFromOrigin();
         break;
       }
       case BasicShape::kBasicShapeCircleType:
@@ -1614,17 +1598,18 @@ void ComputedStyle::ApplyMotionPathTransform(float origin_x,
       case BasicShape::kBasicShapeXYWHType:
       case BasicShape::kBasicShapeRectType:
       case BasicShape::kBasicShapePolygonType: {
-        const gfx::PointF offset_from_containing_block =
-            GetOffsetFromContainingBlock(box);
-        const gfx::SizeF reference_box_size =
-            GetReferenceBoxSize(box, coord_box);
+        const gfx::RectF reference_box = GetReferenceBox(box, coord_box);
+        const gfx::PointF offset_from_reference_box =
+            GetOffsetFromContainingBlock(box) -
+            reference_box.OffsetFromOrigin();
+        const gfx::SizeF& reference_box_size = reference_box.size();
         const gfx::PointF starting_point = GetStartingPointOfThePath(
-            offset_from_containing_block, position, reference_box_size);
+            offset_from_reference_box, position, reference_box_size);
         path_position = CalculatePointAndTangentOnBasicShape(
             basic_shape, starting_point, reference_box_size);
         // `path_position.point` is now relative to the containing block.
         // Make it relative to the box.
-        path_position.point -= offset_from_containing_block.OffsetFromOrigin();
+        path_position.point -= offset_from_reference_box.OffsetFromOrigin();
         break;
       }
     }
@@ -1641,16 +1626,17 @@ void ComputedStyle::ApplyMotionPathTransform(float origin_x,
       inset->SetTopRightRadius(style.BorderTopRightRadius());
       inset->SetBottomRightRadius(style.BorderBottomRightRadius());
       inset->SetBottomLeftRadius(style.BorderBottomLeftRadius());
-      const gfx::PointF offset_from_containing_block =
-          GetOffsetFromContainingBlock(box);
-      const gfx::SizeF reference_box_size = GetReferenceBoxSize(box, coord_box);
+      const gfx::RectF reference_box = GetReferenceBox(box, coord_box);
+      const gfx::PointF offset_from_reference_box =
+          GetOffsetFromContainingBlock(box) - reference_box.OffsetFromOrigin();
+      const gfx::SizeF& reference_box_size = reference_box.size();
       const gfx::PointF starting_point = GetStartingPointOfThePath(
-          offset_from_containing_block, position, reference_box_size);
+          offset_from_reference_box, position, reference_box_size);
       path_position = CalculatePointAndTangentOnBasicShape(
           *inset, starting_point, reference_box_size);
       // `path_position.point` is now relative to the containing block.
       // Make it relative to the box.
-      path_position.point -= offset_from_containing_block.OffsetFromOrigin();
+      path_position.point -= offset_from_reference_box.OffsetFromOrigin();
     }
   } else {
     const auto* url_operation =
@@ -1712,29 +1698,6 @@ const CounterDirectives ComputedStyle::GetCounterDirectives(
     }
   }
   return CounterDirectives();
-}
-
-AtomicString ComputedStyle::LocaleForLineBreakIterator() const {
-  LineBreakIteratorMode mode = LineBreakIteratorMode::kDefault;
-  switch (GetLineBreak()) {
-    case LineBreak::kAuto:
-    case LineBreak::kAfterWhiteSpace:
-    case LineBreak::kAnywhere:
-      return Locale();
-    case LineBreak::kNormal:
-      mode = LineBreakIteratorMode::kNormal;
-      break;
-    case LineBreak::kStrict:
-      mode = LineBreakIteratorMode::kStrict;
-      break;
-    case LineBreak::kLoose:
-      mode = LineBreakIteratorMode::kLoose;
-      break;
-  }
-  if (const LayoutLocale* locale = GetFontDescription().Locale()) {
-    return locale->LocaleWithBreakKeyword(mode);
-  }
-  return Locale();
 }
 
 Hyphenation* ComputedStyle::GetHyphenation() const {
@@ -2534,43 +2497,24 @@ absl::optional<blink::Color> ComputedStyle::AccentColorResolved() const {
   return auto_color.Resolve(GetCurrentColor(), UsedColorScheme());
 }
 
-static const int kPaintOrderBitwidth = 2;
-
-static unsigned PaintOrderSequence(EPaintOrderType first,
-                                   EPaintOrderType second,
-                                   EPaintOrderType third) {
-  return (((third << kPaintOrderBitwidth) | second) << kPaintOrderBitwidth) |
-         first;
+absl::optional<blink::Color> ComputedStyle::ScrollbarThumbColorResolved()
+    const {
+  const absl::optional<StyleScrollbarColor>& scrollbar_color = ScrollbarColor();
+  if (scrollbar_color.has_value()) {
+    return scrollbar_color.value().GetThumbColor().Resolve(GetCurrentColor(),
+                                                           UsedColorScheme());
+  }
+  return absl::nullopt;
 }
 
-EPaintOrderType ComputedStyle::PaintOrderType(unsigned index) const {
-  unsigned pt = 0;
-  DCHECK(index < ((1 << kPaintOrderBitwidth) - 1));
-  switch (PaintOrder()) {
-    case kPaintOrderNormal:
-    case kPaintOrderFillStrokeMarkers:
-      pt = PaintOrderSequence(PT_FILL, PT_STROKE, PT_MARKERS);
-      break;
-    case kPaintOrderFillMarkersStroke:
-      pt = PaintOrderSequence(PT_FILL, PT_MARKERS, PT_STROKE);
-      break;
-    case kPaintOrderStrokeFillMarkers:
-      pt = PaintOrderSequence(PT_STROKE, PT_FILL, PT_MARKERS);
-      break;
-    case kPaintOrderStrokeMarkersFill:
-      pt = PaintOrderSequence(PT_STROKE, PT_MARKERS, PT_FILL);
-      break;
-    case kPaintOrderMarkersFillStroke:
-      pt = PaintOrderSequence(PT_MARKERS, PT_FILL, PT_STROKE);
-      break;
-    case kPaintOrderMarkersStrokeFill:
-      pt = PaintOrderSequence(PT_MARKERS, PT_STROKE, PT_FILL);
-      break;
+absl::optional<blink::Color> ComputedStyle::ScrollbarTrackColorResolved()
+    const {
+  const absl::optional<StyleScrollbarColor>& scrollbar_color = ScrollbarColor();
+  if (scrollbar_color.has_value()) {
+    return scrollbar_color.value().GetTrackColor().Resolve(GetCurrentColor(),
+                                                           UsedColorScheme());
   }
-
-  pt =
-      (pt >> (kPaintOrderBitwidth * index)) & ((1u << kPaintOrderBitwidth) - 1);
-  return static_cast<EPaintOrderType>(pt);
+  return absl::nullopt;
 }
 
 bool ComputedStyle::ShouldApplyAnyContainment(const Element& element,

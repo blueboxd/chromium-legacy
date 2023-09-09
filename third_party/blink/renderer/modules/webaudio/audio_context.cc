@@ -378,9 +378,10 @@ ScriptPromise AudioContext::suspendContext(ScriptState* script_state,
   DCHECK(IsMainThread());
 
   if (ContextState() == kClosed) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Cannot suspend a closed AudioContext.");
-    return ScriptPromise();
+    return ScriptPromise::RejectWithDOMException(
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError,
+                          "Cannot suspend a closed AudioContext."));
   }
 
   suspended_by_user_ = true;
@@ -403,9 +404,10 @@ ScriptPromise AudioContext::resumeContext(ScriptState* script_state,
   DCHECK(IsMainThread());
 
   if (ContextState() == kClosed) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Cannot resume a closed AudioContext.");
-    return ScriptPromise();
+    return ScriptPromise::RejectWithDOMException(
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError,
+                          "Cannot resume a closed AudioContext."));
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
@@ -500,12 +502,10 @@ AudioTimestamp* AudioContext::getOutputTimestamp(
 ScriptPromise AudioContext::closeContext(ScriptState* script_state,
                                          ExceptionState& exception_state) {
   if (ContextState() == kClosed) {
-    // We've already closed the context previously, but it hasn't yet been
-    // resolved, so just throw a DOM exception to trigger a promise rejection
-    // and return an empty promise.
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Cannot close a closed AudioContext.");
-    return ScriptPromise();
+    return ScriptPromise::RejectWithDOMException(
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError,
+                          "Cannot close a closed AudioContext."));
   }
 
   close_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(
@@ -1024,24 +1024,47 @@ double AudioContext::GetOutputLatencyQuantizingFactor() const {
       : kOutputLatencyQuatizingFactor;
 }
 
+void AudioContext::NotifySetSinkIdBegins() {
+  DCHECK(IsMainThread());
+
+  // This performs step 5 to 9 from the second part of setSinkId() algorithm:
+  // https://webaudio.github.io/web-audio-api/#dom-audiocontext-setsinkid-domstring-or-audiosinkoptions-sinkid
+  sink_transition_flag_was_running_ = ContextState() != kSuspended;
+  destination()->GetAudioDestinationHandler().StopRendering();
+  if (sink_transition_flag_was_running_) {
+    SetContextState(kSuspended);
+  }
+}
+
 void AudioContext::NotifySetSinkIdIsDone(
     WebAudioSinkDescriptor pending_sink_descriptor) {
+  DCHECK(IsMainThread());
+
   sink_descriptor_ = pending_sink_descriptor;
   if (sink_descriptor_.Type() ==
           WebAudioSinkDescriptor::AudioSinkType::kAudible &&
       base::FeatureList::IsEnabled(kWebAudioSetSinkEchoCancellation)) {
     // Note: in order to not break echo cancellation of PeerConnection audio, we
     // are heavily relying on the fact that setSinkId() path of AudioContext is
-    // not triggered unless the sink ID is explicitly specified. I.e. we assume
-    // we don't end up here when AudioContext is being created by default.
+    // not triggered unless the sink ID is explicitly specified. It assumes we
+    // don't end up here when AudioContext is being created with the default
+    // device.
     if (auto* execution_context = GetExecutionContext()) {
       PeerConnectionDependencyFactory::From(*execution_context)
           .GetWebRtcAudioDevice()
           ->SetOutputDeviceForAec(sink_descriptor_.SinkId());
     }
   }
+
+  // This performs steps 11 and 12 from the second part of the setSinkId()
+  // algorithm:
+  // https://webaudio.github.io/web-audio-api/#dom-audiocontext-setsinkid-domstring-or-audiosinkoptions-sinkid
   UpdateV8SinkId();
   DispatchEvent(*Event::Create(event_type_names::kSinkchange));
+  if (sink_transition_flag_was_running_) {
+    SetContextState(kRunning);
+    sink_transition_flag_was_running_ = false;
+  }
 }
 
 void AudioContext::InitializeMediaDeviceService() {
@@ -1118,8 +1141,9 @@ void AudioContext::OnDevicesChanged(mojom::blink::MediaDeviceType device_type,
         MakeGarbageCollected<ConsoleMessage>(
             mojom::ConsoleMessageSource::kOther,
             mojom::ConsoleMessageLevel::kInfo,
-            "AudioContext: Fallback to default device due to audio device "
-            "changed."));
+            "[AudioContext] Fallback to the default device due to an invalid"
+            " audio device change. ("
+            + String(sink_descriptor_.SinkId().Utf8()) + ")"));
     sink_descriptor_ = WebAudioSinkDescriptor(
         String(""),
         To<LocalDOMWindow>(GetExecutionContext())->GetLocalFrameToken());

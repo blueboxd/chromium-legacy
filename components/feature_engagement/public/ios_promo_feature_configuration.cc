@@ -32,8 +32,8 @@ absl::optional<FeatureConfig> GetClientSideiOSPromoFeatureConfig(
   }
 
   if (kIPHiOSPromoWhatsNewFeature.name == feature->name) {
-    // Should trigger and display What's New when requested at most once a
-    // month.
+    // Should trigger once only, and only after Chrome has been opened 6 or more
+    // times.
     absl::optional<FeatureConfig> config = FeatureConfig();
     config->valid = true;
     config->availability = Comparator(ANY, 0);
@@ -42,10 +42,12 @@ absl::optional<FeatureConfig> GetClientSideiOSPromoFeatureConfig(
       config->groups.push_back(kiOSFullscreenPromosGroup.name);
     }
     config->used =
-        EventConfig("whats_new_promo_used", Comparator(LESS_THAN, 1), 30, 365);
-    // What's New promo should be trigger no more than once a month.
+        EventConfig("whats_new_promo_used", Comparator(EQUAL, 0), 365, 365);
+    // What's New promo should only ever trigger once.
     config->trigger = EventConfig("whats_new_promo_trigger",
-                                  Comparator(LESS_THAN, 1), 30, 365);
+                                  Comparator(EQUAL, 0), 1000, 1000);
+    config->event_configs.insert(EventConfig(
+        "chrome_opened", Comparator(GREATER_THAN_OR_EQUAL, 6), 365, 365));
     return config;
   }
 

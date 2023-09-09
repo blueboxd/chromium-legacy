@@ -25,6 +25,7 @@ class ASH_PUBLIC_EXPORT TestSystemTrayClient : public SystemTrayClient {
 
   // SystemTrayClient:
   void ShowSettings(int64_t display_id) override;
+  void ShowAccountSettings() override;
   void ShowBluetoothSettings() override;
   void ShowBluetoothSettings(const std::string& device_id) override;
   void ShowBluetoothPairingDialog(
@@ -77,6 +78,12 @@ class ASH_PUBLIC_EXPORT TestSystemTrayClient : public SystemTrayClient {
   bool IsUserFeedbackEnabled() override;
   void ShowEolInfoPage() override;
   void RecordEolNoticeShown() override;
+  void ShowTouchpadSettings() override;
+  void ShowRemapKeysSubpage(int device_id) override;
+
+  int show_account_settings_count() const {
+    return show_account_settings_count_;
+  }
 
   int show_bluetooth_settings_count() const {
     return show_bluetooth_settings_count_;
@@ -182,7 +189,16 @@ class ASH_PUBLIC_EXPORT TestSystemTrayClient : public SystemTrayClient {
     return show_color_correction_settings_count_;
   }
 
+  int show_touchpad_settings_count() const {
+    return show_touchpad_settings_count_;
+  }
+
+  int show_remap_keys_subpage_count() const {
+    return show_remap_keys_subpage_count_;
+  }
+
  private:
+  int show_account_settings_count_ = 0;
   int show_network_settings_count_ = 0;
   int show_bluetooth_settings_count_ = 0;
   int show_bluetooth_pairing_dialog_count_ = 0;
@@ -213,6 +229,8 @@ class ASH_PUBLIC_EXPORT TestSystemTrayClient : public SystemTrayClient {
   bool user_feedback_enabled_ = false;
   int show_eol_info_count_ = 0;
   int show_color_correction_settings_count_ = 0;
+  int show_touchpad_settings_count_ = 0;
+  int show_remap_keys_subpage_count_ = 0;
 };
 
 }  // namespace ash

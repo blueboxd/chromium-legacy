@@ -32,8 +32,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_EVENT_TARGET_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_EVENT_TARGET_H_
 
-#include <memory>
-
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_result.h"
@@ -96,19 +94,6 @@ class V8UnionBooleanOrEventListenerOptions;
         event_type_names::symbol_name, listener);                              \
   }
 
-struct FiringEventIterator {
-  DISALLOW_NEW();
-  FiringEventIterator(const AtomicString& event_type,
-                      wtf_size_t& iterator,
-                      wtf_size_t& end)
-      : event_type(event_type), iterator(iterator), end(end) {}
-
-  const AtomicString& event_type;
-  wtf_size_t& iterator;
-  wtf_size_t& end;
-};
-using FiringEventIteratorVector = Vector<FiringEventIterator, 1>;
-
 class CORE_EXPORT EventTargetData final
     : public GarbageCollected<EventTargetData> {
  public:
@@ -120,7 +105,6 @@ class CORE_EXPORT EventTargetData final
   void Trace(Visitor*) const;
 
   EventListenerMap event_listener_map;
-  std::unique_ptr<FiringEventIteratorVector> firing_event_iterators;
 };
 
 // All DOM event targets extend EventTarget. The spec is defined here:
@@ -133,11 +117,9 @@ class CORE_EXPORT EventTargetData final
 
 // To make your class an EventTarget, follow these steps:
 // - Make your IDL interface inherit from EventTarget.
-// - Inherit from EventTargetWithInlineData (only in rare cases should you
-//   use EventTarget directly).
-// - In your class declaration, EventTargetWithInlineData must come first in
-//   the base class list. If your class is non-final, classes inheriting from
-//   your class need to come first, too.
+// - In your class declaration, EventTarget must come first in the base class
+//   list. If your class is non-final, your class must be the first base class
+//   for any derived classes as well.
 // - If you added an onfoo attribute, use DEFINE_ATTRIBUTE_EVENT_LISTENER(foo)
 //   in your class declaration. Add "attribute EventHandler onfoo;" to the IDL
 //   file.
@@ -146,8 +128,6 @@ class CORE_EXPORT EventTargetData final
 //   return ExecutionContextLifecycleObserver::executionContext (if you are an
 //   ExecutionContextLifecycleObserver)
 //   or the document you're in.
-// - Your trace() method will need to call EventTargetWithInlineData::trace
-//   depending on the base class of your class.
 class CORE_EXPORT EventTarget : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -374,7 +354,12 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
   RegisteredEventListener* GetAttributeRegisteredEventListener(
       const AtomicString& event_type);
 
-  bool FireEventListeners(Event&, EventTargetData*, EventListenerVector&);
+  // Fire event listeners. This method makes a copy of the `EventListenerVector`
+  // on invocation to match the HTML spec. Do not try to optimize it away.
+  // The spec snapshots the array at the beginning of a dispatch so that
+  // listeners adding or removing other event listeners during dispatch is
+  // done in a consistent way.
+  bool FireEventListeners(Event&, EventTargetData*, EventListenerVector);
   void CountLegacyEvents(const AtomicString& legacy_type_name,
                          EventListenerVector*,
                          EventListenerVector*);
@@ -384,12 +369,6 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
   Member<EventTargetData> data_;
 
   friend class EventListenerIterator;
-};
-
-// Provide EventTarget with inlined EventTargetData for improved performance.
-class CORE_EXPORT EventTargetWithInlineData : public EventTarget {
- public:
-  ~EventTargetWithInlineData() override = default;
 };
 
 DISABLE_CFI_PERF

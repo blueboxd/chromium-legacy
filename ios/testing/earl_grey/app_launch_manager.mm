@@ -149,8 +149,6 @@ bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
   }
 
   if (appIsRunning) {
-    [CoverageUtils writeClangCoverageProfile];
-
     if (gracefullyKill) {
       GREYAssertTrue([self backgroundApplication],
                      @"Failed to background application.");
@@ -268,6 +266,12 @@ bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
     if (@available(iOS 14, *)) {
       [BaseEarlGreyTestCaseAppInterface enableFastAnimation];
     }
+
+#if !TARGET_IPHONE_SIMULATOR
+    if (@available(iOS 17, *)) {
+      [BaseEarlGreyTestCaseAppInterface swizzleKeyboardOOP];
+    }
+#endif
 
     // Wait for application to settle before continuing on with test.
     GREYWaitForAppToIdle(@"App failed to idle BEFORE test body started.\n\n"

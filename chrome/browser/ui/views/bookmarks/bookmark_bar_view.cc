@@ -164,6 +164,8 @@ using ::views::MenuButton;
 // Used to globally disable rich animations.
 bool animations_enabled = true;
 
+constexpr int kBookmarkBarSeparatorRefreshThickness = 2;
+
 gfx::ImageSkia* GetImageSkiaNamed(int id) {
   return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
 }
@@ -227,6 +229,10 @@ class BookmarkButtonBase : public views::LabelButton {
     SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
     views::FocusRing::Get(this)->SetOutsetFocusRingDisabled(true);
     SetHideInkDropWhenShowingContextMenu(false);
+
+    if (features::IsChromeRefresh2023()) {
+      label()->SetTextStyle(views::style::STYLE_BODY_4_EMPHASIS);
+    }
 
     show_animation_ = std::make_unique<gfx::SlideAnimation>(this);
     if (!animations_enabled) {
@@ -548,6 +554,14 @@ class BookmarkFolderButton : public BookmarkMenuButtonBase {
     }
     SetHideInkDropWhenShowingContextMenu(false);
 
+    views::FocusRing::Get(this)->SetOutsetFocusRingDisabled(true);
+
+    if (features::IsChromeRefresh2023()) {
+      label()->SetTextStyle(views::style::STYLE_BODY_4_EMPHASIS);
+      SetImageLabelSpacing(
+          GetLayoutConstant(BOOKMARK_BAR_BUTTON_IMAGE_LABEL_PADDING));
+    }
+
     // ui::EF_MIDDLE_MOUSE_BUTTON opens all bookmarked links in separate tabs.
     SetTriggerableEventFlags(ui::EF_LEFT_MOUSE_BUTTON |
                              ui::EF_MIDDLE_MOUSE_BUTTON);
@@ -659,8 +673,10 @@ class BookmarkBarView::ButtonSeparatorView : public views::Separator {
   ButtonSeparatorView() {
     const int leading_padding = features::IsChromeRefresh2023() ? 16 : 4;
     const int trailing_padding = features::IsChromeRefresh2023() ? 8 : 3;
-    const int separator_thickness =
-        features::IsChromeRefresh2023() ? 2 : kThickness;
+    // TODO(1465541): Rely on kThickness once value is updated for refresh.
+    separator_thickness_ = features::IsChromeRefresh2023()
+                               ? kBookmarkBarSeparatorRefreshThickness
+                               : kThickness;
     const gfx::Insets border_insets =
         gfx::Insets::TLBR(0, leading_padding, 0, trailing_padding);
     const ui::ColorId color_id = features::IsChromeRefresh2023()
@@ -668,15 +684,7 @@ class BookmarkBarView::ButtonSeparatorView : public views::Separator {
                                      : kColorBookmarkBarSeparator;
 
     SetColorId(color_id);
-    SetPreferredSize(
-        gfx::Size(leading_padding + separator_thickness + trailing_padding,
-                  gfx::kFaviconSize));
-    if (features::IsChromeRefresh2023()) {
-      SetBorder(views::CreateThemedRoundedRectBorder(1, 100, border_insets,
-                                                     color_id));
-    } else {
-      SetBorder(views::CreateEmptyBorder(border_insets));
-    }
+    UpdateBorderAndPreferredSize(border_insets);
   }
   ButtonSeparatorView(const ButtonSeparatorView&) = delete;
   ButtonSeparatorView& operator=(const ButtonSeparatorView&) = delete;
@@ -686,6 +694,23 @@ class BookmarkBarView::ButtonSeparatorView : public views::Separator {
     node_data->role = ax::mojom::Role::kSplitter;
     node_data->SetNameChecked(l10n_util::GetStringUTF8(IDS_ACCNAME_SEPARATOR));
   }
+
+  void UpdateBorderAndPreferredSize(gfx::Insets border_insets) {
+    SetPreferredSize(gfx::Size(
+        border_insets.left() + separator_thickness_ + border_insets.right(),
+        gfx::kFaviconSize));
+
+    if (features::IsChromeRefresh2023()) {
+      SetBorder(views::CreateThemedRoundedRectBorder(
+          separator_thickness_ / 2, separator_thickness_ / 2, border_insets,
+          kColorBookmarkBarSeparatorChromeRefresh));
+    } else {
+      SetBorder(views::CreateEmptyBorder(border_insets));
+    }
+  }
+
+ private:
+  int separator_thickness_;
 };
 using ButtonSeparatorView = BookmarkBarView::ButtonSeparatorView;
 
@@ -1694,6 +1719,10 @@ void BookmarkBarView::Init() {
 
   bookmarks_separator_view_ =
       AddChildView(std::make_unique<ButtonSeparatorView>());
+  if (features::IsChromeRefresh2023()) {
+    bookmarks_separator_view_->UpdateBorderAndPreferredSize(
+        gfx::Insets::VH(0, 8));
+  }
   UpdateBookmarksSeparatorVisibility();
 
   set_context_menu_controller(this);
@@ -1756,7 +1785,7 @@ std::unique_ptr<MenuButton> BookmarkBarView::CreateOverflowButton() {
   // text and flipping the gfx::Canvas object will break text rendering. Since
   // the overflow button does not contain text, we can safely flip it.
   button->SetFlipCanvasOnPaintForRTLUI(true);
-
+  views::FocusRing::Get(button.get())->SetOutsetFocusRingDisabled(true);
   // Make visible as necessary.
   button->SetVisible(false);
   // Set accessibility name.
@@ -2150,7 +2179,10 @@ void BookmarkBarView::UpdateAppearanceForTheme() {
   overflow_button_->SetImageModel(
       views::Button::STATE_NORMAL,
       ui::ImageModel::FromVectorIcon(
-          touch_ui ? kBookmarkbarTouchOverflowIcon : kOverflowChevronIcon,
+          features::IsChromeRefresh2023()
+              ? kBookmarkbarOverflowRefreshIcon
+              : (touch_ui ? kBookmarkbarTouchOverflowIcon
+                          : kOverflowChevronIcon),
           overflow_color));
 
   // Redraw the background.

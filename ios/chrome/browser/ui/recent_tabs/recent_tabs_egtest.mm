@@ -10,6 +10,7 @@
 #import "components/policy/core/common/policy_loader_ios_constants.h"
 #import "components/policy/policy_constants.h"
 #import "components/strings/grit/components_strings.h"
+#import "components/sync/base/user_selectable_type.h"
 #import "ios/chrome/browser/policy/policy_app_interface.h"
 #import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
 #import "ios/chrome/browser/policy/policy_util.h"
@@ -18,11 +19,15 @@
 #import "ios/chrome/browser/shared/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey_app_interface.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/history/history_ui_constants.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_app_interface.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
+#import "ios/chrome/browser/ui/tabs/tests/distant_tabs_app_interface.h"
+#import "ios/chrome/browser/ui/tabs/tests/fake_distant_tab.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -31,19 +36,42 @@
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #import "ios/web/public/test/http_server/http_server_util.h"
+#import "net/test/embedded_test_server/embedded_test_server.h"
 #import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+using chrome_test_util::PrimarySignInButton;
 using chrome_test_util::RecentTabsDestinationButton;
 
 namespace {
+
 const char kURLOfTestPage[] = "http://testPage";
 const char kHTMLOfTestPage[] =
     "<head><title>TestPageTitle</title></head><body>hello</body>";
 NSString* const kTitleOfTestPage = @"TestPageTitle";
+
+// Timeout in seconds to wait for asynchronous sync operations.
+constexpr base::TimeDelta kSyncOperationTimeout = base::Seconds(10);
+
+// Sign in and sync using a fake identity.
+void SignInAndSync() {
+  FakeSystemIdentity* fake_identity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fake_identity];
+  [SigninEarlGreyUI signinWithFakeIdentity:fake_identity enableSync:YES];
+  [ChromeEarlGrey
+      waitForSyncTransportStateActiveWithTimeout:kSyncOperationTimeout];
+}
+
+// Sign out and clear sync data.
+void SignOut() {
+  [SigninEarlGrey signOut];
+  [ChromeEarlGrey waitForSyncEngineInitialized:NO
+                                   syncTimeout:kSyncOperationTimeout];
+  [ChromeEarlGrey clearSyncServerData];
+}
 
 // Makes sure at least one tab is opened and opens the recent tab panel.
 void OpenRecentTabsPanel() {
@@ -178,6 +206,157 @@ GURL TestPageURL() {
 
   // Close tab.
   [ChromeEarlGrey closeCurrentTab];
+}
+
+// Tests that a promo to sign in + sync is shown to a signed out user.
+- (void)testShowPromoIfSignedOut {
+  [SigninEarlGrey addFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
+
+  OpenRecentTabsPanel();
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(RecentTabsTable(),
+                                          grey_sufficientlyVisible(), nil)]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
+
+  [SigninEarlGreyUI
+      verifySigninPromoVisibleWithMode:SigninPromoViewModeSigninWithAccount
+                           closeButton:NO];
+
+  // Accept the promo.
+  [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kConfirmationAccessibilityIdentifier)]
+      performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  [SigninEarlGreyUI verifySigninPromoNotVisible];
+}
+
+// Tests that no promo to sign-in + sync is shown to a user who is signed out
+// but has sign-in disabled by policy.
+- (void)testNoPromoIfSignedOutAndSigninDisabledByPolicy {
+  policy_test_utils::SetPolicy(static_cast<int>(BrowserSigninMode::kDisabled),
+                               policy::key::kBrowserSignin);
+
+  OpenRecentTabsPanel();
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(RecentTabsTable(),
+                                          grey_sufficientlyVisible(), nil)]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
+
+  [SigninEarlGreyUI verifySigninPromoNotVisible];
+}
+
+// Tests that no promo to sign-in + sync is shown to a signed-out user if sync
+// is disabled by policy.
+- (void)testNoPromoIfSignedOutAndSyncDisabledByPolicy {
+  // Set the policy and dismiss the bottom sheet that it causes.
+  policy_test_utils::SetPolicy(true, policy::key::kSyncDisabled);
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
+                                   IDS_IOS_SYNC_SYNC_DISABLED_CONTINUE))]
+      performAction:grey_tap()];
+
+  OpenRecentTabsPanel();
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(RecentTabsTable(),
+                                          grey_sufficientlyVisible(), nil)]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
+
+  [SigninEarlGreyUI verifySigninPromoNotVisible];
+}
+
+// Tests that a promo to sync is shown to a signed-in non-syncing user.
+- (void)testShowPromoIfSignedIn {
+  [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]
+                                enableSync:NO];
+
+  OpenRecentTabsPanel();
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(RecentTabsTable(),
+                                          grey_sufficientlyVisible(), nil)]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
+
+  [SigninEarlGreyUI
+      verifySigninPromoVisibleWithMode:SigninPromoViewModeSyncWithPrimaryAccount
+                           closeButton:NO];
+
+  // Accept the promo.
+  [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kConfirmationAccessibilityIdentifier)]
+      performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  [SigninEarlGreyUI verifySigninPromoNotVisible];
+}
+
+// Tests no promo to sync is shown to a signed-in non-syncing user if sync is
+// disabled by policy.
+- (void)testNoPromoIfSignedInAndSyncDisabledByPolicy {
+  // Set the policy and dismiss the bottom sheet that it causes.
+  policy_test_utils::SetPolicy(true, policy::key::kSyncDisabled);
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
+                                   IDS_IOS_SYNC_SYNC_DISABLED_CONTINUE))]
+      performAction:grey_tap()];
+
+  [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]
+                                enableSync:NO];
+
+  OpenRecentTabsPanel();
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(RecentTabsTable(),
+                                          grey_sufficientlyVisible(), nil)]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
+
+  [SigninEarlGreyUI verifySigninPromoNotVisible];
+}
+
+// Tests no promo is shown to a syncing user with tab sync enabled.
+- (void)testNoPromoIfSyncing {
+  [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]
+                                enableSync:YES];
+
+  OpenRecentTabsPanel();
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(RecentTabsTable(),
+                                          grey_sufficientlyVisible(), nil)]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
+
+  [SigninEarlGreyUI verifySigninPromoNotVisible];
+}
+
+// Tests a promo is shown to a syncing user who disabled the tab sync toggle.
+// Tapping the promo opens the page to re-enable the toggle.
+- (void)testShowPromoIfSyncingAndDisabledTabs {
+  [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]
+                                enableSync:YES];
+  [SigninEarlGreyAppInterface
+      setSelectedType:(syncer::UserSelectableType::kTabs)
+              enabled:NO];
+
+  OpenRecentTabsPanel();
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(RecentTabsTable(),
+                                          grey_sufficientlyVisible(), nil)]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
+
+  id<GREYMatcher> promoButtonMatcher = grey_allOf(
+      grey_accessibilityID(kRecentTabsTabSyncOffButtonAccessibilityIdentifier),
+      grey_accessibilityTrait(UIAccessibilityTraitButton), nil);
+  [[EarlGrey selectElementWithMatcher:promoButtonMatcher]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [[EarlGrey selectElementWithMatcher:promoButtonMatcher]
+      performAction:grey_tap()];
+
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
+                                   IDS_IOS_MANAGE_SYNC_SETTINGS_TITLE))]
+      assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 // Tests that the sign-in promo can be reloaded correctly.
@@ -318,6 +497,104 @@ GURL TestPageURL() {
   [SigninEarlGreyUI
       verifySigninPromoVisibleWithMode:SigninPromoViewModeNoAccounts
                            closeButton:NO];
+}
+
+// Tests that the distant session is correctly displayed and tapping on a
+// distant tab correctly open it.
+- (void)testOtherDevicesWithOneDistantSession {
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+  SignInAndSync();
+
+  NSString* sessionName = @"Desktop";
+  NSUInteger numberOfTabs = 4;
+
+  // Create a distant session with 4 tabs.
+  [DistantTabsAppInterface
+      addSessionToFakeSyncServer:sessionName
+               modifiedTimeDelta:base::Minutes(5)
+                            tabs:[FakeDistantTab
+                                     createFakeTabsForServerURL:self.testServer
+                                                                    ->base_url()
+                                                   numberOfTabs:numberOfTabs]];
+  [ChromeEarlGrey triggerSyncCycleForType:syncer::SESSIONS];
+
+  OpenRecentTabsPanel();
+
+  // The illustrated cell should not be visible.
+  id<GREYInteraction> illustratedCell = [EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(
+              grey_accessibilityID(
+                  kRecentTabsOtherDevicesIllustratedCellAccessibilityIdentifier),
+              grey_sufficientlyVisible(), nil)];
+  [illustratedCell assertWithMatcher:grey_nil()];
+
+  // Check that the distant session is displayed.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(sessionName)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Check that all distant tabs are displayed.
+  for (NSUInteger i = 0; i < numberOfTabs; ++i) {
+    // Check that the session header is displayed.
+    NSString* tabName = [NSString stringWithFormat:@"Tab %ld", i];
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(tabName)]
+        assertWithMatcher:grey_sufficientlyVisible()];
+  }
+
+  // Open a distant tab and check that the location bar shows the distant tab
+  // URL in a short form.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Tab 0")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
+      assertWithMatcher:chrome_test_util::LocationViewContainingText(
+                            self.testServer->base_url().host())];
+
+  SignOut();
+}
+
+// Tests that all the distant sessions are correctly displayed.
+- (void)testOtherDevicesWithMultipleDistantSessions {
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+  SignInAndSync();
+
+  NSArray<NSString*>* sessionNames =
+      @[ @"Desktop", @"Phone", @"Tablet", @"iPad", @"iPhone", @"MacBook" ];
+  NSUInteger numberOfTabs = 4;
+
+  // Create distant sessions.
+  for (NSUInteger i = 0; i < sessionNames.count; ++i) {
+    NSString* sessionName = sessionNames[i];
+    [DistantTabsAppInterface
+        addSessionToFakeSyncServer:sessionName
+                 modifiedTimeDelta:base::Minutes(5)
+                              tabs:
+                                  [FakeDistantTab
+                                      createFakeTabsForServerURL:
+                                          self.testServer->base_url()
+                                                    numberOfTabs:numberOfTabs]];
+  }
+  [ChromeEarlGrey triggerSyncCycleForType:syncer::SESSIONS];
+
+  OpenRecentTabsPanel();
+
+  // The illustrated cell should not be visible.
+  id<GREYInteraction> illustratedCell = [EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(
+              grey_accessibilityID(
+                  kRecentTabsOtherDevicesIllustratedCellAccessibilityIdentifier),
+              grey_sufficientlyVisible(), nil)];
+  [illustratedCell assertWithMatcher:grey_nil()];
+
+  // Check that all distant sessions are displayed.
+  for (NSUInteger i = sessionNames.count - 1; i > 0; --i) {
+    NSString* sessionName = sessionNames[i];
+    // Tap the session header to collapse the section.
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(sessionName)]
+        performAction:grey_tap()];
+  }
+
+  SignOut();
 }
 
 // Tests the Copy Link action on a recent tab's context menu.

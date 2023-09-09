@@ -10,13 +10,9 @@
 
 namespace supervised_user {
 
-BASE_DECLARE_FEATURE(kWebFilterInterstitialRefresh);
-
 BASE_DECLARE_FEATURE(kLocalWebApprovals);
 extern const char kLocalWebApprovalsPreferredButtonLocal[];
 extern const char kLocalWebApprovalsPreferredButtonRemote[];
-
-BASE_DECLARE_FEATURE(kSynchronousSignInChecking);
 
 // Flags related to supervision features on Desktop and iOS platforms.
 BASE_DECLARE_FEATURE(kEnableSupervisionOnDesktopAndIOS);
@@ -27,7 +23,7 @@ BASE_DECLARE_FEATURE(kEnableManagedByParentUi);
 extern const base::FeatureParam<std::string> kManagedByParentUiMoreInfoUrl;
 BASE_DECLARE_FEATURE(kClearingCookiesKeepsSupervisedUsersSignedIn);
 
-// Enables inkoking the CreatePermissionRequest service through a proto fetcher.
+// Enables invoking the CreatePermissionRequest service through a proto fetcher.
 BASE_DECLARE_FEATURE(kEnableCreatePermissionRequestFetcher);
 
 // Returns whether banner can be displayed to the user after website filtering
@@ -36,15 +32,10 @@ bool CanDisplayFirstTimeInterstitialBanner();
 
 BASE_DECLARE_FEATURE(kLocalExtensionApprovalsV2);
 
-BASE_DECLARE_FEATURE(kRetireStaticDenyList);
-
+// Enables invoking the ClassifyUrl service through a proto fetcher.
 BASE_DECLARE_FEATURE(kEnableProtoApiForClassifyUrl);
 
 BASE_DECLARE_FEATURE(kUpdateSupervisedUserFactoryCreation);
-
-// Returns whether refreshed version of the website filter interstitial is
-// enabled.
-bool IsWebFilterInterstitialRefreshEnabled();
 
 // Returns whether local parent approvals on Family Link user's device are
 // enabled.
@@ -59,10 +50,6 @@ bool IsLocalWebApprovalThePreferredButton();
 
 // Returns whether the ClassifyUrl call uses proto apis.
 bool IsProtoApiForClassifyUrlEnabled();
-
-// Returns whether the First Run Experience will rely on checking the sign-in
-// status synchronously - http://b/264382308.
-bool IsSynchronousSignInCheckingEnabled();
 
 // Returns whether the new local extension approval experience is enabled.
 bool IsLocalExtensionApprovalsV2Enabled();

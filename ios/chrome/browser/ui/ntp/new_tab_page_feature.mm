@@ -31,10 +31,6 @@ BASE_FEATURE(kEnableDiscoverFeedTopSyncPromo,
              "EnableDiscoverFeedTopSyncPromo",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kEnableFollowingFeedDefaultSortType,
-             "EnableFollowingFeedDefaultSortType",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kEnableNTPViewHierarchyRepair,
              "NTPViewHierarchyRepair",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -86,11 +82,6 @@ const char kDiscoverFeedTopSyncPromoAutodismissImpressions[] =
 const char kDiscoverFeedTopSyncPromoIgnoreEngagementCondition[] =
     "IgnoreFeedEngagementConditionForTopSyncPromo";
 
-// EnableFollowingFeedDefaultSortType parameters.
-const char kFollowingFeedDefaultSortTypeSortByLatest[] = "SortByLatest";
-const char kFollowingFeedDefaultSortTypeGroupedByPublisher[] =
-    "GroupedByPublisher";
-
 // Feature parameters for `kFeedHeaderSettings`.
 const char kEnableDotForNewFollowedContent[] =
     "kEnableDotForNewFollowedContent";
@@ -126,9 +117,22 @@ bool IsDiscoverFeedTopSyncPromoEnabled() {
 
 SigninPromoViewStyle GetTopOfFeedPromoStyle() {
   CHECK(IsDiscoverFeedTopSyncPromoEnabled());
-  // Defaults to Compact Titled (Unpersonalized).
-  return (SigninPromoViewStyle)base::GetFieldTrialParamByFeatureAsInt(
-      kEnableDiscoverFeedTopSyncPromo, kDiscoverFeedTopSyncPromoStyle, 1);
+  SigninPromoViewStyle promoStyle =
+      static_cast<SigninPromoViewStyle>(base::GetFieldTrialParamByFeatureAsInt(
+          kEnableDiscoverFeedTopSyncPromo, kDiscoverFeedTopSyncPromoStyle,
+          SigninPromoViewStyleCompactVertical));
+  // Don't handle default to force a compile-time failure if a value is added to
+  // the enum without being handled here.
+  switch (promoStyle) {
+    case SigninPromoViewStyleStandard:
+    case SigninPromoViewStyleCompactHorizontal:
+    case SigninPromoViewStyleCompactVertical:
+      return promoStyle;
+  }
+  // If no compile-time error was triggered above, it likely means that the
+  // value was incorrectly set through Finch. In this case, return the default
+  // vertical style.
+  return SigninPromoViewStyleCompactVertical;
 }
 
 bool ShouldIgnoreFeedEngagementConditionForTopSyncPromo() {
@@ -142,16 +146,6 @@ int FeedSyncPromoAutodismissCount() {
   return base::GetFieldTrialParamByFeatureAsInt(
       kEnableDiscoverFeedTopSyncPromo,
       kDiscoverFeedTopSyncPromoAutodismissImpressions, 10);
-}
-
-bool IsFollowingFeedDefaultSortTypeEnabled() {
-  return base::FeatureList::IsEnabled(kEnableFollowingFeedDefaultSortType);
-}
-
-bool IsDefaultFollowingFeedSortTypeGroupedByPublisher() {
-  return base::GetFieldTrialParamByFeatureAsBool(
-      kEnableFollowingFeedDefaultSortType,
-      kFollowingFeedDefaultSortTypeGroupedByPublisher, true);
 }
 
 bool IsContentSuggestionsForSupervisedUserEnabled(PrefService* pref_service) {

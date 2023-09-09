@@ -79,6 +79,9 @@ class PhoneHubTrayTest : public AshTestBase {
 
     phone_hub_tray_ =
         StatusAreaWidgetTestHelper::GetStatusAreaWidget()->phone_hub_tray();
+    // Disable pulse animation so the tests will not hang.
+    ui::ScopedAnimationDurationScaleMode duration_mode(
+        ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
     GetFeatureStatusProvider()->SetStatus(
         phonehub::FeatureStatus::kEnabledAndConnected);
@@ -782,19 +785,45 @@ TEST_F(PhoneHubTrayTest, MultiDisplay) {
   EXPECT_TRUE(secondary_phone_hub_tray->GetVisible());
 }
 
-TEST_F(PhoneHubTrayTest, ShowNudge) {
-  // Simulate kOnboardingWithoutPhone state.
+TEST_F(PhoneHubTrayTest,
+       PhoneHubNotShownOnMoreThanFiveMinutesAfterSessionStartTime) {
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::ACTIVE);
+  GetFeatureStatusProvider()->SetStatus(
+      phonehub::FeatureStatus::kNotEligibleForFeature);
+
+  // Set time to fifteen minutes after session start time.
+  task_environment()->AdvanceClock(base::TimeDelta(base::Minutes(15)));
   GetFeatureStatusProvider()->SetStatus(
       phonehub::FeatureStatus::kEligiblePhoneButNotSetUp);
   GetOnboardingUiTracker()->SetShouldShowOnboardingUi(true);
+  EXPECT_FALSE(phone_hub_tray_->GetVisible());
+
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::LOCKED);
+  EXPECT_FALSE(phone_hub_tray_->GetVisible());
+
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::ACTIVE);
+  EXPECT_TRUE(phone_hub_tray_->GetVisible());
+}
+
+TEST_F(PhoneHubTrayTest, ShowPhoneHubOnlyUpToFiveMinutesAfterSessionStartTime) {
+  // Reset session start time.
+  GetFeatureStatusProvider()->SetStatus(
+      phonehub::FeatureStatus::kNotEligibleForFeature);
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::ACTIVE);
 
-  EXPECT_TRUE(
-      Shell::Get()->anchored_nudge_manager()->IsNudgeShown(kPhoneHubNudgeId));
+  // Set time to three minutes after session start time.
+  task_environment()->AdvanceClock(base::TimeDelta(base::Minutes(3)));
+  GetFeatureStatusProvider()->SetStatus(
+      phonehub::FeatureStatus::kEligiblePhoneButNotSetUp);
+  GetOnboardingUiTracker()->SetShouldShowOnboardingUi(true);
+  EXPECT_TRUE(phone_hub_tray_->GetVisible());
 }
 
-TEST_F(PhoneHubTrayTest, HideNudge) {
+TEST_F(PhoneHubTrayTest, ShowAndHideNudge) {
   GetFeatureStatusProvider()->SetStatus(
       phonehub::FeatureStatus::kEligiblePhoneButNotSetUp);
   GetOnboardingUiTracker()->SetShouldShowOnboardingUi(true);

@@ -101,7 +101,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Event.DownEventCount.PerInputFormFactorDestinationCombination2"
     enum="DownEventInputFormFactorDestinationCombination2"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>tbuckley@chromium.org</owner>
   <summary>
     The number of down events received per destination, input and form factor
@@ -126,28 +126,6 @@ chromium-metrics-reviews@google.com.
     Android and Windows.
 
     Note: this metric was expired from 2020-03-01 to 2023-04-04.
-  </summary>
-</histogram>
-
-<histogram name="Event.HitTestValidity" enum="EventHitTestValidity"
-    expires_after="M85">
-  <owner>dtapuska@chromium.org</owner>
-  <summary>
-    For hit tests that are validated, records whether it was correct or not, and
-    why.
-
-    Team: input-dev@chromium.org.
-  </summary>
-</histogram>
-
-<histogram name="Event.HitTestValidityScore" enum="EventHitTestValidityScore"
-    expires_after="M85">
-  <owner>dtapuska@chromium.org</owner>
-  <summary>
-    For hit tests that are invalid, records the score (a series of bits
-    indicating what was matched and what wasn't).
-
-    Team: input-dev@chromium.org.
   </summary>
 </histogram>
 
@@ -301,7 +279,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Jank.ScrollUpdate.TotalJankyAndNonJankyDuration2"
-    enum="JankyBoolean" expires_after="2023-10-22">
+    enum="JankyBoolean" expires_after="2023-12-24">
   <owner>nuskos@google.com</owner>
   <owner>woa-performance@google.com</owner>
   <summary>
@@ -345,7 +323,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.EndToEnd.KeyPress" units="microseconds"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -384,7 +362,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.EndToEnd.TouchpadPinch2" units="microseconds"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>nzolghadr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -629,7 +607,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollJank" enum="Boolean"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>ddrone@google.com</owner>
   <owner>chrometto-team@google.com</owner>
   <summary>
@@ -661,7 +639,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.JankyEvents" units="counts"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>ddrone@google.com</owner>
   <owner>chrometto-team@google.com</owner>
   <summary>
@@ -699,7 +677,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.TimeToScrollUpdateSwapBegin2"
-    units="microseconds" expires_after="2023-11-12">
+    units="microseconds" expires_after="2024-01-14">
   <owner>nzolghadr@chromium.org</owner>
   <summary>
     NOTE: This metric is deprecated in favor of
@@ -716,7 +694,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.TotalDuration" units="ms"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>ddrone@google.com</owner>
   <owner>chrometto-team@google.com</owner>
   <summary>
@@ -726,7 +704,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.TotalEvents" units="counts"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>ddrone@google.com</owner>
   <owner>chrometto-team@google.com</owner>
   <summary>
@@ -967,7 +945,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.PassiveListeners" enum="EventResultType"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>dtapuska@chromium.org</owner>
   <summary>
     The result of handling of MouseWheel, TouchStart, TouchMove, TouchEnd events

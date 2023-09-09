@@ -626,11 +626,10 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     }
 
     // Replaced elements have a used value of 'clip' for all overflow values
-    // except visible. See discussion at
-    // https://github.com/w3c/csswg-drafts/issues/7714#issuecomment-1248761712.
+    // except visible. See discussion at:
+    // https://github.com/w3c/csswg-drafts/issues/7714#issuecomment-1248761712
     bool is_overflow_clip = false;
-    if (IsLayoutReplaced() &&
-        RuntimeEnabledFeatures::CSSOverflowForReplacedElementsEnabled()) {
+    if (IsLayoutReplaced()) {
       is_overflow_clip = style.OverflowX() != EOverflow::kVisible &&
                          style.OverflowY() != EOverflow::kVisible;
     } else {
@@ -1343,10 +1342,16 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // coordinate space is the viewport space.
   virtual gfx::RectF VisualRectInLocalSVGCoordinates() const;
 
+  // Compute the SVG stroke bounding box per
+  // https://www.w3.org/TR/SVG2/coords.html#TermStrokeBoundingBox .
+  virtual gfx::RectF StrokeBoundingBox() const;
+
   // Like VisualRectInLocalSVGCoordinates() but does not include visual overflow
   // (name is misleading). May be zoomed (currently only for <foreignObject>,
   // which represents this via its LocalToSVGParentTransform()).
-  virtual gfx::RectF StrokeBoundingBox() const;
+  // It mostly corresponds to the "decorated bounding box" from the SVG spec.
+  // (https://svgwg.org/svg2-draft/coords.html#BoundingBoxes)
+  virtual gfx::RectF DecoratedBoundingBox() const;
 
   // This returns the transform applying to the local SVG coordinate space,
   // which combines the CSS transform properties and animation motion transform.
@@ -1520,56 +1525,20 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   bool NeedsLayout() const {
     NOT_DESTROYED();
     return bitfields_.SelfNeedsLayoutForStyle() ||
-           bitfields_.SelfNeedsLayoutForAvailableSpace() ||
            bitfields_.NormalChildNeedsLayout() ||
-           bitfields_.PosChildNeedsLayout() ||
-           bitfields_.NeedsSimplifiedNormalFlowLayout() ||
-           bitfields_.NeedsPositionedMovementLayout();
-  }
-
-  bool NeedsPositionedMovementLayoutOnly() const {
-    NOT_DESTROYED();
-    return bitfields_.NeedsPositionedMovementLayout() &&
-           !bitfields_.SelfNeedsLayoutForStyle() &&
-           !bitfields_.SelfNeedsLayoutForAvailableSpace() &&
-           !bitfields_.NormalChildNeedsLayout() &&
-           !bitfields_.PosChildNeedsLayout() &&
-           !bitfields_.NeedsSimplifiedNormalFlowLayout();
+           bitfields_.NeedsSimplifiedNormalFlowLayout();
   }
 
   bool NeedsSimplifiedLayoutOnly() const {
     NOT_DESTROYED();
-    // We don't need to check |SelfNeedsLayoutForAvailableSpace| as an
-    // additional check will determine if we need to perform full layout based
-    // on the available space.
-    return (bitfields_.PosChildNeedsLayout() ||
-            bitfields_.NeedsSimplifiedNormalFlowLayout()) &&
+    return bitfields_.NeedsSimplifiedNormalFlowLayout() &&
            !bitfields_.SelfNeedsLayoutForStyle() &&
-           !bitfields_.NormalChildNeedsLayout() &&
-           !bitfields_.NeedsPositionedMovementLayout();
+           !bitfields_.NormalChildNeedsLayout();
   }
 
   bool SelfNeedsLayout() const {
     NOT_DESTROYED();
-    return bitfields_.SelfNeedsLayoutForStyle() ||
-           bitfields_.SelfNeedsLayoutForAvailableSpace();
-  }
-  bool SelfNeedsLayoutForStyle() const {
-    NOT_DESTROYED();
     return bitfields_.SelfNeedsLayoutForStyle();
-  }
-  bool SelfNeedsLayoutForAvailableSpace() const {
-    NOT_DESTROYED();
-    return bitfields_.SelfNeedsLayoutForAvailableSpace();
-  }
-  bool NeedsPositionedMovementLayout() const {
-    NOT_DESTROYED();
-    return bitfields_.NeedsPositionedMovementLayout();
-  }
-
-  bool PosChildNeedsLayout() const {
-    NOT_DESTROYED();
-    return bitfields_.PosChildNeedsLayout();
   }
   bool NeedsSimplifiedNormalFlowLayout() const {
     NOT_DESTROYED();
@@ -1664,14 +1633,14 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   bool HasClipRelatedProperty() const;
   bool IsScrollContainer() const {
     NOT_DESTROYED();
+    // Replaced elements don't support scrolling. If overflow is non visible,
+    // the behaviour applied is equivalent to `clip`. See:
+    // https://github.com/w3c/csswg-drafts/issues/7435
+    if (IsLayoutReplaced()) {
+      return false;
+    }
     // Always check HasNonVisibleOverflow() in case the object is not allowed to
     // have non-visible overflow.
-    // Replaced elements don't support scrolling. If overflow is non visible,
-    // the behaviour applied is equivalent to `clip`. See discussion at:
-    // https://github.com/w3c/csswg-drafts/issues/7435.
-    if (IsLayoutReplaced() &&
-        RuntimeEnabledFeatures::CSSOverflowForReplacedElementsEnabled())
-      return false;
     return HasNonVisibleOverflow() && StyleRef().IsScrollContainer();
   }
 
@@ -1997,7 +1966,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   void ClearNeedsLayoutWithFullPaintInvalidation();
 
   void SetChildNeedsLayout(MarkingBehavior = kMarkContainerChain);
-  void SetNeedsPositionedMovementLayout();
+  void SetNeedsSimplifiedLayout();
   void SetIntrinsicLogicalWidthsDirty(MarkingBehavior = kMarkContainerChain);
   void ClearIntrinsicLogicalWidthsDirty();
 
@@ -2327,9 +2296,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   PositionWithAffinity PositionAfterThis() const;
   PositionWithAffinity PositionBeforeThis() const;
 
-  virtual void DirtyLinesFromChangedChild(
-      LayoutObject*,
-      MarkingBehavior marking_behaviour = kMarkContainerChain);
+  virtual void DirtyLinesFromChangedChild(LayoutObject*) { NOT_DESTROYED(); }
 
   // Set the style of the object and update the state of the object accordingly.
   // ApplyStyleChanges = kYes means we will apply any changes between the old
@@ -2721,14 +2688,9 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // Return the offset to the column in which the specified point (in
   // flow-thread coordinates) lives. This is used to convert a flow-thread point
   // to a point in the containing coordinate space.
-  virtual LayoutSize ColumnOffset(const LayoutPoint&) const {
+  virtual PhysicalOffset ColumnOffset(const PhysicalOffset&) const {
     NOT_DESTROYED();
-    return LayoutSize();
-  }
-
-  virtual unsigned length() const {
-    NOT_DESTROYED();
-    return 1;
+    return PhysicalOffset();
   }
 
   bool IsFloatingOrOutOfFlowPositioned() const {
@@ -2796,6 +2758,8 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
    * of line -
    * useful for character range rect computations
    */
+  // TODO(crbug.com/1353190): Change the return type to PhysicalRect, and
+  // merge LocalCaretRect() and PhysicalLocalCaretRect().
   virtual LayoutRect LocalCaretRect(
       int caret_offset,
       LayoutUnit* extra_width_to_end_of_line = nullptr) const;
@@ -2803,6 +2767,10 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
       int caret_offset,
       LayoutUnit* extra_width_to_end_of_line = nullptr) const {
     NOT_DESTROYED();
+    if (RuntimeEnabledFeatures::LayoutNGNoLocationEnabled()) {
+      return PhysicalRect(
+          LocalCaretRect(caret_offset, extra_width_to_end_of_line));
+    }
     return FlipForWritingMode(
         LocalCaretRect(caret_offset, extra_width_to_end_of_line));
   }
@@ -2965,13 +2933,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
       const LayoutObject*);
 
   bool IsRelayoutBoundary() const;
-
-  void SetSelfNeedsLayoutForAvailableSpace(bool flag) {
-    NOT_DESTROYED();
-    bitfields_.SetSelfNeedsLayoutForAvailableSpace(flag);
-    if (flag)
-      MarkSelfPaintingLayerForVisualOverflowRecalc();
-  }
 
   PaintInvalidationReason FullPaintInvalidationReason() const {
     NOT_DESTROYED();
@@ -3515,6 +3476,17 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   }
   void SetSVGDescendantMayHaveTransformRelatedAnimation();
 
+  bool SVGSelfOrDescendantHasViewportDependency() const {
+    NOT_DESTROYED();
+    return bitfields_.SVGSelfOrDescendantHasViewportDependency();
+  }
+  void SetSVGSelfOrDescendantHasViewportDependency();
+  void ClearSVGSelfOrDescendantHasViewportDependency() {
+    NOT_DESTROYED();
+    DCHECK(IsSVGChild());
+    bitfields_.SetSVGSelfOrDescendantHasViewportDependency(false);
+  }
+
   bool ShouldSkipNextLayoutShiftTracking() const {
     NOT_DESTROYED();
     return bitfields_.ShouldSkipNextLayoutShiftTracking();
@@ -3812,10 +3784,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   ALWAYS_INLINE
   StyleDifference AdjustStyleDifference(StyleDifference) const;
 
-#if DCHECK_IS_ON()
-  void CheckBlockPositionedObjectsNeedLayout();
-#endif
-
   bool IsTextOrSVGChild() const {
     NOT_DESTROYED();
     return IsText() || IsSVGChild();
@@ -3910,10 +3878,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     // of the memory constraints on layout objects.
     LayoutObjectBitfields(Node* node)
         : self_needs_layout_for_style_(false),
-          self_needs_layout_for_available_space_(false),
-          needs_positioned_movement_layout_(false),
           normal_child_needs_layout_(false),
-          pos_child_needs_layout_(false),
           needs_simplified_normal_flow_layout_(false),
           self_needs_layout_overflow_recalc_(false),
           child_needs_layout_overflow_recalc_(false),
@@ -3999,32 +3964,11 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     // positions, the height and the potential overflow.
     ADD_BOOLEAN_BITFIELD(self_needs_layout_for_style_, SelfNeedsLayoutForStyle);
 
-    // Similar to SelfNeedsLayoutForStyle; however, this is set when the
-    // available space (~parent height or width) changes, or the override size
-    // has changed. In some cases this allows skipping layouts.
-    ADD_BOOLEAN_BITFIELD(self_needs_layout_for_available_space_,
-                         SelfNeedsLayoutForAvailableSpace);
-
-    // A positioned movement layout is a specialized type of layout used on
-    // positioned objects that only visually moved. This layout is used when
-    // changing 'top'/'left' on a positioned element or margins on an
-    // out-of-flow one. Because the following operations don't impact the size
-    // of the object or sibling LayoutObjects, this layout is very lightweight.
-    //
-    // Positioned movement layout is implemented in
-    // LayoutBlock::simplifiedLayout.
-    ADD_BOOLEAN_BITFIELD(needs_positioned_movement_layout_,
-                         NeedsPositionedMovementLayout);
-
     // This boolean is set when a normal flow ('position' == static || relative)
     // child requires layout (but this object doesn't). Due to the nature of
     // CSS, laying out a child can cause the parent to resize (e.g., if 'height'
     // is auto).
     ADD_BOOLEAN_BITFIELD(normal_child_needs_layout_, NormalChildNeedsLayout);
-
-    // This boolean is set when an out-of-flow positioned ('position' == fixed
-    // || absolute) child requires layout (but this object doesn't).
-    ADD_BOOLEAN_BITFIELD(pos_child_needs_layout_, PosChildNeedsLayout);
 
     // Simplified normal flow layout only relayouts the normal flow children,
     // ignoring the out-of-flow descendants.
@@ -4300,6 +4244,11 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     ADD_BOOLEAN_BITFIELD(svg_descendant_may_have_transform_related_animation_,
                          SVGDescendantMayHaveTransformRelatedAnimation);
 
+    // For SVG objects, indicates if this object or any descendant depends on
+    // the dimensions of the viewport.
+    ADD_BOOLEAN_BITFIELD(svg_self_or_descendant_has_viewport_dependency_,
+                         SVGSelfOrDescendantHasViewportDependency);
+
     ADD_BOOLEAN_BITFIELD(is_layout_ng_object_for_formatted_text,
                          IsLayoutNGObjectForFormattedText);
 
@@ -4359,22 +4308,12 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     bitfields_.SetSelfNeedsLayoutForStyle(b);
   }
-  void SetNeedsPositionedMovementLayout(bool b) {
-    NOT_DESTROYED();
-    DCHECK(!GetDocument().InPostLifecycleSteps());
-    bitfields_.SetNeedsPositionedMovementLayout(b);
-  }
   void SetNormalChildNeedsLayout(bool b) {
     NOT_DESTROYED();
     DCHECK(!GetDocument().InPostLifecycleSteps());
     bitfields_.SetNormalChildNeedsLayout(b);
     if (b)
       bitfields_.SetIsTableColumnsConstraintsDirty(true);
-  }
-  void SetPosChildNeedsLayout(bool b) {
-    NOT_DESTROYED();
-    DCHECK(!GetDocument().InPostLifecycleSteps());
-    bitfields_.SetPosChildNeedsLayout(b);
   }
   void SetNeedsSimplifiedNormalFlowLayout(bool b) {
     NOT_DESTROYED();
@@ -4451,8 +4390,7 @@ inline void LayoutObject::SetNeedsLayout(
 #if DCHECK_IS_ON()
   DCHECK(!IsSetNeedsLayoutForbidden());
 #endif
-  bool already_needed_layout = bitfields_.SelfNeedsLayoutForStyle() ||
-                               bitfields_.SelfNeedsLayoutForAvailableSpace();
+  bool already_needed_layout = bitfields_.SelfNeedsLayoutForStyle();
   SetSelfNeedsLayoutForStyle(true);
   SetNeedsOverflowRecalc();
   SetTableColumnConstraintDirty(true);
@@ -4480,15 +4418,11 @@ inline void LayoutObject::ClearNeedsLayoutWithoutPaintInvalidation() {
 
   // Clear needsLayout flags.
   SetSelfNeedsLayoutForStyle(false);
-  SetSelfNeedsLayoutForAvailableSpace(false);
-  SetNeedsPositionedMovementLayout(false);
 
   if (!ChildLayoutBlockedByDisplayLock()) {
-    SetPosChildNeedsLayout(false);
     SetNormalChildNeedsLayout(false);
     SetNeedsSimplifiedNormalFlowLayout(false);
-  } else if (!PosChildNeedsLayout() && !NormalChildNeedsLayout() &&
-             !NeedsSimplifiedNormalFlowLayout()) {
+  } else if (!NormalChildNeedsLayout() && !NeedsSimplifiedNormalFlowLayout()) {
     // We aren't clearing the child dirty bits because the node is locked and
     // layout for children is not done. If the children aren't dirty,  we need
     // to notify the display lock that child traversal was blocked so that when
@@ -4497,10 +4431,6 @@ inline void LayoutObject::ClearNeedsLayoutWithoutPaintInvalidation() {
     DCHECK(context);
     context->NotifyChildLayoutWasBlocked();
   }
-
-#if DCHECK_IS_ON()
-  CheckBlockPositionedObjectsNeedLayout();
-#endif
 
   SetScrollAnchorDisablingStyleChanged(false);
 
@@ -4529,15 +4459,15 @@ inline void LayoutObject::SetChildNeedsLayout(MarkingBehavior mark_parents) {
   }
 }
 
-inline void LayoutObject::SetNeedsPositionedMovementLayout() {
-  bool already_needed_layout = NeedsPositionedMovementLayout();
-  SetNeedsOverflowRecalc();
-  SetNeedsPositionedMovementLayout(true);
+inline void LayoutObject::SetNeedsSimplifiedLayout() {
+  bool already_needed_layout = NeedsSimplifiedNormalFlowLayout();
+  SetNeedsSimplifiedNormalFlowLayout(true);
 #if DCHECK_IS_ON()
   DCHECK(!IsSetNeedsLayoutForbidden());
 #endif
-  if (!already_needed_layout)
+  if (!already_needed_layout) {
     MarkContainerChainForLayout();
+  }
 }
 
 // TODO(1229581): Get rid of this.

@@ -18,7 +18,7 @@
 #include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
-#include "chrome/browser/sync/trusted_vault_encryption_keys_tab_helper.h"
+#include "chrome/browser/trusted_vault/trusted_vault_encryption_keys_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/signin_reauth_view_controller.h"
 #include "chrome/browser/ui/signin_view_controller.h"
@@ -140,7 +140,7 @@ class ReauthTestObserver : SigninReauthViewController::Observer {
   }
 
  private:
-  raw_ptr<SigninReauthViewController, DanglingUntriaged> controller_;
+  raw_ptr<SigninReauthViewController, AcrossTasksDanglingUntriaged> controller_;
   base::RunLoop run_loop_;
 };
 

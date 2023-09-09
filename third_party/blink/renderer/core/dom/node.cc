@@ -62,10 +62,12 @@
 #include "third_party/blink/renderer/core/dom/focus_params.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer_registration.h"
+#include "third_party/blink/renderer/core/dom/node_cloning_data.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/dom/node_rare_data.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
+#include "third_party/blink/renderer/core/dom/part.h"
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
@@ -131,6 +133,7 @@
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -991,12 +994,15 @@ Node* Node::cloneNode(bool deep, ExceptionState& exception_state) const {
   // 2. Return a clone of this, with the clone children flag set if deep is
   // true, and the clone shadows flag set if this is a DocumentFragment whose
   // host is an HTML template element.
-  auto* fragment = DynamicTo<DocumentFragment>(this);
-  bool clone_shadows_flag = fragment && fragment->IsTemplateContent();
-  return Clone(GetDocument(),
-               deep ? (clone_shadows_flag ? CloneChildrenFlag::kCloneWithShadows
-                                          : CloneChildrenFlag::kClone)
-                    : CloneChildrenFlag::kSkip);
+  NodeCloningData data;
+  if (deep) {
+    data.Put(CloneOption::kIncludeDescendants);
+    auto* fragment = DynamicTo<DocumentFragment>(this);
+    if (fragment && fragment->IsTemplateContent()) {
+      data.Put(CloneOption::kIncludeShadowRoots);
+    }
+  }
+  return Clone(GetDocument(), data);
 }
 
 Node* Node::cloneNode(bool deep) const {
@@ -1615,15 +1621,6 @@ void Node::DetachLayoutTree(bool performing_reattach) {
   }
 }
 
-const ComputedStyle* Node::VirtualEnsureComputedStyle(
-    PseudoId pseudo_element_specifier,
-    const AtomicString& pseudo_argument) {
-  return ParentOrShadowHostNode()
-             ? ParentOrShadowHostNode()->EnsureComputedStyle(
-                   pseudo_element_specifier, pseudo_argument)
-             : nullptr;
-}
-
 void Node::SetForceReattachLayoutTree() {
   DCHECK(!GetDocument().GetStyleEngine().InRebuildLayoutTree());
   DCHECK(IsElementNode() || IsTextNode());
@@ -2237,6 +2234,16 @@ void Node::InvalidateIfHasEffectiveAppearance() const {
   layout_object->SetSubtreeShouldDoFullPaintInvalidation();
 }
 
+void Node::InvalidateDOMParts() {
+  if (UNLIKELY(RuntimeEnabledFeatures::DOMPartsAPIEnabled() && HasDOMParts())) {
+    for (Part* part : GetDOMParts()) {
+      if (part->root()) {
+        part->root()->MarkPartsDirty();
+      }
+    }
+  }
+}
+
 Node::InsertionNotificationRequest Node::InsertedInto(
     ContainerNode& insertion_point) {
   DCHECK(!ChildNeedsStyleInvalidation());
@@ -2249,6 +2256,7 @@ Node::InsertionNotificationRequest Node::InsertedInto(
     insertion_point.GetDocument().IncrementNodeCount();
 #endif
   }
+  InvalidateDOMParts();
   if (ParentOrShadowHostNode()->IsInShadowTree())
     SetFlag(kIsInShadowTreeFlag);
   if (auto* cache = GetDocument().ExistingAXObjectCache()) {
@@ -2270,6 +2278,7 @@ void Node::RemovedFrom(ContainerNode& insertion_point) {
     insertion_point.GetDocument().DecrementNodeCount();
 #endif
   }
+  InvalidateDOMParts();
   if (IsInShadowTree() && !ContainingTreeScope().RootNode().IsShadowRoot())
     ClearFlag(kIsInShadowTreeFlag);
   if (auto* cache = GetDocument().ExistingAXObjectCache()) {
@@ -2279,7 +2288,7 @@ void Node::RemovedFrom(ContainerNode& insertion_point) {
 
 String Node::DebugName() const {
   StringBuilder name;
-  name.Append(DebugNodeName());
+  name.Append(nodeName());
   if (const auto* this_element = DynamicTo<Element>(this)) {
     if (this_element->HasID()) {
       name.Append(" id=\'");
@@ -2298,10 +2307,6 @@ String Node::DebugName() const {
     }
   }
   return name.ReleaseString();
-}
-
-String Node::DebugNodeName() const {
-  return nodeName();
 }
 
 static void DumpAttributeDesc(const Node& node,

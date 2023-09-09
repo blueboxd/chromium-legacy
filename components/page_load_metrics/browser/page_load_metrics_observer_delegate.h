@@ -205,13 +205,18 @@ class PageLoadMetricsObserverDelegate {
   // Soft navigations are JS-driven same-document navigations that are using the
   // history API or the new Navigation API, triggered by a user gesture and
   // meaningfully modify the DOM, replacing the previous content with new one.
-  virtual uint32_t GetSoftNavigationCount() const = 0;
+  virtual mojom::SoftNavigationMetrics& GetSoftNavigationMetrics() const = 0;
 
-  // UKM source ID for the latest soft navigation.
+  // UKM source ID for the current soft navigation.
   virtual ukm::SourceId GetUkmSourceIdForSoftNavigation() const = 0;
 
-  // UKM source ID for the current page load. For prerendered page loads, this
-  // returns ukm::kInvalidSourceId until activation navigation.
+  // UKM source ID for the previous soft navigation.
+  virtual ukm::SourceId GetPreviousUkmSourceIdForSoftNavigation() const = 0;
+
+  // UKM source ID for the current page load.
+  // Note: For prerendered page loads, this returns ukm::kInvalidSourceId until
+  // the activation navigation. After activation, this returns a UKM source ID
+  // associated with the activation navigation's ID.
   virtual ukm::SourceId GetPageUkmSourceId() const = 0;
 
   // Whether the associated navigation is the first navigation in its associated

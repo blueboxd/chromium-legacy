@@ -4,6 +4,7 @@
 
 #include "content/services/auction_worklet/public/cpp/auction_downloader.h"
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <utility>
@@ -13,13 +14,18 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
+#include "base/unguessable_token.h"
+#include "base/values.h"
 #include "net/base/net_errors.h"
+#include "net/base/request_priority.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
+#include "net/url_request/referrer_policy.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
@@ -155,23 +161,27 @@ AuctionDownloader::AuctionDownloader(
     const GURL& source_url,
     DownloadMode download_mode,
     MimeType mime_type,
-    AuctionDownloaderCallback auction_downloader_callback)
+    AuctionDownloaderCallback auction_downloader_callback,
+    std::unique_ptr<NetworkEventsDelegate> network_events_delegate)
     : source_url_(source_url),
       mime_type_(mime_type),
-      auction_downloader_callback_(std::move(auction_downloader_callback)) {
+      request_id_(base::UnguessableToken::Create().ToString()),
+      auction_downloader_callback_(std::move(auction_downloader_callback)),
+      network_events_delegate_(std::move(network_events_delegate)) {
   DCHECK(auction_downloader_callback_);
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = source_url;
   resource_request->redirect_mode = network::mojom::RedirectMode::kError;
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
-  // TODO(morlovich): We may need to set devtools_request_id here, and pass it
-  // along in AuctionUrlLoaderFactoryProxy when supporting the devtools network
-  // tab. At that point GetRequestId() should probably get a cheaper
-  // implementation.
   resource_request->enable_load_timing =
       *TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED("devtools.timeline");
+  resource_request->devtools_request_id = request_id_;
   resource_request->headers.SetHeader(net::HttpRequestHeaders::kAccept,
                                       MimeTypeToString(mime_type_));
+
+  if (network_events_delegate_ != nullptr) {
+    network_events_delegate_->OnSendRequest(*resource_request);
+  }
 
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), kTrafficAnnotation);
@@ -180,7 +190,7 @@ AuctionDownloader::AuctionDownloader(
       "devtools.timeline", "ResourceSendRequest", TRACE_EVENT_SCOPE_THREAD,
       base::TimeTicks::Now(), "data", [&](perfetto::TracedValue dest) {
         auto dict = std::move(dest).WriteDictionary();
-        dict.Add("requestId", GetRequestId());
+        dict.Add("requestId", request_id_);
         dict.Add("url", source_url.spec());
       });
 
@@ -207,6 +217,7 @@ AuctionDownloader::AuctionDownloader(
   }
 }
 
+AuctionDownloader::NetworkEventsDelegate::~NetworkEventsDelegate() = default;
 AuctionDownloader::~AuctionDownloader() = default;
 
 void AuctionDownloader::OnHeadersOnlyReceived(
@@ -225,6 +236,10 @@ void AuctionDownloader::OnBodyReceived(std::unique_ptr<std::string> body) {
   auto simple_url_loader = std::move(simple_url_loader_);
   std::string allow_fledge;
   std::string auction_allowed;
+  if (network_events_delegate_ != nullptr) {
+    network_events_delegate_->OnRequestComplete(
+        request_id_, simple_url_loader->CompletionStatus());
+  }
 
   if (!body) {
     std::string error_msg;
@@ -316,11 +331,15 @@ void AuctionDownloader::OnRedirect(
 void AuctionDownloader::OnResponseStarted(
     const GURL& final_url,
     const network::mojom::URLResponseHead& response_head) {
+  if (network_events_delegate_ != nullptr) {
+    network_events_delegate_->OnResponseReceived(final_url,
+                                                 response_head.headers);
+  }
   TRACE_EVENT_INSTANT1(
       "devtools.timeline", "ResourceReceiveResponse", TRACE_EVENT_SCOPE_THREAD,
       "data", [&](perfetto::TracedValue dest) {
         perfetto::TracedDictionary dict = std::move(dest).WriteDictionary();
-        dict.Add("requestId", GetRequestId());
+        dict.Add("requestId", request_id_);
         if (response_head.headers) {
           dict.Add("statusCode", response_head.headers->response_code());
         }
@@ -362,13 +381,6 @@ void AuctionDownloader::OnResponseStarted(
       });
 }
 
-std::string AuctionDownloader::GetRequestId() {
-  if (!request_id_.has_value()) {
-    request_id_ = base::UnguessableToken::Create();
-  }
-  return request_id_->ToString();
-}
-
 void AuctionDownloader::TraceResult(bool failure,
                                     base::TimeTicks completion_time,
                                     int64_t encoded_data_length,
@@ -377,7 +389,7 @@ void AuctionDownloader::TraceResult(bool failure,
       "devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data",
       [&](perfetto::TracedValue dest) {
         perfetto::TracedDictionary dict = std::move(dest).WriteDictionary();
-        dict.Add("requestId", GetRequestId());
+        dict.Add("requestId", request_id_);
         dict.Add("didFail", failure);
         dict.Add("encodedDataLength", encoded_data_length);
         dict.Add("decodedBodyLength", decoded_body_length);

@@ -38,6 +38,7 @@ BASE_DECLARE_FEATURE(kPageTextExtraction);
 BASE_DECLARE_FEATURE(kPushNotifications);
 BASE_DECLARE_FEATURE(kOptimizationGuideMetadataValidation);
 BASE_DECLARE_FEATURE(kPageVisibilityBatchAnnotations);
+BASE_DECLARE_FEATURE(kTextEmbeddingBatchAnnotations);
 BASE_DECLARE_FEATURE(kPageContentAnnotationsValidation);
 BASE_DECLARE_FEATURE(kPreventLongRunningPredictionModels);
 BASE_DECLARE_FEATURE(kOverrideNumThreadsForModelExecution);
@@ -273,6 +274,9 @@ bool ShouldMetadataValidationFetchHostKeyed();
 
 // Returns if Page Visibility Batch Annotations are enabled.
 bool PageVisibilityBatchAnnotationsEnabled();
+
+// Returns if Text Embedding Batch Annotations are enabled.
+bool TextEmbeddingBatchAnnotationsEnabled();
 
 // The number of visits batch before running the page content annotation
 // models. A size of 1 is equivalent to annotating one page load at time

@@ -13,16 +13,16 @@ namespace content {
 
 IdentityRegistry::IdentityRegistry(
     content::WebContents* web_contents,
-    base::WeakPtr<FederatedIdentityModalDialogViewDelegate> delegate,
+    FederatedIdentityModalDialogViewDelegate* delegate,
     const url::Origin& registry_origin)
     : content::WebContentsUserData<IdentityRegistry>(*web_contents),
-      delegate_(delegate),
+      delegate_(std::move(delegate)),
       registry_origin_(registry_origin) {}
 
 IdentityRegistry::~IdentityRegistry() = default;
 
 void IdentityRegistry::NotifyClose(const url::Origin& notifier_origin) {
-  if (!registry_origin_.IsSameOriginWith(notifier_origin) || !delegate_) {
+  if (!registry_origin_.IsSameOriginWith(notifier_origin)) {
     return;
   }
 
@@ -31,10 +31,9 @@ void IdentityRegistry::NotifyClose(const url::Origin& notifier_origin) {
 
 bool IdentityRegistry::NotifyResolve(const url::Origin& notifier_origin,
                                      const std::string& token) {
-  if (!registry_origin_.IsSameOriginWith(notifier_origin) || !delegate_) {
+  if (!registry_origin_.IsSameOriginWith(notifier_origin)) {
     return false;
   }
-
   return delegate_->NotifyResolve(token);
 }
 

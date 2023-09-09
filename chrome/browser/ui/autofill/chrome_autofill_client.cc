@@ -98,6 +98,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/storage_partition.h"
+#include "delete_address_profile_dialog_controller_impl.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/origin.h"
@@ -110,6 +111,7 @@
 #include "chrome/browser/touch_to_fill/payments/android/touch_to_fill_credit_card_view_impl.h"
 #include "chrome/browser/ui/android/autofill/autofill_accessibility_utils.h"
 #include "chrome/browser/ui/android/autofill/autofill_logger_android.h"
+#include "chrome/browser/ui/android/autofill/autofill_save_card_bottom_sheet_bridge.h"
 #include "chrome/browser/ui/android/autofill/card_expiration_date_fix_flow_view_android.h"
 #include "chrome/browser/ui/android/autofill/card_name_fix_flow_view_android.h"
 #include "chrome/browser/ui/android/infobars/autofill_credit_card_filling_infobar.h"
@@ -129,6 +131,7 @@
 #include "components/webauthn/android/internal_authenticator_android.h"
 #include "ui/android/window_android.h"
 #else  // BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/ui/autofill/delete_address_profile_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/offer_notification_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/save_upi_bubble_controller_impl.h"
@@ -202,8 +205,7 @@ AutofillOptimizationGuide* ChromeAutofillClient::GetAutofillOptimizationGuide()
 PersonalDataManager* ChromeAutofillClient::GetPersonalDataManager() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  return PersonalDataManagerFactory::GetForProfile(
-      profile->GetOriginalProfile());
+  return PersonalDataManagerFactory::GetForProfile(profile);
 }
 
 AutocompleteHistoryManager*
@@ -742,6 +744,15 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
     UploadSaveCardPromptCallback callback) {
 #if BUILDFLAG(IS_ANDROID)
   DCHECK(options.show_prompt);
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnablePaymentsAndroidBottomSheet)) {
+    if (!autofill_save_card_bottom_sheet_bridge_) {
+      autofill_save_card_bottom_sheet_bridge_ =
+          std::make_unique<AutofillSaveCardBottomSheetBridge>(web_contents());
+    }
+    autofill_save_card_bottom_sheet_bridge_->RequestShowContent();
+    return;
+  }
 
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(GetProfile());
@@ -777,6 +788,19 @@ void ChromeAutofillClient::ConfirmCreditCardFillAssist(
               std::move(infobar_delegate)))) {
     raw_delegate->set_was_shown();
   }
+#endif
+}
+
+void ChromeAutofillClient::ShowDeleteAddressProfileDialog() {
+#if !BUILDFLAG(IS_ANDROID)
+  DeleteAddressProfileDialogControllerImpl::CreateForWebContents(
+      web_contents());
+  DeleteAddressProfileDialogControllerImpl* controller =
+      DeleteAddressProfileDialogControllerImpl::FromWebContents(web_contents());
+  controller->OfferDelete();
+#else
+  // Delete address profile dialog is only available is desktop.
+  NOTREACHED();
 #endif
 }
 
@@ -872,8 +896,7 @@ void ChromeAutofillClient::ShowAutofillPopup(
       web_contents()->GetNativeView(), element_bounds_in_screen_space,
       open_args.text_direction);
 
-  popup_controller_->Show(open_args.suggestions,
-                          open_args.autoselect_first_suggestion);
+  popup_controller_->Show(open_args.suggestions, open_args.trigger_source);
 
   // When testing, try to keep popup open when the reason to hide is from an
   // external browser frame resize that is extraneous to our testing goals.
@@ -900,7 +923,8 @@ void ChromeAutofillClient::PinPopupView() {
 }
 
 autofill::AutofillClient::PopupOpenArgs
-ChromeAutofillClient::GetReopenPopupArgs() const {
+ChromeAutofillClient::GetReopenPopupArgs(
+    AutofillSuggestionTriggerSource trigger_source) const {
   const AutofillPopupController* controller = popup_controller_.get();
   if (!controller)
     return autofill::AutofillClient::PopupOpenArgs();
@@ -912,12 +936,13 @@ ChromeAutofillClient::GetReopenPopupArgs() const {
       controller->element_bounds() - client_area.OffsetFromOrigin();
   return autofill::AutofillClient::PopupOpenArgs(
       screen_space_independent_bounds, controller->GetElementTextDirection(),
-      controller->GetSuggestions(), AutoselectFirstSuggestion(false));
+      controller->GetSuggestions(), trigger_source);
 }
 
 void ChromeAutofillClient::UpdatePopup(
     const std::vector<Suggestion>& suggestions,
-    PopupType popup_type) {
+    PopupType popup_type,
+    AutofillSuggestionTriggerSource trigger_source) {
   if (!popup_controller_.get())
     return;  // Update only if there is a popup.
 
@@ -932,8 +957,8 @@ void ChromeAutofillClient::UpdatePopup(
     return;
   }
 
-  // Calling show will reuse the existing view automatically
-  popup_controller_->Show(suggestions, AutoselectFirstSuggestion(false));
+  // Calling show will reuse the existing view automatically.
+  popup_controller_->Show(suggestions, trigger_source);
 }
 
 void ChromeAutofillClient::HideAutofillPopup(PopupHidingReason reason) {
@@ -996,8 +1021,7 @@ void ChromeAutofillClient::OnVirtualCardDataAvailable(
 #if BUILDFLAG(IS_ANDROID)
   // Show the virtual card snackbar only if the ManualFillingComponent component
   // is enabled for credit cards.
-  if (features::IsAutofillManualFallbackEnabled() ||
-      base::FeatureList::IsEnabled(
+  if (base::FeatureList::IsEnabled(
           autofill::features::kAutofillEnableManualFallbackForVirtualCards)) {
     if (!autofill_snackbar_controller_impl_) {
       autofill_snackbar_controller_impl_ =
@@ -1224,6 +1248,15 @@ ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
   }
 #endif
 }
+
+#if BUILDFLAG(IS_ANDROID)
+void ChromeAutofillClient::SetAutofillSaveCardBottomSheetBridgeForTesting(
+    std::unique_ptr<AutofillSaveCardBottomSheetBridge>
+        autofill_save_card_bottom_sheet_bridge) {
+  autofill_save_card_bottom_sheet_bridge_ =
+      std::move(autofill_save_card_bottom_sheet_bridge);
+}
+#endif
 
 Profile* ChromeAutofillClient::GetProfile() const {
   if (!web_contents())

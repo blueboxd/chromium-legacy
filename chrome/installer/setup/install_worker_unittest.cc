@@ -178,8 +178,7 @@ void AddChromeToInstallationState(bool system_level,
   product_state.set_version(new base::Version(*current_version));
   product_state.set_brand(L"TEST");
   product_state.set_eula_accepted(1);
-  base::FilePath install_path =
-      installer::GetDefaultChromeInstallPath(system_level);
+  base::FilePath install_path = installer::GetChromeInstallPath(system_level);
   product_state.SetUninstallProgram(
       install_path.AppendASCII(current_version->GetString())
           .Append(installer::kInstallerDir)
@@ -226,8 +225,7 @@ void AddChromeToInstallerState(const InstallationState& machine_state,
         chrome->GetSetupPath().DirName().DirName().DirName());
   } else {
     installer_state->set_target_path_for_testing(
-        installer::GetDefaultChromeInstallPath(
-            installer_state->system_install()));
+        installer::GetChromeInstallPath(installer_state->system_install()));
   }
 }
 

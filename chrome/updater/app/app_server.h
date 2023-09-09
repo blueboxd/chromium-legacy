@@ -57,7 +57,7 @@ class AppServer : public App {
 
  private:
   // Overrides of App.
-  void Initialize() final;
+  [[nodiscard]] int Initialize() final;
   void FirstTaskRun() final;
 
   // Sets up the server to handle active version RPCs.
@@ -101,14 +101,14 @@ class AppServer : public App {
   // Uninstalls the updater if it doesn't manage any apps, aside from itself.
   void MaybeUninstall();
 
+  scoped_refptr<ExternalConstants> external_constants_ =
+      CreateExternalConstants();
   base::OnceClosure first_task_;
-  scoped_refptr<ExternalConstants> external_constants_;
   scoped_refptr<UpdaterPrefs> prefs_;
   scoped_refptr<Configurator> config_;
   base::RepeatingTimer hang_timer_;
 
-  // If true, this version of the updater should uninstall itself during
-  // shutdown.
+  // If true, this version of the updater uninstalls itself during shutdown.
   bool uninstall_self_ = false;
 
   // The number of times the server has started, as read from global prefs.
@@ -118,7 +118,7 @@ class AppServer : public App {
   int tasks_running_ = 0;
 };
 
-scoped_refptr<App> AppServerInstance();
+scoped_refptr<App> MakeAppServer();
 
 }  // namespace updater
 

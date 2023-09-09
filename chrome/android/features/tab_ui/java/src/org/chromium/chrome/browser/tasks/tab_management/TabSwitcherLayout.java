@@ -19,9 +19,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
+import org.chromium.base.ResettersForTesting;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -77,6 +77,8 @@ public class TabSwitcherLayout extends Layout {
     private static final String TRACE_DONE_SHOWING_TAB_SWITCHER = "TabSwitcherLayout.DoneShowing";
     private static final String TRACE_DONE_HIDING_TAB_SWITCHER = "TabSwitcherLayout.DoneHiding";
 
+    private final BrowserControlsStateProvider mBrowserControlsStateProvider;
+
     // The transition animation from a tab to the tab switcher.
     private AnimatorSet mTabToSwitcherAnimation;
     private boolean mIsAnimatingHide;
@@ -99,7 +101,6 @@ public class TabSwitcherLayout extends Layout {
     // calculations during animations.
     private Boolean mCachedIsTabGtsAnimationEnabled;
     private float mBackgroundAlpha;
-    private int mTabListTopOffset;
 
     private int mFrameCount;
     private long mStartTime;
@@ -108,6 +109,9 @@ public class TabSwitcherLayout extends Layout {
     private int mStartFrame;
 
     private boolean mAndroidViewFinishedShowing;
+
+    private Handler mHandler;
+    private Runnable mFinishedShowingRunnable;
 
     /**
      * Notified when the animation is complete.
@@ -120,16 +124,18 @@ public class TabSwitcherLayout extends Layout {
     private PerfListener mPerfListenerForTesting;
 
     public TabSwitcherLayout(Context context, LayoutUpdateHost updateHost,
-            LayoutRenderHost renderHost, TabSwitcher tabSwitcher,
-            @Nullable ViewGroup tabSwitcherScrimAnchor,
+            LayoutRenderHost renderHost, BrowserControlsStateProvider browserControlsStateProvider,
+            TabSwitcher tabSwitcher, @Nullable ViewGroup tabSwitcherScrimAnchor,
             @Nullable ScrimCoordinator scrimCoordinator) {
         super(context, updateHost, renderHost);
+        mBrowserControlsStateProvider = browserControlsStateProvider;
         mTabSwitcher = tabSwitcher;
         mController = mTabSwitcher.getController();
         mTabSwitcher.setOnTabSelectingListener(this::onTabSelecting);
         mGridTabListDelegate = mTabSwitcher.getTabListDelegate();
         mScrimAnchor = tabSwitcherScrimAnchor;
         mScrimCoordinator = scrimCoordinator;
+        mHandler = new Handler();
 
         mTabSwitcherObserver = new TabSwitcherViewObserver() {
             @Override
@@ -151,21 +157,29 @@ public class TabSwitcherLayout extends Layout {
                     // Delay thumbnail taking a bit more to make it less likely to happen before the
                     // thumbnail taking triggered by ThumbnailFetcher. See crbug.com/996385 for
                     // details.
-                    new Handler().postDelayed(() -> {
+                    mFinishedShowingRunnable = () -> {
                         Tab currentTab = mTabModelSelector.getCurrentTab();
                         if (currentTab != null) mTabContentManager.cacheTabThumbnail(currentTab);
                         mLayoutTabs = null;
-                    }, ZOOMING_DURATION);
+                        mFinishedShowingRunnable = null;
+                    };
+                    mHandler.postDelayed(mFinishedShowingRunnable, ZOOMING_DURATION);
                 } else {
                     // crbug.com/1176548, mLayoutTabs is used to capture thumbnail, null it in a
                     // post delay handler to avoid creating a new pending surface in native, which
                     // will hold the thumbnail capturing task.
-                    new Handler().postDelayed(() -> { mLayoutTabs = null; }, ZOOMING_DURATION);
+                    mFinishedShowingRunnable = () -> {
+                        mLayoutTabs = null;
+                        mFinishedShowingRunnable = null;
+                    };
+                    mHandler.postDelayed(mFinishedShowingRunnable, ZOOMING_DURATION);
                 }
             }
 
             @Override
-            public void startedHiding() {}
+            public void startedHiding() {
+                removeFinishedShowingRunnable();
+            }
 
             @Override
             public void finishedHiding() {
@@ -214,6 +228,10 @@ public class TabSwitcherLayout extends Layout {
     public void show(long time, boolean animate) {
         try (TraceEvent e = TraceEvent.scoped(TRACE_SHOW_TAB_SWITCHER)) {
             super.show(time, animate);
+
+            // Prevent pending thumbnail captures from running if we start to show again very
+            // quickly.
+            removeFinishedShowingRunnable();
 
             // Keep the current tab in mLayoutTabs even if we are not going to show the shrinking
             // animation so that thumbnail taking is not blocked.
@@ -416,19 +434,18 @@ public class TabSwitcherLayout extends Layout {
         }
 
         forceAnimationToFinish();
-        // TODO(crbug/1423109): mLayoutTabs shouldn't be null here, but it is possible the delayed
-        // removal via a handler in mTabSwitcherObserver#finishedShowing results in a null
-        // mLayoutTabs. This should be fixed by simplifying thumbnail capture logic.
-        if (mLayoutTabs == null) {
-            LayoutTab sourceLayoutTab = createLayoutTab(
-                    mTabModelSelector.getCurrentTabId(), mTabModelSelector.isIncognitoSelected());
-            sourceLayoutTab.setDecorationAlpha(0);
 
-            mLayoutTabs = new LayoutTab[] {sourceLayoutTab};
-        }
+        assert mLayoutTabs != null
+                && mLayoutTabs.length > 0
+            : "mLayoutTabs should have at least one entry during shrink animation.";
         LayoutTab sourceLayoutTab = mLayoutTabs[0];
         CompositorAnimationHandler handler = getAnimationHandler();
         Collection<Animator> animationList = new ArrayList<>(5);
+
+        // With the post start surface refactoring this offset overcompensates. Offset the reverse
+        // for the rect.
+        int tabListTopOffset = mGridTabListDelegate.getTabListTopOffset();
+        targetRect.offset(0, -tabListTopOffset);
 
         // Step 1: zoom out the source tab
         Supplier<Float> scaleStartValueSupplier = () -> 1.0f;
@@ -453,13 +470,13 @@ public class TabSwitcherLayout extends Layout {
         // down, making the "create group" visible for a while.
         animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
                 LayoutTab.MAX_CONTENT_HEIGHT, sourceLayoutTab.getUnclampedOriginalContentHeight(),
-                TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne()
-                        ? Math.min(getWidth() / TabUtils.getTabThumbnailAspectRatio(getContext()),
-                                sourceLayoutTab.getUnclampedOriginalContentHeight())
-                        : getWidth(),
+                TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne() ? Math.min(getWidth()
+                                / TabUtils.getTabThumbnailAspectRatio(
+                                        getContext(), mBrowserControlsStateProvider),
+                        sourceLayoutTab.getUnclampedOriginalContentHeight())
+                                                                        : getWidth(),
                 ZOOMING_DURATION, Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
 
-        int mTabListTopOffset = mGridTabListDelegate.getTabListTopOffset();
         CompositorAnimator backgroundAlpha =
                 CompositorAnimator.ofFloat(handler, 0f, 1f, BACKGROUND_FADING_DURATION_MS,
                         animator -> mBackgroundAlpha = animator.getAnimatedValue());
@@ -495,11 +512,19 @@ public class TabSwitcherLayout extends Layout {
      * @param source The source {@link Rect} area.
      */
     private void expandTab(Rect source) {
+        assert mLayoutTabs != null
+                && mLayoutTabs.length > 0
+            : "mLayoutTabs should have at least one entry during expand animation.";
         LayoutTab sourceLayoutTab = mLayoutTabs[0];
 
         forceAnimationToFinish();
         CompositorAnimationHandler handler = getAnimationHandler();
         Collection<Animator> animationList = new ArrayList<>(5);
+
+        // With the post start surface refactoring this offset overcompensates. Offset the reverse
+        // for the rect.
+        int tabListTopOffset = mGridTabListDelegate.getTabListTopOffset();
+        source.offset(0, -tabListTopOffset);
 
         // Zoom in the source tab
         animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
@@ -515,14 +540,14 @@ public class TabSwitcherLayout extends Layout {
         // down, making the "create group" visible for a while.
         animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
                 LayoutTab.MAX_CONTENT_HEIGHT,
-                TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne()
-                        ? Math.min(getWidth() / TabUtils.getTabThumbnailAspectRatio(getContext()),
-                                sourceLayoutTab.getUnclampedOriginalContentHeight())
-                        : getWidth(),
+                TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne() ? Math.min(getWidth()
+                                / TabUtils.getTabThumbnailAspectRatio(
+                                        getContext(), mBrowserControlsStateProvider),
+                        sourceLayoutTab.getUnclampedOriginalContentHeight())
+                                                                        : getWidth(),
                 sourceLayoutTab.getUnclampedOriginalContentHeight(), ZOOMING_DURATION,
                 Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
 
-        int mTabListTopOffset = mGridTabListDelegate.getTabListTopOffset();
         CompositorAnimator backgroundAlpha =
                 CompositorAnimator.ofFloat(handler, 1f, 0f, BACKGROUND_FADING_DURATION_MS,
                         animator -> mBackgroundAlpha = animator.getAnimatedValue());
@@ -631,12 +656,11 @@ public class TabSwitcherLayout extends Layout {
         doneHiding();
     }
 
-    @VisibleForTesting
     public void setPerfListenerForTesting(PerfListener perfListener) {
         mPerfListenerForTesting = perfListener;
+        ResettersForTesting.register(() -> mPerfListenerForTesting = null);
     }
 
-    @VisibleForTesting
     public TabSwitcher getTabSwitcherForTesting() {
         return mTabSwitcher;
     }
@@ -688,7 +712,7 @@ public class TabSwitcherLayout extends Layout {
         mSceneLayer.pushLayers(getContext(), contentViewport, contentViewport, this,
                 tabContentManager, resourceManager, browserControls,
                 isTabGtsAnimationEnabled(false) ? mGridTabListDelegate.getResourceId() : 0,
-                mBackgroundAlpha, mTabListTopOffset);
+                mBackgroundAlpha, 0);
         mFrameCount++;
         if (mLastFrameTime != 0) {
             long elapsed = SystemClock.elapsedRealtime() - mLastFrameTime;
@@ -726,6 +750,13 @@ public class TabSwitcherLayout extends Layout {
     @Override
     public boolean isRunningAnimations() {
         return mDeferredAnimationRunnable != null || mTabToSwitcherAnimation != null;
+    }
+
+    private void removeFinishedShowingRunnable() {
+        if (mFinishedShowingRunnable != null) {
+            mHandler.removeCallbacks(mFinishedShowingRunnable);
+            mFinishedShowingRunnable = null;
+        }
     }
 
     /**

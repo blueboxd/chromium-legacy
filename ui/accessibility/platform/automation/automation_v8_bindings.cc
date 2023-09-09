@@ -554,6 +554,45 @@ void AutomationV8Bindings::SendChildTreeIDEvent(
                                        args);
 }
 
+void AutomationV8Bindings::SendTreeDestroyedEvent(const AXTreeID& tree_id) {
+  base::Value::List args;
+  args.Append(tree_id.ToString());
+  automation_v8_router_->DispatchEvent(
+      "automationInternal.onAccessibilityTreeDestroyed", args);
+}
+
+void AutomationV8Bindings::SendGetTextLocationResult(
+    const ui::AXActionData& data,
+    const absl::optional<gfx::Rect>& rect) {
+  base::Value::Dict params;
+  params.Set("tree_id", data.target_tree_id.ToString());
+  params.Set("node_id", data.target_node_id);
+  params.Set("result", false);
+  if (rect) {
+    params.Set("left", rect.value().x());
+    params.Set("top", rect.value().y());
+    params.Set("width", rect.value().width());
+    params.Set("height", rect.value().height());
+    params.Set("result", true);
+  }
+  params.Set("request_id", data.request_id);
+
+  base::Value::List args;
+  args.Append(std::move(params));
+  automation_v8_router_->DispatchEvent(
+      "automationInternal.onGetTextLocationResult", args);
+}
+
+void AutomationV8Bindings::SendActionResultEvent(const ui::AXActionData& data,
+                                                 bool result) {
+  base::Value::List args;
+  args.Append(data.target_tree_id.ToString());
+  args.Append(data.request_id);
+  args.Append(result);
+  automation_v8_router_->DispatchEvent("automationInternal.onActionResult",
+                                       args);
+}
+
 void AutomationV8Bindings::SendAutomationEvent(
     const AXTreeID& tree_id,
     const AXEvent& event,

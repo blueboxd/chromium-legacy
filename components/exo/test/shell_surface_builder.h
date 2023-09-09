@@ -62,6 +62,7 @@ class ShellSurfaceBuilder {
   ShellSurfaceBuilder& SetParent(ShellSurface* shell_surface);
   ShellSurfaceBuilder& SetAsPopup();
   ShellSurfaceBuilder& SetAsMenu();
+  ShellSurfaceBuilder& SetClientSubmitsInPixelCoordinates(bool enabled);
   ShellSurfaceBuilder& SetConfigureCallback(
       ShellSurface::ConfigureCallback callback);
 
@@ -117,6 +118,7 @@ class ShellSurfaceBuilder {
   raw_ptr<ShellSurface, ExperimentalAsh> parent_shell_surface_ = nullptr;
   bool popup_ = false;
   bool menu_ = false;
+  absl::optional<bool> client_submits_surfaces_in_pixel_coordinates_;
   ShellSurface::ConfigureCallback configure_callback_;
 
   // ClientControlledShellSurface-specific parameters.

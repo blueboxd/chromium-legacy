@@ -10,15 +10,12 @@ import {BookmarksApiProxyImpl} from 'chrome://bookmarks-side-panel.top-chrome/bo
 import {PowerBookmarkRowElement} from 'chrome://bookmarks-side-panel.top-chrome/power_bookmark_row.js';
 import {PowerBookmarksListElement} from 'chrome://bookmarks-side-panel.top-chrome/power_bookmarks_list.js';
 import {ShoppingListApiProxyImpl} from 'chrome://bookmarks-side-panel.top-chrome/shared/commerce/shopping_list_api_proxy.js';
-import {SpEmptyStateElement} from 'chrome://bookmarks-side-panel.top-chrome/shared/sp_empty_state.js';
 import {PageImageServiceBrowserProxy} from 'chrome://resources/cr_components/page_image_service/browser_proxy.js';
 import {PageImageServiceHandlerRemote} from 'chrome://resources/cr_components/page_image_service/page_image_service.mojom-webui.js';
-import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
-import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
+import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import {TestMock} from 'chrome://webui-test/test_mock.js';
 
 import {TestShoppingListApiProxy} from './commerce/test_shopping_list_api_proxy.js';
@@ -80,6 +77,10 @@ suite('SidePanelPowerBookmarksListTest', () => {
     return Array.from(root.shadowRoot!.querySelectorAll('power-bookmark-row'));
   }
 
+  function isHidden(element: HTMLElement): boolean {
+    return element.matches('[hidden], [hidden] *');
+  }
+
   setup(async () => {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
 
@@ -109,10 +110,16 @@ suite('SidePanelPowerBookmarksListTest', () => {
     });
 
     powerBookmarksList = document.createElement('power-bookmarks-list');
-    document.body.appendChild(powerBookmarksList);
+
+    // Ensure the PowerBookmarksListElement is given a fixed height to expand
+    // to.
+    const parentElement = document.createElement('div');
+    parentElement.style.height = '500px';
+    parentElement.appendChild(powerBookmarksList);
+    document.body.appendChild(parentElement);
 
     await bookmarksApi.whenCalled('getFolders');
-    await flushTasks();
+    await waitAfterNextRender(powerBookmarksList);
   });
 
   test('GetsAndShowsTopLevelBookmarks', () => {
@@ -256,12 +263,9 @@ suite('SidePanelPowerBookmarksListTest', () => {
   });
 
   test('SetsExpandedDescription', () => {
-    const menu =
-        powerBookmarksList.shadowRoot!.querySelector<CrActionMenuElement>(
-            '#editMenu')!;
-    menu.showAt(powerBookmarksList);
-    const visualViewButton: HTMLElement = menu.querySelector('#visualView')!;
-    visualViewButton.click();
+    const viewButton: HTMLElement =
+        powerBookmarksList.shadowRoot!.querySelector('#viewButton')!;
+    viewButton.click();
 
     const bookmarkElements = getBookmarkElements(powerBookmarksList);
     assertEquals(4, bookmarkElements.length);
@@ -274,13 +278,10 @@ suite('SidePanelPowerBookmarksListTest', () => {
     assertTrue(urlListItemElement!.description!.includes(expandedDescription));
   });
 
-  test('SetsExpandedSearchResultDescription', () => {
-    const menu =
-        powerBookmarksList.shadowRoot!.querySelector<CrActionMenuElement>(
-            '#editMenu')!;
-    menu.showAt(powerBookmarksList);
-    const visualViewButton: HTMLElement = menu.querySelector('#visualView')!;
-    visualViewButton.click();
+  test('SetsExpandedSearchResultDescription', async () => {
+    const viewButton: HTMLElement =
+        powerBookmarksList.shadowRoot!.querySelector('#viewButton')!;
+    viewButton.click();
 
     const searchField = powerBookmarksList.shadowRoot!.querySelector(
         'cr-toolbar-search-field')!;
@@ -288,7 +289,7 @@ suite('SidePanelPowerBookmarksListTest', () => {
     searchField.onSearchTermInput();
     searchField.onSearchTermSearch();
 
-    flush();
+    await flushTasks();
 
     const bookmarkElements = getBookmarkElements(powerBookmarksList);
     assertEquals(4, bookmarkElements.length);
@@ -301,64 +302,10 @@ suite('SidePanelPowerBookmarksListTest', () => {
     assertTrue(urlListItemElement!.description!.includes(expandedDescription));
   });
 
-  test('RenamesBookmark', async () => {
-    const renamedBookmarkId = '4';
-    powerBookmarksList.setRenamingIdForTests(renamedBookmarkId);
-
-    await flushTasks();
-
-    const rowElement =
-        powerBookmarksList.shadowRoot!.querySelector<PowerBookmarkRowElement>(
-            `#bookmark-${renamedBookmarkId}`);
-    assertTrue(!!rowElement);
-    let input =
-        rowElement.shadowRoot!.querySelector<CrInputElement>('cr-input');
-    assertTrue(!!input);
-    const newName = 'foo';
-    input.value = newName;
-    input.inputElement.dispatchEvent(new Event('change'));
-
-    await flushTasks();
-
-    // Committing a new input value should rename the bookmark and remove the
-    // input.
-    assertEquals(1, bookmarksApi.getCallCount('renameBookmark'));
-    assertEquals(
-        renamedBookmarkId, bookmarksApi.getArgs('renameBookmark')[0][0]);
-    assertEquals(newName, bookmarksApi.getArgs('renameBookmark')[0][1]);
-    input = rowElement.shadowRoot!.querySelector<CrInputElement>('cr-input');
-    assertFalse(!!input);
-  });
-
-  test('BlursRenameInput', async () => {
-    const renamedBookmarkId = '4';
-    powerBookmarksList.setRenamingIdForTests(renamedBookmarkId);
-
-    await flushTasks();
-
-    const rowElement =
-        powerBookmarksList.shadowRoot!.querySelector<PowerBookmarkRowElement>(
-            `#bookmark-${renamedBookmarkId}`);
-    assertTrue(!!rowElement);
-    let input =
-        rowElement.shadowRoot!.querySelector<CrInputElement>('cr-input');
-    assertTrue(!!input);
-    input.inputElement.blur();
-
-    await flushTasks();
-
-    // Blurring the input should remove it.
-    input = rowElement.shadowRoot!.querySelector<CrInputElement>('cr-input');
-    assertFalse(!!input);
-  });
-
   test('ShowsFolderImages', () => {
-    const menu =
-        powerBookmarksList.shadowRoot!.querySelector<CrActionMenuElement>(
-            '#editMenu')!;
-    menu.showAt(powerBookmarksList);
-    const visualViewButton: HTMLElement = menu.querySelector('#visualView')!;
-    visualViewButton.click();
+    const viewButton: HTMLElement =
+        powerBookmarksList.shadowRoot!.querySelector('#viewButton')!;
+    viewButton.click();
 
     flush();
 
@@ -379,38 +326,72 @@ suite('SidePanelPowerBookmarksListTest', () => {
     assertNotEquals(0, otherBookmarksUrlListItemElement.imageUrls.length);
   });
 
-  test('ShowsCorrectEmptyState', () => {
-    function emptyStateIsHidden(emptyState: SpEmptyStateElement): boolean {
-      return emptyState.matches('[hidden], [hidden] *');
-    }
-
+  test('TogglesSectionVisibilityAndEmptyStates', async () => {
+    const search = powerBookmarksList.$.searchField;
+    const filterChips = powerBookmarksList.$.filterChips;
+    const heading = powerBookmarksList.$.heading;
     const folderEmptyState = powerBookmarksList.$.folderEmptyState;
+    const bookmarksList = powerBookmarksList.$.bookmarks;
     const topLevelEmptyState = powerBookmarksList.$.topLevelEmptyState;
+    const footer = powerBookmarksList.$.footer;
     assertEquals(
         loadTimeData.getString('emptyTitle'), topLevelEmptyState.heading);
     assertEquals(loadTimeData.getString('emptyBody'), topLevelEmptyState.body);
 
-    // Has bookmarks so both empty states should be hidden.
-    assertTrue(emptyStateIsHidden(folderEmptyState));
-    assertTrue(emptyStateIsHidden(topLevelEmptyState));
+    // Has bookmarks.
+    assertFalse(isHidden(search));
+    assertTrue(isHidden(filterChips));
+    assertFalse(isHidden(heading));
+    assertTrue(isHidden(folderEmptyState));
+    assertFalse(isHidden(bookmarksList));
+    assertTrue(isHidden(topLevelEmptyState));
+    assertFalse(isHidden(footer));
 
-    // Opening an empty folder should show the folder empty state.
+    // Opening an empty folder.
     getBookmarkElements(powerBookmarksList)[0]!.$.crUrlListItem.click();
-    flush();
-    assertFalse(emptyStateIsHidden(folderEmptyState));
-    assertTrue(emptyStateIsHidden(topLevelEmptyState));
+    await flushTasks();
+    assertFalse(isHidden(search));
+    assertTrue(isHidden(filterChips));
+    assertFalse(isHidden(heading));
+    assertFalse(isHidden(folderEmptyState));
+    assertTrue(isHidden(bookmarksList));
+    assertTrue(isHidden(topLevelEmptyState));
+    assertFalse(isHidden(footer));
 
-    // A search with no results should show the top level empty state with
-    // text specific to search.
+    // A search with no results.
     const searchField =
         powerBookmarksList.shadowRoot!.querySelector('cr-toolbar-search-field');
     assertTrue(!!searchField);
     searchField.$.searchInput.value = 'abcdef';
     searchField.onSearchTermSearch();
-    flush();
+    await flushTasks();
     assertEquals(
         loadTimeData.getString('emptyTitleSearch'), topLevelEmptyState.heading);
-    assertTrue(emptyStateIsHidden(folderEmptyState));
-    assertFalse(emptyStateIsHidden(topLevelEmptyState));
+    assertFalse(isHidden(search));
+    assertTrue(isHidden(filterChips));
+    assertTrue(isHidden(heading));
+    assertTrue(isHidden(folderEmptyState));
+    assertTrue(isHidden(bookmarksList));
+    assertFalse(isHidden(topLevelEmptyState));
+    assertTrue(isHidden(footer));
+
+    // Adding a tracked product shows filter chips.
+    const newProduct = {
+      bookmarkId: BigInt(3),
+      info: {
+        title: 'Product Baz',
+        clusterTitle: 'Product Cluster Baz',
+        domain: 'baz.com',
+        imageUrl: {url: 'https://baz.com/image'},
+        productUrl: {url: 'https://baz.com/product'},
+        currentPrice: '$56',
+        previousPrice: '$78',
+        clusterId: BigInt(12345),
+      },
+    };
+    shoppingListApi.getCallbackRouterRemote().priceTrackedForBookmark(
+        newProduct);
+    await flushTasks();
+    assertFalse(isHidden(filterChips));
   });
 });

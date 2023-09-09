@@ -49,7 +49,8 @@ class MediaAuthorizationWrapperImpl final : public MediaAuthorizationWrapper {
 
   ~MediaAuthorizationWrapperImpl() override = default;
 
-  NSInteger AuthorizationStatusForMediaType(AVMediaType media_type) override {
+  NSInteger AuthorizationStatusForMediaType(
+      AVMediaType media_type) override {
     if (@available(macOS 10.14, *)) {
       return [AVCaptureDevice authorizationStatusForMediaType:media_type];
     } else {
@@ -95,8 +96,9 @@ NSInteger MediaAuthorizationStatus(AVMediaType media_type) {
 }
 
 SystemPermission CheckSystemMediaCapturePermission(AVMediaType media_type) {
-  if (UsingFakeMediaDevices())
+  if (UsingFakeMediaDevices()) {
     return SystemPermission::kAllowed;
+  }
 
   if (@available(macOS 10.14, *)) {
     NSInteger auth_status = MediaAuthorizationStatus(media_type);
@@ -162,11 +164,11 @@ SystemPermission CheckSystemScreenCapturePermission() {
                                   : SystemPermission::kDenied;
 }
 
-void RequestSystemAudioCapturePermisson(base::OnceClosure callback) {
+void RequestSystemAudioCapturePermission(base::OnceClosure callback) {
   RequestSystemMediaCapturePermission(AVMediaTypeAudio, std::move(callback));
 }
 
-void RequestSystemVideoCapturePermisson(base::OnceClosure callback) {
+void RequestSystemVideoCapturePermission(base::OnceClosure callback) {
   RequestSystemMediaCapturePermission(AVMediaTypeVideo, std::move(callback));
 }
 

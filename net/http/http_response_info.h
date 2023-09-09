@@ -183,6 +183,12 @@ class NET_EXPORT HttpResponseInfo {
   // |InitFromPickle()| then use it to replace |was_fetched_via_proxy|.
   ProxyServer proxy_server;
 
+  // Whether this request was covered by IP protection. This may be true even if
+  // the IP Protection proxy server is `direct://`. It is false if `was_cached`.
+  // This field is not persisted by `Persist()` and not restored by
+  // `InitFromPickle()`.
+  bool was_ip_protected = false;
+
   // Whether the request use http proxy or server authentication.
   bool did_use_http_auth = false;
 
@@ -271,6 +277,9 @@ class NET_EXPORT HttpResponseInfo {
   // If not null, this indicates the response is stored during a certain browser
   // session. Used for filtering cache access.
   absl::optional<int64_t> browser_run_id;
+
+  // True if the response used a shared dictionary for decoding its body.
+  bool did_use_shared_dictionary = false;
 
   static std::string ConnectionInfoToString(ConnectionInfo connection_info);
 };

@@ -12,6 +12,7 @@
 #include "ash/public/cpp/external_arc/message_center/arc_notification_content_view.h"
 #include "ash/public/cpp/external_arc/message_center/arc_notification_delegate.h"
 #include "ash/public/cpp/external_arc/message_center/arc_notification_view.h"
+#include "ash/public/cpp/external_arc/message_center/metadata_utils.h"
 #include "ash/public/cpp/external_arc/message_center/metrics_utils.h"
 #include "ash/public/cpp/message_center/arc_notification_constants.h"
 #include "base/metrics/histogram_macros.h"
@@ -131,9 +132,17 @@ void ArcNotificationItemImpl::OnUpdatedFromAndroid(
       features::IsRenderArcNotificationsByChromeEnabled() &&
       data->render_on_chrome;
 
-  const auto notification_type = render_on_chrome
-                                     ? message_center::NOTIFICATION_TYPE_SIMPLE
-                                     : message_center::NOTIFICATION_TYPE_CUSTOM;
+  const auto notification_type =
+      render_on_chrome
+          ? ((data->indeterminate_progress || data->progress_max != -1)
+                 ? message_center::NOTIFICATION_TYPE_PROGRESS
+                 : message_center::NOTIFICATION_TYPE_SIMPLE)
+          : message_center::NOTIFICATION_TYPE_CUSTOM;
+
+  rich_data.progress = std::clamp(
+      static_cast<int>(std::round(static_cast<float>(data->progress_current) /
+                                  data->progress_max * 100)),
+      -1, 100);
 
   // Add buttons to Chrome rendered ARC notifications only, as ARC rendered
   // notifications already have buttons.
@@ -155,17 +164,18 @@ void ArcNotificationItemImpl::OnUpdatedFromAndroid(
     }
   }
 
-  auto notification = std::make_unique<message_center::Notification>(
-      notification_type, notification_id_, base::UTF8ToUTF16(data->title),
-      base::UTF8ToUTF16(data->message), ui::ImageModel(),
-      u"arc",  // display source
-      GURL(),  // empty origin url, for system component
-      notifier_id, rich_data,
+  auto notification = CreateNotificationFromArcNotificationData(
+      notification_type, notification_id_, data.get(), notifier_id, rich_data,
       new ArcNotificationDelegate(weak_ptr_factory_.GetWeakPtr()));
+
   notification->set_timestamp(base::Time::FromJavaTime(data->time));
 
   if (notification_type == message_center::NOTIFICATION_TYPE_CUSTOM) {
     notification->set_custom_view_type(kArcNotificationCustomViewType);
+  }
+
+  if (notification_type == message_center::NOTIFICATION_TYPE_PROGRESS) {
+    notification->set_progress_status(base::UTF8ToUTF16(data->message));
   }
 
   if (expand_state_ != ArcNotificationExpandState::FIXED_SIZE &&

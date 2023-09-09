@@ -179,6 +179,11 @@ class COMPONENT_EXPORT(UI_BASE) ElementTracker
                                            Callback callback);
 
   // Adds a callback that will be called whenever an element with identifier
+  // `id` is activated in any context.
+  Subscription AddElementActivatedInAnyContextCallback(ElementIdentifier id,
+                                                       Callback callback);
+
+  // Adds a callback that will be called whenever an element with identifier
   // `id` in `context` is hidden.
   //
   // Note: the TrackedElement* passed to the callback may not remain
@@ -188,11 +193,26 @@ class COMPONENT_EXPORT(UI_BASE) ElementTracker
                                         ElementContext context,
                                         Callback callback);
 
+  // Adds a callback that will be called whenever an element with identifier
+  // `id` is hidden in any context.
+  //
+  // Note: the TrackedElement* passed to the callback may not remain
+  // valid after the call, even if the same element object in its UI framework
+  // is re-shown (a new TrackedElement may be generated).
+  Subscription AddElementHiddenInAnyContextCallback(ElementIdentifier id,
+                                                    Callback callback);
+
   // Adds a callback that will be called whenever an event of `event_type` is
   // generated within `context` by any element.
   Subscription AddCustomEventCallback(CustomElementEventType event_type,
                                       ElementContext context,
                                       Callback callback);
+
+  // Adds a callback that will be called whenever an event of `event_type` is
+  // generated within any context.
+  Subscription AddCustomEventInAnyContextCallback(
+      CustomElementEventType event_type,
+      Callback callback);
 
   // Returns all known contexts.
   Contexts GetAllContextsForTesting() const;
@@ -290,10 +310,17 @@ class COMPONENT_EXPORT(UI_BASE) SafeElementReference {
 #define DEFINE_CLASS_CUSTOM_ELEMENT_EVENT_TYPE(ClassName, EventName) \
   DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(ClassName, EventName)
 
+// This produces a unique, mangled name that can safely be used in macros called
+// by tests without having to worry about global name collisions. For production
+// code, use DECLARE/DEFINE above instead. You should pass __FILE__ and __LINE__
+// for `File`, and `Line`, respectively.
+#define DEFINE_MACRO_CUSTOM_ELEMENT_EVENT_TYPE(File, Line, EventName) \
+  DEFINE_MACRO_ELEMENT_IDENTIFIER_VALUE(File, Line, EventName)
+
 // This produces a unique, mangled name that can safely be used in tests
 // without having to worry about global name collisions. For production code,
 // use DECLARE/DEFINE above instead.
 #define DEFINE_LOCAL_CUSTOM_ELEMENT_EVENT_TYPE(EventName) \
-  DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(EventName)
+  DEFINE_MACRO_ELEMENT_IDENTIFIER_VALUE(__FILE__, __LINE__, EventName)
 
 #endif  // UI_BASE_INTERACTION_ELEMENT_TRACKER_H_

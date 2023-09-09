@@ -30,6 +30,7 @@
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/test/test_sync_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/mock_resource_bundle_delegate.h"
@@ -79,10 +80,9 @@ class AutofillSuggestionGeneratorTest : public testing::Test {
                           /*local_state=*/autofill_client_.GetPrefs(),
                           /*identity_manager=*/nullptr,
                           /*history_service=*/nullptr,
-                          /*sync_service=*/nullptr,
+                          /*sync_service=*/&sync_service_,
                           /*strike_database=*/nullptr,
-                          /*image_fetcher=*/nullptr,
-                          /*is_off_the_record=*/false);
+                          /*image_fetcher=*/nullptr);
     suggestion_generator_ = std::make_unique<TestAutofillSuggestionGenerator>(
         &autofill_client_, personal_data());
     autofill_client_.set_autofill_offer_manager(
@@ -159,6 +159,7 @@ class AutofillSuggestionGeneratorTest : public testing::Test {
       base::test::TaskEnvironment::TimeSource::SYSTEM_TIME};
   test::AutofillUnitTestEnvironment autofill_test_environment_;
   TestAutofillClient autofill_client_;
+  syncer::TestSyncService sync_service_;
   std::unique_ptr<TestAutofillSuggestionGenerator> suggestion_generator_;
   scoped_refptr<AutofillWebDataService> database_;
   testing::NiceMock<ui::MockResourceBundleDelegate> mock_resource_delegate_;
@@ -515,7 +516,7 @@ TEST_F(AutofillSuggestionGeneratorTest, ShouldShowVirtualCardOption) {
   CreditCard server_card =
       CreateServerCard(/*guid=*/"00000000-0000-0000-0000-000000000001");
   server_card.set_virtual_card_enrollment_state(
-      CreditCard::VirtualCardEnrollmentState::ENROLLED);
+      CreditCard::VirtualCardEnrollmentState::kEnrolled);
   personal_data()->AddServerCreditCard(server_card);
 
   // Create a local card with same information.
@@ -536,7 +537,7 @@ TEST_F(AutofillSuggestionGeneratorTest,
   CreditCard server_card =
       CreateServerCard(/*guid=*/"00000000-0000-0000-0000-000000000001");
   server_card.set_virtual_card_enrollment_state(
-      CreditCard::VirtualCardEnrollmentState::ENROLLED);
+      CreditCard::VirtualCardEnrollmentState::kEnrolled);
   personal_data()->AddServerCreditCard(server_card);
   autofill_client()->ResetAutofillOptimizationGuide();
 
@@ -558,7 +559,7 @@ TEST_F(AutofillSuggestionGeneratorTest,
   CreditCard server_card =
       CreateServerCard(/*guid=*/"00000000-0000-0000-0000-000000000001");
   server_card.set_virtual_card_enrollment_state(
-      CreditCard::VirtualCardEnrollmentState::ENROLLED);
+      CreditCard::VirtualCardEnrollmentState::kEnrolled);
   personal_data()->AddServerCreditCard(server_card);
 
   // Create a local card with same information.
@@ -585,7 +586,7 @@ TEST_F(AutofillSuggestionGeneratorTest,
   CreditCard server_card =
       CreateServerCard(/*guid=*/"00000000-0000-0000-0000-000000000001");
   server_card.set_virtual_card_enrollment_state(
-      CreditCard::VirtualCardEnrollmentState::UNSPECIFIED);
+      CreditCard::VirtualCardEnrollmentState::kUnspecified);
   personal_data()->AddServerCreditCard(server_card);
 
   // Create a local card with same information.
@@ -786,15 +787,9 @@ TEST_F(AutofillSuggestionGeneratorTest,
 // suggestions. It covers suggestions on Desktop/Android dropdown, and on
 // Android keyboard accessory.
 class AutofillCreditCardSuggestionContentTest
-    : public AutofillSuggestionGeneratorTest,
-      public testing::WithParamInterface<bool> {
+    : public AutofillSuggestionGeneratorTest {
  public:
   AutofillCreditCardSuggestionContentTest() {
-#if BUILDFLAG(IS_ANDROID)
-    keyboard_accessory_enabled_ = GetParam();
-    feature_list_keyboard_accessory_.InitWithFeatureState(
-        features::kAutofillKeyboardAccessory, keyboard_accessory_enabled_);
-#endif
     feature_list_metadata_.InitWithFeatures(
         /*enabled_features=*/{features::kAutofillEnableVirtualCardMetadata,
                               features::kAutofillEnableCardProductName},
@@ -805,7 +800,7 @@ class AutofillCreditCardSuggestionContentTest
 
   bool keyboard_accessory_enabled() const {
 #if BUILDFLAG(IS_ANDROID)
-    return keyboard_accessory_enabled_;
+    return true;
 #else
     return false;
 #endif
@@ -825,20 +820,12 @@ class AutofillCreditCardSuggestionContentTest
 #endif
 
  private:
-#if BUILDFLAG(IS_ANDROID)
-  bool keyboard_accessory_enabled_;
-  base::test::ScopedFeatureList feature_list_keyboard_accessory_;
-#endif
   base::test::ScopedFeatureList feature_list_metadata_;
 };
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         AutofillCreditCardSuggestionContentTest,
-                         testing::Bool());
-
 // Verify that the suggestion's texts are populated correctly for a virtual card
 // suggestion when the cardholder name field is focused.
-TEST_P(AutofillCreditCardSuggestionContentTest,
+TEST_F(AutofillCreditCardSuggestionContentTest,
        CreateCreditCardSuggestion_VirtualCardMetadata_NameField) {
   CreditCard server_card = CreateServerCard();
 
@@ -902,7 +889,7 @@ TEST_P(AutofillCreditCardSuggestionContentTest,
 
 // Verify that the suggestion's texts are populated correctly for a virtual card
 // suggestion when the card number field is focused.
-TEST_P(AutofillCreditCardSuggestionContentTest,
+TEST_F(AutofillCreditCardSuggestionContentTest,
        CreateCreditCardSuggestion_VirtualCardMetadata_NumberField) {
   CreditCard server_card = CreateServerCard();
 
@@ -950,7 +937,7 @@ TEST_P(AutofillCreditCardSuggestionContentTest,
 
 // Verify that the suggestion's texts are populated correctly for a masked
 // server card suggestion when the cardholder name field is focused.
-TEST_P(AutofillCreditCardSuggestionContentTest,
+TEST_F(AutofillCreditCardSuggestionContentTest,
        CreateCreditCardSuggestion_MaskedServerCardMetadata_NameField) {
   CreditCard server_card = CreateServerCard();
 
@@ -993,7 +980,7 @@ TEST_P(AutofillCreditCardSuggestionContentTest,
 
 // Verify that the suggestion's texts are populated correctly for a masked
 // server card suggestion when the card number field is focused.
-TEST_P(AutofillCreditCardSuggestionContentTest,
+TEST_F(AutofillCreditCardSuggestionContentTest,
        CreateCreditCardSuggestion_MaskedServerCardMetadata_NumberField) {
   CreditCard server_card = CreateServerCard();
 
@@ -1102,7 +1089,7 @@ class AutofillSuggestionGeneratorTestForMetadata
     return std::get<0>(GetParam());
   }
   bool card_art_image_enabled() const { return std::get<1>(GetParam()); }
-  bool card_has_capital_one_icon() const { return std::get<2>(GetParam()); }
+  bool card_has_static_art_image() const { return std::get<2>(GetParam()); }
 
  private:
   base::test::ScopedFeatureList feature_list_card_product_description_;
@@ -1134,9 +1121,8 @@ TEST_P(AutofillSuggestionGeneratorTestForMetadata,
             PopupItemId::kVirtualCreditCardEntry);
   EXPECT_EQ(virtual_card_suggestion.GetPayload<Suggestion::BackendId>(),
             Suggestion::BackendId("00000000-0000-0000-0000-000000000001"));
-  EXPECT_EQ(VerifyCardArtImageExpectation(virtual_card_suggestion, card_art_url,
-                                          fake_image),
-            card_art_image_enabled());
+  EXPECT_TRUE(VerifyCardArtImageExpectation(virtual_card_suggestion,
+                                            card_art_url, fake_image));
 
   Suggestion real_card_suggestion =
       suggestion_generator()->CreateCreditCardSuggestion(
@@ -1196,9 +1182,8 @@ TEST_P(AutofillSuggestionGeneratorTestForMetadata,
             PopupItemId::kVirtualCreditCardEntry);
   EXPECT_EQ(virtual_card_suggestion.GetPayload<Suggestion::BackendId>(),
             Suggestion::BackendId("00000000-0000-0000-0000-000000000001"));
-  EXPECT_EQ(VerifyCardArtImageExpectation(virtual_card_suggestion, card_art_url,
-                                          fake_image),
-            card_art_image_enabled());
+  EXPECT_TRUE(VerifyCardArtImageExpectation(virtual_card_suggestion,
+                                            card_art_url, fake_image));
 
   Suggestion real_card_suggestion =
       suggestion_generator()->CreateCreditCardSuggestion(
@@ -1221,7 +1206,7 @@ TEST_P(AutofillSuggestionGeneratorTestForMetadata,
     // Create one server card with no metadata.
     CreditCard server_card = CreateServerCard();
     server_card.set_issuer_id(kCapitalOneCardIssuerId);
-    if (card_has_capital_one_icon()) {
+    if (card_has_static_art_image()) {
       server_card.set_card_art_url(GURL(kCapitalOneCardArtUrl));
     }
     personal_data()->AddServerCreditCard(server_card);
@@ -1280,45 +1265,6 @@ TEST_P(AutofillSuggestionGeneratorTestForMetadata,
   }
 }
 
-// Verifies that the custom icon is set correctly. The card art should be shown
-// when the metadata card art flag is enabled. Capital One virtual card icon is
-// an exception which should only and always be shown for virtual cards.
-TEST_P(AutofillSuggestionGeneratorTestForMetadata,
-       CreateCreditCardSuggestion_CustomCardIcon) {
-  // Create a server card.
-  CreditCard server_card = CreateServerCard();
-  GURL card_art_url =
-      GURL(card_has_capital_one_icon() ? kCapitalOneCardArtUrl
-                                       : "https://www.example.com/card-art");
-  server_card.set_card_art_url(card_art_url);
-  gfx::Image fake_image = CreateFakeImage();
-  personal_data()->AddCardArtImage(card_art_url, fake_image);
-
-  Suggestion virtual_card_suggestion =
-      suggestion_generator()->CreateCreditCardSuggestion(
-          server_card, AutofillType(CREDIT_CARD_NUMBER),
-          /*virtual_card_option=*/true,
-          /*card_linked_offer_available=*/false);
-
-  // Verify that for virtual cards, the custom icon is shown if the card art is
-  // the Capital One virtual card art or if the metadata card art is enabled.
-  EXPECT_EQ(VerifyCardArtImageExpectation(virtual_card_suggestion, card_art_url,
-                                          fake_image),
-            card_has_capital_one_icon() || card_art_image_enabled());
-
-  Suggestion real_card_suggestion =
-      suggestion_generator()->CreateCreditCardSuggestion(
-          server_card, AutofillType(CREDIT_CARD_NUMBER),
-          /*virtual_card_option=*/false,
-          /*card_linked_offer_available=*/false);
-
-  // Verify that for FPAN, the custom icon is shown if the card art is not the
-  // Capital One virtual card art and the metadata card art is enabled.
-  EXPECT_EQ(VerifyCardArtImageExpectation(real_card_suggestion, card_art_url,
-                                          fake_image),
-            !card_has_capital_one_icon() && card_art_image_enabled());
-}
-
 class AutofillSuggestionGeneratorTestForOffer
     : public AutofillSuggestionGeneratorTest,
       public testing::WithParamInterface<bool> {
@@ -1328,13 +1274,10 @@ class AutofillSuggestionGeneratorTestForOffer
     keyboard_accessory_offer_enabled_ = GetParam();
     if (keyboard_accessory_offer_enabled_) {
       scoped_feature_keyboard_accessory_offer_.InitWithFeatures(
-          {features::kAutofillKeyboardAccessory,
-           features::kAutofillEnableOffersInClankKeyboardAccessory},
-          {});
+          {features::kAutofillEnableOffersInClankKeyboardAccessory}, {});
     } else {
       scoped_feature_keyboard_accessory_offer_.InitWithFeatures(
-          {}, {features::kAutofillKeyboardAccessory,
-               features::kAutofillEnableOffersInClankKeyboardAccessory});
+          {}, {features::kAutofillEnableOffersInClankKeyboardAccessory});
     }
 #endif
   }

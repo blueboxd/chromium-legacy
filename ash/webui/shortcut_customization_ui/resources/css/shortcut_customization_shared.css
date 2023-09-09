@@ -38,7 +38,9 @@
 }
 
 :host-context(body.jelly-enabled) cr-dialog::part(dialog) {
+  background-color: var(--cros-bg-color-elevation-3);
   border-radius: 20px;
+  box-shadow: var(--cros-elevation-3-shadow);
 }
 
 iron-icon[icon='shortcut-customization:lock'] {
@@ -59,8 +61,6 @@ iron-icon[icon='shortcut-customization:lock'] {
   align-items: center;
   display: flex;
   margin-inline-start: 8px;
-  opacity: 0;
-  transition: opacity 300ms, transform 100ms;
 }
 
 .edit-icon-container[hidden] {
@@ -71,5 +71,7 @@ iron-icon[icon='shortcut-customization:lock'] {
   --cr-icon-button-icon-size: 16px;
   --cr-icon-button-fill-color: var(--cros-text-color-secondary);
   --cr-icon-button-icon-start-offset: 3px;
+  opacity: 0;
   padding-top: 3px;
+  transition: opacity 300ms, transform 100ms;
 }

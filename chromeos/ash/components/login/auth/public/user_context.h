@@ -105,6 +105,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH_PUBLIC) UserContext {
       const;
   const absl::optional<SyncTrustedVaultKeys>& GetSyncTrustedVaultKeys() const;
   bool CanLockManagedGuestSession() const;
+  AuthSessionIntents GetAuthorizedIntents() const;
 
   bool HasCredentials() const;
   bool HasReplacementKey() const;
@@ -114,6 +115,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH_PUBLIC) UserContext {
 
   void SetAccountId(const AccountId& account_id);
   void SetKey(const Key& key);
+  void SetReplacementKey(const Key& replacement_key);
 
   // This method is used in key replacement scenario, when user's online
   // password was changed externally. Upon next online sign-in the new verified

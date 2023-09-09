@@ -104,11 +104,15 @@ class DiceTestSigninClient : public TestSigninClient, public GaiaAuthConsumer {
 class FakeRegistrationTokenHelper : public RegistrationTokenHelper {
  public:
   FakeRegistrationTokenHelper()
-      : RegistrationTokenHelper(fake_unexportable_key_service_,
-                                "test_client_id",
-                                "test_auth_code",
-                                GURL("https://accounts.google.com/Register"),
-                                base::DoNothing()) {}
+      : RegistrationTokenHelper(
+            fake_unexportable_key_service_,
+            base::BindRepeating(
+                [](crypto::SignatureVerifier::SignatureAlgorithm,
+                   base::span<const uint8_t>,
+                   base::Time) -> absl::optional<std::string> {
+                  return absl::nullopt;
+                }),
+            base::DoNothing()) {}
 
   ~FakeRegistrationTokenHelper() override = default;
 
@@ -257,7 +261,7 @@ class DiceResponseHandlerTest : public testing::Test,
   std::string auth_error_email_;
 #if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
   base::test::ScopedFeatureList feature_list_{
-      switches::kEnableBoundSessionCrendentials};
+      switches::kEnableBoundSessionCredentials};
   StrictMock<
       base::MockCallback<DiceResponseHandler::RegistrationTokenHelperFactory>>
       mock_registration_token_helper_factory_;

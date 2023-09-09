@@ -12,7 +12,7 @@ import {BackgroundBridge} from '../common/background_bridge.js';
 import {BrailleCommandData} from '../common/braille/braille_command_data.js';
 import {BridgeConstants} from '../common/bridge_constants.js';
 import {BridgeHelper} from '../common/bridge_helper.js';
-import {Command, CommandCategory, CommandStore} from '../common/command_store.js';
+import {Command, CommandStore} from '../common/command_store.js';
 import {EventSourceType} from '../common/event_source_type.js';
 import {GestureCommandData} from '../common/gesture_command_data.js';
 import {KeyMap} from '../common/key_map.js';
@@ -35,10 +35,9 @@ const $ = (id) => document.getElementById(id);
 /** Class to manage the panel. */
 export class Panel extends PanelInterface {
   /**
-   * @param {boolean} deprecateTabsMenu Whether to deprecate the tabs menu.
    * @private
    */
-  constructor(deprecateTabsMenu) {
+  constructor() {
     super();
     /** @private {!PanelMode} */
     this.mode_ = PanelMode.COLLAPSED;
@@ -78,9 +77,6 @@ export class Panel extends PanelInterface {
 
     /** @private {boolean} */
     this.tutorialReadyForTesting_ = false;
-
-    /** @private {boolean} */
-    this.deprecateTabsMenu_ = deprecateTabsMenu;
 
     this.initListeners_();
   }
@@ -132,14 +128,7 @@ export class Panel extends PanelInterface {
     await SettingsManager.init();
     LocaleOutputHelper.init();
 
-    const deprecateTabsMenu = await new Promise(resolve => {
-      chrome.accessibilityPrivate.isFeatureEnabled(
-          chrome.accessibilityPrivate.AccessibilityFeature
-              .CHROMEVOX_TABS_DEPRECATION,
-          resolve);
-    });
-
-    Panel.instance = new Panel(deprecateTabsMenu);
+    Panel.instance = new Panel();
     PanelInterface.instance = Panel.instance;
 
     Msgs.addTranslatedMessagesToDom(document);
@@ -333,9 +322,6 @@ export class Panel extends PanelInterface {
       const touchMenu = touchScreen ?
           this.menuManager_.addMenu('panel_menu_touchgestures') :
           null;
-      const tabsMenu = this.deprecateTabsMenu_ ?
-          null :
-          this.menuManager_.addMenu('panel_menu_tabs');
       const chromevoxMenu = this.menuManager_.addMenu('panel_menu_chromevox');
       const actionsMenu = this.menuManager_.addMenu('panel_menu_actions');
 
@@ -345,21 +331,8 @@ export class Panel extends PanelInterface {
 
       // Create a mapping between categories from CommandStore, and our
       // top-level menus. Some categories aren't mapped to any menu.
-      const categoryToMenu = {
-        [CommandCategory.NAVIGATION]: jumpMenu,
-        [CommandCategory.JUMP_COMMANDS]: jumpMenu,
-        [CommandCategory.OVERVIEW]: jumpMenu,
-        [CommandCategory.TABLES]: jumpMenu,
-        [CommandCategory.CONTROLLING_SPEECH]: speechMenu,
-        [CommandCategory.INFORMATION]: speechMenu,
-        [CommandCategory.MODIFIER_KEYS]: chromevoxMenu,
-        [CommandCategory.HELP_COMMANDS]: chromevoxMenu,
-        [CommandCategory.ACTIONS]: actionsMenu,
-
-        [CommandCategory.BRAILLE]: null,
-        [CommandCategory.DEVELOPER]: null,
-        [CommandCategory.NO_CATEGORY]: null,
-      };
+      const categoryToMenu = this.menuManager_.makeCategoryMapping(
+          actionsMenu, chromevoxMenu, jumpMenu, speechMenu);
 
       // TODO(accessibility): Commands should be based off of CommandStore and
       // not the keymap. There are commands that don't have a key binding (e.g.
@@ -463,10 +436,6 @@ export class Panel extends PanelInterface {
         }
       }
 
-      if (!this.deprecateTabsMenu_) {
-        this.populateTabsMenu_(tabsMenu);
-      }
-
       if (this.sessionState_ !== 'IN_SESSION') {
         this.menuManager_.denySignedOut();
       }
@@ -523,25 +492,6 @@ export class Panel extends PanelInterface {
       onFocusDo();
     } else {
       window.addEventListener('focus', onFocusDo);
-    }
-  }
-
-  /**
-   * Creates and populates the Tabs menu.
-   * @private
-   */
-  async populateTabsMenu_(tabsMenu) {
-    // Add all open tabs to the Tabs menu.
-    const data = await BackgroundBridge.PanelBackground.getTabMenuData();
-    for (const menuInfo of data) {
-      tabsMenu.addMenuItem(menuInfo.title, '', '', '', async () => {
-        BackgroundBridge.PanelBackground.focusTab(
-            menuInfo.windowId, menuInfo.tabId);
-      });
-    }
-
-    if (this.sessionState_ !== 'IN_SESSION') {
-      tabsMenu.disable();
     }
   }
 

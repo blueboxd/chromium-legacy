@@ -143,11 +143,25 @@ std::unique_ptr<views::ImageView> GetIconImageViewByName(
     return ImageViewFromVectorIcon(kKeyIcon, kIconSize);
   }
 
+  if (icon_str == "deleteIcon") {
+    return ImageViewFromVectorIcon(kTrashCanLightIcon, kIconSize);
+  }
+
   if (icon_str == "clearIcon") {
     return ImageViewFromVectorIcon(kBackspaceIcon, kIconSize);
   }
 
+  if (icon_str == "undoIcon") {
+    return ImageViewFromVectorIcon(vector_icons::kUndoIcon, kIconSize);
+  }
+
   if (icon_str == "globeIcon") {
+    return ImageViewFromVectorIcon(kGlobeIcon, kIconSize);
+  }
+
+  // TODO(crbug.com/1459990): Use proper icon. The magic_button icon does not
+  // exist yet, I will introduce it in a follow up cl.
+  if (icon_str == "magicIcon") {
     return ImageViewFromVectorIcon(kGlobeIcon, kIconSize);
   }
 
@@ -357,14 +371,10 @@ void AddSuggestionContentToView(
     std::unique_ptr<views::Label> description_label,
     std::vector<std::unique_ptr<views::View>> subtext_views,
     PopupCellView& content_view) {
-  bool has_control_element =
-      suggestion.popup_item_id == PopupItemId::kAutocompleteEntry &&
-      base::FeatureList::IsEnabled(
-          features::kAutofillShowAutocompleteDeleteButton);
   views::BoxLayout& layout =
       *content_view.SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,
-          GetMarginsForContentCell(has_control_element)));
+          GetMarginsForContentCell(/*has_control_element=*/false)));
 
   layout.set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);

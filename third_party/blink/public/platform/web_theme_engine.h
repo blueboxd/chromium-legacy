@@ -132,6 +132,12 @@ class WebThemeEngine {
     float zoom;
   };
 
+  enum class ArrowDirection : int {
+    kDown,
+    kLeft,
+    kRight,
+  };
+
   // Extra parameters for PartMenuList
   struct MenuListExtraParams {
     bool has_border;
@@ -139,6 +145,7 @@ class WebThemeEngine {
     int arrow_x;
     int arrow_y;
     int arrow_size;
+    ArrowDirection arrow_direction;
     SkColor arrow_color;
     SkColor background_color;
     bool fill_content_area;
@@ -205,6 +212,11 @@ class WebThemeEngine {
     mojom::ColorScheme scrollbar_theme;
     ScrollbarOrientation orientation;
     float scale_from_dip;
+    absl::optional<SkColor> thumb_color;
+    absl::optional<SkColor> track_color;
+
+    ScrollbarExtraParams()
+        : thumb_color(absl::nullopt), track_color(absl::nullopt) {}
   };
 #endif
 
@@ -220,6 +232,8 @@ class WebThemeEngine {
     ScrollbarButtonExtraParams scrollbar_button;
 #if BUILDFLAG(IS_MAC)
     ScrollbarExtraParams scrollbar_extra;
+
+    ExtraParams() : scrollbar_extra() {}
 #endif
   };
 

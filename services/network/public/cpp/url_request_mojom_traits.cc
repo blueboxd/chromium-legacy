@@ -106,6 +106,8 @@ bool StructTraits<network::mojom::TrustedUrlRequestParamsDataView,
   }
   out->accept_ch_frame_observer = data.TakeAcceptChFrameObserver<
       mojo::PendingRemote<network::mojom::AcceptCHFrameObserver>>();
+  out->shared_dictionary_observer = data.TakeSharedDictionaryObserver<
+      mojo::PendingRemote<network::mojom::SharedDictionaryAccessObserver>>();
   return true;
 }
 
@@ -219,6 +221,11 @@ bool StructTraits<
       data.attribution_reporting_eligibility();
   out->shared_dictionary_writer_enabled =
       data.shared_dictionary_writer_enabled();
+#if BUILDFLAG(IS_ANDROID)
+  if (!data.ReadCreatedLocation(&out->created_location)) {
+    return false;
+  }
+#endif
   return true;
 }
 

@@ -625,6 +625,29 @@ void BindCreditCardToStatement(const CreditCard& credit_card,
   s->BindString16(index++, credit_card.nickname());
 }
 
+void BindLocalStoredCvcToStatement(const CreditCard& credit_card,
+                                   const base::Time& modification_date,
+                                   sql::Statement* s,
+                                   const AutofillTableEncryptor& encryptor) {
+  CHECK(credit_card.record_type() == CreditCard::LOCAL_CARD);
+  DCHECK(base::Uuid::ParseCaseInsensitive(credit_card.guid()).is_valid());
+  int index = 0;
+  s->BindString(index++, credit_card.guid());
+
+  BindEncryptedValueToColumn(s, index++, credit_card.cvc(), encryptor);
+  s->BindInt64(index++, modification_date.ToTimeT());
+}
+
+void BindServerStoredCvcToStatement(int64_t instrument_id,
+                                    const std::u16string& cvc,
+                                    const AutofillTableEncryptor& encryptor,
+                                    sql::Statement* s) {
+  int index = 0;
+  s->BindInt64(index++, instrument_id);
+  BindEncryptedValueToColumn(s, index++, cvc, encryptor);
+  s->BindInt64(index++, AutofillClock::Now().ToTimeT());
+}
+
 void BindIBANToStatement(const IBAN& iban,
                          sql::Statement* s,
                          const AutofillTableEncryptor& encryptor) {
@@ -677,27 +700,35 @@ std::u16string UnencryptValueFromColumn(
 }
 
 std::unique_ptr<CreditCard> CreditCardFromStatement(
-    sql::Statement& s,
+    sql::Statement& card_statement,
+    absl::optional<std::reference_wrapper<sql::Statement>> cvc_statement,
     const AutofillTableEncryptor& encryptor) {
   auto credit_card = std::make_unique<CreditCard>();
 
   int index = 0;
-  credit_card->set_guid(s.ColumnString(index++));
+  credit_card->set_guid(card_statement.ColumnString(index++));
   DCHECK(base::Uuid::ParseCaseInsensitive(credit_card->guid()).is_valid());
 
   for (ServerFieldType type : {CREDIT_CARD_NAME_FULL, CREDIT_CARD_EXP_MONTH,
                                CREDIT_CARD_EXP_4_DIGIT_YEAR}) {
-    credit_card->SetRawInfo(type, s.ColumnString16(index++));
+    credit_card->SetRawInfo(type, card_statement.ColumnString16(index++));
   }
-  credit_card->SetRawInfo(CREDIT_CARD_NUMBER,
-                          UnencryptValueFromColumn(s, index++, encryptor));
-  credit_card->set_use_count(s.ColumnInt64(index++));
-  credit_card->set_use_date(base::Time::FromTimeT(s.ColumnInt64(index++)));
+  credit_card->SetRawInfo(
+      CREDIT_CARD_NUMBER,
+      UnencryptValueFromColumn(card_statement, index++, encryptor));
+  credit_card->set_use_count(card_statement.ColumnInt64(index++));
+  credit_card->set_use_date(
+      base::Time::FromTimeT(card_statement.ColumnInt64(index++)));
   credit_card->set_modification_date(
-      base::Time::FromTimeT(s.ColumnInt64(index++)));
-  credit_card->set_origin(s.ColumnString(index++));
-  credit_card->set_billing_address_id(s.ColumnString(index++));
-  credit_card->SetNickname(s.ColumnString16(index++));
+      base::Time::FromTimeT(card_statement.ColumnInt64(index++)));
+  credit_card->set_origin(card_statement.ColumnString(index++));
+  credit_card->set_billing_address_id(card_statement.ColumnString(index++));
+  credit_card->SetNickname(card_statement.ColumnString16(index++));
+  // Only set cvc if we retrieve cvc from local_stored_cvc table.
+  if (cvc_statement) {
+    credit_card->set_cvc(
+        UnencryptValueFromColumn(cvc_statement.value(), 0, encryptor));
+  }
   return credit_card;
 }
 
@@ -1703,6 +1734,20 @@ bool AutofillTable::GetAutofillProfilesFromLegacyTable(
   return s.Succeeded();
 }
 
+base::flat_map<int64_t, std::u16string> AutofillTable::GetAllServerCvcs()
+    const {
+  std::vector<std::pair<int64_t, std::u16string>> cvcs;
+  sql::Statement s;
+  SelectBuilder(db_, s, kServerStoredCvcTable,
+                {kInstrumentId, kValueEncrypted});
+  while (s.Step()) {
+    int64_t instrument_id = s.ColumnInt64(0);
+    cvcs.emplace_back(instrument_id, UnencryptValueFromColumn(
+                                         s, 1, *autofill_table_encryptor_));
+  }
+  return cvcs;
+}
+
 bool AutofillTable::GetServerProfiles(
     std::vector<std::unique_ptr<AutofillProfile>>* profiles) const {
   profiles->clear();
@@ -1902,18 +1947,36 @@ bool AutofillTable::GetIBANs(std::vector<std::unique_ptr<IBAN>>* ibans) {
 }
 
 bool AutofillTable::AddCreditCard(const CreditCard& credit_card) {
-  sql::Statement s;
-  InsertBuilder(db_, s, kCreditCardsTable,
+  // We have 2 independent DB operations:
+  // 1. Insert a credit_card
+  // 2. Insert a CVC.
+  // We don't wrap these in a transaction because a credit_card without a CVC is
+  // a valid record, we are OK that the CC is stored but the CVC fails silently.
+  // We only return false if credit_card insert fails.
+  sql::Statement card_statement;
+  InsertBuilder(db_, card_statement, kCreditCardsTable,
                 {kGuid, kNameOnCard, kExpirationMonth, kExpirationYear,
                  kCardNumberEncrypted, kUseCount, kUseDate, kDateModified,
                  kOrigin, kBillingAddressId, kNickname});
-  BindCreditCardToStatement(credit_card, AutofillClock::Now(), &s,
+  BindCreditCardToStatement(credit_card, AutofillClock::Now(), &card_statement,
                             *autofill_table_encryptor_);
 
-  if (!s.Run())
+  if (!card_statement.Run()) {
     return false;
+  }
 
   DCHECK_GT(db_->GetLastChangeCount(), 0);
+
+  // If credit card contains cvc, will store cvc in local_stored_cvc table.
+  if (!credit_card.cvc().empty()) {
+    sql::Statement cvc_statement;
+    InsertBuilder(db_, cvc_statement, kLocalStoredCvcTable,
+                  {kGuid, kValueEncrypted, kLastUpdatedTimestamp});
+    BindLocalStoredCvcToStatement(credit_card, AutofillClock::Now(),
+                                  &cvc_statement, *autofill_table_encryptor_);
+    cvc_statement.Run();
+  }
+
   return true;
 }
 
@@ -1925,27 +1988,41 @@ bool AutofillTable::UpdateCreditCard(const CreditCard& credit_card) {
   if (!old_credit_card)
     return false;
 
-  bool update_modification_date = *old_credit_card != credit_card;
+  bool cvc_result = false;
+  if (old_credit_card->cvc() != credit_card.cvc()) {
+    sql::Statement cvc_statement;
+    UpdateBuilder(db_, cvc_statement, kLocalStoredCvcTable,
+                  {kGuid, kValueEncrypted, kLastUpdatedTimestamp}, "guid=?1");
+    BindLocalStoredCvcToStatement(credit_card, AutofillClock::Now(),
+                                  &cvc_statement, *autofill_table_encryptor_);
+    cvc_result = cvc_statement.Run();
+    CHECK(db_->GetLastChangeCount() > 0);
+  }
 
-  sql::Statement s;
-  UpdateBuilder(db_, s, kCreditCardsTable,
+  // If only cvc is updated, we don't need to update credit_card table
+  // date_modified field. Since we already checked if cvc updated, to ignore
+  // cvc, we set old_credit_card cvc to new cvc.
+  old_credit_card->set_cvc(credit_card.cvc());
+  bool card_updated = *old_credit_card != credit_card;
+  sql::Statement card_statement;
+  UpdateBuilder(db_, card_statement, kCreditCardsTable,
                 {kGuid, kNameOnCard, kExpirationMonth, kExpirationYear,
                  kCardNumberEncrypted, kUseCount, kUseDate, kDateModified,
                  kOrigin, kBillingAddressId, kNickname},
                 "guid=?1");
   BindCreditCardToStatement(credit_card,
-                            update_modification_date
-                                ? AutofillClock::Now()
-                                : old_credit_card->modification_date(),
-                            &s, *autofill_table_encryptor_);
+                            card_updated ? AutofillClock::Now()
+                                         : old_credit_card->modification_date(),
+                            &card_statement, *autofill_table_encryptor_);
+  bool card_result = card_statement.Run();
+  CHECK(db_->GetLastChangeCount() > 0);
 
-  bool result = s.Run();
-  DCHECK_GT(db_->GetLastChangeCount(), 0);
-  return result;
+  return cvc_result || card_result;
 }
 
 bool AutofillTable::RemoveCreditCard(const std::string& guid) {
   DCHECK(base::Uuid::ParseCaseInsensitive(guid).is_valid());
+  DeleteWhereColumnEq(db_, kLocalStoredCvcTable, kGuid, guid);
   return DeleteWhereColumnEq(db_, kCreditCardsTable, kGuid, guid);
 }
 
@@ -1979,18 +2056,31 @@ bool AutofillTable::AddFullServerCreditCard(const CreditCard& credit_card) {
 std::unique_ptr<CreditCard> AutofillTable::GetCreditCard(
     const std::string& guid) {
   DCHECK(base::Uuid::ParseCaseInsensitive(guid).is_valid());
-  sql::Statement s;
-  SelectBuilder(db_, s, kCreditCardsTable,
+  sql::Statement card_statement;
+  SelectBuilder(db_, card_statement, kCreditCardsTable,
                 {kGuid, kNameOnCard, kExpirationMonth, kExpirationYear,
                  kCardNumberEncrypted, kUseCount, kUseDate, kDateModified,
                  kOrigin, kBillingAddressId, kNickname},
                 "WHERE guid = ?");
-  s.BindString(0, guid);
+  card_statement.BindString(0, guid);
 
-  if (!s.Step())
+  if (!card_statement.Step()) {
     return nullptr;
+  }
 
-  return CreditCardFromStatement(s, *autofill_table_encryptor_);
+  // Get cvc from local_stored_cvc table.
+  sql::Statement cvc_statement;
+  SelectBuilder(db_, cvc_statement, kLocalStoredCvcTable, {kValueEncrypted},
+                "WHERE guid = ?");
+  cvc_statement.BindString(0, guid);
+
+  bool has_cvc = cvc_statement.Step();
+  return CreditCardFromStatement(
+      card_statement,
+      has_cvc ? absl::optional<
+                    std::reference_wrapper<sql::Statement>>{cvc_statement}
+              : absl::nullopt,
+      *autofill_table_encryptor_);
 }
 
 bool AutofillTable::GetCreditCards(
@@ -2016,6 +2106,8 @@ bool AutofillTable::GetCreditCards(
 bool AutofillTable::GetServerCreditCards(
     std::vector<std::unique_ptr<CreditCard>>* credit_cards) const {
   credit_cards->clear();
+  base::flat_map<int64_t, std::u16string> instrument_to_cvc =
+      GetAllServerCvcs();
 
   sql::Statement s;
   SelectBuilder(
@@ -2080,6 +2172,7 @@ bool AutofillTable::GetServerCreditCards(
             s.ColumnInt(index++)));
     card->set_card_art_url(GURL(s.ColumnString(index++)));
     card->set_product_description(s.ColumnString16(index++));
+    card->set_cvc(instrument_to_cvc[card->instrument_id()]);
     credit_cards->push_back(std::move(card));
   }
   return s.Succeeded();
@@ -2130,6 +2223,68 @@ bool AutofillTable::UnmaskServerCreditCard(const CreditCard& masked,
 
 bool AutofillTable::MaskServerCreditCard(const std::string& id) {
   return DeleteFromUnmaskedCreditCards(id);
+}
+
+bool AutofillTable::AddServerCvc(int64_t instrument_id,
+                                 const std::u16string& cvc) {
+  if (cvc.empty()) {
+    return false;
+  }
+
+  sql::Statement s;
+  InsertBuilder(db_, s, kServerStoredCvcTable,
+                {kInstrumentId, kValueEncrypted, kLastUpdatedTimestamp});
+  BindServerStoredCvcToStatement(instrument_id, cvc, *autofill_table_encryptor_,
+                                 &s);
+  s.Run();
+  return db_->GetLastChangeCount() > 0;
+}
+
+bool AutofillTable::UpdateServerCvc(int64_t instrument_id,
+                                    const std::u16string& cvc) {
+  sql::Statement s;
+  UpdateBuilder(db_, s, kServerStoredCvcTable,
+                {kInstrumentId, kValueEncrypted, kLastUpdatedTimestamp},
+                "instrument_id=?1");
+  BindServerStoredCvcToStatement(instrument_id, cvc, *autofill_table_encryptor_,
+                                 &s);
+  s.Run();
+  return db_->GetLastChangeCount() > 0;
+}
+
+bool AutofillTable::RemoveServerCvc(int64_t instrument_id) {
+  DeleteWhereColumnEq(db_, kServerStoredCvcTable, kInstrumentId, instrument_id);
+  return db_->GetLastChangeCount() > 0;
+}
+
+bool AutofillTable::ClearServerCvcs() {
+  Delete(db_, kServerStoredCvcTable);
+  return db_->GetLastChangeCount() > 0;
+}
+
+bool AutofillTable::ReconcileServerCvcs() {
+  sql::Statement s(db_->GetUniqueStatement(
+      base::StrCat({"DELETE FROM ", kServerStoredCvcTable, " WHERE ",
+                    kInstrumentId, " NOT IN (SELECT ", kInstrumentId, " FROM ",
+                    kMaskedCreditCardsTable, ")"})
+          .c_str()));
+  s.Run();
+  return db_->GetLastChangeCount() > 0;
+}
+
+std::u16string AutofillTable::GetServerCvcForTesting(int64_t instrument_id) {
+  sql::Statement s;
+  SelectBuilder(db_, s, kServerStoredCvcTable, {kValueEncrypted},
+                "WHERE instrument_id = ?");
+  s.BindInt64(0, instrument_id);
+
+  return s.Step() ? UnencryptValueFromColumn(s, 0, *autofill_table_encryptor_)
+                  : u"";
+}
+
+base::flat_map<int64_t, std::u16string>
+AutofillTable::GetAllServerCvcsForTesting() {
+  return GetAllServerCvcs();
 }
 
 bool AutofillTable::AddServerCardMetadata(
@@ -2758,6 +2913,16 @@ bool AutofillTable::RemoveAutofillDataModifiedBetween(
   if (!s_credit_cards.Run())
     return false;
 
+  // Remove credit card cvcs in the time range.
+  sql::Statement s_cvc;
+  DeleteBuilder(db_, s_cvc, kLocalStoredCvcTable,
+                "last_updated_timestamp >= ? AND last_updated_timestamp < ?");
+  s_cvc.BindInt64(0, delete_begin_t);
+  s_cvc.BindInt64(1, delete_end_t);
+  if (!s_cvc.Run()) {
+    return false;
+  }
+
   // Remove unmasked credit cards in the time range.
   sql::Statement s_unmasked_cards;
   DeleteBuilder(db_, s_unmasked_cards, kUnmaskedCreditCardsTable,
@@ -2803,8 +2968,9 @@ bool AutofillTable::RemoveOriginURLsModifiedBetween(
   return true;
 }
 
-bool AutofillTable::ClearCreditCards() {
-  return Delete(db_, kCreditCardsTable);
+void AutofillTable::ClearCreditCards() {
+  Delete(db_, kLocalStoredCvcTable);
+  Delete(db_, kCreditCardsTable);
 }
 
 bool AutofillTable::GetAllSyncMetadata(syncer::ModelType model_type,
@@ -3582,8 +3748,10 @@ void AutofillTable::AddMaskedCreditCards(
     masked_insert.BindInt(index++, static_cast<int>(card.card_issuer()));
     masked_insert.BindString(index++, card.issuer_id());
     masked_insert.BindInt64(index++, card.instrument_id());
-    masked_insert.BindInt(index++, card.virtual_card_enrollment_state());
-    masked_insert.BindInt(index++, card.virtual_card_enrollment_type());
+    masked_insert.BindInt(
+        index++, static_cast<int>(card.virtual_card_enrollment_state()));
+    masked_insert.BindInt(index++, static_cast<int>(
+                                   card.virtual_card_enrollment_type()));
     masked_insert.BindString(index++, card.card_art_url().spec());
     masked_insert.BindString16(index++, card.product_description());
     masked_insert.Run();

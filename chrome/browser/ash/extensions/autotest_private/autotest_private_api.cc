@@ -41,13 +41,13 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shelf_ui_info.h"
 #include "ash/public/cpp/split_view_test_api.h"
-#include "ash/public/cpp/style/dark_light_mode_controller.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_widget_controller.h"
+#include "ash/style/dark_light_mode_controller_impl.h"
+#include "ash/wallpaper/views/wallpaper_widget_controller.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/wm_event.h"
 #include "base/base64.h"
@@ -224,6 +224,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/ime/ash/ime_bridge.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/base/ime/ash/text_input_method.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/compositor.h"
@@ -3272,7 +3273,7 @@ void AutotestPrivateLoadSmartDimComponentFunction::TryRespond() {
 
   if (ash::power::ml::SmartDimMlAgent::GetInstance()->IsDownloadWorkerReady()) {
     Respond(NoArguments());
-  } else if (timer_triggered_count_ >= 12) {
+  } else if (timer_triggered_count_ >= 48 /* 48 * 5 sec == 4 minutes */) {
     Respond(Error("Timeout occurred before SmartDim component was loaded."));
   } else {
     timer_.Reset();
@@ -3482,7 +3483,7 @@ class AssistantInteractionHelper
     CHECK(on_interaction_finished_callback_)
         << "on_interaction_finished_callback_ is not set.";
 
-    if (resolution != AssistantInteractionResolution::kNormal) {
+    if (resolution == AssistantInteractionResolution::kError) {
       SendErrorResponse(
           base::StringPrintf("Interaction closed with resolution %s",
                              ResolutionToString(resolution).c_str()));
@@ -3496,6 +3497,13 @@ class AssistantInteractionHelper
     // on the client and return that to the server as part of a follow-up
     // interaction.
     if (result_.empty()) {
+      return;
+    }
+
+    if (resolution != AssistantInteractionResolution::kNormal) {
+      SendErrorResponse(
+          base::StringPrintf("Interaction closed with resolution %s",
+                             ResolutionToString(resolution).c_str()));
       return;
     }
 
@@ -6314,10 +6322,11 @@ AutotestPrivateForceAutoThemeModeFunction::Run() {
       api::autotest_private::ForceAutoThemeMode::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  ash::DarkLightModeController* dark_light_mode_controller =
-      ash::DarkLightModeController::Get();
+  ash::DarkLightModeControllerImpl* dark_light_mode_controller =
+      ash::Shell::Get()->dark_light_mode_controller();
   DCHECK(dark_light_mode_controller);
 
+  dark_light_mode_controller->SetAutoScheduleEnabled(false);
   dark_light_mode_controller->SetDarkModeEnabledForTest(
       params->dark_mode_enabled);
   return RespondNow(NoArguments());
@@ -6749,6 +6758,27 @@ AutotestPrivateIsFeatureEnabledFunction::Run() {
   }
   bool enabled = base::FeatureList::IsEnabled(**it);
   return RespondNow(WithArguments(enabled));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetCurrentInputMethodDescriptorFunction
+//////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateGetCurrentInputMethodDescriptorFunction::
+    AutotestPrivateGetCurrentInputMethodDescriptorFunction() = default;
+
+AutotestPrivateGetCurrentInputMethodDescriptorFunction::
+    ~AutotestPrivateGetCurrentInputMethodDescriptorFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateGetCurrentInputMethodDescriptorFunction::Run() {
+  auto* manager = ash::input_method::InputMethodManager::Get();
+  ash::input_method::InputMethodDescriptor descriptor =
+      manager->GetActiveIMEState()->GetCurrentInputMethod();
+
+  base::Value::Dict dict;
+  dict.Set("keyboardLayout", descriptor.keyboard_layout());
+  return RespondNow(WithArguments(std::move(dict)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

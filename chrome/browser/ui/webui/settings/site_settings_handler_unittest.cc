@@ -75,7 +75,6 @@
 #include "components/browsing_topics/browsing_topics_service.h"
 #include "components/browsing_topics/test_util.h"
 #include "components/client_hints/common/client_hints.h"
-#include "components/content_settings/core/browser/content_settings_uma_util.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -97,6 +96,7 @@
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
 #include "components/site_engagement/content/site_engagement_score.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -177,6 +177,12 @@ const struct PatternContentTypeTestCase {
     {{"http://google.com", "location"}, {false, "Origin must be secure"}},
     {{"http://127.0.0.1", "location"}, {true, ""}},  // Localhost is secure.
     {{"http://[::1]", "location"}, {true, ""}}};
+
+struct EmbeddingStorageAccessException {
+  const std::string embedding_origin;
+  const std::string embedding_display_name;
+  const bool incognito;
+};
 
 // Matchers to make verifying GroupingKey contents easier.
 MATCHER_P(IsEtldPlus1, etld_plus1, "") {
@@ -296,11 +302,7 @@ class ContentSettingSourceSetter {
 
 class SiteSettingsHandlerBaseTest : public testing::Test {
  public:
-  SiteSettingsHandlerBaseTest()
-      : kNotifications(site_settings::ContentSettingsTypeToGroupName(
-            ContentSettingsType::NOTIFICATIONS)),
-        kCookies(site_settings::ContentSettingsTypeToGroupName(
-            ContentSettingsType::COOKIES)) {
+  SiteSettingsHandlerBaseTest() {
     // Fully initialize |profile_| in the constructor since some children
     // classes need it right away for SetUp().
     testing_profile_manager_ = std::make_unique<TestingProfileManager>(
@@ -485,6 +487,110 @@ class SiteSettingsHandlerBaseTest : public testing::Test {
     ASSERT_TRUE(source);
     ASSERT_EQ(site_settings::SiteSettingSourceToString(expected_source),
               *source);
+  }
+
+  void SetContentSettingCustomScope(std::string primary_pattern,
+                                    std::string secondary_pattern,
+                                    ContentSettingsType content_setting_type,
+                                    ContentSetting content_setting,
+                                    size_t expected_total_calls = 1U,
+                                    bool is_incognito = false) {
+    HostContentSettingsMap* map = HostContentSettingsMapFactory::GetForProfile(
+        is_incognito ? incognito_profile() : profile());
+    map->SetContentSettingCustomScope(
+        ContentSettingsPattern::FromString(primary_pattern),
+        ContentSettingsPattern::FromString(secondary_pattern),
+        content_setting_type, content_setting);
+
+    EXPECT_EQ(expected_total_calls, web_ui()->call_data().size());
+    ASSERT_EQ("contentSettingSitePermissionChanged",
+              web_ui()->call_data().back()->arg1()->GetString());
+  }
+
+  void ValidateStorageAccessList(size_t expected_total_calls,
+                                 size_t expected_num_groups) {
+    EXPECT_EQ(expected_total_calls, web_ui()->call_data().size());
+
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    EXPECT_EQ("cr.webUIResponse", data.function_name());
+
+    ASSERT_TRUE(data.arg1()->is_string());
+    EXPECT_EQ(kCallbackId, data.arg1()->GetString());
+    ASSERT_TRUE(data.arg2()->is_bool());
+    ASSERT_TRUE(data.arg2()->GetBool());
+
+    ASSERT_TRUE(data.arg3()->is_list());
+    EXPECT_EQ(expected_num_groups, data.arg3()->GetList().size());
+  }
+
+  void ValidateStorageAccessException(
+      const std::string& expected_origin,
+      const std::string& expected_display_name,
+      const ContentSetting expected_setting,
+      const std::vector<EmbeddingStorageAccessException>
+          expected_embedding_exceptions,
+      size_t index = 0) {
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+
+    const base::Value::Dict& exception =
+        data.arg3()->GetList()[index].GetDict();
+
+    const auto* origin = exception.FindString(site_settings::kOrigin);
+    ASSERT_TRUE(origin);
+    ASSERT_EQ(expected_origin, *origin);
+
+    const auto* display_name =
+        exception.FindString(site_settings::kDisplayName);
+    ASSERT_TRUE(display_name);
+    ASSERT_EQ(expected_display_name, *display_name);
+
+    const auto expected_description = l10n_util::GetPluralStringFUTF8(
+        IDS_DEL_SITE_SETTINGS_COUNTER, expected_embedding_exceptions.size());
+    const auto* description = exception.FindString(site_settings::kDescription);
+    ASSERT_TRUE(description);
+    ASSERT_EQ(expected_description, *description);
+
+    const auto* setting = exception.FindString(site_settings::kSetting);
+    ASSERT_TRUE(setting);
+    ASSERT_EQ(content_settings::ContentSettingToString(expected_setting),
+              *setting);
+
+    const auto* exceptions_list =
+        exception.FindList(site_settings::kExceptions);
+    ASSERT_TRUE(exceptions_list);
+    ASSERT_EQ(expected_embedding_exceptions.size(), exceptions_list->size());
+
+    for (size_t i = 0; i < expected_embedding_exceptions.size(); i++) {
+      ValidateStorageAccessEmbeddingException(expected_embedding_exceptions[i],
+                                              (*exceptions_list)[i].GetDict());
+    }
+  }
+
+  void ValidateStorageAccessEmbeddingException(
+      EmbeddingStorageAccessException expected_embedding_exception,
+      const base::Value::Dict& embedding_exception) {
+    const auto* embedding_origin =
+        embedding_exception.FindString(site_settings::kEmbeddingOrigin);
+    ASSERT_TRUE(embedding_origin);
+    ASSERT_EQ(expected_embedding_exception.embedding_origin, *embedding_origin);
+
+    const auto* embedding_display_name =
+        embedding_exception.FindString(site_settings::kEmbeddingDisplayName);
+    ASSERT_TRUE(embedding_display_name);
+    ASSERT_EQ(expected_embedding_exception.embedding_display_name,
+              *embedding_display_name);
+
+    // TODO(http://b/288405540): Check if description is correct according with
+    // the expiration.
+    const auto* description =
+        embedding_exception.FindString(site_settings::kDescription);
+    ASSERT_TRUE(description);
+    ASSERT_EQ("", *description);
+
+    absl::optional<bool> incognito =
+        embedding_exception.FindBool(site_settings::kIncognito);
+    ASSERT_TRUE(incognito.has_value());
+    EXPECT_EQ(expected_embedding_exception.incognito, *incognito);
   }
 
   void ValidateNoOrigin(size_t expected_total_calls) {
@@ -822,11 +928,17 @@ class SiteSettingsHandlerBaseTest : public testing::Test {
   }
 
   // Content setting group name for the relevant ContentSettingsType.
-  const std::string kNotifications;
-  const std::string kCookies;
+  const std::string_view kNotifications =
+      site_settings::ContentSettingsTypeToGroupName(
+          ContentSettingsType::NOTIFICATIONS);
+  const std::string_view kCookies =
+      site_settings::ContentSettingsTypeToGroupName(
+          ContentSettingsType::COOKIES);
 
   const ContentSettingsType kPermissionNotifications =
       ContentSettingsType::NOTIFICATIONS;
+  const ContentSettingsType kPermissionStorageAccess =
+      ContentSettingsType::STORAGE_ACCESS;
 
   // The number of listeners that are expected to fire when any content setting
   // is changed.
@@ -1217,8 +1329,8 @@ TEST_F(SiteSettingsHandlerTest, Cookies) {
 
 TEST_F(SiteSettingsHandlerTest, GetRecentSitePermissions) {
   // Constants used only in this test.
-  std::string kAllowed = content_settings::ContentSettingToString(
-      ContentSetting::CONTENT_SETTING_ALLOW);
+  std::string kAllowed =
+      content_settings::ContentSettingToString(CONTENT_SETTING_ALLOW);
   std::string kBlocked = content_settings::ContentSettingToString(
       ContentSetting::CONTENT_SETTING_BLOCK);
   std::string kEmbargo =
@@ -1771,6 +1883,217 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
   ValidateNoOrigin(6U);
 }
 
+TEST_F(SiteSettingsHandlerTest, StorageAccessExceptions) {
+  const std::string kOrigin("https://[*.]google.com:443");
+  const std::string kEmbeddingOrigin("https://[*.]example.com:443");
+
+  SetContentSettingCustomScope(kOrigin, kEmbeddingOrigin,
+                               kPermissionStorageAccess, CONTENT_SETTING_BLOCK);
+
+  base::Value::List get_exception_list_args;
+  get_exception_list_args.Append(kCallbackId);
+  get_exception_list_args.Append(
+      content_settings::ContentSettingToString(CONTENT_SETTING_BLOCK));
+  handler()->HandleGetStorageAccessExceptionList(get_exception_list_args);
+
+  // Verify that the grouped exception is correct.
+  ValidateStorageAccessList(/*expected_total_calls=*/2U,
+                            /*expected_num_groups=*/
+                            1U);
+
+  ValidateStorageAccessException(
+      kOrigin, kOrigin, CONTENT_SETTING_BLOCK,
+      {{kEmbeddingOrigin, kEmbeddingOrigin, /*incognito=*/false}});
+}
+
+TEST_F(SiteSettingsHandlerTest, StorageAccessExceptions_DiffPatterns) {
+  const std::string kOrigin("https://[*.]google.com:443");
+  const std::string kOrigin2("https://[*.]google2.com:443");
+  const std::string kEmbeddingOrigin("https://[*.]example.com:443");
+  const std::string kEmbeddingOrigin2("https://[*.]example2.com:443");
+
+  SetContentSettingCustomScope(kOrigin, kEmbeddingOrigin,
+                               kPermissionStorageAccess, CONTENT_SETTING_BLOCK);
+  SetContentSettingCustomScope(kOrigin2, kEmbeddingOrigin2,
+                               kPermissionStorageAccess, CONTENT_SETTING_BLOCK,
+                               /*expected_total_calls=*/2U);
+
+  base::Value::List get_exception_list_args;
+  get_exception_list_args.Append(kCallbackId);
+  get_exception_list_args.Append(
+      content_settings::ContentSettingToString(CONTENT_SETTING_BLOCK));
+  handler()->HandleGetStorageAccessExceptionList(get_exception_list_args);
+
+  // Verify that the exception list is correct.
+  ValidateStorageAccessList(/*expected_total_calls=*/3U,
+                            /*expected_num_groups=*/2U);
+
+  // Verify that the first group exception is correct.
+  ValidateStorageAccessException(
+      kOrigin, kOrigin, CONTENT_SETTING_BLOCK,
+      {{kEmbeddingOrigin, kEmbeddingOrigin, /*incognito=*/false}},
+      /*index=*/0U);
+
+  // Verify that the second group exception is correct.
+  ValidateStorageAccessException(
+      kOrigin2, kOrigin2, CONTENT_SETTING_BLOCK,
+      {{kEmbeddingOrigin2, kEmbeddingOrigin2, /*incognito=*/false}},
+      /*index=*/1U);
+}
+
+TEST_F(SiteSettingsHandlerTest, StorageAccessExceptions_SamePrimaryPattern) {
+  const std::string kOrigin("https://[*.]google.com:443");
+  const std::string kEmbeddingOrigin("https://[*.]example.com:443");
+  const std::string kEmbeddingOrigin2("https://[*.]example2.com:443");
+
+  SetContentSettingCustomScope(kOrigin, kEmbeddingOrigin,
+                               kPermissionStorageAccess, CONTENT_SETTING_BLOCK);
+  SetContentSettingCustomScope(kOrigin, kEmbeddingOrigin2,
+                               kPermissionStorageAccess, CONTENT_SETTING_BLOCK,
+                               /*expected_total_calls=*/2U);
+
+  base::Value::List get_exception_list_args;
+  get_exception_list_args.Append(kCallbackId);
+  get_exception_list_args.Append(
+      content_settings::ContentSettingToString(CONTENT_SETTING_BLOCK));
+  handler()->HandleGetStorageAccessExceptionList(get_exception_list_args);
+
+  // Verify that the group exception is correct.
+  ValidateStorageAccessList(/*expected_total_calls=*/3U,
+                            /*expected_num_groups=*/1U);
+
+  ValidateStorageAccessException(
+      kOrigin, kOrigin, CONTENT_SETTING_BLOCK,
+      {{kEmbeddingOrigin2, kEmbeddingOrigin2, /*incognito=*/false},
+       {kEmbeddingOrigin, kEmbeddingOrigin, /*incognito=*/false}},
+      /*index=*/0U);
+}
+
+TEST_F(SiteSettingsHandlerTest, StorageAccessExceptions_DiffType) {
+  const std::string kOrigin("https://[*.]google.com:443");
+  const std::string kEmbeddingOrigin("https://[*.]example.com:443");
+
+  SetContentSettingCustomScope(kOrigin, kEmbeddingOrigin,
+                               kPermissionStorageAccess, CONTENT_SETTING_BLOCK);
+
+  base::Value::List get_exception_list_args;
+  get_exception_list_args.Append(kCallbackId);
+  get_exception_list_args.Append(
+      content_settings::ContentSettingToString(CONTENT_SETTING_ALLOW));
+  handler()->HandleGetStorageAccessExceptionList(get_exception_list_args);
+
+  // Verify that no exception is returned.
+  ValidateNoOrigin(2U);
+}
+
+TEST_F(SiteSettingsHandlerTest, StorageAccessExceptions_Incognito) {
+  const std::string kOrigin("https://[*.]google.com:443");
+  const std::string kEmbeddingOrigin("https://[*.]example.com:443");
+
+  CreateIncognitoProfile();
+  ValidateIncognitoExists(true, 1U);
+
+  SetContentSettingCustomScope(kOrigin, kEmbeddingOrigin,
+                               kPermissionStorageAccess, CONTENT_SETTING_BLOCK,
+                               /*expected_total_calls=*/2U,
+                               /*is_incognito=*/true);
+
+  base::Value::List get_exception_list_args;
+  get_exception_list_args.Append(kCallbackId);
+  get_exception_list_args.Append(
+      content_settings::ContentSettingToString(CONTENT_SETTING_BLOCK));
+  handler()->HandleGetStorageAccessExceptionList(get_exception_list_args);
+
+  // Verify that the group exception is correct.
+  ValidateStorageAccessList(/*expected_total_calls=*/3U,
+                            /*expected_num_groups=*/1U);
+  ValidateStorageAccessException(
+      kOrigin, kOrigin, CONTENT_SETTING_BLOCK,
+      {{kEmbeddingOrigin, kEmbeddingOrigin, /*incognito=*/true}});
+}
+
+TEST_F(SiteSettingsHandlerTest, StorageAccessExceptions_NormalAndIncognito) {
+  const std::string kOrigin("https://[*.]google.com:443");
+  const std::string kOrigin2("https://[*.]google2.com:443");
+  const std::string kEmbeddingOrigin("https://[*.]example.com:443");
+  const std::string kEmbeddingOrigin2("https://[*.]example2.com:443");
+
+  SetContentSettingCustomScope(kOrigin, kEmbeddingOrigin,
+                               kPermissionStorageAccess, CONTENT_SETTING_BLOCK);
+
+  CreateIncognitoProfile();
+  ValidateIncognitoExists(true, 2U);
+
+  SetContentSettingCustomScope(kOrigin2, kEmbeddingOrigin2,
+                               kPermissionStorageAccess, CONTENT_SETTING_BLOCK,
+                               /*expected_total_calls=*/3U,
+                               /*is_incognito=*/true);
+
+  base::Value::List get_exception_list_args;
+  get_exception_list_args.Append(kCallbackId);
+  get_exception_list_args.Append(
+      content_settings::ContentSettingToString(CONTENT_SETTING_BLOCK));
+  handler()->HandleGetStorageAccessExceptionList(get_exception_list_args);
+
+  ValidateStorageAccessList(/*expected_total_calls=*/4U,
+                            /*expected_num_groups=*/2U);
+
+  // Verify that group exception for non-incognito is correct.
+  ValidateStorageAccessException(
+      kOrigin, kOrigin, CONTENT_SETTING_BLOCK,
+      {{kEmbeddingOrigin, kEmbeddingOrigin, /*incognito=*/false}},
+      /*index=*/0U);
+
+  // Verify that group exception for incognito is correct.
+  ValidateStorageAccessException(
+      kOrigin2, kOrigin2, CONTENT_SETTING_BLOCK,
+      {{kEmbeddingOrigin2, kEmbeddingOrigin2, /*incognito=*/true}},
+      /*index=*/1U);
+
+  DestroyIncognitoProfile();
+  handler()->HandleGetStorageAccessExceptionList(get_exception_list_args);
+
+  // Check that the incognito exception gets deleted if the incognito profile is
+  // destroyed.
+  ValidateStorageAccessList(/*expected_total_calls=*/6U,
+                            /*expected_num_groups=*/1U);
+  ValidateStorageAccessException(
+      kOrigin, kOrigin, CONTENT_SETTING_BLOCK,
+      {{kEmbeddingOrigin, kEmbeddingOrigin, /*incognito=*/false}},
+      /*index=*/0U);
+}
+
+TEST_F(SiteSettingsHandlerTest,
+       StorageAccessExceptions_NormalAndIncognito_SamePatterns) {
+  const std::string kOrigin("https://[*.]google.com:443");
+  const std::string kEmbeddingOrigin("https://[*.]example.com:443");
+
+  SetContentSettingCustomScope(kOrigin, kEmbeddingOrigin,
+                               kPermissionStorageAccess, CONTENT_SETTING_BLOCK);
+
+  CreateIncognitoProfile();
+  ValidateIncognitoExists(true, 2U);
+
+  SetContentSettingCustomScope(kOrigin, kEmbeddingOrigin,
+                               kPermissionStorageAccess, CONTENT_SETTING_BLOCK,
+                               /*expected_total_calls=*/3U,
+                               /*is_incognito=*/true);
+
+  base::Value::List get_exception_list_args;
+  get_exception_list_args.Append(kCallbackId);
+  get_exception_list_args.Append(
+      content_settings::ContentSettingToString(CONTENT_SETTING_BLOCK));
+  handler()->HandleGetStorageAccessExceptionList(get_exception_list_args);
+
+  // Verify that group exception for non-incognito and incognito is correct.
+  ValidateStorageAccessList(/*expected_total_calls=*/4U,
+                            /*expected_num_groups=*/1U);
+  ValidateStorageAccessException(
+      kOrigin, kOrigin, CONTENT_SETTING_BLOCK,
+      {{kEmbeddingOrigin, kEmbeddingOrigin, /*incognito=*/false},
+       {kEmbeddingOrigin, kEmbeddingOrigin, /*incognito=*/true}});
+}
+
 TEST_F(SiteSettingsHandlerTest, NotificationPermissionRevokeUkm) {
   const std::string google("https://www.google.com");
   ukm::TestAutoSetUkmRecorder ukm_recorder;
@@ -1817,9 +2140,9 @@ TEST_F(SiteSettingsHandlerTest, NotificationPermissionRevokeUkm) {
       *ukm_recorder.GetEntryMetric(entry, "Source"),
       static_cast<int64_t>(permissions::PermissionSourceUI::SITE_SETTINGS));
 
-  EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "PermissionType"),
-            content_settings_uma_util::ContentSettingTypeToHistogramValue(
-                ContentSettingsType::NOTIFICATIONS));
+  EXPECT_EQ(
+      *ukm_recorder.GetEntryMetric(entry, "PermissionType"),
+      ContentSettingTypeToHistogramValue(ContentSettingsType::NOTIFICATIONS));
   EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "Action"),
             static_cast<int64_t>(permissions::PermissionAction::REVOKED));
 }
@@ -2267,9 +2590,7 @@ TEST_F(SiteSettingsHandlerIsolatedWebAppTest, ZoomLevelsSortedByAppName) {
 
 class SiteSettingsHandlerInfobarTest : public BrowserWithTestWindowTest {
  public:
-  SiteSettingsHandlerInfobarTest()
-      : kNotifications(site_settings::ContentSettingsTypeToGroupName(
-            ContentSettingsType::NOTIFICATIONS)) {}
+  SiteSettingsHandlerInfobarTest() = default;
   SiteSettingsHandlerInfobarTest(const SiteSettingsHandlerInfobarTest&) =
       delete;
   SiteSettingsHandlerInfobarTest& operator=(
@@ -2367,7 +2688,9 @@ class SiteSettingsHandlerInfobarTest : public BrowserWithTestWindowTest {
                                                    GetTestingFactories());
   }
 
-  const std::string kNotifications;
+  const std::string_view kNotifications =
+      site_settings::ContentSettingsTypeToGroupName(
+          ContentSettingsType::NOTIFICATIONS);
 
  private:
   content::TestWebUI web_ui_;
@@ -2851,55 +3174,42 @@ TEST_F(PersistentPermissionsSiteSettingsHandlerTest,
   EXPECT_EQ(CHECK_DEREF(second_grant.FindString(site_settings::kOrigin)),
             "https://www.b.com/");
 
-  const base::Value::List* kTestOrigin1FileReadGrants =
-      first_grant.FindList(site_settings::kFileReadGrants);
-  const base::Value::List* kTestOrigin1FileWriteGrants =
-      first_grant.FindList(site_settings::kFileWriteGrants);
-  const base::Value::List* kTestOrigin1DirectoryReadGrants =
-      first_grant.FindList(site_settings::kDirectoryReadGrants);
-  const base::Value::List* kTestOrigin1DirectoryWriteGrants =
-      first_grant.FindList(site_settings::kDirectoryWriteGrants);
+  const base::Value::List* kTestOrigin1ViewGrants =
+      first_grant.FindList(site_settings::kViewGrants);
+  const base::Value::List* kTestOrigin1EditGrants =
+      first_grant.FindList(site_settings::kEditGrants);
 
-  const base::Value::List* kTestOrigin2FileReadGrants =
-      second_grant.FindList(site_settings::kFileReadGrants);
-  const base::Value::List* kTestOrigin2FileWriteGrants =
-      second_grant.FindList(site_settings::kFileWriteGrants);
-  const base::Value::List* kTestOrigin2DirectoryReadGrants =
-      second_grant.FindList(site_settings::kDirectoryReadGrants);
-  const base::Value::List* kTestOrigin2DirectoryWriteGrants =
-      second_grant.FindList(site_settings::kDirectoryWriteGrants);
+  const base::Value::List* kTestOrigin2ViewGrants =
+      second_grant.FindList(site_settings::kViewGrants);
+  const base::Value::List* kTestOrigin2EditGrants =
+      second_grant.FindList(site_settings::kEditGrants);
 
   // Checks that the grants for test origins are populated as expected.
-  EXPECT_FALSE(CHECK_DEREF(kTestOrigin1FileReadGrants)[0]
-                   .GetDict()
-                   .FindBool(site_settings::kIsDirectory)
-                   .value_or(true));
-  ASSERT_TRUE(kTestOrigin1FileWriteGrants != nullptr);
-  EXPECT_TRUE(kTestOrigin1FileWriteGrants->empty());
+  EXPECT_TRUE(CHECK_DEREF(kTestOrigin1ViewGrants)[0]
+                  .GetDict()
+                  .FindBool(site_settings::kIsDirectory)
+                  .value_or(false));
   EXPECT_EQ(
-      CHECK_DEREF(
-          CHECK_DEREF(kTestOrigin1DirectoryReadGrants)[0].GetDict().FindString(
-              site_settings::kFilePath)),
-      "/e/");
-  ASSERT_TRUE(kTestOrigin1DirectoryWriteGrants != nullptr);
-  EXPECT_TRUE(kTestOrigin1DirectoryWriteGrants->empty());
+      CHECK_DEREF(CHECK_DEREF(kTestOrigin1ViewGrants)[1].GetDict().FindString(
+          site_settings::kFilePath)),
+      "/a/b");
+  ASSERT_TRUE(kTestOrigin1EditGrants != nullptr);
+  EXPECT_TRUE(kTestOrigin1EditGrants->empty());
 
   // In the case of kTestOrigin2, check that when an origin has an
   // associated 'write' grant, that the grant is only recorded in the
   // respective write grants list, and is not recorded in the origin's
   // read grants list.
-  ASSERT_TRUE(kTestOrigin2FileReadGrants != nullptr);
-  EXPECT_TRUE(kTestOrigin2FileReadGrants->empty());
-  EXPECT_TRUE(CHECK_DEREF(kTestOrigin2FileWriteGrants)[0]
-                  .GetDict()
-                  .FindBool(site_settings::kIsWritable)
-                  .value_or(false));
-  ASSERT_TRUE(kTestOrigin2DirectoryReadGrants != nullptr);
-  EXPECT_TRUE(kTestOrigin2DirectoryReadGrants->empty());
-  EXPECT_TRUE(CHECK_DEREF(kTestOrigin2DirectoryWriteGrants)[0]
-                  .GetDict()
-                  .FindBool(site_settings::kIsDirectory)
-                  .value_or(false));
+  ASSERT_TRUE(kTestOrigin2ViewGrants != nullptr);
+  EXPECT_TRUE(kTestOrigin2ViewGrants->empty());
+  EXPECT_EQ(
+      CHECK_DEREF(CHECK_DEREF(kTestOrigin2EditGrants)[0].GetDict().FindString(
+          site_settings::kDisplayName)),
+      "/f/g/h/");
+  EXPECT_FALSE(CHECK_DEREF(kTestOrigin2EditGrants)[1]
+                   .GetDict()
+                   .FindBool(site_settings::kIsDirectory)
+                   .value_or(true));
 }
 
 // RevokeGrant() revokes a single File System Access permission grant,
@@ -2947,14 +3257,10 @@ TEST_F(PersistentPermissionsSiteSettingsHandlerTest,
   const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
   const base::Value::List& grants = data.arg3()->GetList();
 
-  // After revoking the `file_read_grant` for kTestOrigin1, only one
-  // `directory_read_grant` should remain when retrieving the file system grants
-  // for kTestOrigin1.
-  EXPECT_TRUE(
-      grants[0].GetDict().FindList(site_settings::kFileReadGrants)->empty());
-  EXPECT_EQ(
-      grants[0].GetDict().FindList(site_settings::kDirectoryReadGrants)->size(),
-      1UL);
+  // After revoking the `file_read_grant` for kTestOrigin1, only one view grant
+  // should remain when retrieving the file system grants for kTestOrigin1.
+  EXPECT_EQ(grants[0].GetDict().FindList(site_settings::kViewGrants)->size(),
+            1UL);
 
   // Revoking a single grant from an origin with multiple grants in a given
   // grants list only revokes the grant with the given file path.
@@ -2971,13 +3277,11 @@ TEST_F(PersistentPermissionsSiteSettingsHandlerTest,
       *web_ui()->call_data().back();
   const base::Value::List& updated_grants = updated_data.arg3()->GetList();
 
-  EXPECT_EQ(updated_grants[1]
-                .GetDict()
-                .FindList(site_settings::kDirectoryWriteGrants)
-                ->size(),
-            1UL);
+  EXPECT_EQ(
+      updated_grants[1].GetDict().FindList(site_settings::kEditGrants)->size(),
+      1UL);
   EXPECT_EQ(CHECK_DEREF(CHECK_DEREF(updated_grants[1].GetDict().FindList(
-                site_settings::kDirectoryWriteGrants))[0]
+                site_settings::kEditGrants))[0]
                             .GetDict()
                             .FindString(site_settings::kFilePath)),
             "/f/g/h/");
@@ -3039,16 +3343,15 @@ TEST_F(PersistentPermissionsSiteSettingsHandlerTest,
   // All grants are revoked for kTestOrigin1, and the grants for kTestOrigin2
   // are unaffected.
   EXPECT_EQ(updated_grants.size(), 1UL);
-  EXPECT_EQ(updated_grants[0]
-                .GetDict()
-                .FindList(site_settings::kFileWriteGrants)
-                ->size(),
-            1UL);
-  EXPECT_EQ(updated_grants[0]
-                .GetDict()
-                .FindList(site_settings::kDirectoryWriteGrants)
-                ->size(),
-            1UL);
+  EXPECT_EQ(
+      updated_grants[0].GetDict().FindList(site_settings::kEditGrants)->size(),
+      2UL);
+
+  // Expect that the WebUIListenerCallback was triggered.
+  EXPECT_EQ(web_ui()->call_data()[0]->function_name(),
+            "cr.webUIListenerCallback");
+
+  EXPECT_EQ(updated_data.arg1()->GetString(), kCallbackId);
 }
 
 namespace {
@@ -4883,7 +5186,6 @@ TEST_F(SiteSettingsHandlerTest, ClearClientHints) {
 
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile());
-  ContentSettingsForOneType client_hints_settings;
 
   // Add setting for the two hosts host[0], host[1].
   base::Value client_hint_platform_version(14);
@@ -4908,8 +5210,9 @@ TEST_F(SiteSettingsHandlerTest, ClearClientHints) {
   base::Value::List args;
   args.Append(GroupingKey::CreateFromEtldPlus1("example.com").Serialize());
   handler()->HandleClearSiteGroupDataAndCookies(args);
-  host_content_settings_map->GetSettingsForOneType(
-      ContentSettingsType::CLIENT_HINTS, &client_hints_settings);
+  ContentSettingsForOneType client_hints_settings =
+      host_content_settings_map->GetSettingsForOneType(
+          ContentSettingsType::CLIENT_HINTS);
   EXPECT_EQ(2U, client_hints_settings.size());
 
   EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(hosts[2]),
@@ -4931,8 +5234,8 @@ TEST_F(SiteSettingsHandlerTest, ClearClientHints) {
   handler()->HandleClearUnpartitionedUsage(args);
 
   // Validate the client hint has been cleared.
-  host_content_settings_map->GetSettingsForOneType(
-      ContentSettingsType::CLIENT_HINTS, &client_hints_settings);
+  client_hints_settings = host_content_settings_map->GetSettingsForOneType(
+      ContentSettingsType::CLIENT_HINTS);
   EXPECT_EQ(1U, client_hints_settings.size());
 
   // www.google.com should be the only remaining entry.
@@ -4950,8 +5253,8 @@ TEST_F(SiteSettingsHandlerTest, ClearClientHints) {
   handler()->HandleClearUnpartitionedUsage(args);
 
   // Validate the client hint has been cleared.
-  host_content_settings_map->GetSettingsForOneType(
-      ContentSettingsType::CLIENT_HINTS, &client_hints_settings);
+  client_hints_settings = host_content_settings_map->GetSettingsForOneType(
+      ContentSettingsType::CLIENT_HINTS);
   EXPECT_EQ(0U, client_hints_settings.size());
 }
 
@@ -4966,7 +5269,6 @@ TEST_F(SiteSettingsHandlerTest, ClearReducedAcceptLanguage) {
 
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile());
-  ContentSettingsForOneType accept_language_settings;
 
   std::string language = "en-us";
   base::Value::Dict accept_language_dictionary;
@@ -4983,8 +5285,9 @@ TEST_F(SiteSettingsHandlerTest, ClearReducedAcceptLanguage) {
   base::Value::List args;
   args.Append(GroupingKey::CreateFromEtldPlus1("example.com").Serialize());
   handler()->HandleClearSiteGroupDataAndCookies(args);
-  host_content_settings_map->GetSettingsForOneType(
-      ContentSettingsType::REDUCED_ACCEPT_LANGUAGE, &accept_language_settings);
+  ContentSettingsForOneType accept_language_settings =
+      host_content_settings_map->GetSettingsForOneType(
+          ContentSettingsType::REDUCED_ACCEPT_LANGUAGE);
   EXPECT_EQ(2U, accept_language_settings.size());
 
   EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(hosts[2]),
@@ -5008,8 +5311,8 @@ TEST_F(SiteSettingsHandlerTest, ClearReducedAcceptLanguage) {
   handler()->HandleClearUnpartitionedUsage(args);
 
   // Validate the reduce accept language has been cleared.
-  host_content_settings_map->GetSettingsForOneType(
-      ContentSettingsType::REDUCED_ACCEPT_LANGUAGE, &accept_language_settings);
+  accept_language_settings = host_content_settings_map->GetSettingsForOneType(
+      ContentSettingsType::REDUCED_ACCEPT_LANGUAGE);
   EXPECT_EQ(1U, accept_language_settings.size());
 
   // www.google.com should be the only remaining entry.
@@ -5028,8 +5331,8 @@ TEST_F(SiteSettingsHandlerTest, ClearReducedAcceptLanguage) {
   handler()->HandleClearUnpartitionedUsage(args);
 
   // Validate the reduced accept language has been cleared.
-  host_content_settings_map->GetSettingsForOneType(
-      ContentSettingsType::REDUCED_ACCEPT_LANGUAGE, &accept_language_settings);
+  accept_language_settings = host_content_settings_map->GetSettingsForOneType(
+      ContentSettingsType::REDUCED_ACCEPT_LANGUAGE);
   EXPECT_EQ(0U, accept_language_settings.size());
 }
 

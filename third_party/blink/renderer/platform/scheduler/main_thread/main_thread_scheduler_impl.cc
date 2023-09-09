@@ -847,13 +847,6 @@ MainThreadSchedulerImpl::NewThrottleableTaskQueueForTest(
                           .SetCanRunWhenVirtualTimePaused(false));
 }
 
-scoped_refptr<base::sequence_manager::TaskQueue>
-MainThreadSchedulerImpl::NewTaskQueueForTest() {
-  return sequence_manager_->CreateTaskQueue(
-      base::sequence_manager::TaskQueue::Spec(
-          base::sequence_manager::QueueName::TEST_TQ));
-}
-
 void MainThreadSchedulerImpl::OnShutdownTaskQueue(
     const scoped_refptr<MainThreadTaskQueue>& task_queue) {
   if (was_shutdown_) {
@@ -1031,12 +1024,6 @@ void MainThreadSchedulerImpl::SetRendererHidden(bool hidden) {
 
 void MainThreadSchedulerImpl::SetRendererBackgrounded(bool backgrounded) {
   helper_.CheckOnValidThread();
-
-  // Increasing timer slack helps the OS to coalesce timers efficiently.
-  base::TimerSlack timer_slack = base::TIMER_SLACK_NONE;
-  if (backgrounded)
-    timer_slack = base::TIMER_SLACK_MAXIMUM;
-  helper_.SetTimerSlack(timer_slack);
 
   if (helper_.IsShutdown() ||
       main_thread_only().renderer_backgrounded.get() == backgrounded)

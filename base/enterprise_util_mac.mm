@@ -107,6 +107,7 @@ MacDeviceManagementStateOld IsDeviceRegisteredWithManagementOld() {
           }
         }
       }
+
       return MacDeviceManagementStateOld::kNoEnrollment;
     }
   }();

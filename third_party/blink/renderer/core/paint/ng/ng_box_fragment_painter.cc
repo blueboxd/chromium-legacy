@@ -377,11 +377,9 @@ void PaintFragment(const NGPhysicalBoxFragment& fragment,
 
   auto* layout_object = fragment.GetLayoutObject();
   DCHECK(layout_object);
-  if (fragment.IsPaintedAtomically() && fragment.IsLegacyLayoutRoot()) {
+  if (fragment.IsPaintedAtomically() && layout_object->IsLayoutReplaced()) {
     ObjectPainter(*layout_object).PaintAllPhasesAtomically(modified_paint_info);
   } else {
-    // TODO(ikilpatrick): Once FragmentItem ships we should call the
-    // NGBoxFragmentPainter directly for NG objects.
     layout_object->Paint(modified_paint_info);
   }
 }
@@ -2535,16 +2533,6 @@ bool NGBoxFragmentPainter::HitTestFloatingChildren(
     if (child_fragment.IsPaintedAtomically())
       continue;
 
-    // If this is a legacy root, fallback to legacy. It does not have
-    // |HasFloatingDescendantsForPaint()| set, but it may have floating
-    // descendants.
-    if (child_fragment.IsLegacyLayoutRoot()) {
-      if (child_fragment.GetMutableLayoutObject()->NodeAtPoint(
-              *hit_test.result, hit_test.location, child_offset,
-              hit_test.phase))
-        return true;
-      continue;
-    }
     if (!child_fragment.HasFloatingDescendantsForPaint())
       continue;
 

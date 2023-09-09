@@ -41,9 +41,6 @@ void ShowWarning(
     Profile* profile,
     password_manager::metrics_util::PasswordMigrationWarningTriggers
         trigger_source) {
-  if (!window) {
-    return;
-  }
   if (!ShouldShowWarning(profile)) {
     return;
   }

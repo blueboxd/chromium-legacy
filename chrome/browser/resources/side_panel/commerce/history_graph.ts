@@ -68,20 +68,10 @@ export class ShoppingInsightsHistoryGraphElement extends PolymerElement {
   override connectedCallback() {
     super.connectedCallback();
 
-    this.points = this.data.map(
-        d => ({date: this.stringToDate_(d.date), price: d.price}));
+    this.points =
+        this.data.map(d => ({date: new Date(d.date), price: d.price}));
 
     this.drawHistoryGraph_();
-  }
-
-  private stringToDate_(s: string): Date {
-    // When compiled, new Date('yyyy-mm-dd') does not return a valid Date
-    // object. Using Date(year, monthIndex, day) protects against that.
-    const [yearStr, monthStr, dayStr] = s.split('-');
-    const year: number = parseInt(yearStr, 10);
-    const month: number = parseInt(monthStr, 10);
-    const day: number = parseInt(dayStr, 10);
-    return new Date(year, month - 1, day);
   }
 
   private getTooltipText_(i: number): string {
@@ -89,8 +79,7 @@ export class ShoppingInsightsHistoryGraphElement extends PolymerElement {
 
     const previousDay = new Date();
     previousDay.setDate(previousDay.getDate() - 1);
-    if (i === this.points.length - 1 &&
-        this.points[i].date.getDate() === previousDay.getDate() &&
+    if (this.points[i].date.getDate() === previousDay.getDate() &&
         this.points[i].date.getMonth() === previousDay.getMonth()) {
       formattedDate = loadTimeData.getString('yesterday');
     }

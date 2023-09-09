@@ -7,7 +7,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Android Release (Nexus 5X)",
-              "project": "chromium-m116"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-gpu-archive",
@@ -38,7 +38,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "android-pie-arm64-rel",
-              "project": "chromium-m116"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-android-archive",
@@ -71,12 +71,12 @@
         {
           "bucket": "ci",
           "builder": "Android Release (Nexus 5X)",
-          "project": "chromium-m116"
+          "project": "chromium"
         },
         {
           "bucket": "ci",
           "builder": "android-pie-arm64-rel",
-          "project": "chromium-m116"
+          "project": "chromium"
         }
       ],
       "rts_config": {
@@ -96,7 +96,7 @@
   },
   "$build/reclient": {
     "instance": "rbe-chromium-untrusted",
-    "jobs": 300,
+    "jobs": 400,
     "metrics_project": "chromium-reclient-metrics"
   },
   "$recipe_engine/resultdb/test_presentation": {

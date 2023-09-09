@@ -31,33 +31,58 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
-#include "net/base/features.h"
 #include "net/base/schemeful_site.h"
 #include "net/cookies/cookie_setting_override.h"
 #include "net/cookies/site_for_cookies.h"
 #include "net/first_party_sets/first_party_set_entry.h"
 #include "net/first_party_sets/first_party_set_metadata.h"
-#include "net/first_party_sets/same_party_context.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
-#include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/features_generated.h"
-#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 
 using content_settings::URLToSchemefulSitePattern;
 
 namespace {
 
-constexpr base::TimeDelta kImplicitGrantDuration = base::Hours(24);
-constexpr base::TimeDelta kExplicitGrantDuration = base::Days(30);
-
-// Returns true iff the request was answered implicitly (assuming it met some
-// other baseline prerequisites).
+// Returns true if the request wasn't answered by the user explicitly.
 bool IsImplicitOutcome(RequestOutcome outcome) {
-  CHECK_NE(outcome, RequestOutcome::kDeniedByPrerequisites);
-  return outcome == RequestOutcome::kGrantedByAllowance ||
-         outcome == RequestOutcome::kGrantedByFirstPartySet ||
-         outcome == RequestOutcome::kDeniedByFirstPartySet;
+  switch (outcome) {
+    case RequestOutcome::kAllowedByCookieSettings:
+    case RequestOutcome::kDeniedByCookieSettings:
+    case RequestOutcome::kDeniedByFirstPartySet:
+    case RequestOutcome::kDeniedByPrerequisites:
+    case RequestOutcome::kDeniedByTopLevelInteractionHeuristic:
+    case RequestOutcome::kDismissedByUser:
+    case RequestOutcome::kGrantedByAllowance:
+    case RequestOutcome::kGrantedByFirstPartySet:
+    case RequestOutcome::kReusedImplicitGrant:
+    case RequestOutcome::kReusedPreviousDecision:
+      return true;
+    case RequestOutcome::kDeniedByUser:
+    case RequestOutcome::kGrantedByUser:
+      return false;
+  }
+}
+
+// Returns true if the request outcome should be displayed in the omnibox.
+bool ShouldDisplayOutcomeInOmnibox(RequestOutcome outcome) {
+  switch (outcome) {
+    case RequestOutcome::kDeniedByUser:
+    case RequestOutcome::kDismissedByUser:
+    case RequestOutcome::kGrantedByUser:
+    case RequestOutcome::kReusedPreviousDecision:
+      return true;
+    case RequestOutcome::kAllowedByCookieSettings:
+    case RequestOutcome::kDeniedByCookieSettings:
+    case RequestOutcome::kDeniedByFirstPartySet:
+    case RequestOutcome::kDeniedByTopLevelInteractionHeuristic:
+    case RequestOutcome::kGrantedByAllowance:
+    case RequestOutcome::kGrantedByFirstPartySet:
+    case RequestOutcome::kReusedImplicitGrant:
+    case RequestOutcome::kDeniedByPrerequisites:
+      return false;
+  }
 }
 
 // Converts a ContentSetting to the corresponding RequestOutcome. This assumes
@@ -89,12 +114,14 @@ content_settings::ContentSettingConstraints ComputeConstraints(
   content_settings::ContentSettingConstraints constraints;
   switch (outcome) {
     case RequestOutcome::kGrantedByFirstPartySet:
-      constraints.set_lifetime(kImplicitGrantDuration);
+      constraints.set_lifetime(
+          blink::features::kStorageAccessAPIImplicitPermissionLifetime.Get());
       constraints.set_session_model(
           content_settings::SessionModel::NonRestorableUserSession);
       return constraints;
     case RequestOutcome::kGrantedByAllowance:
-      constraints.set_lifetime(kImplicitGrantDuration);
+      constraints.set_lifetime(
+          blink::features::kStorageAccessAPIImplicitPermissionLifetime.Get());
       constraints.set_session_model(
           content_settings::SessionModel::UserSession);
       return constraints;
@@ -102,12 +129,15 @@ content_settings::ContentSettingConstraints ComputeConstraints(
     case RequestOutcome::kDeniedByFirstPartySet:
     case RequestOutcome::kDeniedByPrerequisites:
     case RequestOutcome::kReusedPreviousDecision:
+    case RequestOutcome::kReusedImplicitGrant:
     case RequestOutcome::kDeniedByTopLevelInteractionHeuristic:
     case RequestOutcome::kAllowedByCookieSettings:
+    case RequestOutcome::kDeniedByCookieSettings:
       NOTREACHED_NORETURN();
     case RequestOutcome::kGrantedByUser:
     case RequestOutcome::kDeniedByUser:
-      constraints.set_lifetime(kExplicitGrantDuration);
+      constraints.set_lifetime(
+          blink::features::kStorageAccessAPIExplicitPermissionLifetime.Get());
       constraints.set_session_model(content_settings::SessionModel::Durable);
       return constraints;
   }
@@ -164,6 +194,19 @@ void StorageAccessGrantPermissionContext::DecidePermission(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   CHECK(requesting_origin.is_valid());
   CHECK(embedding_origin.is_valid());
+
+  // Return early without letting SAA override any explicit user settings to
+  // block 3p cookies.
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(browser_context());
+  CHECK(settings_map);
+  ContentSetting setting = settings_map->GetContentSetting(
+      requesting_origin, embedding_origin, ContentSettingsType::COOKIES);
+  if (setting == CONTENT_SETTING_BLOCK) {
+    RecordOutcomeSample(RequestOutcome::kDeniedByCookieSettings);
+    std::move(callback).Run(CONTENT_SETTING_BLOCK);
+    return;
+  }
 
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromID(id.global_render_frame_host_id());
@@ -279,7 +322,11 @@ void StorageAccessGrantPermissionContext::UseImplicitGrantOrPrompt(
   ContentSetting existing_setting =
       PermissionContextBase::GetPermissionStatusInternal(rfh, requesting_origin,
                                                          embedding_origin);
-  if (existing_setting != CONTENT_SETTING_ASK) {
+  // ALLOW grants are handled by PermissionContextBase so they never reach this
+  // point. StorageAccessGrantPermissionContext::GetPermissionStatusInternal
+  // rewrites BLOCK to ASK, so we need to handle BLOCK here explicitly.
+  CHECK_NE(existing_setting, CONTENT_SETTING_ALLOW);
+  if (existing_setting == CONTENT_SETTING_BLOCK) {
     NotifyPermissionSetInternal(id, requesting_origin, embedding_origin,
                                 std::move(callback),
                                 /*persist=*/false, existing_setting,
@@ -289,10 +336,10 @@ void StorageAccessGrantPermissionContext::UseImplicitGrantOrPrompt(
 
   // Get all of our implicit grants and see which ones apply to our
   // |requesting_origin|.
-  ContentSettingsForOneType implicit_grants;
-  settings_map->GetSettingsForOneType(
-      ContentSettingsType::STORAGE_ACCESS, &implicit_grants,
-      content_settings::SessionModel::UserSession);
+  ContentSettingsForOneType implicit_grants =
+      settings_map->GetSettingsForOneType(
+          ContentSettingsType::STORAGE_ACCESS,
+          content_settings::SessionModel::UserSession);
 
   const int existing_implicit_grants = base::ranges::count_if(
       implicit_grants, [requesting_origin](const auto& entry) {
@@ -341,6 +388,13 @@ void StorageAccessGrantPermissionContext::OnCheckedUserInteractionHeuristic(
     permissions::BrowserPermissionCallback callback,
     bool had_top_level_user_interaction) {
   if (!had_top_level_user_interaction) {
+    content::RenderFrameHost* rfh =
+        content::RenderFrameHost::FromID(id.global_render_frame_host_id());
+    CHECK(rfh);
+    rfh->AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kError,
+        "requestStorageAccess: Request denied because the embedded site has "
+        "never been interacted with as a top-level context");
     NotifyPermissionSetInternal(
         id, requesting_origin, embedding_origin, std::move(callback),
         /*persist=*/false, CONTENT_SETTING_BLOCK,
@@ -390,9 +444,28 @@ void StorageAccessGrantPermissionContext::NotifyPermissionSet(
   CHECK(!is_one_time);
   CHECK(is_final_decision);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  NotifyPermissionSetInternal(
-      id, requesting_origin, embedding_origin, std::move(callback), persist,
-      content_setting, RequestOutcomeFromPrompt(content_setting, persist));
+  RequestOutcome outcome = RequestOutcomeFromPrompt(content_setting, persist);
+  if (outcome == RequestOutcome::kReusedPreviousDecision) {
+    // This could be an implicit, e.g. FPS or allowance based permission. Check
+    // if the exception has an ephemeral session model.
+    content_settings::SettingInfo info;
+    HostContentSettingsMapFactory::GetForProfile(browser_context())
+        ->GetContentSetting(requesting_origin, embedding_origin,
+                            ContentSettingsType::STORAGE_ACCESS, &info);
+
+    switch (info.metadata.session_model()) {
+      case content_settings::SessionModel::NonRestorableUserSession:
+      case content_settings::SessionModel::UserSession:
+        outcome = RequestOutcome::kReusedImplicitGrant;
+        break;
+      case content_settings::SessionModel::Durable:
+      case content_settings::SessionModel::OneTime:
+        break;
+    }
+  }
+  NotifyPermissionSetInternal(id, requesting_origin, embedding_origin,
+                              std::move(callback), persist, content_setting,
+                              outcome);
 }
 
 void StorageAccessGrantPermissionContext::NotifyPermissionSetInternal(
@@ -414,8 +487,7 @@ void StorageAccessGrantPermissionContext::NotifyPermissionSetInternal(
   const bool permission_allowed = (content_setting == CONTENT_SETTING_ALLOW);
   UpdateTabContext(id, requesting_origin, permission_allowed);
 
-  if (outcome != RequestOutcome::kDeniedByPrerequisites &&
-      !IsImplicitOutcome(outcome)) {
+  if (ShouldDisplayOutcomeInOmnibox(outcome)) {
     auto* content_settings =
         content_settings::PageSpecificContentSettings::GetForFrame(
             id.global_render_frame_host_id());
@@ -453,9 +525,8 @@ void StorageAccessGrantPermissionContext::NotifyPermissionSetInternal(
       requesting_origin, embedding_origin, ContentSettingsType::STORAGE_ACCESS,
       content_setting, ComputeConstraints(outcome));
 
-  ContentSettingsForOneType grants;
-  settings_map->GetSettingsForOneType(ContentSettingsType::STORAGE_ACCESS,
-                                      &grants);
+  ContentSettingsForOneType grants =
+      settings_map->GetSettingsForOneType(ContentSettingsType::STORAGE_ACCESS);
 
   // TODO(https://crbug.com/989663): Ensure that this update of settings doesn't
   // cause a double update with

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -38,8 +39,8 @@
 #include "chrome/updater/test_scope.h"
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_version.h"
-#include "chrome/updater/util/unittest_util.h"
-#include "chrome/updater/util/unittest_util_win.h"
+#include "chrome/updater/util/unit_test_util.h"
+#include "chrome/updater/util/unit_test_util_win.h"
 #include "chrome/updater/win/test/test_executables.h"
 #include "chrome/updater/win/test/test_strings.h"
 #include "chrome/updater/win/win_constants.h"
@@ -49,6 +50,8 @@
 namespace updater {
 
 namespace {
+
+constexpr char kTestAppID[] = "{D07D2B56-F583-4631-9E8E-9942F63765BE}";
 
 // Allows access to all authenticated users on the machine.
 CSecurityDesc GetEveryoneDaclSecurityDescriptor(ACCESS_MASK accessmask) {
@@ -190,9 +193,9 @@ TEST(WinUtil, RunDeElevated_Exe) {
                     test_process_cmd_line.GetArgumentsString()));
   EXPECT_TRUE(event.TimedWait(TestTimeouts::action_max_timeout()));
 
-  EXPECT_TRUE(test::WaitFor(base::BindLambdaForTesting([&]() {
+  EXPECT_TRUE(test::WaitFor([&]() {
     return test::FindProcesses(kTestProcessExecutableName).empty();
-  })));
+  }));
 }
 
 TEST(WinUtil, GetOSVersion) {
@@ -432,12 +435,11 @@ TEST(WinUtil, ForEachRegistryRunValueWithPrefix) {
   int count_entries = 0;
   ForEachRegistryRunValueWithPrefix(
       kRunEntryPrefix,
-      base::BindLambdaForTesting([&key, &count_entries, kRunEntryPrefix](
-                                     const std::wstring& run_name) {
+      [&key, &count_entries, kRunEntryPrefix](const std::wstring& run_name) {
         EXPECT_TRUE(base::StartsWith(run_name, kRunEntryPrefix));
         ++count_entries;
         EXPECT_EQ(key.DeleteValue(run_name.c_str()), ERROR_SUCCESS);
-      }));
+      });
   EXPECT_EQ(count_entries, kRunEntries);
 }
 
@@ -480,12 +482,11 @@ TEST(WinUtil, ForEachServiceWithPrefix) {
   int count_entries = 0;
   ForEachServiceWithPrefix(
       kServiceNamePrefix, kServiceNamePrefix,
-      base::BindLambdaForTesting([&count_entries, kServiceNamePrefix](
-                                     const std::wstring& service_name) {
+      [&count_entries, kServiceNamePrefix](const std::wstring& service_name) {
         EXPECT_TRUE(base::StartsWith(service_name, kServiceNamePrefix));
         ++count_entries;
         EXPECT_TRUE(DeleteService(service_name));
-      }));
+      });
   EXPECT_EQ(count_entries, kNumServices);
 }
 
@@ -511,6 +512,20 @@ TEST(WinUtil, LogClsidEntries) {
   EXPECT_HRESULT_SUCCEEDED(
       ::CLSIDFromProgID(L"InternetExplorer.Application", &clsid));
   LogClsidEntries(clsid);
+}
+
+TEST(WinUtil, GetAppAPValue) {
+  std::string ap(GetAppAPValue(GetTestScope(), kTestAppID));
+  EXPECT_EQ(ap, "");
+
+  base::win::RegKey client_state_key(
+      CreateAppClientStateKey(GetTestScope(), base::ASCIIToWide(kTestAppID)));
+  EXPECT_EQ(client_state_key.WriteValue(kRegValueAP, L"TestAP"), ERROR_SUCCESS);
+
+  ap = GetAppAPValue(GetTestScope(), kTestAppID);
+  EXPECT_EQ(ap, "TestAP");
+
+  DeleteAppClientStateKey(GetTestScope(), base::ASCIIToWide(kTestAppID));
 }
 
 }  // namespace updater

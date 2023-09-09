@@ -64,6 +64,7 @@ public class MessageBannerView extends BoundedLinearLayout {
     private int mCornerRadius = -1;
     private PopupMenuShownListener mPopupMenuShownListener;
     private Drawable mDescriptionDrawable;
+    private boolean mOverrideSecondaryIconContentDescription = true;
 
     public MessageBannerView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -96,10 +97,19 @@ public class MessageBannerView extends BoundedLinearLayout {
     void setTitle(String title) {
         mTitle.setText(title);
         if (mOnTitleChanged != null) mOnTitleChanged.run();
+        if (mOverrideSecondaryIconContentDescription
+                && TextUtils.isEmpty(mTitle.getContentDescription())) {
+            setSecondaryIconContentDescription(
+                    getResources().getString(R.string.message_more_options, title), true);
+        }
     }
 
     void setTitleContentDescription(String description) {
         mTitle.setContentDescription(description);
+        if (mOverrideSecondaryIconContentDescription) {
+            setSecondaryIconContentDescription(
+                    getResources().getString(R.string.message_more_options, description), true);
+        }
     }
 
     void setDescriptionText(CharSequence description) {
@@ -233,8 +243,9 @@ public class MessageBannerView extends BoundedLinearLayout {
         mSecondaryMenuButtonDelegate = delegate;
     }
 
-    void setSecondaryIconContentDescription(String description) {
+    void setSecondaryIconContentDescription(String description, boolean canBeOverridden) {
         mSecondaryButton.setContentDescription(description);
+        mOverrideSecondaryIconContentDescription = canBeOverridden;
     }
 
     void setSwipeHandler(SwipeHandler handler) {
@@ -414,5 +425,9 @@ public class MessageBannerView extends BoundedLinearLayout {
         public boolean onDown(MotionEvent e) {
             return true;
         }
+    }
+
+    ListMenuButton getSecondaryButtonForTesting() {
+        return mSecondaryButton;
     }
 }

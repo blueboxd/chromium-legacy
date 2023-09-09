@@ -6,6 +6,8 @@ package org.chromium.net;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.chromium.net.truth.UrlResponseInfoSubject.assertThat;
+
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
@@ -15,6 +17,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.Batch;
 import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
 import org.chromium.net.CronetTestRule.RequiresMinApi;
 
@@ -25,6 +28,7 @@ import java.util.Arrays;
  */
 @RunWith(AndroidJUnit4.class)
 @RequiresMinApi(5) // Brotli support added in API version 5: crrev.com/465216
+@Batch(Batch.UNIT_TESTS)
 public class BrotliTest {
     @Rule
     public final CronetTestRule mTestRule = CronetTestRule.withManualEngineStartup();
@@ -55,7 +59,7 @@ public class BrotliTest {
         mCronetEngine = mTestRule.getTestFramework().startEngine();
         String url = Http2TestServer.getEchoAllHeadersUrl();
         TestUrlRequestCallback callback = startAndWaitForComplete(url);
-        assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
+        assertThat(callback.getResponseInfoWithChecks()).hasHttpStatusCodeThat().isEqualTo(200);
         assertThat(callback.mResponseAsString).contains("accept-encoding: gzip, deflate, br");
     }
 
@@ -71,7 +75,7 @@ public class BrotliTest {
         mCronetEngine = mTestRule.getTestFramework().startEngine();
         String url = Http2TestServer.getEchoAllHeadersUrl();
         TestUrlRequestCallback callback = startAndWaitForComplete(url);
-        assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
+        assertThat(callback.getResponseInfoWithChecks()).hasHttpStatusCodeThat().isEqualTo(200);
         assertThat(callback.mResponseAsString).doesNotContain("br");
     }
 
@@ -88,10 +92,11 @@ public class BrotliTest {
         mCronetEngine = mTestRule.getTestFramework().startEngine();
         String url = Http2TestServer.getServeSimpleBrotliResponse();
         TestUrlRequestCallback callback = startAndWaitForComplete(url);
-        assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
+        assertThat(callback.getResponseInfoWithChecks()).hasHttpStatusCodeThat().isEqualTo(200);
         String expectedResponse = "The quick brown fox jumps over the lazy dog";
         assertThat(callback.mResponseAsString).isEqualTo(expectedResponse);
-        assertThat(callback.mResponseInfo.getAllHeaders())
+        assertThat(callback.getResponseInfoWithChecks())
+                .hasHeadersThat()
                 .containsEntry("content-encoding", Arrays.asList("br"));
     }
 

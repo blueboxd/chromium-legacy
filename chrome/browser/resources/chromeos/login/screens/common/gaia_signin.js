@@ -370,6 +370,8 @@ class GaiaSigninElement extends GaiaSigninElementBase {
       'clickPrimaryButtonForTesting',
       'onBeforeLoad',
       'reset',
+      'toggleLoadingUI',
+      'setQuickStartEnabled',
     ];
   }
 
@@ -856,7 +858,7 @@ class GaiaSigninElement extends GaiaSigninElementBase {
    * @private
    */
   onIdentifierEnteredMessage_(e) {
-    chrome.send('identifierEntered', [e.detail.accountIdentifier]);
+    this.userActed(['identifierEntered', e.detail.accountIdentifier]);
   }
 
   /**
@@ -938,6 +940,13 @@ class GaiaSigninElement extends GaiaSigninElementBase {
     this.reset();
     this.emailDomain_ = domain;
     this.$.enrollmentNudge.showDialog();
+  }
+
+  /**
+   * @param {boolean} isShown
+   */
+  toggleLoadingUI(isShown) {
+    this.loadingFrameContents_ = isShown;
   }
 
   /**
@@ -1146,6 +1155,19 @@ class GaiaSigninElement extends GaiaSigninElementBase {
 
   onAllowlistErrorLinkClick_() {
     chrome.send('launchHelpApp', [HELP_CANT_ACCESS_ACCOUNT]);
+  }
+
+  /**
+   * Handle "Quick Start" button for "Signin" screen.
+   *
+   * @private
+   */
+  onQuickStartButtonClicked_() {
+    this.userActed('activateQuickStart');
+  }
+
+  setQuickStartEnabled() {
+    this.$['signin-frame-dialog'].isQuickStartEnabled_ = true;
   }
 }
 

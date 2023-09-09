@@ -54,7 +54,6 @@
 #import "ios/chrome/browser/ui/bubble/bubble_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
-#import "ios/chrome/browser/ui/gestures/view_revealing_vertical_pan_handler.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_constants.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_presentation.h"
@@ -127,13 +126,9 @@ const CGFloat kAutoscrollDecrementWidth = 10.0;
 
 // The size of the new tab button.
 const CGFloat kNewTabButtonWidth = 44;
-const CGFloat kNewTabButtonSpotlightViewCornerRadius = 7;
 
-// Default image insets for the new tab button. The negative value for leading
-// inset is shifting the image view to the left from the center.
+// Default image insets for the new tab button.
 const CGFloat kNewTabButtonLeadingImageInset = -10.0;
-// The negative value for bottom inset is shifting the image view to the bottom
-// from the center.
 const CGFloat kNewTabButtonBottomImageInset = -2.0;
 
 // Identifier of the action that displays the UIMenu.
@@ -141,16 +136,6 @@ NSString* const kMenuActionIdentifier = @"kMenuActionIdentifier";
 
 // Returns the background color.
 UIColor* BackgroundColor() {
-  if (base::FeatureList::IsEnabled(kExpandedTabStrip)) {
-    // The background needs to be clear to allow the thumb strip to be seen
-    // from behind the tab strip during the enter/exit thumb strip animation.
-    // However, when using the fullscreen provider, the WKWebView extends behind
-    // the tab strip. In this case, a clear background would lead to seeing the
-    // WKWebView instead of the thumb strip.
-    return ios::provider::IsFullscreenSmoothScrollingSupported()
-               ? UIColor.blackColor
-               : UIColor.clearColor;
-  }
   return UIColor.blackColor;
 }
 
@@ -195,7 +180,6 @@ const CGFloat kSymbolSize = 18;
 @interface TabStripController () <CRWWebStateObserver,
                                   TabStripViewLayoutDelegate,
                                   TabViewDelegate,
-                                  ViewRevealingAnimatee,
                                   WebStateFaviconDriverObserver,
                                   WebStateListObserving,
                                   UIGestureRecognizerDelegate,
@@ -206,9 +190,6 @@ const CGFloat kSymbolSize = 18;
   TabStripContainerView* _view;
   TabStripView* _tabStripView;
   UIButton* _buttonNewTab;
-  // The spotlight view contained in the new tab button, serving for the
-  // highlighted effect.
-  UIView* _buttonNewTabSpotlightView;
 
   TabStripStyle _style;
 
@@ -311,15 +292,10 @@ const CGFloat kSymbolSize = 18;
 // Handler for URL drop interactions.
 @property(nonatomic, strong) URLDragDropHandler* dragDropHandler;
 
-// Pan gesture recognizer for the view revealing pan gesture handler.
-@property(nonatomic, weak) UIPanGestureRecognizer* panGestureRecognizer;
-
 // The tab strip view can be hidden for multiple reasons, which should be
 // tracked independently.
 // Tracks view hiding from external sources.
 @property(nonatomic, assign) BOOL viewHidden;
-// Tracks view hiding from thumb strip revealing.
-@property(nonatomic, assign) BOOL viewHiddenForThumbStrip;
 
 // Initializes the tab array based on the the entries in the `_webStateList`'s.
 // Creates one TabView per Tab and adds it to the tabstrip.  A later call to
@@ -458,7 +434,6 @@ const CGFloat kSymbolSize = 18;
 @synthesize view = _view;
 @synthesize presentationProvider = _presentationProvider;
 @synthesize animationWaitDuration = _animationWaitDuration;
-@synthesize panGestureHandler = _panGestureHandler;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)baseViewController
                                    browser:(Browser*)browser
@@ -529,20 +504,32 @@ const CGFloat kSymbolSize = 18;
     UIImage* buttonNewTabImage =
         DefaultSymbolWithPointSize(kPlusSymbol, kSymbolSize);
 
-    // TODO(crbug.com/1418068): Simplify after minimum version required is >=
-    // iOS 15.
-    if (base::ios::IsRunningOnIOS15OrLater() &&
-        IsUIButtonConfigurationEnabled()) {
-      if (@available(iOS 15, *)) {
-        UIButtonConfiguration* buttonConfiguration =
-            [UIButtonConfiguration plainButtonConfiguration];
-        buttonConfiguration.contentInsets =
-            NSDirectionalEdgeInsetsMake(0, kNewTabButtonLeadingImageInset,
-                                        kNewTabButtonBottomImageInset, 0);
-        buttonConfiguration.image = buttonNewTabImage;
-        _buttonNewTab.tintColor = [UIColor colorNamed:kGrey500Color];
-        _buttonNewTab.configuration = buttonConfiguration;
-      }
+    if (IsUIButtonConfigurationEnabled()) {
+      UIButtonConfiguration* buttonConfiguration =
+          [UIButtonConfiguration plainButtonConfiguration];
+      buttonConfiguration.contentInsets = NSDirectionalEdgeInsetsMake(
+          0, kNewTabButtonLeadingImageInset, kNewTabButtonBottomImageInset, 0);
+      buttonConfiguration.image = buttonNewTabImage;
+      buttonConfiguration.baseForegroundColor =
+          [UIColor colorNamed:kGrey500Color];
+      _buttonNewTab.configurationUpdateHandler = ^(UIButton* incomingButton) {
+        UIButtonConfiguration* updatedConfig = incomingButton.configuration;
+        switch (incomingButton.state) {
+          case UIControlStateHighlighted: {
+            updatedConfig.baseForegroundColor =
+                [UIColor colorNamed:kGrey700Color];
+            break;
+          }
+          case UIControlStateNormal:
+            updatedConfig.baseForegroundColor =
+                [UIColor colorNamed:kGrey500Color];
+            break;
+          default:
+            break;
+        }
+        incomingButton.configuration = updatedConfig;
+      };
+      _buttonNewTab.configuration = buttonConfiguration;
     } else {
       UIEdgeInsets imageInsets = UIEdgeInsetsMake(
           0, kNewTabButtonLeadingImageInset, kNewTabButtonBottomImageInset, 0);
@@ -550,24 +537,6 @@ const CGFloat kSymbolSize = 18;
       [_buttonNewTab setImage:buttonNewTabImage forState:UIControlStateNormal];
       [_buttonNewTab.imageView setTintColor:[UIColor colorNamed:kGrey500Color]];
     }
-
-    _buttonNewTabSpotlightView = [[UIView alloc] init];
-    _buttonNewTabSpotlightView.hidden = YES;
-    _buttonNewTabSpotlightView.userInteractionEnabled = NO;
-    _buttonNewTabSpotlightView.layer.cornerRadius =
-        kNewTabButtonSpotlightViewCornerRadius;
-    // Position the spotlight view so that the image view is in its center.
-    // Cannot use the button's `backgroundColor` because the image view is not
-    // centered in the button by kNewTabButtonLeadingImageInset and
-    // kNewTabButtonBottomImageInset.
-    [_buttonNewTabSpotlightView
-        setFrame:CGRectMake(0, -kNewTabButtonBottomImageInset,
-                            kNewTabButtonWidth + kNewTabButtonLeadingImageInset,
-                            kTabStripHeight + kNewTabButtonBottomImageInset)];
-    // Make sure that the spotlightView is below the image to avoid changing the
-    // color of the image.
-    [_buttonNewTab insertSubview:_buttonNewTabSpotlightView
-                    belowSubview:_buttonNewTab.imageView];
 
     SetA11yLabelAndUiAutomationName(
         _buttonNewTab,
@@ -636,47 +605,12 @@ const CGFloat kSymbolSize = 18;
 
 // Updates the view's hidden property using all sources of visibility.
 - (void)updateViewHidden {
-  self.view.hidden = self.viewHidden || self.viewHiddenForThumbStrip;
+  self.view.hidden = self.viewHidden;
 }
 
 - (void)tabStripSizeDidChange {
   [self updateContentSizeAndRepositionViews];
   [self layoutTabStripSubviews];
-}
-
-- (void)setPanGestureHandler:
-    (ViewRevealingVerticalPanHandler*)panGestureHandler {
-  _panGestureHandler = panGestureHandler;
-
-  [self.view removeGestureRecognizer:self.panGestureRecognizer];
-
-  UIPanGestureRecognizer* panGestureRecognizer =
-      [[ViewRevealingPanGestureRecognizer alloc]
-          initWithTarget:panGestureHandler
-                  action:@selector(handlePanGesture:)
-                 trigger:ViewRevealTrigger::TabStrip];
-  panGestureRecognizer.delegate = panGestureHandler;
-  panGestureRecognizer.maximumNumberOfTouches = 1;
-  [self.view addGestureRecognizer:panGestureRecognizer];
-
-  self.panGestureRecognizer = panGestureRecognizer;
-}
-
-#pragma mark - TabStripCommands
-
-- (void)setNewTabButtonOnTabStripIPHHighlighted:(BOOL)IPHHighlighted {
-  if (IsUIButtonConfigurationEnabled()) {
-    _buttonNewTab.tintColor = IPHHighlighted
-                                  ? [UIColor colorNamed:kSolidWhiteColor]
-                                  : [UIColor colorNamed:kGrey500Color];
-  } else {
-    _buttonNewTab.imageView.tintColor =
-        IPHHighlighted ? [UIColor colorNamed:kSolidWhiteColor]
-                       : [UIColor colorNamed:kGrey500Color];
-  }
-  _buttonNewTabSpotlightView.backgroundColor =
-      IPHHighlighted ? [UIColor colorNamed:kBlueColor] : nil;
-  _buttonNewTabSpotlightView.hidden = !IPHHighlighted;
 }
 
 #pragma mark - Private
@@ -1223,18 +1157,48 @@ const CGFloat kSymbolSize = 18;
 
 - (void)didChangeWebStateList:(WebStateList*)webStateList
                        change:(const WebStateListChange&)change
-                    selection:(const WebStateSelection&)selection {
+                       status:(const WebStateListStatus&)status {
   switch (change.type()) {
-    case WebStateListChange::Type::kSelectionOnly:
+    case WebStateListChange::Type::kStatusOnly:
       // TODO(crbug.com/1442546): Move the implementation from
       // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason to
       // here. Note that here is reachable only when `reason` ==
       // ActiveWebStateChangeReason::Activated.
       break;
-    case WebStateListChange::Type::kDetach:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // webStateList:didDetachWebState:atIndex: to here.
+    case WebStateListChange::Type::kDetach: {
+      // Keep the actual view around while it is animating out.  Once the
+      // animation is done, remove the view.
+      NSUInteger index = [self indexForWebStateListIndex:status.index];
+      TabView* view = [_tabArray objectAtIndex:index];
+      [_closingTabs addObject:view];
+      _targetFrames.RemoveFrame(view);
+
+      // Adjust the content size now that the tab has been removed from the
+      // model.
+      [self updateContentSizeAndRepositionViews];
+
+      // Signal the FullscreenController that the toolbar needs to stay on
+      // screen for a bit, so the animation is visible.
+      [[NSNotificationCenter defaultCenter]
+          postNotificationName:kWillStartTabStripTabAnimation
+                        object:nil];
+
+      // Leave the view where it is horizontally and animate it downwards out of
+      // sight.
+      CGRect frame = [view frame];
+      frame = CGRectOffset(frame, 0, CGRectGetHeight(frame));
+      __weak TabStripController* weakSelf = self;
+      [UIView animateWithDuration:kTabAnimationDuration
+          animations:^{
+            [view setFrame:frame];
+          }
+          completion:^(BOOL finished) {
+            [weakSelf tabViewAnimationCompletion:view];
+          }];
+
+      [self setNeedsLayoutWithAnimation];
       break;
+    }
     case WebStateListChange::Type::kMove: {
       DCHECK(!_isReordering);
 
@@ -1246,7 +1210,7 @@ const CGFloat kSymbolSize = 18;
           [self indexForWebStateListIndex:moveChange.moved_from_index()];
       TabView* view = [_tabArray objectAtIndex:arrayIndex];
       [_tabArray removeObject:view];
-      [_tabArray insertObject:view atIndex:selection.index];
+      [_tabArray insertObject:view atIndex:status.index];
       [self setNeedsLayoutWithAnimation];
       break;
     }
@@ -1263,15 +1227,14 @@ const CGFloat kSymbolSize = 18;
           change.As<WebStateListChangeInsert>();
       TabView* view =
           [self createTabViewForWebState:insertChange.inserted_web_state()
-                              isSelected:selection.activating];
+                              isSelected:status.active_web_state_change()];
       [_tabArray insertObject:view
-                      atIndex:[self indexForWebStateListIndex:selection.index]];
+                      atIndex:[self indexForWebStateListIndex:status.index]];
       [[self tabStripView] addSubview:view];
 
       [self updateContentSizeAndRepositionViews];
       [self setNeedsLayoutWithAnimation];
-      [self updateContentOffsetForWebStateIndex:selection.index
-                                  isNewWebState:YES];
+      [self updateContentOffsetForWebStateIndex:status.index isNewWebState:YES];
       break;
     }
   }
@@ -1298,42 +1261,6 @@ const CGFloat kSymbolSize = 18;
   // z-ordering of the TabViews.  If a new tab was selected as a result of a tab
   // closure, then the animated layout has already been scheduled.
   [_tabStripView setNeedsLayout];
-}
-
-// Observer method, `webState` removed from `webStateList`.
-- (void)webStateList:(WebStateList*)webStateList
-    didDetachWebState:(web::WebState*)webState
-              atIndex:(int)atIndex {
-  // Keep the actual view around while it is animating out.  Once the animation
-  // is done, remove the view.
-  NSUInteger index = [self indexForWebStateListIndex:atIndex];
-  TabView* view = [_tabArray objectAtIndex:index];
-  [_closingTabs addObject:view];
-  _targetFrames.RemoveFrame(view);
-
-  // Adjust the content size now that the tab has been removed from the model.
-  [self updateContentSizeAndRepositionViews];
-
-  // Signal the FullscreenController that the toolbar needs to stay on
-  // screen for a bit, so the animation is visible.
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kWillStartTabStripTabAnimation
-                    object:nil];
-
-  // Leave the view where it is horizontally and animate it downwards out of
-  // sight.
-  CGRect frame = [view frame];
-  frame = CGRectOffset(frame, 0, CGRectGetHeight(frame));
-  __weak TabStripController* weakSelf = self;
-  [UIView animateWithDuration:kTabAnimationDuration
-      animations:^{
-        [view setFrame:frame];
-      }
-      completion:^(BOOL finished) {
-        [weakSelf tabViewAnimationCompletion:view];
-      }];
-
-  [self setNeedsLayoutWithAnimation];
 }
 
 - (void)tabViewAnimationCompletion:(UIView*)view {
@@ -1925,37 +1852,6 @@ const CGFloat kSymbolSize = 18;
 
 - (void)voiceOverStatusDidChange {
   self.useTabStacking = [self shouldUseTabStacking];
-}
-
-#pragma mark - ViewRevealingAnimatee
-
-- (id<ViewRevealingAnimatee>)animatee {
-  return self;
-}
-
-- (void)willAnimateViewRevealFromState:(ViewRevealState)currentViewRevealState
-                               toState:(ViewRevealState)nextViewRevealState {
-  // Specifically when Smooth Scrolling is on, the background of the view
-  // is non-clear to cover the WKWebView. In this case, make the tab strip
-  // background clear as soon as view revealing begins so any animations that
-  // should be visible behind the tab strip are visible. See the comment on
-  // `BackgroundColor()` for more details.
-  self.view.backgroundColor = UIColor.clearColor;
-  self.viewHiddenForThumbStrip = YES;
-  [self updateViewHidden];
-}
-
-- (void)didAnimateViewRevealFromState:(ViewRevealState)startViewRevealState
-                              toState:(ViewRevealState)currentViewRevealState
-                              trigger:(ViewRevealTrigger)trigger {
-  if (currentViewRevealState == ViewRevealState::Hidden) {
-    // Reset the background color to cover up the WKWebView if it is behind
-    // the tab strip.
-    self.view.backgroundColor = BackgroundColor();
-  }
-  self.viewHiddenForThumbStrip =
-      currentViewRevealState != ViewRevealState::Hidden;
-  [self updateViewHidden];
 }
 
 @end

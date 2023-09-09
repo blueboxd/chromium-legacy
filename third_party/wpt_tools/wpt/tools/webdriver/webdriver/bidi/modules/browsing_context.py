@@ -6,6 +6,11 @@ from ._module import BidiModule, command
 
 class BrowsingContext(BidiModule):
     @command
+    def activate(self,
+                 context: str) -> Mapping[str, Any]:
+        return {"context": context}
+
+    @command
     def capture_screenshot(self, context: str) -> Mapping[str, Any]:
         params: MutableMapping[str, Any] = {"context": context}
 
@@ -127,3 +132,7 @@ class BrowsingContext(BidiModule):
     def _print(self, result: Mapping[str, Any]) -> Any:
         assert result["data"] is not None
         return result["data"]
+
+    @command
+    def set_viewport(self, context: str, viewport: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
+        return {"context": context, "viewport": viewport}

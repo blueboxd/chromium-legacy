@@ -25,14 +25,12 @@
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "components/autofill/core/common/gaia_id_hash.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill/core/common/signatures.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
-#include "components/password_manager/core/browser/field_info_manager.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/mock_password_change_success_tracker.h"
 #include "components/password_manager/core/browser/mock_webauthn_credentials_delegate.h"
@@ -55,6 +53,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/signin/public/base/gaia_id_hash.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -71,7 +70,6 @@ using autofill::FormFieldData;
 using autofill::FormRendererId;
 using autofill::FormSignature;
 using autofill::FormStructure;
-using autofill::GaiaIdHash;
 using autofill::NOT_USERNAME;
 using autofill::PasswordFormFillData;
 using autofill::PasswordFormGenerationData;
@@ -80,6 +78,7 @@ using autofill::ServerFieldTypeSet;
 using autofill::SINGLE_USERNAME;
 using autofill::UNKNOWN_TYPE;
 using autofill::password_generation::PasswordGenerationType;
+using signin::GaiaIdHash;
 using testing::_;
 using testing::AllOf;
 using testing::Contains;
@@ -178,7 +177,6 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
               (override));
   MOCK_METHOD(SyncState, GetPasswordSyncState, (), (const, override));
   MOCK_METHOD(bool, IsCommittedMainFrameSecure, (), (const, override));
-  MOCK_METHOD(FieldInfoManager*, GetFieldInfoManager, (), (const, override));
   MOCK_METHOD(signin::IdentityManager*, GetIdentityManager, (), (override));
   MOCK_METHOD(PrefService*, GetPrefs, (), (const, override));
   MOCK_METHOD(const GURL&, GetLastCommittedURL, (), (const, override));
@@ -321,20 +319,6 @@ class MockFormSaver : public StubFormSaver {
   }
 };
 
-class MockFieldInfoManager : public FieldInfoManager {
- public:
-  MOCK_METHOD(void,
-              AddFieldType,
-              (autofill::FormSignature,
-               autofill::FieldSignature,
-               ServerFieldType),
-              (override));
-  MOCK_METHOD(ServerFieldType,
-              GetFieldType,
-              (autofill::FormSignature, autofill::FieldSignature),
-              (const override));
-};
-
 class PasswordFormManagerTest : public testing::Test,
                                 public testing::WithParamInterface<bool> {
  public:
@@ -419,7 +403,7 @@ class PasswordFormManagerTest : public testing::Test,
     saved_match_.username_element = u"field1";
     saved_match_.password_value = u"test1";
     saved_match_.password_element = u"field2";
-    saved_match_.is_public_suffix_match = false;
+    saved_match_.match_type = PasswordForm::MatchType::kExact;
     saved_match_.scheme = PasswordForm::Scheme::kHtml;
     saved_match_.in_store = PasswordForm::Store::kProfileStore;
 
@@ -427,7 +411,7 @@ class PasswordFormManagerTest : public testing::Test,
     psl_saved_match_.url = psl_origin;
     psl_saved_match_.action = psl_action;
     psl_saved_match_.signon_realm = "https://myaccounts.google.com/";
-    psl_saved_match_.is_public_suffix_match = true;
+    psl_saved_match_.match_type = PasswordForm::MatchType::kPSL;
 
     parsed_observed_form_ = saved_match_;
     parsed_observed_form_.form_data = observed_form_;
@@ -463,6 +447,9 @@ class PasswordFormManagerTest : public testing::Test,
         .WillByDefault(Return(&webauthn_credentials_delegate_));
     ON_CALL(webauthn_credentials_delegate_, GetPasskeys)
         .WillByDefault(ReturnRef(passkeys_));
+    ON_CALL(webauthn_credentials_delegate_,
+            OfferPasskeysFromAnotherDeviceOption)
+        .WillByDefault(Return(true));
 
     fetcher_ = std::make_unique<FakeFormFetcher>();
     fetcher_->Fetch();
@@ -852,7 +839,7 @@ TEST_P(PasswordFormManagerTest, CreatePendingCredentialsPSLMatchSaved) {
 
   saved_match_.url = GURL("https://m.accounts.google.com/auth");
   saved_match_.signon_realm = "https://m.accounts.google.com/";
-  saved_match_.is_public_suffix_match = true;
+  saved_match_.match_type = PasswordForm::MatchType::kPSL;
 
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
 
@@ -1043,7 +1030,6 @@ TEST_P(PasswordFormManagerTest, SavePSLToAlreadySaved) {
   EXPECT_TRUE(
       form_manager_->ProvisionallySave(submitted_form, &driver_, nullptr));
   EXPECT_TRUE(form_manager_->IsNewLogin());
-  EXPECT_TRUE(form_manager_->IsPendingCredentialsPublicSuffixMatch());
 
   MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
   PasswordForm saved_form;
@@ -2370,12 +2356,6 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlow) {
         /*autocomplete_attribute_has_username=*/false);
     possible_username_data.form_predictions = MakeSingleUsernamePredictions();
 
-    MockFieldInfoManager mock_field_manager;
-    ON_CALL(mock_field_manager, GetFieldType(_, _))
-        .WillByDefault(Return(UNKNOWN_TYPE));
-    ON_CALL(client_, GetFieldInfoManager())
-        .WillByDefault(Return(&mock_field_manager));
-
     // Simulate submitting a form without a username. Data from
     // |possible_username_data| will be taken for setting username.
     FormData submitted_form = observed_form_only_password_fields_;
@@ -2472,11 +2452,6 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlowWithPrefilledUsername) {
       /*autocomplete_attribute_has_username=*/false);
   possible_username_data.form_predictions = MakeSingleUsernamePredictions();
 
-  MockFieldInfoManager mock_field_manager;
-  ON_CALL(mock_field_manager, GetFieldType).WillByDefault(Return(UNKNOWN_TYPE));
-  ON_CALL(client_, GetFieldInfoManager)
-      .WillByDefault(Return(&mock_field_manager));
-
   ASSERT_TRUE(form_manager_->ProvisionallySave(submitted_form_, &driver_,
                                                &possible_username_data));
 
@@ -2547,11 +2522,6 @@ TEST_P(PasswordFormManagerTest, NegativeUsernameFirstFlowVotes) {
   constexpr char16_t kUsernameFieldName[] = u"username_field";
   constexpr autofill::FormSignature kUsernameFormSignature(1000);
   constexpr autofill::FieldSignature kUsernameFieldSignature(123);
-
-  MockFieldInfoManager mock_field_manager;
-  ON_CALL(mock_field_manager, GetFieldType).WillByDefault(Return(UNKNOWN_TYPE));
-  ON_CALL(client_, GetFieldInfoManager)
-      .WillByDefault(Return(&mock_field_manager));
 
   CreateFormManager(observed_form_only_password_fields_);
   fetcher_->NotifyFetchCompleted();
@@ -2656,12 +2626,6 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlowVotesNamelessField) {
       possible_username, base::Time::Now(), /*driver_id=*/0,
       /*autocomplete_attribute_has_username=*/false);
   possible_username_data.form_predictions = MakeSingleUsernamePredictions();
-
-  MockFieldInfoManager mock_field_manager;
-  ON_CALL(mock_field_manager, GetFieldType(_, _))
-      .WillByDefault(Return(UNKNOWN_TYPE));
-  ON_CALL(client_, GetFieldInfoManager())
-      .WillByDefault(Return(&mock_field_manager));
 
   // Simulate submission a form without username. Data from
   // |possible_username_data| will be taken for setting username.
@@ -3071,7 +3035,7 @@ class MockPasswordSaveManager : public PasswordSaveManager {
   }
   MOCK_METHOD1(MoveCredentialsToAccountStore,
                void(metrics_util::MoveToAccountStoreTrigger));
-  MOCK_METHOD1(BlockMovingToAccountStoreFor, void(const autofill::GaiaIdHash&));
+  MOCK_METHOD1(BlockMovingToAccountStoreFor, void(const signin::GaiaIdHash&));
 };
 
 class PasswordFormManagerTestWithMockedSaver : public PasswordFormManagerTest {
@@ -3122,14 +3086,19 @@ class PasswordFormManagerTestWithMockedSaver : public PasswordFormManagerTest {
         std::move(mock_password_save_manager));
   }
 
+  void ResetFormManager() {
+    mock_password_save_manager_ = nullptr;
+    form_manager_.reset();
+  }
+
  private:
-  raw_ptr<NiceMock<MockPasswordSaveManager>, DanglingUntriaged>
-      mock_password_save_manager_;
+  raw_ptr<NiceMock<MockPasswordSaveManager>> mock_password_save_manager_ =
+      nullptr;
 };
 
 TEST_F(
     PasswordFormManagerTestWithMockedSaver,
-    ProviosnallySaveShouldCreatePendingPasswordFormManagerTestWithMockedSaverCredentials) {
+    ProvisionallySaveShouldCreatePendingPasswordFormManagerTestWithMockedSaverCredentials) {
   EXPECT_CALL(*mock_password_save_manager(),
               CreatePendingCredentials(_, _, _, _, _));
   EXPECT_TRUE(
@@ -3173,7 +3142,7 @@ TEST_F(PasswordFormManagerTestWithMockedSaver, SaveCredentials) {
   EXPECT_EQ(submitted_form.fields[kPasswordFieldIndex].name,
             updated_form.password_element);
   // Check UKM metrics.
-  form_manager_.reset();
+  ResetFormManager();
   ExpectedGenerationUKM expected_metrics = {
       {} /* shown manually */,
       0 /* password generated */,
@@ -3426,7 +3395,7 @@ TEST_F(PasswordFormManagerTestWithMockedSaver, PasswordNoLongerGenerated) {
       .WillByDefault(Return(false));
   EXPECT_FALSE(form_manager_->HasGeneratedPassword());
   // Check UKM metrics.
-  form_manager_.reset();
+  ResetFormManager();
   ExpectedGenerationUKM expected_metrics = {
       absl::make_optional(2u) /* shown manually */,
       0 /* password generated */,

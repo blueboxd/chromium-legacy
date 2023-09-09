@@ -36,7 +36,7 @@
 #include "components/commerce/core/subscriptions/subscriptions_observer.h"
 #include "components/commerce/core/web_wrapper.h"
 #include "components/grit/components_resources.h"
-#include "components/optimization_guide/core/new_optimization_guide_decider.h"
+#include "components/optimization_guide/core/optimization_guide_decider.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_util.h"
 #include "components/optimization_guide/proto/hints.pb.h"
@@ -100,7 +100,7 @@ ShoppingService::ShoppingService(
     const std::string& country_on_startup,
     const std::string& locale_on_startup,
     bookmarks::BookmarkModel* bookmark_model,
-    optimization_guide::NewOptimizationGuideDecider* opt_guide,
+    optimization_guide::OptimizationGuideDecider* opt_guide,
     PrefService* pref_service,
     signin::IdentityManager* identity_manager,
     syncer::SyncService* sync_service,
@@ -938,8 +938,7 @@ void ShoppingService::HandleOptGuidePriceInsightsInfoResponse(
   commerce::PriceInsightsData insights_data = parsed_any.value();
 
   if (!parsed_any.has_value() || !insights_data.IsInitialized() ||
-      !insights_data.has_product_cluster_id() ||
-      insights_data.product_cluster_id() == 0) {
+      !insights_data.has_product_cluster_id()) {
     std::move(callback).Run(url, absl::nullopt);
     return;
   }
@@ -949,9 +948,7 @@ void ShoppingService::HandleOptGuidePriceInsightsInfoResponse(
 
   info->product_cluster_id = insights_data.product_cluster_id();
 
-  bool has_range = insights_data.has_price_range() &&
-                   !insights_data.price_range().currency_code().empty();
-  if (has_range) {
+  if (insights_data.has_price_range()) {
     info->currency_code = insights_data.price_range().currency_code();
     info->typical_low_price_micros =
         insights_data.price_range().lowest_typical_price_micros();
@@ -959,16 +956,14 @@ void ShoppingService::HandleOptGuidePriceInsightsInfoResponse(
         insights_data.price_range().highest_typical_price_micros();
   }
 
-  if (insights_data.has_price_history() &&
-      !insights_data.price_history().currency_code().empty()) {
+  if (insights_data.has_price_history()) {
     bool currency_code_match =
-        has_range ? insights_data.price_history().currency_code() ==
-                        insights_data.price_range().currency_code()
-                  : true;
+        insights_data.has_price_range()
+            ? insights_data.price_history().currency_code() ==
+                  insights_data.price_range().currency_code()
+            : true;
     if (currency_code_match) {
       const commerce::PriceHistory history = insights_data.price_history();
-
-      info->currency_code = history.currency_code();
 
       if (history.has_attributes()) {
         info->catalog_attributes = history.attributes();
@@ -980,7 +975,7 @@ void ShoppingService::HandleOptGuidePriceInsightsInfoResponse(
             history.price_points(i).min_price_micros());
       }
 
-      if (history.has_jackpot_url() && !history.jackpot_url().empty()) {
+      if (history.has_jackpot_url()) {
         info->jackpot_url = GURL(history.jackpot_url());
       }
     }

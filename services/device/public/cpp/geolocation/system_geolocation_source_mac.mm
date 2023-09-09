@@ -41,9 +41,9 @@ SystemGeolocationSourceMac::SystemGeolocationSourceMac()
     : location_manager_([[CLLocationManager alloc] init]),
       permission_update_callback_(base::DoNothing()),
       position_update_callback_(base::DoNothing()) {
-  delegate_.reset([[GeolocationManagerDelegate alloc]
-      initWithManager:weak_ptr_factory_.GetWeakPtr()]);
-  location_manager_.get().delegate = delegate_;
+  delegate_ = [[GeolocationManagerDelegate alloc]
+      initWithManager:weak_ptr_factory_.GetWeakPtr()];
+  location_manager_.delegate = delegate_;
   if (!@available(macOS 10.10, *)) {
     [location_manager_ startUpdatingLocation];
     [location_manager_ stopUpdatingLocation];
@@ -88,10 +88,10 @@ void SystemGeolocationSourceMac::PositionError(
 
 void SystemGeolocationSourceMac::StartWatchingPosition(bool high_accuracy) {
   if (high_accuracy) {
-    location_manager_.get().desiredAccuracy = kCLLocationAccuracyBest;
+    location_manager_.desiredAccuracy = kCLLocationAccuracyBest;
   } else {
     // Using kCLLocationAccuracyHundredMeters for consistency with Android.
-    location_manager_.get().desiredAccuracy = kCLLocationAccuracyHundredMeters;
+    location_manager_.desiredAccuracy = kCLLocationAccuracyHundredMeters;
   }
   [location_manager_ startUpdatingLocation];
 }
@@ -114,12 +114,9 @@ LocationSystemPermissionStatus SystemGeolocationSourceMac::GetSystemPermission()
   return LocationSystemPermissionStatus::kDenied;
 }
 
-void SystemGeolocationSourceMac::TrackGeolocationAttempted(
-    const std::string& app_name) {
+void SystemGeolocationSourceMac::TrackGeolocationAttempted() {
 #if BUILDFLAG(IS_IOS)
-  if (@available(ios 8.0, macOS 10.15, *)) {
-    [location_manager_ requestWhenInUseAuthorization];
-  }
+  [location_manager_ requestWhenInUseAuthorization];
 #endif
 }
 
@@ -157,10 +154,8 @@ void SystemGeolocationSourceMac::TrackGeolocationAttempted(
   }
 
 #if BUILDFLAG(IS_IOS)
-  if (@available(iOS 8.0, *)) {
-    if (status == kCLAuthorizationStatusAuthorizedWhenInUse) {
-      _hasPermission = YES;
-    }
+  if (status == kCLAuthorizationStatusAuthorizedWhenInUse) {
+    _hasPermission = YES;
   }
 #endif
 

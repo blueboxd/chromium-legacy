@@ -48,6 +48,9 @@ namespace ash::settings {
 
 namespace mojom {
 using ::chromeos::settings::mojom::kAudioSubpagePath;
+using ::chromeos::settings::mojom::kCustomizeMouseButtonsSubpagePath;
+using ::chromeos::settings::mojom::kCustomizePenButtonsSubpagePath;
+using ::chromeos::settings::mojom::kCustomizeTabletButtonsSubpagePath;
 using ::chromeos::settings::mojom::kDeviceSectionPath;
 using ::chromeos::settings::mojom::kDisplaySubpagePath;
 using ::chromeos::settings::mojom::kExternalStorageSubpagePath;
@@ -1202,6 +1205,7 @@ void DeviceSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
   AddDevicePointersStrings(html_source);
   AddDeviceGraphicsTabletStrings(html_source);
+  AddCustomizeButtonsPageStrings(html_source);
   AddDeviceKeyboardStrings(html_source);
   AddDeviceStylusStrings(html_source);
   AddDeviceDisplayStrings(html_source);
@@ -1253,6 +1257,18 @@ bool DeviceSection::LogMetric(mojom::Setting setting,
     case mojom::Setting::kKeyboardFunctionKeys:
       base::UmaHistogramBoolean("ChromeOS.Settings.Device.KeyboardFunctionKeys",
                                 value.GetBool());
+      return true;
+
+    case mojom::Setting::kLowBatterySound:
+      base::UmaHistogramBoolean(
+          "ChromeOS.Settings.Device.LowBatterySoundButtonEnabled",
+          value.GetBool());
+      return true;
+
+    case mojom::Setting::kChargingSounds:
+      base::UmaHistogramBoolean(
+          "ChromeOS.Settings.Device.ChargingSoundsButtonEnabled",
+          value.GetBool());
       return true;
 
     default:
@@ -1340,6 +1356,30 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                                        mojom::SearchResultIcon::kStylus,
                                        mojom::SearchResultDefaultRank::kMedium,
                                        mojom::kGraphicsTabletSubpagePath);
+
+    generator->RegisterNestedSubpage(IDS_SETTINGS_CUSTOMIZE_MOUSE_BUTTONS_TITLE,
+                                     mojom::Subpage::kCustomizeMouseButtons,
+                                     mojom::Subpage::kPerDeviceMouse,
+                                     mojom::SearchResultIcon::kMouse,
+                                     mojom::SearchResultDefaultRank::kMedium,
+                                     mojom::kCustomizeMouseButtonsSubpagePath);
+
+    // TODO(yyhyyh@): Add icon for graphics tablet to replace the temporary
+    // stylus icon.
+    generator->RegisterNestedSubpage(
+        IDS_SETTINGS_GRAPHICS_TABLET_CUSTOMIZE_TABLET_BUTTONS_LABEL,
+        mojom::Subpage::kCustomizeTabletButtons,
+        mojom::Subpage::kGraphicsTablet, mojom::SearchResultIcon::kStylus,
+        mojom::SearchResultDefaultRank::kMedium,
+        mojom::kCustomizeTabletButtonsSubpagePath);
+
+    // TODO(yyhyyh@): Decide whether to use stylus icon or add a new icon.
+    generator->RegisterNestedSubpage(
+        IDS_SETTINGS_GRAPHICS_TABLET_CUSTOMIZE_TABLET_BUTTONS_LABEL,
+        mojom::Subpage::kCustomizePenButtons, mojom::Subpage::kGraphicsTablet,
+        mojom::SearchResultIcon::kStylus,
+        mojom::SearchResultDefaultRank::kMedium,
+        mojom::kCustomizePenButtonsSubpagePath);
   }
 
   // Keyboard.
@@ -1727,6 +1767,24 @@ void DeviceSection::AddDevicePointersStrings(
       {"learnMoreLabel", IDS_SETTINGS_LEARN_MORE_LABEL},
       {"modifierKeysLabel", IDS_SETTINGS_MODIFIER_KEYS_LABEL},
       {"otherKeysLabel", IDS_SETTINGS_OTHER_KEYS_LABEL},
+      {"sixPackKeyLabelInsert", IDS_SETTINGS_SIX_PACK_KEY_INSERT},
+      {"sixPackKeyLabelHome", IDS_SETTINGS_SIX_PACK_KEY_HOME},
+      {"sixPackKeyLabelEnd", IDS_SETTINGS_SIX_PACK_KEY_END},
+      {"sixPackKeyLabelDelete", IDS_SETTINGS_SIX_PACK_KEY_DELETE},
+      {"sixPackKeyLabelPageUp", IDS_SETTINGS_SIX_PACK_KEY_PAGE_UP},
+      {"sixPackKeyLabelPageDown", IDS_SETTINGS_SIX_PACK_KEY_PAGE_DOWN},
+      {"sixPackKeyDeleteAlt", IDS_SETTINGS_SIX_PACK_KEY_DELETE_ALT},
+      {"sixPackKeyDeleteSearch", IDS_SETTINGS_SIX_PACK_KEY_DELETE_SEARCH},
+      {"sixPackKeyHomeAlt", IDS_SETTINGS_SIX_PACK_KEY_HOME_ALT},
+      {"sixPackKeyHomeSearch", IDS_SETTINGS_SIX_PACK_KEY_HOME_SEARCH},
+      {"sixPackKeyEndAlt", IDS_SETTINGS_SIX_PACK_KEY_END_ALT},
+      {"sixPackKeyEndSearch", IDS_SETTINGS_SIX_PACK_KEY_END_SEARCH},
+      {"sixPackKeyPageUpAlt", IDS_SETTINGS_SIX_PACK_KEY_PAGE_UP_ALT},
+      {"sixPackKeyPageUpSearch", IDS_SETTINGS_SIX_PACK_KEY_PAGE_UP_SEARCH},
+      {"sixPackKeyPageDownAlt", IDS_SETTINGS_SIX_PACK_KEY_PAGE_DOWN_ALT},
+      {"sixPackKeyPageDownSearch", IDS_SETTINGS_SIX_PACK_KEY_PAGE_DOWN_SEARCH},
+      {"sixPackKeyInsertSearch", IDS_SETTINGS_SIX_PACK_KEY_INSERT_SEARCH},
+      {"sixPackKeyOff", IDS_SETTINGS_SIX_PACK_KEY_OPTION_OFF},
   };
   html_source->AddLocalizedStrings(kPointersStrings);
 
@@ -1741,9 +1799,22 @@ void DeviceSection::AddDevicePointersStrings(
 void DeviceSection::AddDeviceGraphicsTabletStrings(
     content::WebUIDataSource* html_source) const {
   static constexpr webui::LocalizedString kGraphicsTabletStrings[] = {
+      {"customizePenButtonsLabel",
+       IDS_SETTINGS_GRAPHICS_TABLET_CUSTOMIZE_PEN_BUTTONS_LABEL},
+      {"customizeTabletButtonsLabel",
+       IDS_SETTINGS_GRAPHICS_TABLET_CUSTOMIZE_TABLET_BUTTONS_LABEL},
       {"tabletTitle", IDS_SETTINGS_GRAPHICS_TABLET_TITLE},
   };
   html_source->AddLocalizedStrings(kGraphicsTabletStrings);
+}
+
+void DeviceSection::AddCustomizeButtonsPageStrings(
+    content::WebUIDataSource* html_source) const {
+  static constexpr webui::LocalizedString kCustomizeButtonsPageStrings[] = {
+      {"customizeMouseButtonsTitle",
+       IDS_SETTINGS_CUSTOMIZE_MOUSE_BUTTONS_TITLE},
+  };
+  html_source->AddLocalizedStrings(kCustomizeButtonsPageStrings);
 }
 
 void DeviceSection::AddDeviceDisplayStrings(

@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/shared_image_format.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/raster_interface.h"
@@ -119,6 +118,7 @@ void VideoFrameYUVMailboxesHolder::VideoFrameToMailboxes(
   }
 
   // Create a shared image to upload the data to, if one doesn't exist already.
+  constexpr SkAlphaType kPlaneAlphaType = kPremul_SkAlphaType;
   if (!created_shared_images_) {
     auto* sii = provider_->SharedImageInterface();
     DCHECK(sii);
@@ -138,7 +138,7 @@ void VideoFrameYUVMailboxesHolder::VideoFrameToMailboxes(
           PlaneSharedImageFormat(num_channels, caps.texture_rg);
       holders_[plane].mailbox = sii->CreateSharedImage(
           format, tex_size, video_frame->ColorSpace(), kTopLeft_GrSurfaceOrigin,
-          kPremul_SkAlphaType, mailbox_usage, "VideoFrameYUV",
+          kPlaneAlphaType, mailbox_usage, "VideoFrameYUV",
           gpu::kNullSurfaceHandle);
       holders_[plane].texture_target = GL_TEXTURE_2D;
     }
@@ -160,8 +160,8 @@ void VideoFrameYUVMailboxesHolder::VideoFrameToMailboxes(
     int num_channels = yuva_info_.numChannelsInPlane(plane);
     SkColorType color_type = SkYUVAPixmapInfo::DefaultColorTypeForDataType(
         SkYUVAPixmaps::DataType::kUnorm8, num_channels);
-    SkImageInfo info = SkImageInfo::Make(plane_sizes_[plane], color_type,
-                                         kUnknown_SkAlphaType);
+    SkImageInfo info =
+        SkImageInfo::Make(plane_sizes_[plane], color_type, kPlaneAlphaType);
     ri->WritePixels(
         holders_[plane].mailbox, /*dst_x_offset=*/0,
         /*dst_y_offset=*/0, /*dst_plane_index=*/0, GL_TEXTURE_2D,

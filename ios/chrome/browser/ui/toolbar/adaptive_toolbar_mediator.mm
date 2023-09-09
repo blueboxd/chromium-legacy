@@ -64,7 +64,6 @@
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
   std::unique_ptr<OverlayPresenterObserverBridge> _overlayObserver;
-  BOOL _inBatchOperation;
 }
 
 - (instancetype)init {
@@ -86,14 +85,6 @@
 - (void)updateConsumerForWebState:(web::WebState*)webState {
   [self updateNavigationBackAndForwardStateForWebState:webState];
   [self updateShareMenuForWebState:webState];
-}
-
-- (void)updateConsumerWithTabGridButtonIPHHighlighted:(BOOL)iphHighlighted {
-  [self.consumer setTabGridButtonIPHHighlighted:iphHighlighted];
-}
-
-- (void)updateConsumerWithNewTabButtonIPHHighlighted:(BOOL)iphHighlighted {
-  [self.consumer setNewTabButtonIPHHighlighted:iphHighlighted];
 }
 
 - (void)disconnect {
@@ -168,18 +159,23 @@
 
 - (void)didChangeWebStateList:(WebStateList*)webStateList
                        change:(const WebStateListChange&)change
-                    selection:(const WebStateSelection&)selection {
+                       status:(const WebStateListStatus&)status {
+  DCHECK_EQ(_webStateList, webStateList);
   switch (change.type()) {
-    case WebStateListChange::Type::kSelectionOnly:
+    case WebStateListChange::Type::kStatusOnly:
       // TODO(crbug.com/1442546): Move the implementation from
       // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason to
       // here. Note that here is reachable only when `reason` ==
       // ActiveWebStateChangeReason::Activated.
       break;
-    case WebStateListChange::Type::kDetach:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // webStateList:didDetachWebState:atIndex: to here.
+    case WebStateListChange::Type::kDetach: {
+      if (webStateList->IsBatchInProgress()) {
+        return;
+      }
+
+      [self.consumer setTabCount:_webStateList->count() addedInBackground:NO];
       break;
+    }
     case WebStateListChange::Type::kMove:
       // Do nothing when a WebState is moved.
       break;
@@ -187,26 +183,15 @@
       // Do nothing when a WebState is replaced.
       break;
     case WebStateListChange::Type::kInsert: {
-      DCHECK_EQ(_webStateList, webStateList);
-      if (_inBatchOperation) {
+      if (webStateList->IsBatchInProgress()) {
         return;
       }
 
       [self.consumer setTabCount:_webStateList->count()
-               addedInBackground:!selection.activating];
+               addedInBackground:!status.active_web_state_change()];
+      break;
     }
   }
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    didDetachWebState:(web::WebState*)webState
-              atIndex:(int)index {
-  DCHECK_EQ(_webStateList, webStateList);
-  if (_inBatchOperation) {
-    return;
-  }
-
-  [self.consumer setTabCount:_webStateList->count() addedInBackground:NO];
 }
 
 - (void)webStateList:(WebStateList*)webStateList
@@ -218,16 +203,8 @@
   self.webState = newWebState;
 }
 
-- (void)webStateListWillBeginBatchOperation:(WebStateList*)webStateList {
-  DCHECK_EQ(_webStateList, webStateList);
-  DCHECK(!_inBatchOperation);
-  _inBatchOperation = YES;
-}
-
 - (void)webStateListBatchOperationEnded:(WebStateList*)webStateList {
   DCHECK_EQ(_webStateList, webStateList);
-  DCHECK(_inBatchOperation);
-  _inBatchOperation = NO;
   [self.consumer setTabCount:_webStateList->count() addedInBackground:NO];
 }
 

@@ -19,33 +19,6 @@ namespace content {
 FakeIndexedDBMetadataCoding::FakeIndexedDBMetadataCoding() {}
 FakeIndexedDBMetadataCoding::~FakeIndexedDBMetadataCoding() {}
 
-leveldb::Status FakeIndexedDBMetadataCoding::ReadDatabaseNames(
-    TransactionalLevelDBDatabase* db,
-    const std::string& origin_identifier,
-    std::vector<std::u16string>* names) {
-  return Status::OK();
-}
-
-leveldb::Status FakeIndexedDBMetadataCoding::ReadMetadataForDatabaseName(
-    TransactionalLevelDBDatabase* db,
-    const std::string& origin_identifier,
-    const std::u16string& name,
-    IndexedDBDatabaseMetadata* metadata,
-    bool* found) {
-  return Status::OK();
-}
-
-leveldb::Status FakeIndexedDBMetadataCoding::CreateDatabase(
-    TransactionalLevelDBDatabase* database,
-    const std::string& origin_identifier,
-    const std::u16string& name,
-    int64_t version,
-    IndexedDBDatabaseMetadata* metadata) {
-  metadata->name = name;
-  metadata->version = version;
-  return Status::OK();
-}
-
 leveldb::Status FakeIndexedDBMetadataCoding::SetDatabaseVersion(
     TransactionalLevelDBTransaction* transaction,
     int64_t row_id,
@@ -61,22 +34,6 @@ leveldb::Status FakeIndexedDBMetadataCoding::FindDatabaseId(
     const std::u16string& name,
     int64_t* id,
     bool* found) {
-  return Status::OK();
-}
-
-leveldb::Status FakeIndexedDBMetadataCoding::CreateObjectStore(
-    TransactionalLevelDBTransaction* transaction,
-    int64_t database_id,
-    int64_t object_store_id,
-    std::u16string name,
-    blink::IndexedDBKeyPath key_path,
-    bool auto_increment,
-    IndexedDBObjectStoreMetadata* metadata) {
-  metadata->name = std::move(name);
-  metadata->id = object_store_id;
-  metadata->key_path = std::move(key_path);
-  metadata->auto_increment = auto_increment;
-  metadata->max_index_id = IndexedDBObjectStoreMetadata::kMinimumIndexId;
   return Status::OK();
 }
 

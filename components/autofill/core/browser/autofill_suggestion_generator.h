@@ -12,7 +12,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/types/id_type.h"
+#include "components/autofill/core/browser/metrics/log_event.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
+#include "components/autofill/core/common/aliases.h"
 
 namespace base {
 class Time;
@@ -25,7 +27,6 @@ struct CardMetadataLoggingContext;
 }
 
 class AutofillClient;
-class AutofillField;
 class AutofillOfferData;
 class AutofillType;
 class CreditCard;
@@ -45,13 +46,18 @@ class AutofillSuggestionGenerator {
   AutofillSuggestionGenerator& operator=(const AutofillSuggestionGenerator&) =
       delete;
 
-  // Generates suggestions for all available profiles based on the `form`,
-  // the value of `field` and the `autofill_field`. `app_locale` is the
-  // locale used by the application.
+  // Generates suggestions for all available profiles based on the `form` and
+  // the value of `field` of type `field_type`. `app_locale` is the locale used
+  // by the application.
+  // `skip_statuses` is used to know which fields are skipped during filling and
+  // which are not, and only use fillable fields for suggestion deduplication
+  // and label generation.
+  // It is assumed that skip_statuses and form_structure have the sane size.
   std::vector<Suggestion> GetSuggestionsForProfiles(
       const FormStructure& form,
       const FormFieldData& field,
-      const AutofillField& autofill_field,
+      AutofillType field_type,
+      base::span<SkipStatus> skip_statuses,
       const std::string& app_locale);
 
   // Generates suggestions for all available credit cards based on the `type`

@@ -21,13 +21,13 @@ ci.defaults.set(
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = reclient.jobs.DEFAULT,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
+    shadow_service_account = ci.DEFAULT_SHADOW_SERVICE_ACCOUNT,
 )
 
 consoles.console_view(
     name = "chromium.fuzz",
     ordering = {
         None: [
-            "afl",
             "centipede",
             "win asan",
             "mac asan",
@@ -199,19 +199,6 @@ ci.builder(
         short_name = "med",
     ),
     reclient_jobs = 250,
-)
-
-ci.builder(
-    name = "Afl Upload Linux ASan",
-    executable = "recipe:chromium/fuzz",
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 4,
-    ),
-    cores = 16,
-    console_view_entry = consoles.console_view_entry(
-        category = "afl",
-        short_name = "afl",
-    ),
 )
 
 ci.builder(

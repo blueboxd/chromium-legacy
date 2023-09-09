@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/core/html/parser/html_tokenizer.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/lcp_critical_path_predictor/lcp_critical_path_predictor.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/fetch_priority_attribute.h"
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
@@ -772,7 +773,8 @@ TokenPreloadScanner::TokenPreloadScanner(
     const KURL& document_url,
     std::unique_ptr<CachedDocumentParameters> document_parameters,
     const MediaValuesCached::MediaValuesCachedData& media_values_cached_data,
-    const ScannerType scanner_type)
+    const ScannerType scanner_type,
+    Vector<ElementLocator> locators)
     : document_url_(document_url),
       in_style_(false),
       in_picture_(false),
@@ -784,7 +786,8 @@ TokenPreloadScanner::TokenPreloadScanner(
       document_parameters_(std::move(document_parameters)),
       media_values_(
           MakeGarbageCollected<MediaValuesCached>(media_values_cached_data)),
-      scanner_type_(scanner_type) {
+      scanner_type_(scanner_type),
+      lcp_element_matcher_(std::move(locators)) {
   DCHECK(document_parameters_.get());
   DCHECK(media_values_.Get());
   DCHECK(document_url.IsValid());
@@ -882,6 +885,7 @@ void TokenPreloadScanner::Scan(const HTMLToken& token,
     }
     case HTMLToken::kEndTag: {
       const StringImpl* tag_impl = TagImplFor(token.Data());
+      lcp_element_matcher_.ObserveEndTag(tag_impl);
       if (Match(tag_impl, html_names::kTemplateTag)) {
         if (template_count_)
           --template_count_;
@@ -909,6 +913,8 @@ void TokenPreloadScanner::Scan(const HTMLToken& token,
     }
     case HTMLToken::kStartTag: {
       const StringImpl* tag_impl = TagImplFor(token.Data());
+      const bool potentially_lcp_element =
+          lcp_element_matcher_.ObserveStartTagAndReportMatch(tag_impl, token);
       if (Match(tag_impl, html_names::kTemplateTag)) {
         bool is_declarative_shadow_root = false;
         const HTMLToken::Attribute* shadowrootmode_attribute =
@@ -1026,6 +1032,7 @@ void TokenPreloadScanner::Scan(const HTMLToken& token,
       if (request) {
         request->SetInitiatorPosition(
             TextPosition(source.CurrentLine(), source.CurrentColumn()));
+        request->SetIsPotentiallyLCPElement(potentially_lcp_element);
         requests.push_back(std::move(request));
       }
       return;
@@ -1053,11 +1060,17 @@ std::unique_ptr<HTMLPreloadScanner> HTMLPreloadScanner::Create(
     Document& document,
     HTMLParserOptions options,
     TokenPreloadScanner::ScannerType scanner_type) {
+  Vector<ElementLocator> locators;
+  if (LocalFrame* frame = document.GetFrame()) {
+    if (LCPCriticalPathPredictor* lcpp = frame->GetLCPP()) {
+      locators = lcpp->lcp_element_locators();
+    }
+  }
   return std::make_unique<HTMLPreloadScanner>(
       std::make_unique<HTMLTokenizer>(options), document.Url(),
       std::make_unique<CachedDocumentParameters>(&document),
       MediaValuesCached::MediaValuesCachedData(document), scanner_type,
-      nullptr);
+      /* script_token_scanner=*/nullptr, TakePreloadFn(), locators);
 }
 
 // static
@@ -1067,6 +1080,14 @@ HTMLPreloadScanner::BackgroundPtr HTMLPreloadScanner::CreateBackground(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     TakePreloadFn take_preload) {
   auto* document = parser->GetDocument();
+
+  Vector<ElementLocator> locators;
+  if (LocalFrame* frame = document->GetFrame()) {
+    if (LCPCriticalPathPredictor* lcpp = frame->GetLCPP()) {
+      locators = lcpp->lcp_element_locators();
+    }
+  }
+
   return BackgroundPtr(
       new HTMLPreloadScanner(
           std::make_unique<HTMLTokenizer>(options), document->Url(),
@@ -1074,7 +1095,7 @@ HTMLPreloadScanner::BackgroundPtr HTMLPreloadScanner::CreateBackground(
           MediaValuesCached::MediaValuesCachedData(*document),
           TokenPreloadScanner::ScannerType::kMainDocument,
           BackgroundHTMLScanner::ScriptTokenScanner::Create(parser),
-          std::move(take_preload)),
+          std::move(take_preload), locators),
       Deleter{task_runner});
 }
 
@@ -1086,11 +1107,13 @@ HTMLPreloadScanner::HTMLPreloadScanner(
     const TokenPreloadScanner::ScannerType scanner_type,
     std::unique_ptr<BackgroundHTMLScanner::ScriptTokenScanner>
         script_token_scanner,
-    TakePreloadFn take_preload)
+    TakePreloadFn take_preload,
+    Vector<ElementLocator> locators)
     : scanner_(document_url,
                std::move(document_parameters),
                media_values_cached_data,
-               scanner_type),
+               scanner_type,
+               std::move(locators)),
       tokenizer_(std::move(tokenizer)),
       script_token_scanner_(std::move(script_token_scanner)),
       take_preload_(std::move(take_preload)) {}

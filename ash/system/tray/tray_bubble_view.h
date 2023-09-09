@@ -46,6 +46,18 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
  public:
   METADATA_HEADER(TrayBubbleView);
 
+  // All the types of tray bubbles. This is defined in the init params when
+  // constructing the bubble.
+  enum class TrayBubbleType {
+    // Default. This contains bubbles that are anchored to a shelf pod.
+    kShelfPodBubble = 0,
+    // Bubble used for accessibility.
+    kAccessibilityBubble = 1,
+    // This contains slider bubbles and toast bubbles.
+    kSecondaryBubble = 2,
+    kMaxValue = kSecondaryBubble
+  };
+
   class ASH_EXPORT Delegate {
    public:
     Delegate();
@@ -138,6 +150,8 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
     bool transparent = false;
     // Should use the fixed max_height from this param.
     bool use_fixed_height = false;
+    // The type of this tray bubble.
+    TrayBubbleType type = TrayBubbleType::kShelfPodBubble;
   };
 
   explicit TrayBubbleView(const InitParams& init_params);
@@ -196,6 +210,8 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   // rerouting events, then this function will be idempotent.
   void StopReroutingEvents();
 
+  TrayBubbleType GetBubbleType() const;
+
   Delegate* delegate() { return delegate_.get(); }
 
   void set_gesture_dragging(bool dragging) { is_gesture_dragging_ = dragging; }
@@ -216,6 +232,7 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   ui::LayerType GetLayerType() const override;
 
   // views::View:
+  void AddedToWidget() override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
@@ -234,6 +251,22 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   void OnNotificationDisplayed(
       const std::string& notification_id,
       const message_center::DisplaySource source) override;
+
+  // Notify tray bubble's observers and `StatusAreaWidget` that this tray is
+  // being open (only applicable to bubble that is anchored to status area).
+  // This function is automatically called during `TrayBubbleView`'s
+  // `InitializeAndShowBubble()`. However, if a class is showing the bubble
+  // without triggering `InitializeAndShowBubble()` of `TrayBubbleView`, it
+  // should call this method.
+  void NotifyTrayBubbleOpen();
+
+  // Notify tray bubble's observers and `StatusAreaWidget` that this tray is
+  // being closed (only applicable to bubble that is anchored to status area).
+  // This function is automatically called during `TrayBubbleView`'s
+  // `OnWidgetClosing()`. However, if a class is closing/hiding the bubble
+  // without triggering `OnWidgetClosing()` of `TrayBubbleView`, it should call
+  // this method.
+  void NotifyTrayBubbleClosed();
 
  protected:
   // views::View:
@@ -287,9 +320,6 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   std::unique_ptr<EventHandler> reroute_event_handler_;
 
   std::unique_ptr<SystemShadow> shadow_;
-
-  absl::optional<StatusAreaWidget::ScopedTrayBubbleCounter>
-      tray_bubble_counter_;
 };
 
 BEGIN_VIEW_BUILDER(ASH_EXPORT, TrayBubbleView, views::BubbleDialogDelegateView)

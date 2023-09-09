@@ -14,6 +14,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/supervised_user/core/browser/proto/kidschromemanagement_messages.pb.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/protobuf/src/google/protobuf/message_lite.h"
 
 namespace signin {
@@ -22,7 +23,6 @@ class IdentityManager;
 }  // namespace signin
 
 namespace network {
-class SharedURLLoaderFactory;
 class SimpleURLLoader;
 }  // namespace network
 
@@ -92,7 +92,6 @@ class KidsChromeManagementClient : public KeyedService {
 
   void OnSimpleLoaderComplete(
       KidsChromeRequestList::iterator kids_chrome_request,
-      std::unique_ptr<network::SimpleURLLoader> simple_url_loader,
       signin::AccessTokenInfo token_info,
       std::unique_ptr<std::string> response_body);
 
@@ -103,12 +102,31 @@ class KidsChromeManagementClient : public KeyedService {
       std::unique_ptr<google::protobuf::MessageLite> response_proto,
       ErrorCode error);
 
+  // TODO(b/276898959): those two accessors are exposed to allow experiment
+  // code live next to the decommissioned code. After migrating the fetching
+  // from JSON to proto2, this whole unit will be removed.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory() const {
+    return url_loader_factory_;
+  }
+  raw_ptr<signin::IdentityManager, DanglingUntriaged> identity_manager() const {
+    return identity_manager_;
+  }
+  // Befriend user of the two methods above.
+  friend class KidsManagementURLCheckerClient;
+
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   raw_ptr<signin::IdentityManager, DanglingUntriaged> identity_manager_ =
       nullptr;
 
   // List of requests in execution.
   KidsChromeRequestList requests_in_progress_;
+
+  // Stores the SimpleURLLoaders currently running requests. They are stored in
+  // this map during OnAccessTokenFetchComplete and removed in
+  // OnSimpleLoaderComplete.
+  std::map<KidsChromeManagementRequest*,
+           std::unique_ptr<network::SimpleURLLoader>>
+      requests_loaders_;
 };
 
 #endif  // COMPONENTS_SUPERVISED_USER_CORE_BROWSER_KIDS_CHROME_MANAGEMENT_CLIENT_H_

@@ -49,7 +49,7 @@ class WTF_EXPORT Partitions {
   // Should be called on the thread which is or will become the main one.
   static void Initialize();
   static void InitializeArrayBufferPartition();
-  static void StartPeriodicReclaim(
+  static void StartMemoryReclaimer(
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // The ArrayBufferPartition is initialized separately from the other
@@ -59,15 +59,13 @@ class WTF_EXPORT Partitions {
     return array_buffer_root_ != nullptr;
   }
 
-  ALWAYS_INLINE static partition_alloc::ThreadSafePartitionRoot*
-  ArrayBufferPartition() {
+  ALWAYS_INLINE static partition_alloc::PartitionRoot* ArrayBufferPartition() {
     DCHECK(initialized_);
     DCHECK(ArrayBufferPartitionInitialized());
     return array_buffer_root_;
   }
 
-  ALWAYS_INLINE static partition_alloc::ThreadSafePartitionRoot*
-  BufferPartition() {
+  ALWAYS_INLINE static partition_alloc::PartitionRoot* BufferPartition() {
     DCHECK(initialized_);
     return buffer_root_;
   }
@@ -102,8 +100,7 @@ class WTF_EXPORT Partitions {
   static void HandleOutOfMemory(size_t size);
 
  private:
-  ALWAYS_INLINE static partition_alloc::ThreadSafePartitionRoot*
-  FastMallocPartition() {
+  ALWAYS_INLINE static partition_alloc::PartitionRoot* FastMallocPartition() {
     DCHECK(initialized_);
     return fast_malloc_root_;
   }
@@ -113,9 +110,9 @@ class WTF_EXPORT Partitions {
   static bool initialized_;
   static bool scan_is_enabled_;
   // See Allocator.md for a description of these partitions.
-  static partition_alloc::ThreadSafePartitionRoot* fast_malloc_root_;
-  static partition_alloc::ThreadSafePartitionRoot* array_buffer_root_;
-  static partition_alloc::ThreadSafePartitionRoot* buffer_root_;
+  static partition_alloc::PartitionRoot* fast_malloc_root_;
+  static partition_alloc::PartitionRoot* array_buffer_root_;
+  static partition_alloc::PartitionRoot* buffer_root_;
 };
 
 }  // namespace WTF

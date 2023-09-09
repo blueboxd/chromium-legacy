@@ -90,7 +90,19 @@ bool ConvertMojoRoutine(crosapi::DiagnosticsRoutineEnum in,
     case crosapi::DiagnosticsRoutineEnum::kEmmcLifetime:
       *out = cx_diag::RoutineType::kEmmcLifetime;
       return true;
-    default:
+    case crosapi::DiagnosticsRoutineEnum::kBluetoothPower:
+      *out = cx_diag::RoutineType::kBluetoothPower;
+      return true;
+    case crosapi::DiagnosticsRoutineEnum::kUfsLifetime:
+      *out = cx_diag::RoutineType::kUfsLifetime;
+      return true;
+    case crosapi::DiagnosticsRoutineEnum::kPowerButton:
+      *out = cx_diag::RoutineType::kPowerButton;
+      return true;
+    case crosapi::DiagnosticsRoutineEnum::kAudioDriver:
+      *out = cx_diag::RoutineType::kAudioDriver;
+      return true;
+    case crosapi::DiagnosticsRoutineEnum::kUnknown:
       return false;
   }
 }
@@ -173,6 +185,8 @@ cx_diag::UserMessageType ConvertRoutineUserMessage(
       return cx_diag::UserMessageType::kUnplugAcPower;
     case crosapi::DiagnosticsRoutineUserMessageEnum::kPlugInACPower:
       return cx_diag::UserMessageType::kPlugInAcPower;
+    case crosapi::DiagnosticsRoutineUserMessageEnum::kPressPowerButton:
+      return cx_diag::UserMessageType::kPressPowerButton;
   }
 }
 

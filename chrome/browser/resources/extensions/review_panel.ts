@@ -16,6 +16,10 @@ import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/po
 import {ItemDelegate} from './item.js';
 import {getTemplate} from './review_panel.html.js';
 
+export interface ReviewItemDelegate {
+  setItemSafetyCheckWarningAcknowledged(id: string): void;
+}
+
 export interface ExtensionsReviewPanelElement {
   $: {
     makeExceptionMenu: CrActionMenuElement,
@@ -62,12 +66,45 @@ export class ExtensionsReviewPanelElement extends PolymerElement {
       unsafeExtensions_: Array,
 
       /**
+       * Indicates whether to show completion info after user has finished the
+       * review process.
+       */
+      shouldShowCompletionInfo_: {
+        type: Boolean,
+        computed:
+            'computeShouldShowCompletionInfo_(extensions.*, hasChangeBeenMade_)',
+      },
+
+      /**
+       * Indicates whether to show the potentially unsafe extensions or not.
+       */
+      shouldShowUnsafeExtensions_: {
+        type: Boolean,
+        computed:
+            'computeShouldShowUnsafeExtensions_(extensions.*, hasChangeBeenMade_)',
+      },
+
+      /**
        * Indicates if the list of unsafe extensions is expanded or collapsed.
        */
       unsafeExtensionsReviewListExpanded_: {
         type: Boolean,
         value: true,
       },
+
+      /**
+       * Indicates if any potential unsafe extensions has been kept or removed.
+       */
+      hasChangeBeenMade_: {
+        type: Boolean,
+        value: false,
+      },
+
+      /**
+       * The latest id of an extension whose action menu (Keep the extension)
+       * was expanded.
+       * */
+      lastClickedExtensionId_: String,
     };
   }
 
@@ -75,12 +112,16 @@ export class ExtensionsReviewPanelElement extends PolymerElement {
     return ['onExtensionsChanged_(extensions.*)'];
   }
 
-  delegate: ItemDelegate;
+  delegate: ItemDelegate&ReviewItemDelegate;
   extensions: chrome.developerPrivate.ExtensionInfo[];
-  private unsafeExtensions_: chrome.developerPrivate.ExtensionInfo[]|null;
+  private hasChangeBeenMade_: boolean;
+  private unsafeExtensions_: chrome.developerPrivate.ExtensionInfo[];
   private headerString_: string;
   private subtitleString_: string;
   private unsafeExtensionsReviewListExpanded_: boolean;
+  private shouldShowCompletionInfo_: boolean;
+  private shouldShowUnsafeExtensions_: boolean;
+  private lastClickedExtensionId_: string;
 
   private async onExtensionsChanged_() {
     this.unsafeExtensions_ = this.getUnsafeExtensions_(this.extensions);
@@ -95,18 +136,48 @@ export class ExtensionsReviewPanelElement extends PolymerElement {
   private getUnsafeExtensions_(extensions:
                                    chrome.developerPrivate.ExtensionInfo[]):
       chrome.developerPrivate.ExtensionInfo[] {
-    // TODO(crbug.com/1432194): Update this filter criteria when new trigger
-    // texts are added to getExtensionInfo API.
-    return extensions.filter(
-        extension => extension.disableReasons.corruptInstall ||
-            extension.disableReasons.suspiciousInstall ||
-            extension.runtimeWarnings.length || !!extension.blacklistText);
+    return extensions?.filter(
+        extension =>
+            !!(extension.safetyCheckText &&
+               extension.safetyCheckText.panelString &&
+               !extension.controlledInfo &&
+               extension.acknowledgeSafetyCheckWarning !== true));
+  }
+
+  /**
+   * Determines whether or not to show the completion info after the user
+   * finished reviewing extensions.
+   */
+  private computeShouldShowCompletionInfo_(): boolean {
+    const updatedUnsafeExtensions =
+        this.getUnsafeExtensions_(this.extensions) || [];
+    if (this.hasChangeBeenMade_ && updatedUnsafeExtensions.length === 0) {
+      chrome.metricsPrivate.recordUserAction('SafetyCheck.ReviewCompletion');
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  private computeShouldShowUnsafeExtensions_(): boolean {
+    const updatedUnsafeExtensions =
+        this.getUnsafeExtensions_(this.extensions) || [];
+    if (!this.hasChangeBeenMade_ && updatedUnsafeExtensions.length !== 0) {
+      if (!this.shouldShowUnsafeExtensions_) {
+        chrome.metricsPrivate.recordUserAction('SafetyCheck.ReviewPanelShown');
+      }
+      return true;
+    } else {
+      return false;
+    }
   }
 
   /**
    * Opens the extension action menu.
    */
-  private onMakeExceptionMenuClick_(e: Event) {
+  private onMakeExceptionMenuClick_(
+      e: DomRepeatEvent<chrome.developerPrivate.ExtensionInfo>) {
+    this.lastClickedExtensionId_ = e.model.item.id;
     this.$.makeExceptionMenu.showAt(e.target as HTMLElement);
   }
 
@@ -114,18 +185,30 @@ export class ExtensionsReviewPanelElement extends PolymerElement {
    * Acknowledges the extension safety check warning.
    */
   private onKeepExtensionClick_() {
+    chrome.metricsPrivate.recordUserAction(
+        'SafetyCheck.ReviewPanelKeepClicked');
     this.$.makeExceptionMenu.close();
-    // TODO(crbug.com/1432194): Call the private API to keep the extension in
-    // pref.
+    if (this.lastClickedExtensionId_) {
+      this.delegate.setItemSafetyCheckWarningAcknowledged(
+          this.lastClickedExtensionId_);
+      this.hasChangeBeenMade_ = true;
+    }
+    this.hasChangeBeenMade_ = true;
   }
 
   private onRemoveExtensionClick_(
       e: DomRepeatEvent<chrome.developerPrivate.ExtensionInfo>): void {
+    chrome.metricsPrivate.recordUserAction(
+        'SafetyCheck.ReviewPanelRemoveClicked');
     this.delegate.deleteItem(e.model.item.id);
+    this.hasChangeBeenMade_ = true;
   }
 
   private onRemoveAllExtensions_(): void {
+    chrome.metricsPrivate.recordUserAction(
+        'SafetyCheck.ReviewPanelRemoveAllClicked');
     // TODO(crbug.com/1432194): Call the private API to remove all extensions.
+    this.hasChangeBeenMade_ = true;
   }
 }
 

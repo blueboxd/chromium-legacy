@@ -385,6 +385,11 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // Returns a unique identifier for the next Tab.
 - (NSString*)nextTabID;
 
+// Perform a tap with a timeout, or a GREYAssert is induced. Occasionally EG
+// doesn't sync up properly to the animations of tab switcher, so it is
+// necessary to poll.
+- (void)waitForAndTapButton:(id<GREYMatcher>)button;
+
 // Shows the tab switcher by tapping the switcher button.  Works on both phone
 // and tablet.
 - (void)showTabSwitcher;
@@ -718,10 +723,6 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // Returns whether the UseLensToSearchForImage feature is enabled;
 - (BOOL)isUseLensToSearchForImageEnabled;
 
-// Returns whether the Thumbstrip feature is enabled for window with given
-// number.
-- (BOOL)isThumbstripEnabledForWindowWithNumber:(int)windowNumber;
-
 // Returns whether the Web Channels feature is enabled.
 - (BOOL)isWebChannelsEnabled;
 
@@ -857,6 +858,29 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 
 // Clear the watcher list, stopping monitoring.
 - (void)stopWatcher;
+
+#pragma mark - ActivitySheet utilities
+
+// Induces a GREYAssert if the activity sheet is not visible.
+- (void)verifyActivitySheetVisible;
+
+// Induces a GREYAssert if the activity sheet is visible.
+- (void)verifyActivitySheetNotVisible;
+
+// Induces a GREYAssert if `text` is visible the activity sheet.
+- (void)verifyTextNotVisibleInActivitySheetWithID:(NSString*)text;
+
+// Induces a GREYAssert if `text` is not visible the activity sheet.
+- (void)verifyTextVisibleInActivitySheetWithID:(NSString*)text;
+
+// Closes the activity sheet. Induces a GREYAssert if the activity sheet cannot
+// be closed, either if the 'Close' button is not visible on a phone, or if the
+// share button cannot be tapped on a tablet.
+- (void)closeActivitySheet;
+
+// Taps the element with `buttonText` within the activity sheet. A GREYAssert
+// is induced on failure.
+- (void)tapButtonInActivitySheetWithID:(NSString*)buttonText;
 
 @end
 

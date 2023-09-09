@@ -33,6 +33,7 @@ import androidx.core.widget.ImageViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.ResettersForTesting;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.browser_ui.widget.scrim.ScrimProperties;
@@ -120,6 +121,7 @@ public class TabGridDialogView extends FrameLayout {
     private int mUngroupBarTextColor;
     @ColorInt
     private int mUngroupBarHoveredTextColor;
+    private Integer mBindingToken;
 
     public TabGridDialogView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -784,6 +786,7 @@ public class TabGridDialogView extends FrameLayout {
     void hideDialog() {
         // Skip the hideDialog call caused by initializing the dialog visibility as false.
         if (getVisibility() != VISIBLE) return;
+
         assert mScrimCoordinator != null && mScrimPropertyModel != null;
         if (mCurrentDialogAnimator != null && mCurrentDialogAnimator != mHideDialogAnimation) {
             mCurrentDialogAnimator.end();
@@ -888,62 +891,60 @@ public class TabGridDialogView extends FrameLayout {
         return mSnackBarContainer;
     }
 
-    @VisibleForTesting
+    void setBindingToken(Integer bindingToken) {
+        assert mBindingToken == null || bindingToken == null;
+        mBindingToken = bindingToken;
+    }
+
+    Integer getBindingToken() {
+        return mBindingToken;
+    }
+
     Animator getCurrentDialogAnimatorForTesting() {
         return mCurrentDialogAnimator;
     }
 
-    @VisibleForTesting
     Animator getCurrentUngroupBarAnimatorForTesting() {
         return mCurrentUngroupBarAnimator;
     }
 
-    @VisibleForTesting
     int getUngroupBarStatusForTesting() {
         return mUngroupBarStatus;
     }
 
-    @VisibleForTesting
     AnimatorSet getShowDialogAnimationForTesting() {
         return mShowDialogAnimation;
     }
 
-    @VisibleForTesting
     int getBackgroundColorForTesting() {
         return mBackgroundDrawableColor;
     }
 
-    @VisibleForTesting
     int getUngroupBarBackgroundColorForTesting() {
         return mUngroupBarBackgroundColor;
     }
 
-    @VisibleForTesting
     int getUngroupBarHoveredBackgroundColorForTesting() {
         return mUngroupBarHoveredBackgroundColor;
     }
 
-    @VisibleForTesting
     int getUngroupBarTextColorForTesting() {
         return mUngroupBarTextColor;
     }
 
-    @VisibleForTesting
     int getUngroupBarHoveredTextColorForTesting() {
         return mUngroupBarHoveredTextColor;
     }
 
-    @VisibleForTesting
     static void setSourceRectCallbackForTesting(Callback<RectF> callback) {
         sSourceRectCallbackForTesting = callback;
+        ResettersForTesting.register(() -> sSourceRectCallbackForTesting = null);
     }
 
-    @VisibleForTesting
     ScrimCoordinator getScrimCoordinatorForTesting() {
         return mScrimCoordinator;
     }
 
-    @VisibleForTesting
     VisibilityListener getVisibilityListenerForTesting() {
         return mVisibilityListener;
     }

@@ -139,6 +139,7 @@ chrome_ios_eg2_test("ios_chrome_settings_eg2tests_module") {
     "//ios/chrome/browser/ui/settings/notifications:eg2_tests",
     "//ios/chrome/browser/ui/settings/notifications/tracking_price:eg2_tests",
     "//ios/chrome/browser/ui/settings/password:eg2_tests",
+    "//ios/chrome/browser/ui/settings/password/password_checkup:eg2_tests",
     "//ios/chrome/browser/ui/settings/password/passwords_in_other_apps:eg2_tests",
     "//ios/chrome/browser/ui/settings/privacy:eg2_tests",
     "//ios/chrome/browser/ui/settings/privacy/lockdown_mode:eg2_tests",
@@ -169,6 +170,7 @@ chrome_ios_eg2_test("ios_chrome_ui_eg2tests_module") {
 
   deps = [
     "//ios/chrome/browser/settings/sync/utils:eg2_tests",
+    "//ios/chrome/browser/ui/autofill/bottom_sheet:eg2_tests",
     "//ios/chrome/browser/ui/bring_android_tabs:eg2_tests",
     "//ios/chrome/browser/ui/browser_view:eg2_tests",
     "//ios/chrome/browser/ui/dialogs:eg2_tests",
@@ -208,8 +210,8 @@ chrome_ios_eg2_test("ios_chrome_ui_eg2tests_module") {
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/inactive_tabs:eg2_tests",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/tests:eg2_tests",
     "//ios/chrome/browser/ui/tabs:eg2_tests",
+    "//ios/chrome/browser/ui/tabs/tab_pickup:eg2_tests",
     "//ios/chrome/browser/ui/text_fragments:eg2_tests",
-    "//ios/chrome/browser/ui/thumb_strip:eg2_tests",
     "//ios/chrome/browser/ui/toolbar:eg2_tests",
     "//ios/chrome/browser/ui/webui:eg2_tests",
     "//ios/chrome/browser/ui/webui/interstitials:eg2_tests",

@@ -425,6 +425,14 @@ targets.generated_script(
     ],
 )
 
+targets.generated_script(
+    name = "chrome_disabled_tast_tests",
+    label = "//chromeos:chrome_disabled_tast_tests",
+    args = [
+        "--logs-dir=${ISOLATED_OUTDIR}",
+    ],
+)
+
 targets.console_test_launcher(
     name = "chrome_elf_unittests",
     label = "//chrome/chrome_elf:chrome_elf_unittests",
@@ -555,6 +563,11 @@ targets.compile_target(
     label = "//chrome/test/chromedriver/test/webview_shell:chromedriver_webview_shell_apk",
 )
 
+targets.windowed_test_launcher(
+    name = "chromeos_integration_tests",
+    label = "//chrome/test:chromeos_integration_tests",
+)
+
 targets.generated_script(
     name = "webdriver_wpt_tests",
     label = "//:webdriver_wpt_tests",
@@ -569,8 +582,8 @@ targets.generated_script(
 )
 
 targets.generated_script(
-    name = "wpt_tests_isolate",
-    label = "//:wpt_tests_isolate",
+    name = "chrome_wpt",
+    label = "//:chrome_wpt",
     args = [
         "--results-directory",
         "${ISOLATED_OUTDIR}",
@@ -578,8 +591,8 @@ targets.generated_script(
 )
 
 targets.generated_script(
-    name = "wpt_tests_isolate_content_shell",
-    label = "//:wpt_tests_isolate_content_shell",
+    name = "content_shell_wpt",
+    label = "//:content_shell_wpt",
     args = [
         "--results-directory",
         "${ISOLATED_OUTDIR}",
@@ -587,8 +600,8 @@ targets.generated_script(
 )
 
 targets.generated_script(
-    name = "wpt_tests_ios",
-    label = "//ios/chrome/test/wpt:wpt_tests_ios",
+    name = "chrome_ios_wpt",
+    label = "//ios/chrome/test/wpt:chrome_ios_wpt",
     args = [
         "--results-directory",
         "${ISOLATED_OUTDIR}",
@@ -1103,6 +1116,11 @@ targets.console_test_launcher(
 targets.console_test_launcher(
     name = "headless_unittests",
     label = "//headless:headless_unittests",
+)
+
+targets.compile_target(
+    name = "image_processor_perf_test",
+    label = "//media/gpu/chromeos:image_processor_perf_test",
 )
 
 targets.console_test_launcher(
@@ -1740,6 +1758,11 @@ targets.console_test_launcher(
     label = "//chrome/browser/metrics/perf:profile_provider_unittest",
 )
 
+targets.console_test_launcher(
+    name = "pthreadpool_unittests",
+    label = "//third_party/pthreadpool:pthreadpool_unittests",
+)
+
 targets.compile_target(
     name = "push_apps_to_background_apk",
     label = "//tools/android/push_apps_to_background:push_apps_to_background_apk",
@@ -2183,6 +2206,16 @@ targets.console_test_launcher(
     label = "//chrome/test:usage_time_limit_unittests",
 )
 
+targets.compile_target(
+    name = "v4l2_stateless_decoder",
+    label = "//media/gpu/v4l2:v4l2_stateless_decoder",
+)
+
+targets.compile_target(
+    name = "v4l2_unittest",
+    label = "//media/gpu/v4l2:v4l2_unittest",
+)
+
 targets.console_test_launcher(
     name = "vaapi_unittest",
     label = "//media/gpu/vaapi:vaapi_unittest",
@@ -2191,6 +2224,26 @@ targets.console_test_launcher(
 targets.console_test_launcher(
     name = "fake_libva_driver_unittest",
     label = "//media/gpu/vaapi/test/fake_libva_driver:fake_libva_driver_unittest",
+)
+
+targets.compile_target(
+    name = "video_decode_accelerator_tests",
+    label = "//media/gpu/test:video_decode_accelerator_tests",
+)
+
+targets.compile_target(
+    name = "video_decode_accelerator_perf_tests",
+    label = "//media/gpu/test:video_decode_accelerator_perf_tests",
+)
+
+targets.compile_target(
+    name = "video_encode_accelerator_tests",
+    label = "//media/gpu/test:video_encode_accelerator_tests",
+)
+
+targets.compile_target(
+    name = "video_encode_accelerator_perf_tests",
+    label = "//media/gpu/test:video_encode_accelerator_perf_tests",
 )
 
 targets.windowed_test_launcher(

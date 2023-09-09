@@ -470,6 +470,15 @@ DOMHighResTimeStamp IntersectionObserver::GetTimeStamp(
       ->MonotonicTimeToDOMHighResTimeStamp(monotonic_time);
 }
 
+bool IntersectionObserver::HasRootMargin() const {
+  if (margin_target_ == kApplyMarginToTarget) {
+    return false;
+  }
+  CHECK_EQ(margin_.size(), 4u);
+  return !margin_[0].IsZero() || !margin_[1].IsZero() || !margin_[2].IsZero() ||
+         !margin_[3].IsZero();
+}
+
 int64_t IntersectionObserver::ComputeIntersections(
     unsigned flags,
     absl::optional<base::TimeTicks>& monotonic_time) {
@@ -506,8 +515,7 @@ int64_t IntersectionObserver::ComputeIntersections(
 }
 
 gfx::Vector2dF IntersectionObserver::MinScrollDeltaToUpdate() const {
-  gfx::Vector2dF result(std::numeric_limits<float>::max(),
-                        std::numeric_limits<float>::max());
+  gfx::Vector2dF result = IntersectionGeometry::kInfiniteScrollDelta;
   for (const auto& observation : observations_) {
     result.SetToMin(observation->MinScrollDeltaToUpdate());
   }

@@ -42,7 +42,6 @@
 <translation id="2942241131342758843">Gunakan Chromium secara default untuk membuka link, menelusuri dari widget, dan mengisi otomatis sandi di aplikasi lainnya</translation>
 <translation id="2977470724722393594">Chromium sudah diperbarui</translation>
 <translation id="3102849287235003384">Untuk logout dari Akun Google Anda di semua situs, <ph name="BEGIN_LINK" />logout dari Chromium<ph name="END_LINK" />.</translation>
-<translation id="3115956258722352278">Jadikan Chromium sebagai browser default?</translation>
 <translation id="3256316712990552818">Disalin ke Chromium</translation>
 <translation id="3344973607274501920">Chromium tidak dapat memeriksa sandi Anda. Coba periksa koneksi internet Anda.</translation>
 <translation id="3472200483164753384">Tidak didukung di Chromium Canary</translation>
@@ -128,6 +127,7 @@
 <translation id="8013573822802650211">Untuk melihat tab Chromium Anda dari perangkat lain, login ke semua perangkat Anda</translation>
 <translation id="8071041515667087705">Buka Setelan Chromium.</translation>
 <translation id="8073677936375100957">Hapus data Chromium Anda dari perangkat ini?</translation>
+<translation id="8235427517854598594">Jadikan Chromium sebagai Browser Default?</translation>
 <translation id="8240981428553046115">Chromium tidak dapat memeriksa update. Coba lagi nanti.</translation>
 <translation id="8409374867500149834">Anda memiliki keamanan terkuat Chromium terhadap situs berbahaya</translation>
 <translation id="858114650497379505">Anda dapat menggunakan sandi yang Anda simpan ke Pengelola Sandi di aplikasi lain pada iPhone.</translation>

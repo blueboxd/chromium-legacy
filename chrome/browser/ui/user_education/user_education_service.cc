@@ -13,8 +13,6 @@
 const char kSidePanelCustomizeChromeTutorialId[] =
     "Side Panel Customize Chrome Tutorial";
 const char kTabGroupTutorialId[] = "Tab Group Tutorial";
-const char kTabGroupWithExistingGroupTutorialId[] =
-    "Tab Group With Existing Group Tutorial";
 const char kPasswordManagerTutorialId[] = "Password Manager Tutorial";
 
 UserEducationService::UserEducationService()

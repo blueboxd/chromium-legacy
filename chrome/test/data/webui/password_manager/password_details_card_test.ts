@@ -362,6 +362,16 @@ suite('PasswordDetailsCardTest', function() {
     assertTrue(!!shareButton);
     assertTrue(isVisible(shareButton));
     assertEquals(shareButton.textContent!.trim(), card.i18n('share'));
+
+    assertFalse(!!card.shadowRoot!.querySelector('share-password-flow'));
+
+    // Share flow should become available after the button click.
+    shareButton.click();
+    await passwordManager.whenCalled('fetchFamilyMembers');
+    await flushTasks();
+
+    const shareFlow = card.shadowRoot!.querySelector('share-password-flow');
+    assertTrue(!!shareFlow);
   });
 
   test('sharing unavailable without enableSendPasswords', async function() {
@@ -377,6 +387,10 @@ suite('PasswordDetailsCardTest', function() {
     const shareButton =
         card.shadowRoot!.querySelector<HTMLElement>('#shareButton');
     assertFalse(!!shareButton);
+
+    const sharePasswordFlow =
+        card.shadowRoot!.querySelector('share-password-flow');
+    assertFalse(!!sharePasswordFlow);
   });
 
   test('share button unavailable when sync disabled', async function() {
@@ -392,5 +406,9 @@ suite('PasswordDetailsCardTest', function() {
     const shareButton =
         card.shadowRoot!.querySelector<HTMLElement>('#shareButton');
     assertFalse(!!shareButton);
+
+    const sharePasswordFlow =
+        card.shadowRoot!.querySelector('share-password-flow');
+    assertFalse(!!sharePasswordFlow);
   });
 });

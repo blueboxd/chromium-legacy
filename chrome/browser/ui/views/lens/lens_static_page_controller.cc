@@ -8,7 +8,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/webui_url_constants.h"
-#include "components/lens/lens_metrics.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/snapshot/snapshot.h"
@@ -86,9 +85,7 @@ void LensStaticPageController::StartRegionSearch(
   lens_region_search_controller_->Start(
       contents,
       /*use_fullscreen_capture=*/false,
-      /*is_google_default_search_provider=*/true,
-      lens::AmbientSearchEntryPoint::
-          CONTEXT_MENU_SEARCH_REGION_WITH_GOOGLE_LENS);
+      /*is_google_default_search_provider=*/true);
 }
 
 }  // namespace lens

@@ -142,13 +142,14 @@ export class XfBulkPinningDialog extends XfBase {
   }
 
   async show() {
+    this.stage_ = BulkPinStage.LISTING_FILES;
     this.state = DialogState.LISTING;
     this.$dialog_.showModal();
     this.store_.subscribe(this);
     try {
       await calculateBulkPinRequiredSpace();
     } catch (e) {
-      console.error('Cannot calculate bulk-pinning required space', e);
+      console.error('Cannot calculate required space for bulk-pinning:', e);
       this.state = DialogState.ERROR;
     }
   }
@@ -172,7 +173,7 @@ export class XfBulkPinningDialog extends XfBase {
   // Called when the "Learn more" link is clicked.
   private onLearnMore(e: UIEvent) {
     e.preventDefault();
-    util.visitURL(str('GOOGLE_DRIVE_HELP_URL'));
+    util.visitURL('https://support.google.com/chromebook?p=my_drive_cbx');
   }
 
   // Called when the "View storage" link is clicked.

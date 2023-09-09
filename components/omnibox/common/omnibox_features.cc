@@ -4,8 +4,6 @@
 
 #include "components/omnibox/common/omnibox_features.h"
 
-#include <string>
-
 #include "base/feature_list.h"
 #include "build/build_config.h"
 
@@ -107,9 +105,11 @@ BASE_FEATURE(kSingleSortAndCullPass,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Feature to debounce `AutocompleteController::NotifyChanged()`.
+// TODO(manukh): Enabled by default 7/11/23 m117. Clean up feature code 9/12
+//   when m117 reaches stable.
 BASE_FEATURE(kUpdateResultDebounce,
              "OmniboxUpdateResultDebounce",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Feature used to cap max zero suggestions shown according to the param
 // OmniboxMaxZeroSuggestMatches. If omitted,
@@ -141,12 +141,6 @@ BASE_FEATURE(kOmniboxMaxURLMatches,
 BASE_FEATURE(kDynamicMaxAutocomplete,
              "OmniboxDynamicMaxAutocomplete",
              enabled_by_default_desktop_android);
-
-// If enabled, proactively sets the `stripped_destination_url` for the entity
-// suggestions with identical search terms so they are not erroneously deduped.
-BASE_FEATURE(kDisambiguateEntitySuggestions,
-             "DisambiguateEntitySuggestions",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, takes the search intent query params into account for triggering
 // switch to tab actions on matches.
@@ -274,6 +268,19 @@ BASE_FEATURE(kStoreTitleInContentsAndUrlInDescription,
 BASE_FEATURE(kDocumentProvider,
              "OmniboxDocumentProvider",
              enabled_by_default_desktop_only);
+
+// If enabled, the 'Show Google Drive Suggestions' setting is removed and Drive
+// suggestions are available to all clients who meet the other requirements.
+BASE_FEATURE(kDocumentProviderNoSetting,
+             "OmniboxDocumentProviderNoSetting",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, the requirement to be in an active Sync state is removed and
+// Drive suggestions are available to all clients who meet the other
+// requirements.
+BASE_FEATURE(kDocumentProviderNoSyncRequirement,
+             "OmniboxDocumentProviderNoSyncRequirement",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Feature to determine if the HQP should double as a domain provider by
 // suggesting up to the provider limit for each of the user's highly visited
@@ -434,78 +441,6 @@ BASE_FEATURE(kOmniboxSteadyStateBackgroundColor,
              "OmniboxSteadyStateBackgroundColor",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Specifies the CR23 omnibox background color in Dark Mode.
-//
-// In order to control the value of this param via Finch, the
-// `kOmniboxSteadyStateBackgroundColor` feature flag must be enabled.
-//
-// Enabling `ChromeRefresh2023` Level 2 while leaving the
-// `kOmniboxSteadyStateBackgroundColor` flag disabled will result in the param
-// being locked to its default value and ignoring any overrides provided via
-// Finch.
-//
-// If neither `ChromeRefresh2023` Level 2 nor
-// `kOmniboxSteadyStateBackgroundColor` are enabled, then this feature param
-// will have zero effect on Chrome UI.
-const base::FeatureParam<std::string> kOmniboxDarkBackgroundColor(
-    &omnibox::kOmniboxSteadyStateBackgroundColor,
-    "OmniboxDarkBackgroundColor",
-    "0x2A2A2A");
-
-// Specifies the CR23 omnibox background color in Dark Mode (on-hover).
-//
-// In order to control the value of this param via Finch, the
-// `kOmniboxSteadyStateBackgroundColor` feature flag must be enabled.
-//
-// Enabling `ChromeRefresh2023` Level 2 while leaving the
-// `kOmniboxSteadyStateBackgroundColor` flag disabled, will result in the param
-// being locked to its default value and ignoring any overrides provided via
-// Finch.
-//
-// If neither `ChromeRefresh2023` Level 2 nor
-// `kOmniboxSteadyStateBackgroundColor` are enabled, then this feature param
-// will have zero effect on Chrome UI.
-const base::FeatureParam<std::string> kOmniboxDarkBackgroundColorHovered(
-    &omnibox::kOmniboxSteadyStateBackgroundColor,
-    "OmniboxDarkBackgroundColorHovered",
-    "0x4C4C4B");
-
-// Specifies the CR23 omnibox background color in Light Mode.
-//
-// In order to control the value of this param via Finch, the
-// `kOmniboxSteadyStateBackgroundColor` feature flag must be enabled.
-//
-// Enabling `ChromeRefresh2023` Level 2 while leaving the
-// `kOmniboxSteadyStateBackgroundColor` flag disabled, will result in the param
-// being locked to its default value and ignoring any overrides provided via
-// Finch.
-//
-// If neither `ChromeRefresh2023` Level 2 nor
-// `kOmniboxSteadyStateBackgroundColor` are enabled, then this feature param
-// will have zero effect on Chrome UI.
-const base::FeatureParam<std::string> kOmniboxLightBackgroundColor(
-    &omnibox::kOmniboxSteadyStateBackgroundColor,
-    "OmniboxLightBackgroundColor",
-    "0xEBEFF7");
-
-// Specifies the CR23 omnibox background color in Light Mode (on-hover).
-//
-// In order to control the value of this param via Finch, the
-// `kOmniboxSteadyStateBackgroundColor` feature flag must be enabled.
-//
-// Enabling `ChromeRefresh2023` Level 2 while leaving the
-// `kOmniboxSteadyStateBackgroundColor` flag disabled, will result in the param
-// being locked to its default value and ignoring any overrides provided via
-// Finch.
-//
-// If neither `ChromeRefresh2023` Level 2 nor
-// `kOmniboxSteadyStateBackgroundColor` are enabled, then this feature param
-// will have zero effect on Chrome UI.
-const base::FeatureParam<std::string> kOmniboxLightBackgroundColorHovered(
-    &omnibox::kOmniboxSteadyStateBackgroundColor,
-    "OmniboxLightBackgroundColorHovered",
-    "0xE3E7F0");
-
 // If enabled, Omnibox "steady state" height is increased from 28 dp to 34 dp to
 // match CR23 guidelines.
 // TODO(manukh): Clean up feature code 9/12 when m117 reaches stable; we're
@@ -525,70 +460,6 @@ BASE_FEATURE(kOmniboxSteadyStateTextStyle,
 BASE_FEATURE(kOmniboxSteadyStateTextColor,
              "OmniboxSteadyStateTextColor",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Specifies the CR23 omnibox text color in Dark Mode.
-//
-// In order to control the value of this param via Finch, the
-// `kOmniboxSteadyStateTextColor` feature flag must be enabled.
-//
-// Enabling `ChromeRefresh2023` Level 2 while leaving the
-// `kOmniboxSteadyStateTextColor` flag disabled, will result in the param being
-// locked to its default value and ignoring any overrides provided via Finch.
-//
-// If neither `ChromeRefresh2023` Level 2 nor `kOmniboxSteadyStateTextColor` are
-// enabled, then this feature param will have zero effect on Chrome UI.
-const base::FeatureParam<std::string> kOmniboxTextColorDarkMode(
-    &omnibox::kOmniboxSteadyStateTextColor,
-    "OmniboxTextColorDarkMode",
-    "0xE3E3E3");
-
-// Specifies the CR23 omnibox text color in Dark Mode (dimmed).
-//
-// In order to control the value of this param via Finch, the
-// `kOmniboxSteadyStateTextColor` feature flag must be enabled.
-//
-// Enabling `ChromeRefresh2023` Level 2 while leaving the
-// `kOmniboxSteadyStateTextColor` flag disabled, will result in the param being
-// locked to its default value and ignoring any overrides provided via Finch.
-//
-// If neither `ChromeRefresh2023` Level 2 nor `kOmniboxSteadyStateTextColor` are
-// enabled, then this feature param will have zero effect on Chrome UI.
-const base::FeatureParam<std::string> kOmniboxTextColorDimmedDarkMode(
-    &omnibox::kOmniboxSteadyStateTextColor,
-    "OmniboxTextColorDimmedDarkMode",
-    "0xC7C7C7");
-
-// Specifies the CR23 omnibox text color in Light Mode.
-//
-// In order to control the value of this param via Finch, the
-// `kOmniboxSteadyStateTextColor` feature flag must be enabled.
-//
-// Enabling `ChromeRefresh2023` Level 2 while leaving the
-// `kOmniboxSteadyStateTextColor` flag disabled, will result in the param being
-// locked to its default value and ignoring any overrides provided via Finch.
-//
-// If neither `ChromeRefresh2023` Level 2 nor `kOmniboxSteadyStateTextColor` are
-// enabled, then this feature param will have zero effect on Chrome UI.
-const base::FeatureParam<std::string> kOmniboxTextColorLightMode(
-    &omnibox::kOmniboxSteadyStateTextColor,
-    "OmniboxTextColorLightMode",
-    "0x1F1F1F");
-
-// Specifies the CR23 omnibox text color in Light Mode (dimmed).
-//
-// In order to control the value of this param via Finch, the
-// `kOmniboxSteadyStateTextColor` feature flag must be enabled.
-//
-// Enabling `ChromeRefresh2023` Level 2 while leaving the
-// `kOmniboxSteadyStateTextColor` flag disabled, will result in the param being
-// locked to its default value and ignoring any overrides provided via Finch.
-//
-// If neither`ChromeRefresh2023` Level 2 nor `kOmniboxSteadyStateTextColor` are
-// enabled, then this feature param will have zero effect on Chrome UI.
-const base::FeatureParam<std::string> kOmniboxTextColorDimmedLightMode(
-    &omnibox::kOmniboxSteadyStateTextColor,
-    "OmniboxTextColorDimmedLightMode",
-    "0x474747");
 
 // If enabled, switching tabs will not restore the omnibox state.
 // TODO(manukh): Should also blur the omnibox on tab switch.
@@ -636,20 +507,20 @@ BASE_FEATURE(kReportAssistedQueryStats,
 // resorts to recalculating it each time its needed.
 BASE_FEATURE(kRedoCurrentMatch,
              "OmniboxRedoCurrentMatch",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, when reverting `OmniboxView`, it will first revert the
 // `OmniboxEditModel` before closing the popup. This should be more performant;
 // see comments in `OmniboxView::RevertAll()`.
 BASE_FEATURE(kRevertModelBeforeClosingPopup,
              "OmniboxRevertModelBeforeClosingPopup",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, an existing `AutocompleteClient` will be used instead of
 // generating a new one in `OmniboxEditModel`.
 BASE_FEATURE(kUseExistingAutocompleteClient,
              "OmniboxUseExistingAutocompleteClient",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, Omnibox reports the Searchbox Stats in the gs_lcrp= param in the
 // Search Results Page URL.

@@ -6,7 +6,6 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -23,7 +22,6 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/mac/io_surface.h"
-#include "ui/gl/buffer_format_utils.h"
 #include "ui/gl/buildflags.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
@@ -188,6 +186,8 @@ IOSurfaceImageBackingFactory::CreateSharedImage(
     uint32_t usage,
     std::string debug_label,
     gfx::GpuMemoryBufferHandle handle) {
+  // MacOS does not support external sampler.
+  CHECK(!format.PrefersExternalSampler());
   return CreateSharedImageGMBs(
       mailbox, format, size, color_space, surface_origin, alpha_type, usage,
       std::move(handle), /*io_surface_plane=*/0, gfx::BufferPlane::DEFAULT,
@@ -214,6 +214,11 @@ IOSurfaceImageBackingFactory::CreateSharedImage(
 
   const uint32_t io_surface_plane = GetPlaneIndex(plane, buffer_format);
   auto format = viz::GetSharedImageFormat(buffer_format);
+  // Format cannot be using external sampling due to checks in
+  // `IsPlaneValidForGpuMemoryBufferFormat`.
+  if (format.IsLegacyMultiplanar()) {
+    CHECK_NE(plane, gfx::BufferPlane::DEFAULT);
+  }
   return CreateSharedImageGMBs(
       mailbox, format, size, color_space, surface_origin, alpha_type, usage,
       std::move(handle), io_surface_plane, plane, /*is_plane_format=*/true);
@@ -311,9 +316,14 @@ IOSurfaceImageBackingFactory::CreateSharedImageInternal(
     gl::ScopedProgressReporter scoped_progress_reporter(progress_reporter_);
     const gfx::BufferFormat buffer_format = ToBufferFormat(format);
     const bool should_clear = false;
-    const bool override_rgba_to_bgra = gr_context_type_ == GrContextType::kGL;
-    io_surface.reset(gfx::CreateIOSurface(size, buffer_format, should_clear,
-                                          override_rgba_to_bgra));
+    const bool override_rgba_to_bgra =
+#if BUILDFLAG(IS_IOS)
+        false;
+#else
+        gr_context_type_ == GrContextType::kGL;
+#endif
+    io_surface = gfx::CreateIOSurface(size, buffer_format, should_clear,
+                                      override_rgba_to_bgra);
     if (!io_surface) {
       LOG(ERROR) << "CreateSharedImage: Failed to create bindable image";
       return nullptr;
@@ -380,7 +390,12 @@ IOSurfaceImageBackingFactory::CreateSharedImageGMBs(
   // checking, could result in an out-of-bounds memory access.
   {
     uint32_t io_surface_format = IOSurfaceGetPixelFormat(io_surface);
-    const bool override_rgba_to_bgra = gr_context_type_ == GrContextType::kGL;
+    const bool override_rgba_to_bgra =
+#if BUILDFLAG(IS_IOS)
+        false;
+#else
+        gr_context_type_ == GrContextType::kGL;
+#endif
     if (io_surface_format != BufferFormatToIOSurfacePixelFormat(
                                  buffer_format, override_rgba_to_bgra)) {
       LOG(ERROR)

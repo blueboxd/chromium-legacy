@@ -68,7 +68,7 @@ class FieldDataManager;
 //
 // Note that Autofill encompasses:
 // - single text field suggestions, that we usually refer to as Autocomplete,
-// - password form fill, refered to as Password Autofill, and
+// - password form fill, referred to as Password Autofill, and
 // - entire form fill based on one field entry, referred to as Form Autofill.
 class AutofillAgent : public content::RenderFrameObserver,
                       public FormTracker::Observer,
@@ -103,6 +103,8 @@ class AutofillAgent : public content::RenderFrameObserver,
       base::OnceCallback<void(bool)> callback) override;
   void FillOrPreviewForm(const FormData& form,
                          mojom::RendererFormDataAction action) override;
+  void UndoAutofill(const FormData& form,
+                    mojom::RendererFormDataAction renderer_action) override;
   void FieldTypePredictionsAvailable(
       const std::vector<FormDataPredictions>& forms) override;
   void ClearSection() override;
@@ -253,7 +255,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   void DidCompleteFocusChangeInFrame() override;
   void DidReceiveLeftMouseDownOrGestureTapInNode(
       const blink::WebNode& node) override;
-  void SelectFieldOptionsChanged(
+  void SelectOrSelectMenuFieldOptionsChanged(
       const blink::WebFormControlElement& element) override;
   void SelectControlDidChange(
       const blink::WebFormControlElement& element) override;
@@ -342,10 +344,11 @@ class AutofillAgent : public content::RenderFrameObserver,
   // to execute a refill.
   void TriggerRefillIfNeeded(const FormData& form);
 
-  // Helpers for SelectFieldOptionsChanged() and DataListOptionsChanged(), which
-  // get called after a timer that is restarted when another event of the same
-  // type started.
-  void BatchSelectOptionChange(const blink::WebFormControlElement& element);
+  // Helpers for SelectOrSelectMenuFieldOptionsChanged() and
+  // DataListOptionsChanged(), which get called after a timer that is restarted
+  // when another event of the same type started.
+  void BatchSelectOrSelectMenuOptionChange(
+      const blink::WebFormControlElement& element);
   void BatchDataListOptionChange(const blink::WebFormControlElement& element);
 
   // Return the next web node of `current_node` in the DOM. `next` determines
@@ -410,7 +413,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   bool is_secure_context_required_;
 
   // This flag denotes whether or not password suggestions need to be
-  // programatically queried. This is needed on Android WebView because it
+  // programmatically queried. This is needed on Android WebView because it
   // doesn't use PasswordAutofillAgent to handle password form.
   bool query_password_suggestion_ = false;
 
@@ -432,7 +435,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   bool was_last_action_fill_ = false;
 
   // Timers for throttling handling of frequent events.
-  base::OneShotTimer select_option_change_batch_timer_;
+  base::OneShotTimer select_or_selectmenu_option_change_batch_timer_;
   base::OneShotTimer datalist_option_change_batch_timer_;
   // TODO(crbug.com/1444566): Merge some or all of these timers?
   base::OneShotTimer process_forms_after_dynamic_change_timer_;

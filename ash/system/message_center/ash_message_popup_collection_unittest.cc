@@ -16,12 +16,17 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/system/ime_menu/ime_menu_tray.h"
+#include "ash/system/message_center/ash_notification_expand_button.h"
+#include "ash/system/message_center/ash_notification_view.h"
 #include "ash/system/message_center/message_center_test_util.h"
 #include "ash/system/message_center/message_popup_animation_waiter.h"
+#include "ash/system/phonehub/phone_hub_tray.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
+#include "ash/system/unified/unified_slider_view.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/test/ash_test_base.h"
@@ -30,8 +35,11 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
+#include "chromeos/ash/components/phonehub/fake_phone_hub_manager.h"
+#include "chromeos/ash/components/phonehub/feature_status.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/message_center/message_center.h"
@@ -43,7 +51,6 @@
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/notification_view_base.h"
 #include "ui/views/controls/button/label_button.h"
-
 namespace ash {
 namespace {
 
@@ -101,6 +108,27 @@ class AshMessagePopupCollectionTest : public AshTestBase,
     AshTestBase::SetUp();
   }
 
+  // Trigger the timeout so that shelf will show/hide immediately.
+  bool TriggerShelfAutoHideTimeout() {
+    auto* layout_manager = GetPrimaryShelf()->shelf_layout_manager();
+
+    if (!layout_manager->auto_hide_timer_.IsRunning()) {
+      return false;
+    }
+
+    layout_manager->auto_hide_timer_.FireNow();
+    return true;
+  }
+
+  void AnimateUntilIdle() {
+    auto* animation = GetPrimaryPopupCollection()->animation();
+
+    while (animation->is_animating()) {
+      animation->SetCurrentValue(1.0);
+      animation->End();
+    }
+  }
+
   bool IsQsRevampEnabled() const { return GetParam(); }
 
  protected:
@@ -143,15 +171,24 @@ class AshMessagePopupCollectionTest : public AshTestBase,
 
   gfx::Rect GetWorkArea() { return GetPrimaryPopupCollection()->work_area_; }
 
-  std::string AddNotification() {
+  std::string AddNotification(bool has_image = false) {
     std::string id = base::NumberToString(notification_id_++);
     message_center::MessageCenter::Get()->AddNotification(
-        CreateSimpleNotification(id));
+        CreateSimpleNotification(id, has_image));
     return id;
+  }
+
+  phonehub::FakePhoneHubManager* phone_hub_manager() {
+    return &phone_hub_manager_;
   }
 
  private:
   int notification_id_ = 0;
+
+  // Fake phone hub manager to show the phone hub tray. Used to test the popup
+  // collection when the phone hub bubble is showing.
+  phonehub::FakePhoneHubManager phone_hub_manager_;
+
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
 };
 
@@ -214,7 +251,7 @@ TEST_P(AshMessagePopupCollectionTest, AutoHide) {
   auto* popup_collection = GetPrimaryPopupCollection();
 
   int origin_x = popup_collection->GetPopupOriginX(popup_size);
-  int baseline = popup_collection->GetBaseline();
+  int shelf_show_baseline = popup_collection->GetBaseline();
 
   // Create a window, otherwise autohide doesn't work.
   std::unique_ptr<views::Widget> widget = CreateTestWidget(
@@ -222,7 +259,28 @@ TEST_P(AshMessagePopupCollectionTest, AutoHide) {
   Shelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
   EXPECT_EQ(origin_x, popup_collection->GetPopupOriginX(popup_size));
-  EXPECT_LT(baseline, popup_collection->GetBaseline());
+
+  // The baseline when shelf shows should be less than when it hides.
+  int shelf_hide_baseline = popup_collection->GetBaseline();
+  EXPECT_LT(shelf_show_baseline, shelf_hide_baseline);
+
+  // Tests that popup baseline changes when shelf shows/hides.
+  // Move down the mouse to show shelf. Popup should move up.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  gfx::Rect display_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  generator->MoveMouseTo(display_bounds.bottom_center());
+  ASSERT_TRUE(TriggerShelfAutoHideTimeout());
+  ASSERT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  EXPECT_EQ(shelf_show_baseline, popup_collection->GetBaseline());
+
+  // Move the mouse away to hide shelf. Popup should move down.
+  generator->MoveMouseTo(0, 0);
+  ASSERT_TRUE(TriggerShelfAutoHideTimeout());
+  ASSERT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  EXPECT_EQ(shelf_hide_baseline, popup_collection->GetBaseline());
 }
 
 TEST_P(AshMessagePopupCollectionTest, DisplayResize) {
@@ -535,6 +593,95 @@ TEST_P(AshMessagePopupCollectionTest, BaselineInTabletMode) {
             popup_collection->GetBaseline());
 }
 
+TEST_P(AshMessagePopupCollectionTest, BaselineUpdatesAfterSliderShown) {
+  if (!IsQsRevampEnabled()) {
+    return;
+  }
+
+  AddNotification();
+  auto* popup = GetLastPopUpAdded();
+  ASSERT_TRUE(popup);
+
+  auto* popup_collection = GetPrimaryPopupCollection();
+  auto* system_tray = GetPrimaryUnifiedSystemTray();
+
+  system_tray->ShowVolumeSliderBubble();
+  auto* slider_view = system_tray->GetSliderView();
+  ASSERT_TRUE(slider_view);
+
+  // The added popup should appears on top of the slider bubble, separated by a
+  // padding of `kMarginBetweenPopups`.
+  EXPECT_EQ(popup->GetBoundsInScreen().bottom() +
+                message_center::kMarginBetweenPopups,
+            slider_view->GetBoundsInScreen().y());
+  EXPECT_EQ(slider_view->height() + message_center::kMarginBetweenPopups,
+            popup_collection->baseline_offset_for_test());
+
+  // Baseline returns to previous value when the slider bubble is closed.
+  system_tray->CloseSecondaryBubbles();
+  EXPECT_EQ(0, popup_collection->baseline_offset_for_test());
+
+  // The popup is adjusted to be at the baseline without the offset.
+  EXPECT_EQ(popup->GetBoundsInScreen().bottom(),
+            popup_collection->GetBaseline());
+}
+
+TEST_P(AshMessagePopupCollectionTest,
+       BaselineUpdatesAfterSliderShownOnShelfAutohide) {
+  if (!IsQsRevampEnabled()) {
+    return;
+  }
+
+  // Create a window, otherwise autohide doesn't work.
+  Shelf* shelf = GetPrimaryShelf();
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(
+      nullptr, desks_util::GetActiveDeskContainerId(), gfx::Rect(0, 0, 50, 50));
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
+  ASSERT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  AddNotification();
+  auto* popup = GetLastPopUpAdded();
+  ASSERT_TRUE(popup);
+
+  auto* system_tray = GetPrimaryUnifiedSystemTray();
+  system_tray->ShowVolumeSliderBubble();
+  auto* slider_view = system_tray->GetSliderView();
+  ASSERT_TRUE(slider_view);
+
+  // On hidden shelf, the added popup should appears on top of the slider
+  // bubble, separated by a padding of `kMarginBetweenPopups`.
+  int shelf_hide_popup_bottom = popup->GetBoundsInScreen().bottom();
+  EXPECT_EQ(shelf_hide_popup_bottom + message_center::kMarginBetweenPopups,
+            slider_view->GetBoundsInScreen().y());
+
+  // Move mouse to the shelf to make it shows.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  gfx::Rect display_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  generator->MoveMouseTo(display_bounds.bottom_center());
+  ASSERT_TRUE(TriggerShelfAutoHideTimeout());
+  ASSERT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Popup should move up when shelf is shown, and still on top of slider view.
+  int shelf_show_popup_bottom = popup->GetBoundsInScreen().bottom();
+  EXPECT_GT(shelf_hide_popup_bottom, shelf_show_popup_bottom);
+  EXPECT_EQ(popup->GetBoundsInScreen().bottom() +
+                message_center::kMarginBetweenPopups,
+            slider_view->GetBoundsInScreen().y());
+
+  // Move the mouse away to hide the shelf. The shelf should hide now and the
+  // popup is adjusted correctly.
+  generator->MoveMouseTo(0, 0);
+  ASSERT_TRUE(TriggerShelfAutoHideTimeout());
+  ASSERT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  // Popup should move down and still on top of slider view.
+  EXPECT_EQ(shelf_hide_popup_bottom, popup->GetBoundsInScreen().bottom());
+  EXPECT_EQ(popup->GetBoundsInScreen().bottom() +
+                message_center::kMarginBetweenPopups,
+            slider_view->GetBoundsInScreen().y());
+}
+
 // Tests that `TrayBubbleView` elements (e.g. Quick Settings) and popups
 // are placed on top of each other based on which was shown most recently.
 TEST_P(AshMessagePopupCollectionTest, PopupsAndTrayBubbleViewsZOrdering) {
@@ -618,6 +765,56 @@ TEST_P(AshMessagePopupCollectionTest, AdjustBaselineBasedOnTrayBubble) {
             popup_collection->GetBaseline());
 }
 
+TEST_P(AshMessagePopupCollectionTest,
+       AdjustBaselineBasedOnTrayBubbleAutoHideShelf) {
+  if (!IsQsRevampEnabled()) {
+    return;
+  }
+
+  // Create a window, otherwise autohide doesn't work.
+  Shelf* shelf = GetPrimaryShelf();
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(
+      nullptr, desks_util::GetActiveDeskContainerId(), gfx::Rect(0, 0, 50, 50));
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
+
+  // Move mouse to the shelf to make it shows.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  gfx::Rect display_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  generator->MoveMouseTo(display_bounds.bottom_center());
+  ASSERT_TRUE(TriggerShelfAutoHideTimeout());
+  ASSERT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Test showing a bubble with the shelf showing in auto-hide state.
+  auto* unified_system_tray = GetPrimaryUnifiedSystemTray();
+  unified_system_tray->ShowBubble();
+
+  AddNotification();
+  auto* popup = GetLastPopUpAdded();
+  ASSERT_TRUE(popup);
+
+  // The added popup should appears on top of the tray bubble, separated by a
+  // padding of `kMarginBetweenPopups`.
+  EXPECT_EQ(popup->GetBoundsInScreen().bottom() +
+                message_center::kMarginBetweenPopups,
+            unified_system_tray->GetBubbleBoundsInScreen().y());
+  int old_popup_bottom = popup->GetBoundsInScreen().bottom();
+
+  // Click on the screen corner to hide the shelf and the bubble. The shelf
+  // should hide now and the popup is adjusted correctly to the baseline.
+  generator->MoveMouseTo(0, 0);
+  generator->ClickLeftButton();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  // The popup is moved down to be at the baseline without the offset.
+  EXPECT_LT(old_popup_bottom, popup->GetBoundsInScreen().bottom());
+  auto* popup_collection = GetPrimaryPopupCollection();
+  EXPECT_EQ(0, popup_collection->baseline_offset_for_test());
+  EXPECT_EQ(popup->GetBoundsInScreen().bottom(),
+            popup_collection->GetBaseline());
+}
+
 // Tests that the baseline will not be adjusted when a tray bubble that is not
 // anchored to the shelf corner opens (i.e. the IME tray bubble).
 TEST_P(AshMessagePopupCollectionTest,
@@ -669,7 +866,7 @@ TEST_P(AshMessagePopupCollectionTest, AdjustBaselineForTrayBubbleMultiDisplay) {
   // Open primary system tray bubble. The primary popup collection should update
   // the baseline and the secondary one should reset.
   auto* primary_system_tray = GetPrimaryUnifiedSystemTray();
-  primary_system_tray->ShowBubble();
+  LeftClickOn(primary_system_tray);
   auto* primary_bubble_view = primary_system_tray->bubble()->GetBubbleView();
 
   EXPECT_EQ(
@@ -686,7 +883,7 @@ TEST_P(AshMessagePopupCollectionTest, AdjustBaselineForTrayBubbleMultiDisplay) {
   // update the baseline and the primary one should reset.
   auto* secondary_system_tray =
       second_shelf->GetStatusAreaWidget()->unified_system_tray();
-  secondary_system_tray->ShowBubble();
+  LeftClickOn(secondary_system_tray);
   auto* secondary_bubble_view =
       secondary_system_tray->bubble()->GetBubbleView();
 
@@ -699,6 +896,350 @@ TEST_P(AshMessagePopupCollectionTest, AdjustBaselineForTrayBubbleMultiDisplay) {
   EXPECT_EQ(secondary_popup->GetBoundsInScreen().bottom() +
                 message_center::kMarginBetweenPopups,
             secondary_system_tray->GetBubbleBoundsInScreen().y());
+}
+
+TEST_P(AshMessagePopupCollectionTest, MoveDownPopupWhenNotificationAdded) {
+  if (!IsQsRevampEnabled()) {
+    return;
+  }
+
+  UpdateDisplay("801x600");
+
+  auto* unified_system_tray = GetPrimaryUnifiedSystemTray();
+  unified_system_tray->ShowBubble();
+
+  AddNotification();
+  auto* popup1 = GetLastPopUpAdded();
+
+  auto* bubble_view = unified_system_tray->bubble()->GetBubbleView();
+  auto* popup_collection = GetPrimaryPopupCollection();
+
+  // The added popup should appears on top of the tray bubble, separated by a
+  // padding of `kMarginBetweenPopups`.
+  ASSERT_EQ(popup1->GetBoundsInScreen().bottom() +
+                message_center::kMarginBetweenPopups,
+            unified_system_tray->GetBubbleBoundsInScreen().y());
+  ASSERT_EQ(bubble_view->height() + message_center::kMarginBetweenPopups,
+            popup_collection->baseline_offset_for_test());
+
+  // Add more popup so that there's not enough space to display the popup above
+  // the tray bubble. Note that this only works with screen height of 600 (set
+  // above), and the test might fail if we change the height of bubble width or
+  // notification width in the future.
+  auto id2 = AddNotification();
+  auto id3 = AddNotification();
+
+  AnimateUntilIdle();
+
+  EXPECT_EQ(0, popup_collection->baseline_offset_for_test());
+
+  // The first popup is moved down to be at the baseline without the offset.
+  EXPECT_EQ(popup1->GetBoundsInScreen().bottom(),
+            popup_collection->GetBaseline());
+
+  // The other 2 popups should be right above the first one.
+  auto* popup2 = popup_collection->GetPopupViewForNotificationID(id2);
+  EXPECT_EQ(popup2->GetBoundsInScreen().bottom() +
+                message_center::kMarginBetweenPopups,
+            popup1->GetBoundsInScreen().y());
+
+  auto* popup3 = popup_collection->GetPopupViewForNotificationID(id3);
+  EXPECT_EQ(popup3->GetBoundsInScreen().bottom() +
+                message_center::kMarginBetweenPopups,
+            popup2->GetBoundsInScreen().y());
+}
+
+TEST_P(AshMessagePopupCollectionTest, MoveDownPopupWhenNotificationUpdated) {
+  if (!IsQsRevampEnabled()) {
+    return;
+  }
+
+  UpdateDisplay("801x600");
+
+  auto* unified_system_tray = GetPrimaryUnifiedSystemTray();
+  unified_system_tray->ShowBubble();
+
+  AddNotification();
+  auto* popup1 = GetLastPopUpAdded();
+
+  auto* bubble_view = unified_system_tray->bubble()->GetBubbleView();
+  auto* popup_collection = GetPrimaryPopupCollection();
+
+  // The added popup should appears on top of the tray bubble, separated by a
+  // padding of `kMarginBetweenPopups`.
+  ASSERT_EQ(popup1->GetBoundsInScreen().bottom() +
+                message_center::kMarginBetweenPopups,
+            unified_system_tray->GetBubbleBoundsInScreen().y());
+  ASSERT_EQ(bubble_view->height() + message_center::kMarginBetweenPopups,
+            popup_collection->baseline_offset_for_test());
+
+  // Add a second popup, it should be on top of the first one and baseline
+  // offset should stay the same.
+  auto id2 = AddNotification();
+
+  AnimateUntilIdle();
+
+  auto* popup2 = popup_collection->GetPopupViewForNotificationID(id2);
+
+  EXPECT_EQ(popup2->GetBoundsInScreen().bottom() +
+                message_center::kMarginBetweenPopups,
+            popup1->GetBoundsInScreen().y());
+  EXPECT_EQ(bubble_view->height() + message_center::kMarginBetweenPopups,
+            popup_collection->baseline_offset_for_test());
+
+  // Update the notification to have an image now, which increases the height of
+  // the notification and make it not fit above the tray bubble anymore. In this
+  // case, all the notifications should move down to make room for the change.
+  // Note that this only works with screen height of 600 (set above), and the
+  // test might fail if we change the height of bubble width or notification
+  // width in the future.
+  message_center::MessageCenter::Get()->UpdateNotification(
+      id2, CreateSimpleNotification(id2, /*has_image=*/true));
+  popup2 = popup_collection->GetPopupViewForNotificationID(id2);
+  AnimateUntilIdle();
+
+  EXPECT_EQ(0, popup_collection->baseline_offset_for_test());
+  EXPECT_EQ(popup1->GetBoundsInScreen().bottom(),
+            popup_collection->GetBaseline());
+  EXPECT_EQ(popup2->GetBoundsInScreen().bottom() +
+                message_center::kMarginBetweenPopups,
+            popup1->GetBoundsInScreen().y());
+}
+
+TEST_P(AshMessagePopupCollectionTest, MoveDownPopupWhenExpandNotification) {
+  if (!IsQsRevampEnabled()) {
+    return;
+  }
+
+  UpdateDisplay("801x800");
+
+  auto* unified_system_tray = GetPrimaryUnifiedSystemTray();
+  unified_system_tray->ShowBubble();
+
+  AddNotification(/*has_image=*/true);
+  auto* popup1 = GetLastPopUpAdded();
+
+  auto id2 = AddNotification();
+  AnimateUntilIdle();
+  auto* popup_collection = GetPrimaryPopupCollection();
+  auto* popup2 = popup_collection->GetPopupViewForNotificationID(id2);
+
+  // The added popup should appears on top of the tray bubble, separated by a
+  // padding of `kMarginBetweenPopups`.
+  ASSERT_EQ(popup1->GetBoundsInScreen().bottom() +
+                message_center::kMarginBetweenPopups,
+            unified_system_tray->GetBubbleBoundsInScreen().y());
+  EXPECT_EQ(popup2->GetBoundsInScreen().bottom() +
+                message_center::kMarginBetweenPopups,
+            popup1->GetBoundsInScreen().y());
+
+  // Clicking the expand button so that it is expanded and the notification's
+  // image shows up, which increases the height of the notification and make it
+  // not fit above the tray bubble anymore. In this case, all the notifications
+  // should move down to make room for the change. Note that this only works
+  // with screen height of 700 (set above), and the test might fail if we change
+  // the height of bubble width or notification width in the future.
+  auto* message_view = popup1->message_view();
+  ASSERT_FALSE(message_view->IsExpanded());
+  LeftClickOn(static_cast<AshNotificationView*>(message_view)
+                  ->expand_button_for_test());
+  AnimateUntilIdle();
+
+  EXPECT_EQ(0, GetPrimaryUnifiedSystemTray()
+                   ->GetMessagePopupCollection()
+                   ->baseline_offset_for_test());
+  EXPECT_EQ(popup1->GetBoundsInScreen().bottom(),
+            popup_collection->GetBaseline());
+  EXPECT_EQ(popup2->GetBoundsInScreen().bottom() +
+                message_center::kMarginBetweenPopups,
+            popup1->GetBoundsInScreen().y());
+}
+
+TEST_P(AshMessagePopupCollectionTest, MoveDownPopupWhenBubbleHeightChanged) {
+  if (!IsQsRevampEnabled()) {
+    return;
+  }
+
+  UpdateDisplay("801x800");
+
+  auto* unified_system_tray = GetPrimaryUnifiedSystemTray();
+  unified_system_tray->ShowBubble();
+
+  AddNotification(/*has_image=*/true);
+  auto* popup = GetLastPopUpAdded();
+
+  ASSERT_TRUE(popup);
+
+  auto* bubble_widget = unified_system_tray->bubble()->GetBubbleWidget();
+  auto* bubble_view = unified_system_tray->bubble()->GetBubbleView();
+  auto* popup_collection = GetPrimaryPopupCollection();
+
+  // The added popup should appears on top of the tray bubble, separated by a
+  // padding of `kMarginBetweenPopups`.
+  ASSERT_EQ(popup->GetBoundsInScreen().bottom() +
+                message_center::kMarginBetweenPopups,
+            unified_system_tray->GetBubbleBoundsInScreen().y());
+  ASSERT_EQ(bubble_view->height() + message_center::kMarginBetweenPopups,
+            popup_collection->baseline_offset_for_test());
+
+  // Increase the bubble height so that there's not enough space to display the
+  // bubble on top of it. Note that this only works with screen height of 800
+  // (set above), and the test might fail if we change the height of bubble
+  // width or notification width in the future.
+  auto bubble_bounds = bubble_widget->GetWindowBoundsInScreen();
+  bubble_widget->SetBounds(gfx::Rect(bubble_bounds.x(), bubble_bounds.y() - 100,
+                                     bubble_bounds.width(),
+                                     bubble_bounds.height() + 100));
+
+  // The popup should move down because there's not enough space.
+  EXPECT_EQ(0, popup_collection->baseline_offset_for_test());
+
+  // The popup is adjusted to be at the baseline without the offset.
+  EXPECT_EQ(popup->GetBoundsInScreen().bottom(),
+            popup_collection->GetBaseline());
+}
+
+TEST_P(AshMessagePopupCollectionTest,
+       MoveDownPopupInVerticallyStackedDisplays) {
+  if (!IsQsRevampEnabled()) {
+    return;
+  }
+
+  auto verify_move_down_behavior =
+      [](UnifiedSystemTray* system_tray,
+         AshMessagePopupCollection* popup_collection,
+         message_center::MessagePopupView* popup) {
+        system_tray->ShowBubble();
+
+        auto* bubble_widget = system_tray->bubble()->GetBubbleWidget();
+        auto* bubble_view = system_tray->bubble()->GetBubbleView();
+
+        // The added popup should appears on top of the tray bubble, separated
+        // by a padding of `kMarginBetweenPopups`.
+        ASSERT_EQ(popup->GetBoundsInScreen().bottom() +
+                      message_center::kMarginBetweenPopups,
+                  system_tray->GetBubbleBoundsInScreen().y());
+        ASSERT_EQ(bubble_view->height() + message_center::kMarginBetweenPopups,
+                  popup_collection->baseline_offset_for_test());
+
+        // Increase the bubble height so that there's not enough space to
+        // display the bubble on top of it. Note that this only works with
+        // screen height of 800 (set above), and the test might fail if we
+        // change the height of bubble width or notification width in the
+        // future.
+        auto bubble_bounds = bubble_widget->GetWindowBoundsInScreen();
+        bubble_widget->SetBounds(
+            gfx::Rect(bubble_bounds.x(), bubble_bounds.y() - 100,
+                      bubble_bounds.width(), bubble_bounds.height() + 100));
+
+        // The popup should move down because there's not enough space.
+        EXPECT_EQ(0, popup_collection->baseline_offset_for_test());
+
+        // The popup is adjusted to be at the baseline without the offset.
+        EXPECT_EQ(popup->GetBoundsInScreen().bottom(),
+                  popup_collection->GetBaseline());
+      };
+
+  UpdateDisplay("0+0-801x800,0+800-801x800");
+
+  display::Display second_display = GetSecondaryDisplay();
+  Shelf* second_shelf =
+      Shell::GetRootWindowControllerWithDisplayId(second_display.id())->shelf();
+  AshMessagePopupCollection secondary_popup_collection(second_shelf);
+  UpdateWorkArea(&secondary_popup_collection, second_display);
+
+  AddNotification(/*has_image=*/true);
+  auto* primary_popup = GetLastPopUpAdded();
+  auto* secondary_popup =
+      GetLastPopUpAddedForCollection(&secondary_popup_collection);
+  EXPECT_TRUE(primary_popup);
+  EXPECT_TRUE(secondary_popup);
+
+  // Make sure that the move down behavior when expand notification works on
+  // each display when they are vertically stacked.
+  verify_move_down_behavior(/*system_tray=*/GetPrimaryUnifiedSystemTray(),
+                            /*popup_collection=*/GetPrimaryPopupCollection(),
+                            /*popup=*/primary_popup);
+
+  verify_move_down_behavior(
+      /*system_tray=*/second_shelf->status_area_widget()->unified_system_tray(),
+      /*popup_collection=*/&secondary_popup_collection,
+      /*popup=*/secondary_popup);
+}
+
+// Tests that when a shelf pod bubble other than the main status area bubbles
+// (QS, calendar, notifications) is shown and a slider appears, the popup will
+// be on top of the shelf pod bubble, not the slider. We will use the phone hub
+// tray for this test.
+TEST_P(AshMessagePopupCollectionTest, AdjustBaselineForTrayBubbleAndSlider) {
+  if (!IsQsRevampEnabled()) {
+    return;
+  }
+
+  UpdateDisplay("1001x900");
+
+  phone_hub_manager()->fake_feature_status_provider()->SetStatus(
+      phonehub::FeatureStatus::kEnabledAndConnected);
+  auto* phone_hub_tray =
+      GetPrimaryShelf()->status_area_widget()->phone_hub_tray();
+  phone_hub_tray->SetPhoneHubManager(phone_hub_manager());
+  ASSERT_TRUE(phone_hub_tray->GetVisible());
+
+  phone_hub_tray->ShowBubble();
+
+  auto* system_tray = GetPrimaryUnifiedSystemTray();
+  system_tray->ShowVolumeSliderBubble();
+  auto* slider_view = system_tray->GetSliderView();
+  ASSERT_TRUE(slider_view);
+
+  AddNotification(/*has_image=*/true);
+  auto* popup = GetLastPopUpAdded();
+  ASSERT_TRUE(popup);
+
+  auto* popup_collection = GetPrimaryPopupCollection();
+  auto* bubble_view = phone_hub_tray->GetBubbleView();
+
+  // The added popup should appears on top of the tray bubble, separated by a
+  // padding of `kMarginBetweenPopups` (not on top of the slider).
+  EXPECT_EQ(popup->GetBoundsInScreen().bottom() +
+                message_center::kMarginBetweenPopups,
+            bubble_view->GetBoundsInScreen().y());
+  EXPECT_EQ(bubble_view->height() + message_center::kMarginBetweenPopups,
+            popup_collection->baseline_offset_for_test());
+
+  // Close and then show the slider. Popup should stay the same.
+  system_tray->CloseSecondaryBubbles();
+  EXPECT_EQ(popup->GetBoundsInScreen().bottom() +
+                message_center::kMarginBetweenPopups,
+            bubble_view->GetBoundsInScreen().y());
+  EXPECT_EQ(bubble_view->height() + message_center::kMarginBetweenPopups,
+            popup_collection->baseline_offset_for_test());
+
+  system_tray->ShowVolumeSliderBubble();
+  EXPECT_EQ(popup->GetBoundsInScreen().bottom() +
+                message_center::kMarginBetweenPopups,
+            bubble_view->GetBoundsInScreen().y());
+  EXPECT_EQ(bubble_view->height() + message_center::kMarginBetweenPopups,
+            popup_collection->baseline_offset_for_test());
+
+  // Increase the bubble height so that there's not enough space to
+  // display the bubble on top of it. Note that this only works with
+  // screen height of 900 (set above), and the test might fail if we
+  // change the height of bubble width or notification width in the
+  // future.
+  auto* bubble_widget = phone_hub_tray->GetBubbleWidget();
+  auto bubble_bounds = bubble_widget->GetWindowBoundsInScreen();
+  bubble_widget->SetBounds(gfx::Rect(bubble_bounds.x(), bubble_bounds.y() - 100,
+                                     bubble_bounds.width(),
+                                     bubble_bounds.height() + 100));
+
+  // The popup should move down because there's not enough space (overlap with
+  // the phone hub tray).
+  EXPECT_EQ(0, popup_collection->baseline_offset_for_test());
+
+  // The popup is adjusted to be at the baseline without the offset.
+  EXPECT_EQ(popup->GetBoundsInScreen().bottom(),
+            popup_collection->GetBaseline());
 }
 
 }  // namespace ash

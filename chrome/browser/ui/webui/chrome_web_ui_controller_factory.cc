@@ -98,6 +98,7 @@
 #include "components/security_interstitials/content/known_interception_disclosure_ui.h"
 #include "components/security_interstitials/content/urls.h"
 #include "components/signin/public/base/signin_buildflags.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/supervised_user/core/common/buildflags.h"
 #include "content/public/browser/web_contents.h"
@@ -557,10 +558,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // Bookmarks are part of NTP on Android.
   if (url.host_piece() == chrome::kChromeUIBookmarksHost)
     return &NewWebUI<BookmarksUI>;
-  if (url.host_piece() == password_manager::kChromeUIPasswordManagerHost &&
-      base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordManagerRedesign))
+  if (url.host_piece() == password_manager::kChromeUIPasswordManagerHost) {
     return &NewWebUI<PasswordManagerUI>;
+  }
   if (url.host_piece() == chrome::kChromeUICommanderHost)
     return &NewWebUI<CommanderUI>;
   // Downloads list on Android uses the built-in download manager.
@@ -717,7 +717,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 
 #if BUILDFLAG(ENABLE_WAFFLE_DESKTOP)
   if (url.host_piece() == chrome::kChromeUIWaffleHost &&
-      base::FeatureList::IsEnabled(kWaffle)) {
+      base::FeatureList::IsEnabled(switches::kWaffle)) {
     return &NewWebUI<WaffleUI>;
   }
 #endif
@@ -1120,6 +1120,7 @@ ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
     GURL(chrome::kChromeUISystemURL),
     GURL(chrome::kChromeUITermsURL),
     GURL(chrome::kChromeUIVersionURL),
+    GURL(chrome::kChromeUIWebAppInternalsURL),
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     // Pages that exist only in Ash, i.e. have no immediate counterpart in
@@ -1174,6 +1175,7 @@ ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
     GURL(chrome::kChromeUIPowerUrl),
     GURL(chrome::kChromeUIPrintManagementUrl),
     GURL(chrome::kChromeUIScanningAppURL),
+    GURL(chrome::kChromeUISensorInfoURL),
     GURL(chrome::kChromeUISetTimeURL),
     GURL(chrome::kChromeUISlowURL),
     GURL(chrome::kChromeUISmbShareURL),

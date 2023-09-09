@@ -5,15 +5,12 @@
 #ifndef CONTENT_APP_SHIM_REMOTE_COCOA_WEB_DRAG_SOURCE_MAC_H_
 #define CONTENT_APP_SHIM_REMOTE_COCOA_WEB_DRAG_SOURCE_MAC_H_
 
-#include "base/memory/raw_ptr.h"
-
 #import <Cocoa/Cocoa.h>
 
 #include <memory>
 
 #include "base/files/file_path.h"
-#include "base/mac/scoped_cftyperef.h"
-#include "base/mac/scoped_nsobject.h"
+#include "base/memory/raw_ptr.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
@@ -45,13 +42,13 @@ CONTENT_EXPORT
   std::unique_ptr<content::DropData> _dropData;
 
   // The image to show as drag image. Can be nil.
-  base::scoped_nsobject<NSImage> _dragImage;
+  NSImage* _dragImage;
 
   // The offset to draw |dragImage_| at.
   NSPoint _imageOffset;
 
   // Our pasteboard.
-  base::scoped_nsobject<NSPasteboard> _pasteboard;
+  NSPasteboard* _pasteboard;
 
   // Change count associated with this pasteboard owner change.
   int _changeCount;
@@ -66,7 +63,7 @@ CONTENT_EXPORT
   GURL _downloadURL;
 
   // The file UTI associated with the file drag, if any.
-  base::ScopedCFTypeRef<CFStringRef> _fileUTI;
+  CFStringRef _fileUTI;
 }
 
 // Initialize a WebDragSource object for a drag (originating on the given

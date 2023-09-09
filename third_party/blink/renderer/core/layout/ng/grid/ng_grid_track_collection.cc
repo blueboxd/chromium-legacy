@@ -93,8 +93,13 @@ NGGridRangeBuilder::NGGridRangeBuilder(
     const wtf_size_t repeater_track_count =
         explicit_tracks_.RepeatCount(i, auto_repetitions_) *
         explicit_tracks_.RepeatSize(i);
-    DCHECK_NE(repeater_track_count, 0u);
 
+    // Subgrids can have zero auto repetitions.
+    if (explicit_tracks_.IsSubgriddedAxis() && repeater_track_count == 0) {
+      continue;
+    }
+
+    DCHECK_NE(repeater_track_count, 0u);
     start_lines_.emplace_back(current_repeater_start_line);
     current_repeater_start_line += repeater_track_count;
     end_lines_.emplace_back(current_repeater_start_line);
@@ -654,8 +659,8 @@ NGGridLayoutTrackCollection::CreateSubgridTrackCollection(
     for (wtf_size_t i = 0; i <= range_count; ++i) {
       // Opposite direction subgrids need to iterate backwards.
       const wtf_size_t current_index = is_opposite_direction_in_root_grid
-                                           ? begin_range_index + i
-                                           : end_range_index - i;
+                                           ? end_range_index - i
+                                           : begin_range_index + i;
 
       auto& subgrid_translated_range =
           subgrid_ranges.emplace_back(ranges_[current_index]);

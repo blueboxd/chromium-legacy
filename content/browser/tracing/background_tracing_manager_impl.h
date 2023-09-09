@@ -11,8 +11,12 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
+#include "base/threading/sequence_bound.h"
 #include "content/browser/tracing/background_tracing_config_impl.h"
+#include "content/browser/tracing/trace_report_database.h"
+#include "content/browser/tracing/tracing_scenario.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/background_tracing_manager.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -33,7 +37,8 @@ class ChildProcess;
 class BackgroundTracingActiveScenario;
 class TracingDelegate;
 
-class BackgroundTracingManagerImpl : public BackgroundTracingManager {
+class BackgroundTracingManagerImpl : public BackgroundTracingManager,
+                                     public TracingScenario::Delegate {
  public:
   class AgentObserver {
    public:
@@ -62,11 +67,15 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
     SYSTEM_TRIGGERED = 14,
     REACHED_CODE_SCENARIO_TRIGGERED = 15,
     FINALIZATION_STARTED_WITH_LOCAL_OUTPUT = 16,
+    DATABASE_INITIALIZATION_FAILED = 17,
     NUMBER_OF_BACKGROUND_TRACING_METRICS,
   };
   static void RecordMetric(Metrics metric);
 
   CONTENT_EXPORT static BackgroundTracingManagerImpl& GetInstance();
+
+  BackgroundTracingManagerImpl();
+  ~BackgroundTracingManagerImpl() override;
 
   BackgroundTracingManagerImpl(const BackgroundTracingManagerImpl&) = delete;
   BackgroundTracingManagerImpl& operator=(const BackgroundTracingManagerImpl&) =
@@ -76,6 +85,11 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   static void ActivateForProcess(int child_process_id,
                                  mojom::ChildProcess* child_process);
 
+  bool InitializeScenarios(
+      const perfetto::protos::gen::ChromeFieldTracingConfig& config,
+      ReceiveCallback receive_callback,
+      DataFiltering data_filtering) override;
+
   bool SetActiveScenario(std::unique_ptr<BackgroundTracingConfig>,
                          DataFiltering data_filtering) override;
   bool SetActiveScenarioWithReceiveCallback(
@@ -84,17 +98,23 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
       DataFiltering data_filtering) override;
   bool HasActiveScenario() override;
 
-  // Named triggers
-  bool EmitNamedTrigger(const std::string& trigger_name) override;
+  // TracingScenario::Delegate:
+  void OnScenarioActive(TracingScenario* scenario) override;
+  void OnScenarioIdle(TracingScenario* scenario) override;
+  void OnScenarioRecording(TracingScenario* scenario) override;
+  void SaveTrace(TracingScenario* scenario, std::string trace_data) override;
+
+  void OnTraceDatabaseCreated(bool creation_result);
 
   void SetNamedTriggerCallback(const std::string& trigger_name,
                                base::RepeatingCallback<bool()> callback);
 
   bool HasTraceToUpload() override;
   std::string GetLatestTraceToUpload() override;
-  void SetTraceToUpload(std::unique_ptr<std::string> trace_data);
+  void SetTraceToUpload(std::string trace_data);
   std::unique_ptr<BackgroundTracingConfig> GetBackgroundTracingConfig(
       const std::string& trial_name) override;
+  size_t GetTraceUploadLimitKb() const;
 
   // Add/remove EnabledStateTestObserver.
   CONTENT_EXPORT void AddEnabledStateObserverForTesting(
@@ -110,10 +130,9 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
 
   void AddMetadataGeneratorFunction();
 
-  bool IsAllowedFinalization(bool is_crash_scenario) const;
-
   // Called by BackgroundTracingActiveScenario
   void OnStartTracingDone();
+  void OnProtoDataComplete(std::string trace_data);
 
   // For tests
   CONTENT_EXPORT BackgroundTracingActiveScenario* GetActiveScenarioForTesting();
@@ -122,14 +141,12 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   CONTENT_EXPORT void AbortScenarioForTesting() override;
   CONTENT_EXPORT void SetTraceToUploadForTesting(
       std::unique_ptr<std::string> trace_data) override;
-  void SetConfigTextFilterForTesting(
-      ConfigTextFilterForTesting predicate) override;
 
  private:
-  friend class base::NoDestructor<BackgroundTracingManagerImpl>;
+  bool RequestActivateScenario();
 
-  BackgroundTracingManagerImpl();
-  ~BackgroundTracingManagerImpl() override;
+  // Named triggers
+  bool DoEmitNamedTrigger(const std::string& trigger_name) override;
 
   void GenerateMetadataProto(
       perfetto::protos::pbzero::ChromeMetadataPacket* metadata,
@@ -141,10 +158,17 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
           provider);
   static void ClearPendingAgent(int child_process_id);
   void MaybeConstructPendingAgents();
-
-  std::unique_ptr<BackgroundTracingActiveScenario> active_scenario_;
+  void OnFinalizeComplete(bool success);
+  void InitializeTraceReportDatabase();
 
   std::unique_ptr<TracingDelegate> delegate_;
+  std::unique_ptr<BackgroundTracingActiveScenario> legacy_active_scenario_;
+  std::vector<std::unique_ptr<TracingScenario>> scenarios_;
+  raw_ptr<TracingScenario> active_scenario_{nullptr};
+  ReceiveCallback receive_callback_;
+
+  bool requires_anonymized_data_ = false;
+
   std::map<std::string, base::RepeatingCallback<bool()>>
       named_trigger_callbacks_;
 
@@ -157,11 +181,13 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   std::map<int, mojo::Remote<tracing::mojom::BackgroundTracingAgentProvider>>
       pending_agents_;
 
+  // This contains all the traces saved locally.
+  base::SequenceBound<TraceReportDatabase> trace_database_;
+
   // This field contains serialized trace log proto.
   std::string trace_to_upload_;
 
-  // Callback to override the background tracing config for testing.
-  ConfigTextFilterForTesting config_text_filter_for_testing_;
+  base::WeakPtrFactory<BackgroundTracingManagerImpl> weak_factory_{this};
 };
 
 }  // namespace content

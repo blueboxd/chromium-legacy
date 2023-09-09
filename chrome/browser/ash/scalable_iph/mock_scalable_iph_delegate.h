@@ -31,6 +31,32 @@ class MockScalableIphDelegate : public scalable_iph::ScalableIphDelegate {
       (const scalable_iph::ScalableIphDelegate::NotificationParams& params,
        std::unique_ptr<scalable_iph::IphSession> iph_session),
       (override));
+  MOCK_METHOD(void, AddObserver, (Observer * observer), (override));
+  MOCK_METHOD(void, RemoveObserver, (Observer * observer), (override));
+  MOCK_METHOD(bool, IsOnline, (), (override));
+  MOCK_METHOD(int, ClientAgeInDays, (), (override));
+  MOCK_METHOD(void,
+              PerformActionForScalableIph,
+              (scalable_iph::ActionType action_type),
+              (override));
+
+  // Specify a delegate object and enable fake behaviors. We will want a fake
+  // behavior for the most of cases, i.e. Unlike `ShowBubble` etc, we won't test
+  // `IsOnline` called but we simulate/fake events/states. For now, we simply
+  // use a real object as `ScalableIphDelegateImpl` works as a fake easily for
+  // now and it's an easy way to increases test coverage.
+  void SetDelegate(std::unique_ptr<scalable_iph::ScalableIphDelegate> delegate);
+  void FakeObservers();
+  void FakeClientAgeInDays();
+  void FakeShowBubble();
+  void FakeShowNotification();
+
+ private:
+  std::unique_ptr<scalable_iph::ScalableIphDelegate> delegate_;
+  bool observers_fake_enabled_ = false;
+  bool client_age_fake_enabled_ = false;
+  bool show_bubble_fake_enabled_ = false;
+  bool show_notification_fake_enabled_ = false;
 };
 
 }  // namespace test

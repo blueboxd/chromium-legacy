@@ -9,7 +9,9 @@
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_service_impl.h"
+#include "components/prefs/pref_registry_simple.h"
 
 namespace policy {
 
@@ -32,6 +34,17 @@ LocalTestPolicyProvider::CreateIfAllowed(version_info::Channel channel) {
 
 LocalTestPolicyProvider::~LocalTestPolicyProvider() = default;
 
+void LocalTestPolicyProvider::LoadJsonPolicies(
+    const std::string& json_policies_string) {
+  loader_.SetPolicyListJson(json_policies_string);
+  RefreshPolicies();
+}
+
+void LocalTestPolicyProvider::ClearPolicies() {
+  loader_.ClearPolicies();
+  RefreshPolicies();
+}
+
 void LocalTestPolicyProvider::RefreshPolicies() {
   PolicyBundle bundle = loader_.Load();
   first_policies_loaded_ = true;
@@ -43,7 +56,16 @@ bool LocalTestPolicyProvider::IsFirstPolicyLoadComplete(
   return first_policies_loaded_;
 }
 
+// static
+void LocalTestPolicyProvider::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterListPref(
+      policy::policy_prefs::kLocalTestPoliciesForNextStartup,
+      base::Value::List());
+}
+
 LocalTestPolicyProvider::LocalTestPolicyProvider() {
+  set_active(false);
   RefreshPolicies();
 }
 

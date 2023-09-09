@@ -805,8 +805,8 @@ TEST_P(AmbientControllerTestForAnyUiSettings,
 TEST_F(AmbientControllerTest, ShouldResetLockScreenInactivityTimerOnEvent) {
   auto* ambient_ui_model = AmbientUiModel::Get();
   // Set a long photo download delay so that state is
-  // `AmbientUiVisibility::kShown` but widget does not exist to receive events
-  // yet.
+  // `AmbientUiVisibility::kShouldShow` but widget does not exist to receive
+  // events yet.
   SetPhotoDownloadDelay(base::Seconds(1));
   LockScreen();
   FastForwardByLockScreenInactivityTimeout();
@@ -1644,7 +1644,6 @@ class AmbientControllerForManagedScreensaverTest : public AmbientAshTestBase {
   void SimulateScreensaverStart() {
     LockScreen();
     FastForwardByLockScreenInactivityTimeout();
-    EXPECT_EQ(absl::nullopt, GetRemainingLockScreenTimeoutFraction());
     EXPECT_TRUE(ambient_controller()->ShouldShowAmbientUi());
   }
 
@@ -2035,48 +2034,6 @@ TEST_F(AmbientControllerForManagedScreensaverTest,
   EXPECT_FALSE(ambient_controller()->ShouldShowAmbientUi());
 }
 
-TEST_F(AmbientControllerForManagedScreensaverTest,
-       ManagedScreensaverAlwaysShowsFullImages) {
-  const gfx::Rect screen_bounds_landscape(/*width=*/320, /*height=*/180);
-  UpdateDisplay("320x180");
-  SetAmbientModeManagedScreensaverEnabled(/*enabled=*/true);
-
-  const base::FilePath image_large_1 =
-      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("IMAGE_L.jpg"));
-  CreateTestImageJpegFile(image_large_1, 400, 180, SK_ColorRED);
-  const base::FilePath image_large_2 =
-      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("IMAGE_L_2.jpg"));
-
-  CreateTestImageJpegFile(image_large_2, 400, 180, SK_ColorGREEN);
-
-  const std::vector<base::FilePath> images{image_large_1, image_large_2};
-  managed_policy_handler()->SetImagesForTesting(images);
-  SimulateScreensaverStart();
-  ASSERT_TRUE(GetContainerView());
-
-  const gfx::Rect image_bounds_landscape =
-      GetAmbientBackgroundImageView()->GetImageBoundsInScreenForTesting();
-  EXPECT_TRUE(screen_bounds_landscape.Contains(image_bounds_landscape));
-
-  // Top and bottom black bars of 18 pixels due to height scaling.
-  EXPECT_EQ(image_bounds_landscape,
-            gfx::Rect(/*x=*/0, /*y=*/18, /*width=*/320, /*height=*/144));
-
-  // Rotate screen
-  const gfx::Rect screen_bounds_portrait(/*width=*/180, /*height=*/320);
-  UpdateDisplay("180x320");
-  FastForwardByLockScreenInactivityTimeout();
-  ASSERT_TRUE(GetContainerView());
-
-  const gfx::Rect image_bounds_portrait =
-      GetAmbientBackgroundImageView()->GetImageBoundsInScreenForTesting();
-  EXPECT_TRUE(screen_bounds_portrait.Contains(image_bounds_portrait));
-
-  // Top and bottom black bars of 119 pixels due to height scaling.
-  EXPECT_EQ(image_bounds_portrait,
-            gfx::Rect(/*x=*/0, /*y=*/119, /*width=*/180, /*height=*/81));
-}
-
 TEST_F(AmbientControllerTest, RendersCorrectViewForVideo) {
   SetAmbientUiSettings(
       AmbientUiSettings(AmbientTheme::kVideo, AmbientVideo::kNewMexico));
@@ -2151,8 +2108,11 @@ class AmbientControllerDurationTest : public AmbientAshTestBase {
 TEST_F(AmbientControllerDurationTest, SetScreenSaverDuration) {
   EXPECT_TRUE(ash::features::IsScreenSaverDurationEnabled());
 
-  // Set screen saver duration.
+  // Duration is default to 10 minutes.
   SetAmbientModeEnabled(true);
+  EXPECT_EQ(10, GetScreenSaverDuration());
+
+  // Set screen saver duration.
   SetScreenSaverDuration(5);
   EXPECT_EQ(5, GetScreenSaverDuration());
 
@@ -2163,7 +2123,7 @@ TEST_F(AmbientControllerDurationTest, SetScreenSaverDuration) {
   EXPECT_EQ(0, GetScreenSaverDuration());
 }
 
-TEST_F(AmbientControllerDurationTest, AcquireWakeLockWithoutCharger) {
+TEST_F(AmbientControllerDurationTest, DoNotAcquireWakeLockOnBattery) {
   // Simulate User logged in.
   ClearLogin();
   SimulateUserLogin(kUser1);
@@ -2173,36 +2133,15 @@ TEST_F(AmbientControllerDurationTest, AcquireWakeLockWithoutCharger) {
   SetScreenSaverDuration(0);
   EXPECT_EQ(0, GetScreenSaverDuration());
 
-  // Lock screen to start ambient mode, and flush the loop to ensure
-  // the acquire wake lock request has reached the wake lock provider.
   LockScreen();
   FastForwardByLockScreenInactivityTimeout();
   FastForwardTiny();
-
-  EXPECT_EQ(1, GetNumOfActiveWakeLocks(
-                   device::mojom::WakeLockType::kPreventDisplaySleep));
-
-  HideAmbientScreen();
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(0, GetNumOfActiveWakeLocks(
-                   device::mojom::WakeLockType::kPreventDisplaySleep));
-
-  // Ambient screen showup again after inactivity.
-  FastForwardByLockScreenInactivityTimeout();
-
-  EXPECT_EQ(1, GetNumOfActiveWakeLocks(
-                   device::mojom::WakeLockType::kPreventDisplaySleep));
-
-  // Unlock screen to exit ambient mode.
-  UnlockScreen();
-  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(0, GetNumOfActiveWakeLocks(
                    device::mojom::WakeLockType::kPreventDisplaySleep));
 }
 
-TEST_F(AmbientControllerDurationTest, AcquireWakeLockWithCharger) {
+TEST_F(AmbientControllerDurationTest, AcquireWakeLockAfterScreenSaverStarts) {
   // Simulate User logged in.
   ClearLogin();
   SimulateUserLogin(kUser1);
@@ -2215,8 +2154,7 @@ TEST_F(AmbientControllerDurationTest, AcquireWakeLockWithCharger) {
   // Simulate a device being connected to a charger initially.
   SetPowerStateCharging();
 
-  // Lock screen to start ambient mode, and flush the loop to ensure
-  // the acquire wake lock request has reached the wake lock provider.
+  // Lock screen to start ambient mode.
   LockScreen();
   FastForwardByLockScreenInactivityTimeout();
   FastForwardTiny();
@@ -2241,6 +2179,71 @@ TEST_F(AmbientControllerDurationTest, AcquireWakeLockWithCharger) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(0, GetNumOfActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventDisplaySleep));
+}
+
+TEST_F(AmbientControllerDurationTest, ReleaseWakeLockWhenDurationIsReached) {
+  // Simulate User logged in.
+  ClearLogin();
+  SimulateUserLogin(kUser1);
+
+  // Simulate a device being connected to a charger initially.
+  SetPowerStateCharging();
+
+  // Set screen saver duration to any option that is not kForever.
+  const int duration_minutes = 5;
+  SetAmbientModeEnabled(true);
+  SetScreenSaverDuration(duration_minutes);
+  EXPECT_EQ(duration_minutes, GetScreenSaverDuration());
+
+  // Lock screen to start ambient mode.
+  LockScreen();
+  FastForwardByLockScreenInactivityTimeout();
+  FastForwardTiny();
+
+  EXPECT_TRUE(ambient_controller()->ShouldShowAmbientUi());
+  EXPECT_EQ(1, GetNumOfActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventDisplaySleep));
+
+  // Fast forward to when duration is reached. Verify that the wake lock has
+  // been released.
+  FastForwardByDurationInMinutes(duration_minutes);
+  FastForwardTiny();
+  EXPECT_EQ(0, GetNumOfActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventDisplaySleep));
+}
+
+TEST_F(AmbientControllerDurationTest, HoldWakeLockIfDurationIsSetToForever) {
+  // Simulate User logged in.
+  ClearLogin();
+  SimulateUserLogin(kUser1);
+
+  // Simulate a device being connected to a charger initially.
+  SetPowerStateCharging();
+
+  // Set screen saver duration to kForever.
+  constexpr int kForever = 0;
+  SetAmbientModeEnabled(true);
+  SetScreenSaverDuration(kForever);
+  EXPECT_EQ(kForever, GetScreenSaverDuration());
+
+  // Lock screen to start ambient mode.
+  LockScreen();
+  FastForwardByLockScreenInactivityTimeout();
+  FastForwardTiny();
+
+  EXPECT_TRUE(ambient_controller()->ShouldShowAmbientUi());
+  EXPECT_EQ(1, GetNumOfActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventDisplaySleep));
+
+  // Fast forward to a time very long afterwards. Verify that screen saver is
+  // still running.
+  // Use 61 minutes because it is longer than any duration options but not too
+  // long so that this test could complete within a few seconds.
+  const int kLongTimeInMinutes = 61;
+  FastForwardByDurationInMinutes(kLongTimeInMinutes);
+  EXPECT_TRUE(ambient_controller()->ShouldShowAmbientUi());
+  EXPECT_EQ(1, GetNumOfActiveWakeLocks(
                    device::mojom::WakeLockType::kPreventDisplaySleep));
 }
 

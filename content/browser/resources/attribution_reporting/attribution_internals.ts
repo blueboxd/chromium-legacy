@@ -6,13 +6,12 @@ import 'chrome://resources/cr_elements/cr_tab_box/cr_tab_box.js';
 import './attribution_internals_table.js';
 
 import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
-import {getTrustedHTML} from 'chrome://resources/js/static_types.js';
 import {Origin} from 'chrome://resources/mojo/url/mojom/origin.mojom-webui.js';
 
 import {AttributionSupport, TriggerVerification} from './attribution.mojom-webui.js';
 import {Factory, HandlerInterface, HandlerRemote, ObserverInterface, ObserverReceiver, ReportID, SourceStatus, WebUIDebugReport, WebUIOsRegistration, WebUIRegistration, WebUIReport, WebUISource, WebUISource_Attributability, WebUISourceRegistration, WebUITrigger, WebUITrigger_Status} from './attribution_internals.mojom-webui.js';
 import {AttributionInternalsTableElement} from './attribution_internals_table.js';
-import {OsRegistrationResult, OsRegistrationType} from './attribution_reporting.mojom-webui.js';
+import {OsRegistrationResult, RegistrationType} from './attribution_reporting.mojom-webui.js';
 import {SourceRegistrationError} from './source_registration_error.mojom-webui.js';
 import {SourceType} from './source_type.mojom-webui.js';
 import {StoreSourceResult} from './store_source_result.mojom-webui.js';
@@ -727,10 +726,10 @@ class OsRegistration {
     this.debugReporting = mojo.debugReporting;
 
     switch (mojo.type) {
-      case OsRegistrationType.kSource:
+      case RegistrationType.kSource:
         this.registrationType = 'OS Source';
         break;
-      case OsRegistrationType.kTrigger:
+      case RegistrationType.kTrigger:
         this.registrationType = 'OS Trigger';
         break;
       default:
@@ -982,6 +981,14 @@ function sourceRegistrationStatusToText(status: SourceStatus): string {
         return 'Rejected: excessive reporting origins';
       case StoreSourceResult.kProhibitedByBrowserPolicy:
         return 'Rejected: prohibited by browser policy';
+      case StoreSourceResult.kDestinationReportingLimitReached:
+        return 'Rejected: destination reporting limit reached';
+      case StoreSourceResult.kDestinationGlobalLimitReached:
+        return 'Rejected: destination global limit reached';
+      case StoreSourceResult.kDestinationBothLimitsReached:
+        return 'Rejected: destination both limits reached';
+      case StoreSourceResult.kReportingOriginsPerSiteLimitReached:
+        return 'Rejected: excessive reporting origins per source and reporting site';
       default:
         return status.toString();
     }
@@ -1183,14 +1190,16 @@ class AttributionInternals implements ObserverInterface {
           response.enabled ? 'enabled' : 'disabled';
       featureStatusContent.classList.toggle('disabled', !response.enabled);
 
-      const debugModeContent =
-          document.querySelector<HTMLElement>('#debug-mode-content')!;
-      const html = getTrustedHTML`The #attribution-reporting-debug-mode flag is
- <strong>enabled</strong>, reports are sent immediately and never pending.`;
-      debugModeContent.innerHTML = html as unknown as string;
+      const reportDelaysContent =
+          document.querySelector<HTMLElement>('#report-delays')!;
+      const noiseContent = document.querySelector<HTMLElement>('#noise')!;
 
-      if (!response.debugMode) {
-        debugModeContent.innerText = '';
+      if (response.debugMode) {
+        reportDelaysContent.innerText = 'disabled';
+        noiseContent.innerText = 'disabled';
+      } else {
+        reportDelaysContent.innerText = 'enabled';
+        noiseContent.innerText = 'enabled';
       }
 
       const attributionSupport = document.querySelector<HTMLElement>('#attribution-support')!;

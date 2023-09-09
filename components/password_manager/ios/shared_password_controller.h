@@ -57,12 +57,12 @@ class PasswordManagerClient;
 // one of the suggestions.
 - (void)attachListenersForBottomSheet:
             (const std::vector<autofill::FieldRendererId>&)rendererIds
-                           forFrameId:(const std::string&)frameId;
+                              inFrame:(web::WebFrame*)frame;
 
 // Detach listeners to fields which are associated with a bottom sheet.
 // When there are no more credentials, we want to show the user the keyboard
 // instead of the bottom sheet.
-- (void)detachListenersForBottomSheet:(const std::string&)frameId;
+- (void)detachListenersForBottomSheet:(web::WebFrame*)frame;
 
 @end
 

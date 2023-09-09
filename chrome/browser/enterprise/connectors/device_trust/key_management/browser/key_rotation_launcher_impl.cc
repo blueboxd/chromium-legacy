@@ -29,14 +29,13 @@ using SynchronizationCallback = KeyRotationLauncher::SynchronizationCallback;
 
 namespace {
 
+// Creating the request object involves generating a signature which may be
+// resource intensive. It is, therefore, on a background thread.
 absl::optional<const KeyUploadRequest> CreateRequest(
     const GURL& dm_server_url,
     const std::string& dm_token,
-    scoped_refptr<SigningKeyPair> key_pair) {
-  if (!key_pair) {
-    return absl::nullopt;
-  }
-  return KeyUploadRequest::Create(dm_server_url, dm_token, *key_pair);
+    const SigningKeyPair& key_pair) {
+  return KeyUploadRequest::Create(dm_server_url, dm_token, key_pair);
 }
 
 }  // namespace
@@ -86,10 +85,10 @@ void KeyRotationLauncherImpl::LaunchKeyRotation(
 }
 
 void KeyRotationLauncherImpl::SynchronizePublicKey(
-    scoped_refptr<SigningKeyPair> key_pair,
+    const SigningKeyPair& key_pair,
     SynchronizationCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!key_pair || key_pair->is_empty()) {
+  if (key_pair.is_empty()) {
     LogSynchronizationError(DTSynchronizationError::kMissingKeyPair);
     std::move(callback).Run(absl::nullopt);
     return;
@@ -109,14 +108,15 @@ void KeyRotationLauncherImpl::SynchronizePublicKey(
     return;
   }
 
-  // Creating the request object involves generating a signature which may be
-  // resource intensive. It will therefore be created on a background thread.
+  // Passing the key pair by reference is fine in this case as it is owned by
+  // a browser-level object (DeviceTrustKeyManager) and will outlive any task
+  // running on the ThreadPool.
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&CreateRequest, GURL(dm_server_url.value()),
-                     dm_token.value(), key_pair),
+                     dm_token.value(), std::ref(key_pair)),
       base::BindOnce(&KeyRotationLauncherImpl::OnUploadRequestCreated,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }

@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "base/memory/scoped_refptr.h"
 #include "base/no_destructor.h"
 #include "base/syslog_logging.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/ec_signing_key.h"
@@ -97,7 +96,7 @@ bool WinKeyPersistenceDelegate::StoreKeyPair(
                        "the signing key storage.");
 }
 
-scoped_refptr<SigningKeyPair> WinKeyPersistenceDelegate::LoadKeyPair() {
+std::unique_ptr<SigningKeyPair> WinKeyPersistenceDelegate::LoadKeyPair() {
   base::win::RegKey key;
   std::wstring signingkey_name;
   std::wstring trustlevel_name;
@@ -173,11 +172,10 @@ scoped_refptr<SigningKeyPair> WinKeyPersistenceDelegate::LoadKeyPair() {
     return nullptr;
   }
 
-  return base::MakeRefCounted<SigningKeyPair>(std::move(signing_key),
-                                              trust_level);
+  return std::make_unique<SigningKeyPair>(std::move(signing_key), trust_level);
 }
 
-scoped_refptr<SigningKeyPair> WinKeyPersistenceDelegate::CreateKeyPair() {
+std::unique_ptr<SigningKeyPair> WinKeyPersistenceDelegate::CreateKeyPair() {
   // Attempt to create a TPM signing key.
   KeyPersistenceDelegate::KeyTrustLevel trust_level =
       BPKUR::CHROME_BROWSER_HW_KEY;
@@ -202,8 +200,7 @@ scoped_refptr<SigningKeyPair> WinKeyPersistenceDelegate::CreateKeyPair() {
     return nullptr;
   }
 
-  return base::MakeRefCounted<SigningKeyPair>(std::move(signing_key),
-                                              trust_level);
+  return std::make_unique<SigningKeyPair>(std::move(signing_key), trust_level);
 }
 
 }  // namespace enterprise_connectors

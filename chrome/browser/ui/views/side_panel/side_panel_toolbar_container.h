@@ -39,7 +39,6 @@ class SidePanelToolbarContainer : public ToolbarIconContainerView {
   void CreatePinnedEntryButtons();
 
   void AddPinnedEntryButtonFor(SidePanelEntry::Id id,
-                               std::u16string accessible_name,
                                std::u16string name,
                                const gfx::VectorIcon& icon);
   void RemovePinnedEntryButtonFor(SidePanelEntry::Id id);
@@ -61,7 +60,6 @@ class SidePanelToolbarContainer : public ToolbarIconContainerView {
    public:
     PinnedSidePanelToolbarButton(BrowserView* browser_view,
                                  SidePanelEntry::Id id,
-                                 std::u16string accessible_name,
                                  std::u16string name,
                                  const gfx::VectorIcon& icon);
     ~PinnedSidePanelToolbarButton() override;

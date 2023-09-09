@@ -92,6 +92,7 @@
 #include "third_party/blink/renderer/core/loader/form_submission.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
+#include "third_party/blink/renderer/core/loader/idleness_detector.h"
 #include "third_party/blink/renderer/core/loader/idna_util.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
@@ -1040,18 +1041,28 @@ void FrameLoader::CommitNavigation(
   if (!CancelProvisionalLoaderForNewNavigation())
     return;
 
+  // Dispatch the "navigate" event on the previous document if needed. Note that
+  // when the navigation is going to do a LocalFrame <-> LocalFrame swap, the
+  // event should be dispatched on the previous LocalFrame's document, instead
+  // of the new provisional LocalFrame's initial empty document.
+  LocalFrame* frame_for_navigate_event = frame_;
+  if (frame_->IsProvisional() && frame_->GetPreviousLocalFrameForLocalSwap()) {
+    frame_for_navigate_event = frame_->GetPreviousLocalFrameForLocalSwap();
+  }
   auto url_origin = SecurityOrigin::Create(navigation_params->url);
   if (navigation_params->frame_load_type == WebFrameLoadType::kBackForward &&
-      frame_->DomWindow()->GetSecurityOrigin()->IsSameOriginWith(
-          url_origin.get())) {
+      frame_for_navigate_event->DomWindow()
+          ->GetSecurityOrigin()
+          ->IsSameOriginWith(url_origin.get())) {
     auto* params = MakeGarbageCollected<NavigateEventDispatchParams>(
         navigation_params->url, NavigateEventType::kCrossDocument,
         WebFrameLoadType::kBackForward);
     if (navigation_params->is_browser_initiated)
       params->involvement = UserNavigationInvolvement::kBrowserUI;
     params->destination_item = navigation_params->history_item;
-    auto result =
-        frame_->DomWindow()->navigation()->DispatchNavigateEvent(params);
+    auto result = frame_for_navigate_event->DomWindow()
+                      ->navigation()
+                      ->DispatchNavigateEvent(params);
     DCHECK_EQ(result, NavigationApi::DispatchResult::kContinue);
     if (!document_loader_)
       return;
@@ -1218,7 +1229,17 @@ void FrameLoader::StopAllLoaders(bool abort_client) {
   }
 
   frame_->GetDocument()->CancelParsing();
-  frame_->DomWindow()->navigation()->InformAboutCanceledNavigation();
+
+  // `abort_client` is false only when we are stopping all loading in
+  // preparation for a frame swap. When a swap occurs, we're stopping all
+  // loading in this particular LocalFrame, but the conceptual frame is
+  // committing and continuing loading. We shouldn't treat this as a navigation
+  // cancellation in web-observable ways, so the navigation API should not do
+  // its cancelled navigation steps (e.g., firing a navigateerror event).
+  if (abort_client) {
+    frame_->DomWindow()->navigation()->InformAboutCanceledNavigation();
+  }
+
   if (document_loader_)
     document_loader_->StopLoading();
   if (abort_client)
@@ -1587,6 +1608,7 @@ void FrameLoader::DidDropNavigation() {
     frame_->DomWindow()->GetScriptController().WindowProxy(
         DOMWrapperWorld::MainWorld());
   }
+  frame_->GetIdlenessDetector()->DidDropNavigation();
 }
 
 bool FrameLoader::CancelProvisionalLoaderForNewNavigation() {

@@ -56,10 +56,6 @@ BASE_FEATURE(kVideoDetectorIgnoreNonVideos,
              "VideoDetectorIgnoreNonVideos",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kSimpleFrameRateThrottling,
-             "SimpleFrameRateThrottling",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 #if BUILDFLAG(IS_ANDROID)
 // When wide color gamut content from the web is encountered, promote our
 // display to wide color gamut if supported.
@@ -169,6 +165,12 @@ const base::FeatureParam<int> kCALayerNewLimitManyVideos{&kCALayerNewLimit,
 BASE_FEATURE(kCanSkipRenderPassOverlay,
              "CanSkipRenderPassOverlay",
              base::FEATURE_ENABLED_BY_DEFAULT);
+#endif
+
+#if BUILDFLAG(IS_MAC)
+BASE_FEATURE(kCVDisplayLinkBeginFrameSource,
+             "CVDisplayLinkBeginFrameSource",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 // Allow SkiaRenderer to skip drawing render passes that contain a single
@@ -290,12 +292,25 @@ BASE_FEATURE(kEnableADPFRendererMain,
              "EnableADPFRendererMain",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If enabled, surface activation and draw do not block on dependencies.
+BASE_FEATURE(kDrawImmediatelyWhenInteractive,
+             "DrawImmediatelyWhenInteractive",
+#if BUILDFLAG(IS_IOS)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
+
+// Invalidate the `viz::LocalSurfaceId` on the browser side when the page is
+// navigated away. This flag serves as the kill-switch for the uncaught edge
+// cases in production.
+BASE_FEATURE(kInvalidateLocalSurfaceIdPreCommit,
+             "InvalidateLocalSurfaceIdPreCommit",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 bool IsDelegatedCompositingEnabled() {
   return base::FeatureList::IsEnabled(kDelegatedCompositing);
-}
-
-bool IsSimpleFrameRateThrottlingEnabled() {
-  return base::FeatureList::IsEnabled(kSimpleFrameRateThrottling);
 }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -426,6 +441,11 @@ bool ShouldRendererAllocateImages() {
 
 bool IsOnBeginFrameAcksEnabled() {
   return base::FeatureList::IsEnabled(features::kOnBeginFrameAcks);
+}
+
+bool ShouldDrawImmediatelyWhenInteractive() {
+  return base::FeatureList::IsEnabled(
+      features::kDrawImmediatelyWhenInteractive);
 }
 
 }  // namespace features

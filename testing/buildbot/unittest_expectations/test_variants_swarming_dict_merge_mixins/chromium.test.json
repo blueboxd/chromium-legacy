@@ -12,10 +12,11 @@
         },
         "name": "mixins_test args",
         "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimensions": {
-            "os": "Linux"
-          },
+          "dimension_sets": [
+            {
+              "os": "Linux"
+            }
+          ],
           "value": "test"
         },
         "test": "mixins_test",
@@ -28,11 +29,12 @@
         },
         "name": "mixins_test mixins",
         "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimensions": {
-            "iama": "mixin",
-            "os": "Linux"
-          },
+          "dimension_sets": [
+            {
+              "iama": "mixin",
+              "os": "Linux"
+            }
+          ],
           "value": "test"
         },
         "test": "mixins_test",
@@ -46,11 +48,12 @@
         "name": "mixins_test swarming",
         "swarming": {
           "a": "b",
-          "can_use_on_swarming_builders": true,
-          "dimensions": {
-            "hello": "world",
-            "os": "Linux"
-          },
+          "dimension_sets": [
+            {
+              "hello": "world",
+              "os": "Linux"
+            }
+          ],
           "value": "test"
         },
         "test": "mixins_test",

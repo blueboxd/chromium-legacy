@@ -3,7 +3,6 @@
 <translationbundle lang="es">
 <translation id="1075622780330595106"><ph name="NUMBER_OF_TABS" /> de las pestañas no se han usado recientemente. ¿Quieres cerrarlas?</translation>
 <translation id="125153950246128346">Pulsa para ver otra pestaña</translation>
-<translation id="1403228085774130835">Puedes encontrar las pestañas cerradas en la sección Pestañas recientes del menú principal de Chrome</translation>
 <translation id="1455506303394048917">Se borrará tu actividad en estas pestañas de Incógnito de este dispositivo</translation>
 <translation id="1499635324672558517">¿Cerrar todas las pestañas de Incógnito?</translation>
 <translation id="1657719826150349398">Bajar pestaña</translation>
@@ -47,6 +46,7 @@
 <translation id="5073204694187207510">Ocultar la cuadrícula en pantalla completa</translation>
 <translation id="5076161749301278626">¿Ver reseñas sobre la tienda?</translation>
 <translation id="5082793167783849073">Crea un grupo para comparar páginas rápidamente. Para comenzar, mantén pulsado un enlace.</translation>
+<translation id="5339733443032484186">Tu última pestaña</translation>
 <translation id="5490235265819901748">Grupo de pestañas desplegado</translation>
 <translation id="5494920125229734069">Seleccionar todo</translation>
 <translation id="5556417849629758491">Ver información de la tienda, opción disponible cerca de la parte superior de la pantalla</translation>

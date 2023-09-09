@@ -4,35 +4,32 @@
 
 #include <initializer_list>
 #include <iterator>
+#include <memory>
 #include <string>
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
+#include "base/check_deref.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
-#include "base/functional/callback_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/repeating_test_future.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "chrome/browser/ash/login/helper.h"
 #include "chrome/browser/ash/login/lock/screen_locker_tester.h"
+#include "chrome/browser/ash/login/oobe_quick_start/connectivity/fake_target_device_connection_broker.h"
 #include "chrome/browser/ash/login/saml/lockscreen_reauth_dialog_test_helper.h"
 #include "chrome/browser/ash/login/signin/token_handle_util.h"
 #include "chrome/browser/ash/login/signin_partition_manager.h"
@@ -47,8 +44,8 @@
 #include "chrome/browser/ash/login/test/oobe_screens_utils.h"
 #include "chrome/browser/ash/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/ash/login/test/user_policy_mixin.h"
-#include "chrome/browser/ash/login/test/webview_content_extractor.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/core/device_policy_builder.h"
@@ -68,7 +65,7 @@
 #include "chrome/browser/ui/webui/ash/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/marketing_opt_in_screen_handler.h"
-#include "chrome/browser/ui/webui/ash/login/user_creation_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/quick_start_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -78,7 +75,6 @@
 #include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/ash/components/tpm/tpm_token_loader.h"
-#include "chromeos/dbus/tpm_manager/fake_tpm_manager_client.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -87,21 +83,20 @@
 #include "components/onc/onc_pref_names.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/policy_service.h"
-#include "components/policy/core/common/policy_switches.h"
 #include "components/policy/policy_constants.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
-#include "components/sync/base/features.h"
 #include "components/sync/service/sync_service_impl.h"
 #include "components/trusted_vault/securebox.h"
 #include "components/trusted_vault/standalone_trusted_vault_client.h"
 #include "components/trusted_vault/trusted_vault_client.h"
 #include "components/user_manager/known_user.h"
+#include "components/user_manager/scoped_user_manager.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
@@ -111,7 +106,6 @@
 #include "content/public/test/test_utils.h"
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
-#include "crypto/scoped_test_nss_db.h"
 #include "crypto/scoped_test_system_nss_key_slot.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "media/base/media_switches.h"
@@ -133,7 +127,6 @@
 #include "net/test/test_data_directory.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
@@ -142,28 +135,30 @@ namespace {
 
 namespace em = ::enterprise_management;
 
-constexpr char kTestGuid[] = "cccccccc-cccc-4ccc-0ccc-ccccccccccc1";
-constexpr char kTestCookieName[] = "TestCookie";
-constexpr char kTestCookieValue[] = "present";
-constexpr char kTestCookieHost[] = "host1.com";
 constexpr char kClientCert1Name[] = "client_1";
 constexpr char kClientCert2Name[] = "client_2";
+constexpr char kSigninWebview[] = "$('gaia-signin').getSigninFrame_()";
+constexpr char kSigninWebviewOnLockScreen[] =
+    "$('main-element').getSigninFrame_()";
+constexpr char kTestCookieHost[] = "host1.com";
+constexpr char kTestCookieName[] = "TestCookie";
+constexpr char kTestCookieValue[] = "present";
+constexpr char kTestGuid[] = "cccccccc-cccc-4ccc-0ccc-ccccccccccc1";
 constexpr char kTestTokenHandle[] = "test_token_handle";
 
+constexpr test::UIPath kBackButton = {"gaia-signin", "signin-frame-dialog",
+                                      "signin-back-button"};
 constexpr test::UIPath kPrimaryButton = {"gaia-signin", "signin-frame-dialog",
                                          "primary-action-button"};
 constexpr test::UIPath kSecondaryButton = {"gaia-signin", "signin-frame-dialog",
                                            "secondary-action-button"};
-constexpr test::UIPath kBackButton = {"gaia-signin", "signin-frame-dialog",
-                                      "signin-back-button"};
-constexpr char kSigninWebview[] = "$('gaia-signin').getSigninFrame_()";
-constexpr char kSigninWebviewOnLockScreen[] =
-    "$('main-element').getSigninFrame_()";
+constexpr test::UIPath kQuickStartButton = {
+    "gaia-signin", "signin-frame-dialog", "quick-start-button"};
 
 // UMA names for better test reading.
 const char kLoginRequests[] = "OOBE.GaiaScreen.LoginRequests";
-const char kSuccessLoginRequests[] = "OOBE.GaiaScreen.SuccessLoginRequests";
 const char kPasswordIgnoredChars[] = "OOBE.GaiaScreen.PasswordIgnoredChars";
+const char kSuccessLoginRequests[] = "OOBE.GaiaScreen.SuccessLoginRequests";
 
 void InjectCookieDoneCallback(base::OnceClosure done_closure,
                               net::CookieAccessResult result) {
@@ -352,6 +347,138 @@ class WebviewLoginTest : public OobeBaseTest {
   FakeGaiaMixin fake_gaia_{&mixin_host_};
   base::test::ScopedFeatureList scoped_feature_list_;
 };
+
+IN_PROC_BROWSER_TEST_F(WebviewLoginTest, ErrorScreenOnGaiaError) {
+  WaitForGaiaPageLoadAndPropertyUpdate();
+  ExpectIdentifierPage();
+
+  // Make gaia landing page unreachable
+  fake_gaia_.fake_gaia()->SetFixedResponse(
+      GaiaUrls::GetInstance()->embedded_setup_chromeos_url(),
+      net::HTTP_NOT_FOUND);
+
+  // Click back to reload (unreachable) identifier page.
+  test::OobeJS().ClickOnPath(kBackButton);
+  OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(WebviewLoginTest,
+                       NavigationButtonsDisabledBeforeGaiaLoaded) {
+  WaitForSigninScreen();
+  test::WaitForOobeJSReady();
+
+  test::OobeJS().ExpectHiddenPath(kPrimaryButton);
+  test::OobeJS().ExpectDisabledPath(kPrimaryButton);
+  test::OobeJS().ExpectHiddenPath(kSecondaryButton);
+  test::OobeJS().ExpectDisabledPath(kSecondaryButton);
+}
+
+IN_PROC_BROWSER_TEST_F(WebviewLoginTest,
+                       NavigationButtonsDisabledOnGaiaReload) {
+  // Progress to password page, so that both buttons are enabled.
+  WaitForGaiaPageLoadAndPropertyUpdate();
+  ExpectIdentifierPage();
+  SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserEmail,
+                               FakeGaiaMixin::kEmailPath);
+  test::OobeJS().ClickOnPath(kPrimaryButton);
+  WaitForGaiaPageBackButtonUpdate();
+  ExpectPasswordPage();
+  test::OobeJS().ExpectEnabledPath(kPrimaryButton);
+  test::OobeJS().ExpectEnabledPath(kSecondaryButton);
+
+  // Return empty gaia page so that we do not re-enable buttons again.
+  fake_gaia_.fake_gaia()->SetFixedResponse(
+      GaiaUrls::GetInstance()->embedded_setup_chromeos_url(), net::HTTP_OK,
+      "<body>no-op gaia</body>");
+  test::OobeJS().ExecuteAsync("$('gaia-signin').authenticator_.reload()");
+
+  // Wait for both buttons to become disabled due to reload.
+  test::OobeJS().CreateEnabledWaiter(false, kPrimaryButton)->Wait();
+  test::OobeJS().CreateEnabledWaiter(false, kSecondaryButton)->Wait();
+}
+
+// Verifies `ChromeOS.Gaia.PasswordFlow` events are recorded.
+IN_PROC_BROWSER_TEST_F(WebviewLoginTest, PasswordMetrics) {
+  WaitForGaiaPageLoadAndPropertyUpdate();
+  ExpectIdentifierPage();
+
+  SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserEmail,
+                               FakeGaiaMixin::kEmailPath);
+  test::OobeJS().ClickOnPath(kPrimaryButton);
+
+  // This should generate first "Started" event.
+  SigninFrameJS().ExecuteAsync(
+      "gaia.chromeOSLogin.attemptLogin('email@email.com', 'password')");
+  SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserPassword,
+                               FakeGaiaMixin::kPasswordPath);
+  // This should generate second "Started" event. And also eventually
+  // "Completed" event.
+  test::OobeJS().ClickOnPath(kPrimaryButton);
+
+  test::WaitForPrimaryUserSessionStart();
+  histogram_tester_.ExpectBucketCount("ChromeOS.Gaia.PasswordFlow", 0, 2);
+  histogram_tester_.ExpectBucketCount("ChromeOS.Gaia.PasswordFlow", 1, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(WebviewLoginTest, StoragePartitionHandling) {
+  WaitForGaiaPageLoadAndPropertyUpdate();
+
+  // Start with identifier page.
+  ExpectIdentifierPage();
+
+  // WebContents of the embedding frame
+  content::WebContents* web_contents = GetLoginUI()->GetWebContents();
+  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
+
+  std::string signin_frame_partition_name_1 =
+      test::OobeJS().GetString(base::StrCat({kSigninWebview, ".partition"}));
+  content::StoragePartition* signin_frame_partition_1 =
+      login::GetSigninPartition();
+
+  EXPECT_FALSE(signin_frame_partition_name_1.empty());
+  EXPECT_EQ(login::SigninPartitionManager::Factory::GetForBrowserContext(
+                browser_context)
+                ->GetCurrentStoragePartitionName(),
+            signin_frame_partition_name_1);
+  EXPECT_TRUE(
+      IsLoginScreenHasWebviewWithStoragePartition(signin_frame_partition_1));
+  // Inject a cookie into the currently used StoragePartition, so we can test
+  // later if it has been cleared.
+  InjectCookie(signin_frame_partition_1);
+
+  // Press the back button at a sign-in screen without pre-existing users to
+  // start a new sign-in attempt.
+  test::OobeJS().ClickOnPath(kBackButton);
+  WaitForGaiaPageBackButtonUpdate();
+  // Expect that we got back to the identifier page, as there are no known users
+  // so the sign-in screen will not display user pods.
+  ExpectIdentifierPage();
+
+  std::string signin_frame_partition_name_2 =
+      test::OobeJS().GetString(base::StrCat({kSigninWebview, ".partition"}));
+  content::StoragePartition* signin_frame_partition_2 =
+      login::GetSigninPartition();
+
+  EXPECT_FALSE(signin_frame_partition_name_2.empty());
+  EXPECT_EQ(login::SigninPartitionManager::Factory::GetForBrowserContext(
+                browser_context)
+                ->GetCurrentStoragePartitionName(),
+            signin_frame_partition_name_2);
+  EXPECT_TRUE(
+      IsLoginScreenHasWebviewWithStoragePartition(signin_frame_partition_2));
+  InjectCookie(signin_frame_partition_2);
+
+  // Make sure that the partitions differ and that the old one is not in use
+  // anymore.
+  EXPECT_NE(signin_frame_partition_name_1, signin_frame_partition_name_2);
+  EXPECT_NE(signin_frame_partition_1, signin_frame_partition_2);
+  EXPECT_FALSE(
+      IsLoginScreenHasWebviewWithStoragePartition(signin_frame_partition_1));
+
+  // The StoragePartition which is not in use is supposed to have been cleared.
+  EXPECT_EQ("", GetAllCookies(signin_frame_partition_1));
+  EXPECT_NE("", GetAllCookies(signin_frame_partition_2));
+}
 
 class WebviewCloseViewLoginTest : public WebviewLoginTest,
                                   /* Does Gaia send the 'closeView' message */
@@ -714,55 +841,6 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTestWithSyncTrustedVaultEnabled,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(WebviewLoginTest, ErrorScreenOnGaiaError) {
-  WaitForGaiaPageLoadAndPropertyUpdate();
-  ExpectIdentifierPage();
-
-  // Make gaia landing page unreachable
-  fake_gaia_.fake_gaia()->SetFixedResponse(
-      GaiaUrls::GetInstance()->embedded_setup_chromeos_url(),
-      net::HTTP_NOT_FOUND);
-
-  // Click back to reload (unreachable) identifier page.
-  test::OobeJS().ClickOnPath(kBackButton);
-  OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
-}
-
-IN_PROC_BROWSER_TEST_F(WebviewLoginTest,
-                       NavigationButtonsDisabledBeforeGaiaLoaded) {
-  WaitForSigninScreen();
-  test::WaitForOobeJSReady();
-
-  test::OobeJS().ExpectHiddenPath(kPrimaryButton);
-  test::OobeJS().ExpectDisabledPath(kPrimaryButton);
-  test::OobeJS().ExpectHiddenPath(kSecondaryButton);
-  test::OobeJS().ExpectDisabledPath(kSecondaryButton);
-}
-
-IN_PROC_BROWSER_TEST_F(WebviewLoginTest,
-                       NavigationButtonsDisabledOnGaiaReload) {
-  // Progress to password page, so that both buttons are enabled.
-  WaitForGaiaPageLoadAndPropertyUpdate();
-  ExpectIdentifierPage();
-  SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserEmail,
-                               FakeGaiaMixin::kEmailPath);
-  test::OobeJS().ClickOnPath(kPrimaryButton);
-  WaitForGaiaPageBackButtonUpdate();
-  ExpectPasswordPage();
-  test::OobeJS().ExpectEnabledPath(kPrimaryButton);
-  test::OobeJS().ExpectEnabledPath(kSecondaryButton);
-
-  // Return empty gaia page so that we do not re-enable buttons again.
-  fake_gaia_.fake_gaia()->SetFixedResponse(
-      GaiaUrls::GetInstance()->embedded_setup_chromeos_url(), net::HTTP_OK,
-      "<body>no-op gaia</body>");
-  test::OobeJS().ExecuteAsync("$('gaia-signin').authenticator_.reload()");
-
-  // Wait for both buttons to become disabled due to reload.
-  test::OobeJS().CreateEnabledWaiter(false, kPrimaryButton)->Wait();
-  test::OobeJS().CreateEnabledWaiter(false, kSecondaryButton)->Wait();
-}
-
 // Device settings could only change on the owned device.
 class WebviewDeviceOwnedLoginTest : public WebviewLoginTest {
  private:
@@ -945,11 +1023,31 @@ IN_PROC_BROWSER_TEST_F(ReauthEndpointWebviewLoginTest, SupervisedUser) {
 class ReauthEndpointWebviewLoginOwnerTest
     : public ReauthEndpointWebviewLoginTest {
  protected:
-  ReauthEndpointWebviewLoginOwnerTest() {
-    scoped_testing_cros_settings_.device_settings()->Set(
-        kDeviceOwner, base::Value(FakeGaiaMixin::kFakeUserEmail));
-  }
+  ReauthEndpointWebviewLoginOwnerTest() = default;
   ~ReauthEndpointWebviewLoginOwnerTest() override = default;
+
+  void SetUp() override {
+    ReauthEndpointWebviewLoginTest::SetUp();
+
+    auto user_manager = std::make_unique<ash::FakeChromeUserManager>();
+    scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::move(user_manager));
+  }
+
+  void SetUpOnMainThread() override {
+    ReauthEndpointWebviewLoginTest::SetUpOnMainThread();
+
+    GetFakeUserManager().SetOwnerId(AccountId::FromUserEmailGaiaId(
+        FakeGaiaMixin::kFakeUserEmail, FakeGaiaMixin::kFakeUserGaiaId));
+  }
+
+ private:
+  ash::FakeChromeUserManager& GetFakeUserManager() {
+    return CHECK_DEREF(static_cast<ash::FakeChromeUserManager*>(
+        user_manager::UserManager::Get()));
+  }
+
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
 };
 
 IN_PROC_BROWSER_TEST_F(ReauthEndpointWebviewLoginOwnerTest, SupervisedUser) {
@@ -964,66 +1062,6 @@ IN_PROC_BROWSER_TEST_F(ReauthEndpointWebviewLoginOwnerTest, SupervisedUser) {
   EXPECT_EQ(fake_gaia_.fake_gaia()->is_supervised(), "1");
   EXPECT_EQ(fake_gaia_.fake_gaia()->is_device_owner(), "1");
   histogram_tester_.ExpectTotalCount("OOBE.GaiaLoginTime", 0);
-}
-
-IN_PROC_BROWSER_TEST_F(WebviewLoginTest, StoragePartitionHandling) {
-  WaitForGaiaPageLoadAndPropertyUpdate();
-
-  // Start with identifier page.
-  ExpectIdentifierPage();
-
-  // WebContents of the embedding frame
-  content::WebContents* web_contents = GetLoginUI()->GetWebContents();
-  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
-
-  std::string signin_frame_partition_name_1 =
-      test::OobeJS().GetString(base::StrCat({kSigninWebview, ".partition"}));
-  content::StoragePartition* signin_frame_partition_1 =
-      login::GetSigninPartition();
-
-  EXPECT_FALSE(signin_frame_partition_name_1.empty());
-  EXPECT_EQ(login::SigninPartitionManager::Factory::GetForBrowserContext(
-                browser_context)
-                ->GetCurrentStoragePartitionName(),
-            signin_frame_partition_name_1);
-  EXPECT_TRUE(
-      IsLoginScreenHasWebviewWithStoragePartition(signin_frame_partition_1));
-  // Inject a cookie into the currently used StoragePartition, so we can test
-  // later if it has been cleared.
-  InjectCookie(signin_frame_partition_1);
-
-  // Press the back button at a sign-in screen without pre-existing users to
-  // start a new sign-in attempt.
-  test::OobeJS().ClickOnPath(kBackButton);
-  WaitForGaiaPageBackButtonUpdate();
-  // Expect that we got back to the identifier page, as there are no known users
-  // so the sign-in screen will not display user pods.
-  ExpectIdentifierPage();
-
-  std::string signin_frame_partition_name_2 =
-      test::OobeJS().GetString(base::StrCat({kSigninWebview, ".partition"}));
-  content::StoragePartition* signin_frame_partition_2 =
-      login::GetSigninPartition();
-
-  EXPECT_FALSE(signin_frame_partition_name_2.empty());
-  EXPECT_EQ(login::SigninPartitionManager::Factory::GetForBrowserContext(
-                browser_context)
-                ->GetCurrentStoragePartitionName(),
-            signin_frame_partition_name_2);
-  EXPECT_TRUE(
-      IsLoginScreenHasWebviewWithStoragePartition(signin_frame_partition_2));
-  InjectCookie(signin_frame_partition_2);
-
-  // Make sure that the partitions differ and that the old one is not in use
-  // anymore.
-  EXPECT_NE(signin_frame_partition_name_1, signin_frame_partition_name_2);
-  EXPECT_NE(signin_frame_partition_1, signin_frame_partition_2);
-  EXPECT_FALSE(
-      IsLoginScreenHasWebviewWithStoragePartition(signin_frame_partition_1));
-
-  // The StoragePartition which is not in use is supposed to have been cleared.
-  EXPECT_EQ("", GetAllCookies(signin_frame_partition_1));
-  EXPECT_NE("", GetAllCookies(signin_frame_partition_2));
 }
 
 enum class FrameUrlOrigin { kSameOrigin, kDifferentOrigin };
@@ -2241,29 +2279,6 @@ IN_PROC_BROWSER_TEST_P(WebviewCloseViewLoginTest, UserInfoNeverSent) {
   EXPECT_FALSE(user_manager->GetActiveUser()->IsChild());
 }
 
-// Verifies `ChromeOS.Gaia.PasswordFlow` events are recorded.
-IN_PROC_BROWSER_TEST_F(WebviewLoginTest, PasswordMetrics) {
-  WaitForGaiaPageLoadAndPropertyUpdate();
-  ExpectIdentifierPage();
-
-  SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserEmail,
-                               FakeGaiaMixin::kEmailPath);
-  test::OobeJS().ClickOnPath(kPrimaryButton);
-
-  // This should generate first "Started" event.
-  SigninFrameJS().ExecuteAsync(
-      "gaia.chromeOSLogin.attemptLogin('email@email.com', 'password')");
-  SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserPassword,
-                               FakeGaiaMixin::kPasswordPath);
-  // This should generate second "Started" event. And also eventually
-  // "Completed" event.
-  test::OobeJS().ClickOnPath(kPrimaryButton);
-
-  test::WaitForPrimaryUserSessionStart();
-  histogram_tester_.ExpectBucketCount("ChromeOS.Gaia.PasswordFlow", 0, 2);
-  histogram_tester_.ExpectBucketCount("ChromeOS.Gaia.PasswordFlow", 1, 1);
-}
-
 class WebviewLoginEnrolledTest : public WebviewLoginTest {
  public:
   WebviewLoginEnrolledTest() = default;
@@ -2296,6 +2311,68 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginEnrolledTest, GaiaLoginVariantMetrics) {
                                        GaiaView::GaiaLoginVariant::kAddUser, 1);
   histogram_tester_.ExpectUniqueSample(kSuccessLoginRequests,
                                        GaiaView::GaiaLoginVariant::kAddUser, 1);
+}
+
+// This class is a subclass of WebviewLoginTest with the addition of the
+// abillity to enable Quick Start feature in order to test Quick Start
+// functionality in the Gaia signin screen
+class WebviewLoginQuickStartTest : public WebviewLoginTest {
+ public:
+  WebviewLoginQuickStartTest() {
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitAndEnableFeature(features::kOobeQuickStart);
+    connection_broker_factory_.set_initial_feature_support_status(
+        quick_start::TargetDeviceConnectionBroker::FeatureSupportStatus::
+            kUndetermined);
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    OobeBaseTest::SetUpInProcessBrowserTestFixture();
+    quick_start::TargetDeviceConnectionBrokerFactory::SetFactoryForTesting(
+        &connection_broker_factory_);
+  }
+
+  void TearDownInProcessBrowserTestFixture() override {
+    quick_start::TargetDeviceConnectionBrokerFactory::SetFactoryForTesting(
+        nullptr);
+    OobeBaseTest::TearDownInProcessBrowserTestFixture();
+  }
+
+  quick_start::FakeTargetDeviceConnectionBroker::Factory
+      connection_broker_factory_;
+};
+
+IN_PROC_BROWSER_TEST_F(WebviewLoginQuickStartTest,
+                       QuickStartButtonNotShownWhenFeatureSupportUndetermined) {
+  WaitForSigninScreen();
+  test::WaitForOobeJSReady();
+
+  // Check that QuickStart button is hidden since QuickStart feature is not
+  // enabled
+  test::OobeJS().ExpectHiddenPath(kQuickStartButton);
+}
+
+IN_PROC_BROWSER_TEST_F(WebviewLoginQuickStartTest,
+                       QuickStartButtonFunctionalWhenFeatureEnabled) {
+  WaitForSigninScreen();
+  test::WaitForOobeJSReady();
+
+  test::OobeJS().ExpectHiddenPath(kQuickStartButton);
+
+  // Enable Quick Start
+  connection_broker_factory_.instances().front()->set_feature_support_status(
+      quick_start::TargetDeviceConnectionBroker::FeatureSupportStatus::
+          kSupported);
+
+  // Check that QuickStart button is visible since QuickStart feature is enabled
+  test::OobeJS()
+      .CreateVisibilityWaiter(/*visibility=*/true, kQuickStartButton)
+      ->Wait();
+
+  test::OobeJS().ClickOnPath(kQuickStartButton);
+
+  // Wait for Quick Start screen to show
+  OobeScreenWaiter(QuickStartView::kScreenId).Wait();
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

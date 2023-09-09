@@ -4,7 +4,6 @@
 
 #include "components/segmentation_platform/internal/stats.h"
 
-#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
@@ -229,8 +228,9 @@ void RecordSegmentSelectionComputed(
                                ? previous_selection.value()
                                : SegmentId::OPTIMIZATION_TARGET_UNKNOWN;
 
-  if (prev_segment == new_selection || config.on_demand_execution)
+  if (prev_segment == new_selection || !config.auto_execute_and_cache) {
     return;
+  }
 
   std::string switched_hist =
       base::StrCat({"SegmentationPlatform.", config.segmentation_uma_name,
@@ -262,10 +262,6 @@ void RecordClassificationResultUpdated(
     const Config& config,
     const absl::optional<proto::PredictionResult>& old_result,
     const proto::PredictionResult& new_result) {
-  if (config.on_demand_execution) {
-    return;
-  }
-
   PostProcessor post_processor;
   int new_result_top_label = post_processor.GetIndexOfTopLabel(new_result);
   int old_result_top_label =
@@ -402,30 +398,22 @@ void RecordModelExecutionDurationTotal(SegmentId segment_id,
       duration);
 }
 
-void RecordClassificationRequestTotalDuration(
-    const std::string& segmentation_key,
-    base::TimeDelta duration) {
+void RecordClassificationRequestTotalDuration(const Config& config,
+                                              base::TimeDelta duration) {
   std::string histogram_name =
       base::StrCat({"SegmentationPlatform.ClassificationRequest.TotalDuration.",
-                    SegmentationKeyToUmaName(segmentation_key)});
+                    config.segmentation_uma_name});
   base::UmaHistogramTimes(histogram_name, duration);
 }
 
 void RecordOnDemandSegmentSelectionDuration(
-    const std::string& segmentation_key,
+    const Config& config,
     const SegmentSelectionResult& result,
     base::TimeDelta duration) {
   std::string histogram_prefix =
       base::StrCat({"SegmentationPlatform.SegmentSelectionOnDemand.Duration.",
-                    SegmentationKeyToUmaName(segmentation_key), "."});
+                    config.segmentation_uma_name});
   base::UmaHistogramTimes(base::StrCat({histogram_prefix, "Any"}), duration);
-
-  std::string histogram_name =
-      base::StrCat({histogram_prefix,
-                    result.segment.has_value()
-                        ? SegmentIdToHistogramVariant(result.segment.value())
-                        : "None"});
-  base::UmaHistogramTimes(histogram_name, duration);
 }
 
 void RecordModelExecutionResult(
@@ -566,14 +554,6 @@ void RecordSegmentSelectionFailure(const Config& config,
   base::UmaHistogramEnumeration(
       base::StrCat({"SegmentationPlatform.SelectionFailedReason.",
                     config.segmentation_uma_name}),
-      reason);
-}
-
-void RecordSegmentSelectionFailure(const std::string& segmentation_key,
-                                   SegmentationSelectionFailureReason reason) {
-  base::UmaHistogramEnumeration(
-      base::StrCat({"SegmentationPlatform.SelectionFailedReason.",
-                    SegmentationKeyToUmaName(segmentation_key)}),
       reason);
 }
 

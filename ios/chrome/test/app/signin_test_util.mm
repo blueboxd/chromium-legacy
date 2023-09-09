@@ -5,11 +5,13 @@
 #import "ios/chrome/test/app/signin_test_util.h"
 
 #import "base/check.h"
+#import "base/feature_list.h"
 #import "base/notreached.h"
 #import "base/test/ios/wait_util.h"
 #import "components/prefs/pref_service.h"
 #import "components/signin/public/base/signin_metrics.h"
 #import "components/signin/public/base/signin_pref_names.h"
+#import "components/sync/base/features.h"
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
 #import "google_apis/gaia/gaia_constants.h"
@@ -49,6 +51,13 @@ void StartForgetAllIdentities(ChromeBrowserState* browser_state,
       ChromeAccountManagerServiceFactory::GetForBrowserState(browser_state);
 
   NSArray* identities_to_remove = account_manager_service->GetAllIdentities();
+  if (identities_to_remove.count == 0) {
+    if (completion) {
+      completion();
+    }
+    return;
+  }
+
   __block int pending_tasks_count =
       static_cast<int>(identities_to_remove.count);
   ProceduralBlock tasks_completion = ^{
@@ -179,10 +188,16 @@ void ResetSyncSelectedDataTypes() {
   syncer::SyncService* syncService =
       SyncServiceFactory::GetForBrowserState(browserState);
   syncer::SyncUserSettings* settings = syncService->GetUserSettings();
-  // Explicitly enable all selectable types, this ensures that
-  // BookmarksAndReadingListAccountStorageOptIn works as expected.
-  settings->SetSelectedTypes(
-      /*sync_everything=*/true, settings->GetRegisteredSelectableTypes());
+  if (base::FeatureList::IsEnabled(
+          syncer::kReplaceSyncPromosWithSignInPromos)) {
+    // Clear the new per-account settings.
+    settings->KeepAccountSettingsPrefsOnlyForUsers({});
+  } else {
+    // Explicitly enable all selectable types, this ensures that
+    // BookmarksAndReadingListAccountStorageOptIn works as expected.
+    settings->SetSelectedTypes(
+        /*sync_everything=*/true, settings->GetRegisteredSelectableTypes());
+  }
 }
 
 }  // namespace chrome_test_util

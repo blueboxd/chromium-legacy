@@ -6,38 +6,36 @@
 
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/storage_access_api/storage_access_api_service_impl.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "third_party/blink/public/common/features.h"
+#include "url/gurl.h"
+#include "url/origin.h"
+#include "url/url_constants.h"
 
 constexpr base::TimeDelta kTimerPeriod = base::Days(1);
 
 StorageAccessAPIServiceImpl::StorageAccessAPIServiceImpl(
     content::BrowserContext* browser_context)
-    : grant_refreshes_enabled_(
+    : browser_context_(
+          raw_ref<content::BrowserContext>::from_ptr(browser_context)),
+      grant_refreshes_enabled_(
           blink::features::kStorageAccessAPIRefreshGrantsOnUserInteraction
               .Get()) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CHECK(browser_context);
 
   if (!grant_refreshes_enabled_) {
     return;
   }
 
-  base::Time now = base::Time::Now();
-  // We do our best to update the profile's state starting at the next midnight.
-  base::Time next_midnight = now.LocalMidnight() + base::Days(1);
-  base::TimeDelta to_next_midnight = next_midnight - now;
-
-  // Daylight savings means that some days are longer than 24 hours and some are
-  // shorter than 24 hours, but the next midnight should never be more than 2
-  // days away.
-  CHECK_LT(to_next_midnight, base::Days(2)) << now;
-
-  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&StorageAccessAPIServiceImpl::StartPeriodicTimer,
-                     weak_ptr_factory_.GetWeakPtr()),
-      to_next_midnight);
+  periodic_timer_.Start(
+      FROM_HERE, kTimerPeriod,
+      base::BindRepeating(&StorageAccessAPIServiceImpl::OnPeriodicTimerFired,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 StorageAccessAPIServiceImpl::~StorageAccessAPIServiceImpl() = default;
@@ -46,29 +44,28 @@ bool StorageAccessAPIServiceImpl::RenewPermissionGrant(
     const url::Origin& embedded_origin,
     const url::Origin& top_frame_origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(!embedded_origin.opaque());
+  CHECK(!top_frame_origin.opaque());
 
   if (!grant_refreshes_enabled_ ||
+      embedded_origin.scheme() != url::kHttpsScheme ||
+      top_frame_origin.scheme() != url::kHttpsScheme ||
       !updated_grants_.Insert(embedded_origin, top_frame_origin)) {
     return false;
   }
 
-  // TODO(https://crbug.com/1450356): implement grant renewal.
-  return true;
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(&*browser_context_);
+  CHECK(settings_map);
+
+  return settings_map->RenewContentSetting(
+      embedded_origin.GetURL(), top_frame_origin.GetURL(),
+      ContentSettingsType::STORAGE_ACCESS, CONTENT_SETTING_ALLOW);
 }
 
 void StorageAccessAPIServiceImpl::Shutdown() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   weak_ptr_factory_.InvalidateWeakPtrs();
-}
-
-void StorageAccessAPIServiceImpl::StartPeriodicTimer() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CHECK(grant_refreshes_enabled_);
-  OnPeriodicTimerFired();
-  periodic_timer_.Start(
-      FROM_HERE, kTimerPeriod,
-      base::BindRepeating(&StorageAccessAPIServiceImpl::OnPeriodicTimerFired,
-                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void StorageAccessAPIServiceImpl::OnPeriodicTimerFired() {

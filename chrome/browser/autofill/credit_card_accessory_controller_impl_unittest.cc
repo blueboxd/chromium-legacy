@@ -18,25 +18,24 @@
 #include "components/autofill/content/browser/test_content_autofill_driver.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
+#include "components/autofill/core/browser/browser_autofill_manager_test_api.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
-#include "components/autofill/core/browser/payments/constants.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_browser_autofill_manager.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
-#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/test/test_sync_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using testing::_;
 using testing::SaveArg;
-using testing::SaveArgPointee;
 using IsFillingSourceAvailable = AccessoryController::IsFillingSourceAvailable;
 
 constexpr char kExampleSite[] = "https://example.com";
@@ -97,16 +96,18 @@ class CreditCardAccessoryControllerTest
     SetFormOrigin(GURL(kExampleSite));
     FocusWebContentsOnMainFrame();
 
-    autofill_manager().set_credit_card_access_manager_for_test(
-        std::make_unique<TestAccessManager>(
+    test_api(autofill_manager())
+        .set_credit_card_access_manager(std::make_unique<TestAccessManager>(
             &autofill_driver(), &autofill_client(), &data_manager_));
     CreditCardAccessoryControllerImpl::CreateForWebContentsForTesting(
         web_contents(), mock_mf_controller_.AsWeakPtr(), &data_manager_,
         &autofill_manager(), &autofill_driver());
     data_manager_.SetPrefService(profile()->GetPrefs());
+    data_manager_.SetSyncServiceForTest(&sync_service_);
   }
 
   void TearDown() override {
+    data_manager_.SetSyncServiceForTest(nullptr);
     data_manager_.SetPrefService(nullptr);
     data_manager_.ClearCreditCards();
     data_manager_.ClearCreditCardOfferData();
@@ -141,6 +142,7 @@ class CreditCardAccessoryControllerTest
     return *autofill_manager_injector_[web_contents()];
   }
 
+  syncer::TestSyncService sync_service_;
   TestPersonalDataManager data_manager_;
   testing::NiceMock<MockManualFillingController> mock_mf_controller_;
   base::MockCallback<AccessoryController::FillingSourceObserver>
@@ -167,18 +169,6 @@ class CreditCardAccessoryControllerTestWithoutSupportingUnmaskedCards
             features::kAutofillFillMerchantPromoCodeFields});
   }
 
-  void SetUp() override {
-    ChromeRenderViewHostTestHarness::SetUp();
-    NavigateAndCommit(GURL(kExampleSite));
-    SetFormOrigin(GURL(kExampleSite));
-    FocusWebContentsOnMainFrame();
-
-    CreditCardAccessoryControllerImpl::CreateForWebContentsForTesting(
-        web_contents(), mock_mf_controller_.AsWeakPtr(), &data_manager_,
-        &autofill_manager(), &autofill_driver());
-    data_manager_.SetPrefService(profile()->GetPrefs());
-  }
-
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -194,55 +184,18 @@ class CreditCardAccessoryControllerTestSupportingPromoCodeOffers
         /*disabled_features=*/{});
   }
 
-  void SetUp() override {
-    ChromeRenderViewHostTestHarness::SetUp();
-    NavigateAndCommit(GURL(kExampleSite));
-    SetFormOrigin(GURL(kExampleSite));
-    FocusWebContentsOnMainFrame();
-
-    CreditCardAccessoryControllerImpl::CreateForWebContentsForTesting(
-        web_contents(), mock_mf_controller_.AsWeakPtr(), &data_manager_,
-        &autofill_manager(), &autofill_driver());
-    data_manager_.SetPrefService(profile()->GetPrefs());
-  }
-
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// TODO(crbug.com/911087): Remove this test when enabling the feature.
-TEST_F(CreditCardAccessoryControllerTest,
-       AllowedForWebContentsForNonVirtualCards) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      /*enabled_features=*/
-      {features::kAutofillEnableManualFallbackForVirtualCards,
-       features::kAutofillShowUnmaskedCachedCardInManualFillingView},
-      /*disabled_features=*/{features::kAutofillFillMerchantPromoCodeFields,
-                             autofill::features::kAutofillKeyboardAccessory});
-  prefs::SetPaymentsIntegrationEnabled(profile()->GetPrefs(), true);
-  PersonalDataManager* personal_data_manager =
-      PersonalDataManagerFactory::GetForProfile(profile());
-  personal_data_manager->SetSyncingForTest(true);
-  // Add a non-virtual card.
-  CreditCard card = test::GetMaskedServerCard();
-  personal_data_manager->AddServerCreditCardForTest(
-      std::make_unique<CreditCard>(card));
-
-  // Verify that the accessory sheet is not allowed.
-  ASSERT_FALSE(
-      CreditCardAccessoryController::AllowedForWebContents(web_contents()));
-}
-
 TEST_F(CreditCardAccessoryControllerTest,
        AllowedForWebContentsForVirtualCards) {
-  prefs::SetPaymentsIntegrationEnabled(profile()->GetPrefs(), true);
   PersonalDataManager* personal_data_manager =
       PersonalDataManagerFactory::GetForProfile(profile());
-  personal_data_manager->SetSyncingForTest(true);
   // Add a virtual card.
   CreditCard card = test::GetMaskedServerCard();
-  card.set_virtual_card_enrollment_state(CreditCard::ENROLLED);
+  card.set_virtual_card_enrollment_state(
+      CreditCard::VirtualCardEnrollmentState::kEnrolled);
   personal_data_manager->AddServerCreditCardForTest(
       std::make_unique<CreditCard>(card));
 
@@ -339,7 +292,8 @@ class CreditCardAccessoryControllerCardUnmaskTest
         // The CreditCardAccessoryController will automatically create a virtual
         // card for this masked server card.
         CreditCard card = test::GetMaskedServerCard();
-        card.set_virtual_card_enrollment_state(CreditCard::ENROLLED);
+        card.set_virtual_card_enrollment_state(
+            CreditCard::VirtualCardEnrollmentState::kEnrolled);
         return card;
       }
     }
@@ -580,7 +534,8 @@ TEST_F(
     RefreshSuggestionsAddsVirtualCardWhenOriginalCardIsEnrolledForVirtualCards) {
   // Add a masked card to PersonalDataManager.
   CreditCard masked_card = test::GetMaskedServerCard();
-  masked_card.set_virtual_card_enrollment_state(CreditCard::ENROLLED);
+  masked_card.set_virtual_card_enrollment_state(
+      CreditCard::VirtualCardEnrollmentState::kEnrolled);
   data_manager_.AddCreditCard(masked_card);
 
   AccessorySheetData result(autofill::AccessoryTabType::CREDIT_CARDS,
@@ -621,16 +576,12 @@ TEST_F(
           .Build());
 }
 
-TEST_F(CreditCardAccessoryControllerTest,
-       CardArtIsNotShownEvenWhenMetadataIsAvailableAndEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kAutofillEnableCardArtImage);
-
+TEST_F(CreditCardAccessoryControllerTest, VirtualCreditCardWithCardArtUrl) {
   // Add a masked card to PersonalDataManager.
   CreditCard masked_card = test::GetMaskedServerCard();
   masked_card.set_card_art_url(GURL("http://www.example.com/image.png"));
-  masked_card.set_virtual_card_enrollment_state(CreditCard::ENROLLED);
+  masked_card.set_virtual_card_enrollment_state(
+      CreditCard::VirtualCardEnrollmentState::kEnrolled);
   data_manager_.AddCreditCard(masked_card);
 
   AccessorySheetData result(autofill::AccessoryTabType::CREDIT_CARDS,
@@ -641,45 +592,35 @@ TEST_F(CreditCardAccessoryControllerTest,
   controller()->RefreshSuggestions();
 
   EXPECT_EQ(result, controller()->GetSheetData());
-
-  // Verify both the virtual card and the masked server card are in the
-  // suggestions.
-  EXPECT_EQ(result.user_info_list().size(), 2u);
-  // Verify card art is not shown for the virtual card.
-  EXPECT_EQ(result.user_info_list()[0].icon_url(), GURL());
-  // Verify card art is not shown for the masked server card.
-  EXPECT_EQ(result.user_info_list()[1].icon_url(), GURL());
-}
-
-TEST_F(
-    CreditCardAccessoryControllerTest,
-    CapitalOneVirtualCardIconIsShownForVirtualCardsEvenWhenMetadataIsNotEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      features::kAutofillEnableCardArtImage);
-
-  // Add a masked card to PersonalDataManager.
-  CreditCard masked_card = test::GetMaskedServerCard();
-  masked_card.set_card_art_url(GURL(kCapitalOneCardArtUrl));
-  masked_card.set_virtual_card_enrollment_state(CreditCard::ENROLLED);
-  data_manager_.AddCreditCard(masked_card);
-
-  AccessorySheetData result(autofill::AccessoryTabType::CREDIT_CARDS,
-                            std::u16string());
-  EXPECT_CALL(mock_mf_controller_, RefreshSuggestions)
-      .WillOnce(SaveArg<0>(&result));
-  ASSERT_TRUE(controller());
-  controller()->RefreshSuggestions();
-
-  EXPECT_EQ(result, controller()->GetSheetData());
-
-  // Verify both the virtual card and the masked server card are in the
-  // suggestions.
-  EXPECT_EQ(result.user_info_list().size(), 2u);
-  // Verify the the Capital One virtual card icon is shown for the virtual card.
-  EXPECT_EQ(result.user_info_list()[0].icon_url(), GURL(kCapitalOneCardArtUrl));
-  // Verify card art is not shown for the masked server card.
-  EXPECT_EQ(result.user_info_list()[1].icon_url(), GURL());
+  // Verify that a virtual card is inserted before the actual masked card.
+  std::u16string virtual_card_label =
+      u"Virtual card " +
+      masked_card.ObfuscatedNumberWithVisibleLastFourDigits();
+  EXPECT_EQ(
+      result,
+      CreditCardAccessorySheetDataBuilder()
+          .AddUserInfo(kMasterCard, UserInfo::IsExactMatch(true),
+                       GURL("http://www.example.com/image.png"))
+          .AppendField(virtual_card_label, /*text_to_fill*/ std::u16string(),
+                       virtual_card_label, masked_card.guid() + "_vcn",
+                       /*is_obfuscated=*/false,
+                       /*selectable=*/true)
+          .AppendSimpleField(masked_card.Expiration2DigitMonthAsString())
+          .AppendSimpleField(masked_card.Expiration4DigitYearAsString())
+          .AppendSimpleField(masked_card.GetRawInfo(CREDIT_CARD_NAME_FULL))
+          .AppendSimpleField(std::u16string())
+          .AddUserInfo(kMasterCard, UserInfo::IsExactMatch(true))
+          .AppendField(masked_card.ObfuscatedNumberWithVisibleLastFourDigits(),
+                       /*text_to_fill*/ std::u16string(),
+                       masked_card.ObfuscatedNumberWithVisibleLastFourDigits(),
+                       masked_card.guid(),
+                       /*is_obfuscated=*/false,
+                       /*selectable=*/true)
+          .AppendSimpleField(masked_card.Expiration2DigitMonthAsString())
+          .AppendSimpleField(masked_card.Expiration4DigitYearAsString())
+          .AppendSimpleField(masked_card.GetRawInfo(CREDIT_CARD_NAME_FULL))
+          .AppendSimpleField(std::u16string())
+          .Build());
 }
 
 // Tests that when |kAutofillFillMerchantPromoCodeFields| feature is enabled,

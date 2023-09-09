@@ -21,7 +21,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.browser.customtabs.CustomTabsSessionToken;
 
@@ -245,12 +244,14 @@ public class CustomTabActivity extends BaseCustomTabActivity {
             String publisher = TrustedCdn.getContentPublisher(tab);
             new ChromePageInfo(getModalDialogManagerSupplier(), publisher, OpenedFromSource.MENU,
                     mRootUiCoordinator.getMerchantTrustSignalsCoordinatorSupplier()::get,
-                    mRootUiCoordinator.getEphemeralTabCoordinatorSupplier())
+                    mRootUiCoordinator.getEphemeralTabCoordinatorSupplier(),
+                    getTabCreator(getCurrentTabModel().isIncognito()))
                     .show(tab, ChromePageInfoHighlight.noHighlight());
             return true;
         } else if (id == R.id.page_insights_id) {
-            assert mBaseCustomTabRootUiCoordinator.getPageInsightsCoordinator() != null;
-            mBaseCustomTabRootUiCoordinator.getPageInsightsCoordinator().launch();
+            var pageInsights = mBaseCustomTabRootUiCoordinator.getPageInsightsCoordinator();
+            assert pageInsights != null;
+            pageInsights.launch();
             return true;
         }
         return super.onMenuOrKeyboardAction(id, fromMenu);
@@ -311,7 +312,6 @@ public class CustomTabActivity extends BaseCustomTabActivity {
         return new CustomTabLaunchCauseMetrics(this);
     }
 
-    @VisibleForTesting
     public NightModeStateProvider getNightModeStateProviderForTesting() {
         return super.getNightModeStateProvider();
     }

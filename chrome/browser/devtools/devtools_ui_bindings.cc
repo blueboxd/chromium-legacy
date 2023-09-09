@@ -361,6 +361,10 @@ std::string SanitizeFrontendQueryParam(
     return value;
   }
 
+  if (key == "noJavaScriptCompletion" && value == "true") {
+    return value;
+  }
+
   return std::string();
 }
 

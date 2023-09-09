@@ -27,6 +27,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "base/uuid.h"
 #include "components/aggregation_service/features.h"
 #include "components/attribution_reporting/destination_set.h"
 #include "components/attribution_reporting/filters.h"
@@ -390,11 +391,10 @@ TEST_P(AttributionStorageSqlTest,
     // [impression_origin_idx], [sources_by_source_time],
     // [reports_by_report_time], [reports_by_source_id_report_type],
     // [reports_by_trigger_time], [reports_by_reporting_origin],
-    // [rate_limit_source_site_reporting_site_idx],
     // [rate_limit_reporting_origin_idx], [rate_limit_time_idx],
     // [rate_limit_impression_id_idx], [sources_by_destination_site], and the
     // meta table index.
-    EXPECT_EQ(14u, sql::test::CountSQLIndices(&raw_db));
+    EXPECT_EQ(13u, sql::test::CountSQLIndices(&raw_db));
   }
 }
 
@@ -474,7 +474,7 @@ TEST_P(AttributionStorageSqlTest,
 
   auto trigger_verification = network::TriggerVerification::Create(
       /*token=*/"verification-token", /*aggregatable_report_id=*/
-      "55865da3-fb0e-4b71-965e-64fc4bf0a323");
+      base::Uuid::ParseLowercase("55865da3-fb0e-4b71-965e-64fc4bf0a323"));
   AttributionTrigger trigger =
       DefaultAggregatableTriggerBuilder()
           .SetVerifications({trigger_verification.value()})
@@ -550,7 +550,7 @@ TEST_P(AttributionStorageSqlTest, NullReportWithVerification_FeatureEnabled) {
   });
   auto trigger_verification = network::TriggerVerification::Create(
       /*token=*/"verification-token", /*aggregatable_report_id=*/
-      "55865da3-fb0e-4b71-965e-64fc4bf0a323");
+      base::Uuid::ParseLowercase("55865da3-fb0e-4b71-965e-64fc4bf0a323"));
   auto result = storage()->MaybeCreateAndStoreReport(
       DefaultAggregatableTriggerBuilder()
           .SetVerifications({trigger_verification.value()})
@@ -595,7 +595,7 @@ TEST_P(AttributionStorageSqlTest,
   });
   auto trigger_verification = network::TriggerVerification::Create(
       /*token=*/"verification-token", /*aggregatable_report_id=*/
-      "55865da3-fb0e-4b71-965e-64fc4bf0a323");
+      base::Uuid::ParseLowercase("55865da3-fb0e-4b71-965e-64fc4bf0a323"));
   auto result = storage()->MaybeCreateAndStoreReport(
       DefaultAggregatableTriggerBuilder()
           .SetVerifications({trigger_verification.value()})
@@ -645,7 +645,7 @@ TEST_P(AttributionStorageSqlTest,
   delegate()->set_reverse_reports_on_shuffle(true);
   auto trigger_verification = network::TriggerVerification::Create(
       /*token=*/"verification-token", /*aggregatable_report_id=*/
-      "55865da3-fb0e-4b71-965e-64fc4bf0a323");
+      base::Uuid::ParseLowercase("55865da3-fb0e-4b71-965e-64fc4bf0a323"));
   auto result = storage()->MaybeCreateAndStoreReport(
       DefaultAggregatableTriggerBuilder()
           .SetVerifications({trigger_verification.value()})
@@ -697,13 +697,13 @@ TEST_P(AttributionStorageSqlTest,
   std::vector<network::TriggerVerification> verifications = {
       *network::TriggerVerification::Create(
           /*token=*/"verification-token-1", /*aggregatable_report_id=*/
-          "11865da3-fb0e-4b71-965e-64fc4bf0a323"),
+          base::Uuid::ParseLowercase("11865da3-fb0e-4b71-965e-64fc4bf0a323")),
       *network::TriggerVerification::Create(
           /*token=*/"verification-token-2", /*aggregatable_report_id=*/
-          "22865da3-fb0e-4b71-965e-64fc4bf0a323"),
+          base::Uuid::ParseLowercase("22865da3-fb0e-4b71-965e-64fc4bf0a323")),
       *network::TriggerVerification::Create(
           /*token=*/"verification-token-3", /*aggregatable_report_id=*/
-          "33865da3-fb0e-4b71-965e-64fc4bf0a323")};
+          base::Uuid::ParseLowercase("33865da3-fb0e-4b71-965e-64fc4bf0a323"))};
 
   auto result = storage()->MaybeCreateAndStoreReport(
       DefaultAggregatableTriggerBuilder()

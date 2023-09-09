@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_PICTURE_IN_PICTURE_BROWSER_FRAME_VIEW_H_
 
 #include "base/scoped_observation.h"
-#include "build/build_config.h"
-#include "chrome/browser/ui/content_settings/content_setting_image_model_states.h"
 #include "chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
@@ -64,6 +62,7 @@ class PictureInPictureBrowserFrameView
                                views::Label& window_title_label) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
+  void OnBrowserViewInitViewsComplete() override;
   void UpdateThrobber(bool running) override {}
   gfx::Rect GetBoundsForClientView() const override;
   gfx::Rect GetWindowBoundsForClientBounds(
@@ -108,7 +107,7 @@ class PictureInPictureBrowserFrameView
   SkColor GetIconLabelBubbleBackgroundColor() const override;
 
   // ContentSettingImageView::Delegate:
-  bool ShouldHideContentSettingImage(ImageType type) override;
+  bool ShouldHideContentSettingImage() override;
   content::WebContents* GetContentSettingWebContents() override;
   ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
       override;
@@ -176,6 +175,10 @@ class PictureInPictureBrowserFrameView
   // Gets the shadow metrics (radius, offset, and number of shadows) even if
   // shadows are not drawn.
   static gfx::ShadowValues GetShadowValues();
+#endif
+
+#if BUILDFLAG(IS_WIN)
+  gfx::Insets GetClientAreaInsets(HMONITOR monitor) const;
 #endif
 
   // Helper functions for testing.

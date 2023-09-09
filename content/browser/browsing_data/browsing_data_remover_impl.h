@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <set>
 
 #include "base/cancelable_callback.h"
@@ -21,6 +22,8 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "content/public/browser/storage_partition_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/origin.h"
 
@@ -89,9 +92,17 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   const base::Time& GetLastUsedBeginTimeForTesting() override;
   uint64_t GetLastUsedRemovalMaskForTesting() override;
   uint64_t GetLastUsedOriginTypeMaskForTesting() override;
+  absl::optional<StoragePartitionConfig>
+  GetLastUsedStoragePartitionConfigForTesting() override;
+  uint64_t GetPendingTaskCountForTesting() override;
+
+  void ClearClientHintCacheAndReply(const url::Origin& origin,
+                                    base::OnceClosure callback);
 
   // Used for testing.
-  void OverrideStoragePartitionForTesting(StoragePartition* storage_partition);
+  void OverrideStoragePartitionForTesting(
+      const StoragePartitionConfig& storage_partition_config,
+      StoragePartition* storage_partition);
 
  protected:
   // A common reduction of all public Remove[WithFilter][AndReply] methods.
@@ -213,7 +224,13 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   // Records unfinished tasks from |pending_sub_tasks_| after a delay.
   void RecordUnfinishedSubTasks();
 
-  StoragePartition* GetStoragePartition();
+  StoragePartition* GetStoragePartition(
+      absl::optional<StoragePartitionConfig> storage_partition_config);
+
+  // This does the actual clearing of the client hint cache for the provided
+  // origin. It should be invoked only via ClearClientHintCacheAndReply.
+  void ClearClientHintCacheAndReplyImpl(const url::Origin& origin,
+                                        base::OnceClosure callback);
 
   // Like GetWeakPtr(), but returns a weak pointer to BrowsingDataRemoverImpl
   // for internal purposes.
@@ -236,6 +253,11 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
 
   // From which types of origins should we remove data?
   uint64_t origin_type_mask_ = 0;
+
+  // The StoragePartition from which data should be removed, or the default
+  // if absent.
+  absl::optional<StoragePartitionConfig> storage_partition_config_ =
+      absl::nullopt;
 
   std::vector<std::string> domains_for_deferred_cookie_deletion_;
 
@@ -263,8 +285,9 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   // Observers of the global state and individual tasks.
   base::ObserverList<Observer, true>::Unchecked observer_list_;
 
-  // We do not own this.
-  raw_ptr<StoragePartition> storage_partition_for_testing_;
+  // We do not own the StoragePartitions.
+  std::map<StoragePartitionConfig, raw_ptr<StoragePartition>>
+      storage_partitions_for_testing_;
 
   base::WeakPtrFactory<BrowsingDataRemoverImpl> weak_ptr_factory_{this};
 };

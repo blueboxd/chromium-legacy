@@ -197,12 +197,24 @@ HTMLSelectMenuElement::HTMLSelectMenuElement(Document& document)
       MakeGarbageCollected<HTMLSelectMenuElement::SelectMutationCallback>(
           *this);
 
-  // A selectmenu is the implicit anchor of its listbox.
+  // A selectmenu is the implicit anchor of its listbox and of the autofill
+  // preview.
+  IncrementImplicitlyAnchoredElementCount();
   IncrementImplicitlyAnchoredElementCount();
 }
 
 // static
 HTMLSelectMenuElement* HTMLSelectMenuElement::OwnerSelectMenu(Node* node) {
+  // Do some quick checks in order to avoid, in most cases, walking up the
+  // entire tree if `node` does not have a selectmenu ancestor.
+  if (!IsA<HTMLOptionElement>(node)) {
+    HTMLElement* html_element = DynamicTo<HTMLElement>(node);
+    if (!html_element ||
+        !html_element->FastHasAttribute(html_names::kBehaviorAttr)) {
+      return nullptr;
+    }
+  }
+
   HTMLSelectMenuElement* nearest_select_menu_ancestor =
       SelectMenuPartTraversal::NearestSelectMenuAncestor(*node);
 
@@ -308,6 +320,14 @@ void HTMLSelectMenuElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
   option_part_listener_ =
       MakeGarbageCollected<HTMLSelectMenuElement::OptionPartEventListener>(
           this);
+
+  suggested_option_popover_ = MakeGarbageCollected<HTMLDivElement>(document);
+  suggested_option_popover_->setAttribute(html_names::kPopoverAttr,
+                                          keywords::kManual);
+  suggested_option_popover_->SetPopoverOwnerSelectMenuElement(this);
+  suggested_option_popover_->SetShadowPseudoId(
+      AtomicString("-internal-selectmenu-preview"));
+  root.AppendChild(suggested_option_popover_);
 }
 
 void HTMLSelectMenuElement::DidMoveToNewDocument(Document& old_document) {
@@ -369,6 +389,7 @@ void HTMLSelectMenuElement::setValue(const String& value,
       break;
     }
   }
+  SetSuggestedOption(nullptr);
   SetSelectedOption(selected_option, send_events, autofill_state);
 }
 
@@ -388,6 +409,26 @@ void HTMLSelectMenuElement::SetAutofillValue(const String& value,
   bool user_has_edited_the_field = user_has_edited_the_field_;
   setValue(value, /*send_events=*/true, autofill_state);
   SetUserHasEditedTheField(user_has_edited_the_field);
+}
+
+String HTMLSelectMenuElement::SuggestedValue() const {
+  return suggested_option_ ? suggested_option_->value() : "";
+}
+
+void HTMLSelectMenuElement::SetSuggestedValue(const String& value) {
+  if (value.IsNull()) {
+    SetSuggestedOption(nullptr);
+    return;
+  }
+
+  for (auto& option : option_parts_) {
+    if (option->value() == value) {
+      SetSuggestedOption(option);
+      return;
+    }
+  }
+
+  SetSuggestedOption(nullptr);
 }
 
 void HTMLSelectMenuElement::OpenListbox() {
@@ -456,11 +497,11 @@ bool HTMLSelectMenuElement::SetListboxPart(HTMLElement* new_listbox_part) {
     return false;
 
   if (listbox_part_) {
-    listbox_part_->SetOwnerSelectMenuElement(nullptr);
+    listbox_part_->SetPopoverOwnerSelectMenuElement(nullptr);
   }
 
   if (new_listbox_part) {
-    new_listbox_part->SetOwnerSelectMenuElement(this);
+    new_listbox_part->SetPopoverOwnerSelectMenuElement(this);
   } else {
     QueueCheckForMissingParts();
   }
@@ -759,6 +800,14 @@ void HTMLSelectMenuElement::OptionPartInserted(
   }
   SetNeedsValidityCheck();
   should_recalc_list_items_ = true;
+
+  if (GetDocument().IsActive()) {
+    GetDocument()
+        .GetFrame()
+        ->GetPage()
+        ->GetChromeClient()
+        .SelectOrSelectMenuFieldOptionsChanged(*this);
+  }
 }
 
 void HTMLSelectMenuElement::OptionPartRemoved(HTMLOptionElement* option_part) {
@@ -773,8 +822,19 @@ void HTMLSelectMenuElement::OptionPartRemoved(HTMLOptionElement* option_part) {
   if (selected_option_ == option_part) {
     ResetToDefaultSelection();
   }
+  if (suggested_option_ == option_part) {
+    SetSuggestedOption(nullptr);
+  }
   SetNeedsValidityCheck();
   should_recalc_list_items_ = true;
+
+  if (GetDocument().IsActive()) {
+    GetDocument()
+        .GetFrame()
+        ->GetPage()
+        ->GetChromeClient()
+        .SelectOrSelectMenuFieldOptionsChanged(*this);
+  }
 }
 
 HTMLOptionElement* HTMLSelectMenuElement::FirstOptionPart() const {
@@ -939,6 +999,26 @@ void HTMLSelectMenuElement::SelectPreviousOption() {
       DispatchInputAndChangeEventsIfNeeded();
       return;
     }
+  }
+}
+
+void HTMLSelectMenuElement::SetSuggestedOption(HTMLOptionElement* option) {
+  if (suggested_option_ == option) {
+    return;
+  }
+
+  SetAutofillState(option ? WebAutofillState::kPreviewed
+                          : WebAutofillState::kNotFilled);
+  suggested_option_ = option;
+
+  if (suggested_option_) {
+    suggested_option_popover_->showPopover(ASSERT_NO_EXCEPTION);
+    suggested_option_popover_->setInnerText(option->label());
+  } else if (suggested_option_popover_->popoverOpen()) {
+    suggested_option_popover_->HidePopoverInternal(
+        HidePopoverFocusBehavior::kNone,
+        HidePopoverTransitionBehavior::kNoEventsNoWaiting,
+        /*exception_state=*/nullptr);
   }
 }
 
@@ -1206,11 +1286,11 @@ bool HTMLSelectMenuElement::ValueMissing() const {
 
 void HTMLSelectMenuElement::CloneNonAttributePropertiesFrom(
     const Element& source,
-    CloneChildrenFlag flag) {
+    NodeCloningData& data) {
   const auto& source_element =
       static_cast<const HTMLSelectMenuElement&>(source);
   user_has_edited_the_field_ = source_element.user_has_edited_the_field_;
-  HTMLFormControlElement::CloneNonAttributePropertiesFrom(source, flag);
+  HTMLFormControlElement::CloneNonAttributePropertiesFrom(source, data);
 }
 
 // https://html.spec.whatwg.org/C/#ask-for-a-reset
@@ -1283,6 +1363,8 @@ void HTMLSelectMenuElement::Trace(Visitor* visitor) const {
   visitor->Trace(selected_value_slot_);
   visitor->Trace(selected_option_);
   visitor->Trace(selected_option_when_listbox_opened_);
+  visitor->Trace(suggested_option_);
+  visitor->Trace(suggested_option_popover_);
   visitor->Trace(list_items_);
   HTMLFormControlElementWithState::Trace(visitor);
 }

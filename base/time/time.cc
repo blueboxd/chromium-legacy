@@ -53,55 +53,6 @@ std::atomic<ThreadTicksNowFunction> g_thread_ticks_now_function{
 
 // TimeDelta ------------------------------------------------------------------
 
-int TimeDelta::InDays() const {
-  if (!is_inf())
-    return static_cast<int>(delta_ / Time::kMicrosecondsPerDay);
-  return (delta_ < 0) ? std::numeric_limits<int>::min()
-                      : std::numeric_limits<int>::max();
-}
-
-int TimeDelta::InDaysFloored() const {
-  if (!is_inf()) {
-    const int result = delta_ / Time::kMicrosecondsPerDay;
-    // Convert |result| from truncating to flooring.
-    return (result * Time::kMicrosecondsPerDay > delta_) ? (result - 1)
-                                                         : result;
-  }
-  return (delta_ < 0) ? std::numeric_limits<int>::min()
-                      : std::numeric_limits<int>::max();
-}
-
-double TimeDelta::InMillisecondsF() const {
-  if (!is_inf())
-    return static_cast<double>(delta_) / Time::kMicrosecondsPerMillisecond;
-  return (delta_ < 0) ? -std::numeric_limits<double>::infinity()
-                      : std::numeric_limits<double>::infinity();
-}
-
-int64_t TimeDelta::InMilliseconds() const {
-  if (!is_inf())
-    return delta_ / Time::kMicrosecondsPerMillisecond;
-  return (delta_ < 0) ? std::numeric_limits<int64_t>::min()
-                      : std::numeric_limits<int64_t>::max();
-}
-
-int64_t TimeDelta::InMillisecondsRoundedUp() const {
-  if (!is_inf()) {
-    const int64_t result = delta_ / Time::kMicrosecondsPerMillisecond;
-    // Convert |result| from truncating to ceiling.
-    return (delta_ > result * Time::kMicrosecondsPerMillisecond) ? (result + 1)
-                                                                 : result;
-  }
-  return delta_;
-}
-
-double TimeDelta::InMicrosecondsF() const {
-  if (!is_inf())
-    return static_cast<double>(delta_);
-  return (delta_ < 0) ? -std::numeric_limits<double>::infinity()
-                      : std::numeric_limits<double>::infinity();
-}
-
 TimeDelta TimeDelta::CeilToMultiple(TimeDelta interval) const {
   if (is_inf() || interval.is_zero())
     return *this;
@@ -154,9 +105,8 @@ Time Time::NowFromSystemTime() {
 time_t Time::ToTimeT() const {
   if (is_null())
     return 0;  // Preserve 0 so we can tell it doesn't exist.
-  if (!is_inf() && ((std::numeric_limits<int64_t>::max() -
-                     kTimeTToMicrosecondsOffset) > us_)) {
-    return static_cast<time_t>((*this - UnixEpoch()).InSeconds());
+  if (!is_inf()) {
+    return saturated_cast<time_t>((*this - UnixEpoch()).InSecondsFloored());
   }
   return (us_ < 0) ? std::numeric_limits<time_t>::min()
                    : std::numeric_limits<time_t>::max();

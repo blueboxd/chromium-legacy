@@ -300,7 +300,7 @@ struct MEDIA_EXPORT TrackFragmentRun : FullBox {
 
   // Optional fields, presence is indicated in `flags`. If not present, the
   // default value established in the `TrackFragmentHeader` is used.
-  std::vector<base::TimeDelta> sample_durations;
+  std::vector<base::TimeTicks> sample_timestamps;
   std::vector<uint32_t> sample_sizes;
   std::vector<uint32_t> sample_flags;
   // We don't support sample_composition_time_offsets as we don't know
@@ -352,7 +352,7 @@ struct MEDIA_EXPORT MediaData : Box {
   ~MediaData();
   MediaData(const MediaData&);
   MediaData& operator=(const MediaData&);
-  std::vector<base::span<uint8_t>> data;
+  std::vector<std::vector<uint8_t>> track_data;
 };
 
 }  // namespace media::mp4::writable_boxes

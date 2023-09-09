@@ -345,23 +345,58 @@ void ThemePainterDefault::SetupMenuListArrow(
     const ComputedStyle& style,
     const gfx::Rect& rect,
     WebThemeEngine::ExtraParams& extra_params) {
-  const int left = rect.x() + floorf(style.BorderLeftWidth());
-  const int right = rect.x() + rect.width() - floorf(style.BorderRightWidth());
-  const int middle = rect.y() + rect.height() / 2;
+  if (IsHorizontalWritingMode(style.GetWritingMode()) ||
+      !RuntimeEnabledFeatures::
+          FormControlsVerticalWritingModeSupportEnabled()) {
+    extra_params.menu_list.arrow_direction =
+        WebThemeEngine::ArrowDirection::kDown;
+    const int left = rect.x() + floorf(style.BorderLeftWidth());
+    const int right =
+        rect.x() + rect.width() - floorf(style.BorderRightWidth());
+    const int middle = rect.y() + rect.height() / 2;
 
-  extra_params.menu_list.arrow_y = middle;
-  float arrow_box_width =
-      theme_.ClampedMenuListArrowPaddingSize(document.GetFrame(), style);
-  float arrow_scale_factor = arrow_box_width / theme_.MenuListArrowWidthInDIP();
-  // TODO(tkent): This should be 7.0 to match scroll bar buttons.
-  float arrow_size = 8.0 * arrow_scale_factor;
-  // Put the arrow at the center of paddingForArrow area.
-  // |arrowX| is the left position for Aura theme engine.
-  extra_params.menu_list.arrow_x =
-      (style.Direction() == TextDirection::kRtl)
-          ? left + (arrow_box_width - arrow_size) / 2
-          : right - (arrow_box_width + arrow_size) / 2;
-  extra_params.menu_list.arrow_size = arrow_size;
+    extra_params.menu_list.arrow_y = middle;
+    float arrow_box_width =
+        theme_.ClampedMenuListArrowPaddingSize(document.GetFrame(), style);
+    float arrow_scale_factor =
+        arrow_box_width / theme_.MenuListArrowWidthInDIP();
+    // TODO(tkent): This should be 7.0 to match scroll bar buttons.
+    float arrow_size = 8.0 * arrow_scale_factor;
+    // Put the arrow at the center of paddingForArrow area.
+    // |arrowX| is the left position for Aura theme engine.
+    extra_params.menu_list.arrow_x =
+        (style.Direction() == TextDirection::kRtl)
+            ? left + (arrow_box_width - arrow_size) / 2
+            : right - (arrow_box_width + arrow_size) / 2;
+    extra_params.menu_list.arrow_size = arrow_size;
+  } else {
+    if (style.GetWritingMode() == WritingMode::kVerticalLr) {
+      extra_params.menu_list.arrow_direction =
+          WebThemeEngine::ArrowDirection::kRight;
+    } else {
+      extra_params.menu_list.arrow_direction =
+          WebThemeEngine::ArrowDirection::kLeft;
+    }
+    const int bottom = rect.y() + floorf(style.BorderBottomWidth());
+    const int top = rect.y() + rect.height() - floorf(style.BorderTopWidth());
+    const int middle = rect.x() + rect.width() / 2;
+
+    extra_params.menu_list.arrow_x = middle;
+    float arrow_box_height =
+        theme_.ClampedMenuListArrowPaddingSize(document.GetFrame(), style);
+    float arrow_scale_factor =
+        arrow_box_height / theme_.MenuListArrowWidthInDIP();
+    // TODO(tkent): This should be 7.0 to match scroll bar buttons.
+    float arrow_size = 8.0 * arrow_scale_factor;
+    // Put the arrow at the center of paddingForArrow area.
+    // |arrowY| is the bottom position for Aura theme engine.
+    extra_params.menu_list.arrow_y =
+        (style.Direction() == TextDirection::kRtl)
+            ? bottom + (arrow_box_height - arrow_size) / 2
+            : top - (arrow_box_height + arrow_size) / 2;
+    extra_params.menu_list.arrow_size = arrow_size;
+  }
+
   // TODO: (https://crbug.com/1227305)This color still does not support forced
   // dark mode
   extra_params.menu_list.arrow_color =
@@ -402,7 +437,11 @@ bool ThemePainterDefault::PaintSliderTrack(const Element& element,
     LayoutBox* thumb = thumb_element ? thumb_element->GetLayoutBox() : nullptr;
     LayoutBox* input_box = input->GetLayoutBox();
     if (thumb) {
-      gfx::Rect thumb_rect = ToPixelSnappedRect(thumb->FrameRect());
+      gfx::Rect thumb_rect =
+          RuntimeEnabledFeatures::LayoutNGNoLocationEnabled()
+              ? ToPixelSnappedRect(
+                    PhysicalRect(thumb->PhysicalLocation(), thumb->Size()))
+              : ToPixelSnappedRect(thumb->FrameRect());
       extra_params.slider.thumb_x = thumb_rect.x() +
                                     input_box->PaddingLeft().ToInt() +
                                     input_box->BorderLeft().ToInt();
@@ -539,14 +578,22 @@ bool ThemePainterDefault::PaintSearchFieldCancelButton(
       std::min(input_content_box.size.width,
                std::min(input_content_box.size.height, LayoutUnit(r.height())));
   // Calculate cancel button's coordinates relative to the input element.
-  // Center the button vertically.  Round up though, so if it has to be one
+  // Center the button inline.  Round up though, so if it has to be one
   // pixel off-center, it will be one pixel closer to the bottom of the field.
   // This tends to look better with the text.
-  PhysicalRect cancel_button_rect(
-      cancel_button_object.OffsetFromAncestor(&input_layout_box).left,
-      input_content_box.Y() +
-          (input_content_box.Height() - cancel_button_size + 1) / 2,
-      cancel_button_size, cancel_button_size);
+  const LayoutUnit cancel_button_rect_left =
+      IsHorizontalWritingMode(cancel_button_object.StyleRef().GetWritingMode())
+          ? cancel_button_object.OffsetFromAncestor(&input_layout_box).left
+          : input_content_box.X() +
+                (input_content_box.Width() - cancel_button_size + 1) / 2;
+  const LayoutUnit cancel_button_rect_top =
+      IsHorizontalWritingMode(cancel_button_object.StyleRef().GetWritingMode())
+          ? input_content_box.Y() +
+                (input_content_box.Height() - cancel_button_size + 1) / 2
+          : cancel_button_object.OffsetFromAncestor(&input_layout_box).top;
+  PhysicalRect cancel_button_rect(cancel_button_rect_left,
+                                  cancel_button_rect_top, cancel_button_size,
+                                  cancel_button_size);
   gfx::Rect painting_rect = ConvertToPaintingRect(
       input_layout_box, cancel_button_object, cancel_button_rect, r);
   DEFINE_STATIC_REF(Image, cancel_image,

@@ -33,6 +33,7 @@ BASE_DECLARE_FEATURE(kIPHDesktopTabGroupsNewGroupFeature);
 BASE_DECLARE_FEATURE(kIPHDesktopCustomizeChromeFeature);
 BASE_DECLARE_FEATURE(kIPHDownloadToolbarButtonFeature);
 BASE_DECLARE_FEATURE(kIPHExtensionsMenuFeature);
+BASE_DECLARE_FEATURE(kIPHExtensionsRequestAccessButtonFeature);
 BASE_DECLARE_FEATURE(kIPHFocusHelpBubbleScreenReaderPromoFeature);
 BASE_DECLARE_FEATURE(kIPHGMCCastStartStopFeature);
 BASE_DECLARE_FEATURE(kIPHHighEfficiencyModeFeature);
@@ -47,6 +48,7 @@ BASE_DECLARE_FEATURE(kIPHPerformanceNewBadgeFeature);
 BASE_DECLARE_FEATURE(kIPHPowerBookmarksSidePanelFeature);
 BASE_DECLARE_FEATURE(kIPHPriceInsightsPageActionIconLabelFeature);
 BASE_DECLARE_FEATURE(kIPHPriceTrackingChipFeature);
+BASE_DECLARE_FEATURE(kIPHPriceTrackingEmailConsentFeature);
 BASE_DECLARE_FEATURE(kIPHPriceTrackingPageActionIconLabelFeature);
 BASE_DECLARE_FEATURE(kIPHReadingListDiscoveryFeature);
 BASE_DECLARE_FEATURE(kIPHReadingListEntryPointFeature);
@@ -143,7 +145,6 @@ BASE_DECLARE_FEATURE(kIPHRequestDesktopSiteAppMenuFeature);
 BASE_DECLARE_FEATURE(kIPHRequestDesktopSiteDefaultOnFeature);
 BASE_DECLARE_FEATURE(kIPHRequestDesktopSiteOptInFeature);
 BASE_DECLARE_FEATURE(kIPHRequestDesktopSiteExceptionsGenericFeature);
-BASE_DECLARE_FEATURE(kIPHRequestDesktopSiteExceptionsSpecificFeature);
 BASE_DECLARE_FEATURE(kIPHShoppingListMenuItemFeature);
 BASE_DECLARE_FEATURE(kIPHShoppingListSaveFlowFeature);
 BASE_DECLARE_FEATURE(kIPHTabGroupsQuicklyComparePagesFeature);
@@ -216,6 +217,16 @@ BASE_DECLARE_FEATURE(kIPHAutofillVirtualCardSuggestionFeature);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 BASE_DECLARE_FEATURE(kIPHGoogleOneOfferNotificationFeature);
 BASE_DECLARE_FEATURE(kIPHLauncherSearchHelpUiFeature);
+BASE_DECLARE_FEATURE(kIPHScalableIphTimerBasedOneFeature);
+BASE_DECLARE_FEATURE(kIPHScalableIphTimerBasedTwoFeature);
+BASE_DECLARE_FEATURE(kIPHScalableIphTimerBasedThreeFeature);
+BASE_DECLARE_FEATURE(kIPHScalableIphTimerBasedFourFeature);
+BASE_DECLARE_FEATURE(kIPHScalableIphTimerBasedFiveFeature);
+BASE_DECLARE_FEATURE(kIPHScalableIphTimerBasedSixFeature);
+BASE_DECLARE_FEATURE(kIPHScalableIphTimerBasedSevenFeature);
+BASE_DECLARE_FEATURE(kIPHScalableIphTimerBasedEightFeature);
+BASE_DECLARE_FEATURE(kIPHScalableIphTimerBasedNineFeature);
+BASE_DECLARE_FEATURE(kIPHScalableIphTimerBasedTenFeature);
 #endif
 
 #if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)

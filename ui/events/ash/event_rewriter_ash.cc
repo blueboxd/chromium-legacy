@@ -604,17 +604,30 @@ bool SkipSearchKeyRemapping(EventRewriterAsh::Delegate* delegate,
 bool ShouldBlockSixPackEventRewrite(
     EventRewriterAsh::Delegate* delegate,
     absl::optional<ui::mojom::SixPackShortcutModifier> modifier,
-    int flags) {
-  if (!modifier.has_value() ||
-      *modifier == ui::mojom::SixPackShortcutModifier::kNone) {
+    int flags,
+    ui::KeyboardCode key_code,
+    int device_id) {
+  if (!modifier.has_value()) {
     return true;
   }
 
-  const auto flag_mask = *modifier == ui::mojom::SixPackShortcutModifier::kAlt
-                             ? EF_ALT_DOWN
-                             : EF_COMMAND_DOWN;
+  const auto matched_remapping_modifier =
+      flags & EF_COMMAND_DOWN ? ui::mojom::SixPackShortcutModifier::kSearch
+                              : ui::mojom::SixPackShortcutModifier::kAlt;
+
+  if (*modifier == ui::mojom::SixPackShortcutModifier::kNone) {
+    delegate->NotifySixPackRewriteBlockedBySetting(
+        key_code, matched_remapping_modifier, *modifier, device_id);
+    return true;
+  }
+
+  const auto flag_mask =
+      *modifier == ui::mojom::SixPackShortcutModifier::kSearch ? EF_COMMAND_DOWN
+                                                               : EF_ALT_DOWN;
 
   if (!AreFlagsSet(flags, flag_mask)) {
+    delegate->NotifySixPackRewriteBlockedBySetting(
+        key_code, matched_remapping_modifier, *modifier, device_id);
     return true;
   }
 
@@ -787,7 +800,8 @@ bool MaybeRewriteAltBasedShortcutToSixPackKeyAction(
 void MaybeRewriteKeyEventToSixPackKeyAction(
     EventRewriterAsh::Delegate* delegate,
     const KeyEvent& key_event,
-    EventRewriterAsh::MutableKeyState* state) {
+    EventRewriterAsh::MutableKeyState* state,
+    int device_id) {
   EventRewriterAsh::MutableKeyState incoming = *state;
   static const KeyboardRemapping kMergedSixPackRemappings[] = {
       {// Search+Shift+BackSpace -> Insert
@@ -832,7 +846,8 @@ void MaybeRewriteKeyEventToSixPackKeyAction(
     const auto modifier_flag = delegate->GetShortcutModifierForSixPackKey(
         key_event.source_device_id(), map.result.key_code);
     if (ShouldBlockSixPackEventRewrite(delegate, modifier_flag,
-                                       map.condition.flags)) {
+                                       map.condition.flags, map.result.key_code,
+                                       device_id)) {
       break;
     }
 
@@ -1103,7 +1118,7 @@ bool EventRewriterAsh::RewriteModifierKeys(const KeyEvent& key_event,
     // we risk removing the CapsLock modifier and accidentally disabling
     // CapsLocks.
     if (incoming.key_code == VKEY_CAPITAL &&
-        !ime_keyboard_->CapsLockIsEnabled()) {
+        !ime_keyboard_->IsCapsLockEnabled()) {
       // We remove the CapsLock modifier here because we do not want to
       // turn on the Capslock modifier when the key has been remapped.
       incoming.flags &= ~EF_CAPS_LOCK_ON;
@@ -1160,7 +1175,7 @@ bool EventRewriterAsh::RewriteModifierKeys(const KeyEvent& key_event,
   // AcceleratorController, so that the event is visible to apps (see
   // crbug.com/775743).
   if (key_event.type() == ET_KEY_PRESSED && state->key_code == VKEY_CAPITAL) {
-    ime_keyboard_->SetCapsLockEnabled(!ime_keyboard_->CapsLockIsEnabled());
+    ime_keyboard_->SetCapsLockEnabled(!ime_keyboard_->IsCapsLockEnabled());
   }
   return exact_event;
 }
@@ -1264,11 +1279,10 @@ bool EventRewriterAsh::ShouldRemapToRightClick(
                         ::features::IsDeprecateAltClickEnabled();
   bool use_alt_key = is_alt_down_remapping_enabled_;
 
-  // TODO(b/279503977): Show a notification when the incoming event would have
-  // been remapped to a right click but the user's setting is inconsistent with
-  // the matched modifier key.
+  const bool alt_click_down = AreFlagsSet(flags, kAltLeftButton);
+  const bool search_click_down = AreFlagsSet(flags, kSearchLeftButton);
   if (ash::features::IsAltClickAndSixPackCustomizationEnabled()) {
-    const auto modifier =
+    absl::optional<ui::mojom::SimulateRightClickModifier> modifier =
         delegate_->GetRemapRightClickModifier(mouse_event.source_device_id());
     if (!modifier.has_value()) {
       return false;
@@ -1280,13 +1294,34 @@ bool EventRewriterAsh::ShouldRemapToRightClick(
     if (is_alt_down_remapping_enabled_) {
       use_alt_key = modifier == ui::mojom::SimulateRightClickModifier::kAlt;
     }
+
+    // Show a notification when the incoming event would have been remapped to
+    // a right click but either the user's setting is inconsistent with the
+    // matched modifier key or remapping to right click is disabled.
+    if (search_click_down && use_alt_key) {
+      delegate_->NotifyRightClickRewriteBlockedBySetting(
+          ui::mojom::SimulateRightClickModifier::kSearch, *modifier);
+      return false;
+    } else if (alt_click_down && use_search_key) {
+      delegate_->NotifyRightClickRewriteBlockedBySetting(
+          ui::mojom::SimulateRightClickModifier::kAlt, *modifier);
+      return false;
+    } else if ((search_click_down || alt_click_down) &&
+               *modifier == ui::mojom::SimulateRightClickModifier::kNone) {
+      delegate_->NotifyRightClickRewriteBlockedBySetting(
+          search_click_down ? ui::mojom::SimulateRightClickModifier::kSearch
+                            : ui::mojom::SimulateRightClickModifier::kAlt,
+          *modifier);
+      return false;
+    }
   }
+
   if (use_search_key) {
-    if (AreFlagsSet(flags, kSearchLeftButton)) {
+    if (search_click_down) {
       *matched_mask = kSearchLeftButton;
     } else if (release_without_modifier) {
       *matched_mask = kSearchLeftButton;
-    } else if (AreFlagsSet(flags, kAltLeftButton) && use_alt_key) {
+    } else if (alt_click_down && use_alt_key) {
       // When the alt variant is deprecated, report when it would have matched.
       *matched_alt_deprecation = ((mouse_event.type() == ET_MOUSE_PRESSED) ||
                                   pressed_as_right_button_device_ids_.count(
@@ -1297,7 +1332,7 @@ bool EventRewriterAsh::ShouldRemapToRightClick(
     // If currently both Alt key and mouse left button are still pressed,
     // then this would be an easy case, let's still proceed to remap it
     // to a mouse right button press or release event.
-    if (AreFlagsSet(flags, kAltLeftButton)) {
+    if (alt_click_down) {
       *matched_mask = kAltLeftButton;
     } else if (release_without_modifier) {
       *matched_mask = kAltLeftButton;
@@ -1672,12 +1707,10 @@ void EventRewriterAsh::RewriteExtendedKeys(const KeyEvent& key_event,
     }
   }
 
-  // TODO(b/279503977): Show a notification when the incoming event matches
-  // a "six pack" key remapping but the user's setting is inconsistent with
-  // the matched shortcut.
   if (ash::features::IsAltClickAndSixPackCustomizationEnabled() &&
       incoming.flags & (EF_COMMAND_DOWN | EF_ALT_DOWN)) {
-    MaybeRewriteKeyEventToSixPackKeyAction(delegate_, key_event, state);
+    MaybeRewriteKeyEventToSixPackKeyAction(delegate_, key_event, state,
+                                           last_keyboard_device_id_);
     return;
   }
 

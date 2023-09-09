@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/side_panel/search_companion/search_companion_side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/side_panel.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_combobox_model.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_content_proxy.h"
@@ -174,12 +173,15 @@ class SidePanelContentSwappingContainer : public views::View {
   }
 
   void ResetLoadingEntryIfNecessary() {
-    if (loading_entry_ && loading_entry_->CachedView()) {
-      // The available callback here is used for showing the entry once it has
-      // loaded. We need to reset this to make sure it is not triggered to be
-      // shown once available.
-      SidePanelUtil::GetSidePanelContentProxy(loading_entry_->CachedView())
-          ->ResetAvailableCallback();
+    if (loading_entry_) {
+      loading_entry_->ResetLoadTimestamp();
+      if (loading_entry_->CachedView()) {
+        // The available callback here is used for showing the entry once it has
+        // loaded. We need to reset this to make sure it is not triggered to be
+        // shown once available.
+        SidePanelUtil::GetSidePanelContentProxy(loading_entry_->CachedView())
+            ->ResetAvailableCallback();
+      }
     }
     loading_entry_ = nullptr;
   }
@@ -359,8 +361,6 @@ void SidePanelCoordinator::UpdatePinState() {
         prefs::kSidePanelCompanionEntryPinnedToToolbar);
     pref_service->SetBoolean(prefs::kSidePanelCompanionEntryPinnedToToolbar,
                              !current_state);
-    SearchCompanionSidePanelCoordinator::SetAccessibleNameForToolbarButton(
-        browser_view_, /*is_open=*/true);
     base::RecordComputedAction(base::StrCat(
         {"SidePanel.Companion.", !current_state ? "Pinned" : "Unpinned",
          ".BySidePanelHeaderButton"}));

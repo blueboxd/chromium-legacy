@@ -60,7 +60,6 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
-#include "components/device_reauth/mock_device_authenticator.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
@@ -188,10 +187,9 @@ class CreditCardAccessManagerTest : public testing::Test {
                          /*local_state=*/autofill_client_.GetPrefs(),
                          /*identity_manager=*/nullptr,
                          /*history_service=*/nullptr,
-                         /*sync_service=*/nullptr,
+                         /*sync_service=*/&sync_service_,
                          /*strike_database=*/nullptr,
-                         /*image_fetcher=*/nullptr,
-                         /*is_off_the_record=*/false);
+                         /*image_fetcher=*/nullptr);
     personal_data().SetPrefService(autofill_client_.GetPrefs());
 
     accessor_ = std::make_unique<TestAccessor>();
@@ -561,13 +559,11 @@ class CreditCardAccessManagerTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
       variations::VariationsIdsProvider::Mode::kUseSignedInState};
+  syncer::TestSyncService sync_service_;
   raw_ptr<payments::TestPaymentsClient, DanglingUntriaged> payments_client_;
   TestAutofillClient autofill_client_;
   std::unique_ptr<TestAutofillDriver> autofill_driver_;
   scoped_refptr<AutofillWebDataService> database_;
-  // TODO(crbug.com/1249665): Remove this member variable and use test-local
-  // feature lists.
-  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<BrowserAutofillManager> browser_autofill_manager_;
   raw_ptr<CreditCardAccessManager, DanglingUntriaged>
       credit_card_access_manager_;
@@ -669,8 +665,8 @@ class CreditCardAccessManagerMandatoryReauthTest
     // We should only expect an AuthenticateWithMessage() call if the feature
     // flag is on and the pref is enabled.
     if (FeatureFlagIsOn() && PrefIsEnabled()) {
-      ON_CALL(*static_cast<device_reauth::MockDeviceAuthenticator*>(
-                  autofill_client_.GetDeviceAuthenticator().get()),
+      ON_CALL(*static_cast<payments::MockMandatoryReauthManager*>(
+                  autofill_client_.GetOrCreatePaymentsMandatoryReauthManager()),
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
               AuthenticateWithMessage)
 #elif BUILDFLAG(IS_ANDROID)
@@ -683,12 +679,13 @@ class CreditCardAccessManagerMandatoryReauthTest
                 std::move(callback).Run(mandatory_reauth_response_is_success);
               })));
     } else {
-      EXPECT_CALL(*static_cast<device_reauth::MockDeviceAuthenticator*>(
-                      autofill_client_.GetDeviceAuthenticator().get()),
+      EXPECT_CALL(
+          *static_cast<payments::MockMandatoryReauthManager*>(
+              autofill_client_.GetOrCreatePaymentsMandatoryReauthManager()),
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-                  AuthenticateWithMessage)
+          AuthenticateWithMessage)
 #elif BUILDFLAG(IS_ANDROID)
-                  Authenticate)
+          Authenticate)
 #endif
           .Times(0);
     }
@@ -1067,10 +1064,7 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOSuccess) {
 // Ensures that FetchCreditCard() returns the full PAN upon a successful
 // WebAuthn verification and response from payments.
 TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOSuccessWithDcvv) {
-  // Enable both features and opt user in for FIDO auth.
-  scoped_feature_list_.Reset();
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillAlwaysReturnCloudTokenizedCard);
+  // Opt user in for FIDO auth.
   prefs::SetCreditCardFIDOAuthEnabled(autofill_client_.GetPrefs(), true);
 
   // General setup.
@@ -2360,7 +2354,7 @@ TEST_F(CreditCardAccessManagerTest, FIDOAuthOptChange_OptOut) {
 }
 
 TEST_F(CreditCardAccessManagerTest, FIDOAuthOptChange_OptOut_OffTheRecord) {
-  personal_data().set_is_off_the_record_for_testing(/*is_off_the_record=*/true);
+  autofill_client_.set_is_off_the_record(true);
   credit_card_access_manager_->FIDOAuthOptChange(/*opt_in=*/false);
   ASSERT_FALSE(fido_authenticator_->IsOptOutCalled());
 }

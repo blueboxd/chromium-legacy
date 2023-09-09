@@ -83,10 +83,11 @@ class TestManagePasswordsUIController : public ManagePasswordsUIController {
   MOCK_METHOD(void, OnDialogClosed, (), ());
 
  private:
-  raw_ptr<AccountChooserPrompt, DanglingUntriaged> current_account_chooser_;
-  raw_ptr<AutoSigninFirstRunPrompt, DanglingUntriaged>
+  raw_ptr<AccountChooserPrompt, AcrossTasksDanglingUntriaged>
+      current_account_chooser_;
+  raw_ptr<AutoSigninFirstRunPrompt, AcrossTasksDanglingUntriaged>
       current_autosignin_prompt_;
-  raw_ptr<CredentialLeakPrompt, DanglingUntriaged>
+  raw_ptr<CredentialLeakPrompt, AcrossTasksDanglingUntriaged>
       current_credential_leak_prompt_;
 };
 
@@ -177,7 +178,8 @@ class PasswordDialogViewTest : public DialogBrowserTest {
   }
 
  private:
-  raw_ptr<TestManagePasswordsUIController, DanglingUntriaged> controller_;
+  raw_ptr<TestManagePasswordsUIController, AcrossTasksDanglingUntriaged>
+      controller_;
 };
 
 void PasswordDialogViewTest::SetUpOnMainThread() {
@@ -242,6 +244,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   form.display_name = u"Peter";
   form.username_value = u"peter@pan.test";
   form.icon_url = GURL("broken url");
+  form.match_type = password_manager::PasswordForm::MatchType::kExact;
   local_credentials.push_back(
       std::make_unique<password_manager::PasswordForm>(form));
   form.icon_url = embedded_test_server()->GetURL("/icon.png");
@@ -278,6 +281,7 @@ IN_PROC_BROWSER_TEST_F(
   form.display_name = u"Peter";
   form.username_value = u"peter@pan.test";
   form.icon_url = GURL("broken url");
+  form.match_type = password_manager::PasswordForm::MatchType::kExact;
   local_credentials.push_back(
       std::make_unique<password_manager::PasswordForm>(form));
   GURL icon_url("https://google.com/icon.png");
@@ -313,6 +317,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   form.url = origin;
   form.display_name = u"Peter";
   form.username_value = u"peter@pan.test";
+  form.match_type = password_manager::PasswordForm::MatchType::kExact;
   local_credentials.push_back(
       std::make_unique<password_manager::PasswordForm>(form));
 
@@ -337,6 +342,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   form.url = origin;
   form.display_name = u"Peter";
   form.username_value = u"peter@pan.test";
+  form.match_type = password_manager::PasswordForm::MatchType::kExact;
   local_credentials.push_back(
       std::make_unique<password_manager::PasswordForm>(form));
 
@@ -361,6 +367,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   form.url = origin;
   form.display_name = u"Peter";
   form.username_value = u"peter@pan.test";
+  form.match_type = password_manager::PasswordForm::MatchType::kExact;
   local_credentials.push_back(
       std::make_unique<password_manager::PasswordForm>(form));
 
@@ -393,6 +400,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   form.url = origin;
   form.display_name = u"Peter";
   form.username_value = u"peter@pan.test";
+  form.match_type = password_manager::PasswordForm::MatchType::kExact;
   local_credentials.push_back(
       std::make_unique<password_manager::PasswordForm>(form));
 
@@ -426,6 +434,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest, PopupAccountChooserInIncognito) {
   form.url = origin;
   form.display_name = u"Peter";
   form.username_value = u"peter@pan.test";
+  form.match_type = password_manager::PasswordForm::MatchType::kExact;
   local_credentials.push_back(
       std::make_unique<password_manager::PasswordForm>(form));
 
@@ -498,6 +507,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   form.url = origin;
   form.username_value = u"peter@pan.test";
   form.password_value = u"I can fly!";
+  form.match_type = password_manager::PasswordForm::MatchType::kExact;
 
   // Successful login alone will not prompt:
   client()->NotifySuccessfulLoginWithExistingPassword(WrapFormInManager(&form));
@@ -557,6 +567,8 @@ void PasswordDialogViewTest::ShowUi(const std::string& name) {
   form.url = origin;
   form.display_name = u"Peter Pan";
   form.username_value = u"peter@pan.test";
+  form.match_type = password_manager::PasswordForm::MatchType::kExact;
+
   if (name == "PopupAutoSigninPrompt") {
     form.icon_url = GURL("broken url");
     local_credentials.push_back(

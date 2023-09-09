@@ -86,6 +86,7 @@ class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues>,
   virtual mojom::blink::PreferredContrast GetPreferredContrast() const = 0;
   virtual bool PrefersReducedMotion() const = 0;
   virtual bool PrefersReducedData() const = 0;
+  virtual bool PrefersReducedTransparency() const = 0;
   virtual ForcedColors GetForcedColors() const = 0;
   virtual NavigationControls GetNavigationControls() const = 0;
   virtual int GetHorizontalViewportSegments() const = 0;
@@ -126,6 +127,7 @@ class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues>,
   static float CalculateExSize(LocalFrame*);
   static float CalculateChSize(LocalFrame*);
   static float CalculateIcSize(LocalFrame*);
+  static float CalculateCapSize(LocalFrame*);
   static float CalculateLineHeight(LocalFrame*);
   static int CalculateDeviceWidth(LocalFrame*);
   static int CalculateDeviceHeight(LocalFrame*);
@@ -150,6 +152,7 @@ class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues>,
       LocalFrame*);
   static bool CalculatePrefersReducedMotion(LocalFrame*);
   static bool CalculatePrefersReducedData(LocalFrame*);
+  static bool CalculatePrefersReducedTransparency(LocalFrame*);
   static ForcedColors CalculateForcedColors(LocalFrame*);
   static NavigationControls CalculateNavigationControls(LocalFrame*);
   static int CalculateHorizontalViewportSegments(LocalFrame*);

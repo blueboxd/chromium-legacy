@@ -8,6 +8,7 @@
 #include <string>
 
 #include "chromeos/ui/base/window_properties.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/events/event.h"
@@ -56,7 +57,10 @@ DesktopWindowTreeHostLacros::DesktopWindowTreeHostLacros(
     internal::NativeWidgetDelegate* native_widget_delegate,
     DesktopNativeWidgetAura* desktop_native_widget_aura)
     : DesktopWindowTreeHostPlatform(native_widget_delegate,
-                                    desktop_native_widget_aura) {}
+                                    desktop_native_widget_aura) {
+  CHECK(GetContentWindow());
+  content_window_observation_.Observe(GetContentWindow());
+}
 
 DesktopWindowTreeHostLacros::~DesktopWindowTreeHostLacros() = default;
 
@@ -116,6 +120,11 @@ void DesktopWindowTreeHostLacros::OnImmersiveModeChanged(bool enabled) {
   GetContentWindow()->SetProperty(chromeos::kImmersiveIsActive, enabled);
 }
 
+void DesktopWindowTreeHostLacros::OnOverviewModeChanged(bool in_overview) {
+  GetContentWindow()->SetProperty(chromeos::kIsShowingInOverviewKey,
+                                  in_overview);
+}
+
 void DesktopWindowTreeHostLacros::OnTooltipShownOnServer(
     const std::u16string& text,
     const gfx::Rect& bounds) {
@@ -136,6 +145,23 @@ void DesktopWindowTreeHostLacros::AddAdditionalInitProperties(
     ui::PlatformWindowInitProperties* properties) {
   properties->icon = ViewsDelegate::GetInstance()->GetDefaultWindowIcon();
   properties->wayland_app_id = params.wayland_app_id;
+}
+
+void DesktopWindowTreeHostLacros::OnWindowPropertyChanged(aura::Window* window,
+                                                          const void* key,
+                                                          intptr_t old) {
+  CHECK_EQ(GetContentWindow(), window);
+  if (key == aura::client::kTopViewInset) {
+    if (auto* wayland_extension = GetWaylandExtension()) {
+      wayland_extension->SetTopInset(
+          GetContentWindow()->GetProperty(aura::client::kTopViewInset));
+    }
+  }
+}
+
+void DesktopWindowTreeHostLacros::OnWindowDestroying(aura::Window* window) {
+  CHECK_EQ(GetContentWindow(), window);
+  content_window_observation_.Reset();
 }
 
 void DesktopWindowTreeHostLacros::CreateNonClientEventFilter() {

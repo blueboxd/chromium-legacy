@@ -4,15 +4,26 @@
 
 #include "ash/system/unified/glanceable_tray_bubble_view.h"
 
+#include <algorithm>
+
+#include "ash/glanceables/classroom/glanceables_classroom_client.h"
+#include "ash/glanceables/glanceables_v2_controller.h"
+#include "ash/public/cpp/session/user_info.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shell.h"
+#include "ash/system/time/calendar_view.h"
+#include "ash/system/tray/detailed_view_delegate.h"
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
-#include "ash/system/unified/classroom_bubble_view.h"
+#include "ash/system/unified/classroom_bubble_student_view.h"
+#include "ash/system/unified/classroom_bubble_teacher_view.h"
 #include "ash/system/unified/tasks_bubble_view.h"
+#include "base/check.h"
+#include "base/functional/bind.h"
+#include "components/session_manager/session_manager_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
-#include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
 
 namespace ash {
@@ -20,7 +31,13 @@ namespace ash {
 GlanceableTrayBubbleView::GlanceableTrayBubbleView(
     const InitParams& init_params,
     Shelf* shelf)
-    : TrayBubbleView(init_params), shelf_(shelf) {}
+    : TrayBubbleView(init_params),
+      shelf_(shelf),
+      detailed_view_delegate_(
+          std::make_unique<DetailedViewDelegate>(/*tray_controller=*/nullptr)) {
+}
+
+GlanceableTrayBubbleView::~GlanceableTrayBubbleView() = default;
 
 void GlanceableTrayBubbleView::UpdateBubble() {
   scroll_view_ = AddChildView(std::make_unique<views::ScrollView>(
@@ -35,24 +52,44 @@ void GlanceableTrayBubbleView::UpdateBubble() {
   // blur applied to child bubble views.
   scroll_view_->layer()->SetRoundedCornerRadius(gfx::RoundedCornersF(24));
 
+  // Adjusts the calendar sliding surface bounds (`UpNextView`) with the
+  // glanceable view's scrolling.
+  on_contents_scrolled_subscription_ =
+      scroll_view_->AddContentsScrolledCallback(base::BindRepeating(
+          [](GlanceableTrayBubbleView* bubble) {
+            if (!bubble || !bubble->calendar_view_ ||
+                bubble->calendar_view_->event_list_view()) {
+              return;
+            }
+            bubble->calendar_view_->SetCalendarSlidingSurfaceBounds(false);
+          },
+          base::Unretained(this)));
+
   auto child_glanceable_container = std::make_unique<views::FlexLayoutView>();
   child_glanceable_container->SetOrientation(
       views::LayoutOrientation::kVertical);
 
-  // TODO(b:277268122): set real contents for glanceables view.
-  if (!tasks_bubble_view_) {
+  const auto* const session_controller = Shell::Get()->session_controller();
+  CHECK(session_controller);
+  const bool should_show_non_calendar_glanceables =
+      session_controller->IsActiveUserSessionStarted() &&
+      session_controller->GetSessionState() ==
+          session_manager::SessionState::ACTIVE &&
+      session_controller->GetUserSession(0)->user_info.has_gaia_account;
+
+  if (should_show_non_calendar_glanceables && !tasks_bubble_view_) {
     tasks_bubble_view_ = child_glanceable_container->AddChildView(
-        std::make_unique<TasksBubbleView>());
+        std::make_unique<TasksBubbleView>(detailed_view_delegate_.get()));
   }
 
-  // TODO(b:283370562): only add teacher/student classroom glanceables when
-  // the user is enrolled in courses.
-  if (!classroom_bubble_view_) {
-    classroom_bubble_view_ = child_glanceable_container->AddChildView(
-        std::make_unique<ClassroomBubbleView>());
-    // Add spacing between the classroom bubble and the previous bubble.
-    classroom_bubble_view_->SetProperty(views::kMarginsKey,
-                                        gfx::Insets::TLBR(8, 0, 0, 0));
+  if (!calendar_view_) {
+    calendar_view_ = child_glanceable_container->AddChildView(
+        std::make_unique<CalendarView>(detailed_view_delegate_.get()));
+    // TODO(b:277268122): Update with glanceable spec.
+    calendar_view_->SetPreferredSize(gfx::Size(kRevampedTrayMenuWidth, 400));
+    // Add spacing between the calendar bubble and the previous bubble.
+    calendar_view_->SetProperty(views::kMarginsKey,
+                                gfx::Insets::TLBR(8, 0, 0, 0));
   }
 
   scroll_view_->SetContents(std::move(child_glanceable_container));
@@ -61,10 +98,46 @@ void GlanceableTrayBubbleView::UpdateBubble() {
   SetMaxHeight(max_height);
   ChangeAnchorAlignment(shelf_->alignment());
   ChangeAnchorRect(shelf_->GetSystemTrayAnchorRect());
+
+  auto* const classroom_client =
+      Shell::Get()->glanceables_v2_controller()->GetClassroomClient();
+  if (should_show_non_calendar_glanceables && classroom_client) {
+    if (!classroom_bubble_student_view_) {
+      classroom_client->IsStudentRoleActive(base::BindOnce(
+          &GlanceableTrayBubbleView::AddClassroomBubbleViewIfNeeded<
+              ClassroomBubbleStudentView>,
+          weak_ptr_factory_.GetWeakPtr(), classroom_bubble_student_view_));
+    }
+    if (!classroom_bubble_teacher_view_) {
+      classroom_client->IsTeacherRoleActive(base::BindOnce(
+          &GlanceableTrayBubbleView::AddClassroomBubbleViewIfNeeded<
+              ClassroomBubbleTeacherView>,
+          weak_ptr_factory_.GetWeakPtr(), classroom_bubble_teacher_view_));
+    }
+  }
 }
 
 bool GlanceableTrayBubbleView::CanActivate() const {
   return true;
+}
+
+template <typename T>
+void GlanceableTrayBubbleView::AddClassroomBubbleViewIfNeeded(
+    T* view,
+    bool is_role_active) {
+  if (!is_role_active) {
+    return;
+  }
+
+  // Add classroom bubble before `calendar_view_`.
+  auto* const scroll_contents = scroll_view_->contents();
+  const auto calendar_view_index =
+      std::find(scroll_contents->children().begin(),
+                scroll_contents->children().end(), calendar_view_) -
+      scroll_contents->children().begin();
+  view = scroll_contents->AddChildViewAt(
+      std::make_unique<T>(detailed_view_delegate_.get()), calendar_view_index);
+  view->SetProperty(views::kMarginsKey, gfx::Insets::TLBR(8, 0, 0, 0));
 }
 
 }  // namespace ash

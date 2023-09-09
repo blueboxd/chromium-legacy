@@ -25,7 +25,7 @@ namespace {
 const char kRequestName[] = "Pepper's Request";
 
 const char kDeviceName[] = "Test's Chromebook";
-const char kAccountName[] = "Test Tester";
+const char kAccountName[] = "test.tester@gmail.com";
 const char kProfileUrl[] = "https://example.com";
 const std::vector<uint8_t> kSecretId1 = {0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
 const std::vector<uint8_t> kSecretId2 = {0x22, 0x22, 0x22, 0x22, 0x22, 0x22};
@@ -227,6 +227,16 @@ TEST_F(NearbyPresenceTest, RunStartScan_DeviceLostCallback) {
   EXPECT_EQ(1, num_devices_lost_);
 }
 
+TEST_F(NearbyPresenceTest, RunUpdateLocalDeviceMetadata) {
+  nearby_presence_->UpdateLocalDeviceMetadata(BuildTestMetadata());
+
+  ::nearby::internal::Metadata local_device_metadata =
+      fake_presence_service_->GetLocalDeviceMetadata();
+  EXPECT_EQ(kAccountName, local_device_metadata.account_name());
+  EXPECT_EQ(kDeviceName, local_device_metadata.device_name());
+  EXPECT_EQ(kProfileUrl, local_device_metadata.device_profile_url());
+}
+
 TEST_F(NearbyPresenceTest,
        UpdateLocalDeviceMetadataAndGenerateCredentials_Success) {
   ::nearby::internal::SharedCredential shared_credential1;
@@ -275,6 +285,128 @@ TEST_F(NearbyPresenceTest,
               mojom::StatusCode status) {
             EXPECT_TRUE(shared_credentials.empty());
             EXPECT_EQ(mojom::StatusCode::kFailure, status);
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+}
+
+TEST_F(NearbyPresenceTest, UpdateRemoteSharedCredentials_Success) {
+  std::vector<mojom::SharedCredentialPtr> remote_creds;
+  mojom::SharedCredentialPtr shared_credential1 =
+      mojom::SharedCredential::New();
+  shared_credential1->secret_id = kSecretId1;
+  remote_creds.push_back(std::move(shared_credential1));
+  mojom::SharedCredentialPtr shared_credential2 =
+      mojom::SharedCredential::New();
+  shared_credential2->secret_id = kSecretId2;
+  remote_creds.push_back(std::move(shared_credential2));
+  mojom::SharedCredentialPtr shared_credential3 =
+      mojom::SharedCredential::New();
+  shared_credential3->secret_id = kSecretId3;
+  remote_creds.push_back(std::move(shared_credential3));
+
+  fake_presence_service_->SetUpdateRemoteSharedCredentialsResult(
+      absl::Status(absl::StatusCode::kOk, /*msg=*/std::string()));
+
+  base::RunLoop run_loop;
+  nearby_presence_->UpdateRemoteSharedCredentials(
+      std::move(remote_creds), kAccountName,
+      base::BindLambdaForTesting([&](mojom::StatusCode status) {
+        EXPECT_EQ(mojom::StatusCode::kOk, status);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+
+  auto creds = fake_presence_service_->GetRemoteSharedCredentials();
+  EXPECT_FALSE(creds.empty());
+  EXPECT_EQ(3u, creds.size());
+  EXPECT_EQ(std::string(kSecretId1.begin(), kSecretId1.end()),
+            creds[0].secret_id());
+  EXPECT_EQ(std::string(kSecretId2.begin(), kSecretId2.end()),
+            creds[1].secret_id());
+  EXPECT_EQ(std::string(kSecretId3.begin(), kSecretId3.end()),
+            creds[2].secret_id());
+}
+
+TEST_F(NearbyPresenceTest, UpdateRemoteSharedCredentials_Fail) {
+  std::vector<mojom::SharedCredentialPtr> remote_creds;
+  mojom::SharedCredentialPtr shared_credential1 =
+      mojom::SharedCredential::New();
+  shared_credential1->secret_id = kSecretId1;
+  remote_creds.push_back(std::move(shared_credential1));
+  mojom::SharedCredentialPtr shared_credential2 =
+      mojom::SharedCredential::New();
+  shared_credential2->secret_id = kSecretId2;
+  remote_creds.push_back(std::move(shared_credential2));
+  mojom::SharedCredentialPtr shared_credential3 =
+      mojom::SharedCredential::New();
+  shared_credential3->secret_id = kSecretId3;
+  remote_creds.push_back(std::move(shared_credential3));
+
+  fake_presence_service_->SetUpdateRemoteSharedCredentialsResult(
+      absl::Status(absl::StatusCode::kCancelled, /*msg=*/std::string()));
+
+  base::RunLoop run_loop;
+  nearby_presence_->UpdateRemoteSharedCredentials(
+      std::move(remote_creds), kAccountName,
+      base::BindLambdaForTesting([&](mojom::StatusCode status) {
+        EXPECT_EQ(mojom::StatusCode::kFailure, status);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+
+  auto creds = fake_presence_service_->GetRemoteSharedCredentials();
+  EXPECT_TRUE(creds.empty());
+}
+
+TEST_F(NearbyPresenceTest, GetLocalSharedCredentials_Success) {
+  ::nearby::internal::SharedCredential shared_credential1;
+  shared_credential1.set_secret_id(
+      std::string(kSecretId1.begin(), kSecretId1.end()));
+  ::nearby::internal::SharedCredential shared_credential2;
+  shared_credential2.set_secret_id(
+      std::string(kSecretId2.begin(), kSecretId2.end()));
+  ::nearby::internal::SharedCredential shared_credential3;
+  shared_credential3.set_secret_id(
+      std::string(kSecretId3.begin(), kSecretId3.end()));
+
+  fake_presence_service_->SetLocalPublicCredentialsResult(
+      /*status_code=*/absl::Status(absl::StatusCode::kOk,
+                                   /*msg=*/std::string()),
+      /*shared_credentials=*/{shared_credential1, shared_credential2,
+                              shared_credential3});
+
+  base::RunLoop run_loop;
+  nearby_presence_->GetLocalSharedCredentials(
+      kAccountName,
+      base::BindLambdaForTesting(
+          [&](std::vector<mojom::SharedCredentialPtr> shared_creds,
+              mojom::StatusCode status) {
+            EXPECT_EQ(mojom::StatusCode::kOk, status);
+            EXPECT_FALSE(shared_creds.empty());
+            EXPECT_EQ(3u, shared_creds.size());
+            EXPECT_EQ(kSecretId1, shared_creds[0]->secret_id);
+            EXPECT_EQ(kSecretId2, shared_creds[1]->secret_id);
+            EXPECT_EQ(kSecretId3, shared_creds[2]->secret_id);
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+}
+
+TEST_F(NearbyPresenceTest, GetLocalSharedCredentials_Failure) {
+  fake_presence_service_->SetLocalPublicCredentialsResult(
+      /*status_code=*/absl::Status(absl::StatusCode::kCancelled,
+                                   /*msg=*/std::string()),
+      /*shared_credentials=*/{});
+
+  base::RunLoop run_loop;
+  nearby_presence_->GetLocalSharedCredentials(
+      kAccountName,
+      base::BindLambdaForTesting(
+          [&](std::vector<mojom::SharedCredentialPtr> shared_creds,
+              mojom::StatusCode status) {
+            EXPECT_EQ(mojom::StatusCode::kFailure, status);
+            EXPECT_TRUE(shared_creds.empty());
             run_loop.Quit();
           }));
   run_loop.Run();

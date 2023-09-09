@@ -10,6 +10,7 @@ import {
 import * as error from '../error.js';
 import * as expert from '../expert.js';
 import {Point} from '../geometry.js';
+import {isLocalDev} from '../models/load_time_data.js';
 import {ChromeHelper} from '../mojo/chrome_helper.js';
 import {ScreenState} from '../mojo/type.js';
 import * as nav from '../nav.js';
@@ -78,7 +79,7 @@ class ResumeStateWatchdog {
 }
 
 /**
- * Manges usage of all camera operations.
+ * Manages usages of all camera operations.
  * TODO(b/209726472): Move more camera logic in camera view to here.
  */
 export class CameraManager implements EventListener {
@@ -119,19 +120,24 @@ export class CameraManager implements EventListener {
         modeConstraints,
     );
 
-    // Monitor the states to stop camera when locked/minimized.
-    const idleDetector = new IdleDetector();
-    idleDetector.addEventListener('change', () => {
-      this.locked = idleDetector.screenState === 'locked';
-      if (this.locked) {
-        this.reconfigure();
-      }
-    });
-    idleDetector.start().catch((e) => {
-      error.reportError(
-          ErrorType.IDLE_DETECTOR_FAILURE, ErrorLevel.ERROR,
-          assertInstanceof(e, Error));
-    });
+    // Monitors the states to stop camera when locked/minimized.
+    // TODO(pihsun): The IdleDetector permission is auto-granted on CrOS. For
+    // local dev, we can request it by IdleDetector.requestPermission(), but
+    // that needs to be done in a user gesture and can't be done here.
+    if (!isLocalDev()) {
+      const idleDetector = new IdleDetector();
+      idleDetector.addEventListener('change', () => {
+        this.locked = idleDetector.screenState === 'locked';
+        if (this.locked) {
+          this.reconfigure();
+        }
+      });
+      idleDetector.start().catch((e) => {
+        error.reportError(
+            ErrorType.IDLE_DETECTOR_FAILURE, ErrorLevel.ERROR,
+            assertInstanceof(e, Error));
+      });
+    }
 
     document.addEventListener('visibilitychange', () => {
       const recording = state.get(state.State.TAKING) && state.get(Mode.VIDEO);
@@ -452,7 +458,7 @@ export class CameraManager implements EventListener {
   }
 
   /**
-   * Apply point of interest to the stream.
+   * Applies point of interest to the stream.
    *
    * @param point The point in normalize coordidate system, which means both
    *     |x| and |y| are in range [0, 1).

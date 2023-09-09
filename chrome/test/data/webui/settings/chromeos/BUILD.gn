@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//chrome/browser/resources/settings/chromeos/os_settings.gni")
+import("//chrome/browser/resources/ash/settings/os_settings.gni")
 import("//chrome/test/data/webui/build_webui_tests.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
@@ -24,9 +24,6 @@ build_webui_tests("build") {
     "cellular_roaming_toggle_button_test.js",
     "crostini_extra_containers_subpage_test.js",
     "crostini_page_test.js",
-    "cups_printer_landing_page_tests.js",
-    "cups_printer_page_tests.js",
-    "cups_printer_test_utils.js",
     "esim_install_error_dialog_test.js",
     "esim_remove_profile_dialog_test.js",
     "esim_rename_dialog_test.js",
@@ -43,7 +40,6 @@ build_webui_tests("build") {
     "fake_system_display.js",
     "fake_user_action_recorder.js",
     "fake_users_private.js",
-    "input_page_test.js",
     "internet_detail_menu_test.js",
     "internet_known_networks_subpage_tests.js",
     "internet_page_tests.js",
@@ -51,7 +47,6 @@ build_webui_tests("build") {
     "internet_subpage_menu_test.js",
     "lock_screen_subpage_test.ts",
     "main_page_container_test.js",
-    "manage_users_subpage_tests.js",
     "nearby_share_receive_dialog_tests.js",
     "nearby_share_subpage_tests.js",
     "network_device_info_dialog_test.js",
@@ -80,9 +75,8 @@ build_webui_tests("build") {
     "test_api.ts",
     "test_bluetooth_page_browser_proxy.js",
     "test_crostini_browser_proxy.js",
-    "test_cups_printers_browser_proxy.js",
     "test_device_name_browser_proxy.js",
-    "test_os_languages_browser_proxy.js",
+    "test_os_languages_browser_proxy.ts",
     "test_os_languages_metrics_proxy.js",
     "test_os_lifetime_browser_proxy.js",
     "test_os_reset_browser_proxy.js",
@@ -94,18 +88,6 @@ build_webui_tests("build") {
     "utils.ts",
 
     # Subfolder files.
-    "a11y/basic_a11y_test.js",
-    "a11y/crostini_settings_details_a11y_test.js",
-    "a11y/crostini_settings_export_import_a11y_test.js",
-    "a11y/crostini_settings_shared_paths_a11y_test.js",
-    "a11y/crostini_settings_shared_usb_devices_a11y_test.js",
-    "a11y/crostini_settings_subpage_a11y_test.js",
-    "a11y/google_assistant_a11y_test.js",
-    "a11y/manage_accessibility_a11y_test.js",
-    "a11y/multidevice_a11y_test.js",
-    "a11y/multidevice_features_a11y_test.js",
-    "a11y/tts_subpage_a11y_test.js",
-
     "app_management/app_test.js",
     "app_management/fake_page_handler.ts",
     "app_management/file_handling_item_test.ts",
@@ -121,6 +103,9 @@ build_webui_tests("build") {
     "date_time_page/timezone_subpage_test.ts",
 
     "device_page/audio_page_test.ts",
+    "device_page/customize_mouse_buttons_subpage_test.ts",
+    "device_page/customize_tablet_buttons_subpage_test.ts",
+    "device_page/customize_pen_buttons_subpage_test.ts",
     "device_page/device_page_tests.js",
     "device_page/fake_cros_audio_config_test.ts",
     "device_page/fake_input_device_settings_provider_test.ts",
@@ -157,13 +142,14 @@ build_webui_tests("build") {
     "internet_page/tether_connection_dialog_test.ts",
 
     "kerberos_page/kerberos_accounts_subpage_test.ts",
-    "kerberos_page/kerberos_add_account_dialog_test.js",
+    "kerberos_page/kerberos_add_account_dialog_test.ts",
     "kerberos_page/kerberos_page_test.ts",
     "kerberos_page/test_kerberos_accounts_browser_proxy.ts",
 
     "keyboard_shortcut_banner/keyboard_shortcut_banner_test.ts",
 
     "main_page_container/page_displayer_test.ts",
+    "main_page_container/route_navigation_test.js",
 
     "multidevice_page/multidevice_page_tests.js",
     "multidevice_page/multidevice_combined_setup_item_test.ts",
@@ -229,6 +215,7 @@ build_webui_tests("build") {
     "os_files_page/one_drive_test_browser_proxy.ts",
 
     "os_languages_page/input_method_options_page_test.ts",
+    "os_languages_page/input_page_test.ts",
     "os_languages_page/os_clear_personalization_data_page_test.ts",
     "os_languages_page/smart_inputs_page_test.ts",
 
@@ -239,14 +226,20 @@ build_webui_tests("build") {
     "os_people_page/test_fingerprint_browser_proxy.ts",
     "os_people_page/personalization_options_test.ts",
 
+    "os_printing_page/cups_printer_landing_page_test.ts",
+    "os_printing_page/cups_printer_page_test.ts",
+    "os_printing_page/cups_printer_test_utils.ts",
     "os_printing_page/cups_printers_entry_test.ts",
     "os_printing_page/os_printing_page_test.ts",
     "os_printing_page/printer_status_test.ts",
+    "os_printing_page/test_cups_printers_browser_proxy.js",
 
-    "os_privacy_page/os_privacy_page_test.js",
+    "os_privacy_page/manage_users_subpage_test.ts",
+    "os_privacy_page/os_privacy_page_test.ts",
     "os_privacy_page/privacy_hub_subpage_test.ts",
     "os_privacy_page/smart_privacy_subpage_test.ts",
     "os_privacy_page/test_metrics_consent_browser_proxy.ts",
+    "os_privacy_page/test_peripheral_data_access_browser_proxy.ts",
     "os_privacy_page/test_privacy_hub_browser_proxy.ts",
 
     "os_search_page/google_assistant_subpage_test.ts",
@@ -255,7 +248,7 @@ build_webui_tests("build") {
 
     "os_settings_menu/os_settings_menu_test.ts",
 
-    "os_settings_ui/os_settings_ui_about_page_test.js",
+    "os_settings_ui/os_settings_ui_about_page_test.ts",
     "os_settings_ui/os_settings_ui_menu_test.js",
     "os_settings_ui/os_settings_ui_page_availability_test.ts",
     "os_settings_ui/os_settings_ui_page_visibility_test.ts",
@@ -278,7 +271,7 @@ build_webui_tests("build") {
 
   ts_deps = [
     "//ash/webui/common/resources:build_ts",
-    "//chrome/browser/resources/settings/chromeos:build_ts",
+    "//chrome/browser/resources/ash/settings:build_ts",
     "//chrome/test/data/webui/chromeos:build_ts",
     "//third_party/polymer/v3_0:library",
     "//ui/webui/resources/cr_components/app_management:build_ts",
@@ -291,10 +284,10 @@ build_webui_tests("build") {
     # CrOS Settings browser tests should only import from one of the paths
     # below, so that tests work both in optimize_webui=true/false modes.
     "chrome://os-settings/os_settings.js|" + rebase_path(
-            "$root_gen_dir/chrome/browser/resources/settings/chromeos/tsc/os_settings.d.ts",
+            "$root_gen_dir/chrome/browser/resources/ash/settings/tsc/os_settings.d.ts",
             target_gen_dir),
     "chrome://os-settings/lazy_load.js|" + rebase_path(
-            "$root_gen_dir/chrome/browser/resources/settings/chromeos/tsc/lazy_load.d.ts",
+            "$root_gen_dir/chrome/browser/resources/ash/settings/tsc/lazy_load.d.ts",
             target_gen_dir),
     "chrome://webui-test/chromeos/*|" +
         rebase_path("$root_gen_dir/chrome/test/data/webui/chromeos/tsc/*",

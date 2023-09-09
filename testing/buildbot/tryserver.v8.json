@@ -22,10 +22,11 @@
         },
         "results_handler": "layout tests",
         "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimensions": {
-            "os": "Ubuntu-18.04"
-          },
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-22.04"
+            }
+          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
@@ -50,10 +51,11 @@
         },
         "results_handler": "layout tests",
         "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimensions": {
-            "os": "Ubuntu-18.04"
-          },
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-22.04"
+            }
+          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 7
         },
@@ -80,10 +82,11 @@
         },
         "results_handler": "layout tests",
         "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimensions": {
-            "os": "Ubuntu-18.04"
-          },
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-22.04"
+            }
+          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://:blink_web_tests/"
@@ -109,10 +112,11 @@
         },
         "results_handler": "layout tests",
         "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimensions": {
-            "os": "Ubuntu-18.04"
-          },
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-22.04"
+            }
+          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
@@ -138,10 +142,11 @@
         },
         "results_handler": "layout tests",
         "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimensions": {
-            "os": "Ubuntu-18.04"
-          },
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-22.04"
+            }
+          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 8
         },
@@ -167,10 +172,11 @@
         },
         "results_handler": "layout tests",
         "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimensions": {
-            "os": "Ubuntu-18.04"
-          },
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-22.04"
+            }
+          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 10
         },
@@ -197,10 +203,11 @@
         },
         "results_handler": "layout tests",
         "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimensions": {
-            "os": "Ubuntu-18.04"
-          },
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-22.04"
+            }
+          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://:blink_web_tests/"
@@ -215,10 +222,11 @@
         },
         "name": "webdriver_tests_suite",
         "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimensions": {
-            "os": "Ubuntu-18.04"
-          },
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-22.04"
+            }
+          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },

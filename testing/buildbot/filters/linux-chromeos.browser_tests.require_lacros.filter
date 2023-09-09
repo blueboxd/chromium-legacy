@@ -105,8 +105,6 @@ CrosapiSystemLogSourceTest*
 -SelectToSpeakKeystrokeSelectionTest.contentEditableExternallySelected
 -SelectToSpeakMouseSelectionTest.SpeaksNodeWhenClicked
 -SelectToSpeakMouseSelectionTest.VoiceSwitching
-# TODO(b/268056158) Flaky
--SelectToSpeakTestWithVoiceSwitching.BreaksAtLanguageBounds
 # TODO(b/277821091) Flaky
 -ChromeVoxBackgroundTest.NavigationEscapesEdit
 -ChromeVoxBackgroundTest.NavigationIgnoresLabels
@@ -123,3 +121,13 @@ CrosapiSystemLogSourceTest*
 -DictationUIE2ETest.HintsTimeoutWithChromeVox
 # TODO(b/262789941): Flaky
 -MagnifierE2ETest.IgnoresRootNodeFocus
+
+# The following tests have no dependency on Lacros browser, do not run these tests
+# as browser_tests_require_lacros.
+# TODO(b/290096429): Audit these tests, re-work to run these tests against Lacros
+# browser if necessary.
+-AutoclickBrowserTest*
+-FullscreenMagnifierControllerTest*
+-MagnificationManagerTest*
+-SelectToSpeakTest*
+-SwitchAccessTest*

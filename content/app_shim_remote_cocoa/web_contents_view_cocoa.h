@@ -5,7 +5,6 @@
 #ifndef CONTENT_APP_SHIM_REMOTE_COCOA_WEB_CONTENTS_VIEW_COCOA_H_
 #define CONTENT_APP_SHIM_REMOTE_COCOA_WEB_CONTENTS_VIEW_COCOA_H_
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/raw_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/web_contents_ns_view_bridge.mojom.h"
@@ -26,31 +25,8 @@ class WebContentsNSViewHost;
 @class WebDragSource;
 
 CONTENT_EXPORT
-@interface WebContentsViewCocoa : BaseView <ViewsHostable> {
- @private
-  // Instances of this class are owned by both host_ and AppKit. It is
-  // possible for an instance to outlive its webContentsView_. The host_ must
-  // call -clearHostAndView in its destructor.
-  raw_ptr<remote_cocoa::mojom::WebContentsNSViewHost> _host;
-
-  // The interface exported to views::Views that embed this as a sub-view.
-  raw_ptr<ui::ViewsHostableView> _viewsHostableView;
-
-  BOOL _mouseDownCanMoveWindow;
-
-  // Utility to copy screenshots to a usable directory for PWAs. This utility
-  // will maintain a temporary directory for such screenshot files until this
-  // WebContents is destroyed.
-  // https://crbug.com/1148078
-  std::unique_ptr<remote_cocoa::DroppedScreenShotCopierMac>
-      _droppedScreenShotCopier;
-
-  // Drag variables.
-  base::scoped_nsobject<WebDragSource> _dragSource;
-  NSDragOperation _dragOperation;
-
-  gfx::Rect _windowControlsOverlayRect;
-}
+@interface WebContentsViewCocoa
+    : BaseView <ViewsHostable, NSDraggingSource, NSDraggingDestination>
 
 // Set or un-set the mojo interface through which to communicate with the
 // browser process.

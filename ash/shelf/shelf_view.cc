@@ -12,6 +12,7 @@
 #include "ash/app_list/app_list_item_util.h"
 #include "ash/app_list/views/app_drag_icon_proxy.h"
 #include "ash/app_list/views/ghost_image_view.h"
+#include "ash/ash_element_identifiers.h"
 #include "ash/constants/ash_features.h"
 #include "ash/keyboard/keyboard_util.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
@@ -42,7 +43,6 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/user_education/user_education_class_properties.h"
-#include "ash/user_education/user_education_constants.h"
 #include "ash/user_education/user_education_util.h"
 #include "ash/utility/haptics_util.h"
 #include "ash/wm/desks/desks_util.h"
@@ -376,8 +376,8 @@ ShelfView::ShelfView(ShelfModel* model,
     // NOTE: Set `kHelpBubbleContextKey` before `views::kElementIdentifierKey`
     // in case registration causes a help bubble to be created synchronously.
     SetProperty(kHelpBubbleContextKey, HelpBubbleContext::kAsh);
-    SetProperty(views::kElementIdentifierKey, kShelfViewElementId);
   }
+  SetProperty(views::kElementIdentifierKey, kShelfViewElementId);
 
   announcement_view_ = new views::View();
   AddChildView(announcement_view_.get());
@@ -507,7 +507,8 @@ bool ShelfView::LocationInsideVisibleShelfItemBounds(
   return visible_shelf_item_bounds_union_.Contains(location);
 }
 
-bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) const {
+bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location,
+                                  views::View* delegate_view) const {
   // There are thin gaps between launcher buttons but the tooltip shouldn't hide
   // in the gaps, but the tooltip should hide if the mouse moved totally outside
   // of the buttons area.
@@ -2801,7 +2802,8 @@ bool ShelfView::CanDrop(const OSExchangeData& data) {
 
   std::set<ui::ClipboardFormatType> format_types;
   format_types.insert(GetAppItemFormatType());
-  return data.HasAnyFormat(0, format_types);
+  return data.HasAnyFormat(0, format_types) &&
+         app_info->type == DraggableAppType::kAppGridItem;
 }
 
 void ShelfView::OnDragExited() {

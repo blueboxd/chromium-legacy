@@ -69,7 +69,7 @@ class ScopedUnpackState {
   absl::optional<gl::ScopedPixelStore> unpack_lsb_first_;
 };
 
-// Common helper functions for GLTextureImageBacking and GLImageBacking.
+// Common helper functions for various backings.
 class GPU_GLES2_EXPORT GLTextureImageBackingHelper {
  public:
   // At destriction time, restore `target`'s binding as of construction time. If
@@ -104,9 +104,9 @@ class GPU_GLES2_EXPORT GLTextureImageBackingHelper {
       SharedImageFactory* factory,
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
-      WGPUDevice device,
-      WGPUBackendType backend_type,
-      std::vector<WGPUTextureFormat> view_formats,
+      const wgpu::Device& device,
+      wgpu::BackendType backend_type,
+      std::vector<wgpu::TextureFormat> view_formats,
       SharedImageBacking* backing,
       bool use_passthrough);
 };

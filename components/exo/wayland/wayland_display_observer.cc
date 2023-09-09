@@ -171,6 +171,10 @@ void WaylandDisplayHandler::XdgOutputSendLogicalSize(const gfx::Size& size) {
 }
 
 void WaylandDisplayHandler::XdgOutputSendDescription(const std::string& desc) {
+  if (wl_resource_get_version(xdg_output_resource_) <
+      ZXDG_OUTPUT_V1_DESCRIPTION_SINCE_VERSION) {
+    return;
+  }
   zxdg_output_v1_send_description(xdg_output_resource_, desc.c_str());
 }
 
@@ -220,6 +224,9 @@ bool WaylandDisplayHandler::SendDisplayMetrics(const display::Display& display,
     XdgOutputSendLogicalPosition(output_metrics.logical_origin);
     XdgOutputSendLogicalSize(output_metrics.logical_size);
     XdgOutputSendDescription(output_metrics.description);
+    if (wl_resource_get_version(xdg_output_resource_) < 3) {
+      zxdg_output_v1_send_done(xdg_output_resource_);
+    }
   } else {
     if (wl_resource_get_version(output_resource_) >=
         WL_OUTPUT_SCALE_SINCE_VERSION) {

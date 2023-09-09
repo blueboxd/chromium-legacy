@@ -731,6 +731,19 @@ SynthesizedClip& PaintArtifactCompositor::CreateOrReuseSynthesizedClipLayer(
     synthesized_clip.Layer()->SetLayerTreeHost(root_layer_->layer_tree_host());
     if (layer_debug_info_enabled_ && !synthesized_clip.Layer()->debug_info())
       synthesized_clip.Layer()->SetDebugName("Synthesized Clip");
+
+    if (!should_always_update_on_scroll_) {
+      // If there is any scroll translation between `clip.LocalTransformSpace`
+      // and `transform`, the synthesized clip layer's geometry and paint
+      // operations depend on the scroll offset and we need to update them
+      // on each scroll of the scroller.
+      const auto& clip_transform = clip.LocalTransformSpace().Unalias();
+      if (&clip_transform != &transform &&
+          &clip_transform.NearestScrollTranslationNode() !=
+              &transform.NearestScrollTranslationNode()) {
+        should_always_update_on_scroll_ = true;
+      }
+    }
   }
   mask_isolation_id = synthesized_clip.GetMaskIsolationId();
   mask_effect_id = synthesized_clip.GetMaskEffectId();
@@ -787,15 +800,14 @@ void PaintArtifactCompositor::Update(
     scoped_refptr<const PaintArtifact> artifact,
     const ViewportProperties& viewport_properties,
     const Vector<const TransformPaintPropertyNode*>& scroll_translation_nodes,
-    const Vector<const TransformPaintPropertyNode*>&
-        anchor_scroll_container_nodes,
+    const Vector<const TransformPaintPropertyNode*>& anchor_position_scrollers,
     Vector<std::unique_ptr<cc::ViewTransitionRequest>> transition_requests) {
   const bool unification_enabled =
       base::FeatureList::IsEnabled(features::kScrollUnification);
   // See: |UpdateRepaintedLayers| for repaint updates.
   DCHECK(needs_update_);
   DCHECK(scroll_translation_nodes.empty() || unification_enabled);
-  DCHECK(anchor_scroll_container_nodes.empty() || !unification_enabled);
+  DCHECK(anchor_position_scrollers.empty() || !unification_enabled);
   DCHECK(root_layer_);
 
   TRACE_EVENT0("blink", "PaintArtifactCompositor::Update");
@@ -831,6 +843,7 @@ void PaintArtifactCompositor::Update(
   UpdateCompositorViewportProperties(viewport_properties, property_tree_manager,
                                      host);
 
+  should_always_update_on_scroll_ = false;
   for (auto& entry : synthesized_clip_cache_)
     entry.in_use = false;
 
@@ -910,10 +923,10 @@ void PaintArtifactCompositor::Update(
       property_tree_manager.EnsureCompositorScrollAndTransformNode(*node);
     }
   } else {
-    // anchor-scroll requires all relevant scroll containers to have their
+    // Anchor positioning requires all relevant scroll containers to have their
     // cc::TransformNode and cc::ScrollNode, so that compositor can update the
     // translation correctly.
-    for (auto* node : anchor_scroll_container_nodes) {
+    for (auto* node : anchor_position_scrollers) {
       property_tree_manager.EnsureCompositorScrollAndTransformNode(*node);
     }
   }

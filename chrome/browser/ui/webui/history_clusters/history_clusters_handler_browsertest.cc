@@ -31,7 +31,7 @@ class HistoryClustersHandlerBrowserTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     EXPECT_TRUE(ui_test_utils::NavigateToURL(
-        browser(), GURL(GetChromeUIHistoryClustersURL())));
+        browser(), GURL(kChromeUIHistoryClustersURL)));
     EXPECT_TRUE(content::WaitForLoadStop(
         browser()->tab_strip_model()->GetActiveWebContents()));
     handler_ = browser()
@@ -44,7 +44,7 @@ class HistoryClustersHandlerBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
-  raw_ptr<HistoryClustersHandler, DanglingUntriaged> handler_;
+  raw_ptr<HistoryClustersHandler, AcrossTasksDanglingUntriaged> handler_;
 
  private:
   base::test::ScopedFeatureList feature_list_;

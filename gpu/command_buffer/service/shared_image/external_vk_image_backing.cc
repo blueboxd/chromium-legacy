@@ -592,13 +592,13 @@ void ExternalVkImageBacking::ReturnPendingSemaphoresWithFenceHelper(
 std::unique_ptr<DawnImageRepresentation> ExternalVkImageBacking::ProduceDawn(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
-    WGPUDevice wgpuDevice,
-    WGPUBackendType backend_type,
-    std::vector<WGPUTextureFormat> view_formats) {
+    const wgpu::Device& wgpuDevice,
+    wgpu::BackendType backend_type,
+    std::vector<wgpu::TextureFormat> view_formats) {
 #if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && BUILDFLAG(USE_DAWN)
-  auto wgpu_format = ToWGPUFormat(format());
+  auto wgpu_format = ToDawnFormat(format());
 
-  if (wgpu_format == WGPUTextureFormat_Undefined) {
+  if (wgpu_format == wgpu::TextureFormat::Undefined) {
     DLOG(ERROR) << "Format not supported for Dawn";
     return nullptr;
   }

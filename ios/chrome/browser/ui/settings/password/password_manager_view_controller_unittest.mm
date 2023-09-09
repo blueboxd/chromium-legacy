@@ -86,11 +86,9 @@ namespace {
 // Use this test suite for tests that verify behaviors of
 // PasswordManagerViewController before loading the passwords for the first time
 // has finished. All other tests should go in PasswordManagerViewControllerTest.
-class BasePasswordManagerViewControllerTest
-    : public ChromeTableViewControllerTest {
+class PasswordManagerViewControllerTest : public ChromeTableViewControllerTest {
  protected:
-  BasePasswordManagerViewControllerTest()
-      : enable_grouping_(password_manager::features::kPasswordsGrouping) {}
+  PasswordManagerViewControllerTest() = default;
 
   void SetUp() override {
     ChromeTableViewControllerTest::SetUp();
@@ -142,6 +140,8 @@ class BasePasswordManagerViewControllerTest
     passwords_settings_commands_strict_mock_ =
         OCMStrictProtocolMock(@protocol(PasswordsSettingsCommands));
     passwords_controller.handler = passwords_settings_commands_strict_mock_;
+
+    WaitForPasswordsLoadingCompletion();
   }
 
   int GetSectionIndex(PasswordSectionIdentifier section) {
@@ -168,7 +168,8 @@ class BasePasswordManagerViewControllerTest
             browser_state_.get());
     return [[PasswordManagerViewController alloc]
         initWithChromeAccountManagerService:account_manager_service
-                                prefService:browser_state_.get()->GetPrefs()];
+                                prefService:browser_state_.get()->GetPrefs()
+                                requireAuth:require_auth_];
   }
 
   PasswordManagerViewController* GetPasswordManagerViewController() {
@@ -330,7 +331,6 @@ class BasePasswordManagerViewControllerTest
 
   void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
-  base::test::ScopedFeatureList enable_grouping_;
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   std::unique_ptr<TestBrowser> browser_;
@@ -338,22 +338,7 @@ class BasePasswordManagerViewControllerTest
   ScopedKeyWindow scoped_window_;
   UIViewController* root_view_controller_ = nil;
   id passwords_settings_commands_strict_mock_;
-};
-
-// Test suite for PasswordManagerViewController.
-// All tests are run after the passwords were set for the first time and the
-// loading spinner removed. Tests that verify behavior before the spinner is
-// removed must go in BasePasswordManagerViewControllerTest.
-class PasswordManagerViewControllerTest
-    : public BasePasswordManagerViewControllerTest {
- protected:
-  PasswordManagerViewControllerTest() = default;
-
-  void SetUp() override {
-    BasePasswordManagerViewControllerTest::SetUp();
-
-    WaitForPasswordsLoadingCompletion();
-  }
+  bool require_auth_ = false;
 };
 
 // Tests default case has no saved sites and no blocked sites.
@@ -980,7 +965,7 @@ TEST_F(
   // Grouping is needed to get the right trailing image tint color).
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
-      /*enabled_features=*/{password_manager::features::kPasswordsGrouping},
+      /*enabled_features=*/{},
       /*disabled_features=*/{password_manager::features::kIOSPasswordCheckup});
 
   AddSavedInsecureForm(InsecureType::kLeaked);
@@ -1029,8 +1014,7 @@ TEST_F(PasswordManagerViewControllerTest,
   // is needed to get the right trailing image tint color).
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
-      /*enabled_features=*/{password_manager::features::kIOSPasswordCheckup,
-                            password_manager::features::kPasswordsGrouping},
+      /*enabled_features=*/{password_manager::features::kIOSPasswordCheckup},
       /*disabled_features=*/{});
 
   AddSavedInsecureForm(InsecureType::kLeaked);
@@ -1232,15 +1216,13 @@ TEST_F(PasswordManagerViewControllerTest,
 }
 
 // Test verifies running state of password check cell with kIOSPasswordCheckup
-// feature enabled. kPasswordsGrouping feature needs to also be enabled to get
-// the affiliated group count.
+// feature enabled.
 TEST_F(PasswordManagerViewControllerTest,
        PasswordCheckStateRunningWithKIOSPasswordCheckup) {
   // Enable Password Checkup and Password Grouping features.
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
-      /*enabled_features=*/{password_manager::features::kIOSPasswordCheckup,
-                            password_manager::features::kPasswordsGrouping},
+      /*enabled_features=*/{password_manager::features::kIOSPasswordCheckup},
       /*disabled_features=*/{});
 
   AddSavedForm1();

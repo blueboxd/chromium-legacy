@@ -71,7 +71,6 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-using side_panel::mojom::LoadingState;
 using side_panel::mojom::MethodType;
 using side_panel::mojom::PromoAction;
 using side_panel::mojom::PromoType;
@@ -97,13 +96,6 @@ const char kPhReportingUrl[] = "https://foobar.com/";
 const char kExpsRegistrationSuccessUrl[] = "https://foobar.com/experiments";
 
 const char kRelativeVisualSearchUrl[] = "/test_visual.html";
-
-const char kExpectedNewTabLinkMetadata[] =
-    "{\"openAction\":1,\"isSearchCompanionPinnedByDefault\":false}";
-const char kExpectedClobberLinkMetadata[] =
-    "{\"openAction\":2,\"isSearchCompanionPinnedByDefault\":false}";
-const char kExpectedSearchUrlLinkMetadata[] =
-    "{\"openAction\":3,\"isSearchCompanionPinnedByDefault\":false}";
 
 base::FilePath model_file_path() {
   base::FilePath source_root_dir;
@@ -163,7 +155,6 @@ struct CompanionScriptBuilder {
   absl::optional<std::string> text_directive;
   absl::optional<std::vector<std::string>> cq_text_directives;
   absl::optional<int> click_position;
-  absl::optional<LoadingState> loading_state;
 
   // Useful in case chrome sends a postmessage in response. Companion waits for
   // the message in response and resolves the promise that was sent back to
@@ -255,11 +246,6 @@ struct CompanionScriptBuilder {
          << base::NumberToString(click_position.value()) << ";";
     }
 
-    if (loading_state.has_value()) {
-      ss << "message['companionLoadingState'] = "
-         << base::NumberToString(static_cast<size_t>(loading_state.value()))
-         << ";";
-    }
     ss << "window.parent.postMessage(message, '*');";
 
     if (wait_for_message) {
@@ -350,15 +336,11 @@ class CompanionPageBrowserTest : public InProcessBrowserTest {
 
   // Mimics a user clicking a link to `url` in search companion and waits for
   // the page to load.
-  void ClickUrlInCompanion(const GURL& url,
-                           bool wait_for_navigation = true,
-                           bool wait_for_message = false) {
-    std::string waitForMessage = wait_for_message ? "waitForMessage();" : "";
+  void ClickUrlInCompanion(const GURL& url, bool wait_for_navigation = true) {
     std::string script =
         "const link = document.createElement('a');link.target = "
         "\"blank_\";link.href=\"" +
-        url.spec() + "\";document.body.appendChild(link);link.click();" +
-        waitForMessage;
+        url.spec() + "\";document.body.appendChild(link);link.click();";
     ExecJs(script);
     if (wait_for_navigation) {
       content::TestNavigationObserver nav_observer(web_contents());
@@ -462,15 +444,6 @@ class CompanionPageBrowserTest : public InProcessBrowserTest {
       return absl::nullopt;
     }
     return GURL(eval_js_result.ExtractString());
-  }
-
-  absl::optional<std::string> GetLastLinkOpenedMetadataFromPostMessage() {
-    content::EvalJsResult eval_js_result =
-        EvalJs("getLastReceivedLinkOpenedMetadata()");
-    if (!eval_js_result.error.empty() || !eval_js_result.value.is_string()) {
-      return absl::nullopt;
-    }
-    return eval_js_result.ExtractString();
   }
 
   void EnableMsbb(bool enable_msbb) {
@@ -861,34 +834,6 @@ IN_PROC_BROWSER_TEST_F(CompanionPageSameTabBrowserTest,
 
   // Ensure browser sent post message
   EXPECT_EQ(clicked_url, GetLastLinkOpenedUrlFromPostMessage());
-  EXPECT_EQ(kExpectedClobberLinkMetadata,
-            GetLastLinkOpenedMetadataFromPostMessage());
-}
-
-IN_PROC_BROWSER_TEST_F(CompanionPageSameTabBrowserTest,
-                       LinkClickOnSearchURLNotifiesViaPostMessage) {
-  const GURL clicked_url = GURL("https://www.google.com/search?q=query");
-
-  // Load a page on the active tab.
-  ASSERT_TRUE(
-      ui_test_utils::NavigateToURL(browser(), CreateUrl(kHost, kRelativeUrl1)));
-  ASSERT_EQ(side_panel_coordinator()->GetCurrentEntryId(), absl::nullopt);
-
-  // Open companion companion via toolbar entry point.
-  side_panel_coordinator()->Show(SidePanelEntry::Id::kSearchCompanion);
-  EXPECT_TRUE(side_panel_coordinator()->IsSidePanelShowing());
-
-  WaitForCompanionToBeLoaded();
-  EXPECT_EQ(side_panel_coordinator()->GetCurrentEntryId(),
-            SidePanelEntry::Id::kSearchCompanion);
-
-  ClickUrlInCompanion(clicked_url, /*wait_for_navigation=*/false,
-                      /*wait_for_message=*/true);
-
-  // Ensure browser sent post message
-  EXPECT_EQ(clicked_url, GetLastLinkOpenedUrlFromPostMessage());
-  EXPECT_EQ(kExpectedSearchUrlLinkMetadata,
-            GetLastLinkOpenedMetadataFromPostMessage());
 }
 
 IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest, LinkClickOnCompanionPage) {
@@ -946,8 +891,6 @@ IN_PROC_BROWSER_TEST_F(
 
   // Ensure browser sent post message
   EXPECT_EQ(clicked_url, GetLastLinkOpenedUrlFromPostMessage());
-  EXPECT_EQ(kExpectedNewTabLinkMetadata,
-            GetLastLinkOpenedMetadataFromPostMessage());
 }
 
 IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
@@ -972,10 +915,6 @@ IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
   EXPECT_EQ(side_panel_coordinator()->GetCurrentEntryId(),
             SidePanelEntry::Id::kSearchCompanion);
 
-  CompanionScriptBuilder builder(MethodType::kCompanionLoadingState);
-  builder.loading_state = LoadingState::kStartedLoading;
-  EXPECT_TRUE(ExecJs(builder.Build()));
-
   // TODO(b/289113873) - Fix model flakiness for all platforms.
   // Reading models is flaky on certain platform, using this temporary path
   // check as a proxy; however, this should be done in a better way long-term.
@@ -983,25 +922,14 @@ IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
   base::File model_file(model_file_path(),
                         base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (base::PathExists(model_file_path()) && model_file.IsValid()) {
-    WaitForHistogram("Companion.VisualQuery.SendVisualResultSuccess");
+    WaitForHistogram("Companion.VisualSearch.ClassificationResultsSize");
     histogram_tester.ExpectBucketCount(
         "Companion.VisualQuery.ClassifierModelAvailable", true, 1);
     histogram_tester.ExpectBucketCount(
-        "Companion.VisualQuery.ClassificationResultsSize", 1, 1);
+        "Companion.VisualSearch.ClassificationResultsSize", 1, 1);
     histogram_tester.ExpectBucketCount(
         "Companion.VisualSearch.EndClassificationSuccess", true, 1);
-    histogram_tester.ExpectBucketCount(
-        "Companion.VisualQuery.SendVisualResultSuccess", true, 1);
   }
-
-  CompanionScriptBuilder builder2(MethodType::kCompanionLoadingState);
-  builder2.loading_state = LoadingState::kFinishedLoading;
-  EXPECT_TRUE(ExecJs(builder2.Build()));
-
-  // Verifies that we don't trigger the false state because we successfully
-  // processed the image and sent result before receiving |kFinishedLoading|.
-  histogram_tester.ExpectBucketCount(
-      "Companion.VisualQuery.SendVisualResultSuccess", false, 0);
 
   side_panel_coordinator()->Close();
   // TODO(b/289113873) - Update iFrame to show UI and verify image bytes.
@@ -1119,9 +1047,9 @@ IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest, ReloadWillRefreshCompanion) {
 
   CompanionScriptBuilder builder2(MethodType::kRecordUiSurfaceShown);
   builder2.ui_surface = UiSurface::kRelQr;
-  builder2.ui_surface_position = 3;
-  builder2.child_element_available_count = 8;
-  builder2.child_element_shown_count = 5;
+  builder.ui_surface_position = 3;
+  builder.child_element_available_count = 8;
+  builder.child_element_shown_count = 5;
   EXPECT_TRUE(ExecJs(builder2.Build()));
   WaitForHistogram("Companion.RelQr.Shown");
   histogram_tester_->ExpectTotalCount("Companion.FullLoad.Latency", 1);

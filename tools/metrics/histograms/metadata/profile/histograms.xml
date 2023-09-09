@@ -23,13 +23,13 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="Profile.AddNewUser" enum="ProfileAddNewUser"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>rogerta@chromium.org</owner>
   <summary>The frequency of ways that new user profiles are added.</summary>
 </histogram>
 
 <histogram name="Profile.AddSignInFlowOutcome"
-    enum="ProfileSignedInFlowOutcome" expires_after="2023-10-22">
+    enum="ProfileSignedInFlowOutcome" expires_after="2023-12-24">
   <owner>droger@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -61,7 +61,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Profile.Avatar" enum="ProfileAvatar"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>droger@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>The frequency of selection of each avatar.</summary>
@@ -74,7 +74,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Profile.BrowserActive.PerProfile" enum="Profile"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>msarda@chromium.org</owner>
   <owner>tangltom@chromium.org</owner>
   <summary>
@@ -89,12 +89,6 @@ chromium-metrics-reviews@google.com.
     Note: The guest profile has bucket 0. Regular profiles start at bucket 1.
     Incognito browser windows count towards the original profile.
   </summary>
-</histogram>
-
-<histogram name="Profile.CookiesSize" units="MB" expires_after="2022-06-26">
-  <owner>etienneb@chromium.org</owner>
-  <owner>gab@chromium.org</owner>
-  <summary>Size of the cookies database.</summary>
 </histogram>
 
 <histogram name="Profile.DeleteProfileAction" enum="ProfileDeleteAction"
@@ -160,21 +154,9 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Profile.ExtensionSize" units="MB" expires_after="2022-06-19">
-  <owner>etienneb@chromium.org</owner>
-  <owner>gab@chromium.org</owner>
-  <summary>Size of the extension cookies database.</summary>
-</histogram>
-
-<histogram name="Profile.FaviconsSize" units="MB" expires_after="2022-06-26">
-  <owner>etienneb@chromium.org</owner>
-  <owner>gab@chromium.org</owner>
-  <summary>Size of the favicons database.</summary>
-</histogram>
-
 <histogram name="Profile.Guest.ForcedByPolicy" enum="BooleanForced"
-    expires_after="2023-08-27">
-  <owner>rhalavati@chromium.org</owner>
+    expires_after="2024-04-27">
+  <owner>arabm@google.com</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
     Records if a Guest session is started by user's request or is forced by a
@@ -183,7 +165,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Profile.Guest.OTR.Lifetime" units="minutes"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -193,7 +175,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Profile.Guest.TypeCreated" enum="GuestProfileCreatedType"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>dgn@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -203,14 +185,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Profile.HistorySize" units="MB" expires_after="2022-06-26">
-  <owner>etienneb@chromium.org</owner>
-  <owner>gab@chromium.org</owner>
-  <summary>Size of the history database.</summary>
-</histogram>
-
 <histogram name="Profile.Incognito.Lifetime" units="minutes"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -245,7 +221,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Profile.Incognito.ResumedAfterReportedDuration"
-    units="minutes" expires_after="2023-11-12">
+    units="minutes" expires_after="2024-01-14">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -372,7 +348,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Profile.NetUserCount" enum="ProfileNetUserCount"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>rogerta@chromium.org</owner>
   <summary>
     Counts of users added and deleted. Percentages are not meaningful. Please
@@ -395,7 +371,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Profile.NumberOfAccountsPerProfile" units="units"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>msarda@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>
@@ -406,7 +382,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Profile.NumberOfActiveProfiles" units="profiles"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>droger@chromium.org</owner>
   <owner>feuunk@chromium.org</owner>
   <summary>
@@ -434,7 +410,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Profile.NumberOfProfiles" units="profiles"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>droger@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -459,7 +435,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Profile.NumberOfSignedInProfiles" units="profiles"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>droger@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -471,7 +447,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Profile.NumberOfUnusedProfiles" units="profiles"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>msarda@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>
@@ -525,7 +501,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Profile.State.LastUsed" units="days"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>droger@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -546,7 +522,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Profile.State.SyncEnabled" enum="BooleanEnabled"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>droger@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -556,26 +532,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Profile.State.UnconsentedPrimaryAccountType"
-    enum="ProfileUnconsentedPrimaryAccountType" expires_after="2023-11-12">
+    enum="ProfileUnconsentedPrimaryAccountType" expires_after="2024-01-14">
   <owner>droger@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
     The type of profile's unconsented primary account. Recorded on startup of
     Chrome and whenever Chrome is used after at least 30 minutes of inactivity.
   </summary>
-</histogram>
-
-<histogram name="Profile.TopSitesSize" units="MB" expires_after="2022-07-03">
-  <owner>etienneb@chromium.org</owner>
-  <owner>gab@chromium.org</owner>
-  <summary>Size of the top sites database.</summary>
-</histogram>
-
-<histogram name="Profile.TotalHistorySize" units="MB"
-    expires_after="2022-08-01">
-  <owner>etienneb@chromium.org</owner>
-  <owner>gab@chromium.org</owner>
-  <summary>Total size of all history databases.</summary>
 </histogram>
 
 <histogram name="Profile.TotalSize" units="MB" expires_after="2023-08-27">
@@ -632,19 +595,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Profile.VisitedLinksSize" units="MB"
-    expires_after="2022-07-03">
-  <owner>etienneb@chromium.org</owner>
-  <owner>gab@chromium.org</owner>
-  <summary>Size of the visited links database.</summary>
-</histogram>
-
-<histogram name="Profile.WebDataSize" units="MB" expires_after="2022-07-03">
-  <owner>etienneb@chromium.org</owner>
-  <owner>gab@chromium.org</owner>
-  <summary>Size of the web data database.</summary>
-</histogram>
-
 <histogram name="Profile.ZombieProfileCount" units="profiles"
     expires_after="2023-12-10">
   <owner>nicolaso@chromium.org</owner>
@@ -670,6 +620,27 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Profile.{Database}Size" units="MB" expires_after="2023-12-30">
+  <owner>etienneb@chromium.org</owner>
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Size of the {Database} database.
+
+    These metrics were expired between July 2022 and June 2023 and may be
+    missing data.
+  </summary>
+  <token key="Database">
+    <variant name="Cookies"/>
+    <variant name="Extension"/>
+    <variant name="Favicons"/>
+    <variant name="History"/>
+    <variant name="TopSites"/>
+    <variant name="TotalHistory"/>
+    <variant name="VisitedLinks"/>
+    <variant name="WebData"/>
+  </token>
+</histogram>
+
 <histogram name="ProfileChooser.HasProfilesShown" enum="BooleanShown"
     expires_after="2023-12-10">
   <owner>vasilii@chromium.org</owner>
@@ -681,7 +652,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ProfilePicker.AskOnStartup" enum="BooleanEnabled"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>msalama@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -774,7 +745,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ProfilePicker.FirstRun.OrganizationAvailableTiming" units="ms"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>dgn@chromium.org</owner>
   <owner>jyammine@google.com</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -787,7 +758,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ProfilePicker.FirstRun.PolicyStoreState"
-    enum="FirstRunCloudPolicyStoreState" expires_after="2023-10-22">
+    enum="FirstRunCloudPolicyStoreState" expires_after="2023-12-24">
   <owner>dgn@chromium.org</owner>
   <owner>jyammine@google.com</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -926,7 +897,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ProfilePicker.UserAction" enum="ProfilePickerAction"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>msalama@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>

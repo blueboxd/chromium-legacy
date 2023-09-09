@@ -8,10 +8,11 @@
 
 #include "base/containers/fixed_flat_set.h"
 #import "skia/ext/skia_utils_mac.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_mixer.h"
 #include "ui/color/color_provider.h"
-#include "ui/color/color_provider_manager.h"
+#include "ui/color/color_provider_key.h"
 #include "ui/color/color_recipe.h"
 #include "ui/gfx/color_palette.h"
 
@@ -43,15 +44,14 @@ struct AppearanceProperties {
   bool high_contrast;
 };
 
-AppearanceProperties AppearancePropertiesForKey(
-    const ColorProviderManager::Key& key) {
+AppearanceProperties AppearancePropertiesForKey(const ColorProviderKey& key) {
   return AppearanceProperties{
-      .dark = key.color_mode == ColorProviderManager::ColorMode::kDark,
+      .dark = key.color_mode == ColorProviderKey::ColorMode::kDark,
       .high_contrast =
-          key.contrast_mode == ColorProviderManager::ContrastMode::kHigh};
+          key.contrast_mode == ColorProviderKey::ContrastMode::kHigh};
 }
 
-NSAppearance* AppearanceForKey(const ColorProviderManager::Key& key)
+NSAppearance* AppearanceForKey(const ColorProviderKey& key)
     API_AVAILABLE(macos(10.14)) {
   AppearanceProperties properties = AppearancePropertiesForKey(key);
 
@@ -76,7 +76,7 @@ NSAppearance* AppearanceForKey(const ColorProviderManager::Key& key)
 }  // namespace
 
 void AddNativeCoreColorMixer(ColorProvider* provider,
-                             const ColorProviderManager::Key& key) {
+                             const ColorProviderKey& key) {
   auto load_colors = ^{
     ColorMixer& mixer = provider->AddMixer();
     mixer[kColorItemHighlight] = {SkColorSetA(
@@ -107,7 +107,7 @@ void AddNativeColorSetInColorMixer(ColorMixer& mixer) {
 }
 
 void AddNativeUiColorMixer(ColorProvider* provider,
-                           const ColorProviderManager::Key& key) {
+                           const ColorProviderKey& key) {
   auto load_colors = ^{
     AppearanceProperties properties = AppearancePropertiesForKey(key);
 
@@ -129,10 +129,12 @@ void AddNativeUiColorMixer(ColorProvider* provider,
           NSColor.controlAlternatingRowBackgroundColors[1])};
     }
 
-    SkColor menu_separator_color = properties.dark
-                                       ? SkColorSetA(gfx::kGoogleGrey800, 0xCC)
-                                       : SkColorSetA(SK_ColorBLACK, 0x26);
-    mixer[kColorMenuSeparator] = {menu_separator_color};
+    if (!features::IsChromeRefresh2023()) {
+      SkColor menu_separator_color =
+          properties.dark ? SkColorSetA(gfx::kGoogleGrey800, 0xCC)
+                          : SkColorSetA(SK_ColorBLACK, 0x26);
+      mixer[kColorMenuSeparator] = {menu_separator_color};
+    }
 
     if (!properties.high_contrast) {
       return;
@@ -157,7 +159,7 @@ void AddNativeUiColorMixer(ColorProvider* provider,
 }
 
 void AddNativePostprocessingMixer(ColorProvider* provider,
-                                  const ColorProviderManager::Key& key) {
+                                  const ColorProviderKey& key) {
   ColorMixer& mixer = provider->AddPostprocessingMixer();
 
   for (ColorId id = kUiColorsStart; id < kUiColorsEnd; ++id) {

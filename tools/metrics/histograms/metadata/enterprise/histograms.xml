@@ -40,7 +40,9 @@ chromium-metrics-reviews@google.com.
   <variant name="LacrosBrowser"
       summary="Handler for open browser windows and browsing data on Lacros"/>
   <variant name="LacrosExtension" summary="Handler for extensions on Lacros"/>
+  <variant name="LacrosWebApp" summary="Handler for web apps on Lacros"/>
   <variant name="PrintJobs" summary="Handler for print jobs"/>
+  <variant name="WebApp" summary="Handler for web apps"/>
 </variants>
 
 <variants name="Enterprise_CrdSessionType">
@@ -365,18 +367,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram base="true" name="Enterprise.CachedDevicePolicyDeviceIdValidity"
-    enum="EnterprisePolicyDeviceIdValidity" expires_after="M95">
-  <owner>emaxx@chromium.org</owner>
-  <owner>rodmartin@chromium.org</owner>
-  <summary>
-    Result of the device ID validation in the device policy blob for those which
-    were loaded from disk. This validation happens on enrolled devices on
-    startup, on scheduled policy reloads that happen every few hours, and on
-    forced policy reloads.
-  </summary>
-</histogram>
-
 <histogram name="Enterprise.CBCMPolicyInvalidations"
     enum="EnterprisePolicyInvalidations" expires_after="2023-01-15">
   <owner>anthonyvd@chromium.org</owner>
@@ -422,7 +412,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.CBCMRemoteCommand.Received"
-    enum="RemoteCommandReceivedStatus" expires_after="2023-10-01">
+    enum="RemoteCommandReceivedStatus" expires_after="2023-12-31">
   <owner>anthonyvd@chromium.org</owner>
   <owner>cbe-eng@google.com</owner>
   <summary>
@@ -592,20 +582,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Enterprise.DeviceRemoteCommand.Crd.Capturer.Aura.Created"
-    units="units" expires_after="2023-11-12">
-  <owner>macinashutosh@google.com</owner>
-  <owner>chromeos-commercial-crd@google.com</owner>
-  <summary>Reports the creation of AuraDesktopCapturer class object</summary>
-</histogram>
-
-<histogram name="Enterprise.DeviceRemoteCommand.Crd.Capturer.Aura.Destroyed"
-    units="units" expires_after="2023-11-12">
-  <owner>macinashutosh@google.com</owner>
-  <owner>chromeos-commercial-crd@google.com</owner>
-  <summary>Reports the destruction of AuraDesktopCapturer class object</summary>
-</histogram>
-
 <histogram name="Enterprise.DeviceRemoteCommand.Crd.Capturer.FrameSink.Created"
     units="units" expires_after="2023-11-12">
   <owner>macinashutosh@google.com</owner>
@@ -617,7 +593,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Enterprise.DeviceRemoteCommand.Crd.Capturer.FrameSink.Destroyed"
-    units="units" expires_after="2023-11-12">
+    units="units" expires_after="2024-01-14">
   <owner>macinashutosh@google.com</owner>
   <owner>chromeos-commercial-crd@google.com</owner>
   <summary>
@@ -1220,7 +1196,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.Dlp.ConfidentialContentsCount" units="entries"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>aidazolic@chromium.org</owner>
   <owner>chromeos-dlp@google.com</owner>
   <summary>
@@ -1621,16 +1597,6 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="EnterpriseDMServerRequest">
     <variant name=""/>
-    <variant name=".ActiveDirectoryEnrollPlayUser"
-        summary="Active Directory Enroll Play User.">
-      <owner>rbock@google.com</owner>
-      <owner>zmin@chromium.org</owner>
-    </variant>
-    <variant name=".ActiveDirectoryPlayActivity"
-        summary="Active Directory Play Activity.">
-      <owner>rbock@google.com</owner>
-      <owner>zmin@chromium.org</owner>
-    </variant>
     <variant name=".AndroidManagementCheck" summary="Android Management Check.">
       <owner>rbock@google.com</owner>
       <owner>zmin@chromium.org</owner>
@@ -2056,29 +2022,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Enterprise.FirstRun.AppRestrictionLoadTime" units="ms"
-    expires_after="2022-01-09">
-  <owner>wenyufu@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>
-    Records the time it takes to retrieve application restrictions from the
-    system using an AsyncTask. Recording during first run experience on Android
-    only.
-  </summary>
-</histogram>
-
-<histogram name="Enterprise.FirstRun.AppRestrictionLoadTime.Medium" units="ms"
-    expires_after="2022-04-24">
-  <owner>skym@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <owner>wenyufu@chromium.org</owner>
-  <summary>
-    Records the time it takes to retrieve application restrictions from the
-    system using an AsyncTask. Recording during first run experience on Android
-    only. Has a bigger range (0-3 minutes) than the non-Medium version.
-  </summary>
-</histogram>
-
 <histogram name="Enterprise.InvalidDevicePolicyFilesStatus"
     enum="InvalidDevicePolicyFilesStatus" expires_after="2023-12-01">
   <owner>emaxx@chromium.org</owner>
@@ -2241,19 +2184,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram
-    name="Enterprise.ManagementAuthorityTrustworthiness.Cache.ValueChange"
-    enum="BooleanChanged" expires_after="2023-07-15">
-  <owner>ydago@chromium.org</owner>
-  <owner>zmin@chromium.org</owner>
-  <summary>
-    Recorded after the ManagementStatus cache is updated. Reports whether the
-    Management authority trustworthiness changed after the cache update.
-  </summary>
-</histogram>
-
 <histogram name="Enterprise.OnBulkDataEntry.DataSize" units="bytes"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>domfc@chromium.org</owner>
   <owner>webprotect-team@google.com</owner>
   <summary>
@@ -2270,7 +2202,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.PlatformAuth.GetAuthData.Count" units="count"
-    expires_after="2023-10-31">
+    expires_after="2023-12-31">
   <owner>igorruvinov@chromium.org</owner>
   <owner>zmin@chromium.org</owner>
   <summary>
@@ -2395,6 +2327,27 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.PolicyUI.ButtonUsage.{ButtonType}" units="counts"
+    expires_after="2024-07-01">
+  <owner>zmin@chromium.org</owner>
+  <owner>src/components/policy/OWNERS</owner>
+  <summary>
+    The total number of time {ButtonType} button has been clicked for each time
+    chrome://policy page is opened. Recorded once the page is closed. Export To
+    JSON button is not available on iOS.
+
+    Note that we won't be able to collect the data if the page is not closed
+    normally. For example, browser is crash or shutdown by OS which often
+    happens on mobile platforms.
+  </summary>
+  <token key="ButtonType">
+    <variant name="CopyToJson" summary="Copy To JSON"/>
+    <variant name="ExportToJson" summary="Export To JSON"/>
+    <variant name="ReloadPolicies" summary="Reload Policies"/>
+    <variant name="Upload Report" summary="Upload Report"/>
+  </token>
+</histogram>
+
 <histogram name="Enterprise.PolicyUpdatePeriod.Device" units="days"
     expires_after="2023-12-01">
   <owner>rbock@google.com</owner>
@@ -2443,7 +2396,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.ProfileIdentifier.Status" enum="Boolean"
-    expires_after="2023-11-10">
+    expires_after="2024-01-14">
   <owner>hmare@google.com</owner>
   <owner>cbe-device-trust-eng@google.com</owner>
   <summary>
@@ -2514,7 +2467,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.RegularUserSession.SessionLength" units="minutes"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>bfranz@chromium.org</owner>
   <owner>chromeos-kiosk-eng@google.com</owner>
   <summary>
@@ -2625,7 +2578,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.StateDetermination.KillSwitchFetch.NumTries"
-    enum="NetErrorCodes" expires_after="2024-05-10">
+    units="requests" expires_after="2024-05-10">
   <owner>sergiyb@chromium.org</owner>
   <owner>chromeos-commercial-remote-management@google.com</owner>
   <summary>
@@ -2833,7 +2786,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.TimeToUnthrottlePolicyInit" units="ms"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>emaxx@chromium.org</owner>
   <owner>pmarko@chromium.org</owner>
   <summary>
@@ -2847,7 +2800,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.UserPolicyChromeOS.ChildUser.OAuthTokenError"
-    enum="GoogleServiceAuthError" expires_after="2023-11-12">
+    enum="GoogleServiceAuthError" expires_after="2024-01-14">
   <owner>agawronska@chromium.org</owner>
   <owner>michaelpg@chromium.org</owner>
   <summary>Failure reason for OAuth token fetch for child user.</summary>
@@ -2920,7 +2873,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.UserSession.Logins"
-    enum="EnterpriseUserSessionLogins" expires_after="2023-11-12">
+    enum="EnterpriseUserSessionLogins" expires_after="2024-01-14">
   <owner>xiyuan@chromium.org</owner>
   <owner>sduraisamy@chromium.org</owner>
   <summary>Tracks the sign-in events on an enrolled device.</summary>
@@ -3009,7 +2962,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.InvalidPolicies" enum="EnterprisePolicies"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>pastarmovj@chromium.org</owner>
   <owner>ydago@chromium.org</owner>
   <summary>
@@ -3054,7 +3007,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.IsFullyManaged2" enum="IsFullyManagedBoolean"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>twellington@google.com</owner>
   <owner>tedchcoc@chromium.org</owner>
   <summary>

@@ -9,6 +9,7 @@ import static org.chromium.components.browser_ui.site_settings.WebsitePreference
 import static org.chromium.components.content_settings.PrefNames.COOKIE_CONTROLS_MODE;
 import static org.chromium.components.content_settings.PrefNames.DESKTOP_SITE_DISPLAY_SETTING_ENABLED;
 import static org.chromium.components.content_settings.PrefNames.DESKTOP_SITE_PERIPHERAL_SETTING_ENABLED;
+import static org.chromium.components.content_settings.PrefNames.DESKTOP_SITE_WINDOW_SETTING_ENABLED;
 import static org.chromium.components.content_settings.PrefNames.ENABLE_QUIET_NOTIFICATION_PERMISSION_UI;
 import static org.chromium.components.content_settings.PrefNames.NOTIFICATIONS_VIBRATE_ENABLED;
 
@@ -169,6 +170,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
     private ChromeBaseCheckBoxPreference mDesktopSitePeripheralPref;
     // The "desktop_site_display" preference to allow hiding/showing it.
     private ChromeBaseCheckBoxPreference mDesktopSiteDisplayPref;
+    // The "desktop_site_window" preference to allow hiding/showing it.
+    private ChromeBaseCheckBoxPreference mDesktopSiteWindowPref;
 
     @Nullable
     private Set<String> mSelectedDomains;
@@ -203,6 +206,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
     public static final String NOTIFICATIONS_QUIET_UI_TOGGLE_KEY = "notifications_quiet_ui";
     public static final String DESKTOP_SITE_PERIPHERAL_TOGGLE_KEY = "desktop_site_peripheral";
     public static final String DESKTOP_SITE_DISPLAY_TOGGLE_KEY = "desktop_site_display";
+    public static final String DESKTOP_SITE_WINDOW_TOGGLE_KEY = "desktop_site_window";
     public static final String EXPLAIN_PROTECTED_MEDIA_KEY = "protected_content_learn_more";
     public static final String ADD_EXCEPTION_KEY = "add_exception";
     public static final String INFO_TEXT_KEY = "info_text";
@@ -593,6 +597,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             } else if (type == SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE) {
                 recordSiteLayoutChanged(toggleValue);
                 updateDesktopSiteSecondaryControls();
+                updateDesktopSiteWindowSetting();
             }
             getInfoForOrigins();
         } else if (TRI_STATE_TOGGLE_KEY.equals(preference.getKey())) {
@@ -620,6 +625,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             prefService.setBoolean(DESKTOP_SITE_PERIPHERAL_SETTING_ENABLED, (boolean) newValue);
         } else if (DESKTOP_SITE_DISPLAY_TOGGLE_KEY.equals(preference.getKey())) {
             prefService.setBoolean(DESKTOP_SITE_DISPLAY_SETTING_ENABLED, (boolean) newValue);
+        } else if (DESKTOP_SITE_WINDOW_TOGGLE_KEY.equals(preference.getKey())) {
+            prefService.setBoolean(DESKTOP_SITE_WINDOW_SETTING_ENABLED, (boolean) newValue);
         }
         return true;
     }
@@ -892,16 +899,13 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             case SiteSettingsCategory.Type.COOKIES:
             case SiteSettingsCategory.Type.SITE_DATA:
             case SiteSettingsCategory.Type.FEDERATED_IDENTITY_API:
+            case SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE:
                 allowSpecifyingExceptions = true;
                 break;
             case SiteSettingsCategory.Type.BACKGROUND_SYNC:
             case SiteSettingsCategory.Type.AUTOMATIC_DOWNLOADS:
                 allowSpecifyingExceptions =
                         !WebsitePreferenceBridge.isCategoryEnabled(browserContextHandle, type);
-                break;
-            case SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE:
-                allowSpecifyingExceptions = ContentFeatureMap.isEnabled(
-                        ContentFeatureList.REQUEST_DESKTOP_SITE_EXCEPTIONS);
                 break;
             case SiteSettingsCategory.Type.THIRD_PARTY_COOKIES:
                 allowSpecifyingExceptions = getCookieControlsMode() != CookieControlsMode.OFF;
@@ -1118,6 +1122,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         mNotificationsQuietUiPref = screen.findPreference(NOTIFICATIONS_QUIET_UI_TOGGLE_KEY);
         mDesktopSitePeripheralPref = screen.findPreference(DESKTOP_SITE_PERIPHERAL_TOGGLE_KEY);
         mDesktopSiteDisplayPref = screen.findPreference(DESKTOP_SITE_DISPLAY_TOGGLE_KEY);
+        mDesktopSiteWindowPref = screen.findPreference(DESKTOP_SITE_WINDOW_TOGGLE_KEY);
         Preference explainProtectedMediaKey = screen.findPreference(EXPLAIN_PROTECTED_MEDIA_KEY);
         PreferenceGroup allowedGroup = screen.findPreference(ALLOWED_GROUP);
         PreferenceGroup blockedGroup = screen.findPreference(BLOCKED_GROUP);
@@ -1191,6 +1196,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             screen.removePreference(mNotificationsQuietUiPref);
             screen.removePreference(mDesktopSitePeripheralPref);
             screen.removePreference(mDesktopSiteDisplayPref);
+            screen.removePreference(mDesktopSiteWindowPref);
             screen.removePreference(explainProtectedMediaKey);
             screen.removePreference(allowedGroup);
             screen.removePreference(blockedGroup);
@@ -1220,7 +1226,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             screen.removePreference(mNotificationsQuietUiPref);
         }
 
-        // Configure/hide the desktop site secondary controls, as needed.
+        // Configure/hide the desktop site peripheral/display settings, as needed.
         if (mCategory.getType() == SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE
                 && ContentFeatureMap.isEnabled(ContentFeatureList.REQUEST_DESKTOP_SITE_ADDITIONS)) {
             mDesktopSitePeripheralPref.setOnPreferenceChangeListener(this);
@@ -1229,6 +1235,16 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         } else {
             screen.removePreference(mDesktopSitePeripheralPref);
             screen.removePreference(mDesktopSiteDisplayPref);
+        }
+
+        // Configure/hide the desktop site window setting, as needed.
+        if (mCategory.getType() == SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE
+                && ContentFeatureMap.isEnabled(
+                        ContentFeatureList.REQUEST_DESKTOP_SITE_WINDOW_SETTING)) {
+            mDesktopSiteWindowPref.setOnPreferenceChangeListener(this);
+            updateDesktopSiteWindowSetting();
+        } else {
+            screen.removePreference(mDesktopSiteWindowPref);
         }
 
         // Only show the link that explains protected content settings when needed.
@@ -1416,6 +1432,28 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         }
     }
 
+    private void updateDesktopSiteWindowSetting() {
+        if (!ContentFeatureMap.isEnabled(ContentFeatureList.REQUEST_DESKTOP_SITE_WINDOW_SETTING)) {
+            return;
+        }
+
+        BrowserContextHandle browserContextHandle =
+                getSiteSettingsDelegate().getBrowserContextHandle();
+        Boolean categoryEnabled = WebsitePreferenceBridge.isCategoryEnabled(
+                browserContextHandle, ContentSettingsType.REQUEST_DESKTOP_SITE);
+
+        if (categoryEnabled) {
+            // When the global setting for RDS is on, window setting should be displayed.
+            getPreferenceScreen().addPreference(mDesktopSiteWindowPref);
+            PrefService prefService = UserPrefs.get(browserContextHandle);
+            mDesktopSiteWindowPref.setChecked(
+                    prefService.getBoolean(DESKTOP_SITE_WINDOW_SETTING_ENABLED));
+        } else {
+            // Otherwise, ensure window setting is hidden.
+            getPreferenceScreen().removePreference(mDesktopSiteWindowPref);
+        }
+    }
+
     private void showManagedToast() {
         if (mCategory.isManagedByCustodian()) {
             ManagedPreferencesUtils.showManagedByParentToast(getContext(),
@@ -1512,12 +1550,6 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
      */
     private boolean shouldAddExceptionsForCategory() {
         if (mCategory.getType() == SiteSettingsCategory.Type.ANTI_ABUSE) {
-            return false;
-        }
-        if (mCategory.getType() == SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE
-                && !ContentFeatureMap.isEnabled(ContentFeatureList.REQUEST_DESKTOP_SITE_EXCEPTIONS)
-                && SiteSettingsFeatureList.isEnabled(
-                        SiteSettingsFeatureList.REQUEST_DESKTOP_SITE_EXCEPTIONS_DOWNGRADE)) {
             return false;
         }
         return true;

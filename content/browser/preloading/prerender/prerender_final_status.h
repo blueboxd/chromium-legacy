@@ -65,7 +65,8 @@ enum class PrerenderFinalStatus {
   // Deprecate since same origin redirection is allowed considering that the
   // initial prerender origin is a safe site.
   // kEmbedderTriggeredAndSameOriginRedirected = 33,
-  kEmbedderTriggeredAndCrossOriginRedirected = 34,
+  // Deprecated. Use kCrossSiteRedirectInInitialNavigation instead.
+  // kEmbedderTriggeredAndCrossOriginRedirected = 34,
   // Deprecated. This has the same meaning as kTriggerDestroyed because the
   // metric's name includes trigger type.
   // kEmbedderTriggeredAndDestroyed = 35,
@@ -128,7 +129,17 @@ enum class PrerenderFinalStatus {
   // loading.
   kResourceLoadBlockedByClient = 70,
 
-  kMaxValue = kResourceLoadBlockedByClient,
+  // A trigger page removed a corresponding prerender rule from
+  // <script type="speculationrules">.
+  kSpeculationRuleRemoved = 71,
+
+  // A trigger page cannot activate a prerendered page when it has auxiliary
+  // browsing contexts that should be able to script each other (e.g., pop-up
+  // windows with openers). For details, see comments on the place where this
+  // status is specified.
+  kActivatedWithAuxiliaryBrowsingContexts = 72,
+
+  kMaxValue = kActivatedWithAuxiliaryBrowsingContexts,
 };
 
 // Helper method to convert PrerenderFinalStatus to PreloadingFailureReason.

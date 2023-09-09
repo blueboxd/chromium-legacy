@@ -1178,13 +1178,14 @@ void BrowserCommandController::InitCommandState() {
 
   // Window management commands
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_WINDOW, true);
-  command_updater_.UpdateCommandEnabled(IDC_NEW_TAB, true);
+  command_updater_.UpdateCommandEnabled(
+      IDC_NEW_TAB, !browser_->app_controller() ||
+                       !browser_->app_controller()->ShouldHideNewTabButton());
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_TAB, true);
   command_updater_.UpdateCommandEnabled(
       IDC_DUPLICATE_TAB, !browser_->is_type_picture_in_picture());
   UpdateTabRestoreCommandState();
   command_updater_.UpdateCommandEnabled(IDC_EXIT, true);
-  command_updater_.UpdateCommandEnabled(IDC_DEBUG_FRAME_TOGGLE, true);
   command_updater_.UpdateCommandEnabled(IDC_NAME_WINDOW, true);
 #if BUILDFLAG(IS_CHROMEOS)
   command_updater_.UpdateCommandEnabled(
@@ -1278,9 +1279,7 @@ void BrowserCommandController::InitCommandState() {
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   command_updater_.UpdateCommandEnabled(IDC_CUSTOMIZE_CHROME, true);
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_PROFILE, true);
-  command_updater_.UpdateCommandEnabled(
-      IDC_MANAGE_GOOGLE_ACCOUNT,
-      HasUnconstentedProfile(profile()) && !IsSyncPaused(profile()));
+  command_updater_.UpdateCommandEnabled(IDC_MANAGE_GOOGLE_ACCOUNT, true);
   command_updater_.UpdateCommandEnabled(IDC_OPEN_GUEST_PROFILE, true);
   command_updater_.UpdateCommandEnabled(IDC_ADD_NEW_PROFILE, true);
   command_updater_.UpdateCommandEnabled(IDC_MANAGE_CHROME_PROFILES, true);
@@ -1891,7 +1890,8 @@ void BrowserCommandController::UpdateCommandsForTabStripStateChanged() {
     return;
   }
   command_updater_.UpdateCommandEnabled(
-      IDC_CLOSE_TAB, browser_->tab_strip_model()->IsTabClosable(tab_index));
+      IDC_CLOSE_TAB,
+      web_app::IsTabClosable(browser_->tab_strip_model(), tab_index));
   command_updater_.UpdateCommandEnabled(IDC_WINDOW_CLOSE_TABS_TO_RIGHT,
                                         CanCloseTabsToRight(browser_));
   command_updater_.UpdateCommandEnabled(IDC_WINDOW_CLOSE_OTHER_TABS,

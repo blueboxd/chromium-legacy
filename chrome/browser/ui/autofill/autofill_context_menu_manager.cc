@@ -9,6 +9,7 @@
 #include "base/containers/adapters.h"
 #include "base/containers/flat_map.h"
 #include "base/functional/overloaded.h"
+#include "base/ranges/algorithm.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -22,11 +23,13 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/vector_icons/vector_icons.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/favicon_size.h"
 
@@ -41,6 +44,8 @@ static constexpr int kAutofillContextCustomLast =
     IDC_CONTENT_CONTEXT_AUTOFILL_CUSTOM_LAST;
 static constexpr int kAutofillContextFeedback =
     IDC_CONTENT_CONTEXT_AUTOFILL_FEEDBACK;
+static constexpr int kAutofillFallbackForAutocompleteUnrecognized =
+    IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED;
 
 constexpr char kFeedbackPlaceholder[] =
     "What steps did you just take?\n"
@@ -96,11 +101,11 @@ AutofillContextMenuManager::ConvertToAutofillCustomCommandId(int offset) {
 // static
 bool AutofillContextMenuManager::IsAutofillCustomCommandId(
     CommandId command_id) {
-  if (command_id.value() == kAutofillContextFeedback) {
-    return true;
-  }
-  return command_id.value() >= kAutofillContextCustomFirst &&
-         command_id.value() <= kAutofillContextCustomLast;
+  const int id = command_id.value();
+  return id == kAutofillContextFeedback ||
+         id == kAutofillFallbackForAutocompleteUnrecognized ||
+         (command_id.value() >= kAutofillContextCustomFirst &&
+          command_id.value() <= kAutofillContextCustomLast);
 }
 
 AutofillContextMenuManager::AutofillContextMenuManager(
@@ -212,36 +217,44 @@ void AutofillContextMenuManager::AppendItems() {
 
     menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
   }
+
+  if (params_.field_renderer_id &&
+      base::FeatureList::IsEnabled(
+          features::kAutofillFallbackForAutocompleteUnrecognized)) {
+    MaybeAddFallbackForAutocompleteUnrecognizedToMenu();
+  }
 }
 
-bool AutofillContextMenuManager::IsCommandIdChecked(
-    CommandId command_id) const {
-  return false;
+bool AutofillContextMenuManager::IsCommandIdSupported(int command_id) {
+  return IsAutofillCustomCommandId(CommandId(command_id));
 }
 
-bool AutofillContextMenuManager::IsCommandIdVisible(
-    CommandId command_id) const {
+bool AutofillContextMenuManager::IsCommandIdEnabled(int command_id) {
   return true;
 }
 
-bool AutofillContextMenuManager::IsCommandIdEnabled(
-    CommandId command_id) const {
-  return true;
-}
-
-void AutofillContextMenuManager::ExecuteCommand(CommandId command_id) {
+void AutofillContextMenuManager::ExecuteCommand(int command_id) {
   content::RenderFrameHost* rfh = delegate_->GetRenderFrameHost();
   if (!rfh)
     return;
 
-  DCHECK(IsAutofillCustomCommandId(command_id));
+  CHECK(IsAutofillCustomCommandId(CommandId(command_id)));
 
-  if (command_id.value() == kAutofillContextFeedback) {
+  if (command_id == kAutofillContextFeedback) {
     ExecuteAutofillFeedbackCommand(rfh);
     return;
   }
 
-  ExecuteMenuManagerCommand(command_id, rfh);
+  if (command_id == kAutofillFallbackForAutocompleteUnrecognized) {
+    ExecuteFallbackForAutocompleteUnrecognizedCommand(rfh);
+    return;
+  }
+
+  ExecuteMenuManagerCommand(CommandId(command_id), rfh);
+}
+
+void AutofillContextMenuManager::OnMenuClosed() {
+  fallback_metric_logger_.ContextMenuClosed();
 }
 
 void AutofillContextMenuManager::ExecuteAutofillFeedbackCommand(
@@ -256,12 +269,32 @@ void AutofillContextMenuManager::ExecuteAutofillFeedbackCommand(
   chrome::ShowFeedbackPage(
       browser_, chrome::kFeedbackSourceAutofillContextMenu,
       /*description_template=*/std::string(),
-      /*description_placeholder_text=*/std::string(kFeedbackPlaceholder),
+      /*description_placeholder_text=*/kFeedbackPlaceholder,
       /*category_tag=*/"dogfood_autofill_feedback",
       /*extra_diagnostics=*/std::string(),
       /*autofill_metadata=*/
       data_logs::FetchAutofillFeedbackData(
           manager, LoadTriggerFormAndFieldLogs(manager, rfh, params_)));
+}
+
+void AutofillContextMenuManager::
+    ExecuteFallbackForAutocompleteUnrecognizedCommand(
+        content::RenderFrameHost* rfh) {
+  auto* driver = ContentAutofillDriver::GetForRenderFrameHost(rfh);
+  if (!driver) {
+    return;
+  }
+  AutofillField* field = GetAutofillField();
+  if (!field) {
+    // The field should generally exist, since the fallback option is only shown
+    // when the field can be retrieved. But if the website removed the field
+    // before the entry was select, it might not be available anymore.
+    return;
+  }
+  driver->browser_events().RendererShouldTriggerSuggestions(
+      field->global_id(), AutofillSuggestionTriggerSource::
+                              kManualFallbackForAutocompleteUnrecognized);
+  fallback_metric_logger_.ContextMenuEntryAccepted();
 }
 
 void AutofillContextMenuManager::ExecuteMenuManagerCommand(
@@ -523,6 +556,43 @@ void AutofillContextMenuManager::AddProfileDataToMenu(
   }
 }
 
+void AutofillContextMenuManager::
+    MaybeAddFallbackForAutocompleteUnrecognizedToMenu() {
+  // Only show the context menu entry for address fields, which can be filled
+  // with at least one of the user's profiles.
+  AutofillField* field = GetAutofillField();
+  if (!field || FieldTypeGroupToFormType(field->Type().group()) !=
+                    FormType::kAddressForm) {
+    return;
+  }
+  CHECK(personal_data_manager_);
+  if (base::ranges::none_of(
+          personal_data_manager_->GetProfiles(), [&](AutofillProfile* profile) {
+            return profile->HasInfo(field->Type().GetStorableType());
+          })) {
+    return;
+  }
+
+  // Depending on the Finch parameter, only show the context menu entry for
+  // ac=unrecognized fields.
+  if (!field->ShouldSuppressSuggestionsAndFillingByDefault() &&
+      !features::kAutofillFallForAutocompleteUnrecognizedOnAllAddressField
+           .Get()) {
+    return;
+  }
+
+  menu_model_->AddTitle(l10n_util::GetStringUTF16(
+      IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED_TITLE));
+  menu_model_->AddItemWithStringIdAndIcon(
+      kAutofillFallbackForAutocompleteUnrecognized,
+      IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED,
+      ui::ImageModel::FromVectorIcon(vector_icons::kLocationOnIcon));
+  menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+  fallback_metric_logger_.ContextMenuEntryShown(
+      /*field_has_ac_unrecognized=*/field
+          ->ShouldSuppressSuggestionsAndFillingByDefault());
+}
+
 bool AutofillContextMenuManager::HaveEnoughIdsForProfile(
     absl::variant<const AutofillProfile*, const CreditCard*>
         profile_or_credit_card,
@@ -601,6 +671,24 @@ std::u16string AutofillContextMenuManager::GetProfileDescription(
   return profile.ConstructInferredLabel(
       kDetailsFields, std::size(kDetailsFields),
       /*num_fields_to_include=*/2, personal_data_manager_->app_locale());
+}
+
+AutofillField* AutofillContextMenuManager::GetAutofillField() const {
+  content::RenderFrameHost* rfh = delegate_->GetRenderFrameHost();
+  CHECK(rfh);
+  AutofillManager* manager =
+      ContentAutofillDriver::GetForRenderFrameHost(rfh)->autofill_manager();
+  if (!manager) {
+    return nullptr;
+  }
+  LocalFrameToken frame_token(rfh->GetFrameToken().value());
+  // Formless forms don't have a renderer ID.
+  FormStructure* form = manager->FindCachedFormById(
+      {frame_token, FormRendererId(params_.form_renderer_id.value_or(0))});
+  CHECK(params_.field_renderer_id);
+  return form ? form->GetFieldById(
+                    {frame_token, FieldRendererId(*params_.field_renderer_id)})
+              : nullptr;
 }
 
 }  // namespace autofill

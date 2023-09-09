@@ -23,7 +23,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
-#include "third_party/blink/renderer/core/layout/anchor_scroll_data.h"
+#include "third_party/blink/renderer/core/layout/anchor_position_scroll_data.h"
 #include "third_party/blink/renderer/core/layout/fragmentainer_iterator.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
@@ -65,6 +65,7 @@
 #include "third_party/blink/renderer/core/paint/pre_paint_disable_side_effects_scope.h"
 #include "third_party/blink/renderer/core/paint/rounded_border_geometry.h"
 #include "third_party/blink/renderer/core/paint/svg_root_painter.h"
+#include "third_party/blink/renderer/core/paint/transform_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style_base_constants.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/style_overflow_clip_margin.h"
@@ -251,12 +252,12 @@ class FragmentPaintPropertyTreeBuilder {
   ALWAYS_INLINE void UpdateForObjectLocationAndSize(
       absl::optional<gfx::Vector2d>& paint_offset_translation);
   ALWAYS_INLINE void UpdateStickyTranslation();
-  ALWAYS_INLINE void UpdateAnchorScrollTranslation();
+  ALWAYS_INLINE void UpdateAnchorPositionScrollTranslation();
 
   void UpdateIndividualTransform(
       bool (*needs_property)(const LayoutObject&, CompositingReasons),
       void (*compute_matrix)(const LayoutBox& box,
-                             const PhysicalSize& size,
+                             const PhysicalRect& reference_box,
                              gfx::Transform& matrix),
       CompositingReasons compositing_reasons_for_property,
       CompositorElementIdNamespace compositor_namespace,
@@ -497,9 +498,9 @@ static bool NeedsStickyTranslation(const LayoutObject& object) {
   return To<LayoutBoxModelObject>(object).StickyConstraints();
 }
 
-static bool NeedsAnchorScrollTranslation(const LayoutObject& object) {
+static bool NeedsAnchorPositionScrollTranslation(const LayoutObject& object) {
   if (const LayoutBox* box = DynamicTo<LayoutBox>(object))
-    return box->HasAnchorScrollTranslation();
+    return box->HasAnchorPositionScrollTranslation();
   return false;
 }
 
@@ -539,8 +540,9 @@ static bool NeedsPaintOffsetTranslation(
     return true;
   if (NeedsStickyTranslation(object))
     return true;
-  if (NeedsAnchorScrollTranslation(object))
+  if (NeedsAnchorPositionScrollTranslation(object)) {
     return true;
+  }
   if (NeedsPaintOffsetTranslationForOverflowControls(box_model))
     return true;
   if (NeedsReplacedContentTransform(object))
@@ -757,17 +759,23 @@ void FragmentPaintPropertyTreeBuilder::UpdateStickyTranslation() {
             scroll_container_properties->Scroll() == context_.current.scroll;
         if (scroll_container_scrolls) {
           auto constraint = std::make_unique<CompositorStickyConstraint>();
-          constraint->is_anchored_left = layout_constraint->is_anchored_left;
-          constraint->is_anchored_right = layout_constraint->is_anchored_right;
-          constraint->is_anchored_top = layout_constraint->is_anchored_top;
+          constraint->is_anchored_left =
+              layout_constraint->left_inset.has_value();
+          constraint->is_anchored_right =
+              layout_constraint->right_inset.has_value();
+          constraint->is_anchored_top =
+              layout_constraint->top_inset.has_value();
           constraint->is_anchored_bottom =
-              layout_constraint->is_anchored_bottom;
+              layout_constraint->bottom_inset.has_value();
 
-          constraint->left_offset = layout_constraint->left_offset.ToFloat();
-          constraint->right_offset = layout_constraint->right_offset.ToFloat();
-          constraint->top_offset = layout_constraint->top_offset.ToFloat();
+          constraint->left_offset =
+              layout_constraint->left_inset.value_or(LayoutUnit()).ToFloat();
+          constraint->right_offset =
+              layout_constraint->right_inset.value_or(LayoutUnit()).ToFloat();
+          constraint->top_offset =
+              layout_constraint->top_inset.value_or(LayoutUnit()).ToFloat();
           constraint->bottom_offset =
-              layout_constraint->bottom_offset.ToFloat();
+              layout_constraint->bottom_inset.value_or(LayoutUnit()).ToFloat();
           constraint->constraint_box_rect =
               gfx::RectF(layout_constraint->constraining_rect);
           constraint->scroll_container_relative_sticky_box_rect = gfx::RectF(
@@ -805,15 +813,15 @@ void FragmentPaintPropertyTreeBuilder::UpdateStickyTranslation() {
     context_.current.transform = properties_->StickyTranslation();
 }
 
-void FragmentPaintPropertyTreeBuilder::UpdateAnchorScrollTranslation() {
+void FragmentPaintPropertyTreeBuilder::UpdateAnchorPositionScrollTranslation() {
   DCHECK(properties_);
   if (NeedsPaintPropertyUpdate()) {
-    if (NeedsAnchorScrollTranslation(object_)) {
+    if (NeedsAnchorPositionScrollTranslation(object_)) {
       const auto& box = To<LayoutBox>(object_);
-      const AnchorScrollData& anchor_scroll_data =
-          *To<Element>(box.GetNode())->GetAnchorScrollData();
+      const AnchorPositionScrollData& anchor_position_scroll_data =
+          *To<Element>(box.GetNode())->GetAnchorPositionScrollData();
       gfx::Vector2dF translation_offset =
-          -anchor_scroll_data.AccumulatedScrollOffset();
+          -anchor_position_scroll_data.AccumulatedScrollOffset();
       TransformPaintPropertyNode::State state{
           {gfx::Transform::MakeTranslation(translation_offset)}};
 
@@ -821,8 +829,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateAnchorScrollTranslation() {
       // snapshot's scrollers do not match the current scrollers.
 
       DCHECK(full_context_.direct_compositing_reasons &
-             CompositingReason::kAnchorScroll);
-      state.direct_compositing_reasons = CompositingReason::kAnchorScroll;
+             CompositingReason::kAnchorPosition);
+      state.direct_compositing_reasons = CompositingReason::kAnchorPosition;
 
       // TODO(crbug.com/1309178): Not using GetCompositorElementId() here
       // because anchor-positioned elements don't work properly under multicol
@@ -831,29 +839,30 @@ void FragmentPaintPropertyTreeBuilder::UpdateAnchorScrollTranslation() {
       // LayoutNG block fragments.
       state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
           box.UniqueId(),
-          CompositorElementIdNamespace::kAnchorScrollTranslation);
+          CompositorElementIdNamespace::kAnchorPositionScrollTranslation);
       state.rendering_context_id = context_.rendering_context_id;
       state.flags.flattens_inherited_transform =
           context_.should_flatten_inherited_transform;
 
-      state.anchor_scroll_containers_data =
-          std::make_unique<cc::AnchorScrollContainersData>();
-      state.anchor_scroll_containers_data->scroll_container_ids =
+      state.anchor_position_scrollers_data =
+          std::make_unique<cc::AnchorPositionScrollersData>();
+      state.anchor_position_scrollers_data->scroll_container_ids =
           std::vector<CompositorElementId>(
-              anchor_scroll_data.ScrollContainerIds().begin(),
-              anchor_scroll_data.ScrollContainerIds().end());
-      state.anchor_scroll_containers_data->accumulated_scroll_origin =
-          anchor_scroll_data.AccumulatedScrollOrigin();
+              anchor_position_scroll_data.ScrollContainerIds().begin(),
+              anchor_position_scroll_data.ScrollContainerIds().end());
+      state.anchor_position_scrollers_data->accumulated_scroll_origin =
+          anchor_position_scroll_data.AccumulatedScrollOrigin();
 
-      OnUpdateTransform(properties_->UpdateAnchorScrollTranslation(
+      OnUpdateTransform(properties_->UpdateAnchorPositionScrollTranslation(
           *context_.current.transform, std::move(state)));
     } else {
-      OnClearTransform(properties_->ClearAnchorScrollTranslation());
+      OnClearTransform(properties_->ClearAnchorPositionScrollTranslation());
     }
   }
 
-  if (properties_->AnchorScrollTranslation())
-    context_.current.transform = properties_->AnchorScrollTranslation();
+  if (properties_->AnchorPositionScrollTranslation()) {
+    context_.current.transform = properties_->AnchorPositionScrollTranslation();
+  }
 }
 
 // Directly updates the associated cc transform node if possible, and
@@ -932,19 +941,24 @@ FragmentPaintPropertyTreeBuilder::TransformAndOriginForSVGChild() const {
       CompositingReason::kActiveTransformAnimation) {
     if (CompositorAnimations::CanStartTransformAnimationOnCompositorForSVG(
             *To<SVGElement>(object_.GetNode()))) {
+      const gfx::RectF reference_box =
+          TransformHelper::ComputeReferenceBox(object_);
       // Composited transform animation works only if
       // LocalToSVGParentTransform() reflects the CSS transform properties.
       // If this fails, we need to exclude the case in
       // CompositorAnimations::CanStartTransformAnimationOnCompositorForSVG().
       DCHECK_EQ(TransformHelper::ComputeTransform(
-                    object_, ComputedStyle::kIncludeTransformOrigin),
+                    object_.GetDocument(), object_.StyleRef(), reference_box,
+                    ComputedStyle::kIncludeTransformOrigin),
                 object_.LocalToSVGParentTransform());
       // For composited transform animation to work, we need to store transform
       // origin separately. It's baked in object_.LocalToSVGParentTransform().
       return {TransformHelper::ComputeTransform(
-                  object_, ComputedStyle::kExcludeTransformOrigin)
+                  object_.GetDocument(), object_.StyleRef(), reference_box,
+                  ComputedStyle::kExcludeTransformOrigin)
                   .ToTransform(),
-              gfx::Point3F(TransformHelper::ComputeTransformOrigin(object_))};
+              gfx::Point3F(TransformHelper::ComputeTransformOrigin(
+                  object_.StyleRef(), reference_box))};
     }
   }
   return {object_.LocalToSVGParentTransform().ToTransform()};
@@ -1001,16 +1015,18 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransformForSVGChild(
 }
 
 static gfx::Point3F GetTransformOrigin(const LayoutBox& box,
-                                       PhysicalSize size) {
+                                       const PhysicalRect& reference_box) {
   // Transform origin has no effect without a transform or motion path.
   if (!box.HasTransform())
     return gfx::Point3F();
-  gfx::SizeF border_box_size(size);
+  const gfx::SizeF reference_box_size(reference_box.size);
   const auto& style = box.StyleRef();
   return gfx::Point3F(FloatValueForLength(style.GetTransformOrigin().X(),
-                                          border_box_size.width()),
+                                          reference_box_size.width()) +
+                          reference_box.X().ToFloat(),
                       FloatValueForLength(style.GetTransformOrigin().Y(),
-                                          border_box_size.height()),
+                                          reference_box_size.height()) +
+                          reference_box.Y().ToFloat(),
                       style.GetTransformOrigin().Z());
 }
 
@@ -1115,13 +1131,13 @@ static bool UpdateBoxSizeAndCheckActiveAnimationAxisAlignment(
 
 static TransformPaintPropertyNode::TransformAndOrigin TransformAndOriginState(
     const LayoutBox& box,
-    const PhysicalSize& size,
+    const PhysicalRect& reference_box,
     void (*compute_matrix)(const LayoutBox& box,
-                           const PhysicalSize& size,
+                           const PhysicalRect& reference_box,
                            gfx::Transform& matrix)) {
   gfx::Transform matrix;
-  compute_matrix(box, size, matrix);
-  return {matrix, GetTransformOrigin(box, size)};
+  compute_matrix(box, reference_box, matrix);
+  return {matrix, GetTransformOrigin(box, reference_box)};
 }
 
 static bool IsLayoutShiftRootTransform(
@@ -1134,7 +1150,7 @@ static bool IsLayoutShiftRootTransform(
 void FragmentPaintPropertyTreeBuilder::UpdateIndividualTransform(
     bool (*needs_property)(const LayoutObject&, CompositingReasons),
     void (*compute_matrix)(const LayoutBox& box,
-                           const PhysicalSize& size,
+                           const PhysicalRect& reference_box,
                            gfx::Transform& matrix),
     CompositingReasons compositing_reasons_for_property,
     CompositorElementIdNamespace compositor_namespace,
@@ -1168,17 +1184,17 @@ void FragmentPaintPropertyTreeBuilder::UpdateIndividualTransform(
       if (object_.IsBox()) {
         auto& box = To<LayoutBox>(object_);
         // Each individual fragment should have its own transform origin, based
-        // on the fragment size.
-        PhysicalSize size(BoxFragment().Size());
+        // on the fragment reference box.
+        PhysicalRect reference_box = ComputeReferenceBox(BoxFragment());
 
         if (IsMissingActualFragment()) {
           // If the fragment doesn't really exist in the current fragmentainer,
           // treat its block-size as zero. See figure in
           // https://www.w3.org/TR/css-break-3/#transforms
           if (style.IsHorizontalWritingMode()) {
-            size.height = LayoutUnit();
+            reference_box.SetHeight(LayoutUnit());
           } else {
-            size.width = LayoutUnit();
+            reference_box.SetWidth(LayoutUnit());
           }
         }
 
@@ -1189,7 +1205,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateIndividualTransform(
         // See http://crbug.com/937929 for why we are not using
         // style.IsRunningTransformAnimationOnCompositor() etc. here.
         state.transform_and_origin =
-            TransformAndOriginState(box, size, compute_matrix);
+            TransformAndOriginState(box, reference_box, compute_matrix);
 
         // TODO(trchen): transform-style should only be respected if a
         // PaintLayer is created. If a node with transform-style: preserve-3d
@@ -1267,11 +1283,11 @@ void FragmentPaintPropertyTreeBuilder::UpdateIndividualTransform(
 void FragmentPaintPropertyTreeBuilder::UpdateTranslate() {
   UpdateIndividualTransform(
       &NeedsTranslate,
-      [](const LayoutBox& box, const PhysicalSize& size,
+      [](const LayoutBox& box, const PhysicalRect& reference_box,
          gfx::Transform& matrix) {
         const ComputedStyle& style = box.StyleRef();
         if (style.Translate())
-          style.Translate()->Apply(matrix, gfx::SizeF(size));
+          style.Translate()->Apply(matrix, gfx::SizeF(reference_box.size));
       },
       CompositingReason::kDirectReasonsForTranslateProperty,
       CompositorElementIdNamespace::kTranslateTransform,
@@ -1284,11 +1300,11 @@ void FragmentPaintPropertyTreeBuilder::UpdateTranslate() {
 void FragmentPaintPropertyTreeBuilder::UpdateRotate() {
   UpdateIndividualTransform(
       &NeedsRotate,
-      [](const LayoutBox& box, const PhysicalSize& size,
+      [](const LayoutBox& box, const PhysicalRect& reference_box,
          gfx::Transform& matrix) {
         const ComputedStyle& style = box.StyleRef();
         if (style.Rotate())
-          style.Rotate()->Apply(matrix, gfx::SizeF(size));
+          style.Rotate()->Apply(matrix, gfx::SizeF(reference_box.size));
       },
       CompositingReason::kDirectReasonsForRotateProperty,
       CompositorElementIdNamespace::kRotateTransform,
@@ -1300,11 +1316,11 @@ void FragmentPaintPropertyTreeBuilder::UpdateRotate() {
 void FragmentPaintPropertyTreeBuilder::UpdateScale() {
   UpdateIndividualTransform(
       &NeedsScale,
-      [](const LayoutBox& box, const PhysicalSize& size,
+      [](const LayoutBox& box, const PhysicalRect& reference_box,
          gfx::Transform& matrix) {
         const ComputedStyle& style = box.StyleRef();
         if (style.Scale())
-          style.Scale()->Apply(matrix, gfx::SizeF(size));
+          style.Scale()->Apply(matrix, gfx::SizeF(reference_box.size));
       },
       CompositingReason::kDirectReasonsForScaleProperty,
       CompositorElementIdNamespace::kScaleTransform,
@@ -1316,11 +1332,12 @@ void FragmentPaintPropertyTreeBuilder::UpdateScale() {
 void FragmentPaintPropertyTreeBuilder::UpdateOffset() {
   UpdateIndividualTransform(
       &NeedsOffset,
-      [](const LayoutBox& box, const PhysicalSize& size,
+      [](const LayoutBox& box, const PhysicalRect& reference_box,
          gfx::Transform& matrix) {
         const ComputedStyle& style = box.StyleRef();
         style.ApplyTransform(
-            matrix, &box, size, ComputedStyle::kExcludeTransformOperations,
+            matrix, &box, reference_box,
+            ComputedStyle::kExcludeTransformOperations,
             ComputedStyle::kExcludeTransformOrigin,
             ComputedStyle::kIncludeMotionPath,
             ComputedStyle::kExcludeIndependentTransformProperties);
@@ -1337,11 +1354,12 @@ void FragmentPaintPropertyTreeBuilder::UpdateOffset() {
 void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
   UpdateIndividualTransform(
       &NeedsTransform,
-      [](const LayoutBox& box, const PhysicalSize& size,
+      [](const LayoutBox& box, const PhysicalRect& reference_box,
          gfx::Transform& matrix) {
         const ComputedStyle& style = box.StyleRef();
         style.ApplyTransform(
-            matrix, &box, size, ComputedStyle::kIncludeTransformOperations,
+            matrix, &box, reference_box,
+            ComputedStyle::kIncludeTransformOperations,
             ComputedStyle::kExcludeTransformOrigin,
             ComputedStyle::kExcludeMotionPath,
             ComputedStyle::kExcludeIndependentTransformProperties);
@@ -1818,10 +1836,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
       // the blurred result will be clipped.
       // "B" should be also clipped because a filter always creates a containing
       // block for all descendants.
-      if (!state.filter.IsEmpty() ||
-          (full_context_.direct_compositing_reasons &
-           CompositingReason::kActiveFilterAnimation))
-        state.output_clip = context_.current.clip;
+      state.output_clip = context_.current.clip;
 
       // We may begin to composite our subtree prior to an animation starts,
       // but a compositor element ID is only needed when an animation is
@@ -2500,6 +2515,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
             if (needs_effect_node) {
               EffectPaintPropertyNode::State effect_state;
               effect_state.local_transform_space = context_.current.transform;
+              effect_state.output_clip = context_.current.clip;
               effect_state.compositor_element_id =
                   scrollable_area->GetScrollbarElementId(orientation);
 
@@ -2545,6 +2561,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
         // are only painted for non-overlay scrollbars.
         EffectPaintPropertyNode::State effect_state;
         effect_state.local_transform_space = context_.current.transform;
+        effect_state.output_clip = context_.current.clip;
         effect_state.compositor_element_id =
             scrollable_area->GetScrollCornerElementId();
         OnUpdateEffect(properties_->UpdateScrollCornerEffect(
@@ -2857,8 +2874,9 @@ void FragmentPaintPropertyTreeBuilder::SetNeedsPaintPropertyUpdateIfNeeded() {
   if (object_.GetFrameView()->RemovePendingOpacityUpdate(object_))
     object_.GetMutableForPainting().SetOnlyThisNeedsPaintPropertyUpdate();
 
-  if (box.Size() == box.PreviousSize())
+  if (box.Size() == box.PreviousSize()) {
     return;
+  }
 
   // The overflow clip paint property depends on the border box rect through
   // overflowClipRect(). The border box rect's size equals the frame rect's
@@ -2945,8 +2963,10 @@ static bool IsLayoutShiftRoot(const LayoutObject& object,
   }
   if (auto* sticky_translation = properties->StickyTranslation())
     return true;
-  if (auto* anchor_scroll_translation = properties->AnchorScrollTranslation())
+  if (auto* anchor_position_scroll_translation =
+          properties->AnchorPositionScrollTranslation()) {
     return true;
+  }
   if (properties->OverflowClip())
     return true;
   return false;
@@ -2988,7 +3008,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateForSelf() {
 
   if (properties_) {
     UpdateStickyTranslation();
-    UpdateAnchorScrollTranslation();
+    UpdateAnchorPositionScrollTranslation();
     if (object_.IsSVGChild()) {
       // TODO(crbug.com/1278452): Merge SVG handling into the primary codepath.
       UpdateTransformForSVGChild(full_context_.direct_compositing_reasons);
@@ -3195,7 +3215,7 @@ void PaintPropertyTreeBuilder::UpdateFragments() {
                                    context_.container_for_fixed_position,
                                    context_.painting_layer) ||
        NeedsStickyTranslation(object_) ||
-       NeedsAnchorScrollTranslation(object_) ||
+       NeedsAnchorPositionScrollTranslation(object_) ||
        NeedsTranslate(object_, context_.direct_compositing_reasons) ||
        NeedsRotate(object_, context_.direct_compositing_reasons) ||
        NeedsScale(object_, context_.direct_compositing_reasons) ||
@@ -3455,9 +3475,6 @@ void PaintPropertyTreeBuilder::UpdateForChildren() {
 
 bool PaintPropertyTreeBuilder::ScheduleDeferredTransformNodeUpdate(
     LayoutObject& object) {
-  if (!base::FeatureList::IsEnabled(features::kFastPathPaintPropertyUpdates))
-    return false;
-
   if (CanDoDeferredTransformNodeUpdate(object)) {
     object.GetFrameView()->AddPendingTransformUpdate(object);
     return true;
@@ -3467,8 +3484,6 @@ bool PaintPropertyTreeBuilder::ScheduleDeferredTransformNodeUpdate(
 
 bool PaintPropertyTreeBuilder::ScheduleDeferredOpacityNodeUpdate(
     LayoutObject& object) {
-  if (!base::FeatureList::IsEnabled(features::kFastPathPaintPropertyUpdates))
-    return false;
   if (CanDoDeferredOpacityNodeUpdate(object)) {
     object.GetFrameView()->AddPendingOpacityUpdate(object);
     return true;
@@ -3483,17 +3498,18 @@ void PaintPropertyTreeBuilder::DirectlyUpdateTransformMatrix(
   DCHECK(CanDoDeferredTransformNodeUpdate(object));
 
   auto& box = To<LayoutBox>(object);
-  PhysicalSize size = PhysicalSize(box.Size());
+  const PhysicalRect reference_box = ComputeReferenceBox(box);
   FragmentData* fragment_data = &object.GetMutableForPainting().FirstFragment();
   auto* properties = fragment_data->PaintProperties();
   auto* transform = properties->Transform();
   auto transform_and_origin = TransformAndOriginState(
-      box, size,
-      [](const LayoutBox& box, const PhysicalSize& size,
+      box, reference_box,
+      [](const LayoutBox& box, const PhysicalRect& reference_box,
          gfx::Transform& matrix) {
         const ComputedStyle& style = box.StyleRef();
         style.ApplyTransform(
-            matrix, &box, size, ComputedStyle::kIncludeTransformOperations,
+            matrix, &box, reference_box,
+            ComputedStyle::kIncludeTransformOperations,
             ComputedStyle::kExcludeTransformOrigin,
             ComputedStyle::kExcludeMotionPath,
             ComputedStyle::kExcludeIndependentTransformProperties);

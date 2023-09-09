@@ -19,6 +19,7 @@
 #import "components/bookmarks/browser/bookmark_node.h"
 #import "components/bookmarks/common/bookmark_features.h"
 #import "components/bookmarks/common/bookmark_metrics.h"
+#import "components/sync/base/features.h"
 #import "ios/chrome/browser/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/bookmarks/bookmarks_utils.h"
 #import "ios/chrome/browser/shared/coordinator/alert/action_sheet_coordinator.h"
@@ -116,7 +117,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                          browser:(Browser*)browser {
   DCHECK(profileBookmarkModel);
   DCHECK(profileBookmarkModel->loaded());
-  if (base::FeatureList::IsEnabled(bookmarks::kEnableBookmarksAccountStorage)) {
+  if (base::FeatureList::IsEnabled(syncer::kEnableBookmarksAccountStorage)) {
     DCHECK(accountBookmarkModel);
     DCHECK(accountBookmarkModel->loaded());
   } else {
@@ -168,6 +169,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   _syncService = nullptr;
   _syncObserverModelBridge.reset();
   _titleItem.delegate = nil;
+  [self dismissActionSheetCoordinator];
 }
 
 - (void)dealloc {
@@ -190,6 +192,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                            IDS_IOS_VIEW_CONTROLLER_DISMISS_SAVE_CHANGES)
                 action:^{
                   [weakSelf saveFolder];
+                  [weakSelf dismissActionSheetCoordinator];
                 }
                  style:UIAlertActionStyleDefault];
   [_actionSheetCoordinator
@@ -197,6 +200,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                            IDS_IOS_VIEW_CONTROLLER_DISMISS_DISCARD_CHANGES)
                 action:^{
                   [weakSelf dismiss];
+                  [weakSelf dismissActionSheetCoordinator];
                 }
                  style:UIAlertActionStyleDestructive];
   // IDS_IOS_NAVIGATION_BAR_CANCEL_BUTTON
@@ -206,6 +210,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                 action:^{
                   weakSelf.navigationItem.leftBarButtonItem.enabled = YES;
                   weakSelf.navigationItem.rightBarButtonItem.enabled = YES;
+                  [weakSelf dismissActionSheetCoordinator];
                 }
                  style:UIAlertActionStyleCancel];
 
@@ -479,6 +484,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 #pragma mark - Private
+
+- (void)dismissActionSheetCoordinator {
+  [_actionSheetCoordinator stop];
+  _actionSheetCoordinator = nil;
+}
 
 // If `_parentFolder` belongs to `_accountBookmarkModel` and
 // `accountBookmarkModel` becomes unavailable, this method will cancel folder

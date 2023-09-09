@@ -9,6 +9,7 @@ import {CloudUploadBrowserProxy} from 'chrome://cloud-upload/cloud_upload_browse
 import {CloudProvider, MoveConfirmationPageElement} from 'chrome://cloud-upload/move_confirmation_page.js';
 import {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertNotReached, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
 import {CloudUploadTestBrowserProxy, ProxyOptions} from './cloud_upload_test_browser_proxy.js';
@@ -25,6 +26,21 @@ suite('<move-confirmation-page>', () => {
   async function setUp(options: ProxyOptions) {
     testProxy = new CloudUploadTestBrowserProxy(options);
     CloudUploadBrowserProxy.setInstance(testProxy);
+
+    // Setup fake strings, there are tests below to assert these strings.
+    loadTimeData.resetForTesting({
+      'moveAndOpen': 'Move and open',
+      'copyAndOpen': 'Copy and open',
+      'moveConfirmationMoveTitle': 'Move 1 file to $1',
+      'moveConfirmationMoveTitlePlural': 'Move $2 files to $1',
+      'moveConfirmationCopyTitle': 'Copy 1 file to $1',
+      'moveConfirmationCopyTitlePlural': 'Copy $2 files to $1',
+      'moveConfirmationOneDriveBodyText': 'OneDrive body',
+      'moveConfirmationGoogleDriveBodyText': 'Google Drive body',
+      'moveConfirmationAlwaysMove': 'Don\'t ask again',
+      'oneDrive': 'Microsoft OneDrive',
+      'googleDrive': 'Google Drive',
+    });
 
     // Creates and attaches the <move-confirmation-page> element to the DOM
     // tree.
@@ -64,6 +80,7 @@ suite('<move-confirmation-page>', () => {
    * the <move-confirmation-page> component.
    */
   teardown(() => {
+    loadTimeData.resetForTesting();
     assert(window.trustedTypes);
     container.innerHTML = window.trustedTypes.emptyHTML;
     testProxy.handler.reset();
@@ -76,7 +93,7 @@ suite('<move-confirmation-page>', () => {
    */
   test('No checkbox before first move confirmation for Drive', async () => {
     await setUp({
-      fileName: 'text.docx',
+      fileNames: ['text.docx'],
       officeWebAppInstalled: true,
       installOfficeWebAppResult: true,
       odfsMounted: true,
@@ -118,7 +135,7 @@ suite('<move-confirmation-page>', () => {
       'Checkbox after first move confirmation for Drive. Checkbox clicked',
       async () => {
         await setUp({
-          fileName: 'text.docx',
+          fileNames: ['text.docx'],
           officeWebAppInstalled: true,
           installOfficeWebAppResult: true,
           odfsMounted: true,
@@ -173,7 +190,7 @@ suite('<move-confirmation-page>', () => {
       'Checkbox after first move confirmation for Drive. Checkbox not clicked',
       async () => {
         await setUp({
-          fileName: 'text.docx',
+          fileNames: ['text.docx'],
           officeWebAppInstalled: true,
           installOfficeWebAppResult: true,
           odfsMounted: true,
@@ -221,7 +238,7 @@ suite('<move-confirmation-page>', () => {
           'confirmation for OneDrive has already been shown',
       async () => {
         await setUp({
-          fileName: 'text.docx',
+          fileNames: ['text.docx'],
           officeWebAppInstalled: true,
           installOfficeWebAppResult: true,
           odfsMounted: true,
@@ -242,7 +259,7 @@ suite('<move-confirmation-page>', () => {
    */
   test('No checkbox before first move confirmation for OneDrive', async () => {
     await setUp({
-      fileName: 'text.docx',
+      fileNames: ['text.docx'],
       officeWebAppInstalled: true,
       installOfficeWebAppResult: true,
       odfsMounted: true,
@@ -286,7 +303,7 @@ suite('<move-confirmation-page>', () => {
       'Checkbox after first move confirmation for OneDrive. Checkbox clicked',
       async () => {
         await setUp({
-          fileName: 'text.docx',
+          fileNames: ['text.docx'],
           officeWebAppInstalled: true,
           installOfficeWebAppResult: true,
           odfsMounted: true,
@@ -344,7 +361,7 @@ suite('<move-confirmation-page>', () => {
           'clicked',
       async () => {
         await setUp({
-          fileName: 'text.docx',
+          fileNames: ['text.docx'],
           officeWebAppInstalled: true,
           installOfficeWebAppResult: true,
           odfsMounted: true,
@@ -393,7 +410,7 @@ suite('<move-confirmation-page>', () => {
           'move confirmation for Drive has already been shown',
       async () => {
         await setUp({
-          fileName: 'text.docx',
+          fileNames: ['text.docx'],
           officeWebAppInstalled: true,
           installOfficeWebAppResult: true,
           odfsMounted: true,
@@ -413,7 +430,7 @@ suite('<move-confirmation-page>', () => {
    */
   test('Checkbox pre-checked for Drive', async () => {
     await setUp({
-      fileName: 'text.docx',
+      fileNames: ['text.docx'],
       officeWebAppInstalled: true,
       installOfficeWebAppResult: true,
       odfsMounted: true,
@@ -435,7 +452,7 @@ suite('<move-confirmation-page>', () => {
    */
   test('Checkbox pre-checked for OneDrive', async () => {
     await setUp({
-      fileName: 'text.docx',
+      fileNames: ['text.docx'],
       officeWebAppInstalled: true,
       installOfficeWebAppResult: true,
       odfsMounted: true,
@@ -456,7 +473,7 @@ suite('<move-confirmation-page>', () => {
    */
   test('DialogTextForDrive', async () => {
     await setUp({
-      fileName: 'text.docx',
+      fileNames: ['text.docx'],
       officeWebAppInstalled: true,
       installOfficeWebAppResult: true,
       odfsMounted: true,
@@ -484,7 +501,7 @@ suite('<move-confirmation-page>', () => {
    */
   test('DialogTextForOneDrive', async () => {
     await setUp({
-      fileName: 'text.docx',
+      fileNames: ['text.docx'],
       officeWebAppInstalled: true,
       installOfficeWebAppResult: true,
       odfsMounted: true,
@@ -512,7 +529,7 @@ suite('<move-confirmation-page>', () => {
    */
   test('DialogTextForMoveAndUpload', async () => {
     await setUp({
-      fileName: 'text.docx',
+      fileNames: ['text.docx'],
       officeWebAppInstalled: true,
       installOfficeWebAppResult: true,
       odfsMounted: true,
@@ -535,7 +552,7 @@ suite('<move-confirmation-page>', () => {
    */
   test('DialogTextForCopyAndUpload', async () => {
     await setUp({
-      fileName: 'text.docx',
+      fileNames: ['text.docx'],
       officeWebAppInstalled: true,
       installOfficeWebAppResult: true,
       odfsMounted: true,

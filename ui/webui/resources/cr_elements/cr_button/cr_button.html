@@ -88,10 +88,9 @@
         /* Disabled default button colors. */
         --disabled-bg: transparent;
         --disabled-border-color: var(--color-button-border-disabled,
-            rgba(var(--cr-fallback-color-on-surface-rgb), .12));
+            var(--cr-fallback-color-disabled-background));
         --disabled-text-color: var(--color-button-foreground-disabled,
-            rgba(var(--cr-fallback-color-on-surface-rgb),
-                 var(--cr-disabled-opacity)));
+            var(--cr-fallback-color-disabled-foreground));
 
         /* Action button colors. */
         --bg-action: var(--color-button-background-prominent,
@@ -105,10 +104,11 @@
 
         /* Disabled action button colors. */
         --disabled-bg-action: var(--color-button-background-prominent-disabled,
-            rgba(var(--cr-fallback-color-on-surface-rgb), .12));
+            var(--cr-fallback-color-disabled-background));
 
         background: transparent;
         border-radius: 100px;
+        isolation: isolate;
         line-height: 20px;
       }
 
@@ -149,6 +149,14 @@
           /* Use outline instead of box-shadow (which does not work) in Windows
              HCM. */
           outline: var(--cr-focus-outline-hcm);
+        }
+
+        :host-context([chrome-refresh-2023]):host {
+          /* Refresh styles either use color pipeline colors which automatically
+           * provide high-contrast colors in high-contrast mode, or use fallback
+           * vars that have high-contrast fallbacks for critically important
+           * states such as disabled state. */
+          forced-color-adjust: none;
         }
       }
 
@@ -216,7 +224,7 @@
       :host-context([chrome-refresh-2023]):host([disabled].floating-button)
           #background {
         background-color: var(--color-button-background-tonal-disabled,
-            rgba(var(--cr-fallback-color-on-surface-rgb), .12));
+            var(--cr-fallback-color-disabled-background));
       }
 
       #content {

@@ -31,6 +31,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/enterprise/util/affiliation.h"
+#include "chrome/browser/infobars/simple_alert_infobar_creator.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/policy_ui_utils.h"
 #include "chrome/browser/policy/policy_value_and_status_aggregator.h"
@@ -47,14 +48,20 @@
 #include "components/enterprise/browser/controller/browser_dm_token_storage.h"
 #include "components/enterprise/browser/controller/chrome_browser_cloud_management_controller.h"
 #include "components/enterprise/browser/reporting/common_pref_names.h"
+#include "components/infobars/content/content_infobar_manager.h"
+#include "components/infobars/core/infobar_delegate.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
 #include "components/policy/core/browser/policy_conversions.h"
 #include "components/policy/core/browser/webui/json_generation.h"
 #include "components/policy/core/browser/webui/policy_webui_constants.h"
+#include "components/policy/core/browser/webui/statistics_collector.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
+#include "components/policy/core/common/local_test_policy_provider.h"
 #include "components/policy/core/common/policy_details.h"
+#include "components/policy/core/common/policy_loader_local_test.h"
+#include "components/policy/core/common/policy_logger.h"
 #include "components/policy/core/common/policy_scheduler.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/remote_commands/remote_commands_service.h"
@@ -73,10 +80,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 
-#if BUILDFLAG(IS_ANDROID)
-#include "components/policy/core/common/policy_logger.h"
-#endif  // BUILDFLAG(IS_ANDROID)
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/core/device_cloud_policy_store_ash.h"
@@ -93,7 +96,7 @@
 namespace {
 
 // Key under which extension policies are grouped in JSON policy exports.
-const char kExtensionsKey[] = "extensions";
+constexpr char kExtensionsKey[] = "extensions";
 
 }  // namespace
 
@@ -103,6 +106,9 @@ PolicyUIHandler::~PolicyUIHandler() {
   if (export_policies_select_file_dialog_) {
     export_policies_select_file_dialog_->ListenerDestroyed();
   }
+  policy::RecordPolicyUIButtonUsage(reload_policies_count_,
+                                    export_to_json_count_, copy_to_json_count_,
+                                    upload_report_count_);
 }
 
 void PolicyUIHandler::AddCommonLocalizedStringsToSource(
@@ -179,13 +185,19 @@ void PolicyUIHandler::RegisterMessages() {
       "copyPoliciesJSON",
       base::BindRepeating(&PolicyUIHandler::HandleCopyPoliciesJson,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setLocalTestPolicies",
+      base::BindRepeating(&PolicyUIHandler::HandleSetLocalTestPolicies,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "revertLocalTestPolicies",
+      base::BindRepeating(&PolicyUIHandler::HandleRevertLocalTestPolicies,
+                          base::Unretained(this)));
 
-#if BUILDFLAG(IS_ANDROID)
   web_ui()->RegisterMessageCallback(
       "getPolicyLogs",
       base::BindRepeating(&PolicyUIHandler::HandleGetPolicyLogs,
                           base::Unretained(this)));
-#endif  // BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
@@ -217,7 +229,18 @@ void PolicyUIHandler::FileSelectionCanceled(void* params) {
   export_policies_select_file_dialog_ = nullptr;
 }
 
+void PolicyUIHandler::AddInfobarForActiveLocalTestPolicies() {
+  content::WebContents* web_contents = web_ui()->GetWebContents();
+
+  CreateSimpleAlertInfoBar(
+      infobars::ContentInfoBarManager::FromWebContents(web_contents),
+      infobars::InfoBarDelegate::LOCAL_TEST_POLICIES_APPLIED_INFOBAR, nullptr,
+      l10n_util::GetStringUTF16(IDS_LOCAL_TEST_POLICIES_ENABLED),
+      /*auto_expire=*/false, /*should_animate=*/false);
+}
+
 void PolicyUIHandler::HandleExportPoliciesJson(const base::Value::List& args) {
+  export_to_json_count_ += 1;
 #if BUILDFLAG(IS_ANDROID)
   // TODO(crbug.com/1228691): Unify download logic between all platforms to
   // use the WebUI download solution (and remove the Android check).
@@ -233,8 +256,9 @@ void PolicyUIHandler::HandleExportPoliciesJson(const base::Value::List& args) {
 #else
   // If the "select file" dialog window is already opened, we don't want to open
   // it again.
-  if (export_policies_select_file_dialog_)
+  if (export_policies_select_file_dialog_) {
     return;
+  }
 
   content::WebContents* webcontents = web_ui()->GetWebContents();
 
@@ -266,6 +290,7 @@ void PolicyUIHandler::HandleListenPoliciesUpdates(
 }
 
 void PolicyUIHandler::HandleReloadPolicies(const base::Value::List& args) {
+  reload_policies_count_ += 1;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Allow user to manually fetch remote commands. Useful for testing or when
   // the invalidation service is not working properly.
@@ -283,8 +308,9 @@ void PolicyUIHandler::HandleReloadPolicies(const base::Value::List& args) {
     if (manager) {
       policy::RemoteCommandsService* const remote_commands_service =
           manager->core()->remote_commands_service();
-      if (remote_commands_service)
+      if (remote_commands_service) {
         remote_commands_service->FetchRemoteCommands();
+      }
     }
   }
 #endif
@@ -292,22 +318,48 @@ void PolicyUIHandler::HandleReloadPolicies(const base::Value::List& args) {
 }
 
 void PolicyUIHandler::HandleCopyPoliciesJson(const base::Value::List& args) {
+  copy_to_json_count_ += 1;
   std::string policies_json = GetPoliciesAsJson();
   ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
   scw.WriteText(base::UTF8ToUTF16(policies_json));
 }
 
-#if BUILDFLAG(IS_ANDROID)
+void PolicyUIHandler::HandleSetLocalTestPolicies(
+    const base::Value::List& args) {
+  std::string json_policies_string = args[1].GetString();
+
+  policy::LocalTestPolicyProvider* local_test_provider =
+      static_cast<policy::LocalTestPolicyProvider*>(
+          g_browser_process->browser_policy_connector()
+              ->local_test_policy_provider());
+
+  CHECK(local_test_provider);
+
+  Profile::FromWebUI(web_ui())
+      ->GetProfilePolicyConnector()
+      ->UseLocalTestPolicyProvider();
+
+  local_test_provider->LoadJsonPolicies(json_policies_string);
+  AddInfobarForActiveLocalTestPolicies();
+}
+
+void PolicyUIHandler::HandleRevertLocalTestPolicies(
+    const base::Value::List& args) {
+  Profile::FromWebUI(web_ui())
+      ->GetProfilePolicyConnector()
+      ->RevertUseLocalTestPolicyProvider();
+}
+
 void PolicyUIHandler::HandleGetPolicyLogs(const base::Value::List& args) {
   DCHECK(policy::PolicyLogger::GetInstance()->IsPolicyLoggingEnabled());
   AllowJavascript();
   ResolveJavascriptCallback(args[0],
                             policy::PolicyLogger::GetInstance()->GetAsList());
 }
-#endif  // BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_CHROMEOS)
 void PolicyUIHandler::HandleUploadReport(const base::Value::List& args) {
+  upload_report_count_ += 1;
   DCHECK_EQ(1u, args.size());
   std::string callback_id = args[0].GetString();
   auto* report_scheduler = g_browser_process->browser_policy_connector()
@@ -324,8 +376,9 @@ void PolicyUIHandler::HandleUploadReport(const base::Value::List& args) {
 #endif  // !BUILDFLAG(IS_CHROMEOS)
 
 void PolicyUIHandler::SendPolicies() {
-  if (!IsJavascriptAllowed())
+  if (!IsJavascriptAllowed()) {
     return;
+  }
   FireWebUIListener(
       "policies-updated",
       base::Value(
@@ -335,8 +388,9 @@ void PolicyUIHandler::SendPolicies() {
 }
 
 void PolicyUIHandler::SendStatus() {
-  if (!IsJavascriptAllowed())
+  if (!IsJavascriptAllowed()) {
     return;
+  }
 
   FireWebUIListener(
       "status-updated",
@@ -345,8 +399,9 @@ void PolicyUIHandler::SendStatus() {
 
 #if !BUILDFLAG(IS_CHROMEOS)
 void PolicyUIHandler::OnReportUploaded(const std::string& callback_id) {
-  if (!IsJavascriptAllowed())
+  if (!IsJavascriptAllowed()) {
     return;
+  }
   ResolveJavascriptCallback(base::Value(callback_id),
                             /*response=*/base::Value());
   SendStatus();

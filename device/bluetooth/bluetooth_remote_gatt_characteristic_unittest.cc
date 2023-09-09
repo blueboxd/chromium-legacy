@@ -160,11 +160,12 @@ class BluetoothRemoteGattCharacteristicTest :
     ExpectedNotifyValue(notify_value_state);
   }
 
-  raw_ptr<BluetoothDevice, DanglingUntriaged> device_ = nullptr;
-  raw_ptr<BluetoothRemoteGattService, DanglingUntriaged> service_ = nullptr;
-  raw_ptr<BluetoothRemoteGattCharacteristic, DanglingUntriaged>
+  raw_ptr<BluetoothDevice, AcrossTasksDanglingUntriaged> device_ = nullptr;
+  raw_ptr<BluetoothRemoteGattService, AcrossTasksDanglingUntriaged> service_ =
+      nullptr;
+  raw_ptr<BluetoothRemoteGattCharacteristic, AcrossTasksDanglingUntriaged>
       characteristic1_ = nullptr;
-  raw_ptr<BluetoothRemoteGattCharacteristic, DanglingUntriaged>
+  raw_ptr<BluetoothRemoteGattCharacteristic, AcrossTasksDanglingUntriaged>
       characteristic2_ = nullptr;
 };
 

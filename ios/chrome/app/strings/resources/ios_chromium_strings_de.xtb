@@ -41,7 +41,6 @@
 <translation id="2942241131342758843">Standardmäßig Chromium verwenden, um Links zu öffnen, über Widgets zu suchen und Passwörter in anderen Apps automatisch ausfüllen zu lassen</translation>
 <translation id="2977470724722393594">Chromium ist auf dem neuesten Stand</translation>
 <translation id="3102849287235003384">Du kannst dich auf allen Websites aus deinem Google-Konto abmelden, indem du dich <ph name="BEGIN_LINK" />von Chromium abmeldest<ph name="END_LINK" />.</translation>
-<translation id="3115956258722352278">Chromium als Standardbrowser festlegen?</translation>
 <translation id="3256316712990552818">In Chromium kopiert</translation>
 <translation id="3344973607274501920">Chromium konnte deine Passwörter nicht prüfen. Prüfe deine Internetverbindung.</translation>
 <translation id="3472200483164753384">Wird von Chromium Canary nicht unterstützt</translation>
@@ -127,6 +126,7 @@
 <translation id="8013573822802650211">Melde dich auf allen deinen Geräten an, um deine Tabs überall dort aufzurufen, wo du Chromium verwendest</translation>
 <translation id="8071041515667087705">Gehe zu den Chromium-Einstellungen.</translation>
 <translation id="8073677936375100957">Deine Chromium-Daten von diesem Gerät löschen?</translation>
+<translation id="8235427517854598594">Chromium als Standardbrowser festlegen?</translation>
 <translation id="8240981428553046115">Chromium konnte nicht nach Updates suchen. Versuche es später noch einmal.</translation>
 <translation id="8409374867500149834">Du nutzt den umfangreichen Schutz von Chromium vor schädlichen Websites</translation>
 <translation id="858114650497379505">Du kannst die im Passwortmanager gespeicherten Passwörter in anderen Apps auf deinem iPhone verwenden.</translation>

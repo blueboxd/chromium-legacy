@@ -42,7 +42,6 @@
 <translation id="2942241131342758843">Hãy dùng Chromium theo mặc định để mở đường liên kết, tìm kiếm trong tiện ích và tự động điền mật khẩu trên các ứng dụng khác</translation>
 <translation id="2977470724722393594">Chromium đã được cập nhật</translation>
 <translation id="3102849287235003384">Để đăng xuất khỏi Tài khoản Google trên tất cả trang web, hãy <ph name="BEGIN_LINK" />đăng xuất khỏi Chromium<ph name="END_LINK" />.</translation>
-<translation id="3115956258722352278">Đặt Chromium làm trình duyệt mặc định của bạn?</translation>
 <translation id="3256316712990552818">Đã sao chép vào Chromium</translation>
 <translation id="3344973607274501920">Chromium không thể kiểm tra mật khẩu của bạn. Hãy thử kiểm tra kết nối Internet.</translation>
 <translation id="3472200483164753384">Chưa hỗ trợ trên Chromium Canary</translation>
@@ -128,6 +127,7 @@
 <translation id="8013573822802650211">Để xem các thẻ của bạn trên bất cứ thiết bị nào mà bạn có dùng Chromium, hãy đăng nhập trên tất cả thiết bị</translation>
 <translation id="8071041515667087705">Vào phần Cài đặt Chromium.</translation>
 <translation id="8073677936375100957">Xóa dữ liệu Chromium của bạn khỏi thiết bị này?</translation>
+<translation id="8235427517854598594">Đặt Chromium làm trình duyệt mặc định?</translation>
 <translation id="8240981428553046115">Chromium không thể kiểm tra xem có bản cập nhật mới nào không. Hãy thử lại sau.</translation>
 <translation id="8409374867500149834">Chromium sở hữu khả năng bảo mật mạnh nhất để bảo vệ bạn trước các trang web có hại</translation>
 <translation id="858114650497379505">Bạn có thể sử dụng mật khẩu đã lưu vào Trình quản lý mật khẩu trong ứng dụng khác trên iPhone.</translation>

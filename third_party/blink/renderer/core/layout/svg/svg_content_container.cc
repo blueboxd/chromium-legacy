@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_marker.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_shape.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_transformable_container.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 
@@ -68,12 +69,19 @@ void SVGContentContainer::Layout(const SVGContainerLayoutInfo& layout_info) {
           // FIXME: this should be done on invalidation, not during layout.
           // When the layout size changed and when using relative values tell
           // the LayoutSVGShape to update its shape object
-          if (auto* shape = DynamicTo<LayoutSVGShape>(child)) {
+          if (auto* shape = DynamicTo<LayoutSVGShape>(*child)) {
             shape->SetNeedsShapeUpdate();
-          } else if (auto* ng_text = DynamicTo<LayoutNGSVGText>(child)) {
+          } else if (auto* ng_text = DynamicTo<LayoutNGSVGText>(*child)) {
             ng_text->SetNeedsTextMetricsUpdate();
+          } else if (auto* container =
+                         DynamicTo<LayoutSVGTransformableContainer>(*child)) {
+            container->SetNeedsTransformUpdate();
           }
 
+          force_child_layout = true;
+        }
+        if (!child->NeedsLayout() &&
+            child->SVGSelfOrDescendantHasViewportDependency()) {
           force_child_layout = true;
         }
       }
@@ -171,7 +179,7 @@ bool SVGContentContainer::UpdateBoundingBoxes(bool& object_bounding_box_valid) {
   object_bounding_box_valid = false;
 
   gfx::RectF object_bounding_box;
-  gfx::RectF stroke_bounding_box;
+  gfx::RectF decorated_bounding_box;
   for (LayoutObject* current = children_.FirstChild(); current;
        current = current->NextSibling()) {
     // Don't include elements that are not rendered.
@@ -181,14 +189,15 @@ bool SVGContentContainer::UpdateBoundingBoxes(bool& object_bounding_box_valid) {
     UpdateObjectBoundingBox(
         object_bounding_box, object_bounding_box_valid,
         transform.MapRect(ObjectBoundsForPropagation(*current)));
-    stroke_bounding_box.Union(transform.MapRect(current->StrokeBoundingBox()));
+    decorated_bounding_box.Union(
+        transform.MapRect(current->DecoratedBoundingBox()));
   }
 
   bool changed = false;
   changed |= object_bounding_box_ != object_bounding_box;
   object_bounding_box_ = object_bounding_box;
-  changed |= stroke_bounding_box_ != stroke_bounding_box;
-  stroke_bounding_box_ = stroke_bounding_box;
+  changed |= decorated_bounding_box_ != decorated_bounding_box;
+  decorated_bounding_box_ = decorated_bounding_box;
   return changed;
 }
 
@@ -202,6 +211,19 @@ bool SVGContentContainer::ComputeHasNonIsolatedBlendingDescendants() const {
       return true;
   }
   return false;
+}
+
+gfx::RectF SVGContentContainer::ComputeStrokeBoundingBox() const {
+  gfx::RectF stroke_bbox;
+  for (LayoutObject* child = children_.FirstChild(); child;
+       child = child->NextSibling()) {
+    // Don't include elements that are not rendered.
+    if (!HasValidBoundingBoxForContainer(*child)) {
+      continue;
+    }
+    stroke_bbox.Union(child->StrokeBoundingBox());
+  }
+  return stroke_bbox;
 }
 
 }  // namespace blink

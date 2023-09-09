@@ -19,7 +19,6 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_policy.h"
-#include "base/message_loop/timer_slack.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
@@ -27,6 +26,10 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 #if !BUILDFLAG(IS_IOS)
 #import <AppKit/AppKit.h>
@@ -211,26 +214,11 @@ void MessagePumpCFRunLoopBase::ScheduleDelayedWork(
   } else {
     const double delay_seconds = next_work_info.remaining_delay().InSecondsF();
 
-    typedef void (*CFRunLoopTimerSetTolerancePtr)(CFRunLoopTimerRef, CFTimeInterval);
-    static const CFRunLoopTimerSetTolerancePtr CFRunLoopTimerSetToleranceFuncPtr =
-        reinterpret_cast<CFRunLoopTimerSetTolerancePtr>(dlsym(((void *) -2), "CFRunLoopTimerSetTolerance"));
-    if(CFRunLoopTimerSetToleranceFuncPtr) {
-      // The tolerance needs to be set before the fire date or it may be ignored.
-      if (timer_slack_ == TIMER_SLACK_MAXIMUM) {
-        CFRunLoopTimerSetTolerance(delayed_work_timer_, delay_seconds * 0.5);
-      } else {
-        CFRunLoopTimerSetTolerance(delayed_work_timer_, 0);
-      }
-    }
     CFRunLoopTimerSetNextFireDate(delayed_work_timer_,
                                   CFAbsoluteTimeGetCurrent() + delay_seconds);
   }
 
   delayed_work_scheduled_at_ = next_work_info.delayed_run_time;
-}
-
-void MessagePumpCFRunLoopBase::SetTimerSlack(TimerSlack timer_slack) {
-  timer_slack_ = timer_slack;
 }
 
 #if BUILDFLAG(IS_IOS)
@@ -256,6 +244,12 @@ MessagePumpCFRunLoopBase::MessagePumpCFRunLoopBase(int initial_mode_mask) {
                            /*order=*/0,
                            /*callout=*/RunDelayedWorkTimer,
                            /*context=*/&timer_context));
+  typedef void (*CFRunLoopTimerSetTolerancePtr)(CFRunLoopTimerRef, CFTimeInterval);
+  static const CFRunLoopTimerSetTolerancePtr CFRunLoopTimerSetToleranceFuncPtr =
+      reinterpret_cast<CFRunLoopTimerSetTolerancePtr>(dlsym(((void *) -2), "CFRunLoopTimerSetTolerance"));
+  if(CFRunLoopTimerSetToleranceFuncPtr) {
+    CFRunLoopTimerSetToleranceFuncPtr(delayed_work_timer_, 0);
+  }
 
   CFRunLoopSourceContext source_context = {0};
   source_context.info = this;

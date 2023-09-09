@@ -50,9 +50,15 @@ class NetworkIconTest : public AshTestBase,
 
   void SetUp() override {
     if (IsJellyrollEnabled()) {
-      feature_list_.InitAndEnableFeature(chromeos::features::kJellyroll);
+      feature_list_.InitWithFeatures(
+          /*enabled_features=*/{chromeos::features::kJellyroll,
+                                chromeos::features::kJelly},
+          /*disabled_features=*/{});
     } else {
-      feature_list_.InitAndDisableFeature(chromeos::features::kJellyroll);
+      feature_list_.InitWithFeatures(
+          /*enabled_features=*/{},
+          /*disabled_features=*/{chromeos::features::kJellyroll,
+                                 chromeos::features::kJelly});
     }
 
     AshTestBase::SetUp();
@@ -309,7 +315,6 @@ TEST_P(NetworkIconTest, ConnectingIconChangesInDarkMode) {
       GetDefaultNetworkImage(icon_type_, &animating);
   ASSERT_FALSE(light_mode_image.isNull());
   EXPECT_TRUE(animating);
-
   EXPECT_FALSE(gfx::test::AreImagesEqual(gfx::Image(default_image),
                                          gfx::Image(light_mode_image)));
 }

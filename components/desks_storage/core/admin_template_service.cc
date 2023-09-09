@@ -54,7 +54,7 @@ void UpdateModelWithPolicy(desks_storage::DeskModel* desk_model,
   }
 
   // If templates exist that aren't in the current policy we should delete them.
-  std::vector<base::Uuid> desk_uuids_to_delete = desk_model->GetAllEntryUuids();
+  std::set<base::Uuid> desk_uuids_to_delete = desk_model->GetAllEntryUuids();
 
   for (auto& desk_template : desk_templates) {
     // Something went wrong when parsing the template
@@ -77,7 +77,7 @@ void UpdateModelWithPolicy(desks_storage::DeskModel* desk_model,
     if (entry_status == desks_storage::DeskModel::GetEntryByUuidStatus::kOk ||
         entry_status ==
             desks_storage::DeskModel::GetEntryByUuidStatus::kNotFound) {
-      base::Erase(desk_uuids_to_delete, desk_template->uuid());
+      desk_uuids_to_delete.erase(desk_template->uuid());
 
       // There was an error when retrieving the template, do nothing and delete
       // the template.
@@ -145,12 +145,5 @@ bool AdminTemplateService::IsReady() {
 void AdminTemplateService::DeskModelLoaded() {
   UpdateModelWithPolicy(data_manager_.get(), pref_service_);
 }
-
-// Noops, we're not interested in these events.
-void AdminTemplateService::OnDeskModelDestroying() {}
-void AdminTemplateService::EntriesAddedOrUpdatedRemotely(
-    const std::vector<const ash::DeskTemplate*>& new_entries) {}
-void AdminTemplateService::EntriesRemovedRemotely(
-    const std::vector<base::Uuid>& uuids) {}
 
 }  // namespace desks_storage

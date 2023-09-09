@@ -30,7 +30,7 @@ BASE_FEATURE(kIPHBatterySaverModeFeature,
              base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHCompanionSidePanelFeature,
              "IPH_CompanionSidePanel",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHCompanionSidePanelRegionSearchFeature,
              "IPH_CompanionSidePanelRegionSearch",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -48,6 +48,9 @@ BASE_FEATURE(kIPHDownloadToolbarButtonFeature,
              base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHExtensionsMenuFeature,
              "IPH_ExtensionsMenu",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHExtensionsRequestAccessButtonFeature,
+             "IPH_ExtensionsRequestAccessButton",
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHFocusHelpBubbleScreenReaderPromoFeature,
              "IPH_FocusHelpBubbleScreenReaderPromo",
@@ -90,6 +93,9 @@ BASE_FEATURE(kIPHPriceInsightsPageActionIconLabelFeature,
              base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHPriceTrackingChipFeature,
              "IPH_PriceTrackingChipFeature",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHPriceTrackingEmailConsentFeature,
+             "IPH_PriceTrackingEmailConsentFeature",
              base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHPriceTrackingPageActionIconLabelFeature,
              "IPH_PriceTrackingPageActionIconLabelFeature",
@@ -239,9 +245,6 @@ BASE_FEATURE(kIPHRequestDesktopSiteOptInFeature,
              base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHRequestDesktopSiteExceptionsGenericFeature,
              "IPH_RequestDesktopSiteExceptionsGeneric",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-BASE_FEATURE(kIPHRequestDesktopSiteExceptionsSpecificFeature,
-             "IPH_RequestDesktopSiteExceptionsSpecific",
              base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHShoppingListSaveFlowFeature,
              "IPH_ShoppingListSaveFlow",
@@ -525,6 +528,36 @@ BASE_FEATURE(kIPHGoogleOneOfferNotificationFeature,
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHLauncherSearchHelpUiFeature,
              "IPH_LauncherSearchHelpUi",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHScalableIphTimerBasedOneFeature,
+             "IPH_ScalableIphTimerBasedOne",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHScalableIphTimerBasedTwoFeature,
+             "IPH_ScalableIphTimerBasedTwo",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHScalableIphTimerBasedThreeFeature,
+             "IPH_ScalableIphTimerBasedThree",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHScalableIphTimerBasedFourFeature,
+             "IPH_ScalableIphTimerBasedFour",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHScalableIphTimerBasedFiveFeature,
+             "IPH_ScalableIphTimerBasedFive",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHScalableIphTimerBasedSixFeature,
+             "IPH_ScalableIphTimerBasedSix",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHScalableIphTimerBasedSevenFeature,
+             "IPH_ScalableIphTimerBasedSeven",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHScalableIphTimerBasedEightFeature,
+             "IPH_ScalableIphTimerBasedEight",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHScalableIphTimerBasedNineFeature,
+             "IPH_ScalableIphTimerBasedNine",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHScalableIphTimerBasedTenFeature,
+             "IPH_ScalableIphTimerBasedTen",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 

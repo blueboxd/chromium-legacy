@@ -145,8 +145,7 @@ class ResourceFetcherTest : public testing::Test {
     void DidFinishLoading(uint64_t identifier,
                           base::TimeTicks finish_time,
                           int64_t encoded_data_length,
-                          int64_t decoded_body_length,
-                          bool should_report_corb_blocking) override {}
+                          int64_t decoded_body_length) override {}
     void DidFailLoading(const KURL&,
                         uint64_t identifier,
                         const ResourceError&,
@@ -237,7 +236,8 @@ TEST_F(ResourceFetcherTest, UseExistingResource) {
   KURL url("http://127.0.0.1:8000/foo.html");
   ResourceResponse response(url);
   response.SetHttpStatusCode(200);
-  response.SetHttpHeaderField(http_names::kCacheControl, "max-age=3600");
+  response.SetHttpHeaderField(http_names::kCacheControl,
+                              AtomicString("max-age=3600"));
   platform_->GetURLLoaderMockFactory()->RegisterURL(
       url, WrappedResourceResponse(response),
       test::PlatformTestDataPath(kTestResourceFilename));
@@ -287,7 +287,8 @@ TEST_F(ResourceFetcherTest, MemoryCachePerContextUseExistingResource) {
   KURL url("http://127.0.0.1:8000/foo.html");
   ResourceResponse response(url);
   response.SetHttpStatusCode(200);
-  response.SetHttpHeaderField(http_names::kCacheControl, "max-age=3600");
+  response.SetHttpHeaderField(http_names::kCacheControl,
+                              AtomicString("max-age=3600"));
   platform_->GetURLLoaderMockFactory()->RegisterURL(
       url, WrappedResourceResponse(response),
       test::PlatformTestDataPath(kTestResourceFilename));
@@ -354,7 +355,8 @@ TEST_F(ResourceFetcherTest, MetricsPerTopFrameSite) {
   KURL url("http://127.0.0.1:8000/foo.html");
   ResourceResponse response(url);
   response.SetHttpStatusCode(200);
-  response.SetHttpHeaderField(http_names::kCacheControl, "max-age=3600");
+  response.SetHttpHeaderField(http_names::kCacheControl,
+                              AtomicString("max-age=3600"));
   platform_->GetURLLoaderMockFactory()->RegisterURL(
       url, WrappedResourceResponse(response),
       test::PlatformTestDataPath(kTestResourceFilename));
@@ -422,7 +424,8 @@ TEST_F(ResourceFetcherTest, MetricsPerTopFrameSiteOpaqueOrigins) {
   KURL url("http://127.0.0.1:8000/foo.html");
   ResourceResponse response(url);
   response.SetHttpStatusCode(200);
-  response.SetHttpHeaderField(http_names::kCacheControl, "max-age=3600");
+  response.SetHttpHeaderField(http_names::kCacheControl,
+                              AtomicString("max-age=3600"));
   platform_->GetURLLoaderMockFactory()->RegisterURL(
       url, WrappedResourceResponse(response),
       test::PlatformTestDataPath(kTestResourceFilename));
@@ -500,7 +503,8 @@ TEST_F(ResourceFetcherTest, WillSendRequestAdBit) {
   AddResourceToMemoryCache(resource);
   ResourceResponse response(url);
   response.SetHttpStatusCode(200);
-  response.SetHttpHeaderField(http_names::kCacheControl, "max-age=3600");
+  response.SetHttpHeaderField(http_names::kCacheControl,
+                              AtomicString("max-age=3600"));
   resource->ResponseReceived(response);
   resource->FinishForTest();
 
@@ -535,8 +539,9 @@ TEST_F(ResourceFetcherTest, Vary) {
 
   ResourceResponse response(url);
   response.SetHttpStatusCode(200);
-  response.SetHttpHeaderField(http_names::kCacheControl, "max-age=3600");
-  response.SetHttpHeaderField(http_names::kVary, "*");
+  response.SetHttpHeaderField(http_names::kCacheControl,
+                              AtomicString("max-age=3600"));
+  response.SetHttpHeaderField(http_names::kVary, AtomicString("*"));
   resource->ResponseReceived(response);
   resource->FinishForTest();
   ASSERT_TRUE(resource->MustReloadDueToVaryHeader(ResourceRequest(url)));
@@ -567,8 +572,9 @@ TEST_F(ResourceFetcherTest, VaryOnBack) {
 
   ResourceResponse response(url);
   response.SetHttpStatusCode(200);
-  response.SetHttpHeaderField(http_names::kCacheControl, "max-age=3600");
-  response.SetHttpHeaderField(http_names::kVary, "*");
+  response.SetHttpHeaderField(http_names::kCacheControl,
+                              AtomicString("max-age=3600"));
+  response.SetHttpHeaderField(http_names::kVary, AtomicString("*"));
   resource->ResponseReceived(response);
   resource->FinishForTest();
   ASSERT_TRUE(resource->MustReloadDueToVaryHeader(ResourceRequest(url)));
@@ -589,8 +595,9 @@ TEST_F(ResourceFetcherTest, VaryResource) {
   KURL url("http://127.0.0.1:8000/foo.html");
   ResourceResponse response(url);
   response.SetHttpStatusCode(200);
-  response.SetHttpHeaderField(http_names::kCacheControl, "max-age=3600");
-  response.SetHttpHeaderField(http_names::kVary, "*");
+  response.SetHttpHeaderField(http_names::kCacheControl,
+                              AtomicString("max-age=3600"));
+  response.SetHttpHeaderField(http_names::kVary, AtomicString("*"));
   platform_->GetURLLoaderMockFactory()->RegisterURL(
       url, WrappedResourceResponse(response),
       test::PlatformTestDataPath(kTestResourceFilename));
@@ -665,8 +672,9 @@ TEST_F(ResourceFetcherTest, RevalidateWhileFinishingLoading) {
 
   ResourceResponse response(url);
   response.SetHttpStatusCode(200);
-  response.SetHttpHeaderField(http_names::kCacheControl, "max-age=3600");
-  response.SetHttpHeaderField(http_names::kETag, "1234567890");
+  response.SetHttpHeaderField(http_names::kCacheControl,
+                              AtomicString("max-age=3600"));
+  response.SetHttpHeaderField(http_names::kETag, AtomicString("1234567890"));
   platform_->GetURLLoaderMockFactory()->RegisterURL(
       url, WrappedResourceResponse(response),
       test::PlatformTestDataPath(kTestResourceFilename));
@@ -674,7 +682,8 @@ TEST_F(ResourceFetcherTest, RevalidateWhileFinishingLoading) {
   ResourceFetcher* fetcher1 = CreateFetcher(
       *MakeGarbageCollected<TestResourceFetcherProperties>(source_origin));
   ResourceRequest request1(url);
-  request1.SetHttpHeaderField(http_names::kCacheControl, "no-cache");
+  request1.SetHttpHeaderField(http_names::kCacheControl,
+                              AtomicString("no-cache"));
   FetchParameters fetch_params1 =
       FetchParameters::CreateForTest(std::move(request1));
   Persistent<RequestSameResourceOnComplete> client =
@@ -1093,7 +1102,7 @@ TEST_F(ResourceFetcherTest, Revalidate304) {
 
   ResourceResponse response(url);
   response.SetHttpStatusCode(304);
-  response.SetHttpHeaderField("etag", "1234567890");
+  response.SetHttpHeaderField(http_names::kETag, AtomicString("1234567890"));
   resource->ResponseReceived(response);
   resource->FinishForTest();
 
@@ -1200,8 +1209,9 @@ TEST_F(ResourceFetcherTest, StaleWhileRevalidate) {
 
   ResourceResponse response(url);
   response.SetHttpStatusCode(200);
-  response.SetHttpHeaderField(http_names::kCacheControl,
-                              "max-age=0, stale-while-revalidate=40");
+  response.SetHttpHeaderField(
+      http_names::kCacheControl,
+      AtomicString("max-age=0, stale-while-revalidate=40"));
 
   platform_->GetURLLoaderMockFactory()->RegisterURL(
       url, WrappedResourceResponse(response),
@@ -1490,6 +1500,29 @@ TEST_F(ResourceFetcherTest, BoostImagePriority) {
         RenderBlockingBehavior::kNonBlocking,
         mojom::blink::ScriptType::kClassic, false /* is_link_preload */);
     EXPECT_EQ(priority, ResourceLoadPriority::kLow);
+  }
+}
+
+TEST_F(ResourceFetcherTest, IsPotentiallyLCPElement) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kBoostImagePriority);
+  auto& properties = *MakeGarbageCollected<TestResourceFetcherProperties>();
+  auto* fetcher = CreateFetcher(properties);
+  ResourceRequest request(KURL("https://www.example.com/"));
+
+  // Resources for Potentially LCP Elements get VeryHigh priority.
+  {
+    properties.SetIsOutermostMainFrame(true);
+    properties.SetIsSubframeDeprioritizationEnabled(false);
+    const auto priority = fetcher->ComputeLoadPriorityForTesting(
+        ResourceType::kImage, request, ResourcePriority::kNotVisible,
+        FetchParameters::DeferOption::kNoDefer,
+        FetchParameters::SpeculativePreloadType::kInDocument,
+        RenderBlockingBehavior::kNonBlocking,
+        mojom::blink::ScriptType::kClassic, /* is_link_preload=*/false,
+        /* resource_width=*/10, /* resource_height=*/10,
+        /* is_potentially_lcp_element=*/true);
+    EXPECT_EQ(priority, ResourceLoadPriority::kVeryHigh);
   }
 }
 

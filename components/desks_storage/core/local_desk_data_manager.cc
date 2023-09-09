@@ -452,12 +452,12 @@ size_t LocalDeskDataManager::GetMaxDeskTemplateEntryCount() const {
   return kMaxDeskTemplateCount + policy_entries_.size();
 }
 
-std::vector<base::Uuid> LocalDeskDataManager::GetAllEntryUuids() const {
-  std::vector<base::Uuid> keys;
+std::set<base::Uuid> LocalDeskDataManager::GetAllEntryUuids() const {
+  std::set<base::Uuid> keys;
   for (const auto& type_and_saved_desks : saved_desks_list_) {
     for (const auto& [uuid, template_entry] : type_and_saved_desks.second) {
       DCHECK_EQ(uuid, template_entry->uuid());
-      keys.emplace_back(uuid);
+      keys.emplace(uuid);
     }
   }
   return keys;
@@ -497,7 +497,7 @@ void LocalDeskDataManager::UpdateEntry(
     // Do not update a template if the storage layer has a new policy.
   } else if (old_entry->second->policy_definition() !=
              entry->policy_definition()) {
-    last_update_status_ = UpdateEntryStatus::kBadPolicy;
+    last_update_status_ = UpdateEntryStatus::kOutdatedPolicy;
     return;
     // Make sure that there are actually new contents, otherwise don't bother
     // the io thread.

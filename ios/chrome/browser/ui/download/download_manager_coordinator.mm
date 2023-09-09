@@ -139,12 +139,16 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
           DownloadedFileAction::Count);
     }
   }
+
   // WebStateListObserver overrides:
-  void WillCloseWebStateAt(WebStateList* web_state_list,
-                           web::WebState* web_state,
-                           int index,
-                           bool user_action) override {
-    if (!user_action) {
+  void WebStateListWillChange(WebStateList* web_state_list,
+                              const WebStateListChangeDetach& detach_change,
+                              const WebStateListStatus& status) override {
+    if (!detach_change.is_closing()) {
+      return;
+    }
+
+    if (!detach_change.is_user_action()) {
       did_close_web_state_without_user_action = true;
     }
   }
@@ -189,12 +193,6 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
 - (void)start {
   DCHECK(self.presenter);
   DCHECK(self.browser);
-
-  NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
-  [defaultCenter addObserver:self
-                    selector:@selector(applicationDidEnterBackground:)
-                        name:UIApplicationDidEnterBackgroundNotification
-                      object:nil];
 
   _viewController = [[DownloadManagerViewController alloc] init];
   _viewController.delegate = self;
@@ -458,14 +456,6 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
       registerForInstallationNotifications:self
                               withSelector:@selector(didInstallGoogleDriveApp)
                                  forScheme:kGoogleDriveAppURLScheme];
-}
-
-#pragma mark - Notification callback
-
-- (void)applicationDidEnterBackground:(NSNotification*)note {
-  [_openInController.presentingViewController
-      dismissViewControllerAnimated:YES
-                         completion:nil];
 }
 
 @end

@@ -29,6 +29,7 @@
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/first_party_sets/first_party_sets_policy_service.h"
 #include "chrome/browser/first_party_sets/first_party_sets_policy_service_factory.h"
+#include "chrome/browser/ip_protection/ip_protection_auth_token_provider.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -211,9 +212,9 @@ void UpdateAntiAbuseSettings(Profile* profile) {
 }
 
 void UpdateCookieSettings(Profile* profile) {
-  ContentSettingsForOneType settings;
-  HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
-      ContentSettingsType::COOKIES, &settings);
+  ContentSettingsForOneType settings =
+      HostContentSettingsMapFactory::GetForProfile(profile)
+          ->GetSettingsForOneType(ContentSettingsType::COOKIES);
   profile->ForEachLoadedStoragePartition(base::BindRepeating(
       [](ContentSettingsForOneType settings,
          content::StoragePartition* storage_partition) {
@@ -224,9 +225,9 @@ void UpdateCookieSettings(Profile* profile) {
 }
 
 void UpdateLegacyCookieSettings(Profile* profile) {
-  ContentSettingsForOneType settings;
-  HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
-      ContentSettingsType::LEGACY_COOKIE_ACCESS, &settings);
+  ContentSettingsForOneType settings =
+      HostContentSettingsMapFactory::GetForProfile(profile)
+          ->GetSettingsForOneType(ContentSettingsType::LEGACY_COOKIE_ACCESS);
   profile->ForEachLoadedStoragePartition(base::BindRepeating(
       [](ContentSettingsForOneType settings,
          content::StoragePartition* storage_partition) {
@@ -238,9 +239,9 @@ void UpdateLegacyCookieSettings(Profile* profile) {
 
 void UpdateStorageAccessSettings(Profile* profile) {
   if (base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI)) {
-    ContentSettingsForOneType settings;
-    HostContentSettingsMapFactory::GetForProfile(profile)
-        ->GetSettingsForOneType(ContentSettingsType::STORAGE_ACCESS, &settings);
+    ContentSettingsForOneType settings =
+        HostContentSettingsMapFactory::GetForProfile(profile)
+            ->GetSettingsForOneType(ContentSettingsType::STORAGE_ACCESS);
 
     profile->ForEachLoadedStoragePartition(base::BindRepeating(
         [](ContentSettingsForOneType settings,
@@ -257,14 +258,13 @@ void UpdateAllStorageAccessSettings(Profile* profile) {
   if (base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI) &&
       base::FeatureList::IsEnabled(
           blink::features::kStorageAccessAPIForOriginExtension)) {
-    ContentSettingsForOneType top_level_settings;
-    HostContentSettingsMapFactory::GetForProfile(profile)
-        ->GetSettingsForOneType(ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS,
-                                &top_level_settings);
-    ContentSettingsForOneType storage_access_settings;
-    HostContentSettingsMapFactory::GetForProfile(profile)
-        ->GetSettingsForOneType(ContentSettingsType::STORAGE_ACCESS,
-                                &storage_access_settings);
+    ContentSettingsForOneType top_level_settings =
+        HostContentSettingsMapFactory::GetForProfile(profile)
+            ->GetSettingsForOneType(
+                ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS);
+    ContentSettingsForOneType storage_access_settings =
+        HostContentSettingsMapFactory::GetForProfile(profile)
+            ->GetSettingsForOneType(ContentSettingsType::STORAGE_ACCESS);
 
     profile->ForEachLoadedStoragePartition(base::BindRepeating(
         [](ContentSettingsForOneType storage_access_settings,
@@ -566,9 +566,9 @@ ProfileNetworkContextService::CreateCookieManagerParams(
       cookie_settings.ShouldBlockThirdPartyCookies();
   // This allows cookies to be sent on https requests from chrome:// pages,
   // ignoring SameSite attribute rules. For example, this is needed for browser
-  // UI to interact with SameSite cookies on accounts.google.com, which are used
-  // for logging into Cloud Print from chrome://print, for displaying a list
-  // of available accounts on the NTP (chrome://new-tab-page), etc.
+  // UI to interact with SameSite cookies on accounts.google.com, which is used
+  // for displaying a list of available accounts on the NTP
+  // (chrome://new-tab-page), etc.
   out->secure_origin_cookies_allowed_schemes.push_back(
       content::kChromeUIScheme);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -579,38 +579,29 @@ ProfileNetworkContextService::CreateCookieManagerParams(
       extensions::kExtensionScheme);
 #endif
 
-  ContentSettingsForOneType settings;
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile);
-  host_content_settings_map->GetSettingsForOneType(ContentSettingsType::COOKIES,
-                                                   &settings);
-  out->settings = std::move(settings);
+  out->settings = host_content_settings_map->GetSettingsForOneType(
+      ContentSettingsType::COOKIES);
 
-  ContentSettingsForOneType settings_for_legacy_cookie_access;
-  host_content_settings_map->GetSettingsForOneType(
-      ContentSettingsType::LEGACY_COOKIE_ACCESS,
-      &settings_for_legacy_cookie_access);
   out->settings_for_legacy_cookie_access =
-      std::move(settings_for_legacy_cookie_access);
+      host_content_settings_map->GetSettingsForOneType(
+          ContentSettingsType::LEGACY_COOKIE_ACCESS);
 
-  ContentSettingsForOneType settings_for_storage_access;
   if (base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI)) {
-    host_content_settings_map->GetSettingsForOneType(
-        ContentSettingsType::STORAGE_ACCESS, &settings_for_storage_access);
+    out->settings_for_storage_access =
+        host_content_settings_map->GetSettingsForOneType(
+            ContentSettingsType::STORAGE_ACCESS);
   }
-  out->settings_for_storage_access = std::move(settings_for_storage_access);
 
-  ContentSettingsForOneType settings_for_top_level_storage_access;
   // TODO(crbug.com/1385156): Separate the two flags entirely.
   if (base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI) &&
       base::FeatureList::IsEnabled(
           blink::features::kStorageAccessAPIForOriginExtension)) {
-    host_content_settings_map->GetSettingsForOneType(
-        ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS,
-        &settings_for_top_level_storage_access);
+    out->settings_for_top_level_storage_access =
+        host_content_settings_map->GetSettingsForOneType(
+            ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS);
   }
-  out->settings_for_top_level_storage_access =
-      std::move(settings_for_top_level_storage_access);
 
   out->cookie_access_delegate_type =
       network::mojom::CookieAccessDelegateType::USE_CONTENT_SETTINGS;
@@ -774,6 +765,8 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
   g_browser_process->system_network_context_manager()
       ->ConfigureDefaultNetworkContextParams(network_context_params);
 
+  network_context_params->enable_zstd =
+      base::FeatureList::IsEnabled(net::features::kZstdContentEncoding);
   network_context_params->accept_language = ComputeAcceptLanguage();
   network_context_params->enable_referrers = enable_referrers_.GetValue();
 
@@ -813,8 +806,6 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
         local_state->GetFilePath(prefs::kDiskCacheDir);
     if (!disk_cache_dir.empty())
       base_cache_path = disk_cache_dir.Append(base_cache_path.BaseName());
-    network_context_params->http_cache_directory =
-        base_cache_path.Append(chrome::kCacheDirname);
     const int disk_cache_size = local_state->GetInteger(prefs::kDiskCacheSize);
     network_context_params->http_cache_max_size = disk_cache_size;
     network_context_params->shared_dictionary_cache_max_size = disk_cache_size;
@@ -822,6 +813,8 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
     network_context_params->file_paths =
         ::network::mojom::NetworkContextFilePaths::New();
 
+    network_context_params->file_paths->http_cache_directory =
+        base_cache_path.Append(chrome::kCacheDirname);
     network_context_params->file_paths->data_directory =
         path.Append(chrome::kNetworkDataDirname);
     network_context_params->file_paths->unsandboxed_data_path = path;
@@ -1033,6 +1026,14 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
   network_context_params->acam_preflight_spec_conformant =
       profile_->GetPrefs()->GetBoolean(
           prefs::kAccessControlAllowMethodsInCORSPreflightSpecConformant);
+
+  IpProtectionAuthTokenProvider* ip_protection_auth_token_getter =
+      IpProtectionAuthTokenProvider::Get(profile_);
+  if (ip_protection_auth_token_getter) {
+    ip_protection_auth_token_getter->SetReceiver(
+        network_context_params->ip_protection_auth_token_getter
+            .InitWithNewPipeAndPassReceiver());
+  }
 }
 
 base::FilePath ProfileNetworkContextService::GetPartitionPath(

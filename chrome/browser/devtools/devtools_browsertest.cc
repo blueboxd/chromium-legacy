@@ -26,6 +26,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
@@ -2132,6 +2133,8 @@ class BrowserAutofillManagerTestDelegateDevtoolsImpl
                                 "console.log('didShowSuggestions');"));
   }
 
+  void DidHideSuggestions() override {}
+
   void OnTextFieldChanged() override {}
 
  private:
@@ -2179,6 +2182,14 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, testForwardedKeysChanged) {
   OpenDevToolsWindow("about:blank", true);
   RunTestFunction(window_, "testForwardedKeysChanged");
   CloseDevToolsWindow();
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsTest, testCloseActionRecorded) {
+  base::UserActionTester user_action_tester;
+  OpenDevToolsWindow("about:blank", true);
+  CloseDevToolsWindow();
+
+  EXPECT_EQ(1, user_action_tester.GetActionCount("DevTools_Close"));
 }
 
 // Test that showing a certificate in devtools does not crash the process.
@@ -3504,6 +3515,28 @@ class DevToolsProcessPerSiteUpToMainFrameThresholdTest : public DevToolsTest {
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
+
+IN_PROC_BROWSER_TEST_F(DevToolsProcessPerSiteUpToMainFrameThresholdTest,
+                       DevToolsWasAttachedBefore) {
+  const GURL url = embedded_test_server()->GetURL("foo.test", "/hello.html");
+
+  OpenDevToolsWindow(kDebuggerTestPage, false);
+
+  Browser* browser1 = CreateBrowser(browser()->profile());
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser1, url));
+
+  Browser* browser2 = CreateBrowser(browser()->profile());
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser2, url));
+
+  ASSERT_NE(browser1->tab_strip_model()
+                ->GetActiveWebContents()
+                ->GetPrimaryMainFrame()
+                ->GetProcess(),
+            browser2->tab_strip_model()
+                ->GetActiveWebContents()
+                ->GetPrimaryMainFrame()
+                ->GetProcess());
+}
 
 IN_PROC_BROWSER_TEST_F(DevToolsProcessPerSiteUpToMainFrameThresholdTest,
                        DontReuseProcess) {

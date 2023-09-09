@@ -107,7 +107,7 @@ void GetFormField(autofill::FormFieldData* field,
     return;
 
   // Hack to get suggestions from select input elements.
-  if (field->form_control_type == "select-one") {
+  if (field->IsSelectElement()) {
     // Any value set will cause the BrowserAutofillManager to filter suggestions
     // (only show suggestions that begin the same as the current value) with the
     // effect that one only suggestion would be returned; the value itself.
@@ -351,7 +351,7 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
   // TODO(crbug.com/1448447): Distinguish between different trigger sources.
   autofillManager->OnAskForValuesToFill(
       form, field, gfx::RectF(),
-      autofill::AutofillSuggestionTriggerSource::kFormControlElementClicked);
+      autofill::AutofillSuggestionTriggerSource::kiOS);
 }
 
 - (void)checkIfSuggestionsAvailableForForm:
@@ -481,7 +481,10 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
             SysNSStringToUTF8(suggestion.backendIdentifier));
       }
 
-      _popupDelegate->DidAcceptSuggestion(autofill_suggestion, 0);
+      // On iOS, only a single trigger source exists. See crbug.com/1448447.
+      _popupDelegate->DidAcceptSuggestion(
+          autofill_suggestion, 0,
+          autofill::AutofillSuggestionTriggerSource::kiOS);
     }
     return;
   }
@@ -588,7 +591,11 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
 
 - (void)handleParsedForms:(const std::vector<autofill::FormStructure*>&)forms
                   inFrame:(web::WebFrame*)frame {
-  // No op.
+  autofill::BrowserAutofillManager* autofillManager =
+      [self autofillManagerFromWebState:_webState webFrame:frame];
+  if (autofillManager) {
+    autofillManager->HandleParsedForms(forms);
+  }
 }
 
 - (void)fillFormDataPredictions:

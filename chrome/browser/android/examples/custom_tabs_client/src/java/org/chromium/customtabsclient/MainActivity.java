@@ -3,6 +3,12 @@
 // found in the LICENSE file.
 package org.chromium.customtabsclient;
 
+import static androidx.browser.customtabs.CustomTabsIntent.ACTIVITY_HEIGHT_FIXED;
+import static androidx.browser.customtabs.CustomTabsIntent.EXTRA_ACTIVITY_HEIGHT_RESIZE_BEHAVIOR;
+import static androidx.browser.customtabs.CustomTabsIntent.EXTRA_CLOSE_BUTTON_POSITION;
+import static androidx.browser.customtabs.CustomTabsIntent.EXTRA_INITIAL_ACTIVITY_HEIGHT_PX;
+import static androidx.browser.customtabs.CustomTabsIntent.EXTRA_TOOLBAR_CORNER_RADIUS_DP;
+
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
 import android.app.PendingIntent;
@@ -35,6 +41,7 @@ import android.view.WindowInsets;
 import android.view.WindowMetrics;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.URLUtil;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -98,12 +105,12 @@ public class MainActivity
     private static final String SHARED_PREF_DISCONNECT_BUTTON = "DisconnectButton";
     private static final String SHARED_PREF_WARMUP_BUTTON = "WarmupButton";
     private static final String SHARED_PREF_MAY_LAUNCH_BUTTON = "MayLaunchButton";
+    private static final String SHARED_PREF_ENGAGEMENT_SIGNALS_BUTTON = "EngagementSignalsButton";
     private static final int CLOSE_ICON_X = 0;
     private static final int CLOSE_ICON_BACK = 1;
     private static final int CLOSE_ICON_CHECK = 2;
     private static final int UNCHECKED = 0;
     private static final int CHECKED = 1;
-    private static final int ACTIVITY_HEIGHT_FIXED = 2;
     private static final int BACKGROUND_INTERACT_OFF_VALUE = 2;
 
     /** Extra that enables the maximization button on the side sheet Custom Tab toolbar. */
@@ -133,6 +140,8 @@ public class MainActivity
     private Button mMayLaunchButton;
     private Button mWarmupButton;
     private Button mLaunchButton;
+    private Button mResultLaunchButton;
+    private Button mEngagementSignalsButton;
     private MediaPlayer mMediaPlayer;
     private MaterialButtonToggleGroup mCloseButtonPositionToggle;
     private MaterialButtonToggleGroup mCloseButtonIcon;
@@ -225,20 +234,8 @@ public class MainActivity
         public void extraCallback(@NonNull String callbackName, @Nullable Bundle args) {
             if (args == null) return;
 
-            // CustomTabsConnection#ON_VERTICAL_SCROLL_EVENT_CALLBACK
-            if (callbackName.equals("onVerticalScrollEvent")) {
-                // CustomTabsConnection#ON_VERTICAL_SCROLL_EVENT_IS_DIRECTION_UP_EXTRA
-                Log.w(TAG,
-                        "onVerticalScrollEvent: isDirectionUp = "
-                                + args.getBoolean("isDirectionUp"));
-                // CustomTabsConnection#ON_GREATEST_SCROLL_PERCENTAGE_INCREASED_CALLBACK
-            } else if (callbackName.equals("onGreatestScrollPercentageIncreased")) {
-                // CustomTabsConnection#ON_GREATEST_SCROLL_PERCENTAGE_INCREASED_PERCENTAGE_EXTRA
-                Log.w(TAG,
-                        "onGreatestScrollPercentageIncreased: scrollPercentage = "
-                                + args.getInt("scrollPercentage"));
-                // CustomTabsConnection#ON_RESIZED_CALLBACK
-            } else if (callbackName.equals("onResized")) {
+            // CustomTabsConnection#ON_RESIZED_CALLBACK
+            if (callbackName.equals("onResized")) {
                 // CustomTabsConnection#ON_RESIZED_SIZE_EXTRA
                 Log.w(TAG, "onResized: size = " + args.getInt("size"));
                 // CustomTabsConnection#ON_ACTIVITY_LAYOUT_CALLBACK
@@ -662,11 +659,15 @@ public class MainActivity
         mWarmupButton = (Button) findViewById(R.id.warmup_button);
         mMayLaunchButton = (Button) findViewById(R.id.may_launch_button);
         mLaunchButton = (Button) findViewById(R.id.launch_button);
+        mResultLaunchButton = (Button) findViewById(R.id.result_launch_button);
+        mEngagementSignalsButton = (Button) findViewById(R.id.engagement_signals_button);
         mConnectButton.setOnClickListener(this);
         mDisconnectButton.setOnClickListener(this);
         mWarmupButton.setOnClickListener(this);
         mMayLaunchButton.setOnClickListener(this);
         mLaunchButton.setOnClickListener(this);
+        mResultLaunchButton.setOnClickListener(this);
+        mEngagementSignalsButton.setOnClickListener(this);
         if (configChange) {
             mConnectButton.setEnabled(mSharedPref.getBoolean(SHARED_PREF_CONNECT_BUTTON, true));
             mDisconnectButton.setEnabled(
@@ -674,6 +675,8 @@ public class MainActivity
             mWarmupButton.setEnabled(mSharedPref.getBoolean(SHARED_PREF_WARMUP_BUTTON, false));
             mMayLaunchButton.setEnabled(
                     mSharedPref.getBoolean(SHARED_PREF_MAY_LAUNCH_BUTTON, false));
+            mEngagementSignalsButton.setEnabled(
+                    mSharedPref.getBoolean(SHARED_PREF_ENGAGEMENT_SIGNALS_BUTTON, false));
         }
         findViewById(R.id.test_asm_button).setOnClickListener(this);
     }
@@ -763,6 +766,8 @@ public class MainActivity
             editor.putBoolean(SHARED_PREF_DISCONNECT_BUTTON, mDisconnectButton.isEnabled());
             editor.putBoolean(SHARED_PREF_WARMUP_BUTTON, mWarmupButton.isEnabled());
             editor.putBoolean(SHARED_PREF_MAY_LAUNCH_BUTTON, mMayLaunchButton.isEnabled());
+            editor.putBoolean(
+                    SHARED_PREF_ENGAGEMENT_SIGNALS_BUTTON, mEngagementSignalsButton.isEnabled());
             editor.apply();
         }
         super.onDestroy();
@@ -803,6 +808,7 @@ public class MainActivity
         mConnectButton.setEnabled(true);
         mDisconnectButton.setEnabled(false);
         mWarmupButton.setEnabled(false);
+        mEngagementSignalsButton.setEnabled(false);
 
         if (mConnection == null) return;
         unbindService(mConnection);
@@ -830,15 +836,26 @@ public class MainActivity
             if (sClient != null) success = session.mayLaunchUrl(Uri.parse(url), null, null);
             if (!success) mMayLaunchButton.setEnabled(false);
         } else if (viewId == R.id.test_asm_button) {
-            launchCct(url, editor);
-            new Handler().postDelayed(() -> launchCct("https://abc.xyz", editor), 5000);
+            launchCct(url, editor, false);
+            new Handler().postDelayed(() -> launchCct("https://abc.xyz", editor, false), 5000);
         } else if (viewId == R.id.launch_button) {
             updateUrlsList();
-            launchCct(url, editor);
+            launchCct(url, editor, false);
+        } else if (viewId == R.id.result_launch_button) {
+            updateUrlsList();
+            launchCct(url, editor, true);
+        } else if (viewId == R.id.engagement_signals_button) {
+            try {
+                getSession().setEngagementSignalsCallback(new EngagementCallback(), Bundle.EMPTY);
+            } catch (RemoteException e) {
+                Log.w(TAG, "The Service died while responding to the request.", e);
+            }
         }
     }
 
-    private void launchCct(String url, SharedPreferences.Editor editor) {
+    private void launchCct(
+            String url, SharedPreferences.Editor editor, boolean startActivityForResult) {
+        url = mayPrependUrl(url);
         CustomTabsSession session = getSession();
         CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder(session);
         prepareMenuItems(builder);
@@ -865,18 +882,12 @@ public class MainActivity
         if (isPCCT) {
             editor.putString(SHARED_PREF_CCT, "Partial CCT");
             int toolbarCornerRadiusDp = mToolbarCornerRadiusSlider.getProgress();
-            int toolbarCornerRadiusPx =
-                    Math.round(toolbarCornerRadiusDp * getResources().getDisplayMetrics().density);
-            customTabsIntent.intent.putExtra(
-                    "androidx.browser.customtabs.extra.CLOSE_BUTTON_POSITION", closeButtonPosition);
-            customTabsIntent.intent.putExtra(
-                    "androidx.browser.customtabs.extra.TOOLBAR_CORNER_RADIUS_IN_PIXEL",
-                    toolbarCornerRadiusPx);
+            customTabsIntent.intent.putExtra(EXTRA_CLOSE_BUTTON_POSITION, closeButtonPosition);
+            customTabsIntent.intent.putExtra(EXTRA_TOOLBAR_CORNER_RADIUS_DP, toolbarCornerRadiusDp);
             int pcctInitialHeightPx = mPcctInitialHeightSlider.getProgress();
             if (pcctInitialHeightPx != 0) {
                 customTabsIntent.intent.putExtra(
-                        "androidx.browser.customtabs.extra.INITIAL_ACTIVITY_HEIGHT_IN_PIXEL",
-                        pcctInitialHeightPx);
+                        EXTRA_INITIAL_ACTIVITY_HEIGHT_PX, pcctInitialHeightPx);
             }
             int pcctInitialWidthPx = mPcctInitialWidthSlider.getProgress();
             if (pcctInitialWidthPx != 0) {
@@ -894,8 +905,7 @@ public class MainActivity
             }
             if (!mPcctHeightResizableCheckbox.isChecked()) {
                 customTabsIntent.intent.putExtra(
-                        "androidx.browser.customtabs.extra.ACTIVITY_HEIGHT_RESIZE_BEHAVIOR",
-                        ACTIVITY_HEIGHT_FIXED);
+                        EXTRA_ACTIVITY_HEIGHT_RESIZE_BEHAVIOR, ACTIVITY_HEIGHT_FIXED);
             }
             if (!mBackgroundInteractCheckbox.isChecked()) {
                 customTabsIntent.intent.putExtra(
@@ -924,8 +934,7 @@ public class MainActivity
             customTabsIntent.intent.putExtra(
                     "com.google.android.apps.chrome.EXTRA_OPEN_NEW_INCOGNITO_TAB",
                     mCctType.equals("Incognito CCT"));
-            customTabsIntent.intent.putExtra(
-                    "androidx.browser.customtabs.extra.CLOSE_BUTTON_POSITION", closeButtonPosition);
+            customTabsIntent.intent.putExtra(EXTRA_CLOSE_BUTTON_POSITION, closeButtonPosition);
         }
         if (mForceEngagementSignalsCheckbox.isChecked()) {
             // NOTE: this may not work because this app is not a trusted 1st party app,
@@ -936,8 +945,14 @@ public class MainActivity
                     new ArrayList<String>(
                             List.of("CCTRealTimeEngagementSignals", "CCTBrandTransparency")));
         }
-        configSessionConnection(session, customTabsIntent);
-        customTabsIntent.launchUrl(this, Uri.parse(url));
+
+        if (startActivityForResult) {
+            customTabsIntent.intent.setData(Uri.parse(url));
+            startActivityForResult(customTabsIntent.intent, 0);
+        } else {
+            configSessionConnection(session, customTabsIntent);
+            customTabsIntent.launchUrl(this, Uri.parse(url));
+        }
 
         editor.putInt(SHARED_PREF_HEIGHT, mPcctInitialHeightSlider.getProgress());
         editor.putInt(SHARED_PREF_WIDTH, mPcctInitialWidthSlider.getProgress());
@@ -956,6 +971,14 @@ public class MainActivity
                 mSideSheetRoundedCornerCheckbox.isChecked() ? CHECKED : UNCHECKED);
         editor.putInt(SHARED_PREF_DECORATION, decorationType);
         editor.apply();
+    }
+
+    private String mayPrependUrl(String url) {
+        if (!URLUtil.isValidUrl(url)) {
+            url = "https://" + url;
+        }
+
+        return url;
     }
 
     private void prepareAesthetics(CustomTabsIntent.Builder builder, boolean isPcct) {
@@ -1076,7 +1099,7 @@ public class MainActivity
         mMayLaunchButton.setEnabled(true);
         try {
             if (getSession().isEngagementSignalsApiAvailable(Bundle.EMPTY)) {
-                getSession().setEngagementSignalsCallback(new EngagementCallback(), Bundle.EMPTY);
+                mEngagementSignalsButton.setEnabled(true);
             }
         } catch (RemoteException e) {
             Log.w(TAG, "The Service died while responding to the request.", e);
@@ -1090,6 +1113,7 @@ public class MainActivity
         mConnectButton.setEnabled(true);
         mWarmupButton.setEnabled(false);
         mMayLaunchButton.setEnabled(false);
+        mEngagementSignalsButton.setEnabled(false);
         sClient = null;
     }
 

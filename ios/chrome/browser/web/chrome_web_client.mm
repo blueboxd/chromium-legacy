@@ -81,7 +81,6 @@
 #import "ios/components/security_interstitials/safe_browsing/safe_browsing_unsafe_resource_container.h"
 #import "ios/components/webui/web_ui_url_constants.h"
 #import "ios/net/protocol_handler_util.h"
-#import "ios/public/provider/chrome/browser/find_in_page/find_in_page_api.h"
 #import "ios/public/provider/chrome/browser/url_rewriters/url_rewriters_api.h"
 #import "ios/web/common/features.h"
 #import "ios/web/common/user_agent.h"
@@ -100,6 +99,7 @@
 #import "components/supervised_user/core/browser/supervised_user_interstitial.h"
 #import "ios/chrome/browser/supervised_user/supervised_user_error.h"
 #import "ios/chrome/browser/supervised_user/supervised_user_error_container.h"
+#import "ios/chrome/browser/supervised_user/supervised_user_interstitial_java_script_feature.h"
 #import "ios/chrome/browser/supervised_user/supervised_user_service_factory.h"
 #import "ios/chrome/browser/supervised_user/supervised_user_url_filter_tab_helper.h"
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -188,21 +188,35 @@ NSString* GetHttpsOnlyModeErrorPageHtml(web::WebState* web_state,
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 // Returns the Supervised User Error Page Interstitial HTML.
 NSString* GetSupervisedUserErrorPageHTML(web::WebState* web_state,
+                                         int64_t navigation_id,
                                          const GURL& url) {
   // Fetch the supervised user error info from the WebState's container.
   SupervisedUserErrorContainer* container =
       SupervisedUserErrorContainer::FromWebState(web_state);
-  SupervisedUserErrorContainer::SupervisedUserErrorInfo& info =
-      container->GetSupervisedUserErrorInfo();
+  CHECK(container);
+  std::unique_ptr<SupervisedUserErrorContainer::SupervisedUserErrorInfo>
+      error_info = container->ReleaseSupervisedUserErrorInfo();
+  CHECK(error_info);
+
+  std::unique_ptr<supervised_user::SupervisedUserInterstitial> interstitial =
+      container->CreateSupervisedUserInterstitial(*error_info);
+  std::unique_ptr<security_interstitials::IOSSecurityInterstitialPage> page =
+      std::make_unique<SupervisedUserInterstitialBlockingPage>(
+          std::move(interstitial), /*controller_client=*/nullptr, container,
+          web_state);
 
   ChromeBrowserState* browser_state =
       ChromeBrowserState::FromBrowserState(web_state->GetBrowserState());
   std::string error_page_content =
       supervised_user::SupervisedUserInterstitial::GetHTMLContents(
           SupervisedUserServiceFactory::GetForBrowserState(browser_state),
-          browser_state->GetPrefs(), info.filtering_behavior_reason(),
-          info.is_already_requested(), info.is_main_frame(),
+          browser_state->GetPrefs(), error_info->filtering_behavior_reason(),
+          container->IsRemoteApprovalPendingForUrl(url),
+          error_info->is_main_frame(),
           GetApplicationContext()->GetApplicationLocale());
+
+  security_interstitials::IOSBlockingPageTabHelper::FromWebState(web_state)
+      ->AssociateBlockingPage(navigation_id, std::move(page));
   return base::SysUTF8ToNSString(error_page_content);
 }
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -359,6 +373,10 @@ std::vector<web::JavaScriptFeature*> ChromeWebClient::GetJavaScriptFeatures(
   features.push_back(translate::TranslateJavaScriptFeature::GetInstance());
   features.push_back(WebPerformanceMetricsJavaScriptFeature::GetInstance());
   features.push_back(FollowJavaScriptFeature::GetInstance());
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  features.push_back(
+      SupervisedUserInterstitialJavaScriptFeature::GetInstance());
+#endif
   return features;
 }
 
@@ -389,49 +407,41 @@ void ChromeWebClient::PrepareErrorPage(
     return;
   }
   DCHECK(error);
-  __block NSString* error_html = nil;
-  __block base::OnceCallback<void(NSString*)> error_html_callback =
-      std::move(callback);
   NSError* final_underlying_error =
       base::ios::GetFinalUnderlyingErrorFromError(error);
   if ([final_underlying_error.domain
           isEqualToString:kSafeBrowsingErrorDomain]) {
     // Only kUnsafeResourceErrorCode is supported.
     DCHECK_EQ(kUnsafeResourceErrorCode, final_underlying_error.code);
-    std::move(error_html_callback)
-        .Run(GetSafeBrowsingErrorPageHTML(web_state, navigation_id));
+    std::move(callback).Run(
+        GetSafeBrowsingErrorPageHTML(web_state, navigation_id));
   } else if ([final_underlying_error.domain
                  isEqualToString:kLookalikeUrlErrorDomain]) {
     // Only kLookalikeUrlErrorCode is supported.
     DCHECK_EQ(kLookalikeUrlErrorCode, final_underlying_error.code);
-    std::move(error_html_callback)
-        .Run(GetLookalikeUrlErrorPageHtml(web_state, navigation_id));
+    std::move(callback).Run(
+        GetLookalikeUrlErrorPageHtml(web_state, navigation_id));
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   } else if ([final_underlying_error.domain
                  isEqualToString:kSupervisedUserInterstitialErrorDomain]) {
     CHECK_EQ(kSupervisedUserInterstitialErrorCode, final_underlying_error.code);
-    std::move(error_html_callback)
-        .Run(GetSupervisedUserErrorPageHTML(web_state, url));
+    std::move(callback).Run(
+        GetSupervisedUserErrorPageHTML(web_state, navigation_id, url));
 #endif
   } else if ([final_underlying_error.domain
                  isEqualToString:kHttpsOnlyModeErrorDomain]) {
     // Only kHttpsOnlyModeErrorCode is supported.
     DCHECK_EQ(kHttpsOnlyModeErrorCode, final_underlying_error.code);
-    std::move(error_html_callback)
-        .Run(GetHttpsOnlyModeErrorPageHtml(web_state, navigation_id));
+    std::move(callback).Run(
+        GetHttpsOnlyModeErrorPageHtml(web_state, navigation_id));
   } else if (ssl_info.has_value()) {
-    base::OnceCallback<void(NSString*)> blocking_page_callback =
-        base::BindOnce(^(NSString* blocking_page_html) {
-          error_html = blocking_page_html;
-          std::move(error_html_callback).Run(error_html);
-        });
     IOSSSLErrorHandler::HandleSSLError(
         web_state, net::MapCertStatusToNetError(ssl_info.value().cert_status),
         ssl_info.value(), url, ssl_info.value().is_fatal_cert_error,
-        navigation_id, std::move(blocking_page_callback));
+        navigation_id, std::move(callback));
   } else {
-    std::move(error_html_callback)
-        .Run(GetErrorPage(url, error, is_post, is_off_the_record));
+    std::move(callback).Run(
+        GetErrorPage(url, error, is_post, is_off_the_record));
   }
 }
 
@@ -526,23 +536,6 @@ bool ChromeWebClient::IsPointingToSameDocument(const GURL& url1,
   GURL url_to_compare1 = GetOnlineUrl(url1);
   GURL url_to_compare2 = GetOnlineUrl(url2);
   return url_to_compare1 == url_to_compare2;
-}
-
-id<CRWFindSession> ChromeWebClient::CreateFindSessionForWebState(
-    web::WebState* web_state) const API_AVAILABLE(ios(16)) {
-  id<UITextSearching> searchable_object =
-      ios::provider::GetSearchableObjectForWebState(web_state);
-  UIFindSession* UIFindSession = [[UITextSearchingFindSession alloc]
-      initWithSearchableObject:searchable_object];
-  return [[CRWFindSession alloc] initWithUIFindSession:UIFindSession];
-}
-
-void ChromeWebClient::StartTextSearchInWebState(web::WebState* web_state) {
-  ios::provider::StartTextSearchInWebState(web_state);
-}
-
-void ChromeWebClient::StopTextSearchInWebState(web::WebState* web_state) {
-  ios::provider::StopTextSearchInWebState(web_state);
 }
 
 bool ChromeWebClient::IsMixedContentAutoupgradeEnabled(

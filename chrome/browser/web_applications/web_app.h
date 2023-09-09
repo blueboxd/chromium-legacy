@@ -5,38 +5,47 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_H_
 
+#include <stdint.h>
 #include <iosfwd>
 #include <set>
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
-#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom-forward.h"
 #include "chrome/browser/web_applications/proto/web_app_os_integration_state.pb.h"
+#include "chrome/browser/web_applications/scope_extension_info.h"
 #include "chrome/browser/web_applications/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
-#include "chrome/browser/web_applications/web_app_sources.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
+#include "components/services/app_service/public/cpp/icon_info.h"
 #include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "components/services/app_service/public/cpp/share_target.h"
 #include "components/services/app_service/public/cpp/url_handler_info.h"
 #include "components/sync/model/string_ordinal.h"
-#include "components/webapps/browser/installable/installable_metrics.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy_declaration.h"
+#include "third_party/blink/public/mojom/manifest/capture_links.mojom-shared.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_data.h"
 #endif
+
+namespace webapps {
+enum class WebappInstallSource;
+}
 
 namespace web_app {
 
@@ -252,12 +261,6 @@ class WebApp {
     return shortcuts_menu_item_infos_;
   }
 
-  // Represents which shortcuts menu icon sizes we successfully downloaded for
-  // each WebAppShortcutsMenuItemInfo.shortcuts_menu_manifest_icons.
-  const std::vector<IconSizes>& downloaded_shortcuts_menu_icons_sizes() const {
-    return downloaded_shortcuts_menu_icons_sizes_;
-  }
-
   blink::mojom::CaptureLinks capture_links() const { return capture_links_; }
 
   const GURL& manifest_url() const { return manifest_url_; }
@@ -403,13 +406,17 @@ class WebApp {
     return isolation_data_;
   }
 
+  bool is_default_app_for_supported_links() const {
+    return is_default_app_for_supported_links_;
+  }
+
   // A Web App can be installed from multiple sources simultaneously. Installs
   // add a source to the app. Uninstalls remove a source from the app.
   void AddSource(WebAppManagement::Type source);
   void RemoveSource(WebAppManagement::Type source);
   bool HasAnySources() const;
   bool HasOnlySource(WebAppManagement::Type source) const;
-  WebAppSources GetSources() const;
+  WebAppManagementTypes GetSources() const;
 
   bool IsSynced() const;
   bool IsPreinstalledApp() const;
@@ -448,10 +455,8 @@ class WebApp {
   void SetDownloadedIconSizes(IconPurpose purpose, SortedSizesPx sizes);
   void SetIsGeneratedIcon(bool is_generated_icon);
   // Sets information about the shortcuts menu for the app.
-  // `shortcuts_menu_item_infos` and `downloaded_sizes` must be the same length.
   void SetShortcutsMenuInfo(
-      std::vector<WebAppShortcutsMenuItemInfo> shortcuts_menu_item_infos,
-      std::vector<IconSizes> downloaded_sizes);
+      std::vector<WebAppShortcutsMenuItemInfo> shortcuts_menu_infos);
   void SetFileHandlers(apps::FileHandlers file_handlers);
   void SetFileHandlerApprovalState(ApiApprovalState approval_state);
   void SetFileHandlerOsIntegrationState(
@@ -495,6 +500,8 @@ class WebApp {
   void SetCurrentOsIntegrationStates(
       proto::WebAppOsIntegrationState current_os_integration_states);
   void SetIsolationData(IsolationData isolation_data);
+  void SetIsDefaultAppForSupportedLinks(
+      bool is_default_app_for_supported_links);
 
   void AddPlaceholderInfoToManagementExternalConfigMap(
       WebAppManagement::Type source_type,
@@ -539,7 +546,7 @@ class WebApp {
   AppId app_id_;
 
   // This set always contains at least one source.
-  WebAppSources sources_;
+  WebAppManagementTypes sources_{};
 
   std::string name_;
   std::string description_;
@@ -569,7 +576,6 @@ class WebApp {
   SortedSizesPx downloaded_icon_sizes_maskable_;
   bool is_generated_icon_ = false;
   std::vector<WebAppShortcutsMenuItemInfo> shortcuts_menu_item_infos_;
-  std::vector<IconSizes> downloaded_shortcuts_menu_icons_sizes_;
   apps::FileHandlers file_handlers_;
   absl::optional<apps::ShareTarget> share_target_;
   std::vector<std::string> additional_search_terms_;
@@ -633,6 +639,8 @@ class WebApp {
       proto::WebAppOsIntegrationState();
 
   absl::optional<IsolationData> isolation_data_;
+
+  bool is_default_app_for_supported_links_ = false;
 
   // New fields must be added to:
   //  - |operator==|

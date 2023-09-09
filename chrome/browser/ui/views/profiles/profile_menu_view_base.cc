@@ -63,6 +63,7 @@
 #include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/layout/table_layout.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 
@@ -70,14 +71,16 @@ namespace {
 
 // Helpers --------------------------------------------------------------------
 
-constexpr int kMenuWidth = 288;
+constexpr int kMenuWidth = 290;
 constexpr int kMaxImageSize = ProfileMenuViewBase::kIdentityImageSize;
 constexpr int kDefaultMargin = 8;
 constexpr int kBadgeSize = 16;
 constexpr int kCircularImageButtonSize = 28;
 constexpr int kCircularImageButtonRefreshSize = 32;
+constexpr int kCircularImageButtonTransparentRefreshSize = 24;
 constexpr float kShortcutIconToImageRatio = 9.0f / 16.0f;
-constexpr float kShortcutIconToImageRefreshRatio = 10.0f / 16.0f;
+constexpr float kShortcutIconToImageRefreshRatio = 20.0f / 32.0f;
+constexpr float kShortcutIconToImageTransparentRefreshRatio = 16.0f / 24.0f;
 // TODO(crbug.com/1128499): Remove this constant by extracting art height from
 // |avatar_header_art|.
 constexpr int kHeaderArtHeight = 80;
@@ -95,6 +98,7 @@ constexpr int kMinimumScrollableContentHeight = 40;
 constexpr int kMenuEdgeMargin = 16;
 
 constexpr int kSyncInfoInsidePadding = 12;
+constexpr int kSyncInfoRefreshInsidePadding = 16;
 
 // The bottom background edge should match the center of the identity image.
 constexpr auto kBackgroundInsets =
@@ -261,16 +265,17 @@ class CircularImageButton : public views::ImageButton {
 
     const auto* color_provider = GetColorProvider();
     SkColor icon_color = color_provider->GetColor(ui::kColorIcon);
+    float shortcutIconToImageRatio = kShortcutIconToImageRatio;
     if (features::IsChromeRefresh2023()) {
       icon_color = color_provider->GetColor(kColorProfileMenuIconButton);
+      shortcutIconToImageRatio =
+          has_background_color_ ? kShortcutIconToImageRefreshRatio
+                                : kShortcutIconToImageTransparentRefreshRatio;
     } else if (themed_icon_color_ != SK_ColorTRANSPARENT) {
       icon_color = themed_icon_color_;
     }
-    gfx::ImageSkia image = ImageForMenu(*icon_,
-                                        features::IsChromeRefresh2023()
-                                            ? kShortcutIconToImageRefreshRatio
-                                            : kShortcutIconToImageRatio,
-                                        icon_color);
+    gfx::ImageSkia image =
+        ImageForMenu(*icon_, shortcutIconToImageRatio, icon_color);
     SetImage(views::Button::STATE_NORMAL, SizeImage(image, button_size_));
     views::InkDrop::Get(this)->SetBaseColor(icon_color);
   }
@@ -460,13 +465,20 @@ void BuildProfileTitleAndSubtitle(views::View* parent,
                       gfx::Insets::TLBR(kDefaultMargin, 0, 0, 0)));
 
   if (!title.empty()) {
-    profile_titles_container->AddChildView(std::make_unique<views::Label>(
-        title, views::style::CONTEXT_DIALOG_TITLE));
+    profile_titles_container->AddChildView(
+        features::IsChromeRefresh2023()
+            ? std::make_unique<views::Label>(title,
+                                             views::style::CONTEXT_DIALOG_TITLE,
+                                             views::style::STYLE_HEADLINE_4)
+            : std::make_unique<views::Label>(
+                  title, views::style::CONTEXT_DIALOG_TITLE));
   }
 
   if (!subtitle.empty()) {
     profile_titles_container->AddChildView(std::make_unique<views::Label>(
-        subtitle, views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY));
+        subtitle, views::style::CONTEXT_LABEL,
+        features::IsChromeRefresh2023() ? views::style::STYLE_BODY_3
+                                        : views::style::STYLE_SECONDARY));
   }
 }
 
@@ -648,11 +660,17 @@ void ProfileMenuViewBase::SetProfileIdentityInfo(
 
   std::unique_ptr<views::Label> heading_label;
   if (!profile_name.empty()) {
-    views::Label::CustomFont font = {
-        views::Label::GetDefaultFontList()
-            .DeriveWithSizeDelta(2)
-            .DeriveWithWeight(gfx::Font::Weight::BOLD)};
-    heading_label = std::make_unique<views::Label>(profile_name, font);
+    if (features::IsChromeRefresh2023()) {
+      heading_label = std::make_unique<views::Label>(
+          profile_name, views::style::CONTEXT_LABEL,
+          views::style::STYLE_HEADLINE_5);
+    } else {
+      views::Label::CustomFont font = {
+          views::Label::GetDefaultFontList()
+              .DeriveWithSizeDelta(2)
+              .DeriveWithWeight(gfx::Font::Weight::BOLD)};
+      heading_label = std::make_unique<views::Label>(profile_name, font);
+    }
     heading_label->SetElideBehavior(gfx::ELIDE_TAIL);
     heading_label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     heading_label->SetProperty(
@@ -673,8 +691,8 @@ void ProfileMenuViewBase::SetProfileIdentityInfo(
           base::BindRepeating(&ProfileMenuViewBase::ButtonPressed,
                               base::Unretained(this),
                               std::move(edit_button_params->edit_action)),
-          *edit_button_params->edit_icon,
-          edit_button_params->edit_tooltip_text);
+          *edit_button_params->edit_icon, edit_button_params->edit_tooltip_text,
+          kCircularImageButtonTransparentRefreshSize);
     } else {
       edit_button = std::make_unique<CircularImageButton>(
           base::BindRepeating(&ProfileMenuViewBase::ButtonPressed,
@@ -748,7 +766,11 @@ void ProfileMenuViewBase::BuildSyncInfoWithCallToAction(
   }
 
   views::Label* label = description_container->AddChildView(
-      std::make_unique<views::Label>(description));
+      features::IsChromeRefresh2023()
+          ? std::make_unique<views::Label>(description,
+                                           views::style::CONTEXT_LABEL,
+                                           views::style::STYLE_BODY_3_EMPHASIS)
+          : std::make_unique<views::Label>(description));
   label->SetMultiLine(true);
   label->SetHandlesTooltips(false);
   label->SetProperty(
@@ -771,9 +793,13 @@ void ProfileMenuViewBase::BuildSyncInfoWithCallToAction(
           button_text));
   button->SetProminent(true);
 
+  // TODO(crbug.com/1422119): Remove `background_color_id` parameter after
+  // Chrome Refresh 2023 is launched.
   sync_info_background_callback_ = base::BindRepeating(
       &ProfileMenuViewBase::BuildSyncInfoCallToActionBackground,
-      base::Unretained(this), background_color_id);
+      base::Unretained(this),
+      features::IsChromeRefresh2023() ? kColorProfileMenuSyncInfoBackground
+                                      : background_color_id);
 }
 
 void ProfileMenuViewBase::BuildSyncInfoWithoutCallToAction(
@@ -870,7 +896,9 @@ void ProfileMenuViewBase::SetProfileManagementHeading(
   // Add heading.
   views::Label* label = profile_mgmt_heading_container_->AddChildView(
       std::make_unique<views::Label>(heading, views::style::CONTEXT_LABEL,
-                                     views::style::STYLE_HINT));
+                                     features::IsChromeRefresh2023()
+                                         ? views::style::STYLE_BODY_3_EMPHASIS
+                                         : views::style::STYLE_HINT));
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetHandlesTooltips(false);
 }
@@ -963,6 +991,8 @@ void ProfileMenuViewBase::AddProfileManagementFeatureButton(
     profile_mgmt_features_container_->SetLayoutManager(
         std::make_unique<views::BoxLayout>(
             views::BoxLayout::Orientation::kVertical));
+    profile_mgmt_features_container_->SetBorder(
+        views::CreateEmptyBorder(gfx::Insets::TLBR(0, 0, kDefaultMargin, 0)));
   }
 
   profile_mgmt_features_container_->AddChildView(
@@ -1083,12 +1113,22 @@ void ProfileMenuViewBase::BuildSyncInfoCallToActionBackground(
     const ui::ColorProvider* color_provider) {
   const int radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
       views::Emphasis::kHigh);
-  sync_info_container_->SetBackground(views::CreateRoundedRectBackground(
-      color_provider->GetColor(background_color_id), radius, 1));
-  sync_info_container_->SetBorder(views::CreatePaddedBorder(
-      views::CreateRoundedRectBorder(
-          1, radius, color_provider->GetColor(ui::kColorMenuSeparator)),
-      gfx::Insets(kSyncInfoInsidePadding)));
+  if (features::IsChromeRefresh2023()) {
+    sync_info_container_->SetBackground(views::CreateRoundedRectBackground(
+        color_provider->GetColor(background_color_id), radius));
+    sync_info_container_->SetBorder(views::CreatePaddedBorder(
+        views::CreateRoundedRectBorder(
+            0, radius,
+            color_provider->GetColor(kColorProfileMenuSyncInfoBackground)),
+        gfx::Insets(kSyncInfoRefreshInsidePadding)));
+  } else {
+    sync_info_container_->SetBackground(views::CreateRoundedRectBackground(
+        color_provider->GetColor(background_color_id), radius, 1));
+    sync_info_container_->SetBorder(views::CreatePaddedBorder(
+        views::CreateRoundedRectBorder(
+            1, radius, color_provider->GetColor(ui::kColorMenuSeparator)),
+        gfx::Insets(kSyncInfoInsidePadding)));
+  }
 }
 
 void ProfileMenuViewBase::Init() {

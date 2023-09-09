@@ -37,9 +37,9 @@ import androidx.recyclerview.widget.RecyclerView.OnScrollListener;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
+import org.chromium.base.ResettersForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
@@ -111,17 +111,6 @@ class TabListMediator {
     private boolean mVisible;
     private boolean mShownIPH;
     private Tab mTabToAddDelayed;
-
-    /**
-     * An interface to get the thumbnails to be shown inside the tab grid cards.
-     */
-    public interface ThumbnailProvider {
-        /**
-         * @see TabContentManager#getTabThumbnailWithCallback
-         */
-        void getTabThumbnailWithCallback(int tabId, Size thumbnailSize, Callback<Bitmap> callback,
-                boolean forceUpdate, boolean writeToCache, boolean isSelected);
-    }
 
     /**
      * An interface to handle requests about updating TabGridDialog.
@@ -1046,7 +1035,7 @@ class TabListMediator {
 
                 @Override
                 public void didCreateGroup(List<Tab> tabs, List<Integer> tabOriginalIndex,
-                        List<Integer> tabOriginalRootId) {}
+                        List<Integer> tabOriginalRootId, String destinationGroupTitle) {}
             };
 
             ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(
@@ -1111,9 +1100,10 @@ class TabListMediator {
         sTabClosedFromMapTabClosedFromMap.put(tabId, TabClosedFrom.GRID_TAB_SWITCHER_GROUP);
     }
 
-    @VisibleForTesting
     void setActionOnAllRelatedTabsForTesting(boolean actionOnAllRelatedTabs) {
+        var oldValue = mActionsOnAllRelatedTabs;
         mActionsOnAllRelatedTabs = actionOnAllRelatedTabs;
+        ResettersForTesting.register(() -> mActionsOnAllRelatedTabs = oldValue);
     }
 
     private List<Tab> getRelatedTabsForId(int id) {
@@ -1374,7 +1364,6 @@ class TabListMediator {
         return getRelatedTabsForId(tabId).size() == 1;
     }
 
-    @VisibleForTesting
     public Set<Integer> getViewedTabIdsForTesting() {
         return sViewedTabIds;
     }
@@ -1683,8 +1672,11 @@ class TabListMediator {
         updateFaviconForTab(pseudoTab, null, null);
 
         if (mThumbnailProvider != null && mDefaultGridCardSize != null) {
-            tabInfo.set(TabProperties.GRID_CARD_SIZE,
-                    new Size(mDefaultGridCardSize.getWidth(), mDefaultGridCardSize.getHeight()));
+            if (!mDefaultGridCardSize.equals(tabInfo.get(TabProperties.GRID_CARD_SIZE))) {
+                tabInfo.set(TabProperties.GRID_CARD_SIZE,
+                        new Size(
+                                mDefaultGridCardSize.getWidth(), mDefaultGridCardSize.getHeight()));
+            }
         }
         if (mThumbnailProvider != null && mVisible) {
             boolean isSelectable = mUiType == UiType.SELECTABLE;
@@ -2003,7 +1995,6 @@ class TabListMediator {
         }
     }
 
-    @VisibleForTesting
     View.AccessibilityDelegate getAccessibilityDelegateForTesting() {
         return mAccessibilityDelegate;
     }
@@ -2050,13 +2041,13 @@ class TabListMediator {
         return TabModel.INVALID_TAB_INDEX;
     }
 
-    @VisibleForTesting
     Tab getTabToAddDelayedForTesting() {
         return mTabToAddDelayed;
     }
 
-    @VisibleForTesting
     void setComponentNameForTesting(String name) {
+        var oldValue = mComponentName;
         mComponentName = name;
+        ResettersForTesting.register(() -> mComponentName = oldValue);
     }
 }

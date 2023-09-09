@@ -12,6 +12,8 @@
 
 namespace segmentation_platform {
 
+// SEGMENTATION_CLIENT_KEYS_BEGIN
+
 // The key to be used for adaptive toolbar feature.
 const char kAdaptiveToolbarSegmentationKey[] = "adaptive_toolbar";
 const char kAdaptiveToolbarUmaName[] = "AdaptiveToolbar";
@@ -98,6 +100,13 @@ const char kDeviceTierUmaName[] = "DeviceTier";
 const char kTabResumptionClassifierKey[] = "tab_resupmtion_classifier";
 const char kTabResumptionClassifierUmaName[] = "TabResumptionClassifier";
 
+// SEGMENTATION_CLIENT_KEYS_END
+
+// Please keep the UMA names for keys in sync with SegmentationKey variant in
+// //tools/metrics/histograms/metadata/segmentation_platform/histograms.xml.
+// Should also update the field trials allowlist in
+// go/segmentation-field-trials-map.
+
 // Config parameter name specified in experiment configs. Any experiment config
 // or feature can include this param and segmentation will enable the config for
 // storing cached results.
@@ -115,18 +124,12 @@ constexpr char kVariationsParamNameUnknownSelectionTTLDays[] =
 
 const char kSubsegmentDiscreteMappingSuffix[] = "_subsegment";
 
-// Returns an UMA display string for the given `segmentation_key`.
-const char* SegmentationKeyToUmaName(const std::string& segmentation_key);
-
 // Returns an UMA histogram variant for the given segment_id.
+// TODO(ssid): Move this to stats.cc since, no need to be in public.
 std::string SegmentIdToHistogramVariant(proto::SegmentId segment_id);
 
 // Returns Subsegment key for the given `segmentation_key`.
 std::string GetSubsegmentKey(const std::string& segmentation_key);
-
-// Returns PredictorType for the given `segmentation_key`
-proto::Predictor::PredictorTypeCase GetClassifierType(
-    const std::string& segmentation_key);
 
 // TODO(shaktisahu): Move these to a nicer location.
 

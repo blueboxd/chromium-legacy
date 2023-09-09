@@ -124,7 +124,7 @@ various important responsibilities:
   * Use the 'last updated' column to avoid duplicating the work of the previous
     secondary.
 * Stay sharp, keep in shape ([finger
-  exercises](https://youtu.be/20elMaVZ9lg?t=47s) are standard for the secondary),
+  exercises](https://youtu.be/iV9vyacIeEY?t=47s) are standard for the secondary),
   and remember you may be called upon during emergencies.
 
 ## Life Of A Security Bug
@@ -174,6 +174,7 @@ i like that.")
   * Add appropriate component or CCs to ensure it does get triaged.
   * Add the **Security** component or the **Team-Security-UX** label if the
     security team should still track the issue (e.g. security features).
+  * Please do not remove the **external_security_report** label.
 * **If the report doesn't have enough information**, ask the reporter for more
   information, add the **Needs-Feedback** label and wait for 24 hours for a
   response.

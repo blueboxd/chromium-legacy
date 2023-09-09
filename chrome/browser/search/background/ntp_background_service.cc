@@ -4,11 +4,13 @@
 
 #include "chrome/browser/search/background/ntp_background_service.h"
 
-#include "base/barrier_callback.h"
+#include "base/barrier_closure.h"
 #include "base/command_line.h"
 #include "base/functional/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
 #include "base/strings/strcat.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/search/background/ntp_background.pb.h"
@@ -22,6 +24,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "ui/base/ui_base_features.h"
 
 namespace {
 
@@ -77,7 +80,8 @@ NtpBackgroundService::NtpBackgroundService(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : url_loader_factory_(url_loader_factory) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  image_options_ = kImageOptions;
+  default_image_options_ = kImageOptions;
+  thumbnail_image_options_ = GetThumbnailImageOptions();
   collections_api_url_ = GetUrl(kCollectionsPath);
   collection_images_api_url_ = GetUrl(kCollectionImagesPath);
   next_image_api_url_ = GetUrl(kNextCollectionImagePath);
@@ -148,6 +152,9 @@ void NtpBackgroundService::FetchCollectionInfo() {
   if (base::FeatureList::IsEnabled(ntp_features::kCustomizeChromeSidePanel)) {
     request.add_filtering_label(base::StrCat({kFilteringLabel, ".panorama"}));
   }
+  if (features::IsChromeWebuiRefresh2023()) {
+    request.add_filtering_label(base::StrCat({kFilteringLabel, ".gm3"}));
+  }
 
   std::string serialized_proto;
   request.SerializeToString(&serialized_proto);
@@ -204,123 +211,80 @@ void NtpBackgroundService::OnCollectionInfoFetchComplete(
 void NtpBackgroundService::FetchCollectionImageInfo(
     const std::string& collection_id) {
   collection_images_error_info_.ClearError();
-  if (collections_image_info_loader_ != nullptr)
+  // Ignore subsequent requests to fetch collection image info.
+  // TODO(crbug.com/1454463): Prioritize the latest request to fetch collection
+  // images.
+  if (!requested_collection_id_.empty()) {
     return;
-
-  pending_image_url_header_loaders_.clear();
-
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("backdrop_collection_images_download",
-                                          R"(
-        semantics {
-          sender: "Desktop NTP Background Selector"
-          description:
-            "The Chrome Desktop New Tab Page background selector displays a "
-            "rich set of wallpapers for users to choose from. Each wallpaper "
-            "belongs to a collection (e.g. Arts, Landscape etc.). The list of "
-            "all available collections is obtained from the Backdrop wallpaper "
-            "service."
-          trigger:
-            "Clicking the customize (pencil) icon on the New Tab page."
-          data:
-            "The Backdrop protocol buffer messages. No user data is included."
-          destination: GOOGLE_OWNED_SERVICE
-          internal {
-            contacts {
-            email: "chrome-desktop-ntp@google.com"
-            }
-          }
-          user_data {
-            type: NONE
-          }
-          last_reviewed: "2023-06-13"
-        }
-        policy {
-          cookies_allowed: NO
-          setting:
-            "Users can control this feature by selecting a non-Google default "
-            "search engine in Chrome settings under 'Search Engine'."
-          chrome_policy {
-            DefaultSearchProviderEnabled {
-              policy_options {mode: MANDATORY}
-              DefaultSearchProviderEnabled: false
-            }
-          }
-        })");
-
+  }
   requested_collection_id_ = collection_id;
-  ntp::background::GetImagesInCollectionRequest request;
-  request.set_collection_id(collection_id);
-  // The language field may include the country code (e.g. "en-US").
-  request.set_language(g_browser_process->GetApplicationLocale());
-  std::string serialized_proto;
-  request.SerializeToString(&serialized_proto);
-
-  auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = collection_images_api_url_;
-  resource_request->method = "POST";
-  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
-
-  collections_image_info_loader_ = network::SimpleURLLoader::Create(
-      std::move(resource_request), traffic_annotation);
-  collections_image_info_loader_->AttachStringForUpload(serialized_proto,
-                                                        kProtoMimeType);
-  collections_image_info_loader_->DownloadToString(
-      url_loader_factory_.get(),
+  pending_image_url_header_loaders_.clear();
+  FetchCollectionImageInfoInternal(
+      collection_id,
       base::BindOnce(&NtpBackgroundService::OnCollectionImageInfoFetchComplete,
-                     base::Unretained(this)),
-      1024 * 1024);
+                     base::Unretained(this)));
 }
 
 void NtpBackgroundService::OnCollectionImageInfoFetchComplete(
-    std::unique_ptr<std::string> response_body) {
+    const ntp::background::GetImagesInCollectionResponse images_response,
+    const ErrorType error_type) {
   collection_images_.clear();
-  // The loader will be deleted when the request is handled.
-  std::unique_ptr<network::SimpleURLLoader> loader_deleter(
-      std::move(collections_image_info_loader_));
 
-  if (!response_body) {
-    // This represents network errors (i.e. the server did not provide a
-    // response).
-    DVLOG(1) << "Request failed with error: " << loader_deleter->NetError();
-    collection_images_error_info_.error_type = ErrorType::NET_ERROR;
-    collection_images_error_info_.net_error = loader_deleter->NetError();
+  if (error_type == ErrorType::NET_ERROR) {
+    // This represents network errors (i.e. the server did not provide
+    // a response).
+    DVLOG(1) << "Request failed with error: "
+             << collection_images_error_info_.net_error;
+    collection_images_error_info_.error_type = error_type;
     NotifyObservers(FetchComplete::COLLECTION_IMAGE_INFO);
     return;
-  }
-
-  ntp::background::GetImagesInCollectionResponse images_response;
-  if (!images_response.ParseFromString(*response_body)) {
-    DVLOG(1) << "Deserializing Backdrop wallpaper proto for image info failed.";
-    collection_images_error_info_.error_type = ErrorType::SERVICE_ERROR;
+  } else if (error_type == ErrorType::SERVICE_ERROR) {
+    DVLOG(1) << "Deserializing Backdrop wallpaper proto for image "
+                "info failed.";
+    collection_images_error_info_.error_type = error_type;
     NotifyObservers(FetchComplete::COLLECTION_IMAGE_INFO);
     return;
   }
 
   if (base::FeatureList::IsEnabled(
           ntp_features::kNtpBackgroundImageErrorDetection)) {
-    const auto image_error_detection_callback = base::BarrierCallback<bool>(
-        images_response.images_size(),
-        base::BindOnce(&NtpBackgroundService::CollectionImagesURLsVerified,
-                       base::Unretained(this)));
+    const auto collection_urls_verification_complete_closure =
+        base::BarrierClosure(
+            images_response.images_size(),
+            base::BindOnce(&NtpBackgroundService::NotifyObservers,
+                           base::Unretained(this),
+                           FetchComplete::COLLECTION_IMAGE_INFO));
     for (int i = 0; i < images_response.images_size(); ++i) {
-      VerifyCollectionImageURL(images_response.images(i),
-                               image_error_detection_callback);
+      const ntp::background::Image image = images_response.images(i);
+      const GURL thumbnail_image_url =
+          AddOptionsToImageURL(image.image_url(), thumbnail_image_options_);
+      VerifyImageURL(
+          thumbnail_image_url,
+          base::BindOnce(
+              &NtpBackgroundService::OnCollectionImageURLHeadersReceived,
+              base::Unretained(this), image, thumbnail_image_url,
+              collection_urls_verification_complete_closure));
     }
   } else {
     for (int i = 0; i < images_response.images_size(); ++i) {
+      const ntp::background::Image image = images_response.images(i);
       collection_images_.push_back(CollectionImage::CreateFromProto(
-          requested_collection_id_, images_response.images(i), image_options_));
+          requested_collection_id_, image,
+          /*default_image_url=*/
+          AddOptionsToImageURL(image.image_url(), default_image_options_),
+          /*thumbnail_image_url=*/
+          AddOptionsToImageURL(image.image_url(), thumbnail_image_options_)));
     }
     NotifyObservers(FetchComplete::COLLECTION_IMAGE_INFO);
+    requested_collection_id_.clear();
   }
 }
 
-void NtpBackgroundService::VerifyCollectionImageURL(
-    const ntp::background::Image& image,
-    base::OnceCallback<void(bool)> callback) {
+void NtpBackgroundService::VerifyImageURL(
+    const GURL& url,
+    base::OnceCallback<void(int)> image_url_headers_received_callback) {
   constexpr net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("backdrop_image_link_verification",
+      net::DefineNetworkTrafficAnnotation("ntp_image_url_verification",
                                           R"(
         semantics {
           sender: "Desktop NTP Background Selector"
@@ -331,10 +295,11 @@ void NtpBackgroundService::VerifyCollectionImageURL(
             "This fetches a wallpaper image's link to make sure its "
             "resource is reachable."
           trigger:
-            "Clicking a theme collection on the New Tab page."
+            "When the user has a non-uploaded background image set and "
+            "opens the New Tab Page, or when a user clicks a theme "
+            "collection on the New Tab Page."
           data:
-            "The HTTP headers for each background image in the "
-            "theme collection."
+            "The HTTP headers for a NTP background image."
           destination: GOOGLE_OWNED_SERVICE
           internal {
             contacts {
@@ -344,7 +309,7 @@ void NtpBackgroundService::VerifyCollectionImageURL(
           user_data {
             type: NONE
           }
-          last_reviewed: "2023-06-13"
+          last_reviewed: "2023-06-14"
         }
         policy {
           cookies_allowed: NO
@@ -360,7 +325,7 @@ void NtpBackgroundService::VerifyCollectionImageURL(
         })");
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->method = "GET";
-  resource_request->url = GURL(image.image_url());
+  resource_request->url = url;
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   std::unique_ptr<network::SimpleURLLoader> image_url_header_loader =
       network::SimpleURLLoader::Create(std::move(resource_request),
@@ -378,32 +343,63 @@ void NtpBackgroundService::VerifyCollectionImageURL(
   image_url_header_loader_ptr->DownloadHeadersOnly(
       url_loader_factory_.get(),
       base::BindOnce(&NtpBackgroundService::OnImageURLHeadersFetchComplete,
-                     base::Unretained(this), std::move(it), image,
-                     std::move(callback)));
+                     base::Unretained(this), std::move(it),
+                     std::move(image_url_headers_received_callback),
+                     base::TimeTicks::Now()));
 }
 
 void NtpBackgroundService::OnImageURLHeadersFetchComplete(
-    ImageURLHeaderLoaderList::iterator it,
-    const ntp::background::Image& image,
-    base::OnceCallback<void(bool)> callback,
+    URLLoaderList::iterator it,
+    base::OnceCallback<void(int)> image_url_headers_received_callback,
+    base::TimeTicks request_start,
     scoped_refptr<net::HttpResponseHeaders> headers) {
   if (pending_image_url_header_loaders_.empty()) {
     return;
   }
-
   pending_image_url_header_loaders_.erase(it);
-  if (headers && headers->response_code() == net::HTTP_OK) {
-    collection_images_.push_back(CollectionImage::CreateFromProto(
-        requested_collection_id_, image, image_options_));
-    std::move(callback).Run(true);
+  int headers_response_code =
+      headers ? headers->response_code() : net::ERR_FAILED;
+
+  UMA_HISTOGRAM_SPARSE("NewTabPage.BackgroundService.Images.Headers.StatusCode",
+                       headers_response_code);
+  auto request_time = base::TimeTicks::Now() - request_start;
+  UMA_HISTOGRAM_TIMES(
+      "NewTabPage.BackgroundService.Images.Headers.RequestLatency",
+      request_time);
+  if (headers_response_code == net::HTTP_OK) {
+    UMA_HISTOGRAM_TIMES(
+        "NewTabPage.BackgroundService.Images.Headers.RequestLatency.Ok",
+        request_time);
+  } else if (headers_response_code == net::HTTP_NOT_FOUND) {
+    UMA_HISTOGRAM_TIMES(
+        "NewTabPage.BackgroundService.Images.Headers.RequestLatency.NotFound",
+        request_time);
   } else {
-    std::move(callback).Run(false);
+    UMA_HISTOGRAM_TIMES(
+        "NewTabPage.BackgroundService.Images.Headers.RequestLatency.Other",
+        request_time);
   }
+
+  std::move(image_url_headers_received_callback).Run(headers_response_code);
 }
 
-void NtpBackgroundService::CollectionImagesURLsVerified(
-    const std::vector<bool>& results) {
-  NotifyObservers(FetchComplete::COLLECTION_IMAGE_INFO);
+void NtpBackgroundService::OnCollectionImageURLHeadersReceived(
+    ntp::background::Image image,
+    const GURL& thumbnail_image_url,
+    base::OnceClosure collection_urls_verification_complete_closure,
+    int headers_response_code) {
+  if (headers_response_code == net::HTTP_OK) {
+    collection_images_.push_back(CollectionImage::CreateFromProto(
+        requested_collection_id_, image,
+        /*default_image_url=*/
+        AddOptionsToImageURL(image.image_url(), default_image_options_),
+        thumbnail_image_url));
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(
+        "NewTabPage.BackgroundService.Images.Headers.ErrorDetected",
+        NtpImageType::kCollectionImages);
+  }
+  std::move(collection_urls_verification_complete_closure).Run();
 }
 
 void NtpBackgroundService::FetchNextCollectionImage(
@@ -502,12 +498,117 @@ void NtpBackgroundService::OnNextImageInfoFetchComplete(
     return;
   }
 
-  next_image_ =
-      CollectionImage::CreateFromProto(requested_next_image_collection_id_,
-                                       image_response.image(), image_options_);
+  const ntp::background::Image image = image_response.image();
+  next_image_ = CollectionImage::CreateFromProto(
+      requested_next_image_collection_id_, image,
+      /*default_image_url=*/
+      AddOptionsToImageURL(image.image_url(), default_image_options_),
+      /*thumbnail_image_url=*/
+      AddOptionsToImageURL(image.image_url(), thumbnail_image_options_));
   next_image_resume_token_ = image_response.resume_token();
 
   NotifyObservers(FetchComplete::NEXT_IMAGE_INFO);
+}
+
+void NtpBackgroundService::FetchCollectionImageInfoInternal(
+    const std::string& collection_id,
+    base::OnceCallback<void(ntp::background::GetImagesInCollectionResponse,
+                            ErrorType)> collection_images_received_callback) {
+  collection_images_error_info_.ClearError();
+
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("backdrop_collection_images_download",
+                                          R"(
+        semantics {
+          sender: "Desktop NTP Background Selector"
+          description:
+            "The Chrome Desktop New Tab Page background selector displays a "
+            "rich set of wallpapers for users to choose from. Each wallpaper "
+            "belongs to a collection (e.g. Arts, Landscape etc.). The list of "
+            "all available collections is obtained from the Backdrop wallpaper "
+            "service."
+          trigger:
+            "Clicking the customize (pencil) icon on the New Tab page."
+          data:
+            "The Backdrop protocol buffer messages. No user data is included."
+          destination: GOOGLE_OWNED_SERVICE
+          internal {
+            contacts {
+            email: "chrome-desktop-ntp@google.com"
+            }
+          }
+          user_data {
+            type: NONE
+          }
+          last_reviewed: "2023-06-13"
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "Users can control this feature by selecting a non-Google default "
+            "search engine in Chrome settings under 'Search Engine'."
+          chrome_policy {
+            DefaultSearchProviderEnabled {
+              policy_options {mode: MANDATORY}
+              DefaultSearchProviderEnabled: false
+            }
+          }
+        })");
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = collection_images_api_url_;
+  resource_request->method = "POST";
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+  std::unique_ptr<network::SimpleURLLoader> collection_image_info_loader =
+      network::SimpleURLLoader::Create(std::move(resource_request),
+                                       traffic_annotation);
+  network::SimpleURLLoader* const collection_image_info_loader_ptr =
+      collection_image_info_loader.get();
+  collection_image_info_loader->SetRetryOptions(
+      /*max_retries=*/3,
+      network::SimpleURLLoader::RetryMode::RETRY_ON_5XX |
+          network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE |
+          network::SimpleURLLoader::RETRY_ON_NAME_NOT_RESOLVED);
+  auto it = pending_collection_image_info_loaders_.insert(
+      pending_collection_image_info_loaders_.begin(),
+      std::move(collection_image_info_loader));
+
+  ntp::background::GetImagesInCollectionRequest request;
+  request.set_collection_id(collection_id);
+  // The language field may include the country code (e.g. "en-US").
+  request.set_language(g_browser_process->GetApplicationLocale());
+  std::string serialized_proto;
+  request.SerializeToString(&serialized_proto);
+  collection_image_info_loader_ptr->AttachStringForUpload(serialized_proto,
+                                                          kProtoMimeType);
+  collection_image_info_loader_ptr->DownloadToString(
+      url_loader_factory_.get(),
+      base::BindOnce(
+          [](URLLoaderList& pending_collection_image_info_loaders,
+             URLLoaderList::iterator it,
+             base::OnceCallback<void(
+                 ntp::background::GetImagesInCollectionResponse, ErrorType)>
+                 collection_images_received_callback,
+             std::unique_ptr<std::string> response_body) {
+            if (pending_collection_image_info_loaders.empty()) {
+              return;
+            }
+            pending_collection_image_info_loaders.erase(it);
+
+            ntp::background::GetImagesInCollectionResponse images_response;
+            if (!response_body) {
+              std::move(collection_images_received_callback)
+                  .Run(std::move(images_response), ErrorType::NET_ERROR);
+            } else if (!images_response.ParseFromString(*response_body)) {
+              std::move(collection_images_received_callback)
+                  .Run(std::move(images_response), ErrorType::SERVICE_ERROR);
+            } else {
+              std::move(collection_images_received_callback)
+                  .Run(std::move(images_response), ErrorType::NONE);
+            }
+          },
+          std::ref(pending_collection_image_info_loaders_), std::move(it),
+          std::move(collection_images_received_callback)),
+      1024 * 1024);
 }
 
 const std::vector<CollectionInfo>& NtpBackgroundService::collection_info()

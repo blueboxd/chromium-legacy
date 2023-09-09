@@ -134,7 +134,7 @@ class FakeDiceWebSigninInterceptorDelegate
   }
 
  private:
-  raw_ptr<Browser, DanglingUntriaged> fre_browser_ = nullptr;
+  raw_ptr<Browser, AcrossTasksDanglingUntriaged> fre_browser_ = nullptr;
   CoreAccountId fre_account_id_;
   WebSigninInterceptor::SigninInterceptionType expected_interception_type_ =
       WebSigninInterceptor::SigninInterceptionType::kMultiUser;
@@ -575,7 +575,7 @@ IN_PROC_BROWSER_TEST_F(DiceWebSigninInterceptorBrowserTest,
   // Install web app
   Profile* profile = browser()->profile();
   const GURL kWebAppURL("http://www.webapp.com");
-  auto web_app_info = std::make_unique<WebAppInstallInfo>();
+  auto web_app_info = std::make_unique<web_app::WebAppInstallInfo>();
   web_app_info->start_url = kWebAppURL;
   web_app_info->scope = kWebAppURL.GetWithoutFilename();
   web_app_info->user_display_mode =

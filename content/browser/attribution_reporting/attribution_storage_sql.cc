@@ -54,7 +54,6 @@
 #include "content/browser/attribution_reporting/attribution_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/create_report_result.h"
-#include "content/browser/attribution_reporting/destination_throttler.h"
 #include "content/browser/attribution_reporting/rate_limit_result.h"
 #include "content/browser/attribution_reporting/sql_queries.h"
 #include "content/browser/attribution_reporting/sql_utils.h"
@@ -74,6 +73,7 @@
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/origin.h"
 
@@ -92,6 +92,10 @@ const base::FilePath::CharType kDatabasePath[] =
     FILE_PATH_LITERAL("Conversions");
 
 constexpr int64_t kUnsetRecordId = -1;
+
+const base::FeatureParam<bool> kSourceDeactivationAfterFiltering{
+    &blink::features::kConversionMeasurement,
+    "source_deactivation_after_filtering", false};
 
 void RecordInitializationStatus(
     const AttributionStorageSql::InitStatus status) {
@@ -615,17 +619,19 @@ base::FilePath DatabasePath(const base::FilePath& user_data_directory) {
   return user_data_directory.Append(kDatabasePath);
 }
 
-StorableSource::Result ThrottleResultToStorableSourceResult(
-    DestinationThrottler::Result r) {
+StorableSource::Result DestinationRateLimitResultToStorableSourceResult(
+    RateLimitTable::DestinationRateLimitResult r) {
   switch (r) {
-    case DestinationThrottler::Result::kAllowed:
+    case RateLimitTable::DestinationRateLimitResult::kAllowed:
       return StorableSource::Result::kSuccess;
-    case DestinationThrottler::Result::kHitGlobalLimit:
+    case RateLimitTable::DestinationRateLimitResult::kHitGlobalLimit:
       return StorableSource::Result::kDestinationGlobalLimitReached;
-    case DestinationThrottler::Result::kHitReportingLimit:
+    case RateLimitTable::DestinationRateLimitResult::kHitReportingLimit:
       return StorableSource::Result::kDestinationReportingLimitReached;
-    case DestinationThrottler::Result::kHitBothLimits:
+    case RateLimitTable::DestinationRateLimitResult::kHitBothLimits:
       return StorableSource::Result::kDestinationBothLimitsReached;
+    case RateLimitTable::DestinationRateLimitResult::kError:
+      return StorableSource::Result::kInternalError;
   }
 }
 
@@ -641,8 +647,7 @@ AttributionStorageSql::AttributionStorageSql(
                                .page_size = 4096,
                                .cache_size = 32}),
       delegate_(std::move(delegate)),
-      rate_limit_table_(delegate_.get()),
-      throttler_(delegate_->GetDestinationThrottlerPolicy()) {
+      rate_limit_table_(delegate_.get()) {
   DCHECK(delegate_);
 
   db_.set_histogram_tag("Conversions");
@@ -685,13 +690,6 @@ bool AttributionStorageSql::DeactivateSources(
 StoreSourceResult AttributionStorageSql::StoreSource(
     const StorableSource& source) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (StorableSource::Result result = CheckDestinationThrottler(source);
-      result != StorableSource::Result::kSuccess) {
-    StoreSourceResult store_result(result);
-    store_result.max_destinations_per_rate_limit_window_reporting_origin =
-        throttler_.GetMaxPerReportingSite();
-    return store_result;
-  }
 
   // Force the creation of the database if it doesn't exist, as we need to
   // persist the source.
@@ -699,12 +697,24 @@ StoreSourceResult AttributionStorageSql::StoreSource(
     return StoreSourceResult(StorableSource::Result::kInternalError);
   }
 
+  const base::Time source_time = base::Time::Now();
+
+  if (StorableSource::Result result =
+          CheckDestinationRateLimit(source, source_time);
+      result != StorableSource::Result::kSuccess) {
+    StoreSourceResult store_result(result);
+    if (result != StorableSource::Result::kInternalError) {
+      store_result.max_destinations_per_rate_limit_window_reporting_origin =
+          delegate_->GetDestinationRateLimit().max_per_reporting_site;
+    }
+    return store_result;
+  }
+
   // Only delete expired impressions periodically to avoid excessive DB
   // operations.
   const base::TimeDelta delete_frequency =
       delegate_->GetDeleteExpiredSourcesFrequency();
   DCHECK_GE(delete_frequency, base::TimeDelta());
-  const base::Time source_time = base::Time::Now();
   if (source_time - last_deleted_expired_sources_ >= delete_frequency) {
     if (!DeleteExpiredSources()) {
       return StoreSourceResult(StorableSource::Result::kInternalError);
@@ -753,11 +763,8 @@ StoreSourceResult AttributionStorageSql::StoreSource(
     case RateLimitResult::kAllowed:
       break;
     case RateLimitResult::kNotAllowed:
-      // TODO(https://crbug.com/1448330): Report a different result
-      // type for this limit to avoid overlap with the other reporting
-      // origin limit.
       return StoreSourceResult(
-          StorableSource::Result::kExcessiveReportingOrigins);
+          StorableSource::Result::kReportingOriginsPerSiteLimitReached);
     case RateLimitResult::kError:
       return StoreSourceResult(StorableSource::Result::kInternalError);
   }
@@ -923,17 +930,17 @@ StoreSourceResult AttributionStorageSql::StoreSource(
       min_fake_report_time);
 }
 
-StorableSource::Result AttributionStorageSql::CheckDestinationThrottler(
-    const StorableSource& source) {
+StorableSource::Result AttributionStorageSql::CheckDestinationRateLimit(
+    const StorableSource& source,
+    base::Time source_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DestinationThrottler::Result throttle_result = throttler_.UpdateAndGetResult(
-      source.registration().destination_set,
-      net::SchemefulSite(source.common_info().source_origin()),
-      net::SchemefulSite(source.common_info().reporting_origin()));
-  base::UmaHistogramEnumeration("Conversions.DestinationThrottlerResult",
-                                throttle_result);
+  RateLimitTable::DestinationRateLimitResult rate_limit_result =
+      rate_limit_table_.SourceAllowedForDestinationRateLimit(&db_, source,
+                                                             source_time);
+  base::UmaHistogramEnumeration("Conversions.DestinationRateLimitResult",
+                                rate_limit_result);
 
-  return ThrottleResultToStorableSourceResult(throttle_result);
+  return DestinationRateLimitResultToStorableSourceResult(rate_limit_result);
 }
 
 // Checks whether a new report is allowed to be stored for the given source
@@ -1202,6 +1209,23 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
         AggregatableResult::kNoMatchingSourceFilterData);
   }
 
+  const bool deactivate_after_filtering =
+      kSourceDeactivationAfterFiltering.Get();
+
+  if (deactivate_after_filtering) {
+    // Delete all unattributed sources.
+    if (!DeleteSources(source_ids_to_delete)) {
+      return assemble_report_result(EventLevelResult::kInternalError,
+                                    AggregatableResult::kInternalError);
+    }
+
+    // Deactivate all attributed sources not used.
+    if (!DeactivateSources(source_ids_to_deactivate)) {
+      return assemble_report_result(EventLevelResult::kInternalError,
+                                    AggregatableResult::kInternalError);
+    }
+  }
+
   absl::optional<uint64_t> dedup_key;
   if (!event_level_status.has_value()) {
     if (EventLevelResult create_event_level_status =
@@ -1316,7 +1340,7 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
                                   AggregatableResult::kInternalError);
   }
 
-  // Early exit if done modifying the storage. Dropped reports still need to
+  // Early exit if done modifying the storage. Noised reports still need to
   // clean sources.
   if (!IsSuccessResult(store_event_level_status) &&
       !IsSuccessResult(store_aggregatable_status) &&
@@ -1330,16 +1354,18 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
                                   store_aggregatable_status);
   }
 
-  // Delete all unattributed sources.
-  if (!DeleteSources(source_ids_to_delete)) {
-    return assemble_report_result(EventLevelResult::kInternalError,
-                                  AggregatableResult::kInternalError);
-  }
+  if (!deactivate_after_filtering) {
+    // Delete all unattributed sources.
+    if (!DeleteSources(source_ids_to_delete)) {
+      return assemble_report_result(EventLevelResult::kInternalError,
+                                    AggregatableResult::kInternalError);
+    }
 
-  // Deactivate all attributed sources.
-  if (!DeactivateSources(source_ids_to_deactivate)) {
-    return assemble_report_result(EventLevelResult::kInternalError,
-                                  AggregatableResult::kInternalError);
+    // Deactivate all attributed sources not used.
+    if (!DeactivateSources(source_ids_to_deactivate)) {
+      return assemble_report_result(EventLevelResult::kInternalError,
+                                    AggregatableResult::kInternalError);
+    }
   }
 
   // Based on the deletion logic here and the fact that we delete sources
@@ -3133,6 +3159,14 @@ void AttributionStorageSql::DeleteByDataKey(
                 std::equal_to<blink::StorageKey>(),
                 blink::StorageKey::CreateFirstParty(key.reporting_origin())),
             /*delete_rate_limit_data=*/true);
+}
+
+void AttributionStorageSql::SetDelegate(
+    std::unique_ptr<AttributionStorageDelegate> delegate) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(delegate);
+  rate_limit_table_.SetDelegate(*delegate);
+  delegate_ = std::move(delegate);
 }
 
 }  // namespace content

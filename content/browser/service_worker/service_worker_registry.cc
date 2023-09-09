@@ -24,6 +24,7 @@
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/common/service_worker/service_worker_router_evaluator.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
@@ -166,6 +167,14 @@ void FindRegistrationForClientUrlTraceEventEnd(
   }
 }
 
+std::string RouterRulesToString(blink::ServiceWorkerRouterRules rules) {
+  ServiceWorkerRouterEvaluator e(rules);
+  if (!e.IsValid()) {
+    return "data corruption detected";
+  }
+  return e.ToString();
+}
+
 }  // namespace
 
 // Enables merging duplicate calls of FindRegistrationForClientUrl.
@@ -182,6 +191,15 @@ BASE_FEATURE(kServiceWorkerRegistrationCache,
 const base::FeatureParam<int> kServiceWorkerRegistrationCacheSize{
     &kServiceWorkerRegistrationCache, "service_worker_registration_cache_size",
     100};
+
+BASE_FEATURE(kServiceWorkerScopeCacheLimit,
+             "ServiceWorkerScopeCacheLimit",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// The cache size for kServiceWorkerScopeCache.
+// (https://crbug.com/1411197)
+const base::FeatureParam<int> kServiceWorkerScopeCacheLimitSize{
+    &kServiceWorkerScopeCacheLimit, "ServiceWorkerScopeCacheLimitSize", 100};
 
 template <typename... ReplyArgs>
 class InflightCallWithInvoker final
@@ -235,6 +253,7 @@ ServiceWorkerRegistry::ServiceWorkerRegistry(
     : context_(context),
       quota_manager_proxy_(quota_manager_proxy),
       special_storage_policy_(special_storage_policy),
+      registration_scope_cache_(kServiceWorkerScopeCacheLimitSize.Get()),
       registration_id_cache_(kServiceWorkerRegistrationCacheSize.Get()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(context_);
@@ -330,7 +349,7 @@ void ServiceWorkerRegistry::FindRegistrationForClientUrl(
   bool no_registration = false;
   absl::optional<GURL> matched_scope;
   absl::optional<std::set<GURL>> scopes;
-  auto iter = registration_scope_cache_.find(key);
+  auto iter = registration_scope_cache_.Get(key);
   if (iter != registration_scope_cache_.end()) {
     scopes = iter->second;
     blink::ServiceWorkerLongestScopeMatcher matcher(client_url);
@@ -363,13 +382,13 @@ void ServiceWorkerRegistry::FindRegistrationForClientUrl(
     auto it = registration_id_cache_.Get(std::make_pair(*matched_scope, key));
     if (it != registration_id_cache_.end()) {
       int64_t registration_id = it->second;
-      scoped_refptr<ServiceWorkerRegistration> registration =
-          context_->GetLiveRegistration(registration_id);
+      absl::optional<scoped_refptr<ServiceWorkerRegistration>> registration =
+          FindFromLiveRegistrationsForId(registration_id);
       if (registration) {
         FindRegistrationForClientUrlTraceEventBegin(trace_event_id, client_url);
         FindRegistrationForClientUrlTraceEventEnd(
             trace_event_id, blink::ServiceWorkerStatusCode::kOk, absl::nullopt);
-        CompleteFindNow(std::move(registration),
+        CompleteFindNow(std::move(*registration),
                         blink::ServiceWorkerStatusCode::kOk,
                         std::move(callback));
         return;
@@ -1173,13 +1192,19 @@ void ServiceWorkerRegistry::DidFindRegistrationForClientUrl(
       database_status !=
           storage::mojom::ServiceWorkerDatabaseStatus::kErrorNotFound) {
     DCHECK(!scopes);
-    registration_scope_cache_.erase(key);
+    auto it = registration_scope_cache_.Peek(key);
+    if (it != registration_scope_cache_.end()) {
+      registration_scope_cache_.Erase(it);
+    }
     ScheduleDeleteAndStartOver();
   } else if (scopes && !scopes->empty()) {
-    registration_scope_cache_.insert_or_assign(
+    registration_scope_cache_.Put(
         key, std::set<GURL>(scopes->begin(), scopes->end()));
   } else {
-    registration_scope_cache_.erase(key);
+    auto it = registration_scope_cache_.Peek(key);
+    if (it != registration_scope_cache_.end()) {
+      registration_scope_cache_.Erase(it);
+    }
   }
 
   blink::ServiceWorkerStatusCode status =
@@ -1452,6 +1477,10 @@ void ServiceWorkerRegistry::DidGetAllRegistrations(
           registration_data->navigation_preload_state->enabled;
       info.active_version.navigation_preload_state.header =
           registration_data->navigation_preload_state->header;
+      if (registration_data->router_rules) {
+        info.active_version.router_rules =
+            RouterRulesToString(*registration_data->router_rules);
+      }
     } else {
       info.waiting_version.status = ServiceWorkerVersion::INSTALLED;
       info.waiting_version.script_url = registration_data->script;
@@ -1465,6 +1494,10 @@ void ServiceWorkerRegistry::DidGetAllRegistrations(
           registration_data->navigation_preload_state->enabled;
       info.waiting_version.navigation_preload_state.header =
           registration_data->navigation_preload_state->header;
+      if (registration_data->router_rules) {
+        info.waiting_version.router_rules =
+            RouterRulesToString(*registration_data->router_rules);
+      }
     }
     infos.push_back(info);
   }
@@ -1542,12 +1575,12 @@ void ServiceWorkerRegistry::NotifyRegistrationStored(
   }
   context_->NotifyRegistrationStored(stored_registration_id, stored_scope, key);
 
-  auto iter = registration_scope_cache_.find(key);
+  auto iter = registration_scope_cache_.Get(key);
   if (iter != registration_scope_cache_.end()) {
     std::set<GURL>& scopes = iter->second;
     scopes.insert(stored_scope);
     if (scopes.size() > kServiceWorkerScopeCacheHardLimitPerKey) {
-      registration_scope_cache_.erase(iter);
+      registration_scope_cache_.Erase(iter);
     }
   }
 
@@ -1612,9 +1645,12 @@ void ServiceWorkerRegistry::NotifyRegistrationDeletedForStorageKey(
     context_->NotifyAllRegistrationsDeletedForStorageKey(key);
     if (storage_policy_observer_)
       storage_policy_observer_->StopTrackingOrigin(key.origin());
-    registration_scope_cache_.erase(key);
+    auto it = registration_scope_cache_.Peek(key);
+    if (it != registration_scope_cache_.end()) {
+      registration_scope_cache_.Erase(it);
+    }
   } else {
-    auto iter = registration_scope_cache_.find(key);
+    auto iter = registration_scope_cache_.Peek(key);
     if (iter != registration_scope_cache_.end()) {
       iter->second.erase(stored_scope);
       DCHECK(!iter->second.empty());

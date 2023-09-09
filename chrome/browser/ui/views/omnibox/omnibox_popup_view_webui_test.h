@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/omnibox/browser/omnibox_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "ui/views/widget/widget.h"
 
@@ -42,14 +43,14 @@ class OmniboxPopupViewWebUITest : public InProcessBrowserTest {
   OmniboxPopupViewWebUITest& operator=(const OmniboxPopupViewWebUITest&) =
       delete;
 
-  views::Widget* CreatePopupForTestQuery();
-  views::Widget* GetPopupWidget() { return popup_view()->GetWidget(); }
+  void CreatePopupForTestQuery();
 
   LocationBarView* location_bar() {
     auto* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
     return browser_view->toolbar()->location_bar();
   }
   OmniboxViewViews* omnibox_view() { return location_bar()->omnibox_view(); }
+  OmniboxController* controller() { return omnibox_view()->controller(); }
   OmniboxEditModel* edit_model() { return omnibox_view()->model(); }
   OmniboxPopupViewWebUI* popup_view() {
     return static_cast<OmniboxPopupViewWebUI*>(edit_model()->get_popup_view());
@@ -84,6 +85,10 @@ class OmniboxPopupViewWebUITest : public InProcessBrowserTest {
   }
 
   void SetUp() override;
+
+  // This blocks until the view's underlying handler is ready to use.
+  // It is required before using the view which makes calls into the handler.
+  void WaitForHandler();
 
  private:
   OmniboxTriggeredFeatureService triggered_feature_service_;

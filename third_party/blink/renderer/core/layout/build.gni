@@ -27,8 +27,8 @@ blink_core_hot_sources_layout = [
 ]
 
 blink_core_sources_layout = [
-  "anchor_scroll_data.cc",
-  "anchor_scroll_data.h",
+  "anchor_position_scroll_data.cc",
+  "anchor_position_scroll_data.h",
   "background_bleed_avoidance.h",
   "box_layout_extra_input.h",
   "content_change_type.h",
@@ -338,6 +338,8 @@ blink_core_sources_layout = [
   "ng/inline/ng_text_offset_range.cc",
   "ng/inline/ng_text_offset_range.h",
   "ng/inline/ng_text_type.h",
+  "ng/inline/text_auto_space.cc",
+  "ng/inline/text_auto_space.h",
   "ng/layout_box_utils.cc",
   "ng/layout_box_utils.h",
   "ng/layout_ng_block.h",
@@ -498,6 +500,9 @@ blink_core_sources_layout = [
   "ng/ng_text_decoration_offset.cc",
   "ng/ng_text_decoration_offset.h",
   "ng/ng_unpositioned_float.h",
+  "ng/non_overflowing_scroll_range.h",
+  "ng/physical_fragment_rare_data.cc",
+  "ng/physical_fragment_rare_data.h",
   "ng/svg/layout_ng_svg_foreign_object.cc",
   "ng/svg/layout_ng_svg_foreign_object.h",
   "ng/svg/layout_ng_svg_text.cc",
@@ -696,7 +701,7 @@ if (is_fuchsia) {
 }
 
 blink_core_tests_layout = [
-  "anchor_scroll_data_test.cc",
+  "anchor_position_scroll_data_test.cc",
   "geometry/axis_test.cc",
   "geometry/logical_rect_test.cc",
   "geometry/physical_rect_test.cc",
@@ -759,8 +764,10 @@ blink_core_tests_layout = [
   "ng/inline/ng_paragraph_line_breaker_test.cc",
   "ng/inline/ng_physical_line_box_fragment_test.cc",
   "ng/inline/ng_score_line_breaker_test.cc",
+  "ng/inline/text_auto_space_test.cc",
   "ng/layout_ng_fieldset_test.cc",
   "ng/layout_ng_frame_set_test.cc",
+  "ng/layout_ng_ruby_run_test.cc",
   "ng/layout_ng_text_control_single_line_test.cc",
   "ng/list/layout_ng_inline_list_item_test.cc",
   "ng/list/layout_ng_list_item_test.cc",

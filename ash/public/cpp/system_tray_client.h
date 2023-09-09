@@ -24,6 +24,9 @@ class ASH_PUBLIC_EXPORT SystemTrayClient {
   // Shows general settings UI.
   virtual void ShowSettings(int64_t display_id) = 0;
 
+  // Shows settings related to the user account.
+  virtual void ShowAccountSettings() = 0;
+
   // Shows settings related to Bluetooth devices (e.g. to add a device).
   virtual void ShowBluetoothSettings() = 0;
 
@@ -197,6 +200,13 @@ class ASH_PUBLIC_EXPORT SystemTrayClient {
   // Returns 'true' if the user preference is set to allow users to submit
   // feedback, 'false' otherwise.
   virtual bool IsUserFeedbackEnabled() = 0;
+
+  // Shows settings related to touchpads.
+  virtual void ShowTouchpadSettings() = 0;
+
+  // Shows the remap keyboard keys settings subpage for the keyboard with
+  // `device_id`.
+  virtual void ShowRemapKeysSubpage(int device_id) = 0;
 
  protected:
   SystemTrayClient() {}

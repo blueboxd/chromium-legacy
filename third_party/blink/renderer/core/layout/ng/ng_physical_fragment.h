@@ -237,9 +237,6 @@ class CORE_EXPORT NGPhysicalFragment
            GetDocument().Printing();
   }
 
-  // Returns whether the fragment is legacy layout root.
-  bool IsLegacyLayoutRoot() const { return is_legacy_layout_root_; }
-
   // Returns whether the fragment should be atomically painted.
   bool IsPaintedAtomically() const { return is_painted_atomically_; }
 
@@ -247,8 +244,7 @@ class CORE_EXPORT NGPhysicalFragment
   bool HasCollapsedBorders() const { return has_collapsed_borders_; }
 
   bool IsFormattingContextRoot() const {
-    return (IsBox() && BoxType() >= NGBoxType::kMinimumFormattingContextRoot) ||
-           IsLegacyLayoutRoot();
+    return IsBox() && BoxType() >= NGBoxType::kMinimumFormattingContextRoot;
   }
 
   // Returns true if we have a descendant within this formatting context, which
@@ -749,7 +745,6 @@ class CORE_EXPORT NGPhysicalFragment
   // for all types to allow methods using them to be inlined.
   unsigned is_fieldset_container_ : 1;
   unsigned is_table_ng_part_ : 1;
-  unsigned is_legacy_layout_root_ : 1;
   unsigned is_painted_atomically_ : 1;
   unsigned has_collapsed_borders_ : 1;
   unsigned has_first_baseline_ : 1;

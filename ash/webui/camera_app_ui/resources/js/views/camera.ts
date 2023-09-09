@@ -5,6 +5,7 @@
 import * as animate from '../animation.js';
 import {
   assert,
+  assertEnumVariant,
   assertInstanceof,
   assertNotReached,
 } from '../assert.js';
@@ -27,7 +28,11 @@ import * as metrics from '../metrics.js';
 import {Filenamer} from '../models/file_namer.js';
 import {getI18nMessage} from '../models/load_time_data.js';
 import {ResultSaver} from '../models/result_saver.js';
-import {VideoSaver} from '../models/video_saver.js';
+import {
+  TimeLapseEncoderArgs,
+  TimeLapseSaver,
+  VideoSaver,
+} from '../models/video_saver.js';
 import {ChromeHelper} from '../mojo/chrome_helper.js';
 import {DeviceOperator} from '../mojo/device_operator.js';
 import {ToteMetricFormat} from '../mojo/type.js';
@@ -48,7 +53,7 @@ import {
   MimeType,
   Mode,
   PerfEvent,
-  PortraitModeProcessError,
+  PortraitErrorNoFaceDetected,
   Resolution,
   Rotation,
   ViewName,
@@ -245,7 +250,7 @@ export class Camera extends View implements CameraViewUI {
         for (const el of items) {
           const radio = dom.getFrom(el, 'input[type=radio]', HTMLInputElement);
           const supported = supportedModes.includes(
-              util.assertEnumVariant(Mode, radio.dataset['mode']));
+              assertEnumVariant(Mode, radio.dataset['mode']));
           el.classList.toggle('hide', !supported);
           if (supported) {
             if (first === null) {
@@ -293,7 +298,7 @@ export class Camera extends View implements CameraViewUI {
       });
       el.addEventListener('change', async () => {
         if (el.checked) {
-          const mode = util.assertEnumVariant(Mode, el.dataset['mode']);
+          const mode = assertEnumVariant(Mode, el.dataset['mode']);
           this.updateModeUI(mode);
           this.updateShutterLabel(mode);
           state.set(PerfEvent.MODE_SWITCHING, true);
@@ -336,7 +341,7 @@ export class Camera extends View implements CameraViewUI {
    * Gets current facing after |initialize()|.
    */
   protected getFacing(): Facing {
-    return util.assertEnumVariant(Facing, this.facing);
+    return assertEnumVariant(Facing, this.facing);
   }
 
   private updateModeUI(mode: Mode) {
@@ -643,10 +648,9 @@ export class Camera extends View implements CameraViewUI {
             portraitBlob, ToteMetricFormat.PHOTO, name, portraitMetadata);
       } catch (e) {
         toast.show(I18nString.ERROR_MSG_TAKE_PORTRAIT_BOKEH_PHOTO_FAILED);
-        // PortraitModeProcessError might be thrown when no face is detected
-        // or the segmentataion failed for the scene. Since there is not much
-        // we can do for either cases, we tolerate such error.
-        if (!(e instanceof PortraitModeProcessError)) {
+        // Throws PortraitErrorNoFaceDetected error if no face is detected for
+        // the scene.
+        if (!(e instanceof PortraitErrorNoFaceDetected)) {
           throw e;
         }
       }
@@ -720,6 +724,12 @@ export class Camera extends View implements CameraViewUI {
 
   createVideoSaver(): Promise<VideoSaver> {
     return this.resultSaver.startSaveVideo(this.outputVideoRotation);
+  }
+
+  createTimeLapseSaver(encoderArgs: TimeLapseEncoderArgs, speed: number):
+      Promise<TimeLapseSaver> {
+    encoderArgs.videoRotation = this.outputVideoRotation;
+    return TimeLapseSaver.create(encoderArgs, speed);
   }
 
   playShutterEffect(): void {

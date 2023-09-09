@@ -7,6 +7,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "components/autofill/core/browser/geo/autofill_country.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
+#import "components/autofill/core/browser/profile_requirement_utils.h"
 #import "components/autofill/core/browser/ui/country_combobox_model.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/ui/list_model/list_model.h"
@@ -45,6 +46,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // YES, when the mediator belongs to the migration prompt.
 @property(nonatomic, assign, readonly) BOOL isMigrationPrompt;
+
+// If YES, a migration button would be shown for the profile.
+@property(nonatomic, assign, readonly) BOOL showMigrateToAccountButton;
 
 @end
 
@@ -106,19 +110,29 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self.consumer didSelectCountry:countryItem.text];
 }
 
+#pragma mark - AutofillSettingsProfileEditTableViewControllerDelegate
+
+- (void)didEditAutofillProfileFromSettings {
+  _personalDataManager->UpdateProfile(*_autofillProfile);
+
+  // Push the saved profile data to the consumer.
+  [self sendAutofillProfileDataToConsumer];
+}
+
+- (BOOL)isMinimumAddress {
+  return autofill::IsMinimumAddress(*_autofillProfile);
+}
+
+- (void)didTapMigrateToAccountButton {
+  _personalDataManager->MigrateProfileToAccount(*_autofillProfile);
+}
+
 #pragma mark - AutofillProfileEditTableViewControllerDelegate
 
 - (void)willSelectCountryWithCurrentlySelectedCountry:(NSString*)country {
   [self.delegate
       willSelectCountryWithCurrentlySelectedCountry:country
                                         countryList:self.allCountries];
-}
-
-- (void)didEditAutofillProfile {
-  _personalDataManager->UpdateProfile(*_autofillProfile);
-
-  // Push the saved profile data to the consumer.
-  [self sendAutofillProfileDataToConsumer];
 }
 
 - (void)didSaveProfileFromModal {

@@ -16,17 +16,11 @@ import androidx.annotation.Nullable;
 import org.chromium.content.R;
 import org.chromium.content.browser.selection.SelectActionMenuHelper.SelectActionMenuDelegate;
 import org.chromium.content_public.browser.AdditionalSelectionMenuItemProvider;
-import org.chromium.content_public.browser.SelectionMenuGroup;
 import org.chromium.ui.base.DeviceFormFactor;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.PriorityQueue;
 
 /**
  * Paste popup implementation based on floating ActionModes.
  */
-// TODO(crbug.com/1468921): Merge this class with SelectionPopupControllerImpl and remove.
 public class FloatingPastePopupMenu implements PastePopupMenu {
     private final View mParent;
     private final PastePopupMenuDelegate mDelegate;
@@ -35,7 +29,6 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
     private ActionMode mActionMode;
     private Rect mSelectionRect;
     private final @Nullable AdditionalSelectionMenuItemProvider mAdditionalItemProvider;
-    private final Map<MenuItem, View.OnClickListener> mCustomMenuItemClickListeners;
 
     public FloatingPastePopupMenu(Context context, View parent, PastePopupMenuDelegate delegate,
             @Nullable AdditionalSelectionMenuItemProvider additionalItemProvider) {
@@ -43,7 +36,6 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
         mDelegate = delegate;
         mContext = context;
         mAdditionalItemProvider = additionalItemProvider;
-        mCustomMenuItemClickListeners = new HashMap<>();
     }
 
     @Override
@@ -127,11 +119,8 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
                     return mDelegate.canPasteAsPlainText();
                 }
             };
-            PriorityQueue<SelectionMenuGroup> nonSelectionMenuItems =
-                    SelectActionMenuHelper.getNonSelectionMenuItems(
-                            actionMenuDelegate, mAdditionalItemProvider);
-            SelectionPopupControllerImpl.initializeActionMenu(
-                    mContext, nonSelectionMenuItems, menu, mCustomMenuItemClickListeners, null);
+            SelectionPopupControllerImpl.initializeNonSelectionActionMenu(
+                    actionMenuDelegate, mContext, mAdditionalItemProvider, mode, menu);
         }
 
         @Override
@@ -141,29 +130,23 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
 
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-            View.OnClickListener customMenuItemClickListener =
-                    mCustomMenuItemClickListeners.get(item);
-            if (customMenuItemClickListener != null) {
-                customMenuItemClickListener.onClick(mParent);
-            } else {
-                int id = item.getItemId();
-                if (id == R.id.select_action_menu_paste) {
-                    mDelegate.paste();
-                    mode.finish();
-                } else if (id == R.id.select_action_menu_paste_as_plain_text) {
-                    mDelegate.pasteAsPlainText();
-                    mode.finish();
-                } else if (id == R.id.select_action_menu_select_all) {
-                    mDelegate.selectAll();
-                    mode.finish();
-                }
+            int id = item.getItemId();
+            boolean ret = true;
+            if (id == R.id.select_action_menu_paste) {
+                mDelegate.paste();
+                mode.finish();
+            } else if (id == R.id.select_action_menu_paste_as_plain_text) {
+                mDelegate.pasteAsPlainText();
+                mode.finish();
+            } else if (id == R.id.select_action_menu_select_all) {
+                mDelegate.selectAll();
+                mode.finish();
             }
-            return true;
+            return ret;
         }
 
         @Override
         public void onDestroyActionMode(ActionMode mode) {
-            mCustomMenuItemClickListeners.clear();
             if (mAdditionalItemProvider != null) {
                 mAdditionalItemProvider.onMenuDestroyed();
             }

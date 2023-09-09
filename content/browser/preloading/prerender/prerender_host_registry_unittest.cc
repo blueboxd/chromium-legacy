@@ -325,7 +325,69 @@ TEST_F(PrerenderHostRegistryTest, CreateAndStartHost_PreloadingConfigHoldback) {
                                   PrerenderTriggerType::kSpeculationRule, "",
                                   contents()->GetPrimaryMainFrame()),
       preloading_attempt);
-  ASSERT_EQ(prerender_frame_tree_node_id, kNoFrameTreeNodeId);
+  EXPECT_EQ(prerender_frame_tree_node_id, kNoFrameTreeNodeId);
+}
+
+TEST_F(PrerenderHostRegistryTest,
+       CreateAndStartHost_HoldbackOverride_Holdback) {
+  const GURL kPrerenderingUrl("https://example.com/next");
+  auto* preloading_data = PreloadingData::GetOrCreateForWebContents(contents());
+  PreloadingURLMatchCallback same_url_matcher =
+      PreloadingData::GetSameURLMatcher(kPrerenderingUrl);
+  PreloadingAttempt* preloading_attempt = preloading_data->AddPreloadingAttempt(
+      content_preloading_predictor::kSpeculationRules,
+      PreloadingType::kPrerender, std::move(same_url_matcher));
+
+  auto attributes = GeneratePrerenderAttributes(
+      kPrerenderingUrl, PrerenderTriggerType::kSpeculationRule, "",
+      contents()->GetPrimaryMainFrame());
+  attributes.holdback_status_override = PreloadingHoldbackStatus::kHoldback;
+
+  const int prerender_frame_tree_node_id =
+      registry().CreateAndStartHost(attributes, preloading_attempt);
+
+  EXPECT_EQ(prerender_frame_tree_node_id, kNoFrameTreeNodeId);
+}
+
+TEST_F(PrerenderHostRegistryTest, CreateAndStartHost_HoldbackOverride_Allowed) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeatureWithParameters(features::kPreloadingConfig,
+                                              {{"preloading_config", R"(
+  [{
+    "preloading_type": "Prerender",
+    "preloading_predictor": "SpeculationRules",
+    "holdback": true
+  }]
+  )"}});
+  PreloadingConfig& config = PreloadingConfig::GetInstance();
+  config.ParseConfig();
+  const GURL kPrerenderingUrl("https://example.com/next");
+  auto* preloading_data = PreloadingData::GetOrCreateForWebContents(contents());
+  PreloadingURLMatchCallback same_url_matcher =
+      PreloadingData::GetSameURLMatcher(kPrerenderingUrl);
+  PreloadingAttempt* preloading_attempt = preloading_data->AddPreloadingAttempt(
+      content_preloading_predictor::kSpeculationRules,
+      PreloadingType::kPrerender, std::move(same_url_matcher));
+
+  auto attributes = GeneratePrerenderAttributes(
+      kPrerenderingUrl, PrerenderTriggerType::kSpeculationRule, "",
+      contents()->GetPrimaryMainFrame());
+  attributes.holdback_status_override = PreloadingHoldbackStatus::kAllowed;
+
+  const int prerender_frame_tree_node_id =
+      registry().CreateAndStartHost(attributes, preloading_attempt);
+
+  ASSERT_NE(prerender_frame_tree_node_id, kNoFrameTreeNodeId);
+  PrerenderHost* prerender_host =
+      registry().FindHostByUrlForTesting(kPrerenderingUrl);
+  CommitPrerenderNavigation(*prerender_host);
+
+  contents()->ActivatePrerenderedPage(kPrerenderingUrl);
+
+  // "Navigation.TimeToActivatePrerender.SpeculationRule" histogram should be
+  // recorded on every prerender activation.
+  histogram_tester().ExpectTotalCount(
+      "Navigation.TimeToActivatePrerender.SpeculationRule", 1u);
 }
 
 TEST_F(PrerenderHostRegistryTest, CreateAndStartHostForSameURL) {
@@ -396,7 +458,8 @@ TEST_F(PrerenderHostRegistryTest, NumberLimit_Activation) {
 // Tests that PrerenderHostRegistry limits the number of started prerenders
 // to 1, and new candidates can be processed after the initiator page navigates
 // to a new same-origin page.
-TEST_F(PrerenderHostRegistryTest, NumberLimit_SameOriginNavigateAway) {
+// TODO(crbug.com/1464684): Test is flaky across platforms.
+TEST_F(PrerenderHostRegistryTest, DISABLED_NumberLimit_SameOriginNavigateAway) {
   RenderFrameHostImpl* render_frame_host = contents()->GetPrimaryMainFrame();
   ASSERT_TRUE(render_frame_host);
 
@@ -434,7 +497,9 @@ TEST_F(PrerenderHostRegistryTest, NumberLimit_SameOriginNavigateAway) {
 // Tests that PrerenderHostRegistry limits the number of started prerenders
 // to 1, and new candidates can be processed after the initiator page navigates
 // to a new cross-origin page.
-TEST_F(PrerenderHostRegistryTest, NumberLimit_CrossOriginNavigateAway) {
+// TODO(crbug.com/1464684): Test is flaky across platforms.
+TEST_F(PrerenderHostRegistryTest,
+       DISABLED_NumberLimit_CrossOriginNavigateAway) {
   RenderFrameHostImpl* render_frame_host = contents()->GetPrimaryMainFrame();
   ASSERT_TRUE(render_frame_host);
 
@@ -564,8 +629,7 @@ TEST_F(PrerenderHostRegistryTest,
 
   {
     MockCommitDeferringConditionInstaller installer(
-        kPrerenderingUrl,
-        /*is_ready_to_commit=*/false);
+        kPrerenderingUrl, CommitDeferringCondition::Result::kDefer);
     // Start trying to activate the prerendered page.
     navigation = CreateActivation(kPrerenderingUrl, *contents());
     navigation->Start();
@@ -627,8 +691,7 @@ TEST_F(PrerenderHostRegistryTest,
 
   {
     MockCommitDeferringConditionInstaller installer(
-        kPrerenderingUrl,
-        /*is_ready_to_commit=*/false);
+        kPrerenderingUrl, CommitDeferringCondition::Result::kDefer);
     // Start trying to activate the prerendered page.
     navigation = CreateActivation(kPrerenderingUrl, *contents());
     navigation->Start();

@@ -80,12 +80,6 @@ const char BaseRenderingContext2D::kAllPetiteVariantString[] =
     "all-petite-caps";
 const char BaseRenderingContext2D::kUnicaseVariantString[] = "unicase";
 const char BaseRenderingContext2D::kTitlingCapsVariantString[] = "titling-caps";
-const char BaseRenderingContext2D::kAutoRendering[] = "auto";
-const char BaseRenderingContext2D::kOptimizeSpeedRendering[] = "optimizespeed";
-const char BaseRenderingContext2D::kOptimizeLegibilityRendering[] =
-    "optimizelegibility";
-const char BaseRenderingContext2D::kGeometricPrecisionRendering[] =
-    "geometricprecision";
 
 // Dummy overdraw test for ops that do not support overdraw detection
 const auto kNoOverdraw = [](const SkIRect& clip_bounds) { return false; };
@@ -2118,15 +2112,17 @@ ImageData* BaseRenderingContext2D::getImageDataInternal(
       GetCanvasRenderingContextHost()->RenderingContext()) {
     if (will_read_frequently_value == CanvasContextCreationAttributesCore::
                                           WillReadFrequently::kUndefined) {
-      const String& message =
-          "Canvas2D: Multiple readback operations using getImageData are "
-          "faster with the willReadFrequently attribute set to true. See: "
-          "https://html.spec.whatwg.org/multipage/"
-          "canvas.html#concept-canvas-will-read-frequently";
-      GetTopExecutionContext()->AddConsoleMessage(
-          MakeGarbageCollected<ConsoleMessage>(
-              mojom::blink::ConsoleMessageSource::kRendering,
-              mojom::blink::ConsoleMessageLevel::kWarning, message));
+      if (auto* execution_context = GetTopExecutionContext()) {
+        const String& message =
+            "Canvas2D: Multiple readback operations using getImageData are "
+            "faster with the willReadFrequently attribute set to true. See: "
+            "https://html.spec.whatwg.org/multipage/"
+            "canvas.html#concept-canvas-will-read-frequently";
+        execution_context->AddConsoleMessage(
+            MakeGarbageCollected<ConsoleMessage>(
+                mojom::blink::ConsoleMessageSource::kRendering,
+                mojom::blink::ConsoleMessageLevel::kWarning, message));
+      }
     }
   }
 
@@ -2378,7 +2374,7 @@ String BaseRenderingContext2D::wordSpacing() const {
 }
 
 String BaseRenderingContext2D::textRendering() const {
-  return ToStringForIdl(GetState().GetTextRendering());
+  return GetState().GetTextRendering().AsString();
 }
 
 float BaseRenderingContext2D::GetFontBaseline(
@@ -2425,7 +2421,7 @@ String BaseRenderingContext2D::fontKerning() const {
 }
 
 String BaseRenderingContext2D::fontStretch() const {
-  return FontDescription::ToString(GetState().GetFontStretch()).LowerASCII();
+  return GetState().GetFontStretch().AsString();
 }
 
 String BaseRenderingContext2D::fontVariantCaps() const {

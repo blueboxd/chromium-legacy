@@ -17,12 +17,13 @@
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
-#include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/webapps/browser/uninstall_result_code.h"
@@ -69,6 +70,9 @@ constexpr const char kSubAppIdInvalid[] = "/invalid-sub-app-id";
 using RemoveResultsMojo =
     std::vector<blink::mojom::SubAppsServiceRemoveResultPtr>;
 
+using AddResults =
+    std::vector<std::pair<ManifestId, blink::mojom::SubAppsServiceResultCode>>;
+
 // There's one simple end-to-end test that actually calls the JS API interface,
 // the rest test the mojo interface (since the first layer listening to the API
 // calls is almost a direct passthrough to the mojo service).
@@ -112,7 +116,7 @@ class SubAppsServiceImplBrowserTest : public WebAppControllerBrowserTest {
 
   void UninstallParentAppBySource(WebAppManagement::Type source) {
     base::test::TestFuture<void> uninstall_future;
-    provider().install_finalizer().UninstallExternalWebApp(
+    provider().scheduler().RemoveInstallSource(
         parent_app_id_, source, webapps::WebappUninstallSource::kAppsPage,
         base::BindLambdaForTesting([&](webapps::UninstallResultCode code) {
           EXPECT_EQ(code, webapps::UninstallResultCode::kSuccess);
@@ -135,8 +139,7 @@ class SubAppsServiceImplBrowserTest : public WebAppControllerBrowserTest {
 
   // Calls the Add() method on the mojo interface which is async, and waits for
   // it to finish. Argument should contain paths, not full URLs.
-  SubAppsServiceImpl::AddResults CallAdd(
-      std::vector<std::pair<std::string, std::string>> subapps) {
+  AddResults CallAdd(std::vector<std::pair<std::string, std::string>> subapps) {
     // Convert params to mojo before making the call.
     std::vector<SubAppsServiceAddParametersPtr> sub_apps_mojo;
     for (const auto& [manifest_id_path, install_url_path] : subapps) {
@@ -149,7 +152,7 @@ class SubAppsServiceImplBrowserTest : public WebAppControllerBrowserTest {
     EXPECT_TRUE(future.Wait()) << "Add did not trigger the callback.";
 
     // Unpack the mojo results before returning them.
-    SubAppsServiceImpl::AddResults add_results;
+    AddResults add_results;
     for (const auto& result : future.Take()) {
       add_results.emplace_back(GetURLFromPath(result->manifest_id_path),
                                result->result_code);
@@ -160,7 +163,7 @@ class SubAppsServiceImplBrowserTest : public WebAppControllerBrowserTest {
   void ExpectCallAdd(
       base::flat_set<std::pair<ManifestId, SubAppsServiceResultCode>> expected,
       std::vector<std::pair<std::string, std::string>> subapps) {
-    SubAppsServiceImpl::AddResults actual = CallAdd(subapps);
+    AddResults actual = CallAdd(subapps);
     EXPECT_THAT(actual, testing::UnorderedElementsAreArray(expected));
   }
 
@@ -509,7 +512,7 @@ IN_PROC_BROWSER_TEST_F(SubAppsServiceImplBrowserTest,
 
   // Add another source to the parent app.
   {
-    ScopedRegistryUpdate update(&provider().sync_bridge_unsafe());
+    ScopedRegistryUpdate update = provider().sync_bridge_unsafe().BeginUpdate();
     WebApp* web_app = update->UpdateApp(parent_app_id_);
     ASSERT_TRUE(web_app);
     web_app->AddSource(WebAppManagement::kDefault);

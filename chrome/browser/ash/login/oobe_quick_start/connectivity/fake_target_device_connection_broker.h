@@ -14,6 +14,7 @@
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/fake_connection.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/target_device_connection_broker.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/target_device_connection_broker_factory.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class FakeNearbyConnection;
 
@@ -48,8 +49,8 @@ class FakeTargetDeviceConnectionBroker : public TargetDeviceConnectionBroker {
     // TargetDeviceConnectionBrokerFactory:
     std::unique_ptr<TargetDeviceConnectionBroker> CreateInstance(
         base::WeakPtr<NearbyConnectionsManager> nearby_connections_manager,
-        mojo::SharedRemote<mojom::QuickStartDecoder> quick_start_decoder,
-        bool is_resume_after_update = false) override;
+        mojo::SharedRemote<mojom::QuickStartDecoder> quick_start_decoder)
+        override;
 
     std::vector<FakeTargetDeviceConnectionBroker*> instances_;
   };
@@ -66,7 +67,6 @@ class FakeTargetDeviceConnectionBroker : public TargetDeviceConnectionBroker {
                         bool use_pin_authentication,
                         ResultCallback on_start_advertising_callback) override;
   void StopAdvertising(base::OnceClosure on_stop_advertising_callback) override;
-  base::Value::Dict GetPrepareForUpdateInfo() override;
 
   void InitiateConnection(const std::string& source_device_id);
   void AuthenticateConnection(const std::string& source_device_id);
@@ -106,6 +106,10 @@ class FakeTargetDeviceConnectionBroker : public TargetDeviceConnectionBroker {
     return std::move(on_stop_advertising_callback_);
   }
 
+  absl::optional<bool> start_advertising_use_pin_authentication() {
+    return start_advertising_use_pin_authentication_;
+  }
+
   FakeConnection* GetFakeConnection();
 
  private:
@@ -120,6 +124,7 @@ class FakeTargetDeviceConnectionBroker : public TargetDeviceConnectionBroker {
   std::unique_ptr<FakeConnection> connection_;
 
   RandomSessionId random_session_id_;
+  absl::optional<bool> start_advertising_use_pin_authentication_;
 
   base::WeakPtrFactory<FakeTargetDeviceConnectionBroker> weak_ptr_factory_{
       this};

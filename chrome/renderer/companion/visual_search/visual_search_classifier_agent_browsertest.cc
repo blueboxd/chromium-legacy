@@ -67,9 +67,8 @@ class TestVisualResultHandler : mojom::VisualSuggestionsResultHandler {
     return receiver_.BindNewPipeAndPassRemote();
   }
 
-  MOCK_METHOD2(HandleClassification,
-               void(std::vector<mojom::VisualSearchSuggestionPtr>,
-                    mojom::ClassificationStatsPtr));
+  MOCK_METHOD1(HandleClassification,
+               void(std::vector<mojom::VisualSearchSuggestionPtr>));
 
  private:
   mojo::Receiver<mojom::VisualSuggestionsResultHandler> receiver_{this};
@@ -97,16 +96,6 @@ class VisualSearchClassifierAgentTest : public ChromeRenderViewTest {
     ChromeRenderViewTest::TearDown();
   }
 
-  void LoadHtmlWithSingleImage() {
-    base::FilePath img_path = img_file_path();
-    std::string base64_img;
-    ASSERT_TRUE(base::ReadFileToString(img_path, &base64_img));
-    std::string html = "<html><body><img src=\"";
-    html.append(base64_img);
-    html.append("\"</body></html>");
-    LoadHTML(html.c_str());
-  }
-
  protected:
   VisualSearchClassifierAgent* agent_;  // Owned by RenderFrame
   base::HistogramTester histogram_tester_;
@@ -117,7 +106,13 @@ class VisualSearchClassifierAgentTest : public ChromeRenderViewTest {
 
 TEST_F(VisualSearchClassifierAgentTest,
        StartClassification_SingleImageNonShoppy) {
-  LoadHtmlWithSingleImage();
+  base::FilePath img_path = img_file_path();
+  std::string base64_img;
+  ASSERT_TRUE(base::ReadFileToString(img_path, &base64_img));
+  std::string html = "<html><body><img src=\"";
+  html.append(base64_img);
+  html.append("\"</body></html>");
+  LoadHTML(html.c_str());
   agent_->StartVisualClassification(model_file_.Duplicate(), "",
                                     test_handler_.GetRemoteHandler());
   base::RunLoop().RunUntilIdle();
@@ -126,7 +121,7 @@ TEST_F(VisualSearchClassifierAgentTest,
   // on certain platforms (i.e. linux-lacros-rel, linux-wayland).
   if (model_file_.IsValid()) {
     histogram_tester_.ExpectBucketCount(
-        "Companion.VisualQuery.Agent.DomImageCount", 1, 1);
+        "Companion.VisualSearch.Agent.DomImageCount", 1, 1);
   }
 }
 
@@ -138,24 +133,25 @@ TEST_F(VisualSearchClassifierAgentTest, StartClassification_NoImages) {
   base::RunLoop().RunUntilIdle();
 
   // We don't expect handler to get called since there are no images in DOM.
-  EXPECT_CALL(test_handler_, HandleClassification(_, _)).Times(0);
+  EXPECT_CALL(test_handler_, HandleClassification(_)).Times(0);
 
   // TODO(b/287637476) - Remove the file valid check.
   // This validity check is needed because file path does not seem to work on
   // on certain platforms (i.e. linux-lacros-rel, linux-wayland).
   if (model_file_.IsValid()) {
     histogram_tester_.ExpectBucketCount(
-        "Companion.VisualQuery.Agent.StartClassification", false, 1);
+        "Companion.VisualSearch.Agent.DomImageCount", 0, 1);
   }
 }
 
 TEST_F(VisualSearchClassifierAgentTest, StartClassification_InvalidModel) {
   base::File file;
-  LoadHtmlWithSingleImage();
+  std::string html = "<html><body>dummy</body></html>";
+  LoadHTML(html.c_str());
   agent_->StartVisualClassification(file.Duplicate(), "",
                                     test_handler_.GetRemoteHandler());
   base::RunLoop().RunUntilIdle();
-  EXPECT_CALL(test_handler_, HandleClassification(_, _)).Times(0);
+  EXPECT_CALL(test_handler_, HandleClassification(_)).Times(0);
   histogram_tester_.ExpectBucketCount(
       "Companion.VisualSearch.Agent.InvalidModelFailure", true, 1);
 }

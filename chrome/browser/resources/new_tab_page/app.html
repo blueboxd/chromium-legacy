@@ -34,6 +34,13 @@
     }
   }
 
+  :host-context([chrome-refresh-2023]) cr-most-visited {
+    --add-shortcut-background-color:
+        var(--color-new-tab-page-add-shortcut-background);
+    --add-shortcut-foreground-color:
+        var(--color-new-tab-page-add-shortcut-foreground);
+  }
+
   :host([modules-redesigned-enabled_]) {
     --ntp-module-border-radius: 16px;
     --ntp-module-item-border-radius: 12px;
@@ -99,7 +106,7 @@
     width: var(--ntp-module-layout-width);
   }
 
-  ntp-modules:not([hidden]) {
+  #modules:not([hidden]) {
     /* We use animation instead of transition to allow a fade-in out of
        display: none. */
     animation: 300ms ease-in-out fade-in-animation;
@@ -135,7 +142,7 @@
   }
 
   /* ~ because the dom-if results in a template between the middle-slot-promo
-     and ntp-modules / ntp-modules-lanchpad. */
+     and ntp-modules. */
   ntp-middle-slot-promo:not([hidden]) ~ #modules {
     margin-top: 16px;
   }
@@ -176,11 +183,18 @@
     box-shadow: 0 3px 6px rgba(0, 0, 0, .16), 0 1px 2px rgba(0, 0, 0, .23);
     font-weight: 400;
     min-width: 32px;
+    padding-inline-start: 16px;
+    padding-inline-end: 16px;
   }
 
   :host([show-background-image_]) #customizeButton {
     box-shadow: none;
     padding: 0;
+  }
+
+  :host-context([chrome-refresh-2023]):host([show-background-image_])
+      #customizeButton {
+    padding-inline-start: 8px;
   }
 
   :host-context(.focus-outline-visible) #customizeButton:focus {
@@ -193,8 +207,11 @@
     -webkit-mask-size: 100%;
     background-color: var(--text-color);
     height: 16px;
-    margin-inline-end: 8px;
     width: 16px;
+  }
+
+  :host-context([chrome-refresh-2023]) #customizeButton {
+    --cr-button-height: 32px;
   }
 
   :host([show-background-image_]) #customizeIcon {
@@ -203,12 +220,13 @@
   }
 
   @media (max-width: 550px) {
-    #customizeButton {
-      padding: 0;
+    :host-context([chrome-refresh-2023]) #customizeButton {
+      padding-inline-start: 8px;
     }
 
-    #customizeIcon {
-      margin: 0;
+    #customizeButton {
+      padding-inline-start: 0;
+      padding-inline-end: 0;
     }
 
     #customizeText {
@@ -217,12 +235,14 @@
   }
 
   @media (max-width: 970px) {
-    :host([modules-shown-to-user]) #customizeButton {
-      padding: 0;
+    :host-context([chrome-refresh-2023]):host([modules-shown-to-user])
+        #customizeButton {
+      padding-inline-start: 8px;
     }
 
-    :host([modules-shown-to-user]) #customizeIcon {
-      margin: 0;
+    :host([modules-shown-to-user]) #customizeButton {
+      padding-inline-start: 0;
+      padding-inline-end: 0;
     }
 
     :host([modules-shown-to-user]) #customizeText {
@@ -231,12 +251,14 @@
   }
 
   @media (max-width: 1020px) {
-    :host([modules-fre-shown]) #customizeButton {
-      padding: 0;
+    :host-context([chrome-refresh-2023]):host([modules-fre-shown])
+        #customizeButton {
+      padding-inline-start: 8px;
     }
 
-    :host([modules-fre-shown]) #customizeIcon {
-      margin: 0;
+    :host([modules-fre-shown]) #customizeButton {
+      padding-inline-start: 0;
+      padding-inline-end: 0;
     }
 
     :host([modules-fre-shown]) #customizeText {
@@ -420,7 +442,7 @@
       <div id="customizeButtonContainer">
         <cr-button id="customizeButton" on-click="onCustomizeClick_"
             title="$i18n{customizeThisPage}" aria-pressed="[[showCustomize_]]">
-          <div id="customizeIcon"></div>
+          <div id="customizeIcon" slot="prefix-icon"></div>
           <div id="customizeText" hidden$="[[showBackgroundImage_]]">
             $i18n{customizeButton}
           </div>

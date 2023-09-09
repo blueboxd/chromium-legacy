@@ -351,8 +351,7 @@ bool LocalDOMWindow::IsCrossSiteSubframeIncludingScheme() const {
 }
 
 LocalDOMWindow* LocalDOMWindow::From(const ScriptState* script_state) {
-  v8::HandleScope scope(script_state->GetIsolate());
-  return blink::ToLocalDOMWindow(script_state->GetContext());
+  return blink::ToLocalDOMWindow(script_state);
 }
 
 mojom::blink::V8CacheOptions LocalDOMWindow::GetV8CacheOptions() const {
@@ -1087,9 +1086,7 @@ Screen* LocalDOMWindow::screen() {
     int64_t display_id =
         frame ? frame->GetChromeClient().GetScreenInfo(*frame).display_id
               : Screen::kInvalidDisplayId;
-    screen_ = MakeGarbageCollected<Screen>(
-        this, display_id, /*use_size_override=*/
-        !RuntimeEnabledFeatures::FullscreenScreenSizeMatchesDisplayEnabled());
+    screen_ = MakeGarbageCollected<Screen>(this, display_id);
   }
   return screen_.Get();
 }
@@ -2222,7 +2219,7 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   frame_request.GetResourceRequest().SetHasUserGesture(has_user_gesture);
   GetFrame()->MaybeLogAdClickNavigation();
 
-  if (has_user_gesture && window_features.attribution_srcs.has_value()) {
+  if (window_features.attribution_srcs.has_value()) {
     // An impression must be attached prior to the
     // `FindOrCreateFrameForNavigation()` call, as that call may result in
     // performing a navigation if the call results in creating a new window with
@@ -2231,7 +2228,8 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
                                     ->GetAttributionSrcLoader()
                                     ->RegisterNavigation(
                                         /*navigation_url=*/completed_url,
-                                        *window_features.attribution_srcs));
+                                        *window_features.attribution_srcs,
+                                        has_user_gesture));
   }
 
   FrameTree::FindResult result =
@@ -2495,12 +2493,46 @@ void LocalDOMWindow::SetHasStorageAccess() {
   has_storage_access_ = true;
 }
 
-bool LocalDOMWindow::HadActivationlessPaymentRequest() const {
-  return had_activationless_payment_request_;
+void LocalDOMWindow::maximize() {
+  if (!GetFrame() || !GetFrame()->IsOutermostMainFrame() ||
+      GetFrame()->GetPage()->IsPrerendering()) {
+    return;
+  }
+
+#if defined(USE_AURA)
+  GetFrame()->GetLocalFrameHostRemote().Maximize();
+#else
+  // API works only on Aura platforms for now.
+  return;
+#endif
 }
 
-void LocalDOMWindow::SetHadActivationlessPaymentRequest() {
-  had_activationless_payment_request_ = true;
+void LocalDOMWindow::minimize() {
+  if (!GetFrame() || !GetFrame()->IsOutermostMainFrame() ||
+      GetFrame()->GetPage()->IsPrerendering()) {
+    return;
+  }
+
+#if defined(USE_AURA)
+  GetFrame()->GetLocalFrameHostRemote().Minimize();
+#else
+  // API works only on Aura platforms for now.
+  return;
+#endif
+}
+
+void LocalDOMWindow::restore() {
+  if (!GetFrame() || !GetFrame()->IsOutermostMainFrame() ||
+      GetFrame()->GetPage()->IsPrerendering()) {
+    return;
+  }
+
+#if defined(USE_AURA)
+  GetFrame()->GetLocalFrameHostRemote().Restore();
+#else
+  // API works only on Aura platforms for now.
+  return;
+#endif
 }
 
 void LocalDOMWindow::GenerateNewNavigationId() {

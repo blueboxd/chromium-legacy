@@ -73,7 +73,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.CanonicalURLResult" enum="CanonicalURLResult"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>pkl@chromium.org</owner>
   <owner>sebsg@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
@@ -83,7 +83,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.ContextMenu.CopyImage" enum="ContextMenuIOSCopyImage"
-    expires_after="2023-10-16">
+    expires_after="2024-01-07">
   <owner>djean@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <summary>
@@ -115,7 +115,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.ContextMenu.LensSupportStatus"
-    enum="IOSLensSupportStatus" expires_after="2023-11-19">
+    enum="IOSLensSupportStatus" expires_after="2024-07-17">
   <owner>hujasonx@google.com</owner>
   <owner>lens-in-bling-team@google.com</owner>
   <summary>
@@ -231,7 +231,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.Keyboard.LensSupportStatus" enum="IOSLensSupportStatus"
-    expires_after="2023-11-19">
+    expires_after="2024-07-17">
   <owner>hujasonx@google.com</owner>
   <owner>lens-in-bling-team@google.com</owner>
   <summary>
@@ -394,7 +394,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.NewTabPage.LensSupportStatus"
-    enum="IOSLensSupportStatus" expires_after="2023-08-26">
+    enum="IOSLensSupportStatus" expires_after="2024-07-17">
   <owner>hujasonx@google.com</owner>
   <owner>lens-in-bling-team@google.com</owner>
   <summary>
@@ -405,7 +405,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.PlusButton.LensSupportStatus"
-    enum="IOSLensSupportStatus" expires_after="2023-08-26">
+    enum="IOSLensSupportStatus" expires_after="2024-07-17">
   <owner>hujasonx@google.com</owner>
   <owner>lens-in-bling-team@google.com</owner>
   <summary>
@@ -426,7 +426,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.Share.EntryPoints" enum="IOSActivityScenario"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>ellyjones@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <owner>chrome-with-friends-robots@google.com</owner>
@@ -439,14 +439,15 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.Share.{EntryPoint}.Actions" enum="IOSShareAction"
-    expires_after="2023-05-06">
+    expires_after="2024-07-07">
   <owner>ellyjones@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <owner>chrome-with-friends-robots@google.com</owner>
   <summary>
     Tracks the sharing actions executed when the sharing scenario was initiated
     for a {EntryPoint}. To view how often this sharing scenario was triggered,
-    take a look at: Mobile.Share.EntryPoints. Currently only on iOS.
+    take a look at: Mobile.Share.EntryPoints. Currently only on iOS. Expired
+    between 2023-05-06 and 2023-07-07.
   </summary>
   <token key="EntryPoint">
     <variant name="BookmarkEntry" summary="Bookmark entry"/>
@@ -466,7 +467,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.Spotlight.LensSupportStatus"
-    enum="IOSLensSupportStatus" expires_after="2023-08-26">
+    enum="IOSLensSupportStatus" expires_after="2024-07-17">
   <owner>hujasonx@google.com</owner>
   <owner>lens-in-bling-team@google.com</owner>
   <summary>
@@ -604,7 +605,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.SystemNotification.Permission.OSPromptResult"
-    enum="BooleanEnabled" expires_after="2023-11-01">
+    enum="BooleanEnabled" expires_after="2023-12-31">
   <owner>salg@google.com</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>
@@ -614,7 +615,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.SystemNotification.Permission.RationaleResult"
-    enum="NotificationRationaleResult" expires_after="2023-11-01">
+    enum="NotificationRationaleResult" expires_after="2023-12-31">
   <owner>salg@google.com</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>
@@ -624,7 +625,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.SystemNotification.Permission.StartupRequestCount"
-    units="attempts" expires_after="2023-11-01">
+    units="attempts" expires_after="2023-12-31">
   <owner>salg@google.com</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>
@@ -635,7 +636,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.SystemNotification.Permission.StartupState"
-    enum="NotificationPermissionState" expires_after="2023-11-01">
+    enum="NotificationPermissionState" expires_after="2023-12-31">
   <owner>salg@google.com</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>
@@ -876,70 +877,14 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram
-    name="MobileFre.Lightweight.EnterprisePolicyCheckSpeed{MobileFreInflationSpeedComparison}"
-    units="ms" expires_after="2022-05-01">
-  <owner>skym@chromium.org</owner>
-  <owner>wenyufu@chromium.org</owner>
-  <summary>
-    Android: Records the time it takes from Lightweight FRE launch to the
-    enterprise policy check completing. This check is often skipped when its
-    result becomes irrelevant. {MobileFreInflationSpeedComparison}
-  </summary>
-  <token key="MobileFreInflationSpeedComparison"
-      variants="MobileFreInflationSpeedComparison"/>
-</histogram>
-
-<histogram
-    name="MobileFre.Lightweight.IsDeviceOwnedCheckSpeed{MobileFreInflationSpeedComparison}"
-    units="ms" expires_after="2022-05-01">
-  <owner>skym@chromium.org</owner>
-  <owner>wenyufu@chromium.org</owner>
-  <summary>
-    Android: Records the time it takes from from Lightweight FRE launch to the
-    device ownership check completing. This check is often skipped when its
-    result becomes irrelevant. {MobileFreInflationSpeedComparison}
-  </summary>
-  <token key="MobileFreInflationSpeedComparison"
-      variants="MobileFreInflationSpeedComparison"/>
-</histogram>
-
-<histogram name="MobileFre.Lightweight.LoadingDuration" units="ms"
-    expires_after="2022-05-01">
-  <owner>skym@chromium.org</owner>
-  <owner>wenyufu@chromium.org</owner>
-  <summary>
-    Android: Records how long it takes waiting from the dialog for Lightweight
-    FRE created to content fully loaded - either ToS is shown or FRE is skipped.
-  </summary>
-</histogram>
-
 <histogram name="MobileFre.NativeInitialized" units="ms"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>skym@chromium.org</owner>
   <owner>wenyufu@chromium.org</owner>
   <summary>
     Android: The amount of time spent between FRE started and native
     initialization. Recorded when native is fully initialized.
   </summary>
-</histogram>
-
-<histogram name="MobileFre.PolicyServiceInitDelayAfterNative{PolicyPresence}2"
-    units="ms" expires_after="2022-05-01">
-  <owner>skym@chromium.org</owner>
-  <owner>wenyufu@chromium.org</owner>
-  <summary>
-    Android: The amount of time spent between native initialized and the
-    decision &quot;whether we need to wait to load policy service from
-    native&quot; has been made. The decision is made when no on-device policy is
-    found, or policy service is fully initialized. If the decision has been made
-    before native initialization, it will not be recorded. Recorded during FRE
-    only, when on-device policy is {PolicyPresence}
-  </summary>
-  <token key="PolicyPresence">
-    <variant name=".WithoutPolicy" summary="not presented."/>
-    <variant name=".WithPolicy" summary="presented."/>
-  </token>
 </histogram>
 
 <histogram name="MobileFre.Progress" enum="MobileFreProgress"
@@ -1098,7 +1043,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileOmnibox.PressedClipboardSuggestionAge" units="ms"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <summary>
@@ -1160,7 +1105,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileSignInPromo.NTPFeedTop.ImpressionsTilDismiss"
-    units="impressions" expires_after="2023-10-15">
+    units="impressions" expires_after="2024-01-07">
   <owner>mrefaat@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -1264,7 +1209,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileStartup.DailyLaunchCount" units="units"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>tedchoc@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -1309,7 +1254,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileStartup.LaunchCause" enum="LaunchCause"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>mthiesse@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
@@ -1322,7 +1267,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="MobileStartup.ToolbarInflationTime" units="ms"
-    expires_after="M82">
+    expires_after="2023-12-28">
   <owner>pasko@chromium.org</owner>
   <summary>
     Android: The time spent performing toolbar layout inflation.

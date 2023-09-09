@@ -285,9 +285,14 @@ after discussions on the right group.
       <annotation id="crash_file_uploader"/>
       <annotation id="glanceables_classroom_integration"/>
       <annotation id="promise_app_service_download_icon"/>
-      <annotation id="backdrop_image_link_verification"/>
       <annotation id="ip_protection_service_get_token"/>
       <annotation id="supervised_user_request_blocked_site_permission"/>
+      <annotation id="password_sharing_recipients"/>
+      <annotation id="page_insights"/>
+      <annotation id="ntp_image_url_verification"/>
+      <annotation id="passkey_enclave_client"/>
+      <annotation id="iwa_update_discovery_update_manifest"/>
+      <annotation id="iwa_update_discovery_web_bundle"/>
     </sender>
   </group>
   <group name="Admin Features" hidden="true">
@@ -376,6 +381,7 @@ after discussions on the right group.
     <sender name="Accounts, Identity, and Authentication">
       <annotation id="accounts_image_fetcher"/>
       <annotation id="affiliation_lookup_by_hash"/>
+      <annotation id="device_bound_session_register"/>
       <annotation id="device_management_service"/>
       <annotation id="lookup_single_password_leak"/>
     </sender>

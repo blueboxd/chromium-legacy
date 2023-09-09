@@ -710,7 +710,6 @@ blink_core_sources_css = [
   "vision_deficiency.cc",
   "vision_deficiency.h",
   "white_space.h",
-  "word_boundary_detection.h",
   "zoom_adjusted_pixel_value.h",
 ]
 
@@ -831,6 +830,7 @@ blink_core_tests_css = [
   "selector_checker_test.cc",
   "selector_filter_test.cc",
   "selector_query_test.cc",
+  "style_containment_scope_tree_test.cc",
   "style_element_test.cc",
   "style_engine_test.cc",
   "style_environment_variables_test.cc",

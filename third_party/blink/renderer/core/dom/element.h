@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/dom/focusgroup_flags.h"
 #include "third_party/blink/renderer/core/dom/has_invalidation_flags.h"
 #include "third_party/blink/renderer/core/dom/names_map.h"
+#include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
@@ -67,7 +68,7 @@ namespace blink {
 
 class AccessibleNode;
 class AnchorElementObserver;
-class AnchorScrollData;
+class AnchorPositionScrollData;
 class AriaNotificationOptions;
 class Attr;
 class Attribute;
@@ -466,8 +467,10 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   String nodeName() const override;
 
-  Element& CloneWithChildren(CloneChildrenFlag flag, Document* = nullptr) const;
-  Element& CloneWithoutChildren(Document* = nullptr) const;
+  Element& CloneWithChildren(NodeCloningData& data, Document* = nullptr) const;
+  Element& CloneWithoutChildren(NodeCloningData& data,
+                                Document* = nullptr) const;
+  Element& CloneWithoutChildren() const;
 
   void SetBooleanAttribute(const QualifiedName&, bool);
 
@@ -585,7 +588,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   // Step 5 of https://dom.spec.whatwg.org/#concept-node-clone
   virtual void CloneNonAttributePropertiesFrom(const Element&,
-                                               CloneChildrenFlag) {}
+                                               NodeCloningData&) {}
 
   // NOTE: This shadows Node::GetComputedStyle().
   // The definition is in node_computed_style.h.
@@ -759,8 +762,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // GetFocusableArea calls GetFocusDelegate, this allows us to skip redundant
   // recursive calls to the same descendants.
   Element* GetFocusableArea(bool in_descendant_traversal = false) const;
-  Element* GetFocusDelegate(bool autofocus_only,
-                            bool in_descendant_traversal = false) const;
+  Element* GetFocusDelegate(bool in_descendant_traversal = false) const;
   // Element focus function called through IDL (i.e. element.focus() in JS)
   // Delegates to Focus() with focus type set to kScript
   void focusForBindings(const FocusOptions*);
@@ -1189,9 +1191,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   PopoverData* EnsurePopoverData();
   PopoverData* GetPopoverData() const;
 
-  AnchorScrollData& EnsureAnchorScrollData();
-  void RemoveAnchorScrollData();
-  AnchorScrollData* GetAnchorScrollData() const;
+  AnchorPositionScrollData& EnsureAnchorPositionScrollData();
+  void RemoveAnchorPositionScrollData();
+  AnchorPositionScrollData* GetAnchorPositionScrollData() const;
 
   // Returns true if any element is implicitly anchored to this element.
   bool HasImplicitlyAnchoredElement() const;
@@ -1498,12 +1500,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void CancelSelectionAfterLayout();
   virtual int DefaultTabIndex() const;
 
-  const ComputedStyle* VirtualEnsureComputedStyle(
-      PseudoId pseudo_element_specifier = kPseudoIdNone,
-      const AtomicString& pseudo_argument = g_null_atom) final {
-    return EnsureComputedStyle(pseudo_element_specifier, pseudo_argument);
-  }
-
   inline void UpdateCallbackSelectors(const ComputedStyle* old_style,
                                       const ComputedStyle* new_style);
   inline void NotifyIfMatchedDocumentRulesSelectorsChanged(
@@ -1512,7 +1508,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   // Clone is private so that non-virtual CloneElementWithChildren and
   // CloneElementWithoutChildren are used instead.
-  Node* Clone(Document&, CloneChildrenFlag) const override;
+  Node* Clone(Document&, NodeCloningData&) const override;
   virtual Element& CloneWithoutAttributesAndChildren(Document& factory) const;
 
   QualifiedName tag_name_;

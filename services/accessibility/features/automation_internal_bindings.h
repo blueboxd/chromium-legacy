@@ -33,8 +33,7 @@ class BindingsIsolateHolder;
 // Automation API in the Accessibility Service. It runs in a V8 thread.
 // The service may have multiple AutomationInternalBindings, one per
 // V8 isolate, each owned by a V8Manager.
-class AutomationInternalBindings : public mojom::Automation,
-                                   public ui::AutomationTreeManagerOwner,
+class AutomationInternalBindings : public ui::AutomationTreeManagerOwner,
                                    public ui::AutomationV8Router {
  public:
   // AutomationInternalBindings will use the |ax_service_client| on the
@@ -102,10 +101,8 @@ class AutomationInternalBindings : public mojom::Automation,
   void Bind(base::WeakPtr<mojom::AccessibilityServiceClient> at_controller,
             scoped_refptr<base::SequencedTaskRunner> main_runner);
 
-  // TODO(crbug.com/1355633): Override these from
-  // mojom::Automation:
-  void DispatchTreeDestroyedEvent(const ui::AXTreeID& tree_id);
-  void DispatchActionResult(const ui::AXActionData& data, bool result);
+  // TODO(crbug.com/1355633): Remove these and implement them in
+  // ui::AutomationTreeManagerOwner:
   void DispatchAccessibilityEvents(
       const ui::AXTreeID& tree_id,
       const std::vector<ui::AXTreeUpdate>& updates,
@@ -115,8 +112,6 @@ class AutomationInternalBindings : public mojom::Automation,
       const ui::AXTreeID& tree_id,
       int node_id,
       const ui::AXRelativeBounds& bounds) override;
-  void DispatchGetTextLocationResult(const ax::mojom::AXActionData& data,
-                                     gfx::Rect rect);
 
   // Used during object template creation.
   raw_ptr<v8::Local<v8::ObjectTemplate>, ExperimentalAsh> template_;
@@ -124,8 +119,6 @@ class AutomationInternalBindings : public mojom::Automation,
   base::WeakPtr<BindingsIsolateHolder> isolate_holder_;
 
   std::unique_ptr<ui::AutomationV8Bindings> automation_v8_bindings_;
-
-  mojo::Receiver<mojom::Automation> automation_receiver_{this};
 
   // We can send automation info back to the main Service thread with the
   // automation client interface.

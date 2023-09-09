@@ -19,6 +19,7 @@ source_set("coordinators") {
     "//ios/chrome/browser/overlays/public/common/infobars",
     "//ios/chrome/browser/overlays/public/default",
     "//ios/chrome/browser/shared/coordinator/layout_guide",
+    "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/browser/shared/ui/util",
     "//ios/chrome/browser/ui/infobars:constants",
     "//ios/chrome/browser/ui/infobars/banners",
@@ -31,6 +32,7 @@ source_set("coordinators") {
     "//ios/chrome/browser/ui/overlays/infobar_banner/permissions",
     "//ios/chrome/browser/ui/overlays/infobar_banner/save_card",
     "//ios/chrome/browser/ui/overlays/infobar_banner/sync_error",
+    "//ios/chrome/browser/ui/overlays/infobar_banner/tab_pickup",
     "//ios/chrome/browser/ui/overlays/infobar_banner/tailored_security",
     "//ios/chrome/browser/ui/overlays/infobar_banner/translate:mediators",
   ]

@@ -178,6 +178,8 @@ android_assets("webview_instrumentation_apk_assets") {
     "shell/assets/full_screen_video_test.html",
     "shell/assets/full_screen_video_test_not_preloaded.html",
     "shell/assets/key-system-test.html",
+    "shell/assets/mod.m.js",
+    "shell/assets/page_with_module.html",
     "shell/assets/star.svg",
     "shell/assets/star.svgz",
     "shell/assets/video.webm",
@@ -277,6 +279,7 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "//components/embedder_support/android:util_java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/embedder_support/android/metrics:java",
+    "//components/environment_integrity/android:java",
     "//components/heap_profiling/multi_process:heap_profiling_java_test_support",
     "//components/metrics:metrics_java",
     "//components/minidump_uploader:minidump_uploader_java",
@@ -289,6 +292,7 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "//components/version_info/android:version_constants_java",
     "//components/viz:viz_java",
     "//content/public/android:content_java",
+    "//content/public/common:common_java",
     "//content/public/test/android:content_java_test_support",
     "//mojo/public/java:bindings_java",
     "//net/android:net_java",
@@ -311,6 +315,7 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "//third_party/androidx:androidx_test_runner_java",
     "//third_party/androidx_javascriptengine:javascriptengine_common_java",
     "//third_party/androidx_javascriptengine:javascriptengine_java",
+    "//third_party/blink/public/common:common_java",
     "//third_party/blink/public/mojom:mojom_platform_java",
     "//third_party/blink/public/mojom:web_feature_mojo_bindings_java",
     "//third_party/hamcrest:hamcrest_core_java",
@@ -378,6 +383,7 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "../javatests/src/org/chromium/android_webview/test/AwUncaughtExceptionTest.java",
     "../javatests/src/org/chromium/android_webview/test/AwVariationsSeedFetcherTest.java",
     "../javatests/src/org/chromium/android_webview/test/AwWebContentsObserverTest.java",
+    "../javatests/src/org/chromium/android_webview/test/AwWebEnvironmentIntegrityTest.java",
     "../javatests/src/org/chromium/android_webview/test/AwZoomTest.java",
     "../javatests/src/org/chromium/android_webview/test/ChromeAutocompleteSafeModeTest.java",
     "../javatests/src/org/chromium/android_webview/test/CleanupReferenceTest.java",
@@ -447,6 +453,7 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "../javatests/src/org/chromium/android_webview/test/devui/DeveloperUiTestUtils.java",
     "../javatests/src/org/chromium/android_webview/test/devui/FlagsFragmentTest.java",
     "../javatests/src/org/chromium/android_webview/test/devui/HomeFragmentTest.java",
+    "../javatests/src/org/chromium/android_webview/test/devui/SafeModeFragmentTest.java",
     "../javatests/src/org/chromium/android_webview/test/devui/util/ComponentsInfoLoaderTest.java",
     "../javatests/src/org/chromium/android_webview/test/devui/util/CrashBugUrlFactoryTest.java",
     "../javatests/src/org/chromium/android_webview/test/devui/util/UnuploadedFilesStateLoaderTest.java",
@@ -498,10 +505,7 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "//android_webview/test/embedded_test_server:aw_net_test_support_apk",
     "//net/android:net_test_support_apk",
   ]
-  srcjar_deps = [
-    ":libstandalonelibwebviewchromium__jni_registration",
-    ":webview_instrumentation_test_jni",
-  ]
+  srcjar_deps = [ ":webview_instrumentation_test_jni" ]
 }
 
 android_library("webview_instrumentation_test_mock_services_java") {
@@ -589,6 +593,7 @@ test("android_webview_unittests") {
     "//android_webview/common",
     "//android_webview/common:tests",
     "//android_webview/nonembedded",
+    "//base/test:proto_test_support",
     "//base/test:test_support",
     "//components/autofill/core/browser",
     "//components/component_updater",
@@ -623,7 +628,14 @@ test("android_webview_unittests") {
     "//ui/gl:test_support",
   ]
 
-  data = [ "data/" ]
+  data_deps = [
+    "//third_party/perfetto/protos/perfetto/config/chrome:scenario_descriptor",
+  ]
+
+  data = [
+    "data/",
+    "$root_gen_dir/third_party/perfetto/protos/perfetto/config/chrome/scenario_config.descriptor",
+  ]
 
   sources = [
     "../browser/aw_browser_context_unittest.cc",

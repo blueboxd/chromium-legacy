@@ -42,7 +42,6 @@
 <translation id="2942241131342758843">Դարձրեք Chromium-ը ձեր կանխադրված դիտարկիչը՝ հղումներ բացելու, վիջեթներից որոնելու և այլ հավելվածներում գաղտնաբառերի ինքնալրացման համար</translation>
 <translation id="2977470724722393594">Chromium-ը թարմացված է</translation>
 <translation id="3102849287235003384">Բոլոր կայքերում ձեր Google հաշվից դուրս գալու համար <ph name="BEGIN_LINK" />դուրս եկեք Chromium-ից<ph name="END_LINK" />։</translation>
-<translation id="3115956258722352278">Դարձնե՞լ Chromium-ը ձեր կանխադրված դիտարկիչը</translation>
 <translation id="3256316712990552818">Պատճենվել է Chromium-ում</translation>
 <translation id="3344973607274501920">Chromium-ին չհաջողվեց ստուգել ձեր գաղտնաբառերը։ Ստուգեք ինտերնետ կապը։</translation>
 <translation id="3472200483164753384">Չի աջակցվում Chromium Canary-ում</translation>
@@ -128,6 +127,7 @@
 <translation id="8013573822802650211">Chromium-ն օգտագործելիս ձեր բոլոր ներդիրները տեսնելու համար մտեք հաշիվ բոլոր սարքերում։</translation>
 <translation id="8071041515667087705">Բացեք Chromium-ի կարգավորումները։</translation>
 <translation id="8073677936375100957">Հեռացնե՞լ Chromium-ի տվյալները այս սարքից</translation>
+<translation id="8235427517854598594">Դարձնե՞լ Chromium-ը ձեր կանխադրված դիտարկիչը</translation>
 <translation id="8240981428553046115">Chromium-ին չհաջողվեց ստուգել թարմացումների առկայությունը։ Փորձեք ավելի ուշ։</translation>
 <translation id="8409374867500149834">Chromium-ի ամենահուսալի անվտանգության համակարգը պաշտպանում է ձեզ վնասաբեր կայքերից</translation>
 <translation id="858114650497379505">Դուք կարող եք Գաղտնաբառերի կառավարիչում պահված գաղտնաբառերն օգտագործել ձեր iPhone-ի այլ հավելվածներում։</translation>

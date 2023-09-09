@@ -228,8 +228,7 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
         embedder_support::kOriginTrialDisabledFeatures,
         embedder_support::kOriginTrialPublicKey,
     };
-    command_line->CopySwitchesFrom(old_command_line, kSwitchNames,
-                                   std::size(kSwitchNames));
+    command_line->CopySwitchesFrom(old_command_line, kSwitchNames);
   }
 }
 
@@ -266,6 +265,7 @@ void HeadlessContentBrowserClient::AllowCertificateError(
 }
 
 base::OnceClosure HeadlessContentBrowserClient::SelectClientCertificate(
+    content::BrowserContext* browser_context,
     content::WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
     net::ClientCertIdentityList client_certs,

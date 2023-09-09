@@ -32,6 +32,7 @@
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_issues/password_issues_coordinator.h"
+#import "ios/chrome/browser/ui/settings/password/password_manager_ui_features.h"
 #import "ios/chrome/browser/ui/settings/password/password_manager_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/password_manager_view_controller_presentation_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_coordinator.h"
@@ -150,13 +151,15 @@ using password_manager::WarningType;
                      faviconLoader:faviconLoader
                        syncService:SyncServiceFactory::GetForBrowserState(
                                        browserState)];
-  self.reauthModule = [[ReauthenticationModule alloc]
-      initWithSuccessfulReauthTimeAccessor:self.mediator];
+  self.reauthModule = password_manager::BuildReauthenticationModule(
+      /*successfulReauthTimeAccessor=*/self.mediator);
   ChromeAccountManagerService* accountManagerService =
       ChromeAccountManagerServiceFactory::GetForBrowserState(browserState);
   self.passwordsViewController = [[PasswordManagerViewController alloc]
       initWithChromeAccountManagerService:accountManagerService
-                              prefService:browserState->GetPrefs()];
+                              prefService:browserState->GetPrefs()
+                              requireAuth:password_manager::features::
+                                              IsAuthOnEntryEnabled()];
 
   self.passwordsViewController.handler = self;
   self.passwordsViewController.delegate = self.mediator;
@@ -199,6 +202,10 @@ using password_manager::WarningType;
   [self.passwordSettingsCoordinator stop];
   self.passwordSettingsCoordinator.delegate = nil;
   self.passwordSettingsCoordinator = nil;
+
+  [self.addPasswordCoordinator stop];
+  self.addPasswordCoordinator.delegate = nil;
+  self.addPasswordCoordinator = nil;
 
   [self.mediator disconnect];
 }
@@ -268,7 +275,7 @@ using password_manager::WarningType;
 - (void)showPasswordDeleteDialogWithOrigins:(NSArray<NSString*>*)origins
                                  completion:(void (^)(void))completion {
   std::pair<NSString*, NSString*> titleAndMessage =
-      GetPasswordAlertTitleAndMessageForOrigins(origins);
+      password_manager::GetPasswordAlertTitleAndMessageForOrigins(origins);
   NSString* title = titleAndMessage.first;
   NSString* message = titleAndMessage.second;
 

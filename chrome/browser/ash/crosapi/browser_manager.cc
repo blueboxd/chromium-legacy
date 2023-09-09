@@ -17,6 +17,7 @@
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/base_switches.h"
+#include "base/check.h"
 #include "base/check_is_test.h"
 #include "base/command_line.h"
 #include "base/environment.h"
@@ -60,6 +61,8 @@
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/crosapi/crosapi_util.h"
 #include "chrome/browser/ash/crosapi/desk_template_ash.h"
+#include "chrome/browser/ash/crosapi/device_ownership_waiter.h"
+#include "chrome/browser/ash/crosapi/device_ownership_waiter_impl.h"
 #include "chrome/browser/ash/crosapi/environment_provider.h"
 #include "chrome/browser/ash/crosapi/files_app_launcher.h"
 #include "chrome/browser/ash/crosapi/primary_profile_creation_waiter.h"
@@ -219,16 +222,20 @@ void PreloadLacrosFiles(const base::FilePath& lacros_dir) {
   // These files are the Lacros equivalent of Ash's files preloaded at boot by
   // ureadahead.
   static constexpr const char* kPreloadFiles[] = {
-      "WidevineCdm/manifest.json",
-      "chrome",
-      "chrome_100_percent.pak",
-      "chrome_200_percent.pak",
-      "chrome_crashpad_handler",
-      "icudtl.dat",
-      "icudtl.dat.hash",
-      "nacl_helper",
-      "resources.pak",
-      "snapshot_blob.bin",
+#if BUILDFLAG(ENABLE_WIDEVINE)
+    "WidevineCdm/manifest.json",
+#endif
+    "chrome",
+    "chrome_100_percent.pak",
+    "chrome_200_percent.pak",
+    "chrome_crashpad_handler",
+    "icudtl.dat",
+    "icudtl.dat.hash",
+#if BUILDFLAG(ENABLE_NACL)
+    "nacl_helper",
+#endif
+    "resources.pak",
+    "snapshot_blob.bin",
   };
 
   // Preload common files.
@@ -244,6 +251,7 @@ void PreloadLacrosFiles(const base::FilePath& lacros_dir) {
   PreloadFile(locale_path);
 
   // Preload Widevine for the right architecture.
+#if BUILDFLAG(ENABLE_WIDEVINE)
 #if defined(ARCH_CPU_ARM_FAMILY)
   base::FilePath libwidevine_path = lacros_dir.Append(
       "WidevineCdm/_platform_specific/cros_arm/libwidevinecdm.so");
@@ -252,6 +260,7 @@ void PreloadLacrosFiles(const base::FilePath& lacros_dir) {
       "WidevineCdm/_platform_specific/cros_x64/libwidevinecdm.so");
 #endif
   PreloadFile(libwidevine_path);
+#endif
 }
 
 ResourcesFileSharingMode ClearOrMoveSharedResourceFileInternal(
@@ -468,30 +477,6 @@ void RecordDataVerForPrimaryUser() {
                                        version_info::GetVersion());
 }
 
-// Waits for the device owner being fetched from `UserManager` and then executes
-// a callback with `params`. If Lacros is launched at the login screen, this
-// just executes the callback directly.
-void WaitForDeviceOwnerFetchedAndThen(base::OnceClosure cb,
-                                      bool launching_at_login_screen) {
-  if (!user_manager::UserManager::IsInitialized()) {
-    // The `UserManager` is only unavailable in tests.
-    CHECK_IS_TEST();
-    std::move(cb).Run();
-    return;
-  }
-
-  if (launching_at_login_screen) {
-    std::move(cb).Run();
-    return;
-  }
-
-  // Delay start of Lacros until the owner id is fetched. The owner id is
-  // unused here and synchronously read from `UserManager` at a later point.
-  // This just ensures the owner id has been set.
-  user_manager::UserManager::Get()->GetOwnerAccountIdAsync(
-      base::IgnoreArgs<const AccountId&>(std::move(cb)));
-}
-
 // The delegate keeps track of the most recent lacros-chrome binary version
 // loaded by the BrowserLoader.
 // It is the single source of truth for what is the most up-to-date launchable
@@ -607,7 +592,8 @@ BrowserManager::BrowserManager(
           !base::CommandLine::ForCurrentProcess()->HasSwitch(
               ash::switches::kLoginUser) &&
           base::FeatureList::IsEnabled(kLacrosLaunchAtLoginScreen)),
-      disabled_for_testing_(g_disabled_for_testing) {
+      disabled_for_testing_(g_disabled_for_testing),
+      device_ownership_waiter_(std::make_unique<DeviceOwnershipWaiterImpl>()) {
   DCHECK(!g_instance);
   g_instance = this;
   version_service_delegate_ =
@@ -730,9 +716,10 @@ void BrowserManager::Launch() {
 void BrowserManager::OpenUrl(
     const GURL& url,
     crosapi::mojom::OpenUrlFrom from,
-    crosapi::mojom::OpenUrlParams::WindowOpenDisposition disposition) {
+    crosapi::mojom::OpenUrlParams::WindowOpenDisposition disposition,
+    NavigateParams::PathBehavior path_behavior) {
   PerformOrEnqueue(
-      BrowserAction::OpenUrl(url, disposition, from, NavigateParams::RESPECT));
+      BrowserAction::OpenUrl(url, disposition, from, path_behavior));
 }
 
 void BrowserManager::SwitchToTab(const GURL& url,
@@ -965,6 +952,12 @@ void BrowserManager::Shutdown() {
   }
 }
 
+void BrowserManager::set_device_ownership_waiter_for_testing(
+    std::unique_ptr<DeviceOwnershipWaiter> device_ownership_waiter) {
+  CHECK(!device_ownership_waiter_called_);
+  device_ownership_waiter_ = std::move(device_ownership_waiter);
+}
+
 void BrowserManager::set_relaunch_requested_for_testing(
     bool relaunch_requested) {
   CHECK_IS_TEST();
@@ -1050,16 +1043,8 @@ void BrowserManager::Start(bool launching_at_login_screen) {
       base::BindOnce(&DoLacrosBackgroundWorkPreLaunch, lacros_path_,
                      is_initial_lacros_launch_after_reboot_,
                      launching_at_login_screen),
-      base::BindOnce(
-          [](base::WeakPtr<BrowserManager> manager,
-             bool launching_at_login_screen,
-             LaunchParamsFromBackground params) {
-            WaitForDeviceOwnerFetchedAndThen(
-                base::BindOnce(&BrowserManager::StartWithLogFile, manager,
-                               launching_at_login_screen, std::move(params)),
-                launching_at_login_screen);
-          },
-          weak_factory_.GetWeakPtr(), launching_at_login_screen));
+      base::BindOnce(&BrowserManager::OnLaunchParamsFetched,
+                     weak_factory_.GetWeakPtr(), launching_at_login_screen));
   // Set false to prepare for the next Lacros launch.
   is_initial_lacros_launch_after_reboot_ = false;
 }
@@ -1654,6 +1639,7 @@ void BrowserManager::ResumeLaunch() {
   // we need to reload and relaunch the correct version of Lacros.
   auto user_lacros_selection = browser_util::DetermineLacrosSelection();
   if (user_lacros_selection.has_value() &&
+      lacros_selection_ != LacrosSelection::kDeployedLocally &&
       lacros_selection_ != user_lacros_selection) {
     LOG(WARNING)
         << "Mismatching Lacros selection between login screen and user. "
@@ -1690,6 +1676,23 @@ void BrowserManager::WaitForProfileAddedBeforeResuming() {
       g_browser_process->profile_manager(),
       base::BindOnce(&BrowserManager::WritePostLoginData,
                      weak_factory_.GetWeakPtr()));
+}
+
+void BrowserManager::WaitForDeviceOwnerFetchedAndThen(
+    base::OnceClosure cb,
+    bool launching_at_login_screen) {
+  device_ownership_waiter_called_ = true;
+  device_ownership_waiter_->WaitForOwnerhipFetched(std::move(cb),
+                                                   launching_at_login_screen);
+}
+
+void BrowserManager::OnLaunchParamsFetched(bool launching_at_login_screen,
+                                           LaunchParamsFromBackground params) {
+  WaitForDeviceOwnerFetchedAndThen(
+      base::BindOnce(&BrowserManager::StartWithLogFile,
+                     weak_factory_.GetWeakPtr(), launching_at_login_screen,
+                     std::move(params)),
+      launching_at_login_screen);
 }
 
 void BrowserManager::WritePostLoginData() {
@@ -1823,10 +1826,14 @@ void BrowserManager::StartKeepAlive(Feature feature) {
     return;
   }
 
-  DCHECK(keep_alive_features_.find(feature) == keep_alive_features_.end())
-      << "Features should never be double registered.";
+  auto insertion = keep_alive_features_.insert(feature);
+  // Features should never be double registered.
+  // TODO(b/278643115): Replace if-statement with a (D)CHECK once browser tests
+  // no longer use multiple user managers.
+  if (!insertion.second) {
+    CHECK_IS_TEST();
+  }
 
-  keep_alive_features_.insert(feature);
   // If this is first KeepAlive instance, update the keep-alive in the browser.
   if (keep_alive_features_.size() == 1) {
     UpdateKeepAliveInBrowserIfNecessary(true);

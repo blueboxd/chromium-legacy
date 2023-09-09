@@ -377,9 +377,7 @@ CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
 CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
                              base::TimeDelta last_access_threshold,
                              NetLog* net_log)
-    : same_party_attribute_enabled_(base::FeatureList::IsEnabled(
-          net::features::kSamePartyAttributeEnabled)),
-      change_dispatcher_(this, same_party_attribute_enabled_),
+    : change_dispatcher_(this),
       net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::COOKIE_STORE)),
       store_(std::move(store)),
       last_access_threshold_(last_access_threshold),
@@ -741,13 +739,9 @@ bool CookieMonster::MatchCookieDeletionInfo(
             delete_info.url.value());
   }
 
-  // Deletion uses all inclusive options, so it's ok to get the
-  // `CookieSamePartyStatus` wrong here.
   return delete_info.Matches(
-      cookie,
-      CookieAccessParams{GetAccessSemanticsForCookie(cookie),
-                         delegate_treats_url_as_trustworthy,
-                         CookieSamePartyStatus::kNoSamePartyEnforcement});
+      cookie, CookieAccessParams{GetAccessSemanticsForCookie(cookie),
+                                 delegate_treats_url_as_trustworthy});
 }
 
 void CookieMonster::DeleteCanonicalCookie(const CanonicalCookie& cookie,
@@ -1211,11 +1205,8 @@ void CookieMonster::FilterCookiesWithOptions(
     // cookie |options|.
     CookieAccessResult access_result = cookie_ptr->IncludeForRequestURL(
         url, options,
-        CookieAccessParams{
-            GetAccessSemanticsForCookie(*cookie_ptr),
-            delegate_treats_url_as_trustworthy,
-            cookie_util::GetSamePartyStatus(*cookie_ptr, options,
-                                            same_party_attribute_enabled_)});
+        CookieAccessParams{GetAccessSemanticsForCookie(*cookie_ptr),
+                           delegate_treats_url_as_trustworthy});
     cookies_and_access_results.emplace_back(cookie_ptr, access_result);
 
     // Record the names of all origin cookies that would be included if both
@@ -1516,6 +1507,12 @@ CookieMonster::InternalInsertPartitionedCookie(
             .first;
   }
 
+  size_t n_bytes = NameValueSizeBytes(*cc);
+  num_partitioned_cookies_bytes_ += n_bytes;
+  if (partition_key.nonce()) {
+    num_nonced_partitioned_cookie_bytes_ += n_bytes;
+  }
+
   CookieMap::iterator cookie_it = partition_it->second->insert(
       CookieMap::value_type(std::move(key), std::move(cc)));
   ++num_partitioned_cookies_;
@@ -1551,9 +1548,7 @@ void CookieMonster::SetCanonicalCookie(
   CookieAccessResult access_result = cc->IsSetPermittedInContext(
       source_url, options,
       CookieAccessParams(GetAccessSemanticsForCookie(*cc),
-                         delegate_treats_url_as_trustworthy,
-                         cookie_util::GetSamePartyStatus(
-                             *cc, options, same_party_attribute_enabled_)),
+                         delegate_treats_url_as_trustworthy),
       cookieable_schemes_, cookie_access_result);
 
   const std::string key(GetKey(cc->Domain()));
@@ -1685,6 +1680,11 @@ void CookieMonster::SetCanonicalCookie(
 
     UMA_HISTOGRAM_ENUMERATION("Cookie.CookieSourceSchemeName",
                               GetSchemeNameEnum(source_url));
+  } else {
+    // If the cookie would be excluded, don't bother warning about the 3p cookie
+    // phaseout.
+    access_result.status.RemoveWarningReason(
+        net::CookieInclusionStatus::WARN_THIRD_PARTY_PHASEOUT);
   }
 
   // TODO(chlily): Log metrics.
@@ -1842,6 +1842,12 @@ void CookieMonster::InternalDeletePartitionedCookie(
                              true /* is_allowed_to_access_secure_cookies */),
           mapping.cause),
       mapping.notify);
+
+  size_t n_bytes = NameValueSizeBytes(*cc);
+  num_partitioned_cookies_bytes_ -= n_bytes;
+  if (CookiePartitionKey::HasNonce(cc->PartitionKey())) {
+    num_nonced_partitioned_cookie_bytes_ -= n_bytes;
+  }
 
   DCHECK(partition_it->second->find(cookie_it->first) !=
          partition_it->second->end())
@@ -2370,6 +2376,16 @@ bool CookieMonster::DoRecordPeriodicStats() {
     base::UmaHistogramCounts100000(
         "Cookie.PartitionedCookieCount.Unnonced",
         num_partitioned_cookies_ - num_nonced_partitioned_cookies_);
+    base::UmaHistogramCounts100000("Cookie.PartitionedCookieJarSizeKibibytes",
+                                   num_partitioned_cookies_bytes_ >> 10);
+    base::UmaHistogramCounts100000(
+        "Cookie.PartitionedCookieJarSizeKibibytes.Nonced",
+        num_nonced_partitioned_cookie_bytes_ >> 10);
+    base::UmaHistogramCounts100000(
+        "Cookie.PartitionedCookieJarSizeKibibytes.Unnonced",
+        (num_partitioned_cookies_bytes_ -
+         num_nonced_partitioned_cookie_bytes_) >>
+            10);
   }
 
   return true;

@@ -44,7 +44,7 @@
 #include "third_party/blink/renderer/core/css/style_color.h"
 #include "third_party/blink/renderer/core/layout/geometry/box_sides.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
-#include "third_party/blink/renderer/core/layout/geometry/physical_size.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_type.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
@@ -513,11 +513,6 @@ class ComputedStyle : public ComputedStyleBase,
     return base::ValuesEquivalent(AnchorName(), o.AnchorName());
   }
 
-  // anchor-scroll
-  bool AnchorScrollDataEquivalent(const ComputedStyle& o) const {
-    return base::ValuesEquivalent(AnchorScroll(), o.AnchorScroll());
-  }
-
   const FilterOperations& BackdropFilter() const {
     DCHECK(BackdropFilterInternal().Get());
     return BackdropFilterInternal()->operations_;
@@ -733,11 +728,16 @@ class ComputedStyle : public ComputedStyleBase,
     return ScrollbarGutter() & kScrollbarGutterBothEdges;
   }
 
-  // ignore non-standard ::-webkit-scrollbar when standard properties are in use
+  bool UsesStandardScrollbarStyle() const {
+    return ScrollbarWidth() != EScrollbarWidth::kAuto ||
+           ScrollbarColor().has_value();
+  }
+
+  // Ignore non-standard ::-webkit-scrollbar when standard properties are in
+  // use.
   bool HasCustomScrollbarStyle() const {
     return HasPseudoElementStyle(kPseudoIdScrollbar) &&
-           ScrollbarWidth() == EScrollbarWidth::kAuto &&
-           ScrollbarColor() == absl::nullopt;
+           !UsesStandardScrollbarStyle();
   }
 
   // shape-outside (aka -webkit-shape-outside)
@@ -898,7 +898,6 @@ class ComputedStyle : public ComputedStyleBase,
   const AtomicString& Locale() const {
     return LayoutLocale::LocaleString(GetFontDescription().Locale());
   }
-  AtomicString LocaleForLineBreakIterator() const;
 
   // letter-spacing
   float LetterSpacing() const { return GetFontDescription().LetterSpacing(); }
@@ -918,9 +917,6 @@ class ComputedStyle : public ComputedStyleBase,
     return MarkerStartResource() || MarkerMidResource() || MarkerEndResource();
   }
 
-  // paint-order helper
-  EPaintOrderType PaintOrderType(unsigned index) const;
-
   // stroke helpers
   bool HasStroke() const { return !StrokePaint().IsNone(); }
   bool HasVisibleStroke() const {
@@ -936,6 +932,11 @@ class ComputedStyle : public ComputedStyleBase,
   // accent-color
   // An empty optional means the accent-color is 'auto'
   absl::optional<blink::Color> AccentColorResolved() const;
+
+  // scrollbar-color
+  // An empty optional means the scrollbar-color is 'auto'
+  absl::optional<blink::Color> ScrollbarThumbColorResolved() const;
+  absl::optional<blink::Color> ScrollbarTrackColorResolved() const;
 
   // Comparison operators
   // FIXME: Replace callers of operator== wth a named method instead, e.g.
@@ -955,7 +956,7 @@ class ComputedStyle : public ComputedStyleBase,
   void CopyChildDependentFlagsFrom(const ComputedStyle&) const;
 
   // Counters.
-  const CounterDirectiveMap* GetCounterDirectives() const;
+  CORE_EXPORT const CounterDirectiveMap* GetCounterDirectives() const;
   const CounterDirectives GetCounterDirectives(
       const AtomicString& identifier) const;
   bool CounterDirectivesEqual(const ComputedStyle& other) const {
@@ -2161,14 +2162,14 @@ class ComputedStyle : public ComputedStyleBase,
   };
   void ApplyTransform(gfx::Transform&,
                       const LayoutBox* box,
-                      PhysicalSize border_box_data_size,
+                      const PhysicalRect& reference_box,
                       ApplyTransformOperations,
                       ApplyTransformOrigin,
                       ApplyMotionPath,
                       ApplyIndependentTransformProperties) const;
   void ApplyTransform(gfx::Transform&,
                       const LayoutBox* box,
-                      const gfx::RectF& bounding_box,
+                      const gfx::RectF& reference_box,
                       ApplyTransformOperations,
                       ApplyTransformOrigin,
                       ApplyMotionPath,
@@ -2913,8 +2914,7 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
       IsAtShadowBoundary is_at_shadow_boundary = kNotAtShadowBoundary) {
     EUserModify current_user_modify = UserModify();
     EUserSelect current_user_select = UserSelect();
-    ComputedStyleBuilderBase::InheritFrom(inherit_parent,
-                                          is_at_shadow_boundary);
+    ComputedStyleBuilderBase::InheritFrom(inherit_parent);
 
     // Even if surrounding content is user-editable, shadow DOM should act as a
     // single unit, and not necessarily be editable
@@ -3585,6 +3585,17 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   void SetHasDynamicViewportUnits() {
     SetViewportUnitFlags(ViewportUnitFlags() |
                          static_cast<unsigned>(ViewportUnitFlag::kDynamic));
+  }
+
+  // ContainIntrinsicSize
+  void SetContainIntrinsicSizeAuto() {
+    StyleIntrinsicLength width = ContainIntrinsicWidth();
+    width.SetHasAuto();
+    SetContainIntrinsicWidth(width);
+
+    StyleIntrinsicLength height = ContainIntrinsicHeight();
+    height.SetHasAuto();
+    SetContainIntrinsicHeight(height);
   }
 
  private:

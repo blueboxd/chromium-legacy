@@ -34,6 +34,7 @@
 #include "content/public/browser/overlay_window.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/prefetch_service_delegate.h"
+#include "content/public/browser/private_network_device_delegate.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/responsiveness_calculator_delegate.h"
 #include "content/public/browser/sms_fetcher.h"
@@ -418,6 +419,12 @@ bool ContentBrowserClient::MayDeleteServiceWorkerRegistration(
   return true;
 }
 
+bool ContentBrowserClient::ShouldTryToUpdateServiceWorkerRegistration(
+    const GURL& scope,
+    BrowserContext* browser_context) {
+  return true;
+}
+
 void ContentBrowserClient::UpdateEnabledBlinkRuntimeFeaturesInIsolatedWorker(
     BrowserContext* context,
     const GURL& script_url,
@@ -602,6 +609,7 @@ bool ContentBrowserClient::ShouldDenyRequestOnCertificateError(
 }
 
 base::OnceClosure ContentBrowserClient::SelectClientCertificate(
+    BrowserContext* browser_context,
     WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
     net::ClientCertIdentityList client_certs,
@@ -719,6 +727,10 @@ base::FilePath ContentBrowserClient::GetNetLogDefaultDirectory() {
 
 base::FilePath ContentBrowserClient::GetFirstPartySetsDirectory() {
   return base::FilePath();
+}
+
+absl::optional<base::FilePath> ContentBrowserClient::GetLocalTracesDirectory() {
+  return absl::nullopt;
 }
 
 BrowserPpapiHost* ContentBrowserClient::GetExternalBrowserPpapiHost(
@@ -1090,6 +1102,11 @@ UsbDelegate* ContentBrowserClient::GetUsbDelegate() {
   return nullptr;
 }
 
+PrivateNetworkDeviceDelegate*
+ContentBrowserClient::GetPrivateNetworkDeviceDelegate() {
+  return nullptr;
+}
+
 FontAccessDelegate* ContentBrowserClient::GetFontAccessDelegate() {
   return nullptr;
 }
@@ -1293,12 +1310,12 @@ void ContentBrowserClient::BlockBluetoothScanning(
     const url::Origin& requesting_origin,
     const url::Origin& embedding_origin) {}
 
-bool ContentBrowserClient::ArePersistentMediaDeviceIDsAllowed(
-    content::BrowserContext* browser_context,
-    const GURL& scope,
+void ContentBrowserClient::GetMediaDeviceIDSalt(
+    content::RenderFrameHost* rfh,
     const net::SiteForCookies& site_for_cookies,
-    const absl::optional<url::Origin>& top_frame_origin) {
-  return false;
+    const blink::StorageKey& storage_key,
+    base::OnceCallback<void(bool, const std::string&)> callback) {
+  std::move(callback).Run(false, rfh->GetBrowserContext()->UniqueId());
 }
 
 base::OnceClosure ContentBrowserClient::FetchRemoteSms(
@@ -1364,7 +1381,7 @@ bool ContentBrowserClient::ShouldServiceWorkerInheritPolicyContainerFromCreator(
   return url.SchemeIsLocal();
 }
 
-bool ContentBrowserClient::ShouldAllowInsecureLocalNetworkRequests(
+bool ContentBrowserClient::ShouldAllowInsecurePrivateNetworkRequests(
     BrowserContext* browser_context,
     const url::Origin& origin) {
   return false;
@@ -1433,6 +1450,11 @@ ContentBrowserClient::CreateSpeculationHostDelegate(
 std::unique_ptr<PrefetchServiceDelegate>
 ContentBrowserClient::CreatePrefetchServiceDelegate(
     BrowserContext* browser_context) {
+  return nullptr;
+}
+
+std::unique_ptr<PrerenderWebContentsDelegate>
+ContentBrowserClient::CreatePrerenderWebContentsDelegate() {
   return nullptr;
 }
 

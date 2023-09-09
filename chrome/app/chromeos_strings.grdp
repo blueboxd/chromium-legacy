@@ -214,11 +214,17 @@
   <message name="IDS_CELLULAR_SETUP_PROFILE_LIST_PAGE_MESSAGE" desc="Label informing the user that they are able to select multiple eSIM profiles for downloading.">
     We've found multiple profiles available to download. Select the ones you would like to download before proceeding.
   </message>
-  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE" desc="Label for informing the user on ways to retrieve an eSim profile">
-    Scan a QR Code using your device camera or enter the activation code provided by your carrier
+ <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE" desc="Label for informing the user on ways to retrieve an eSim profile">
+    Scan a QR Code using your device camera or enter the activation code provided by your carrier.
   </message>
-  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_ENTER_ACTIVATION_CODE" desc="Label for informing the user to enter activation code when no media devices have been found">
-    Please enter your activation code
+  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_NO_PROFILES_FOUND" desc="Label for informing the user on ways to retrieve an eSim profile when no profiles could be automatically discovered.">
+    No profiles were found. Try scanning the QR Code using your device camera or enter the activation code provided by your carrier.
+  </message>
+  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_ENTER_ACTIVATION_CODE" desc="Label for informing the user to enter activation code when no media devices have been found">
+    Please enter the activation code provided by your carrier.
+  </message>
+  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_ENTER_ACTIVATION_CODE_NO_PROFILES_FOUND" desc="Label for informing the user to enter activation code when no media devices have been found and no available profiles could be automatically discovered">
+    No profiles were found. Please enter the activation code provided by your carrier.
   </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_USE_CAMERA" desc="Label for button that uses the camera to scan for QR Codes when clicked.">
     Use camera to scan QR Code
@@ -273,6 +279,21 @@
   </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_CONFIRMATION_CODE_LOADING" desc="Message, informing the user the confirmation code entered to activate an eSIM profile is currently being verified.">
     Verifying confirmation code...
+  </message>
+  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_PROFILE_DISCOVERY_CONSENT_TITLE" desc="Title asking for consent to scan automatically for available eSIM profiles.">
+    Automatically scan for available eSIM profiles?
+  </message>
+  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_PROFILE_DISCOVERY_CONSENT_MESSAGE" desc="Message, informing the user that device information will be shared with third parties.">
+    By continuing, you allow third parties to verify information that identifies this device on the network
+  </message>
+  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_PROFILE_DISCOVERY_CONSENT_ENTER_MANUALLY" desc="Label for button that allows the user to manually scan for profiles.">
+    Enter manually
+  </message>
+  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_PROFILE_DISCOVERY_CONSENT_SCAN" desc="Label for button to trigger automatic scanning.">
+    Scan
+  </message>
+  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_PROFILE_DISCOVERY_CONSENT_CANCEL" desc="Label for button to cancel and return to previous page.">
+    Cancel
   </message>
 
   <!-- ChromeOS Strings -->
@@ -772,8 +793,15 @@
   </message>
 
   <!-- Strings for the OOBE user creation screen -->
+  <!-- TODO(b/290598534): Add final string and remove translateable tags -->
   <message name="IDS_OOBE_USER_CREATION_TITLE" desc="Title of the screen which allows users to choose whom the device is set up for.">
     Who's using this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>?
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_NEW_TITLE" translateable="false" desc="New Title of the screen which allows users to choose whom the device is set up for.">
+    Choose your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>’s setup
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_NEW_SUBTITLE" translateable="false" desc="New Subtitle of the screen which allows users to choose whom the device is set up for.">
+    You can always add another person to the device after setup. Each person can personalize their experience and keep data private.
   </message>
   <message name="IDS_OOBE_USER_CREATION_SUBTITLE" desc="Subtitle of the screen which allows users to choose whom the device is set up for.">
     You can always add more people after setup. Each person can personalize their account and keep data private.
@@ -783,6 +811,12 @@
   </message>
   <message name="IDS_OOBE_USER_CREATION_ADD_PERSON_SUBTITLE" desc="Subtitle of the screen which allows users to add person to the device.">
     Each person can personalize their account and keep data private.
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_ADD_PERSON_NEW_TITLE" translateable="false" desc="Title of the screen which allows users to add person to the device.">
+    Choose your setup
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_ADD_PERSON_NEW_SUBTITLE" translateable="false" desc="Subtitle of the screen which allows users to add person to the device.">
+    Each person can personalize their experience and keep data private.
   </message>
   <message name="IDS_OOBE_USER_CREATION_SELF_BUTTON_LABEL" desc="The label of the button that leads to set up device for self.">
     You
@@ -795,6 +829,24 @@
   </message>
   <message name="IDS_OOBE_USER_CREATION_CHILD_BUTTON_DESCRIPTION" desc="The description of the button that leads to set up device for child.">
     Set digital ground rules to help children play, explore and do schoolwork at home
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_PERSONEL_USE_BUTTON_LABEL" translateable="false" desc="The label of the button that leads to set up device for personal use.">
+    For personal use
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_PERSONEL_USE_BUTTON_DESCRIPTION" translateable="false" desc="The description of the button that leads to set up device for personal use.">
+    Use your personal Google Account
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_CHILD_USE_BUTTON_LABEL" translateable="false" desc="The label of the button that leads to set up device for child.">
+    For a child
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_CHILD_USE_BUTTON_DESCRIPTION" translateable="false" desc="The description of the button that leads to set up device for child.">
+    Use your child’s Google Account or a school account. You can also set parental controls.
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_ENROLL_USE_BUTTON_LABEL" translateable="false" desc="The label of the button that leads to set up device for work or school.">
+    For work or school
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_ENROLL_USE_BUTTON_DESCRIPTION" translateable="false" desc="The description of the button that leads to set up device for work or shcool.">
+   Use your organization’s email address
   </message>
   <message name="IDS_OOBE_USER_CREATION_CHILD_SIGNIN_TITLE" desc="Title of the screen which allows users to choose signin method for child.">
     Set up this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> for a child
@@ -819,6 +871,67 @@
   </message>
   <message name="IDS_OOBE_USER_CREATION_CHILD_SIGN_IN_LEARN_MORE_DIALOG_TEXT" desc="Text of the learn more dialog on child account creation screen.">
     Parental controls are not supported for school accounts. To add a school account to access Google Classroom and other websites for schoolwork at home, sign in with the child's personal account first. You can add the school account later in setup.
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_ENROLL_TRIAGE_TITLE" translateable="false" desc="Title of the screen which allows triage users to choose signin or enroll.">
+    Enroll the device in your organization?
+  </message>
+    <message name="IDS_OOBE_USER_CREATION_ENROLL_SUBTITLE" translateable="false" desc="Subtitle of the screen which allows triage users to choose signin or enroll.">
+    Your organization may require enrollment so you can access apps, extensions, and more. This also allows your organization to manage things like security and device settings.
+  </message>
+   <message name="IDS_OOBE_USER_CREATION_ENROLL_LEARN_MORE" translateable="false" desc="Learn more link text in enroll triage step in user creation screen.">
+    Learn more
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_ENROLL_ADDITIONAL_DESCRIPTION_TITLE" translateable="false" desc="The title of additional description in enroll triage step in user creation screen.">
+    Not sure if you should enroll?
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_ENROLL_ADDITIONAL_DESCRIPTION" translateable="false" desc="The additional description in enroll triage step in user creation screen.">
+    Ask your organization, or enroll with your work email to check if your account is eligible.
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_ENROLL_TRIAGE_ACCEPT_ENROLL_BUTTON_LABEL" translateable="false" desc="The label of the button that leads to enroll the device in the in enroll triage step in user creation screen.">
+    Enroll the device
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_ENROLL_TRIAGE_DECLINE_ENROLL_BUTTON_LABEL" translateable="false" desc="The label of the button that leads that leads to not enroll the device and normal signin in the in enroll triage step in user creation screen.">
+    Don’t enroll the device
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_CHILD_SETUP_TITLE" translateable="false" desc="Title of the child setup step in the user creation screen which allows users to choose setup with child’s Google account (to setup Family Link) or setup with child’s school.">
+    Choose the account to use for setup
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_CHILD_SETUP_CHILD_ACCOUNT_BUTTON_LABEL" translateable="false" desc="The label of the button that leads to set up device setup with child’s Google account (to setup Family Link).">
+    Child’s Google Account
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_CHILD_SETUP_CHILD_ACCOUNT_BUTTON_DESCRIPTION" translateable="false" desc="The description of the button that leads to set up device setup with child’s Google account (to setup Family Link).">
+    Parents can approve or block apps, set time limits, and control web browsing. A school account can be added later to access most school resources.
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_CHILD_SETUP_SCHOOL_ACCOUNT_BUTTON_LABEL" translateable="false" desc="The label of the button that leads to set up device setup with child’s school.">
+    Child’s school account
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_CHILD_SETUP_SCHOOL_ACCOUNT_BUTTON_DESCRIPTION" translateable="false" desc="The description of the button that leads to set up device setup with child’s school">
+    Your child can use all of their school apps, bookmarks, and resources just like they do in class. The school sets the ground rules.
+  </message>
+
+   <!-- Strings for Learn more in Enroll Triage-->
+  <message name="IDS_OOBE_USER_CREATION_ENROLL_LEARN_MORE_TITLE" translateable="false" desc="The title of the learn more dialogue in the enrollment triage step in user creation screen.">
+    Device enrollment
+  </message>
+  <message name="IDS_OOBE_USER_CREATION_ENROLL_LEARN_MORE_TEXT" translateable="false" desc="The description of the learn more dialogue in the enrollment triage step in user creation screen.">
+    <ph name="BEGIN_DESCRIPTION">&lt;p&gt;</ph>Enrolling your devices in your organization sets it up for centralized device management. Your organization may require enrollment for multiple reasons:<ph name="END_DESCRIPTION">&lt;/p&gt;</ph>
+    <ph name="BEGIN_SUBTITLE1">&lt;p&gt;</ph><ph name="BEGIN_BOLD">&lt;b&gt;</ph>Enhance security<ph name="END_BOLD">&lt;/b&gt;</ph><ph name="END_SUBTITLE1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_DESCRIPTION1">&lt;p&gt;</ph>By configuring additional security settings, the organization can keep user and device data safe. It can also perform actions such as remote reset or disabling a lost device.<ph name="END_DESCRIPTION1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_SUBTITLE2">&lt;p&gt;</ph><ph name="BEGIN_BOLD">&lt;b&gt;</ph>Customize the experience<ph name="END_BOLD">&lt;/b&gt;</ph><ph name="END_SUBTITLE2">&lt;/p&gt;</ph>
+    <ph name="BEGIN_DESCRIPTION2">&lt;p&gt;</ph>The device behavior on bootup, on the login screen, and after login can be customized to the organization’s needs.<ph name="END_DESCRIPTION2">&lt;/p&gt;</ph>
+    <ph name="BEGIN_SUBTITLE3">&lt;p&gt;</ph><ph name="BEGIN_BOLD">&lt;b&gt;</ph>Provide support<ph name="END_BOLD">&lt;/b&gt;</ph><ph name="END_SUBTITLE3">&lt;/p&gt;</ph>
+    <ph name="BEGIN_DESCRIPTION3">&lt;p&gt;</ph>The organization can remotely access a device session in order to provide troubleshooting.<ph name="END_DESCRIPTION3">&lt;/p&gt;</ph>
+    <ph name="BEGIN_SUBTITLE4">&lt;p&gt;</ph><ph name="BEGIN_BOLD">&lt;b&gt;</ph>Enable access<ph name="END_BOLD">&lt;/b&gt;</ph><ph name="END_SUBTITLE4">&lt;/p&gt;</ph>
+    <ph name="BEGIN_DESCRIPTION4">&lt;p&gt;</ph>Organization apps, services, and networks may only be available on enrolled devices.<ph name="END_DESCRIPTION4">&lt;/p&gt;</ph>
+  </message>
+
+  <!-- Strings for the OOBE consumer update screen -->
+  <!-- TODO(b/290598534): Add final string and remove translateable tags -->
+  <message name="IDS_CONSUMER_UPDATE_DECLINE_BUTTON" translateable="false" desc="Label on the button that decline using cellular data for the consumer update screen">
+    No thanks
+  </message>
+  <message name="IDS_CONSUMER_UPDATE_SKIP_BUTTON" translateable="false" desc="Label on the button that skip the consumer update screen.">
+    Skip
   </message>
 
    <!-- Strings for the OOBE demo setup flow -->
@@ -2098,9 +2211,6 @@
   <message name="IDS_CONTROLLED_SETTING_DEMO_SESSION" desc="Text displayed in the controlled settings bubble when a setting's value is enforced by demo session.">
     This setting can't be changed in a demo session.
   </message>
-  <message name="IDS_CONTROLLED_SETTING_PARENT" desc="Text displayed in the controlled settings bubble when a setting's value is controlled by user's parent.">
-    This setting is managed by a parent.
-  </message>
   <message name="IDS_STATUSBAR_DISABLE_SPOKEN_FEEDBACK" desc="The menu option to disable spoken feedback accessibility feature.">
     Disable ChromeVox (spoken feedback)
   </message>
@@ -2674,6 +2784,14 @@
   </message>
   <message name="IDS_U2F_INSECURE_NOTIFICATION_RESET" desc="Label for the reset button in the notification shown to inform the user that the legacy U2F feature is insecure.">
     Reset
+  </message>
+
+    <!-- Update Notification Strings -->
+  <message name="IDS_UPDATE_NOTIFICATION_HEADER" desc="Notification title shown for a system update.">
+    Update <ph name="NAME">$1<ex>Chromebook</ex></ph>.
+  </message>
+  <message name="IDS_UPDATE_NOTIFICATION_MESSAGE" desc="Notification shown for a system update.">
+    Your Chromebook is updated.
   </message>
 
   <!-- Update Required Screen Strings-->
@@ -3856,12 +3974,6 @@
   </message>
   <message name="IDS_ARC_OPT_IN_PRIVACY_POLICY_LINK" desc="Text of the Link to Goolge Privacy Policy in opt-in dialog">
     Google privacy policy
-  </message>
-  <message name="IDS_ARC_OPT_IN_ACTIVE_DIRECTORY_AUTH_TITLE" desc="Title displayed in opt-in dialog to inform an Active Directory user that they may have to enter their credentials">
-    Google Play Store Account
-  </message>
-  <message name="IDS_ARC_OPT_IN_ACTIVE_DIRECTORY_AUTH_DESC" desc="Description displayed in opt-in dialog to inform an Active Directory user that they may have to enter their credentials">
-    To enable your account to access the Google Play Store, please authenticate with your Identity Provider.
   </message>
   <message name="IDS_ARC_OPT_OUT_TAB_TITLE" desc="Tab title when viewing opt-out setting dialog for android apps.">
     Settings - Remove Android apps
@@ -5213,7 +5325,7 @@
     Remove Bruschetta
   </message>
   <message name="IDS_BRUSCHETTA_UNINSTALLER_BODY" desc="Description for the Bruschetta (codename) uninstaller, a dialog for uninstalling Bruschetta, the associated VM and files.">
-    Remove Bruschetta from your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>?
+    Remove Bruschetta from your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>? This will delete all apps and data in the virtual machine!
   </message>
   <message name="IDS_BRUSCHETTA_UNINSTALLER_UNINSTALL_BUTTON" desc="Label for the button in the Bruschetta uninstaller dialog to uninstall the VM.">
     Remove
@@ -5493,12 +5605,21 @@
   <message name="IDS_OOBE_ACTIVATE_CHROMEVOX" desc="Label for the button in the ChromeVox hint dialog that will activate ChromeVox.">
     Yes, activate ChromeVox
   </message>
+  <message name="IDS_OOBE_CHROMEVOX_HINT_TITLE" desc="The title of the ChromeVox hint dialog.">
+    Turn on screen reader
+  </message>
   <message name="IDS_OOBE_CONTINUE_WITHOUT_CHROMEVOX" desc="Label for the button in the ChromeVox hint dialog that will close the dialog.">
     No, continue without ChromeVox
+  </message>
+  <message name="IDS_OOBE_CHROMEVOX_HINT_CLOSE" desc="Label for the button in the ChromeVox hint dialog that will close the dialog.">
+    Close
   </message>
   <if expr="reven">
     <message name="IDS_OOBE_CHROMEVOX_HINT_TEXT" desc="Text content in the ChromeVox hint dialog, asking the user if they would like to activate ChromeVox.">
       Do you want to activate ChromeVox, the built-in screen reader for ChromeOS Flex?
+    </message>
+    <message name="IDS_OOBE_CHROMEVOX_HINT_TEXT_EXPANDED" desc="Text content in the ChromeVox hint dialog, asking the user if they would like to activate ChromeVox.">
+      The screen reader on ChromeOS Flex, ChromeVox, is primarily used by people with blindness and low vision. Press the space bar to turn on ChromeVox. When ChromeVox is activated, you’ll go through a quick tour.
     </message>
     <message name="IDS_OOBE_CHROMEVOX_HINT_ANNOUNCEMENT_TEXT_LAPTOP" desc="The string spoken when the ChromeVox hint is activated when the device is in laptop mode." is_accessibility_with_no_ui="true">
       Do you want to activate ChromeVox, the built-in screen reader for ChromeOS Flex? If so, press the space bar.
@@ -5506,16 +5627,31 @@
     <message name="IDS_OOBE_CHROMEVOX_HINT_ANNOUNCEMENT_TEXT_TABLET" desc="The string spoken when the ChromeVox hint is activated when the device is in tablet mode." is_accessibility_with_no_ui="true">
       Do you want to activate ChromeVox, the built-in screen reader for ChromeOS Flex? If so, press and hold both volume keys for five seconds.
     </message>
+    <message name="IDS_OOBE_CHROMEVOX_HINT_ANNOUNCEMENT_TEXT_LAPTOP_EXPANDED" desc="The new string spoken when the ChromeVox hint is activated when the device is in laptop mode." is_accessibility_with_no_ui="true">
+      The screen reader on ChromeOS Flex, ChromeVox, is primarily used by people with blindness and low vision. Press the space bar to turn on ChromeVox. When ChromeVox is activated, you’ll go through a quick tour.
+    </message>
+    <message name="IDS_OOBE_CHROMEVOX_HINT_ANNOUNCEMENT_TEXT_TABLET_EXPANDED" desc="The new string spoken when the ChromeVox hint is activated when the device is in tablet mode." is_accessibility_with_no_ui="true">
+      The screen reader on ChromeOS Flex, ChromeVox, is primarily used by people with blindness and low vision. Press and hold both volume keys for five seconds to turn on ChromeVox. When ChromeVox is activated, you’ll go through a quick tour.
+    </message>
   </if>
   <if expr="not reven">
     <message name="IDS_OOBE_CHROMEVOX_HINT_TEXT" desc="Text content in the ChromeVox hint dialog, asking the user if they would like to activate ChromeVox.">
       Do you want to activate ChromeVox, the built-in screen reader for ChromeOS?
+    </message>
+    <message name="IDS_OOBE_CHROMEVOX_HINT_TEXT_EXPANDED" desc="Text content in the ChromeVox hint dialog, asking the user if they would like to activate ChromeVox.">
+      The screen reader on ChromeOS, ChromeVox, is primarily used by people with blindness and low vision. Press the space bar to turn on ChromeVox. When ChromeVox is activated, you’ll go through a quick tour.
     </message>
     <message name="IDS_OOBE_CHROMEVOX_HINT_ANNOUNCEMENT_TEXT_LAPTOP" desc="The string spoken when the ChromeVox hint is activated when the device is in laptop mode." is_accessibility_with_no_ui="true">
       Do you want to activate ChromeVox, the built-in screen reader for ChromeOS? If so, press the space bar.
     </message>
     <message name="IDS_OOBE_CHROMEVOX_HINT_ANNOUNCEMENT_TEXT_TABLET" desc="The string spoken when the ChromeVox hint is activated when the device is in tablet mode." is_accessibility_with_no_ui="true">
       Do you want to activate ChromeVox, the built-in screen reader for ChromeOS? If so, press and hold both volume keys for five seconds.
+    </message>
+    <message name="IDS_OOBE_CHROMEVOX_HINT_ANNOUNCEMENT_TEXT_LAPTOP_EXPANDED" desc="The new string spoken when the ChromeVox hint is activated when the device is in laptop mode." is_accessibility_with_no_ui="true">
+      The screen reader on ChromeOS, ChromeVox, is primarily used by people with blindness and low vision. Press the space bar to turn on ChromeVox. When ChromeVox is activated, you’ll go through a quick tour.
+    </message>
+    <message name="IDS_OOBE_CHROMEVOX_HINT_ANNOUNCEMENT_TEXT_TABLET_EXPANDED" desc="The new string spoken when the ChromeVox hint is activated when the device is in tablet mode." is_accessibility_with_no_ui="true">
+      The screen reader on ChromeOS, ChromeVox, is primarily used by people with blindness and low vision. Press and hold both volume keys for five seconds to turn on ChromeVox. When ChromeVox is activated, you’ll go through a quick tour.
     </message>
   </if>
 
@@ -6226,6 +6362,9 @@ Permissions you've already given to websites and apps may apply to this account.
   <message name="IDS_ADD_SUPERVISION_PAGE_TITLE" desc="Title for the ChromeOS Add Supervision screen. Since the title bar is not visible, this string is only used by screen readers.">
     Set Up Parental Controls
   </message>
+  <message name="IDS_ADD_SUPERVISION_WEBVIEW_LOADING_MESSAGE" desc="Message shown while the Add Supervision screen is loading.">
+    Please wait...
+  </message>
   <message name="IDS_ADD_SUPERVISION_EXIT_DIALOG_TITLE" desc="Title for the dialog shown when attempting to exit the Add Supervision screen.">
     Are you sure you want to exit?
   </message>
@@ -6677,21 +6816,17 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   </message>
 
   <!-- Drive Offline-->
-  <!-- TODO(b/278024582): Remove translateable tags when strings are finalized. -->
-  <message name="IDS_OOBE_DRIVE_PINNING_TITLE" desc="Title of the drive pinning screen." translateable="false">
-    Keep your files available when you're offline
+  <message name="IDS_OOBE_DRIVE_PINNING_TITLE" desc="Title of the drive pinning screen.">
+    Access your Google Drive files when you’re offline
   </message>
-  <message name="IDS_OOBE_DRIVE_PINNING_SUBTITLE" desc="Description of the drive pinning screen." translateable="false">
-    Automatically download files in your My Drive so you can access and edit them without an internet connection.
+  <message name="IDS_OOBE_DRIVE_PINNING_SUBTITLE" desc="Description of the drive pinning screen.">
+    Your files in My Drive will sync to your Chromebook automatically so you can access them without an internet connection. You can change this anytime in Settings > Files.
   </message>
-  <message name="IDS_OOBE_DRIVE_PINNING_ADDITIONAL_SUBTITLE" desc="Additional description of the drive pinning screen." translateable="false">
-    This will use about <ph name="REQUIRED_SPACE">$1<ex>12.2 GB</ex></ph> leaving <ph name="FREE_SPACE">$2<ex>96.8 GB</ex></ph> available
+  <message name="IDS_OOBE_DRIVE_PINNING_TOGGLE_TITLE" desc="Title of the toggle button of the drive pinning screen.">
+    File sync
   </message>
-  <message name="IDS_OOBE_DRIVE_PINNING_ACCEPT_BUTTON" desc="Label for button to accept sync drive files pinning." translateable="false">
-    Turn on sync
-  </message>
-  <message name="IDS_OOBE_DRIVE_PINNING_DECLINE_BUTTON" desc="Label for button to decline sync drive files pinning." translateable="false">
-    Skip
+  <message name="IDS_OOBE_DRIVE_PINNING_TOGGLE_SUBTITLE" desc="Subtitle of the toggle button of the drive pinning screen.">
+    This will use about <ph name="REQUIRED_SPACE">$1<ex>12.2 GB</ex></ph>. You currently have <ph name="FREE_SPACE">$2<ex>96.8 GB</ex></ph> available.
   </message>
 
   <!-- Strings for the locale switch notification inside the OOBE. -->
@@ -6726,6 +6861,9 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   <message name="IDS_OOBE_CHOOBE_TOUCHPAD_SCROLL_TILE_TITLE" desc="Title of the touchpad scroll tile in the CHOOBE screen.">
     Change touchpad scrolling direction
   </message>
+  <message name="IDS_OOBE_CHOOBE_DRIVE_PINNING_TILE_TITLE" desc="Title of the drive pinning tile in the CHOOBE screen.">
+    Access your Google Drive files when you’re offline
+  </message>
   <message name="IDS_OOBE_CHOOBE_DISPLAY_SIZE_TILE_TITLE" desc="Title of the display size tile in the CHOOBE screen.">
     Change display and text size
   </message>
@@ -6737,6 +6875,12 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   </message>
   <message name="IDS_OOBE_CHOOBE_TOUCHPAD_SCROLL_SUBTITLE_DISABLED" desc="Subtitle of the touchpad scroll tile in the CHOOBE screen if reverse scroll disabled.">
     Reverse scrolling disabled
+  </message>
+  <message name="IDS_OOBE_CHOOBE_DRIVE_PINNING_SUBTITLE_ENABLED" desc="Subtitle of the drive pinning tile in the CHOOBE screen if drive offline is enabled.">
+    File sync turned on
+  </message>
+  <message name="IDS_OOBE_CHOOBE_DRIVE_PINNING_SUBTITLE_DISABLED" desc="Subtitle of the drive pinning tile in the CHOOBE screen if drive offline is disabled.">
+    File sync turned off
   </message>
 
   <!-- CHOOBE Tiles Accessibility -->
@@ -6817,12 +6961,38 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
     Open
   </message>
 
-  <!-- Office setup and move dialogs -->
+  <!-- Office setup welcome dialog -->
+  <message name="IDS_OFFICE_WELCOME_TITLE" desc="Title for the welcome dialog when the user sets up Microsoft Office for the first time.">
+    Set up Microsoft 365 to open files
+  </message>
+  <message name="IDS_OFFICE_WELCOME_BODY_TEXT" desc="Body text for the welcome dialog when the user sets up Microsoft Office for the first time.">
+    <ph name="LINK_BEGIN">&lt;a href="https://support.google.com/chromebook?p=edit_office_files" target="_blank"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph> about Microsoft 365 on your Chromebook.
+  </message>
+  <message name="IDS_OFFICE_WELCOME_INSTALL_MICROSOFT365" desc="A bullet point in the welcome dialog when the user sets up Microsoft Office for the first time, telling the user that Microsoft 365 web app will be installed.">
+    Install Microsoft 365
+  </message>
+  <message name="IDS_OFFICE_WELCOME_CONNECT_ONEDRIVE" desc="A bullet point in the welcome dialog when the user sets up Microsoft Office for the first time, telling the user that Microsoft OneDrive account will be installed.">
+    Connect to Microsoft OneDrive
+  </message>
+  <message name="IDS_OFFICE_WELCOME_FILES_WILL_MOVE" desc="A bullet point in the welcome dialog when the user sets up Microsoft Office for the first time, telling the user that selected files will be moved to the user's Microsoft OneDrive account when opened with Microsoft 365 web app.">
+    Files will move to OneDrive when opening in Microsoft 365
+  </message>
+  <message name="IDS_OFFICE_WELCOME_GET_STARTED" desc="Caption for a button that starts the setup flow in the welcome dialog when the user sets up Microsoft Office for the first time.">
+    Get started
+  </message>
+  <message name="IDS_OFFICE_WELCOME_SET_UP" desc="Caption for a button that starts the setup flow in the welcome dialog when the user sets up Microsoft Office, but both Microsoft 365 web app and Microsoft OneDrive were previously set up.">
+    Set up
+  </message>
+
+  <!-- Office setup Connect OneDrive dialog -->
   <message name="IDS_CONNECT_TO_ONEDRIVE_TITLE" desc="Title for a dialog which allows the user to connect Files app and Microsoft OneDrive storage.">
     Connect to Microsoft OneDrive
   </message>
   <message name="IDS_CONNECT_TO_ONEDRIVE_BODY_TEXT" desc="Explanation text for a dialog which allows the user to connect Files app and Microsoft OneDrive storage.">
     Connect OneDrive to the Files app to manage your stored documents from your Chromebook. You'll need to sign in with your Microsoft account.
+  </message>
+  <message name="IDS_CONNECT_TO_ONEDRIVE_SIGNIN_FLOW_BODY_TEXT" desc="Explanation text for a dialog which allows the user to connect Files app and Microsoft OneDrive storage via sign in flow.">
+    Microsoft 365 uses OneDrive to open and edit Word, Excel, and PowerPoint files. These files will be found in the Files app side navigation labeled “Microsoft OneDrive.” You'll need to sign in with your Microsoft account. <ph name="LINK_BEGIN">&lt;a href="https://support.google.com/chromebook?p=edit_office_files" target="_blank"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_CANT_CONNECT_ONEDRIVE" desc="Error message text displayed when the user has tried to connect to OneDrive storage, but failed for any reason.">
     Can't connect to OneDrive. Try again.
@@ -6835,6 +7005,159 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   </message>
   <message name="IDS_ONEDRIVE_CONNECTED_BODY_TEXT" desc="Text for a button which triggers a UI flow to connect the user to OneDrive storage.">
     OneDrive will now appear in the Files app
+  </message>
+
+  <!-- Office install PWA dialog -->
+  <message name="IDS_OFFICE_INSTALL_PWA_TITLE" desc="Title for a dialog which allows the user to install Microsoft 365 PWA.">
+    Install Microsoft 365
+  </message>
+  <message name="IDS_OFFICE_INSTALL_PWA_BODY_TEXT" desc="Explanation text for a dialog which allows the user to install Microsoft 365 PWA.">
+    Open, edit, and save Word, Excel, and PowerPoint files. A subscription may be required for some features.
+  </message>
+  <message name="IDS_OFFICE_INSTALL_PWA_INSTALLING_BUTTON" desc="Text for a button that indicates the PWA is now installing.">
+    Installing
+  </message>
+  <message name="IDS_OFFICE_INSTALL_PWA_INSTALLED_BUTTON" desc="Text for a button that indicates the PWA is successfully installed.">
+    Installed
+  </message>
+
+  <!-- Office cancel setup dialog -->
+  <message name="IDS_OFFICE_CANCEL_SETUP_TITLE" desc="Title for a dialog which allows the user to cancel the Microsoft 365 setup.">
+    Cancel Microsoft 365 setup?
+  </message>
+  <message name="IDS_OFFICE_CANCEL_SETUP_BODY_TEXT" desc="Explanation text for a dialog which allows the user to cancel the Microsoft 365 setup.">
+    You won’t be able to open files in Microsoft 365 until setup is complete.
+  </message>
+  <message name="IDS_OFFICE_CANCEL_SETUP_CANCEL_BUTTON" desc="Text for a button which cancels the Microsoft 365 setup flow.">
+    Cancel setup
+  </message>
+  <message name="IDS_OFFICE_CANCEL_SETUP_CONTINUE_BUTTON" desc="Text for a button which continues the Microsoft 365 setup flow.">
+    Continue setup
+  </message>
+
+  <!-- Office Microsoft 365 setup complete dialog -->
+  <message name="IDS_OFFICE_ONEDRIVE_SETUP_COMPLETE_TITLE" desc="Title for a dialog which indicates the Microsoft 365 setup has been completed.">
+    Microsoft 365 setup complete
+  </message>
+  <message name="IDS_OFFICE_ONEDRIVE_SETUP_COMPLETE_BODY_TEXT" desc="Explanation text for a dialog which indicates the Microsoft 365 setup has been completed.">
+    When opening Word, Excel, and Powerpoint files, the files will move to Microsoft OneDrive before opening in Microsoft 365
+  </message>
+
+  <!-- Office move confirmation dialog -->
+  <message name="IDS_OFFICE_MOVE_CONFIRMATION_MOVE_TITLE" desc="Title for a dialog asking the user to confirm moving one file to OneDrive/Google Drive before opening it.">
+    Move 1 file to <ph name="CLOUD_PROVIDER">$1<ex>Microsoft OneDrive</ex></ph> to open?
+  </message>
+  <message name="IDS_OFFICE_MOVE_CONFIRMATION_MOVE_TITLE_PLURAL" desc="Title for a dialog asking the user to confirm moving more than one files to OneDrive/Google Drive before opening it.">
+    Move <ph name="NUM_OF_FILES">$2<ex>5</ex></ph> files to <ph name="CLOUD_PROVIDER">$1<ex>Microsoft OneDrive</ex></ph> to open?
+  </message>
+  <message name="IDS_OFFICE_MOVE_CONFIRMATION_COPY_TITLE" desc="Title for a dialog asking the user to confirm copying one file to OneDrive/Google Drive before opening it.">
+    Copy 1 file to <ph name="CLOUD_PROVIDER">$1<ex>Microsoft OneDrive</ex></ph> to open?
+  </message>
+  <message name="IDS_OFFICE_MOVE_CONFIRMATION_COPY_TITLE_PLURAL" desc="Title for a dialog asking the user to confirm copying more than one files to OneDrive/Google Drive before opening it.">
+    Copy <ph name="NUM_OF_FILES">$2<ex>5</ex></ph> files to <ph name="CLOUD_PROVIDER">$1<ex>Microsoft OneDrive</ex></ph> to open?
+  </message>
+  <message name="IDS_OFFICE_MOVE_CONFIRMATION_ONEDRIVE_BODY_TEXT" desc="Explanation text for a dialog asking the user to confirm moving files to OneDrive before opening it.">
+    Microsoft 365 requires files to be stored in OneDrive. Local files will move and files from other locations will copy. Your files can be found in the Microsoft OneDrive folder in the Files app.
+  </message>
+  <message name="IDS_OFFICE_MOVE_CONFIRMATION_GOOGLE_DRIVE_BODY_TEXT" desc="Explanation text for a dialog asking the user to confirm moving files to Google Drive before opening it.">
+    Google Docs, Sheets, and Slides require files to be stored in Google Drive. Local files will move and files from other locations will copy. Your files can be found in the Google Drive folder in the Files app.
+  </message>
+  <message name="IDS_OFFICE_MOVE_CONFIRMATION_ALWAYS_MOVE_CHECKBOX" desc="Checkbox label which allows the user to always move/copy files to OneDrive/Google Drive without asking each time.">
+    Don’t ask again
+  </message>
+  <message name="IDS_OFFICE_MOVE_CONFIRMATION_MOVE_BUTTON" desc="Text for a button which triggers the move and open action for the file.">
+    Move and open
+  </message>
+  <message name="IDS_OFFICE_MOVE_CONFIRMATION_COPY_BUTTON" desc="Text for a button which triggers the copy and open action for the file.">
+    Copy and open
+  </message>
+  <message name="IDS_OFFICE_CLOUD_PROVIDER_ONEDRIVE" desc="Cloud provider name for OneDrive.">
+    Microsoft OneDrive
+  </message>
+  <message name="IDS_OFFICE_CLOUD_PROVIDER_ONEDRIVE_SHORT" desc="Short name for OneDrive.">
+    OneDrive
+  </message>
+  <message name="IDS_OFFICE_CLOUD_PROVIDER_GOOGLE_DRIVE" desc="Cloud provider name for Google Drive.">
+    Google Drive
+  </message>
+  <message name="IDS_OFFICE_CLOUD_PROVIDER_GOOGLE_DRIVE_SHORT" desc="Short name for Google Drive.">
+    Drive
+  </message>
+
+  <!-- Office notification -->
+  <message name="IDS_OFFICE_NOTIFICATION_MOVING_FILES" desc="Title for a notification indicating that files are in the process of moving to OneDrive/Google Drive.">
+    {NUM_OF_FILES, plural,
+      =1 {Moving 1 file to <ph name="CLOUD_PROVIDER">{1}<ex>Microsoft OneDrive</ex></ph>}
+      other {Moving {NUM_OF_FILES} files to <ph name="CLOUD_PROVIDER">{1}<ex>Google Drive</ex></ph>}}
+  </message>
+  <message name="IDS_OFFICE_NOTIFICATION_FILES_MOVED" desc="Title for a notification indicating that files are already moved to OneDrive/Google Drive.">
+    {NUM_OF_FILES, plural,
+      =1 {Moved 1 file}
+      other {Moved {NUM_OF_FILES} files}}
+  </message>
+  <message name="IDS_OFFICE_NOTIFICATION_COPYING_FILES" desc="Title for a notification indicating that files are in the process of copying to OneDrive/Google Drive.">
+    {NUM_OF_FILES, plural,
+      =1 {Copying 1 file to <ph name="CLOUD_PROVIDER">{1}<ex>Microsoft OneDrive</ex></ph>}
+      other {Copying {NUM_OF_FILES} files to <ph name="CLOUD_PROVIDER">{1}<ex>Microsoft OneDrive</ex></ph>}}
+  </message>
+  <message name="IDS_OFFICE_NOTIFICATION_FILES_COPIED" desc="Title for a notification indicating that files are already copied to OneDrive/Google Drive.">
+    {NUM_OF_FILES, plural,
+      =1 {Copied 1 file}
+      other {Copied {NUM_OF_FILES} files}}
+  </message>
+  <!-- TODO(b/272601262) Display or delete this message. -->
+  <message name="IDS_OFFICE_NOTIFICATION_FILES_WILL_OPEN" desc="Subtitle for a notification indicating that files will open in Microsoft 365 or Google Docs/Sheets/Slides." translateable="false">
+    {NUM_OF_FILES, plural,
+      =1 {File will open in <ph name="TARGET_APP">{1}<ex>Microsoft 365</ex></ph>}
+      other {Files will open in <ph name="TARGET_APP">{1}<ex>Google Docs</ex></ph>}}
+  </message>
+  <message name="IDS_OFFICE_NOTIFICATION_FILES_OPENING" desc="Subtitle for a notification indicating that files is opening in Microsoft 365 or Google Docs/Sheets/Slides.">
+    Opening in <ph name="TARGET_APP">$1<ex>Microsoft 365</ex></ph>
+  </message>
+  <message name="IDS_OFFICE_NOTIFICATION_SHOW_IN_FOLDER_BUTTON" desc="Text for a button in the office notification which allows the user to see the file in the Files folder after clicking.">
+    Show in folder
+  </message>
+  <message name="IDS_OFFICE_NOTIFICATION_SIGN_IN_BUTTON" desc="Text for a button in the office notification which allows the user to sign in when reauthentication is needed.">
+    Sign in
+  </message>
+
+  <!-- Office upload errors -->
+  <message name="IDS_OFFICE_UPLOAD_ERROR_CANT_MOVE_FILES" desc="Error message for uploading office files indicating that the files cannot be moved to OneDrive/Google Drive.">
+    {NUM_OF_FILES, plural,
+      =1 {Can't move file to <ph name="CLOUD_PROVIDER">{1}<ex>Microsoft OneDrive</ex></ph>}
+      other {Can't move files to <ph name="CLOUD_PROVIDER">{1}<ex>Google Drive</ex></ph>}}
+  </message>
+  <message name="IDS_OFFICE_UPLOAD_ERROR_CANT_COPY_FILES" desc="Error message for uploading office files indicating that files cannot be copied to OneDrive/Google Drive.">
+    {NUM_OF_FILES, plural,
+      =1 {Can't copy file to <ph name="CLOUD_PROVIDER">{1}<ex>Microsoft OneDrive</ex></ph>}
+      other {Can't copy files to <ph name="CLOUD_PROVIDER">{1}<ex>Google Drive</ex></ph>}}
+  </message>
+  <message name="IDS_OFFICE_UPLOAD_ERROR_FREE_UP_SPACE_TO_MOVE" desc="Error message for uploading office files indicating that the user needs to free up space before moving files to OneDrive/Google Drive.">
+    {NUM_OF_FILES, plural,
+      =1 {Free up space in <ph name="CLOUD_PROVIDER">{1}<ex>Microsoft OneDrive</ex></ph> to move this file}
+      other {Free up space in <ph name="CLOUD_PROVIDER">{1}<ex>Google Drive</ex></ph> to move these files}}
+  </message>
+  <message name="IDS_OFFICE_UPLOAD_ERROR_FREE_UP_SPACE_TO_COPY" desc="Error message for uploading office files indicating that the user needs to free up space before copying files to OneDrive/Google Drive.">
+    {NUM_OF_FILES, plural,
+      =1 {Free up space in <ph name="CLOUD_PROVIDER">{1}<ex>Microsoft OneDrive</ex></ph> to copy this file}
+      other {Free up space in <ph name="CLOUD_PROVIDER">{1}<ex>Google Drive</ex></ph> to copy these files}}
+  </message>
+  <message name="IDS_OFFICE_UPLOAD_ERROR_FILE_NOT_EXIST_TO_MOVE" desc="Error message for uploading office files indicating that the file does not exist so it cannot be moved.">
+    The file can't be moved because it no longer exists
+  </message>
+  <message name="IDS_OFFICE_UPLOAD_ERROR_FILE_NOT_EXIST_TO_COPY" desc="Error message for uploading office files indicating that the file does not exist so it cannot be copied.">
+    The file can't be copied because it no longer exists
+  </message>
+  <message name="IDS_OFFICE_UPLOAD_ERROR_GENERIC" desc="Generic error message for uploading office files.">
+    Something went wrong. Try again.
+  </message>
+  <message name="IDS_OFFICE_UPLOAD_ERROR_REAUTHENTICATION_REQUIRED" desc="Error message for uploading office files indicating that the needs to sign in to Microsoft first before uploading the files.">
+    Sign in to your Microsoft account and then try again
+  </message>
+  <message name="IDS_OFFICE_UPLOAD_ERROR_CANT_OPEN_FILE" desc="Error message for uploading office files indicating that file cannot be open.">
+    {NUM_OF_FILES, plural,
+      =1 {Can't open file}
+      other {Can't open files}}
   </message>
 
   <!-- security curtain -->

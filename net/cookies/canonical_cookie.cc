@@ -339,11 +339,9 @@ bool HasValidHostPrefixAttributes(const GURL& url,
 }  // namespace
 
 CookieAccessParams::CookieAccessParams(CookieAccessSemantics access_semantics,
-                                       bool delegate_treats_url_as_trustworthy,
-                                       CookieSamePartyStatus same_party_status)
+                                       bool delegate_treats_url_as_trustworthy)
     : access_semantics(access_semantics),
-      delegate_treats_url_as_trustworthy(delegate_treats_url_as_trustworthy),
-      same_party_status(same_party_status) {}
+      delegate_treats_url_as_trustworthy(delegate_treats_url_as_trustworthy) {}
 
 CanonicalCookie::CanonicalCookie() = default;
 
@@ -616,12 +614,6 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
     status->AddExclusionReason(CookieInclusionStatus::EXCLUDE_INVALID_PREFIX);
   }
 
-  bool is_same_party_valid = IsCookieSamePartyValid(parsed_cookie);
-  if (!is_same_party_valid) {
-    status->AddExclusionReason(
-        CookieInclusionStatus::EXCLUDE_INVALID_SAMEPARTY);
-  }
-
   bool partition_has_nonce = CookiePartitionKey::HasNonce(cookie_partition_key);
   bool is_partitioned_valid =
       IsCookiePartitionedValid(url, parsed_cookie, partition_has_nonce);
@@ -887,10 +879,6 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::CreateSanitizedCookie(
         net::CookieInclusionStatus::EXCLUDE_INVALID_PREFIX);
   }
 
-  if (!IsCookieSamePartyValid(same_party, secure, same_site)) {
-    status->AddExclusionReason(
-        net::CookieInclusionStatus::EXCLUDE_INVALID_SAMEPARTY);
-  }
   if (!IsCookiePartitionedValid(url, secure,
                                 /*is_partitioned=*/partition_key.has_value(),
                                 /*partition_has_nonce=*/
@@ -1192,56 +1180,11 @@ CookieAccessResult CanonicalCookie::IncludeForRequestURL(
         CookieInclusionStatus::EXCLUDE_SAMESITE_NONE_INSECURE);
   }
 
-  switch (params.same_party_status) {
-    case CookieSamePartyStatus::kEnforceSamePartyExclude:
-      DCHECK(IsSameParty());
-      status.AddExclusionReason(
-          CookieInclusionStatus::EXCLUDE_SAMEPARTY_CROSS_PARTY_CONTEXT);
-      [[fallthrough]];
-    case CookieSamePartyStatus::kEnforceSamePartyInclude: {
-      status.AddWarningReason(CookieInclusionStatus::WARN_TREATED_AS_SAMEPARTY);
-      // Remove any SameSite exclusion reasons, since SameParty overrides
-      // SameSite.
-      DCHECK(!status.HasExclusionReason(
-          CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT));
-      DCHECK_NE(effective_same_site, CookieEffectiveSameSite::STRICT_MODE);
-      bool included_by_samesite =
-          !status.HasExclusionReason(
-              CookieInclusionStatus::EXCLUDE_SAMESITE_LAX) &&
-          !status.HasExclusionReason(
-              CookieInclusionStatus::
-                  EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX);
-      if (!included_by_samesite) {
-        status.RemoveExclusionReasons({
-            CookieInclusionStatus::EXCLUDE_SAMESITE_LAX,
-            CookieInclusionStatus::EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX,
-        });
-      }
-
-      // Update metrics.
-      if (status.HasOnlyExclusionReason(
-              CookieInclusionStatus::EXCLUDE_SAMEPARTY_CROSS_PARTY_CONTEXT) &&
-          included_by_samesite) {
-        status.AddWarningReason(
-            CookieInclusionStatus::WARN_SAMEPARTY_EXCLUSION_OVERRULED_SAMESITE);
-      }
-      if (status.IsInclude()) {
-        if (!included_by_samesite) {
-          status.AddWarningReason(
-              CookieInclusionStatus::
-                  WARN_SAMEPARTY_INCLUSION_OVERRULED_SAMESITE);
-        }
-      }
-      break;
-    }
-    case CookieSamePartyStatus::kNoSamePartyEnforcement:
-      // Only apply SameSite-related warnings if SameParty is not in effect.
-      ApplySameSiteCookieWarningToStatus(
-          SameSite(), effective_same_site, IsSecure(),
-          options.same_site_cookie_context(), &status,
-          false /* is_cookie_being_set */);
-      break;
-  }
+  // Only apply SameSite-related warnings if SameParty is not in effect.
+  ApplySameSiteCookieWarningToStatus(SameSite(), effective_same_site,
+                                     IsSecure(),
+                                     options.same_site_cookie_context(),
+                                     &status, false /* is_cookie_being_set */);
 
   if (status.IsInclude()) {
     UMA_HISTOGRAM_ENUMERATION("Cookie.IncludedRequestEffectiveSameSite",
@@ -1411,59 +1354,11 @@ CookieAccessResult CanonicalCookie::IsSetPermittedInContext(
       break;
   }
 
-  switch (params.same_party_status) {
-    case CookieSamePartyStatus::kEnforceSamePartyExclude:
-      DCHECK(IsSameParty());
-      access_result.status.AddExclusionReason(
-          CookieInclusionStatus::EXCLUDE_SAMEPARTY_CROSS_PARTY_CONTEXT);
-      [[fallthrough]];
-    case CookieSamePartyStatus::kEnforceSamePartyInclude: {
-      DCHECK(IsSameParty());
-      access_result.status.AddWarningReason(
-          CookieInclusionStatus::WARN_TREATED_AS_SAMEPARTY);
-      // Remove any SameSite exclusion reasons, since SameParty overrides
-      // SameSite.
-      DCHECK(!access_result.status.HasExclusionReason(
-          CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT));
-      DCHECK_NE(access_result.effective_same_site,
-                CookieEffectiveSameSite::STRICT_MODE);
-      bool included_by_samesite =
-          !access_result.status.HasExclusionReason(
-              CookieInclusionStatus::EXCLUDE_SAMESITE_LAX) &&
-          !access_result.status.HasExclusionReason(
-              CookieInclusionStatus::
-                  EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX);
-      if (!included_by_samesite) {
-        access_result.status.RemoveExclusionReasons({
-            CookieInclusionStatus::EXCLUDE_SAMESITE_LAX,
-            CookieInclusionStatus::EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX,
-        });
-      }
-
-      // Update metrics.
-      if (access_result.status.HasOnlyExclusionReason(
-              CookieInclusionStatus::EXCLUDE_SAMEPARTY_CROSS_PARTY_CONTEXT) &&
-          included_by_samesite) {
-        access_result.status.AddWarningReason(
-            CookieInclusionStatus::WARN_SAMEPARTY_EXCLUSION_OVERRULED_SAMESITE);
-      }
-      if (access_result.status.IsInclude()) {
-        if (!included_by_samesite) {
-          access_result.status.AddWarningReason(
-              CookieInclusionStatus::
-                  WARN_SAMEPARTY_INCLUSION_OVERRULED_SAMESITE);
-        }
-      }
-      break;
-    }
-    case CookieSamePartyStatus::kNoSamePartyEnforcement:
-      // Only apply SameSite-related warnings if SameParty is not in effect.
-      ApplySameSiteCookieWarningToStatus(
-          SameSite(), access_result.effective_same_site, IsSecure(),
-          options.same_site_cookie_context(), &access_result.status,
-          true /* is_cookie_being_set */);
-      break;
-  }
+  // Only apply SameSite-related warnings if SameParty is not in effect.
+  ApplySameSiteCookieWarningToStatus(
+      SameSite(), access_result.effective_same_site, IsSecure(),
+      options.same_site_cookie_context(), &access_result.status,
+      true /* is_cookie_being_set */);
 
   if (access_result.status.IsInclude()) {
     UMA_HISTOGRAM_ENUMERATION("Cookie.IncludedResponseEffectiveSameSite",
@@ -1568,9 +1463,6 @@ bool CanonicalCookie::IsCanonicalForFromStorage() const {
   }
 
   if (name_ == "" && HasHiddenPrefixName(value_))
-    return false;
-
-  if (!IsCookieSamePartyValid(same_party_, secure_, same_site_))
     return false;
 
   if (IsPartitioned()) {
@@ -1817,23 +1709,6 @@ bool CanonicalCookie::HasHiddenPrefixName(
 
 bool CanonicalCookie::IsRecentlyCreated(base::TimeDelta age_threshold) const {
   return (base::Time::Now() - creation_date_) <= age_threshold;
-}
-
-// static
-bool CanonicalCookie::IsCookieSamePartyValid(
-    const ParsedCookie& parsed_cookie) {
-  return IsCookieSamePartyValid(parsed_cookie.IsSameParty(),
-                                parsed_cookie.IsSecure(),
-                                parsed_cookie.SameSite());
-}
-
-// static
-bool CanonicalCookie::IsCookieSamePartyValid(bool is_same_party,
-                                             bool is_secure,
-                                             CookieSameSite same_site) {
-  if (!is_same_party)
-    return true;
-  return is_secure && (same_site != CookieSameSite::STRICT_MODE);
 }
 
 // static

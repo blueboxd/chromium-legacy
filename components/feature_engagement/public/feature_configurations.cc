@@ -198,10 +198,9 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     absl::optional<FeatureConfig> config = FeatureConfig();
     config->valid = true;
     config->availability = Comparator(ANY, 0);
-    config->session_rate = Comparator(ANY, 0);
-    // Show the promo once a year if the price tracking IPH was not triggered.
+    config->session_rate = Comparator(EQUAL, 0);
     config->trigger = EventConfig("iph_power_bookmarks_side_panel_trigger",
-                                  Comparator(EQUAL, 0), 360, 360);
+                                  Comparator(LESS_THAN, 3), 360, 360);
     config->used = EventConfig("power_bookmarks_side_panel_shown",
                                Comparator(EQUAL, 0), 360, 360);
     return config;
@@ -243,6 +242,18 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     return config;
   }
 
+  if (kIPHPriceTrackingEmailConsentFeature.name == feature->name) {
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(ANY, 0);
+    config->session_rate_impact.type = SessionRateImpact::Type::NONE;
+    // Show the IPH up to 3 times per month.
+    config->trigger = EventConfig("price_tracking_email_consent_trigger",
+                                  Comparator(LESS_THAN, 3), 30, 360);
+    return config;
+  }
+
   if (kIPHPriceTrackingInSidePanelFeature.name == feature->name) {
     absl::optional<FeatureConfig> config = FeatureConfig();
     config->valid = true;
@@ -268,6 +279,37 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     return config;
   }
 
+  if (kIPHExtensionsMenuFeature.name == feature->name) {
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(LESS_THAN, 1);
+
+    // Show promo up to three times a year or until the extensions menu is
+    // opened while any extension has access to the current site.
+    config->trigger = EventConfig("extensions_menu_trigger",
+                                  Comparator(LESS_THAN, 3), 360, 360);
+    config->used =
+        EventConfig("extensions_menu_opened_while_extension_has_access",
+                    Comparator(EQUAL, 0), 360, 360);
+    return config;
+  }
+
+  if (kIPHExtensionsRequestAccessButtonFeature.name == feature->name) {
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(LESS_THAN, 1);
+
+    // Show promo up to three times a year or until the request access button
+    // is clicked.
+    config->trigger = EventConfig("extensions_request_access_button_trigger",
+                                  Comparator(LESS_THAN, 3), 360, 360);
+    config->used = EventConfig("extensions_request_access_button_clicked",
+                               Comparator(EQUAL, 0), 360, 360);
+    return config;
+  }
+
   if (kIPHCompanionSidePanelFeature.name == feature->name) {
     absl::optional<FeatureConfig> config = FeatureConfig();
     config->valid = true;
@@ -287,10 +329,10 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     config->valid = true;
     config->availability = Comparator(ANY, 0);
     config->session_rate = Comparator(EQUAL, 0);
-    // Show the promo up to 3 times a year.
+    // Show the promo up to 1 times a year.
     config->trigger =
         EventConfig("iph_companion_side_panel_region_search_trigger",
-                    Comparator(LESS_THAN, 3), 360, 360);
+                    Comparator(LESS_THAN, 1), 360, 360);
     config->used =
         EventConfig("companion_side_panel_region_search_button_clicked",
                     Comparator(EQUAL, 0), 360, 360);
@@ -385,8 +427,8 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     config->availability = Comparator(ANY, 0);
     config->session_rate = Comparator(ANY, 0);
     config->session_rate_impact.type = SessionRateImpact::Type::NONE;
-    config->blocked_by.type = BlockedBy::Type::NONE;
-    config->blocking.type = Blocking::Type::NONE;
+    config->blocked_by.type = BlockedBy::Type::ALL;
+    config->blocking.type = Blocking::Type::ALL;
     config->used =
         EventConfig("ios_password_promo_bubble_on_desktop_interacted_with",
                     Comparator(ANY, 0), 0, 0);
@@ -1210,26 +1252,6 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
                     Comparator(LESS_THAN, 2), 720, 720);
     config->event_configs.insert(
         EventConfig("request_desktop_site_exceptions_generic_iph_trigger",
-                    Comparator(EQUAL, 0), 14, 14));
-    return config;
-  }
-
-  if (kIPHRequestDesktopSiteExceptionsSpecificFeature.name == feature->name) {
-    // A config that allows the RDS site-level setting IPH to be shown on sites
-    // that are more functional in desktop mode. This will be triggered a
-    // maximum of 2 times (once per 2 weeks), and if the user has not used the
-    // app menu to create a desktop site exception in a span of a year.
-    absl::optional<FeatureConfig> config = FeatureConfig();
-    config->valid = true;
-    config->availability = Comparator(GREATER_THAN_OR_EQUAL, 2);
-    config->session_rate = Comparator(LESS_THAN, 1);
-    config->used = EventConfig("app_menu_desktop_site_exception_added",
-                               Comparator(EQUAL, 0), 360, 360);
-    config->trigger =
-        EventConfig("request_desktop_site_exceptions_specific_iph_trigger",
-                    Comparator(LESS_THAN, 2), 720, 720);
-    config->event_configs.insert(
-        EventConfig("request_desktop_site_exceptions_specific_iph_trigger",
                     Comparator(EQUAL, 0), 14, 14));
     return config;
   }

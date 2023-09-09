@@ -9,7 +9,6 @@ import android.os.Handler;
 import android.view.View;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CallbackController;
@@ -172,12 +171,8 @@ public class TabGroupUiMediator implements BackPressHandler {
             public void didAddTab(Tab tab, int type, @TabCreationState int creationState,
                     boolean markedForSelection) {
                 if (type == TabLaunchType.FROM_CHROME_UI || type == TabLaunchType.FROM_RESTORE
-                        || type == TabLaunchType.FROM_STARTUP) {
-                    return;
-                }
-
-                if (type == TabLaunchType.FROM_LONGPRESS_BACKGROUND
-                        && !TabUiFeatureUtilities.ENABLE_TAB_GROUP_AUTO_CREATION.getValue()) {
+                        || type == TabLaunchType.FROM_STARTUP
+                        || type == TabLaunchType.FROM_LONGPRESS_BACKGROUND) {
                     return;
                 }
 
@@ -472,7 +467,6 @@ public class TabGroupUiMediator implements BackPressHandler {
         mIncognitoStateProvider.removeObserver(mIncognitoStateObserver);
     }
 
-    @VisibleForTesting
     boolean getIsShowingOverViewModeForTesting() {
         return mIsShowingOverViewMode;
     }

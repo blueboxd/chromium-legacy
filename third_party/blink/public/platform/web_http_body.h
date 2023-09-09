@@ -122,7 +122,7 @@ class BLINK_PLATFORM_EXPORT WebHTTPBody {
  private:
   void EnsureMutable();
 
-  WebPrivatePtr<EncodedFormData> private_;
+  WebPrivatePtrForRefCounted<EncodedFormData> private_;
 };
 
 }  // namespace blink

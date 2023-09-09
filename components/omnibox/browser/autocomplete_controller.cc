@@ -49,6 +49,7 @@
 #include "components/omnibox/browser/bookmark_provider.h"
 #include "components/omnibox/browser/bookmark_scoring_signals_annotator.h"
 #include "components/omnibox/browser/builtin_provider.h"
+#include "components/omnibox/browser/calculator_provider.h"
 #include "components/omnibox/browser/clipboard_provider.h"
 #include "components/omnibox/browser/document_provider.h"
 #include "components/omnibox/browser/history_fuzzy_provider.h"
@@ -352,8 +353,10 @@ AutocompleteController::AutocompleteController(
       notify_changed_debouncer_(
           OmniboxFieldTrial::
               kAutocompleteStabilityUpdateResultDebounceFromLastRun.Get(),
-          OmniboxFieldTrial::kAutocompleteStabilityUpdateResultDebounceDelay
-              .Get()),
+          DebouncingEnabled()
+              ? OmniboxFieldTrial::
+                    kAutocompleteStabilityUpdateResultDebounceDelay.Get()
+              : 0),
       is_cros_launcher_(is_cros_launcher),
       search_service_worker_signal_sent_(false),
       template_url_service_(provider_client_->GetTemplateURLService()),
@@ -875,6 +878,10 @@ void AutocompleteController::InitializeAsyncProviders(int provider_types) {
     on_device_head_provider_ =
         OnDeviceHeadProvider::Create(provider_client_.get(), this);
     providers_.push_back(on_device_head_provider_.get());
+  }
+  if (provider_types & AutocompleteProvider::TYPE_CALCULATOR &&
+      search_provider_ != nullptr) {
+    providers_.push_back(new CalculatorProvider(this, search_provider_));
   }
 }
 
@@ -1781,21 +1788,8 @@ void AutocompleteController::OnUrlScoringModelDone(
     // score to the match with the highest respective model prediction score.
     if (!OmniboxFieldTrial::IsMlUrlScoringCounterfactual()) {
       auto match_itr = prediction_and_match_itr_heap.top().second;
-      match_itr->RecordAdditionalInfo("ml_legacy_relevance",
-                                      match_itr->relevance);
+      match_itr->RecordAdditionalInfo("legacy_relevance", match_itr->relevance);
       match_itr->relevance = relevance_heap.top();
-
-      // Fuzzy matches use the scoring signals for history and bookmark
-      // providers with the "corrected" input. This leads to an artificially
-      // high confidence from the model. Correct for this by re-applying the
-      // penalty from the history fuzzy provider.
-      if (match_itr->provider && match_itr->provider->type() ==
-                                     AutocompleteProvider::TYPE_HISTORY_FUZZY) {
-        match_itr->RecordAdditionalInfo("ml_relevance_before_penalty",
-                                        match_itr->relevance);
-        HistoryFuzzyProvider::ApplyRelevancePenalty(
-            *match_itr, match_itr->fuzzy_match_penalty);
-      }
     }
     relevance_heap.pop();
     prediction_and_match_itr_heap.pop();

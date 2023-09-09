@@ -136,7 +136,7 @@ source_set("ipc_common_sources") {
 
   deps = [
     "//base",
-    "//components/viz/common:resource_format",
+    "//components/viz/common:shared_image_format",
     "//gpu/command_buffer/client:client_sources",
     "//gpu/command_buffer/common:common_sources",
     "//gpu/config:config_sources",
@@ -212,7 +212,6 @@ mojom("gpu_channel_mojom") {
   public_deps = [
     ":surface_handle",
     "//mojo/public/mojom/base",
-    "//services/viz/public/mojom:resource_format",
     "//services/viz/public/mojom:shared_image_format",
     "//skia/public/mojom",
     "//ui/gfx/geometry/mojom",
@@ -360,7 +359,7 @@ mojom("interfaces") {
     public_deps += [ ":vulkan_interface" ]
     enabled_features += [ "supports_vulkan" ]
   }
-  if (is_win || is_chromeos || is_chromeos_lacros) {
+  if (is_win || is_chromeos) {
     enabled_features += [ "has_gpu_revision_info" ]
   }
 

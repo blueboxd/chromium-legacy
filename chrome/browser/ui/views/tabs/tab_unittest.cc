@@ -50,7 +50,7 @@ class TabTest : public ChromeViewsTestBase {
     // Prevent the fake clock from starting at 0 which is the null time.
     fake_clock_.Advance(base::Milliseconds(2000));
   }
-  ~TabTest() override {}
+  ~TabTest() override = default;
 
   static TabIcon* GetTabIcon(Tab* tab) { return tab->icon_; }
 
@@ -60,9 +60,7 @@ class TabTest : public ChromeViewsTestBase {
     return tab->alert_indicator_button_;
   }
 
-  static views::ImageButton* GetCloseButton(Tab* tab) {
-    return tab->close_button_;
-  }
+  static TabCloseButton* GetCloseButton(Tab* tab) { return tab->close_button_; }
 
   static int GetTitleWidth(Tab* tab) { return tab->title_->bounds().width(); }
 
@@ -383,9 +381,6 @@ TEST_F(TabTest, CloseButtonLayout) {
   EXPECT_EQ(close_button_insets.left(), close_button_insets_2.left());
   EXPECT_EQ(close_button_insets.bottom(), close_button_insets_2.bottom());
   EXPECT_EQ(close_button_insets.right(), close_button_insets_2.right());
-
-  // Also make sure the close button is sized as large as the tab.
-  EXPECT_EQ(50, GetCloseButton(&tab)->bounds().height());
 }
 
 // Regression test for http://crbug.com/609701. Ensure TabCloseButton does not
@@ -395,7 +390,7 @@ TEST_F(TabTest, CloseButtonFocus) {
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
   Tab* tab = widget->SetContentsView(std::make_unique<Tab>(controller.get()));
 
-  views::ImageButton* tab_close_button = GetCloseButton(tab);
+  TabCloseButton* tab_close_button = GetCloseButton(tab);
 
   // Verify tab_close_button does not get focus on right click.
   ui::MouseEvent right_click_event(ui::ET_KEY_PRESSED, gfx::Point(),
@@ -638,14 +633,23 @@ TEST_F(TabTest, TitleTextHasSufficientContrast) {
   Tab* tab = widget->SetContentsView(std::make_unique<Tab>(controller.get()));
 
   for (const auto& colors : color_schemes) {
-    controller->SetTabColors(colors.bg_active, colors.fg_active,
-                             colors.bg_inactive, colors.fg_inactive);
+    tab->GetColorProvider()->SetColorForTesting(
+        kColorTabBackgroundActiveFrameActive, colors.bg_active);
+    tab->GetColorProvider()->SetColorForTesting(
+        kColorTabBackgroundActiveFrameInactive, colors.bg_active);
+    tab->GetColorProvider()->SetColorForTesting(
+        kColorTabBackgroundInactiveFrameActive, colors.bg_inactive);
+    tab->GetColorProvider()->SetColorForTesting(
+        kColorTabBackgroundInactiveFrameInactive, colors.bg_inactive);
+    controller->SetTabColors(colors.fg_active, colors.fg_inactive);
     for (TabActive active : {TabActive::kInactive, TabActive::kActive}) {
       controller->set_active_tab(active == TabActive::kActive ? tab : nullptr);
       tab->UpdateForegroundColors();
       const SkColor fg_color = tab->title_->GetEnabledColor();
-      const SkColor bg_color = controller->GetTabBackgroundColor(
-          active, BrowserFrameActiveState::kUseCurrent);
+      const SkColor bg_color = TabStyle::Get()->GetTabBackgroundColor(
+          active == TabActive::kActive ? TabStyle::TabSelectionState::kActive
+                                       : TabStyle::TabSelectionState::kInactive,
+          tab->GetWidget()->ShouldPaintAsActive(), *tab->GetColorProvider());
       const float contrast = color_utils::GetContrastRatio(fg_color, bg_color);
       EXPECT_GE(contrast, color_utils::kMinimumReadableContrastRatio);
     }

@@ -18,6 +18,7 @@ import {
 } from './file_system_access_entry.js';
 import * as idb from './idb.js';
 import {getMaybeLazyDirectory} from './lazy_directory_entry.js';
+import {isLocalDev} from './load_time_data.js';
 
 
 /**
@@ -54,7 +55,8 @@ let cameraTempDir: DirectoryAccessEntry|null = null;
 /**
  * Gets camera directory used by CCA.
  */
-export function getCameraDirectory(): DirectoryAccessEntry|null {
+export function getCameraDirectory(): DirectoryAccessEntry {
+  assert(cameraDir !== null);
   return cameraDir;
 }
 
@@ -73,7 +75,7 @@ async function initCameraTempDir(): Promise<DirectoryAccessEntry> {
  *
  * @return Promise for the directory result.
  */
-async function initCameraDirectory(): Promise<DirectoryAccessEntry|null> {
+async function initCameraDirectory(): Promise<DirectoryAccessEntry> {
   const handle = new WaitableEvent<FileSystemDirectoryHandle>();
 
   // We use the sessionStorage to decide if we should use the handle in the
@@ -109,11 +111,17 @@ async function initCameraDirectory(): Promise<DirectoryAccessEntry|null> {
  * beginning of the app.
  */
 export async function initialize(): Promise<void> {
-  cameraDir = await initCameraDirectory();
-  assert(cameraDir !== null);
+  if (isLocalDev()) {
+    // TODO(pihsun): Add expert mode option for developer to point the camera
+    // folder to a local folder.
+    const root = await navigator.storage.getDirectory();
+    cameraDir = await getMaybeLazyDirectory(
+        new DirectoryAccessEntryImpl(root), 'Camera');
+  } else {
+    cameraDir = await initCameraDirectory();
+  }
 
   cameraTempDir = await initCameraTempDir();
-  assert(cameraTempDir !== null);
 }
 
 /**
@@ -169,9 +177,9 @@ export async function getEntries(): Promise<FileAccessEntry[]> {
 }
 
 /**
- * Returns an URL for a picture given by the file |entry|.
+ * Returns an Object URL for a file `entry`.
  */
-export async function pictureURL(entry: FileAccessEntry): Promise<string> {
+export async function getObjectURL(entry: FileAccessEntry): Promise<string> {
   const file = await entry.file();
   return URL.createObjectURL(file);
 }

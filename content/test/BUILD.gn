@@ -481,6 +481,7 @@ static_library("test_support") {
     ":test_interfaces",
     "//components/attribution_reporting:test_support",
     "//components/download/public/common:test_support",
+    "//components/file_access:test_support",
     "//components/services/filesystem/public/mojom",
     "//components/services/storage/public/cpp",
     "//components/services/storage/public/mojom",
@@ -515,7 +516,7 @@ static_library("test_support") {
     "//components/browsing_topics/common:common",
     "//components/network_session_configurator/common:common",
     "//components/services/storage",
-    "//components/startup_metric_utils/browser",
+    "//components/startup_metric_utils",
     "//components/ukm:test_support",
     "//components/variations",
     "//components/viz/client",
@@ -691,6 +692,10 @@ static_library("test_support") {
       "../browser/compositor/test/test_image_transport_factory.cc",
       "../browser/compositor/test/test_image_transport_factory.h",
     ]
+  }
+
+  if (is_apple) {
+    configs += [ "//build/config/compiler:enable_arc" ]
   }
 
   if (is_mac) {
@@ -1027,6 +1032,9 @@ static_library("browsertest_support") {
     deps += [ "//ui/views" ]
   }
 
+  if (is_apple) {
+    configs += [ "//build/config/compiler:enable_arc" ]
+  }
   if (is_mac) {
     sources += [ "../public/test/content_browser_test_utils_mac.mm" ]
     deps += [ "//ui/base/mojom" ]
@@ -1391,6 +1399,7 @@ test("content_browsertests") {
     "../browser/media/media_canplaytype_browsertest.cc",
     "../browser/media/media_capabilities_browsertest.cc",
     "../browser/media/media_color_browsertest.cc",
+    "../browser/media/media_devices_util_browsertest.cc",
     "../browser/media/media_redirect_browsertest.cc",
     "../browser/media/media_source_browsertest.cc",
     "../browser/media/media_suspend_browsertest.cc",
@@ -1537,6 +1546,7 @@ test("content_browsertests") {
     "../browser/tracing/memory_tracing_browsertest.cc",
     "../browser/tracing/startup_tracing_browsertest.cc",
     "../browser/tracing/tracing_controller_browsertest.cc",
+    "../browser/tracing/tracing_end_to_end_browsertest.cc",
     "../browser/usb/usb_browsertest.cc",
     "../browser/utility_process_host_browsertest.cc",
     "../browser/vibration_browsertest.cc",
@@ -1611,10 +1621,10 @@ test("content_browsertests") {
     sources += [ "../browser/network/address_map_linux_browsertest.cc" ]
   }
 
-  if (is_mac) {
-    sources +=
-        [ "../app_shim_remote_cocoa/window_occlusion_browsertest_mac.mm" ]
+  if (is_android) {
+    sources += [ "../browser/gpu/gpu_background_kill_android_browsertest.cc" ]
   }
+
   if (enable_reporting) {
     sources += [
       "../browser/network/cross_origin_opener_policy_reporting_browsertest.cc",
@@ -1644,6 +1654,7 @@ test("content_browsertests") {
     ":web_ui_js_bridge_test_bindings_webui_js_bridge_impl",
     ":web_ui_test_mojo_bindings",
     ":web_ui_ts_test_mojo_bindings",
+    "//base/test:proto_test_support",
     "//base/test:test_support",
     "//build:chromecast_buildflags",
     "//build:chromeos_buildflags",
@@ -1656,6 +1667,7 @@ test("content_browsertests") {
     "//components/network_session_configurator/common",
     "//components/payments/mojom",
     "//components/performance_manager",
+    "//components/permissions:test_support",
     "//components/services/quarantine:test_support",
     "//components/services/storage",
     "//components/services/storage/public/cpp",
@@ -1773,6 +1785,7 @@ test("content_browsertests") {
   if (is_ios) {
     bundle_deps = [
       ":content_test_bundle_data",
+      ":content_test_perfetto_bundle_data",
       "//media/test:media_bundle_data",
       "//testing/buildbot/filters:content_browsertests_filter_bundle_data",
     ]
@@ -1780,8 +1793,12 @@ test("content_browsertests") {
     data = [
       "data/",
       "//media/test/data/",
+      "$root_gen_dir/third_party/perfetto/protos/perfetto/config/chrome/scenario_config.descriptor",
     ]
-    data_deps += [ "//testing/buildbot/filters:content_browsertests_filters" ]
+    data_deps += [
+      "//testing/buildbot/filters:content_browsertests_filters",
+      "//third_party/perfetto/protos/perfetto/config/chrome:scenario_descriptor",
+    ]
   }
 
   if (enable_plugins) {
@@ -1942,12 +1959,13 @@ test("content_browsertests") {
     }
     sources += [
       "../browser/accessibility/android_granularity_movement_browsertest.cc",
-      "../browser/android/date_time_chooser_browsertest.cc",
       "../browser/android/nfc_host_browsertest.cc",
       "../browser/android/render_widget_host_connector_browsertest.cc",
       "../browser/android/render_widget_host_connector_browsertest.h",
       "../browser/android/synchronous_compositor_browsertest.cc",
+      "../browser/date_time_chooser/android/date_time_chooser_browsertest.cc",
       "../browser/media/session/audio_focus_delegate_android_browsertest.cc",
+      "../browser/network/dns_config_android_browsertest.cc",
       "../browser/renderer_host/compositor_impl_android_browsertest.cc",
       "../shell/android/browsertests_apk/content_browser_tests_jni_onload.cc",
     ]
@@ -2028,8 +2046,13 @@ test("content_browsertests") {
     ]
   }
 
+  if (is_apple) {
+    configs += [ "//build/config/compiler:enable_arc" ]
+  }
+
   if (is_mac) {
     sources += [
+      "../app_shim_remote_cocoa/window_occlusion_browsertest_mac.mm",
       "../browser/accessibility/ax_tree_formatter_mac_browsertest.mm",
       "../browser/accessibility/browser_accessibility_cocoa_browsertest.mm",
       "../browser/accessibility/hit_testing_mac_browsertest.mm",
@@ -2172,7 +2195,6 @@ test("content_browsertests") {
   if (is_fuchsia) {
     use_test_server = true
 
-    test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
     additional_manifest_fragments = [
       "//build/config/fuchsia/test/audio_output.shard.test-cml",
       "//build/config/fuchsia/test/fonts.shard.test-cml",
@@ -2255,7 +2277,6 @@ test("content_unittests") {
     "../browser/attribution_reporting/attribution_storage_unittest.cc",
     "../browser/attribution_reporting/attribution_utils_unittest.cc",
     "../browser/attribution_reporting/combinatorics_unittest.cc",
-    "../browser/attribution_reporting/destination_throttler_unittest.cc",
     "../browser/attribution_reporting/rate_limit_table_unittest.cc",
     "../browser/background_fetch/background_fetch_cross_origin_filter_unittest.cc",
     "../browser/background_fetch/background_fetch_data_manager_unittest.cc",
@@ -2278,6 +2299,7 @@ test("content_unittests") {
     "../browser/background_sync/one_shot_background_sync_service_impl_unittest.cc",
     "../browser/background_sync/periodic_background_sync_service_impl_unittest.cc",
     "../browser/blob_storage/blob_url_unittest.cc",
+    "../browser/blob_storage/file_backed_blob_factory_impl_unittest.cc",
     "../browser/bluetooth/bluetooth_allowed_devices_unittest.cc",
     "../browser/bluetooth/bluetooth_blocklist_unittest.cc",
     "../browser/bluetooth/bluetooth_device_chooser_controller_unittest.cc",
@@ -2333,9 +2355,9 @@ test("content_unittests") {
     "../browser/file_system_access/file_system_access_file_handle_impl_unittest.cc",
     "../browser/file_system_access/file_system_access_file_writer_impl_unittest.cc",
     "../browser/file_system_access/file_system_access_handle_base_unittest.cc",
+    "../browser/file_system_access/file_system_access_lock_manager_unittest.cc",
     "../browser/file_system_access/file_system_access_manager_impl_unittest.cc",
     "../browser/file_system_access/file_system_access_safe_move_helper_unittest.cc",
-    "../browser/file_system_access/file_system_access_write_lock_manager_unittest.cc",
     "../browser/file_system_access/file_system_chooser_unittest.cc",
     "../browser/first_party_sets/database/first_party_sets_database_unittest.cc",
     "../browser/first_party_sets/first_party_set_parser_unittest.cc",
@@ -2389,7 +2411,9 @@ test("content_unittests") {
     "../browser/interest_group/auction_runner_unittest.cc",
     "../browser/interest_group/auction_url_loader_factory_proxy_unittest.cc",
     "../browser/interest_group/auction_worklet_manager_unittest.cc",
+    "../browser/interest_group/bidding_and_auction_response_unittest.cc",
     "../browser/interest_group/bidding_and_auction_server_key_fetcher_unittest.cc",
+    "../browser/interest_group/header_direct_from_seller_signals_unittest.cc",
     "../browser/interest_group/interest_group_auction_reporter_unittest.cc",
     "../browser/interest_group/interest_group_k_anonymity_manager_unittest.cc",
     "../browser/interest_group/interest_group_pa_report_util_unittest.cc",
@@ -2635,6 +2659,8 @@ test("content_unittests") {
     "../browser/storage_partition_impl_unittest.cc",
     "../browser/tracing/background_startup_tracing_observer_unittest.cc",
     "../browser/tracing/background_tracing_config_unittest.cc",
+    "../browser/tracing/trace_report_database_unittest.cc",
+    "../browser/tracing/tracing_scenario_unittest.cc",
     "../browser/usb/web_usb_service_impl_unittest.cc",
     "../browser/web_contents/aura/gesture_nav_simple_unittest.cc",
     "../browser/web_contents/web_contents_delegate_unittest.cc",
@@ -2784,12 +2810,11 @@ test("content_unittests") {
       "../browser/renderer_host/media/fuchsia_media_codec_provider_impl_unittest.cc",
     ]
 
-    # TODO(https://crbug.com/1185811): Investigate removing the requirement for
-    # job_policy_ambient_mark_vmo_exec for the sake of V8's allocator in tests.
-    test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
-
     additional_manifest_fragments = [
       "//build/config/fuchsia/test/fonts.shard.test-cml",
+
+      # TODO(https://crbug.com/1185811): Investigate removing the requirement
+      # for VmexResource.
       "//build/config/fuchsia/test/mark_vmo_executable.shard.test-cml",
       "//build/config/fuchsia/test/network.shard.test-cml",
       "//build/config/fuchsia/test/platform_video_codecs.shard.test-cml",
@@ -2936,6 +2961,7 @@ test("content_unittests") {
     "//services/network:test_support",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
+    "//services/network/shared_storage:shared_storage",
     "//services/service_manager/public/cpp/test:test_support",
     "//services/video_capture/public/cpp:mocks",
     "//services/video_capture/public/mojom",
@@ -3132,12 +3158,13 @@ test("content_unittests") {
       "//ui/base/mojom",
     ]
     frameworks = [
+      "AVFAudio.framework",
       "Carbon.framework",
       "IOSurface.framework",
     ]
     weak_frameworks = [
       "AuthenticationServices.framework",
-       "ScreenCaptureKit.framework"  # macOS 12.3
+      "ScreenCaptureKit.framework"  # macOS 12.3
     ]
   }
   if (is_chromeos_ash) {
@@ -3300,6 +3327,12 @@ if (is_ios) {
     outputs = [ "{{bundle_resources_dir}}/content_shell.pak" ]
   }
 
+  bundle_data_from_filelist("content_test_bundle_data") {
+    testonly = true
+    filelist_name = "content_test_bundle_data.filelist"
+  }
+}
+if (is_apple) {
   bundle_data("content_test_perfetto_bundle_data") {
     testonly = true
     _relative_path = "third_party/perfetto/protos/perfetto/config/chrome"
@@ -3307,11 +3340,6 @@ if (is_ios) {
     sources = [ "$root_gen_dir/$_relative_path/scenario_config.descriptor" ]
     outputs =
         [ "{{bundle_resources_dir}}/gen/$_relative_path/{{source_file_part}}" ]
-  }
-
-  bundle_data_from_filelist("content_test_bundle_data") {
-    testonly = true
-    filelist_name = "content_test_bundle_data.filelist"
   }
 }
 

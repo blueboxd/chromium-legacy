@@ -34,8 +34,8 @@ _CONFIG = [
             # TODO(dcheng): Should these be in a more specific config?
             'gfx::ColorSpace',
             'gfx::CubicBezier',
-            'gfx::HDRMode',
             'gfx::HDRMetadata',
+            'gfx::HdrMetadataExtendedRange',
             'gfx::ICCProfile',
             'gfx::RadToDeg',
 
@@ -586,6 +586,7 @@ _CONFIG = [
             'v8::.+',
             'v8_inspector::.+',
             'inspector_protocol_encoding::.+',
+            'snappy::.+',
 
             # Inspector instrumentation and protocol
             'probe::.+',
@@ -857,6 +858,12 @@ _CONFIG = [
         ],
     },
     {
+        'paths': ['third_party/blink/renderer/core/exported/web_view_impl.cc'],
+        'allowed': [
+            'base::TaskAnnotator',
+        ],
+    },
+    {
         'paths': ['third_party/blink/renderer/core/clipboard'],
         'allowed': ['base::EscapeForHTML'],
     },
@@ -898,6 +905,13 @@ _CONFIG = [
             # The existing code already contains gin::IsolateHolder.
             'gin::IsolateHolder',
         ],
+    },
+    {
+        'paths':
+        ['third_party/blink/renderer/core/frame/deprecation/deprecation.cc'],
+        'allowed': [
+            'base::CommandLine',
+        ]
     },
     {
         'paths': ['third_party/blink/renderer/core/frame/visual_viewport.cc'],
@@ -1315,6 +1329,7 @@ _CONFIG = [
             'base::MakeFixedFlatMap',
             'base::SharedMemory',
             'base::StringPiece',
+            'base::NumberToString',
             'base::ThreadTaskRunnerHandle',
             'media::.+',
             'libopus::.+',

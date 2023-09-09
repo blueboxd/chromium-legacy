@@ -13,13 +13,12 @@ namespace blink {
 
 NGReplacedLayoutAlgorithm::NGReplacedLayoutAlgorithm(
     const NGLayoutAlgorithmParams& params)
-    : NGLayoutAlgorithm(params) {}
+    : NGLayoutAlgorithm(params) {
+  DCHECK(params.space.IsNewFormattingContext());
+}
 
 const NGLayoutResult* NGReplacedLayoutAlgorithm::Layout() {
   DCHECK(!BreakToken() || BreakToken()->IsBreakBefore());
-  // Set this as a legacy root so that legacy painters are used.
-  container_builder_.SetIsLegacyLayoutRoot();
-
   // TODO(crbug.com/1252693): kIgnoreBlockLengths applies inline constraints
   // through the aspect ratio. But the aspect ratio is ignored when computing
   // the intrinsic block size for NON-replaced elements. This is inconsistent
@@ -65,8 +64,7 @@ void NGReplacedLayoutAlgorithm::LayoutMediaChildren() {
   LogicalRect logical_new_rect(
       BorderPadding().StartOffset(),
       ShrinkLogicalSize(container_builder_.Size(), BorderPadding()));
-  // We need to use LayoutRect, not PhysicalRect, for ComputePanelWidth().
-  LayoutRect new_rect = converter.ToPhysical(logical_new_rect).ToLayoutRect();
+  PhysicalRect new_rect = converter.ToPhysical(logical_new_rect);
 
   for (NGLayoutInputNode child = Node().FirstChild(); child;
        child = child.NextSibling()) {
@@ -86,8 +84,8 @@ void NGReplacedLayoutAlgorithm::LayoutMediaChildren() {
 
     const NGLayoutResult* result =
         To<NGBlockNode>(child).Layout(space_builder.ToConstraintSpace());
-    LogicalOffset offset = converter.ToLogical(
-        PhysicalOffset(new_rect.Location()), result->PhysicalFragment().Size());
+    LogicalOffset offset =
+        converter.ToLogical(new_rect.offset, result->PhysicalFragment().Size());
     container_builder_.AddResult(*result, offset);
   }
 }

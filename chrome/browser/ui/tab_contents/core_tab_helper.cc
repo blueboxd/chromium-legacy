@@ -197,8 +197,7 @@ TemplateURLService* CoreTabHelper::GetTemplateURLService() {
 void CoreTabHelper::RegionSearchWithLens(
     gfx::Image image,
     const gfx::Size& image_original_size,
-    std::vector<lens::mojom::LatencyLogPtr> log_data,
-    lens::EntryPoint entry_point) {
+    std::vector<lens::mojom::LatencyLogPtr> log_data) {
   // TODO(crbug/1431377): After validating the efficacy of the Lens Ping, move
   // the region search Ping to an earlier point in
   // lens_region_search_controller.
@@ -207,16 +206,16 @@ void CoreTabHelper::RegionSearchWithLens(
   // if Lens fullscreen search features are enabled.
   bool is_full_screen_region_search_request =
       lens::features::IsLensFullscreenSearchEnabled();
-  lens::EntryPoint lens_entry_point =
+  lens::EntryPoint entry_point =
       is_full_screen_region_search_request
           ? lens::EntryPoint::CHROME_FULLSCREEN_SEARCH_MENU_ITEM
-          : entry_point;
+          : lens::EntryPoint::CHROME_REGION_SEARCH_MENU_ITEM;
   bool use_side_panel =
       lens::IsSidePanelEnabledForLensRegionSearch(web_contents());
   bool is_companion_enabled = IsImageSearchSupportedForCompanion();
 
   auto lens_query_params = lens::GetQueryParametersForLensRequest(
-      lens_entry_point, use_side_panel, is_full_screen_region_search_request,
+      entry_point, use_side_panel, is_full_screen_region_search_request,
       is_companion_enabled);
   SearchByImageImpl(image, image_original_size, lens_query_params,
                     use_side_panel, std::move(log_data));

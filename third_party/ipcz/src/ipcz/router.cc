@@ -44,10 +44,11 @@ using ParcelsToFlush = absl::InlinedVector<ParcelToFlush, 8>;
 // `edge`. This terminates either when `queue` is exhausted, or the next parcel
 // in `queue` is to be transmitted over a link that is not yet known to `edge`.
 // Any successfully popped elements are accumulated at the end of `parcels`.
-void CollectParcelsToFlush(ParcelQueue& queue,
+template <typename ParcelQueueType>
+void CollectParcelsToFlush(ParcelQueueType& queue,
                            const RouteEdge& edge,
                            ParcelsToFlush& parcels) {
-  RouterLink* decaying_link = edge.decaying_link().get();
+  RouterLink* decaying_link = edge.decaying_link();
   RouterLink* primary_link = edge.primary_link().get();
   while (queue.HasNextElement()) {
     const SequenceNumber n = queue.current_sequence_number();
@@ -66,6 +67,21 @@ void CollectParcelsToFlush(ParcelQueue& queue,
   }
 }
 
+bool ValidateAndAcquireObjectsForTransitFrom(
+    Router& sender,
+    absl::Span<const IpczHandle> handles,
+    std::vector<Ref<APIObject>>& objects) {
+  objects.resize(handles.size());
+  for (size_t i = 0; i < handles.size(); ++i) {
+    auto* object = APIObject::FromHandle(handles[i]);
+    if (!object || !object->CanSendFrom(sender)) {
+      return false;
+    }
+    objects[i] = WrapRefCounted(object);
+  }
+  return true;
+}
+
 }  // namespace
 
 Router::Router() = default;
@@ -77,14 +93,37 @@ Router::~Router() {
   ABSL_ASSERT(traps_.empty());
 }
 
+// static
+Router::Pair Router::CreatePair() {
+  Pair routers{MakeRefCounted<Router>(), MakeRefCounted<Router>()};
+  DVLOG(5) << "Created new portal pair " << routers.first.get() << " and "
+           << routers.second.get();
+
+  const OperationContext context{OperationContext::kAPICall};
+  auto links = LocalRouterLink::CreatePair(LinkType::kCentral, routers,
+                                           LocalRouterLink::kStable);
+  routers.first->SetOutwardLink(context, std::move(links.first));
+  routers.second->SetOutwardLink(context, std::move(links.second));
+  return routers;
+}
+
+IpczResult Router::Close() {
+  CloseRoute();
+  return IPCZ_RESULT_OK;
+}
+
+bool Router::CanSendFrom(Router& sender) {
+  return &sender != this && !HasLocalPeer(sender);
+}
+
 bool Router::IsPeerClosed() {
   absl::MutexLock lock(&mutex_);
-  return (status_.flags & IPCZ_PORTAL_STATUS_PEER_CLOSED) != 0;
+  return (status_flags_ & IPCZ_PORTAL_STATUS_PEER_CLOSED) != 0;
 }
 
 bool Router::IsRouteDead() {
   absl::MutexLock lock(&mutex_);
-  return (status_.flags & IPCZ_PORTAL_STATUS_DEAD) != 0;
+  return (status_flags_ & IPCZ_PORTAL_STATUS_DEAD) != 0;
 }
 
 bool Router::IsOnCentralRemoteLink() {
@@ -98,9 +137,10 @@ bool Router::IsOnCentralRemoteLink() {
 
 void Router::QueryStatus(IpczPortalStatus& status) {
   absl::MutexLock lock(&mutex_);
-  const size_t size = std::min(status.size, status_.size);
-  memcpy(&status, &status_, size);
-  status.size = size;
+  status.size = std::min(status.size, sizeof(IpczPortalStatus));
+  status.flags = status_flags_;
+  status.num_local_parcels = inbound_parcels_.GetNumAvailableElements();
+  status.num_local_bytes = inbound_parcels_.GetTotalAvailableElementSize();
 }
 
 bool Router::HasLocalPeer(Router& router) {
@@ -138,8 +178,7 @@ IpczResult Router::SendOutboundParcel(Parcel& parcel) {
         outbound_parcels_.GetCurrentSequenceLength();
     parcel.set_sequence_number(sequence_number);
     if (outward_edge_.primary_link() &&
-        outbound_parcels_.SkipElement(sequence_number,
-                                      parcel.data_view().size())) {
+        outbound_parcels_.SkipElement(sequence_number)) {
       link = outward_edge_.primary_link();
     } else {
       // If there are no unsent parcels ahead of this one in the outbound
@@ -219,15 +258,12 @@ bool Router::AcceptInboundParcel(const OperationContext& context,
 
     if (!inward_edge_) {
       // If this is a terminal router, we may have trap events to fire.
-      status_.num_local_parcels = inbound_parcels_.GetNumAvailableElements();
-      status_.num_local_bytes = inbound_parcels_.GetTotalAvailableElementSize();
       if (sequence_number < inbound_parcels_.GetCurrentSequenceLength()) {
         // Only notify traps if the new parcel is actually available for
         // reading, which may not be the case if some preceding parcels have yet
         // to be received.
-        traps_.UpdatePortalStatus(context, status_,
-                                  TrapSet::UpdateReason::kNewLocalParcel,
-                                  dispatcher);
+        traps_.NotifyNewLocalParcel(context, status_flags_, inbound_parcels_,
+                                    dispatcher);
       }
     }
   }
@@ -279,11 +315,11 @@ bool Router::AcceptRouteClosureFrom(const OperationContext& context,
       if (!inward_edge_ && !bridge_) {
         is_peer_closed_ = true;
         if (inbound_parcels_.IsSequenceFullyConsumed()) {
-          status_.flags |=
+          status_flags_ |=
               IPCZ_PORTAL_STATUS_PEER_CLOSED | IPCZ_PORTAL_STATUS_DEAD;
         }
-        traps_.UpdatePortalStatus(
-            context, status_, TrapSet::UpdateReason::kPeerClosed, dispatcher);
+        traps_.NotifyPeerClosed(context, status_flags_, inbound_parcels_,
+                                dispatcher);
       }
     } else if (link_type.is_peripheral_inward()) {
       if (!outbound_parcels_.SetFinalSequenceLength(sequence_length)) {
@@ -334,11 +370,11 @@ bool Router::AcceptRouteDisconnectedFrom(const OperationContext& context,
       // Terminal routers may have trap events to fire.
       is_peer_closed_ = true;
       if (inbound_parcels_.IsSequenceFullyConsumed()) {
-        status_.flags |=
+        status_flags_ |=
             IPCZ_PORTAL_STATUS_PEER_CLOSED | IPCZ_PORTAL_STATUS_DEAD;
       }
-      traps_.UpdatePortalStatus(context, status_,
-                                TrapSet::UpdateReason::kPeerClosed, dispatcher);
+      traps_.NotifyPeerClosed(context, status_flags_, inbound_parcels_,
+                              dispatcher);
     }
   }
 
@@ -354,12 +390,121 @@ bool Router::AcceptRouteDisconnectedFrom(const OperationContext& context,
   return true;
 }
 
-IpczResult Router::GetNextInboundParcel(IpczGetFlags flags,
-                                        void* data,
-                                        size_t* num_bytes,
-                                        IpczHandle* handles,
-                                        size_t* num_handles,
-                                        IpczHandle* parcel) {
+IpczResult Router::Put(absl::Span<const uint8_t> data,
+                       absl::Span<const IpczHandle> handles) {
+  std::vector<Ref<APIObject>> objects;
+  if (!ValidateAndAcquireObjectsForTransitFrom(*this, handles, objects)) {
+    return IPCZ_RESULT_INVALID_ARGUMENT;
+  }
+
+  if (IsPeerClosed()) {
+    return IPCZ_RESULT_NOT_FOUND;
+  }
+
+  Parcel parcel;
+  const IpczResult allocate_result =
+      AllocateOutboundParcel(data.size(), /*allow_partial=*/false, parcel);
+  if (allocate_result != IPCZ_RESULT_OK) {
+    return allocate_result;
+  }
+
+  if (!data.empty()) {
+    memcpy(parcel.data_view().data(), data.data(), data.size());
+  }
+  parcel.CommitData(data.size());
+  parcel.SetObjects(std::move(objects));
+  const IpczResult result = SendOutboundParcel(parcel);
+  if (result == IPCZ_RESULT_OK) {
+    // If the parcel was sent, the sender relinquishes handle ownership and
+    // therefore implicitly releases its ref to each object.
+    for (IpczHandle handle : handles) {
+      std::ignore = APIObject::TakeFromHandle(handle);
+    }
+  }
+
+  return result;
+}
+
+IpczResult Router::BeginPut(IpczBeginPutFlags flags,
+                            volatile void** data,
+                            size_t* num_bytes,
+                            IpczTransaction* transaction) {
+  const bool allow_partial = (flags & IPCZ_BEGIN_PUT_ALLOW_PARTIAL) != 0;
+  if (IsPeerClosed()) {
+    return IPCZ_RESULT_NOT_FOUND;
+  }
+
+  const size_t num_bytes_to_request = num_bytes ? *num_bytes : 0;
+  Parcel parcel;
+  const IpczResult allocation_result =
+      AllocateOutboundParcel(num_bytes_to_request, allow_partial, parcel);
+  if (allocation_result != IPCZ_RESULT_OK) {
+    return allocation_result;
+  }
+
+  if (num_bytes) {
+    *num_bytes = parcel.data_view().size();
+  }
+  if (data) {
+    *data = parcel.data_view().data();
+  }
+  if (!pending_puts_) {
+    pending_puts_ = std::make_unique<PendingTransactionSet>();
+  }
+  *transaction = pending_puts_->Add(std::move(parcel));
+  return IPCZ_RESULT_OK;
+}
+
+IpczResult Router::EndPut(IpczTransaction transaction,
+                          size_t num_bytes_produced,
+                          absl::Span<const IpczHandle> handles,
+                          IpczEndPutFlags flags) {
+  const bool aborted = flags & IPCZ_END_PUT_ABORT;
+  std::vector<Ref<APIObject>> objects;
+  if (!aborted &&
+      !ValidateAndAcquireObjectsForTransitFrom(*this, handles, objects)) {
+    return IPCZ_RESULT_INVALID_ARGUMENT;
+  }
+
+  if (!pending_puts_) {
+    return IPCZ_RESULT_INVALID_ARGUMENT;
+  }
+
+  absl::optional<Parcel> parcel;
+  if (aborted) {
+    parcel = pending_puts_->FinalizeForPut(transaction, 0);
+  } else {
+    parcel = pending_puts_->FinalizeForPut(transaction, num_bytes_produced);
+  }
+
+  if (!parcel) {
+    return IPCZ_RESULT_INVALID_ARGUMENT;
+  }
+
+  if (aborted) {
+    return IPCZ_RESULT_OK;
+  }
+
+  parcel->CommitData(num_bytes_produced);
+  parcel->SetObjects(std::move(objects));
+  IpczResult result = SendOutboundParcel(*parcel);
+  if (result == IPCZ_RESULT_OK) {
+    // If the parcel was sent, the sender relinquishes handle ownership and
+    // therefore implicitly releases its ref to each object.
+    for (IpczHandle handle : handles) {
+      APIObject::TakeFromHandle(handle);
+    }
+  }
+
+  return result;
+}
+
+IpczResult Router::Get(IpczGetFlags flags,
+                       void* data,
+                       size_t* num_bytes,
+                       IpczHandle* handles,
+                       size_t* num_handles,
+                       IpczHandle* parcel) {
   const OperationContext context{OperationContext::kAPICall};
   TrapEventDispatcher dispatcher;
   Parcel consumed_parcel;
@@ -380,7 +525,7 @@ IpczResult Router::GetNextInboundParcel(IpczGetFlags flags,
       return IPCZ_RESULT_INVALID_ARGUMENT;
     }
 
-    if (!pending_gets_.empty() && is_pending_get_exclusive_) {
+    if (pending_gets_ && !pending_gets_->empty() && is_pending_get_exclusive_) {
       return IPCZ_RESULT_ALREADY_EXISTS;
     }
 
@@ -408,16 +553,13 @@ IpczResult Router::GetNextInboundParcel(IpczGetFlags flags,
 
     const bool ok = inbound_parcels_.Pop(consumed_parcel);
     ABSL_ASSERT(ok);
-    consumed_parcel.Consume(0, absl::MakeSpan(handles, handles_size));
+    consumed_parcel.ConsumeHandles(absl::MakeSpan(handles, handles_size));
 
-    status_.num_local_parcels = inbound_parcels_.GetNumAvailableElements();
-    status_.num_local_bytes = inbound_parcels_.GetTotalAvailableElementSize();
     if (inbound_parcels_.IsSequenceFullyConsumed()) {
-      status_.flags |= IPCZ_PORTAL_STATUS_PEER_CLOSED | IPCZ_PORTAL_STATUS_DEAD;
+      status_flags_ |= IPCZ_PORTAL_STATUS_PEER_CLOSED | IPCZ_PORTAL_STATUS_DEAD;
     }
-    traps_.UpdatePortalStatus(context, status_,
-                              TrapSet::UpdateReason::kLocalParcelConsumed,
-                              dispatcher);
+    traps_.NotifyLocalParcelConsumed(context, status_flags_, inbound_parcels_,
+                                     dispatcher);
   }
 
   if (parcel) {
@@ -428,12 +570,12 @@ IpczResult Router::GetNextInboundParcel(IpczGetFlags flags,
   return IPCZ_RESULT_OK;
 }
 
-IpczResult Router::BeginGetNextInboundParcel(IpczBeginGetFlags flags,
-                                             const volatile void** data,
-                                             size_t* num_bytes,
-                                             IpczHandle* handles,
-                                             size_t* num_handles,
-                                             IpczTransaction* transaction) {
+IpczResult Router::BeginGet(IpczBeginGetFlags flags,
+                            const volatile void** data,
+                            size_t* num_bytes,
+                            IpczHandle* handles,
+                            size_t* num_handles,
+                            IpczTransaction* transaction) {
   const OperationContext context{OperationContext::kAPICall};
   TrapEventDispatcher dispatcher;
   absl::MutexLock lock(&mutex_);
@@ -447,7 +589,7 @@ IpczResult Router::BeginGetNextInboundParcel(IpczBeginGetFlags flags,
 
   const bool overlapped = flags & IPCZ_BEGIN_GET_OVERLAPPED;
   const bool allow_partial = flags & IPCZ_BEGIN_GET_PARTIAL;
-  if (!overlapped && !pending_gets_.empty()) {
+  if (!overlapped && pending_gets_ && !pending_gets_->empty()) {
     return IPCZ_RESULT_ALREADY_EXISTS;
   }
   if (overlapped && is_pending_get_exclusive_) {
@@ -472,7 +614,7 @@ IpczResult Router::BeginGetNextInboundParcel(IpczBeginGetFlags flags,
   if (num_handles) {
     *num_handles = num_handles_to_consume;
   }
-  p.Consume(0, absl::MakeSpan(handles, num_handles_to_consume));
+  p.ConsumeHandles(absl::MakeSpan(handles, num_handles_to_consume));
 
   if (data) {
     *data = p.data_view().data();
@@ -481,7 +623,11 @@ IpczResult Router::BeginGetNextInboundParcel(IpczBeginGetFlags flags,
     *num_bytes = p.data_view().size();
   }
 
-  *transaction = pending_gets_.Add(std::move(p));
+  if (!pending_gets_) {
+    pending_gets_ = std::make_unique<PendingTransactionSet>();
+  }
+
+  *transaction = pending_gets_->Add(std::move(p));
   if (overlapped) {
     DiscardNextInboundParcel(context, dispatcher);
   } else {
@@ -490,13 +636,17 @@ IpczResult Router::BeginGetNextInboundParcel(IpczBeginGetFlags flags,
   return IPCZ_RESULT_OK;
 }
 
-IpczResult Router::EndGetNextInboundParcel(IpczTransaction transaction,
-                                           IpczEndGetFlags flags,
-                                           IpczHandle* parcel_handle) {
+IpczResult Router::EndGet(IpczTransaction transaction,
+                          IpczEndGetFlags flags,
+                          IpczHandle* parcel_handle) {
   const OperationContext context{OperationContext::kAPICall};
   TrapEventDispatcher dispatcher;
   absl::MutexLock lock(&mutex_);
-  absl::optional<Parcel> parcel = pending_gets_.FinalizeForGet(transaction);
+  if (!pending_gets_) {
+    return IPCZ_RESULT_INVALID_ARGUMENT;
+  }
+
+  absl::optional<Parcel> parcel = pending_gets_->FinalizeForGet(transaction);
   if (!parcel) {
     return IPCZ_RESULT_INVALID_ARGUMENT;
   }
@@ -528,8 +678,8 @@ IpczResult Router::Trap(const IpczTrapConditions& conditions,
                         IpczTrapConditionFlags* satisfied_condition_flags,
                         IpczPortalStatus* status) {
   absl::MutexLock lock(&mutex_);
-  return traps_.Add(conditions, handler, context, status_,
-                    satisfied_condition_flags, status);
+  return traps_.Add(conditions, handler, context, status_flags_,
+                    inbound_parcels_, satisfied_condition_flags, status);
 }
 
 IpczResult Router::MergeRoute(const Ref<Router>& other) {
@@ -581,11 +731,9 @@ Ref<Router> Router::Deserialize(const RouterDescriptor& descriptor,
   {
     absl::MutexLock lock(&router->mutex_);
     router->outbound_parcels_.ResetSequence(
-        descriptor.next_outgoing_sequence_number,
-        descriptor.num_bytes_produced);
+        descriptor.next_outgoing_sequence_number);
     router->inbound_parcels_.ResetSequence(
-        descriptor.next_incoming_sequence_number,
-        descriptor.num_bytes_consumed);
+        descriptor.next_incoming_sequence_number);
     if (descriptor.peer_closed) {
       router->is_peer_closed_ = true;
       if (!router->inbound_parcels_.SetFinalSequenceLength(
@@ -593,7 +741,7 @@ Ref<Router> Router::Deserialize(const RouterDescriptor& descriptor,
         return nullptr;
       }
       if (router->inbound_parcels_.IsSequenceFullyConsumed()) {
-        router->status_.flags |=
+        router->status_flags_ |=
             IPCZ_PORTAL_STATUS_PEER_CLOSED | IPCZ_PORTAL_STATUS_DEAD;
       }
     }
@@ -760,12 +908,8 @@ bool Router::SerializeNewRouterWithLocalPeer(const OperationContext& context,
   descriptor.proxy_already_bypassed = true;
   descriptor.next_outgoing_sequence_number =
       outbound_parcels_.GetCurrentSequenceLength();
-  descriptor.num_bytes_produced =
-      outbound_parcels_.total_consumed_element_size();
   descriptor.next_incoming_sequence_number =
       inbound_parcels_.current_sequence_number();
-  descriptor.num_bytes_consumed =
-      inbound_parcels_.total_consumed_element_size();
   descriptor.decaying_incoming_sequence_length = proxy_inbound_sequence_length;
 
   DVLOG(4) << "Splitting local pair to move router with outbound sequence "
@@ -781,7 +925,7 @@ bool Router::SerializeNewRouterWithLocalPeer(const OperationContext& context,
 
   // Initialize an inward edge that will immediately begin decaying once it has
   // a link (established in BeginProxyingToNewRouter()).
-  inward_edge_.emplace();
+  inward_edge_ = std::make_unique<RouteEdge>();
   inward_edge_->BeginPrimaryLinkDecay();
   inward_edge_->set_length_to_decaying_link(proxy_inbound_sequence_length);
   inward_edge_->set_length_from_decaying_link(
@@ -802,17 +946,13 @@ void Router::SerializeNewRouterAndConfigureProxy(
   descriptor.proxy_already_bypassed = false;
   descriptor.next_outgoing_sequence_number =
       outbound_parcels_.GetCurrentSequenceLength();
-  descriptor.num_bytes_produced =
-      outbound_parcels_.total_consumed_element_size();
   descriptor.next_incoming_sequence_number =
       inbound_parcels_.current_sequence_number();
-  descriptor.num_bytes_consumed =
-      inbound_parcels_.total_consumed_element_size();
 
   // Initialize an inward edge but with no link yet. This ensures that we
   // don't look like a terminal router while waiting for a link to be set,
   // which can only happen after `descriptor` is transmitted.
-  inward_edge_.emplace();
+  inward_edge_ = std::make_unique<RouteEdge>();
 
   if (is_peer_closed_) {
     descriptor.peer_closed = true;
@@ -1187,9 +1327,8 @@ bool Router::StopProxyingToLocalPeer(const OperationContext& context,
   if (local_peer && !bridge_peer) {
     // This is the common case, with no bridge link.
     MultiMutexLock lock(&mutex_, &local_peer->mutex_);
-    const Ref<RouterLink>& our_link = outward_edge_.decaying_link();
-    const Ref<RouterLink>& peer_link =
-        local_peer->outward_edge_.decaying_link();
+    RouterLink* const our_link = outward_edge_.decaying_link();
+    RouterLink* const peer_link = local_peer->outward_edge_.decaying_link();
     if (!our_link || !peer_link) {
       // Either Router may have been unexpectedly disconnected, in which case
       // we can ignore this request.
@@ -1307,14 +1446,15 @@ void Router::Flush(const OperationContext& context, FlushBehavior behavior) {
     // to acquire additional (unmanaged) references per ParcelToFlush.
     outward_link = outward_edge_.primary_link();
     inward_link = inward_edge_ ? inward_edge_->primary_link() : nullptr;
-    decaying_outward_link = outward_edge_.decaying_link();
+    decaying_outward_link = WrapRefCounted(outward_edge_.decaying_link());
     decaying_inward_link =
-        inward_edge_ ? inward_edge_->decaying_link() : nullptr;
+        WrapRefCounted(inward_edge_ ? inward_edge_->decaying_link() : nullptr);
     on_central_link = outward_link && outward_link->GetType().is_central();
     if (bridge_) {
       // Bridges have either a primary link or decaying link, but never both.
-      bridge_link = bridge_->primary_link() ? bridge_->primary_link()
-                                            : bridge_->decaying_link();
+      bridge_link = bridge_->primary_link()
+                        ? bridge_->primary_link()
+                        : WrapRefCounted(bridge_->decaying_link());
     }
 
     // Collect any parcels which are safe to transmit now. Note that we do not
@@ -1364,14 +1504,14 @@ void Router::Flush(const OperationContext& context, FlushBehavior behavior) {
     }
 
     if (is_peer_closed_ &&
-        (status_.flags & IPCZ_PORTAL_STATUS_PEER_CLOSED) == 0 &&
+        (status_flags_ & IPCZ_PORTAL_STATUS_PEER_CLOSED) == 0 &&
         !inbound_parcels_.ExpectsMoreElements()) {
       // Set the PEER_CLOSED bit and trigger any relevant traps, if and only if
       // the peer is actually closed and there are no more inbound parcels in
       // flight towards us.
-      status_.flags |= IPCZ_PORTAL_STATUS_PEER_CLOSED;
-      traps_.UpdatePortalStatus(context, status_,
-                                TrapSet::UpdateReason::kPeerClosed, dispatcher);
+      status_flags_ |= IPCZ_PORTAL_STATUS_PEER_CLOSED;
+      traps_.NotifyPeerClosed(context, status_flags_, inbound_parcels_,
+                              dispatcher);
     }
 
     // If we're dropping the last of our decaying links, our outward link may
@@ -1893,7 +2033,7 @@ bool Router::BypassPeerWithNewRemoteLink(
         [router = WrapRefCounted(this), requestor = WrapRefCounted(&requestor),
          node_link = WrapRefCounted(&node_link), context,
          bypass_target_sublink](FragmentRef<RouterLinkState> new_link_state) {
-          if (new_link_state.is_null()) {
+          if (!new_link_state.is_null()) {
             // If this fails once, it's unlikely to succeed afterwards.
             return;
           }
@@ -2026,14 +2166,11 @@ void Router::DiscardNextInboundParcel(const OperationContext& context,
                                       TrapEventDispatcher& dispatcher) {
   Parcel discarded;
   inbound_parcels_.Pop(discarded);
-  status_.num_local_parcels = inbound_parcels_.GetNumAvailableElements();
-  status_.num_local_bytes = inbound_parcels_.GetTotalAvailableElementSize();
   if (inbound_parcels_.IsSequenceFullyConsumed()) {
-    status_.flags |= IPCZ_PORTAL_STATUS_PEER_CLOSED | IPCZ_PORTAL_STATUS_DEAD;
+    status_flags_ |= IPCZ_PORTAL_STATUS_PEER_CLOSED | IPCZ_PORTAL_STATUS_DEAD;
   }
-  traps_.UpdatePortalStatus(context, status_,
-                            TrapSet::UpdateReason::kLocalParcelConsumed,
-                            dispatcher);
+  traps_.NotifyLocalParcelConsumed(context, status_flags_, inbound_parcels_,
+                                   dispatcher);
 }
 
 }  // namespace ipcz

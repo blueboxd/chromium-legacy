@@ -15,7 +15,6 @@
 #import "components/variations/variations_url_constants.h"
 #import "components/version_info/version_info.h"
 #import "ios/chrome/browser/variations/constants.h"
-#import "ios/chrome/browser/variations/ios_chrome_variations_seed_fetcher+testing.h"
 #import "ios/chrome/browser/variations/ios_chrome_variations_seed_store.h"
 #import "net/http/http_status_code.h"
 #import "testing/gtest/include/gtest/gtest.h"
@@ -23,6 +22,11 @@
 #import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
+
+// The following headers should be imported after their non-testing
+// counterparts.
+#import "ios/chrome/browser/variations/ios_chrome_variations_seed_fetcher+testing.h"
+#import "ios/chrome/browser/variations/ios_chrome_variations_seed_store+testing.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -67,7 +71,7 @@ MockValueForHTTPHeaderField GetMockMethodWithHeader(
 class IOSChromeVariationsSeedFetcherTest : public PlatformTest {
  protected:
   void TearDown() override {
-    [IOSChromeVariationsSeedStore popSeed];
+    [IOSChromeVariationsSeedStore resetForTesting];
     [IOSChromeVariationsSeedFetcher resetFetchingStatusForTesting];
     PlatformTest::TearDown();
   }

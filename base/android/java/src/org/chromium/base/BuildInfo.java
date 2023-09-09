@@ -18,7 +18,6 @@ import android.os.Build.VERSION_CODES;
 import android.text.TextUtils;
 
 import androidx.annotation.OptIn;
-import androidx.annotation.VisibleForTesting;
 import androidx.core.os.BuildCompat;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -36,9 +35,6 @@ public class BuildInfo {
     private static PackageInfo sBrowserPackageInfo;
     private static ApplicationInfo sBrowserApplicationInfo;
     private static boolean sInitialized;
-
-    /** Not a member variable to avoid creating the instance early (it is set early in start up). */
-    private static String sFirebaseAppId = "";
 
     /** The application name (e.g. "Chrome"). For WebView, this is name of the embedding app. */
     public final String hostPackageLabel;
@@ -71,7 +67,9 @@ public class BuildInfo {
      */
     public final int vulkanDeqpLevel;
 
-    private static class Holder { private static BuildInfo sInstance = new BuildInfo(); }
+    private static class Holder {
+        private static final BuildInfo INSTANCE = new BuildInfo();
+    }
 
     @CalledByNative
     private static String[] getAll() {
@@ -79,9 +77,8 @@ public class BuildInfo {
     }
 
     /** Returns a serialized string array of all properties of this class. */
-    @VisibleForTesting
     @OptIn(markerClass = androidx.core.os.BuildCompat.PrereleaseSdkCheck.class)
-    String[] getAllProperties() {
+    private String[] getAllProperties() {
         String hostPackageName = ContextUtils.getApplicationContext().getPackageName();
         // This implementation needs to be kept in sync with the native BuildInfo constructor.
         return new String[] {
@@ -103,7 +100,6 @@ public class BuildInfo {
                 gmsVersionCode,
                 installerPackageName,
                 abiString,
-                sFirebaseAppId,
                 customThemes,
                 resourcesVersion,
                 String.valueOf(
@@ -153,13 +149,16 @@ public class BuildInfo {
     }
 
     public static BuildInfo getInstance() {
-        return Holder.sInstance;
+        // Some tests mock out things BuildInfo is based on, so disable caching in tests to ensure
+        // such mocking is not defeated by caching.
+        if (BuildConfig.IS_FOR_TEST) {
+            return new BuildInfo();
+        }
+        return Holder.INSTANCE;
     }
 
-    @VisibleForTesting
-    BuildInfo() {
+    private BuildInfo() {
         sInitialized = true;
-
         Context appContext = ContextUtils.getApplicationContext();
         String hostPackageName = appContext.getPackageName();
         PackageManager pm = appContext.getPackageManager();
@@ -305,38 +304,19 @@ public class BuildInfo {
      * This must be manually maintained as the SDK goes through finalization!
      * Avoid depending on this if possible; this is only intended for WebView.
      */
-    @OptIn(markerClass = androidx.core.os.BuildCompat.PrereleaseSdkCheck.class)
     public static boolean targetsAtLeastU() {
         int target = ContextUtils.getApplicationContext().getApplicationInfo().targetSdkVersion;
 
-        // Logic for after API finalization but before public SDK release has to
-        // just hardcode the appropriate SDK integer. This will include Android
-        // builds with the finalized SDK, and also pre-API-finalization builds
-        // (because CUR_DEVELOPMENT == 10000).
-        return target >= 34;
+        // Logic for pre-API-finalization:
+        // return BuildCompat.isAtLeastU() && target == Build.VERSION_CODES.CUR_DEVELOPMENT;
 
-        // Once the public SDK is upstreamed we can use the defined constant,
-        // deprecate this, then eventually inline this at all callsites and
-        // remove it.
-        // return target >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
-    }
+        // Logic for after API finalization but before public SDK release has to just hardcode the
+        // appropriate SDK integer. This will include Android builds with the finalized SDK, and
+        // also pre-API-finalization builds (because CUR_DEVELOPMENT == 10000).
+        // return target >= 34;
 
-    public static void setFirebaseAppId(String id) {
-        assert sFirebaseAppId.equals("");
-        sFirebaseAppId = id;
-    }
-
-    public static String getFirebaseAppId() {
-        return sFirebaseAppId;
-    }
-
-    /**
-     * This operation is not thread-safe. Construction of the new BuildInfo object will
-     * happen synchronously and result in a consistent BuildInfo, but references to the static
-     * BuildInfo instance may be out of date in some threads.
-     */
-    @VisibleForTesting
-    public static void resetForTesting() {
-        Holder.sInstance = new BuildInfo();
+        // Now that the public SDK is upstreamed we can use the defined constant. All users of this
+        // should now just inline this check themselves.
+        return target >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
     }
 }

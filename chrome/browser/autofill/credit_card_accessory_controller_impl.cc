@@ -25,7 +25,6 @@
 #include "components/autofill/core/browser/autofill_browser_util.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
-#include "components/autofill/core/browser/payments/constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/strings/grit/components_strings.h"
@@ -36,13 +35,11 @@ namespace autofill {
 namespace {
 
 // Return the card art url to displayed in the autofill suggestions. The card
-// art is only supported for Capital One virtual cards. For other cards, we show
-// the default network icon.
+// art is only supported for virtual cards. For other cards, we show the default
+// network icon.
 GURL GetCardArtUrl(const CreditCard& card) {
-  return card.record_type() == CreditCard::VIRTUAL_CARD &&
-                 card.card_art_url().spec() == kCapitalOneCardArtUrl
-             ? card.card_art_url()
-             : GURL();
+  return card.record_type() == CreditCard::VIRTUAL_CARD ? card.card_art_url()
+                                                        : GURL();
 }
 
 std::u16string GetTitle(bool has_suggestions) {
@@ -113,7 +110,8 @@ UserInfo TranslateCachedCard(const CachedServerCardInfo* data, bool enabled) {
 }
 
 bool ShouldCreateVirtualCard(const CreditCard* card) {
-  return card->virtual_card_enrollment_state() == CreditCard::ENROLLED;
+  return card->virtual_card_enrollment_state() ==
+         CreditCard::VirtualCardEnrollmentState::kEnrolled;
 }
 
 const CreditCard* UnwrapCardOrVirtualCard(
@@ -274,14 +272,13 @@ bool CreditCardAccessoryController::AllowedForWebContents(
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
     PersonalDataManager* personal_data_manager =
-        PersonalDataManagerFactory::GetForProfile(
-            profile->GetOriginalProfile());
+        PersonalDataManagerFactory::GetForProfile(profile);
     if (personal_data_manager) {
       std::vector<CreditCard*> cards =
           personal_data_manager->GetCreditCardsToSuggest();
       bool has_virtual_card = base::ranges::any_of(cards, [](const auto& card) {
         return card->virtual_card_enrollment_state() ==
-               CreditCard::VirtualCardEnrollmentState::ENROLLED;
+               CreditCard::VirtualCardEnrollmentState::kEnrolled;
       });
       if (has_virtual_card) {
         // Virtual cards are available. We should always show manual fallback
@@ -291,9 +288,7 @@ bool CreditCardAccessoryController::AllowedForWebContents(
     }
   }
 
-  // For non-virtual cards show the credit card accessory sheet only
-  // when both keyboard accessory and manual fallback flags are enabled.
-  return features::IsAutofillManualFallbackEnabled();
+  return true;
 }
 
 // static

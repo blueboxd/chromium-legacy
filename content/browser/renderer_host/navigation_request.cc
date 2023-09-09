@@ -258,7 +258,6 @@ void UpdateLoadFlagsWithCacheFlags(int* load_flags,
                                    bool is_post) {
   switch (navigation_type) {
     case blink::mojom::NavigationType::RELOAD:
-    case blink::mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL:
       *load_flags |= net::LOAD_VALIDATE_CACHE;
       break;
     case blink::mojom::NavigationType::RELOAD_BYPASSING_CACHE:
@@ -654,7 +653,6 @@ blink::mojom::NavigationType ConvertToCrossDocumentType(
       return blink::mojom::NavigationType::HISTORY_DIFFERENT_DOCUMENT;
     case blink::mojom::NavigationType::RELOAD:
     case blink::mojom::NavigationType::RELOAD_BYPASSING_CACHE:
-    case blink::mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL:
     case blink::mojom::NavigationType::RESTORE:
     case blink::mojom::NavigationType::RESTORE_WITH_POST:
     case blink::mojom::NavigationType::HISTORY_DIFFERENT_DOCUMENT:
@@ -1984,7 +1982,10 @@ NavigationRequest::~NavigationRequest() {
     loading_mem_tracker_->Cancel();
   ResetExpectedProcess();
   if (!HasCommitted()) {
-    if (state_ >= WILL_START_NAVIGATION) {
+    // If we're before WILL_START_NAVIGATION, we haven't reported request start
+    // to DevTools yet.
+    // If we're in WILL_FAIL_REQUEST, the failure has been reported already.
+    if (state_ >= WILL_START_NAVIGATION && state_ != WILL_FAIL_REQUEST) {
       devtools_instrumentation::OnNavigationRequestFailed(
           *this, network::URLLoaderCompletionStatus(net::ERR_ABORTED));
     }
@@ -4440,10 +4441,15 @@ NavigationRequest::CreateNavigationEarlyHintsManagerParams(
       trust_token_observer;
   Clone(trust_token_observer.InitWithNewPipeAndPassReceiver());
 
+  mojo::PendingRemote<network::mojom::SharedDictionaryAccessObserver>
+      shared_dictionary_observer;
+  Clone(shared_dictionary_observer.InitWithNewPipeAndPassReceiver());
+
   network::mojom::URLLoaderFactoryParamsPtr url_loader_factory_params =
       URLLoaderFactoryParamsHelper::CreateForEarlyHintsPreload(
           process, tentative_origin, *this, early_hints,
-          std::move(cookie_observer), std::move(trust_token_observer));
+          std::move(cookie_observer), std::move(trust_token_observer),
+          std::move(shared_dictionary_observer));
 
   net::IsolationInfo isolation_info = url_loader_factory_params->isolation_info;
 
@@ -4822,10 +4828,10 @@ void NavigationRequest::OnStartChecksComplete(
     if (!base::FeatureList::IsEnabled(
             features::kBlockInsecurePrivateNetworkRequestsForNavigations)) {
       // Only show warnings for requests initiated from non-secure contexts.
-      client_security_state->local_network_request_policy =
+      client_security_state->private_network_request_policy =
           client_security_state->is_web_secure_context
-              ? network::mojom::LocalNetworkRequestPolicy::kAllow
-              : network::mojom::LocalNetworkRequestPolicy::kWarn;
+              ? network::mojom::PrivateNetworkRequestPolicy::kAllow
+              : network::mojom::PrivateNetworkRequestPolicy::kWarn;
     }
   }
 
@@ -4918,6 +4924,7 @@ void NavigationRequest::OnStartChecksComplete(
       std::move(navigation_ui_data), service_worker_handle_.get(),
       std::move(prefetched_signed_exchange_cache_), this, loader_type,
       CreateCookieAccessObserver(), CreateTrustTokenAccessObserver(),
+      CreateSharedDictionaryAccessObserver(),
       static_cast<StoragePartitionImpl*>(partition)
           ->CreateURLLoaderNetworkObserverForNavigationRequest(*this),
       NetworkServiceDevToolsObserver::MakeSelfOwned(frame_tree_node_),
@@ -5782,6 +5789,25 @@ void NavigationRequest::CommitPageActivation() {
           return RenderFrameHost::FrameIterationAction::kContinue;
         });
 
+    // When activating from BackForwardCache, properly set the
+    // BrowsingContextGroupSwap information. This is required because we
+    // otherwise do it in the RenderFrameHost selection, in
+    // GetFrameHostForNavigation, which does not happen for BFCache restores.
+    // TODO(https://crbug.com/1464335): This code assumes that pages can only be
+    // stored in the BFCache if they live in a different BrowsingInstance in
+    // another CoopRelatedGroup, so we enforce that invariant via a CHECK. If
+    // this is not the case anymore, `browsing_context_group_swap_` should be
+    // set to BrowsingContextGroupSwap::CreateRelatedCoopSwap() if the two
+    // SiteInstances live in the same CoopRelatedGroup.
+    SiteInstanceImpl* current_site_instance =
+        frame_tree_node_->current_frame_host()->GetSiteInstance();
+    SiteInstanceImpl* target_site_instance =
+        activated_entry->render_frame_host()->GetSiteInstance();
+    CHECK(!target_site_instance->IsCoopRelatedSiteInstance(
+        current_site_instance));
+    browsing_context_group_swap_ =
+        BrowsingContextGroupSwap::CreateSecuritySwap();
+
     base::WeakPtr<NavigationRequest> weak_self(weak_factory_.GetWeakPtr());
     ReadyToCommitNavigation(false /* is_error */);
     // The call above might block on showing a user dialog. The interaction of
@@ -6639,7 +6665,20 @@ NavigatorDelegate* NavigationRequest::GetDelegate() const {
 
 void NavigationRequest::Resume(NavigationThrottle* resuming_throttle) {
   DCHECK(resuming_throttle);
+  CHECK(!is_resuming_) << "This call does not support re-entrancy.";
   EnterChildTraceEvent("Resume", this);
+  is_resuming_ = true;
+
+  // Stop watching for response body changes to ensure that the response body
+  // callback isn't called later in the throttle's lifetime with a response body
+  // that is not relevant to the throttle.
+  if (response_body_watcher_) {
+    CHECK(response_body_callback_);
+    response_body_watcher_.reset();
+    std::move(response_body_callback_).Run(std::string());
+  }
+
+  is_resuming_ = false;
   throttle_runner_->ResumeProcessingNavigationEvent(resuming_throttle);
   // DO NOT ADD CODE AFTER THIS, as the NavigationHandle might have been deleted
   // by the previous call.
@@ -6663,7 +6702,7 @@ void NavigationRequest::RegisterThrottleForTesting(
   throttle_runner_->AddThrottle(std::move(navigation_throttle));
 }
 bool NavigationRequest::IsDeferredForTesting() {
-  return throttle_runner_->GetDeferringThrottle() != nullptr;
+  return IsDeferred();
 }
 
 bool NavigationRequest::IsMhtmlOrSubframe() {
@@ -6808,12 +6847,20 @@ void NavigationRequest::WillProcessResponse() {
   DCHECK_EQ(state_, WILL_PROCESS_RESPONSE);
 
   processing_navigation_throttle_ = true;
+  was_get_response_body_called_ = false;
+  base::WeakPtr<NavigationRequest> this_ptr(weak_factory_.GetWeakPtr());
 
   // Notify each throttle of the response.
   throttle_runner_->ProcessNavigationEvent(
       NavigationThrottleRunner::Event::WillProcessResponse);
-  // DO NOT ADD CODE AFTER THIS, as the NavigationHandle might have been deleted
-  // by the previous call.
+
+  // `this` may have been deleted by the previous call.
+  if (!this_ptr) {
+    // DO NOT ADD CODE HERE.
+    return;
+  }
+
+  CHECK(!was_get_response_body_called_ || IsDeferred());
 }
 
 void NavigationRequest::WillCommitWithoutUrlLoader() {
@@ -7039,7 +7086,7 @@ bool NavigationRequest::NeedsUrlLoader() {
          !is_mhtml_subframe_loaded_from_achive;
 }
 
-void NavigationRequest::UpdateLocalNetworkRequestPolicy() {
+void NavigationRequest::UpdatePrivateNetworkRequestPolicy() {
   // It is useless to update this state for same-document navigations as well
   // as pages served from the back-forward cache or prerendered pages.
   DCHECK(!IsSameDocument());
@@ -7055,10 +7102,10 @@ void NavigationRequest::UpdateLocalNetworkRequestPolicy() {
       frame_tree_node_->navigator().controller().GetBrowserContext();
 
   url::Origin origin = GetOriginToCommit().value();
-  if (client->ShouldAllowInsecureLocalNetworkRequests(context, origin)) {
+  if (client->ShouldAllowInsecurePrivateNetworkRequests(context, origin)) {
     // The content browser client decided to make an exception for this URL.
-    local_network_request_policy_ =
-        network::mojom::LocalNetworkRequestPolicy::kAllow;
+    private_network_request_policy_ =
+        network::mojom::PrivateNetworkRequestPolicy::kAllow;
     return;
   }
 
@@ -7077,12 +7124,12 @@ void NavigationRequest::UpdateLocalNetworkRequestPolicy() {
     web_features_to_log_.push_back(
         blink::mojom::WebFeature::
             kPrivateNetworkAccessNonSecureContextsAllowedDeprecationTrial);
-    local_network_request_policy_ =
-        network::mojom::LocalNetworkRequestPolicy::kAllow;
+    private_network_request_policy_ =
+        network::mojom::PrivateNetworkRequestPolicy::kAllow;
     return;
   }
 
-  local_network_request_policy_ = DerivePrivateNetworkRequestPolicy(
+  private_network_request_policy_ = DerivePrivateNetworkRequestPolicy(
       policies, PrivateNetworkRequestContext::kSubresource);
 }
 
@@ -7145,7 +7192,7 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
   }
 
   if (!IsSameDocument() && !IsPageActivation())
-    UpdateLocalNetworkRequestPolicy();
+    UpdatePrivateNetworkRequestPolicy();
 
   RenderFrameHostImpl* previous_render_frame_host =
       frame_tree_node_->current_frame_host();
@@ -7485,6 +7532,28 @@ void NavigationRequest::SetAllowCookiesFromBrowser(
   allow_cookies_from_browser_ = allow_cookies_from_browser;
 }
 
+void NavigationRequest::GetResponseBody(ResponseBodyCallback callback) {
+  CHECK_GE(state_, WILL_PROCESS_RESPONSE)
+      << "The response body should only be requested after the response body "
+         "data pipe is received from the network stack.";
+  CHECK(processing_navigation_throttle_ || IsDeferred());
+  CHECK(response_body_callback_.is_null());
+  CHECK(callback);
+  response_body_callback_ = std::move(callback);
+  was_get_response_body_called_ = true;
+
+  CHECK(!response_body_watcher_);
+  response_body_watcher_ = std::make_unique<mojo::SimpleWatcher>(
+      FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+      base::SequencedTaskRunner::GetCurrentDefault());
+  response_body_watcher_->Watch(
+      response_body(),
+      MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+      base::BindRepeating(&NavigationRequest::OnResponseBodyReady,
+                          weak_factory_.GetWeakPtr()));
+  response_body_watcher_->ArmOrNotify();
+}
+
 void NavigationRequest::RenderProcessBlockedStateChanged(bool blocked) {
   if (blocked)
     StopCommitTimeout();
@@ -7595,14 +7664,8 @@ NavigationRequest::MakeDidCommitProvisionalLoadParamsForActivation() {
   CHECK(params);
 
   if (IsPrerenderedPageActivation()) {
-    if (prerender_navigation_utils::IsDisallowedHttpResponseCode(
-            params->http_status_code)) {
-      // TODO(https://crbug.com/1441842) Replace with CHECK when the
-      // investigation is done.
-      SCOPED_CRASH_KEY_NUMBER("PrerenderUnexpected", "http_status_code",
-                              params->http_status_code);
-      NOTREACHED_NORETURN();
-    }
+    CHECK(!prerender_navigation_utils::IsDisallowedHttpResponseCode(
+        params->http_status_code));
   } else {
     DCHECK_EQ(params->http_status_code, net::HTTP_OK);
   }
@@ -8112,8 +8175,6 @@ ReloadType NavigationRequest::NavigationTypeToReloadType(
     return ReloadType::NORMAL;
   if (type == blink::mojom::NavigationType::RELOAD_BYPASSING_CACHE)
     return ReloadType::BYPASSING_CACHE;
-  if (type == blink::mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL)
-    return ReloadType::ORIGINAL_REQUEST_URL;
   return ReloadType::NONE;
 }
 
@@ -8484,8 +8545,8 @@ NavigationRequest::BuildClientSecurityState() {
 
   client_security_state->cross_origin_embedder_policy =
       policies.cross_origin_embedder_policy;
-  client_security_state->local_network_request_policy =
-      local_network_request_policy_;
+  client_security_state->private_network_request_policy =
+      private_network_request_policy_;
 
   return client_security_state;
 }
@@ -8521,6 +8582,14 @@ mojo::PendingRemote<network::mojom::TrustTokenAccessObserver>
 NavigationRequest::CreateTrustTokenAccessObserver() {
   mojo::PendingRemote<network::mojom::TrustTokenAccessObserver> remote;
   trust_token_observers_.Add(this, remote.InitWithNewPipeAndPassReceiver());
+  return remote;
+}
+
+mojo::PendingRemote<network::mojom::SharedDictionaryAccessObserver>
+NavigationRequest::CreateSharedDictionaryAccessObserver() {
+  mojo::PendingRemote<network::mojom::SharedDictionaryAccessObserver> remote;
+  shared_dictionary_observers_.Add(this,
+                                   remote.InitWithNewPipeAndPassReceiver());
   return remote;
 }
 
@@ -8587,6 +8656,23 @@ void NavigationRequest::Clone(
 std::vector<mojo::PendingReceiver<network::mojom::TrustTokenAccessObserver>>
 NavigationRequest::TakeTrustTokenObservers() {
   return trust_token_observers_.TakeReceivers();
+}
+
+void NavigationRequest::OnSharedDictionaryAccessed(
+    network::mojom::SharedDictionaryAccessDetailsPtr details) {
+  GetDelegate()->OnSharedDictionaryAccessed(this, *details);
+}
+
+void NavigationRequest::Clone(
+    mojo::PendingReceiver<network::mojom::SharedDictionaryAccessObserver>
+        observer) {
+  shared_dictionary_observers_.Add(this, std::move(observer));
+}
+
+std::vector<
+    mojo::PendingReceiver<network::mojom::SharedDictionaryAccessObserver>>
+NavigationRequest::TakeSharedDictionaryAccessObservers() {
+  return shared_dictionary_observers_.TakeReceivers();
 }
 
 RenderFrameHostImpl* NavigationRequest::GetInitiatorDocumentRenderFrameHost() {
@@ -9439,6 +9525,43 @@ void NavigationRequest::CreateWebUIIfNeeded(RenderFrameHostImpl* frame_host) {
   }
 
   web_ui_->SetController(std::move(controller));
+}
+
+bool NavigationRequest::IsDeferred() {
+  return throttle_runner_->GetDeferringThrottle() != nullptr;
+}
+
+void NavigationRequest::OnResponseBodyReady(MojoResult) {
+  uint32_t num_bytes = 0;
+  MojoResult result =
+      response_body().ReadData(nullptr, &num_bytes, MOJO_READ_DATA_FLAG_QUERY);
+  CHECK_EQ(result, MOJO_RESULT_OK);
+
+  std::string response_body_contents(num_bytes, '\0');
+  result = response_body().ReadData(response_body_contents.data(), &num_bytes,
+                                    MOJO_READ_DATA_FLAG_PEEK);
+  switch (result) {
+    case MOJO_RESULT_OK:
+      // The watcher is reset before calling the callback since the callback may
+      // resume the throttle. If the watcher is still active, resumption via
+      // callback results in running the OnceCallback twice.
+      response_body_watcher_.reset();
+      std::move(response_body_callback_).Run(std::move(response_body_contents));
+      break;
+    case MOJO_RESULT_SHOULD_WAIT:
+      response_body_watcher_->ArmOrNotify();
+      break;
+    default:
+      // The watcher is reset before calling the callback since the callback may
+      // resume the throttle. If the watcher is still active, resumption via
+      // callback results in running the OnceCallback twice.
+      response_body_watcher_.reset();
+      // The client throttle may be waiting for the response body before
+      // resuming navigation, so call the callback with an empty response body
+      // to unblock the throttle.
+      std::move(response_body_callback_).Run(std::string());
+      break;
+  }
 }
 
 }  // namespace content

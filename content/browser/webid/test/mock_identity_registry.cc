@@ -13,7 +13,7 @@ namespace content {
 
 MockIdentityRegistry::MockIdentityRegistry(
     content::WebContents* web_contents,
-    base::WeakPtr<FederatedIdentityModalDialogViewDelegate> delegate,
+    FederatedIdentityModalDialogViewDelegate* delegate,
     const url::Origin& registry_origin)
     : IdentityRegistry(web_contents, delegate, registry_origin) {}
 

@@ -260,24 +260,6 @@ WallpaperControllerClientImpl* WallpaperControllerClientImpl::Get() {
   return g_wallpaper_controller_client_instance;
 }
 
-void WallpaperControllerClientImpl::SetOnlineWallpaper(
-    const ash::OnlineWallpaperParams& params,
-    ash::WallpaperController::SetWallpaperCallback callback) {
-  if (!IsKnownUser(params.account_id))
-    return;
-
-  wallpaper_controller_->SetOnlineWallpaper(params, std::move(callback));
-}
-
-void WallpaperControllerClientImpl::SetGooglePhotosWallpaper(
-    const ash::GooglePhotosWallpaperParams& params,
-    ash::WallpaperController::SetWallpaperCallback callback) {
-  if (!IsKnownUser(params.account_id))
-    return;
-
-  wallpaper_controller_->SetGooglePhotosWallpaper(params, std::move(callback));
-}
-
 void WallpaperControllerClientImpl::SetCustomizedDefaultWallpaperPaths(
     const base::FilePath& customized_default_small_path,
     const base::FilePath& customized_default_large_path) {
@@ -470,17 +452,6 @@ void WallpaperControllerClientImpl::OpenWallpaperPicker() {
   params.launch_source = apps::LaunchSource::kFromShelf;
   ash::LaunchSystemWebAppAsync(profile, ash::SystemWebAppType::PERSONALIZATION,
                                params);
-}
-
-void WallpaperControllerClientImpl::SetDefaultWallpaper(
-    const AccountId& account_id,
-    bool show_wallpaper,
-    ash::WallpaperController::SetWallpaperCallback callback) {
-  if (!IsKnownUser(account_id))
-    return;
-
-  wallpaper_controller_->SetDefaultWallpaper(account_id, show_wallpaper,
-                                             std::move(callback));
 }
 
 void WallpaperControllerClientImpl::FetchDailyRefreshWallpaper(

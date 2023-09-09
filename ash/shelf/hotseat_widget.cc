@@ -536,6 +536,9 @@ void HotseatWidget::DelegateView::Init(
   auto* shadow_layer = shadow_->GetLayer();
   parent_layer->Add(shadow_layer);
   parent_layer->StackAtBottom(shadow_layer);
+
+  // Make shadow observe the widget theme change.
+  shadow_->ObserveColorProviderSource(hotseat_widget);
 }
 
 void HotseatWidget::DelegateView::UpdateTranslucentBackground() {
@@ -1213,8 +1216,9 @@ void HotseatWidget::MaybeAdjustTargetBoundsForAppScaling(
 HotseatDensity HotseatWidget::CalculateTargetHotseatDensity() const {
   // App scaling is only applied to the standard shelf. So the hotseat density
   // should not update in dense shelf.
-  if (ShelfConfig::Get()->is_dense())
-    return target_hotseat_density_;
+  if (ShelfConfig::Get()->is_dense() || !shelf_->IsHorizontalAlignment()) {
+    return HotseatDensity::kNormal;
+  }
 
   // TODO(crbug.com/1081476): Currently the scaling animation of hotseat bounds
   // and that of shelf icons do not synchronize due to performance issue. As a

@@ -15,6 +15,9 @@ const char kOemFolderId[] = "ddb1da55-d478-4243-8642-56d3041f0263";
 // Generated using crx_file::id_util::GenerateId("LinuxAppsFolder")
 const char kCrostiniFolderId[] = "ddolnhmblagmcagkedkbfejapapdimlk";
 
+// Generated using crx_file::id_util::GenerateId("BruschettaAppsFolder")
+const char kBruschettaFolderId[] = "olojmkekngdacpmgcffeipkflkgohcja";
+
 bool IsAppListSearchResultAnApp(AppListSearchResultType result_type) {
   switch (result_type) {
     case AppListSearchResultType::kInstalledApp:
@@ -232,18 +235,15 @@ SystemInfoAnswerCardData::SystemInfoAnswerCardData(double bar_chart_percentage)
     : display_type(SystemInfoAnswerCardDisplayType::kBarChart),
       bar_chart_percentage(bar_chart_percentage) {}
 
-SystemInfoAnswerCardData::SystemInfoAnswerCardData(
-    std::map<SearchResultSystemInfoStorageType, int64_t>
-        storage_type_to_size_map)
-    : display_type(SystemInfoAnswerCardDisplayType::kMultiElementBarChart),
-      storage_type_to_size(std::move(storage_type_to_size_map)) {
-  DCHECK(!storage_type_to_size.empty());
-}
-
 SystemInfoAnswerCardData::~SystemInfoAnswerCardData() = default;
 
 SystemInfoAnswerCardData::SystemInfoAnswerCardData(
     const SystemInfoAnswerCardData& other) = default;
+
+void SystemInfoAnswerCardData::SetDescriptionOnRight(
+    const std::u16string& description_on_right) {
+  right_hand_description = description_on_right;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // SearchResultTag:

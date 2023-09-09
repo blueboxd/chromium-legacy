@@ -25,11 +25,6 @@ using base::SysNSStringToUTF16;
 using l10n_util::GetNSString;
 using l10n_util::GetNSStringF;
 
-namespace {
-// The image name of the SigninPromoViewStyleCompactTitled view's icon.
-NSString* const kPromoViewImageName = @"ntp_feed_signin_promo_icon";
-}  // namespace
-
 @interface SigninPromoViewConfigurator ()
 
 // User email used for the secondary button, and also for the primary button if
@@ -85,7 +80,6 @@ NSString* const kPromoViewImageName = @"ntp_feed_signin_promo_icon";
       [self configureStandardSigninPromoView:signinPromoView];
       break;
     }
-    case SigninPromoViewStyleCompactTitled:
     case SigninPromoViewStyleCompactHorizontal:
     case SigninPromoViewStyleCompactVertical: {
       [self configureCompactPromoView:signinPromoView withStyle:promoViewStyle];
@@ -104,8 +98,6 @@ NSString* const kPromoViewImageName = @"ntp_feed_signin_promo_icon";
 // Configures the view elements of the `signinPromoView` to conform to the
 // `SigninPromoViewStyleStandard` style.
 - (void)configureStandardSigninPromoView:(SigninPromoView*)signinPromoView {
-  signinPromoView.titleLabel.hidden = YES;
-  //  signinPromoView.secondaryButton.hidden = NO;
   NSString* name =
       self.userGivenName.length ? self.userGivenName : self.userEmail;
   std::u16string name16 = SysNSStringToUTF16(name);
@@ -150,16 +142,8 @@ NSString* const kPromoViewImageName = @"ntp_feed_signin_promo_icon";
       // This function shouldn't be used for the standard promo.
       CHECK(NO);
       break;
-    case SigninPromoViewStyleCompactTitled:
-      signinPromoView.titleLabel.hidden = NO;
-      [signinPromoView configurePrimaryButtonWithTitle:
-                           GetNSString(IDS_IOS_NTP_FEED_SIGNIN_PROMO_CONTINUE)];
-      [signinPromoView
-          setNonProfileImage:[UIImage imageNamed:kPromoViewImageName]];
-      break;
-    case SigninPromoViewStyleCompactHorizontal:
     case SigninPromoViewStyleCompactVertical:
-      signinPromoView.titleLabel.hidden = YES;
+    case SigninPromoViewStyleCompactHorizontal:
       [signinPromoView configurePrimaryButtonWithTitle:
                            GetNSString(IDS_IOS_NTP_FEED_SIGNIN_PROMO_CONTINUE)];
       switch (self.signinPromoViewMode) {

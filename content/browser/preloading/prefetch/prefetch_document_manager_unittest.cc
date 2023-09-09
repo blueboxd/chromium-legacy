@@ -155,9 +155,8 @@ class PrefetchDocumentManagerTest : public RenderViewHostTestHarness {
     head->parsed_headers->no_vary_search_with_parse_error =
         network::mojom::NoVarySearchWithParseError::NewParseError(parse_error);
 
-    GetPrefetches()[0]->TakeStreamingURLLoader(
-        MakeServableStreamingURLLoaderForTest(std::move(head), "empty"));
-    GetPrefetches()[0]->OnPrefetchedResponseHeadReceived();
+    MakeServableStreamingURLLoaderForTest(GetPrefetches()[0].get(),
+                                          std::move(head), "empty");
 
     auto& test_rfh = static_cast<TestRenderFrameHost&>(GetPrimaryMainFrame());
     return test_rfh.GetConsoleMessages()[0];
@@ -283,9 +282,8 @@ TEST_F(PrefetchDocumentManagerTest, ProcessNoVarySearchResponse) {
         ->search_variance =
         network::mojom::SearchParamsVariance::NewVaryParams({"a"});
 
-    GetPrefetches()[0]->TakeStreamingURLLoader(
-        MakeServableStreamingURLLoaderForTest(std::move(head), "empty"));
-    GetPrefetches()[0]->OnPrefetchedResponseHeadReceived();
+    MakeServableStreamingURLLoaderForTest(GetPrefetches()[0].get(),
+                                          std::move(head), "empty");
 
     const auto urls_with_no_vary_search =
         prefetch_document_manager->GetAllForUrlWithoutRefAndQueryForTesting(
@@ -326,9 +324,8 @@ TEST_F(PrefetchDocumentManagerTest, ProcessNoVarySearchResponse) {
         network::mojom::URLResponseHead::New();
     head->parsed_headers = network::mojom::ParsedHeaders::New();
 
-    GetPrefetches().back()->TakeStreamingURLLoader(
-        MakeServableStreamingURLLoaderForTest(std::move(head), "empty"));
-    GetPrefetches().back()->OnPrefetchedResponseHeadReceived();
+    MakeServableStreamingURLLoaderForTest(GetPrefetches().back().get(),
+                                          std::move(head), "empty");
 
     const auto urls_with_no_vary_search =
         prefetch_document_manager->GetAllForUrlWithoutRefAndQueryForTesting(

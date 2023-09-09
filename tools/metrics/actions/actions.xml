@@ -6513,6 +6513,61 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Commerce.PriceTracking.EmailConsentDialog.Accepted">
+  <owner>mdjones@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when a user confirms they would like to receive email notifications
+    when a price drops. The user preference is changed to true in this case.
+  </description>
+</action>
+
+<action name="Commerce.PriceTracking.EmailConsentDialog.Closed">
+  <owner>mdjones@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when a user dismisses the post price tracking dialog without taking
+    an explicit action. The email settings remain unchanged in this case.
+  </description>
+</action>
+
+<action name="Commerce.PriceTracking.EmailConsentDialog.EmailLinkClicked">
+  <owner>mdjones@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when a user clicks the linked email address in the price tracking
+    email consent dialog.
+  </description>
+</action>
+
+<action name="Commerce.PriceTracking.EmailConsentDialog.HelpLinkClicked">
+  <owner>mdjones@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when a user clicks the help article link in the price tracking email
+    consent dialog.
+  </description>
+</action>
+
+<action name="Commerce.PriceTracking.EmailConsentDialog.Rejected">
+  <owner>mdjones@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when a user rejects the offer to receive email notifications when a
+    price drops. The user preference is changed to false in this case.
+  </description>
+</action>
+
+<action name="Commerce.PriceTracking.EmailConsentDialog.Shown"
+    not_user_triggered="true">
+  <owner>mdjones@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when the post price tracking email consent dialog is shown to a
+    user.
+  </description>
+</action>
+
 <action name="Commerce.PriceTracking.FirstRunBubbleDismissed">
   <owner>meiliang@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -7168,7 +7223,7 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="ContentSuggestions.Feed.SignIn.ShowSyncnHalfSheetFromFeed">
+<action name="ContentSuggestions.Feed.SignIn.ShowSyncHalfSheetFromFeed">
   <owner>sczs@google.com</owner>
   <owner>tinazwang@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -8420,6 +8475,11 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="DevTools_Close">
+  <owner>dsv@chromium.org</owner>
+  <description>DevTools window is closed in any way.</description>
+</action>
+
 <action name="DevTools_InspectAndroidPage">
   <owner>yangguo@chromium.org</owner>
   <owner>bmeurer@chromium.org</owner>
@@ -8939,6 +8999,28 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Extensions.ContextMenu.PinExtension">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user pinned an extenson to the toolbar by clicking on the pin entry of
+    an extension's context menu. This isn't emmitted if extension is pinned
+    through other mechanism. This is recorded for both keyboard and mouse
+    activation.
+  </description>
+</action>
+
+<action name="Extensions.ContextMenu.UnpinExtension">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user unpinned an extenson to the toolbar by clicking on the unpin entry
+    of an extension's context menu. This isn't emmitted if extension is unpinned
+    through other mechanism. This is recorded for both keyboard and mouse
+    activation.
+  </description>
+</action>
+
 <action name="Extensions.ExtensionDisabled">
   <owner>archanasimha@chromium.org</owner>
   <description>
@@ -8970,6 +9052,94 @@ should be able to be added at any place in this file.
 <action name="Extensions.IDChangedError">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="Extensions.Menu.AllowByExtensionSelected">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user interacted with the &quot;site settings&quot; toggle in the
+    extensions menu to allow site access by extension on the current site. This
+    is recorded for both keyboard and mouse activations.
+  </description>
+</action>
+
+<action name="Extensions.Menu.ExtensionsBlockedSelected">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user interacted with the &quot;site settings&quot; toggle in the
+    extensions menu to block all extensions on the current site. This is
+    recorded for both keyboard and mouse activations.
+  </description>
+</action>
+
+<action name="Extensions.Menu.ExtensionsSettingsOpened">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user opened chrome://extensions by clicking on the &quot;settings&quot;
+    option in the extensions menu. This is recorded for both keyboard and mouse
+    activations.
+  </description>
+</action>
+
+<action name="Extensions.Menu.HideRequestsInToolbarPressed">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user blocked an extension to show site access requests in the toolbar by
+    toggling the extension's show requests toggle off in the extensions menu.
+    This is recorded for both keyboard and mouse activations.
+  </description>
+</action>
+
+<action name="Extensions.Menu.OnAllSitesSelected">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user clicked the &quot;on all sites&quot; option in an extension's site
+    permissions page in the extensions menu. This is recorded for both keyboard
+    and mouse activations.
+  </description>
+</action>
+
+<action name="Extensions.Menu.OnClickSelected">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user clicked the &quot;on click&quot; option in an extension's site
+    permissions page in the extensions menu. This is recorded for both keyboard
+    and mouse activations.
+  </description>
+</action>
+
+<action name="Extensions.Menu.OnSiteSelected">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user clicked the &quot;on site&quot; option in an extension's site
+    permissions page in the extensions menu. This is recorded for both keyboard
+    and mouse activations.
+  </description>
+</action>
+
+<action name="Extensions.Menu.ShowRequestsInToolbarPressed">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user allowed an extension to show site access requests in the toolbar by
+    toggling the extension's show requests toggle on in the extensions menu.
+    This is recorded for both keyboard and mouse activations.
+  </description>
+</action>
+
+<action name="Extensions.Menu.SitePermissionsPageOpened">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user opened an extension's site permissions page in the extensions menu.
+  </description>
 </action>
 
 <action name="Extensions.NtpPromoClicked">
@@ -9205,6 +9375,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Extensions.Toolbar.ExtensionRequestDismissedFromMenu">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user dismissed an extension's site access request in the toolbar and
+    extensions menu by dismissing it from the extensions menu.
+  </description>
+</action>
+
 <action name="Extensions.Toolbar.ExtensionsActivatedFromRequestAccessButton">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>emiliapaz@chromium.org</owner>
@@ -9221,6 +9400,16 @@ should be able to be added at any place in this file.
   <description>
     The user opened the Extensions Menu in the toolbar. This is recorded for
     both keyboard and mouse activation.
+  </description>
+</action>
+
+<action name="Extensions.Toolbar.MenuOpenedWhenExtensionsAreRequestingAccess">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user opened the Extensions Menu in the toolbar while the request access
+    button in the toolbar is visible. This is recorded when the user opens the
+    menu for both keyboard and mouse activation.
   </description>
 </action>
 
@@ -12019,6 +12208,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="IOS.ExperienceKit.Maps.OneTap.View">
+  <owner>erahmaoui@google.com</owner>
+  <owner>djean@chromium.org</owner>
+  <description>
+    The number of times the user tapped on an underlined address and triggered
+    the &quot;view-locationh&quot; view controller.
+  </description>
+</action>
+
 <action name="IOS.ExperienceKit.Maps.View">
   <owner>erahmaoui@google.com</owner>
   <owner>djean@chromium.org</owner>
@@ -12463,14 +12661,6 @@ should be able to be added at any place in this file.
   <description>
     Recorded when a user has switched back to a tab whose renderer needs to be
     reloaded due to a renderer crash on iOS.
-  </description>
-</action>
-
-<action name="IOSMostVisitedTopSitesChanged" not_user_triggered="true">
-  <owner>thegreenfrog@google.com</owner>
-  <owner>bwwilliams@google.com</owner>
-  <description>
-    Recorded when the top four most visited sites changes.
   </description>
 </action>
 
@@ -17971,26 +18161,6 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="MediaContextMenu_Mute">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
-</action>
-
-<action name="MediaContextMenu_Pause">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
-</action>
-
-<action name="MediaContextMenu_Play">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
-</action>
-
-<action name="MediaContextMenu_Unmute">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
-</action>
-
 <action name="MediaIndicatorButton_Dragged">
   <obsolete>Replaced with &quot;AlertIndicatorButton_Dragged&quot;.</obsolete>
   <owner>miu@chromium.org</owner>
@@ -22266,6 +22436,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileThumbstripCreateIncognitoTab">
+  <obsolete>Deprecated as of 06/2023</obsolete>
   <owner>djean@chromium.org</owner>
   <owner>edchin@chromium.org</owner>
   <description>
@@ -22275,6 +22446,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileThumbstripCreateRegularTab">
+  <obsolete>Deprecated as of 06/2023</obsolete>
   <owner>djean@chromium.org</owner>
   <owner>edchin@chromium.org</owner>
   <description>
@@ -26576,6 +26748,11 @@ should be able to be added at any place in this file.
   <description>Change password pressed in PageInfo.</description>
 </action>
 
+<action name="PageInfo.Closed">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <description>Please enter the description of the metric.</description>
+</action>
+
 <action name="PageInfo.Cookies.Allowed">
   <owner>olesiamarukhno@google.com</owner>
   <owner>dullweber@chromium.org</owner>
@@ -28618,6 +28795,94 @@ should be able to be added at any place in this file.
   <description>
     User clicks the standard protection expand arrow in the Safe Browsing
     setting page.
+  </description>
+</action>
+
+<action name="SafetyCheck.DetailKeepClicked">
+  <owner>psarouthakis@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    User clicked on the Safety Check Keep button in the chrome://extensions
+    Detail page for an extension that triggered a Safety Check warning.
+  </description>
+</action>
+
+<action name="SafetyCheck.DetailRemoveClicked">
+  <owner>psarouthakis@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    User clicks remove on the detail page of an extension that is showing a
+    safety check warning. This warning is shown when the extension needs a
+    safety review.
+  </description>
+</action>
+
+<action name="SafetyCheck.DetailWarningShown" not_user_triggered="true">
+  <owner>psarouthakis@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    User is shown a safety check warning after navigating to the details page of
+    an extension. This warning is shown when the extension needs a safety
+    review.
+  </description>
+</action>
+
+<action name="SafetyCheck.NonTriggeringExtensionRemoved">
+  <owner>psarouthakis@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    User has clicked removed on an extension card while being shown the Safety
+    Check Review Panel on the chrome://extensions page. The extension being
+    removed is NOT one of the extensions listed in the Review Panel.
+  </description>
+</action>
+
+<action name="SafetyCheck.ReviewCompletion" not_user_triggered="true">
+  <owner>psarouthakis@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    User has reviewed all triggering extensions on the Safety Check Review Panel
+    on the chrome://extensions page and has been shown the green check mark
+    completion state.
+  </description>
+</action>
+
+<action name="SafetyCheck.ReviewPanelKeepClicked">
+  <owner>psarouthakis@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    User selected 'Keep this extension' for a Safety Check Review Panel entry in
+    the chrome://extensions page to keep an extension that has triggered a
+    safety check warning.
+  </description>
+</action>
+
+<action name="SafetyCheck.ReviewPanelRemoveAllClicked">
+  <owner>psarouthakis@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    User clicked the Remove All button in the chrome://extensions Safety Check
+    Review Panel to remove all extensions that triggered safety check warnings.
+  </description>
+</action>
+
+<action name="SafetyCheck.ReviewPanelRemoveClicked">
+  <owner>psarouthakis@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    User clicked the trash button for a Safety Check Review Panel entry in the
+    chrome://extensions page to remove an extension that has triggered a safety
+    check warning.
+  </description>
+</action>
+
+<action name="SafetyCheck.ReviewPanelShown" not_user_triggered="true">
+  <owner>psarouthakis@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    User was shown the Safety Check Review Panel in the chrome://extensions
+    page. This means that there is at least one extension that triggered a
+    safety check warning and should be reviewed by the user.
   </description>
 </action>
 
@@ -31231,6 +31496,17 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="ShowRemapKeysSettingsSubpage">
+  <owner>michaelcheco@google.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <description>
+    Recorded when a user navigates to the remap keys settings subpage by
+    clicking on the notification shown when they attempted to rewrite a key
+    event to a six pack key action using a shortcut that is inconsistent with
+    their setting for that behavior.
+  </description>
+</action>
+
 <action name="ShowSections_RecentSitesDisabled">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -31244,6 +31520,16 @@ should be able to be added at any place in this file.
 <action name="ShowSessions">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="ShowTouchpadSettingsPage">
+  <owner>michaelcheco@google.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <description>
+    Recorded when a user navigates to the touchpad settings subpage by clicking
+    on the notification shown when they attempted to simulate a right-click
+    using a rewrite that is inconsistent with their setting for that behavior.
+  </description>
 </action>
 
 <action name="Shutdown">
@@ -34425,6 +34711,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="StatusArea_FocusMode_Detailed">
+  <owner>richui@chromium.org</owner>
+  <description>
+    Counts the number of times the user has clicked on the Focus Mode status
+    tray item and is now in the detail view.
+  </description>
+</action>
+
 <action name="StatusArea_HighContrastDisabled">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -35530,12 +35824,24 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="TabContextMenu_Back">
+  <owner>loubrett@google.com</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <description>User selected Back from tab context menu.</description>
+</action>
+
 <action name="TabContextMenu_BookmarkAllTabs">
   <obsolete>Deprecated due to removal.</obsolete>
   <owner>wittman@chromium.org</owner>
   <description>
     User selected Bookmark All Tabs from the tab context menu.
   </description>
+</action>
+
+<action name="TabContextMenu_CloseAllTabs">
+  <owner>loubrett@google.com</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <description>User selected Close All Tabs from tab context menu.</description>
 </action>
 
 <action name="TabContextMenu_CloseOtherTabs">
@@ -38231,6 +38537,8 @@ should be able to be added at any place in this file.
   <suffix name="EphemeralTab" label="For Ephemeral Tab."/>
   <suffix name="ExploreSitesTile" label="For Explore Sites feature."/>
   <suffix name="ExtensionsMenu" label="For Extensions menu opening."/>
+  <suffix name="ExtensionsRequestAccessButton"
+      label="For Extensions request access button feature."/>
   <suffix name="FeatureNotificationGuideDefaultBrowserNotificationShown"
       label="For feature notification guide default browser notification
              feature."/>
@@ -38361,6 +38669,8 @@ should be able to be added at any place in this file.
       label="For price insights page action icon label triggering."/>
   <suffix name="PriceTrackingChipFeature"
       label="For PriceTrackingChipFeature feature."/>
+  <suffix name="PriceTrackingEmailConsentFeature"
+      label="For price tracking email consent dialog."/>
   <suffix name="PriceTrackingInSidePanel"
       label="For PriceTrackingInSidePanelFeature feature."/>
   <suffix name="PriceTrackingPageActionIconLabel"
@@ -38395,11 +38705,29 @@ should be able to be added at any place in this file.
       label="For the RequestDesktopSiteDefaultOn feature."/>
   <suffix name="RequestDesktopSiteExceptionsGeneric"
       label="For the RequestDesktopSiteExceptionsGeneric feature."/>
-  <suffix name="RequestDesktopSiteExceptionsSpecific"
-      label="For the RequestDesktopSiteExceptionsSpecific feature."/>
   <suffix name="RequestDesktopSiteOptIn"
       label="For the RequestDesktopSiteOptIn feature."/>
   <suffix name="RestoreTabsOnFRE" label="For the RestoreTabsOnFRE feature."/>
+  <suffix name="ScalableIphTimerBasedEight"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphTimerBasedFive"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphTimerBasedFour"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphTimerBasedNine"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphTimerBasedOne"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphTimerBasedSeven"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphTimerBasedSix"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphTimerBasedTen"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphTimerBasedThree"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphTimerBasedTwo"
+      label="For a variant of Scalable Iph feature."/>
   <suffix name="SharedHighlightingBuilder"
       label="For SharedHighlightingBuilder feature."/>
   <suffix name="SharedHighlightingReceiver"

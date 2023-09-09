@@ -6,7 +6,6 @@
 
 #include "base/apple/bridging.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/memory/scoped_policy.h"
 #include "base/supports_user_data.h"

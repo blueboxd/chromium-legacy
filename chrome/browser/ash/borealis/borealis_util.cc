@@ -27,6 +27,10 @@ const re2::LazyRE2 kURLAllowlistRegex[] = {{"//store/[0-9]{1,32}"},
 const char kBorealisAppIdRegex[] = "(?:steam:\\/\\/rungameid\\/)(\\d+)";
 const char kCompatToolVersionGameMismatch[] = "UNKNOWN (GameID mismatch)";
 const char kDeviceInformationKey[] = "entry.1613887985";
+const re2::LazyRE2 kSpuriousGameBlocklist[] = {
+    {"Proton [0-9.]+"},
+    {"Steam Linux Runtime - [a-zA-Z]*"},
+    {"Steam Linux Runtime"}};
 
 namespace {
 
@@ -48,7 +52,7 @@ static constexpr char kSteamBigPictureId[] =
     "borealis_anon:org.chromium.guest_os.borealis.xprop.769";
 }  // namespace
 
-absl::optional<int> GetBorealisAppId(std::string exec) {
+absl::optional<int> ParseSteamGameId(std::string exec) {
   int app_id;
   if (RE2::PartialMatch(exec, kBorealisAppIdRegex, &app_id)) {
     return app_id;
@@ -57,7 +61,7 @@ absl::optional<int> GetBorealisAppId(std::string exec) {
   }
 }
 
-absl::optional<int> GetBorealisAppId(const aura::Window* window) {
+absl::optional<int> SteamGameId(const aura::Window* window) {
   const std::string* id = exo::GetShellApplicationId(window);
   if (id && base::StartsWith(*id, kBorealisWindowWithIdPrefix)) {
     int borealis_id;
@@ -78,6 +82,15 @@ bool IsNonGameBorealisApp(const std::string& app_id) {
   if (app_id == kZenityId || app_id == kSteamClientId ||
       app_id == kSteamBigPictureId) {
     return true;
+  }
+  return false;
+}
+
+bool ShouldHideIrrelevantApp(const std::string& desktop_name) {
+  for (auto& blocklist_regex : kSpuriousGameBlocklist) {
+    if (re2::RE2::FullMatch(desktop_name, *blocklist_regex)) {
+      return true;
+    }
   }
   return false;
 }

@@ -44,6 +44,10 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
 
   virtual void RemoveAllClientsFromCache() = 0;
 
+  // Like RemoveAllClientsFromCache(), but predicated on if layout has been
+  // performed at all.
+  void InvalidateCache();
+
   // Remove any cached data for the |client|, and return true if so.
   virtual bool RemoveClientFromCache(SVGResourceClient&) {
     NOT_DESTROYED();
@@ -66,9 +70,6 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
            resource_type == kLinearGradientResourceType ||
            resource_type == kRadialGradientResourceType;
   }
-
-  void InvalidateCacheAndMarkForLayout(LayoutInvalidationReasonForTracing);
-  void InvalidateCacheAndMarkForLayout();
 
   bool FindCycle() const;
 
@@ -132,29 +133,21 @@ struct DowncastTraits<LayoutSVGResourceContainer> {
 };
 
 template <typename ContainerType>
-inline bool IsResourceOfType(const LayoutSVGResourceContainer* container) {
-  return container->ResourceType() == ContainerType::kResourceType;
-}
-
-template <typename ContainerType>
 inline ContainerType* GetSVGResourceAsType(SVGResourceClient& client,
                                            const SVGResource* resource) {
-  if (!resource)
+  if (!resource) {
     return nullptr;
-  if (LayoutSVGResourceContainer* container =
-          resource->ResourceContainer(client)) {
-    if (IsResourceOfType<ContainerType>(container))
-      return static_cast<ContainerType*>(container);
   }
-  return nullptr;
+  return DynamicTo<ContainerType>(resource->ResourceContainer(client));
 }
 
 template <typename ContainerType>
 inline ContainerType* GetSVGResourceAsType(
     SVGResourceClient& client,
     const StyleSVGResource* style_resource) {
-  if (!style_resource)
+  if (!style_resource) {
     return nullptr;
+  }
   return GetSVGResourceAsType<ContainerType>(client,
                                              style_resource->Resource());
 }

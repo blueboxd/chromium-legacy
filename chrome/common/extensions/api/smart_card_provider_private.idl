@@ -120,11 +120,18 @@ namespace smartCardProviderPrivate {
   dictionary ReaderStateIn {
     DOMString reader;
     ReaderStateFlags currentState;
+    // Number of card insertion and removal events that happened in this reader,
+    // as known by the application.
+    long currentCount;
   };
 
   dictionary ReaderStateOut {
     DOMString reader;
     ReaderStateFlags eventState;
+    // The actual number of card insertion and removal events that happened in
+    // this reader.
+    // Set to zero if not supported.
+    long eventCount;
     ArrayBuffer atr;
   };
 
@@ -209,6 +216,18 @@ namespace smartCardProviderPrivate {
     // reportStatusResult.
     [maxListeners=1] static void onStatusRequested(long requestId,
         long scardHandle);
+
+    // Browser requested a SCardBeginTransaction call.
+    // Extension must report the result to the browser by calling
+    // reportPlainResult.
+    [maxListeners=1] static void onBeginTransactionRequested(long requestId,
+        long scardHandle);
+
+    // Browser requested a SCardEndTransaction call.
+    // Extension must report the result to the browser by calling
+    // reportPlainResult.
+    [maxListeners=1] static void onEndTransactionRequested(long requestId,
+        long scardHandle, Disposition disposition);
   };
 
   interface Functions {

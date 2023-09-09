@@ -46,6 +46,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/service_worker_external_request_result.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -58,7 +59,6 @@
 #include "net/cookies/site_for_cookies.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/service_worker/service_worker_type_converters.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
@@ -68,9 +68,6 @@ namespace {
 
 // Timeout for an installed worker to start.
 constexpr base::TimeDelta kStartInstalledWorkerTimeout = base::Seconds(60);
-
-const base::FeatureParam<int> kUpdateDelayParam{
-    &blink::features::kServiceWorkerUpdateDelay, "update_delay_in_ms", 1000};
 
 const char kClaimClientsStateErrorMesage[] =
     "Only the active worker can claim clients.";
@@ -190,10 +187,6 @@ void DidNavigateClient(
   std::move(callback).Run(success, std::move(client), error_msg);
 }
 
-base::TimeDelta GetUpdateDelay() {
-  return base::Milliseconds(kUpdateDelayParam.Get());
-}
-
 const char* FetchHandlerTypeToSuffix(
     ServiceWorkerVersion::FetchHandlerType type) {
   switch (type) {
@@ -210,7 +203,9 @@ const char* FetchHandlerTypeToSuffix(
 // ServiceWokrerResourceRecord and return a single hash string.
 absl::optional<std::string> MergeResourceRecordSHA256ScriptChecksum(
     const GURL& main_script_url,
-    const ServiceWorkerScriptCacheMap& script_cache_map) {
+    const ServiceWorkerScriptCacheMap& script_cache_map,
+    absl::optional<blink::mojom::ServiceWorkerFetchHandlerType>
+        fetch_handler_type) {
   const std::unique_ptr<crypto::SecureHash> checksum =
       crypto::SecureHash::Create(crypto::SecureHash::SHA256);
   std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources =
@@ -243,8 +238,11 @@ absl::optional<std::string> MergeResourceRecordSHA256ScriptChecksum(
   checksum->Finish(result, crypto::kSHA256Length);
   const std::string encoded = base::HexEncode(result);
 
-  DVLOG(3) << "Updated ServiceWorker script checksum. script_url:"
-           << main_script_url.spec() << ", checksum:" << encoded;
+  if (fetch_handler_type) {
+    DVLOG(3) << "Updated ServiceWorker script checksum. script_url:"
+             << main_script_url.spec() << ", checksum:" << encoded
+             << ", fetch_handler_type:" << fetch_handler_type.value();
+  }
 
   return encoded;
 }
@@ -664,7 +662,7 @@ void ServiceWorkerVersion::ScheduleUpdate() {
   // and soon no one might hold a reference to us.
   context_->ProtectVersion(base::WrapRefCounted(this));
 
-  update_timer_.Start(FROM_HERE, GetUpdateDelay(),
+  update_timer_.Start(FROM_HERE, ServiceWorkerContext::GetUpdateDelay(),
                       base::BindOnce(&ServiceWorkerVersion::StartUpdate,
                                      weak_factory_.GetWeakPtr()));
 }
@@ -1179,14 +1177,16 @@ void ServiceWorkerVersion::ExecuteScriptForTest(
 }
 
 bool ServiceWorkerVersion::IsWarmingUp() const {
-  if (running_status() != EmbeddedWorkerStatus::STARTING) {
+  if (running_status() != EmbeddedWorkerStatus::STARTING ||
+      !embedded_worker_->pause_initializing_global_scope()) {
     return false;
   }
   return !warm_up_callbacks_.empty();
 }
 
 bool ServiceWorkerVersion::IsWarmedUp() const {
-  if (running_status() != EmbeddedWorkerStatus::STARTING) {
+  if (running_status() != EmbeddedWorkerStatus::STARTING ||
+      !embedded_worker_->pause_initializing_global_scope()) {
     return false;
   }
   switch (embedded_worker_->starting_phase()) {
@@ -1344,7 +1344,7 @@ void ServiceWorkerVersion::OnStarting() {
 
 void ServiceWorkerVersion::OnStarted(
     blink::mojom::ServiceWorkerStartStatus start_status,
-    FetchHandlerType fetch_handler_type) {
+    FetchHandlerType new_fetch_handler_type) {
   DCHECK_EQ(EmbeddedWorkerStatus::RUNNING, running_status());
 
   // TODO(falken): This maps kAbruptCompletion to kErrorScriptEvaluated, which
@@ -1356,31 +1356,35 @@ void ServiceWorkerVersion::OnStarted(
       mojo::ConvertTo<blink::ServiceWorkerStatusCode>(start_status);
 
   if (status == blink::ServiceWorkerStatusCode::kOk) {
-    if (fetch_handler_type_ && fetch_handler_type_ != fetch_handler_type) {
+    if (fetch_handler_type_ && fetch_handler_type_ != new_fetch_handler_type) {
       context_->registry()->UpdateFetchHandlerType(
-          registration_id_, key_, fetch_handler_type,
+          registration_id_, key_, new_fetch_handler_type,
           // Ignore errors; bumping the update fetch handler type is
           // just best-effort.
           base::DoNothing());
       base::UmaHistogramEnumeration(
           "ServiceWorker.OnStarted.UpdatedFetchHandlerType",
-          fetch_handler_type);
+          new_fetch_handler_type);
       base::UmaHistogramEnumeration(
           base::StrCat(
               {"ServiceWorker.OnStarted.UpdatedFetchHandlerTypeBySourceType",
                FetchHandlerTypeToSuffix(*fetch_handler_type_)}),
-          fetch_handler_type);
+          new_fetch_handler_type);
     }
     if (!fetch_handler_type_) {
       // When the new service worker starts, the fetch handler type is unknown
       // until this point.
-      set_fetch_handler_type(fetch_handler_type);
+      set_fetch_handler_type(new_fetch_handler_type);
     } else {
       // Starting the installed service worker should not change the existence
       // of the fetch handler.
+      SCOPED_CRASH_KEY_NUMBER("SWVersion", "old_FHType",
+                              static_cast<int32_t>(*fetch_handler_type_));
+      SCOPED_CRASH_KEY_NUMBER("SWVersion", "new_FHType",
+                              static_cast<int32_t>(new_fetch_handler_type));
       DCHECK_EQ(*fetch_handler_type_ != FetchHandlerType::kNoHandler,
-                fetch_handler_type != FetchHandlerType::kNoHandler);
-      fetch_handler_type_ = fetch_handler_type;
+                new_fetch_handler_type != FetchHandlerType::kNoHandler);
+      fetch_handler_type_ = new_fetch_handler_type;
     }
   }
 
@@ -1390,8 +1394,8 @@ void ServiceWorkerVersion::OnStarted(
   // |sha256_script_checksum_| should be empty. Calculate the checksum string
   // with the script newly added/updated in |script_cache_map_|.
   if (!sha256_script_checksum_) {
-    sha256_script_checksum_ =
-        MergeResourceRecordSHA256ScriptChecksum(script_url_, script_cache_map_);
+    sha256_script_checksum_ = MergeResourceRecordSHA256ScriptChecksum(
+        script_url_, script_cache_map_, fetch_handler_type_);
   }
 
   // Fire all start callbacks.
@@ -2107,7 +2111,8 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
       break;
     case EmbeddedWorkerStatus::STOPPING:
     case EmbeddedWorkerStatus::STOPPED:
-      if (purpose == ServiceWorkerMetrics::EventType::WARM_UP) {
+      if (running_status() == EmbeddedWorkerStatus::STOPPED &&
+          purpose == ServiceWorkerMetrics::EventType::WARM_UP) {
         // Postpone initializing the global scope.
         embedded_worker_->SetPauseInitializingGlobalScope();
 
@@ -2258,7 +2263,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
         policy_container_host_->ip_address_space();
     client_security_state_->is_web_secure_context =
         policy_container_host_->policies().is_web_secure_context;
-    client_security_state_->local_network_request_policy =
+    client_security_state_->private_network_request_policy =
         DerivePrivateNetworkRequestPolicy(
             policy_container_host_->policies(),
             PrivateNetworkRequestContext::kWorker);
@@ -2354,7 +2359,7 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
                                     ? kStartInstalledWorkerTimeout
                                     : kStartNewWorkerTimeout;
 
-  if (embedded_worker_->pause_initializing_global_scope()) {
+  if (IsWarmedUp()) {
     start_limit =
         blink::features::kSpeculativeServiceWorkerWarmUpDuration.Get();
   }
@@ -2586,8 +2591,9 @@ void ServiceWorkerVersion::FoundRegistrationForUpdate(
   if (status != blink::ServiceWorkerStatusCode::kOk ||
       registration->active_version() != this)
     return;
-  context_->UpdateServiceWorker(registration.get(),
-                                false /* force_bypass_cache */);
+
+  context_->UpdateServiceWorkerWithoutExecutionContext(
+      registration.get(), false /* force_bypass_cache */);
 }
 
 void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
@@ -2885,8 +2891,8 @@ void ServiceWorkerVersion::SetResources(
   DCHECK_EQ(status_, NEW);
   DCHECK(!sha256_script_checksum_);
   script_cache_map_.SetResources(resources);
-  sha256_script_checksum_ =
-      MergeResourceRecordSHA256ScriptChecksum(script_url_, script_cache_map_);
+  sha256_script_checksum_ = MergeResourceRecordSHA256ScriptChecksum(
+      script_url_, script_cache_map_, fetch_handler_type_);
 }
 
 bool ServiceWorkerVersion::SetupRouterEvaluator(

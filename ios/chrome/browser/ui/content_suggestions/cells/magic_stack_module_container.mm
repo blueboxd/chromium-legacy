@@ -35,7 +35,7 @@ const CGFloat kContentBottomInset = 24.0f;
 const CGFloat kReducedContentBottomInset = 10.0f;
 
 // Vertical spacing between the content views.
-const float kContentVerticalSpacing = 20.0f;
+const CGFloat kContentVerticalSpacing = 16.0f;
 
 // The corner radius of this container.
 const float kCornerRadius = 24;
@@ -43,8 +43,6 @@ const float kCornerRadius = 24;
 // The width of the modules.
 const int kModuleWidthCompact = 343;
 const int kModuleWidthRegular = 382;
-// The max height of the modules.
-const int kModuleMaxHeight = 150;
 
 const CGFloat kSeparatorHeight = 0.5;
 
@@ -170,17 +168,6 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
     _contentViewWidthAnchor = [contentView.widthAnchor
         constraintEqualToConstant:[self contentViewWidth]];
     [NSLayoutConstraint activateConstraints:@[ _contentViewWidthAnchor ]];
-    // Ensures that the modules do not become larger than kModuleMaxHeight. The
-    // less than or equal to constraint coupled with a UIViewNoIntrinsicMetric
-    // vertical intrinsic content size declaration allows for it to still
-    // vertically shrink to intrinsic content size. In practice, the largest
-    // module will determine the height of all the modules, but it should not
-    // grow taller than kModuleMaxHeight. The less than or equal to
-    // configuration is for the MVT when it lives outside of the Magic Stack to
-    // stay as close to its intrinsic size as possible.
-    [NSLayoutConstraint activateConstraints:@[
-      [self.heightAnchor constraintLessThanOrEqualToConstant:kModuleMaxHeight]
-    ]];
 
     [self addSubview:stackView];
     AddSameConstraintsWithInsets(stackView, self, [self contentMargins]);

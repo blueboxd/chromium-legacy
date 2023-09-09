@@ -29,6 +29,7 @@
   E_CPONLY(kColorRefPrimary100) \
   E_CPONLY(kColorRefSecondary0) \
   E_CPONLY(kColorRefSecondary10) \
+  E_CPONLY(kColorRefSecondary12) \
   E_CPONLY(kColorRefSecondary15) \
   E_CPONLY(kColorRefSecondary20) \
   E_CPONLY(kColorRefSecondary25) \
@@ -72,6 +73,7 @@
   E_CPONLY(kColorRefNeutral0) \
   E_CPONLY(kColorRefNeutral4) \
   E_CPONLY(kColorRefNeutral6) \
+  E_CPONLY(kColorRefNeutral8) \
   E_CPONLY(kColorRefNeutral10) \
   E_CPONLY(kColorRefNeutral12) \
   E_CPONLY(kColorRefNeutral15) \
@@ -140,6 +142,7 @@
   E_CPONLY(kColorSysWhite) \
   /* Inverse. */ \
   E_CPONLY(kColorSysInversePrimary) \
+  E_CPONLY(kColorSysInverseSurface) \
   E_CPONLY(kColorSysInverseOnSurface) \
   /* Surfaces. */ \
   E_CPONLY(kColorSysSurface) \
@@ -245,6 +248,7 @@
   E_CPONLY(kColorBubbleBorderWhenShadowPresent) \
   E_CPONLY(kColorBubbleFooterBackground) \
   E_CPONLY(kColorBubbleFooterBorder) \
+  E_CPONLY(kColorButtonFeatureAttentionHighlight) \
   E_CPONLY(kColorButtonBackground) \
   E_CPONLY(kColorButtonBackgroundPressed) \
   E_CPONLY(kColorButtonBackgroundProminent) \
@@ -253,6 +257,7 @@
   E_CPONLY(kColorButtonBackgroundTonal) \
   E_CPONLY(kColorButtonBackgroundTonalDisabled) \
   E_CPONLY(kColorButtonBackgroundTonalFocused) \
+  E_CPONLY(kColorButtonBackgroundWithAttention) \
   E_CPONLY(kColorButtonBorder) \
   E_CPONLY(kColorButtonBorderDisabled) \
   E_CPONLY(kColorButtonForeground) \
@@ -321,8 +326,10 @@
   E_CPONLY(kColorMenuBackground) \
   E_CPONLY(kColorMenuBorder) \
   E_CPONLY(kColorMenuButtonBackground) \
+  E_CPONLY(kColorMenuButtonBackgroundSelected) \
   E_CPONLY(kColorMenuDropmarker) \
   E_CPONLY(kColorMenuIcon) \
+  E_CPONLY(kColorMenuIconDisabled) \
   E_CPONLY(kColorMenuItemBackgroundAlertedInitial) \
   E_CPONLY(kColorMenuItemBackgroundAlertedTarget) \
   E_CPONLY(kColorMenuItemBackgroundHighlighted) \
@@ -380,10 +387,16 @@
   E_CPONLY(kColorSegmentedButtonChecked) \
   E_CPONLY(kColorSeparator) \
   E_CPONLY(kColorShadowBase) \
+  E_CPONLY(kColorShadowValueAmbientShadowElevationFour) \
   E_CPONLY(kColorShadowValueAmbientShadowElevationSixteen) \
   E_CPONLY(kColorShadowValueAmbientShadowElevationThree) \
+  E_CPONLY(kColorShadowValueAmbientShadowElevationTwelve) \
+  E_CPONLY(kColorShadowValueAmbientShadowElevationTwentyFour) \
+  E_CPONLY(kColorShadowValueKeyShadowElevationFour) \
   E_CPONLY(kColorShadowValueKeyShadowElevationSixteen) \
   E_CPONLY(kColorShadowValueKeyShadowElevationThree) \
+  E_CPONLY(kColorShadowValueKeyShadowElevationTwelve) \
+  E_CPONLY(kColorShadowValueKeyShadowElevationTwentyFour) \
   E_CPONLY(kColorSidePanelComboboxBorder) \
   E_CPONLY(kColorSidePanelComboboxBackground) \
   E_CPONLY(kColorSliderThumb) \

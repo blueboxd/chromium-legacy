@@ -134,7 +134,7 @@ void Mp4TrackFragmentHeaderBoxWriter::Write(BoxByteStream& writer) {
   if (box_.flags &
       static_cast<uint32_t>(mp4::writable_boxes::TrackFragmentHeaderFlags::
                                 kDefaultSampleDurationPresent)) {
-    writer.WriteU32(box_.default_sample_duration.InSeconds());
+    writer.WriteU32(box_.default_sample_duration.InMilliseconds());
   }
 
   if (box_.flags &
@@ -169,7 +169,7 @@ void Mp4TrackFragmentDecodeTimeBoxWriter::Write(BoxByteStream& writer) {
 
   writer.StartBox(mp4::FOURCC_TFDT);
 
-  writer.WriteU64(box_.base_media_decode_time.InSeconds());
+  writer.WriteU64(box_.base_media_decode_time.InMilliseconds());
 
   writer.EndBox();
 }
@@ -194,7 +194,7 @@ void Mp4TrackFragmentRunBoxWriter::Write(BoxByteStream& writer) {
   {
     // `data_offset`.
 
-    // `movie-fragment relative addressing` should exist must by
+    // `movie-fragment relative addressing` should exist by
     // `https://www.w3.org/TR/mse-byte-stream-format-isobmff/`.
     CHECK(box_.flags &
           static_cast<uint16_t>(
@@ -223,7 +223,9 @@ void Mp4TrackFragmentRunBoxWriter::Write(BoxByteStream& writer) {
            mp4::writable_boxes::TrackFragmentRunFlags::kSampleFlagsPresent));
 
   if (duration_exists) {
-    CHECK_EQ(box_.sample_count, box_.sample_durations.size());
+    // fragment, if not last, has an additional timestamp entry for last
+    // item duration calculation.
+    CHECK_EQ(box_.sample_count + 1, box_.sample_timestamps.size());
   }
 
   if (size_exists) {
@@ -236,7 +238,11 @@ void Mp4TrackFragmentRunBoxWriter::Write(BoxByteStream& writer) {
 
   for (uint32_t i = 0; i < box_.sample_count; ++i) {
     if (duration_exists) {
-      writer.WriteU32(box_.sample_durations[i].InSeconds());
+      // TODO(crbug.com://1465031): sample_timestamps will be converted to
+      // per sample duration with timescale.
+      writer.WriteU32(
+          (box_.sample_timestamps[i + 1] - box_.sample_timestamps[i])
+              .InMilliseconds());
     }
 
     if (size_exists) {
@@ -266,7 +272,9 @@ void Mp4MediaDataBoxWriter::Write(BoxByteStream& writer) {
 
   writer.StartBox(mp4::FOURCC_MDAT);
 
-  for (const auto& data : box_.data) {
+  for (const auto& data : box_.track_data) {
+    // Write base data offset to the entry of `base_data_offset` of the `trun`,
+    // which was set with placeholder during its write.
     writer.FlushCurrentOffset();
     writer.WriteBytes(data.data(), data.size());
   }

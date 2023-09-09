@@ -4,20 +4,37 @@
 
 #include "third_party/blink/renderer/core/dom/node_part.h"
 
+#include "third_party/blink/renderer/core/dom/child_node_part.h"
+#include "third_party/blink/renderer/core/dom/node_cloning_data.h"
+#include "third_party/blink/renderer/core/dom/part_root.h"
+#include "third_party/blink/renderer/core/dom/tree_scope.h"
+
 namespace blink {
 
 // static
-NodePart* NodePart::Create(PartRoot* root,
+NodePart* NodePart::Create(PartRootUnion* root_union,
                            Node* node,
-                           const NodePartInit* init,
+                           const PartInit* init,
                            ExceptionState& exception_state) {
-  if (!root->SupportsContainedParts()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
-        "The provided PartRoot does not support contained parts");
-    return nullptr;
+  return MakeGarbageCollected<NodePart>(
+      *PartRoot::GetPartRootFromUnion(root_union), *node, init);
+}
+
+NodePart::NodePart(PartRoot& root, Node& node, const Vector<String> metadata)
+    : Part(root, metadata), node_(node) {
+  node.AddDOMPart(*this);
+}
+
+void NodePart::disconnect() {
+  if (!root()) {
+    CHECK(!node_);
+    return;
   }
-  return MakeGarbageCollected<NodePart>(*root, node, init);
+  if (node_) {
+    node_->RemoveDOMPart(*this);
+  }
+  node_ = nullptr;
+  Part::disconnect();
 }
 
 void NodePart::Trace(Visitor* visitor) const {
@@ -25,21 +42,34 @@ void NodePart::Trace(Visitor* visitor) const {
   Part::Trace(visitor);
 }
 
-bool NodePart::IsValid() {
-  // A NodePart is valid if it has a |Node| that is connected.
-  return node_ && node_->isConnected();
+bool NodePart::IsValid() const {
+  // A NodePart is valid if the base Part is valid (has a root), and if there
+  // is a node reference.
+  return Part::IsValid() && node_;
 }
 
-Node* NodePart::RelevantNode() const {
+Node* NodePart::NodeToSortBy() const {
   return node_;
 }
 
-Document* NodePart::GetDocument() const {
-  return node_ ? &node_->GetDocument() : nullptr;
+Part* NodePart::ClonePart(NodeCloningData& data) const {
+  CHECK(IsValid());
+  PartRoot* new_part_root = data.ClonedPartRootFor(*root());
+  // TODO(crbug.com/1453291) Eventually it should *not* be possible to construct
+  // Parts that get cloned without their PartRoots. But as-is, that can happen
+  // if, for example, a ChildNodePart contains child Nodes that are part of
+  // other ChildNodeParts or NodeParts whose `root` is not this ChildNodePart.
+  if (!new_part_root) {
+    return nullptr;
+  }
+  Node* new_node = data.ClonedNodeFor(*node_);
+  CHECK(new_node);
+  return MakeGarbageCollected<NodePart>(*new_part_root, *new_node, metadata());
 }
 
-String NodePart::ToString() const {
-  return "NodePart for " + (node_ ? node_->ToString() : "nullptr");
+Document& NodePart::GetDocument() const {
+  CHECK(IsValid());
+  return node_->GetDocument();
 }
 
 }  // namespace blink

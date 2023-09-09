@@ -15,10 +15,11 @@
         },
         "name": "swarming_test a_variant",
         "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimensions": {
-            "os": "Linux"
-          },
+          "dimension_sets": [
+            {
+              "os": "Linux"
+            }
+          ],
           "shards": 10
         },
         "test": "foo_test_apk",

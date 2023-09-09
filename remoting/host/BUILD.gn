@@ -241,10 +241,6 @@ if (is_linux) {
   pkg_config("xkbcommon") {
     packages = [ "xkbcommon" ]
   }
-
-  pkg_config("libevdev") {
-    packages = [ "libevdev" ]
-  }
 }
 
 # This must be a static library instead of a source set because
@@ -411,6 +407,14 @@ static_library("common") {
     "zombie_host_detector.h",
   ]
 
+  # ChromotingHostServices currently only works on Linux and Windows.
+  if (is_linux || is_win) {
+    sources += [
+      "chromoting_host_services_server.cc",
+      "chromoting_host_services_server.h",
+    ]
+  }
+
   libs = []
 
   configs += [
@@ -576,7 +580,6 @@ static_library("common") {
       "x11_display_util.cc",
       "x11_display_util.h",
     ]
-    configs += [ ":libevdev" ]
     libs += [ "//third_party/libei/lib64/libei.a" ]
     public_deps += [
       "//third_party/wayland:wayland_client",
@@ -821,11 +824,6 @@ source_set("unit_tests") {
     "zombie_host_detector_unittest.cc",
   ]
 
-  # MojoIpcServer currently only works on Linux and Windows.
-  if (is_linux || is_win) {
-    sources += [ "chromoting_host_services_client_unittest.cc" ]
-  }
-
   if (use_ozone || is_chromeos_ash) {
     sources -= [ "input_monitor/local_input_monitor_unittest.cc" ]
   }
@@ -871,6 +869,16 @@ source_set("unit_tests") {
     "//ui/base:base",
     "//ui/events:events",
   ]
+
+  # ChromotingHostServices currently only works on Linux and Windows.
+  if (is_linux || is_win) {
+    sources += [
+      "chromoting_host_services_client_unittest.cc",
+      "chromoting_host_services_server_unittest.cc",
+    ]
+
+    deps += [ "//remoting/host:ipc_constants" ]
+  }
 
   if (is_linux) {
     deps += [

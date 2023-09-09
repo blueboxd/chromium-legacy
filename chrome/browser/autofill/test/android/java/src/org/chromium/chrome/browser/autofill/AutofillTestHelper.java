@@ -10,11 +10,9 @@ import static org.chromium.content_public.browser.test.util.TestThreadUtils.runO
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.components.autofill.VirtualCardEnrollmentState;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.url.GURL;
 
 import java.util.Calendar;
 import java.util.List;
@@ -151,18 +149,15 @@ public class AutofillTestHelper {
      *
      * @param guid The GUID of the profile to modify.
      * @param count The use count to assign to the profile. It should be non-negative.
-     * @param date The use date to assign to the profile. It represents an absolute point in
-     *             coordinated universal time (UTC) represented as microseconds since the Windows
-     *             epoch. For more details see the comment header in time.h. It should always be a
-     *             positive number.
+     * @param daysSinceLastUsed The number of days since the profile was last used.
      */
-    public void setProfileUseStatsForTesting(final String guid, final int count, final long date)
-            throws TimeoutException {
+    public void setProfileUseStatsForTesting(final String guid, final int count,
+            final int daysSinceLastUsed) throws TimeoutException {
         int callCount = mOnPersonalDataChangedHelper.getCallCount();
         runOnUiThreadBlocking(
                 ()
                         -> PersonalDataManager.getInstance().setProfileUseStatsForTesting(
-                                guid, count, date));
+                                guid, count, daysSinceLastUsed));
         mOnPersonalDataChangedHelper.waitForCallback(callCount);
     }
 
@@ -210,18 +205,15 @@ public class AutofillTestHelper {
      *
      * @param guid The GUID of the credit card to modify.
      * @param count The use count to assign to the credit card. It should be non-negative.
-     * @param date The use date to assign to the credit card. It represents an absolute point in
-     *             coordinated universal time (UTC) represented as microseconds since the Windows
-     *             epoch. For more details see the comment header in time.h. It should always be a
-     *             positive number.
+     * @param daysSinceLastUsed The number of days since the credit card was last used.
      */
-    public void setCreditCardUseStatsForTesting(final String guid, final int count, final long date)
-            throws TimeoutException {
+    public void setCreditCardUseStatsForTesting(final String guid, final int count,
+            final int daysSinceLastUsed) throws TimeoutException {
         int callCount = mOnPersonalDataChangedHelper.getCallCount();
         runOnUiThreadBlocking(
                 ()
                         -> PersonalDataManager.getInstance().setCreditCardUseStatsForTesting(
-                                guid, count, date));
+                                guid, count, daysSinceLastUsed));
         mOnPersonalDataChangedHelper.waitForCallback(callCount);
     }
 
@@ -259,6 +251,19 @@ public class AutofillTestHelper {
     public long getCurrentDateForTesting() {
         return runOnUiThreadBlockingNoException(
                 () -> PersonalDataManager.getInstance().getCurrentDateForTesting());
+    }
+
+    /**
+     * Get a certain last use date to be used in tests with credit cards and profiles.
+     *
+     * @param days The number of days from today.
+     * @return A non-negative long representing the time N days ago. It represents an absolute point
+     *         in coordinated universal time (UTC) represented as microseconds since the Windows
+     *         epoch. For more details see the comment header in time.h.
+     */
+    public long getDateNDaysAgoForTesting(final int days) {
+        return runOnUiThreadBlockingNoException(
+                () -> PersonalDataManager.getInstance().getDateNDaysAgoForTesting(days));
     }
 
     /**
@@ -316,7 +321,7 @@ public class AutofillTestHelper {
                 /* basicCardIssuerNetwork =*/network, /* issuerIconDrawableId= */ iconId,
                 /* billingAddressId= */ "",
                 /* serverId= */ "", /* instrumentId= */ 0, /* cardLabel= */ "", /* nickname= */ "",
-                /* cardArtUrl= */ new GURL(""),
+                /* cardArtUrl= */ null,
                 /* virtualCardEnrollmentState= */ VirtualCardEnrollmentState.ENROLLED,
                 /* productDescription= */ "",
                 /* cardNameForAutofillDisplay= */ cardNameForAutofillDisplay,

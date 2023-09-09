@@ -16,6 +16,10 @@
     }
   }
 
+  :host([drop-position='into']) power-bookmark-row {
+    background: var(--cr-hover-background-color);
+  }
+
   cr-icon-button {
     --cr-icon-button-icon-size: 16px;
     --cr-icon-button-size: 24px;
@@ -44,7 +48,6 @@
 
   :host-context([chrome-refresh-2023]) cr-toolbar-search-field {
     margin: var(--sp-body-padding);
-    margin-block-end: 0;
   }
 
   hr {
@@ -63,12 +66,6 @@
 
   iron-icon[invisible] {
     visibility: hidden;
-  }
-
-  :host-context([chrome-refresh-2023]) .sp-card {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
   }
 
   .bookmarks {
@@ -97,15 +94,15 @@
   }
 
   sp-empty-state {
-    margin-top: 40px;
+    padding-top: 40px;
   }
 
   #folderEmptyState {
-    margin-bottom: 40px;
+    padding-bottom: 40px;
   }
 
   sp-empty-state[guest] {
-    margin-top: 66px;
+    padding-top: 66px;
   }
 
   sp-heading {
@@ -113,7 +110,27 @@
   }
 
   :host-context([chrome-refresh-2023]) sp-heading {
-    margin: var(--sp-card-block-padding) var(--sp-card-inline-padding);
+    padding: var(--sp-card-block-padding) var(--sp-card-inline-padding);
+  }
+
+  :host-context([chrome-refresh-2023]) .card-top {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    padding-block-end: 0;
+  }
+
+  :host-context([chrome-refresh-2023]) .card-bottom:not([is-full-card]) {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    padding-block-start: 0;
+  }
+
+  :host-context([chrome-refresh-2023]) .sp-scroller:has([is-full-card]) {
+    border-bottom: solid 1px transparent;
+  }
+
+  :host-context([chrome-refresh-2023]) #shownBookmarksIronList[is-full-card] {
+    margin-block-end: var(--sp-body-padding);
   }
 
   .icon-button-row {
@@ -136,7 +153,82 @@
   }
 
   :host-context([chrome-refresh-2023]) .label-row {
-    margin: var(--sp-card-gap) var(--sp-body-padding);
+    margin: 4px var(--sp-body-padding) var(--sp-card-gap);
+  }
+
+  .new-folder-icon-container {
+    align-items: center;
+    background-color: var(--google-grey-50);
+    border-radius: 4px;
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    width: 56px;
+  }
+
+  .new-folder-row[compact] > .new-folder-icon-container {
+    background-color: transparent;
+    height: 16px;
+    width: 16px;
+  }
+
+  :host-context([chrome-refresh-2023])
+  .new-folder-row > .new-folder-icon-container {
+    background-color: var(--color-list-item-url-favicon-background);
+  }
+
+  :host-context([chrome-refresh-2023])
+  .new-folder-row[compact] > .new-folder-icon-container {
+    height: 24px;
+    width: 24px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .new-folder-icon-container {
+      background-color: var(--google-grey-800);
+    }
+  }
+
+  .new-folder-row {
+    align-items: center;
+    background: none;
+    border: none;
+    color: var(--cr-primary-text-color);
+    display: flex;
+    font-family: inherit;
+    gap: 16px;
+    height: 41px;
+    padding: 6px 16px;
+    width: 100%;
+  }
+
+  .new-folder-row[compact] {
+    gap: 12px;
+    height: 32px;
+    padding: 6px 14px;
+  }
+
+  .new-folder-row[disabled] {
+    color: var(--google-grey-400);
+  }
+
+  :host-context([chrome-refresh-2023]) .new-folder-row {
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  :host-context([chrome-refresh-2023]) .new-folder-row[compact] {
+    gap: 8px;
+  }
+
+  .new-folder-row:not([disabled]):hover {
+    background-color: var(--cr-hover-background-color);
+  }
+
+  .new-folder-row:not([disabled]):active,
+  .new-folder-row:not([disabled]):focus {
+    background-color: var(--cr-active-background-color);
+    outline: none;
   }
 
   cr-toolbar-selection-overlay {
@@ -181,12 +273,11 @@
 <div class="column" id="powerBookmarksContainer">
   <cr-toolbar-search-field id="searchField" label="$i18n{searchBookmarks}"
       clear-label="$i18n{clearSearch}" on-search-changed="onSearchChanged_"
-      disabled="[[editing_]]" hidden="[[guestMode_]]"
+      disabled="[[editing_]]" hidden="[[!sectionVisibility_.search]]"
       on-blur="onSearchBlurred_">
   </cr-toolbar-search-field>
-  <div class="label-row" hidden="[[guestMode_]]"
-      header-hidden$="[[shouldHideHeader_(
-          labels_.*, searchQuery_, shownBookmarks_)]]">
+  <div class="label-row" hidden="[[!sectionVisibility_.filterChips]]"
+      header-hidden$="[[!sectionVisibility_.heading]]" id="filterChips">
     <template is="dom-repeat" items="[[labels_]]">
       <sp-filter-chip
           selected="[[item.active]]"
@@ -198,12 +289,8 @@
     </template>
   </div>
 
-  <div class="sp-card"
-      hidden$="[[shouldHideCard_(labels_.*, searchQuery_, shownBookmarks_,
-          guestMode_)]]">
-    <sp-heading
-        hidden$="[[shouldHideHeader_(
-            labels_.*, searchQuery_, shownBookmarks_)]]"
+  <div class="sp-card card-top" hidden$="[[!sectionVisibility_.heading]]">
+    <sp-heading id="heading"
         back-button-title="$i18n{tooltipBack}"
         back-button-aria-label="[[getBackButtonLabel_(activeFolderPath_.*)]]"
         on-back-button-click="onBackClicked_"
@@ -222,23 +309,39 @@
           aria-description="[[getSortLabel_(activeSortIndex_)]]"
           on-click="onShowSortMenuClicked_">
       </cr-icon-button>
-      <cr-icon-button slot="buttons" iron-icon="bookmarks:create-new-folder"
-          disabled="[[editing_]]"
-          title="$i18n{tooltipNewFolder}"
-          aria-label="$i18n{createNewFolderA11yLabel}"
-          on-click="onAddNewFolderClicked_"></cr-icon-button>
-      <cr-icon-button slot="buttons" iron-icon="cr:more-vert"
+      <cr-icon-button id="viewButton" slot="buttons"
+          iron-icon="[[getViewButtonIcon_(compact_)]]"
+          title="[[getViewButtonTooltip_(compact_)]]"
+          aria-label="[[getViewButtonTooltip_(compact_)]]"
+          on-click="onViewToggleClicked_"></cr-icon-button>
+      <cr-icon-button slot="buttons" class="icon-edit"
           disabled="[[!shownBookmarks_.length]]"
-          title="$i18n{tooltipMore}"
-          aria-label="$i18n{tooltipMore}"
+          title="$i18n{tooltipEdit}"
+          aria-label="$i18n{editBookmarkListA11yLabel}"
+          aria-pressed="[[editing_]]"
           aria-disabled="[[!shownBookmarks_.length]]"
-          on-click="onShowEditMenuClicked_">
+          on-click="onBulkEditClicked_"></cr-icon-button>
       </cr-icon-button>
     </sp-heading>
+  </div>
 
-    <div class="sp-scroller"
-        hidden="[[!shouldShowFolderEmptyState_(shownBookmarks_.length,
-                    hasLoadedData_)]]">
+  <div class="sp-card card-top card-bottom"
+      hidden="[[!sectionVisibility_.newFolderButton]]">
+    <button class="new-folder-row"
+        disabled="[[editing_]]"
+        compact$="[[compact_]]"
+        aria-label="$i18n{createNewFolderA11yLabel}"
+        on-click="onAddNewFolderClicked_">
+      <div class="new-folder-icon-container">
+        <iron-icon icon="cr:add"></iron-icon>
+      </div>
+      $i18n{tooltipNewFolder}
+    </button>
+  </div>
+
+  <div class="sp-scroller"
+      hidden="[[!sectionVisibility_.folderEmptyState]]">
+    <div class="sp-card card-bottom">
       <sp-empty-state id="folderEmptyState"
           image-path="./images/bookmarks_empty.svg"
           dark-image-path="./images/bookmarks_empty_dark.svg"
@@ -246,17 +349,30 @@
           body="$i18n{emptyBodyFolder}">
       </sp-empty-state>
     </div>
+  </div>
 
-    <div id="bookmarks" class="bookmarks sp-scroller"
-        hidden="[[!shownBookmarks_.length]]"
-        role="[[getBookmarksListRole_(editing_)]]"
-        aria-multiselectable="[[editing_]]" scrollable>
+  <div id="bookmarks" class="bookmarks sp-scroller"
+      hidden="[[!sectionVisibility_.bookmarksList]]"
+      role="[[getBookmarksListRole_(editing_)]]"
+      aria-multiselectable="[[editing_]]" scrollable>
+    <div class="sp-card card-bottom"
+        is-full-card$="[[!sectionVisibility_.heading]]">
+      <button class="new-folder-row"
+          disabled="[[editing_]]"
+          compact$="[[compact_]]"
+          aria-label="$i18n{createNewFolderA11yLabel}"
+          on-click="onAddNewFolderClicked_">
+        <div class="new-folder-icon-container">
+          <iron-icon icon="cr:add"></iron-icon>
+        </div>
+        $i18n{tooltipNewFolder}
+      </button>
       <iron-list id="shownBookmarksIronList"
           items="[[shownBookmarks_]]" scroll-target="bookmarks">
         <template>
           <power-bookmark-row id="bookmark-[[item.id]]" bookmark="[[item]]"
               description="[[getBookmarkDescription_(
-                             item, compact_, searchQuery_, item.*)]]"
+                              item, compact_, searchQuery_, item.*)]]"
               compact="[[compact_]]" trailing-icon="cr:more-vert"
               trailing-icon-aria-label="[[getBookmarkMenuA11yLabel_(
                                           item.url, item.title)]]"
@@ -278,8 +394,7 @@
                             item, item.*, imageUrls_.*)]]"
               force-hover="[[getBookmarkForceHover_(
                             item, contextMenuBookmark_)]]"
-              draggable="[[canDrag_(editing_, renamingId_, searchQuery_,
-                           labels_.*)]]">
+              draggable="[[canDrag_]]">
             <template is="dom-if" restamp
                 if="[[isPriceTracked(item, trackedProductInfos_.*)]]">
               <sp-list-item-badge slot="badges"
@@ -303,16 +418,15 @@
   </div>
 
   <sp-empty-state id="topLevelEmptyState"
-      hidden="[[!shouldShowTopLevelEmptyState_(
-                  shownBookmarks_, guestMode_, hasLoadedData_)]]"
+      hidden="[[!sectionVisibility_.topLevelEmptyState]]"
       guest$="[[guestMode_]]"
-      image-path="[[getEmptyImagePath_(labels_.*, searchQuery_)]]"
-      dark-image-path="[[getEmptyImagePathDark_(labels_.*, searchQuery_)]]"
-      heading="[[getEmptyTitle_(labels_.*, searchQuery_)]]"
-      body="[[getEmptyBody_(labels_.*, searchQuery_)]]">
+      image-path="[[getEmptyImagePath_(hasSomeActiveFilter_)]]"
+      dark-image-path="[[getEmptyImagePathDark_(hasSomeActiveFilter_)]]"
+      heading="[[getEmptyTitle_(hasSomeActiveFilter_)]]"
+      body="[[getEmptyBody_(hasSomeActiveFilter_)]]">
   </sp-empty-state>
-  <sp-footer
-      hidden="[[shouldShowEmptySearchState_(labels_.*, searchQuery_)]]"
+  <sp-footer id="footer"
+      hidden="[[!sectionVisibility_.footer]]"
       pinned="[[shownBookmarks_.length]]">
     <cr-button class="floating-button"
         hidden="[[hideAddTabButton_(editing_)]]"
@@ -357,22 +471,6 @@
       [[getSortMenuItemLowerLabel_(item)]]
     </button>
   </template>
-</cr-action-menu>
-
-<cr-action-menu id="editMenu">
-  <button class="dropdown-item" on-click="onBulkEditClicked_">
-    <iron-icon icon="bookmarks:edit"></iron-icon>
-    $i18n{tooltipEdit}
-  </button>
-  <hr>
-  <button id="visualView" class="dropdown-item" on-click="onVisualViewClicked_">
-    <iron-icon icon="cr:check" invisible$="[[compact_]]"></iron-icon>
-    $i18n{visualView}
-  </button>
-  <button class="dropdown-item" on-click="onCompactViewClicked_">
-    <iron-icon icon="cr:check" invisible$="[[!compact_]]"></iron-icon>
-    $i18n{compactView}
-  </button>
 </cr-action-menu>
 
 <power-bookmarks-edit-dialog id="editDialog"

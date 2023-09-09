@@ -66,9 +66,9 @@
 #include "base/time/time.h"
 #include "base/uuid.h"
 #include "cc/test/pixel_comparator.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/app_constants/constants.h"
 #include "components/app_restore/app_launch_info.h"
-#include "components/app_restore/full_restore_utils.h"
 #include "components/app_restore/window_info.h"
 #include "components/app_restore/window_properties.h"
 #include "components/desks_storage/core/local_desk_data_manager.h"
@@ -422,7 +422,10 @@ class SavedDeskTest : public OverviewTestBase {
 
   // OverviewTestBase:
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures({features::kDesksTemplates}, {});
+    // TOOD(b/289462121): Remove Jelly from disbled features when the library
+    // button code is updated to find the right element.
+    scoped_feature_list_.InitWithFeatures({features::kDesksTemplates},
+                                          {chromeos::features::kJelly});
     OverviewTestBase::SetUp();
 
     // The `FullRestoreSaveHandler` isn't setup during tests so every window we
@@ -2127,7 +2130,7 @@ TEST_F(SavedDeskTest, AllUnsupportedAppsDisablesSaveDeskButtons) {
   auto no_app_id_window = CreateAppWindow();
   auto* delegate = Shell::Get()->saved_desk_delegate();
   ASSERT_TRUE(delegate->IsWindowSupportedForSavedDesk(no_app_id_window.get()));
-  ASSERT_TRUE(full_restore::GetAppId(no_app_id_window.get()).empty());
+  ASSERT_TRUE(saved_desk_util::GetAppId(no_app_id_window.get()).empty());
 
   // Open overview.
   ToggleOverview();
@@ -3315,7 +3318,7 @@ TEST_F(SavedDeskTest, WindowOpacityResetAfterImmediateExit) {
 
   // Activate the second desk which has no windows. Test that all the windows
   // have their opacity restored.
-  ActivateDesk(desks_controller->desks()[1].get());
+  ActivateDesk(desks_controller->GetDeskAtIndex(1));
   EXPECT_EQ(1.f, test_window1->layer()->opacity());
   EXPECT_EQ(1.f, test_window2->layer()->opacity());
   EXPECT_EQ(1.f, test_window3->layer()->opacity());
@@ -4353,7 +4356,7 @@ TEST_F(DeskSaveAndRecallTest, RecallSavedDesk) {
   // Verify that a new desk has been created and that it has the name of the
   // saved desk.
   EXPECT_EQ(2ul, desks_controller->desks().size());
-  EXPECT_EQ(kDeskName, desks_controller->desks()[1]->name());
+  EXPECT_EQ(kDeskName, desks_controller->GetDeskAtIndex(1)->name());
 
   // Verify that the saved desk has been deleted.
   EXPECT_TRUE(GetAllEntries().empty());

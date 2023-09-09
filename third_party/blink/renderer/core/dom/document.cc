@@ -126,7 +126,6 @@
 #include "third_party/blink/renderer/core/dom/beforeunload_event_listener.h"
 #include "third_party/blink/renderer/core/dom/cdata_section.h"
 #include "third_party/blink/renderer/core/dom/comment.h"
-#include "third_party/blink/renderer/core/dom/context_features.h"
 #include "third_party/blink/renderer/core/dom/css_toggle_inference.h"
 #include "third_party/blink/renderer/core/dom/document_data.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
@@ -150,12 +149,14 @@
 #include "third_party/blink/renderer/core/dom/live_node_list.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer.h"
 #include "third_party/blink/renderer/core/dom/node_child_removal_tracker.h"
+#include "third_party/blink/renderer/core/dom/node_cloning_data.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/node_iterator.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/dom/node_rare_data.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_with_index.h"
+#include "third_party/blink/renderer/core/dom/part_root.h"
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
 #include "third_party/blink/renderer/core/dom/scripted_animation_controller.h"
 #include "third_party/blink/renderer/core/dom/scripted_idle_task_controller.h"
@@ -392,8 +393,8 @@ enum class RequestStorageResult {
   REJECTED_INCORRECT_FRAME = 8,
   REJECTED_INSECURE_CONTEXT = 9,
   APPROVED_PRIMARY_FRAME = 10,
-  APPROVED_SAMEORIGIN_WITH_PRIMARY_FRAME = 11,
-  kMaxValue = APPROVED_SAMEORIGIN_WITH_PRIMARY_FRAME,
+  REJECTED_CREDENTIALLESS_IFRAME = 11,
+  kMaxValue = REJECTED_CREDENTIALLESS_IFRAME,
 };
 void FireRequestStorageAccessHistogram(RequestStorageResult result) {
   base::UmaHistogramEnumeration("API.StorageAccess.RequestStorageAccess",
@@ -702,13 +703,11 @@ UnloadEventTimingInfo::UnloadEventTimingInfo(
     : new_document_origin(std::move(new_document_origin)) {}
 
 Document* Document::Create(Document& document) {
-  Document* new_document = MakeGarbageCollected<Document>(
+  return MakeGarbageCollected<Document>(
       DocumentInit::Create()
           .WithExecutionContext(document.GetExecutionContext())
           .WithAgent(document.GetAgent())
           .WithURL(BlankURL()));
-  new_document->SetContextFeatures(document.GetContextFeatures());
-  return new_document;
 }
 
 Document* Document::CreateForTest(ExecutionContext& execution_context) {
@@ -733,7 +732,6 @@ Document::Document(const DocumentInit& initializer,
       dom_window_(initializer.GetWindow()),
       execution_context_(initializer.GetExecutionContext()),
       agent_(initializer.GetAgent()),
-      context_features_(ContextFeatures::DefaultSwitch()),
       http_refresh_scheduler_(MakeGarbageCollected<HttpRefreshScheduler>(this)),
       well_formed_(false),
       fallback_base_url_(initializer.FallbackBaseURL()),
@@ -846,7 +844,6 @@ Document::Document(const DocumentInit& initializer,
 
   if (GetFrame()) {
     DCHECK(GetFrame()->GetPage());
-    ProvideContextFeaturesToDocumentFrom(*this, *GetFrame()->GetPage());
     fetcher_ = FrameFetchContext::CreateFetcherForCommittedDocument(
         *GetFrame()->Loader().GetDocumentLoader(), *this);
     cookie_jar_ = MakeGarbageCollected<CookieJar>(this);
@@ -1074,17 +1071,14 @@ Element* Document::CreateRawElement(const QualifiedName& qname,
       element = MakeGarbageCollected<SVGUnknownElement>(qname, *this);
     saw_elements_in_known_namespaces_ = true;
   } else if (qname.NamespaceURI() == mathml_names::kNamespaceURI) {
-    if (RuntimeEnabledFeatures::MathMLCoreEnabled()) {
-      element = MathMLElementFactory::Create(qname.LocalName(), *this, flags);
-      // An unknown MathML element is treated like an <mrow> element.
-      // TODO(crbug.com/1021837): Determine if we need to introduce a
-      // MathMLUnknownElement IDL.
-      if (!element)
-        element = MakeGarbageCollected<MathMLRowElement>(qname, *this);
-      saw_elements_in_known_namespaces_ = true;
-    } else {
-      element = MakeGarbageCollected<MathMLElement>(qname, *this);
+    element = MathMLElementFactory::Create(qname.LocalName(), *this, flags);
+    // An unknown MathML element is treated like an <mrow> element.
+    // TODO(crbug.com/1021837): Determine if we need to introduce a
+    // MathMLUnknownElement IDL.
+    if (!element) {
+      element = MakeGarbageCollected<MathMLRowElement>(qname, *this);
     }
+    saw_elements_in_known_namespaces_ = true;
   } else {
     element = MakeGarbageCollected<Element>(qname, this);
   }
@@ -1354,12 +1348,15 @@ Node* Document::importNode(Node* imported_node,
   // 2. Return a clone of node, with context object, the clone children flag set
   // if deep is true, and the clone shadows flag set if this is a
   // DocumentFragment whose host is an HTML template element.
-  auto* fragment = DynamicTo<DocumentFragment>(imported_node);
-  bool clone_shadows_flag = fragment && fragment->IsTemplateContent();
-  return imported_node->Clone(
-      *this, deep ? (clone_shadows_flag ? CloneChildrenFlag::kCloneWithShadows
-                                        : CloneChildrenFlag::kClone)
-                  : CloneChildrenFlag::kSkip);
+  NodeCloningData data;
+  if (deep) {
+    data.Put(CloneOption::kIncludeDescendants);
+    auto* fragment = DynamicTo<DocumentFragment>(imported_node);
+    if (fragment && fragment->IsTemplateContent()) {
+      data.Put(CloneOption::kIncludeShadowRoots);
+    }
+  }
+  return imported_node->Clone(*this, data);
 }
 
 Node* Document::adoptNode(Node* source, ExceptionState& exception_state) {
@@ -4379,7 +4376,6 @@ void Document::SetURL(const KURL& url) {
 
   url_ = new_url;
   UpdateBaseURL();
-  GetContextFeatures().UrlDidChange(this);
 
   if (GetFrame()) {
     if (FrameScheduler* frame_scheduler = GetFrame()->GetFrameScheduler())
@@ -4903,7 +4899,7 @@ bool Document::CanAcceptChild(const Node& new_child,
   return true;
 }
 
-Node* Document::Clone(Document& factory, CloneChildrenFlag flag) const {
+Node* Document::Clone(Document& factory, NodeCloningData& data) const {
   DCHECK_EQ(this, &factory)
       << "Document::Clone() doesn't support importNode mode.";
 
@@ -4911,8 +4907,10 @@ Node* Document::Clone(Document& factory, CloneChildrenFlag flag) const {
     return nullptr;
   Document* clone = CloneDocumentWithoutChildren();
   clone->CloneDataFromDocument(*this);
-  if (flag != CloneChildrenFlag::kSkip)
-    clone->CloneChildNodesFrom(*this, flag);
+  clone->ClonePartsFrom(*this, data);
+  if (data.Has(CloneOption::kIncludeDescendants)) {
+    clone->CloneChildNodesFrom(*this, data);
+  }
   return clone;
 }
 
@@ -4954,7 +4952,6 @@ Document* Document::CloneDocumentWithoutChildren() const {
 void Document::CloneDataFromDocument(const Document& other) {
   SetCompatibilityMode(other.GetCompatibilityMode());
   SetEncodingData(other.encoding_data_);
-  SetContextFeatures(other.GetContextFeatures());
   SetMimeType(other.contentType());
 }
 
@@ -5799,10 +5796,9 @@ Event* Document::createEvent(ScriptState* script_state,
 
 void Document::AddMutationEventListenerTypeIfEnabled(
     ListenerType listener_type) {
-  // Mutation events can be disabled by the embedder via a ContextFeatures
-  // switch, or via the runtime enabled feature.
-  if (!ContextFeatures::MutationEventsEnabled(this) ||
-      !RuntimeEnabledFeatures::MutationEventsEnabled()) {
+  // Mutation events can be disabled by the embedder, or via the runtime enabled
+  // feature.
+  if (!SupportsLegacyDOMMutations()) {
     return;
   }
   AddListenerType(listener_type);
@@ -6249,6 +6245,11 @@ ScriptPromise Document::hasStorageAccess(ScriptState* script_state) {
       return false;
     }
 
+    // #?: if window.credentialless is true, return false.
+    if (dom_window_->credentialless()) {
+      return false;
+    }
+
     // #5: if global is not a secure context, return false.
     if (!dom_window_->isSecureContext()) {
       return false;
@@ -6326,6 +6327,10 @@ ScriptPromise Document::requestStorageAccessFor(ScriptState* script_state,
         "requestStorageAccessFor not allowed"));
     return promise;
   }
+
+  // `requestStorageAccessFor` must be rejected for any given iframe. In
+  // particular, it must have been rejected by credentialless iframes:
+  CHECK(!dom_window_->credentialless());
 
   if (!dom_window_->isSecureContext()) {
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
@@ -6452,6 +6457,22 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
     return promise;
   }
 
+  if (dom_window_->credentialless()) {
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kSecurity,
+        mojom::blink::ConsoleMessageLevel::kError,
+        "requestStorageAccess: May not be used in a credentialless iframe"));
+    FireRequestStorageAccessHistogram(
+        RequestStorageResult::REJECTED_CREDENTIALLESS_IFRAME);
+
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
+        "requestStorageAccess not allowed"));
+    return promise;
+  }
+
+  // TODO(https://crbug.com/1441133): we should not return early here since 3p
+  // cookies could be blocked by user explicitly.
   if (GetExecutionContext()->GetSecurityOrigin()->IsSameSiteWith(
           &*TopFrameOrigin())) {
     FireRequestStorageAccessHistogram(
@@ -6487,6 +6508,8 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
     return promise;
   }
 
+  // TODO(https://crbug.com/1441133): we should not return early based on the
+  // per-frame bit since 3p cookies could be blocked by user explicitly.
   if (dom_window_->HasStorageAccess()) {
     FireRequestStorageAccessHistogram(
         RequestStorageResult::APPROVED_EXISTING_ACCESS);
@@ -8263,10 +8286,6 @@ void Document::PerformScrollSnappingTasks() {
   snap_coordinator.ResnapAllContainersIfNeeded();
 }
 
-void Document::SetContextFeatures(ContextFeatures& features) {
-  context_features_ = &features;
-}
-
 void Document::UpdateHoverActiveState(bool is_active,
                                       bool update_active_chain,
                                       Element* inner_element) {
@@ -8864,7 +8883,6 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(dom_window_);
   visitor->Trace(fetcher_);
   visitor->Trace(parser_);
-  visitor->Trace(context_features_);
   visitor->Trace(http_refresh_scheduler_);
   visitor->Trace(document_timing_);
   visitor->Trace(media_query_matcher_);
@@ -9284,6 +9302,29 @@ Document::PendingJavascriptUrl::~PendingJavascriptUrl() = default;
 
 void Document::ResetAgent(Agent& agent) {
   agent_ = agent;
+}
+
+bool Document::SupportsLegacyDOMMutations() {
+  if (!RuntimeEnabledFeatures::MutationEventsEnabled()) {
+    return false;
+  }
+  if (!legacy_dom_mutations_supported_.has_value()) {
+    // We load the `LocalFrame` from the `ExecutionContext`'s so that documents
+    // that do not have a frame are given the same setting consistently across
+    // the `ExecutionContext`.
+    auto* execution_dom_window =
+        DynamicTo<LocalDOMWindow>(GetExecutionContext());
+    LocalFrame* frame =
+        execution_dom_window ? execution_dom_window->GetFrame() : nullptr;
+    if (frame && frame->GetContentSettingsClient()) {
+      legacy_dom_mutations_supported_ =
+          frame->GetContentSettingsClient()->AllowMutationEvents(
+              /*default_value=*/true);
+    } else {
+      legacy_dom_mutations_supported_ = true;
+    }
+  }
+  return legacy_dom_mutations_supported_.value();
 }
 
 Resource* Document::GetPendingLinkPreloadForTesting(const KURL& url) {

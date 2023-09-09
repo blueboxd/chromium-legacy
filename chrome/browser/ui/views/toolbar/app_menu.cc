@@ -145,14 +145,6 @@ bool IsRecentTabsCommand(int command_id) {
           1);
 }
 
-// Returns true if |command_id| identifies an other profile menu item.
-bool IsOtherProfileCommand(int command_id) {
-  return command_id >= IDC_FIRST_UNBOUNDED_MENU &&
-         ((command_id - IDC_FIRST_UNBOUNDED_MENU) %
-              AppMenuModel::kNumUnboundedMenuTypes ==
-          2);
-}
-
 // Combination border/background for the buttons contained in the menu. The
 // painting of the border/background is done here as LabelButton does not always
 // paint the border.
@@ -238,9 +230,13 @@ class InMenuButtonBackground : public views::Background {
       if (features::IsChromeRefresh2023() &&
           views::IsViewClass<views::Button>(view)) {
         cc::PaintFlags flags;
-        flags.setColor(provider->GetColor(ui::kColorMenuButtonBackground));
+        flags.setColor(
+            provider->GetColor(state != views::Button::STATE_NORMAL
+                                   ? ui::kColorMenuButtonBackgroundSelected
+                                   : ui::kColorMenuButtonBackground));
         canvas->DrawRoundRect(gfx::RectF(bounds_rect),
                               params.menu_item.corner_radius, flags);
+        return;
       }
       if (state != views::Button::STATE_NORMAL) {
         view->GetNativeTheme()->Paint(
@@ -331,12 +327,18 @@ class InMenuImageButton : public ImageButton {
   void Init(InMenuButtonBackground::ButtonType type,
             InMenuButtonBackground::ButtonShape shape,
             const ui::ImageModel& image_model) {
+    SetFocusBehavior(FocusBehavior::ALWAYS);
     SetImageModel(views::Button::STATE_NORMAL, image_model);
     SetImageHorizontalAlignment(ImageButton::ALIGN_CENTER);
     SetImageVerticalAlignment(ImageButton::ALIGN_MIDDLE);
     SetBackground(std::make_unique<InMenuButtonBackground>(type, shape));
     SetBorder(views::CreateEmptyBorder(
         gfx::Insets::TLBR(0, kHorizontalPadding, 0, kHorizontalPadding)));
+  }
+
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    ImageButton::GetAccessibleNodeData(node_data);
+    node_data->role = ax::mojom::Role::kMenuItem;
   }
 };
 
@@ -366,7 +368,8 @@ void AddChipToProfileMenuItem(Browser* browser,
     // MenuItemView::Layout().
     auto profile_chip =
         views::Builder<views::BoxLayoutView>()
-            .SetInsideBorderInsets(gfx::Insets::VH(config.item_top_margin, 0))
+            .SetInsideBorderInsets(
+                gfx::Insets::VH(config.item_vertical_margin, 0))
             .AddChildren(
                 views::Builder<views::Label>()
                     .SetText(local_name)
@@ -1318,11 +1321,8 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
         model->GetCommandIdAt(i) == IDC_ZOOM_MENU) {
       // ChromeOS adds extra vertical space for the menu buttons.
       const MenuConfig& config = views::MenuConfig::instance();
-      int top_margin = config.item_top_margin + config.separator_height / 2 + 4;
-      int bottom_margin =
-          config.item_bottom_margin + config.separator_height / 2 + 5;
-
-      item->SetMargins(top_margin, bottom_margin);
+      item->set_vertical_margin(config.item_vertical_margin * 2 +
+                                config.separator_height / 2);
     }
 #endif
     if (model->GetTypeAt(i) == MenuModel::TYPE_SUBMENU) {
@@ -1331,15 +1331,13 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
     switch (model->GetCommandIdAt(i)) {
       case IDC_PROFILE_MENU_IN_APP_MENU: {
         if (features::IsChromeRefresh2023()) {
-          constexpr int background_horizontal_margin = 12;
           constexpr int background_corner_radii = 12;
           // Profile row margins are different from the menu config item
           // margins.
-          int vertical_margin = ChromeLayoutProvider::Get()->GetDistanceMetric(
-              DISTANCE_CONTENT_LIST_VERTICAL_MULTI);
-          item->SetMargins(vertical_margin, vertical_margin);
+          item->set_vertical_margin(
+              ChromeLayoutProvider::Get()->GetDistanceMetric(
+                  DISTANCE_CONTENT_LIST_VERTICAL_MULTI));
           item->SetMenuItemBackground(MenuItemView::MenuItemBackground(
-              0, background_horizontal_margin,
               ui::kColorAppMenuProfileRowBackground, background_corner_radii));
           item->SetSelectedColorId(
               ui::kColorAppMenuProfileRowBackgroundHovered);
@@ -1350,7 +1348,7 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
             const MenuConfig& config = MenuConfig::instance();
             AddChipToProfileMenuItem(
                 browser_, item, profile_attributes->GetLocalProfileName(),
-                config.arrow_to_edge_padding + config.arrow_width,
+                config.arrow_to_edge_padding + views::kSubmenuArrowSize,
                 profile_menu_item_selected_subscription_list_);
           }
         }

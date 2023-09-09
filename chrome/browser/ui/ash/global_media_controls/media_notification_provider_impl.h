@@ -7,7 +7,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/media/media_notification_provider.h"
-#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ash/crosapi/media_ui_ash.h"
 #include "chrome/browser/ui/ash/global_media_controls/media_item_ui_device_selector_delegate_ash.h"
@@ -28,6 +27,8 @@ namespace mojom {
 class DeviceService;
 }  // namespace mojom
 class MediaItemManager;
+class MediaItemUIDeviceSelector;
+class MediaItemUIFooter;
 class MediaItemUIListView;
 class MediaSessionItemProducer;
 }  // namespace global_media_controls
@@ -57,7 +58,8 @@ class ASH_EXPORT MediaNotificationProviderImpl
   std::unique_ptr<views::View> GetMediaNotificationListView(
       int separator_thickness,
       bool should_clip_height,
-      const std::string& item_id) override;
+      const std::string& item_id,
+      const std::string& show_devices_for_item_id) override;
   void OnBubbleClosing() override;
   void SetColorTheme(
       const media_message_center::NotificationTheme& color_theme) override;
@@ -67,6 +69,16 @@ class ASH_EXPORT MediaNotificationProviderImpl
       global_media_controls::MediaItemManager* media_item_manager) override;
   void RemoveMediaItemManagerFromCastService(
       global_media_controls::MediaItemManager* media_item_manager) override;
+  std::unique_ptr<global_media_controls::MediaItemUIDeviceSelector>
+  BuildDeviceSelectorView(
+      const std::string& id,
+      base::WeakPtr<media_message_center::MediaNotificationItem> item,
+      global_media_controls::GlobalMediaControlsEntryPoint entry_point,
+      bool show_devices) override;
+  std::unique_ptr<global_media_controls::MediaItemUIFooter> BuildFooterView(
+      base::WeakPtr<media_message_center::MediaNotificationItem> item,
+      global_media_controls::GlobalMediaControlsEntryPoint entry_point)
+      override;
 
   // global_media_controls::MediaDialogDelegate:
   global_media_controls::MediaItemUI* ShowMediaItem(
@@ -116,7 +128,9 @@ class ASH_EXPORT MediaNotificationProviderImpl
   base::ObserverList<MediaNotificationProviderObserver> observers_;
 
   base::WeakPtr<global_media_controls::MediaItemUIListView>
-      active_session_view_;
+      media_item_ui_list_view_;
+
+  std::string show_devices_for_item_id_;
 
   std::unique_ptr<global_media_controls::MediaItemManager> item_manager_;
 
@@ -126,6 +140,8 @@ class ASH_EXPORT MediaNotificationProviderImpl
       supplemental_device_picker_producer_;
 
   absl::optional<media_message_center::NotificationTheme> color_theme_;
+
+  absl::optional<media_message_center::MediaColorTheme> media_color_theme_;
 
   global_media_controls::MediaItemUIObserverSet item_ui_observer_set_{this};
 

@@ -5,16 +5,33 @@
 #include "third_party/blink/renderer/core/dom/document_part_root.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_document_documentfragment.h"
+#include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/node_cloning_data.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
 void DocumentPartRoot::Trace(Visitor* visitor) const {
-  visitor->Trace(document_);
+  visitor->Trace(root_container_);
+  ScriptWrappable::Trace(visitor);
   PartRoot::Trace(visitor);
+}
+
+PartRootUnion* DocumentPartRoot::clone(ExceptionState&) const {
+  NodeCloningData data{CloneOption::kIncludeDescendants,
+                       CloneOption::kPreserveDOMParts};
+  Node* clone = rootContainer()->Clone(rootContainer()->GetDocument(), data);
+  if (clone->IsDocumentNode()) {
+    return PartRoot::GetUnionFromPartRoot(&To<Document>(clone)->getPartRoot());
+  }
+  return PartRoot::GetUnionFromPartRoot(
+      &To<DocumentFragment>(clone)->getPartRoot());
 }
 
 }  // namespace blink

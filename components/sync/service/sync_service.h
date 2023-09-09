@@ -408,6 +408,12 @@ class SyncService : public KeyedService {
   // implementation may return a sensible likely value.
   virtual ModelTypeSet GetTypesWithPendingDownloadForInitialSync() const = 0;
 
+  // Returns the datatypes which have local changes that have not yet been
+  // synced with the server.
+  // Note: This includes deletions as well.
+  virtual void GetTypesWithUnsyncedData(
+      base::OnceCallback<void(ModelTypeSet)> callback) const = 0;
+
   //////////////////////////////////////////////////////////////////////////////
   // ACTIONS / STATE CHANGE REQUESTS
   //////////////////////////////////////////////////////////////////////////////
@@ -442,23 +448,6 @@ class SyncService : public KeyedService {
   // only when user is interested in session sync data, e.g. the history sync
   // page is opened.
   virtual void SetInvalidationsForSessionsEnabled(bool enabled) = 0;
-
-  // Processes trusted vault encryption keys retrieved from the web. Unused and
-  // ignored on platforms where keys are retrieved by other means.
-  // |last_key_version| represents the key version of the last element in
-  // |keys| (unused if empty).
-  virtual void AddTrustedVaultDecryptionKeysFromWeb(
-      const std::string& gaia_id,
-      const std::vector<std::vector<uint8_t>>& keys,
-      int last_key_version) = 0;
-
-  // Registers a new trusted recovery method that can be used to retrieve
-  // trusted vault encryption keys.
-  virtual void AddTrustedVaultRecoveryMethodFromWeb(
-      const std::string& gaia_id,
-      const std::vector<uint8_t>& public_key,
-      int method_type_hint,
-      base::OnceClosure callback) = 0;
 
   //////////////////////////////////////////////////////////////////////////////
   // OBSERVERS

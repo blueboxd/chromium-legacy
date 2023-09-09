@@ -22,11 +22,12 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/data_model/iban.h"
 #include "components/autofill/core/browser/field_filler.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
+#include "components/autofill/core/browser/metrics/log_event.h"
 #include "components/autofill/core/browser/metrics/payments/card_metadata_metrics.h"
 #include "components/autofill/core/browser/payments/autofill_offer_manager.h"
-#include "components/autofill/core/browser/payments/constants.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion_selection.h"
@@ -76,10 +77,8 @@ std::map<std::string, AutofillOfferData*> GetCardLinkedOffers(
 
 int GetObfuscationLength() {
 #if BUILDFLAG(IS_ANDROID)
-  // On Android, the obfuscation length is 2 when the Android keyboard
-  // accessory is enabled (though this length applies to all Suggestions
-  // created for Android).
-  return IsKeyboardAccessoryEnabled() ? 2 : 4;
+  // On Android, the obfuscation length is 2.
+  return 2;
 #elif BUILDFLAG(IS_IOS)
   return base::FeatureList::IsEnabled(
              features::kAutofillUseTwoDotsForLastFourDigits)
@@ -112,32 +111,31 @@ AutofillSuggestionGenerator::~AutofillSuggestionGenerator() = default;
 std::vector<Suggestion> AutofillSuggestionGenerator::GetSuggestionsForProfiles(
     const FormStructure& form,
     const FormFieldData& field,
-    const AutofillField& autofill_field,
+    AutofillType field_type,
+    base::span<SkipStatus> skip_statuses,
     const std::string& app_locale) {
-  std::vector<ServerFieldType> field_types;
-  field_types.reserve(form.field_count());
-  for (const std::unique_ptr<AutofillField>& form_field : form) {
-    if (!form_field->ShouldSuppressSuggestionsAndFillingByDefault()) {
-      field_types.push_back(form_field->Type().GetStorableType());
+  ServerFieldTypeSet field_types;
+  CHECK_EQ(skip_statuses.size(), form.field_count());
+  for (size_t i = 0; i < form.field_count(); ++i) {
+    if (skip_statuses[i] == SkipStatus::kNotSkipped) {
+      field_types.insert(form.field(i)->Type().GetStorableType());
     }
   }
 
   std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
-      autofill_field.Type(), field.value, field.is_autofilled, field_types);
+      field_type, field.value, field.is_autofilled, field_types);
 
   // Adjust phone number to display in prefix/suffix case.
-  if (autofill_field.Type().group() == FieldTypeGroup::kPhoneHome) {
+  if (field_type.group() == FieldTypeGroup::kPhoneHome) {
     for (auto& suggestion : suggestions) {
       const AutofillProfile* profile = personal_data_->GetProfileByGUID(
           suggestion.GetPayload<Suggestion::BackendId>().value());
       if (profile) {
-        const std::u16string phone_home_city_and_number =
-            profile->GetInfo(PHONE_HOME_CITY_AND_NUMBER, app_locale);
-        suggestion.main_text =
-            Suggestion::Text(FieldFiller::GetPhoneNumberValueForInput(
-                                 autofill_field, suggestion.main_text.value,
-                                 phone_home_city_and_number, field),
-                             Suggestion::Text::IsPrimary(true));
+        suggestion.main_text = Suggestion::Text(
+            FieldFiller::GetPhoneNumberValueForInput(
+                field, suggestion.main_text.value,
+                profile->GetInfo(PHONE_HOME_CITY_AND_NUMBER, app_locale)),
+            Suggestion::Text::IsPrimary(true));
       }
     }
   }
@@ -682,33 +680,23 @@ void AutofillSuggestionGenerator::SetCardArtURL(
     Suggestion& suggestion,
     const CreditCard& credit_card,
     bool virtual_card_option) const {
-  const GURL card_art_url = personal_data_->GetCardArtURL(credit_card);
+  if (!virtual_card_option &&
+      !base::FeatureList::IsEnabled(features::kAutofillEnableCardArtImage)) {
+    return;
+  }
+
+  GURL card_art_url = personal_data_->GetCardArtURL(credit_card);
 
   if (card_art_url.is_empty() || !card_art_url.is_valid())
     return;
 
-  // The Capital One icon for virtual cards is not card metadata, it only helps
-  // distinguish FPAN from virtual cards when metadata is unavailable. FPANs
-  // should only ever use the network logo or rich card art. The Capital One
-  // logo is reserved for virtual cards only.
-  if (!virtual_card_option && card_art_url == kCapitalOneCardArtUrl) {
-    return;
-  }
-
-  // Only show card art if the experiment is enabled or if it is the Capital One
-  // virtual card icon.
-  if (base::FeatureList::IsEnabled(features::kAutofillEnableCardArtImage) ||
-      card_art_url == kCapitalOneCardArtUrl) {
 #if BUILDFLAG(IS_ANDROID)
-    suggestion.custom_icon_url = card_art_url;
+  suggestion.custom_icon_url = card_art_url;
 #else
-    gfx::Image* image =
-        personal_data_->GetCreditCardArtImageForUrl(card_art_url);
-    if (image) {
-      suggestion.custom_icon = *image;
-    }
+  gfx::Image* image = personal_data_->GetCreditCardArtImageForUrl(card_art_url);
+  if (image)
+    suggestion.custom_icon = *image;
 #endif
-  }
 }
 
 bool AutofillSuggestionGenerator::ShouldShowVirtualCardOptionForServerCard(
@@ -717,7 +705,8 @@ bool AutofillSuggestionGenerator::ShouldShowVirtualCardOptionForServerCard(
 
   // If the card is not enrolled into virtual cards, we should not show a
   // virtual card suggestion for it.
-  if (card->virtual_card_enrollment_state() != CreditCard::ENROLLED) {
+  if (card->virtual_card_enrollment_state() !=
+      CreditCard::VirtualCardEnrollmentState::kEnrolled) {
     return false;
   }
 

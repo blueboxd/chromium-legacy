@@ -7,18 +7,21 @@
 #include <map>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/functional/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/observer_list.h"
+#include "base/strings/string_split.h"
 #include "content/browser/devtools/auction_worklet_devtools_agent_host.h"
 #include "content/browser/devtools/devtools_http_handler.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_pipe_handler.h"
 #include "content/browser/devtools/devtools_stream_file.h"
 #include "content/browser/devtools/forwarding_agent_host.h"
+#include "content/browser/devtools/mojom_devtools_agent_host.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
@@ -30,11 +33,20 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/browser/devtools_socket_factory.h"
+#include "content/public/browser/mojom_devtools_agent_host_delegate.h"
+#include "content/public/common/content_switches.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+
+#if BUILDFLAG(IS_WIN)
+#include <fcntl.h>
+#include <io.h>
+#include <windows.h>
+#endif
 
 namespace content {
 
 namespace {
+
 typedef std::map<std::string, DevToolsAgentHostImpl*> DevToolsMap;
 DevToolsMap& GetDevtoolsInstances() {
   static base::NoDestructor<DevToolsMap> instance;
@@ -59,6 +71,55 @@ void SetDevToolsPipeHandler(std::unique_ptr<DevToolsPipeHandler> handler) {
   *instance = std::move(handler);
 }
 
+#if BUILDFLAG(IS_WIN)
+// Map handle to file descriptor
+int AdoptHandle(const std::string& serialized_pipe, int flags) {
+  // Deserialize the handle.
+  // We use the fact that inherited handles in the child process have the same
+  // value and access rights as in the parent process.
+  // See:
+  // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessa
+  uint32_t handle_as_uint32;
+  if (!base::StringToUint(serialized_pipe, &handle_as_uint32)) {
+    return -1;
+  }
+  HANDLE handle = base::win::Uint32ToHandle(handle_as_uint32);
+  if (GetFileType(handle) != FILE_TYPE_PIPE) {
+    return -1;
+  }
+  // Map the handle to the file descriptor
+  return _open_osfhandle(reinterpret_cast<intptr_t>(handle), flags);
+}
+
+// Transform the --remote-debugging-io-pipes switch value to file descriptors.
+bool AdoptPipes(const std::string& io_pipes, int& read_fd, int& write_fd) {
+  // The parent process is expected to serialize the input and the output pipe
+  // handles as unsigned integers, concatenate them with comma and pass this
+  // string to the browser via the --remote-debugging-io-pipes argument.
+  std::vector<std::string> pipe_names = base::SplitString(
+      io_pipes, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (pipe_names.size() != 2) {
+    return false;
+  }
+  const std::string& in_pipe = pipe_names[0];
+  const std::string& out_pipe = pipe_names[1];
+  // If adoption of the read_fd fails the already adopted write_fd signalizing
+  // the remote end that the session is over.
+  int tmp_write_fd = AdoptHandle(out_pipe, 0);
+  if (tmp_write_fd < 0) {
+    return false;
+  }
+  int tmp_read_fd = AdoptHandle(in_pipe, _O_RDONLY);
+  if (tmp_read_fd < 0) {
+    _close(tmp_write_fd);
+    return false;
+  }
+  read_fd = tmp_read_fd;
+  write_fd = tmp_write_fd;
+  return true;
+}
+#endif
+
 }  // namespace
 
 const char DevToolsAgentHost::kTypeTab[] = "tab";
@@ -71,6 +132,8 @@ const char DevToolsAgentHost::kTypeBrowser[] = "browser";
 const char DevToolsAgentHost::kTypeGuest[] = "webview";
 const char DevToolsAgentHost::kTypeOther[] = "other";
 const char DevToolsAgentHost::kTypeAuctionWorklet[] = "auction_worklet";
+const char DevToolsAgentHost::kTypeAssistiveTechnology[] =
+    "assistive_technology";
 int DevToolsAgentHostImpl::s_force_creation_count_ = 0;
 
 // static
@@ -114,6 +177,7 @@ DevToolsAgentHost::List DevToolsAgentHost::GetOrCreateAll() {
   WebContentsDevToolsAgentHost::AddAllAgentHosts(&result);
 
   AuctionWorkletDevToolsAgentHostManager::GetInstance().GetAll(&result);
+  MojomDevToolsAgentHost::GetAll(&result);
 
 #if DCHECK_IS_ON()
   for (auto it : result) {
@@ -142,8 +206,19 @@ void DevToolsAgentHost::StartRemoteDebuggingServer(
 // static
 void DevToolsAgentHost::StartRemoteDebuggingPipeHandler(
     base::OnceClosure on_disconnect) {
-  SetDevToolsPipeHandler(
-      std::make_unique<DevToolsPipeHandler>(std::move(on_disconnect)));
+  int read_fd = kReadFD;
+  int write_fd = kWriteFD;
+#if BUILDFLAG(IS_WIN)
+  std::string io_pipes =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kRemoteDebuggingIoPipes);
+  if (!io_pipes.empty() && !AdoptPipes(io_pipes, read_fd, write_fd)) {
+    std::move(on_disconnect).Run();
+    return;
+  }
+#endif
+  SetDevToolsPipeHandler(std::make_unique<DevToolsPipeHandler>(
+      read_fd, write_fd, std::move(on_disconnect)));
 }
 
 // static
@@ -189,6 +264,17 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::Forward(
   if (result)
     return result;
   return new ForwardingAgentHost(id, std::move(delegate));
+}
+
+// static
+scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::CreateForMojomDelegate(
+    const std::string& id,
+    std::unique_ptr<MojomDevToolsAgentHostDelegate> delegate) {
+  scoped_refptr<DevToolsAgentHost> result = DevToolsAgentHost::GetForId(id);
+  if (result) {
+    return result;
+  }
+  return new MojomDevToolsAgentHost(id, std::move(delegate));
 }
 
 DevToolsSession* DevToolsAgentHostImpl::SessionByClient(

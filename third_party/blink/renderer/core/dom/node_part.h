@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_PART_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_PART_H_
 
-#include "third_party/blink/renderer/bindings/core/v8/v8_node_part_init.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_part_init.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node.h"
@@ -22,26 +22,28 @@ class CORE_EXPORT NodePart : public Part {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static NodePart* Create(PartRoot* root,
+  static NodePart* Create(PartRootUnion* root_union,
                           Node* node,
-                          const NodePartInit* init,
+                          const PartInit* init,
                           ExceptionState& exception_state);
-  // TODO(crbug.com/1453291): Handle the init parameter.
-  NodePart(PartRoot& root, Node* node, const NodePartInit* init)
-      : Part(root), node_(node) {}
+  NodePart(PartRoot& root, Node& node, const PartInit* init)
+      : NodePart(root,
+                 node,
+                 init && init->hasMetadata() ? init->metadata()
+                                             : Vector<String>()) {}
+  NodePart(PartRoot& root, Node& node, const Vector<String> metadata);
   NodePart(const NodePart&) = delete;
   ~NodePart() override = default;
 
   void Trace(Visitor* visitor) const override;
-  Node* RelevantNode() const override;
-  String ToString() const override;
+  void disconnect() override;
+  bool IsValid() const override;
+  Node* NodeToSortBy() const override;
+  Part* ClonePart(NodeCloningData&) const override;
+  Document& GetDocument() const override;
 
   // NodePart API
   Node* node() const { return node_; }
-
- protected:
-  bool IsValid() override;
-  Document* GetDocument() const override;
 
  private:
   Member<Node> node_;

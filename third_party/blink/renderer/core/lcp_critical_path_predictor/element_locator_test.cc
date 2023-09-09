@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/html/parser/html_token.h"
 #include "third_party/blink/renderer/core/lcp_critical_path_predictor/element_locator.pb.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
@@ -75,6 +76,157 @@ TEST_F(ElementLocatorTest, OfElement) {
       EXPECT_EQ(String(test_case.expected_locator_string), locator_string);
     }
   }
+}
+
+class TokenStreamMatcherTest : public ::testing::Test {
+ public:
+  struct Expectation {
+    enum class Type { kStartTag, kEndTag } type = Type::kStartTag;
+    const char* tag_name;
+    const char* id_attr = nullptr;
+    bool should_match = false;
+  };
+  static const auto kEndTag = Expectation::Type::kEndTag;
+
+  void TestMatch(element_locator::TokenStreamMatcher& matcher,
+                 const Vector<Expectation>& exps) {
+    size_t i = 0;
+    for (const Expectation& exp : exps) {
+      SCOPED_TRACE(testing::Message() << "expectation index = " << i);
+      AtomicString tag_name(exp.tag_name);
+      EXPECT_TRUE(tag_name.Impl()->IsStatic());
+
+      switch (exp.type) {
+        case Expectation::Type::kStartTag: {
+          HTMLToken token;
+          {
+            const char* c = exp.tag_name;
+            token.BeginStartTag(static_cast<LChar>(*c++));
+            for (; *c != 0; ++c) {
+              token.AppendToName(static_cast<UChar>(*c));
+            }
+          }
+
+          if (exp.id_attr) {
+            token.AddNewAttribute('i');
+            token.AppendToAttributeName('d');
+
+            for (const char* c = exp.id_attr; *c != 0; ++c) {
+              token.AppendToAttributeValue(static_cast<LChar>(*c));
+            }
+          }
+
+          bool matched =
+              matcher.ObserveStartTagAndReportMatch(tag_name.Impl(), token);
+          EXPECT_EQ(matched, exp.should_match);
+        } break;
+        case Expectation::Type::kEndTag:
+          matcher.ObserveEndTag(tag_name.Impl());
+          break;
+      }
+
+      ++i;
+    }
+  }
+};
+
+TEST_F(TokenStreamMatcherTest, SingleId) {
+  ElementLocator locator;
+  auto* c = locator.add_components()->mutable_id();
+  c->set_id_attr("target");
+
+  element_locator::TokenStreamMatcher matcher({locator});
+  Vector<Expectation> exps = {
+      {.tag_name = "h1"},
+      {.type = kEndTag, .tag_name = "h1"},
+      {.tag_name = "p"},
+      {.tag_name = "input"},
+      {.tag_name = "div", .id_attr = "target", .should_match = true},
+      {.type = kEndTag, .tag_name = "div"},
+  };
+
+  TestMatch(matcher, exps);
+}
+
+TEST_F(TokenStreamMatcherTest, SingleNth) {
+  ElementLocator locator;
+  auto* c = locator.add_components()->mutable_nth();
+  c->set_tag_name("span");
+  c->set_index(2);
+
+  element_locator::TokenStreamMatcher matcher({locator});
+  Vector<Expectation> exps = {
+      {.tag_name = "div"},
+      {.tag_name = "span"},
+      {.type = kEndTag, .tag_name = "span"},
+      {.tag_name = "span"},
+      {.type = kEndTag, .tag_name = "span"},
+      {.tag_name = "span", .should_match = true},
+      {.type = kEndTag, .tag_name = "span"},
+      {.tag_name = "span"},
+      {.type = kEndTag, .tag_name = "span"},
+      {.type = kEndTag, .tag_name = "div"},
+  };
+
+  TestMatch(matcher, exps);
+}
+
+TEST_F(TokenStreamMatcherTest, CloseAPElement) {
+  ElementLocator locator;
+  auto* c0 = locator.add_components()->mutable_nth();
+  c0->set_tag_name("p");
+  c0->set_index(2);
+  auto* c1 = locator.add_components()->mutable_id();
+  c1->set_id_attr("container");
+
+  EXPECT_EQ(String("/p[2]/#container"), element_locator::ToString(locator));
+
+  element_locator::TokenStreamMatcher matcher({locator});
+  Vector<Expectation> exps = {
+      {.tag_name = "div", .id_attr = "container"},
+      {.tag_name = "p"},
+      {.tag_name = "img"},
+      {.tag_name = "p"},
+      {.tag_name = "p", .should_match = true},
+      {.type = kEndTag, .tag_name = "div"},
+  };
+
+  TestMatch(matcher, exps);
+}
+
+TEST_F(TokenStreamMatcherTest, Complicated) {
+  ElementLocator locator;
+  auto* c0 = locator.add_components()->mutable_nth();
+  c0->set_tag_name("img");
+  c0->set_index(1);
+  auto* c1 = locator.add_components()->mutable_nth();
+  c1->set_tag_name("article");
+  c1->set_index(2);
+  auto* c2 = locator.add_components()->mutable_id();
+  c2->set_id_attr("container");
+
+  EXPECT_EQ(String("/img[1]/article[2]/#container"),
+            element_locator::ToString(locator));
+
+  element_locator::TokenStreamMatcher matcher({locator});
+  Vector<Expectation> exps = {
+      {.tag_name = "section", .id_attr = "container"},
+      {.tag_name = "article"},
+      {.type = kEndTag, .tag_name = "article"},
+      {.tag_name = "article"},
+      {.type = kEndTag, .tag_name = "article"},
+      {.tag_name = "article"},
+      {.tag_name = "h2"},
+      {.type = kEndTag, .tag_name = "h2"},
+      {.tag_name = "img"},
+      {.tag_name = "img", .should_match = true},
+      {.type = kEndTag, .tag_name = "article"},
+      {.tag_name = "article"},
+      {.type = kEndTag, .tag_name = "article"},
+      {.type = kEndTag, .tag_name = "section"},
+  };
+
+  TestMatch(matcher, exps);
 }
 
 }  // namespace blink

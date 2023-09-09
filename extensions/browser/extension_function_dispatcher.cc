@@ -18,6 +18,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process.h"
+#include "base/ranges/algorithm.h"
 #include "base/scoped_observation.h"
 #include "base/trace_event/typed_macros.h"
 #include "base/tracing/protos/chrome_track_event.pbzero.h"
@@ -497,9 +498,9 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
 
   const int render_process_id = render_process_host.GetID();
 
-  const GURL* rfh_url = nullptr;
+  const GURL* render_frame_host_url = nullptr;
   if (render_frame_host) {
-    rfh_url = &render_frame_host->GetLastCommittedURL();
+    render_frame_host_url = &render_frame_host->GetLastCommittedURL();
     DCHECK_EQ(render_process_id, render_frame_host->GetProcess()->GetID());
   }
 
@@ -507,11 +508,12 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
   const Extension* extension =
       registry->enabled_extensions().GetByID(params.extension_id);
   // Check if the call is from a hosted app. Hosted apps can only make call from
-  // render frames, so we can use `rfh_url`.
+  // render frames, so we can use `render_frame_host_url`.
   // TODO(devlin): Isn't `params.extension_id` still populated for hosted app
   // calls?
-  if (!extension && rfh_url) {
-    extension = registry->enabled_extensions().GetHostedAppByURL(*rfh_url);
+  if (!extension && render_frame_host_url) {
+    extension = registry->enabled_extensions().GetHostedAppByURL(
+        *render_frame_host_url);
   }
 
   Feature::Context context_type =
@@ -534,8 +536,8 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
     // TODO(https://crbug.com/1435575): We should, at minimum, be using an
     // origin here. It'd be even better if we could have a more robust way of
     // checking that a process can host untrusted webui.
-    if (extension || !rfh_url ||
-        !rfh_url->SchemeIs(content::kChromeUIUntrustedScheme)) {
+    if (extension || !render_frame_host_url ||
+        !render_frame_host_url->SchemeIs(content::kChromeUIUntrustedScheme)) {
       constexpr char kInvalidWebUiUntrustedContext[] =
           "Context indicated it was untrusted webui, but is invalid.";
       ResponseCallbackOnError(std::move(callback), ExtensionFunction::FAILED,
@@ -547,9 +549,9 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
   const bool is_worker_request = IsRequestFromServiceWorker(params);
 
   scoped_refptr<ExtensionFunction> function = CreateExtensionFunction(
-      params, extension, render_process_id, is_worker_request, rfh_url,
-      context_type, ExtensionAPI::GetSharedInstance(), std::move(callback),
-      render_frame_host);
+      params, extension, render_process_id, is_worker_request,
+      render_frame_host_url, context_type, ExtensionAPI::GetSharedInstance(),
+      std::move(callback), render_frame_host);
   if (!function.get())
     return;
 
@@ -636,20 +638,22 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
 
   // Increment the keepalive to ensure the extension doesn't shut down while
   // it's executing an API function.
+  base::Uuid request_uuid;
   if (IsRequestFromServiceWorker(params)) {
     CHECK(function->worker_id());
     const content::ServiceWorkerExternalRequestTimeoutType timeout_type =
         function->ShouldKeepWorkerAliveIndefinitely()
             ? content::ServiceWorkerExternalRequestTimeoutType::kDoesNotTimeout
             : content::ServiceWorkerExternalRequestTimeoutType::kDefault;
-    base::Uuid uuid = process_manager->IncrementServiceWorkerKeepaliveCount(
+    request_uuid = process_manager->IncrementServiceWorkerKeepaliveCount(
         *function->worker_id(), timeout_type, Activity::API_FUNCTION,
         function->name());
-    function->set_request_uuid(std::move(uuid));
   } else {
     process_manager->IncrementLazyKeepaliveCount(
         function->extension(), Activity::API_FUNCTION, function->name());
+    request_uuid = base::Uuid::GenerateRandomV4();
   }
+  function->set_request_uuid(std::move(request_uuid));
 }
 
 void ExtensionFunctionDispatcher::RemoveWorkerCallbacksForProcess(
@@ -722,27 +726,23 @@ ExtensionFunctionDispatcher::GetVisibleWebContents() const {
       GetAssociatedWebContents();
 }
 
-void ExtensionFunctionDispatcher::AddWorkerResponseTarget(
-    ExtensionFunction* func) {
-  DCHECK(func->is_from_service_worker());
-  worker_response_targets_.insert(func);
+void ExtensionFunctionDispatcher::AddResponseTarget(ExtensionFunction* func) {
+  response_targets_.insert(func);
 }
 
-void ExtensionFunctionDispatcher::ProcessServiceWorkerResponse(
-    int request_id,
-    int64_t service_worker_version_id) {
-  for (auto it = worker_response_targets_.begin();
-       it != worker_response_targets_.end(); ++it) {
-    ExtensionFunction* func = *it;
-    if (func->request_id() == request_id &&
-        func->service_worker_version_id() == service_worker_version_id) {
-      // Calling this may cause the instance to delete itself, so no
-      // referencing it after this!
-      func->OnServiceWorkerAck();
-      worker_response_targets_.erase(it);
-      break;
-    }
+void ExtensionFunctionDispatcher::ProcessResponseAck(
+    const base::Uuid& request_uuid) {
+  auto iter = base::ranges::find_if(
+      response_targets_, [request_uuid](ExtensionFunction* function) {
+        return function->request_uuid() == request_uuid;
+      });
+  if (iter == response_targets_.end()) {
+    return;
   }
+  // Calling this may cause the instance to delete itself, so no
+  // referencing it after this!
+  (*iter)->OnResponseAck();
+  response_targets_.erase(iter);
 }
 
 // static
@@ -752,7 +752,7 @@ ExtensionFunctionDispatcher::CreateExtensionFunction(
     const Extension* extension,
     int requesting_process_id,
     bool is_worker_request,
-    const GURL* rfh_url,
+    const GURL* render_frame_host_url,
     Feature::Context context_type,
     ExtensionAPI* api,
     ExtensionFunction::ResponseCallback callback,
@@ -780,11 +780,10 @@ ExtensionFunctionDispatcher::CreateExtensionFunction(
     // remove it from `mojom::RequestParams`.
     function->set_source_url(params.source_url);
   } else {
-    DCHECK(rfh_url);
-    function->set_source_url(*rfh_url);
+    DCHECK(render_frame_host_url);
+    function->set_source_url(*render_frame_host_url);
   }
 
-  function->set_request_id(params.request_id);
   function->set_has_callback(params.has_callback);
   function->set_user_gesture(params.user_gesture);
   function->set_extension(extension);

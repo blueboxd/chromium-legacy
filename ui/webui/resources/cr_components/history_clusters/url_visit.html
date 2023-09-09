@@ -6,6 +6,10 @@
     min-height: 64px;
   }
 
+  :host-context([chrome-refresh-2023]):host([in-side-panel_]) {
+    min-height: 48px;
+  }
+
   :host(:hover) {
     background-color: var(--cr-hover-background-color);
   }
@@ -70,6 +74,11 @@
 
   :host(:hover) #link-container {
     margin-inline-end: 0;
+  }
+
+  :host-context([chrome-refresh-2023]) #icon {
+    background-color: var(--color-list-item-url-favicon-background,
+      var(--cr-fallback-color-neutral-container));
   }
 
   :host-context(.focus-outline-visible) #link-container:focus {

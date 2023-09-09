@@ -138,7 +138,8 @@ class ASH_EXPORT UnifiedSystemTrayController
   // Show the detailed view of notifier settings. Called from the view.
   void ShowNotifierSettingsView();
   // Show the detailed view of media controls. Called from the view.
-  void ShowMediaControlsDetailedView();
+  void ShowMediaControlsDetailedView(
+      const std::string& show_devices_for_item_id = "");
   // Show the detailed view of Calendar. Called from the view.
   void ShowCalendarView(calendar_metrics::CalendarViewShowSource show_source,
                         calendar_metrics::CalendarEventSource event_source);
@@ -249,9 +250,7 @@ class ASH_EXPORT UnifiedSystemTrayController
   // If you want to add a new feature pod item, you have to add here.
   void InitFeaturePods();
 
-  // Initialize feature pod controllers and their tile views.
-  // Temporarily only adds two feature tiles and other placeholder tiles.
-  // TODO(b/252871301): Create each feature's tile.
+  // Initialize feature pod controllers and their feature tile views.
   void InitFeatureTiles();
 
   // Add the feature pod controller and its view.

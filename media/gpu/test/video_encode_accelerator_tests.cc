@@ -44,10 +44,10 @@ constexpr const char* usage_msg =
            [--codec=<codec>] [--svc_mode=<svc scalability mode>]
            [--bitrate_mode=(cbr|vbr)]
            [--reverse] [--bitrate=<bitrate>]
-           [--disable_validator] [--output_bitstream]
-           [--output_images=(all|corrupt)] [--output_format=(png|yuv)]
-           [--output_folder=<filepath>] [--output_limit=<number>]
-           [--disable_vaapi_lock]
+           [--disable_validator] [--psnr_threshold=<number>]
+           [--output_bitstream] [--output_images=(all|corrupt)]
+           [--output_format=(png|yuv)] [--output_folder=<filepath>]
+           [--output_limit=<number>] [--disable_vaapi_lock]
            [-v=<level>] [--vmodule=<config>]
            [--gtest_help] [--help]
            [<video path>] [<video metadata path>]
@@ -121,13 +121,20 @@ constexpr base::FilePath::CharType kDefaultTestVideoPath[] =
 // TODO(hiroh): Decrease this values to make the test faster.
 constexpr size_t kNumFramesToEncodeForBitrateCheck = 300;
 // Tolerance factor for how encoded bitrate can differ from requested bitrate.
-constexpr double kBitrateTolerance = 0.1;
+constexpr double kBitrateTolerance = 0.15;
 constexpr double kVariableBitrateTolerance = 0.3;
 // The event timeout used in bitrate check tests because encoding 2160p and
 // validating |kNumFramesToEncodeBitrateCheck| frames take much time.
 constexpr base::TimeDelta kBitrateCheckEventTimeout = base::Seconds(180);
 
 media::test::VideoEncoderTestEnvironment* g_env;
+
+// Whether we validate the bitstream produced by the encoder.
+bool g_enable_bitstream_validator = false;
+
+// Declared PSNR threshold here, not in VideoEncoderTestEnvironment because it
+// is specific in video_encode_accelerator_tests.
+double g_psnr_threshold = PSNRVideoFrameValidator::kDefaultTolerance;
 
 // Video encode test class. Performs setup and teardown for each single test.
 class VideoEncoderTest : public ::testing::Test {
@@ -197,21 +204,11 @@ class VideoEncoderTest : public ::testing::Test {
         video_frame_processors.push_back(std::move(image_writer));
     }
 
-    // For a resolution less than 360p, we lower the tolerance. Some platforms
-    // couldn't compress a low resolution video efficiently with a low bitrate.
-    constexpr gfx::Size k360p(640, 360);
-    constexpr double kSSIMToleranceForLowerResolution = 0.65;
-    const gfx::Size encode_resolution = decoder_config.visible_rect().size();
-    const double ssim_tolerance =
-        encode_resolution.GetArea() < k360p.GetArea()
-            ? kSSIMToleranceForLowerResolution
-            : SSIMVideoFrameValidator::kDefaultTolerance;
-
-    auto ssim_validator = SSIMVideoFrameValidator::Create(
+    auto psnr_validator = PSNRVideoFrameValidator::Create(
         get_model_frame_cb, std::move(image_writer),
-        VideoFrameValidator::ValidationMode::kAverage, ssim_tolerance);
-    LOG_ASSERT(ssim_validator);
-    video_frame_processors.push_back(std::move(ssim_validator));
+        VideoFrameValidator::ValidationMode::kAverage, g_psnr_threshold);
+    LOG_ASSERT(psnr_validator);
+    video_frame_processors.push_back(std::move(psnr_validator));
     return BitstreamValidator::Create(
         decoder_config, last_frame_index, std::move(video_frame_processors),
         spatial_layer_index_to_decode, temporal_layer_index_to_decode,
@@ -260,7 +257,7 @@ class VideoEncoderTest : public ::testing::Test {
       }
     }
 
-    if (!g_env->IsBitstreamValidatorEnabled()) {
+    if (!g_enable_bitstream_validator) {
       return bitstream_processors;
     }
 
@@ -464,7 +461,7 @@ TEST_F(VideoEncoderTest, BitrateCheck) {
   const bool vbr_encoding =
       config.bitrate_allocation.GetMode() == Bitrate::Mode::kVariable;
   const double tolerance =
-      vbr_encoding ? kBitrateTolerance : kVariableBitrateTolerance;
+      vbr_encoding ? kVariableBitrateTolerance : kBitrateTolerance;
   if (!vbr_encoding) {
     config.num_frames_to_encode = kNumFramesToEncodeForBitrateCheck * 3;
   }
@@ -483,6 +480,8 @@ TEST_F(VideoEncoderTest, BitrateCheck) {
     encoder->EncodeUntil(VideoEncoder::kFrameReleased,
                          kNumFramesToEncodeForBitrateCheck);
     EXPECT_TRUE(encoder->WaitUntilIdle());
+    EXPECT_TRUE(encoder->WaitForEvent(VideoEncoder::kBitstreamReady,
+                                      kNumFramesToEncodeForBitrateCheck));
   }
   EXPECT_NEAR(encoder->GetStats().Bitrate(), first_bitrate,
               tolerance * first_bitrate);
@@ -500,6 +499,8 @@ TEST_F(VideoEncoderTest, BitrateCheck) {
     encoder->EncodeUntil(VideoEncoder::kFrameReleased,
                          kNumFramesToEncodeForBitrateCheck * 2);
     EXPECT_TRUE(encoder->WaitUntilIdle());
+    EXPECT_TRUE(encoder->WaitForEvent(VideoEncoder::kBitstreamReady,
+                                      kNumFramesToEncodeForBitrateCheck));
     EXPECT_NEAR(encoder->GetStats().Bitrate(), second_bitrate,
                 tolerance * second_bitrate);
 
@@ -510,7 +511,6 @@ TEST_F(VideoEncoderTest, BitrateCheck) {
     encoder->UpdateBitrate(
         AllocateDefaultBitrateForTesting(
             config.num_spatial_layers, config.num_temporal_layers,
-            // TODO(b/181797390): Reconsider if this peak bitrate is reasonable.
             Bitrate::ConstantBitrate(third_bitrate)),
         third_framerate);
     encoder->Encode();
@@ -582,8 +582,7 @@ TEST_F(VideoEncoderTest, FlushAtEndOfStream_NV12DmabufScaling) {
     num_temporal_layers = spatial_layers[0].num_of_temporal_layers;
   }
   VideoEncoderClientConfig config(
-      nv12_video, g_env->Profile(), spatial_layers,
-      VideoEncodeAccelerator::Config::InterLayerPredMode::kOff,
+      nv12_video, g_env->Profile(), spatial_layers, SVCInterLayerPredMode::kOff,
       AllocateDefaultBitrateForTesting(/*num_spatial_layers=*/1u,
                                        num_temporal_layers, new_bitrate),
       g_env->Reverse());
@@ -787,7 +786,7 @@ int main(int argc, char** argv) {
   std::vector<base::test::FeatureRef> disabled_features;
 
   // Parse command line arguments.
-  bool enable_bitstream_validator = true;
+  media::test::g_enable_bitstream_validator = true;
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
   for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
        it != switches.end(); ++it) {
@@ -816,7 +815,12 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
       }
     } else if (it->first == "disable_validator") {
-      enable_bitstream_validator = false;
+      media::test::g_enable_bitstream_validator = false;
+    } else if (it->first == "psnr_threshold") {
+      if (!base::StringToDouble(it->second, &media::test::g_psnr_threshold)) {
+        std::cout << "invalid number \"" << it->second << "\n";
+        return EXIT_FAILURE;
+      }
     } else if (it->first == "output_bitstream") {
       output_bitstream = true;
     } else if (it->first == "bitrate") {
@@ -874,10 +878,10 @@ int main(int argc, char** argv) {
   // Set up our test environment.
   media::test::VideoEncoderTestEnvironment* test_environment =
       media::test::VideoEncoderTestEnvironment::Create(
-          video_path, video_metadata_path, enable_bitstream_validator,
-          output_folder, codec, svc_mode, output_bitstream, output_bitrate,
-          bitrate_mode, reverse, frame_output_config,
-          /*enabled_features=*/{}, disabled_features);
+          media::test::VideoEncoderTestEnvironment::TestType::kValidation,
+          video_path, video_metadata_path, output_folder, codec, svc_mode,
+          output_bitstream, output_bitrate, bitrate_mode, reverse,
+          frame_output_config, /*enabled_features=*/{}, disabled_features);
 
   if (!test_environment)
     return EXIT_FAILURE;

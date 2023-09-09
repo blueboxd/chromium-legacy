@@ -166,6 +166,9 @@ CastContentBrowserClient::CastContentBrowserClient(
   std::vector<const base::Feature*> extra_disable_features;
 
 #if BUILDFLAG(IS_ANDROID)
+  extra_enable_features.push_back(
+      &::media::kUseTaskRunnerForMojoAudioDecoderService);
+
   if (base::android::BuildInfo::GetInstance()->is_tv()) {
     // Use the software decoder provided by MediaCodec instead of the built in
     // software decoder. This can improve av sync quality.
@@ -437,8 +440,7 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
         switches::kForceMediaResolutionHeight,
         switches::kForceMediaResolutionWidth,
         network::switches::kUnsafelyTreatInsecureOriginAsSecure};
-    command_line->CopySwitchesFrom(*browser_command_line, kForwardSwitches,
-                                   std::size(kForwardSwitches));
+    command_line->CopySwitchesFrom(*browser_command_line, kForwardSwitches);
   } else if (process_type == switches::kUtilityProcess) {
     if (browser_command_line->HasSwitch(switches::kAudioOutputChannels)) {
       command_line->AppendSwitchASCII(switches::kAudioOutputChannels,
@@ -459,8 +461,7 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
         switches::kCastInitialScreenWidth,
         switches::kVSyncInterval,
     };
-    command_line->CopySwitchesFrom(*browser_command_line, kForwardSwitches,
-                                   std::size(kForwardSwitches));
+    command_line->CopySwitchesFrom(*browser_command_line, kForwardSwitches);
 
     auto display = display::Screen::GetScreen()->GetPrimaryDisplay();
     gfx::Size res = display.GetSizeInPixel();
@@ -567,11 +568,18 @@ void CastContentBrowserClient::AllowCertificateError(
 }
 
 base::OnceClosure CastContentBrowserClient::SelectClientCertificate(
+    content::BrowserContext* browser_context,
     content::WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
     net::ClientCertIdentityList client_certs,
     std::unique_ptr<content::ClientCertificateDelegate> delegate) {
   GURL requesting_url("https://" + cert_request_info->host_and_port.ToString());
+
+  if (!web_contents) {
+    LOG(ERROR) << "Invalid requestor.";
+    delegate->ContinueWithCertificate(nullptr, nullptr);
+    return base::OnceClosure();
+  }
 
   if (!requesting_url.is_valid()) {
     LOG(ERROR) << "Invalid URL string: "
@@ -878,10 +886,10 @@ bool CastContentBrowserClient::IsWebUIAllowedToMakeNetworkRequests(
   return false;
 }
 
-bool CastContentBrowserClient::ShouldAllowInsecureLocalNetworkRequests(
+bool CastContentBrowserClient::ShouldAllowInsecurePrivateNetworkRequests(
     content::BrowserContext* browser_context,
     const url::Origin& origin) {
-  // Some Cast apps hosted over HTTP needs to access the local network so that
+  // Some Cast apps hosted over HTTP needs to access the private network so that
   // media can be streamed from a local media server.
   return true;
 }

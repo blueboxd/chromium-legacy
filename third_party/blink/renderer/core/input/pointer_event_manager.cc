@@ -109,7 +109,7 @@ void PointerEventManager::Clear() {
   pending_pointer_capture_target_.clear();
   dispatching_pointer_id_ = 0;
   resize_scrollable_area_.Clear();
-  offset_from_resize_corner_ = LayoutSize();
+  offset_from_resize_corner_ = {};
 }
 
 void PointerEventManager::Trace(Visitor* visitor) const {
@@ -419,9 +419,9 @@ void PointerEventManager::AdjustPointerEvent(WebPointerEvent& pointer_event,
         (device_scale_factor / page_scale_factor);
   }
 
-  LayoutSize hit_rect_size = GetHitTestRectForAdjustment(
-      *frame_,
-      LayoutSize(LayoutUnit(adjustment_width), LayoutUnit(adjustment_height)));
+  PhysicalSize hit_rect_size = GetHitTestRectForAdjustment(
+      *frame_, PhysicalSize(LayoutUnit(adjustment_width),
+                            LayoutUnit(adjustment_height)));
 
   if (hit_rect_size.IsEmpty())
     return;
@@ -433,7 +433,8 @@ void PointerEventManager::AdjustPointerEvent(WebPointerEvent& pointer_event,
   // TODO(szager): Shouldn't this be PositionInScreen() ?
   PhysicalOffset hit_test_point =
       PhysicalOffset::FromPointFRound(pointer_event.PositionInWidget());
-  hit_test_point -= PhysicalOffset(hit_rect_size * 0.5f);
+  hit_test_point -= PhysicalOffset(LayoutUnit(hit_rect_size.width * 0.5f),
+                                   LayoutUnit(hit_rect_size.height * 0.5f));
   HitTestLocation location(PhysicalRect(hit_test_point, hit_rect_size));
   HitTestResult hit_test_result =
       root_frame.GetEventHandler().HitTestResultAtLocation(location, hit_type);
@@ -802,7 +803,7 @@ bool PointerEventManager::HandleResizerDrag(
         frame_->GetPage()->GetChromeClient().SetTouchAction(frame_,
                                                             TouchAction::kNone);
         offset_from_resize_corner_ =
-            LayoutSize(resize_scrollable_area_->OffsetFromResizeCorner(p));
+            resize_scrollable_area_->OffsetFromResizeCorner(p);
         return true;
       }
       break;
@@ -821,7 +822,7 @@ bool PointerEventManager::HandleResizerDrag(
       if (resize_scrollable_area_ && resize_scrollable_area_->InResizeMode()) {
         resize_scrollable_area_->SetInResizeMode(false);
         resize_scrollable_area_.Clear();
-        offset_from_resize_corner_ = LayoutSize();
+        offset_from_resize_corner_ = {};
         return true;
       }
       break;

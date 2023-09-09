@@ -318,6 +318,7 @@ blink::UserAgentMetadata GetShellUserAgentMetadata() {
 
   metadata.bitness = GetCpuBitness();
   metadata.wow64 = content::IsWoW64();
+  metadata.form_factor = "";  // Empty value signifies desktop.
 
   return metadata;
 }
@@ -398,7 +399,7 @@ bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
 void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
-  static const char* kForwardSwitches[] = {
+  static const char* const kForwardSwitches[] = {
 #if BUILDFLAG(IS_MAC)
     // Needed since on Mac, content_browsertests doesn't use
     // content_test_launcher.cc and instead uses shell_main.cc. So give a signal
@@ -409,10 +410,11 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
     switches::kEnableCrashReporter,
     switches::kExposeInternalsForTesting,
     switches::kRunWebTests,
+    switches::kTestRegisterStandardScheme,
   };
 
   command_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
-                                 kForwardSwitches, std::size(kForwardSwitches));
+                                 kForwardSwitches);
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -489,14 +491,16 @@ ShellContentBrowserClient::GetGeneratedCodeCacheSettings(
 }
 
 base::OnceClosure ShellContentBrowserClient::SelectClientCertificate(
+    BrowserContext* browser_context,
     WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
     net::ClientCertIdentityList client_certs,
     std::unique_ptr<ClientCertificateDelegate> delegate) {
-  if (select_client_certificate_callback_)
+  if (select_client_certificate_callback_ && web_contents) {
     return std::move(select_client_certificate_callback_)
         .Run(web_contents, cert_request_info, std::move(client_certs),
              std::move(delegate));
+  }
   return base::OnceClosure();
 }
 
@@ -727,6 +731,7 @@ void ShellContentBrowserClient::ConfigureNetworkContextParamsForShell(
       allow_any_cors_exempt_header_for_browser_;
   context_params->user_agent = GetUserAgent();
   context_params->accept_language = GetAcceptLangs(context);
+  context_params->enable_zstd = true;
   auto exempt_header =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           "cors_exempt_header_list");

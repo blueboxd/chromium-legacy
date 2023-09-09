@@ -496,6 +496,13 @@ void WidgetBase::RequestSuccessfulPresentationTimeForNextFrame(
   if (is_hidden_)
     return;
 
+  if (visible_time_request->show_reason_unfolding) {
+    LayerTreeHost()->RequestSuccessfulPresentationTimeForNextFrame(
+        tab_switch_time_recorder_.GetCallbackForNextFrameAfterUnfold(
+            visible_time_request->event_start_time));
+    return;
+  }
+
   // Tab was shown while widget was already painting, eg. due to being
   // captured.
   LayerTreeHost()->RequestSuccessfulPresentationTimeForNextFrame(
@@ -637,6 +644,9 @@ void WidgetBase::RequestNewLayerTreeFrameSink(
   const cc::LayerTreeSettings& settings = LayerTreeHost()->GetSettings();
   if (settings.disable_frame_rate_limit ||
       settings.enable_variable_refresh_rate) {
+    params->use_begin_frame_presentation_feedback =
+        base::FeatureList::IsEnabled(
+            features::kUseBeginFramePresentationFeedback);
     params->synthetic_begin_frame_source = CreateSyntheticBeginFrameSource();
   }
 

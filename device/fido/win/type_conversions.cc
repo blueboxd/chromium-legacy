@@ -136,6 +136,11 @@ ToAuthenticatorMakeCredentialResponse(
           std::make_unique<OpaqueAttestationStatement>(
               base::WideToUTF8(credential_attestation.pwszFormatType),
               std::move(*cbor_attestation_statement))));
+  if (transport_used == FidoTransportProtocol::kInternal) {
+    // Windows platform credentials can't be used from other devices, so we can
+    // fill in the authenticator supported transports.
+    ret.transports = {*transport_used};
+  }
 
   if (credential_attestation.dwVersion >=
       WEBAUTHN_CREDENTIAL_ATTESTATION_VERSION_4) {
@@ -167,10 +172,15 @@ ToAuthenticatorGetAssertionResponse(
                                    assertion.cbAuthenticatorData);
     return absl::nullopt;
   }
+  absl::optional<FidoTransportProtocol> transport_used =
+      assertion.dwVersion >= WEBAUTHN_ASSERTION_VERSION_4
+          ? FromWinTransportsMask(assertion.dwUsedTransport)
+          : absl::nullopt;
   AuthenticatorGetAssertionResponse response(
       std::move(*authenticator_data),
       std::vector<uint8_t>(assertion.pbSignature,
-                           assertion.pbSignature + assertion.cbSignature));
+                           assertion.pbSignature + assertion.cbSignature),
+      transport_used);
   response.credential = PublicKeyCredentialDescriptor(
       CredentialType::kPublicKey,
       std::vector<uint8_t>(
@@ -194,9 +204,6 @@ ToAuthenticatorGetAssertionResponse(
   if (assertion.dwVersion >= WEBAUTHN_ASSERTION_VERSION_3 &&
       assertion.pHmacSecret) {
     response.hmac_secret = HMACSecretOutputs(*assertion.pHmacSecret);
-  }
-  if (assertion.dwVersion >= WEBAUTHN_ASSERTION_VERSION_4) {
-    response.transport_used = FromWinTransportsMask(assertion.dwUsedTransport);
   }
   return response;
 }

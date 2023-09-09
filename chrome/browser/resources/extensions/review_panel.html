@@ -7,11 +7,12 @@
   .header-with-icon {
     align-items: center;
     display: flex;
-    padding: 15px 30px 15px 20px;
+    padding: 0 30px 15px 0px;
   }
 
   .header-with-icon h3 {
-    margin: 5px 0 5px 0;
+    margin: 5px 0 3px 0;
+    font-weight: 400;
   }
 
   /** TODO(crbug.com/1432194): Clean up the CSS with the shared styles added
@@ -21,6 +22,18 @@
     height: var(--cr-icon-size);
     padding: 6px;
     width: var(--cr-icon-size);
+  }
+
+  iron-icon[icon='cr:check'] {
+    background-color: var(--google-green-50);
+    fill: var(--google-green-700);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    iron-icon[icon='cr:check'] {
+      background-color: var(--google-green-300);
+      fill: var(--grey-900-white-4-percent);
+    }
   }
 
   .text-container {
@@ -38,13 +51,24 @@
     }
   }
 
+  .header-group-wrapper {
+    flex: 1;
+    margin-inline-start: 15px;
+  }
+
+  .completion-container {
+    margin-top: 20px;
+    font-weight: 500;
+    font-size: 14px;
+  }
+
   #extension-icon {
     height: var(--cr-icon-size);
     width: var(--cr-icon-size);
   }
 
   .extension-row {
-    padding-inline-end: 10px;
+    padding-inline-end: 20px;
     padding-inline-start: 50px;
   }
 
@@ -58,16 +82,20 @@
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
   .bulk-action-button {
     margin-inline-start: auto;
   }
+
+  .cr-row.first {
+    padding-left: 0px;
+  }
 </style>
 <cr-expand-button class="cr-row first" no-hover
     id="expandButton"
-    expanded="{{unsafeExtensionsReviewListExpanded_}}">
+    expanded="{{unsafeExtensionsReviewListExpanded_}}"
+    hidden$="[[!shouldShowUnsafeExtensions_]]">
   <div class="header-with-icon" id="reviewPanelContainer">
     <iron-icon aria-hidden="true" icon="cr:extension" class="header-icon">
       <!-- TODO(crbug.com/1432194):Will replace this
@@ -84,16 +112,15 @@
   </div>
 </cr-expand-button>
 <iron-collapse class="extension-list"
-    opened="[[unsafeExtensionsReviewListExpanded_]]">
+    opened="[[unsafeExtensionsReviewListExpanded_]]"
+    hidden$="[[!shouldShowUnsafeExtensions_]]">
   <template is="dom-repeat" items="[[unsafeExtensions_]]">
     <div class="extension-row cr-row">
       <img id="extension-icon" src="[[item.iconUrl]]" role="presentation">
       <div class="display-name text-elide">
         <div class="extension-representation">[[item.name]]</div>
-        <div class="secondary">
-          <!-- TODO(crbug.com/1432194): Add secondary string
-            (trigger warnings). -->
-          Placeholder for the trigger text.
+        <div class="cr-secondary-text">
+          [[item.safetyCheckText.panelString]]
         </div>
       </div>
       <cr-icon-button iron-icon="cr:delete"
@@ -114,6 +141,11 @@
     </cr-button>
   </div>
 </iron-collapse>
+<div class="header-with-icon completion-container"
+    hidden$="[[!shouldShowCompletionInfo_]]">
+  <iron-icon role="img" icon="cr:check"></iron-icon>
+  <span class="header-group-wrapper">$i18n{safetyCheckAllDoneForNow}</span>
+</div>
 <cr-action-menu id="makeExceptionMenu">
   <button id="menuKeepExtension"
     class="dropdown-item"

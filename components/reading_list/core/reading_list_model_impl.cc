@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/observer_list.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/time/clock.h"
 #include "components/reading_list/core/reading_list_model_storage.h"
@@ -364,6 +365,9 @@ const ReadingListEntry& ReadingListModelImpl::AddOrReplaceEntry(
 
   AddEntry(std::move(entry), source);
 
+  base::UmaHistogramEnumeration("ReadingList.AddOrReplaceEntry",
+                                GetStorageStateForUma());
+
   return *(entries_.at(url));
 }
 
@@ -393,6 +397,11 @@ void ReadingListModelImpl::SetReadStatusIfExists(const GURL& url, bool read) {
   for (ReadingListModelObserver& observer : observers_) {
     observer.ReadingListDidMoveEntry(this, url);
     observer.ReadingListDidApplyChanges(this);
+  }
+
+  if (read) {
+    base::UmaHistogramEnumeration("ReadingList.MarkEntryRead",
+                                  GetStorageStateForUma());
   }
 }
 
@@ -544,6 +553,13 @@ void ReadingListModelImpl::RemoveObserver(ReadingListModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void ReadingListModelImpl::RecordCountMetricsOnUMAUpload() const {
+  if (!loaded()) {
+    return;
+  }
+  RecordCountMetrics(".OnUMAUpload");
+}
+
 void ReadingListModelImpl::AddEntry(scoped_refptr<ReadingListEntry> entry,
                                     reading_list::EntrySource source) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -633,6 +649,31 @@ ReadingListSyncBridge* ReadingListModelImpl::GetSyncBridgeForTest() {
   return &sync_bridge_;
 }
 
+ReadingListModelImpl::StorageStateForUma
+ReadingListModelImpl::GetStorageStateForUma() const {
+  switch (sync_bridge_.GetStorageType()) {
+    case syncer::StorageType::kAccount:
+      return StorageStateForUma::kAccount;
+    case syncer::StorageType::kUnspecified:
+      return sync_bridge_.IsTrackingMetadata()
+                 ? StorageStateForUma::kSyncEnabled
+                 : StorageStateForUma::kLocalOnly;
+  }
+  NOTREACHED_NORETURN();
+}
+
+std::string ReadingListModelImpl::GetStorageStateSuffixForUma() const {
+  switch (GetStorageStateForUma()) {
+    case StorageStateForUma::kAccount:
+      return ".AccountStorage";
+    case StorageStateForUma::kLocalOnly:
+      return ".LocalStorage";
+    case StorageStateForUma::kSyncEnabled:
+      return ".LocalStorageSyncing";
+  }
+  NOTREACHED_NORETURN();
+}
+
 void ReadingListModelImpl::StoreLoaded(
     ReadingListModelStorage::LoadResultOrError result_or_error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -652,6 +693,8 @@ void ReadingListModelImpl::StoreLoaded(
   DCHECK_EQ(read_entry_count_ + unread_entry_count_, entries_.size());
   loaded_ = true;
 
+  RecordCountMetrics(".OnModelLoaded");
+
   {
     // In rare cases, ModelReadyToSync() leads to the deletion of all local
     // entries. Such deletions should not be propagated to observers, because
@@ -661,11 +704,6 @@ void ReadingListModelImpl::StoreLoaded(
     sync_bridge_.ModelReadyToSync(/*model=*/this,
                                   std::move(result_or_error.value().second));
   }
-
-  base::UmaHistogramCounts1000("ReadingList.Unread.Count.OnModelLoaded",
-                               unread_entry_count_);
-  base::UmaHistogramCounts1000("ReadingList.Read.Count.OnModelLoaded",
-                               read_entry_count_);
 
   for (auto& observer : observers_) {
     observer.ReadingListModelLoaded(this);
@@ -731,4 +769,16 @@ void ReadingListModelImpl::MarkEntrySeenImpl(ReadingListEntry* entry) {
   for (ReadingListModelObserver& observer : observers_) {
     observer.ReadingListDidApplyChanges(this);
   }
+}
+
+void ReadingListModelImpl::RecordCountMetrics(
+    const std::string& event_suffix) const {
+  CHECK(loaded());
+  std::string storage_suffix = GetStorageStateSuffixForUma();
+  base::UmaHistogramCounts1000(
+      base::StrCat({"ReadingList.Unread.Count", event_suffix, storage_suffix}),
+      unread_entry_count_);
+  base::UmaHistogramCounts1000(
+      base::StrCat({"ReadingList.Read.Count", event_suffix, storage_suffix}),
+      read_entry_count_);
 }

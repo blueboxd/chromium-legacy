@@ -43,6 +43,7 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/pref_names.h"
+#include "extensions/common/api/types.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/common/manifest.h"
@@ -2201,10 +2202,6 @@ AppSorting* ExtensionPrefs::app_sorting() const {
   return ExtensionSystem::Get(browser_context_)->app_sorting();
 }
 
-void ExtensionPrefs::SetNeedsStorageGarbageCollection(bool value) {
-  prefs_->SetBoolean(pref_names::kStorageGarbageCollect, value);
-}
-
 bool ExtensionPrefs::NeedsStorageGarbageCollection() const {
   return prefs_->GetBoolean(pref_names::kStorageGarbageCollect);
 }
@@ -2404,12 +2401,13 @@ void ExtensionPrefs::InitExtensionControlledPrefs(
       observer.OnExtensionRegistered(extension_id, install_time, is_enabled);
 
     // Set regular extension controlled prefs.
-    LoadExtensionControlledPrefs(extension_id, kExtensionPrefsScopeRegular);
+    LoadExtensionControlledPrefs(extension_id, ChromeSettingScope::kRegular);
     // Set incognito extension controlled prefs.
     LoadExtensionControlledPrefs(extension_id,
-                                 kExtensionPrefsScopeIncognitoPersistent);
+                                 ChromeSettingScope::kIncognitoPersistent);
     // Set regular-only extension controlled prefs.
-    LoadExtensionControlledPrefs(extension_id, kExtensionPrefsScopeRegularOnly);
+    LoadExtensionControlledPrefs(extension_id,
+                                 ChromeSettingScope::kRegularOnly);
 
     for (auto& observer : observer_list_)
       observer.OnExtensionPrefsLoaded(extension_id, this);
@@ -2418,7 +2416,7 @@ void ExtensionPrefs::InitExtensionControlledPrefs(
 
 void ExtensionPrefs::LoadExtensionControlledPrefs(
     const ExtensionId& extension_id,
-    ExtensionPrefsScope scope) {
+    ChromeSettingScope scope) {
   std::string scope_string;
   if (!pref_names::ScopeToPrefName(scope, &scope_string))
     return;

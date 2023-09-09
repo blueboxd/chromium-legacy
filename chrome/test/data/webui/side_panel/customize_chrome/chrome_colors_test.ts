@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://webui-test/mojo_webui_test_support.js';
 import 'chrome://customize-chrome-side-panel.top-chrome/chrome_colors.js';
 
 import {ChromeColorsElement} from 'chrome://customize-chrome-side-panel.top-chrome/chrome_colors.js';
 import {ColorElement} from 'chrome://customize-chrome-side-panel.top-chrome/color.js';
-import {ChromeColor, CustomizeChromePageCallbackRouter, CustomizeChromePageHandlerRemote, CustomizeChromePageRemote} from 'chrome://customize-chrome-side-panel.top-chrome/customize_chrome.mojom-webui.js';
+import {BrowserColorVariant, ChromeColor, CustomizeChromePageCallbackRouter, CustomizeChromePageHandlerRemote, CustomizeChromePageRemote} from 'chrome://customize-chrome-side-panel.top-chrome/customize_chrome.mojom-webui.js';
 import {CustomizeChromeApiProxy} from 'chrome://customize-chrome-side-panel.top-chrome/customize_chrome_api_proxy.js';
-import {assertDeepEquals, assertEquals, assertGE, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {assertDeepEquals, assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import {TestMock} from 'chrome://webui-test/test_mock.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
@@ -41,6 +40,7 @@ suite('ChromeColorsTest', () => {
         background: {value: i + 1},
         foreground: {value: i + 2},
         base: {value: i + 3},
+        variant: BrowserColorVariant.kTonalSpot,
       });
     }
     handler.setResultFor('getChromeColors', Promise.resolve({colors}));
@@ -81,9 +81,11 @@ suite('ChromeColorsTest', () => {
         .querySelector<ColorElement>('.chrome-color')!.click();
 
     // Should remove background image if there is one.
+    const args = handler.getArgs('setSeedColor')[0];
     assertEquals(1, handler.getCallCount('removeBackgroundImage'));
     assertEquals(1, handler.getCallCount('setSeedColor'));
-    assertEquals(0, handler.getArgs('setSeedColor')[0].value);
+    assertEquals(0, args[0].value);
+    assertEquals(BrowserColorVariant.kTonalSpot, args[1]);
   });
 
   test('sets default color', async () => {
@@ -102,9 +104,10 @@ suite('ChromeColorsTest', () => {
     chromeColorsElement.$.colorPicker.dispatchEvent(new Event('change'));
 
     assertEquals(1, handler.getCallCount('removeBackgroundImage'));
-    const args = handler.getArgs('setSeedColor');
-    assertGE(1, args.length);
-    assertEquals(0xffff0000, args.at(-1).value);
+    const args = handler.getArgs('setSeedColor')[0];
+    assertEquals(2, args.length);
+    assertEquals(0xffff0000, args[0].value);
+    assertEquals(BrowserColorVariant.kTonalSpot, args[1]);
   });
 
   test('checks selected color', async () => {

@@ -381,13 +381,9 @@ std::unique_ptr<SharedImageBacking> D3DImageBackingFactory::CreateSharedImage(
 
   // SHARED_IMAGE_USAGE_CPU_UPLOAD is set for shared memory GMBs.
   const bool is_shm_gmb = usage & SHARED_IMAGE_USAGE_CPU_UPLOAD;
-
-  // TODO(https://anglebug.com/7998): Binding a GL texture that represents one
-  // plane of a multi-planar D3D to the GL framebuffer doesn't work correctly.
-  // This sets the texture target to GL_TEXTURE_EXTERNAL_OES to prevent that
-  // until the issue is fixed.
-  const GLenum texture_target =
-      format.is_single_plane() ? GL_TEXTURE_2D : GL_TEXTURE_EXTERNAL_OES;
+  // GL_TEXTURE_2D is okay to use here as D3D11_BIND_RENDER_TARGET is being
+  // used.
+  const GLenum texture_target = GL_TEXTURE_2D;
 
   D3D11_TEXTURE2D_DESC desc;
   desc.Width = size.width();
@@ -506,6 +502,8 @@ std::unique_ptr<SharedImageBacking> D3DImageBackingFactory::CreateSharedImage(
     uint32_t usage,
     std::string debug_label,
     gfx::GpuMemoryBufferHandle handle) {
+  // Windows does not support external sampler.
+  CHECK(!format.PrefersExternalSampler());
   return CreateSharedImageGMBs(mailbox, std::move(handle), format,
                                gfx::BufferPlane::DEFAULT, size, color_space,
                                surface_origin, alpha_type, usage);
@@ -529,6 +527,11 @@ std::unique_ptr<SharedImageBacking> D3DImageBackingFactory::CreateSharedImage(
   }
 
   auto format = viz::GetSharedImageFormat(buffer_format);
+  // Format cannot be using external sampling due to checks in
+  // `IsPlaneValidForGpuMemoryBufferFormat`.
+  if (format.IsLegacyMultiplanar()) {
+    CHECK_NE(plane, gfx::BufferPlane::DEFAULT);
+  }
   return CreateSharedImageGMBs(mailbox, std::move(handle), format, plane, size,
                                color_space, surface_origin, alpha_type, usage);
 }

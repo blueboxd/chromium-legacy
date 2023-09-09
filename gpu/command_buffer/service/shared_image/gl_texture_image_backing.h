@@ -12,8 +12,7 @@ class GrPromiseImageTexture;
 
 namespace gpu {
 
-// Implementation of SharedImageBacking that creates a GL Texture that is not
-// backed by a GLImage.
+// Implementation of SharedImageBacking that uses GL Textures as storage.
 class GLTextureImageBacking : public ClearTrackingSharedImageBacking {
  public:
   static bool SupportsPixelUploadWithFormat(viz::SharedImageFormat format);
@@ -52,9 +51,9 @@ class GLTextureImageBacking : public ClearTrackingSharedImageBacking {
   std::unique_ptr<DawnImageRepresentation> ProduceDawn(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
-      WGPUDevice device,
-      WGPUBackendType backend_type,
-      std::vector<WGPUTextureFormat> view_formats) final;
+      const wgpu::Device& device,
+      wgpu::BackendType backend_type,
+      std::vector<wgpu::TextureFormat> view_formats) final;
   std::unique_ptr<SkiaGaneshImageRepresentation> ProduceSkiaGanesh(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,

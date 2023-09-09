@@ -60,7 +60,7 @@ class TabDropTarget {
                     for (int i = 0; i < clip.getItemCount(); i++) {
                         int sourceTabId = tabDragSource.getTabIdFromClipData(clip.getItemAt(i));
                         // Ignore the drop if the dropped tab id does not match the id of tab being
-                        // dragged. Return the original payload drop for next in line to receive the
+                        // dragged. Return the orginal payload drop for next in line to receive the
                         // drop to handle.
                         if (sourceTabId != tabBeingDragged.getId()) {
                             Log.w(TAG, "DnD: Received an invalid tab drop.");

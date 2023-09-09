@@ -59,6 +59,7 @@
 <translation id="3984746313391923992">Согласно правилам вашей организации, входить в Chrome запрещено.</translation>
 <translation id="3988789688219830639">У Google Chrome нет доступа к вашим фото и видео. Чтобы предоставить его, нажмите "Настройки &gt; Конфиденциальность &gt; Фотографии".</translation>
 <translation id="4064699917955374540">Чтобы использовать и сохранять данные Chrome в аккаунте Google, подтвердите свою личность.</translation>
+<translation id="4093042601582616698">Сделать Chrome браузером по умолчанию?</translation>
 <translation id="417201473131094001">Проверка не поддерживается в Chrome Canary</translation>
 <translation id="4233521129555661685">Пользователь <ph name="USER_EMAIL1" />, который работал с Chrome на этом устройстве, не удалил свои закладки, пароли и другие настройки</translation>
 <translation id="424864128008805179">Выйти из Chrome?</translation>
@@ -69,7 +70,6 @@
 <translation id="4636900170638246267">Войдите на этот сайт и в Chrome.</translation>
 <translation id="4698415050768537821">Браузеру Chrome не удается проверить все пароли. Повторите попытку завтра или <ph name="BEGIN_LINK" />проверьте пароли в аккаунте Google<ph name="END_LINK" />.</translation>
 <translation id="4819268619367838612">Chrome отправляет в Google информацию об использовании и сбоях, которые помогают улучшать приложение. <ph name="BEGIN_LINK" />Настроить отправку данных<ph name="END_LINK" /></translation>
-<translation id="4830799082179398588">Сделать Chrome браузером по умолчанию?</translation>
 <translation id="484033449593719797">Проверка не поддерживается в бета-версии Chrome</translation>
 <translation id="4840404732697892756">Чтобы Google Менеджер паролей мог проверять пароли, войдите в аккаунт Google.</translation>
 <translation id="4903674399067644695">Карточка с предложениями о том, как наиболее эффективно использовать Chrome.</translation>
@@ -119,7 +119,7 @@
 <translation id="7275945473750112644">С этого устройства будут удалены все данные Chrome, так как вашим аккаунтом управляет администратор домена <ph name="HOSTED_DOMAIN" /></translation>
 <translation id="7394108421562933108">Карты в Chrome</translation>
 <translation id="7400722733683201933">О браузере Google Chrome</translation>
-<translation id="7501046334262221972">Чтобы сделать Chrome браузером по умолчанию, откройте настройки, нажмите "Браузер по умолчанию" и выберите Chrome.</translation>
+<translation id="7501046334262221972">Чтобы сделать Chrome браузером по умолчанию, откройте настройки, нажмите "Приложение браузера по умолчанию" и выберите Chrome.</translation>
 <translation id="756809126120519699">Данные Chrome удалены</translation>
 <translation id="7662994914830945754">Чтобы ваши вкладки всегда были доступны вам при работе с Chrome, выполните вход и включите синхронизацию.</translation>
 <translation id="7669869107155339016">Откройте настройки Chrome.</translation>

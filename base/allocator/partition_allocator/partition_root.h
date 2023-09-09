@@ -166,8 +166,8 @@ struct PartitionOptions {
     kAllowed,
   };
 
+  // TODO(bartekn): Remove.
   enum class Cookie : uint8_t {
-    kDisallowed,
     kAllowed,
   };
 
@@ -192,7 +192,7 @@ struct PartitionOptions {
   Cookie cookie = Cookie::kAllowed;
   BackupRefPtr backup_ref_ptr = BackupRefPtr::kDisabled;
   UseConfigurablePool use_configurable_pool = UseConfigurablePool::kNo;
-  size_t ref_count_size;
+  size_t ref_count_size = 0;
   MemoryTagging memory_tagging = MemoryTagging::kDisabled;
 #if BUILDFLAG(ENABLE_THREAD_ISOLATION)
   ThreadIsolationOption thread_isolation;
@@ -228,9 +228,8 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
   // Root settings accessed on fast paths.
   //
   // Careful! PartitionAlloc's performance is sensitive to its layout.  Please
-  // put the fast-path objects in the struct below, and the other ones after
-  // the union..
-  struct Settings {
+  // put the fast-path objects in the struct below.
+  struct alignas(internal::kPartitionCachelineSize) Settings {
     // Chromium-style: Complex constructor needs an explicit out-of-line
     // constructor.
     Settings();
@@ -250,19 +249,23 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
     bool with_thread_cache = false;
 
     bool allow_aligned_alloc = false;
-    bool allow_cookie = false;
+#if BUILDFLAG(PA_DCHECK_IS_ON)
+    bool use_cookie = false;
+#else
+    static constexpr bool use_cookie = false;
+#endif  // BUILDFLAG(PA_DCHECK_IS_ON)
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
     bool brp_enabled_ = false;
 #if PA_CONFIG(ENABLE_MAC11_MALLOC_SIZE_HACK)
     bool mac11_malloc_size_hack_enabled_ = false;
-    size_t mac11_malloc_size_hack_usable_size_;
+    size_t mac11_malloc_size_hack_usable_size_ = 0;
 #endif  // PA_CONFIG(ENABLE_MAC11_MALLOC_SIZE_HACK)
 #endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
     bool use_configurable_pool = false;
 #if PA_CONFIG(HAS_MEMORY_TAGGING)
     bool memory_tagging_enabled_ = false;
 #if PA_CONFIG(INCREASE_REF_COUNT_SIZE_FOR_MTE)
-    size_t ref_count_size;
+    size_t ref_count_size = 0;
 #endif  // PA_CONFIG(INCREASE_REF_COUNT_SIZE_FOR_MTE)
 #endif  // PA_CONFIG(HAS_MEMORY_TAGGING)
 #if BUILDFLAG(ENABLE_THREAD_ISOLATION)
@@ -280,19 +283,11 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
 #endif  // PA_CONFIG(EXTRAS_REQUIRED)
   };
 
-  // Read-mostly settings.
-  union {
-    Settings settings;
-
-    // The flags above are accessed for all (de)allocations, and are mostly
-    // read-only. They should not share a cacheline with the data below, which
-    // is only touched when the lock is taken.
-    uint8_t one_cacheline[internal::kPartitionCachelineSize];
-  };
+  Settings settings;
 
   // Not used on the fastest path (thread cache allocations), but on the fast
   // path of the central allocator.
-  ::partition_alloc::internal::Lock lock_;
+  alignas(internal::kPartitionCachelineSize) internal::Lock lock_;
 
   Bucket buckets[internal::kNumBuckets] = {};
   Bucket sentinel_bucket{};
@@ -1331,14 +1326,12 @@ PA_ALWAYS_INLINE void PartitionRoot::FreeNoHooksImmediate(
   // For more context, see the other "Layout inside the slot" comment inside
   // AllocWithFlagsNoHooks().
 
-#if BUILDFLAG(PA_DCHECK_IS_ON)
-  if (settings.allow_cookie) {
+  if (settings.use_cookie) {
     // Verify the cookie after the allocated region.
     // If this assert fires, you probably corrupted memory.
     internal::PartitionCookieCheckValue(static_cast<unsigned char*>(object) +
                                         GetSlotUsableSize(slot_span));
   }
-#endif
 
 #if BUILDFLAG(USE_STARSCAN)
   // TODO(bikineev): Change the condition to PA_LIKELY once PCScan is enabled by
@@ -1688,7 +1681,7 @@ PA_ALWAYS_INLINE size_t PartitionRoot::GetUsableSize(void* ptr) {
     return 0;
   }
   auto* slot_span = SlotSpan::FromObjectInnerPtr(ptr);
-  auto* root = PartitionRoot::FromSlotSpan(slot_span);
+  auto* root = FromSlotSpan(slot_span);
   return root->GetSlotUsableSize(slot_span);
 }
 
@@ -1699,7 +1692,7 @@ PartitionRoot::GetUsableSizeWithMac11MallocSizeHack(void* ptr) {
     return 0;
   }
   auto* slot_span = SlotSpan::FromObjectInnerPtr(ptr);
-  auto* root = PartitionRoot::FromSlotSpan(slot_span);
+  auto* root = FromSlotSpan(slot_span);
   size_t usable_size = root->GetSlotUsableSize(slot_span);
 #if PA_CONFIG(ENABLE_MAC11_MALLOC_SIZE_HACK)
   // Check |mac11_malloc_size_hack_enabled_| flag first as this doesn't
@@ -1962,13 +1955,11 @@ PA_ALWAYS_INLINE void* PartitionRoot::AllocWithFlagsNoHooks(
 
   void* object = SlotStartToObject(slot_start);
 
-#if BUILDFLAG(PA_DCHECK_IS_ON)
   // Add the cookie after the allocation.
-  if (settings.allow_cookie) {
+  if (settings.use_cookie) {
     internal::PartitionCookieWriteValue(static_cast<unsigned char*>(object) +
                                         usable_size);
   }
-#endif
 
   // Fill the region kUninitializedByte (on debug builds, if not requested to 0)
   // or 0 (if requested and not 0 already).
@@ -2164,12 +2155,6 @@ ThreadCache* PartitionRoot::GetOrCreateThreadCache() {
 ThreadCache* PartitionRoot::GetThreadCache() {
   return PA_LIKELY(settings.with_thread_cache) ? ThreadCache::Get() : nullptr;
 }
-
-using ThreadSafePartitionRoot = PartitionRoot;
-
-static_assert(offsetof(ThreadSafePartitionRoot, lock_) ==
-                  internal::kPartitionCachelineSize,
-              "Padding is incorrect");
 
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 // Usage in `raw_ptr.cc` is notable enough to merit a non-internal alias.

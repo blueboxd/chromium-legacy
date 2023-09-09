@@ -7,10 +7,11 @@
 #include <memory>
 
 #include "base/check_is_test.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "base/metrics/histogram_functions.h"
+#include "base/run_loop.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_runner.h"
 #include "base/time/time.h"
@@ -39,6 +40,7 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-shared.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "url/gurl.h"
@@ -47,6 +49,7 @@
 namespace webapps {
 
 namespace {
+const char kDisableGuardrailsSwitch[] = "disable-ml-install-history-guardrails";
 
 enum class ManifestUrlInvalid {
   kEmpty = 0,
@@ -82,13 +85,6 @@ MLInstallabilityPromoter::RegisterCurrentInstallForWebContents(
   }
   current_install_ = tracker->GetWeakPtr();
   return tracker;
-}
-
-void MLInstallabilityPromoter::SetAwaitTimeoutTaskPendingCallbackForTesting(
-    base::OnceClosure await_site_resources_load_callback_for_testing) {
-  CHECK_IS_TEST();
-  await_timeout_task_pending_callback_for_testing_ =
-      std::move(await_site_resources_load_callback_for_testing);
 }
 
 void MLInstallabilityPromoter::SetTaskRunnerForTesting(
@@ -178,16 +174,26 @@ void MLInstallabilityPromoter::MaybeCompleteMetricsCollection() {
     // This allows us to reach a state in tests where both the site quality and
     // site metrics tasks have run but the timeout task has not, allowing
     // effective testing of update logic.
-    if (IsTimeoutTaskOnlyPending()) {
-      if (await_timeout_task_pending_callback_for_testing_) {
-        CHECK_IS_TEST();
-        std::move(await_timeout_task_pending_callback_for_testing_).Run();
-      }
+    if (IsTimeoutTaskOnlyPending() && run_loop_for_testing_) {
+      CHECK_IS_TEST();
+      run_loop_for_testing_->Quit();
     }
     return;
   }
-
   EmitUKMs();
+}
+
+void MLInstallabilityPromoter::AwaitMetricsCollectionTasksCompleteForTesting() {
+  CHECK_IS_TEST();
+  if (!site_manifest_metrics_task_ && !site_quality_metrics_task_) {
+    return;
+  }
+
+  if (!run_loop_for_testing_) {
+    run_loop_for_testing_ = std::make_unique<base::RunLoop>();
+  }
+  run_loop_for_testing_->Run();
+  run_loop_for_testing_.reset();
 }
 
 GURL MLInstallabilityPromoter::GetProjectedManifestIdAfterMetricsCollection() {
@@ -204,11 +210,14 @@ GURL MLInstallabilityPromoter::GetProjectedManifestIdAfterMetricsCollection() {
   }
   GURL manifest_id;
   if (blink::IsEmptyManifest(manifest_)) {
-    manifest_id = web_contents()->GetLastCommittedURL().GetWithoutRef();
+    manifest_id = site_url_.GetWithoutRef();
   } else {
-    manifest_id = manifest_->id;
+    manifest_id = blink::GetIdFromManifest(*manifest_);
+    if (!manifest_id.is_valid()) {
+      manifest_id = site_url_.GetWithoutRef();
+    }
   }
-  CHECK(manifest_id.is_valid());
+  CHECK(manifest_id.is_valid()) << " invalid manifest_id: " << manifest_id;
   return manifest_id;
 }
 
@@ -222,7 +231,7 @@ void MLInstallabilityPromoter::EmitUKMs() {
   ukm::builders::Site_Quality(source_id)
       .SetCacheStorageSize(ukm::GetExponentialBucketMinForBytes(
           site_quality_metrics_.cache_storage_size))
-      .SetHasFavicons(site_quality_metrics_.favicons_count > 0)
+      .SetHasFavicons(site_quality_metrics_.non_default_favicons_count > 0)
       .SetHasFetchHandler(site_quality_metrics_.has_fetch_handler)
       .SetServiceWorkerScriptSize(ukm::GetExponentialBucketMinForBytes(
           site_quality_metrics_.service_worker_script_size))
@@ -349,15 +358,20 @@ void MLInstallabilityPromoter::OnClassificationResult(
     return;
   }
   GURL manifest_id = GetProjectedManifestIdAfterMetricsCollection();
-  bool has_icons =
-      site_quality_metrics_.favicons_count > 0 || !manifest_->icons.empty();
+  bool has_icons = site_quality_metrics_.non_default_favicons_count > 0 ||
+                   !manifest_->icons.empty();
+  bool blocked_by_history_guardrails =
+      app_banner_manager_->IsMlPromotionBlockedByHistoryGuardrail(manifest_id);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kDisableGuardrailsSwitch)) {
+    blocked_by_history_guardrails = false;
+  }
   // Promotion from this Ml result is blocked by guardrails if it doesn't have
   // any icons, or if there has been a history of recent ignores. See the
   // implementation of IsMlPromotionBlockedByHistoryGuardrail per platform for
   // more details.
   bool is_ml_promotion_blocked_by_guardrails =
-      !has_icons ||
-      app_banner_manager_->IsMlPromotionBlockedByHistoryGuardrail(manifest_id);
+      !has_icons || blocked_by_history_guardrails;
   ml_result_reporter_ = std::make_unique<MlInstallResultReporter>(
       app_banner_manager_, result.request_id, result.ordered_labels[0],
       manifest_id, is_ml_promotion_blocked_by_guardrails);
@@ -447,7 +461,14 @@ void MLInstallabilityPromoter::DidUpdateFaviconURL(
     return;
   }
 
-  site_quality_metrics_.favicons_count = candidates.size();
+  // Only count favicon URLs that are not the default one set by the renderer in
+  // the absence of icons in the html. Default URLs follow the
+  // <document_origin>/favicon.ico format.
+  for (const auto& favicon_urls : candidates) {
+    if (!favicon_urls->is_default_icon) {
+      ++site_quality_metrics_.non_default_favicons_count;
+    }
+  }
 }
 
 void MLInstallabilityPromoter::OnRegistrationStored(int64_t registration_id,

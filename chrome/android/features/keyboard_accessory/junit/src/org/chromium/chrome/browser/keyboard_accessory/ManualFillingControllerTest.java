@@ -107,8 +107,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@EnableFeatures({ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY,
-        ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID})
+@EnableFeatures({ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
 public class ManualFillingControllerTest {
     private static final int sKeyboardHeightDp = 100;
     private static final int sAccessoryHeightDp = 48;
@@ -246,10 +245,7 @@ public class ManualFillingControllerTest {
          * @return The {@link Action} last captured with {@link #record(int, Action[])}.
          */
         Action getFirstRecordedAction() {
-            int firstNonTabLayoutAction = 1;
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
-                firstNonTabLayoutAction = 0;
-            }
+            int firstNonTabLayoutAction = 0;
             assert mRecordedActions.size() >= firstNonTabLayoutAction;
             return mRecordedActions.get(firstNonTabLayoutAction);
         }

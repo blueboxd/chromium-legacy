@@ -62,11 +62,12 @@ class LayoutNGSVGForeignObject final
                       const ComputedStyle& style) const override;
   gfx::RectF ObjectBoundingBox() const override;
   gfx::RectF StrokeBoundingBox() const override;
+  gfx::RectF DecoratedBoundingBox() const override;
   gfx::RectF VisualRectInLocalSVGCoordinates() const override;
   AffineTransform LocalToSVGParentTransform() const override;
 
   // LayoutBox override:
-  LayoutPoint Location() const override;
+  LayoutPoint LocationInternal() const override;
   PaintLayerType LayerTypeRequired() const override;
   bool CreatesNewFormattingContext() const override;
 

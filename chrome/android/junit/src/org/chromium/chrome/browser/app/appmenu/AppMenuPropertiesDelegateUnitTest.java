@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.view.ContextThemeWrapper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
@@ -48,7 +49,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowPackageManager;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FeatureList;
 import org.chromium.base.FeatureList.TestValues;
@@ -76,7 +76,6 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.read_later.ReadingListUtils;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -106,7 +105,6 @@ import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.components.user_prefs.UserPrefsJni;
 import org.chromium.components.webapps.AppBannerManager;
 import org.chromium.components.webapps.AppBannerManagerJni;
-import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.ConnectionType;
@@ -200,7 +198,8 @@ public class AppMenuPropertiesDelegateUnitTest {
         MockitoAnnotations.initMocks(this);
         setupFeatureDefaults();
 
-        Context context = ContextUtils.getApplicationContext();
+        Context context = new ContextThemeWrapper(
+                ContextUtils.getApplicationContext(), R.style.Theme_BrowserUI_DayNight);
         mShadowPackageManager = Shadows.shadowOf(context.getPackageManager());
 
         mLayoutStateProviderSupplier.set(mLayoutStateProvider);
@@ -241,28 +240,23 @@ public class AppMenuPropertiesDelegateUnitTest {
         mBookmarkModelSupplier.set(mBookmarkModel);
         PowerBookmarkUtils.setPriceTrackingEligibleForTesting(false);
         PowerBookmarkUtils.setPowerBookmarkMetaForTesting(PowerBookmarkMeta.newBuilder().build());
-        mAppMenuPropertiesDelegate = Mockito.spy(new AppMenuPropertiesDelegateImpl(
-                ContextUtils.getApplicationContext(), mActivityTabProvider,
-                mMultiWindowModeStateDispatcher, mTabModelSelector, mToolbarManager, mDecorView,
-                mLayoutStateProviderSupplier, mStartSurfaceSupplier, mBookmarkModelSupplier,
-                mIncognitoReauthControllerSupplier));
+        mAppMenuPropertiesDelegate = Mockito.spy(new AppMenuPropertiesDelegateImpl(context,
+                mActivityTabProvider, mMultiWindowModeStateDispatcher, mTabModelSelector,
+                mToolbarManager, mDecorView, mLayoutStateProviderSupplier, mStartSurfaceSupplier,
+                mBookmarkModelSupplier, mIncognitoReauthControllerSupplier));
 
         ShoppingServiceFactory.setShoppingServiceForTesting(mShoppingService);
     }
 
     @After
     public void tearDown() {
-        ThreadUtils.setThreadAssertsDisabledForTesting(false);
         ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(false);
         ChromeAccessibilityUtil.get().setTouchExplorationEnabledForTesting(false);
-        ReadingListUtils.setReadingListSupportedForTesting(null);
-        ShoppingFeatures.setShoppingListEligibleForTesting(null);
     }
 
     private void setupFeatureDefaults() {
         setBookmarkItemRowEnabled(false);
         setShoppingListItemRowEnabled(false);
-        setDesktopSiteExceptionsEnabled(false);
         FeatureList.setTestValues(mTestValues);
     }
 
@@ -278,11 +272,6 @@ public class AppMenuPropertiesDelegateUnitTest {
                 .thenReturn(true);
         mTestValues.addFeatureFlagOverride(ChromeFeatureList.BOOKMARKS_REFRESH, enabled);
         FeatureList.setTestValues(mTestValues);
-    }
-
-    private void setDesktopSiteExceptionsEnabled(boolean enabled) {
-        mTestValues.addFeatureFlagOverride(
-                ContentFeatureList.REQUEST_DESKTOP_SITE_EXCEPTIONS, enabled);
     }
 
     @Test
@@ -346,29 +335,6 @@ public class AppMenuPropertiesDelegateUnitTest {
     @Config(qualifiers = "sw320dp")
     public void testPageMenuItems_Phone_Ntp() {
         setUpMocksForPageMenu();
-        when(mTab.getUrl()).thenReturn(JUnitTestGURLs.getGURL(JUnitTestGURLs.NTP_URL));
-        when(mTab.isNativePage()).thenReturn(true);
-        doReturn(false)
-                .when(mAppMenuPropertiesDelegate)
-                .shouldShowTranslateMenuItem(any(Tab.class));
-
-        Assert.assertEquals(MenuGroup.PAGE_MENU, mAppMenuPropertiesDelegate.getMenuGroup());
-        Menu menu = createTestMenu();
-        mAppMenuPropertiesDelegate.prepareMenu(menu, null);
-
-        Integer[] expectedItems = {R.id.icon_row_menu_id, R.id.new_tab_menu_id,
-                R.id.new_incognito_tab_menu_id, R.id.divider_line_id, R.id.open_history_menu_id,
-                R.id.downloads_menu_id, R.id.all_bookmarks_menu_id, R.id.recent_tabs_menu_id,
-                R.id.divider_line_id, R.id.request_desktop_site_row_menu_id, R.id.divider_line_id,
-                R.id.preferences_id, R.id.help_id};
-        assertMenuItemsAreEqual(menu, expectedItems);
-    }
-
-    @Test
-    @Config(qualifiers = "sw320dp")
-    public void testPageMenuItems_Phone_Ntp_RequestDesktopSiteExceptionsEnabled() {
-        setUpMocksForPageMenu();
-        setDesktopSiteExceptionsEnabled(true);
         when(mTab.getUrl()).thenReturn(JUnitTestGURLs.getGURL(JUnitTestGURLs.NTP_URL));
         when(mTab.isNativePage()).thenReturn(true);
         doReturn(false)
@@ -1140,8 +1106,6 @@ public class AppMenuPropertiesDelegateUnitTest {
             boolean isChromeRunningInAdjacentWindow, boolean isInMultiWindowMode,
             boolean isInMultiDisplayMode, boolean isMultiInstanceRunning) {
         mShadowPackageManager.setSystemFeature(PackageManager.FEATURE_AUTOMOTIVE, isAutomotive);
-        BuildInfo.resetForTesting();
-
         doReturn(isInstanceSwitcherEnabled)
                 .when(mAppMenuPropertiesDelegate)
                 .instanceSwitcherEnabled();

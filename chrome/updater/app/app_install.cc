@@ -96,9 +96,10 @@ AppInstall::AppInstall(SplashScreen::Maker splash_screen_maker,
 
 AppInstall::~AppInstall() = default;
 
-void AppInstall::Initialize() {
+int AppInstall::Initialize() {
   setup_lock_ =
       ScopedLock::Create(kSetupMutex, updater_scope(), kWaitForSetupLock);
+  return kErrorOk;
 }
 
 void AppInstall::FirstTaskRun() {
@@ -119,8 +120,7 @@ void AppInstall::FirstTaskRun() {
     return;
   }
 
-  const TagParsingResult tag_parsing_result =
-      GetTagArgsForCommandLine(GetCommandLineLegacyCompatible());
+  const TagParsingResult tag_parsing_result(GetTagArgs());
 
   // A tag parsing error is handled as an fatal error.
   if (tag_parsing_result.error != tagging::ErrorCode::kSuccess) {
@@ -143,12 +143,14 @@ void AppInstall::FirstTaskRun() {
   splash_screen_ = splash_screen_maker_.Run(app_name_);
   splash_screen_->Show();
 
-  // Creating instances of `UpdateServiceProxy` is possible only after task
-  // scheduling has been initialized.
-  update_service_ = CreateUpdateServiceProxy(
-      updater_scope(), external_constants_->OverinstallTimeout());
+  CreateUpdateServiceProxy();
   update_service_->GetVersion(
       base::BindOnce(&AppInstall::GetVersionDone, this));
+}
+
+void AppInstall::CreateUpdateServiceProxy() {
+  update_service_ = updater::CreateUpdateServiceProxy(
+      updater_scope(), external_constants_->OverinstallTimeout());
 }
 
 void AppInstall::GetVersionDone(const base::Version& version) {
@@ -207,17 +209,10 @@ void AppInstall::WakeCandidate() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Invoke UpdateServiceInternal::Hello to wake this version of the updater,
-  // qualify, and possibly promote this version as a result. The
-  // |UpdateServiceInternal| instance has sequence affinity. Bind it in the
-  // closure to ensure it is released in this sequence.
-  scoped_refptr<UpdateServiceInternal> update_service_internal =
-      CreateUpdateServiceInternalProxy(updater_scope());
-  update_service_internal->Hello(base::BindOnce(
-      [](scoped_refptr<UpdateServiceInternal> /*update_service_internal*/,
-         scoped_refptr<AppInstall> app_install) {
-        app_install->FetchPolicies();
-      },
-      update_service_internal, base::WrapRefCounted(this)));
+  // qualify, and possibly promote this version as a result.
+  CreateUpdateServiceInternalProxy(updater_scope())
+      ->Hello(base::BindOnce(&AppInstall::CreateUpdateServiceProxy, this)
+                  .Then(base::BindOnce(&AppInstall::FetchPolicies, this)));
 }
 
 void AppInstall::FetchPolicies() {

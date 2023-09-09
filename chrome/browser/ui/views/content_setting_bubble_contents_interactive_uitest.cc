@@ -93,10 +93,10 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleContentsInteractiveTest,
                        PrerenderDoesNotCloseBubble) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  // Accept any prompts so that content setting icons appear.
+  // Dismiss any prompts so that content setting icons appear.
   permissions::PermissionRequestManager::FromWebContents(web_contents())
       ->set_auto_response_for_test(
-          permissions::PermissionRequestManager::ACCEPT_ALL);
+          permissions::PermissionRequestManager::DISMISS);
 
   // Navigate to the test page.
   EXPECT_TRUE(content::NavigateToURL(
@@ -110,14 +110,13 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleContentsInteractiveTest,
   // Geolocation icon should be off in the beginning.
   EXPECT_FALSE(geolocation_icon.GetVisible());
 
-  // Access geolocation which will trigger a prompt which will be accepted
+  // Attempt to use geolocation but the permission request will be dismissed.
   permissions::PermissionRequestObserver request_observer(web_contents());
   ASSERT_TRUE(content::ExecJs(web_contents(), "geolocate();"));
   request_observer.Wait();
 
   // Geolocation icon should be on since geolocation API is used.
   EXPECT_TRUE(geolocation_icon.GetVisible());
-
   // Make sure its content setting bubble doesn't show yet.
   EXPECT_FALSE(geolocation_icon.IsBubbleShowing());
 

@@ -24,6 +24,12 @@ BASE_DECLARE_FEATURE(kMetricsClearLogsOnClonedInstall);
 // This can be used to disable structured metrics as a whole.
 BASE_DECLARE_FEATURE(kStructuredMetrics);
 
+#if BUILDFLAG(IS_ANDROID)
+// Determines whether to merge histograms from child processes when Chrome is
+// backgrounded/foregrounded. Only on Android.
+BASE_DECLARE_FEATURE(kMergeSubprocessMetricsOnBgAndFg);
+#endif  // BUILDFLAG(IS_ANDROID)
+
 // When this feature is enabled, use the client ID stored in the system profile
 // of the PMA files when creating independent logs from them. This is to address
 // the issue of a client resetting their client ID, and then creating an
@@ -32,6 +38,25 @@ BASE_DECLARE_FEATURE(kStructuredMetrics);
 // although the metrics are associated with the old client ID. This is notably
 // the case in cloned installs.
 BASE_DECLARE_FEATURE(kRestoreUmaClientIdIndependentLogs);
+
+// Determines whether to allow merging subprocess metrics asynchronously. By
+// itself, the feature does nothing. But the different params below allow
+// toggling specific async behaviours.
+BASE_DECLARE_FEATURE(kSubprocessMetricsAsync);
+// Determines whether to merge subprocess metrics asynchronously when creating
+// periodic ongoing UMA logs.
+extern const base::FeatureParam<bool> kPeriodicMergeAsync;
+// Determines whether to merge the last metrics of a subprocess that has just
+// exited asynchronously.
+extern const base::FeatureParam<bool> kDeregisterAsync;
+// Determines whether the tasks posted when deregistering a subprocess
+// asynchronously are sequenced. This param only applies when |kDeregisterAsync|
+// is true.
+extern const base::FeatureParam<bool> kDeregisterSequenced;
+
+// Determines whether the metrics service should finalize certain independent
+// logs asynchronously.
+BASE_DECLARE_FEATURE(kMetricsServiceAsyncIndependentLogs);
 
 }  // namespace metrics::features
 

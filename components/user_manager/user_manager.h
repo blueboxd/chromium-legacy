@@ -94,6 +94,10 @@ class USER_MANAGER_EXPORT UserManager {
     virtual void OnUserRemoved(const AccountId& account_id,
                                UserRemovalReason reason);
 
+    // Called when the first user that is not allowed in the session is
+    // detected.
+    virtual void OnUserNotAllowed(const std::string& user_email);
+
    protected:
     virtual ~Observer();
   };
@@ -105,6 +109,12 @@ class USER_MANAGER_EXPORT UserManager {
    public:
     // Called when active user has changed.
     virtual void ActiveUserChanged(User* active_user);
+
+    // Called when login state is updated.
+    // This looks very similar to ActiveUserChanged, so consider to merge
+    // in the future.
+    virtual void OnLoginStateUpdated(const User* active_user,
+                                     bool is_current_user_owner);
 
     // Called when another user got added to the existing session.
     virtual void UserAddedToSession(const User* added_user);
@@ -194,9 +204,11 @@ class USER_MANAGER_EXPORT UserManager {
   virtual const AccountId& GetOwnerAccountId() const = 0;
 
   // Provides the caller with account Id of the Owner user once it is loaded.
-  // Would provide empty account id if there is no owner on the device (e.g.
-  // if device is enterprise-owned).
-  virtual void GetOwnerAccountIdAsync(
+  // The provided callback will only be executed when the definitive owner is
+  // determined (either through first user login or successful enterprise
+  // enrollment). Would provide empty account id if there is no owner on the
+  // device (e.g. if device is enterprise-owned).
+  virtual void RequestOwnerAccountId(
       base::OnceCallback<void(const AccountId&)> callback) const = 0;
 
   // Returns account Id of the user that was active in the previous session.
@@ -405,6 +417,7 @@ class USER_MANAGER_EXPORT UserManager {
   virtual void NotifyUserToBeRemoved(const AccountId& account_id) = 0;
   virtual void NotifyUserRemoved(const AccountId& account_id,
                                  UserRemovalReason reason) = 0;
+  virtual void NotifyUserNotAllowed(const std::string& user_email) = 0;
 
   // Returns true if guest user is allowed.
   virtual bool IsGuestSessionAllowed() const = 0;
@@ -429,12 +442,6 @@ class USER_MANAGER_EXPORT UserManager {
 
   // Returns "Local State" PrefService instance.
   virtual PrefService* GetLocalState() const = 0;
-
-  // Checks for platform-specific known users matching given |user_email|. If
-  // data matches a known account, fills |out_account_id| with account id and
-  // returns true.
-  virtual bool GetPlatformKnownUserId(const std::string& user_email,
-                                      AccountId* out_account_id) const = 0;
 
   // Returns account id of the Guest user.
   virtual const AccountId& GetGuestAccountId() const = 0;

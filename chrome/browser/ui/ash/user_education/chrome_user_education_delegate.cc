@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/user_education/chrome_user_education_delegate.h"
 
-#include "ash/user_education/user_education_constants.h"
+#include "ash/ash_element_identifiers.h"
 #include "ash/user_education/user_education_types.h"
 #include "ash/user_education/user_education_util.h"
 #include "base/check.h"
@@ -12,17 +12,20 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/user_education/user_education_service.h"
 #include "chrome/browser/ui/user_education/user_education_service_factory.h"
 #include "chrome/browser/ui/views/user_education/browser_user_education_service.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
 #include "components/account_id/account_id.h"
+#include "components/user_education/common/help_bubble.h"
 #include "components/user_education/common/help_bubble_factory_registry.h"
 #include "components/user_education/common/help_bubble_params.h"
 #include "components/user_education/common/tutorial_registry.h"
 #include "components/user_education/common/tutorial_service.h"
 #include "components/user_manager/user_manager.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/interaction/element_tracker.h"
 
 namespace {
@@ -134,7 +137,9 @@ void ChromeUserEducationDelegate::StartTutorial(
                      std::move(aborted_callback));
 }
 
-void ChromeUserEducationDelegate::AbortTutorial(const AccountId& account_id) {
+void ChromeUserEducationDelegate::AbortTutorial(
+    const AccountId& account_id,
+    absl::optional<ash::TutorialId> tutorial_id) {
   Profile* profile = Profile::FromBrowserContext(
       ash::BrowserContextHelper::Get()->GetBrowserContextByAccountId(
           account_id));
@@ -143,9 +148,48 @@ void ChromeUserEducationDelegate::AbortTutorial(const AccountId& account_id) {
   // user profile. This is a self-imposed restriction.
   CHECK(IsPrimaryProfile(profile));
 
-  UserEducationServiceFactory::GetForProfile(profile)
+  auto& tutorial_service =
+      UserEducationServiceFactory::GetForProfile(profile)->tutorial_service();
+
+  const absl::optional<std::string> tutorial_id_string =
+      tutorial_id ? absl::make_optional(
+                        ash::user_education_util::ToString(tutorial_id.value()))
+                  : absl::nullopt;
+
+  if (tutorial_service.IsRunningTutorial(tutorial_id_string)) {
+    tutorial_service.AbortTutorial(/*abort_step=*/absl::nullopt);
+  }
+}
+
+void ChromeUserEducationDelegate::LaunchSystemWebAppAsync(
+    const AccountId& account_id,
+    ash::SystemWebAppType system_web_app_type,
+    int64_t display_id) {
+  Profile* profile = Profile::FromBrowserContext(
+      ash::BrowserContextHelper::Get()->GetBrowserContextByAccountId(
+          account_id));
+
+  // NOTE: User education in Ash is currently only supported for the primary
+  // user profile. This is a self-imposed restriction.
+  CHECK(IsPrimaryProfile(profile));
+
+  ash::LaunchSystemWebAppAsync(profile, system_web_app_type,
+                               ash::SystemAppLaunchParams(),
+                               std::make_unique<apps::WindowInfo>(display_id));
+}
+
+bool ChromeUserEducationDelegate::IsRunningTutorial(
+    const AccountId& account_id,
+    absl::optional<ash::TutorialId> tutorial_id) const {
+  Profile* const profile = Profile::FromBrowserContext(
+      ash::BrowserContextHelper::Get()->GetBrowserContextByAccountId(
+          account_id));
+  return UserEducationServiceFactory::GetForProfile(profile)
       ->tutorial_service()
-      .AbortTutorial(/*abort_step=*/absl::nullopt);
+      .IsRunningTutorial(
+          tutorial_id ? absl::make_optional(
+                            ash::user_education_util::ToString(*tutorial_id))
+                      : absl::nullopt);
 }
 
 void ChromeUserEducationDelegate::OnProfileAdded(Profile* profile) {

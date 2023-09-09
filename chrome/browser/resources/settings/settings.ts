@@ -42,7 +42,7 @@ export {AppearanceBrowserProxy, AppearanceBrowserProxyImpl} from './appearance_p
 export {SettingsAppearancePageElement, SystemTheme} from './appearance_page/appearance_page.js';
 export {HomeUrlInputElement} from './appearance_page/home_url_input.js';
 export {SettingsAutofillPageElement} from './autofill_page/autofill_page.js';
-export {AccountStorageOptInStateChangedListener, CredentialsChangedListener, PasswordCheckInteraction, PasswordCheckReferrer, PasswordCheckStatusChangedListener, PasswordExceptionListChangedListener, PasswordManagerAuthTimeoutListener, PasswordManagerImpl, PasswordManagerPage, PasswordManagerProxy, PasswordsFileExportProgressListener, SavedPasswordListChangedListener} from './autofill_page/password_manager_proxy.js';
+export {PasswordCheckReferrer, PasswordManagerImpl, PasswordManagerPage, PasswordManagerProxy} from './autofill_page/password_manager_proxy.js';
 export {BaseMixin} from './base_mixin.js';
 export {SettingsBasicPageElement} from './basic_page/basic_page.js';
 export {SettingsIdleLoadElement} from './controls/settings_idle_load.js';
@@ -87,6 +87,7 @@ export {Route, Router, SettingsRoutes} from './router.js';
 export {SafetyCheckBrowserProxy, SafetyCheckBrowserProxyImpl, SafetyCheckCallbackConstants, SafetyCheckExtensionsStatus, SafetyCheckParentStatus, SafetyCheckPasswordsStatus, SafetyCheckSafeBrowsingStatus, SafetyCheckUpdatesStatus} from './safety_check_page/safety_check_browser_proxy.js';
 export {SafetyCheckIconStatus, SettingsSafetyCheckChildElement} from './safety_check_page/safety_check_child.js';
 export {SafetyCheckExtensionsElement} from './safety_check_page/safety_check_extensions.js';
+export {SafetyCheckExtensionsBrowserProxy, SafetyCheckExtensionsBrowserProxyImpl} from './safety_check_page/safety_check_extensions_browser_proxy.js';
 export {SettingsSafetyCheckExtensionsChildElement} from './safety_check_page/safety_check_extensions_child.js';
 export {SettingsSafetyCheckNotificationPermissionsElement} from './safety_check_page/safety_check_notification_permissions.js';
 export {SettingsSafetyCheckPageElement} from './safety_check_page/safety_check_page.js';

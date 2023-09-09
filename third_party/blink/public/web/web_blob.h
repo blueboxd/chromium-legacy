@@ -36,12 +36,11 @@
 #include "third_party/blink/public/platform/web_private_ptr.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
+#include "v8/include/v8-local-handle.h"
 
 namespace v8 {
 class Isolate;
 class Value;
-template <class T>
-class Local;
 }
 
 namespace blink {
@@ -77,7 +76,7 @@ class BLINK_EXPORT WebBlob {
 #endif
 
  protected:
-  WebPrivatePtr<Blob> private_;
+  WebPrivatePtrForGC<Blob> private_;
 };
 
 }  // namespace blink

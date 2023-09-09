@@ -83,11 +83,14 @@ int GetIconSize() {
 // static
 std::unique_ptr<views::View> PageInfoViewFactory::CreateSeparator(
     int horizontal_inset) {
-  // Distance for multi content list is used, but split in half, since there is
-  // a separator in the middle of it.
-  const int separator_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                                    DISTANCE_CONTENT_LIST_VERTICAL_MULTI) /
-                                2;
+  int separator_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      DISTANCE_CONTENT_LIST_VERTICAL_MULTI);
+  if (!features::IsChromeRefresh2023()) {
+    // Distance for multi content list is used, but split in half, since there
+    // is a separator in the middle of it. For ChromeRefresh2023, the separator
+    // spacing is larger hence no need to split in half.
+    separator_spacing /= 2;
+  }
   auto separator = std::make_unique<views::Separator>();
   separator->SetProperty(views::kMarginsKey,
                          gfx::Insets::VH(separator_spacing, horizontal_inset));
@@ -201,18 +204,23 @@ std::unique_ptr<views::View> PageInfoViewFactory::CreateSubpageHeader(
       base::BindRepeating(&PageInfoNavigationHandler::OpenMainPage,
                           base::Unretained(navigation_handler_),
                           base::DoNothing()),
-      vector_icons::kArrowBackIcon, GetIconSize());
+      features::IsChromeRefresh2023()
+          ? vector_icons::kArrowBackChromeRefreshIcon
+          : vector_icons::kArrowBackIcon,
+      GetIconSize());
   views::InstallCircleHighlightPathGenerator(back_button.get());
   back_button->SetID(VIEW_ID_PAGE_INFO_BACK_BUTTON);
   back_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_ACCNAME_BACK));
   back_button->SetProperty(views::kInternalPaddingKey,
                            back_button->GetInsets());
   header->AddChildView(std::move(back_button));
-
   auto* label_wrapper = header->AddChildView(CreateLabelWrapper());
   auto* title_label = label_wrapper->AddChildView(
       std::make_unique<views::Label>(title, views::style::CONTEXT_DIALOG_TITLE,
                                      views::style::STYLE_SECONDARY));
+  if (features::IsChromeRefresh2023()) {
+    title_label->SetTextStyle(views::style::STYLE_HEADLINE_4);
+  }
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   if (!subtitle.empty()) {
@@ -532,11 +540,9 @@ const ui::ImageModel PageInfoViewFactory::GetChosenObjectIcon(
 
 // static
 const ui::ImageModel PageInfoViewFactory::GetValidCertificateIcon() {
-  return ui::ImageModel::FromVectorIcon(
-      features::IsChromeRefresh2023()
-          ? vector_icons::kCertificateChromeRefreshIcon
-          : vector_icons::kCertificateIcon,
-      ui::kColorIcon, GetIconSize());
+  return GetImageModel(features::IsChromeRefresh2023()
+                           ? vector_icons::kCertificateChromeRefreshIcon
+                           : vector_icons::kCertificateIcon);
 }
 
 // static
@@ -553,10 +559,9 @@ const ui::ImageModel PageInfoViewFactory::GetInvalidCertificateIcon() {
 
 // static
 const ui::ImageModel PageInfoViewFactory::GetSiteSettingsIcon() {
-  return ui::ImageModel::FromVectorIcon(
-      features::IsChromeRefresh2023() ? vector_icons::kSettingsChromeRefreshIcon
-                                      : vector_icons::kSettingsIcon,
-      ui::kColorIcon, GetIconSize());
+  return GetImageModel(features::IsChromeRefresh2023()
+                           ? vector_icons::kSettingsChromeRefreshIcon
+                           : vector_icons::kSettingsIcon);
 }
 
 // static
@@ -570,7 +575,9 @@ const ui::ImageModel PageInfoViewFactory::GetLaunchIcon() {
   return ui::ImageModel::FromVectorIcon(
       features::IsChromeRefresh2023() ? vector_icons::kLaunchChromeRefreshIcon
                                       : vector_icons::kLaunchIcon,
-      ui::kColorIconSecondary, GetIconSize());
+      features::IsChromeRefresh2023() ? ui::kColorIcon
+                                      : ui::kColorIconSecondary,
+      GetIconSize());
 }
 
 // static
@@ -582,11 +589,9 @@ const ui::ImageModel PageInfoViewFactory::GetConnectionNotSecureIcon() {
 
 // static
 const ui::ImageModel PageInfoViewFactory::GetConnectionSecureIcon() {
-  return ui::ImageModel::FromVectorIcon(
-      features::IsChromeRefresh2023()
-          ? vector_icons::kHttpsValidChromeRefreshIcon
-          : vector_icons::kHttpsValidIcon,
-      ui::kColorIcon, GetIconSize());
+  return GetImageModel(features::IsChromeRefresh2023()
+                           ? vector_icons::kHttpsValidChromeRefreshIcon
+                           : vector_icons::kHttpsValidIcon);
 }
 
 // static
@@ -603,8 +608,7 @@ const ui::ImageModel PageInfoViewFactory::GetOpenSubpageIcon() {
 
 // static
 const ui::ImageModel PageInfoViewFactory::GetAboutThisSiteIcon() {
-  return ui::ImageModel::FromVectorIcon(GetAboutThisSiteVectorIcon(),
-                                        ui::kColorIcon, GetIconSize());
+  return GetImageModel(GetAboutThisSiteVectorIcon());
 }
 
 // static
@@ -615,7 +619,8 @@ const gfx::VectorIcon& PageInfoViewFactory::GetAboutThisSiteColorVectorIcon() {
   }
 #endif  // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
-  return views::kInfoIcon;
+  return features::IsChromeRefresh2023() ? views::kInfoChromeRefreshIcon
+                                         : views::kInfoIcon;
 }
 
 // static
@@ -626,18 +631,17 @@ const gfx::VectorIcon& PageInfoViewFactory::GetAboutThisSiteVectorIcon() {
   }
 #endif  // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
-  return views::kInfoIcon;
+  return features::IsChromeRefresh2023() ? views::kInfoChromeRefreshIcon
+                                         : views::kInfoIcon;
 }
 // static
 const ui::ImageModel PageInfoViewFactory::GetHistoryIcon() {
-  return ui::ImageModel::FromVectorIcon(vector_icons::kHistoryIcon,
-                                        ui::kColorIcon, GetIconSize());
+  return GetImageModel(vector_icons::kHistoryIcon);
 }
 
 // static
 const ui::ImageModel PageInfoViewFactory::GetAdPersonalizationIcon() {
-  return ui::ImageModel::FromVectorIcon(vector_icons::kAdsClickIcon,
-                                        ui::kColorIcon, GetIconSize());
+  return GetImageModel(vector_icons::kAdsClickIcon);
 }
 
 // static
@@ -647,51 +651,40 @@ const ui::ImageModel PageInfoViewFactory::GetManagedPermissionIcon(
       info.source == content_settings::SETTING_SOURCE_EXTENSION
           ? vector_icons::kExtensionIcon
           : vector_icons::kBusinessIcon;
-  return ui::ImageModel::FromVectorIcon(managed_vector_icon, ui::kColorIcon,
-                                        GetIconSize());
+  return GetImageModel(managed_vector_icon);
 }
 
 // static
-const ui::ImageModel PageInfoViewFactory::GetBlockingThirdPartyCookiesIcon() {
-  return ui::ImageModel::FromVectorIcon(views::kEyeCrossedIcon, ui::kColorIcon,
-                                        GetIconSize());
-}
-
-// static
-const ui::ImageModel PageInfoViewFactory::GetFpsIcon() {
-  return ui::ImageModel::FromVectorIcon(vector_icons::kTenancyIcon,
-                                        ui::kColorIcon, GetIconSize());
-}
-
-// static
-const ui::ImageModel PageInfoViewFactory::GetEnforcedCookieControlsIcon(
-    CookieControlsEnforcement enforcement) {
-  switch (enforcement) {
-    case CookieControlsEnforcement::kEnforcedByExtension:
-      return GetEnforcedByExtensionIcon();
-    case CookieControlsEnforcement::kEnforcedByPolicy:
-      return GetEnforcedByPolicyIcon();
-    case CookieControlsEnforcement::kEnforcedByCookieSetting:
-      return GetEnforcedBySettingsIcon();
-    case CookieControlsEnforcement::kNoEnforcement:
-      NOTREACHED_NORETURN();
+const ui::ImageModel PageInfoViewFactory::GetThirdPartyCookiesIcon(
+    bool third_party_cookies_enabled) {
+  if (third_party_cookies_enabled) {
+    return GetImageModel(features::IsChromeRefresh2023()
+                             ? views::kEyeRefreshIcon
+                             : views::kEyeIcon);
+  } else {
+    return GetBlockingThirdPartyCookiesIcon();
   }
 }
 
 // static
+const ui::ImageModel PageInfoViewFactory::GetBlockingThirdPartyCookiesIcon() {
+  return GetImageModel(features::IsChromeRefresh2023()
+                           ? views::kEyeCrossedRefreshIcon
+                           : views::kEyeCrossedIcon);
+}
+
+// static
+const ui::ImageModel PageInfoViewFactory::GetFpsIcon() {
+  return GetImageModel(vector_icons::kTenancyIcon);
+}
+
+// static
 const ui::ImageModel PageInfoViewFactory::GetEnforcedByPolicyIcon() {
-  return ui::ImageModel::FromVectorIcon(vector_icons::kBusinessIcon,
-                                        ui::kColorIcon, GetIconSize());
+  return GetImageModel(vector_icons::kBusinessIcon);
 }
 
 // static
-const ui::ImageModel PageInfoViewFactory::GetEnforcedByExtensionIcon() {
-  return ui::ImageModel::FromVectorIcon(vector_icons::kExtensionIcon,
-                                        ui::kColorIcon, GetIconSize());
-}
-
-// static
-const ui::ImageModel PageInfoViewFactory::GetEnforcedBySettingsIcon() {
-  return ui::ImageModel::FromVectorIcon(vector_icons::kSettingsIcon,
-                                        ui::kColorIcon, GetIconSize());
+const ui::ImageModel PageInfoViewFactory::GetImageModel(
+    const gfx::VectorIcon& icon) {
+  return ui::ImageModel::FromVectorIcon(icon, ui::kColorIcon, GetIconSize());
 }

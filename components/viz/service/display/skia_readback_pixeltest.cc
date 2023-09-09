@@ -9,6 +9,7 @@
 #include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ref.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -28,6 +29,7 @@
 #include "components/viz/test/buildflags.h"
 #include "components/viz/test/gl_scaler_test_util.h"
 #include "components/viz/test/paths.h"
+#include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
@@ -40,6 +42,7 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
+#include "third_party/skia/include/core/SkYUVAPixmaps.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/color_transform.h"
@@ -49,6 +52,7 @@
 namespace viz {
 namespace {
 
+#if !BUILDFLAG(IS_ANDROID)
 constexpr float kAvgAbsoluteErrorLimit = 8.f;
 constexpr int kMaxAbsoluteErrorLimit = 32;
 
@@ -58,6 +62,7 @@ cc::FuzzyPixelComparator GetDefaultFuzzyPixelComparator() {
       .SetAvgAbsErrorLimit(kAvgAbsoluteErrorLimit)
       .SetAbsErrorLimit(kMaxAbsoluteErrorLimit);
 }
+#endif
 
 base::FilePath GetTestFilePath(const base::FilePath::CharType* basename) {
   base::FilePath test_dir;
@@ -93,6 +98,7 @@ void DeleteSharedImage(scoped_refptr<RasterContextProvider> context_provider,
   sii->DestroySharedImage(sync_token, mailbox);
 }
 
+#if !BUILDFLAG(IS_ANDROID)
 struct ReadbackTextureInfo {
   ReadbackTextureInfo(const gfx::Size& size,
                       SkColorType color_type,
@@ -101,7 +107,7 @@ struct ReadbackTextureInfo {
 
   gfx::Size size;
   SkColorType color_type;
-  SkBitmap& out_bitmap;
+  const raw_ref<SkBitmap> out_bitmap;
 };
 
 void ReadbackTexturesOnGpuThread(gpu::SharedImageManager* shared_image_manager,
@@ -132,7 +138,7 @@ void ReadbackTexturesOnGpuThread(gpu::SharedImageManager* shared_image_manager,
 
     auto& texture_size = readback_texture_infos[i].size;
     auto color_type = readback_texture_infos[i].color_type;
-    auto& out_bitmap = readback_texture_infos[i].out_bitmap;
+    auto& out_bitmap = readback_texture_infos[i].out_bitmap.get();
 
     DCHECK(color_type == kAlpha_8_SkColorType ||
            color_type == kR8G8_unorm_SkColorType);
@@ -167,6 +173,59 @@ void ReadbackTexturesOnGpuThread(gpu::SharedImageManager* shared_image_manager,
   if (GrDirectContext* direct_context = context_state->gr_context()) {
     direct_context->flush(flush_info);
   }
+  scoped_write->ApplyBackendSurfaceEndState();
+}
+
+void WriteTextureOnGpuMainThread(gpu::SharedImageManager* shared_image_manager,
+                                 gpu::SharedContextState* context_state,
+                                 const gpu::Mailbox& mailbox,
+                                 const gfx::Size& texture_size,
+                                 SkColorType color_type,
+                                 base::span<const uint8_t> pixel_data) {
+  if (!context_state->MakeCurrent(nullptr)) {
+    return;
+  }
+
+  auto representation = shared_image_manager->ProduceSkia(
+      mailbox, context_state->memory_type_tracker(), context_state);
+
+  SkSurfaceProps surface_props{0, kUnknown_SkPixelGeometry};
+
+  std::vector<GrBackendSemaphore> begin_semaphores;
+  std::vector<GrBackendSemaphore> end_semaphores;
+
+  auto scoped_write = representation->BeginScopedWriteAccess(
+      /*final_msaa_count=*/1, surface_props, &begin_semaphores, &end_semaphores,
+      gpu::SharedImageRepresentation::AllowUnclearedAccess::kYes);
+
+  context_state->gr_context()->wait(begin_semaphores.size(),
+                                    begin_semaphores.data());
+
+  DCHECK(color_type == kAlpha_8_SkColorType ||
+         color_type == kR8G8_unorm_SkColorType);
+
+  size_t row_bytes =
+      texture_size.width() * (color_type == kAlpha_8_SkColorType ? 1 : 2);
+
+  SkPixmap pixmap(SkImageInfo::Make(texture_size.width(), texture_size.height(),
+                                    color_type, kUnpremul_SkAlphaType),
+                  pixel_data.data(), row_bytes);
+
+  auto* surface = scoped_write->surface();
+  surface->writePixels(pixmap, 0, 0);
+
+  GrFlushInfo flush_info;
+  flush_info.fNumSemaphores = end_semaphores.size();
+  flush_info.fSignalSemaphores = end_semaphores.data();
+
+  gpu::AddVulkanCleanupTaskForSkiaFlush(context_state->vk_context_provider(),
+                                        &flush_info);
+
+  // Graphite surfaces do not need to be flushed, only Ganesh ones.
+  if (GrDirectContext* direct_context = context_state->gr_context()) {
+    direct_context->flush(flush_info);
+  }
+  scoped_write->ApplyBackendSurfaceEndState();
 }
 
 // Reads back NV12 planes from textures returned in the result.
@@ -231,6 +290,29 @@ void ReadbackNV12Planes(TestGpuServiceHolder* gpu_service_holder,
   wait.Wait();
 }
 
+void WriteNV12Plane(TestGpuServiceHolder* gpu_service_holder,
+                    gpu::Mailbox mailbox,
+                    const gfx::Size& texture_size,
+                    SkColorType color_type,
+                    base::span<const uint8_t> pixel_data) {
+  base::WaitableEvent wait;
+
+  // Write the texture on the GPU main thread to ensure ordering with the
+  // creation of the SharedImage referred to by `mailbox`.
+  gpu_service_holder->ScheduleGpuMainTask(base::BindLambdaForTesting(
+      [&mailbox, &texture_size, &color_type, &pixel_data, &wait]() {
+        WriteTextureOnGpuMainThread(
+            TestGpuServiceHolder::GetInstance()
+                ->gpu_service()
+                ->shared_image_manager(),
+            TestGpuServiceHolder::GetInstance()->GetSharedContextState().get(),
+            mailbox, texture_size, color_type, pixel_data);
+        wait.Signal();
+      }));
+
+  wait.Wait();
+}
+
 // Generates a sequence of bytes of specified length, using the given pattern.
 // The pattern will be repeated in the generated sequence, and does not have to
 // fit in the |num_bytes| evenly. For example, for byte pattern A B C and length
@@ -247,28 +329,20 @@ std::vector<uint8_t> GeneratePixels(size_t num_bytes,
   return result;
 }
 
-// NV12 tests can't run with multiplanar SharedImage on certain
-// platforms/configurations.
+// NV12 tests can't run on certain platforms/configurations.
 bool can_run_nv12_test(bool use_multiplanar_si) {
-  if (!use_multiplanar_si) {
-    return true;
-  }
-
-#if BUILDFLAG(IS_ANDROID)
-  // Android doesn't support (or use) the MultiPlane::kNV12 format.
-  return false;
-#elif BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   // On ChromeOS, multiplanar SharedImage is supported only when the
   // passthrough decoder is used.
-  return TestGpuServiceHolder::GetInstance()
-      ->gpu_service()
-      ->gpu_preferences()
-      .use_passthrough_cmd_decoder;
+  return !use_multiplanar_si || TestGpuServiceHolder::GetInstance()
+                                    ->gpu_service()
+                                    ->gpu_preferences()
+                                    .use_passthrough_cmd_decoder;
 #else
-  // Multiplanar SI is supported on all other platforms.
   return true;
 #endif
 }
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace
 
@@ -519,6 +593,17 @@ INSTANTIATE_TEST_SUITE_P(All,
                          // Result scaling: Scale by half?
                          testing::Values(true, false));
 
+// Tests of NV12.
+
+// NOTE: These tests don't run on Android. Android doesn't use NV12 GMB and
+// doesn't support the MultiPlane:: kNV12 format. Additionally, the test
+// variants that use one SharedImage per plane cannot be made to pass with
+// Vulkan, as they require cross-thread access and there is no SharedImage
+// factory on Android that supports cross-thread access for the required
+// formats (WrappedSkImageBackingFactory and ExternalVkImageBackingFactory
+// don't support cross-thread access, while AHardwareBufferImageBackingFactory
+// doesn't support the plane formats).
+#if !BUILDFLAG(IS_ANDROID)
 class SkiaReadbackPixelTestNV12
     : public SkiaReadbackPixelTest,
       public testing::WithParamInterface<
@@ -638,7 +723,6 @@ TEST_P(SkiaReadbackPixelTestNV12, ExecutesCopyRequest) {
       cc::MatchesBitmap(actual, expected, GetDefaultFuzzyPixelComparator()));
 }
 
-#if !BUILDFLAG(IS_ANDROID_EMULATOR)
 INSTANTIATE_TEST_SUITE_P(
     ,
     SkiaReadbackPixelTestNV12,
@@ -649,13 +733,6 @@ INSTANTIATE_TEST_SUITE_P(
                         CopyOutputResult::Destination::kNativeTextures),
         // Use MultiplanarSharedImage?
         testing::Values(true, false)));
-#else
-// Don't instantiate the NV12 tests when run on Android emulator, they won't
-// work since the SkiaRenderer currently does not support CopyOutputRequests
-// with NV12 format if the platform does not support GL_EXT_texture_rg extension
-// in GL ES 2.0 (which is the case on Android emulator).
-GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SkiaReadbackPixelTestNV12);
-#endif
 
 class SkiaReadbackPixelTestNV12WithBlit
     : public SkiaReadbackPixelTest,
@@ -673,10 +750,8 @@ class SkiaReadbackPixelTestNV12WithBlit
   }
 
   CopyOutputResult::Format RequestFormat() const {
-    // TODO(crbug.com/1429004): Implement necessary support in
-    // CopyOutputRequest() and pass NV12_MULTIPLANE when |use_multiplanar_si_|
-    // is true.
-    return CopyOutputResult::Format::NV12_PLANES;
+    return use_multiplanar_si_ ? CopyOutputResult::Format::NV12_MULTIPLANE
+                               : CopyOutputResult::Format::NV12_PLANES;
   }
 
   void SetUp() override {
@@ -694,6 +769,8 @@ class SkiaReadbackPixelTestNV12WithBlit
     return populates_gpu_memory_buffer_;
   }
 
+  bool use_multiplanar_si() const { return use_multiplanar_si_; }
+
  private:
   bool should_scale_by_half_ = false;
   LetterboxingBehavior letterboxing_behavior_;
@@ -703,6 +780,10 @@ class SkiaReadbackPixelTestNV12WithBlit
 
 // Test that SkiaRenderer NV12 readback works correctly using existing textures.
 TEST_P(SkiaReadbackPixelTestNV12WithBlit, ExecutesCopyRequestWithBlit) {
+  if (!can_run_nv12_test(use_multiplanar_si())) {
+    GTEST_SKIP();
+  }
+
   const gfx::Rect result_selection = GetRequestArea();
 
   // Check if request's width and height are even (required for NV12 format).
@@ -719,9 +800,6 @@ TEST_P(SkiaReadbackPixelTestNV12WithBlit, ExecutesCopyRequestWithBlit) {
   ASSERT_TRUE(result_selection.width() % 4 == 0)
       << " request width is not divisible by 4, result_selection.width()="
       << result_selection.width();
-
-  // TODO(crbug.com/1429004): Update test to create one multiplanar SharedImage
-  // when |use_multiplanar_si_| is true.
 
   // Generate 2 shared images that will be owned by us. They will be used as the
   // destination for the issued BlitRequest. The logical size of the image will
@@ -748,26 +826,66 @@ TEST_P(SkiaReadbackPixelTestNV12WithBlit, ExecutesCopyRequestWithBlit) {
       static_cast<uint8_t>(yuv_red.fG * 255.0f),
       static_cast<uint8_t>(yuv_red.fB * 255.0f)};
 
+  auto* sii = child_context_provider_->SharedImageInterface();
+  auto* ri = child_context_provider_->RasterInterface();
+
+  size_t num_mailboxes =
+      use_multiplanar_si() ? 1 : CopyOutputResult::kNV12MaxPlanes;
+
   std::array<gpu::MailboxHolder, CopyOutputResult::kMaxPlanes> mailboxes;
+  std::array<std::vector<uint8_t>, CopyOutputResult::kNV12MaxPlanes> pixels;
+  SkPixmap pixmaps[SkYUVAInfo::kMaxPlanes] = {};
   for (size_t i = 0; i < CopyOutputResult::kNV12MaxPlanes; ++i) {
-    const auto format =
-        i == 0 ? SinglePlaneFormat::kR_8 : SinglePlaneFormat::kRG_88;
+    const auto format = use_multiplanar_si() ? MultiPlaneFormat::kNV12
+                        : i == 0             ? SinglePlaneFormat::kR_8
+                                             : SinglePlaneFormat::kRG_88;
     const gfx::Size plane_size =
         i == 0 ? source_size
                : gfx::Size(source_size.width() / 2, source_size.height() / 2);
-    const size_t plane_size_in_bytes =
-        plane_size.GetArea() * (format == SinglePlaneFormat::kR_8 ? 1 : 2);
+    const size_t plane_size_in_bytes = plane_size.GetArea() * (i == 0 ? 1 : 2);
 
-    std::vector<uint8_t> pixels =
-        (i == 0) ? GeneratePixels(plane_size_in_bytes, luma_pattern)
-                 : GeneratePixels(plane_size_in_bytes, chromas_pattern);
+    pixels[i] = (i == 0) ? GeneratePixels(plane_size_in_bytes, luma_pattern)
+                         : GeneratePixels(plane_size_in_bytes, chromas_pattern);
 
-    mailboxes[i].mailbox =
-        child_context_provider_->SharedImageInterface()->CreateSharedImage(
-            format, plane_size, gfx::ColorSpace::CreateREC709(),
-            kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
-            gpu::SHARED_IMAGE_USAGE_DISPLAY_READ, "TestLabels", pixels);
-    DCHECK(!mailboxes[i].mailbox.IsZero());
+    auto color_type = i == 0 ? kAlpha_8_SkColorType : kR8G8_unorm_SkColorType;
+    size_t row_bytes = plane_size.width() * (i == 0 ? 1 : 2);
+    pixmaps[i] =
+        SkPixmap(SkImageInfo::Make(plane_size.width(), plane_size.height(),
+                                   color_type, kUnpremul_SkAlphaType),
+                 pixels[i].data(), row_bytes);
+
+    if (!use_multiplanar_si() || i == 0) {
+      mailboxes[i].mailbox = sii->CreateSharedImage(
+          format, plane_size, gfx::ColorSpace::CreateREC709(),
+          kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+          gpu::SHARED_IMAGE_USAGE_DISPLAY_READ, "TestLabels",
+          gpu::kNullSurfaceHandle);
+      DCHECK(!mailboxes[i].mailbox.IsZero());
+    }
+
+    // Populate the data. Note that this is done on the GPU main thread, so it
+    // is ordered with the creation of the SharedImage above.
+    if (!use_multiplanar_si()) {
+      WriteNV12Plane(gpu_service_holder_, mailboxes[i].mailbox, plane_size,
+                     color_type, pixels[i]);
+    }
+  }
+
+  if (use_multiplanar_si()) {
+    // Create and wait on shared image interface sync token to wait for shared
+    // image creation.
+    ri->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
+
+    SkYUVAInfo info = SkYUVAInfo({source_size.width(), source_size.height()},
+                                 SkYUVAInfo::PlaneConfig::kY_UV,
+                                 SkYUVAInfo::Subsampling::k420,
+                                 SkYUVColorSpace::kIdentity_SkYUVColorSpace);
+    SkYUVAPixmaps yuv_pixmap =
+        SkYUVAPixmaps::FromExternalPixmaps(info, pixmaps);
+    ri->WritePixelsYUV(mailboxes[0].mailbox, yuv_pixmap);
+
+    // Create and wait on raster interface sync token for write pixels YUV.
+    ri->GenUnverifiedSyncTokenCHROMIUM(mailboxes[0].sync_token.GetData());
   }
 
   std::unique_ptr<CopyOutputResult> result = IssueCopyOutputRequestAndRender(
@@ -809,8 +927,8 @@ TEST_P(SkiaReadbackPixelTestNV12WithBlit, ExecutesCopyRequestWithBlit) {
   ReadbackNV12Planes(gpu_service_holder_, *result, source_size, luma_plane,
                      chroma_planes);
 
-  for (size_t i = 0; i < CopyOutputResult::kNV12MaxPlanes; ++i) {
-    child_context_provider_->SharedImageInterface()->DestroySharedImage(
+  for (size_t i = 0; i < num_mailboxes; ++i) {
+    sii->DestroySharedImage(
         result->GetTextureResult()->mailbox_holders[i].sync_token,
         result->GetTextureResult()->mailbox_holders[i].mailbox);
   }
@@ -856,7 +974,6 @@ TEST_P(SkiaReadbackPixelTestNV12WithBlit, ExecutesCopyRequestWithBlit) {
       cc::MatchesBitmap(actual, expected, GetDefaultFuzzyPixelComparator()));
 }
 
-#if !BUILDFLAG(IS_ANDROID_EMULATOR)
 INSTANTIATE_TEST_SUITE_P(
     ,
     SkiaReadbackPixelTestNV12WithBlit,
@@ -867,13 +984,6 @@ INSTANTIATE_TEST_SUITE_P(
         testing::Bool(),  // Should behave as if COR is populating a GMB?
         testing::Bool()   // Use MultiplanarSI?
         ));
-#else
-// Don't instantiate the NV12 tests when run on Android emulator, they won't
-// work since the SkiaRenderer currently does not support CopyOutputRequests
-// with NV12 format if the platform does not support GL_EXT_texture_rg extension
-// in GL ES 2.0 (which is the case on Android emulator).
-GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(
-    SkiaReadbackPixelTestNV12WithBlit);
-#endif
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace viz

@@ -190,7 +190,10 @@ class HostedOrWebAppTest : public extensions::ExtensionBrowserTest,
           // tests.
           features::kHttpsUpgrades,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-              features::kWebAppsCrosapi, ash::features::kLacrosPrimary
+              // TODO(crbug.com/1462253): Also test with Lacros flags enabled.
+              ash::features::kLacrosSupport, ash::features::kLacrosPrimary,
+              ash::features::kLacrosOnly,
+              ash::features::kLacrosProfileMigrationForceOff
 #endif
         });
   }
@@ -216,7 +219,7 @@ class HostedOrWebAppTest : public extensions::ExtensionBrowserTest,
           base::StringPrintf(kAppDotComManifest, start_url.spec().c_str()));
       SetupApp(test_app_dir.UnpackedPath());
     } else {
-      auto web_app_info = std::make_unique<WebAppInstallInfo>();
+      auto web_app_info = std::make_unique<web_app::WebAppInstallInfo>();
       web_app_info->start_url = start_url;
       web_app_info->scope = start_url.GetWithoutFilename();
       web_app_info->user_display_mode =
@@ -327,7 +330,7 @@ class HostedOrWebAppTest : public extensions::ExtensionBrowserTest,
   apps::AppServiceTest& app_service_test() { return app_service_test_; }
 
   std::string app_id_;
-  raw_ptr<Browser, DanglingUntriaged> app_browser_;
+  raw_ptr<Browser, AcrossTasksDanglingUntriaged> app_browser_;
 
   AppType app_type() const { return app_type_; }
 

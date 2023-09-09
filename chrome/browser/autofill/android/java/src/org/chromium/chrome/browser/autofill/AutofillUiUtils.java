@@ -20,6 +20,7 @@ import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.text.InputType;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -47,6 +48,8 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.components.autofill.ServerFieldType;
+import org.chromium.components.autofill.payments.LegalMessageLine;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.url.GURL;
@@ -534,31 +537,6 @@ public class AutofillUiUtils {
     }
 
     /**
-     * Always show the Capital One virtual card icon for virtual cards if the card icon URL is
-     * available for the card. Never show the Capital One virtual card icon for FPAN. Show rich card
-     * art when the metadata experiment is enabled.
-     * @param customIconUrl {@link GURL} for fetching the custom icon.
-     * @param isVirtualCard Whether or not the card is a virtual card.
-     * @return True if the custom icon should be shown. False otherwise.
-     */
-    public static boolean shouldShowCustomIcon(GURL customIconUrl, boolean isVirtualCard) {
-        if (customIconUrl == null) {
-            return false;
-        }
-
-        if (isVirtualCard && customIconUrl.getSpec().equals(CAPITAL_ONE_ICON_URL)) {
-            return true;
-        }
-
-        if (!customIconUrl.getSpec().equals(CAPITAL_ONE_ICON_URL)
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ENABLE_CARD_ART_IMAGE)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * If {@code showCustomIcon} is true, and the {@code cardArtUrl} is valid, it fetches the bitmap
      * of the required size from PersonalDataManager. If not, the default icon {@code defaultIconId}
      * is fetched from the resources. If the bitmap is not available in cache, then it is fetched
@@ -687,5 +665,28 @@ public class AutofillUiUtils {
         TextView cardLabelView = parentView.findViewById(R.id.card_label);
         cardLabelView.setText(cardLabel);
         cardLabelView.setTextAppearance(cardLabelTextAppearance);
+    }
+
+    public static int getInputTypeForField(@ServerFieldType int type) {
+        switch (type) {
+            case ServerFieldType.NAME_FULL:
+                return InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS
+                        | InputType.TYPE_TEXT_VARIATION_PERSON_NAME;
+            case ServerFieldType.ADDRESS_HOME_SORTING_CODE:
+            case ServerFieldType.ADDRESS_HOME_ZIP:
+                return InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
+                        | InputType.TYPE_TEXT_VARIATION_POSTAL_ADDRESS;
+            case ServerFieldType.PHONE_HOME_WHOLE_NUMBER:
+                // Show the keyboard with numbers and phone-related symbols.
+                return InputType.TYPE_CLASS_PHONE;
+            case ServerFieldType.ADDRESS_HOME_STREET_ADDRESS:
+                return InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS
+                        | InputType.TYPE_TEXT_FLAG_MULTI_LINE
+                        | InputType.TYPE_TEXT_VARIATION_POSTAL_ADDRESS;
+            case ServerFieldType.EMAIL_ADDRESS:
+                return InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
+            default:
+                return InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS;
+        }
     }
 }

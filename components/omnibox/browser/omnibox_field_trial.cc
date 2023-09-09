@@ -740,6 +740,13 @@ bool OmniboxFieldTrial::IsCr23LayoutEnabled() {
   return enabled;
 }
 
+bool OmniboxFieldTrial::IsChromeRefreshSteadyStateBackgroundColorEnabled() {
+  return features::GetChromeRefresh2023Level() ==
+             features::ChromeRefresh2023Level::kLevel2 ||
+         base::FeatureList::IsEnabled(
+             omnibox::kOmniboxSteadyStateBackgroundColor);
+}
+
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
 const char OmniboxFieldTrial::kDisableProvidersRule[] = "DisableProviders";
@@ -822,7 +829,7 @@ const base::FeatureParam<bool>
 const base::FeatureParam<int> kAutocompleteStabilityUpdateResultDebounceDelay(
     &omnibox::kUpdateResultDebounce,
     "AutocompleteStabilityUpdateResultDebounceDelay",
-    0);
+    200);
 
 // Local history zero-prefix (aka zero-suggest) and prefix suggestions:
 
@@ -1058,7 +1065,9 @@ MLConfig::MLConfig() {
 }
 
 ScopedMLConfigForTesting::ScopedMLConfigForTesting()
-    : original_config_(std::make_unique<MLConfig>(GetMLConfig())) {}
+    : original_config_(std::make_unique<MLConfig>(GetMLConfig())) {
+  GetMLConfigInternal() = {};
+}
 
 ScopedMLConfigForTesting::~ScopedMLConfigForTesting() {
   GetMLConfigInternal() = *original_config_;

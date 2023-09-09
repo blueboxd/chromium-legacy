@@ -32,7 +32,6 @@
 #include "chromeos/ui/base/chromeos_ui_constants.h"
 #include "chromeos/ui/base/window_pin_type.h"
 #include "chromeos/ui/base/window_properties.h"
-#include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
 #include "chromeos/ui/frame/multitask_menu/float_controller_base.h"
 #include "components/app_restore/app_restore_utils.h"
@@ -207,6 +206,11 @@ class CustomWindowTargeter : public aura::WindowTargeter {
                                  const ui::LocatedEvent& event) const override {
     gfx::Point local_point =
         ConvertEventLocationToWindowCoordinates(window, event);
+
+    if (shell_surface_->shape_dp() &&
+        !shell_surface_->shape_dp()->Contains(local_point)) {
+      return false;
+    }
 
     if (IsInResizeHandle(window, event, local_point))
       return true;
@@ -465,22 +469,28 @@ void ShellSurfaceBase::UpdateSystemModal() {
 }
 
 void ShellSurfaceBase::UpdateShape() {
-  if (!host_window() || !host_window()->layer()) {
+  auto* widget_window = widget_->GetNativeWindow();
+  if (!widget_window || !widget_window->layer()) {
     return;
   }
 
-  if (!shape_rects_dp_.has_value()) {
-    host_window()->layer()->SetAlphaShape(nullptr);
+  if (!shape_dp_.has_value()) {
+    widget_window->layer()->SetAlphaShape(nullptr);
     return;
   }
 
-  auto scaled_rects = std::make_unique<std::vector<gfx::Rect>>();
-  for (const gfx::Rect& rect_dp : shape_rects_dp_.value()) {
-    const float scale_factor = host_window()->layer()->device_scale_factor();
-    scaled_rects->push_back(gfx::ScaleToEnclosedRect(rect_dp, scale_factor));
+  // TODO(crbug.com/1465999): The current implementation of window shape must
+  // only be used on frameless windows with shadows disabled, otherwise we risk
+  // the layer bounds not matching the bounds of the root surface. This needs to
+  // be updated such that the shape is applied to the root surface's geometry.
+  DCHECK_EQ(frame_type_, SurfaceFrameType::NONE);
+
+  auto shape_rects_dp = std::make_unique<ui::Layer::ShapeRects>();
+  for (gfx::Rect rect : shape_dp_.value()) {
+    shape_rects_dp->push_back(std::move(rect));
   }
 
-  host_window()->layer()->SetAlphaShape(std::move(scaled_rects));
+  widget_window->layer()->SetAlphaShape(std::move(shape_rects_dp));
 }
 
 void ShellSurfaceBase::SetApplicationId(const char* application_id) {
@@ -764,19 +774,12 @@ void ShellSurfaceBase::SetRestoreInfoWithWindowIdSource(
 }
 
 void ShellSurfaceBase::SetFloat() {
-  aura::Window* window = widget_->GetNativeWindow();
-  if (window->GetProperty(chromeos::kWindowStateTypeKey) !=
-      chromeos::WindowStateType::kFloated) {
-    chromeos::FloatControllerBase::Get()->ToggleFloat(window);
-  }
+  chromeos::FloatControllerBase::Get()->SetFloat(
+      widget_->GetNativeWindow(), chromeos::FloatStartLocation::kBottomRight);
 }
 
 void ShellSurfaceBase::UnsetFloat() {
-  aura::Window* window = widget_->GetNativeWindow();
-  if (window->GetProperty(chromeos::kWindowStateTypeKey) ==
-      chromeos::WindowStateType::kFloated) {
-    chromeos::FloatControllerBase::Get()->ToggleFloat(window);
-  }
+  chromeos::FloatControllerBase::Get()->UnsetFloat(widget_->GetNativeWindow());
 }
 
 void ShellSurfaceBase::SetDisplay(int64_t display_id) {
@@ -989,8 +992,9 @@ void ShellSurfaceBase::OnSurfaceCommit() {
   // SetShadowBounds requires synchronizing shadow bounds with the next frame,
   // so submit the next frame to a new surface and let the host window use the
   // new surface.
-  if (shadow_bounds_changed_)
-    host_window()->AllocateLocalSurfaceId();
+  if (shadow_bounds_changed_) {
+    AllocateLocalSurfaceId();
+  }
 
   root_surface()->CommitSurfaceHierarchy(false);
 
@@ -1180,6 +1184,13 @@ bool ShellSurfaceBase::WidgetHasHitTestMask() const {
 }
 
 void ShellSurfaceBase::GetWidgetHitTestMask(SkPath* mask) const {
+  // If a window shape is applied set the hit test mask to the boundary path
+  // of the masked region.
+  if (shape_dp_) {
+    shape_dp_->GetBoundaryPath(mask);
+    return;
+  }
+
   GetHitTestMask(mask);
 
   gfx::Point origin = host_window()->bounds().origin();
@@ -1623,12 +1634,11 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   // Start tracking changes to window bounds and window state.
   window->AddObserver(this);
   ash::WindowState* window_state = ash::WindowState::Get(window);
-  // Skip initializing window state when it is menu.
-  // TODO(crbug.com/1338597): Remove `window_state` condition when tooltip fix
-  // is done. Without the fix, window_state can be null when  it is tooltip and
-  // the parent window is menu, so add null check of `window_state` here.
-  if (!is_menu_ && window_state)
+  // Skip initializing window state when `window_state` is null.
+  // This happesn when the window type is popup.
+  if (window_state) {
     InitializeWindowState(window_state);
+  }
 
   SetShellUseImmersiveForFullscreen(window, immersive_implied_by_fullscreen_);
 
@@ -1746,8 +1756,14 @@ void ShellSurfaceBase::UpdateSurfaceBounds() {
   gfx::Point origin = GetClientViewBounds().origin();
 
   origin += GetSurfaceOrigin().OffsetFromOrigin();
-  origin -= ToFlooredVector2d(ScaleVector2d(
-      root_surface_origin().OffsetFromOrigin(), 1.f / GetScale()));
+  const gfx::Vector2dF scaled_root_origin = ScaleVector2d(
+      root_surface_origin().OffsetFromOrigin(), 1.f / GetScaleFactor());
+  origin -= ToFlooredVector2d(scaled_root_origin);
+  // Set subpixel offset to the diff between the scaled origin in float and its
+  // floored value to adjust root surface origin to be at the same position.
+  host_window()->layer()->SetSubpixelPositionOffset(
+      ToFlooredVector2d(scaled_root_origin) - scaled_root_origin);
+
   gfx::Rect surface_bounds(origin, host_window()->bounds().size());
   if (host_window()->bounds() == surface_bounds)
     return;
@@ -1763,7 +1779,7 @@ void ShellSurfaceBase::UpdateShadow() {
   aura::Window* window = widget_->GetNativeWindow();
 
   // Window shadows should be disabled if a window shape has been set.
-  if (!shadow_bounds_ || shape_rects_dp_.has_value()) {
+  if (!shadow_bounds_ || shape_dp_.has_value()) {
     wm::SetShadowElevation(window, wm::kShadowElevationNone);
   } else {
     // Use a small style shadow for popup surface.
@@ -1782,8 +1798,6 @@ void ShellSurfaceBase::UpdateShadow() {
 
     if (!window->GetProperty(aura::client::kUseWindowBoundsForShadow)) {
       origin += GetSurfaceOrigin().OffsetFromOrigin();
-      origin -= ToFlooredVector2d(ScaleVector2d(
-          root_surface_origin().OffsetFromOrigin(), 1.f / GetScale()));
       if (origin.x() != 0 || origin.y() != 0) {
         shadow_bounds.set_origin(origin);
         if (widget_) {
@@ -1973,7 +1987,7 @@ void ShellSurfaceBase::CommitWidget() {
   // Apply new window geometry.
   geometry_ = pending_geometry_;
   display_id_ = pending_display_id_;
-  shape_rects_dp_ = pending_shape_rects_dp_;
+  shape_dp_ = pending_shape_dp_;
 
   // Apply new minimum/maximium size.
   minimum_size_ = pending_minimum_size_;
@@ -1995,7 +2009,7 @@ void ShellSurfaceBase::CommitWidget() {
   // type (e.g. caption height).
   UpdateFrameType();
   UpdateWidgetBounds();
-  SurfaceTreeHost::UpdateHostWindowBounds();
+  UpdateHostWindowBounds();
   gfx::Rect bounds = geometry_;
   if (!bounds.IsEmpty() && !widget_->GetNativeWindow()->GetProperty(
                                aura::client::kUseWindowBoundsForShadow)) {
@@ -2139,17 +2153,28 @@ void ShellSurfaceBase::SetZOrder(ui::ZOrderLevel z_order) {
 }
 
 void ShellSurfaceBase::SetShape(absl::optional<cc::Region> shape) {
-  pending_shape_rects_dp_.reset();
   if (!shape) {
+    pending_shape_dp_.reset();
     return;
   }
 
-  ShapeRects shape_rects_dp;
-  for (gfx::Rect rect : shape.value()) {
-    shape_rects_dp.push_back(std::move(rect));
+  if (frame_enabled()) {
+    LOG(ERROR) << "SetShape() is not supported for windows with frame enabled.";
+    return;
   }
 
-  pending_shape_rects_dp_ = std::move(shape_rects_dp);
+  // SetShape() may be called some time after a window has been created. In case
+  // server_side_resize_ has been set we disable it here.
+  server_side_resize_ = false;
+
+  // Although window shape is only supported for frameless windows we must also
+  // ensure window shadows are disabled as shadows can contribute to the widget
+  // window's layer bounds.
+  // TODO(crbug.com/1465999): This will not be necessary once the implementation
+  // is updated to use the root surface's geometry.
+  OnSetFrame(SurfaceFrameType::NONE);
+
+  pending_shape_dp_ = std::move(shape);
 }
 
 // static

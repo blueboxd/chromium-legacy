@@ -36,16 +36,17 @@ BASE_FEATURE(kSafeSitesFilterBehaviorPolicyAndroid,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_ANDROID)
 
-BASE_FEATURE(kPolicyMergeMultiSource,
-             "PolicyMergeMultiSource",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 #if BUILDFLAG(IS_IOS)
 BASE_FEATURE(kPolicyLogsPageIOS,
              "PolicyLogsPageIOS",
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_IOS)
 
+#if !BUILDFLAG(IS_IOS) || !BUILDFLAG(IS_ANDROID)
+BASE_FEATURE(kPolicyLogsPageDesktop,
+             "PolicyLogsPageDesktop",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif  // !BUILDFLAG(IS_IOS) || !!BUILDFLAG(IS_ANDROID)
 }  // namespace features
 
 }  // namespace policy

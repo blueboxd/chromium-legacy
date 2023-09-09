@@ -98,6 +98,7 @@
 #include "chrome/browser/ash/extensions/default_app_order.h"
 #include "chrome/browser/ash/extensions/login_screen_ui/ui_handler.h"
 #include "chrome/browser/ash/external_metrics.h"
+#include "chrome/browser/ash/input_method/editor_mediator.h"
 #include "chrome/browser/ash/input_method/input_method_configuration.h"
 #include "chrome/browser/ash/language_preferences.h"
 #include "chrome/browser/ash/lock_screen_apps/state_controller.h"
@@ -130,8 +131,7 @@
 #include "chrome/browser/ash/notifications/debugd_notification_handler.h"
 #include "chrome/browser/ash/notifications/gnubby_notification.h"
 #include "chrome/browser/ash/notifications/low_disk_notification.h"
-#include "chrome/browser/ash/notifications/multi_capture_login_notification.h"
-#include "chrome/browser/ash/notifications/multi_capture_notification.h"
+#include "chrome/browser/ash/notifications/multi_capture_notifications.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/pcie_peripheral/ash_usb_detector.h"
 #include "chrome/browser/ash/platform_keys/key_permissions/key_permissions_manager_impl.h"
@@ -943,6 +943,8 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
   // must be placed after UserManager initialization.
   MagnificationManager::Initialize();
 
+  g_browser_process->platform_part()->InitializeAshProxyMonitor();
+
   // Has to be initialized before |assistant_delegate_|;
   image_downloader_ = std::make_unique<ImageDownloaderImpl>();
 
@@ -1033,8 +1035,7 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
   // Needs to be initialized after crosapi_manager_.
   metrics::structured::ChromeStructuredMetricsRecorder::Get()->Initialize();
 
-  multi_capture_login_notification_ =
-      std::make_unique<MultiCaptureLoginNotification>();
+  multi_capture_notifications_ = std::make_unique<MultiCaptureNotifications>();
 
   if (immediate_login) {
     const user_manager::CryptohomeId cryptohome_id(
@@ -1243,6 +1244,10 @@ void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
 
     misconfigured_user_cleaner_->ScheduleCleanup();
 
+    if (features::IsOrcaEnabled()) {
+      editor_mediator_ = std::make_unique<input_method::EditorMediator>();
+    }
+
     g_browser_process->platform_part()->session_manager()->Initialize(
         *base::CommandLine::ForCurrentProcess(), profile,
         is_integration_test());
@@ -1420,8 +1425,6 @@ void ChromeBrowserMainPartsAsh::PostBrowserStart() {
     zram_writeback_controller_->Start();
   }
 
-  multi_capture_notification_ = std::make_unique<MultiCaptureNotification>();
-
   if (features::IsVideoConferenceEnabled()) {
     video_conference_manager_client_ =
         std::make_unique<video_conference::VideoConferenceManagerClientImpl>();
@@ -1434,8 +1437,7 @@ void ChromeBrowserMainPartsAsh::PostBrowserStart() {
   apn_migrator_ = std::make_unique<ApnMigrator>(
       NetworkHandler::Get()->managed_cellular_pref_handler(),
       NetworkHandler::Get()->managed_network_configuration_handler(),
-      NetworkHandler::Get()->network_state_handler(),
-      NetworkHandler::Get()->network_metadata_store());
+      NetworkHandler::Get()->network_state_handler());
 
   ChromeBrowserMainPartsLinux::PostBrowserStart();
 }
@@ -1640,8 +1642,7 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   lacros_availability_policy_observer_.reset();
   lacros_data_backward_migration_mode_policy_observer_.reset();
 
-  multi_capture_notification_.reset();
-  multi_capture_login_notification_.reset();
+  multi_capture_notifications_.reset();
 
   // vc_app_service_client_ has to be destructed before PostMainMessageLoopRun.
   vc_app_service_client_.reset();
@@ -1659,6 +1660,10 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   // is destroyed inside ChromeBrowserMainPartsLinux::PostMainMessageLoopRun().
   browser_manager_.reset();
   crosapi_manager_.reset();
+
+  // The `AshProxyMonitor` instance needs to outlive the `crosapi_manager_`
+  // because crosapi depends on it.
+  g_browser_process->platform_part()->ShutdownAshProxyMonitor();
 
   // Destroy classes that may have ash observers or dependencies.
   arc_kiosk_app_manager_.reset();

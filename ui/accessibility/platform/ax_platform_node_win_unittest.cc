@@ -31,6 +31,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
+#include "ui/accessibility/platform/sequence_affine_com_object_root_win.h"
 #include "ui/accessibility/platform/test_ax_node_wrapper.h"
 #include "ui/base/win/atl_module.h"
 
@@ -4435,7 +4436,8 @@ TEST_F(AXPlatformNodeWinTest, UIAGetControllerForPropertyId) {
   AXNodeData group1;
   group1.id = 5;
   group1.role = ax::mojom::Role::kGenericContainer;
-  group1.AddIntAttribute(ax::mojom::IntAttribute::kErrormessageId, 6);
+  group1.AddIntListAttribute(ax::mojom::IntListAttribute::kErrormessageIds,
+                             std::vector<AXNodeID>{6});
 
   AXNodeData text1;
   text1.id = 6;
@@ -7720,7 +7722,7 @@ TEST_F(AXPlatformNodeWinTest, SanitizeStringAttributeForIA2) {
 //
 
 class TestIChromeAccessibleDelegate
-    : public CComObjectRootEx<CComMultiThreadModel>,
+    : public SequenceAffineComObjectRoot,
       public IDispatchImpl<IChromeAccessibleDelegate> {
   using IDispatchImpl::Invoke;
 

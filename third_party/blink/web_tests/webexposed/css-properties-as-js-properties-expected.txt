@@ -10,7 +10,6 @@ alignmentBaseline
 all
 anchorDefault
 anchorName
-anchorScroll
 animation
 animationComposition
 animationDelay
@@ -348,6 +347,7 @@ popoverHideDelay
 popoverShowDelay
 position
 positionFallback
+positionFallbackBounds
 prefix
 quotes
 r
@@ -432,6 +432,7 @@ tableLayout
 textAlign
 textAlignLast
 textAnchor
+textAutospace
 textBoxTrim
 textCombineUpright
 textDecoration
@@ -467,6 +468,7 @@ transformBox
 transformOrigin
 transformStyle
 transition
+transitionAnimationType
 transitionDelay
 transitionDuration
 transitionProperty
@@ -558,7 +560,6 @@ webkitFlexShrink
 webkitFlexWrap
 webkitFontFeatureSettings
 webkitFontSmoothing
-webkitHighlight
 webkitHyphenateCharacter
 webkitJustifyContent
 webkitLineBreak
@@ -642,7 +643,6 @@ whiteSpaceCollapse
 widows
 width
 willChange
-wordBoundaryDetection
 wordBreak
 wordSpacing
 wordWrap

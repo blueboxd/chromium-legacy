@@ -52,6 +52,7 @@
 #include "content/public/test/web_contents_tester.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/features.h"
+#include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -112,7 +113,7 @@ int SetSSLCipherSuite(int connection_status, int cipher_suite) {
 class MockPageInfoUI : public PageInfoUI {
  public:
   ~MockPageInfoUI() override = default;
-  MOCK_METHOD(void, SetCookieInfo, (const CookieInfoList& cookie_info_list));
+  MOCK_METHOD(void, SetCookieInfo, (const CookiesNewInfo& cookie_info));
   MOCK_METHOD(void, SetPermissionInfoStub, ());
   MOCK_METHOD(void, SetIdentityInfo, (const IdentityInfo& identity_info));
   MOCK_METHOD(void, SetPageFeatureInfo, (const PageFeatureInfo& info));
@@ -159,11 +160,7 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     // TODO(crbug.com/1344787): Fix tests and enable the feature.
     scoped_feature_list_.InitWithFeatures(
-        {permissions::features::kPermissionStorageAccessAPI}, {
-#if !BUILDFLAG(IS_ANDROID)
-          page_info::kPageInfoCookiesSubpage
-#endif
-        });
+        {permissions::features::kPermissionStorageAccessAPI}, {});
 
     ChromeRenderViewHostTestHarness::SetUp();
 
@@ -216,7 +213,18 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
     // During creation |PageInfo| makes the following calls to the ui.
     EXPECT_CALL(*mock_ui, SetPermissionInfoStub());
     EXPECT_CALL(*mock_ui, SetIdentityInfo(_));
+    ExpectInitialSetCookieInfoCall(mock_ui);
+  }
+
+  void ExpectInitialSetCookieInfoCall(MockPageInfoUI* mock_ui) {
+#if !BUILDFLAG(IS_ANDROID)
+    // TODO(crbug.com/1430440): SetCookiesInfo is called twice on creation, once
+    // when the observation of web_contents starts and once when PageInfoUI is
+    // initialized. Clean this up after it is fixed.
+    EXPECT_CALL(*mock_ui, SetCookieInfo(_)).Times(2);
+#else
     EXPECT_CALL(*mock_ui, SetCookieInfo(_));
+#endif
   }
 
   void SetURL(const std::string& url) {
@@ -613,7 +621,7 @@ TEST_F(PageInfoTest, OnPermissionsChanged) {
   EXPECT_EQ(setting, CONTENT_SETTING_ASK);
 
   EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
-  EXPECT_CALL(*mock_ui(), SetCookieInfo(_));
+  ExpectInitialSetCookieInfoCall(mock_ui());
 
   // SetPermissionInfo() is called once initially, and then again every time
   // OnSitePermissionChanged() is called.
@@ -680,7 +688,7 @@ TEST_F(PageInfoTest, OnChosenObjectDeleted) {
   store->GrantDevicePermission(origin(), *device_info);
 
   EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
-  EXPECT_CALL(*mock_ui(), SetCookieInfo(_));
+  ExpectInitialSetCookieInfoCall(mock_ui());
 
   // Access PageInfo so that SetPermissionInfo is called once to populate
   // |last_chosen_object_info_|. It will be called again by
@@ -1131,7 +1139,7 @@ TEST_F(PageInfoTest, NoInfoBar) {
 
 TEST_F(PageInfoTest, ShowInfoBar) {
   EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
-  EXPECT_CALL(*mock_ui(), SetCookieInfo(_));
+  ExpectInitialSetCookieInfoCall(mock_ui());
 
   EXPECT_CALL(*mock_ui(), SetPermissionInfoStub()).Times(2);
 
@@ -1438,6 +1446,38 @@ TEST_F(PageInfoTest, ShowInfobarWhenGeolocationAndMediaChangedToBlock) {
   histograms.ExpectUniqueSample(
       "Permissions.PageInfo.Changed.AudioCapture.ReloadInfobarNotShown",
       permissions::PermissionChangeAction::REALLOWED, 1);
+}
+
+TEST_F(PageInfoTest, ShowInfoBarWhenAllowingThirdPartyCookies) {
+  SetDefaultUIExpectations(mock_ui());
+  NavigateAndCommit(url());
+
+  page_info()->OnStatusChanged(CookieControlsStatus::kEnabled,
+                               CookieControlsEnforcement::kNoEnforcement,
+                               base::Time());
+
+  EXPECT_EQ(0u, infobar_manager()->infobar_count());
+  page_info()->OnThirdPartyToggleClicked(/*block_third_party_cookies=*/false);
+  page_info()->OnUIClosing(nullptr);
+  ASSERT_EQ(1u, infobar_manager()->infobar_count());
+
+  infobar_manager()->RemoveInfoBar(infobar_manager()->infobar_at(0));
+}
+
+TEST_F(PageInfoTest, ShowInfoBarWhenBlockingThirdPartyCookies) {
+  SetDefaultUIExpectations(mock_ui());
+  NavigateAndCommit(url());
+
+  page_info()->OnStatusChanged(CookieControlsStatus::kDisabledForSite,
+                               CookieControlsEnforcement::kNoEnforcement,
+                               base::Time());
+
+  EXPECT_EQ(0u, infobar_manager()->infobar_count());
+  page_info()->OnThirdPartyToggleClicked(/*block_third_party_cookies=*/true);
+  page_info()->OnUIClosing(nullptr);
+  ASSERT_EQ(1u, infobar_manager()->infobar_count());
+
+  infobar_manager()->RemoveInfoBar(infobar_manager()->infobar_at(0));
 }
 
 #endif

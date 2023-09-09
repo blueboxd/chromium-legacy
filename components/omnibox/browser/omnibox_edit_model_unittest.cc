@@ -20,6 +20,7 @@
 #include "components/omnibox/browser/actions/tab_switch_action.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/omnibox_controller.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/browser/omnibox_view.h"
@@ -53,6 +54,7 @@ namespace {
 
 class TestOmniboxPopupView : public OmniboxPopupView {
  public:
+  TestOmniboxPopupView() : OmniboxPopupView(/*controller=*/nullptr) {}
   ~TestOmniboxPopupView() override = default;
   bool IsOpen() const override { return false; }
   void InvalidateLine(size_t line) override {}
@@ -67,11 +69,13 @@ class TestOmniboxPopupView : public OmniboxPopupView {
   }
 };
 
-void OpenUrlFromEditBox(TestOmniboxEditModel* model,
+void OpenUrlFromEditBox(OmniboxController* controller,
+                        TestOmniboxEditModel* model,
                         const std::u16string url_text,
                         bool is_autocompleted) {
-  AutocompleteMatch match(model->autocomplete_controller()->search_provider(),
-                          0, false, AutocompleteMatchType::OPEN_TAB);
+  AutocompleteMatch match(
+      controller->autocomplete_controller()->search_provider(), 0, false,
+      AutocompleteMatchType::OPEN_TAB);
   match.destination_url = GURL(url_text);
   match.allowed_to_be_default_match = true;
   if (is_autocompleted) {
@@ -95,8 +99,9 @@ class OmniboxEditModelTest : public testing::Test {
         .WillRepeatedly(Return(&location_bar_model_));
 
     view_ = std::make_unique<TestOmniboxView>(std::move(omnibox_client));
-    view_->controller()->set_edit_model(std::make_unique<TestOmniboxEditModel>(
-        view_->controller(), view_.get(), /*pref_service=*/nullptr));
+    view_->controller()->SetEditModelForTesting(
+        std::make_unique<TestOmniboxEditModel>(view_->controller(), view_.get(),
+                                               /*pref_service=*/nullptr));
   }
 
   TestOmniboxView* view() { return view_.get(); }
@@ -104,6 +109,7 @@ class OmniboxEditModelTest : public testing::Test {
   TestOmniboxEditModel* model() {
     return static_cast<TestOmniboxEditModel*>(view_->model());
   }
+  OmniboxController* controller() { return view_->controller(); }
 
  protected:
   base::test::TaskEnvironment task_environment_;
@@ -369,9 +375,9 @@ TEST_F(OmniboxEditModelTest, RevertZeroSuggestTemporaryText) {
 // resulting fill_into_edit.  Alternate nav matches are never shown, so there's
 // no need to ever try and strip this scheme.
 TEST_F(OmniboxEditModelTest, AlternateNavHasHTTP) {
-  AutocompleteMatch match(model()->autocomplete_controller()->search_provider(),
-                          0, false,
-                          AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED);
+  AutocompleteMatch match(
+      controller()->autocomplete_controller()->search_provider(), 0, false,
+      AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED);
   // |match.destination_url| has to be set to ensure that OnAutocompleteAccept
   // is called and |alternate_nav_match| is populated.
   match.destination_url = GURL("https://foo/");
@@ -651,10 +657,13 @@ class OmniboxEditModelPopupTest : public ::testing::Test {
     auto omnibox_client = std::make_unique<TestOmniboxClient>();
     EXPECT_CALL(*omnibox_client, GetLocationBarModel())
         .WillRepeatedly(Return(&location_bar_model_));
+    EXPECT_CALL(*omnibox_client, GetPrefs())
+        .WillRepeatedly(Return(pref_service()));
 
     view_ = std::make_unique<TestOmniboxView>(std::move(omnibox_client));
-    view_->controller()->set_edit_model(std::make_unique<TestOmniboxEditModel>(
-        view_->controller(), view_.get(), pref_service()));
+    view_->controller()->SetEditModelForTesting(
+        std::make_unique<TestOmniboxEditModel>(view_->controller(), view_.get(),
+                                               pref_service()));
 
     omnibox::RegisterProfilePrefs(pref_service_.registry());
     model()->set_popup_view(&popup_view_);
@@ -671,8 +680,10 @@ class OmniboxEditModelPopupTest : public ::testing::Test {
   TestOmniboxEditModel* model() {
     return static_cast<TestOmniboxEditModel*>(view_->model());
   }
+  OmniboxController* controller() { return view_->controller(); }
 
  protected:
+  base::test::ScopedFeatureList features{omnibox::kUpdateResultDebounce};
   base::test::TaskEnvironment task_environment_;
   TestLocationBarModel location_bar_model_;
   TestingPrefServiceSimple pref_service_;
@@ -693,7 +704,7 @@ TEST_F(OmniboxEditModelPopupTest, SetSelectedLine) {
     match.allowed_to_be_default_match = true;
     matches.push_back(match);
   }
-  auto* result = &model()->autocomplete_controller()->result_;
+  auto* result = &controller()->autocomplete_controller()->published_result_;
   AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
                           TestSchemeClassifier());
   result->AppendMatches(matches);
@@ -716,7 +727,7 @@ TEST_F(OmniboxEditModelPopupTest, SetSelectedLineWithNoDefaultMatches) {
     match.keyword = u"match";
     matches.push_back(match);
   }
-  auto* result = &model()->autocomplete_controller()->result_;
+  auto* result = &controller()->autocomplete_controller()->published_result_;
   AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
                           TestSchemeClassifier());
   result->AppendMatches(matches);
@@ -749,7 +760,7 @@ TEST_F(OmniboxEditModelPopupTest, PopupPositionChanging) {
     match.allowed_to_be_default_match = true;
     matches.push_back(match);
   }
-  auto* result = &model()->autocomplete_controller()->result_;
+  auto* result = &controller()->autocomplete_controller()->published_result_;
   AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
                           TestSchemeClassifier());
   result->AppendMatches(matches);
@@ -797,7 +808,7 @@ TEST_F(OmniboxEditModelPopupTest, PopupStepSelection) {
   // Make match index 5 have a suggestion_group_id but no header text.
   matches[5].suggestion_group_id = omnibox::GROUP_HISTORY_CLUSTER;
 
-  auto* result = &model()->autocomplete_controller()->result_;
+  auto* result = &controller()->autocomplete_controller()->published_result_;
   result->AppendMatches(matches);
 
   omnibox::GroupConfigMap suggestion_groups_map;
@@ -805,7 +816,7 @@ TEST_F(OmniboxEditModelPopupTest, PopupStepSelection) {
   suggestion_groups_map[omnibox::GROUP_HISTORY_CLUSTER].set_header_text("");
 
   // Do not set the original_group_id on purpose to test that default visibility
-  // can be safely queried via AutocompleteResult::IsSuggestionGroupHidden().
+  // can be safely queried via OmniboxController::IsSuggestionGroupHidden().
   result->MergeSuggestionGroupsMap(suggestion_groups_map);
 
   AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
@@ -888,16 +899,16 @@ TEST_F(OmniboxEditModelPopupTest, PopupStepSelectionWithHiddenGroupIds) {
   matches[2].suggestion_group_id = kNewGroupId;
   matches[3].suggestion_group_id = kNewGroupId;
 
-  auto* result = &model()->autocomplete_controller()->result_;
+  auto* result = &controller()->autocomplete_controller()->published_result_;
   result->AppendMatches(matches);
 
   omnibox::GroupConfigMap suggestion_groups_map;
   suggestion_groups_map[kNewGroupId].set_header_text("header");
   // Setting the original_group_id allows the default visibility to be set via
-  // AutocompleteResult::SetSuggestionGroupHidden().
+  // OmniboxController::SetSuggestionGroupHidden().
   result->MergeSuggestionGroupsMap(suggestion_groups_map);
-  result->SetSuggestionGroupHidden(pref_service(), kNewGroupId,
-                                   /*hidden=*/true);
+  controller()->SetSuggestionGroupHidden(kNewGroupId, /*hidden=*/true);
+  EXPECT_TRUE(controller()->IsSuggestionGroupHidden(kNewGroupId));
 
   AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
                           TestSchemeClassifier());
@@ -964,7 +975,7 @@ TEST_F(OmniboxEditModelPopupTest, PopupStepSelectionWithActions) {
   matches[3].takeover_action = base::MakeRefCounted<OmniboxAction>(
       OmniboxAction::LabelStrings(), GURL());
 
-  auto* result = &model()->autocomplete_controller()->result_;
+  auto* result = &controller()->autocomplete_controller()->published_result_;
   result->AppendMatches(matches);
 
   AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
@@ -1034,7 +1045,7 @@ TEST_F(OmniboxEditModelPopupTest, PopupInlineAutocompleteAndTemporaryText) {
   const auto kNewGroupId = omnibox::GROUP_PREVIOUS_SEARCH_RELATED;
   matches[2].suggestion_group_id = kNewGroupId;
 
-  auto* result = &model()->autocomplete_controller()->result_;
+  auto* result = &controller()->autocomplete_controller()->published_result_;
   result->AppendMatches(matches);
 
   omnibox::GroupConfigMap suggestion_groups_map;
@@ -1108,7 +1119,7 @@ TEST_F(OmniboxEditModelPopupTest, TestFocusFixing) {
   match.has_tab_match = true;
   matches.push_back(match);
 
-  auto* result = &model()->autocomplete_controller()->result_;
+  auto* result = &controller()->autocomplete_controller()->published_result_;
   AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
                           TestSchemeClassifier());
   result->AppendMatches(matches);
@@ -1191,9 +1202,11 @@ TEST_F(OmniboxEditModelPopupTest, OpenActionSelectionLogsOmniboxEvent) {
   }
   const GURL url = GURL("http://kong-foo.com");
   matches[1].destination_url = url;
-  matches[1].provider = model()->autocomplete_controller()->search_provider();
+  matches[1].provider =
+      controller()->autocomplete_controller()->search_provider();
   matches[1].actions.push_back(base::MakeRefCounted<TabSwitchAction>(url));
-  AutocompleteResult* result = &model()->autocomplete_controller()->result_;
+  AutocompleteResult* result =
+      &controller()->autocomplete_controller()->published_result_;
   result->AppendMatches(matches);
   AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
                           TestSchemeClassifier());
@@ -1286,17 +1299,17 @@ TEST_F(OmniboxEditModelTest, IPv4AddressPartsCount) {
   constexpr char kIPv4AddressPartsCountHistogramName[] =
       "Omnibox.IPv4AddressPartsCount";
   // Hostnames shall not be recorded.
-  OpenUrlFromEditBox(model(), u"http://example.com", false);
+  OpenUrlFromEditBox(controller(), model(), u"http://example.com", false);
   histogram_tester.ExpectTotalCount(kIPv4AddressPartsCountHistogramName, 0);
 
   // Autocompleted navigations shall not be recorded.
-  OpenUrlFromEditBox(model(), u"http://127.0.0.1", true);
+  OpenUrlFromEditBox(controller(), model(), u"http://127.0.0.1", true);
   histogram_tester.ExpectTotalCount(kIPv4AddressPartsCountHistogramName, 0);
 
   // Test IPv4 parts are correctly counted.
-  OpenUrlFromEditBox(model(), u"http://127.0.0.1", false);
-  OpenUrlFromEditBox(model(), u"http://127.1/test.html", false);
-  OpenUrlFromEditBox(model(), u"http://127.0.1", false);
+  OpenUrlFromEditBox(controller(), model(), u"http://127.0.0.1", false);
+  OpenUrlFromEditBox(controller(), model(), u"http://127.1/test.html", false);
+  OpenUrlFromEditBox(controller(), model(), u"http://127.0.1", false);
   EXPECT_THAT(
       histogram_tester.GetAllSamples(kIPv4AddressPartsCountHistogramName),
       testing::ElementsAre(base::Bucket(2, 1), base::Bucket(3, 1),
@@ -1309,7 +1322,7 @@ TEST_F(OmniboxEditModelTest, OpenTabMatch) {
   // When the match comes from the Open Tab Provider while in keyword mode,
   // the disposition should be set to SWITCH_TO_TAB.
   AutocompleteMatch match(
-      model()->autocomplete_controller()->open_tab_provider(), 0, false,
+      controller()->autocomplete_controller()->open_tab_provider(), 0, false,
       AutocompleteMatchType::OPEN_TAB);
   match.destination_url = GURL("https://foo/");
   match.from_keyword = true;
@@ -1340,7 +1353,7 @@ TEST_F(OmniboxEditModelTest, OpenTabMatch) {
               OnAutocompleteAccept(_, _, _, _, _, _, _, _, _, _, _, _))
       .WillOnce(SaveArg<2>(&disposition));
 
-  match.provider = model()->autocomplete_controller()->search_provider();
+  match.provider = controller()->autocomplete_controller()->search_provider();
   match.from_keyword = true;
   model()->OpenMatchForTesting(match, WindowOpenDisposition::CURRENT_TAB,
                                GURL(), std::u16string(), 0);

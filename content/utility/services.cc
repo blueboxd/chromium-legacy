@@ -21,7 +21,6 @@
 #include "content/services/auction_worklet/auction_worklet_service_impl.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
 #include "device/vr/buildflags/buildflags.h"
-#include "media/base/media_switches.h"
 #include "media/gpu/buildflags.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -112,10 +111,10 @@ extern sandbox::TargetServices* g_utility_target_services;
 #include "ui/accessibility/accessibility_features.h"
 #endif  // BUILDFLAG(ENABLE_ACCESSIBILITY_SERVICE)
 
-#if BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
 #include "media/capture/capture_switches.h"
 #include "services/viz/public/cpp/gpu/gpu.h"
-#endif  // BUILDFLAG(IS_LINUX)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
 
 namespace content {
 base::LazyInstance<NetworkBinderCreationCallback>::Leaky
@@ -209,21 +208,19 @@ auto RunAudio(mojo::PendingReceiver<audio::mojom::AudioService> receiver) {
 
   // Set the audio process to run with similar scheduling parameters as the
   // browser process.
-  if (__builtin_available(macOS 10.9, *)) {
-    task_category_policy category;
-    category.role = TASK_FOREGROUND_APPLICATION;
-    kern_return_t result = task_policy_set(
-        mach_task_self(), TASK_CATEGORY_POLICY,
-        reinterpret_cast<task_policy_t>(&category), TASK_CATEGORY_POLICY_COUNT);
+  task_category_policy category;
+  category.role = TASK_FOREGROUND_APPLICATION;
+  kern_return_t result = task_policy_set(
+      mach_task_self(), TASK_CATEGORY_POLICY,
+      reinterpret_cast<task_policy_t>(&category), TASK_CATEGORY_POLICY_COUNT);
 
-    MACH_LOG_IF(ERROR, result != KERN_SUCCESS, result)
-        << "task_policy_set TASK_CATEGORY_POLICY";
+  MACH_LOG_IF(ERROR, result != KERN_SUCCESS, result)
+      << "task_policy_set TASK_CATEGORY_POLICY";
 
-    if (result != KERN_SUCCESS) {
-      LOG(ERROR) << "task_policy_set(TASK_CATEGORY_POLICY) failed for pid:"
-                 << getpid() << " role:TASK_FOREGROUND_APPLICATION";
-    }
+  if(result!=KERN_SUCCESS)
+    LOG(ERROR) << "task_policy_set(TASK_CATEGORY_POLICY) failed for pid:" << getpid() << " role:TASK_FOREGROUND_APPLICATION";
 
+  if(__builtin_available(macOS 10.9, *)) {
     task_qos_policy qos;
     qos.task_latency_qos_tier = LATENCY_QOS_TIER_0;
     qos.task_throughput_qos_tier = THROUGHPUT_QOS_TIER_0;
@@ -258,9 +255,7 @@ auto RunAudio(mojo::PendingReceiver<audio::mojom::AudioService> receiver) {
   }
 #endif  // BUILDFLAG(IS_WIN)
 
-  return audio::CreateStandaloneService(
-      std::move(receiver),
-      /*run_audio_processing=*/media::IsChromeWideEchoCancellationEnabled());
+  return audio::CreateStandaloneService(std::move(receiver));
 }
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING) && BUILDFLAG(IS_CHROMEOS)
@@ -323,7 +318,7 @@ auto RunVideoCapture(
     mojo::PendingReceiver<video_capture::mojom::VideoCaptureService> receiver) {
   auto service = std::make_unique<UtilityThreadVideoCaptureServiceImpl>(
       std::move(receiver), base::SingleThreadTaskRunner::GetCurrentDefault());
-#if BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
   if (switches::IsVideoCaptureUseGpuMemoryBufferEnabled()) {
     mojo::PendingRemote<viz::mojom::Gpu> remote_gpu;
     content::UtilityThread::Get()->BindHostReceiver(
@@ -333,7 +328,7 @@ auto RunVideoCapture(
                          content::UtilityThread::Get()->GetIOTaskRunner());
     service->SetVizGpu(std::move(viz_gpu));
   }
-#endif  // BUILDFLAG(IS_LINUX)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
   return service;
 }
 

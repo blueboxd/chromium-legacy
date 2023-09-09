@@ -467,6 +467,34 @@ DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(HelpBubbleView,
                                       kFirstNonDefaultButtonIdForTesting);
 
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(HelpBubbleView, kBodyTextIdForTesting);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(HelpBubbleView, kTitleTextIdForTesting);
+
+// Watches for the anchor view to be destroyed or removed from its widget.
+// Used in cases where the anchor element is not the same as the anchor view.
+// Prevents the help bubble from lingering after its anchor is invalid, which
+// can cause crashes and other strange behavior.
+class HelpBubbleView::AnchorViewObserver : public views::ViewObserver {
+ public:
+  AnchorViewObserver(views::View* anchor_view, HelpBubbleView* help_bubble)
+      : help_bubble_(help_bubble) {
+    observation_.Observe(anchor_view);
+  }
+
+ private:
+  // views::ViewObserver:
+  void OnViewRemovedFromWidget(views::View*) override { Detach(); }
+  void OnViewIsDeleting(views::View*) override { Detach(); }
+
+  void Detach() {
+    observation_.Reset();
+    if (help_bubble_->GetWidget() && !help_bubble_->GetWidget()->IsClosed()) {
+      help_bubble_->GetWidget()->Close();
+    }
+  }
+
+  const base::raw_ptr<HelpBubbleView> help_bubble_;
+  base::ScopedObservation<View, ViewObserver> observation_{this};
+};
 
 HelpBubbleView::HelpBubbleView(const HelpBubbleDelegate* delegate,
                                const internal::HelpBubbleAnchorParams& anchor,
@@ -484,14 +512,14 @@ HelpBubbleView::HelpBubbleView(const HelpBubbleDelegate* delegate,
           // can revert back to the (slightly better-looking) default
           // DIALOG_SHADOW following the 2023 refresh. The old pre-refresh
           // value is preserved just for consistency.
-          base::FeatureList::IsEnabled(features::kChromeRefresh2023)
-              ? views::BubbleBorder::DIALOG_SHADOW
-              : views::BubbleBorder::STANDARD_SHADOW
+          features::IsChromeRefresh2023() ? views::BubbleBorder::DIALOG_SHADOW
+                                          : views::BubbleBorder::STANDARD_SHADOW
 #endif
           ),
       delegate_(delegate) {
   if (anchor.rect.has_value()) {
     SetForceAnchorRect(anchor.rect.value());
+    anchor_observer_ = std::make_unique<AnchorViewObserver>(anchor.view, this);
   } else {
     // When hosted within a `views::ScrollView`, the anchor view may be
     // (partially) outside the viewport. Ensure that the anchor view is visible.
@@ -572,21 +600,26 @@ HelpBubbleView::HelpBubbleView(const HelpBubbleDelegate* delegate,
 
   // Add title (optional) and body label.
   if (!params.title_text.empty()) {
-    labels_.push_back(
+    views::Label* const title_label =
         top_text_container->AddChildView(std::make_unique<views::Label>(
-            params.title_text, delegate->GetTitleTextContext())));
-    views::Label* label =
+            params.title_text, delegate->GetTitleTextContext()));
+    title_label->SetProperty(views::kElementIdentifierKey,
+                             kTitleTextIdForTesting);
+    labels_.push_back(title_label);
+    views::Label* const body_label =
         AddChildViewAt(std::make_unique<views::Label>(
                            params.body_text, delegate->GetBodyTextContext()),
                        GetIndexOf(button_container).value());
-    labels_.push_back(label);
-    label->SetProperty(views::kElementIdentifierKey, kBodyTextIdForTesting);
+    labels_.push_back(body_label);
+    body_label->SetProperty(views::kElementIdentifierKey,
+                            kBodyTextIdForTesting);
   } else {
-    views::Label* label =
+    views::Label* const body_label =
         top_text_container->AddChildView(std::make_unique<views::Label>(
             params.body_text, delegate->GetBodyTextContext()));
-    labels_.push_back(label);
-    label->SetProperty(views::kElementIdentifierKey, kBodyTextIdForTesting);
+    labels_.push_back(body_label);
+    body_label->SetProperty(views::kElementIdentifierKey,
+                            kBodyTextIdForTesting);
   }
 
   // Set common label properties.
@@ -817,7 +850,7 @@ HelpBubbleView::HelpBubbleView(const HelpBubbleDelegate* delegate,
   // have to change it afterwards:
   set_adjust_if_offscreen(true);
   auto* const frame_view = GetBubbleFrameView();
-  if (!base::FeatureList::IsEnabled(features::kChromeRefresh2023)) {
+  if (!features::IsChromeRefresh2023()) {
     frame_view->SetCornerRadius(
         views::LayoutProvider::Get()->GetCornerRadiusMetric(
             views::Emphasis::kHigh));

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/ash/app_list/app_list_syncable_service.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 
@@ -59,7 +60,7 @@ class ChromeShelfPrefs : public app_list::AppListSyncableService::Observer {
 
   // Gets the ordered list of apps that have been pinned by policy. May contain
   // duplicates.
-  std::vector<std::string> GetAppsPinnedByPolicy(ShelfControllerHelper* helper);
+  static std::vector<std::string> GetAppsPinnedByPolicy(Profile* profile);
 
   // Removes information about pin position from sync model for the app.
   // Note, |shelf_id| with non-empty launch_id is not supported.
@@ -70,9 +71,12 @@ class ChromeShelfPrefs : public app_list::AppListSyncableService::Observer {
   // before the target app. |shelf_ids_after| optionally specifies sorted by
   // position apps that exist right after the target app. Note, |shelf_id| with
   // non-empty launch_id is not supported.
+  // |pinned_by_policy| tells whether this item is pinned to the shelf by the
+  // `PinnedLauncherApps` policy.
   void SetPinPosition(const ash::ShelfID& shelf_id,
                       const ash::ShelfID& shelf_id_before,
-                      const std::vector<ash::ShelfID>& shelf_ids_after);
+                      const std::vector<ash::ShelfID>& shelf_ids_after,
+                      bool pinned_by_policy);
 
   // Makes GetPinnedAppsFromSync() return an empty list. Avoids test failures
   // due to an untitled Play Store icon in the shelf.
@@ -156,16 +160,8 @@ class ChromeShelfPrefs : public app_list::AppListSyncableService::Observer {
   std::string GetSyncId(const std::string& shelf_id);
 
  protected:
-  // Virtual for testing. Returns the syncable service associated with the
-  // current profile.
-  virtual app_list::AppListSyncableService* GetSyncableService();
-
-  // Virtual for testing. Returns the pref service associated with the current
-  // profile.
-  virtual PrefService* GetPrefs();
-
   // Starts observing the sync service if not already doing so.
-  virtual void ObserveSyncService();
+  void ObserveSyncService();
 
   // Virtual for testing. The migration to use a standalone browser (lacros) to
   // publish chrome apps is incomplete. In the interim, this class uses some
@@ -186,9 +182,6 @@ class ChromeShelfPrefs : public app_list::AppListSyncableService::Observer {
   // app_list::AppListSyncableService::Observer:
   void OnSyncModelUpdated() override;
 
-  // Stops observing the current sync service.
-  void StopObservingSyncService();
-
   // Migrations are performed in several situations:
   //   (1) On first launch
   //   (2) Any time there's a sync update
@@ -197,10 +190,9 @@ class ChromeShelfPrefs : public app_list::AppListSyncableService::Observer {
   // be idempotent.
   bool needs_consistency_migrations_ = true;
 
-  // The sync service instance that is currently being observed. If nullptr then
-  // nothing is being observed.
-  raw_ptr<app_list::AppListSyncableService, ExperimentalAsh>
-      observed_sync_service_ = nullptr;
+  base::ScopedObservation<app_list::AppListSyncableService,
+                          app_list::AppListSyncableService::Observer>
+      sync_service_observer_{this};
 
   // The owner of this class is responsible for ensuring the validity of this
   // pointer.

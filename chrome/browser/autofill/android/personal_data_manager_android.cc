@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/autofill/address_normalizer_factory.h"
+#include "chrome/browser/autofill/android/jni_headers/AutofillProfile_jni.h"
 #include "chrome/browser/autofill/android/jni_headers/PersonalDataManager_jni.h"
 #include "chrome/browser/autofill/autofill_popup_controller_utils.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -40,6 +41,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
@@ -292,53 +294,24 @@ AutofillProfile PersonalDataManagerAndroid::CreateNativeProfileFromJava(
   if (!guid.empty())
     profile.set_guid(guid);
 
-  MaybeSetInfoWithVerificationStatus(
-      &profile, NAME_FULL, Java_AutofillProfile_getFullName(env, jprofile),
-      Java_AutofillProfile_getFullNameStatus(env, jprofile));
-  MaybeSetRawInfoWithVerificationStatus(
-      &profile, NAME_HONORIFIC_PREFIX,
-      Java_AutofillProfile_getHonorificPrefix(env, jprofile),
-      Java_AutofillProfile_getHonorificPrefixStatus(env, jprofile));
-  MaybeSetRawInfoWithVerificationStatus(
-      &profile, COMPANY_NAME,
-      Java_AutofillProfile_getCompanyName(env, jprofile),
-      Java_AutofillProfile_getCompanyNameStatus(env, jprofile));
-  MaybeSetRawInfoWithVerificationStatus(
-      &profile, ADDRESS_HOME_STREET_ADDRESS,
-      Java_AutofillProfile_getStreetAddress(env, jprofile),
-      Java_AutofillProfile_getStreetAddressStatus(env, jprofile));
-  MaybeSetRawInfoWithVerificationStatus(
-      &profile, ADDRESS_HOME_STATE,
-      Java_AutofillProfile_getRegion(env, jprofile),
-      Java_AutofillProfile_getRegionStatus(env, jprofile));
-  MaybeSetRawInfoWithVerificationStatus(
-      &profile, ADDRESS_HOME_CITY,
-      Java_AutofillProfile_getLocality(env, jprofile),
-      Java_AutofillProfile_getLocalityStatus(env, jprofile));
-  MaybeSetRawInfoWithVerificationStatus(
-      &profile, ADDRESS_HOME_DEPENDENT_LOCALITY,
-      Java_AutofillProfile_getDependentLocality(env, jprofile),
-      Java_AutofillProfile_getDependentLocalityStatus(env, jprofile));
-  MaybeSetRawInfoWithVerificationStatus(
-      &profile, ADDRESS_HOME_ZIP,
-      Java_AutofillProfile_getPostalCode(env, jprofile),
-      Java_AutofillProfile_getPostalCodeStatus(env, jprofile));
-  MaybeSetRawInfoWithVerificationStatus(
-      &profile, ADDRESS_HOME_SORTING_CODE,
-      Java_AutofillProfile_getSortingCode(env, jprofile),
-      Java_AutofillProfile_getSortingCodeStatus(env, jprofile));
-  MaybeSetInfoWithVerificationStatus(
-      &profile, ADDRESS_HOME_COUNTRY,
-      Java_AutofillProfile_getCountryCode(env, jprofile),
-      Java_AutofillProfile_getCountryCodeStatus(env, jprofile));
-  MaybeSetRawInfoWithVerificationStatus(
-      &profile, PHONE_HOME_WHOLE_NUMBER,
-      Java_AutofillProfile_getPhoneNumber(env, jprofile),
-      Java_AutofillProfile_getPhoneNumberStatus(env, jprofile));
-  MaybeSetRawInfoWithVerificationStatus(
-      &profile, EMAIL_ADDRESS,
-      Java_AutofillProfile_getEmailAddress(env, jprofile),
-      Java_AutofillProfile_getEmailAddressStatus(env, jprofile));
+  for (ServerFieldType fieldType : {NAME_FULL, ADDRESS_HOME_COUNTRY}) {
+    MaybeSetInfoWithVerificationStatus(
+        &profile, fieldType,
+        Java_AutofillProfile_getInfo(env, jprofile, fieldType),
+        Java_AutofillProfile_getInfoStatus(env, jprofile, fieldType));
+  }
+
+  for (ServerFieldType fieldType :
+       {NAME_HONORIFIC_PREFIX, COMPANY_NAME, ADDRESS_HOME_STREET_ADDRESS,
+        ADDRESS_HOME_STATE, ADDRESS_HOME_CITY, ADDRESS_HOME_DEPENDENT_LOCALITY,
+        ADDRESS_HOME_ZIP, ADDRESS_HOME_SORTING_CODE, PHONE_HOME_WHOLE_NUMBER,
+        EMAIL_ADDRESS}) {
+    MaybeSetRawInfoWithVerificationStatus(
+        &profile, fieldType,
+        Java_AutofillProfile_getInfo(env, jprofile, fieldType),
+        Java_AutofillProfile_getInfoStatus(env, jprofile, fieldType));
+  }
+
   profile.set_language_code(ConvertJavaStringToUTF8(
       Java_AutofillProfile_getLanguageCode(env, jprofile)));
   profile.FinalizeAfterImport();
@@ -644,13 +617,14 @@ void PersonalDataManagerAndroid::SetProfileUseStatsForTesting(
     const JavaParamRef<jobject>& unused_obj,
     const JavaParamRef<jstring>& jguid,
     jint count,
-    jint date) {
-  DCHECK(count >= 0 && date >= 0);
+    jint days_since_last_used) {
+  DCHECK(count >= 0 && days_since_last_used >= 0);
 
   AutofillProfile* profile = personal_data_manager_->GetProfileByGUID(
       ConvertJavaStringToUTF8(env, jguid));
   profile->set_use_count(static_cast<size_t>(count));
-  profile->set_use_date(base::Time::FromTimeT(date));
+  profile->set_use_date(AutofillClock::Now() -
+                        base::Days(days_since_last_used));
 
   personal_data_manager_->NotifyPersonalDataObserver();
 }
@@ -688,13 +662,13 @@ void PersonalDataManagerAndroid::SetCreditCardUseStatsForTesting(
     const JavaParamRef<jobject>& unused_obj,
     const JavaParamRef<jstring>& jguid,
     jint count,
-    jint date) {
-  DCHECK(count >= 0 && date >= 0);
+    jint days_since_last_used) {
+  DCHECK(count >= 0 && days_since_last_used >= 0);
 
   CreditCard* card = personal_data_manager_->GetCreditCardByGUID(
       ConvertJavaStringToUTF8(env, jguid));
   card->set_use_count(static_cast<size_t>(count));
-  card->set_use_date(base::Time::FromTimeT(date));
+  card->set_use_date(AutofillClock::Now() - base::Days(days_since_last_used));
 
   personal_data_manager_->NotifyPersonalDataObserver();
 }
@@ -722,6 +696,13 @@ jlong PersonalDataManagerAndroid::GetCurrentDateForTesting(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& unused_obj) {
   return base::Time::Now().ToTimeT();
+}
+
+jlong PersonalDataManagerAndroid::GetDateNDaysAgoForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& unused_obj,
+    jint days) {
+  return (AutofillClock::Now() - base::Days(days)).ToTimeT();
 }
 
 void PersonalDataManagerAndroid::ClearServerDataForTesting(
@@ -839,24 +820,24 @@ ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(
     bool include_organization_in_label,
     bool include_country_in_label,
     std::vector<AutofillProfile*> profiles) {
-  std::unique_ptr<std::vector<ServerFieldType>> suggested_fields;
+  ServerFieldTypeSet suggested_fields;
   size_t minimal_fields_shown = 2;
   if (address_only) {
-    suggested_fields = std::make_unique<std::vector<ServerFieldType>>();
+    suggested_fields = ServerFieldTypeSet();
     if (include_name_in_label)
-      suggested_fields->push_back(NAME_FULL);
+      suggested_fields.insert(NAME_FULL);
     if (include_organization_in_label)
-      suggested_fields->push_back(COMPANY_NAME);
-    suggested_fields->push_back(ADDRESS_HOME_LINE1);
-    suggested_fields->push_back(ADDRESS_HOME_LINE2);
-    suggested_fields->push_back(ADDRESS_HOME_DEPENDENT_LOCALITY);
-    suggested_fields->push_back(ADDRESS_HOME_CITY);
-    suggested_fields->push_back(ADDRESS_HOME_STATE);
-    suggested_fields->push_back(ADDRESS_HOME_ZIP);
-    suggested_fields->push_back(ADDRESS_HOME_SORTING_CODE);
+      suggested_fields.insert(COMPANY_NAME);
+    suggested_fields.insert(ADDRESS_HOME_LINE1);
+    suggested_fields.insert(ADDRESS_HOME_LINE2);
+    suggested_fields.insert(ADDRESS_HOME_DEPENDENT_LOCALITY);
+    suggested_fields.insert(ADDRESS_HOME_CITY);
+    suggested_fields.insert(ADDRESS_HOME_STATE);
+    suggested_fields.insert(ADDRESS_HOME_ZIP);
+    suggested_fields.insert(ADDRESS_HOME_SORTING_CODE);
     if (include_country_in_label)
-      suggested_fields->push_back(ADDRESS_HOME_COUNTRY);
-    minimal_fields_shown = suggested_fields->size();
+      suggested_fields.insert(ADDRESS_HOME_COUNTRY);
+    minimal_fields_shown = suggested_fields.size();
   }
 
   ServerFieldType excluded_field =
@@ -864,7 +845,9 @@ ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(
 
   std::vector<std::u16string> labels;
   AutofillProfile::CreateInferredLabels(
-      profiles, suggested_fields.get(), excluded_field, minimal_fields_shown,
+      profiles,
+      address_only ? absl::make_optional(suggested_fields) : absl::nullopt,
+      excluded_field, minimal_fields_shown,
       g_browser_process->GetApplicationLocale(), &labels);
 
   return base::android::ToJavaArrayOfStrings(env, labels);
@@ -910,19 +893,6 @@ static jboolean JNI_PersonalDataManager_IsAutofillProfileManaged(JNIEnv* env) {
 static jboolean JNI_PersonalDataManager_IsAutofillCreditCardManaged(
     JNIEnv* env) {
   return prefs::IsAutofillCreditCardManaged(GetPrefs());
-}
-
-// Returns whether the Payments integration feature is enabled.
-static jboolean JNI_PersonalDataManager_IsPaymentsIntegrationEnabled(
-    JNIEnv* env) {
-  return prefs::IsPaymentsIntegrationEnabled(GetPrefs());
-}
-
-// Enables or disables the Payments integration feature.
-static void JNI_PersonalDataManager_SetPaymentsIntegrationEnabled(
-    JNIEnv* env,
-    jboolean enable) {
-  prefs::SetPaymentsIntegrationEnabled(GetPrefs(), enable);
 }
 
 // Returns an ISO 3166-1-alpha-2 country code for a |jcountry_name| using

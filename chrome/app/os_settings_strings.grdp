@@ -820,6 +820,40 @@
   <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_KEYBOARD_COLEMAK" desc="The label for the choice to use Colemak keyboard.">
     Colemak
   </message>
+  <!-- Vietnamese Input Method (VNI/Telex) setting strings  -->
+  <message name="IDS_SETTINGS_INPUT_METHOD_HEADING_SHORTHAND_TYPING" desc="This is a heading for the settings option for shorthand typing features. These features allow the user to type certain diacritics via shortcut methods.">
+  Shorthand typing
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_VIETNAMESE_MODERN_TONE_MARK_PLACEMENT" desc="This is a label for the settings option to use the modern (as opposed to classic) set of rules in which vowel letter to place tone marks on a Vietnamese syllable (when there are multiple vowel letters) in flexible typing mode (where tone marks don’t need to be typed immediately after the vowel). The Vietnamese writing system has tone marks that can be placed on vowel letters.">
+   Use modern tone mark placement
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_DESCRIPTION_VIETNAMESE_MODERN_TONE_MARK_PLACEMENT" desc="This is a description for the settings option to use the modern (as opposed to classic) set of rules in which vowel letter to place tone marks on a Vietnamese syllable (when there are multiple vowel letters) in flexible typing mode (where tone marks don’t need to be typed immediately after the vowel). The Vietnamese writing system has tone marks that can be placed on vowel letters. The description shows the cases where the modern tone mark placement would differ from classic placement.">
+   For example, use oà, oè, uỳ instead of òa, òe, ùy
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_VIETNAMESE_FLEXIBLE_TYPING" desc="This is a label for the settings option to enable flexible typing mode in a Vietnamese input method. In flexible typing mode, users don’t need to assign diacritics immediately after the target letters, but can do so later e.g. towards or at the end of the syllable.">
+   Flexible typing
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_VIETNAMESE_TELEX_FLEXIBLE_TYPING_DESCRIPTION" desc="This is a description for the settings option to enable flexible typing mode in the Vietnamese Telex input method. In flexible typing mode, users don’t need to assign diacritics immediately after the target letters, but can do so later e.g. towards or at the end of the syllable. In the example, the 'S' key is used to add the acute diacritic on the 'a' character.">
+   Allow flexible diacritic assignment. For example, you can type “anhs” or “asnh” to get “ánh”.
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_VIETNAMESE_VNI_FLEXIBLE_TYPING_DESCRIPTION" desc="This is a description for the settings option to enable flexible typing mode in the Vietnamese VNI input method. In flexible typing mode, users don’t need to assign diacritics immediately after the target letters, but can do so later e.g. towards or at the end of the syllable. In the example, the '1' key is used to add the acute diacritic on the 'a' character.">
+   Allow flexible diacritic assignment. For example, you can type “anh1” or “a1nh” to get “ánh”.
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_VIETNAMESE_SHOW_UNDERLINE" desc="This is a label for the settings option to allow the Vietnamese input method to show underline when typing.">
+   Show underline for composition text
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_DESCRIPTION_VIETNAMESE_SHOW_UNDERLINE" desc="This is a description for the settings option to allow the Vietnamese input method to show underline when typing. The description clarifies that the underline setting may not be supported by some applications.">
+   Not supported by some apps
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_VIETNAMESE_VNI_UO_HOOK_SHORTCUT" desc="This is a label for the settings option to enable a shortcut way of typing in the Vietnamese VNI input method whereby typing keys U-O-7 gives characters ƯƠ directly, without having to type the canonical U-7-O-7. Note that the characters are U-with-horn and O-with-horn.">
+   Type "uo7" to get "ươ"
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_VIETNAMESE_TELEX_UO_HOOK_SHORTCUT" desc="This is a label for the settings option to enable a shortcut way of typing in the Vietnamese Telex input method whereby typing keys U-O-W gives characters ƯƠ directly, without having to type the canonical U-W-O-W. Note that the characters are U-with-horn and O-with-horn.">
+   Type "uow" to get "ươ"
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_VIETNAMESE_TELEX_W_SHORTCUT" desc="This is a label for the settings option to enable a shortcut way of typing in the Vietnamese Telex input method whereby typing the key W gives the character Ư directly, without having to type the canonical U-W. Note that the character is U-with-horn.">
+   Type "w" to get "ư"
+  </message>
 
   <!-- Device Page (OS Settings) -->
   <message name="IDS_OS_SETTINGS_TOUCHPAD_REVERSE_SCROLL_LABEL">
@@ -899,75 +933,104 @@
   <message name="IDS_SETTINGS_DISCONNECT_GOOGLE_DRIVE" desc="Label for the checkbox which enables disconnecting from Google Drive account.">
     Disconnect Google Drive account
   </message>
-  <!-- TODO(b/276391980): Remove translateable="false" when all the strings have been defined. -->
-  <message name="IDS_SETTINGS_GOOGLE_DRIVE" translateable="false" desc="Label for the settings link that takes the user to the page where they can manage their Google Drive settings.">
-    Google Drive
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_CLEAN_UP_STORAGE_ACTION" desc="Button for the Offline Storage row where users can clean their offline storage in Settings: Files: Google Drive.">
+    Clean up storage
   </message>
-  <message name="IDS_SETTINGS_GOOGLE_DRIVE_DISABLED" translateable="false" desc="Label indicating that Google Drive is disabled in Settings: Files: Google Drive.">
-    Disabled
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_CLEAN_UP_STORAGE_TITLE" desc="Title text for the Offline Storage confirmation dialog where users can clean up their offline storage in Settings: Files: Google Drive.">
+    Clean up offline storage?
   </message>
-  <message name="IDS_SETTINGS_GOOGLE_DRIVE_DISCONNECT" translateable="false" desc="Action to disconnect from Google Drive in Settings: Files: Google Drive.">
-    Disconnect
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_CLEAN_UP_STORAGE_BODY" desc="Title text for the Offline Storage confirmation dialog where users can clear their offline storage in Settings: Files: Google Drive.">
+    This will remove <ph name="OFFLINE_STORAGE_SIZE">$1<ex>5.0 GB</ex></ph> of space used by your offline files. Some files will still be available offline. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$2<ex>https://google.com/</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
-  <message name="IDS_SETTINGS_GOOGLE_DRIVE_CONNECT" translateable="false" desc="Action to connect Google Drive in Settings: Files: Google Drive.">
-    Connect account
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_CLEAN_UP_STORAGE_DISABLED_TOOLTIP" desc="Tooltip text that shows when hovering over the clear offline storage button in the Settings: Files: Google Drive.">
+    Can’t clean up storage while file sync is on
   </message>
-  <message name="IDS_SETTINGS_GOOGLE_DRIVE_SIGNED_IN_AS" translateable="false" desc="Label indicating account signed in with Google Drive in Settings: Files: Google Drive.">
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_CLEAN_UP_STORAGE_DISABLED_UNKNOWN_STORAGE_TOOLTIP" desc="Tooltip text that shows when hovering over the clear offline storage button that is disabled due to an unknown storage size in the Settings: Files: Google Drive.">
+    Can’t clean up storage until offline storage size is known.
+  </message>
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_SIGNED_IN_AS" desc="Label indicating account signed in with Google Drive in Settings: Files: Google Drive.">
     Signed in as <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DRIVE_ACCOUNT_EMAIL">$1<ex>john@google.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph>
   </message>
-  <message name="IDS_SETTINGS_GOOGLE_DRIVE_DISCONNECTED_FROM" translateable="false" desc="Label indicating account that Google Drive would sign in as in Settings: Files: Google Drive.">
-    Disconnected from <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DRIVE_ACCOUNT_EMAIL">$1<ex>john@google.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph>
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_FILE_SYNC_TITLE" desc="Title for the everything offline feature in Settings: Files: Google Drive.">
+    File sync
   </message>
-  <message name="IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_TITLE" translateable="false" desc="Title for the everything offline feature in Settings: Files: Google Drive.">
-    Keep your files available when you're offline
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_FILE_SYNC_SUBTITLE_WITHOUT_STORAGE" desc="Subtitle for the everything offline feature in Settings: Files: Google Drive.">
+    Your files in My Drive sync to your Chromebook automatically so you can access them without an internet connection.
   </message>
-  <message name="IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_SUBTITLE" translateable="false" desc="Subtitle for the everything offline feature in Settings: Files: Google Drive.">
-    This will store your Google Drive files on this Chromebook so you can view and edit them without an internet connection.
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_FILE_SYNC_SUBTITLE_WITH_STORAGE" desc="Subtitle for the everything offline feature in Settings: Files: Google Drive.">
+    Your files in My Drive sync to your Chromebook automatically so you can access them without an internet connection. This will use about <ph name="REQUIRED_SPACE">$1<ex>12.2 GB</ex></ph>. You currently have <ph name="FREE_SPACE_AVAILABLE">$2<ex>96.7 GB</ex></ph> available.
   </message>
-  <message name="IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_STORAGE_REQUIRED_SUBTITLE" translateable="false" desc="Subtitle to display the required and remaining space if all the google drive files are made available offline">
-    This will use about <ph name="REQUIRED_SPACE">$1<ex>12.2 GB</ex></ph> leaving <ph name="FREE_SPACE_LEFT">$2<ex>96.7 GB</ex></ph> available.
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_STORAGE_TITLE" desc="Title for the Offline Storage row where users can clear their offline storage in Settings: Files: Google Drive.">
+    Offline storage
   </message>
-  <message name="IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_STORAGE_TITLE" translateable="false" desc="Title for the Offline Storage row where users can clear their offline storage in Settings: Files: Google Drive.">
-    Offline Storage
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_STORAGE_SPACE_TAKEN" desc="The storage used by files that are pinned in Settings: Files: Google Drive">
+    Using <ph name="USED_SPACE">$1<ex>10 GB</ex></ph>
   </message>
-  <message name="IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_CLEAR_CALCULATING_SUBTITLE" translateable="false" desc="Subtitle for the Offline Storage row where users can clear their offline storage in Settings: Files: Google Drive.">
-    Calculating...
-  </message>
-  <message name="IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_CLEAR_ERROR_SUBTITLE" translateable="false" desc="Subtitle for the Offline Storage row where users can clear their offline storage in Settings: Files: Google Drive.">
-    Unknown
-  </message>
-  <message name="IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_CLEAR_ACTION" translateable="false" desc="Button for the Offline Storage row where users can clear their offline storage in Settings: Files: Google Drive.">
-    Clear offline storage
-  </message>
-  <message name="IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_CLEAR_DIALOG_TITLE" translateable="false" desc="Title text for the Offline Storage confirmation dialog where users can clear their offline storage in Settings: Files: Google Drive.">
-    Clear offline storage?
-  </message>
-  <message name="IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_CLEAR_DIALOG_BODY" translateable="false" desc="Title text for the Offline Storage confirmation dialog where users can clear their offline storage in Settings: Files: Google Drive.">
-    This will remove <ph name="OFFLINE_STORAGE_SIZE">$1<ex>5.0 GB</ex></ph> of space used by your offline files.
-  </message>
-  <message name="IDS_SETTINGS_GOOGLE_DRIVE_TURN_OFF_BUTTON_LABEL" translateable="false" desc="Button for the confirmation dialog that spawns when attempting to turn off bulk pinning in Settings: Files: Google Drive.">
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_TURN_OFF_BUTTON_LABEL" desc="Button for the confirmation dialog that spawns when attempting to turn off bulk pinning in Settings: Files: Google Drive.">
     Turn off
   </message>
-  <message name="IDS_SETTINGS_GOOGLE_DRIVE_TURN_OFF_TITLE_TEXT" translateable="false" desc="Title text for the confirmation dialog that spawns when attempting to turn off bulk pinning in Settings: Files: Google Drive.">
-    Are you sure you want to turn off automatic syncing?
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_FILE_SYNC_TURN_OFF_TITLE_TEXT" desc="Title text for the confirmation dialog that spawns when attempting to turn off bulk pinning in Settings: Files: Google Drive.">
+    Turn off file sync?
   </message>
-  <message name="IDS_SETTINGS_GOOGLE_DRIVE_TURN_OFF_BODY_TEXT" translateable="false" desc="Body text for the confirmation dialog that spawns when attempting to turn off bulk pinning in Settings: Files: Google Drive.">
-    New Google Drive files will no longer be synced automatically, but files that are already synced will remain available.
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_FILE_SYNC_TURN_OFF_BODY_TEXT" desc="Body text for the confirmation dialog that spawns when attempting to turn off bulk pinning in Settings: Files: Google Drive.">
+    New files in My Drive will stop syncing automatically to this Chromebook
   </message>
-  <message name="IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_CLEAR_DISABLED_TOOLTIP" translateable="false" desc="Tooltip text that shows when hovering over the clear offline storage button in the Settings: Files: Google Drive.">
-    Can’t clean up storage while files are automatically syncing.
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_REMOVE_ACCESS_BUTTON_LABEL" desc="Button label indicates that, when pressed, will disconnect the users Google Drive access in Settings: Files: Google Drive">
+    Remove Drive access
   </message>
-  <message name="IDS_SETTINGS_GOOGLE_DRIVE_BULK_PINNING_NOT_ENOUGH_SPACE_TITLE_TEXT" translateable="false" desc="Title text for the confirmation dialog that spawns when attempting to turn on bulk pinning but the user doesn't have enough free space in Settings: Files: Google Drive.">
-    Low disk space
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_REMOVE_ACCESS_DIALOG_TITLE" desc="Title of the dialog that appears when the Remove Drive access button is pressed in Settings: Files: Google Drive">
+    Remove Google Drive access?
   </message>
-  <message name="IDS_SETTINGS_GOOGLE_DRIVE_BULK_PINNING_NOT_ENOUGH_SPACE_BODY_TEXT" translateable="false" desc="Body text for the confirmation dialog that spawns when attempting to turn on bulk pinning but the user doesn't have enough free space in Settings: Files: Google Drive.">
-    Cannot enable this feature due to insufficient disk space.
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_REMOVE_ACCESS_DIALOG_BODY" desc="Body text of the dialog that appears when the Remove Drive access button is pressed in Settings: Files: Google Drive">
+    This will remove access to Google Drive on this Chromebook, including access to any files that have been made available offline
   </message>
-  <message name="IDS_SETTINGS_GOOGLE_DRIVE_BULK_PINNING_UNEXPECTED_ERROR_TITLE_TEXT" translateable="false" desc="Title text for the confirmation dialog that spawns when attempting to turn on bulk pinning but an unexpected error occurred in Settings: Files: Google Drive.">
-    An unexpected error occurred
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_REMOVE_BUTTON_TEXT" desc="Action button text of the dialog that appears when the Remove Drive access button is pressed in Settings: Files: Google Drive">
+    Remove
   </message>
-  <message name="IDS_SETTINGS_GOOGLE_DRIVE_BULK_PINNING_UNEXPECTED_ERROR_BODY_TEXT" translateable="false" desc="Body text for the confirmation dialog that spawns when attempting to turn on bulk pinning but an unexpected error occurred in Settings: Files: Google Drive.">
-    Cannot enable this feature as an unexpected error has occurred.
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_FILE_SYNC_UNEXPECTED_ERROR_TITLE_TEXT" desc="Title text for the confirmation dialog that spawns when attempting to turn on bulk pinning but an unexpected error occurred in Settings: Files: Google Drive.">
+    Something went wrong
+  </message>
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_FILE_SYNC_UNEXPECTED_ERROR_BODY_TEXT" desc="Body text for the confirmation dialog that spawns when attempting to turn on bulk pinning but an unexpected error occurred in Settings: Files: Google Drive.">
+    Try again later
+  </message>
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_FILE_SYNC_OFFLINE_ERROR_TITLE_TEXT" desc="Title text for the confirmation dialog that spawns when attempting to turn on bulk pinning but the device is offline in Settings: Files: Google Drive.">
+    You are currently offline
+  </message>
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_FILE_SYNC_OFFLINE_ERROR_BODY_TEXT" desc="Body text for the confirmation dialog that spawns when attempting to turn on bulk pinning but the device is offline in Settings: Files: Google Drive.">
+    For initial setup, you need to connect to the internet so files can sync to your Chromebook
+  </message>
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_BULK_PINNING_NOT_ENOUGH_SPACE_TITLE_TEXT" desc="Title text for the confirmation dialog that spawns when attempting to turn on bulk pinning but the user doesn't have enough free space in Settings: Files: Google Drive.">
+    Not enough storage space
+  </message>
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_BULK_PINNING_NOT_ENOUGH_SPACE_BODY_TEXT" desc="Body text for the confirmation dialog that spawns when attempting to turn on bulk pinning but the user doesn't have enough free space in Settings: Files: Google Drive.">
+    There isn’t enough storage to sync your files. Try freeing up space.
+  </message>
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_DISMISS_BUTTON_TEXT" desc="Button text for dialogs in Settings: Files: Google Drive to dismiss the dialog">
+    Dismiss
+  </message>
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_OK_BUTTON_TEXT" desc="Button text for dialogs in Settings: Files: Google Drive to dismiss the dialog">
+    OK
+  </message>
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_NOT_SIGNED_IN_SUBLABEL" desc="Label indicating that Google Drive is not signed in (i.e. disabled) for the current user in Settings: Files">
+    Not signed in
+  </message>
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_FILE_SYNC_ON_SUBLABEL" desc="Sub label for the row indicating that Google Drive is enabled and file sync is on in Settings: Files">
+    File sync on
+  </message>
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_RECONNECT_AS" desc="Label indicating account that Google Drive would sign in as in Settings: Files: Google Drive.">
+    Connect <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DRIVE_ACCOUNT_EMAIL">$1<ex>john@google.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> to access your Drive files in the Files app
+  </message>
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_CONNECT" desc="Action to connect Google Drive in Settings: Files: Google Drive.">
+    Connect
+  </message>
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_CLEAR_CALCULATING_SUBTITLE" desc="Subtitle for the Offline Storage row where users can clear their offline storage in Settings: Files: Google Drive.">
+    Calculating...
+  </message>
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_CLEAR_ERROR_SUBTITLE" desc="Subtitle for the Offline Storage row where users can clear their offline storage in Settings: Files: Google Drive.">
+    Unknown
+  </message>
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE" translateable="false" desc="Label for the settings link that takes the user to the page where they can manage their Google Drive settings.">
+    Google Drive
   </message>
   <message name="IDS_SETTINGS_DOWNLOADS_SMB_SHARES" desc="In Downloads Settings, the title of the SMB shares setting section.">
     Network file shares
@@ -1103,10 +1166,10 @@
   <message name="IDS_SETTINGS_HIGH_CONTRAST_DESCRIPTION" desc="Label for checkbox which enables high-contrast UI.">
     Turn light screens dark, and dark screens light. Press Search + Ctrl + H to turn color inversion on and off.
   </message>
-  <message name="IDS_SETTINGS_COLOR_FILTERING_LABEL" desc="Label for a checkbox which enables color filtering settings.">
+  <message name="IDS_SETTINGS_COLOR_FILTERING_LABEL" desc="Label for a checkbox which enables color correction settings.">
     Color correction
   </message>
-  <message name="IDS_SETTINGS_COLOR_FILTERING_DESCRIPTION" desc="Description for a checkbox which enables color filtering settings.">
+  <message name="IDS_SETTINGS_COLOR_FILTERING_DESCRIPTION" desc="Description for a checkbox which enables color correction settings.">
     Adjust how colors display on your screen
   </message>
   <message name="IDS_SETTINGS_GREYSCALE_LABEL" desc="Label for slider which controls grayscale UI filter.">
@@ -1133,31 +1196,31 @@
   <message name="IDS_SETTINGS_COLOR_FILTER_MAXIMUM_LABEL" desc="Label for the side of the color filter slider control that causes the most visual change.">
     100
   </message>
-  <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_INSTRUCTIONS" desc="The insructions for users to preview the effects of color filtering by looking at how some color swatches change as the filter settings change">
+  <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_INSTRUCTIONS" desc="The insructions for users to preview the effects of color correction by looking at how some color swatches change as the filter settings change">
     Adjust the color correction settings to make sure colors are distinct
   </message>
-  <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_COLOR_RED" desc="The label for a swatch of red color which is shown for users to preview the effects of color filtering">
+  <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_COLOR_RED" desc="The label for a swatch of red color which is shown for users to preview the effects of color correction.">
     Red
   </message>
-  <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_COLOR_ORANGE" desc="The label for a swatch of orange color which is shown for users to preview the effects of color filtering">
+  <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_COLOR_ORANGE" desc="The label for a swatch of orange color which is shown for users to preview the effects of color correction.">
     Orange
   </message>
-  <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_COLOR_YELLOW" desc="The label for a swatch of yellow color which is shown for users to preview the effects of color filtering">
+  <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_COLOR_YELLOW" desc="The label for a swatch of yellow color which is shown for users to preview the effects of color correction.">
     Yellow
   </message>
-    <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_COLOR_GREEN" desc="The label for a swatch of green color which is shown for users to preview the effects of color filtering">
+    <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_COLOR_GREEN" desc="The label for a swatch of green color which is shown for users to preview the effects of color correction.">
     Green
   </message>
-    <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_COLOR_CYAN" desc="The label for a swatch of cyan color which is shown for users to preview the effects of color filtering">
+    <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_COLOR_CYAN" desc="The label for a swatch of cyan color which is shown for users to preview the effects of color correction.">
     Cyan
   </message>
-    <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_COLOR_BLUE" desc="The label for a swatch of blue color which is shown for users to preview the effects of color filtering">
+    <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_COLOR_BLUE" desc="The label for a swatch of blue color which is shown for users to preview the effects of color correction.">
     Blue
   </message>
-  <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_COLOR_PURPLE" desc="The label for a swatch of purple color which is shown for users to preview the effects of color filtering">
+  <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_COLOR_PURPLE" desc="The label for a swatch of purple color which is shown for users to preview the effects of color correction.">
     Purple
   </message>
-  <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_COLOR_GRAY" desc="The label for a swatch of gray color which is shown for users to preview the effects of color filtering">
+  <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_COLOR_GRAY" desc="The label for a swatch of gray color which is shown for users to preview the effects of color correction.">
     Gray
   </message>
   <message name="IDS_SETTINGS_STICKY_KEYS_LABEL" desc="Label for checkbox which enables sticky keys, with an explanation of the term 'sticky keys'.">
@@ -2031,8 +2094,11 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_ACCESSIBILITY_DISPLAY_AND_MAGNIFICATION_LINK_TITLE" desc="In the settings tab, the title of a link that opens a screen allowing the user to change display and magnification accessibility features.">
     Display and magnification
   </message>
-  <message name="IDS_SETTINGS_ACCESSIBILITY_DISPLAY_AND_MAGNIFICATION_LINK_DESCRIPTION" desc="In the settings tab, the description of a link that opens a screen allowing the user to change keyboard and text input accessibility features.">
+  <message name="IDS_SETTINGS_ACCESSIBILITY_DISPLAY_AND_MAGNIFICATION_LINK_DESCRIPTION" desc="In the settings tab, the description of a link that opens a screen allowing the user to change display and magnification accessibility features.">
     Color inversion, magnifier, and display settings
+  </message>
+  <message name="IDS_SETTINGS_ACCESSIBILITY_DISPLAY_AND_MAGNIFICATION_LINK_NEW_DESCRIPTION" desc="In the settings tab, the description of a link that opens a screen allowing the user to change display and magnification accessibility features, including the new color correction feature.">
+    Color inversion, color correction, magnifier, and display settings
   </message>
   <message name="IDS_SETTINGS_ACCESSIBILITY_KEYBOARD_AND_TEXT_INPUT_LINK_TITLE" desc="In the settings tab, the title of a link that opens a screen allowing the user to change keyboard and text input accessibility features.">
     Keyboard and text input
@@ -2585,10 +2651,21 @@ Press an assigned switch or key to remove assignment.
     Loading apps...
   </message>
 
-  <!-- Graphics tablet page (OS settings)-->
   <!-- TODO(b/286930911): Translate string for peripherals customization launch. -->
+  <!-- Graphics tablet page (OS settings)-->
   <message name="IDS_SETTINGS_GRAPHICS_TABLET_TITLE" translateable="false" desc="Title of Graphics tablet settings page">
     Graphics tablet
+  </message>
+  <message name="IDS_SETTINGS_GRAPHICS_TABLET_CUSTOMIZE_TABLET_BUTTONS_LABEL" translateable="false" desc="Label of customize tablet buttons link row in graphics tablet page.">
+    Customize tablet buttons
+  </message>
+  <message name="IDS_SETTINGS_GRAPHICS_TABLET_CUSTOMIZE_PEN_BUTTONS_LABEL" translateable="false" desc="Label of customize pen buttons link row in graphics tablet page.">
+    Customize pen buttons
+  </message>
+
+  <!-- Customize buttons page (OS settings)-->
+  <message name="IDS_SETTINGS_CUSTOMIZE_MOUSE_BUTTONS_TITLE" translateable="false" desc="Title of Customize mouse buttons page">
+    Customize mouse buttons
   </message>
 
   <!-- Bluetooth page (OS settings) -->
@@ -3020,10 +3097,64 @@ Press an assigned switch or key to remove assignment.
   </message>
   <!-- TODO(b/286937607): Finalize and translate these strings -->
   <message name="IDS_SETTINGS_MODIFIER_KEYS_LABEL" translateable="false" desc="In the remap keyboard keys settings subpage, the label for the section that contains all of the modifier keys (Ctrl, Alt, etc).">
-    Modifier keys
+    Choose an action for each key
   </message>
   <message name="IDS_SETTINGS_OTHER_KEYS_LABEL" translateable="false" desc="In the remap keyboard keys settings subpage, the label for the section that contains all of the non-modifier keys (Backspace, Home, etc).">
-    Other keys
+    Choose a key combination to generate each action
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_INSERT" translateable="false" desc="In the keyboard settings subpage, the text next to the dropdown for setting the shortcut used to trigger the insert 6-pack key action.">
+    insert
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_HOME" translateable="false" desc="In the keyboard settings subpage, the text next to the dropdown for setting the shortcut used to trigger the home 6-pack key action.">
+    home
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_END" translateable="false" desc="In the keyboard settings subpage, the text next to the dropdown for setting the shortcut used to trigger the end 6-pack key action.">
+    end
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_PAGE_UP" translateable="false" desc="In the keyboard settings subpage, the text next to the dropdown for setting the shortcut used to trigger the PageUp 6-pack key action.">
+    page up
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_PAGE_DOWN" translateable="false" desc="In the keyboard settings subpage, the text next to the dropdown for setting the shortcut used to trigger the PageDown 6-pack key action.">
+    page down
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_DELETE" translateable="false" desc="In the keyboard settings subpage, the text next to the dropdown for setting the shortcut used to trigger the delete 6-pack key action.">
+    delete
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_DELETE_ALT" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+    alt + backspace
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_DELETE_SEARCH" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+    search + backspace
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_HOME_ALT" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+    ctrl + alt + up arrow
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_HOME_SEARCH" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+    search + left arrow
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_END_ALT" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+    ctrl + alt + down arrow
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_END_SEARCH" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+    search + right arrow
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_INSERT_SEARCH" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+    search + shift + backspace
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_PAGE_DOWN_ALT" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+    alt + down arrow
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_PAGE_DOWN_SEARCH" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+    search + down arrow
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_PAGE_UP_ALT" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+    alt + up arrow
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_PAGE_UP_SEARCH" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+    search + up arrow
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_OPTION_OFF" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the Off option.">
+    Off
   </message>
 
   <!-- Printing Page (OS Settings)-->
@@ -3042,20 +3173,20 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_PRINTER" desc="In CUPS printing settings subpage, text for the link adding a new CUPS printer.">
     Add printer
   </message>
-  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_PRINTER_MANUALLY" desc="In CUPS printing settings subpage, text for the link adding a new CUPS printer." translateable="false">
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_PRINTER_MANUALLY" desc="In CUPS printing settings subpage, text for the link adding a new CUPS printer.">
     Add printer manually
   </message>
   <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_DETECTED_OR_NEW_PRINTER" desc="In CUPS printing settings subpage, explanatory text for the nearby printers list.">
     Save detected printers to your profile, or add a new printer. <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
-  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS_READY_SUBTEXT" desc="In CUPS printing settings subpage, explanatory text for the nearby printers list." translateable="false">
-    Connected printers will automatically appear here and ready to use or save to your profile.
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS_READY_SUBTEXT" desc="In CUPS printing settings subpage, explanatory text for the nearby printers list.">
+    These printers are connected and ready to use. Save to your profile for easier access.
   </message>
   <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS" desc="In CUPS printing settings subpage, title for the nearby printers list.">
     Add printers to your profile
   </message>
-  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS_READY" desc="In CUPS printing settings subpage, title for the nearby printers list." translateable="false">
-    Available printers ready to use
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS_READY" desc="In CUPS printing settings subpage, title for the nearby printers list.">
+    Other available printers
   </message>
   <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS_COUNT_MANY" desc="In CUPS printing settings subpage, this message will be read aloud to the user to inform them on the number of printers showing on the screen that are available to save.">
     There are <ph name="PRINTER_COUNT">$1<ex>3</ex></ph> printers available to save.
@@ -3090,14 +3221,8 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_SETUP_BUTTON" desc="Text for the button which allows the user to manually setup a CUPS printer.">
     Set up
   </message>
-  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_SETUP_BUTTON_ARIA" desc="Label to be read aloud by the screen reader for the button which allows the user to manually setup a CUPS printer.">
-    Set up <ph name="PRINTER_NAME">$1<ex>HP OfficeJet 500</ex></ph>
-  </message>
   <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_SAVE_BUTTON" desc="Text for the button which allows the user to add an automatically discovered printer to the user's saved printer list.">
     Save
-  </message>
-  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_SAVE_BUTTON_ARIA" desc="Label to be read aloud by the screen reader for the button which allows the user to add an automatically discovered printer to the user's saved printer list.">
-    Save <ph name="PRINTER_NAME">$1<ex>HP OfficeJet 500</ex></ph>
   </message>
   <message name="IDS_SETTINGS_PRINTING_CUPS_SEARCH_LABEL" desc="The placeholder text in the printer search field.">
     Search printers
@@ -3105,8 +3230,8 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_PRINTING_CUPS_SAVED_PRINTERS_TITLE" desc="Text for the title of the user's saved printers list.">
     Your saved printers
   </message>
-  <message name="IDS_SETTINGS_PRINTING_CUPS_SAVED_PRINTERS_SUBTEXT" desc="Subtext of the user's saved printers list." translateable="false">
-    Saved printers will appear here for easier managing and access.
+  <message name="IDS_SETTINGS_PRINTING_CUPS_SAVED_PRINTERS_SUBTEXT" desc="Subtext of the user's saved printers list.">
+    Easily access and manage printers
   </message>
   <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_SAVED_PRINTERS_COUNT_MANY" desc="In CUPS printing settings subpage, this message will be read aloud to the user to inform them on the number of printers previously saved by the user.">
     You have <ph name="PRINTER_COUNT">$1<ex>3</ex></ph> saved printers.
@@ -3120,11 +3245,11 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_PRINTING_CUPS_NO_SAVED_PRINTERS" desc="In CUPS printing settings subpage, the text shown when a user has no printers saved to their profile.">
     No saved printers
   </message>
-  <message name="IDS_SETTINGS_PRINTING_CUPS_HELP_SECTION_TITLE" desc="In CUPS printing settings subpage, this title helps users when their local printer is not shown on the page." translateable="false">
-    Don't see your printers below?
+  <message name="IDS_SETTINGS_PRINTING_CUPS_HELP_SECTION_TITLE" desc="In CUPS printing settings subpage, this title helps users when their local printer is not shown on the page.">
+    Don’t see your printer?
   </message>
-  <message name="IDS_SETTINGS_PRINTING_CUPS_HELP_SECTION_DESCRIPTION" desc="In CUPS printing settings subpage, this description helps users when trying to connect to a local printer." translateable="false">
-    Make sure your printer is connected to the same Wi-Fi network as your Chromebook or via a USB cable. For more help, check compatibility and help information.
+  <message name="IDS_SETTINGS_PRINTING_CUPS_HELP_SECTION_DESCRIPTION" desc="In CUPS printing settings subpage, this description helps users when trying to connect to a local printer.">
+    Make sure your printer is connected to the same Wi-Fi network as your Chromebook or use a USB cable. <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more about compatibility<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_SETTINGS_PRINTING_CUPS_SHOW_MORE" desc="Text for the button to show more printers when there are more printers than currently displayed to the user.">
     Show more
@@ -3345,47 +3470,50 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_PRINTING_SCANNING_LAUNCH_APP_SUBLABEL" desc="Sub-label that describes the scanning app which lets users scan documents.">
     Scan documents and images
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_DEVICE_ERROR" translateable="false" desc="Error label to show under the destination dropdown when there is a mechanical error inside the printer.">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_DEVICE_ERROR" desc="Error label to show under the destination dropdown when there is a mechanical error inside the printer.">
     Mechanical issue. Check printer
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_DOOR_OPEN" translateable="false" desc="Error label to show under the destination dropdown when the printer has an open cover or door.">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_DOOR_OPEN" desc="Error label to show under the destination dropdown when the printer has an open cover or door.">
    Printer door is open
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_LOW_ON_INK" translateable="false" desc="Error label to show under the destination dropdown when the printer is low on ink.">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_LOW_ON_INK" desc="Error label to show under the destination dropdown when the printer is low on ink.">
     Low on ink
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_LOW_ON_PAPER" translateable="false" desc="Error label to show under the destination dropdown when the printer is low on paper">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_LOW_ON_PAPER" desc="Error label to show under the destination dropdown when the printer is low on paper">
     Low on paper
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_OUT_OF_INK" translateable="false" desc="Error label to show under the destination dropdown when the printer is out of ink.">
-   Out of ink
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_OUT_OF_INK" desc="Error label to show under the destination dropdown when the printer is out of ink.">
+    Out of ink
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_OUT_OF_PAPER" translateable="false" desc="Error label to show under the destination dropdown when the printer is out of paper.">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_OUT_OF_PAPER" desc="Error label to show under the destination dropdown when the printer is out of paper.">
     Out of paper
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_OUPUT_ALMOST_FULL" translateable="false" desc="Error label to show under the destination dropdown when the printer's output tray is almost full.">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_OUPUT_ALMOST_FULL" desc="Error label to show under the destination dropdown when the printer's output tray is almost full.">
     Output tray is almost full
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_OUPUT_FULL" translateable="false" desc="Error label to show under the destination dropdown when the printer's output tray is full.">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_OUPUT_FULL" desc="Error label to show under the destination dropdown when the printer's output tray is full.">
     Output tray is full
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_PAPER_JAM" translateable="false" desc="Error label to show under the destination dropdown when the printer has a paper jam.">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_PAPER_JAM" desc="Error label to show under the destination dropdown when the printer has a paper jam.">
     Paper is jammed
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_PAUSED" translateable="false" desc="Error label to show under the destination dropdown when someone has put the printer into a paused state.">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_PAUSED" desc="Error label to show under the destination dropdown when someone has put the printer into a paused state.">
     Printer is paused
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_PRINTER_QUEUE_FULL" translateable="false" desc="Error label to show under the destination dropdown when the printer's job queue is full and is temporarily unable to accept more print jobs.">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_PRINTER_QUEUE_FULL" desc="Error label to show under the destination dropdown when the printer's job queue is full and is temporarily unable to accept more print jobs.">
     Printer queue is full
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_PRINTER_UNREACHABLE" translateable="false" desc="Error label to show under the destination dropdown when the device is attempting to schedule a print job on the printer but can't get a connection to the printer">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_PRINTER_UNREACHABLE" desc="Error label to show under the destination dropdown when the device is attempting to schedule a print job on the printer but can't get a connection to the printer">
     Can’t connect to printer
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_STOPPED" translateable="false" desc="Error label to show under the destination dropdown when the printer is in the process of stopping or the printer is powered down.">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_STOPPED" desc="Error label to show under the destination dropdown when the printer is in the process of stopping or the printer is powered down.">
     Printer has stopped
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_TRAY_MISSING" translateable="false" desc="Error label to show under the destination dropdown when the printer is missing a tray.">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_TRAY_MISSING" desc="Error label to show under the destination dropdown when the printer is missing a tray.">
     Tray is missing
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_ENTRY_ARIA_LABEL" is_accessibility_with_no_ui="true" desc="Aria label spoken by ChromeVox announcing the printer's position in the list of printers.">
+    <ph name="PRINTER_NAME">$1<ex>HP 3100</ex></ph> <ph name="PRINTER_STATUS">$2<ex>Low on ink</ex></ph>. Printer <ph name="ITEM_POSITION">$3<ex>2</ex></ph> of <ph name="NUM_PRINTERS">$4<ex>4</ex></ph>.
   </message>
 
   <!-- Internet page (OS settings) -->
@@ -3435,7 +3563,7 @@ Press an assigned switch or key to remove assignment.
     Hotspot details
   </message>
   <message name="IDS_SETTINGS_INTERNET_HOTSPOT_SUBTITLE_WITH_LEARN_MORE_LINK" desc="Subtitle of the hotspot subpage which explains how hotspot may affect your Chromebook.">
-    Uses your Chromebook’s mobile data and your carrier may charge additional fees. May increase battery usage. <ph name="BEGIN_LINK_LEARN_MORE">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK_LEARN_MORE">&lt;/a&gt;</ph>
+    Uses your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>’s mobile data and your carrier may charge additional fees. May increase battery usage. <ph name="BEGIN_LINK_LEARN_MORE">&lt;a target="_blank" href="$2"&gt;</ph>Learn more<ph name="END_LINK_LEARN_MORE">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_SETTINGS_INTERNET_HOTSPOT_MOBILE_DATA_NOT_SUPPORTED_SUBLABEL_WITH_LEARN_MORE_LINK" desc="Sublabel of the hotspot summary which explains the hostpost toggle is disabled because the mobile data plan doesn't support hotspot.">
     Your mobile data may not support hotspot. <ph name="BEGIN_LINK_LEARN_MORE">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK_LEARN_MORE">&lt;/a&gt;</ph>
@@ -3449,8 +3577,14 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_INTERNET_HOTSPOT_SUMMARY_STATE_ON" desc="Sublabel for Hotspot summary row, when Hotspot is on.">
     On
   </message>
+  <message name="IDS_SETTINGS_INTERNET_HOTSPOT_SUMMARY_STATE_TURNING_ON" desc="Sublabel for Hotspot summary row, when Hotspot is turning on.">
+    Turning On...
+  </message>
   <message name="IDS_SETTINGS_INTERNET_HOTSPOT_SUMMARY_STATE_OFF" desc="Sublabel for Hotspot summary row, when Hotspot is off.">
     Off
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_HOTSPOT_SUMMARY_STATE_TURNING_OFF" desc="Sublabel for Hotspot summary row, when Hotspot is turning off.">
+    Turning off...
   </message>
   <message name="IDS_SETTINGS_INTERNET_HOTSPOT_ENABLED_A11Y_LABEL" desc="Accessibility announcement when Hotspot is enabled.">
     Hotspot enabled
@@ -3474,16 +3608,22 @@ Press an assigned switch or key to remove assignment.
     When no devices are connected
   </message>
   <message name="IDS_SETTINGS_INTERNET_HOTSPOT_SETTINGS_TITLE" desc="Settings > Network > Hotspot > Configure hotspot dialog: Title for the hotspot configuration dialog.">
-    Hotspot Settings
+    Configure <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> Hotspot
   </message>
   <message name="IDS_SETTINGS_INTERNET_HOTSPOT_SETTINGS_SUBTITLE_WITH_LEARN_MORE_LINK" desc="Subtitle of the hotspot configuration dialog which explains that creating a WiFi hotspot to provide internet to other devices.">
-    Create a Wi-Fi hotspot to provide internet to other deivces. <ph name="BEGIN_LINK_LEARN_MORE">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK_LEARN_MORE">&lt;/a&gt;</ph>
+    Create a Wi-Fi hotspot using your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>'s mobile data to provide internet to other devices. <ph name="BEGIN_LINK_LEARN_MORE">&lt;a target="_blank" href="$2"&gt;</ph>Learn more<ph name="END_LINK_LEARN_MORE">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_SETTINGS_INTERNET_HOTSPOT_CONFIG_NAME_LABEL" desc="Settings > Network > Hotspot > Configure hotspot dialog: Label for the hotspot name input.">
     Hotspot name
   </message>
   <message name="IDS_SETTINGS_INTERNET_HOTSPOT_CONFIG_NAME_INFO" desc="Settings > Network > Hotspot > Configure hotspot dialog: Info label under the hotspot name input to inform users that the hotspot name will be visible to others.">
     This will be visible to others
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_HOTSPOT_CONFIG_NAME_EMPTY_INFO" desc="Settings > Network > Hotspot > Configure hotspot dialog: Info label under the hotspot name input to inform users that the hotspot name will be visible to others.">
+    Name cannot be empty
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_HOTSPOT_CONFIG_NAME_TOO_LONG_INFO" desc="Settings > Network > Hotspot > Configure hotspot dialog: Info label under the hotspot name input to inform users that the hotspot name will be visible to others.">
+    Name cannot exceed 32 characters
   </message>
   <message name="IDS_SETTINGS_INTERNET_HOTSPOT_CONFIG_PASSWORD_LABEL" desc="Settings > Network > Hotspot > Configure hotspot dialog: Label for the hotspot password input.">
     Password
@@ -5441,6 +5581,9 @@ Press &amp; hold keyboard keys to see accent marks and special characters. This 
   </message>
   <message name="IDS_OS_SETTINGS_PRIVACY_HUB_CAMERA_TOGGLE_SUBTEXT" desc="Sub-label for the camera access toggle in the Privacy controls (aka Privacy Hub) os-settings page.">
     Allow access for apps and websites with the camera permission
+  </message>
+  <message name="IDS_OS_SETTINGS_PRIVACY_HUB_FALLBACK_CAMERA_TOGGLE_SUBTEXT" desc="Sub-label for the camera access toggle in the Privacy controls (aka Privacy Hub) os-settings page.">
+    Allow apps and webpages to use the camera(s) connected to this device. If you still have a problem with your camera, try restart the app or refresh the webpage.
   </message>
   <message name="IDS_OS_SETTINGS_PRIVACY_HUB_NO_CAMERA_CONNECTED_TEXT" desc="Text to display in the Privacy Hub subpage when no camera is connected to the device.">
     No camera

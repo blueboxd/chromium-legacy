@@ -24,9 +24,11 @@
 #include "sql/database.h"
 #include "sql/error_delegate_util.h"
 #include "sql/meta_table.h"
+#include "sql/recovery.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "storage/browser/quota/quota_database_migrations.h"
+#include "storage/browser/quota/quota_features.h"
 #include "storage/browser/quota/quota_internals.mojom.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "url/gurl.h"
@@ -815,37 +817,16 @@ QuotaError QuotaDatabase::SetIsBootstrapped(bool bootstrap_flag) {
              : QuotaError::kDatabaseError;
 }
 
-QuotaError QuotaDatabase::RazeAndReopen() {
+bool QuotaDatabase::RecoverOrRaze(int error_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Opening failed, don't bother to try again. If the error occurred while
-  // opening the db, it won't be open and trying to raze it will result in a
-  // MISUSE error.
-  if (db_ && !db_->is_open()) {
-    return QuotaError::kDatabaseError;
-  }
+  std::ignore = sql::BuiltInRecovery::RecoverIfPossible(
+      db_.get(), error_code,
+      sql::BuiltInRecovery::Strategy::kRecoverWithMetaVersionOrRaze, nullptr);
 
-  // Try creating a database one last time if there isn't one.
-  if (!db_) {
-    if (!db_file_path_.empty()) {
-      DCHECK(!legacy_db_file_path_.empty());
-      sql::Database::Delete(db_file_path_);
-      sql::Database::Delete(legacy_db_file_path_);
-    }
-    return EnsureOpened();
-  }
-
-  // Abort the long-running transaction.
-  db_->RollbackTransaction();
-
-  // Raze and close the database.
-  if (!db_->Raze()) {
-    return QuotaError::kDatabaseError;
-  }
-
-  // Reset `db_` to nullptr so EnsureOpened will recreate the database.
   db_.reset();
-  return EnsureOpened();
+  EnsureOpened();
+  return db_->is_open();
 }
 
 QuotaError QuotaDatabase::CorruptForTesting(
@@ -932,7 +913,7 @@ QuotaError QuotaDatabase::EnsureOpened() {
     return QuotaError::kDatabaseError;
   }
 
-  db_ = std::make_unique<sql::Database>(sql::DatabaseOptions{
+  sql::DatabaseOptions options{
       .exclusive_locking = true,
       // The quota database is a critical storage component. If it's corrupted,
       // all client-side storage APIs fail, because they don't know where their
@@ -940,7 +921,12 @@ QuotaError QuotaDatabase::EnsureOpened() {
       .flush_to_media = true,
       .page_size = 4096,
       .cache_size = 500,
-  });
+  };
+  if (base::FeatureList::IsEnabled(features::kDisableQuotaDbFullFSync)) {
+    options.flush_to_media = false;
+  }
+
+  db_ = std::make_unique<sql::Database>(std::move(options));
   meta_table_ = std::make_unique<sql::MetaTable>();
 
   db_->set_histogram_tag("Quota");

@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_COMMON_PASSWORD_MANAGER_FEATURES_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_COMMON_PASSWORD_MANAGER_FEATURES_H_
 
-// This file defines all the base::FeatureList features for the Password Manager
-// module.
+// DON'T ADD NEW FEATURES here.
+// If the feature doesn't logically belong to the browser process, put it into
+// components/password_manager/core/browser/features/password_features.h.
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
@@ -21,33 +22,12 @@ namespace password_manager::features {
 
 // All features in alphabetical order. The features should be documented
 // alongside the definition of their values in the .cc file.
-
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-BASE_DECLARE_FEATURE(kBiometricAuthenticationForFilling);
-#endif
-#if BUILDFLAG(IS_MAC)
-BASE_DECLARE_FEATURE(kBiometricAuthenticationInSettings);
-#endif
-BASE_DECLARE_FEATURE(kBiometricTouchToFill);
-BASE_DECLARE_FEATURE(kDisablePasswordsDropdownForCvcFields);
 BASE_DECLARE_FEATURE(kEnableOverwritingPlaceholderUsernames);
 
-BASE_DECLARE_FEATURE(kEnablePasswordsAccountStorage);
-inline constexpr base::FeatureParam<int>
-    kMaxAccountStorageNewFeatureIconImpressions = {
-        &kEnablePasswordsAccountStorage,
-        "max_account_storage_new_feature_icon_impressions", 5};
-
-BASE_DECLARE_FEATURE(kEnablePasswordGenerationForClearTextFields);
-BASE_DECLARE_FEATURE(kEnablePasswordManagerWithinFencedFrame);
-BASE_DECLARE_FEATURE(kFillingAcrossAffiliatedWebsites);
-BASE_DECLARE_FEATURE(kFillingAcrossGroupedSites);
-BASE_DECLARE_FEATURE(kFillOnAccountSelect);
 BASE_DECLARE_FEATURE(kPasswordManagerLogToTerminal);
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 BASE_DECLARE_FEATURE(kForceInitialSyncWhenDecryptionFails);
 #endif
-BASE_DECLARE_FEATURE(kInferConfirmationPasswordField);
 #if BUILDFLAG(IS_IOS)
 BASE_DECLARE_FEATURE(kIOSPasswordUISplit);
 BASE_DECLARE_FEATURE(kIOSPasswordCheckup);
@@ -60,9 +40,6 @@ BASE_DECLARE_FEATURE(kNewRegexForOtpFields);
 BASE_DECLARE_FEATURE(kPasswordIssuesInSpecificsMetadata);
 BASE_DECLARE_FEATURE(kSendPasswords);
 BASE_DECLARE_FEATURE(kPasswordChangeWellKnown);
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
-BASE_DECLARE_FEATURE(kPasswordManagerRedesign);
-#endif
 BASE_DECLARE_FEATURE(kPasswordReuseDetectionEnabled);
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
 BASE_DECLARE_FEATURE(kPasswordGenerationExperiment);
@@ -115,6 +92,10 @@ enum class PasswordGenerationVariation {
   kConvenience = 4,
   // Adjusts the language of the help text pointing out the benefits.
   kCrossDevice = 5,
+  // Adds a row for switching to editing the suggested password directly.
+  kEditPassword = 6,
+  // Adds chunking generated passwords into smaller readable parts.
+  kChunkPassword = 7,
 };
 
 inline constexpr base::FeatureParam<PasswordGenerationVariation>::Option
@@ -124,6 +105,8 @@ inline constexpr base::FeatureParam<PasswordGenerationVariation>::Option
         {PasswordGenerationVariation::kTrySomethingNew, "try_something_new"},
         {PasswordGenerationVariation::kConvenience, "convenience"},
         {PasswordGenerationVariation::kCrossDevice, "cross_device"},
+        {PasswordGenerationVariation::kEditPassword, "edit_password"},
+        {PasswordGenerationVariation::kChunkPassword, "chunk_password"},
 };
 
 inline constexpr base::FeatureParam<PasswordGenerationVariation>

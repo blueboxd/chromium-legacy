@@ -59,6 +59,7 @@
 <translation id="3984746313391923992">Kuruluşunuz, Chrome'da oturum kapatmış olarak kalmanızı zorunlu tutuyor.</translation>
 <translation id="3988789688219830639">Google Chrome, fotoğraflarınıza veya videolarınıza erişemiyor. iOS Ayarlar &gt; Gizlilik &gt; Fotoğraflar'dan erişimi etkinleştirin.</translation>
 <translation id="4064699917955374540">Chrome verilerini kullanmak ve Google Hesabınıza kaydetmek için kimliğinizi doğrulayın.</translation>
+<translation id="4093042601582616698">Chrome varsayılan tarayıcınız yapılsın mı?</translation>
 <translation id="417201473131094001">Chrome Canary'de desteklenmiyor</translation>
 <translation id="4233521129555661685"><ph name="USER_EMAIL1" />, Chrome'u kullanıyordu, ardından yer işaretlerini, şifrelerini ve diğer ayarlarını bu cihazda bıraktı.</translation>
 <translation id="424864128008805179">Chrome oturumu kapatılsın mı?</translation>
@@ -69,7 +70,6 @@
 <translation id="4636900170638246267">Bu sitede ve Chrome'da oturum açın.</translation>
 <translation id="4698415050768537821">Chrome, şifrelerin tümünü kontrol edemedi. Yarın tekrar deneyin veya <ph name="BEGIN_LINK" />Google Hesabınızdaki şifreleri kontrol edin<ph name="END_LINK" />.</translation>
 <translation id="4819268619367838612">Chrome, uygulamanın iyileştirilmesine yardımcı olmak için kullanım ve kilitlenme verilerini Google'a gönderir. <ph name="BEGIN_LINK" />Yönetin<ph name="END_LINK" /></translation>
-<translation id="4830799082179398588">Chrome varsayılan tarayıcınız yapılsın mı?</translation>
 <translation id="484033449593719797">Chrome Beta'da desteklenmiyor</translation>
 <translation id="4840404732697892756">Google Şifre Yöneticisi, Google Hesabınızla oturum açtığınızda şifrelerinizi kontrol edebilir.</translation>
 <translation id="4903674399067644695">Bu kartta, Chrome'dan en iyi şekilde yararlanmayla ilgili öneriler gösterilmektedir.</translation>
@@ -94,7 +94,7 @@
 <translation id="6054613632208573261">Chrome'u varsayılan olarak kullanın</translation>
 <translation id="6063091872902370735">Chrome'da oturum açmaya izin ver</translation>
 <translation id="6110625574506755980">Bazı Chrome özellikleri artık kullanılamayacak.</translation>
-<translation id="6181930887571472871">Chrome'a geçin</translation>
+<translation id="6181930887571472871">Chrome'a Geçin</translation>
 <translation id="6238746320622508509">Chrome'un Gizli sekmeleri kilitlemesine izin verin.</translation>
 <translation id="6247557882553405851">Google Şifre Yöneticisi</translation>
 <translation id="6412673304250309937">URL'leri, Chrome'da kayıtlı güvenli olmayan siteler listesine göre kontrol eder. Chrome, bir sitenin şifrenizi çalmaya çalışması veya zararlı bir dosya indirmeniz halinde de Güvenli Tarama'ya sayfa içeriğinden parçalarla birlikte URL'ler gönderebilir.</translation>
@@ -144,7 +144,7 @@
   3. Chrome'u seçin.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8603022514504485810">Google Şifre Yöneticisi, şifrelerin tümünü kontrol edemedi. Yarın tekrar deneyin veya <ph name="BEGIN_LINK" />Google Hesabınızdaki şifreleri kontrol edin<ph name="END_LINK" />.</translation>
-<translation id="8736550665979974340">Google Chrome ile güvende kalın</translation>
+<translation id="8736550665979974340">Google Chrome ile Güvende Kalın</translation>
 <translation id="8765470054473112089">Adres çubuğuna veya arama kutusuna yazdığınızda Chrome, yazdıklarınızı varsayılan arama motorunuza göndererek daha iyi öneriler görmenizi sağlar. Bu ayar Gizli modda kapalıdır.</translation>
 <translation id="8772179140489533211">Chrome'da oturum açmak için istekleri gösterir.</translation>
 <translation id="8788269841521769222">Bu şifreyi hatırlamanız gerekmez. <ph name="EMAIL" /> için Google Şifre Yöneticisi'ne kaydedilir</translation>

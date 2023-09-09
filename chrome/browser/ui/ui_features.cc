@@ -20,7 +20,7 @@ BASE_FEATURE(kAllowWindowDragUsingSystemDragDrop,
 #if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kDesktopPWAsAppHomePage,
              "DesktopPWAsAppHomePage",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
 
 // Enables Chrome Labs menu in the toolbar. See https://crbug.com/1145666
@@ -75,6 +75,12 @@ BASE_FEATURE(kGetTheMostOutOfChrome,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
+#if !BUILDFLAG(IS_ANDROID)
+// Enables or disables the Happiness Tracking Surveys being delivered via chrome
+// webui, rather than a separate static website.
+BASE_FEATURE(kHaTSWebUI, "HaTSWebUI", base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // !BUILDFLAG(IS_ANDROID)
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // Controls whether we use a different UX for simple extensions overriding
 // settings.
@@ -91,6 +97,12 @@ BASE_FEATURE(kPowerBookmarksSidePanel,
 // Enables the QuickCommands UI surface. See https://crbug.com/1014639
 BASE_FEATURE(kQuickCommands,
              "QuickCommands",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enable responsive toolbar. Toolbar buttons overflow to a chevron button when
+// the browser width is resized smaller than normal.
+BASE_FEATURE(kResponsiveToolbar,
+             "ResponsiveToolbar",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the side search feature for Google Search. Presents recent Google
@@ -353,8 +365,9 @@ int GetLocationPermissionsExperimentLabelPromptLimit() {
 #endif
 
 // Reduce resource usage when view is hidden by not rendering loading animation.
+// TODO(crbug.com/1322081): Clean up the feature in M117.
 BASE_FEATURE(kStopLoadingAnimationForHiddenWindow,
              "StopLoadingAnimationForHiddenWindow",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace features

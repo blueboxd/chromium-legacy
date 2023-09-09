@@ -38,6 +38,20 @@ posix_bypass_mmap = (is_android && current_cpu != "x86") || is_fuchsia
 
 enable_built_in_dns = use_blink
 
+# TODO(droger): Support client auth on iOS. See http://crbug.com/145954).
+#
+# Historically this was disabled because client auth required
+# platform-specific code deep in //net. Nowadays, this is abstracted away and
+# we could enable the interfaces on iOS for platform-independence. However,
+# merely enabling them changes our behavior from automatically proceeding
+# with no client certificate to raising
+# `URLRequest::Delegate::OnCertificateRequested`. Callers would need to be
+# updated to apply that behavior manually.
+#
+# If fixing this, re-enable the tests in ssl_client_socket_unittest.cc and
+# ssl_server_socket_unittest.cc which are disabled on iOS.
+enable_client_certificates = !is_ios || (use_blink && !is_cronet_build)
+
 # Unix sockets are not supported on iOS.
 enable_unix_sockets = is_posix && !is_ios
 
@@ -82,6 +96,7 @@ buildflag_header("buildflags") {
     "ENABLE_MDNS=$enable_mdns",
     "ENABLE_REPORTING=$enable_reporting",
     "ENABLE_WEBSOCKETS=$enable_websockets",
+    "ENABLE_CLIENT_CERTIFICATES=$enable_client_certificates",
     "INCLUDE_TRANSPORT_SECURITY_STATE_PRELOAD_LIST=$include_transport_security_state_preload_list",
     "USE_KERBEROS=$use_kerberos",
     "USE_EXTERNAL_GSSAPI=$use_external_gssapi",
@@ -490,7 +505,6 @@ component("net") {
     "disk_cache/blockfile/file_block.h",
     "disk_cache/blockfile/file_lock.cc",
     "disk_cache/blockfile/file_lock.h",
-    "disk_cache/blockfile/histogram_macros.h",
     "disk_cache/blockfile/in_flight_backend_io.cc",
     "disk_cache/blockfile/in_flight_backend_io.h",
     "disk_cache/blockfile/in_flight_io.cc",
@@ -568,8 +582,6 @@ component("net") {
     "first_party_sets/first_party_sets_context_config.h",
     "first_party_sets/global_first_party_sets.cc",
     "first_party_sets/global_first_party_sets.h",
-    "first_party_sets/same_party_context.cc",
-    "first_party_sets/same_party_context.h",
     "http/alternative_service.cc",
     "http/alternative_service.h",
     "http/bidirectional_stream.cc",
@@ -615,8 +627,6 @@ component("net") {
     "http/http_byte_range.h",
     "http/http_cache.cc",
     "http/http_cache.h",
-    "http/http_cache_lookup_manager.cc",
-    "http/http_cache_lookup_manager.h",
     "http/http_cache_transaction.cc",
     "http/http_cache_transaction.h",
     "http/http_cache_writers.cc",
@@ -953,13 +963,10 @@ component("net") {
     "spdy/header_coalescer.h",
     "spdy/http2_priority_dependencies.cc",
     "spdy/http2_priority_dependencies.h",
-    "spdy/http2_push_promise_index.cc",
-    "spdy/http2_push_promise_index.h",
     "spdy/multiplexed_http_stream.cc",
     "spdy/multiplexed_http_stream.h",
     "spdy/multiplexed_session.cc",
     "spdy/multiplexed_session.h",
-    "spdy/server_push_delegate.h",
     "spdy/spdy_buffer.cc",
     "spdy/spdy_buffer.h",
     "spdy/spdy_buffer_producer.cc",
@@ -1022,6 +1029,8 @@ component("net") {
     "ssl/ssl_server_config.h",
     "ssl/threaded_ssl_private_key.cc",
     "ssl/threaded_ssl_private_key.h",
+    "url_request/clear_site_data.cc",
+    "url_request/clear_site_data.h",
     "url_request/redirect_info.cc",
     "url_request/redirect_info.h",
     "url_request/redirect_util.cc",
@@ -1722,6 +1731,12 @@ source_set("net_deps") {
   } else {
     public_deps += [ "//third_party/brotli:headers" ]
   }
+
+  if (!disable_zstd_filter) {
+    public_deps += [ "//third_party/zstd:decompress" ]
+  } else {
+    public_deps += [ "//third_party/zstd:headers" ]
+  }
 }
 
 # Public dependencies for the //net component and for any build targets (e.g.
@@ -1806,10 +1821,6 @@ proto_library("isolation_info_proto") {
 
 component("extras") {
   sources = [
-    "extras/shared_dictionary/shared_dictionary_info.cc",
-    "extras/shared_dictionary/shared_dictionary_info.h",
-    "extras/shared_dictionary/shared_dictionary_isolation_key.cc",
-    "extras/shared_dictionary/shared_dictionary_isolation_key.h",
     "extras/sqlite/cookie_crypto_delegate.h",
     "extras/sqlite/sqlite_persistent_cookie_store.cc",
     "extras/sqlite/sqlite_persistent_cookie_store.h",
@@ -1825,6 +1836,7 @@ component("extras") {
     "//base",
     "//sql:sql",
   ]
+  public_deps = [ ":shared_dictionary" ]
 
   if (enable_reporting) {
     sources += [
@@ -1832,6 +1844,22 @@ component("extras") {
       "extras/sqlite/sqlite_persistent_reporting_and_nel_store.h",
     ]
   }
+}
+
+component("shared_dictionary") {
+  sources = [
+    "extras/shared_dictionary/shared_dictionary_info.cc",
+    "extras/shared_dictionary/shared_dictionary_info.h",
+    "extras/shared_dictionary/shared_dictionary_isolation_key.cc",
+    "extras/shared_dictionary/shared_dictionary_isolation_key.h",
+    "extras/shared_dictionary/shared_dictionary_usage_info.h",
+  ]
+  defines = [ "IS_NET_SHARED_DICTIONARY_IMPL" ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+  deps = [
+    ":net",
+    "//base",
+  ]
 }
 
 static_library("preload_decoder") {
@@ -2659,7 +2687,6 @@ test("net_unittests") {
     "http/http_auth_unittest.cc",
     "http/http_basic_state_unittest.cc",
     "http/http_byte_range_unittest.cc",
-    "http/http_cache_lookup_manager_unittest.cc",
     "http/http_cache_unittest.cc",
     "http/http_cache_writers_unittest.cc",
     "http/http_chunked_decoder_unittest.cc",
@@ -2783,7 +2810,6 @@ test("net_unittests") {
     "spdy/fuzzing/hpack_fuzz_util_test.cc",
     "spdy/header_coalescer_test.cc",
     "spdy/http2_priority_dependencies_unittest.cc",
-    "spdy/http2_push_promise_index_test.cc",
     "spdy/spdy_buffer_unittest.cc",
     "spdy/spdy_http_stream_unittest.cc",
     "spdy/spdy_http_utils_unittest.cc",
@@ -3199,6 +3225,10 @@ test("net_unittests") {
 
   if (!disable_brotli_filter) {
     sources += [ "filter/brotli_source_stream_unittest.cc" ]
+  }
+
+  if (!disable_zstd_filter) {
+    sources += [ "filter/zstd_source_stream_unittest.cc" ]
   }
 
   if (is_android) {
@@ -3675,6 +3705,18 @@ if (!is_win) {
 if (!disable_brotli_filter) {
   fuzzer_test("net_brotli_source_stream_fuzzer") {
     sources = [ "filter/brotli_source_stream_fuzzer.cc" ]
+    deps = [
+      ":net_fuzzer_test_support",
+      ":test_support",
+      "//base",
+      "//net",
+    ]
+  }
+}
+
+if (!disable_zstd_filter) {
+  fuzzer_test("net_zstd_source_stream_fuzzer") {
+    sources = [ "filter/zstd_source_stream_fuzzer.cc" ]
     deps = [
       ":net_fuzzer_test_support",
       ":test_support",

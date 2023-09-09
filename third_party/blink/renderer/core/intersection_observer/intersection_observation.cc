@@ -39,8 +39,11 @@ IntersectionObservation::IntersectionObservation(IntersectionObserver& observer,
       // should be -1, but since last_threshold_index_ is unsigned, we use a
       // different sentinel value.
       last_threshold_index_(kMaxThresholdIndex - 1) {
-  if (!observer.RootIsImplicit())
+  if (!observer.RootIsImplicit() ||
+      RuntimeEnabledFeatures::IntersectionOptimizationEnabled()) {
+    // TODO(crbug.com/1400495): Avoid unique_ptr for IntersectionOptimization.
     cached_rects_ = std::make_unique<IntersectionGeometry::CachedRects>();
+  }
 }
 
 int64_t IntersectionObservation::ComputeIntersection(
@@ -64,7 +67,8 @@ int64_t IntersectionObservation::ComputeIntersection(
       [this](unsigned geometry_flags) {
         return IntersectionGeometry(
             observer_->root(), *Target(), observer_->RootMargin(),
-            observer_->thresholds(), observer_->TargetMargin(), geometry_flags);
+            observer_->thresholds(), observer_->TargetMargin(), geometry_flags,
+            cached_rects_.get());
       },
       compute_flags, monotonic_time);
 }
@@ -143,7 +147,7 @@ bool IntersectionObservation::CanUseCachedRectsForTesting() const {
   if (cached_rects_) {
     cached_rects_copy = *cached_rects_;
   }
-  IntersectionGeometry geometry(observer_->root(), *target_, {}, {}, {}, 0,
+  IntersectionGeometry geometry(observer_->root(), *target_, {}, {0}, {}, 0,
                                 cached_rects_ ? &cached_rects_copy : nullptr);
   return geometry.CanUseCachedRectsForTesting();
 }

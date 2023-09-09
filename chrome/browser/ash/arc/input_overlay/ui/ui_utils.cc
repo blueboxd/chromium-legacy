@@ -41,6 +41,7 @@ constexpr char16_t kAlt[] = u"alt";
 constexpr char16_t kCtrl[] = u"ctrl";
 constexpr char16_t kShift[] = u"shift";
 constexpr char16_t kCap[] = u"cap";
+
 }  // namespace
 
 std::u16string GetDisplayText(const ui::DomCode code) {

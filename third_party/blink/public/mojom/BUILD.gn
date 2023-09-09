@@ -179,6 +179,7 @@ mojom("mojom_platform") {
     "renderer_preferences.mojom",
     "reporting/reporting.mojom",
     "runtime_feature_state/runtime_feature_state_controller.mojom",
+    "safe_url_pattern.mojom",
     "scroll/scroll_enums.mojom",
     "scroll/scroll_into_view_params.mojom",
     "scroll/scrollbar_mode.mojom",
@@ -189,6 +190,7 @@ mojom("mojom_platform") {
     "service_worker/service_worker_ancestor_frame_type.mojom",
     "service_worker/service_worker_client.mojom",
     "service_worker/service_worker_container_type.mojom",
+    "service_worker/service_worker_embedded_worker_status.mojom",
     "service_worker/service_worker_error_type.mojom",
     "service_worker/service_worker_event_status.mojom",
     "service_worker/service_worker_fetch_handler_bypass_option.mojom",
@@ -213,7 +215,6 @@ mojom("mojom_platform") {
     "subapps/sub_apps_service.mojom",
     "timing/performance_mark_or_measure.mojom",
     "timing/resource_timing.mojom",
-    "url_pattern.mojom",
     "use_counter/use_counter_feature.mojom",
     "user_agent/user_agent_metadata.mojom",
     "v8_cache_options.mojom",
@@ -222,6 +223,7 @@ mojom("mojom_platform") {
     "webaudio/audio_context_manager.mojom",
     "webdatabase/web_database.mojom",
     "webid/federated_auth_request.mojom",
+    "webid/federated_auth_request_automation.mojom",
     "webpreferences/web_preferences.mojom",
     "websockets/websocket_connector.mojom",
     "webtransport/web_transport_connector.mojom",
@@ -629,8 +631,8 @@ mojom("mojom_platform") {
     {
       types = [
         {
-          mojom = "blink.mojom.UrlPattern"
-          cpp = "::blink::UrlPattern"
+          mojom = "blink.mojom.SafeUrlPattern"
+          cpp = "::blink::SafeUrlPattern"
         },
         {
           mojom = "blink.mojom.UrlPatternPart"
@@ -653,8 +655,9 @@ mojom("mojom_platform") {
           cpp = "::liburlpattern::Modifier"
         },
       ]
-      traits_headers =
-          [ "//third_party/blink/public/common/url_pattern_mojom_traits.h" ]
+      traits_headers = [
+        "//third_party/blink/public/common/safe_url_pattern_mojom_traits.h",
+      ]
       traits_public_deps = [ "//third_party/blink/public/common:headers" ]
     },
     {
@@ -666,6 +669,16 @@ mojom("mojom_platform") {
       ]
       traits_headers = [ "//third_party/blink/public/common/interest_group/auction_config_mojom_traits.h" ]
       traits_public_deps = [ "//url/mojom:mojom_traits" ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.ServiceWorkerEmbeddedWorkerStatus"
+          cpp = "::blink::EmbeddedWorkerStatus"
+        },
+      ]
+      traits_headers = [ "//third_party/blink/public/common/service_worker/embedded_worker_status.h" ]
+      traits_private_headers = [ "//third_party/blink/public/common/service_worker/service_worker_embedded_worker_status_mojom_traits.h" ]
     },
   ]
   cpp_typemaps = [
@@ -765,6 +778,16 @@ mojom("mojom_platform") {
         {
           mojom = "blink.mojom.AuctionAdConfigNonSharedParams"
           cpp = "::blink::AuctionConfig::NonSharedParams"
+        },
+      ]
+      traits_headers = [ "//third_party/blink/public/common/interest_group/auction_config_mojom_traits.h" ]
+      traits_public_deps = [ "//url/mojom:mojom_traits" ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.AuctionAdServerResponseConfig"
+          cpp = "::blink::AuctionConfig::ServerResponseConfig"
         },
       ]
       traits_headers = [ "//third_party/blink/public/common/interest_group/auction_config_mojom_traits.h" ]
@@ -1051,6 +1074,7 @@ mojom("android_mojo_bindings") {
     "blob/blob_registry.mojom",
     "blob/blob_url_store.mojom",
     "blob/data_element.mojom",
+    "blob/file_backed_blob_factory.mojom",
     "blob/serialized_blob.mojom",
     "contacts/contacts_manager.mojom",
     "digital_goods/digital_goods.mojom",
@@ -1318,6 +1342,11 @@ mojom("mojom_core") {
       "//ui/base/mojom",
       "//ui/gfx/range/mojom",
     ]
+  }
+
+  enabled_features = []
+  if (use_aura) {
+    enabled_features += [ "use_aura" ]
   }
 
   shared_cpp_typemaps = [

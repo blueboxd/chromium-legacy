@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "base/test/test_future.h"
 #include "base/time/time.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
@@ -142,17 +143,17 @@ class WebAppDatabaseTest : public WebAppTest {
   }
 
   void RegisterApp(std::unique_ptr<WebApp> web_app) {
-    ScopedRegistryUpdate update(&sync_bridge());
+    ScopedRegistryUpdate update = sync_bridge().BeginUpdate();
     update->CreateApp(std::move(web_app));
   }
 
   void UnregisterApp(const AppId& app_id) {
-    ScopedRegistryUpdate update(&sync_bridge());
+    ScopedRegistryUpdate update = sync_bridge().BeginUpdate();
     update->DeleteApp(app_id);
   }
 
   void UnregisterAll() {
-    ScopedRegistryUpdate update(&sync_bridge());
+    ScopedRegistryUpdate update = sync_bridge().BeginUpdate();
     for (const AppId& app_id : registrar().GetAppIds())
       update->DeleteApp(app_id);
   }
@@ -217,38 +218,30 @@ TEST_F(WebAppDatabaseTest, WriteAndDeleteAppsWithCallbacks) {
   }
 
   {
-    base::RunLoop run_loop;
-
-    std::unique_ptr<WebAppRegistryUpdate> update = sync_bridge().BeginUpdate();
-
-    for (std::unique_ptr<WebApp>& web_app : apps_to_create)
-      update->CreateApp(std::move(web_app));
-
-    sync_bridge().CommitUpdate(std::move(update),
-                               base::BindLambdaForTesting([&](bool success) {
-                                 EXPECT_TRUE(success);
-                                 run_loop.Quit();
-                               }));
-    run_loop.Run();
+    base::test::TestFuture<bool> future;
+    {
+      ScopedRegistryUpdate update =
+          sync_bridge().BeginUpdate(future.GetCallback());
+      for (std::unique_ptr<WebApp>& web_app : apps_to_create) {
+        update->CreateApp(std::move(web_app));
+      }
+    }
+    EXPECT_TRUE(future.Take());
 
     Registry registry_written = database_factory().ReadRegistry();
     EXPECT_TRUE(IsRegistryEqual(registry_written, expected_registry));
   }
 
   {
-    base::RunLoop run_loop;
-
-    std::unique_ptr<WebAppRegistryUpdate> update = sync_bridge().BeginUpdate();
-
-    for (const AppId& app_id : apps_to_delete)
-      update->DeleteApp(app_id);
-
-    sync_bridge().CommitUpdate(std::move(update),
-                               base::BindLambdaForTesting([&](bool success) {
-                                 EXPECT_TRUE(success);
-                                 run_loop.Quit();
-                               }));
-    run_loop.Run();
+    base::test::TestFuture<bool> future;
+    {
+      ScopedRegistryUpdate update =
+          sync_bridge().BeginUpdate(future.GetCallback());
+      for (const AppId& app_id : apps_to_delete) {
+        update->DeleteApp(app_id);
+      }
+    }
+    EXPECT_TRUE(future.Take());
 
     Registry registry_deleted = database_factory().ReadRegistry();
     EXPECT_TRUE(registry_deleted.empty());
@@ -344,9 +337,8 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
     app->SetWebAppChromeOsData(absl::make_optional<WebAppChromeOsData>());
 
   EXPECT_FALSE(app->HasAnySources());
-  for (int i = WebAppManagement::kMinValue; i <= WebAppManagement::kMaxValue;
-       ++i) {
-    app->AddSource(static_cast<WebAppManagement::Type>(i));
+  for (WebAppManagement::Type type : WebAppManagementTypes::All()) {
+    app->AddSource(type);
     EXPECT_TRUE(app->HasAnySources());
   }
 
@@ -382,7 +374,6 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app->last_launch_time().is_null());
   EXPECT_TRUE(app->install_time().is_null());
   EXPECT_TRUE(app->shortcuts_menu_item_infos().empty());
-  EXPECT_TRUE(app->downloaded_shortcuts_menu_icons_sizes().empty());
   EXPECT_EQ(app->run_on_os_login_mode(), RunOnOsLoginMode::kNotRun);
   EXPECT_FALSE(app->run_on_os_login_os_integration_state().has_value());
   EXPECT_TRUE(app->manifest_url().is_empty());
@@ -415,10 +406,9 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
     EXPECT_FALSE(chromeos_data.has_value());
   }
 
-  for (int i = WebAppManagement::kMinValue; i <= WebAppManagement::kMaxValue;
-       ++i) {
+  for (WebAppManagement::Type type : WebAppManagementTypes::All()) {
     EXPECT_TRUE(app_copy->HasAnySources());
-    app_copy->RemoveSource(static_cast<WebAppManagement::Type>(i));
+    app_copy->RemoveSource(type);
   }
   EXPECT_FALSE(app_copy->HasAnySources());
 
@@ -453,7 +443,6 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->scope_extensions().empty());
   EXPECT_TRUE(app_copy->validated_scope_extensions().empty());
   EXPECT_TRUE(app_copy->shortcuts_menu_item_infos().empty());
-  EXPECT_TRUE(app_copy->downloaded_shortcuts_menu_icons_sizes().empty());
   EXPECT_EQ(app_copy->run_on_os_login_mode(), RunOnOsLoginMode::kNotRun);
   EXPECT_FALSE(app_copy->run_on_os_login_os_integration_state().has_value());
   EXPECT_TRUE(app_copy->manifest_url().is_empty());
@@ -584,11 +573,10 @@ TEST_F(WebAppDatabaseTest, MigrateFromMissingShortcutsSizes) {
   WebAppShortcutsMenuItemInfo shortcut_item_info{};
   shortcut_item_info.name = u"shortcut";
   shortcut_item_info.url = GURL("http://example.com/shortcut");
-  IconSizes downloaded_icon_sizes{};
-  downloaded_icon_sizes.any = {42};
-  downloaded_icon_sizes.maskable = {24};
-  downloaded_icon_sizes.monochrome = {123};
-  base_app->SetShortcutsMenuInfo({shortcut_item_info}, {downloaded_icon_sizes});
+  shortcut_item_info.downloaded_icon_sizes.any = {42};
+  shortcut_item_info.downloaded_icon_sizes.maskable = {24};
+  shortcut_item_info.downloaded_icon_sizes.monochrome = {123};
+  base_app->SetShortcutsMenuInfo({shortcut_item_info});
 
   std::unique_ptr<WebAppProto> base_proto =
       WebAppDatabase::CreateWebAppProto(*base_app);
@@ -604,12 +592,13 @@ TEST_F(WebAppDatabaseTest, MigrateFromMissingShortcutsSizes) {
   // length.
   WebAppProto proto_without_downloaded_sizes(*base_proto);
   proto_without_downloaded_sizes.clear_downloaded_shortcuts_menu_icons_sizes();
-
-  auto app_with_empty_downloaded_sizes = std::make_unique<WebApp>(*base_app);
-  app_with_empty_downloaded_sizes->SetShortcutsMenuInfo({shortcut_item_info},
-                                                        {IconSizes{}});
   auto roundtrip_app =
       WebAppDatabase::CreateWebApp(proto_without_downloaded_sizes);
+
+  auto app_with_empty_downloaded_sizes = std::make_unique<WebApp>(*base_app);
+  shortcut_item_info.downloaded_icon_sizes = {};
+  app_with_empty_downloaded_sizes->SetShortcutsMenuInfo({shortcut_item_info});
+
   EXPECT_EQ(base::ToString(*roundtrip_app),
             base::ToString(*app_with_empty_downloaded_sizes));
 }

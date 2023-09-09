@@ -155,7 +155,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
-#include "third_party/blink/renderer/core/layout/anchor_scroll_data.h"
+#include "third_party/blink/renderer/core/layout/anchor_position_scroll_data.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
@@ -789,8 +789,8 @@ LCPCriticalPathPredictor* LocalFrame::GetLCPP() {
     return nullptr;
   }
 
-  // For now, we only attach LCPP to the main frames.
-  if (!IsMainFrame()) {
+  // For now, we only attach LCPP to the outermost main frames.
+  if (!IsOutermostMainFrame()) {
     return nullptr;
   }
 
@@ -1250,20 +1250,18 @@ scoped_refptr<InspectorTaskRunner> LocalFrame::GetInspectorTaskRunner() {
 }
 
 void LocalFrame::StartPrinting(const gfx::SizeF& page_size,
-                               const gfx::SizeF& aspect_ratio,
                                float maximum_shrink_ratio) {
   DCHECK(!saved_scroll_offsets_);
-  SetPrinting(true, page_size, aspect_ratio, maximum_shrink_ratio);
+  SetPrinting(true, page_size, maximum_shrink_ratio);
 }
 
 void LocalFrame::EndPrinting() {
   RestoreScrollOffsets();
-  SetPrinting(false, gfx::SizeF(), gfx::SizeF(), 0);
+  SetPrinting(false, gfx::SizeF(), 0);
 }
 
 void LocalFrame::SetPrinting(bool printing,
                              const gfx::SizeF& page_size,
-                             const gfx::SizeF& aspect_ratio,
                              float maximum_shrink_ratio) {
   // In setting printing, we should not validate resources already cached for
   // the document.  See https://bugs.webkit.org/show_bug.cgi?id=43704
@@ -1278,8 +1276,7 @@ void LocalFrame::SetPrinting(bool printing,
     text_autosizer->UpdatePageInfo();
 
   if (ShouldUsePrintingLayout()) {
-    View()->ForceLayoutForPagination(page_size, aspect_ratio,
-                                     maximum_shrink_ratio);
+    View()->ForceLayoutForPagination(page_size, maximum_shrink_ratio);
   } else {
     if (LayoutView* layout_view = View()->GetLayoutView()) {
       layout_view->SetIntrinsicLogicalWidthsDirty();
@@ -1491,8 +1488,9 @@ void LocalFrame::MediaQueryAffectingValueChangedForLocalSubtree(
 
 void LocalFrame::WindowSegmentsChanged(
     const WebVector<gfx::Rect>& window_segments) {
-  if (!RuntimeEnabledFeatures::CSSFoldablesEnabled())
+  if (!RuntimeEnabledFeatures::ViewportSegmentsEnabled()) {
     return;
+  }
 
   DCHECK(IsLocalRoot());
 
@@ -1507,7 +1505,7 @@ void LocalFrame::WindowSegmentsChanged(
 
 void LocalFrame::UpdateViewportSegmentCSSEnvironmentVariables(
     const WebVector<gfx::Rect>& window_segments) {
-  DCHECK(RuntimeEnabledFeatures::CSSFoldablesEnabled());
+  DCHECK(RuntimeEnabledFeatures::ViewportSegmentsEnabled());
 
   // Update the variable values on the root instance so that documents that
   // are created after the values change automatically have the right values.
@@ -2709,6 +2707,15 @@ void LocalFrame::SetContextPaused(bool is_paused) {
   GetFrameScheduler()->SetPaused(is_paused);
 }
 
+LocalFrame* LocalFrame::GetPreviousLocalFrameForLocalSwap() {
+  CHECK(IsProvisional());
+  if (auto* previous_main_frame =
+          GetPage()->GetPreviousMainFrameForLocalSwap()) {
+    return previous_main_frame;
+  }
+  return DynamicTo<LocalFrame>(GetProvisionalOwnerFrame());
+}
+
 bool LocalFrame::SwapIn() {
   DCHECK(IsProvisional());
   WebLocalFrameClient* client = Client()->GetWebFrame()->Client();
@@ -2718,7 +2725,7 @@ bool LocalFrame::SwapIn() {
   // First, check if there's a previous main frame to be used for a main frame
   // LocalFrame <-> LocalFrame swap.
   Frame* previous_local_main_frame =
-      GetPage()->TakePreviousMainFrameForLocalSwap();
+      GetPage()->GetPreviousMainFrameForLocalSwap();
   if (previous_local_main_frame && !previous_local_main_frame->IsDetached()) {
     // We're about to do a LocalFrame <-> LocalFrame swap for a provisional
     // main frame, where the previous main frame and the provisional main frame
@@ -2739,6 +2746,7 @@ bool LocalFrame::SwapIn() {
     CHECK(provisional_owner_frame->IsRemoteFrame());
     CHECK(!DynamicTo<RemoteFrame>(provisional_owner_frame)
                ->IsRemoteFrameHostRemoteBound());
+    GetPage()->SetPreviousMainFrameForLocalSwap(nullptr);
     return client->SwapIn(WebFrame::FromCoreFrame(previous_local_main_frame));
   }
 
@@ -2778,6 +2786,7 @@ void LocalFrame::RequestExecuteScript(
     mojom::blink::PromiseResultOption promise_behavior) {
   scoped_refptr<DOMWrapperWorld> world;
   ExecuteScriptPolicy execute_script_policy;
+  CHECK(!IsProvisional());
   if (world_id == DOMWrapperWorld::kMainWorldId) {
     world = &DOMWrapperWorld::MainWorld();
     execute_script_policy =
@@ -2800,10 +2809,12 @@ void LocalFrame::RequestExecuteScript(
   script_sources.Append(sources.data(),
                         base::checked_cast<wtf_size_t>(sources.size()));
 
+  ScriptState* script_state = ToScriptState(this, *world);
+  CHECK(script_state);
   PausableScriptExecutor::CreateAndRun(
-      ToScriptState(DomWindow(), *world), std::move(script_sources),
-      execute_script_policy, user_gesture, evaluation_timing, blocking_option,
-      want_result_option, promise_behavior, std::move(callback));
+      script_state, std::move(script_sources), execute_script_policy,
+      user_gesture, evaluation_timing, blocking_option, want_result_option,
+      promise_behavior, std::move(callback));
 }
 
 void LocalFrame::SetEvictCachedSessionStorageOnFreezeOrUnload() {
@@ -2951,7 +2962,8 @@ void LocalFrame::UpdateFaviconURL() {
   urls.reserve(icon_urls.size());
   for (const auto& icon_url : icon_urls) {
     urls.push_back(mojom::blink::FaviconURL::New(
-        icon_url.icon_url_, icon_url.icon_type_, icon_url.sizes_));
+        icon_url.icon_url_, icon_url.icon_type_, icon_url.sizes_,
+        icon_url.is_default_icon_));
   }
   DCHECK_EQ(icon_urls.size(), urls.size());
 
@@ -3214,15 +3226,6 @@ void LocalFrame::MediaPlayerActionAtViewportPoint(
 
   auto* media_element = To<HTMLMediaElement>(node);
   switch (type) {
-    case mojom::blink::MediaPlayerActionType::kPlay:
-      if (enable)
-        media_element->Play();
-      else
-        media_element->pause();
-      break;
-    case mojom::blink::MediaPlayerActionType::kMute:
-      media_element->setMuted(enable);
-      break;
     case mojom::blink::MediaPlayerActionType::kLoop:
       media_element->SetLoop(enable);
       break;
@@ -3553,11 +3556,6 @@ LocalFrame::GetNotRestoredReasons() {
   return not_restored_reasons_;
 }
 
-void LocalFrame::SetLCPPHint(
-    mojom::blink::LCPCriticalPathPredictorNavigationTimeHintPtr hint) {
-  // TODO(crbug.com/1419756): Pass the hint to `lcpp_`
-}
-
 void LocalFrame::AddScrollSnapshotClient(ScrollSnapshotClient& client) {
   scroll_snapshot_clients_.insert(&client);
 }
@@ -3590,11 +3588,11 @@ void LocalFrame::ScheduleNextServiceForScrollSnapshotClients() {
   }
 }
 
-void LocalFrame::CollectAnchorScrollContainerIds(
+void LocalFrame::CollectAnchorPositionScrollerIds(
     Vector<cc::ElementId>* ids) const {
   for (const auto& client : scroll_snapshot_clients_) {
-    if (const AnchorScrollData* data =
-            DynamicTo<AnchorScrollData>(client.Get());
+    if (const AnchorPositionScrollData* data =
+            DynamicTo<AnchorPositionScrollData>(client.Get());
         data && data->IsActive()) {
       ids->AppendVector(data->ScrollContainerIds());
     }

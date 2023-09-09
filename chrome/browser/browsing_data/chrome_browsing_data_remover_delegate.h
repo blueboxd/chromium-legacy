@@ -39,6 +39,7 @@ class WaitableEvent;
 
 namespace content {
 class BrowserContext;
+class StoragePartition;
 }
 
 namespace webrtc_event_logging {
@@ -69,6 +70,7 @@ class ChromeBrowsingDataRemoverDelegate
   GetOriginTypeMatcher() override;
   bool MayRemoveDownloadHistory() override;
   std::vector<std::string> GetDomainsForDeferredCookieDeletion(
+      content::StoragePartition* storage_partition,
       uint64_t remove_mask) override;
   void RemoveEmbedderData(
       const base::Time& delete_begin,
@@ -146,11 +148,12 @@ class ChromeBrowsingDataRemoverDelegate
     kWebAppHistory = 42,
     kWebAuthnCredentials = 43,
     kWebrtcVideoPerfHistory = 44,
+    kMediaDeviceSalts = 45,
 
     // Please update ChromeBrowsingDataRemoverTasks in enums.xml and
     // History.ClearBrowsingData.Duration.ChromeTask.{Task}
     // in histograms/metadata/history/histograms.xml when adding entries!
-    kMaxValue = kWebrtcVideoPerfHistory,
+    kMaxValue = kMediaDeviceSalts,
   };
 
   // Returns the suffix for the

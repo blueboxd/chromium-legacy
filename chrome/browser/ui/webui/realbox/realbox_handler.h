@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_REALBOX_REALBOX_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_REALBOX_REALBOX_HANDLER_H_
 
+#include <atomic>
 #include <memory>
 
 #include "base/memory/raw_ptr.h"
@@ -13,6 +14,7 @@
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/omnibox.mojom.h"
+#include "components/omnibox/browser/omnibox_popup_selection.h"
 #include "components/url_formatter/spoof_checks/idna_metrics.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -52,17 +54,22 @@ class RealboxHandler : public omnibox::mojom::PageHandler,
       const gfx::VectorIcon& icon);
   static std::string PedalVectorIconToResourceName(const gfx::VectorIcon& icon);
 
+  // Note: `omnibox_controller` may be null for the Realbox, in which case
+  //  an internally owned controller is created and used.
   RealboxHandler(
       mojo::PendingReceiver<omnibox::mojom::PageHandler> pending_page_handler,
       Profile* profile,
       content::WebContents* web_contents,
       MetricsReporter* metrics_reporter,
-      bool is_omnibox_popup_handler);
+      OmniboxController* omnibox_controller);
 
   RealboxHandler(const RealboxHandler&) = delete;
   RealboxHandler& operator=(const RealboxHandler&) = delete;
 
   ~RealboxHandler() override;
+
+  // Returns true if the page remote is bound and ready to receive calls.
+  bool IsRemoteBound() const;
 
   // omnibox::mojom::PageHandler:
   void SetPage(mojo::PendingRemote<omnibox::mojom::Page> pending_page) override;
@@ -98,7 +105,7 @@ class RealboxHandler : public omnibox::mojom::PageHandler,
   void OnResultChanged(AutocompleteController* controller,
                        bool default_match_changed) override;
 
-  void SelectMatchAtLine(size_t old_line, size_t new_line);
+  void UpdateSelection(OmniboxPopupSelection selection);
 
   // LocationBarModel:
   std::u16string GetFormattedFullURL() const override;
@@ -131,6 +138,8 @@ class RealboxHandler : public omnibox::mojom::PageHandler,
                           AutocompleteController::Observer>
       autocomplete_controller_observation_{this};
 
+  // Since mojo::Remote is not thread-safe, use an atomic to signal readiness.
+  std::atomic<bool> page_set_;
   mojo::Remote<omnibox::mojom::Page> page_;
   mojo::Receiver<omnibox::mojom::PageHandler> page_handler_;
 

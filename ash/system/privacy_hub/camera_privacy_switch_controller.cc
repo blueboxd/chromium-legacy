@@ -18,6 +18,12 @@
 #include "ash/system/privacy_hub/privacy_hub_notification_controller.h"
 #include "ash/system/system_notification_controller.h"
 #include "base/check.h"
+#include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/sequence_checker.h"
+#include "base/task/thread_pool.h"
+#include "base/time/time.h"
+#include "camera_privacy_switch_controller.h"
 #include "components/prefs/pref_service.h"
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 #include "media/capture/video/chromeos/mojom/cros_camera_service.mojom-shared.h"
@@ -53,11 +59,15 @@ void VCDPrivacyAdapter::SetCameraSWPrivacySwitch(
   }
 }
 
+const base::TimeDelta kCameraLedFallbackNotificationExtensionPeriod =
+    base::Seconds(10);
+
 }  // namespace
 
 CameraPrivacySwitchController::CameraPrivacySwitchController()
     : switch_api_(std::make_unique<VCDPrivacyAdapter>()) {
   Shell::Get()->session_controller()->AddObserver(this);
+  InitUsingCameraLEDFallback();
 }
 
 CameraPrivacySwitchController::~CameraPrivacySwitchController() {
@@ -138,6 +148,8 @@ void CameraPrivacySwitchController::OnCameraSWPrivacySwitchStateChanged(
 
 void CameraPrivacySwitchController::ActiveApplicationsChanged(
     bool application_added) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (application_added) {
     active_applications_using_camera_count_++;
   } else {
@@ -148,8 +160,82 @@ void CameraPrivacySwitchController::ActiveApplicationsChanged(
   const bool camera_muted_by_sw =
       GetUserSwitchPreference() == CameraSWPrivacySwitchSetting::kDisabled;
 
+  auto* privacy_hub_notification_controller =
+      PrivacyHubNotificationController::Get();
+  CHECK(privacy_hub_notification_controller);
+
+  if (!camera_muted_by_sw) {
+    return;
+  }
+
   if (features::IsVideoConferenceEnabled()) {
     // The `VideoConferenceTrayController` shows this info as a toast.
+    return;
+  }
+
+  // NOTE: This logic mirrors the logic in
+  // `MicrophonePrivacySwitchController`.
+  if (active_applications_using_camera_count_ == 0) {
+    // Always remove the notification when active applications go to 0.
+    RemoveNotification();
+  } else if (application_added) {
+    if (InNotificationExtensionPeriod()) {
+      // Notification is not re-shown, but only updated in the extension period.
+      UpdateNotification();
+    } else {
+      ShowNotification();
+    }
+    if (UsingCameraLEDFallback()) {
+      ScheduleNotificationRemoval();
+    }
+  } else {
+    // Application removed, update the notifications message.
+    UpdateNotification();
+    if (UsingCameraLEDFallback()) {
+      ScheduleNotificationRemoval();
+    }
+  }
+}
+
+bool CameraPrivacySwitchController::UsingCameraLEDFallback() {
+  return using_camera_led_fallback_;
+}
+
+void CameraPrivacySwitchController::InitUsingCameraLEDFallback() {
+  using_camera_led_fallback_ = CheckCameraLEDFallbackDirectly();
+}
+
+// static
+bool CameraPrivacySwitchController::CheckCameraLEDFallbackDirectly() {
+  // Check that the file created by the camera service exists.
+  const base::FilePath kPath(
+      "/run/camera/camera_ids_with_sw_privacy_switch_fallback");
+  if (!base::PathExists(kPath) || !base::PathIsReadable(kPath)) {
+    // The camera service should create the file always. However we keep this
+    // for backward compatibility when deployed with an older version of the OS
+    // and forward compatibility when the fallback is eventually dropped.
+    return false;
+  }
+  int64_t file_size{};
+  const bool file_size_read_success = base::GetFileSize(kPath, &file_size);
+  CHECK(file_size_read_success);
+
+  return (file_size != 0ll);
+}
+
+void CameraPrivacySwitchController::ShowNotification() {
+  last_active_notification_update_time_ = base::Time::Now();
+  auto* privacy_hub_notification_controller =
+      PrivacyHubNotificationController::Get();
+  CHECK(privacy_hub_notification_controller);
+
+  privacy_hub_notification_controller->ShowSoftwareSwitchNotification(
+      SensorDisabledNotificationDelegate::Sensor::kCamera);
+}
+
+void CameraPrivacySwitchController::RemoveNotification() {
+  if (InNotificationExtensionPeriod()) {
+    // Do not remove notification within the extension period.
     return;
   }
 
@@ -157,43 +243,35 @@ void CameraPrivacySwitchController::ActiveApplicationsChanged(
       PrivacyHubNotificationController::Get();
   CHECK(privacy_hub_notification_controller);
 
-  if (features::IsPrivacyIndicatorsEnabled()) {
-    // NOTE: This logic mirrors the logic in
-    // `MicrophonePrivacySwitchController`.
-    if (active_applications_using_camera_count_ == 0) {
-      // Always remove the notification when active applications go to 0.
-      privacy_hub_notification_controller->RemoveSoftwareSwitchNotification(
-          SensorDisabledNotificationDelegate::Sensor::kCamera);
-    } else if (application_added) {
-      if (camera_muted_by_sw) {
-        privacy_hub_notification_controller->ShowSoftwareSwitchNotification(
-            SensorDisabledNotificationDelegate::Sensor::kCamera);
-      }
-    } else {
-      // Application removed, update the notifications message.
-      privacy_hub_notification_controller->UpdateSoftwareSwitchNotification(
-          SensorDisabledNotificationDelegate::Sensor::kCamera);
-    }
-    return;
-  }
+  last_active_notification_update_time_ = base::Time::Min();
+  privacy_hub_notification_controller->RemoveSoftwareSwitchNotification(
+      SensorDisabledNotificationDelegate::Sensor::kCamera);
+}
 
-  if (!camera_muted_by_sw) {
-    return;
-  }
+void CameraPrivacySwitchController::UpdateNotification() {
+  auto* privacy_hub_notification_controller =
+      PrivacyHubNotificationController::Get();
+  CHECK(privacy_hub_notification_controller);
 
-  if (active_applications_using_camera_count_ == 0 &&
-      camera_used_while_deactivated_) {
-    camera_used_while_deactivated_ = false;
-    privacy_hub_notification_controller->RemoveSoftwareSwitchNotification(
-        SensorDisabledNotificationDelegate::Sensor::kCamera);
-  } else if (application_added) {
-    camera_used_while_deactivated_ = true;
-    privacy_hub_notification_controller->ShowSoftwareSwitchNotification(
-        SensorDisabledNotificationDelegate::Sensor::kCamera);
-  } else {
-    privacy_hub_notification_controller->UpdateSoftwareSwitchNotification(
-        SensorDisabledNotificationDelegate::Sensor::kCamera);
+  last_active_notification_update_time_ = base::Time::Now();
+  privacy_hub_notification_controller->UpdateSoftwareSwitchNotification(
+      SensorDisabledNotificationDelegate::Sensor::kCamera);
+}
+
+void CameraPrivacySwitchController::ScheduleNotificationRemoval() {
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&CameraPrivacySwitchController::RemoveNotification,
+                     weak_ptr_factory_.GetWeakPtr()),
+      kCameraLedFallbackNotificationExtensionPeriod);
+}
+
+bool CameraPrivacySwitchController::InNotificationExtensionPeriod() {
+  if (!UsingCameraLEDFallback()) {
+    return false;
   }
+  return base::Time::Now() < (last_active_notification_update_time_ +
+                              kCameraLedFallbackNotificationExtensionPeriod);
 }
 
 }  // namespace ash

@@ -385,7 +385,7 @@ class WmGestureHandlerKioskTest : public WmGestureHandlerTest {
 
   void SetUp() override {
     WmGestureHandlerTest::SetUp();
-    SimulateKioskMode(user_manager::USER_TYPE_KIOSK_APP);
+    SimulateKioskMode(user_manager::USER_TYPE_WEB_KIOSK_APP);
   }
 };
 

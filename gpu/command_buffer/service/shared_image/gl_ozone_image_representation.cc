@@ -8,7 +8,6 @@
 #include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/shared_image/ozone_image_backing.h"
@@ -84,6 +83,7 @@ gfx::BufferPlane GetBufferPlane(viz::SharedImageFormat format,
                                 int plane_index) {
   DCHECK(format.IsValidPlaneIndex(plane_index));
   switch (format.plane_config()) {
+    case viz::SharedImageFormat::PlaneConfig::kY_U_V:
     case viz::SharedImageFormat::PlaneConfig::kY_V_U:
       switch (plane_index) {
         case 0:

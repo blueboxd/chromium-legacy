@@ -138,6 +138,17 @@ class OsDiagnosticsRunBatteryHealthRoutineFunction
   void RunIfAllowed() override;
 };
 
+class OsDiagnosticsRunBluetoothPowerRoutineFunction
+    : public DiagnosticsApiRunRoutineFunctionBase {
+  DECLARE_EXTENSION_FUNCTION("os.diagnostics.runBluetoothPowerRoutine",
+                             OS_DIAGNOSTICS_RUNBLUETOOTHPOWERROUTINE)
+ private:
+  ~OsDiagnosticsRunBluetoothPowerRoutineFunction() override = default;
+
+  // BaseTelemetryExtensionApiGuardFunction:
+  void RunIfAllowed() override;
+};
+
 class OsDiagnosticsRunCpuCacheRoutineFunction
     : public DiagnosticsApiRunRoutineFunctionBase {
   DECLARE_EXTENSION_FUNCTION("os.diagnostics.runCpuCacheRoutine",
@@ -321,6 +332,39 @@ class OsDiagnosticsRunSmartctlCheckRoutineFunction
                              OS_DIAGNOSTICS_RUNSMARTCTLCHECKROUTINE)
  private:
   ~OsDiagnosticsRunSmartctlCheckRoutineFunction() override = default;
+
+  // BaseTelemetryExtensionApiGuardFunction:
+  void RunIfAllowed() override;
+};
+
+class OsDiagnosticsRunUfsLifetimeRoutineFunction
+    : public DiagnosticsApiRunRoutineFunctionBase {
+  DECLARE_EXTENSION_FUNCTION("os.diagnostics.runUfsLifetimeRoutine",
+                             OS_DIAGNOSTICS_RUNUFSLIFETIMEROUTINE)
+ private:
+  ~OsDiagnosticsRunUfsLifetimeRoutineFunction() override = default;
+
+  // BaseTelemetryExtensionApiGuardFunction:
+  void RunIfAllowed() override;
+};
+
+class OsDiagnosticsRunPowerButtonRoutineFunction
+    : public DiagnosticsApiRunRoutineFunctionBase {
+  DECLARE_EXTENSION_FUNCTION("os.diagnostics.runPowerButtonRoutine",
+                             OS_DIAGNOSTICS_RUNPOWERBUTTONROUTINE)
+ private:
+  ~OsDiagnosticsRunPowerButtonRoutineFunction() override = default;
+
+  // BaseTelemetryExtensionApiGuardFunction:
+  void RunIfAllowed() override;
+};
+
+class OsDiagnosticsRunAudioDriverRoutineFunction
+    : public DiagnosticsApiRunRoutineFunctionBase {
+  DECLARE_EXTENSION_FUNCTION("os.diagnostics.runAudioDriverRoutine",
+                             OS_DIAGNOSTICS_RUNAUDIODRIVERROUTINE)
+ private:
+  ~OsDiagnosticsRunAudioDriverRoutineFunction() override = default;
 
   // BaseTelemetryExtensionApiGuardFunction:
   void RunIfAllowed() override;

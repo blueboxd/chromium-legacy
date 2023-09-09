@@ -190,6 +190,7 @@ PasswordForm CreatePasswordForm(const char* origin_url,
   form.username_value = ASCIIToUTF16(username_value);
   form.password_value = ASCIIToUTF16(password_value);
   form.in_store = password_manager::PasswordForm::Store::kProfileStore;
+  form.match_type = PasswordForm::MatchType::kExact;
   return form;
 }
 
@@ -586,7 +587,7 @@ void PasswordControllerTest::FillFormAndValidate(TestPasswordFormData test_data,
 
   [passwordController_.sharedPasswordController
       processPasswordFormFillData:form_data
-                       forFrameId:frame->GetFrameId()
+                          inFrame:frame
                       isMainFrame:frame->IsMainFrame()
                 forSecurityOrigin:frame->GetSecurityOrigin()];
 
@@ -677,6 +678,7 @@ PasswordForm MakeSimpleForm() {
   form.signon_realm = "http://www.google.com/";
   form.form_data = MakeSimpleFormData();
   form.in_store = password_manager::PasswordForm::Store::kProfileStore;
+  form.match_type = password_manager::PasswordForm::MatchType::kExact;
   return form;
 }
 
@@ -1124,7 +1126,7 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
   web::WebFrame* expected_frame = GetWebFrame(/*is_main_frame=*/true);
   [passwordController_.sharedPasswordController
       processPasswordFormFillData:form_data
-                       forFrameId:expected_frame->GetFrameId()
+                          inFrame:expected_frame
                       isMainFrame:expected_frame->IsMainFrame()
                 forSecurityOrigin:expected_frame->GetSecurityOrigin()];
 
@@ -1640,7 +1642,7 @@ TEST_F(PasswordControllerTest, CheckPasswordGenerationSuggestion) {
   web::WebFrame* expected_frame = GetWebFrame(/*is_main_frame=*/true);
   [passwordController_.sharedPasswordController
       processPasswordFormFillData:form_data
-                       forFrameId:expected_frame->GetFrameId()
+                          inFrame:expected_frame
                       isMainFrame:expected_frame->IsMainFrame()
                 forSecurityOrigin:expected_frame->GetSecurityOrigin()];
 

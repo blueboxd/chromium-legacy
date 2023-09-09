@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.feed;
 import android.app.Activity;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.ResettersForTesting;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -136,7 +136,6 @@ public class NtpFeedSurfaceLifecycleManager extends FeedSurfaceLifecycleManager 
         return controller.getEntryExtraData(index, FEED_SAVED_INSTANCE_STATE_KEY);
     }
 
-    @VisibleForTesting
     TabObserver getTabObserverForTesting() {
         return mTabObserver;
     }
@@ -146,8 +145,8 @@ public class NtpFeedSurfaceLifecycleManager extends FeedSurfaceLifecycleManager 
         return UserPrefs.get(Profile.getLastUsedRegularProfile());
     }
 
-    @VisibleForTesting
     static void setPrefServiceForTesting(PrefService prefServiceForTesting) {
         sPrefServiceForTesting = prefServiceForTesting;
+        ResettersForTesting.register(() -> sPrefServiceForTesting = null);
     }
 }

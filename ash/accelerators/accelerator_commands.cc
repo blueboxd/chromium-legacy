@@ -80,6 +80,7 @@
 #include "chromeos/ui/base/display_util.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/frame/caption_buttons/frame_size_button.h"
+#include "chromeos/ui/frame/frame_utils.h"
 #include "chromeos/ui/wm/desks/chromeos_desks_histogram_enums.h"
 #include "chromeos/ui/wm/window_util.h"
 #include "components/prefs/pref_service.h"
@@ -610,7 +611,7 @@ bool CanToggleGameDashboard() {
     return false;
   }
   aura::Window* window = GetTargetWindow();
-  return window && GameDashboardController::IsGameWindow(window);
+  return window && GameDashboardController::ReadyForAccelerator(window);
 }
 
 bool CanToggleMultitaskMenu() {
@@ -1622,9 +1623,7 @@ void ToggleOverview() {
 void TogglePrivacyScreen() {
   PrivacyScreenController* controller =
       Shell::Get()->privacy_screen_controller();
-  controller->SetEnabled(
-      !controller->GetEnabled(),
-      PrivacyScreenController::kToggleUISurfaceKeyboardShortcut);
+  controller->SetEnabled(!controller->GetEnabled());
 }
 
 void ToggleProjectorMarker() {
@@ -1670,6 +1669,26 @@ void UnpinWindow() {
 
 void VolumeDown() {
   auto* audio_handler = CrasAudioHandler::Get();
+  if (features::IsQsRevampEnabled()) {
+    if (audio_handler->IsOutputMuted() &&
+        !audio_handler->IsOutputVolumeBelowDefaultMuteLevel()) {
+      // The output node can be muted while the previous level is preserved.
+      // First update the mute state to update the slider style if the level is
+      // greater than `kMuteThresholdPercent`, and then adjust the volume level.
+      audio_handler->SetOutputMute(false);
+    }
+    // Only plays the audio if unmuted.
+    if (!audio_handler->IsOutputMuted()) {
+      AcceleratorController::PlayVolumeAdjustmentSound();
+    }
+    if (features::IsAudioPeripheralVolumeGranularityEnabled()) {
+      audio_handler->DecreaseOutputVolumeByOneStep(kStepPercentage);
+    } else {
+      audio_handler->AdjustOutputVolumeByPercent(-kStepPercentage);
+    }
+    return;
+  }
+
   if (audio_handler->IsOutputMuted()) {
     audio_handler->SetOutputVolumePercent(0);
   } else {
@@ -1692,20 +1711,39 @@ void VolumeMute() {
 void VolumeUp() {
   auto* audio_handler = CrasAudioHandler::Get();
   bool play_sound = false;
+  if (features::IsQsRevampEnabled()) {
+    if (audio_handler->IsOutputMuted()) {
+      audio_handler->SetOutputMute(false);
+    }
+    play_sound = audio_handler->GetOutputVolumePercent() != 100;
+    if (features::IsAudioPeripheralVolumeGranularityEnabled()) {
+      audio_handler->IncreaseOutputVolumeByOneStep(kStepPercentage);
+    } else {
+      audio_handler->AdjustOutputVolumeByPercent(kStepPercentage);
+    }
+
+    if (play_sound) {
+      AcceleratorController::PlayVolumeAdjustmentSound();
+    }
+    return;
+  }
+
   if (audio_handler->IsOutputMuted()) {
     audio_handler->SetOutputMute(false);
     audio_handler->AdjustOutputVolumeToAudibleLevel();
     play_sound = true;
   } else {
     play_sound = audio_handler->GetOutputVolumePercent() != 100;
-    if (features::IsAudioPeripheralVolumeGranularityEnabled())
+    if (features::IsAudioPeripheralVolumeGranularityEnabled()) {
       audio_handler->IncreaseOutputVolumeByOneStep(kStepPercentage);
-    else
+    } else {
       audio_handler->AdjustOutputVolumeByPercent(kStepPercentage);
+    }
   }
 
-  if (play_sound)
+  if (play_sound) {
     AcceleratorController::PlayVolumeAdjustmentSound();
+  }
 }
 
 void WindowMinimize() {
@@ -1739,14 +1777,23 @@ void WindowSnap(AcceleratorAction action) {
           WindowSnapAcceleratorAction::kCycleRightSnapInClamshellNoOverview);
     }
   }
-  const WindowSnapWMEvent event(
-      action == AcceleratorAction::kWindowCycleSnapLeft
-          ? WM_EVENT_CYCLE_SNAP_PRIMARY
-          : WM_EVENT_CYCLE_SNAP_SECONDARY,
-      WindowSnapActionSource::kKeyboardShortcutToSnap);
+
   aura::Window* window = GetTargetWindow();
   DCHECK(window);
 
+  // For displays rotated 90 or 180 degrees, they are considered upside down.
+  // Here, primary snap does not match physical left or top. The accelerators
+  // should always match the physical left or top.
+  const bool physical_left_or_top =
+      (action == AcceleratorAction::kWindowCycleSnapLeft);
+  chromeos::SnapDirection snap_direction =
+      chromeos::GetSnapDirectionForWindow(window, physical_left_or_top);
+
+  const WindowSnapWMEvent event(
+      snap_direction == chromeos::SnapDirection::kPrimary
+          ? WM_EVENT_CYCLE_SNAP_PRIMARY
+          : WM_EVENT_CYCLE_SNAP_SECONDARY,
+      WindowSnapActionSource::kKeyboardShortcutToSnap);
   WindowState::Get(window)->OnWMEvent(&event);
 }
 

@@ -1316,6 +1316,7 @@ void OverviewItem::CreateItemWidget() {
   auto* widget_layer = item_widget_->GetLayer();
   widget_layer->Add(shadow_layer);
   widget_layer->StackAtBottom(shadow_layer);
+  shadow_->ObserveColorProviderSource(item_widget_.get());
 
   overview_item_view_ =
       item_widget_->SetContentsView(std::make_unique<OverviewItemView>(
@@ -1365,6 +1366,8 @@ void OverviewItem::UpdateHeaderLayoutCrOSNext(
     OverviewAnimationType animation_type) {
   gfx::RectF current_item_bounds(item_widget_->GetWindowBoundsInScreen());
   gfx::RectF target_item_bounds = target_bounds_;
+
+  wm::TranslateRectFromScreen(root_window_, &current_item_bounds);
   wm::TranslateRectFromScreen(root_window_, &target_item_bounds);
 
   aura::Window* widget_window = item_widget_->GetNativeWindow();

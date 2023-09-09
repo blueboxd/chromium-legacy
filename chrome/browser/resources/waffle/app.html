@@ -20,23 +20,21 @@
     right: 0;
   }
 
-  .button-container {
+  .button {
     bottom: 0;
-    display: flex;
-    position: absolute;
-    width: 100%;
-  }
-
-  cr-button {
+    height: unset;
     margin: 25px;
+    /* The max-width is needed to stop the button from overlapping with
+     the waffle list. The exact value will be updated once the mocks
+     are final. */
+    max-width: 115px;
+    position: absolute;
+    right: 0;
   }
 
-  .first-button {
-    margin-inline-end: auto;
-  }
-
-  .second-button {
-    margin-inline-start: auto;
+  :host-context([dir='rtl']) .button {
+    left: 0;
+    right: initial;
   }
 
   .content-container {
@@ -73,23 +71,9 @@
 
   .choice {
     align-items: center;
-    background-color: var(--google-grey-200);
     display: flex;
     flex-direction: row;
     gap: 16px;
-    height: 24px;
-    padding: 16px 24px;
-    width: 424px;
-  }
-
-  .choice:first-child {
-    border-top-left-radius: 24px;
-    border-top-right-radius: 24px;
-  }
-
-  div.choice:last-of-type {
-    border-bottom-left-radius: 24px;
-    border-bottom-right-radius: 24px;
   }
 
   .choice-icon {
@@ -103,8 +87,21 @@
     line-height: 20px;
   }
 
-  cr-checkbox {
-    margin-inline-start: auto;
+  cr-radio-button {
+    background-color: var(--google-grey-200);
+    height: 24px;
+    padding: 16px 24px;
+    width: 424px;
+  }
+
+  cr-radio-button:first-of-type {
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+  }
+
+  cr-radio-button:last-of-type {
+    border-bottom-left-radius: 24px;
+    border-bottom-right-radius: 24px;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -123,19 +120,27 @@
 <div class="content-container">
   <h1 class="title">$i18n{title}</h1>
   <div class="image-placeholder"></div>
-  <p class="subtitle">$i18n{subtitle}</p>
-  <div class="choice-list">
+  <p class="subtitle">
+    $i18n{subtitle}
+    <a href="" on-click="onLinkClicked_">$i18n{subtitleInfoLink}</a>
+  </p>
+  <cr-radio-group class="choice-list">
     <template is="dom-repeat" items="[[choiceList_]]">
-      <div class="choice">
-        <div class="choice-icon"></div>
-        <div class="choice-text">[[item.name]]</div>
-        <cr-checkbox></cr-checkbox>
-      </div>
+      <cr-radio-button class="label-first" name="[[item.id]]">
+        <div class="choice">
+          <div class="choice-icon"></div>
+          <div class="choice-text">[[item.name]]</div>
+        </div>
+      </cr-radio-button>
     </template>
+  </cr-radio-group>
+</div>
+<cr-button class="button action-button" disabled>
+  $i18n{buttonText}
+</cr-button>
+
+<cr-dialog id="infoDialog">
+  <div slot="title">
+    $i18n{infoTitle}
   </div>
-</div>
-<div class="button-container">
-  <cr-button class="first-button">$i18n{firstButton}</cr-button>
-  <cr-button class="second-button action-button" disabled>
-      $i18n{secondButton}</cr-button>
-</div>
+</cr-dialog>

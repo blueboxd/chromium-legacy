@@ -173,7 +173,7 @@ class DISPLAY_EXPORT Display final {
 
   // Sets the device scale factor and display bounds in pixel. This
   // updates the work area using the same insets between old bounds and
-  // work area.
+  // work area.  This does not set the native origin based on `bounds_in_pixel`.
   void SetScaleAndBounds(float device_scale_factor,
                          const gfx::Rect& bounds_in_pixel);
 
@@ -194,6 +194,13 @@ class DISPLAY_EXPORT Display final {
   gfx::Size GetSizeInPixel() const;
   void set_size_in_pixels(const gfx::Size& size) { size_in_pixels_ = size; }
 
+  // Returns the display's origin in pixel coordinates.  Only available on
+  // windowing systems like X11 that position displays in pixel coordinates.
+  gfx::Point native_origin() const { return native_origin_; }
+  void set_native_origin(const gfx::Point& native_origin) {
+    native_origin_ = native_origin;
+  }
+
   // Returns a string representation of the display;
   std::string ToString() const;
 
@@ -202,6 +209,16 @@ class DISPLAY_EXPORT Display final {
 
   // True if the display corresponds to internal panel.
   bool IsInternal() const;
+
+  // Returns true if the display is detected by the system. A display can
+  // stay 'active' when all displays are disconnected from SW point of view,
+  // because this can happen when the display went to sleep mode, or the
+  // device went to sleep mode, and in that case, we do not want to change
+  // the display configuration (so that it starts in the same state when
+  // resumed). Use this if you want to check if the display is detected by the
+  // system.
+  bool detected() const { return detected_; }
+  void set_detected(bool detected) { detected_ = detected; }
 
   // [Deprecated] Use `display::GetInternalDisplayIds()`.
   // Gets an id of display corresponding to internal panel.
@@ -280,9 +297,10 @@ class DISPLAY_EXPORT Display final {
 
   int64_t id_ = kInvalidDisplayId;
   gfx::Rect bounds_;
-  // If non-empty, then should be same size as |bounds_|. Used to avoid rounding
+  // If non-empty, then should be same as |bounds_|. Used to avoid rounding
   // errors.
   gfx::Size size_in_pixels_;
+  gfx::Point native_origin_;
   gfx::Rect work_area_;
   float device_scale_factor_;
   Rotation rotation_ = ROTATE_0;
@@ -294,6 +312,7 @@ class DISPLAY_EXPORT Display final {
   int color_depth_;
   int depth_per_component_;
   bool is_monochrome_ = false;
+  bool detected_ = true;
   int display_frequency_ = 0;
   std::string label_;
   uint32_t audio_formats_ = 0;

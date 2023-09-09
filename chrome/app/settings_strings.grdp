@@ -155,6 +155,9 @@
   <message name="IDS_SETTINGS_CAPTIONS_LIVE_CAPTION_DOWNLOAD_ERROR_REBOOT_REQUIRED" desc="Error message shown when a OS reboot is required to install the Live Caption files.">
     Can't install speech files. Your device needs to be updated. Restart your device and try again.
   </message>
+  <message name="IDS_SETTINGS_CAPTIONS_MASK_OFFENSIVE_WORDS_TITLE" desc="Name of the setting to hide profanity (offensive words) for the Live Caption feature.">
+    Hide profanity
+  </message>
   <message name="IDS_SETTINGS_ENABLE_CARET_BROWSING_TITLE" desc="Name of the setting to enable Caret Browsing, which allows you to move around any web page using a text caret.">
     Navigate pages with a text cursor
   </message>
@@ -387,9 +390,6 @@
   <message name="IDS_SETTINGS_AUTOFILL_ADDRESS_HONORIFIC_LABEL" desc="This is the label for the field that lets the user modify the title that will be used when auto-filling forms on the web. A 'Title' field in a web form could be a prefix like Ms., Mx., or Dr. or a position held, like Captain or Rabbi." meaning="Honorific">
     Title
   </message>
-  <message name="IDS_SETTINGS_AUTOFILL_CREDIT_CARD_TYPE_COLUMN_LABEL" desc="Label for the column containing the type of credit card that is saved. The type is in the format: `Visa ****1234`.">
-    Type
-  </message>
   <message name="IDS_SETTINGS_AUTOFILL_DETAIL" desc="Description of what toggling the 'Autofill' setting does. Immediately underneath IDS_SETTINGS_AUTOFILL">
     Enable Autofill to fill out forms in a single click
   </message>
@@ -416,9 +416,6 @@
   </message>
   <message name="IDS_AUTOFILL_EDIT_SERVER_CREDIT_CARD" desc="The text shown in the secondary action menu button to direct users to pay.google.com to edit the information of credit cards stored in Google Payments.">
     Edit in Google Pay
-  </message>
-  <message name="IDS_AUTOFILL_VIRTUAL_CARD_ENABLED_LABEL" desc="The text shown next to the card summary to indicate that a virtual card has been generated for the credit card and is enabled. Virtual cards are credit cards generated from the actual cards and provide extra security.">
-    (Virtual card enabled)
   </message>
   <message name="IDS_AUTOFILL_VIRTUAL_CARD_TURNED_ON_LABEL" desc="The text shown next to the card summary to indicate that a virtual card has been enabled for the credit card. Virtual cards are credit cards generated from the actual cards and provide extra security.">
     Virtual card turned on
@@ -684,8 +681,11 @@
   <message name="IDS_SETTINGS_PASSWORDS_AUTOSIGNIN_CHECKBOX_DESC" desc="Text that describes the 'Auto Sign-in' functionality to users.">
     Automatically sign in to sites and apps using saved credentials. If turned off, you'll be asked for confirmation every time before signing in to a site or app.
   </message>
-  <message name="IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_LABEL" desc="Label for a checkbox that allows users to choose whether chrome should check that credentials have been part of a leak.">
+  <message name="IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_LABEL" desc="Label for a checkbox that allows users to choose whether Chrome should check that credentials have been part of a leak.">
     Warn you if passwords are exposed in a data breach
+  </message>
+  <message name="IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_LABEL_UPDATED" desc="Label for a checkbox that allows users to choose whether chrome should check that credentials have been part of a leak.">
+    Warn you if a password was compromised in a data breach
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_SIGNED_OUT_ENABLED_DESC" desc="Text that describes the 'Password Leak Detection' functionality to signed-out users who have not disabled the feature. This text always follows a sentence describing the feature.">
     When you sign in to your Google Account, this feature is turned on.
@@ -1408,7 +1408,7 @@
     Browsing history
   </message>
   <message name="IDS_SETTINGS_CLEAR_COOKIES_AND_SITE_DATA_SUMMARY_BASIC" desc="A summary for the 'Cookies and site data' option in the 'Clear Browsing Data' screen, explaining that deleting cookies and site data will sign the user out of most websites.">
-    Signs you out of most sites.
+    Signs you out of most sites
   </message>
   <message name="IDS_SETTINGS_CLEAR_COOKIES_AND_SITE_DATA_SUMMARY_BASIC_WITH_EXCEPTION" desc="A summary for the 'Cookies and site data' option in the 'Clear Browsing Data' screen, explaining that deleting cookies and site data will sign the user out of most websites but your Google sign in will stay.">
     Signs you out of most sites. You'll stay signed in to your Google Account so your synced data can be cleared.
@@ -1643,9 +1643,6 @@
     </message>
     <message name="IDS_SETTINGS_LANGUAGES_PREFERRED_LANGUAGES_DESC" desc="Explanatory message about the list of preferred languages.">
       Websites will show content in your preferred languages, when possible
-    </message>
-    <message name="IDS_SETTINGS_LANGUAGES_OFFER_TO_TRANSLATE_IN_THIS_LANGUAGE" desc="The label for a checkbox which indicates whether or not pages in this language should be translated by default.">
-      Offer to translate pages in this language
     </message>
     <message name="IDS_SETTINGS_LANGUAGES_OFFER_TO_ENABLE_TRANSLATE" desc="The label of the check-box that enables the prompt to translate a page.">
       Use Google Translate
@@ -2074,7 +2071,7 @@
     When on, a list of sites you visit that guess your interests appears here
   </message>
   <message name="IDS_SETTINGS_FLEDGE_PAGE_CURRENT_SITES_DESCRIPTION_EMPTY" desc="1 of 2 descriptions that appear if there are no sites in the list. This string is for the case that the Site-suggested ads setting IS on, but the user hasn't browsed any sites that have called the Site-suggested ads API.">
-    It can take up to a week for a list of sites to appear here based on your browsing history
+    No sites to show right now
   </message>
   <message name="IDS_SETTINGS_FLEDGE_PAGE_CURRENT_SITES_REGION_A11Y_DESCRIPTION" desc="Read by screen readers to describe a list of sites that appear on the page.">
     List of recent sites you visited that can suggest ads to other sites as you keep browsing
@@ -2402,6 +2399,14 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_TOAST_LABEL" desc="'Unused Site Permissions' shows unused websites for which permissions have been revoked. This label is shown after a user has taken action to allow some permissions again.">
     Permissions allowed again for <ph name="WEBSITE">$1<ex>www.example.com</ex></ph>
   </message>
+  <!-- TODO(crbug/1443466): Change the string to translatable once it's final. -->
+  <message name="IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_SETTING_LABEL" translateable="false" desc="By default Chrome auto-revokes (disables) permissions (e.g. Camera, Location, etc.) for websites that were not visited for a while. This label is for the toggle that allows users to switch off/on this functionality.">
+    Automatically remove permissions from unused sites
+  </message>
+  <!-- TODO(crbug/1443466): Change the string to translatable once it's final. -->
+  <message name="IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_SETTING_SUBLABEL" translateable="false" desc="By default Chrome auto-revokes (disables) permissions (e.g. Camera, Location, etc.) for websites that were not visited for a while. This sublabel is for the toggle that allows users to switch off/on this functionality.">
+    To protect your data, remove permissions from sites you haven't visited in 2 months. Doesn't stop notifications.
+  </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_UPDATES_PRIMARY_LABEL" desc="'Updates' is an element in safety check that shows the update status of Chrome.">
     Updates
   </message>
@@ -2584,6 +2589,9 @@
   </message>
   <message name="IDS_SETTINGS_SAFEBROWSING_STANDARD_DESC" desc="Description for safe browsing standard protection mode">
     Standard protection against websites, downloads, and extensions that are known to be dangerous
+  </message>
+  <message name="IDS_SETTINGS_SAFEBROWSING_STANDARD_DESC_UPDATED" desc="Description for safe browsing standard protection mode">
+    Protects against sites, downloads, and extensions that are known to be dangerous. If a page does something suspicious, URLs and bits of page content are sent to Google Safe Browsing.
   </message>
   <message name="IDS_SETTINGS_SAFEBROWSING_STANDARD_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the detailed description of safe browsing standard protection. Only visible by screen reader software.">
     Show standard protection details
@@ -3241,7 +3249,7 @@
     Not allowed to use your microphone
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_MIDI_DESCRIPTION" desc="Description of the MIDI devices content setting.">
-    Sites usually connect to MIDI devices for features for creating and editing music
+    Sites usually connect to MIDI devices for creating and editing music
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_MIDI_ALLOWED" desc="Label for the enabled option of the MIDI devices content setting.">
     Sites can ask to connect to MIDI devices

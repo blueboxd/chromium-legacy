@@ -531,6 +531,42 @@ AudioDetailedView::CreateNoiseCancellationToggleRow(const AudioDevice& device) {
   return noise_cancellation_toggle_row;
 }
 
+std::unique_ptr<TriView> AudioDetailedView::CreateNbsWarningView() {
+  const bool is_qs_revamp = features::IsQsRevampEnabled();
+
+  std::unique_ptr<TriView> nbs_warning_view(
+      TrayPopupUtils::CreateDefaultRowView(
+          /*use_wide_layout=*/is_qs_revamp));
+  nbs_warning_view->SetMinHeight(kNbsWarningMinHeight);
+  nbs_warning_view->SetContainerVisible(TriView::Container::END, false);
+  nbs_warning_view->SetID(AudioDetailedViewID::kNbsWarningView);
+
+  std::unique_ptr<views::ImageView> image_view =
+      base::WrapUnique(TrayPopupUtils::CreateMainImageView(
+          /*use_wide_layout=*/is_qs_revamp));
+  image_view->SetImage(
+      ui::ImageModel::FromVectorIcon(vector_icons::kNotificationWarningIcon,
+                                     kColorAshIconColorWarning, kMenuIconSize));
+  nbs_warning_view->AddView(TriView::Container::START, std::move(image_view));
+
+  std::unique_ptr<views::Label> label =
+      base::WrapUnique(TrayPopupUtils::CreateDefaultLabel());
+  label->SetText(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO_NBS_MESSAGE));
+  label->SetMultiLine(/*multi_line=*/true);
+  label->SetBackground(views::CreateSolidBackground(SK_ColorTRANSPARENT));
+  label->SetEnabledColorId(kColorAshTextColorWarning);
+  if (chromeos::features::IsJellyEnabled()) {
+    label->SetAutoColorReadabilityEnabled(false);
+    TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosBody2, *label);
+  } else {
+    TrayPopupUtils::SetLabelFontList(
+        label.get(), TrayPopupUtils::FontStyle::kDetailedViewLabel);
+  }
+  nbs_warning_view->AddView(TriView::Container::CENTER, std::move(label));
+  return nbs_warning_view;
+}
+
 std::unique_ptr<HoverHighlightView>
 AudioDetailedView::CreateQsNoiseCancellationToggleRow(
     const AudioDevice& device) {
@@ -542,9 +578,8 @@ AudioDetailedView::CreateQsNoiseCancellationToggleRow(
 
   auto toggle_icon =
       std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(
-          noise_cancellation_state ? kUnifiedMenuMicNoiseCancelHighIcon
-                                   : kUnifiedMenuMicNoiseCancelOffIcon,
-          cros_tokens::kCrosSysOnSurface, kQsSliderIconSize));
+          kUnifiedMenuMicNoiseCancelHighIcon, cros_tokens::kCrosSysOnSurface,
+          kQsSliderIconSize));
   noise_cancellation_icon_ = toggle_icon.get();
 
   noise_cancellation_view->AddViewAndLabel(
@@ -687,10 +722,6 @@ void AudioDetailedView::OnInputNoiseCancellationTogglePressed() {
   audio_handler->SetNoiseCancellationState(
       new_state, CrasAudioHandler::AudioSettingsChangeSource::kSystemTray);
   if (features::IsQsRevampEnabled()) {
-    noise_cancellation_icon_->SetImage(ui::ImageModel::FromVectorIcon(
-        new_state ? kUnifiedMenuMicNoiseCancelHighIcon
-                  : kUnifiedMenuMicNoiseCancelOffIcon,
-        cros_tokens::kCrosSysOnSurface, kQsSliderIconSize));
     noise_cancellation_button_->SetIsOn(new_state);
   }
 }
@@ -918,41 +949,7 @@ void AudioDetailedView::UpdateScrollableList() {
     if (features::IsAudioHFPNbsWarningEnabled()) {
       if (audio_handler->GetPrimaryActiveInputNode() == device.id &&
           device.type == AudioDeviceType::kBluetoothNbMic) {
-        std::unique_ptr<TriView> nbs_warning_view(
-            TrayPopupUtils::CreateDefaultRowView(
-                /*use_wide_layout=*/is_qs_revamp));
-        nbs_warning_view->SetMinHeight(kNbsWarningMinHeight);
-        nbs_warning_view->SetContainerVisible(TriView::Container::END, false);
-
-        std::unique_ptr<views::ImageView> image_view =
-            base::WrapUnique(TrayPopupUtils::CreateMainImageView(
-                /*use_wide_layout=*/is_qs_revamp));
-        image_view->SetImage(ui::ImageModel::FromVectorIcon(
-            vector_icons::kNotificationWarningIcon, kColorAshIconColorWarning,
-            kMenuIconSize));
-        image_view->SetBackground(
-            views::CreateSolidBackground(SK_ColorTRANSPARENT));
-        nbs_warning_view->AddView(TriView::Container::START,
-                                  std::move(image_view));
-
-        std::unique_ptr<views::Label> label =
-            base::WrapUnique(TrayPopupUtils::CreateDefaultLabel());
-        label->SetText(
-            l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO_NBS_MESSAGE));
-        label->SetMultiLine(/*multi_line=*/true);
-        label->SetBackground(views::CreateSolidBackground(SK_ColorTRANSPARENT));
-        label->SetEnabledColorId(kColorAshTextColorWarning);
-        if (chromeos::features::IsJellyEnabled()) {
-          label->SetAutoColorReadabilityEnabled(false);
-          TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosBody2,
-                                                *label);
-        } else {
-          TrayPopupUtils::SetLabelFontList(
-              label.get(), TrayPopupUtils::FontStyle::kDetailedViewLabel);
-        }
-        nbs_warning_view->AddView(TriView::Container::CENTER, std::move(label));
-
-        container->AddChildView(std::move(nbs_warning_view));
+        container->AddChildView(AudioDetailedView::CreateNbsWarningView());
       }
     }
   }

@@ -12,7 +12,6 @@
 #include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/viz/common/gpu/context_lost_reason.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/shared_image_format.h"
 #include "components/viz/service/display/dc_layer_overlay.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -210,7 +209,7 @@ void SkiaOutputDeviceDComp::ScheduleOverlays(
     params->clip_rect = dc_layer.clip_rect;
     params->protected_video_type = dc_layer.protected_video_type;
     params->color_space = dc_layer.color_space;
-    params->hdr_metadata = dc_layer.hdr_metadata.value_or(gfx::HDRMetadata());
+    params->hdr_metadata = dc_layer.hdr_metadata;
     params->possible_video_fullscreen_letterboxing =
         dc_layer.possible_video_fullscreen_letterboxing;
 
@@ -417,7 +416,7 @@ SkiaOutputDeviceDCompPresenter::SkiaOutputDeviceDCompPresenter(
   capabilities_.supports_delegated_ink = presenter_->SupportsDelegatedInk();
   capabilities_.pending_swap_params.max_pending_swaps = 1;
   capabilities_.renderer_allocates_images = true;
-  capabilities_.supports_viewporter = true;
+  capabilities_.supports_viewporter = presenter_->SupportsViewporter();
 }
 
 SkiaOutputDeviceDCompPresenter::~SkiaOutputDeviceDCompPresenter() = default;

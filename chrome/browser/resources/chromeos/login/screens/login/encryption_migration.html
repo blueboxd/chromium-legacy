@@ -12,6 +12,11 @@ found in the LICENSE file.
     width: 100%;
   }
 
+  :host-context(.jelly-enabled) paper-progress {
+    --paper-progress-active-color: var(--cros-sys-primary);
+    --paper-progress-container-color: var(--cros-sys-primary_container);
+  }
+
   [slot='content'] div {
     color: var(--oobe-text-color);
   }
@@ -43,8 +48,9 @@ found in the LICENSE file.
   </div>
   <div slot="content" class="content-centered"
       hidden="[[!isEnoughBattery]]">
-    <img src="../../images/encryption_migration.svg"
-          class="oobe-illustration" aria-hidden="true">
+    <iron-icon icon="oobe-illos:encryption-migration-illo"
+          class="illustration-jelly">
+    </iron-icon>
   </div>
   <div slot="content" class="landscape-header-aligned"
       aria-live="polite" hidden="[[isEnoughBattery]]">

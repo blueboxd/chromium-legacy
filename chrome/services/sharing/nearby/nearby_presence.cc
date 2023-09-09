@@ -9,11 +9,13 @@
 #include "chrome/services/sharing/nearby/nearby_shared_remotes.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/abseil-cpp/absl/status/status.h"
+#include "third_party/nearby/internal/proto/credential.pb.h"
+#include "third_party/nearby/src/presence/presence_client_impl.h"
 #include "third_party/nearby/src/presence/presence_service_impl.h"
 
 namespace {
 
-constexpr char kChromeOSManagerAppName[] = "CHROMEOS";
+constexpr char kChromeOSManagerAppId[] = "CHROMEOS";
 constexpr int kCredentialLifeCycleDays = 5;
 constexpr int kNumCredentials = 6;
 
@@ -69,8 +71,10 @@ void NearbyPresence::StartScan(mojom::ScanRequestPtr scan_request,
                                StartScanCallback callback) {
   auto presence_scan_request = ::nearby::presence::ScanRequest();
   presence_scan_request.account_name = scan_request->account_name;
-  presence_scan_request.identity_types.push_back(
-      ::nearby::internal::IdentityType::IDENTITY_TYPE_PUBLIC);
+  for (auto identity_type : scan_request->identity_types) {
+    presence_scan_request.identity_types.push_back(
+        ConvertMojomIdentityType(identity_type));
+  }
   uint64_t session_id;
   auto id = id_++;
   auto session_id_or_status = presence_client_->StartScan(
@@ -94,39 +98,18 @@ void NearbyPresence::StartScan(mojom::ScanRequestPtr scan_request,
            },
        .on_discovered_cb =
            [this](::nearby::presence::PresenceDevice device) {
-             // TODO(b/286564727): Remove hex encoding once endpoint_id is
-             // alphanumeric.
-             auto hex_encoded_endpoint_id = base::HexEncode(
-                 device.GetEndpointId().data(), device.GetEndpointId().size());
-             // TODO(b/276642472): Properly plumb type and stable_device_id.
-             scan_observer_remote_->OnDeviceFound(mojom::PresenceDevice::New(
-                 hex_encoded_endpoint_id, device.GetMetadata().device_name(),
-                 mojom::PresenceDeviceType::kPhone,
-                 /*stable_device_id=*/absl::nullopt));
+             scan_observer_remote_->OnDeviceFound(
+                 BuildPresenceMojomDevice(device));
            },
        .on_updated_cb =
            [this](::nearby::presence::PresenceDevice device) {
-             // TODO(b/286564727): Remove hex encoding once endpoint_id is
-             // alphanumeric.
-             auto hex_encoded_endpoint_id = base::HexEncode(
-                 device.GetEndpointId().data(), device.GetEndpointId().size());
-             // TODO(b/276642472): Properly plumb type and stable_device_id.
-             scan_observer_remote_->OnDeviceChanged(mojom::PresenceDevice::New(
-                 hex_encoded_endpoint_id, device.GetMetadata().device_name(),
-                 mojom::PresenceDeviceType::kPhone,
-                 /*stable_device_id=*/absl::nullopt));
+             scan_observer_remote_->OnDeviceChanged(
+                 BuildPresenceMojomDevice(device));
            },
        .on_lost_cb =
            [this](::nearby::presence::PresenceDevice device) {
-             // TODO(b/286564727): Remove hex encoding once endpoint_id is
-             // alphanumeric.
-             auto hex_encoded_endpoint_id = base::HexEncode(
-                 device.GetEndpointId().data(), device.GetEndpointId().size());
-             // TODO(b/276642472): Properly plumb type and stable_device_id.
-             scan_observer_remote_->OnDeviceLost(mojom::PresenceDevice::New(
-                 hex_encoded_endpoint_id, device.GetMetadata().device_name(),
-                 mojom::PresenceDeviceType::kPhone,
-                 /*stable_device_id=*/absl::nullopt));
+             scan_observer_remote_->OnDeviceLost(
+                 BuildPresenceMojomDevice(device));
            }});
 
   if (session_id_or_status.ok()) {
@@ -178,7 +161,7 @@ void NearbyPresence::UpdateLocalDeviceMetadata(mojom::MetadataPtr metadata) {
   // metadata changes (e.g. the user's name).
   presence_service_->UpdateLocalDeviceMetadata(
       MetadataFromMojom(metadata.get()), /*regen_credentials=*/false,
-      /*manager_app_id=*/kChromeOSManagerAppName,
+      /*manager_app_id=*/kChromeOSManagerAppId,
       /*identity_types=*/
       {::nearby::internal::IdentityType::IDENTITY_TYPE_PRIVATE},
       /*credential_life_cycle_days=*/kCredentialLifeCycleDays,
@@ -191,7 +174,7 @@ void NearbyPresence::UpdateLocalDeviceMetadataAndGenerateCredentials(
     UpdateLocalDeviceMetadataAndGenerateCredentialsCallback callback) {
   presence_service_->UpdateLocalDeviceMetadata(
       MetadataFromMojom(metadata.get()), /*regen_credentials=*/true,
-      /*manager_app_id=*/kChromeOSManagerAppName,
+      /*manager_app_id=*/kChromeOSManagerAppId,
       /*identity_types=*/
       {::nearby::internal::IdentityType::IDENTITY_TYPE_PRIVATE},
       /*credential_life_cycle_days=*/kCredentialLifeCycleDays,
@@ -225,6 +208,7 @@ void NearbyPresence::UpdateLocalDeviceMetadataAndGenerateCredentials(
 }
 
 void NearbyPresence::OnScanSessionDisconnect(uint64_t scan_session_id) {
+  NS_LOG(VERBOSE) << __func__;
   presence_client_->StopScan(scan_session_id);
   session_id_to_scan_session_map_.erase(scan_session_id);
   session_id_to_results_callback_map_.erase(scan_session_id);
@@ -237,6 +221,69 @@ void NearbyPresence::OnScanSessionDisconnect(uint64_t scan_session_id) {
     }
     iter++;
   }
+}
+
+void NearbyPresence::UpdateRemoteSharedCredentials(
+    std::vector<mojom::SharedCredentialPtr> shared_credentials,
+    const std::string& account_name,
+    UpdateRemoteSharedCredentialsCallback callback) {
+  std::vector<::nearby::internal::SharedCredential> proto_credentials;
+  for (const auto& credential : shared_credentials) {
+    proto_credentials.push_back(SharedCredentialFromMojom(credential.get()));
+  }
+
+  presence_service_->UpdateRemotePublicCredentials(
+      /*manager_app_id=*/kChromeOSManagerAppId, account_name, proto_credentials,
+      {.credentials_updated_cb =
+           [cb = base::BindOnce(std::move(callback)),
+            task_runner =
+                base::SequencedTaskRunner::GetCurrentDefault()](auto status) {
+             // absl::AnyInvocable marks its bound parameters as const&, but
+             // base::BindOnce() expects a non-const rvalue. Cast it as
+             // non-const to allow the bind.
+             task_runner->PostTask(
+                 FROM_HERE,
+                 base::BindOnce(
+                     std::move(
+                         const_cast<UpdateRemoteSharedCredentialsCallback&>(
+                             cb)),
+                     CovertStatusToMojomStatus(status)));
+           }});
+}
+
+void NearbyPresence::GetLocalSharedCredentials(
+    const std::string& account_name,
+    GetLocalSharedCredentialsCallback callback) {
+  presence_service_->GetLocalPublicCredentials(
+      /*credential_selector=*/{.manager_app_id = kChromeOSManagerAppId,
+                               .account_name = account_name,
+                               .identity_type = ::nearby::internal::
+                                   IdentityType::IDENTITY_TYPE_PRIVATE},
+      {.credentials_fetched_cb =
+           [cb = base::BindOnce(std::move(callback)),
+            task_runner = base::SequencedTaskRunner::GetCurrentDefault()](
+               auto status_or_shared_credentials) {
+             std::vector<mojom::SharedCredentialPtr> mojo_credentials;
+
+             if (status_or_shared_credentials.ok()) {
+               for (auto credential : status_or_shared_credentials.value()) {
+                 mojo_credentials.push_back(
+                     SharedCredentialToMojom(credential));
+               }
+             }
+
+             // absl::AnyInvocable marks its bound parameters as const&, but
+             // base::BindOnce() expects a non-const rvalue. Cast it as
+             // non-const to allow the bind.
+             task_runner->PostTask(
+                 FROM_HERE,
+                 base::BindOnce(
+                     std::move(
+                         const_cast<GetLocalSharedCredentialsCallback&>(cb)),
+                     /*credentials=*/std::move(mojo_credentials), /*status=*/
+                     CovertStatusToMojomStatus(
+                         status_or_shared_credentials.status())));
+           }});
 }
 
 NearbyPresence::ScanSessionImpl::ScanSessionImpl() {}

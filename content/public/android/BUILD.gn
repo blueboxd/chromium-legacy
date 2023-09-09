@@ -291,7 +291,7 @@ android_library("content_full_java") {
     "java/src/org/chromium/content/browser/input/SelectPopupDropdown.java",
     "java/src/org/chromium/content/browser/input/SelectPopupItem.java",
     "java/src/org/chromium/content/browser/input/SpellCheckPopupWindow.java",
-    "java/src/org/chromium/content/browser/input/StylusGestureHandler.java",
+    "java/src/org/chromium/content/browser/input/StylusGestureConverter.java",
     "java/src/org/chromium/content/browser/input/SuggestionInfo.java",
     "java/src/org/chromium/content/browser/input/SuggestionsPopupWindow.java",
     "java/src/org/chromium/content/browser/input/TextInputState.java",
@@ -398,6 +398,7 @@ android_library("content_full_java") {
     "java/src/org/chromium/content_public/browser/WebContentsInternals.java",
     "java/src/org/chromium/content_public/browser/WebContentsObserver.java",
     "java/src/org/chromium/content_public/browser/WebContentsStatics.java",
+    "java/src/org/chromium/content_public/browser/selection/SelectionDropdownMenuDelegate.java",
   ]
 
   proguard_configs = [ "proguard.flags" ]
@@ -632,6 +633,9 @@ android_library("content_javatests") {
     "javatests/src/org/chromium/content/browser/input/InsertionMarkerTest.java",
     "javatests/src/org/chromium/content/browser/input/OngoingGestureTest.java",
     "javatests/src/org/chromium/content/browser/input/SelectPopupTest.java",
+    "javatests/src/org/chromium/content/browser/input/StylusGestureConverterTest.java",
+    "javatests/src/org/chromium/content/browser/input/StylusGestureEndToEndTest.java",
+    "javatests/src/org/chromium/content/browser/input/StylusTestHelper.java",
     "javatests/src/org/chromium/content/browser/input/TextSuggestionMenuTest.java",
     "javatests/src/org/chromium/content/browser/picker/DateTimePickerDialogTest.java",
     "javatests/src/org/chromium/content/browser/remoteobjects/RemoteObjectHostImplTest.java",
@@ -641,10 +645,6 @@ android_library("content_javatests") {
     "javatests/src/org/chromium/content/browser/webcontents/WebContentsTest.java",
     "javatests/src/org/chromium/content_public/browser/ClientDataJsonTest.java",
   ]
-
-  if (android_sdk_release == "u") {
-    sources += [ "javatests/src/org/chromium/content/browser/input/StylusGestureHandlerTest.java" ]
-  }
 
   data = [
     "//content/test/data/accessibility/accname/",

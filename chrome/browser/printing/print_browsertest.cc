@@ -88,7 +88,9 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/size_f.h"
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
 #include "chrome/browser/printing/print_backend_service_manager.h"
@@ -478,34 +480,33 @@ void PrintBrowserTest::SetPrinterNameForSubsequentContexts(
 }
 
 void PrintBrowserTest::PrintAndWaitUntilPreviewIsReady() {
-  const PrintParams kParams;
-  PrintAndWaitUntilPreviewIsReady(kParams);
+  PrintAndWaitUntilPreviewIsReady(PrintParams());
 }
 
 void PrintBrowserTest::PrintAndWaitUntilPreviewIsReady(
     const PrintParams& params) {
-  TestPrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/false,
-                                                  params.pages_per_sheet);
-
-  StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-             /*print_renderer=*/mojo::NullAssociatedRemote(),
-#endif
-             /*print_preview_disabled=*/false, params.print_only_selection);
-
-  print_preview_observer.WaitUntilPreviewIsReady();
-
-  set_rendered_page_count(print_preview_observer.rendered_page_count());
+  PrintAndWaitUntilPreviewIsReadyAndMaybeLoaded(params,
+                                                /*wait_for_loaded=*/false);
 }
 
-void PrintBrowserTest::PrintAndWaitUntilPreviewIsReadyAndLoaded() {
-  const PrintParams kParams;
-  PrintAndWaitUntilPreviewIsReadyAndLoaded(kParams);
+content::WebContents*
+PrintBrowserTest::PrintAndWaitUntilPreviewIsReadyAndLoaded() {
+  return PrintAndWaitUntilPreviewIsReadyAndLoaded(PrintParams());
 }
 
-void PrintBrowserTest::PrintAndWaitUntilPreviewIsReadyAndLoaded(
+content::WebContents*
+PrintBrowserTest::PrintAndWaitUntilPreviewIsReadyAndLoaded(
     const PrintParams& params) {
-  TestPrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/true,
+  return PrintAndWaitUntilPreviewIsReadyAndMaybeLoaded(
+      params,
+      /*wait_for_loaded=*/true);
+}
+
+content::WebContents*
+PrintBrowserTest::PrintAndWaitUntilPreviewIsReadyAndMaybeLoaded(
+    const PrintParams& params,
+    bool wait_for_loaded) {
+  TestPrintPreviewObserver print_preview_observer(wait_for_loaded,
                                                   params.pages_per_sheet);
 
   StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
@@ -514,13 +515,16 @@ void PrintBrowserTest::PrintAndWaitUntilPreviewIsReadyAndLoaded(
 #endif
              /*print_preview_disabled=*/false, params.print_only_selection);
 
-  print_preview_observer.WaitUntilPreviewIsReady();
+  content::WebContents* preview_dialog =
+      print_preview_observer.WaitUntilPreviewIsReadyAndReturnPreviewDialog();
 
   set_rendered_page_count(print_preview_observer.rendered_page_count());
+
+  return preview_dialog;
 }
 
-  // The following are helper functions for having a wait loop in the test and
-  // exit when all expected messages are received.
+// The following are helper functions for having a wait loop in the test and
+// exit when all expected messages are received.
 void PrintBrowserTest::SetNumExpectedMessages(unsigned int num) {
   num_expected_messages_ = num;
 }
@@ -1453,13 +1457,13 @@ IN_PROC_BROWSER_TEST_F(PrintExtensionBrowserTest,
   // Size and printable area are in device units, which is different for macOS.
   // See PrintSettings::device_units_per_inch().
 #if BUILDFLAG(IS_MAC)
-  static constexpr gfx::Size kLetterPdfPhysicalSize{612, 792};
-  static constexpr gfx::Rect kExpectedPrintableArea{72, 72, 432, 684};
-  static constexpr gfx::Size kExpectedContentSize{432, 656};
+  static constexpr gfx::SizeF kLetterPdfPhysicalSize{612, 792};
+  static constexpr gfx::RectF kExpectedPrintableArea{72, 72, 432, 684};
+  static constexpr gfx::SizeF kExpectedContentSize{432, 656};
 #else
-  static constexpr gfx::Size kLetterPdfPhysicalSize{2550, 3300};
-  static constexpr gfx::Rect kExpectedPrintableArea{300, 300, 1800, 2850};
-  static constexpr gfx::Size kExpectedContentSize{1800, 2732};
+  static constexpr gfx::SizeF kLetterPdfPhysicalSize{2550, 3300};
+  static constexpr gfx::RectF kExpectedPrintableArea{300, 300, 1800, 2850};
+  static constexpr gfx::SizeF kExpectedContentSize{1800, 2732};
 #endif
   LoadExtensionAndNavigateToOptionPage();
 
@@ -1503,9 +1507,9 @@ IN_PROC_BROWSER_TEST_F(
   // Size is in device units, which is different for macOS. See
   // PrintSettings::device_units_per_inch().
 #if BUILDFLAG(IS_MAC)
-  static constexpr gfx::Size kIsoA4PdfPhysicalSize{595, 841};
+  static constexpr gfx::SizeF kIsoA4PdfPhysicalSize{595, 841};
 #else
-  static constexpr gfx::Size kIsoA4PdfPhysicalSize{2480, 3507};
+  static constexpr gfx::SizeF kIsoA4PdfPhysicalSize{2480, 3507};
 #endif
 
   LoadExtensionAndNavigateToOptionPage();

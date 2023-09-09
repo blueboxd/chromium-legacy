@@ -59,7 +59,8 @@ class PowerButtonPixelTest : public NoSessionAshTestBase {
   raw_ptr<PowerButton, ExperimentalAsh> button_ = nullptr;
 };
 
-TEST_F(PowerButtonPixelTest, NoSession) {
+// TODO(http://b/291573477): Re-enable this test.
+TEST_F(PowerButtonPixelTest, DISABLED_NoSession) {
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "check_power_button",
       /*revision_number=*/2, GetPowerButton()));
@@ -67,7 +68,7 @@ TEST_F(PowerButtonPixelTest, NoSession) {
   SimulatePowerButtonPress();
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "check_menu",
-      /*revision_number=*/0, GetMenuView()));
+      /*revision_number=*/1, GetMenuView()));
 }
 
 // TODO(crbug.com/1451244): Re-enable this test
@@ -109,6 +110,6 @@ TEST_F(PowerButtonPixelTest, GuestMode) {
   SimulatePowerButtonPress();
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "check_menu",
-      /*revision_number=*/0, GetMenuView()));
+      /*revision_number=*/1, GetMenuView()));
 }
 }  // namespace ash

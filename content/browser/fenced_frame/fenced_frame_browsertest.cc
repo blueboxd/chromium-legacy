@@ -268,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(FencedFrameMPArchBrowserTest, AboutBlankNavigation) {
   ASSERT_EQ(1ul, fenced_frames.size());
   FencedFrame* fenced_frame = fenced_frames.back();
 
-  // Exepct the origin is correct.
+  // Expect the origin is correct.
   EXPECT_EQ(url::Origin::Create(fenced_frame_url),
             EvalJs(fenced_frame->GetInnerRoot(), "self.origin;"));
 
@@ -283,8 +283,41 @@ IN_PROC_BROWSER_TEST_F(FencedFrameMPArchBrowserTest, AboutBlankNavigation) {
                      "FencedFrameConfig('about:blank');"));
   observer.Wait();
 
-  EXPECT_TRUE(!fenced_frame->GetInnerRoot()->IsErrorDocument());
+  EXPECT_FALSE(fenced_frame->GetInnerRoot()->IsErrorDocument());
   EXPECT_EQ("null", EvalJs(fenced_frame->GetInnerRoot(), "self.origin;"));
+  EXPECT_EQ("about:blank",
+            EvalJs(fenced_frame->GetInnerRoot(), "window.location.href"));
+}
+
+IN_PROC_BROWSER_TEST_F(FencedFrameMPArchBrowserTest,
+                       SettingNullConfigNavigatesToAboutBlank) {
+  ASSERT_TRUE(https_server()->Start());
+  const GURL main_url = https_server()->GetURL("a.test", "/title1.html");
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  RenderFrameHostImpl* primary_rfh = primary_main_frame_host();
+
+  const GURL fenced_frame_url =
+      https_server()->GetURL("c.test", "/fenced_frames/title1.html");
+  fenced_frame_test_helper().CreateFencedFrame(primary_rfh, fenced_frame_url);
+
+  std::vector<FencedFrame*> fenced_frames = primary_rfh->GetFencedFrames();
+  ASSERT_EQ(1ul, fenced_frames.size());
+  FencedFrame* fenced_frame = fenced_frames.back();
+
+  // Expect the origin is correct.
+  EXPECT_EQ(url::Origin::Create(fenced_frame_url),
+            EvalJs(fenced_frame->GetInnerRoot(), "self.origin;"));
+
+  TestFrameNavigationObserver observer(fenced_frame->GetInnerRoot());
+  EXPECT_TRUE(ExecJs(primary_rfh,
+                     "document.querySelector('fencedframe').config = null;"));
+  observer.Wait();
+
+  EXPECT_FALSE(fenced_frame->GetInnerRoot()->IsErrorDocument());
+  EXPECT_EQ("null", EvalJs(fenced_frame->GetInnerRoot(), "self.origin;"));
+  EXPECT_EQ("about:blank",
+            EvalJs(fenced_frame->GetInnerRoot(), "window.location.href"));
 }
 
 IN_PROC_BROWSER_TEST_F(FencedFrameMPArchBrowserTest, FrameIteration) {
@@ -4399,7 +4432,14 @@ IN_PROC_BROWSER_TEST_F(FencedFrameParameterizedBrowserTest,
                     true /*G*/});
 }
 
-IN_PROC_BROWSER_TEST_F(FencedFrameParameterizedBrowserTest, FencedAdSizes) {
+// TODO(crbug.com/1459591): Flaky on Android release bots.
+#if BUILDFLAG(IS_ANDROID) && defined(NDEBUG)
+#define MAYBE_FencedAdSizes DISABLED_FencedAdSizes
+#else
+#define MAYBE_FencedAdSizes FencedAdSizes
+#endif
+IN_PROC_BROWSER_TEST_F(FencedFrameParameterizedBrowserTest,
+                       MAYBE_FencedAdSizes) {
   // This test exercises restrictions on fenced frame sizes in opaque-ads mode.
   // See the design document for more details on intended semantics:
   // https://docs.google.com/document/d/1MVqxc2nzde3cJYIRC8vnXH-a4A6J4GQE-1vBuXhQsPE/edit#
@@ -4892,8 +4932,10 @@ class FencedFrameReportEventBrowserTest
       WebContentsConsoleObserver console_observer(web_contents());
       auto filter =
           [](const content::WebContentsConsoleObserver::Message& message) {
-            return message.log_level ==
-                   blink::mojom::ConsoleMessageLevel::kError;
+            return (message.log_level ==
+                    blink::mojom::ConsoleMessageLevel::kError) ||
+                   (message.log_level ==
+                    blink::mojom::ConsoleMessageLevel::kWarning);
           };
       console_observer.SetFilter(base::BindRepeating(filter));
       if (step.report_event_result != Step::Result::kSuccess) {
@@ -6175,6 +6217,7 @@ IN_PROC_BROWSER_TEST_P(UUIDFrameTreeBrowserTest,
     // A console warning is emitted during navigation. This will be removed
     // once navigation support for urn::uuid in iframes is deprecated.
     // TODO(crbug.com/1355857)
+    ASSERT_TRUE(console_observer.Wait());
     EXPECT_FALSE(console_observer.messages().empty());
     EXPECT_EQ(
         console_observer.GetMessageAt(0),

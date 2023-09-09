@@ -689,6 +689,9 @@
   "RemoteAccessHostAllowFileTransfer": {
     "reason_for_missing_test": "Not used by the browser, handled by CRD host."
   },
+  "RemoteAccessHostAllowEnterpriseFileTransfer": {
+    "reason_for_missing_test": "Not used by the browser, handled by CRD host."
+  },
   "RemoteAccessHostEnableUserInterface": {
     "reason_for_missing_test": "Not used by the browser, handled by CRD host."
   },
@@ -2125,6 +2128,9 @@
           "sync.reading_list": {
             "default_value": false
           },
+          "sync.saved_tab_groups": {
+            "default_value": false
+          },
           "sync.tabs": {
             "default_value": false
           },
@@ -2146,6 +2152,7 @@
             "passwords",
             "preferences",
             "readingList",
+            "savedTabGroups",
             "tabs",
             "themes",
             "typedUrls"
@@ -2171,6 +2178,9 @@
             "value": false
           },
           "sync.reading_list": {
+            "value": false
+          },
+          "sync.saved_tab_groups": {
             "value": false
           },
           "sync.tabs": {
@@ -8147,6 +8157,82 @@
         "prefs": {
           "browser.suppress_unsupported_os_warning": {
             "location": "local_state"
+          }
+        }
+      }
+    ]
+  },
+  "DeviceChargingSoundsEnabled": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "ash.charging_sounds.enabled": {
+            "location": "local_state",
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "DeviceChargingSoundsEnabled": false
+        },
+        "prefs": {
+          "ash.charging_sounds.enabled": {
+            "location": "local_state",
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "DeviceChargingSoundsEnabled": true
+        },
+        "prefs": {
+          "ash.charging_sounds.enabled": {
+            "location": "local_state",
+            "value": true
+          }
+        }
+      }
+    ]
+  },
+  "DeviceLowBatterySoundEnabled": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "ash.low_battery_sound.enabled": {
+            "location": "local_state",
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "DeviceLowBatterySoundEnabled": false
+        },
+        "prefs": {
+          "ash.low_battery_sound.enabled": {
+            "location": "local_state",
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "DeviceLowBatterySoundEnabled": true
+        },
+        "prefs": {
+          "ash.low_battery_sound.enabled": {
+            "location": "local_state",
+            "value": true
           }
         }
       }
@@ -16344,6 +16430,45 @@
       }
     ]
   },
+  "EmojiPickerGifSupportEnabled": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "Check default values (no policies set)",
+        "policies": {},
+        "prefs": {
+          "emoji_picker.gif_support_enabled": {
+            "location": "user_profile",
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "EmojiPickerGifSupportEnabled": false
+        },
+        "prefs": {
+          "emoji_picker.gif_support_enabled": {
+            "location": "user_profile",
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "EmojiPickerGifSupportEnabled": true
+        },
+        "prefs": {
+          "emoji_picker.gif_support_enabled": {
+            "location": "user_profile",
+            "value": true
+          }
+        }
+      }
+    ]
+  },
   "PerAppTimeLimits": {
     "os": [
       "chromeos_ash"
@@ -23636,6 +23761,75 @@
       }
     ]
   },
+  "NativeClientForceAllowed": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "NativeClientForceAllowed":true
+        },
+        "prefs": {
+          "native_client_force_allowed": {
+            "location": "local_state"
+          }
+        }
+      },
+      {
+        "policies": {
+          "NativeClientForceAllowed":false
+        },
+        "prefs": {
+          "native_client_force_allowed": {
+            "location": "local_state"
+          }
+        }
+      }
+    ]
+  },
+  "GlanceablesEnabled": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "Check default values (no policies set)",
+        "policies": { },
+        "prefs": {
+          "ash.glanceables_enabled" : {
+            "value": false
+          }
+        }
+      },
+      {
+        "note": "Check true policy value",
+        "policies": {
+          "GlanceablesEnabled": true
+        },
+        "prefs": {
+          "ash.glanceables_enabled" : {
+            "value": true
+          }
+        }
+      },
+      {
+        "note": "Check false policy value",
+        "policies": {
+          "GlanceablesEnabled": false
+        },
+        "prefs": {
+          "ash.glanceables_enabled" : {
+            "value": false
+          }
+        }
+      }
+    ]
+  },
   "ArcVmDataMigrationStrategy": {
     "os": [
       "chromeos_ash"
@@ -23667,6 +23861,136 @@
         "prefs": {
           "arc.vm_data_migration_strategy": {
             "value": 1
+          }
+        }
+      }
+    ]
+  },
+  "AccessibilityPerformanceFilteringAllowed": {
+   "os": [
+      "android"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "Default value (no policies set).",
+        "policies": {},
+        "prefs": {
+          "settings.a11y.allow_accessibility_performance_filtering": {
+            "default_value": true,
+            "location": "local_state"
+          }
+        }
+      },
+      {
+        "policies": {
+          "AccessibilityPerformanceFilteringAllowed": true
+        },
+        "prefs": {
+          "settings.a11y.allow_accessibility_performance_filtering": {
+            "value": true,
+            "location": "local_state"
+          }
+        }
+      },
+      {
+        "policies": {
+          "AccessibilityPerformanceFilteringAllowed": false
+        },
+        "prefs": {
+          "settings.a11y.allow_accessibility_performance_filtering": {
+            "value": false,
+            "location": "local_state"
+          }
+        }
+      }
+    ]
+  },
+  "DefaultMidiSetting": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "android",
+      "fuchsia"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "DefaultMidiSetting": 2
+        },
+        "prefs": {
+          "profile.managed_default_content_settings.midi": {
+            "value": 2
+          }
+        }
+      },
+      {
+        "policies": {
+          "DefaultMidiSetting": 3
+        },
+        "prefs": {
+          "profile.managed_default_content_settings.midi": {
+            "value": 3
+          }
+        }
+      }
+    ]
+  },
+  "MidiAllowedForUrls": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "android",
+      "fuchsia"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "MidiAllowedForUrls": [
+            "[*.]google.com",
+            "http://example.com:1234"
+          ]
+        },
+        "prefs": {
+          "profile.managed_midi_allowed_for_urls": {
+            "value": [
+              "[*.]google.com",
+              "http://example.com:1234"
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "MidiBlockedForUrls": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "android",
+      "fuchsia"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "MidiBlockedForUrls": [
+            "[*.]google.com",
+            "http://example.com:1234"
+          ]
+        },
+        "prefs": {
+          "profile.managed_midi_blocked_for_urls": {
+            "value": [
+              "[*.]google.com",
+              "http://example.com:1234"
+            ]
           }
         }
       }

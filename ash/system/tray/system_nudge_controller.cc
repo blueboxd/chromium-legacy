@@ -110,7 +110,7 @@ void SystemNudgeController::MaybeRecordNudgeAction(
 }
 
 void SystemNudgeController::ShowNudge() {
-  if (nudge_ && !nudge_->widget()->IsClosed()) {
+  if (nudge_ && nudge_->widget() && !nudge_->widget()->IsClosed()) {
     if (hide_nudge_timer_) {
       hide_nudge_timer_->AbandonAndStop();
     }
@@ -155,19 +155,21 @@ SystemNudgeController::GetNudgeRegistry() {
 }
 
 void SystemNudgeController::StartFadeAnimation(bool show) {
-  hide_nudge_timer_.reset();
-  // Clean any pending animation observer.
-  hide_nudge_animation_observer_.reset();
-
   // `nudge_` may not exist if `StartFadeAnimation(false)` has been called
   // before a new nudge has been created.
-  if (!nudge_)
+  if (!nudge_ || !nudge_->widget()) {
     return;
+  }
 
   ui::Layer* layer = nudge_->widget()->GetLayer();
   if (layer->GetAnimator()->is_animating()) {
     return;
   }
+
+  hide_nudge_timer_.reset();
+  // Clean any pending animation observer.
+  hide_nudge_animation_observer_.reset();
+
   gfx::Rect widget_bounds = layer->bounds();
 
   gfx::Transform scaled_nudge_transform;

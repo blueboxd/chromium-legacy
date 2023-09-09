@@ -5,8 +5,10 @@
 #include "chrome/browser/ash/bruschetta/bruschetta_terminal_provider.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_launcher.h"
+#include "chrome/browser/ash/bruschetta/bruschetta_pref_names.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_service.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_util.h"
+#include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/extensions/api/terminal/startup_status.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -20,7 +22,16 @@ BruschettaTerminalProvider::BruschettaTerminalProvider(
 BruschettaTerminalProvider::~BruschettaTerminalProvider() = default;
 
 std::string BruschettaTerminalProvider::Label() {
-  return kBruschettaDisplayName;
+  auto config = GetConfigForGuest(profile_, guest_id_,
+                                  prefs::PolicyEnabledState::BLOCKED);
+  if (!config.has_value() || !config.value()) {
+    // If the config doesn't exist, the terminal will default to
+    // <vm_name>:<container_name>, but container_name isn't meaningful for us
+    // so just use the vm_name instead.
+    return guest_id_.vm_name;
+  }
+
+  return *config.value()->FindString(prefs::kPolicyNameKey);
 }
 
 guest_os::GuestId BruschettaTerminalProvider::GuestId() {
@@ -29,6 +40,13 @@ guest_os::GuestId BruschettaTerminalProvider::GuestId() {
 
 bool BruschettaTerminalProvider::RecoveryRequired(int64_t display_id) {
   return false;
+}
+
+bool BruschettaTerminalProvider::AllowedByPolicy() {
+  auto config = GetConfigForGuest(profile_, guest_id_,
+                                  prefs::PolicyEnabledState::RUN_ALLOWED);
+
+  return config.has_value() && config.value();
 }
 
 std::string BruschettaTerminalProvider::PrepareCwd(
@@ -68,7 +86,8 @@ void BruschettaTerminalProvider::EnsureRunning(
               success ? ""
                       : base::StringPrintf(
                             "Error starting bruschetta for terminal: %d (%s)",
-                            result, BruschettaResultString(result)));
+                            static_cast<int>(result),
+                            BruschettaResultString(result)));
         },
         std::move(callback)));
   } else {

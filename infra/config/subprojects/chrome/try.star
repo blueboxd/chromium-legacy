@@ -85,6 +85,10 @@ chrome_internal_verifier(
 )
 
 chrome_internal_verifier(
+    builder = "chromeos-betty-pi-arc-cfi-thin-lto-chrome",
+)
+
+chrome_internal_verifier(
     builder = "chromeos-betty-pi-arc-chrome",
 )
 
@@ -97,11 +101,11 @@ chrome_internal_verifier(
 )
 
 chrome_internal_verifier(
-    builder = "chromeos-kevin-chrome",
+    builder = "chromeos-jacuzzi-chrome",
 )
 
 chrome_internal_verifier(
-    builder = "chromeos-kevin-compile-chrome",
+    builder = "chromeos-jacuzzi-compile-chrome",
 )
 
 chrome_internal_verifier(

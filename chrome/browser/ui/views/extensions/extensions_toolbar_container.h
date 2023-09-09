@@ -167,6 +167,7 @@ class ExtensionsToolbarContainer
   void UpdateToolbarActionHoverCard(
       ToolbarActionView* action_view,
       ToolbarActionHoverCardUpdateType update_type) override;
+  void CollapseConfirmation() override;
 
   // ToolbarActionView::Delegate:
   content::WebContents* GetCurrentWebContents() override;
@@ -256,11 +257,17 @@ class ExtensionsToolbarContainer
   // Updates the controls visibility.
   void UpdateControlsVisibility();
 
+  // Maybe displays the In-Product-Help with a specific priority order.
+  void MaybeShowIPH();
+
   // TabStripModelObserver:
   void OnTabStripModelChanged(
       TabStripModel* tab_strip_model,
       const TabStripModelChange& change,
       const TabStripSelectionChange& selection) override;
+  void TabChangedAt(content::WebContents* contents,
+                    int index,
+                    TabChangeType change_type) override;
 
   // ToolbarActionsModel::Observer:
   void OnToolbarActionAdded(
@@ -314,7 +321,8 @@ class ExtensionsToolbarContainer
   // `extensions_features::kExtensionsMenuAccessControl` experiment is released.
   // Exactly one of `extensions_button_ and `extensions_controls_` is created;
   // the other is null.
-  const raw_ptr<ExtensionsToolbarButton, DanglingUntriaged> extensions_button_;
+  const raw_ptr<ExtensionsToolbarButton, AcrossTasksDanglingUntriaged>
+      extensions_button_;
   const raw_ptr<ExtensionsToolbarControls, DanglingUntriaged>
       extensions_controls_;
   DisplayMode display_mode_;

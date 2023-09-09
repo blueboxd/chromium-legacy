@@ -52,9 +52,10 @@ NSString* const kMoveFolderSymbol = @"folder_badge_arrow_forward";
 // Custom symbol names which can be configured with a color palette.
 NSString* const kIncognitoCircleFillSymbol = @"incognito_circle_fill";
 NSString* const kPlusCircleFillSymbol = @"plus_circle_fill";
-NSString* const kLegacyPlusCircleFillSymbol = @"legacy_plus_circle_fill";
 
 // Default symbol names.
+NSString* const kChartBarXAxisSymbol = @"chart.bar.xaxis";
+NSString* const kCircleSymbol = @"circle";
 NSString* const kCircleFillSymbol = @"circle.fill";
 NSString* const kSyncEnabledSymbol = @"arrow.triangle.2.circlepath";
 NSString* const kSyncCircleSymbol = @"arrow.triangle.2.circlepath.circle.fill";
@@ -79,6 +80,7 @@ NSString* const kMarkAsReadActionSymbol = @"text.badge.checkmark";
 NSString* const kReadLaterActionSymbol = @"text.badge.plus";
 NSString* const kAddBookmarkActionSymbol = @"star";
 NSString* const kCopyActionSymbol = @"doc.on.doc";
+NSString* const kPasteActionSymbol = @"doc.on.clipboard";
 NSString* const kNewWindowActionSymbol = @"square.split.2x1";
 NSString* const kShowActionSymbol = @"eye";
 NSString* const kHideActionSymbol = @"eye.slash";
@@ -152,6 +154,11 @@ NSString* const kSquareOnSquareDashedSymbol = @"square.on.square.dashed";
 NSString* const kDocPlaintext = @"doc.plaintext";
 NSString* const kFlagSymbol = @"flag";
 NSString* const kKeyboardSymbol = @"keyboard";
+NSString* const kSpeedometerSymbol = @"speedometer";
+NSString* const kMovePlatterToTopPhoneSymbol =
+    @"platter.filled.top.and.arrow.up.iphone";
+NSString* const kMovePlatterToBottomPhoneSymbol =
+    @"platter.filled.bottom.and.arrow.down.iphone";
 
 // Names of the default symbol being non-monochrome by default. When using them,
 // you probably want to set their color to monochrome.

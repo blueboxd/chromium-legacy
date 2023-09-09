@@ -72,8 +72,8 @@ class ShortcutsProvider : public AutocompleteProvider,
   // Performs the autocomplete matching and scoring. Populates matches results
   // with scoring signals for ML models if enabled. Only populates signals for
   // ULR matches for now.
-  void GetMatches(const AutocompleteInput& input,
-                  bool populate_scoring_signals);
+  void DoAutocomplete(const AutocompleteInput& input,
+                      bool populate_scoring_signals);
 
   // Creates a shortcut match by aggregating the scoring factors from a vector
   // of `shortcuts`. Specifically:
@@ -110,8 +110,8 @@ class ShortcutsProvider : public AutocompleteProvider,
   // The default max relevance unless overridden by a field trial.
   static const int kShortcutsProviderDefaultMaxRelevance;
 
-  raw_ptr<AutocompleteProviderClient> client_{};
-  scoped_refptr<ShortcutsBackend> backend_{};
+  raw_ptr<AutocompleteProviderClient> client_ = nullptr;
+  scoped_refptr<ShortcutsBackend> backend_;
   bool initialized_{};
 };
 

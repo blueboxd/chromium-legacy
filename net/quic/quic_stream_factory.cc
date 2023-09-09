@@ -64,7 +64,6 @@
 #include "net/third_party/quiche/src/quiche/quic/core/crypto/proof_verifier.h"
 #include "net/third_party/quiche/src/quiche/quic/core/crypto/quic_client_session_cache.h"
 #include "net/third_party/quiche/src/quiche/quic/core/crypto/quic_random.h"
-#include "net/third_party/quiche/src/quiche/quic/core/http/quic_client_promised_info.h"
 #include "net/third_party/quiche/src/quiche/quic/core/http/quic_client_push_promise_index.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_clock.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_connection.h"
@@ -237,7 +236,7 @@ class QuicStreamFactory::QuicCryptoClientConfigOwner {
 
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
-    quic::SessionCache* session_cache = config_.mutable_session_cache();
+    quic::SessionCache* session_cache = config_.session_cache();
     if (!session_cache) {
       return;
     }
@@ -371,7 +370,8 @@ class QuicStreamFactory::Job {
     // Callers do not need to wait for OnQuicSessionCreationComplete if the
     // kAsyncQuicSession flag is not set because session creation will be fully
     // synchronous, so no need to call ExpectQuicSessionCreation.
-    if (base::FeatureList::IsEnabled(net::features::kAsyncQuicSession)) {
+    if (base::FeatureList::IsEnabled(net::features::kAsyncQuicSession) &&
+        !session_creation_finished_) {
       request->ExpectQuicSessionCreation();
     }
   }
@@ -512,6 +512,7 @@ class QuicStreamFactory::Job {
   const bool retry_on_alternate_network_before_handshake_;
   const NetLogWithSource net_log_;
   bool host_resolution_finished_ = false;
+  bool session_creation_finished_ = false;
   bool connection_retried_ = false;
   // This field is not a raw_ptr<> because it was filtered by the rewriter for:
   // #addr-of
@@ -788,6 +789,7 @@ int QuicStreamFactory::Job::DoCreateSession() {
   return rv;
 }
 int QuicStreamFactory::Job::DoCreateSessionComplete(int rv) {
+  session_creation_finished_ = true;
   if (rv != OK) {
     return rv;
   }
@@ -1207,18 +1209,6 @@ int QuicStreamFactory::Create(const QuicSessionKey& session_key,
   DCHECK(HostPortPair(session_key.server_id().host(),
                       session_key.server_id().port())
              .Equals(HostPortPair::FromURL(url)));
-
-  // Search sessions for a matching promised stream.
-  for (auto session : active_sessions_) {
-    quic::QuicClientPromisedInfo* promised =
-        session.second->GetPromised(url, session_key);
-    if (!promised)
-      continue;
-    DCHECK_EQ(promised->session(), session.second);
-    request->SetSession(session.second->CreateHandle(std::move(destination)));
-    ++num_push_streams_created_;
-    return OK;
-  }
 
   // Use active session for |session_key| if such exists.
   auto active_session = active_sessions_.find(session_key);
@@ -2039,9 +2029,9 @@ bool QuicStreamFactory::CreateSessionHelper(
       yield_after_packets_, yield_after_duration_, cert_verify_flags, config,
       std::move(crypto_config_handle), dns_resolution_start_time,
       dns_resolution_end_time,
-      std::make_unique<quic::QuicClientPushPromiseIndex>(), push_delegate_,
-      tick_clock_, task_runner_, std::move(socket_performance_watcher),
-      endpoint_result, net_log.net_log());
+      std::make_unique<quic::QuicClientPushPromiseIndex>(), tick_clock_,
+      task_runner_, std::move(socket_performance_watcher), endpoint_result,
+      net_log.net_log());
 
   all_sessions_[*session] = key;  // owning pointer
   writer->set_delegate(*session);

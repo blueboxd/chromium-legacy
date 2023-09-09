@@ -7,11 +7,9 @@ import {assert} from 'chrome://resources/js/assert_ts.js';
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 
-import {CurrentWallpaper, GooglePhotosAlbum, GooglePhotosEnablementState, GooglePhotosPhoto, ThemeProviderInterface, WallpaperCollection, WallpaperImage, WallpaperLayout, WallpaperProviderInterface, WallpaperType} from '../../personalization_app.mojom-webui.js';
+import {CurrentWallpaper, GooglePhotosAlbum, GooglePhotosEnablementState, GooglePhotosPhoto, WallpaperCollection, WallpaperImage, WallpaperLayout, WallpaperProviderInterface, WallpaperType} from '../../personalization_app.mojom-webui.js';
 import {setErrorAction} from '../personalization_actions.js';
 import {PersonalizationStore} from '../personalization_store.js';
-import {setColorModeAutoSchedule, setColorSchemePref} from '../theme/theme_controller.js';
-import {DEFAULT_COLOR_SCHEME} from '../theme/utils.js';
 import {isNonEmptyArray} from '../utils.js';
 
 import {DisplayableImage} from './constants.js';
@@ -337,19 +335,6 @@ async function getMissingLocalImageThumbnails(
   }
 }
 
-/**
- * Special helper function for time of day wallpaper specifically. It also sets
- * the color scheme pref to default and turns on dark/light auto mode.
- */
-export async function selectTimeOfDayWallpaper(
-    image: WallpaperImage, wallpaperProvider: WallpaperProviderInterface,
-    themeProvider: ThemeProviderInterface,
-    store: PersonalizationStore): Promise<void> {
-  setColorSchemePref(DEFAULT_COLOR_SCHEME, themeProvider, store);
-  setColorModeAutoSchedule(true, themeProvider, store);
-  await selectWallpaper(image, wallpaperProvider, store);
-}
-
 export async function selectWallpaper(
     image: DisplayableImage, provider: WallpaperProviderInterface,
     store: PersonalizationStore,
@@ -397,6 +382,8 @@ export async function selectWallpaper(
   }
   if (!success) {
     console.warn('Error setting wallpaper');
+    store.dispatch(
+        action.setAttributionAction(store.data.wallpaper.attribution));
     store.dispatch(
         action.setSelectedImageAction(store.data.wallpaper.currentSelected));
   }
@@ -518,6 +505,7 @@ export async function updateDailyRefreshWallpaper(
   if (success) {
     store.dispatch(action.setUpdatedDailyRefreshImageAction());
   } else {
+    const currentAttribution = store.data.wallpaper.attribution;
     const currentWallpaper = store.data.wallpaper.currentSelected;
     const dailyRefresh = store.data.wallpaper.dailyRefresh;
     // Displays error if daily refresh is activated for Google Photos album
@@ -528,6 +516,7 @@ export async function updateDailyRefreshWallpaper(
     // online wallpaper collections.
     if (!!dailyRefresh && dailyRefresh.type == DailyRefreshType.GOOGLE_PHOTOS) {
       store.dispatch(action.setUpdatedDailyRefreshImageAction());
+      store.dispatch(action.setAttributionAction(currentAttribution));
       store.dispatch(action.setSelectedImageAction(currentWallpaper));
       store.dispatch(setErrorAction(
           {message: loadTimeData.getString('googlePhotosError')}));

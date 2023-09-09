@@ -109,8 +109,7 @@ void BrowserCommandHandler::CanExecuteCommand(
                     DefaultSearchProviderIsGoogle();
       break;
     case Command::kStartPasswordManagerTutorial:
-      can_execute =
-          !!GetTutorialService() && BrowserSupportsNewPasswordManager();
+      can_execute = !!GetTutorialService();
       break;
   }
   std::move(callback).Run(can_execute);
@@ -206,11 +205,6 @@ bool BrowserCommandHandler::BrowserSupportsTabGroups() {
   return browser->tab_strip_model()->SupportsTabGroups();
 }
 
-bool BrowserCommandHandler::BrowserHasTabGroups() {
-  Browser* browser = chrome::FindBrowserWithProfile(profile_);
-  return !browser->tab_strip_model()->group_model()->ListTabGroups().empty();
-}
-
 void BrowserCommandHandler::StartTabGroupTutorial() {
   user_education::TutorialService* tutorial_service = GetTutorialService();
 
@@ -227,9 +221,7 @@ void BrowserCommandHandler::StartTabGroupTutorial() {
     return;
   }
 
-  user_education::TutorialIdentifier tutorial_id =
-      BrowserHasTabGroups() ? kTabGroupWithExistingGroupTutorialId
-                            : kTabGroupTutorialId;
+  user_education::TutorialIdentifier tutorial_id = kTabGroupTutorialId;
 
   tutorial_service->StartTutorial(tutorial_id, context);
   tutorial_service->LogStartedFromWhatsNewPage(
@@ -281,11 +273,6 @@ void BrowserCommandHandler::OpenNTPAndStartCustomizeChromeTutorial(
   NavigateToURL(GURL(chrome::kChromeUINewTabPageURL), disposition);
 }
 
-bool BrowserCommandHandler::BrowserSupportsNewPasswordManager() {
-  return base::FeatureList::IsEnabled(
-      password_manager::features::kPasswordManagerRedesign);
-}
-
 void BrowserCommandHandler::StartPasswordManagerTutorial() {
   user_education::TutorialService* tutorial_service = GetTutorialService();
 
@@ -297,10 +284,6 @@ void BrowserCommandHandler::StartPasswordManagerTutorial() {
 
   const ui::ElementContext context = GetUiElementContext();
   if (!context) {
-    return;
-  }
-
-  if (!BrowserSupportsNewPasswordManager()) {
     return;
   }
 

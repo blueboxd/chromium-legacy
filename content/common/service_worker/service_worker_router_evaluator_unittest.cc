@@ -22,7 +22,7 @@ TEST(ServiceWorkerRouterEvaluator, EmptyRule) {
   network::ResourceRequest request;
   request.method = "GET";
   request.url = GURL("https://example.com/");
-  const auto sources = evaluator.Evaluate(request);
+  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
   EXPECT_TRUE(sources.empty());
 }
 
@@ -34,7 +34,7 @@ TEST(ServiceWorkerRouterEvaluator, SimpleMatch) {
       blink::ServiceWorkerRouterCondition condition;
       condition.type =
           blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern;
-      blink::UrlPattern url_pattern;
+      blink::SafeUrlPattern url_pattern;
       auto parse_result = liburlpattern::Parse(
           "/test/*",
           [](base::StringPiece input) { return std::string(input); });
@@ -60,7 +60,7 @@ TEST(ServiceWorkerRouterEvaluator, SimpleMatch) {
   network::ResourceRequest request;
   request.method = "GET";
   request.url = GURL("https://example.com/test/page.html");
-  const auto sources = evaluator.Evaluate(request);
+  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
   EXPECT_EQ(1U, sources.size());
 }
 
@@ -72,7 +72,7 @@ TEST(ServiceWorkerRouterEvaluator, SimpleExactMatch) {
       blink::ServiceWorkerRouterCondition condition;
       condition.type =
           blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern;
-      blink::UrlPattern url_pattern;
+      blink::SafeUrlPattern url_pattern;
       auto parse_result = liburlpattern::Parse(
           "/test/page.html",
           [](base::StringPiece input) { return std::string(input); });
@@ -98,7 +98,7 @@ TEST(ServiceWorkerRouterEvaluator, SimpleExactMatch) {
   network::ResourceRequest request;
   request.method = "GET";
   request.url = GURL("https://example.com/test/page.html");
-  const auto sources = evaluator.Evaluate(request);
+  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
   EXPECT_EQ(1U, sources.size());
 }
 
@@ -110,7 +110,7 @@ TEST(ServiceWorkerRouterEvaluator, NotMatchingCondition) {
       blink::ServiceWorkerRouterCondition condition;
       condition.type =
           blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern;
-      blink::UrlPattern url_pattern;
+      blink::SafeUrlPattern url_pattern;
       auto parse_result = liburlpattern::Parse(
           "/test/*",
           [](base::StringPiece input) { return std::string(input); });
@@ -136,7 +136,7 @@ TEST(ServiceWorkerRouterEvaluator, NotMatchingCondition) {
   network::ResourceRequest request;
   request.method = "GET";
   request.url = GURL("https://example.com/notmatched/page.html");
-  const auto sources = evaluator.Evaluate(request);
+  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
   EXPECT_EQ(0U, sources.size());
 }
 
@@ -148,7 +148,7 @@ TEST(ServiceWorkerRouterEvaluator, OneConditionMisMatch) {
       blink::ServiceWorkerRouterCondition condition;
       condition.type =
           blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern;
-      blink::UrlPattern url_pattern;
+      blink::SafeUrlPattern url_pattern;
       auto parse_result = liburlpattern::Parse(
           "/test/*",
           [](base::StringPiece input) { return std::string(input); });
@@ -161,7 +161,7 @@ TEST(ServiceWorkerRouterEvaluator, OneConditionMisMatch) {
       blink::ServiceWorkerRouterCondition condition;
       condition.type =
           blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern;
-      blink::UrlPattern url_pattern;
+      blink::SafeUrlPattern url_pattern;
       auto parse_result = liburlpattern::Parse(
           "/notmatch/*",
           [](base::StringPiece input) { return std::string(input); });
@@ -187,7 +187,7 @@ TEST(ServiceWorkerRouterEvaluator, OneConditionMisMatch) {
   network::ResourceRequest request;
   request.method = "GET";
   request.url = GURL("https://example.com/test/page.html");
-  const auto sources = evaluator.Evaluate(request);
+  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
   EXPECT_EQ(0U, sources.size());
 }
 
@@ -199,7 +199,7 @@ TEST(ServiceWorkerRouterEvaluator, AllConditionMatch) {
       blink::ServiceWorkerRouterCondition condition;
       condition.type =
           blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern;
-      blink::UrlPattern url_pattern;
+      blink::SafeUrlPattern url_pattern;
       auto parse_result = liburlpattern::Parse(
           "/test/*",
           [](base::StringPiece input) { return std::string(input); });
@@ -212,7 +212,7 @@ TEST(ServiceWorkerRouterEvaluator, AllConditionMatch) {
       blink::ServiceWorkerRouterCondition condition;
       condition.type =
           blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern;
-      blink::UrlPattern url_pattern;
+      blink::SafeUrlPattern url_pattern;
       auto parse_result = liburlpattern::Parse(
           "*.html", [](base::StringPiece input) { return std::string(input); });
       ASSERT_TRUE(parse_result.ok());
@@ -237,14 +237,11 @@ TEST(ServiceWorkerRouterEvaluator, AllConditionMatch) {
   network::ResourceRequest request;
   request.method = "GET";
   request.url = GURL("https://example.com/test/page.html");
-  const auto sources = evaluator.Evaluate(request);
+  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
   EXPECT_EQ(1U, sources.size());
 }
 
 TEST(ServiceWorkerRouterEvaluator, ChooseMatchedRoute) {
-  // Since we currently only support Network source type, and we cannot
-  // make the returned value difference by the source type, we use the number
-  // of sources to allow the test to distinguish one rule to the other.
   blink::ServiceWorkerRouterRules rules;
   {
     blink::ServiceWorkerRouterRule rule;
@@ -252,7 +249,7 @@ TEST(ServiceWorkerRouterEvaluator, ChooseMatchedRoute) {
       blink::ServiceWorkerRouterCondition condition;
       condition.type =
           blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern;
-      blink::UrlPattern url_pattern;
+      blink::SafeUrlPattern url_pattern;
       auto parse_result = liburlpattern::Parse(
           "*.html", [](base::StringPiece input) { return std::string(input); });
       ASSERT_TRUE(parse_result.ok());
@@ -264,10 +261,6 @@ TEST(ServiceWorkerRouterEvaluator, ChooseMatchedRoute) {
       blink::ServiceWorkerRouterSource source;
       source.type = blink::ServiceWorkerRouterSource::SourceType::kNetwork;
       source.network_source.emplace();
-      // This is two sources rule.
-      // As mentioned above, this is used as a marker that tells the rule
-      // matches.
-      rule.sources.push_back(source);
       rule.sources.push_back(source);
     }
     rules.rules.push_back(rule);
@@ -278,7 +271,7 @@ TEST(ServiceWorkerRouterEvaluator, ChooseMatchedRoute) {
       blink::ServiceWorkerRouterCondition condition;
       condition.type =
           blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern;
-      blink::UrlPattern url_pattern;
+      blink::SafeUrlPattern url_pattern;
       auto parse_result = liburlpattern::Parse(
           "*.css", [](base::StringPiece input) { return std::string(input); });
       ASSERT_TRUE(parse_result.ok());
@@ -288,14 +281,8 @@ TEST(ServiceWorkerRouterEvaluator, ChooseMatchedRoute) {
     }
     {
       blink::ServiceWorkerRouterSource source;
-      source.type = blink::ServiceWorkerRouterSource::SourceType::kNetwork;
-      source.network_source.emplace();
-      // This is four sources rule.
-      // As mentioned above, this is used as a marker that tells the rule
-      // matches.
-      rule.sources.push_back(source);
-      rule.sources.push_back(source);
-      rule.sources.push_back(source);
+      source.type = blink::ServiceWorkerRouterSource::SourceType::kRace;
+      source.race_source.emplace();
       rule.sources.push_back(source);
     }
     rules.rules.push_back(rule);
@@ -309,9 +296,125 @@ TEST(ServiceWorkerRouterEvaluator, ChooseMatchedRoute) {
   network::ResourceRequest request;
   request.method = "GET";
   request.url = GURL("https://example.com/top/test.css");
-  const auto sources = evaluator.Evaluate(request);
+  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
   // Four sources rule should match because of *.css URLPattern.
-  EXPECT_EQ(4U, sources.size());
+  ASSERT_EQ(1U, sources.size());
+  EXPECT_EQ(blink::ServiceWorkerRouterSource::SourceType::kRace,
+            sources[0].type);
+}
+
+TEST(ServiceWorkerRouterEvaluator, SimpleHostnameMatch) {
+  blink::ServiceWorkerRouterRules rules;
+  {
+    blink::ServiceWorkerRouterRule rule;
+    {
+      blink::ServiceWorkerRouterCondition condition;
+      condition.type =
+          blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern;
+      blink::SafeUrlPattern url_pattern;
+      auto parse_result = liburlpattern::Parse(
+          "*.example.com",
+          [](base::StringPiece input) { return std::string(input); });
+      ASSERT_TRUE(parse_result.ok());
+      url_pattern.hostname = parse_result.value().PartList();
+      condition.url_pattern = url_pattern;
+      rule.conditions.push_back(condition);
+    }
+    {
+      blink::ServiceWorkerRouterSource source;
+      source.type = blink::ServiceWorkerRouterSource::SourceType::kNetwork;
+      source.network_source.emplace();
+      rule.sources.push_back(source);
+    }
+    rules.rules.push_back(rule);
+  }
+  ASSERT_EQ(1U, rules.rules.size());
+
+  ServiceWorkerRouterEvaluator evaluator(rules);
+  ASSERT_EQ(1U, evaluator.rules().rules.size());
+  EXPECT_TRUE(evaluator.IsValid());
+
+  network::ResourceRequest request;
+  request.method = "GET";
+  request.url = GURL("https://www.example.com/test/page.html");
+  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
+  EXPECT_EQ(1U, sources.size());
+}
+
+TEST(ServiceWorkerRouterEvaluator, SimpleExactHostnameMatch) {
+  blink::ServiceWorkerRouterRules rules;
+  {
+    blink::ServiceWorkerRouterRule rule;
+    {
+      blink::ServiceWorkerRouterCondition condition;
+      condition.type =
+          blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern;
+      blink::SafeUrlPattern url_pattern;
+      auto parse_result = liburlpattern::Parse(
+          "www.example.com",
+          [](base::StringPiece input) { return std::string(input); });
+      ASSERT_TRUE(parse_result.ok());
+      url_pattern.hostname = parse_result.value().PartList();
+      condition.url_pattern = url_pattern;
+      rule.conditions.push_back(condition);
+    }
+    {
+      blink::ServiceWorkerRouterSource source;
+      source.type = blink::ServiceWorkerRouterSource::SourceType::kNetwork;
+      source.network_source.emplace();
+      rule.sources.push_back(source);
+    }
+    rules.rules.push_back(rule);
+  }
+  ASSERT_EQ(1U, rules.rules.size());
+
+  ServiceWorkerRouterEvaluator evaluator(rules);
+  ASSERT_EQ(1U, evaluator.rules().rules.size());
+  EXPECT_TRUE(evaluator.IsValid());
+
+  network::ResourceRequest request;
+  request.method = "GET";
+  request.url = GURL("https://www.example.com/test/page.html");
+  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
+  EXPECT_EQ(1U, sources.size());
+}
+
+TEST(ServiceWorkerRouterEvaluator, NotMatchingHostnameCondition) {
+  blink::ServiceWorkerRouterRules rules;
+  {
+    blink::ServiceWorkerRouterRule rule;
+    {
+      blink::ServiceWorkerRouterCondition condition;
+      condition.type =
+          blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern;
+      blink::SafeUrlPattern url_pattern;
+      auto parse_result = liburlpattern::Parse(
+          "*.example.com",
+          [](base::StringPiece input) { return std::string(input); });
+      ASSERT_TRUE(parse_result.ok());
+      url_pattern.pathname = parse_result.value().PartList();
+      condition.url_pattern = url_pattern;
+      rule.conditions.push_back(condition);
+    }
+    {
+      blink::ServiceWorkerRouterSource source;
+      source.type = blink::ServiceWorkerRouterSource::SourceType::kNetwork;
+      source.network_source.emplace();
+      rule.sources.push_back(source);
+    }
+    rules.rules.push_back(rule);
+  }
+  ASSERT_EQ(1U, rules.rules.size());
+
+  ServiceWorkerRouterEvaluator evaluator(rules);
+  ASSERT_EQ(1U, evaluator.rules().rules.size());
+  EXPECT_TRUE(evaluator.IsValid());
+
+  network::ResourceRequest request;
+  request.method = "GET";
+  request.url = GURL("https://www.example.org/notmatched/page.html");
+  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
+  EXPECT_EQ(0U, sources.size());
 }
 
 TEST(ServiceWorkerRouterEvaluator, EmptyCondition) {
@@ -342,7 +445,7 @@ TEST(ServiceWorkerRouterEvaluator, EmptySource) {
       blink::ServiceWorkerRouterCondition condition;
       condition.type =
           blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern;
-      blink::UrlPattern url_pattern;
+      blink::SafeUrlPattern url_pattern;
       auto parse_result = liburlpattern::Parse(
           "/test/*",
           [](base::StringPiece input) { return std::string(input); });
@@ -369,7 +472,7 @@ TEST(ServiceWorkerRouterEvaluator, InvalidSource) {
       blink::ServiceWorkerRouterCondition condition;
       condition.type =
           blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern;
-      blink::UrlPattern url_pattern;
+      blink::SafeUrlPattern url_pattern;
       auto parse_result = liburlpattern::Parse(
           "/test/*",
           [](base::StringPiece input) { return std::string(input); });
@@ -393,6 +496,169 @@ TEST(ServiceWorkerRouterEvaluator, InvalidSource) {
   EXPECT_FALSE(evaluator.IsValid());
 }
 
+TEST(ServiceWorkerRouterEvaluator, RequestMatch) {
+  auto verify =
+      [](const blink::ServiceWorkerRouterRequestCondition& request_condition,
+         const network::ResourceRequest& request, bool expect_match) {
+        blink::ServiceWorkerRouterRules rules;
+        {
+          blink::ServiceWorkerRouterRule rule;
+          {
+            blink::ServiceWorkerRouterCondition condition;
+            condition.type =
+                blink::ServiceWorkerRouterCondition::ConditionType::kRequest;
+            condition.request = request_condition;
+            rule.conditions.push_back(condition);
+          }
+          {
+            blink::ServiceWorkerRouterSource source;
+            source.type =
+                blink::ServiceWorkerRouterSource::SourceType::kFetchEvent;
+            source.fetch_event_source.emplace();
+            rule.sources.push_back(source);
+          }
+          rules.rules.push_back(rule);
+        }
+        ASSERT_EQ(1U, rules.rules.size());
+        ServiceWorkerRouterEvaluator evaluator(rules);
+        ASSERT_EQ(1U, evaluator.rules().rules.size());
+        EXPECT_TRUE(evaluator.IsValid());
+
+        const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
+        if (expect_match) {
+          EXPECT_EQ(1U, sources.size());
+        } else {
+          EXPECT_EQ(0U, sources.size());
+        }
+      };
+
+  network::ResourceRequest request;
+  request.method = "GET";
+  request.mode = network::mojom::RequestMode::kCors;
+  request.destination = network::mojom::RequestDestination::kFrame;
+  request.url = GURL("https://example.com/test/page.html");
+
+  // match cases.
+  {
+    blink::ServiceWorkerRouterRequestCondition rc;
+    rc.method = "GET";
+    verify(rc, request, /*expect_match=*/true);
+  }
+  {
+    blink::ServiceWorkerRouterRequestCondition rc;
+    rc.mode = network::mojom::RequestMode::kCors;
+    verify(rc, request, /*expect_match=*/true);
+  }
+  {
+    blink::ServiceWorkerRouterRequestCondition rc;
+    rc.destination = network::mojom::RequestDestination::kFrame;
+    verify(rc, request, /*expect_match=*/true);
+  }
+  {
+    blink::ServiceWorkerRouterRequestCondition rc;
+    rc.method = "GET";
+    rc.mode = network::mojom::RequestMode::kCors;
+    rc.destination = network::mojom::RequestDestination::kFrame;
+    verify(rc, request, /*expect_match=*/true);
+  }
+
+  // not matched case.
+  {
+    blink::ServiceWorkerRouterRequestCondition rc;
+    rc.method = "POST";
+    verify(rc, request, /*expect_match=*/false);
+  }
+  {
+    blink::ServiceWorkerRouterRequestCondition rc;
+    rc.mode = network::mojom::RequestMode::kNoCors;
+    verify(rc, request, /*expect_match=*/false);
+  }
+  {
+    blink::ServiceWorkerRouterRequestCondition rc;
+    rc.destination = network::mojom::RequestDestination::kAudio;
+    verify(rc, request, /*expect_match=*/false);
+  }
+}
+
+TEST(ServiceWorkerRouterEvaluator, RunningStatusMatch) {
+  auto verify = [](const blink::ServiceWorkerRouterRunningStatusCondition&
+                       running_status_condition,
+                   blink::EmbeddedWorkerStatus running_status,
+                   bool expect_match) {
+    blink::ServiceWorkerRouterRules rules;
+    {
+      blink::ServiceWorkerRouterRule rule;
+      {
+        blink::ServiceWorkerRouterCondition condition;
+        condition.type =
+            blink::ServiceWorkerRouterCondition::ConditionType::kRunningStatus;
+        condition.running_status = running_status_condition;
+        rule.conditions.push_back(condition);
+      }
+      {
+        blink::ServiceWorkerRouterSource source;
+        source.type = blink::ServiceWorkerRouterSource::SourceType::kFetchEvent;
+        source.fetch_event_source.emplace();
+        rule.sources.push_back(source);
+      }
+      rules.rules.push_back(rule);
+    }
+    ASSERT_EQ(1U, rules.rules.size());
+    ServiceWorkerRouterEvaluator evaluator(rules);
+    ASSERT_EQ(1U, evaluator.rules().rules.size());
+    EXPECT_TRUE(evaluator.IsValid());
+    EXPECT_TRUE(evaluator.need_running_status());
+
+    network::ResourceRequest request;
+    request.method = "GET";
+    request.url = GURL("https://example.com/");
+
+    const auto sources = evaluator.Evaluate(request, running_status);
+    if (expect_match) {
+      EXPECT_EQ(1U, sources.size());
+    } else {
+      EXPECT_EQ(0U, sources.size());
+    }
+  };
+
+  {
+    blink::ServiceWorkerRouterRunningStatusCondition rc;
+    rc.status = blink::ServiceWorkerRouterRunningStatusCondition::
+        RunningStatusEnum::kRunning;
+    verify(rc, blink::EmbeddedWorkerStatus::RUNNING,
+           /*expect_match=*/true);
+  }
+  {
+    blink::ServiceWorkerRouterRunningStatusCondition rc;
+    rc.status = blink::ServiceWorkerRouterRunningStatusCondition::
+        RunningStatusEnum::kRunning;
+    verify(rc, blink::EmbeddedWorkerStatus::STOPPED,
+           /*expect_match=*/false);
+    verify(rc, blink::EmbeddedWorkerStatus::STARTING,
+           /*expect_match=*/false);
+    verify(rc, blink::EmbeddedWorkerStatus::STOPPING,
+           /*expect_match=*/false);
+  }
+  {
+    blink::ServiceWorkerRouterRunningStatusCondition rc;
+    rc.status = blink::ServiceWorkerRouterRunningStatusCondition::
+        RunningStatusEnum::kNotRunning;
+    verify(rc, blink::EmbeddedWorkerStatus::RUNNING,
+           /*expect_match=*/false);
+  }
+  {
+    blink::ServiceWorkerRouterRunningStatusCondition rc;
+    rc.status = blink::ServiceWorkerRouterRunningStatusCondition::
+        RunningStatusEnum::kNotRunning;
+    verify(rc, blink::EmbeddedWorkerStatus::STOPPED,
+           /*expect_match=*/true);
+    verify(rc, blink::EmbeddedWorkerStatus::STARTING,
+           /*expect_match=*/true);
+    verify(rc, blink::EmbeddedWorkerStatus::STOPPING,
+           /*expect_match=*/true);
+  }
+}
+
 TEST(ServiceWorkerRouterEvaluator, ToValueEmptyRule) {
   blink::ServiceWorkerRouterRules rules;
   ServiceWorkerRouterEvaluator evaluator(rules);
@@ -409,7 +675,7 @@ TEST(ServiceWorkerRouterEvaluator, ToValueBasicSimpleRule) {
       blink::ServiceWorkerRouterCondition condition;
       condition.type =
           blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern;
-      blink::UrlPattern url_pattern;
+      blink::SafeUrlPattern url_pattern;
       auto parse_result = liburlpattern::Parse(
           "/test/*",
           [](base::StringPiece input) { return std::string(input); });
@@ -419,9 +685,52 @@ TEST(ServiceWorkerRouterEvaluator, ToValueBasicSimpleRule) {
       rule.conditions.push_back(condition);
     }
     {
+      blink::ServiceWorkerRouterCondition condition;
+      condition.type =
+          blink::ServiceWorkerRouterCondition::ConditionType::kRequest;
+      blink::ServiceWorkerRouterRequestCondition request;
+      request.method = "GET";
+      request.mode = network::mojom::RequestMode::kCors;
+      request.destination = network::mojom::RequestDestination::kFrame;
+      condition.request = request;
+      rule.conditions.push_back(condition);
+    }
+    {
+      blink::ServiceWorkerRouterCondition condition;
+      condition.type =
+          blink::ServiceWorkerRouterCondition::ConditionType::kRunningStatus;
+      blink::ServiceWorkerRouterRunningStatusCondition running_status;
+      running_status.status = blink::ServiceWorkerRouterRunningStatusCondition::
+          RunningStatusEnum::kRunning;
+      condition.running_status = running_status;
+      rule.conditions.push_back(condition);
+    }
+    {
+      blink::ServiceWorkerRouterCondition condition;
+      condition.type =
+          blink::ServiceWorkerRouterCondition::ConditionType::kRunningStatus;
+      blink::ServiceWorkerRouterRunningStatusCondition running_status;
+      running_status.status = blink::ServiceWorkerRouterRunningStatusCondition::
+          RunningStatusEnum::kNotRunning;
+      condition.running_status = running_status;
+      rule.conditions.push_back(condition);
+    }
+    {
       blink::ServiceWorkerRouterSource source;
       source.type = blink::ServiceWorkerRouterSource::SourceType::kNetwork;
       source.network_source.emplace();
+      rule.sources.push_back(source);
+    }
+    {
+      blink::ServiceWorkerRouterSource source;
+      source.type = blink::ServiceWorkerRouterSource::SourceType::kRace;
+      source.race_source.emplace();
+      rule.sources.push_back(source);
+    }
+    {
+      blink::ServiceWorkerRouterSource source;
+      source.type = blink::ServiceWorkerRouterSource::SourceType::kFetchEvent;
+      source.fetch_event_source.emplace();
       rule.sources.push_back(source);
     }
     rules.rules.push_back(rule);
@@ -442,13 +751,102 @@ TEST(ServiceWorkerRouterEvaluator, ToValueBasicSimpleRule) {
           condition.Set("urlPattern", "/test/*");
           conditions.Append(std::move(condition));
         }
+        {
+          base::Value::Dict condition;
+          {
+            base::Value::Dict request;
+            request.Set("method", "GET");
+            request.Set("mode", "cors");
+            request.Set("destination", "frame");
+            condition.Set("request", base::Value(std::move(request)));
+          }
+          conditions.Append(std::move(condition));
+        }
+        {
+          base::Value::Dict condition;
+          condition.Set("running_status", "running");
+          conditions.Append(std::move(condition));
+        }
+        {
+          base::Value::Dict condition;
+          condition.Set("running_status", "not-running");
+          conditions.Append(std::move(condition));
+        }
         rule.Set("condition", std::move(conditions));
       }
       {
         base::Value::List sources;
         sources.Append("network");
+        sources.Append("race-network-and-fetch-handler");
+        sources.Append("fetch-event");
         rule.Set("source", std::move(sources));
       }
+    }
+    expected_rules.Append(std::move(rule));
+  }
+  EXPECT_EQ(expected_rules, evaluator.ToValue());
+}
+
+TEST(ServiceWorkerRouterEvaluator, ToValueUrlPatternWithHostname) {
+  blink::ServiceWorkerRouterRules rules;
+  {
+    blink::ServiceWorkerRouterRule rule;
+    {
+      blink::ServiceWorkerRouterCondition condition;
+      condition.type =
+          blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern;
+      blink::SafeUrlPattern url_pattern;
+      {
+        auto parse_result = liburlpattern::Parse(
+            "*.example.com",
+            [](base::StringPiece input) { return std::string(input); });
+        ASSERT_TRUE(parse_result.ok());
+        url_pattern.hostname = parse_result.value().PartList();
+      }
+      {
+        auto parse_result = liburlpattern::Parse(
+            "/test/*",
+            [](base::StringPiece input) { return std::string(input); });
+        ASSERT_TRUE(parse_result.ok());
+        url_pattern.pathname = parse_result.value().PartList();
+      }
+      condition.url_pattern = url_pattern;
+      rule.conditions.push_back(condition);
+    }
+    {
+      blink::ServiceWorkerRouterSource source;
+      source.type = blink::ServiceWorkerRouterSource::SourceType::kNetwork;
+      source.network_source.emplace();
+      rule.sources.push_back(source);
+    }
+    rules.rules.push_back(rule);
+  }
+  ASSERT_EQ(1U, rules.rules.size());
+
+  ServiceWorkerRouterEvaluator evaluator(rules);
+  ASSERT_EQ(1U, evaluator.rules().rules.size());
+  EXPECT_TRUE(evaluator.IsValid());
+  base::Value::List expected_rules;
+  {
+    base::Value::Dict rule;
+    {
+      base::Value::List conditions;
+      {
+        base::Value::Dict condition;
+        {
+          base::Value::Dict url_pattern;
+          url_pattern.Set("host", "*.example.com");
+          url_pattern.Set("path", "/test/*");
+          condition.Set("urlPattern", std::move(url_pattern));
+        }
+        conditions.Append(std::move(condition));
+      }
+      rule.Set("condition", std::move(conditions));
+    }
+    {
+      base::Value::List sources;
+      sources.Append("network");
+      rule.Set("source", std::move(sources));
     }
     expected_rules.Append(std::move(rule));
   }

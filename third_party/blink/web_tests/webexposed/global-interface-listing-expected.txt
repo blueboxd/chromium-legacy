@@ -851,9 +851,8 @@ interface CSSPerspective : CSSTransformComponent
     getter length
     method constructor
     setter length
-interface CSSPositionFallbackRule : CSSRule
+interface CSSPositionFallbackRule : CSSGroupingRule
     attribute @@toStringTag
-    getter cssRules
     getter name
     method constructor
 interface CSSPositionValue : CSSStyleValue
@@ -929,6 +928,8 @@ interface CSSScale : CSSTransformComponent
     setter z
 interface CSSScopeRule : CSSConditionRule
     attribute @@toStringTag
+    getter end
+    getter start
     method constructor
 interface CSSSkew : CSSTransformComponent
     attribute @@toStringTag
@@ -1066,7 +1067,9 @@ interface CSSTranslate : CSSTransformComponent
     setter z
 interface CSSTryRule : CSSRule
     attribute @@toStringTag
+    getter style
     method constructor
+    setter style
 interface CSSUnitValue : CSSNumericValue
     attribute @@toStringTag
     getter unit
@@ -1227,10 +1230,17 @@ interface CanvasRenderingContext2D
     setter textBaseline
     setter textRendering
     setter wordSpacing
-interface CaptureController
+interface CaptureController : EventTarget
     attribute @@toStringTag
+    getter oncapturedmousechange
     method constructor
     method setFocusBehavior
+    setter oncapturedmousechange
+interface CapturedMouseEvent : Event
+    attribute @@toStringTag
+    getter surfaceX
+    getter surfaceY
+    method constructor
 interface ChannelMergerNode : AudioNode
     attribute @@toStringTag
     method constructor
@@ -1265,7 +1275,10 @@ interface ChildNodePart : Part
     getter children
     getter nextSibling
     getter previousSibling
+    getter rootContainer
+    method clone
     method constructor
+    method getParts
     method replaceChildren
 interface Clipboard : EventTarget
     attribute @@toStringTag
@@ -2176,13 +2189,17 @@ interface DocumentFragment : Node
     method append
     method constructor
     method getElementById
+    method getPartRoot
     method prepend
     method querySelector
     method querySelectorAll
     method replaceChildren
-interface DocumentPartRoot : PartRoot
+interface DocumentPartRoot
     attribute @@toStringTag
+    getter rootContainer
+    method clone
     method constructor
+    method getParts
 interface DocumentPictureInPicture : EventTarget
     attribute @@toStringTag
     getter onenter
@@ -2274,7 +2291,7 @@ interface Element : Node
     getter ariaDescription
     getter ariaDetailsElements
     getter ariaDisabled
-    getter ariaErrorMessageElement
+    getter ariaErrorMessageElements
     getter ariaExpanded
     getter ariaFlowToElements
     getter ariaHasPopup
@@ -2422,7 +2439,7 @@ interface Element : Node
     setter ariaDescription
     setter ariaDetailsElements
     setter ariaDisabled
-    setter ariaErrorMessageElement
+    setter ariaErrorMessageElements
     setter ariaExpanded
     setter ariaFlowToElements
     setter ariaHasPopup
@@ -2493,7 +2510,7 @@ interface ElementInternals
     getter ariaDescription
     getter ariaDetailsElements
     getter ariaDisabled
-    getter ariaErrorMessageElement
+    getter ariaErrorMessageElements
     getter ariaExpanded
     getter ariaFlowToElements
     getter ariaHasPopup
@@ -2556,7 +2573,7 @@ interface ElementInternals
     setter ariaDescription
     setter ariaDetailsElements
     setter ariaDisabled
-    setter ariaErrorMessageElement
+    setter ariaErrorMessageElements
     setter ariaExpanded
     setter ariaFlowToElements
     setter ariaHasPopup
@@ -5558,6 +5575,8 @@ interface MLGraphBuilder
     method neg
     method pad
     method prelu
+    method reduceMean
+    method reduceSum
     method relu
     method resample2d
     method reshape
@@ -6752,17 +6771,12 @@ interface PannerNode : AudioNode
     setter panningModel
     setter refDistance
     setter rolloffFactor
-interface Part : PartRoot
+interface Part
     attribute @@toStringTag
     getter metadata
     getter root
     method constructor
     method disconnect
-interface PartRoot
-    attribute @@toStringTag
-    method clone
-    method constructor
-    method getParts
 interface PasswordCredential : Credential
     attribute @@toStringTag
     getter iconURL
@@ -7331,6 +7345,7 @@ interface RTCEncodedAudioFrame
     method clone
     method constructor
     method getMetadata
+    method setTimestamp
     method toString
     setter data
 interface RTCEncodedVideoFrame
@@ -7342,6 +7357,7 @@ interface RTCEncodedVideoFrame
     method constructor
     method getMetadata
     method setMetadata
+    method setTimestamp
     method toString
     setter data
 interface RTCError : DOMException
@@ -11509,7 +11525,6 @@ interface XMLHttpRequest : XMLHttpRequestEventTarget
     attribute OPENED
     attribute UNSENT
     getter onreadystatechange
-    getter privateTokenOperationError
     getter readyState
     getter response
     getter responseText
@@ -12465,6 +12480,8 @@ namespace console
     method getScreenDetails
     method getSelection
     method matchMedia
+    method maximize
+    method minimize
     method moveBy
     method moveTo
     method open
@@ -12480,6 +12497,7 @@ namespace console
     method requestIdleCallback
     method resizeBy
     method resizeTo
+    method restore
     method scroll
     method scrollBy
     method scrollTo

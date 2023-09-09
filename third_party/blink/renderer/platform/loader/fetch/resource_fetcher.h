@@ -179,8 +179,14 @@ class PLATFORM_EXPORT ResourceFetcher
   std::unique_ptr<WebCodeCacheLoader> CreateCodeCacheLoader();
 
   Resource* CachedResource(const KURL&) const;
-  static void AddPriorityObserverForTesting(const KURL&,
-                                            base::OnceCallback<void(int)>);
+
+  // Registers an callback to be called with the resource priority of the fetch
+  // made to the specified URL. When `new_load_only` is set to false,
+  // this will also search for Resources alive in Oilpan heap, and their
+  // fetched priority.
+  void AddPriorityObserverForTesting(const KURL&,
+                                     base::OnceCallback<void(int)>,
+                                     bool new_load_only = false);
 
   using DocumentResourceMap = HeapHashMap<String, WeakMember<Resource>>;
   // Note: This function is defined for devtools. Do not use this function in
@@ -249,7 +255,6 @@ class PLATFORM_EXPORT ResourceFetcher
                           base::TimeTicks finish_time,
                           LoaderFinishType,
                           uint32_t inflight_keepalive_bytes,
-                          bool should_report_corb_blocking,
                           bool pervasive_payload_requested,
                           int64_t bytes_fetched);
   void HandleLoaderError(Resource*,
@@ -315,11 +320,13 @@ class PLATFORM_EXPORT ResourceFetcher
       mojom::blink::ScriptType script_type,
       bool is_link_preload,
       const absl::optional<float> resource_width = absl::nullopt,
-      const absl::optional<float> resource_height = absl::nullopt) {
-    return ComputeLoadPriority(
-        type, request, visibility_statue, defer_option,
-        speculative_preload_type, render_blocking_behavior, script_type,
-        is_link_preload, resource_width, resource_height);
+      const absl::optional<float> resource_height = absl::nullopt,
+      bool is_potentially_lcp_element = false) {
+    return ComputeLoadPriority(type, request, visibility_statue, defer_option,
+                               speculative_preload_type,
+                               render_blocking_behavior, script_type,
+                               is_link_preload, resource_width, resource_height,
+                               is_potentially_lcp_element);
   }
 
   bool ShouldLoadIncrementalForTesting(ResourceType type) {
@@ -388,7 +395,8 @@ class PLATFORM_EXPORT ResourceFetcher
       mojom::blink::ScriptType script_type = mojom::blink::ScriptType::kClassic,
       bool is_link_preload = false,
       const absl::optional<float> resource_width = absl::nullopt,
-      const absl::optional<float> resource_height = absl::nullopt);
+      const absl::optional<float> resource_height = absl::nullopt,
+      bool is_potentially_lcp_element = false);
   ResourceLoadPriority AdjustImagePriority(
       ResourceLoadPriority priority_so_far,
       ResourceType type,

@@ -432,8 +432,8 @@ void HTMLSelectElement::AccessKeyAction(
   DispatchSimulatedClick(nullptr, creation_scope);
 }
 
-Element* HTMLSelectElement::namedItem(const AtomicString& name) {
-  return options()->namedItem(name);
+HTMLOptionElement* HTMLSelectElement::namedItem(const AtomicString& name) {
+  return To<HTMLOptionElement>(options()->namedItem(name));
 }
 
 HTMLOptionElement* HTMLSelectElement::item(unsigned index) {
@@ -790,7 +790,7 @@ void HTMLSelectElement::OptionInserted(HTMLOptionElement& option,
       .GetFrame()
       ->GetPage()
       ->GetChromeClient()
-      .SelectFieldOptionsChanged(*this);
+      .SelectOrSelectMenuFieldOptionsChanged(*this);
 }
 
 void HTMLSelectElement::OptionRemoved(HTMLOptionElement& option) {
@@ -817,7 +817,7 @@ void HTMLSelectElement::OptionRemoved(HTMLOptionElement& option) {
       .GetFrame()
       ->GetPage()
       ->GetChromeClient()
-      .SelectFieldOptionsChanged(*this);
+      .SelectOrSelectMenuFieldOptionsChanged(*this);
 }
 
 void HTMLSelectElement::OptGroupInsertedOrRemoved(
@@ -1421,12 +1421,11 @@ void HTMLSelectElement::ResetTypeAheadSessionForTesting() {
   type_ahead_.ResetSession();
 }
 
-void HTMLSelectElement::CloneNonAttributePropertiesFrom(
-    const Element& source,
-    CloneChildrenFlag flag) {
+void HTMLSelectElement::CloneNonAttributePropertiesFrom(const Element& source,
+                                                        NodeCloningData& data) {
   const auto& source_element = static_cast<const HTMLSelectElement&>(source);
   user_has_edited_the_field_ = source_element.user_has_edited_the_field_;
-  HTMLFormControlElement::CloneNonAttributePropertiesFrom(source, flag);
+  HTMLFormControlElement::CloneNonAttributePropertiesFrom(source, data);
 }
 
 void HTMLSelectElement::ChangeRendering() {

@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/overlays/public/overlay_request_support.h"
 #import "ios/chrome/browser/overlays/public/overlay_response.h"
 #import "ios/chrome/browser/shared/coordinator/layout_guide/layout_guide_util.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_accessibility_util.h"
@@ -28,6 +29,7 @@
 #import "ios/chrome/browser/ui/overlays/infobar_banner/permissions/permissions_infobar_banner_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/save_card/save_card_infobar_banner_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/sync_error/sync_error_infobar_banner_overlay_mediator.h"
+#import "ios/chrome/browser/ui/overlays/infobar_banner/tab_pickup/tab_pickup_infobar_banner_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/tailored_security/tailored_security_infobar_banner_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/translate/translate_infobar_banner_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator+subclassing.h"
@@ -62,6 +64,7 @@
     [PermissionsBannerOverlayMediator class],
     [TailoredSecurityInfobarBannerOverlayMediator class],
     [SyncErrorInfobarBannerOverlayMediator class],
+    [TabPickupBannerOverlayMediator class],
   ];
 }
 
@@ -80,9 +83,22 @@
 - (CGFloat)bannerYPosition {
   LayoutGuideCenter* layoutGuideCenter =
       LayoutGuideCenterForBrowser(self.browser);
-  UIView* omnibox = [layoutGuideCenter referencedViewUnderName:kOmniboxGuide];
-  CGRect omniboxFrame = [omnibox convertRect:omnibox.bounds toView:nil];
-  return CGRectGetMaxY(omniboxFrame);
+  UIView* topOmnibox =
+      [layoutGuideCenter referencedViewUnderName:kTopOmniboxGuide];
+  CGRect omniboxFrame = [topOmnibox convertRect:topOmnibox.bounds toView:nil];
+  CGFloat omniboxMaxY = CGRectGetMaxY(omniboxFrame);
+
+  // Use the top toolbar's layout guide when the omnibox is at the bottom.
+  if (IsBottomOmniboxSteadyStateEnabled() && topOmnibox.hidden) {
+    UIView* topToolbar =
+        [layoutGuideCenter referencedViewUnderName:kPrimaryToolbarGuide];
+    CGRect topToolbarFrame = [topToolbar convertRect:topToolbar.bounds
+                                              toView:nil];
+    CGFloat topToolbarMaxY =
+        CGRectGetMaxY(topToolbarFrame) + kInfobarTopPaddingBottomOmnibox;
+    return topToolbarMaxY;
+  }
+  return omniboxMaxY;
 }
 
 - (UIView*)bannerView {
@@ -222,6 +238,9 @@
       break;
     case InfobarType::kInfobarTypeTranslate:
       mediatorClass = [TranslateInfobarBannerOverlayMediator class];
+      break;
+    case InfobarType::kInfobarTypeTabPickup:
+      mediatorClass = [TabPickupBannerOverlayMediator class];
       break;
     default:
       NOTREACHED_NORETURN() << "Received unsupported infobarType.";

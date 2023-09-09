@@ -316,9 +316,7 @@ try_.orchestrator_builder(
             condition = builder_config.rts_condition.QUICK_RUN_ONLY,
         ),
     ),
-    # crbug/1434778 - disabling due to high flake rate. See crbug/1422481 for
-    # root cause.
-    # check_for_flakiness = True,
+    check_for_flakiness = True,
     compilator = "android-nougat-x86-rel-compilator",
     coverage_test_types = ["unit", "overall"],
     experiments = {
@@ -349,6 +347,13 @@ try_.builder(
         "ci/Oreo Phone Tester",
     ],
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+)
+
+try_.builder(
+    name = "android-oreo-x86-rel",
+    mirrors = [
+        "ci/android-oreo-x86-rel",
+    ],
 )
 
 try_.builder(

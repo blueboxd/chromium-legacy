@@ -46,16 +46,51 @@ class TrapEventDispatcher;
 //     routers.first->SetOutwardLink(std::move(links.first));
 //     routers.second->SetOutwardLink(std::move(links.second));
 //
-// Each ipcz Portal directly controls a terminal Router along its route, and
-// all routes stabilize to eventually consist of only two interconnected
+// Each ipcz portal handle directly controls a terminal Router along its route,
+// and all routes stabilize to eventually consist of only two interconnected
 // terminal Routers. When a portal moves, its side of the route is extended by
 // creating a new terminal Router at the portal's new location. The previous
 // terminal Router remains as a proxying hop to be phased out eventually.
-class Router : public RefCounted {
+class Router : public APIObjectImpl<Router, APIObject::kPortal> {
  public:
   using Pair = std::pair<Ref<Router>, Ref<Router>>;
 
   Router();
+
+  // Creates a new pair of terminal routers which are directly connected to each
+  // other by a LocalRouterLink.
+  static Pair CreatePair();
+
+  // APIObject:
+  IpczResult Close() override;
+  bool CanSendFrom(Router& sender) override;
+
+  // *Put/*Get APIs exposed through the ipcz API via portal handles.
+  IpczResult Put(absl::Span<const uint8_t> data,
+                 absl::Span<const IpczHandle> handles);
+  IpczResult BeginPut(IpczBeginPutFlags flags,
+                      volatile void** data,
+                      size_t* num_bytes,
+                      IpczTransaction* transaction);
+  IpczResult EndPut(IpczTransaction transaction,
+                    size_t num_bytes_produced,
+                    absl::Span<const IpczHandle> handles,
+                    IpczEndPutFlags flags);
+  IpczResult Get(IpczGetFlags flags,
+                 void* data,
+                 size_t* num_data_bytes,
+                 IpczHandle* handles,
+                 size_t* num_handles,
+                 IpczHandle* parcel);
+  IpczResult BeginGet(IpczBeginGetFlags flags,
+                      const volatile void** data,
+                      size_t* num_data_bytes,
+                      IpczHandle* handles,
+                      size_t* num_handles,
+                      IpczTransaction* transaction);
+  IpczResult EndGet(IpczTransaction transaction,
+                    IpczEndGetFlags flags,
+                    IpczHandle* parcel);
 
   // Indicates whether the terminal router on the other side of the central link
   // is known to be closed.
@@ -68,8 +103,7 @@ class Router : public RefCounted {
 
   // Indicates whether this Router is currently on a central link which is
   // connected to a router on another node. Used by tests to verify route
-  // reduction behavior, and may only be called on terminal Routers, i.e.
-  // Routers controlled directly by a Portal.
+  // reduction behavior, and may only be called on terminal Routers.
   bool IsOnCentralRemoteLink();
 
   // Fills in an IpczPortalStatus corresponding to the current state of this
@@ -95,8 +129,7 @@ class Router : public RefCounted {
   // portal.
   IpczResult SendOutboundParcel(Parcel& parcel);
 
-  // Closes this side of the Router's own route. Only called on a Router to
-  // which a Portal is currently attached, and only by that Portal.
+  // Closes this side of the Router's own route. Only called terminal Routers.
   void CloseRoute();
 
   // Uses `link` as this Router's new outward link. This is the primary link on
@@ -326,7 +359,9 @@ class Router : public RefCounted {
              FlushBehavior behavior = kDefault);
 
  private:
-  ~Router() override;
+  friend class RefCounted<Router>;
+
+  ~Router();
 
   // Attempts to initiate bypass of this router by its peers, and ultimately to
   // remove this router from its route.
@@ -417,14 +452,23 @@ class Router : public RefCounted {
 
   // Indicates whether the opposite end of the route has been closed. This is
   // the source of truth for peer closure status. The status bit
-  // (IPCZ_PORTAL_STATUS_PEER_CLOSED) within `status_`, and the corresponding
-  // trap condition (IPCZ_TRAP_PEER_CLOSED) are only raised when this is true
-  // AND we are not expecting any more in-flight parcels.
+  // (IPCZ_PORTAL_STATUS_PEER_CLOSED) within `status_flags_`, and the
+  // corresponding trap condition (IPCZ_TRAP_PEER_CLOSED) are only raised when
+  // this is true AND we are not expecting any more in-flight parcels.
   bool is_peer_closed_ ABSL_GUARDED_BY(mutex_) = false;
 
-  // The current computed portal status to be reflected by a portal controlling
-  // this router, iff this is a terminal router.
-  IpczPortalStatus status_ ABSL_GUARDED_BY(mutex_) = {sizeof(status_)};
+  // Tracks whether this router has been unexpectedly disconnected from its
+  // links. This may be used to prevent additional links from being established.
+  bool is_disconnected_ ABSL_GUARDED_BY(mutex_) = false;
+
+  // If `pending_gets_` has only one transaction, this indicates whether it's
+  // exclusive. An exclusive transaction must return its Parcel to the head
+  // element of `inbound_parcels_` if aborted.
+  bool is_pending_get_exclusive_ ABSL_GUARDED_BY(mutex_) = false;
+
+  // The current computed portal status flags state, to be reflected by a portal
+  // controlling this router iff this is a terminal router.
+  IpczPortalStatusFlags status_flags_ ABSL_GUARDED_BY(mutex_) = IPCZ_NO_FLAGS;
 
   // A set of traps installed via a controlling portal where applicable. These
   // traps are notified about any interesting state changes within the router.
@@ -437,7 +481,7 @@ class Router : public RefCounted {
   // The edge connecting this router inward to another, closer to the portal on
   // our own side of the route. Only present for proxying routers: terminal
   // routers by definition can have no inward edge.
-  absl::optional<RouteEdge> inward_edge_ ABSL_GUARDED_BY(mutex_);
+  std::unique_ptr<RouteEdge> inward_edge_ ABSL_GUARDED_BY(mutex_);
 
   // A special inward edge which when present bridges this route with another
   // route. This is used only to implement route merging.
@@ -455,17 +499,11 @@ class Router : public RefCounted {
   // `outward_edge_` as soon as possible.
   ParcelQueue outbound_parcels_ ABSL_GUARDED_BY(mutex_);
 
-  // Tracks whether this router has been unexpectedly disconnected from its
-  // links. This may be used to prevent additional links from being established.
-  bool is_disconnected_ ABSL_GUARDED_BY(mutex_) = false;
+  // The set of pending get transactions in progress on this router.
+  std::unique_ptr<PendingTransactionSet> pending_gets_ ABSL_GUARDED_BY(mutex_);
 
-  // The set of pending get transactions in progress on the owning portal.
-  PendingTransactionSet pending_gets_ ABSL_GUARDED_BY(mutex_);
-
-  // If `pending_gets_` has only one transaction, this indicates whether it's
-  // exclusive. An exclusive transaction must return its Parcel to the head
-  // element of `inbound_parcels_` if aborted.
-  bool is_pending_get_exclusive_ ABSL_GUARDED_BY(mutex_) = false;
+  // The set of pending get transactions in progress on this router.
+  std::unique_ptr<PendingTransactionSet> pending_puts_;
 };
 
 }  // namespace ipcz

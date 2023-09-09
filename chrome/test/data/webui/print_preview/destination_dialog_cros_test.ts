@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Destination, DestinationStore, LocalDestinationInfo, makeRecentDestination, NativeLayerImpl, PrintPreviewDestinationDialogCrosElement, RecentDestination} from 'chrome://print/print_preview.js';
+import {Destination, DestinationStore, LocalDestinationInfo, makeRecentDestination, NativeLayerImpl, PrinterSetupInfoMessageType, PrintPreviewDestinationDialogCrosElement, PrintPreviewPrinterSetupInfoCrosElement, RecentDestination} from 'chrome://print/print_preview.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
-import {eventToPromise} from 'chrome://webui-test/test_util.js';
+import {eventToPromise, isVisible} from 'chrome://webui-test/test_util.js';
 
 import {NativeLayerCrosStub, setNativeLayerCrosInstance} from './native_layer_cros_stub.js';
 import {NativeLayerStub} from './native_layer_stub.js';
@@ -20,6 +21,10 @@ const destination_dialog_cros_test = {
     ShowProvisionalDialog: 'ShowProvisionalDialog',
     PrintServersChanged: 'PrintServersChanged',
     PrintServerSelected: 'PrintServerSelected',
+    PrinterSetupAssistanceHasDestinations:
+        'PrinterSetupAssistanceHasDestinations',
+    PrinterSetupAssistanceHasNoDestinations:
+        'PrinterSetupAssistanceHasNoDestinations',
   },
 };
 
@@ -55,7 +60,7 @@ suite(destination_dialog_cros_test.suiteName, function() {
     recentDestinations = [makeRecentDestination(destinations[4]!)];
     nativeLayer.setLocalDestinations(localDestinations);
     destinationStore.init(
-        false /* pdfPrinterDisabled */, true /* isDriveMounted */,
+        false /* pdfPrinterDisabled */, false /* saveToDriveDisabled */,
         'FooDevice' /* printerName */,
         '' /* serializedDefaultDestinationSelectionRulesStr */,
         recentDestinations /* recentDestinations */);
@@ -187,5 +192,112 @@ suite(destination_dialog_cros_test.suiteName, function() {
         assertDeepEquals(
             ['user-print-server-2', 'device-print-server-2'],
             await pendingPrintServerId);
+      });
+
+  // Test that the correct elements are displayed when the printer setup
+  // assistance flag is on and destination store has destinations.
+  test(
+      destination_dialog_cros_test.TestNames
+          .PrinterSetupAssistanceHasDestinations,
+      async () => {
+        // Set flag enabled.
+        loadTimeData.overrideValues({
+          isPrintPreviewSetupAssistanceEnabled: true,
+        });
+
+        // Remove existing dialog to set `isPrintPreviewSetupAssistanceEnabled`
+        // flag for testing.
+        dialog.remove();
+        await flush();
+
+        // Set up dialog.
+        dialog =
+            document.createElement('print-preview-destination-dialog-cros');
+        dialog.destinationStore = destinationStore;
+        await finishSetup();
+
+        // Manage printers button hidden when there are valid destinations.
+        const managePrintersButton =
+            dialog.shadowRoot!.querySelector<HTMLElement>(
+                'cr-button:not(.cancel-button)');
+        assertTrue(isVisible(managePrintersButton));
+
+        // Printer setup element should not be displayed when there are
+        // valid destinations.
+        const printerSetupInfo = dialog.shadowRoot!.querySelector<HTMLElement>(
+            'print-preview-printer-setup-info-cros')!;
+        assertTrue(printerSetupInfo.hidden);
+
+        // Destination list should display if there are valid destinations.
+        const destinationList =
+            dialog.shadowRoot!.querySelector<HTMLElement>('#printList');
+        assertTrue(isVisible(destinationList));
+
+        // Destination search box should be shown if there are valid
+        // destinations.
+        const searchBox = dialog.shadowRoot!.querySelector<HTMLElement>(
+            'print-preview-search-box');
+        assertTrue(isVisible(searchBox));
+
+      });
+
+  // Test that the correct elements are displayed when the printer setup
+  // assistance flag is on and destination store has no destinations.
+  test(
+      destination_dialog_cros_test.TestNames
+          .PrinterSetupAssistanceHasNoDestinations,
+      async () => {
+        // Set flag enabled.
+        loadTimeData.overrideValues({
+          isPrintPreviewSetupAssistanceEnabled: true,
+        });
+
+        // Remove existing dialog to set `isPrintPreviewSetupAssistanceEnabled`
+        // flag for testing.
+        dialog.remove();
+        await flush();
+
+        // Re-create data classes with no destinations.
+        destinationStore = createDestinationStore();
+        nativeLayer.setLocalDestinations([]);
+        destinationStore.init(
+            false /* pdfPrinterDisabled */, false /* saveToDriveDisabled */,
+            'FooDevice' /* printerName */,
+            '' /* serializedDefaultDestinationSelectionRulesStr */,
+            [] /* recentDestinations */);
+
+        // Set up dialog.
+        dialog =
+            document.createElement('print-preview-destination-dialog-cros');
+        dialog.destinationStore = destinationStore;
+        await finishSetup();
+
+        // Manage printers button hidden when there are no destinations.
+        const managePrintersButton =
+            dialog.shadowRoot!.querySelector<HTMLElement>(
+                'cr-button:not(.cancel-button)');
+        assertFalse(isVisible(managePrintersButton));
+
+        // Printer setup element should be displayed when there are no valid
+        // destinations.
+        const printerSetupInfo =
+            dialog.shadowRoot!
+                .querySelector<PrintPreviewPrinterSetupInfoCrosElement>(
+                    PrintPreviewPrinterSetupInfoCrosElement.is)!;
+        assertFalse(printerSetupInfo.hidden);
+        assertEquals(
+            PrinterSetupInfoMessageType.NO_PRINTERS,
+            printerSetupInfo!.messageType);
+
+        // Destination list should be hidden if there are no valid destinations.
+        const destinationList =
+            dialog.shadowRoot!.querySelector<HTMLElement>('#printList');
+        assertFalse(isVisible(destinationList));
+
+        // Destination search box should be hidden if there are no valid
+        // destinations.
+        const searchBox = dialog.shadowRoot!.querySelector<HTMLElement>(
+            'print-preview-search-box');
+        assertFalse(isVisible(searchBox));
       });
 });

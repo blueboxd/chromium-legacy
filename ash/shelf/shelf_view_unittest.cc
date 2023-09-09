@@ -32,8 +32,10 @@
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_app_button.h"
+#include "ash/shelf/shelf_context_menu_model.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_focus_cycler.h"
+#include "ash/shelf/shelf_metrics.h"
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_observer.h"
 #include "ash/shelf/shelf_test_util.h"
@@ -1440,7 +1442,7 @@ TEST_P(LtrRtlShelfViewTest, ShouldHideTooltipTest) {
       continue;
     }
     EXPECT_FALSE(shelf_view_->ShouldHideTooltip(
-        button->GetMirroredBounds().CenterPoint()))
+        button->GetMirroredBounds().CenterPoint(), shelf_view_))
         << "ShelfView tries to hide on button " << i;
   }
 
@@ -1463,8 +1465,10 @@ TEST_P(LtrRtlShelfViewTest, ShouldHideTooltipTest) {
   gfx::Point test_point(left + (right - left) / 2,
                         home_button->GetBoundsInScreen().y());
   views::View::ConvertPointFromScreen(shelf_view_, &test_point);
-  EXPECT_TRUE(shelf_view_->ShouldHideTooltip(gfx::Point(
-      shelf_view_->GetMirroredXInView(test_point.x()), test_point.y())))
+  EXPECT_TRUE(shelf_view_->ShouldHideTooltip(
+      gfx::Point(shelf_view_->GetMirroredXInView(test_point.x()),
+                 test_point.y()),
+      shelf_view_))
       << "Tooltip should hide between home button and first shelf item";
 
   // The tooltip shouldn't hide if the mouse is in the gap between two buttons.
@@ -1473,7 +1477,8 @@ TEST_P(LtrRtlShelfViewTest, ShouldHideTooltipTest) {
       GetButtonByID(platform_button_id)->GetMirroredBounds();
   ASSERT_FALSE(app_button_rect.Intersects(platform_button_rect));
   EXPECT_FALSE(shelf_view_->ShouldHideTooltip(
-      gfx::UnionRects(app_button_rect, platform_button_rect).CenterPoint()));
+      gfx::UnionRects(app_button_rect, platform_button_rect).CenterPoint(),
+      shelf_view_));
 
   // The tooltip should hide if it's outside of all buttons.
   gfx::Rect all_area;
@@ -1486,15 +1491,15 @@ TEST_P(LtrRtlShelfViewTest, ShouldHideTooltipTest) {
     all_area.Union(button->GetMirroredBounds());
   }
   EXPECT_FALSE(shelf_view_->ShouldHideTooltip(
-      gfx::Point(all_area.right() - 1, all_area.bottom() - 1)));
+      gfx::Point(all_area.right() - 1, all_area.bottom() - 1), shelf_view_));
   EXPECT_TRUE(shelf_view_->ShouldHideTooltip(
-      gfx::Point(all_area.right(), all_area.y())));
+      gfx::Point(all_area.right(), all_area.y()), shelf_view_));
   EXPECT_TRUE(shelf_view_->ShouldHideTooltip(
-      gfx::Point(all_area.x() - 1, all_area.y())));
+      gfx::Point(all_area.x() - 1, all_area.y()), shelf_view_));
   EXPECT_TRUE(shelf_view_->ShouldHideTooltip(
-      gfx::Point(all_area.x(), all_area.y() - 1)));
+      gfx::Point(all_area.x(), all_area.y() - 1), shelf_view_));
   EXPECT_TRUE(shelf_view_->ShouldHideTooltip(
-      gfx::Point(all_area.x(), all_area.bottom())));
+      gfx::Point(all_area.x(), all_area.bottom()), shelf_view_));
 }
 
 // Test that shelf button tooltips show (except app list) with an open app list.
@@ -1509,7 +1514,7 @@ TEST_P(LtrRtlShelfViewTest, ShouldHideTooltipWithAppListWindowTest) {
     }
 
     EXPECT_FALSE(shelf_view_->ShouldHideTooltip(
-        button->GetMirroredBounds().CenterPoint()))
+        button->GetMirroredBounds().CenterPoint(), shelf_view_))
         << "ShelfView tries to hide on button " << i;
   }
 
@@ -1518,8 +1523,10 @@ TEST_P(LtrRtlShelfViewTest, ShouldHideTooltipWithAppListWindowTest) {
       GetPrimaryShelf()->navigation_widget()->GetHomeButton();
   gfx::Point center_point = home_button->GetBoundsInScreen().CenterPoint();
   views::View::ConvertPointFromScreen(shelf_view_, &center_point);
-  EXPECT_TRUE(shelf_view_->ShouldHideTooltip(gfx::Point(
-      shelf_view_->GetMirroredXInView(center_point.x()), center_point.y())));
+  EXPECT_TRUE(shelf_view_->ShouldHideTooltip(
+      gfx::Point(shelf_view_->GetMirroredXInView(center_point.x()),
+                 center_point.y()),
+      shelf_view_));
 }
 
 // Test that by moving the mouse cursor off the button onto the bubble it closes
@@ -3857,4 +3864,18 @@ TEST_F(ShelfViewDeskButtonTest, PrefVisibilityRelationship) {
     }
   }
 }
+
+// Verify that metrics are being correctly recorded for when a user hides the
+// desk button.
+TEST_F(ShelfViewDeskButtonTest, VisibilityMetrics) {
+  SetShowDeskButtonInShelfPref(prefs_, true);
+  base::HistogramTester histogram_tester;
+  ShelfContextMenuModel menu_model(nullptr, GetPrimaryDisplayId(),
+                                   /*menu_in_shelf=*/false);
+  menu_model.ExecuteCommand(
+      static_cast<int>(ShelfContextMenuModel::CommandId::MENU_HIDE_DESK_NAME),
+      /*event_flags=*/0);
+  histogram_tester.ExpectTotalCount(kDeskButtonHiddenHistogramName, 1);
+}
+
 }  // namespace ash

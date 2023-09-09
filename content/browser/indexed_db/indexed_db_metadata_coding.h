@@ -40,45 +40,6 @@ class CONTENT_EXPORT IndexedDBMetadataCoding {
 
   virtual ~IndexedDBMetadataCoding();
 
-  // Reads the list of database names for the given origin.
-  virtual leveldb::Status ReadDatabaseNames(
-      TransactionalLevelDBDatabase* db,
-      const std::string& origin_identifier,
-      std::vector<std::u16string>* names);
-  virtual leveldb::Status ReadDatabaseNames(
-      TransactionalLevelDBTransaction* transaction,
-      const std::string& origin_identifier,
-      std::vector<std::u16string>* names);
-
-  // Reads in the list of database names and versions for the given origin.
-  virtual leveldb::Status ReadDatabaseNamesAndVersions(
-      TransactionalLevelDBDatabase* db,
-      const std::string& origin_identifier,
-      std::vector<blink::mojom::IDBNameAndVersionPtr>* names_and_versions);
-
-  // Reads in metadata for the database and all object stores & indices.
-  // Note: the database name is not populated in |metadata|.
-  virtual leveldb::Status ReadMetadataForDatabaseName(
-      TransactionalLevelDBDatabase* db,
-      const std::string& origin_identifier,
-      const std::u16string& name,
-      blink::IndexedDBDatabaseMetadata* metadata,
-      bool* found);
-  virtual leveldb::Status ReadMetadataForDatabaseName(
-      TransactionalLevelDBTransaction* transaction,
-      const std::string& origin_identifier,
-      const std::u16string& name,
-      blink::IndexedDBDatabaseMetadata* metadata,
-      bool* found);
-
-  // Creates a new database metadata entry and writes it to disk.
-  virtual leveldb::Status CreateDatabase(
-      TransactionalLevelDBDatabase* database,
-      const std::string& origin_identifier,
-      const std::u16string& name,
-      int64_t version,
-      blink::IndexedDBDatabaseMetadata* metadata);
-
   // Changes the database version to |version|.
   [[nodiscard]] virtual leveldb::Status SetDatabaseVersion(
       TransactionalLevelDBTransaction* transaction,
@@ -92,16 +53,6 @@ class CONTENT_EXPORT IndexedDBMetadataCoding {
                                          const std::u16string& name,
                                          int64_t* id,
                                          bool* found);
-
-  // Creates a new object store metadata entry and writes it to the transaction.
-  virtual leveldb::Status CreateObjectStore(
-      TransactionalLevelDBTransaction* transaction,
-      int64_t database_id,
-      int64_t object_store_id,
-      std::u16string name,
-      blink::IndexedDBKeyPath key_path,
-      bool auto_increment,
-      blink::IndexedDBObjectStoreMetadata* metadata);
 
   // Deletes the given object store metadata on the transaction (but not any
   // data entries or blobs in the object store).

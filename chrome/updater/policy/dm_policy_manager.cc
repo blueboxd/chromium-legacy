@@ -246,27 +246,22 @@ absl::optional<std::vector<std::string>> DMPolicyManager::GetForceInstallApps()
   std::vector<std::string> force_install_apps;
   for (const auto& app_settings_proto :
        omaha_settings_.application_settings()) {
-    const std::string app_id = [&app_settings_proto]() {
-#if BUILDFLAG(IS_MAC)
-      if (app_settings_proto.has_bundle_identifier())
-        return app_settings_proto.bundle_identifier();
-#endif  // BUILDFLAG(IS_MAC)
-      return app_settings_proto.has_app_guid() ? app_settings_proto.app_guid()
-                                               : "";
-    }();
-
-    if (!app_id.empty()) {
-      const int install = app_settings_proto.has_install()
-                              ? app_settings_proto.install()
-                          : omaha_settings_.has_install_default()
-                              ? omaha_settings_.install_default()
-                              : -1;
-      if (install == kPolicyForceInstallMachine) {
-        force_install_apps.push_back(app_id);
+    const std::string app_id = [&app_settings_proto, this]() {
+      if (app_settings_proto.install() != kPolicyForceInstallMachine &&
+          omaha_settings_.install_default() != kPolicyForceInstallMachine) {
+        return std::string();
       }
+#if BUILDFLAG(IS_MAC)
+      if (app_settings_proto.has_bundle_identifier()) {
+        return app_settings_proto.bundle_identifier();
+      }
+#endif
+      return app_settings_proto.app_guid();
+    }();
+    if (!app_id.empty()) {
+      force_install_apps.push_back(app_id);
     }
   }
-
   return force_install_apps.empty()
              ? absl::nullopt
              : absl::optional<std::vector<std::string>>(force_install_apps);
@@ -295,12 +290,16 @@ absl::optional<std::vector<std::string>> DMPolicyManager::GetAppsWithPolicy()
 }
 
 scoped_refptr<PolicyManagerInterface> CreateDMPolicyManager() {
+  scoped_refptr<DMStorage> default_dm_storage = GetDefaultDMStorage();
+  if (!default_dm_storage) {
+    return nullptr;
+  }
   std::unique_ptr<
       ::wireless_android_enterprise_devicemanagement::OmahaSettingsClientProto>
-      omaha_settings = GetDefaultDMStorage()->GetOmahaPolicySettings();
-  if (!omaha_settings)
+      omaha_settings = default_dm_storage->GetOmahaPolicySettings();
+  if (!omaha_settings) {
     return nullptr;
-
+  }
   return base::MakeRefCounted<DMPolicyManager>(*omaha_settings);
 }
 

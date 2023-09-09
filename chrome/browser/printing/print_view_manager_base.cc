@@ -372,6 +372,7 @@ void PrintViewManagerBase::OnPrintSettingsDone(
   }
 
   if (!printer_query->cookie() || !printer_query->settings().dpi()) {
+    PRINTER_LOG(ERROR) << "Unable to update print settings";
     std::move(callback).Run(base::Value("Update settings failed"));
     return;
   }
@@ -433,7 +434,7 @@ void PrintViewManagerBase::GetDefaultPrintSettingsReply(
     set_cookie(params->document_cookie);
     std::move(callback).Run(std::move(params));
   } else {
-    set_cookie(0);
+    set_cookie(PrintSettings::NewInvalidCookie());
     std::move(callback).Run(nullptr);
   }
 }
@@ -460,7 +461,7 @@ void PrintViewManagerBase::ScriptedPrintReply(
     set_cookie(params->params->document_cookie);
     std::move(callback).Run(std::move(params));
   } else {
-    set_cookie(0);
+    set_cookie(PrintSettings::NewInvalidCookie());
     std::move(callback).Run(nullptr);
   }
 }
@@ -619,7 +620,8 @@ void PrintViewManagerBase::GetDefaultPrintSettings(
   auto callback_wrapper =
       base::BindOnce(&PrintViewManagerBase::GetDefaultPrintSettingsReply,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback));
-  std::unique_ptr<PrinterQuery> printer_query = queue_->PopPrinterQuery(0);
+  std::unique_ptr<PrinterQuery> printer_query =
+      queue_->PopPrinterQuery(PrintSettings::NewInvalidCookie());
   if (!printer_query) {
     printer_query =
         queue_->CreatePrinterQuery(render_frame_host->GetGlobalId());
@@ -763,8 +765,9 @@ void PrintViewManagerBase::ScriptedPrint(mojom::ScriptedPrintParamsPtr params,
 #endif
 #if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
   absl::optional<enterprise_connectors::ContentAnalysisDelegate::Data>
-      scanning_data = enterprise_connectors::GetBeforePrintPreviewAnalysisData(
-          web_contents());
+      scanning_data = enterprise_connectors::GetPrintAnalysisData(
+          web_contents(),
+          enterprise_connectors::PrintScanningContext::kBeforeSystemDialog);
   if (scanning_data) {
     auto scanning_done_callback = base::BindOnce(
         &PrintViewManagerBase::CompleteScriptedPrintAfterContentAnalysis,
@@ -1211,7 +1214,7 @@ void PrintViewManagerBase::ReleasePrinterQuery() {
   if (!current_cookie)
     return;
 
-  set_cookie(0);
+  set_cookie(PrintSettings::NewInvalidCookie());
 
   PrintJobManager* print_job_manager = g_browser_process->print_job_manager();
   // May be NULL in tests.

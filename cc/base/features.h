@@ -29,23 +29,9 @@ CC_BASE_EXPORT BASE_DECLARE_FEATURE(kRemoveMobileViewportDoubleTap);
 // https://docs.google.com/document/d/1smLAXs-DSLLmkEt4FIPP7PVglJXOcwRc7A5G0SEwxaY/edit
 CC_BASE_EXPORT BASE_DECLARE_FEATURE(kScrollUnification);
 
-// Sets raster tree priority to NEW_CONTENT_TAKES_PRIORITY when performing a
-// unified scroll with main-thread repaint reasons.
-CC_BASE_EXPORT BASE_DECLARE_FEATURE(kMainRepaintScrollPrefersNewContent);
-
-// When enabled, wheel scrolls trigger smoothness mode. When disabled,
-// smoothness mode is limited to non-animated (precision) scrolls, such as
-// touch scrolling.
-CC_BASE_EXPORT BASE_DECLARE_FEATURE(kSchedulerSmoothnessForAnimatedScrolls);
-
 // When enabled, cc will show blink's Web-Vital metrics inside its heads up
 // display.
 CC_BASE_EXPORT BASE_DECLARE_FEATURE(kHudDisplayForPerformanceMetrics);
-
-// When enabled, scheduler tree priority will change to
-// NEW_CONTENT_TAKES_PRIORITY if during a scrollbar scroll, CC has to
-// checkerboard.
-CC_BASE_EXPORT BASE_DECLARE_FEATURE(kPreferNewContentForCheckerboardedScrolls);
 
 // When enabled, CompositorTimingHistory will directly record the timing history
 // that is used to calculate main thread timing estimates, and use the
@@ -112,11 +98,18 @@ CC_BASE_EXPORT BASE_DECLARE_FEATURE(kReducedFrameRateEstimation);
 // Use 4x MSAA (vs 8) on High DPI screens.
 CC_BASE_EXPORT BASE_DECLARE_FEATURE(kDetectHiDpiForMsaa);
 
+// When no frames are produced in a certain time interval, reclaim prepaint
+// tiles.
+CC_BASE_EXPORT BASE_DECLARE_FEATURE(kReclaimPrepaintTilesWhenIdle);
+
 // Feature to reduce the area in which invisible tiles are kept around.
 CC_BASE_EXPORT BASE_DECLARE_FEATURE(kSmallerInterestArea);
 
 constexpr static int kDefaultInterestAreaSizeInPixels = 3000;
 CC_BASE_EXPORT extern const base::FeatureParam<int> kInterestAreaSizeInPixels;
+
+// Whether images marked "no-cache" are cached. When disabled, they are.
+CC_BASE_EXPORT BASE_DECLARE_FEATURE(kImageCacheNoCache);
 
 }  // namespace features
 

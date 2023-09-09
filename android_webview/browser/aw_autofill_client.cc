@@ -27,6 +27,7 @@
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/common/aliases.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
@@ -205,6 +206,10 @@ void AwAutofillClient::ConfirmSaveCreditCardLocally(
   NOTIMPLEMENTED();
 }
 
+void AwAutofillClient::ShowDeleteAddressProfileDialog() {
+  NOTREACHED();
+}
+
 void AwAutofillClient::ConfirmSaveCreditCardToCloud(
     const autofill::CreditCard& card,
     const autofill::LegalMessageLines& legal_message_lines,
@@ -288,15 +293,16 @@ void AwAutofillClient::PinPopupView() {
   NOTIMPLEMENTED();
 }
 
-autofill::AutofillClient::PopupOpenArgs AwAutofillClient::GetReopenPopupArgs()
-    const {
+autofill::AutofillClient::PopupOpenArgs AwAutofillClient::GetReopenPopupArgs(
+    autofill::AutofillSuggestionTriggerSource trigger_source) const {
   NOTIMPLEMENTED();
   return {};
 }
 
 void AwAutofillClient::UpdatePopup(
     const std::vector<autofill::Suggestion>& suggestions,
-    autofill::PopupType popup_type) {
+    autofill::PopupType popup_type,
+    autofill::AutofillSuggestionTriggerSource trigger_source) {
   NOTIMPLEMENTED();
 }
 
@@ -384,7 +390,9 @@ void AwAutofillClient::SuggestionSelected(JNIEnv* env,
                                           const JavaParamRef<jobject>& object,
                                           jint position) {
   if (delegate_) {
-    delegate_->DidAcceptSuggestion(suggestions_[position], position);
+    delegate_->DidAcceptSuggestion(
+        suggestions_[position], position,
+        autofill::AutofillSuggestionTriggerSource::kAndroidWebView);
   }
 }
 

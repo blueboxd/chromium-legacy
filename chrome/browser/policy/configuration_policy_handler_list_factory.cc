@@ -63,7 +63,7 @@
 #include "components/commerce/core/pref_names.h"
 #include "components/component_updater/pref_names.h"
 #include "components/content_settings/core/browser/cookie_settings_policy_handler.h"
-#include "components/content_settings/core/browser/insecure_local_network_policy_handler.h"
+#include "components/content_settings/core/browser/insecure_private_network_policy_handler.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/custom_handlers/pref_names.h"
 #include "components/domain_reliability/domain_reliability_prefs.h"
@@ -125,6 +125,7 @@
 #include "chrome/browser/first_run/android/first_run_prefs.h"
 #include "chrome/browser/lens/android/lens_prefs.h"
 #include "chrome/browser/search/contextual_search_policy_handler_android.h"
+#include "ui/accessibility/accessibility_prefs.h"
 #else  // BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/download/default_download_dir_policy_handler.h"
 #include "chrome/browser/download/download_auto_open_policy_handler.h"
@@ -254,6 +255,13 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kEditBookmarksEnabled,
     bookmarks::prefs::kEditBookmarksEnabled,
     base::Value::Type::BOOLEAN },
+// We avoid checking for BUILDFLAG(ENABLE_NACL) since we may want the policy to
+// exist (deprecated) even if NACL is no longer being built.
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)
+  { key::kNativeClientForceAllowed,
+    prefs::kNativeClientForceAllowed,
+    base::Value::Type::BOOLEAN },
+#endif
   { key::kPasswordManagerEnabled,
     password_manager::prefs::kCredentialsEnableService,
     base::Value::Type::BOOLEAN },
@@ -324,6 +332,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN},
 // Policies for all platforms - End
 #if BUILDFLAG(IS_ANDROID)
+  { key::kAccessibilityPerformanceFilteringAllowed,
+    prefs::kAccessibilityPerformanceFilteringAllowed,
+    base::Value::Type::BOOLEAN },
   { key::kAuthAndroidNegotiateAccountType,
     prefs::kAuthAndroidNegotiateAccountType,
     base::Value::Type::STRING },
@@ -778,7 +789,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kManagedLegacyCookieAccessAllowedForDomains,
     base::Value::Type::LIST },
   { key::kInsecurePrivateNetworkRequestsAllowedForUrls,
-    prefs::kManagedInsecureLocalNetworkAllowedForUrls,
+    prefs::kManagedInsecurePrivateNetworkAllowedForUrls,
     base::Value::Type::LIST },
   { key::kDefaultGeolocationSetting,
     prefs::kManagedDefaultGeolocationSetting,
@@ -911,6 +922,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kEmojiSuggestionEnabled,
     ash::prefs::kEmojiSuggestionEnterpriseAllowed,
     base::Value::Type::BOOLEAN },
+  { key::kEmojiPickerGifSupportEnabled,
+    ash::prefs::kEmojiPickerGifSupportEnabled,
+    base::Value::Type::BOOLEAN },
   { key::kExternalStorageDisabled,
     disks::prefs::kExternalStorageDisabled,
     base::Value::Type::BOOLEAN },
@@ -1017,7 +1031,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     ash::prefs::kAccessibilityStickyKeysEnabled,
     base::Value::Type::BOOLEAN },
   { key::kColorCorrectionEnabled,
-    ash::prefs::kAccessibilityColorFiltering,
+    ash::prefs::kAccessibilityColorCorrectionEnabled,
     base::Value::Type::BOOLEAN },
   { key::kFullscreenAlertEnabled,
     ash::prefs::kFullscreenAlertEnabled,
@@ -1455,9 +1469,18 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kReportAppUsageCollectionRateMs,
     ash::reporting::kReportAppUsageCollectionRateMs,
     base::Value::Type::INTEGER },
+  { key::kDeviceChargingSoundsEnabled,
+    ash::prefs::kChargingSoundsEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kDeviceLowBatterySoundEnabled,
+    ash::prefs::kLowBatterySoundEnabled,
+    base::Value::Type::BOOLEAN },
   { key::kArcVmDataMigrationStrategy,
     arc::prefs::kArcVmDataMigrationStrategy,
     base::Value::Type::INTEGER },
+  { key::kGlanceablesEnabled,
+    ash::prefs::kGlanceablesEnabled,
+    base::Value::Type::BOOLEAN },
 #endif // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_LINUX)
@@ -1922,6 +1945,15 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     policy_prefs::kAllowBackForwardCacheForCacheControlNoStorePageEnabled,
     base::Value::Type::BOOLEAN},
 #endif  // !BUILDFLAG(IS_FUCHSIA)
+  { key::kDefaultMidiSetting,
+    prefs::kManagedDefaultMidi,
+    base::Value::Type::INTEGER },
+  { key::kMidiAllowedForUrls,
+    prefs::kManagedMidiAllowedForUrls,
+    base::Value::Type::LIST },
+  { key::kMidiBlockedForUrls,
+    prefs::kManagedMidiBlockedForUrls,
+    base::Value::Type::LIST },
 };
 // clang-format on
 
@@ -2227,7 +2259,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(
       std::make_unique<content_settings::CookieSettingsPolicyHandler>());
   handlers->AddHandler(
-      std::make_unique<content_settings::InsecureLocalNetworkPolicyHandler>());
+      std::make_unique<
+          content_settings::InsecurePrivateNetworkPolicyHandler>());
   handlers->AddHandler(
       std::make_unique<
           enterprise_reporting::CloudProfileReportingPolicyHandler>());

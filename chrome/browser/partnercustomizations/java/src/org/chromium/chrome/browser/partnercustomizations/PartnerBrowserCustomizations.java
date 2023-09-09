@@ -14,6 +14,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
+import org.chromium.base.ResettersForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.AsyncTask;
@@ -443,8 +444,9 @@ public class PartnerBrowserCustomizations {
         return true;
     }
 
-    @VisibleForTesting
     public static void setInstanceForTesting(PartnerBrowserCustomizations instance) {
+        var oldValue = sInstance;
         sInstance = instance;
+        ResettersForTesting.register(() -> sInstance = oldValue);
     }
 }

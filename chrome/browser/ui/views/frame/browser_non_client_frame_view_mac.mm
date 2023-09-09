@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
@@ -39,13 +40,24 @@
 #include "components/remote_cocoa/common/native_widget_ns_window.mojom.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/theme_provider.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/cocoa/native_widget_mac_ns_window_host.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
 // Keep in sync with web_app_frame_toolbar_browsertest.cc
 constexpr double kTitlePaddingWidthFraction = 0.1;
+
+constexpr int kResizeHandleHeight = 1;
+
+// Empirical measurements of the traffic lights.
+constexpr int kCaptionButtonsWidth = 52;
+constexpr int kCaptionButtonsLeadingPadding = 20;
 
 FullscreenToolbarStyle GetUserPreferredToolbarStyle(bool always_show) {
   // In Kiosk mode, we don't show top Chrome UI.
@@ -78,8 +90,8 @@ BrowserNonClientFrameViewMac::BrowserNonClientFrameViewMac(
             base::Unretained(this)));
   }
   if (!browser_view->UsesImmersiveFullscreenMode()) {
-    fullscreen_toolbar_controller_.reset(
-        [[FullscreenToolbarController alloc] initWithBrowserView:browser_view]);
+    fullscreen_toolbar_controller_ =
+        [[FullscreenToolbarController alloc] initWithBrowserView:browser_view];
     [fullscreen_toolbar_controller_
         setToolbarStyle:GetUserPreferredToolbarStyle(
                             AlwaysShowToolbarInFullscreen())];
@@ -218,7 +230,6 @@ int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
     return 0;
 
   // Mac seems to reserve 1 DIP of the top inset as a resize handle.
-  constexpr int kResizeHandleHeight = 1;
   constexpr int kTabstripTopInset = 8;
   int top_inset = kTabstripTopInset;
   if (EverHasVisibleBackgroundTabShapes()) {
@@ -442,11 +453,13 @@ void BrowserNonClientFrameViewMac::PaintChildren(const views::PaintInfo& info) {
 }
 
 gfx::Insets BrowserNonClientFrameViewMac::GetCaptionButtonInsets() const {
-  const int kCaptionWidth = base::mac::IsAtMostOS10_15() ? 70 : 85;
+  const int kCaptionButtonInset = kCaptionButtonsWidth +
+                                  (kCaptionButtonsLeadingPadding * 2) -
+                                  TabStyle::Get()->GetBottomCornerRadius();
   if (CaptionButtonsOnLeadingEdge()) {
-    return gfx::Insets::TLBR(0, kCaptionWidth, 0, 0);
+    return gfx::Insets::TLBR(0, kCaptionButtonInset, 0, 0);
   } else {
-    return gfx::Insets::TLBR(0, 0, 0, kCaptionWidth);
+    return gfx::Insets::TLBR(0, 0, 0, kCaptionButtonInset);
   }
 }
 

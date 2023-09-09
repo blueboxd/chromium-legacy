@@ -206,6 +206,7 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
   void UpdateLiveTranslateLabelStyle(
       views::StyledLabel::RangeStyleInfo label_style,
       views::StyledLabel::RangeStyleInfo languages_style);
+  void OnLanguageChanged();
   void UpdateLanguageLabelText();
 
   // Places the bubble at the bottom center of the context widget for the active
@@ -302,7 +303,7 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
   // A timer which causes the bubble to hide if there is no activity after a
   // specified interval.
   std::unique_ptr<base::RetainingOneShotTimer> inactivity_timer_;
-  raw_ptr<const base::TickClock, DanglingUntriaged> tick_clock_;
+  raw_ptr<const base::TickClock, AcrossTasksDanglingUntriaged> tick_clock_;
 
   gfx::SlideAnimation controls_animation_;
 

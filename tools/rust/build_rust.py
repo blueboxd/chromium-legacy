@@ -94,7 +94,7 @@ CLANG_SCRIPTS_DIR = os.path.join(CHROMIUM_DIR, 'tools', 'clang', 'scripts')
 RUST_GIT_URL = ('https://chromium.googlesource.com/external/' +
                 'github.com/rust-lang/rust')
 
-RUST_SRC_DIR = os.path.join(THIRD_PARTY_DIR, 'rust_src', 'src')
+RUST_SRC_DIR = os.path.join(THIRD_PARTY_DIR, 'rust-src')
 RUST_BOOTSTRAP_DIST_RS = os.path.join(RUST_SRC_DIR, 'src', 'bootstrap',
                                       'dist.rs')
 STAGE0_JSON_PATH = os.path.join(RUST_SRC_DIR, 'src', 'stage0.json')
@@ -260,100 +260,42 @@ def InstallBetaPackage(package_dir, install_dir):
 
 def CargoVendor(cargo_bin):
     '''Runs `cargo vendor` to pull down dependencies.'''
-    # From https://github.com/rust-lang/rust/blob/4a18324a4df6bc98bec0b54d35908d7a9cdc7c32/src/bootstrap/dist.rs#L1008-L1015:
-    # The additional `--sync` Cargo.toml files are not part of the top level
-    # workspace.
-    SYNC_TARGETS = [
-        './src/tools/cargo/Cargo.toml',
-        './src/tools/rust-analyzer/Cargo.toml',
-        './compiler/rustc_codegen_cranelift/Cargo.toml',
-        './src/bootstrap/Cargo.toml',
-    ]
-
-    # Try to verify our sync targets match the upstream nightly tarball
-    # builder's.
-    BUILDER_REGEX = (r'(?:'
-                     r'\s*\.arg\("--sync"\)'
-                     r'\s*\.arg\(builder.src.join\("(?P<target>[^"]+)"\)\)'
-                     r')')
-    content = ''
-    with open(RUST_BOOTSTRAP_DIST_RS) as f:
-        content = ''.join([line.strip() for line in f])
-    upstream_sync_targets = re.compile(BUILDER_REGEX).findall(content)
-    error = False
-    for s in SYNC_TARGETS:
-        if not s in upstream_sync_targets:
-            print(f'Upstream bootstrap/dist.rs removed "--sync {s}", '
-                  'so it should be removed from SYNC_TARGETS in '
-                  '//tools/rust/build_rust.py.')
-            error = True
-    for s in upstream_sync_targets:
-        if not s in SYNC_TARGETS:
-            print(f'Upstream bootstrap/dist.rs added "--sync {s}", '
-                  'so it should be added to SYNC_TARGETS in '
-                  '//tools/rust/build_rust.py.')
-            error = True
-    if error:
-        sys.exit(1)
-
     os.chdir(RUST_SRC_DIR)
 
-    for i in range(0, 3):
-        # Some Submodules are part of the workspace and need to exist (so we can
-        # read their Cargo.toml files) before we can vendor their deps.
-        submod_cmd = [
-            'git', 'submodule', 'update', '--init', '--recursive', '--depth',
-            '1'
-        ]
-        if RunCommand(submod_cmd, fail_hard=False):
-            pass  # Move on to vendoring.
-        elif i < 2:
-            print('Failed git submodule, retrying...')
-            continue
-        else:
-            sys.exit(1)
+    # Some Submodules are part of the workspace and need to exist (so we can
+    # read their Cargo.toml files) before we can vendor their deps.
+    submod_cmd = [
+        'git', 'submodule', 'update', '--init', '--recursive', '--depth', '1'
+    ]
+    RunWithRetry(submod_cmd, 'git submodule')
 
-        vendor_env = os.environ
-        # The Cargo.toml files in the Rust toolchain may use nightly Cargo
-        # features, but the cargo binary is beta. This env var enables the
-        # beta cargo binary to allow nightly features anyway.
-        # https://github.com/rust-lang/rust/commit/2e52f4deb0544480b6aefe2c0cc1e6f3c893b081
-        vendor_env['RUSTC_BOOTSTRAP'] = '1'
+    vendor_env = os.environ
+    # The Cargo.toml files in the Rust toolchain may use nightly Cargo
+    # features, but the cargo binary is beta. This env var enables the
+    # beta cargo binary to allow nightly features anyway.
+    # https://github.com/rust-lang/rust/commit/2e52f4deb0544480b6aefe2c0cc1e6f3c893b081
+    vendor_env['RUSTC_BOOTSTRAP'] = '1'
 
-        vendor_cmd = [
-            cargo_bin,
-            'vendor',
-            '--locked',
-            '--versioned-dirs',
-        ]
-        for s in SYNC_TARGETS:
-            vendor_cmd.extend(['--sync', s])
-        if RunCommand(vendor_cmd, fail_hard=False, env=vendor_env):
-            break  # Success, break out of the retry loop.
-        elif i < 2:
-            print('Failed cargo vendor, retrying...')
-            continue
-        else:
-            print(
-                'NOTE: Our cargo vendor step mimics the behaviour of upstream '
-                'bootstrap/dist.rs which is used to build the nightly tarball. '
-                'Any changes to that file may need to be reflected in '
-                'build_rust.py in order for our vendor step to succeed. See '
-                'the link in the roll CL description to quickly see changes to '
-                'the bootstrap/dist.rs file.')
-            sys.exit(1)
-
-    # Make a `.cargo/config.toml` the points to the `vendor` directory for all
-    # dependency crates.
-    try:
-        os.mkdir(os.path.join(RUST_SRC_DIR, '.cargo'))
-    except FileExistsError:
-        pass
-    shutil.copyfile(RUST_CARGO_CONFIG_TEMPLATE_PATH,
-                    os.path.join(RUST_SRC_DIR, '.cargo', 'config.toml'))
+    vendor_cmd = [
+        cargo_bin,
+        'vendor',
+        '--locked',
+        '--versioned-dirs',
+    ]
+    RunWithRetry(vendor_cmd, 'cargo vendor')
 
     os.chdir(CHROMIUM_DIR)
 
+
+def RunWithRetry(command, name):
+    '''Run a command, retrying a few times then aborting if it fails.'''
+    for i in range(0, 3):
+        if RunCommand(command, fail_hard=False):
+            return
+        elif i < 2:
+            print(f'failed {name}, retrying...')
+        else:
+            sys.exit(1)
 
 class XPy:
     ''' Runner for x.py, Rust's build script. Holds shared state between x.py
@@ -677,9 +619,9 @@ def main():
     parser.add_argument('--skip-checkout',
                         action='store_true',
                         help='do not create or update any checkouts')
-    parser.add_argument('--update-deps',
+    parser.add_argument('--sync-for-gnrt',
                         action='store_true',
-                        help='update dependencies and exit.')
+                        help='sync checkout and deps for gnrt run then quit.')
     parser.add_argument('--skip-clean',
                         action='store_true',
                         help='skip x.py clean step')
@@ -718,12 +660,8 @@ def main():
         print('--build-mac-arm only valid on intel to cross-build arm')
         return 1
 
-    if args.update_deps:
-        args.skip_checkout = True
-        args.skip_llvm_build = True
-
     args.gcc_toolchain = None
-    if sys.platform.startswith('linux') and not args.update_deps:
+    if sys.platform.startswith('linux') and not args.sync_for_gnrt:
         # Fetch GCC package here and pass it to build.py to avoid it doing the
         # same again. Used for the LLVM build and for any C/C++ targets inside
         # the Rust toolchain build.
@@ -745,7 +683,7 @@ def main():
     # builder, but we should change to using a package from 3pp when it is
     # available.
     if (sys.platform != 'win32' and not args.build_mac_arm
-            and not args.update_deps):
+            and not args.sync_for_gnrt):
         # Building cargo depends on OpenSSL.
         AddOpenSSLToEnv(args.build_mac_arm)
 
@@ -780,13 +718,25 @@ def main():
     if not args.skip_checkout:
         CheckoutGitRepo('Rust', RUST_GIT_URL, checkout_revision, RUST_SRC_DIR)
 
-    if not args.update_deps:
-        VerifyStage0JsonHash()
-        if args.verify_stage0_hash:
-            # The above function exits and prints the actual hash if
-            # verification failed so we just quit here; if we reach this point,
-            # the hash is valid.
-            return 0
+        path = FetchBetaPackage('cargo', checkout_revision)
+        if sys.platform == 'win32':
+            cargo_bin = os.path.join(path, 'cargo', 'bin', 'cargo.exe')
+        else:
+            cargo_bin = os.path.join(path, 'cargo', 'bin', 'cargo')
+        CargoVendor(cargo_bin)
+
+    # Gnrt needs the checkout to be up-to-date, workspace submodules to be
+    # synced for cargo to work, and the cargo binary itself. All this is done,
+    # so quit.
+    if args.sync_for_gnrt:
+        return 0
+
+    VerifyStage0JsonHash()
+    if args.verify_stage0_hash:
+        # The above function exits and prints the actual hash if
+        # verification failed so we just quit here; if we reach this point,
+        # the hash is valid.
+        return 0
 
     (x86_64_llvm_config, aarch64_llvm_config,
      target_llvm_dir) = BuildLLVMLibraries(args.skip_llvm_build,
@@ -798,16 +748,9 @@ def main():
     # Set up config.toml in Rust source tree.
     xpy.configure(args.build_mac_arm, x86_64_llvm_config, aarch64_llvm_config)
 
-    path = FetchBetaPackage('cargo', checkout_revision)
-    if sys.platform == 'win32':
-        cargo_bin = os.path.join(path, 'cargo', 'bin', 'cargo.exe')
-    else:
-        cargo_bin = os.path.join(path, 'cargo', 'bin', 'cargo')
-    CargoVendor(cargo_bin)
-
     # Deps are updated, so we're done now. All steps needed for --run-xpy to
     # work should be above this.
-    if args.update_deps or args.prepare_run_xpy:
+    if args.prepare_run_xpy:
         return 0
 
     building_on_host_triple = RustTargetTriple()

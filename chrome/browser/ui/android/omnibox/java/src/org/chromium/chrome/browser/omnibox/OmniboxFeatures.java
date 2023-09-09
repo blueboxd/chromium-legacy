@@ -58,7 +58,7 @@ public class OmniboxFeatures {
                     "modernize_visual_update_merge_clipboard_on_ntp", false);
 
     private static final MutableFlagWithSafeDefault sOmniboxConsumesImeInsets =
-            new MutableFlagWithSafeDefault(ChromeFeatureList.OMNIBOX_CONSUMERS_IME_INSETS, false);
+            new MutableFlagWithSafeDefault(ChromeFeatureList.OMNIBOX_CONSUMERS_IME_INSETS, true);
     private static final MutableFlagWithSafeDefault sShouldAdaptToNarrowTabletWindows =
             new MutableFlagWithSafeDefault(
                     ChromeFeatureList.OMNIBOX_ADAPT_NARROW_TABLET_WINDOWS, false);
@@ -73,16 +73,14 @@ public class OmniboxFeatures {
     private static final MutableFlagWithSafeDefault sCacheSuggestionResources =
             new MutableFlagWithSafeDefault(
                     ChromeFeatureList.OMNIBOX_CACHE_SUGGESTION_RESOURCES, false);
-    private static final MutableFlagWithSafeDefault
-            sOmniboxAdaptiveSuggestionsVisibleGroupEligibilityUpdate =
-                    new MutableFlagWithSafeDefault(
-                            ChromeFeatureList
-                                    .OMNIBOX_ADAPTIVE_SUGGESTIONS_VISIBLE_GROUP_ELIGIBILITY_UPDATE,
-                            false);
 
     private static final MutableFlagWithSafeDefault sWarmRecycledViewPoolFlag =
             new MutableFlagWithSafeDefault(
                     ChromeFeatureList.OMNIBOX_WARM_RECYCLED_VIEW_POOL, false);
+
+    private static final MutableFlagWithSafeDefault sNoopEditUrlSuggestionClicks =
+            new MutableFlagWithSafeDefault(
+                    ChromeFeatureList.OMNIBOX_NOOP_EDIT_URL_SUGGESTION_CLICKS, false);
 
     /**
      * @param context The activity context.
@@ -186,14 +184,6 @@ public class OmniboxFeatures {
     }
 
     /**
-     * Returns whether a modified visible-group eligibility logic should be used when determining
-     * suggestion visibility.
-     */
-    public static boolean adaptiveSuggestionsVisibleGroupEligibilityUpdate() {
-        return sOmniboxAdaptiveSuggestionsVisibleGroupEligibilityUpdate.isEnabled();
-    }
-
-    /**
      * Returns whether the omnibox's recycler view pool should be pre-warmed prior to initial use.
      */
     public static boolean shouldPreWarmRecyclerViewPool() {
@@ -210,5 +200,13 @@ public class OmniboxFeatures {
                             BaseSwitches.DISABLE_LOW_END_DEVICE_MODE));
         }
         return sIsLowMemoryDevice;
+    }
+
+    /**
+     * Returns whether clicking the edit url suggestion / search-ready omnibox should be a no-op.
+     * Currently the default behavior is to refresh the page.
+     */
+    public static boolean noopEditUrlSuggestionClicks() {
+        return sNoopEditUrlSuggestionClicks.isEnabled();
     }
 }

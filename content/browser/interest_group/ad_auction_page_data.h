@@ -8,11 +8,28 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
+#include "base/containers/flat_map.h"
+#include "base/uuid.h"
 #include "content/public/browser/page_user_data.h"
+#include "net/third_party/quiche/src/quiche/oblivious_http/oblivious_http_client.h"
 #include "url/origin.h"
 
 namespace content {
+
+struct CONTENT_EXPORT AdAuctionRequestContext {
+  AdAuctionRequestContext(
+      url::Origin seller,
+      base::flat_map<url::Origin, std::vector<std::string>> group_names,
+      quiche::ObliviousHttpRequest::Context context);
+  AdAuctionRequestContext(AdAuctionRequestContext&& other);
+  ~AdAuctionRequestContext();
+
+  url::Origin seller;
+  base::flat_map<url::Origin, std::vector<std::string>> group_names;
+  quiche::ObliviousHttpRequest::Context context;
+};
 
 // Contains auction header responses within a page. This will only be created
 // for the outermost page (i.e. not within a fenced frame).
@@ -33,6 +50,10 @@ class CONTENT_EXPORT AdAuctionPageData
   const std::set<std::string>& GetAuctionSignalsForOrigin(
       const url::Origin& origin) const;
 
+  void RegisterAdAuctionRequestContext(const base::Uuid& id,
+                                       AdAuctionRequestContext context);
+  AdAuctionRequestContext* GetContextForAdAuctionRequest(const base::Uuid& id);
+
  private:
   explicit AdAuctionPageData(Page& page);
 
@@ -41,6 +62,7 @@ class CONTENT_EXPORT AdAuctionPageData
 
   std::map<url::Origin, std::set<std::string>> origin_auction_result_map_;
   std::map<url::Origin, std::set<std::string>> origin_auction_signals_map_;
+  std::map<base::Uuid, AdAuctionRequestContext> context_map_;
 };
 
 }  // namespace content

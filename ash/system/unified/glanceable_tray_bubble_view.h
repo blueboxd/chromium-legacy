@@ -6,13 +6,13 @@
 #define ASH_SYSTEM_UNIFIED_GLANCEABLE_TRAY_BUBBLE_VIEW_H_
 
 #include "ash/system/tray/tray_bubble_view.h"
-
-namespace views {
-class Label;
-}
+#include "base/memory/weak_ptr.h"
 
 namespace ash {
-class ClassroomBubbleView;
+class CalendarView;
+class ClassroomBubbleStudentView;
+class ClassroomBubbleTeacherView;
+class DetailedViewDelegate;
 class TasksBubbleView;
 class Shelf;
 
@@ -23,7 +23,7 @@ class GlanceableTrayBubbleView : public TrayBubbleView {
   GlanceableTrayBubbleView(const InitParams& init_params, Shelf* shelf);
   GlanceableTrayBubbleView(const GlanceableTrayBubbleView&) = delete;
   GlanceableTrayBubbleView& operator=(const GlanceableTrayBubbleView&) = delete;
-  ~GlanceableTrayBubbleView() override = default;
+  ~GlanceableTrayBubbleView() override;
 
   void UpdateBubble();
 
@@ -33,11 +33,15 @@ class GlanceableTrayBubbleView : public TrayBubbleView {
   bool CanActivate() const override;
 
  private:
-  const raw_ptr<Shelf, ExperimentalAsh> shelf_;
+  // Creates classroom student or teacher view if needed (if the corresponding
+  // role is active) and stores the pointer in `view`.
+  // NOTE: in the rare case, when a single user has both student and teacher
+  // roles in different courses, the order of the two bubbles is not guaranteed.
+  template <typename T>
+  void AddClassroomBubbleViewIfNeeded(T* view, bool is_role_active);
 
-  // Stand-in title label for glanceables_view_.
-  // TODO(b:277268122): Remove and replace with actual glanceable content.
-  raw_ptr<views::Label, ExperimentalAsh> title_label_ = nullptr;
+  const raw_ptr<Shelf, ExperimentalAsh> shelf_;
+  const std::unique_ptr<DetailedViewDelegate> detailed_view_delegate_;
 
   // A scrollable view which contains the individual glanceables.
   raw_ptr<views::ScrollView, ExperimentalAsh> scroll_view_ = nullptr;
@@ -45,9 +49,22 @@ class GlanceableTrayBubbleView : public TrayBubbleView {
   // Child bubble view for the tasks glanceable. Owned by bubble_view_.
   raw_ptr<TasksBubbleView, ExperimentalAsh> tasks_bubble_view_ = nullptr;
 
-  // Child bubble view for the classrooms glanceable. Owned by bubble_view_.
-  raw_ptr<ClassroomBubbleView, ExperimentalAsh> classroom_bubble_view_ =
-      nullptr;
+  // Child bubble view for the teacher classrooms glanceable. Owned by
+  // bubble_view_.
+  raw_ptr<ClassroomBubbleTeacherView, ExperimentalAsh>
+      classroom_bubble_teacher_view_ = nullptr;
+
+  // Child bubble view for the student classrooms glanceable. Owned by
+  // bubble_view_.
+  raw_ptr<ClassroomBubbleStudentView, ExperimentalAsh>
+      classroom_bubble_student_view_ = nullptr;
+
+  // Child bubble view for the calendar glanceable. Owned by bubble_view_.
+  raw_ptr<CalendarView, ExperimentalAsh> calendar_view_ = nullptr;
+
+  base::CallbackListSubscription on_contents_scrolled_subscription_;
+
+  base::WeakPtrFactory<GlanceableTrayBubbleView> weak_ptr_factory_{this};
 };
 
 }  // namespace ash

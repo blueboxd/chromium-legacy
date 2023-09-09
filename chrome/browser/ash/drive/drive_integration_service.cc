@@ -516,9 +516,7 @@ class DriveIntegrationService::PreferenceWatcher
     VLOG(1) << "OnConnectionChanged: {type: " << type << ", online: " << online
             << ", pause_syncing: " << pause_syncing << "}";
 
-    if (DriveFs* const drivefs = integration_service_->GetDriveFsInterface()) {
-      drivefs->UpdateNetworkState(pause_syncing, !online);
-    }
+    integration_service_->UpdateNetworkState(pause_syncing, !online);
   }
 
   const raw_ptr<const Profile, ExperimentalAsh> profile_;
@@ -855,6 +853,10 @@ void DriveIntegrationService::SetEnabled(bool enabled) {
   }
 }
 
+bool DriveIntegrationService::IsOnline() const {
+  return preference_watcher_ && preference_watcher_->IsOnline();
+}
+
 bool DriveIntegrationService::IsMounted() const {
   if (mount_point_name_.empty()) {
     return false;
@@ -901,14 +903,12 @@ bool DriveIntegrationService::IsSharedDrive(
       .IsParent(local_path);
 }
 
-void DriveIntegrationService::AddObserver(
-    DriveIntegrationServiceObserver* observer) {
+void DriveIntegrationService::AddObserver(Observer* const observer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observers_.AddObserver(observer);
 }
 
-void DriveIntegrationService::RemoveObserver(
-    DriveIntegrationServiceObserver* observer) {
+void DriveIntegrationService::RemoveObserver(Observer* const observer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observers_.RemoveObserver(observer);
 }
@@ -1048,7 +1048,7 @@ void DriveIntegrationService::MaybeMountDrive(const base::FilePath& data_dir,
       file_manager::SystemNotificationManager snm(profile_);
       const std::unique_ptr<const message_center::Notification> notification =
           snm.CreateNotification("drive_data_dir_missing",
-                                 IDS_FILE_BROWSER_DRIVE_SYNC_ERROR_TITLE,
+                                 IDS_FILE_BROWSER_DRIVE_DATA_DIR_MISSING_TITLE,
                                  IDS_FILE_BROWSER_DRIVE_DATA_DIR_MISSING);
       DCHECK(notification);
       snm.GetNotificationDisplayService()->Display(
@@ -1200,10 +1200,18 @@ void DriveIntegrationService::OnMounted(const base::FilePath& mount_path) {
   // Enable bulk-pinning if the feature is enabled.
   if (util::IsDriveFsBulkPinningEnabled(profile_)) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+    // Instantiate a PinManager.
     DCHECK(!pin_manager_);
     pin_manager_ = std::make_unique<PinManager>(profile_->GetPath(), mount_path,
                                                 GetDriveFsInterface());
+
+    // Listen to progress events from this PinManager.
     pin_manager_->AddObserver(this);
+    if (!observers_.empty()) {
+      OnProgress(pin_manager_->GetProgress());
+    }
+
     DCHECK(!bulk_pinning_pref_updater_);
     bulk_pinning_pref_updater_ =
         std::make_unique<BulkPinningPrefUpdater>(GetPrefs());
@@ -1356,7 +1364,7 @@ void DriveIntegrationService::ToggleBulkPinning() {
   }
 
   if (GetPrefs()->GetBoolean(kDriveFsBulkPinningEnabled)) {
-    pin_manager_->ShouldPin(true);
+    pin_manager_->ShouldPin();
     pin_manager_->Start();
   } else {
     pin_manager_->Stop();
@@ -1371,17 +1379,28 @@ void DriveIntegrationService::GetTotalPinnedSize(
     return;
   }
 
-  GetDriveFsInterface()->GetOfflineFilesSpaceUsage(base::BindOnce(
-      [](base::OnceCallback<void(int64_t)> callback, drive::FileError error,
-         int64_t total_size) {
-        if (error != drive::FILE_ERROR_OK) {
-          LOG(ERROR) << "Cannot get offline size: " << error;
-          std::move(callback).Run(-1);
-          return;
-        }
-        std::move(callback).Run(total_size);
-      },
-      std::move(callback)));
+  if (base::Time::Now() < last_offline_storage_size_time_ + Seconds(2)) {
+    std::move(callback).Run(last_offline_storage_size_result_);
+    return;
+  }
+
+  GetDriveFsInterface()->GetOfflineFilesSpaceUsage(
+      base::BindOnce(&DriveIntegrationService::OnGetOfflineFilesSpaceUsage,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void DriveIntegrationService::OnGetOfflineFilesSpaceUsage(
+    base::OnceCallback<void(int64_t)> callback,
+    drive::FileError error,
+    int64_t total_size) {
+  if (error != drive::FILE_ERROR_OK) {
+    LOG(ERROR) << "Cannot get offline size: " << error;
+    std::move(callback).Run(-1);
+    return;
+  }
+  last_offline_storage_size_result_ = total_size;
+  last_offline_storage_size_time_ = base::Time::Now();
+  std::move(callback).Run(total_size);
 }
 
 void DriveIntegrationService::ClearOfflineFiles(
@@ -1777,6 +1796,19 @@ void DriveIntegrationService::GetDocsOfflineStats(
   }
 
   GetDriveFsInterface()->GetDocsOfflineStats(std::move(callback));
+}
+
+void DriveIntegrationService::UpdateNetworkState(bool pause_syncing,
+                                                 bool is_offline) {
+  if (DriveFs* const drivefs = GetDriveFsInterface()) {
+    drivefs->UpdateNetworkState(pause_syncing, is_offline);
+  }
+
+  util::ConnectionStatusType connection_status =
+      util::GetDriveConnectionStatus(profile_);
+  for (auto& observer : observers_) {
+    observer.OnDriveConnectionStatusChanged(connection_status);
+  }
 }
 
 //===================== DriveIntegrationServiceFactory =======================

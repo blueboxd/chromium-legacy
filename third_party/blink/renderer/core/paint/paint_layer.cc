@@ -48,6 +48,8 @@
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/containers/adapters.h"
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
@@ -60,7 +62,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/layout/anchor_scroll_data.h"
+#include "third_party/blink/renderer/core/layout/anchor_position_scroll_data.h"
 #include "third_party/blink/renderer/core/layout/fragmentainer_iterator.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
@@ -89,6 +91,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
 #include "third_party/blink/renderer/core/paint/rounded_border_geometry.h"
+#include "third_party/blink/renderer/core/paint/transform_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/reference_offset_path_operation.h"
@@ -126,7 +129,6 @@ struct SameSizeAsPaintLayer : GarbageCollected<PaintLayer>, DisplayItemClient {
   bool is_destroyed;
 #endif
   Member<void*> members[9];
-  PhysicalOffset offset;
   LayoutUnit layout_units[2];
   std::unique_ptr<void*> pointer;
 };
@@ -172,11 +174,6 @@ PaintLayer::PaintLayer(LayoutBoxModelObject* layout_object)
       needs_descendant_dependent_flags_update_(true),
       needs_visual_overflow_recalc_(true),
       has_visible_self_painting_descendant_(false),
-#if DCHECK_IS_ON()
-      // The root layer (LayoutView) does not need position update at start
-      // because its Location() is always 0.
-      needs_position_update_(!IsRootLayer()),
-#endif
       has3d_transformed_descendant_(false),
       self_needs_repaint_(false),
       descendant_needs_repaint_(false),
@@ -300,13 +297,7 @@ void PaintLayer::UpdateLayerPositionsAfterLayout() {
 }
 
 void PaintLayer::UpdateLayerPositionRecursive() {
-  UpdateLayerPosition();
-
-  if (GetLayoutObject().UpdateStickyPositionConstraints()) {
-    // Sticky position constraints and ancestor overflow scroller affect
-    // the sticky layer position, so we need to update it again here.
-    UpdateLayerPosition();
-  }
+  GetLayoutObject().UpdateStickyPositionConstraints();
 
   // Display-locked elements always have a PaintLayer, meaning that the
   // PaintLayer traversal won't skip locked elements. Thus, we don't have to do
@@ -321,11 +312,12 @@ void PaintLayer::UpdateLayerPositionRecursive() {
 
 void PaintLayer::UpdateTransform() {
   if (gfx::Transform* transform = Transform()) {
-    LayoutBox* box = GetLayoutBox();
+    const LayoutBox* box = GetLayoutBox();
     DCHECK(box);
     transform->MakeIdentity();
+    const PhysicalRect reference_box = ComputeReferenceBox(*box);
     box->StyleRef().ApplyTransform(
-        *transform, box, PhysicalSize(box->Size()),
+        *transform, box, reference_box,
         ComputedStyle::kIncludeTransformOperations,
         ComputedStyle::kIncludeTransformOrigin,
         ComputedStyle::kIncludeMotionPath,
@@ -489,11 +481,10 @@ void PaintLayer::UpdateDescendantDependentFlags() {
         MarkAncestorChainForFlagsUpdate(kDoesNotNeedDescendantDependentUpdate);
       }
     }
-    if (base::FeatureList::IsEnabled(features::kFastPathPaintPropertyUpdates)) {
-      GetLayoutObject().InvalidateIntersectionObserverCachedRects();
-      GetLayoutObject().GetFrameView()->SetIntersectionObservationState(
-          LocalFrameView::kDesired);
-    }
+    GetLayoutObject().InvalidateIntersectionObserverCachedRects();
+    GetLayoutObject().GetFrameView()->SetIntersectionObservationState(
+        LocalFrameView::kDesired);
+
     needs_visual_overflow_recalc_ = false;
   }
 
@@ -561,35 +552,6 @@ void PaintLayer::Update3DTransformedDescendantStatus() {
       break;
     }
   }
-}
-
-void PaintLayer::UpdateLayerPosition() {
-  if (RuntimeEnabledFeatures::RemoveConvertToLayerCoordsEnabled()) {
-    return;
-  }
-  PhysicalOffset local_point;
-  if (LayoutBox* box = GetLayoutBox()) {
-    local_point += box->PhysicalLocation();
-  }
-
-  if (!GetLayoutObject().IsOutOfFlowPositioned() &&
-      !GetLayoutObject().IsColumnSpanAll()) {
-    // We must adjust our position by walking up the layout tree looking for the
-    // nearest enclosing object with a layer.
-    LayoutObject* curr = GetLayoutObject().Container();
-    while (curr && !curr->HasLayer()) {
-      if (curr->IsBox()) {
-        local_point += To<LayoutBox>(curr)->PhysicalLocation();
-      }
-      curr = curr->Container();
-    }
-  }
-
-  location_without_position_offset_ = local_point;
-
-#if DCHECK_IS_ON()
-  needs_position_update_ = false;
-#endif
 }
 
 void PaintLayer::UpdateScrollingAfterLayout() {
@@ -706,16 +668,14 @@ void PaintLayer::SetNeedsVisualOverflowRecalc() {
   // mark this as needing a descendant dependent flags update, which will
   // cause a paint property update if needed (see:
   // PaintLayer::UpdateDescendantDependentFlags).
-  if (base::FeatureList::IsEnabled(features::kFastPathPaintPropertyUpdates))
-    SetNeedsDescendantDependentFlagsUpdate();
-  else
-    MarkAncestorChainForFlagsUpdate();
+  SetNeedsDescendantDependentFlagsUpdate();
 }
 
 bool PaintLayer::HasNonIsolatedDescendantWithBlendMode() const {
   DCHECK(!needs_descendant_dependent_flags_update_);
-  if (has_non_isolated_descendant_with_blend_mode_)
+  if (has_non_isolated_descendant_with_blend_mode_) {
     return true;
+  }
   if (GetLayoutObject().IsSVGRoot()) {
     return To<LayoutSVGRoot>(GetLayoutObject())
         .HasNonIsolatedBlendingDescendants();
@@ -880,79 +840,6 @@ void PaintLayer::InsertOnlyThisLayerAfterStyleChange() {
             parent_->EnclosingSelfPaintingLayer())
       MergeNeedsPaintPhaseFlagsFrom(*enclosing_self_painting_layer);
   }
-}
-
-// Returns the layer reached on the walk up towards the ancestor.
-static inline const PaintLayer* AccumulateOffsetTowardsAncestor(
-    const PaintLayer* layer,
-    const PaintLayer* ancestor_layer,
-    PhysicalOffset& location) {
-  DCHECK(ancestor_layer != layer);
-
-  const LayoutBoxModelObject& layout_object = layer->GetLayoutObject();
-
-  if (layout_object.IsFixedPositioned() &&
-      (!ancestor_layer || ancestor_layer == layout_object.View()->Layer())) {
-    // If the fixed layer's container is the root, just add in the offset of the
-    // view. We can obtain this by calling localToAbsolute() on the LayoutView.
-    location +=
-        layout_object.LocalToAbsolutePoint(PhysicalOffset(), kIgnoreTransforms);
-    return ancestor_layer;
-  }
-
-  bool found_ancestor_first = false;
-  PaintLayer* containing_layer =
-      ancestor_layer
-          ? layer->ContainingLayer(ancestor_layer, &found_ancestor_first)
-          : layer->ContainingLayer(ancestor_layer, nullptr);
-
-  if (found_ancestor_first) {
-    // Found ancestorLayer before the containing layer, so compute offset of
-    // both relative to the container and subtract.
-    PhysicalOffset this_coords;
-    layer->ConvertToLayerCoords(containing_layer, this_coords);
-
-    PhysicalOffset ancestor_coords;
-    ancestor_layer->ConvertToLayerCoords(containing_layer, ancestor_coords);
-
-    location += (this_coords - ancestor_coords);
-    return ancestor_layer;
-  }
-
-  if (!containing_layer)
-    return nullptr;
-
-  location += layer->LocationWithoutPositionOffset();
-  if (layer->GetLayoutObject().IsStickyPositioned()) {
-    location += layer->GetLayoutObject().StickyPositionOffset();
-  } else if (layer->GetLayoutObject().IsBox() &&
-             layer->GetLayoutBox()->HasAnchorScrollTranslation()) {
-    location += layer->GetLayoutBox()->AnchorScrollTranslationOffset();
-  }
-  location -=
-      PhysicalOffset(containing_layer->PixelSnappedScrolledContentOffset());
-
-  return containing_layer;
-}
-
-void PaintLayer::ConvertToLayerCoords(const PaintLayer* ancestor_layer,
-                                      PhysicalOffset& location) const {
-  DCHECK(!RuntimeEnabledFeatures::RemoveConvertToLayerCoordsEnabled());
-  if (ancestor_layer == this)
-    return;
-
-  const PaintLayer* curr_layer = this;
-  while (curr_layer && curr_layer != ancestor_layer)
-    curr_layer =
-        AccumulateOffsetTowardsAncestor(curr_layer, ancestor_layer, location);
-}
-
-const PhysicalOffset& PaintLayer::LocationWithoutPositionOffset() const {
-  DCHECK(!RuntimeEnabledFeatures::RemoveConvertToLayerCoordsEnabled());
-#if DCHECK_IS_ON()
-  DCHECK(!needs_position_update_);
-#endif
-  return location_without_position_offset_;
 }
 
 void PaintLayer::DidUpdateScrollsOverflow() {
@@ -1361,8 +1248,15 @@ PaintLayer* PaintLayer::HitTestLayer(
 
   if (UNLIKELY(layout_object.NeedsLayout() &&
                !layout_object.ChildLayoutBlockedByDisplayLock())) {
-    // Skip if we need layout. This should never happen. See crbug.com/1244130
-    NOTREACHED();
+    // Skip if we need layout. This should never happen. See crbug.com/1423308.
+
+    // Record whether the LayoutView exists and if it needs layout.
+    LayoutView* view = layout_object.GetFrameView()->GetLayoutView();
+    SCOPED_CRASH_KEY_BOOL("Crbug1423308", "ViewExists", !!view);
+    SCOPED_CRASH_KEY_BOOL("Crbug1423308", "ViewNeedsLayout",
+                          view && view->NeedsLayout());
+    base::debug::DumpWithoutCrashing();
+
     return nullptr;
   }
 
@@ -2003,13 +1897,8 @@ bool PaintLayer::HitTestClippedOutByClipPath(
   DCHECK(GetLayoutObject().HasClipPath());
   DCHECK(IsSelfPaintingLayer());
 
-  PhysicalOffset origin;
-  if (RuntimeEnabledFeatures::RemoveConvertToLayerCoordsEnabled()) {
-    origin = GetLayoutObject().LocalToAncestorPoint(
-        origin, &root_layer.GetLayoutObject());
-  } else {
-    ConvertToLayerCoords(&root_layer, origin);
-  }
+  PhysicalOffset origin = GetLayoutObject().LocalToAncestorPoint(
+      PhysicalOffset(), &root_layer.GetLayoutObject());
 
   gfx::PointF point(hit_test_location.Point() - origin);
   gfx::RectF reference_box =
@@ -2098,13 +1987,8 @@ void PaintLayer::ExpandRectForSelfPaintingDescendants(
           child_layer->Transform()->MapRect(gfx::RectF(added_rect)));
     }
 
-    PhysicalOffset delta;
-    if (RuntimeEnabledFeatures::RemoveConvertToLayerCoordsEnabled()) {
-      delta = child_layer->GetLayoutObject().LocalToAncestorPoint(
-          delta, &GetLayoutObject(), kIgnoreTransforms);
-    } else {
-      child_layer->ConvertToLayerCoords(this, delta);
-    }
+    PhysicalOffset delta = child_layer->GetLayoutObject().LocalToAncestorPoint(
+        PhysicalOffset(), &GetLayoutObject(), kIgnoreTransforms);
     added_rect.Move(delta);
 
     result.Unite(added_rect);

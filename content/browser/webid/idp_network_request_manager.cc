@@ -154,13 +154,11 @@ absl::optional<content::IdentityRequestAccount> ParseAccount(
   auto* picture = account.FindString(kAccountPictureKey);
   auto* approved_clients = account.FindList(kAccountApprovedClientsKey);
   std::vector<std::string> account_hints;
-  if (IsFedCmLoginHintEnabled()) {
-    auto* hints = account.FindList(kHintsKey);
-    if (hints) {
-      for (const base::Value& entry : *hints) {
-        if (entry.is_string()) {
-          account_hints.emplace_back(entry.GetString());
-        }
+  auto* hints = account.FindList(kHintsKey);
+  if (hints) {
+    for (const base::Value& entry : *hints) {
+      if (entry.is_string()) {
+        account_hints.emplace_back(entry.GetString());
       }
     }
   }
@@ -880,7 +878,7 @@ IdpNetworkRequestManager::CreateUncredentialedResourceRequest(
   } else {
     resource_request->redirect_mode = network::mojom::RedirectMode::kError;
   }
-  resource_request->request_initiator = relying_party_origin_;
+  resource_request->request_initiator = url::Origin();
   resource_request->trusted_params = network::ResourceRequest::TrustedParams();
   resource_request->trusted_params->isolation_info =
       net::IsolationInfo::CreateTransient();

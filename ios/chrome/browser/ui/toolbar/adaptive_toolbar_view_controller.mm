@@ -75,7 +75,7 @@ const CGFloat kFullscreenProgressFullyExpanded = 1.0;
   return self.view.toolsMenuButton;
 }
 
-- (void)updateForSideSwipeSnapshotOnNTP:(BOOL)onNTP {
+- (void)updateForSideSwipeSnapshot:(BOOL)onNonIncognitoNTP {
   self.view.progressBar.hidden = YES;
   self.view.progressBar.alpha = 0;
 }
@@ -110,12 +110,8 @@ const CGFloat kFullscreenProgressFullyExpanded = 1.0;
                         completion:nil];
 }
 
-- (void)setTabGridButtonIPHHighlighted:(BOOL)iphHighlighted {
-  self.view.tabGridButton.iphHighlighted = iphHighlighted;
-}
-
-- (void)setNewTabButtonIPHHighlighted:(BOOL)iphHighlighted {
-  self.view.openNewTabButton.iphHighlighted = iphHighlighted;
+- (BOOL)hasOmnibox {
+  return self.locationBarViewController != nil;
 }
 
 #pragma mark - UIViewController
@@ -157,9 +153,10 @@ const CGFloat kFullscreenProgressFullyExpanded = 1.0;
             kFullscreenProgressFullyExpanded];
 
   // CollapsedToolbarButton exit fullscreen.
-  [self.view.collapsedToolbarButton addTarget:self
-                                       action:@selector(exitFullscreen)
-                             forControlEvents:UIControlEventTouchUpInside];
+  [self.view.collapsedToolbarButton
+             addTarget:self
+                action:@selector(collapsedToolbarButtonTapped)
+      forControlEvents:UIControlEventTouchUpInside];
   UIHoverGestureRecognizer* hoverGestureRecognizer =
       [[UIHoverGestureRecognizer alloc]
           initWithTarget:self
@@ -219,11 +216,15 @@ const CGFloat kFullscreenProgressFullyExpanded = 1.0;
     [locationBarViewController didMoveToParentViewController:self];
     [self.view setLocationBarView:locationBarViewController.view];
     self.view.locationBarContainer.hidden = NO;
+    // Update the constraint of the location bar view to make sure the text is
+    // centered.
+    [locationBarViewController.view updateConstraintsIfNeeded];
   } else {
     CHECK(IsBottomOmniboxSteadyStateEnabled());
     [self.view setLocationBarView:nil];
     self.view.locationBarContainer.hidden = YES;
   }
+  [self updateProgressBarVisibility];
 }
 
 #pragma mark - ToolbarConsumer
@@ -369,6 +370,10 @@ const CGFloat kFullscreenProgressFullyExpanded = 1.0;
                           }];
 }
 
+- (void)collapsedToolbarButtonTapped {
+  [self exitFullscreen];
+}
+
 #pragma mark - PopupMenuUIUpdating
 
 - (void)updateUIForOverflowMenuIPHDisplayed {
@@ -405,6 +410,13 @@ const CGFloat kFullscreenProgressFullyExpanded = 1.0;
 // is expected.
 - (void)updateProgressBarVisibility {
   __weak __typeof(self) weakSelf = self;
+
+  BOOL hasOmnibox = self.locationBarViewController != nil;
+  if (!hasOmnibox) {
+    self.view.progressBar.hidden = YES;
+    return;
+  }
+
   if (self.loading && self.view.progressBar.hidden) {
     [self.view.progressBar setHidden:NO
                             animated:YES

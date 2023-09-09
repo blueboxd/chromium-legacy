@@ -94,6 +94,11 @@
   _syncSetupService = nil;
 }
 
+- (void)dealloc {
+  // TODO(crbug.com/1454777)
+  DUMP_WILL_BE_CHECK(!_authenticationService);
+}
+
 - (void)startSyncWithConfirmationID:(const int)confirmationID
                            consentIDs:(NSArray<NSNumber*>*)consentIDs
                    authenticationFlow:(AuthenticationFlow*)authenticationFlow

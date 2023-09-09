@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/check.h"
 #include "base/containers/flat_set.h"
@@ -16,6 +17,7 @@
 #include "base/memory/raw_ptr_exclusion.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/viz/common/display/update_vsync_parameters_callback.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 
@@ -231,6 +233,9 @@ class VIZ_COMMON_EXPORT BeginFrameSource {
   // moves across displays.
   virtual void SetVSyncDisplayID(int64_t display_id) {}
 
+  virtual void SetUpdateVSyncParametersCallback(
+      UpdateVSyncParametersCallback callback) {}
+
  protected:
   // Returns whether begin-frames to clients should be withheld (because the gpu
   // is still busy, for example). If this returns true, then OnGpuNoLongerBusy()
@@ -312,7 +317,7 @@ class VIZ_COMMON_EXPORT BackToBackBeginFrameSource
 
   // SyntheticBeginFrameSource implementation.
   void OnUpdateVSyncParameters(base::TimeTicks timebase,
-                               base::TimeDelta interval) override {}
+                               base::TimeDelta interval) override;
   void SetMaxVrrInterval(
       const absl::optional<base::TimeDelta>& max_vrr_interval) override;
 
@@ -326,6 +331,7 @@ class VIZ_COMMON_EXPORT BackToBackBeginFrameSource
   base::flat_set<BeginFrameObserver*> observers_;
   base::flat_set<BeginFrameObserver*> pending_begin_frame_observers_;
   uint64_t next_sequence_number_;
+  base::TimeDelta vsync_interval_ = BeginFrameArgs::DefaultInterval();
   absl::optional<base::TimeDelta> max_vrr_interval_ = absl::nullopt;
   base::WeakPtrFactory<BackToBackBeginFrameSource> weak_factory_{this};
 };
@@ -428,6 +434,9 @@ class VIZ_COMMON_EXPORT ExternalBeginFrameSource : public BeginFrameSource {
 
   // Returns the maximum supported refresh rate interval for a given BFS.
   virtual base::TimeDelta GetMaximumRefreshFrameInterval();
+
+  virtual std::vector<base::TimeDelta> GetSupportedFrameIntervals(
+      base::TimeDelta interval);
 
  protected:
   // Called on AddObserver and gets missed BeginFrameArgs for the given

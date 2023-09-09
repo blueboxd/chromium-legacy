@@ -3,7 +3,6 @@
 <translationbundle lang="cy">
 <translation id="1075622780330595106">Nid yw <ph name="NUMBER_OF_TABS" /> o'ch tabiau wedi'u defnyddio'n ddiweddar. Cau'r tabiau?</translation>
 <translation id="125153950246128346">Tapiwch i weld tab arall</translation>
-<translation id="1403228085774130835">Gallwch ddod o hyd i'ch tabiau sydd wedi'u cau yn Tabiau diweddar o dan brif ddewislen Chrome</translation>
 <translation id="1455506303394048917">Bydd eich gweithgarwch yn y tabiau Anhysbys hyn yn cael ei glirio o'r ddyfais hon</translation>
 <translation id="1499635324672558517">Cau pob tab Anhysbys</translation>
 <translation id="1657719826150349398">Symud tab i lawr</translation>
@@ -47,6 +46,7 @@
 <translation id="5073204694187207510">Cuddio'r grid sgrîn lawn</translation>
 <translation id="5076161749301278626">Gweld adolygiadau'r siop?</translation>
 <translation id="5082793167783849073">Cymharwch dudalennau'n gyflym drwy wneud grŵp. I ddechrau, cyffyrddwch a daliwch ddolen.</translation>
+<translation id="5339733443032484186">Eich tab diwethaf</translation>
 <translation id="5490235265819901748">Mae'r grŵp tabiau wedi'i ehangu</translation>
 <translation id="5494920125229734069">Dewis pob un</translation>
 <translation id="5556417849629758491">Gweld gwybodaeth siop, opsiwn ar gael yn agos at frig y sgrîn</translation>

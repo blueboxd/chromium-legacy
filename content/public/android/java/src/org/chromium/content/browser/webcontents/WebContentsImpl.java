@@ -42,6 +42,7 @@ import org.chromium.content.browser.WindowEventObserverManager;
 import org.chromium.content.browser.accessibility.ViewStructureBuilder;
 import org.chromium.content.browser.framehost.RenderFrameHostDelegate;
 import org.chromium.content.browser.framehost.RenderFrameHostImpl;
+import org.chromium.content.browser.input.ImeAdapterImpl;
 import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 import org.chromium.content_public.browser.ChildProcessImportance;
 import org.chromium.content_public.browser.GlobalRenderFrameHostId;
@@ -52,6 +53,7 @@ import org.chromium.content_public.browser.MessagePort;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.StylusWritingHandler;
+import org.chromium.content_public.browser.StylusWritingImeCallback;
 import org.chromium.content_public.browser.ViewEventSink.InternalAccessDelegate;
 import org.chromium.content_public.browser.Visibility;
 import org.chromium.content_public.browser.WebContents;
@@ -91,7 +93,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
      * Used to reset the internal tracking for whether or not a serialized {@link WebContents}
      * was created in this process or not.
      */
-    @VisibleForTesting
     public static void invalidateSerializedWebContentsForTesting() {
         sParcelableUUID = UUID.randomUUID();
     }
@@ -709,7 +710,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
-    @VisibleForTesting
     public void evaluateJavaScriptForTests(String script, JavaScriptCallback callback) {
         ThreadUtils.assertOnUiThread();
         if (script == null) return;
@@ -815,7 +815,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
                 mNativeWebContentsAndroid, root, builder, doneCallback);
     }
 
-    @VisibleForTesting
     public void simulateRendererKilledForTesting() {
         if (mObserverProxy != null) {
             mObserverProxy.renderProcessGone();
@@ -828,6 +827,13 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         if (mNativeWebContentsAndroid == 0) return;
         WebContentsImplJni.get().setStylusHandwritingEnabled(
                 mNativeWebContentsAndroid, mStylusWritingHandler != null);
+    }
+
+    @Override
+    public StylusWritingImeCallback getStylusWritingImeCallback() {
+        ImeAdapterImpl imeAdapter = ImeAdapterImpl.fromWebContents(this);
+        if (imeAdapter == null) return null;
+        return imeAdapter.getStylusWritingImeCallback();
     }
 
     public StylusWritingHandler getStylusWritingHandler() {
@@ -1020,7 +1026,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     /**
      * Convenience method to initialize test state. Only use for testing.
      */
-    @VisibleForTesting
     public void initializeForTesting() {
         if (mInternalsHolder == null) {
             mInternalsHolder = WebContents.createDefaultInternalsHolder();
@@ -1037,7 +1042,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     /**
      * Convenience method to set user data. Only use for testing.
      */
-    @VisibleForTesting
     public <T extends UserData> void setUserDataForTesting(Class<T> key, T userData) {
         // Be sure to call initializeForTesting() first.
         assert mInitialized;

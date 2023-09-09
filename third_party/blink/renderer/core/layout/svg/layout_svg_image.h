@@ -88,6 +88,11 @@ class LayoutSVGImage final : public LayoutSVGModelObject {
     return object_bounding_box_;
   }
 
+  gfx::RectF DecoratedBoundingBox() const override {
+    NOT_DESTROYED();
+    return object_bounding_box_;
+  }
+
   void ImageChanged(WrappedImagePtr, CanDeferInvalidation) override;
 
   void UpdateLayout() override;

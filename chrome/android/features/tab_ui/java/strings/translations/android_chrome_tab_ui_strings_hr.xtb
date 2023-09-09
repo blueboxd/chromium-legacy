@@ -3,7 +3,6 @@
 <translationbundle lang="hr">
 <translation id="1075622780330595106">Broj vaših kartica koje niste koristili neko vrijeme: <ph name="NUMBER_OF_TABS" />. Želite li ih zatvoriti?</translation>
 <translation id="125153950246128346">Dodirnite za prikaz druge kartice</translation>
-<translation id="1403228085774130835">Zatvorene kartice nalaze se u kategoriji Nedavne kartice u glavnom izborniku Chromea.</translation>
 <translation id="1455506303394048917">Vaša aktivnost na tim anonimnim karticama izbrisat će se s ovog uređaja</translation>
 <translation id="1499635324672558517">Zatvoriti sve anonimne kartice?</translation>
 <translation id="1657719826150349398">Pomakni karticu prema dolje</translation>
@@ -47,6 +46,7 @@
 <translation id="5073204694187207510">Sakrij rešetku na cijelom zaslonu</translation>
 <translation id="5076161749301278626">Pregled recenzija trgovine?</translation>
 <translation id="5082793167783849073">Izradom grupe možete brzo usporediti stranice. Da biste započeli, dodirnite i držite vezu.</translation>
+<translation id="5339733443032484186">Vaša posljednja kartica</translation>
 <translation id="5490235265819901748">Grupa kartica je proširena</translation>
 <translation id="5494920125229734069">Odaberi sve</translation>
 <translation id="5556417849629758491">Pogledajte podatke o trgovini, opciju koja je dostupna pri vrhu zaslona</translation>

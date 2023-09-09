@@ -10,7 +10,6 @@
 #include "base/task/bind_post_task.h"
 #include "device/vr/android/cardboard/cardboard_image_transport.h"
 #include "device/vr/android/cardboard/cardboard_sdk.h"
-#include "device/vr/android/xr_java_coordinator.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom-shared.h"
 #include "device/vr/util/transform_utils.h"
@@ -75,7 +74,6 @@ void CardboardRenderLoop::GetEnvironmentIntegrationProvider(
 void CardboardRenderLoop::CreateSession(
     CardboardRequestSessionCallback session_request_callback,
     base::OnceClosure session_shutdown_callback,
-    XrJavaCoordinator* java_coordinator,
     CardboardSdk* cardboard_sdk,
     gfx::AcceleratedWidget drawing_widget,
     const gfx::Size& frame_size,
@@ -85,11 +83,11 @@ void CardboardRenderLoop::CreateSession(
   CHECK(!session_request_callback_);
   CHECK(!frame_size.IsEmpty());
   DVLOG(1) << __func__;
+  cardboard_sdk_ = cardboard_sdk;
 
   // The initial frame size given here should correspond with the display size.
   cardboard_image_transport_ = cardboard_image_transport_factory_->Create(
       std::move(mailbox_bridge_), frame_size);
-  cardboard_sdk_ = cardboard_sdk;
   session_request_callback_ = std::move(session_request_callback);
   session_shutdown_callback_ = std::move(session_shutdown_callback);
   texture_size_ = frame_size;
@@ -100,6 +98,16 @@ void CardboardRenderLoop::CreateSession(
                            options->required_features.end());
   enabled_features_.insert(options->optional_features.begin(),
                            options->optional_features.end());
+
+  if (!InitializeGl(drawing_widget)) {
+    std::move(session_request_callback_).Run(nullptr);
+    return;
+  }
+
+  cardboard_image_transport_->Initialize(
+      webxr_.get(),
+      base::BindOnce(&CardboardRenderLoop::OnCardboardImageTransportReady,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   left_eye_ = mojom::XRView::New();
   left_eye_->eye = mojom::XREye::kLeft;
@@ -119,26 +127,6 @@ void CardboardRenderLoop::CreateSession(
   right_eye_->mojo_from_view = gfx::Transform();
   right_eye_->field_of_view =
       cardboard_image_transport_->GetFOV(CardboardEye::kRight);
-
-  if (!InitializeGl(drawing_widget)) {
-    std::move(session_request_callback_).Run(nullptr);
-    return;
-  }
-
-  base::android::ScopedJavaLocalRef<jobject> application_context =
-      java_coordinator->GetCurrentActivityContext();
-  if (!application_context.obj()) {
-    DLOG(ERROR) << "Unable to retrieve the Java context/activity!";
-    std::move(session_request_callback_).Run(nullptr);
-    return;
-  }
-
-  cardboard_sdk_->Initialize(application_context.obj());
-
-  cardboard_image_transport_->Initialize(
-      webxr_.get(),
-      base::BindOnce(&CardboardRenderLoop::OnCardboardImageTransportReady,
-                     weak_ptr_factory_.GetWeakPtr()));
 
   head_tracker_ = internal::ScopedCardboardObject<CardboardHeadTracker*>(
       CardboardHeadTracker_create());
@@ -360,9 +348,10 @@ void CardboardRenderLoop::GetFrameData(
   xr_frame->bounds_right = right_bounds_;
 
   if (CardboardImageTransport::UseSharedBuffer()) {
-    // TODO(https://crbug.com/1429099): Do we need to pass a uv_transform?
+    // We aren't modifying the texture that we give to the page, so we just pass
+    // in identity for the uv_transform.
     frame_data->buffer_holder = cardboard_image_transport_->TransferFrame(
-        webxr_.get(), texture_size_, /*uv_transform=*/gfx::Transform());
+        webxr_.get(), texture_size_, gfx::Transform());
   }
 
   // Get the head pose
@@ -473,7 +462,8 @@ void CardboardRenderLoop::ProcessFrameFromMailbox(
   CHECK(webxr_->HaveProcessingFrame());
   CHECK(!CardboardImageTransport::UseSharedBuffer());
 
-  // TODO(https://crbug.com/1429099): Do we need to pass a uv_transform?
+  // We aren't modifying the texture that we've received from the page, so we
+  // just pass in identity.
   cardboard_image_transport_->CopyMailboxToSurfaceAndSwap(
       texture_size_, mailbox, gfx::Transform());
 

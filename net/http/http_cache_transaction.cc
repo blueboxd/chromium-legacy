@@ -609,6 +609,18 @@ void HttpCache::Transaction::SetEarlyResponseHeadersCallback(
   early_response_headers_callback_ = std::move(callback);
 }
 
+void HttpCache::Transaction::SetModifyRequestHeadersCallback(
+    base::RepeatingCallback<void(net::HttpRequestHeaders*)> callback) {
+  // This method should not be called for this class.
+  NOTREACHED();
+}
+
+void HttpCache::Transaction::SetIsSharedDictionaryReadAllowedCallback(
+    base::RepeatingCallback<bool()> callback) {
+  DCHECK(!network_trans_);
+  is_shared_dictionary_read_allowed_callback_ = std::move(callback);
+}
+
 int HttpCache::Transaction::ResumeNetworkStart() {
   if (network_trans_)
     return network_trans_->ResumeNetworkStart();
@@ -1871,6 +1883,10 @@ int HttpCache::Transaction::DoSendRequest() {
   network_trans_->SetEarlyResponseHeadersCallback(
       early_response_headers_callback_);
   network_trans_->SetResponseHeadersCallback(response_headers_callback_);
+  if (is_shared_dictionary_read_allowed_callback_) {
+    network_trans_->SetIsSharedDictionaryReadAllowedCallback(
+        is_shared_dictionary_read_allowed_callback_);
+  }
 
   // Old load timing information, if any, is now obsolete.
   network_transaction_info_.old_network_trans_load_timing.reset();
@@ -3427,7 +3443,7 @@ int HttpCache::Transaction::DoConnectedCallback() {
 int HttpCache::Transaction::DoConnectedCallbackComplete(int result) {
   if (result != OK) {
     if (result ==
-        ERR_CACHED_IP_ADDRESS_SPACE_BLOCKED_BY_LOCAL_NETWORK_ACCESS_POLICY) {
+        ERR_CACHED_IP_ADDRESS_SPACE_BLOCKED_BY_PRIVATE_NETWORK_ACCESS_POLICY) {
       DoomInconsistentEntry();
       UpdateCacheEntryStatus(CacheEntryStatus::ENTRY_OTHER);
       TransitionToState(reading_ ? STATE_SEND_REQUEST

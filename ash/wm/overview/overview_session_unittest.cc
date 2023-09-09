@@ -33,6 +33,7 @@
 #include "ash/style/rounded_label_widget.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_window_builder.h"
+#include "ash/wm/desks/cros_next_desk_icon_button.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_constants.h"
 #include "ash/wm/desks/desks_test_util.h"
@@ -65,6 +66,7 @@
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
+#include "ash/wm/test/fake_window_state.h"
 #include "ash/wm/window_mini_view_header_view.h"
 #include "ash/wm/window_preview_view.h"
 #include "ash/wm/window_state.h"
@@ -111,6 +113,7 @@
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/transform_util.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -244,9 +247,16 @@ TEST_P(OverviewSessionTest, CloseButtonDisabledOnDrag) {
       gfx::ToRoundedPoint(item1->GetTransformedBounds().CenterPoint()));
   GetEventGenerator()->MoveTouchIdBy(/*touch_id=*/0, -100, 0);
 
-  // Make sure the drag event triggered the fade animations.
-  EXPECT_EQ(0.f, GetTitlebarOpacity(item1));
-  EXPECT_EQ(1.f, GetCloseButtonOpacity(item1));
+  if (chromeos::features::IsJellyEnabled()) {
+    // When Jellyroll is enabled, we show the title and hide the close button
+    // only for the overview item being dragged.
+    EXPECT_EQ(1.f, GetTitlebarOpacity(item1));
+    EXPECT_EQ(0.f, GetCloseButtonOpacity(item1));
+  } else {
+    // Make sure the drag event triggered the fade animations.
+    EXPECT_EQ(0.f, GetTitlebarOpacity(item1));
+    EXPECT_EQ(1.f, GetCloseButtonOpacity(item1));
+  }
   EXPECT_EQ(1.f, GetTitlebarOpacity(item2));
   EXPECT_EQ(0.f, GetCloseButtonOpacity(item2));
 
@@ -789,7 +799,7 @@ TEST_P(OverviewSessionTest, CloseButtonOnMultipleDisplay) {
 
   ToggleOverview();
   gfx::Rect bounds = GetTransformedBoundsInRootWindow(window2);
-  gfx::Point point(bounds.right() - 5, bounds.y() + 5);
+  gfx::Point point(bounds.right() - 15, bounds.y() + 15);
   ui::test::EventGenerator event_generator(window2->GetRootWindow(), point);
 
   EXPECT_FALSE(widget->IsClosed());
@@ -2104,9 +2114,14 @@ TEST_P(OverviewSessionTest, HandleActiveWindowNotInOverviewGrid) {
 
   ClickWindow(widget->GetNativeWindow());
 
+  const bool is_jellyroll_enabled = chromeos::features::IsJellyrollEnabled();
   // |window1| and |window2| should animate.
-  EXPECT_EQ(gfx::Tween::EASE_OUT, tester1.tween_type());
-  EXPECT_EQ(gfx::Tween::EASE_OUT, tester2.tween_type());
+  EXPECT_EQ(is_jellyroll_enabled ? gfx::Tween::ACCEL_20_DECEL_100
+                                 : gfx::Tween::EASE_OUT,
+            tester1.tween_type());
+  EXPECT_EQ(is_jellyroll_enabled ? gfx::Tween::ACCEL_20_DECEL_100
+                                 : gfx::Tween::EASE_OUT,
+            tester2.tween_type());
   EXPECT_EQ(gfx::Tween::ZERO, tester3.tween_type());
 }
 
@@ -2356,8 +2371,16 @@ TEST_P(OverviewSessionTest, OverviewItemTitleCloseVisibilityOnDrag) {
       gfx::ToRoundedPoint(item1->target_bounds().CenterPoint()));
   generator->PressLeftButton();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0.f, GetTitlebarOpacity(item1));
-  EXPECT_EQ(1.f, GetCloseButtonOpacity(item1));
+
+  if (chromeos::features::IsJellyEnabled()) {
+    // When Jellyroll is enabled, we show the title and hide the close button
+    // only for the overview item being dragged.
+    EXPECT_EQ(1.f, GetTitlebarOpacity(item1));
+    EXPECT_EQ(0.f, GetCloseButtonOpacity(item1));
+  } else {
+    EXPECT_EQ(0.f, GetTitlebarOpacity(item1));
+    EXPECT_EQ(1.f, GetCloseButtonOpacity(item1));
+  }
   EXPECT_EQ(1.f, GetTitlebarOpacity(item2));
   EXPECT_EQ(0.f, GetCloseButtonOpacity(item2));
 
@@ -2651,7 +2674,9 @@ TEST_P(OverviewSessionTest, ShadowBounds) {
   // Helper function which returns the ratio of the item width and height minus
   // the header and window margin.
   auto item_ratio = [](OverviewItem* item) {
-    gfx::RectF boundsf = item->GetWindowTargetBoundsWithInsets();
+    gfx::RectF boundsf = chromeos::features::IsJellyrollEnabled()
+                             ? item->target_bounds()
+                             : item->GetWindowTargetBoundsWithInsets();
     return boundsf.width() / boundsf.height();
   };
 
@@ -2694,7 +2719,7 @@ TEST_P(OverviewSessionTest, ShadowBounds) {
   // the header of window margin.
   EXPECT_NEAR(shadow_ratio(wide_item), item_ratio(wide_item), 0.01f);
   EXPECT_NEAR(shadow_ratio(tall_item), item_ratio(tall_item), 0.01f);
-  EXPECT_NEAR(shadow_ratio(normal_item), 1.f, 0.01f);
+  EXPECT_NEAR(shadow_ratio(normal_item), item_ratio(normal_item), 0.01f);
 
   // Verify all the shadows are within the bounds of their respective item
   // widgets when the overview windows are positioned with animations.
@@ -2707,7 +2732,7 @@ TEST_P(OverviewSessionTest, ShadowBounds) {
 
   EXPECT_NEAR(shadow_ratio(wide_item), item_ratio(wide_item), 0.01f);
   EXPECT_NEAR(shadow_ratio(tall_item), item_ratio(tall_item), 0.01f);
-  EXPECT_NEAR(shadow_ratio(normal_item), 1.f, 0.01f);
+  EXPECT_NEAR(shadow_ratio(normal_item), item_ratio(normal_item), 0.01f);
 
   // Test that leaving overview mode cleans up properly.
   ToggleOverview();
@@ -3623,20 +3648,24 @@ TEST_F(FloatOverviewSessionTest, DraggingToNewDeskWithFloatedWindow) {
       GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
   const auto* desks_bar_view = overview_grid->desks_bar_view();
   ASSERT_TRUE(desks_bar_view);
-  const auto* zero_state_new_desk_button =
-      desks_bar_view->zero_state_new_desk_button();
-  ASSERT_TRUE(zero_state_new_desk_button);
-  ASSERT_TRUE(zero_state_new_desk_button->GetVisible());
-  generator->DragMouseTo(
-      zero_state_new_desk_button->GetBoundsInScreen().CenterPoint());
+  views::LabelButton* new_desk_button = nullptr;
+  if (chromeos::features::IsJellyrollEnabled()) {
+    new_desk_button =
+        const_cast<CrOSNextDeskIconButton*>(desks_bar_view->new_desk_button());
+  } else {
+    new_desk_button = desks_bar_view->zero_state_new_desk_button();
+  }
+  ASSERT_TRUE(new_desk_button);
+  ASSERT_TRUE(new_desk_button->GetVisible());
+  generator->DragMouseTo(new_desk_button->GetBoundsInScreen().CenterPoint());
 
   // Check that a new desk has been created, and there should be no crash when
   // dropping the window.
   generator->ReleaseLeftButton();
   auto* controller = DesksController::Get();
   EXPECT_EQ(2u, controller->desks().size());
-  EXPECT_TRUE(
-      base::Contains(controller->desks()[1]->windows(), normal_window.get()));
+  EXPECT_TRUE(base::Contains(controller->GetDeskAtIndex(1)->windows(),
+                             normal_window.get()));
 }
 
 // Tests that the overview item associated with the floated window appears
@@ -3879,14 +3908,14 @@ TEST_F(TabletModeOverviewSessionTest, DeskRemovalWhileScrolling) {
 
   auto* controller = DesksController::Get();
   controller->NewDesk(DesksCreationRemovalSource::kKeyboard);
-  ActivateDesk(controller->desks()[1].get());
+  ActivateDesk(controller->GetDeskAtIndex(1));
   auto desk2_windows = CreateAppWindows(2);
 
   // Activate the desk with 15 windows. There may be more than the windows we
   // created (i.e. backdrop, nudges), so we assert greater than.
-  ActivateDesk(controller->desks()[0].get());
-  ASSERT_GT(controller->desks()[0]->windows().size(), 15u);
-  ASSERT_GT(controller->desks()[1]->windows().size(), 2u);
+  ActivateDesk(controller->GetDeskAtIndex(0));
+  ASSERT_GT(controller->GetDeskAtIndex(0)->windows().size(), 15u);
+  ASSERT_GT(controller->GetDeskAtIndex(1)->windows().size(), 2u);
 
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
@@ -3896,7 +3925,7 @@ TEST_F(TabletModeOverviewSessionTest, DeskRemovalWhileScrolling) {
   GetEventGenerator()->MoveTouchBy(-50, 0);
 
   // Remove the desk and continue scrolling. There should be no crash.
-  RemoveDesk(controller->desks()[1].get(), DeskCloseType::kCombineDesks);
+  RemoveDesk(controller->GetDeskAtIndex(1), DeskCloseType::kCombineDesks);
   GetEventGenerator()->MoveTouchBy(-50, 0);
 }
 
@@ -4013,6 +4042,28 @@ TEST_F(TabletModeOverviewSessionTest, SnappingFullscreenWindow) {
 
   EXPECT_TRUE(WindowState::Get(window.get())->IsSnapped());
 }
+
+class ContinuousOverviewAnimationTest : public OverviewTestBase {
+ public:
+  ContinuousOverviewAnimationTest() = default;
+  ContinuousOverviewAnimationTest(const ContinuousOverviewAnimationTest&) =
+      delete;
+  ContinuousOverviewAnimationTest& operator=(
+      const ContinuousOverviewAnimationTest&) = delete;
+  ~ContinuousOverviewAnimationTest() override = default;
+
+  // OverviewTestBase:
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{features::kContinuousOverviewScrollAnimation,
+                              chromeos::features::kJelly},
+        /*disabled_features=*/{});
+    OverviewTestBase::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
 
 class ClamshellScrollOverviewSessionTest : public OverviewTestBase {
  public:
@@ -5188,7 +5239,7 @@ TEST_F(SplitViewOverviewSessionTest, Clipping) {
   auto aspect_ratio_near = [](const gfx::Rect& rect1, const gfx::Rect& rect2) {
     DCHECK_GT(rect1.height(), 0);
     DCHECK_GT(rect2.height(), 0);
-    constexpr float kEpsilon = 0.05f;
+    constexpr float kEpsilon = 0.06f;
     const float rect1_aspect_ratio =
         static_cast<float>(rect1.width()) / rect1.height();
     const float rect2_aspect_ratio =
@@ -7284,29 +7335,6 @@ TEST_F(SplitViewOverviewSessionInClamshellTest,
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 }
 
-class TestWindowStateDelegate : public WindowStateDelegate {
- public:
-  TestWindowStateDelegate() = default;
-  TestWindowStateDelegate(const TestWindowStateDelegate&) = delete;
-  TestWindowStateDelegate& operator=(const TestWindowStateDelegate&) = delete;
-  ~TestWindowStateDelegate() override = default;
-
-  // WindowStateDelegate:
-  std::unique_ptr<PresentationTimeRecorder> OnDragStarted(
-      int component) override {
-    drag_in_progress_ = true;
-    return nullptr;
-  }
-  void OnDragFinished(bool cancel, const gfx::PointF& location) override {
-    drag_in_progress_ = false;
-  }
-
-  bool drag_in_progress() { return drag_in_progress_; }
-
- private:
-  bool drag_in_progress_ = false;
-};
-
 // Tests that when a split view window carries over to clamshell split view
 // while the divider is being dragged, the window resize is properly completed.
 TEST_F(SplitViewOverviewSessionInClamshellTest,
@@ -7314,8 +7342,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest,
   std::unique_ptr<aura::Window> snapped_window = CreateTestWindow();
   std::unique_ptr<aura::Window> overview_window = CreateTestWindow();
   WindowState* snapped_window_state = WindowState::Get(snapped_window.get());
-  TestWindowStateDelegate* snapped_window_state_delegate =
-      new TestWindowStateDelegate();
+  auto* snapped_window_state_delegate = new FakeWindowStateDelegate();
   snapped_window_state->SetDelegate(
       base::WrapUnique(snapped_window_state_delegate));
 

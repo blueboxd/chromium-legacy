@@ -33,6 +33,7 @@ CookieControlsBridge::CookieControlsBridge(
       permissions_client->GetCookieSettings(web_contents->GetBrowserContext()),
       original_context ? permissions_client->GetCookieSettings(original_context)
                        : nullptr);
+  old_observation_.Observe(controller_.get());
   observation_.Observe(controller_.get());
   controller_->Update(web_contents);
 }
@@ -73,6 +74,53 @@ void CookieControlsBridge::OnCookiesCountChanged(int allowed_cookies,
 
 // This is a no-op for Android.
 void CookieControlsBridge::OnStatefulBounceCountChanged(int bounce_count) {}
+
+void CookieControlsBridge::OnStatusChanged(
+    CookieControlsStatus status,
+    CookieControlsEnforcement enforcement,
+    base::Time expiration) {
+  // Only invoke the callback when there is a change.
+  if (status_ == status && enforcement_ == enforcement &&
+      expiration_ == expiration) {
+    return;
+  }
+  status_ = status;
+  enforcement_ = enforcement;
+  expiration_ = expiration;
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_CookieControlsBridge_onStatusChanged(
+      env, jobject_, static_cast<int>(status_), static_cast<int>(enforcement_),
+      expiration.ToJavaTime());
+}
+
+void CookieControlsBridge::OnSitesCountChanged(
+    int allowed_third_party_sites_count,
+    int blocked_third_party_sites_count) {
+  // The site counts change quite frequently, so avoid unnecessary
+  // UI updates if possible.
+  if (allowed_third_party_sites_count_ == allowed_third_party_sites_count &&
+      blocked_third_party_sites_count_ == blocked_third_party_sites_count) {
+    return;
+  }
+  allowed_third_party_sites_count_ = allowed_third_party_sites_count;
+  blocked_third_party_sites_count_ = blocked_third_party_sites_count;
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_CookieControlsBridge_onSitesCountChanged(
+      env, jobject_, allowed_third_party_sites_count,
+      blocked_third_party_sites_count);
+}
+
+void CookieControlsBridge::OnBreakageConfidenceLevelChanged(
+    CookieControlsBreakageConfidenceLevel level) {
+  if (level_ == level) {
+    return;
+  }
+
+  level_ = level;
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_CookieControlsBridge_onBreakageConfidenceLevelChanged(
+      env, jobject_, static_cast<int>(level));
+}
 
 void CookieControlsBridge::SetThirdPartyCookieBlockingEnabledForSite(
     JNIEnv* env,

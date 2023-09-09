@@ -41,6 +41,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -182,8 +183,9 @@ class AutofillAgent::DeferringAutofillDriver : public mojom::AutofillDriver {
     DeferMsg(&mojom::AutofillDriver::SelectControlDidChange, form, field,
              bounding_box);
   }
-  void SelectFieldOptionsDidChange(const FormData& form) override {
-    DeferMsg(&mojom::AutofillDriver::SelectFieldOptionsDidChange, form);
+  void SelectOrSelectMenuFieldOptionsDidChange(const FormData& form) override {
+    DeferMsg(&mojom::AutofillDriver::SelectOrSelectMenuFieldOptionsDidChange,
+             form);
   }
   void AskForValuesToFill(
       const FormData& form,
@@ -663,12 +665,14 @@ void AutofillAgent::FillOrPreviewForm(const FormData& form,
         document, form.fields.front().unique_renderer_id);
   }
 
-  if (element_.IsNull())
+  if (element_.IsNull()) {
     return;
+  }
+
+  // Clear anything that might have been previewing previously.
+  ClearPreviewedForm();
 
   if (action == mojom::RendererFormDataAction::kPreview) {
-    ClearPreviewedForm();
-
     query_node_autofill_state_ = element_.GetAutofillState();
     previewed_elements_ = form_util::FillOrPreviewForm(form, element_, action);
 
@@ -698,6 +702,37 @@ void AutofillAgent::FillOrPreviewForm(const FormData& form,
 
     TriggerRefillIfNeeded(form);
     SendPotentiallySubmittedFormToBrowser();
+  }
+}
+
+void AutofillAgent::UndoAutofill(
+    const FormData& form,
+    mojom::RendererFormDataAction renderer_action) {
+  // If `element_` is null or not focused, Undo was either triggered from
+  // another frame or the `element_` has been detached from the DOM or the focus
+  // was moved otherwise. If `element_` is from a different form than `form`,
+  // then Undo was triggered from a different form in the same frame, and either
+  // this is a subframe and both forms should be filled, or focus has changed
+  // right after the user accepted the suggestions.
+  //
+  // In these cases, we set `element_` to some form field as if Undo had been
+  // triggered from that field. This is necessary because currently
+  // AutofillAgent relies on `element_` in many places.
+  if (!form.fields.empty() && (element_.IsNull() || !element_.Focused() ||
+                               form_util::GetFormRendererId(element_.Form()) !=
+                                   form.unique_renderer_id)) {
+    if (unsafe_render_frame() == nullptr) {
+      return;
+    }
+    WebDocument document = unsafe_render_frame()->GetWebFrame()->GetDocument();
+    element_ = form_util::FindFormControlElementByUniqueRendererId(
+        document, form.fields.front().unique_renderer_id);
+  }
+  if (element_.IsNull()) {
+    return;
+  }
+  if (renderer_action == mojom::RendererFormDataAction::kFill) {
+    form_util::UndoForm(form, element_);
   }
 }
 
@@ -830,9 +865,9 @@ void AutofillAgent::AcceptDataListSuggestion(
     std::u16string value = input_element.EditingValue().Utf16();
     std::vector<base::StringPiece16> parts = base::SplitStringPiece(
         value, u",", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-    if (parts.size() == 0)
-      parts.push_back(base::StringPiece16());
-
+    if (parts.empty()) {
+      parts.emplace_back();
+    }
     std::u16string last_part(parts.back());
     // We want to keep just the leading whitespace.
     for (size_t i = 0; i < last_part.size(); ++i) {
@@ -947,7 +982,7 @@ void AutofillAgent::ShowSuggestions(
   // autofill agent.
   // The /*disable presubmit*/ comment below is used to disable a presubmit
   // script that ensures that only IsPasswordFieldForAutofill() is used in this
-  // code (it has to appear between the function name and the parentesis to not
+  // code (it has to appear between the function name and the parenthesis to not
   // match a regex). In this specific case we are actually interested in whether
   // the field is currently a password field, not whether it has ever been a
   // password field.
@@ -1189,13 +1224,14 @@ void AutofillAgent::SelectControlDidChange(
   form_tracker_.SelectControlDidChange(element);
 }
 
-// Notifies the AutofillDriver about changes in the <select> options in batches.
+// Notifies the AutofillDriver about changes in the <select> or <selectmenu>
+// options in batches.
 //
 // A batch ends if no event occurred for `kWaitTimeForOptionsChangesMs`
 // milliseconds. For a given batch, the AutofillDriver is informed only about
 // the last FormData. That is, if within one batch the options of different
 // forms changed, all but one of these events will be lost.
-void AutofillAgent::SelectFieldOptionsChanged(
+void AutofillAgent::SelectOrSelectMenuFieldOptionsChanged(
     const blink::WebFormControlElement& element) {
   DCHECK(!unsafe_render_frame() ||
          IsOwnedByFrame(element, unsafe_render_frame()));
@@ -1203,16 +1239,17 @@ void AutofillAgent::SelectFieldOptionsChanged(
   if (!was_last_action_fill_ || element_.IsNull())
     return;
 
-  if (select_option_change_batch_timer_.IsRunning())
-    select_option_change_batch_timer_.AbandonAndStop();
+  if (select_or_selectmenu_option_change_batch_timer_.IsRunning()) {
+    select_or_selectmenu_option_change_batch_timer_.AbandonAndStop();
+  }
 
-  select_option_change_batch_timer_.Start(
+  select_or_selectmenu_option_change_batch_timer_.Start(
       FROM_HERE, base::Milliseconds(kWaitTimeForOptionsChangesMs),
-      base::BindRepeating(&AutofillAgent::BatchSelectOptionChange,
+      base::BindRepeating(&AutofillAgent::BatchSelectOrSelectMenuOptionChange,
                           weak_ptr_factory_.GetWeakPtr(), element));
 }
 
-void AutofillAgent::BatchSelectOptionChange(
+void AutofillAgent::BatchSelectOrSelectMenuOptionChange(
     const blink::WebFormControlElement& element) {
   if (element.GetDocument().IsNull()) {
     return;
@@ -1226,7 +1263,7 @@ void AutofillAgent::BatchSelectOptionChange(
                                             &form, &field) &&
       !field.options.empty()) {
     if (auto* autofill_driver = unsafe_autofill_driver()) {
-      autofill_driver->SelectFieldOptionsDidChange(form);
+      autofill_driver->SelectOrSelectMenuFieldOptionsDidChange(form);
     }
   }
 }

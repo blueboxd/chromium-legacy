@@ -139,7 +139,7 @@ content::WebContents::Getter GetWebContentsGetter(
 }
 
 void AcquireFileAccessPermissionDoneForScheduleDownload(
-    const content::WebContents::Getter& wc_getter,
+    content::WebContents* web_contents,
     const std::string& name_space,
     const GURL& url,
     OfflinePageUtils::DownloadUIActionFlags ui_action,
@@ -147,11 +147,6 @@ void AcquireFileAccessPermissionDoneForScheduleDownload(
     bool granted) {
   if (!granted)
     return;
-  content::WebContents* web_contents = wc_getter.Run();
-  if (!web_contents) {
-    return;
-  }
-
   OfflinePageTabHelper* tab_helper =
       OfflinePageTabHelper::FromWebContents(web_contents);
   if (!tab_helper)
@@ -301,8 +296,7 @@ void OfflinePageUtils::ScheduleDownload(content::WebContents* web_contents,
   AcquireFileAccessPermission(
       web_contents,
       base::BindOnce(&AcquireFileAccessPermissionDoneForScheduleDownload,
-                     GetWebContentsGetter(web_contents), name_space, url,
-                     ui_action, request_origin));
+                     web_contents, name_space, url, ui_action, request_origin));
 }
 
 // static

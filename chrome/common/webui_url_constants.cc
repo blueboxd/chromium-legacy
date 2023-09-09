@@ -16,6 +16,7 @@
 #include "components/password_manager/content/common/web_ui_constants.h"
 #include "components/safe_browsing/core/common/web_ui_constants.h"
 #include "components/signin/public/base/signin_buildflags.h"
+#include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "third_party/blink/public/common/chrome_debug_urls.h"
 
@@ -127,6 +128,8 @@ const char kChromeUIInvalidationsUrl[] = "chrome://invalidations";
 const char kChromeUIKillHost[] = "kill";
 const char kChromeUILauncherInternalsHost[] = "launcher-internals";
 const char kChromeUILauncherInternalsURL[] = "chrome://launcher-internals";
+const char kChromeUISensorInfoHost[] = "sensor-info";
+const char kChromeUISensorInfoURL[] = "chrome://sensor-info/";
 const char kChromeUILocalStateHost[] = "local-state";
 const char kChromeUILocationInternalsHost[] = "location-internals";
 const char kChromeUIManagementHost[] = "management";
@@ -162,6 +165,7 @@ const char kChromeUIPasswordManagerSettingsURL[] =
 const char kChromeUIPerformanceSettingsURL[] = "chrome://settings/performance";
 const char kChromeUIPolicyHost[] = "policy";
 const char kChromeUIPolicyURL[] = "chrome://policy/";
+const char kChromeUIPolicyTestURL[] = "chrome://policy/test";
 const char kChromeUIPredictorsHost[] = "predictors";
 const char kChromeUIPrefsInternalsHost[] = "prefs-internals";
 const char kChromeUIPrefsInternalsURL[] = "chrome://prefs-internals";
@@ -286,6 +290,7 @@ const char kChromeUIOmniboxPopupURL[] = "chrome://omnibox-popup.top-chrome/";
 const char kChromeUISuggestInternalsHost[] = "suggest-internals";
 const char kChromeUISuggestInternalsURL[] = "chrome://suggest-internals/";
 const char kChromeUIWebAppInternalsHost[] = "web-app-internals";
+const char kChromeUIWebAppInternalsURL[] = "chrome://web-app-internals";
 const char kChromeUIWebUITestHost[] = "webui-test";
 #endif
 
@@ -583,6 +588,7 @@ const char kImportDataSubPage[] = "importData";
 const char kLanguagesSubPage[] = "languages/details";
 const char kLanguageOptionsSubPage[] = "languages";
 const char kOnStartupSubPage[] = "onStartup";
+const char kPasskeysSubPage[] = "passkeys";
 const char kPasswordCheckSubPage[] = "passwords/check?start=true";
 const char kPasswordManagerSubPage[] = "passwords";
 const char kPaymentsSubPage[] = "payments";
@@ -727,6 +733,9 @@ const char* const kChromeHostURLs[] = {
 #endif
     content::kChromeUIUkmHost,
     content::kChromeUIWebRTCInternalsHost,
+#if BUILDFLAG(ENABLE_VR)
+    content::kChromeUIWebXrInternalsHost,
+#endif
 #if !BUILDFLAG(IS_ANDROID)
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
     kChromeUIAppLauncherPageHost,
@@ -820,12 +829,12 @@ const char* const kChromeDebugURLs[] = {
     blink::kChromeUIBrowserCrashURL,
     blink::kChromeUIBrowserDcheckURL,
     blink::kChromeUICrashURL,
-#if BUILDFLAG(BUILD_RUST_CRASH)
+#if BUILDFLAG(ENABLE_RUST_CRASH)
     blink::kChromeUICrashRustURL,
 #if defined(ADDRESS_SANITIZER)
     blink::kChromeUICrashRustOverflowURL,
 #endif
-#endif  // BUILDFLAG(BUILD_RUST_CRASH)
+#endif  // BUILDFLAG(ENABLE_RUST_CRASH)
     blink::kChromeUIDumpURL,
     blink::kChromeUIKillURL,
     blink::kChromeUIHangURL,

@@ -407,9 +407,9 @@ enum BulkPinStage {
   success,
 
   // Final error stages.
+  not_enough_space,
   cannot_get_free_space,
   cannot_list_files,
-  not_enough_space,
   cannot_enable_docs_offline
 };
 
@@ -1074,6 +1074,16 @@ dictionary IOTaskParams {
   boolean? showNotification;
 };
 
+// Holds information about data protection policy errors, see file_manager::io_task::PolicyError.
+dictionary PolicyError {
+  // Type of the error.
+  PolicyErrorType type;
+  // The number of files blocked by the policy.
+  long policyFileCount;
+  // The name of the first blocked file. Used for notifications.
+  DOMString fileName;
+};
+
 // IO task state::PAUSED name conflict parameters, see file_manager::io_task::ConflictPauseParams.
 dictionary ConflictPauseParams {
   // The conflict file name.
@@ -1091,7 +1101,12 @@ dictionary ConflictPauseParams {
 
 // IO task state::PAUSED policy parameters, see file_manager::io_task::PolicyPauseParams.
 dictionary PolicyPauseParams {
+  // One of DLP or Enterprise Connectors.
   PolicyErrorType type;
+  // The number of files under warning restriction.
+  long policyFileCount;
+  // The name of the first file under warning restriction. Used for notifications.
+  DOMString fileName;
 };
 
 // IO task state::PAUSED parameters, see file_manager::io_task::PauseParams.
@@ -1136,7 +1151,7 @@ dictionary ProgressStatus {
 
   // Type of policy error that occurred, if any.
   // Used only if Data Leak Prevention or Enterprise Connectors policies apply.
-  PolicyErrorType? policyError;
+  PolicyError? policyError;
 
   // Name of the first source entry.
   DOMString sourceName;
@@ -1270,6 +1285,9 @@ dictionary BulkPinProgress {
 
   // Estimated time remaining to pin all the `bytesToPin`.
   double remainingSeconds;
+
+  // Has the bulk-pinning manager ever emptied its set of tracked items?
+  boolean emptiedQueue;
 };
 
 // Callback that does not take arguments.

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/containers/contains.h"
+#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/task/single_thread_task_runner.h"
@@ -31,6 +32,7 @@
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/privacy_sandbox/privacy_sandbox_prefs.h"
 #include "components/privacy_sandbox/privacy_sandbox_test_util.h"
+#include "components/services/storage/shared_storage/shared_storage_manager.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_features.h"
@@ -39,8 +41,10 @@
 #include "content/public/test/shared_storage_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_select_url_fenced_frame_config_observer.h"
+#include "content/public/test/test_shared_storage_header_observer.h"
 #include "net/base/schemeful_site.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,8 +66,18 @@ namespace storage {
 
 namespace {
 
+using OperationResult = SharedStorageManager::OperationResult;
+
+const auto& SetOperation =
+    content::SharedStorageWriteOperationAndResult::SetOperation;
+const auto& AppendOperation =
+    content::SharedStorageWriteOperationAndResult::AppendOperation;
+const auto& ClearOperation =
+    content::SharedStorageWriteOperationAndResult::ClearOperation;
+
 constexpr char kMainHost[] = "a.test";
 constexpr char kSimplePagePath[] = "/simple.html";
+constexpr char kTitle1Path[] = "/title1.html";
 constexpr char kCrossOriginHost[] = "b.test";
 constexpr char kThirdOriginHost[] = "c.test";
 constexpr char kFourthOriginHost[] = "d.test";
@@ -114,6 +128,19 @@ constexpr char kPrivateAggregationSendHistogramReportHistogram[] =
     "PrivacySandbox.PrivateAggregation.Host.SendHistogramReportResult";
 
 const double kBudgetAllowed = 5.0;
+
+// In order to cut back on the total number of tests run, we deliberately only
+// test three possibilities. In particular, the main host is unenrolled when the
+// attestations are unenforced, leaving out the main host enrolled/attestations
+// unenforced case. Since this enum is used as a parameter and combined with
+// other parameters, using three instead of four cases is especially important
+// on Android due to hardware limitations that constrain the total number of
+// tests that can be run.
+enum class EnforcementAndEnrollmentStatus {
+  kAttestationsUnenforced = 0,
+  kAttestationsEnforcedMainHostUnenrolled = 1,
+  kAttestationsEnforcedMainHostEnrolled = 2,
+};
 
 #if BUILDFLAG(IS_ANDROID)
 base::FilePath GetChromeTestDataDir() {
@@ -258,9 +285,9 @@ class SharedStorageChromeBrowserTestBase : public PlatformBrowserTest {
     https_server()->AddDefaultHandlers(GetChromeTestDataDir());
     https_server()->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
     content::SetupCrossSiteRedirector(https_server());
-    CHECK(https_server()->Start());
 
     SetPrefs(EnablePrivacySandbox(), AllowThirdPartyCookies());
+    FinishSetUp();
   }
 
   ~SharedStorageChromeBrowserTestBase() override = default;
@@ -269,6 +296,12 @@ class SharedStorageChromeBrowserTestBase : public PlatformBrowserTest {
 
   content::WebContents* GetActiveWebContents() {
     return chrome_test_utils::GetActiveWebContents(this);
+  }
+
+  content::StoragePartition* GetStoragePartition() {
+    return content::ToRenderFrameHost(GetActiveWebContents())
+        .render_frame_host()
+        ->GetStoragePartition();
   }
 
   Profile* GetProfile() {
@@ -282,6 +315,10 @@ class SharedStorageChromeBrowserTestBase : public PlatformBrowserTest {
   privacy_sandbox::PrivacySandboxSettings* GetPrivacySandboxSettings() {
     return PrivacySandboxSettingsFactory::GetForProfile(GetProfile());
   }
+
+  // Virtual so derived classes can delay or perform additional set up before
+  // starting the server.
+  virtual void FinishSetUp() { CHECK(https_server()->Start()); }
 
   void SetPrefs(bool enable_privacy_sandbox, bool allow_third_party_cookies) {
     GetProfile()->GetPrefs()->SetBoolean(prefs::kPrivacySandboxApisEnabledV2,
@@ -331,10 +368,12 @@ class SharedStorageChromeBrowserTestBase : public PlatformBrowserTest {
   }
 
   // Unless overridden to do otherwise, enrolls the main host to attest for
-  // Shared Storage exactly when `ShouldEnrollMainHost()` is true.
+  // Shared Storage exactly when `GetEnforcementAndEnrollmentStatus()` is
+  // `EnforcementAndEnrollmentStatus::kAttestationsEnforcedMainHostEnrolled`.
   virtual void MaybeEnrollMainHost(const GURL& main_url) {
     privacy_sandbox::PrivacySandboxAttestationsMap attestations_map =
-        ShouldEnrollMainHost()
+        (GetEnforcementAndEnrollmentStatus() ==
+         EnforcementAndEnrollmentStatus::kAttestationsEnforcedMainHostEnrolled)
             ? MakeSharedStoragePrivacySandboxAttestationsMap(
                   std::vector<GURL>({main_url}))
             : privacy_sandbox::PrivacySandboxAttestationsMap();
@@ -533,11 +572,15 @@ class SharedStorageChromeBrowserTestBase : public PlatformBrowserTest {
   virtual bool ResolveSelectURLToConfig() const { return false; }
   virtual bool EnablePrivacySandbox() const { return true; }
   virtual bool AllowThirdPartyCookies() const { return true; }
-  virtual bool EnforceAttestations() const { return false; }
-  virtual bool ShouldEnrollMainHost() const { return true; }
+  virtual EnforcementAndEnrollmentStatus GetEnforcementAndEnrollmentStatus()
+      const {
+    return EnforcementAndEnrollmentStatus::kAttestationsUnenforced;
+  }
 
   bool SuccessExpected() {
-    return (ShouldEnrollMainHost() || !EnforceAttestations()) &&
+    return GetEnforcementAndEnrollmentStatus() !=
+               EnforcementAndEnrollmentStatus::
+                   kAttestationsEnforcedMainHostUnenrolled &&
            EnablePrivacySandbox() && AllowThirdPartyCookies();
   }
 
@@ -566,7 +609,8 @@ class SharedStorageChromeBrowserTest
     fenced_frame_feature_.InitAndEnableFeature(blink::features::kFencedFrames);
     attestation_feature_.InitWithFeatureState(
         privacy_sandbox::kEnforcePrivacySandboxAttestations,
-        EnforceAttestations());
+        GetEnforcementAndEnrollmentStatus() !=
+            EnforcementAndEnrollmentStatus::kAttestationsUnenforced);
   }
   ~SharedStorageChromeBrowserTest() override = default;
 
@@ -578,12 +622,10 @@ class SharedStorageChromeBrowserTest
   base::test::ScopedFeatureList attestation_feature_;
 };
 
-using SharedStorageChromeBrowserParams =
-    std::tuple</*resolve_to_config=*/bool,
-               /*enable_privacy_sandbox=*/bool,
-               /*allow_third_party_cookies=*/bool,
-               /*enforce_attestations=*/bool,
-               /*should_enroll_main_host=*/bool>;
+using SharedStorageChromeBrowserParams = std::tuple<
+    /*enable_privacy_sandbox=*/bool,
+    /*allow_third_party_cookies=*/bool,
+    /*enforcement_and_enrollment_status=*/EnforcementAndEnrollmentStatus>;
 
 class SharedStoragePrefBrowserTest
     : public SharedStorageChromeBrowserTestBase,
@@ -595,18 +637,20 @@ class SharedStoragePrefBrowserTest
     fenced_frame_feature_.InitAndEnableFeature(blink::features::kFencedFrames);
     attestation_feature_.InitWithFeatureState(
         privacy_sandbox::kEnforcePrivacySandboxAttestations,
-        EnforceAttestations());
+        GetEnforcementAndEnrollmentStatus() !=
+            EnforcementAndEnrollmentStatus::kAttestationsUnenforced);
   }
 
-  bool ResolveSelectURLToConfig() const override {
-    return std::get<0>(GetParam());
-  }
-  bool EnablePrivacySandbox() const override { return std::get<1>(GetParam()); }
+  bool ResolveSelectURLToConfig() const override { return true; }
+  bool EnablePrivacySandbox() const override { return std::get<0>(GetParam()); }
   bool AllowThirdPartyCookies() const override {
+    return std::get<1>(GetParam());
+  }
+  EnforcementAndEnrollmentStatus GetEnforcementAndEnrollmentStatus()
+      const override {
     return std::get<2>(GetParam());
   }
-  bool EnforceAttestations() const override { return std::get<3>(GetParam()); }
-  bool ShouldEnrollMainHost() const override { return std::get<4>(GetParam()); }
+
   void AddSimpleModuleWithPermissionBypassed(
       const content::ToRenderFrameHost& execution_target) {
     content::WebContentsConsoleObserver add_module_console_observer(
@@ -716,23 +760,39 @@ class SharedStoragePrefBrowserTest
   base::test::ScopedFeatureList attestation_feature_;
 };
 
+namespace {
+std::string DescribePrefBrowserTestParams(
+    const testing::TestParamInfo<SharedStoragePrefBrowserTest::ParamType>&
+        info) {
+  return base::StrCat(
+      {"PrivacySandbox", std::get<0>(info.param) ? "Enabled" : "Disabled",
+       "_3PCookies", std::get<1>(info.param) ? "Allowed" : "Blocked",
+       "_Attestations",
+       (std::get<2>(info.param) !=
+        EnforcementAndEnrollmentStatus::kAttestationsUnenforced)
+           ? base::StrCat({"Enforced_MainHost",
+                           (std::get<2>(info.param) ==
+                            EnforcementAndEnrollmentStatus::
+                                kAttestationsEnforcedMainHostEnrolled)
+                               ? "Enrolled"
+                               : "Unenrolled"})
+           : "Unenforced"});
+}
+
+}  // namespace
+
 INSTANTIATE_TEST_SUITE_P(
     All,
     SharedStoragePrefBrowserTest,
-    testing::Combine(testing::Bool(),
-                     testing::Bool(),
-                     testing::Bool(),
-                     testing::Bool(),
-                     testing::Bool()),
-    [](const testing::TestParamInfo<SharedStoragePrefBrowserTest::ParamType>&
-           info) {
-      return base::StrCat(
-          {"ResolveSelectURLTo", std::get<0>(info.param) ? "Config" : "URN",
-           "_PrivacySandbox", std::get<1>(info.param) ? "Enabled" : "Disabled",
-           "_3PCookies", std::get<2>(info.param) ? "Allowed" : "Blocked",
-           "_Attestations", std::get<3>(info.param) ? "Enforced" : "Unenforced",
-           "_MainHost", std::get<4>(info.param) ? "Enrolled" : "Unenrolled"});
-    });
+    testing::Combine(
+        testing::Bool(),
+        testing::Bool(),
+        testing::Values(EnforcementAndEnrollmentStatus::kAttestationsUnenforced,
+                        EnforcementAndEnrollmentStatus::
+                            kAttestationsEnforcedMainHostUnenrolled,
+                        EnforcementAndEnrollmentStatus::
+                            kAttestationsEnforcedMainHostEnrolled)),
+    DescribePrefBrowserTestParams);
 
 IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, AddModule) {
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
@@ -840,10 +900,7 @@ IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, RunURLSelectionOperation) {
 
   // Construct and add the `TestSelectURLFencedFrameConfigObserver` to shared
   // storage worklet host manager.
-  content::StoragePartition* storage_partition =
-      content::ToRenderFrameHost(GetActiveWebContents())
-          .render_frame_host()
-          ->GetStoragePartition();
+  content::StoragePartition* storage_partition = GetStoragePartition();
   content::TestSelectURLFencedFrameConfigObserver config_observer(
       storage_partition);
   content::EvalJsResult run_url_op_result = EvalJs(GetActiveWebContents(), R"(
@@ -2558,14 +2615,19 @@ class SharedStorageFencedFrameChromeBrowserTest
 
     attestation_feature_.InitWithFeatureState(
         privacy_sandbox::kEnforcePrivacySandboxAttestations,
-        EnforceAttestations());
+        GetEnforcementAndEnrollmentStatus() !=
+            EnforcementAndEnrollmentStatus::kAttestationsUnenforced);
   }
 
   ~SharedStorageFencedFrameChromeBrowserTest() override = default;
 
   bool ResolveSelectURLToConfig() const override { return true; }
 
-  bool EnforceAttestations() const override { return true; }
+  EnforcementAndEnrollmentStatus GetEnforcementAndEnrollmentStatus()
+      const override {
+    return EnforcementAndEnrollmentStatus::
+        kAttestationsEnforcedMainHostEnrolled;
+  }
 
   void Set3rdPartyCookieAndAttestationSettingsThenNavigateToMainHostPage() {
     main_url_ = https_server()->GetURL(kMainHost, kSimplePagePath);
@@ -2603,10 +2665,7 @@ class SharedStorageFencedFrameChromeBrowserTest
 
     // Construct and add the `TestSelectURLFencedFrameConfigObserver` to shared
     // storage worklet host manager.
-    content::StoragePartition* storage_partition =
-        content::ToRenderFrameHost(GetActiveWebContents())
-            .render_frame_host()
-            ->GetStoragePartition();
+    content::StoragePartition* storage_partition = GetStoragePartition();
     content::TestSelectURLFencedFrameConfigObserver config_observer(
         storage_partition);
     content::EvalJsResult run_url_op_result = EvalJs(render_frame_host, R"(
@@ -2787,14 +2846,9 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(3, histogram_tester_.GetTotalSum(kWorkletNumPerPageHistogram));
 }
 
-using SharedStoragePrivateAggregationChromeBrowserParams = std::tuple<
-    /*enforce_attestations=*/bool,
-    /*should_enroll_main_host=*/bool>;
-
 class SharedStoragePrivateAggregationChromeBrowserTest
     : public SharedStorageChromeBrowserTestBase,
-      public testing::WithParamInterface<
-          SharedStoragePrivateAggregationChromeBrowserParams> {
+      public testing::WithParamInterface<EnforcementAndEnrollmentStatus> {
  public:
   SharedStoragePrivateAggregationChromeBrowserTest() {
     fenced_frame_api_change_feature_.InitWithFeatureState(
@@ -2802,7 +2856,8 @@ class SharedStoragePrivateAggregationChromeBrowserTest
     fenced_frame_feature_.InitAndEnableFeature(blink::features::kFencedFrames);
     attestation_feature_.InitWithFeatureState(
         privacy_sandbox::kEnforcePrivacySandboxAttestations,
-        EnforceAttestations());
+        GetEnforcementAndEnrollmentStatus() !=
+            EnforcementAndEnrollmentStatus::kAttestationsUnenforced);
     private_aggregation_feature_.InitAndEnableFeature(
         blink::features::kPrivateAggregationApi);
   }
@@ -2810,17 +2865,24 @@ class SharedStoragePrivateAggregationChromeBrowserTest
   ~SharedStoragePrivateAggregationChromeBrowserTest() override = default;
 
   bool ResolveSelectURLToConfig() const override { return true; }
-  bool EnforceAttestations() const override { return std::get<0>(GetParam()); }
-  bool ShouldEnrollMainHost() const override { return std::get<1>(GetParam()); }
+  EnforcementAndEnrollmentStatus GetEnforcementAndEnrollmentStatus()
+      const override {
+    return GetParam();
+  }
 
   // This always enrolls the main host for Shared Storage, but only enrolls the
-  // main host for Private Aggregation exactly when `ShouldEnrollMainHost()` is
+  // main host for Private Aggregation exactly when
+  // `(GetEnforcementAndEnrollmentStatus() ==
+  // EnforcementAndEnrollmentStatus::kAttestationsEnforcedMainHostEnrolled)` is
   // true.
   void MaybeEnrollMainHost(const GURL& main_url) override {
     privacy_sandbox::PrivacySandboxAttestationsMap attestations_map =
         MakeSharedStoragePrivacySandboxAttestationsMap(
             std::vector<GURL>({main_url}),
-            /*enroll_for_private_aggregation=*/ShouldEnrollMainHost());
+            /*enroll_for_private_aggregation=*/(
+                GetEnforcementAndEnrollmentStatus() ==
+                EnforcementAndEnrollmentStatus::
+                    kAttestationsEnforcedMainHostEnrolled));
     SetAttestationsMap(attestations_map);
   }
 
@@ -2835,12 +2897,23 @@ class SharedStoragePrivateAggregationChromeBrowserTest
 INSTANTIATE_TEST_SUITE_P(
     All,
     SharedStoragePrivateAggregationChromeBrowserTest,
-    testing::Combine(testing::Bool(), testing::Bool()),
+    testing::Values(
+        EnforcementAndEnrollmentStatus::kAttestationsUnenforced,
+        EnforcementAndEnrollmentStatus::kAttestationsEnforcedMainHostUnenrolled,
+        EnforcementAndEnrollmentStatus::kAttestationsEnforcedMainHostEnrolled),
     [](const testing::TestParamInfo<
         SharedStoragePrivateAggregationChromeBrowserTest::ParamType>& info) {
       return base::StrCat(
-          {"Attestations", std::get<0>(info.param) ? "Enforced" : "Unenforced",
-           "_MainHost", std::get<1>(info.param) ? "Enrolled" : "Unenrolled"});
+          {"Attestations",
+           (info.param !=
+            EnforcementAndEnrollmentStatus::kAttestationsUnenforced)
+               ? base::StrCat(
+                     {"Enforced_MainHost",
+                      (info.param == EnforcementAndEnrollmentStatus::
+                                         kAttestationsEnforcedMainHostEnrolled)
+                          ? "Enrolled"
+                          : "Unenrolled"})
+               : "Unenforced"});
     });
 
 IN_PROC_BROWSER_TEST_P(SharedStoragePrivateAggregationChromeBrowserTest,
@@ -2926,6 +2999,115 @@ IN_PROC_BROWSER_TEST_P(SharedStoragePrivateAggregationChromeBrowserTest,
           ? content::GetPrivateAggregationSendHistogramSuccessValue()
           : content::GetPrivateAggregationSendHistogramApiDisabledValue(),
       1);
+}
+
+class SharedStorageHeaderPrefBrowserTest : public SharedStoragePrefBrowserTest {
+ public:
+  SharedStorageHeaderPrefBrowserTest() {
+    shared_storage_m117_feature_.InitAndEnableFeature(
+        blink::features::kSharedStorageAPIM117);
+  }
+
+  void FinishSetUp() override {
+    observer_ = content::CreateAndOverrideSharedStorageHeaderObserver(
+        GetStoragePartition());
+  }
+
+ protected:
+  base::WeakPtr<content::TestSharedStorageHeaderObserver> observer_;
+
+ private:
+  base::test::ScopedFeatureList shared_storage_m117_feature_;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SharedStorageHeaderPrefBrowserTest,
+    testing::Combine(
+        testing::Bool(),
+        testing::Bool(),
+        testing::Values(EnforcementAndEnrollmentStatus::kAttestationsUnenforced,
+                        EnforcementAndEnrollmentStatus::
+                            kAttestationsEnforcedMainHostUnenrolled,
+                        EnforcementAndEnrollmentStatus::
+                            kAttestationsEnforcedMainHostEnrolled)),
+    DescribePrefBrowserTestParams);
+
+IN_PROC_BROWSER_TEST_P(SharedStorageHeaderPrefBrowserTest, Basic) {
+  net::test_server::ControllableHttpResponse response(https_server(),
+                                                      kTitle1Path);
+  ASSERT_TRUE(https_server()->Start());
+  Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
+
+  GURL fetch_url = https_server()->GetURL(kMainHost, kTitle1Path);
+  EXPECT_TRUE(content::ExecJs(
+      GetActiveWebContents(),
+      content::JsReplace(R"(
+      fetch($1, {sharedStorageWritable: true});
+    )",
+                         fetch_url.spec()),
+      content::EvalJsOptions::EXECUTE_SCRIPT_NO_RESOLVE_PROMISES));
+
+  response.WaitForRequest();
+  ASSERT_TRUE(base::Contains(response.http_request()->headers,
+                             "Shared-Storage-Writable"));
+  EXPECT_EQ(response.http_request()->content, "");
+  response.Send(
+      /*http_status=*/net::HTTP_OK,
+      /*content_type=*/"text/plain;charset=UTF-8",
+      /*content=*/{}, /*cookies=*/{}, /*extra_headers=*/
+      {"Shared-Storage-Write: clear, "
+       "set;key=\"hello\";value=\"world\";ignore_if_present, "
+       "append;key=hello;value=there"});
+
+  ASSERT_TRUE(observer_);
+
+  if (!SuccessExpected()) {
+    // Shared Storage is disabled, so the `SharedStorageHeaderObserver` ignores
+    // the header and no operations are invoked.
+    EXPECT_TRUE(observer_->header_results().empty());
+    EXPECT_TRUE(observer_->operations().empty());
+    response.Done();
+    return;
+  }
+
+  // Shared Storage is enabled.
+
+  observer_->WaitForOperations(3);
+
+  url::Origin fetch_origin = url::Origin::Create(fetch_url);
+  EXPECT_EQ(observer_->header_results().size(), 1u);
+  EXPECT_EQ(observer_->header_results().front().first, fetch_origin);
+  EXPECT_THAT(observer_->header_results().front().second,
+              testing::ElementsAre(true, true, true));
+  EXPECT_THAT(observer_->operations(),
+              testing::ElementsAre(
+                  ClearOperation(fetch_origin, OperationResult::kSuccess),
+                  SetOperation(fetch_origin, "hello", "world", true,
+                               OperationResult::kSet),
+                  AppendOperation(fetch_origin, "hello", "there",
+                                  OperationResult::kSet)));
+
+  response.Done();
+
+  content::WebContentsConsoleObserver console_observer(GetActiveWebContents());
+  ExecuteScriptInWorklet(GetActiveWebContents(), R"(
+      console.log(await sharedStorage.get('hello'));
+      console.log(await sharedStorage.length());
+      console.log('Finished script');
+    )",
+                         "Finished script");
+
+  EXPECT_EQ(5u, console_observer.messages().size());
+  EXPECT_EQ("Start executing customizable_module.js",
+            base::UTF16ToUTF8(console_observer.messages()[0].message));
+  EXPECT_EQ("Finish executing customizable_module.js",
+            base::UTF16ToUTF8(console_observer.messages()[1].message));
+  EXPECT_EQ("worldthere",
+            base::UTF16ToUTF8(console_observer.messages()[2].message));
+  EXPECT_EQ("1", base::UTF16ToUTF8(console_observer.messages()[3].message));
+  EXPECT_EQ("Finished script",
+            base::UTF16ToUTF8(console_observer.messages()[4].message));
 }
 
 }  // namespace storage

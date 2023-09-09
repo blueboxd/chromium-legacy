@@ -43,6 +43,12 @@
 #include "base/allocator/partition_allocator/partition_alloc_base/mac/mac_util.h"
 #endif
 
+// The patching of Objective-C runtime bits must be done without any
+// interference from the ARC machinery.
+#if defined(__has_feature) && __has_feature(objc_arc)
+#error "This file must not be compiled with ARC."
+#endif
+
 namespace allocator_shim {
 
 bool g_replaced_default_zone = false;
@@ -506,11 +512,6 @@ void InterceptAllocationsMac() {
     PA_CHECK(g_old_cfallocator_malloc_zone)
         << "Failed to get kCFAllocatorMallocZone allocation function.";
     context->allocate = oom_killer_cfallocator_malloc_zone;
-  } else {
-    PA_DLOG(WARNING) << "Internals of CFAllocator not known; out-of-memory "
-                        "failures via CFAllocator will not result in "
-                        "termination. "
-                        "http://crbug.com/45650";
   }
 #endif
 

@@ -59,13 +59,15 @@ ConfigurableStorageDelegate::ConfigurableStorageDelegate()
                   e.max_attributions_per_event_source =
                       std::numeric_limits<int>::max();
                 });
-            c.aggregate_limit = {
-                .max_reports_per_destination = std::numeric_limits<int>::max(),
-                .aggregatable_budget_per_source =
-                    std::numeric_limits<int64_t>::max(),
-                .min_delay = base::TimeDelta(),
-                .delay_span = base::TimeDelta(),
-            };
+            c.aggregate_limit =
+                AggregateLimitWith([](AttributionConfig::AggregateLimit& a) {
+                  a.max_reports_per_destination =
+                      std::numeric_limits<int>::max();
+                  a.aggregatable_budget_per_source =
+                      std::numeric_limits<int64_t>::max();
+                  a.min_delay = base::TimeDelta();
+                  a.delay_span = base::TimeDelta();
+                });
           })) {}
 
 ConfigurableStorageDelegate::~ConfigurableStorageDelegate() = default;
@@ -213,6 +215,13 @@ void ConfigurableStorageDelegate::set_rate_limits(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(c.Validate());
   config_.rate_limit = c;
+}
+
+void ConfigurableStorageDelegate::set_destination_rate_limit(
+    AttributionConfig::DestinationRateLimit limit) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Intentionally allows `limit` to be invalid for testing.
+  config_.destination_rate_limit = limit;
 }
 
 void ConfigurableStorageDelegate::set_delete_expired_sources_frequency(

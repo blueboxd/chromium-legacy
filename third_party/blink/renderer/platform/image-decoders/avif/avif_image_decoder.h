@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_AVIF_AVIF_IMAGE_DECODER_H_
 
 #include <memory>
+#include <vector>
 
 #include "third_party/blink/renderer/platform/allow_discouraged_type.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
@@ -24,7 +25,7 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
  public:
   AVIFImageDecoder(AlphaOption,
                    HighBitDepthDecodingOption,
-                   const ColorBehavior&,
+                   ColorBehavior,
                    wtf_size_t max_decoded_bytes,
                    AnimationOption);
   AVIFImageDecoder(const AVIFImageDecoder&) = delete;
@@ -32,10 +33,13 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
   ~AVIFImageDecoder() override;
 
   // ImageDecoder:
-  String FilenameExtension() const override { return "avif"; }
+  String FilenameExtension() const override;
   const AtomicString& MimeType() const override;
   bool ImageIsHighBitDepth() override;
   void OnSetData(SegmentReader* data) override;
+  bool GetGainmapInfoAndData(
+      SkGainmapInfo& out_gainmap_info,
+      scoped_refptr<SegmentReader>& out_gainmap_data) const override;
   cc::YUVSubsampling GetYUVSubsampling() const override;
   gfx::Size DecodedYUVSize(cc::YUVIndex) const override;
   wtf_size_t DecodedYUVWidthBytes(cc::YUVIndex) const override;
@@ -71,7 +75,7 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
   };
 
   struct AvifIOData {
-    blink::SegmentReader* reader = nullptr;
+    const SegmentReader* reader = nullptr;
     std::vector<uint8_t> buffer ALLOW_DISCOURAGED_TYPE("Required by libavif");
     bool all_data_received = false;
   };

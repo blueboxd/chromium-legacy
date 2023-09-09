@@ -4,13 +4,15 @@
 
 #include "chrome/browser/ip_protection/blind_sign_http_impl.h"
 
-#include <stdio.h>
-#include <functional>
 #include <string>
 
 #include "base/strings/strcat.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "url/gurl.h"
+#include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace {
 constexpr net::NetworkTrafficAnnotationTag kIpProtectionTrafficAnnotation =
@@ -47,27 +49,49 @@ constexpr net::NetworkTrafficAnnotationTag kIpProtectionTrafficAnnotation =
 
 }  // namespace
 
-int kIpProtectionRequestMaxBodySize = 1024;
-char kIpProtectionContentType[] = "application/x-protobuf";
+// The maximum size of the IpProtectionRequests - 256 KB (in practice these
+// should be much smaller than this).
+const int kIpProtectionRequestMaxBodySize = 256 * 1024;
+const char kIpProtectionContentType[] = "application/x-protobuf";
 
 BlindSignHttpImpl::BlindSignHttpImpl(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : url_loader_factory_(std::move(url_loader_factory)) {
+    : url_loader_factory_(std::move(url_loader_factory)),
+      ip_protection_server_url_(BlindSignHttpImpl::kIpProtectionServerUrl) {
   CHECK(url_loader_factory_);
 }
 
 BlindSignHttpImpl::~BlindSignHttpImpl() = default;
 
-void BlindSignHttpImpl::DoRequest(
-    const std::string& path_and_query,
-    const std::string& authorization_header,
-    const std::string& body,
-    std::function<void(absl::StatusOr<quiche::BlindSignHttpResponse>)>
-        callback) {
+void BlindSignHttpImpl::DoRequest(const std::string& path_and_query,
+                                  const std::string& authorization_header,
+                                  const std::string& body,
+                                  quiche::BlindSignHttpCallback callback) {
   callback_ = std::move(callback);
 
+  // Note that the `path_and_query` we parse here comes from the BlindSignAuth
+  // library, which is maintained by Google. Thus, this can be considered
+  // trustworthy input.
+  std::vector<base::StringPiece> split_path_and_query = base::SplitStringPiece(
+      path_and_query, "?", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  // We assume there will always be a non-empty path component.
+  CHECK(split_path_and_query.size() >= 1);
+
+  GURL::Replacements replacements;
+  replacements.SetPathStr(split_path_and_query.front());
+  // Define `new_query` here so that its value stays alive for the lifetime of
+  // `replacements` (if needed).
+  std::string new_query;
+  if (split_path_and_query.size() > 1) {
+    std::vector<base::StringPiece> split_query(split_path_and_query.begin() + 1,
+                                               split_path_and_query.end());
+    new_query = base::JoinString(split_query, "?");
+    replacements.SetQueryStr(new_query);
+  }
+
   auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = GURL(path_and_query);
+  resource_request->url =
+      ip_protection_server_url_.ReplaceComponents(replacements);
   resource_request->method = net::HttpRequestHeaders::kPostMethod;
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->headers.SetHeader(
@@ -99,12 +123,13 @@ void BlindSignHttpImpl::OnRequestCompleted(
   if (!response) {
     // TODO (crbug.com/1446863): Indicate why the request to Phosphor failed so
     // we can consider not requesting more tokens.
-    callback_(absl::InternalError("Failed Request to Authentication Server"));
+    std::move(callback_)(
+        absl::InternalError("Failed Request to Authentication Server"));
     return;
   }
 
   quiche::BlindSignHttpResponse bsa_response(response_code,
                                              std::move(*response));
 
-  callback_(std::move(bsa_response));
+  std::move(callback_)(std::move(bsa_response));
 }

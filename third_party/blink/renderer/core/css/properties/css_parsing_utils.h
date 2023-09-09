@@ -89,7 +89,8 @@ CORE_EXPORT bool ConsumeAnyValue(CSSParserTokenRange&);
 CSSPrimitiveValue* ConsumeInteger(
     CSSParserTokenRange&,
     const CSSParserContext&,
-    double minimum_value = -std::numeric_limits<double>::max());
+    double minimum_value = -std::numeric_limits<double>::max(),
+    const bool is_percentage_allowed = true);
 CSSPrimitiveValue* ConsumeIntegerOrNumberCalc(
     CSSParserTokenRange&,
     const CSSParserContext&,
@@ -529,6 +530,7 @@ CSSValue* ConsumeTransformList(CSSParserTokenRange&,
 CSSValue* ConsumeTransitionProperty(CSSParserTokenRange&,
                                     const CSSParserContext&);
 bool IsValidPropertyList(const CSSValueList&);
+bool IsValidTransitionAnimationTypeList(const CSSValueList&);
 
 CSSValue* ConsumeBorderColorSide(CSSParserTokenRange&,
                                  const CSSParserContext&,
@@ -538,9 +540,6 @@ CSSValue* ConsumeBorderWidth(CSSParserTokenRange&,
                              UnitlessQuirk);
 CSSValue* ConsumeSVGPaint(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ParseSpacing(CSSParserTokenRange&, const CSSParserContext&);
-CSSFunctionValue* CreateWordBoundaryDetectionValue();
-CSSValue* ParseWordBoundaryDetection(CSSParserTokenRange&,
-                                     const CSSParserContext&);
 
 CSSValue* ConsumeSingleContainerName(CSSParserTokenRange&,
                                      const CSSParserContext&);

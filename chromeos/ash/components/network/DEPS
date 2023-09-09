@@ -40,6 +40,7 @@ include_rules = [
   '+third_party/abseil-cpp',
   '-third_party/abseil-cpp/absl/algorithm/container.h',
   '-third_party/abseil-cpp/absl/container',
+  '+third_party/abseil-cpp/absl/container/inlined_vector.h',
   '-third_party/abseil-cpp/absl/crc',
   '-third_party/abseil-cpp/absl/flags',
   '-third_party/abseil-cpp/absl/functional/any_invocable.h',
@@ -65,6 +66,9 @@ specific_include_rules = {
     "+components/sync_preferences/testing_pref_service_syncable.h"
   ],
  "cellular_policy_handler_unittest.cc": [
+    "+components/sync_preferences/testing_pref_service_syncable.h"
+  ],
+ "cellular_policy_handler_unittest_legacy.cc": [
     "+components/sync_preferences/testing_pref_service_syncable.h"
   ],
  "network_metadata_store_unittest.cc": [

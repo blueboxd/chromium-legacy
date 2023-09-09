@@ -42,7 +42,6 @@
 <translation id="2942241131342758843">Usa Chromium como tu navegador predeterminado para abrir vínculos, realizar búsquedas desde widgets y autocompletar contraseñas en otras apps</translation>
 <translation id="2977470724722393594">Chromium está actualizado.</translation>
 <translation id="3102849287235003384">Para salir de tu Cuenta de Google en todos los sitios web, debes <ph name="BEGIN_LINK" />salir de Chromium<ph name="END_LINK" />.</translation>
-<translation id="3115956258722352278">¿Quieres establecer Chromium como navegador predeterminado?</translation>
 <translation id="3256316712990552818">Se copió en Chromium.</translation>
 <translation id="3344973607274501920">Chromium no pudo revisar las contraseñas. Revisa la conexión a Internet.</translation>
 <translation id="3472200483164753384">No es compatible en Chromium Canary</translation>
@@ -128,6 +127,7 @@
 <translation id="8013573822802650211">Para ver tus pestañas donde sea que uses Chromium, accede a tu cuenta en todos los dispositivos</translation>
 <translation id="8071041515667087705">Ve a la configuración de Chromium.</translation>
 <translation id="8073677936375100957">¿Quieres borrar tus datos de Chromium de este dispositivo?</translation>
+<translation id="8235427517854598594">¿Quieres establecer Chromium como tu navegador predeterminado?</translation>
 <translation id="8240981428553046115">Chromium no pudo buscar actualizaciones. Vuelve a intentarlo más tarde.</translation>
 <translation id="8409374867500149834">Tienes la seguridad más sólida de Chromium contra sitios web dañinos</translation>
 <translation id="858114650497379505">Puedes usar las contraseñas que guardaste en el Administrador de contraseñas en otras apps de tu iPhone.</translation>

@@ -152,6 +152,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return self;
 }
 
+- (void)dealloc {
+  // TODO(crbug.com/1454777)
+  DUMP_WILL_BE_CHECK(!_browser);
+}
+
 #pragma mark - UIViewController
 
 - (void)viewDidLoad {
@@ -482,12 +487,26 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)settingsWillBeDismissed {
+  // TODO(crbug.com/1454777)
+  DUMP_WILL_BE_CHECK(_browser);
   [_disablePopupsSetting stop];
+  _disablePopupsSetting.observer = nil;
+  _disablePopupsSetting = nil;
   [_requestDesktopSetting stop];
+  _requestDesktopSetting.observer = nil;
+  _requestDesktopSetting = nil;
   [_linkPreviewEnabled stop];
+  _linkPreviewEnabled.observer = nil;
+  _linkPreviewEnabled = nil;
   [_webInspectorEnabled stop];
-  [_webInspectorStateViewCoordinator stop];
+  _webInspectorEnabled.observer = nil;
+  [self.webInspectorStateViewCoordinator stop];
+  self.webInspectorStateViewCoordinator = nil;
+  [self.defaultModeViewCoordinator stop];
+  self.defaultModeViewCoordinator = nil;
   _browser = nullptr;
+  [self.defaultModeViewCoordinator stop];
+  self.defaultModeViewCoordinator = nil;
 }
 
 @end

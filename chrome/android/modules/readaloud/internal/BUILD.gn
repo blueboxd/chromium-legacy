@@ -6,24 +6,25 @@ import("//build/config/android/rules.gni")
 
 android_library("java") {
   sources = [
-    "java/src/org/chromium/chrome/modules/readaloud/ReadAloudHooks.java",
-    "java/src/org/chromium/chrome/modules/readaloud/ReadAloudHooksImpl.java",
+    "java/src/org/chromium/chrome/modules/readaloud/Playback.java",
+    "java/src/org/chromium/chrome/modules/readaloud/PlaybackListener.java",
+    "java/src/org/chromium/chrome/modules/readaloud/ReadAloudPlaybackHooks.java",
   ]
-  deps = [ ":external_java" ]
+  deps = [
+    "//chrome/browser/android/httpclient/public:java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
+  ]
 
   # Add the actual implementation where necessary so that downstream targets
   # can provide their own implementations.
-  jar_excluded_patterns = [ "*/ReadAloudHooksImpl*.class" ]
+  jar_excluded_patterns = [ "*/ReadAloudPlaybackHooksImpl*.class" ]
 }
 
-android_library("external_java") {
-  sources = [
-    "java/src/org/chromium/chrome/modules/readaloud/external/Playback.java",
-    "java/src/org/chromium/chrome/modules/readaloud/external/PlaybackListener.java",
-    "java/src/org/chromium/chrome/modules/readaloud/external/ReadAloud.java",
-  ]
+android_library("hooks_public_impl_java") {
+  sources = [ "java/src/org/chromium/chrome/modules/readaloud/ReadAloudPlaybackHooksImpl.java" ]
   deps = [
-    "//third_party/android_deps:com_google_guava_listenablefuture_java",
-    "//third_party/android_deps:guava_android_java",
+    ":java",
+    "//chrome/browser/android/httpclient/public:java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
   ]
 }

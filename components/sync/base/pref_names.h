@@ -43,6 +43,11 @@ inline constexpr char kBookmarksAndReadingListAccountStorageOptIn[] =
     "sync.bookmarks_and_reading_list_account_storage_opt_in";
 #endif  // BUILDFLAG(IS_IOS)
 
+// Dict specifying the selected types per account for signed-in, non-syncing
+// users only.
+inline constexpr char kSelectedTypesPerAccount[] =
+    "sync.selected_types_per_account";
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Boolean specifying whether to automatically sync all Chrome OS specific data
@@ -64,12 +69,14 @@ inline constexpr char kSyncAppsEnabledByOs[] = "sync.apps_enabled_by_os";
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 // Booleans specifying whether the user has selected to sync the following
-// user selectable types.
+// user selectable types. Which are also used as keys within
+// "sync.selected_types_per_account".
 inline constexpr char kSyncApps[] = "sync.apps";
 inline constexpr char kSyncAutofill[] = "sync.autofill";
 inline constexpr char kSyncBookmarks[] = "sync.bookmarks";
 inline constexpr char kSyncExtensions[] = "sync.extensions";
 inline constexpr char kSyncPasswords[] = "sync.passwords";
+inline constexpr char kSyncPayments[] = "sync.payments";
 inline constexpr char kSyncPreferences[] = "sync.preferences";
 inline constexpr char kSyncReadingList[] = "sync.reading_list";
 inline constexpr char kSyncTabs[] = "sync.tabs";
@@ -88,6 +95,13 @@ inline constexpr char kSyncManaged[] = "sync.managed";
 // disabled by the user in sync settings, or when sync was reset from the
 // dashboard.
 inline constexpr char kSyncRequested[] = "sync.requested";
+
+// The type of encryption passphrase used. Determined and set the first time the
+// engine is successfully initialized.
+// Note that the actual values correspond to the proto version of
+// PassphraseType, see ProtoPassphraseInt32ToEnum() etc.
+inline constexpr char kSyncCachedPassphraseType[] =
+    "sync.cached_passphrase_type";
 
 // A string that can be used to restore sync encryption infrastructure on
 // startup so that the user doesn't need to provide credentials on each start.

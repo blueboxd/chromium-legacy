@@ -1,3 +1,4 @@
+
 // Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -6,8 +7,13 @@
 
 #include <memory>
 
+#include "base/json/json_writer.h"
+#include "base/strings/stringprintf.h"
+#include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/enterprise/browser_management/management_service_factory.h"
+#include "chrome/browser/policy/value_provider/chrome_policies_value_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/policy/policy_ui_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
@@ -16,33 +22,27 @@
 #include "components/grit/policy_resources.h"
 #include "components/grit/policy_resources_map.h"
 #include "components/policy/core/common/features.h"
+#include "components/policy/core/common/policy_logger.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_utils.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/version_info/version_info.h"
+#include "components/version_ui/version_handler_helper.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "content/public/common/user_agent.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/webui/web_ui_util.h"
 
-#if BUILDFLAG(IS_ANDROID)
-#include "base/json/json_writer.h"
-#include "base/strings/stringprintf.h"
-#include "base/system/sys_info.h"
-#include "components/policy/core/common/policy_logger.h"
-#include "components/version_info/version_info.h"
-#include "components/version_ui/version_handler_helper.h"
-#include "content/public/common/user_agent.h"
-#endif  // BUILDFLAG(IS_ANDROID)
-
 namespace {
 
-#if BUILDFLAG(IS_ANDROID)
 // Returns the operating system information to be displayed on
 // chrome://policy/logs page.
 std::string GetOsInfo() {
-  // The base format for the OS version and build
+#if BUILDFLAG(IS_ANDROID)
+  // The base format for the OS version and build.
   constexpr char kOSVersionAndBuildFormat[] = "Android %s %s";
   return base::StringPrintf(
       kOSVersionAndBuildFormat,
@@ -50,6 +50,11 @@ std::string GetOsInfo() {
       (content::GetAndroidOSInfo(content::IncludeAndroidBuildNumber::Include,
                                  content::IncludeAndroidModel::Include))
           .c_str());
+#else
+  return base::StringPrintf("%s %s",
+                            base::SysInfo::OperatingSystemName().c_str(),
+                            base::SysInfo::OperatingSystemVersion().c_str());
+#endif  //  BUILDFLAG (IS_ANDROID)
 }
 
 // Returns the version information to be displayed on the chrome://policy/logs
@@ -64,7 +69,6 @@ base::Value::Dict GetVersionInfo() {
 
   return version_info;
 }
-#endif
 
 void CreateAndAddPolicyUIHtmlSource(Profile* profile) {
   content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
@@ -149,7 +153,6 @@ void CreateAndAddPolicyUIHtmlSource(Profile* profile) {
   };
   source->AddLocalizedStrings(kPolicyLogsStrings);
 
-#if BUILDFLAG(IS_ANDROID)
   source->AddBoolean(
       "loggingEnabled",
       policy::PolicyLogger::GetInstance()->IsPolicyLoggingEnabled());
@@ -163,16 +166,74 @@ void CreateAndAddPolicyUIHtmlSource(Profile* profile) {
 
   source->AddResourcePath("logs/", IDR_POLICY_LOGS_POLICY_LOGS_HTML);
   source->AddResourcePath("logs", IDR_POLICY_LOGS_POLICY_LOGS_HTML);
-#endif  // BUILDFLAG(IS_ANDROID)
 
-  if (policy::utils::IsPolicyTestingEnabled(profile->GetPrefs())) {
+  // Test page should only load if testing is enabled and the profile is not
+  // managed by cloud.
+  if (policy::utils::IsPolicyTestingEnabled(profile->GetPrefs()) &&
+      !policy::ManagementServiceFactory::GetForProfile(profile)
+           ->HasManagementAuthority(
+               policy::EnterpriseManagementAuthority::CLOUD)) {
     // Localized strings for chrome://policy/test.
     static constexpr webui::LocalizedString kPolicyTestStrings[] = {
         {"testTitle", IDS_POLICY_TEST_TITLE},
+        {"testRestart", IDS_POLICY_REBOOT_BUTTON},
+        {"testApply", IDS_POLICY_TEST_APPLY},
+        {"testImport", IDS_POLICY_TEST_IMPORT},
+        {"testDesc", IDS_POLICY_TEST_DESC},
+        {"testRevertAppliedPolicies", IDS_POLICY_TEST_REVERT},
+        {"testClearPolicies", IDS_CLEAR},
+        {"testTableName", IDS_POLICY_HEADER_NAME},
+        {"testTableSource", IDS_POLICY_HEADER_SOURCE},
+        {"testTableTarget", IDS_POLICY_TEST_TABLE_TARGET},
+        {"testTableLevel", IDS_POLICY_HEADER_LEVEL},
+        {"testTableValue", IDS_POLICY_LABEL_VALUE},
+        {"testTableRemove", IDS_REMOVE},
+        {"testAdd", IDS_POLICY_TEST_ADD},
+        {"testNameSelect", IDS_POLICY_SELECT_NAME},
+        {"testSourceSelect", IDS_POLICY_SELECT_SOURCE},
+        {"testTargetSelect", IDS_POLICY_SELECT_TARGET},
+        {"testLevelSelect", IDS_POLICY_SELECT_LEVEL},
     };
+
     source->AddLocalizedStrings(kPolicyTestStrings);
     source->AddResourcePath("test/", IDR_POLICY_TEST_POLICY_TEST_HTML);
     source->AddResourcePath("test", IDR_POLICY_TEST_POLICY_TEST_HTML);
+
+    // Create a string policy_name_str of comma-separated policy names
+    ChromePoliciesValueProvider value_provider(profile);
+    base::Value::List policy_names =
+        (*value_provider.GetNames().FindDict("chrome"))
+            .FindList("policyNames")
+            ->Clone();
+    std::string policy_name_str = "";
+    for (auto& policy_name : policy_names) {
+      policy_name_str += policy_name.GetString() + ",";
+    }
+    policy_name_str.pop_back();  // remove last divider
+    source->AddString("policyNames", policy_name_str);
+
+    // Strings for policy levels, scopes and sources
+    static constexpr webui::LocalizedString kPolicyTestTypes[] = {
+        {"scopeUser", IDS_POLICY_SCOPE_USER},
+        {"scopeAllUsers", IDS_POLICY_SCOPE_ALL_USERS},
+        {"scopeDevice", IDS_POLICY_SCOPE_DEVICE},
+        {"levelRecommended", IDS_POLICY_LEVEL_RECOMMENDED},
+        {"levelMandatory", IDS_POLICY_LEVEL_MANDATORY},
+        {"sourceEnterpriseDefault", IDS_POLICY_SOURCE_ENTERPRISE_DEFAULT},
+        {"sourceDefault", IDS_POLICY_SOURCE_DEFAULT},
+        {"sourceCommandLine", IDS_POLICY_SOURCE_COMMAND_LINE},
+        {"sourceCloud", IDS_POLICY_SOURCE_CLOUD},
+        {"sourceMerged", IDS_POLICY_SOURCE_MERGED},
+        {"sourceCloudFromAsh", IDS_POLICY_SOURCE_CLOUD_FROM_ASH},
+        {"sourceRestrictedManagedGuestSessionOverride",
+         IDS_POLICY_SOURCE_RESTRICTED_MANAGED_GUEST_SESSION_OVERRIDE},
+        {"sourceActiveDirectory", IDS_POLICY_SOURCE_ACTIVE_DIRECTORY},
+        {"sourcePlatform", IDS_POLICY_SOURCE_PLATFORM},
+        {"sourceDeviceLocalAccountOverride",
+         IDS_POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE},
+    };
+
+    source->AddLocalizedStrings(kPolicyTestTypes);
   }
 
   webui::SetupWebUIDataSource(

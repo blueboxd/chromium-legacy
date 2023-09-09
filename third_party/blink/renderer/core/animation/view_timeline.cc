@@ -23,8 +23,12 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/page/scrolling/sticky_position_scrolling_constraints.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/platform/geometry/calculation_value.h"
 
 namespace blink {
@@ -284,24 +288,23 @@ void ViewTimeline::CalculateOffsets(PaintLayerScrollableArea* scrollable_area,
   DCHECK(ComputeIsResolved(state->resolved_source));
   DCHECK(subject());
 
-  absl::optional<LayoutSize> subject_size = SubjectSize();
+  absl::optional<gfx::Size> subject_size = SubjectSize();
   absl::optional<gfx::PointF> subject_position =
       SubjectPosition(state->resolved_source);
   DCHECK(subject_position);
   DCHECK(subject_size);
 
   // TODO(crbug.com/1448801): Handle nested sticky elements.
-
   double target_offset = physical_orientation == kHorizontalScroll
                              ? subject_position->x()
                              : subject_position->y();
   double target_size;
   LayoutUnit viewport_size;
   if (physical_orientation == kHorizontalScroll) {
-    target_size = subject_size->Width().ToDouble();
+    target_size = subject_size->width();
     viewport_size = scrollable_area->LayoutContentRect().Width();
   } else {
-    target_size = subject_size->Height().ToDouble();
+    target_size = subject_size->height();
     viewport_size = scrollable_area->LayoutContentRect().Height();
   }
 
@@ -402,30 +405,30 @@ void ViewTimeline::ApplyStickyAdjustments(ScrollOffsets& scroll_offsets,
   // The maximum adjustment from each offset property is the available room
   // from the opposite edge of the sticky element in its static position.
   if (is_horizontal) {
-    if (constraints->is_anchored_left) {
+    if (constraints->left_inset) {
       max_forward_adjust = (container.Right() - sticky_rect.Right()).ToDouble();
       forward_stickiness =
-          ComputeStickinessRange(constraints->left_offset, sticky_rect.X(),
+          ComputeStickinessRange(*constraints->left_inset, sticky_rect.X(),
                                  viewport_size, target_size, target_offset);
     }
-    if (constraints->is_anchored_right) {
+    if (constraints->right_inset) {
       max_backward_adjust = (container.X() - sticky_rect.X()).ToDouble();
       backward_stickiness = ComputeStickinessRange(
-          viewport_size - constraints->right_offset - sticky_rect.Width(),
+          viewport_size - *constraints->right_inset - sticky_rect.Width(),
           sticky_rect.X(), viewport_size, target_size, target_offset);
     }
   } else {  // Vertical.
-    if (constraints->is_anchored_top) {
+    if (constraints->top_inset) {
       max_forward_adjust =
           (container.Bottom() - sticky_rect.Bottom()).ToDouble();
       forward_stickiness =
-          ComputeStickinessRange(constraints->top_offset, sticky_rect.Y(),
+          ComputeStickinessRange(*constraints->top_inset, sticky_rect.Y(),
                                  viewport_size, target_size, target_offset);
     }
-    if (constraints->is_anchored_bottom) {
+    if (constraints->bottom_inset) {
       max_backward_adjust = (container.Y() - sticky_rect.Y()).ToDouble();
       backward_stickiness = ComputeStickinessRange(
-          viewport_size - constraints->bottom_offset - sticky_rect.Height(),
+          viewport_size - *constraints->bottom_inset - sticky_rect.Height(),
           sticky_rect.Y(), viewport_size, target_size, target_offset);
     }
   }
@@ -465,16 +468,36 @@ void ViewTimeline::ApplyStickyAdjustments(ScrollOffsets& scroll_offsets,
   }
 }
 
-absl::optional<LayoutSize> ViewTimeline::SubjectSize() const {
+absl::optional<gfx::Size> ViewTimeline::SubjectSize() const {
   if (!subject()) {
     return absl::nullopt;
   }
-  LayoutBox* subject_layout_box = subject()->GetLayoutBox();
-  if (!subject_layout_box) {
+  LayoutObject* subject_layout_object = subject()->GetLayoutObject();
+  if (!subject_layout_object) {
     return absl::nullopt;
   }
 
-  return subject_layout_box->Size();
+  if (subject_layout_object->IsBox()) {
+    return To<LayoutBox>(subject_layout_object)
+        ->BorderBoxRect()
+        .PixelSnappedSize();
+  }
+
+  if (subject_layout_object->IsLayoutInline()) {
+    return PhysicalRect::EnclosingRect(
+               To<LayoutInline>(subject_layout_object)->LocalBoundingBoxRectF())
+        .PixelSnappedSize();
+  }
+
+  if (subject_layout_object->IsSVGChild()) {
+    return SVGLayoutSupport::VisualRectInAncestorSpace(
+               *subject_layout_object,
+               *To<SVGElement>(subject())->ownerSVGElement()->GetLayoutBox())
+        .PixelSnappedSize();
+  }
+
+  NOTREACHED();
+  return absl::nullopt;
 }
 
 absl::optional<gfx::PointF> ViewTimeline::SubjectPosition(
@@ -482,15 +505,15 @@ absl::optional<gfx::PointF> ViewTimeline::SubjectPosition(
   if (!subject() || !resolved_source) {
     return absl::nullopt;
   }
-  LayoutBox* subject_layout_box = subject()->GetLayoutBox();
+  LayoutObject* subject_layout_object = subject()->GetLayoutObject();
   LayoutBox* source_layout_box = resolved_source->GetLayoutBox();
-  if (!subject_layout_box || !source_layout_box) {
+  if (!subject_layout_object || !source_layout_box) {
     return absl::nullopt;
   }
   MapCoordinatesFlags flags =
       kIgnoreScrollOffset | kIgnoreStickyOffset | kIgnoreTransforms;
   gfx::PointF subject_pos =
-      gfx::PointF(subject_layout_box->LocalToAncestorPoint(
+      gfx::PointF(subject_layout_object->LocalToAncestorPoint(
           PhysicalOffset(), source_layout_box, flags));
 
   // We call LayoutObject::ClientLeft/Top directly and avoid

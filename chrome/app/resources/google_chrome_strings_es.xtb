@@ -83,6 +83,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="235650106824528204">El administrador del perfil de trabajo puede quitar cualquier dato de Chrome generado durante el uso de este perfil, como los marcadores, el historial, las contraseñas y otros ajustes. <ph name="LEARN_MORE" /></translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2401189691232800402">Sistema ChromeOS</translation>
+<translation id="2409816192575564775">{NUM_DEVICES,plural, =0{Una o varias extensiones de Chrome estaban accediendo a 1 dispositivo HID}=1{Una o varias extensiones de Chrome están accediendo a 1 dispositivo HID}other{Una o varias extensiones de Chrome están accediendo a # dispositivos HID}}</translation>
 <translation id="2424440923901031101">Esta extensión infringe la política de Chrome Web Store y podría no ser segura. Elimínala de Chrome para que no pueda ver ni cambiar tus datos en los sitios que visites, incluida tu información personal.</translation>
 <translation id="2467438592969358367">Google Chrome quiere exportar tus contraseñas. Escribe tu contraseña de Windows para permitirlo.</translation>
 <translation id="2472092250898121027">Esta extensión contiene malware y no es segura. Elimínala de Chrome para que no pueda ver ni cambiar tus datos en los sitios que visites, incluida tu información personal.</translation>
@@ -120,7 +121,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="2929907241665500097">Chrome no se ha actualizado, algo no va bien. <ph name="BEGIN_LINK" />Soluciona los problemas y errores de actualización de Chrome<ph name="END_LINK" />.</translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" />, inicio de sesión en la red, Chrome</translation>
 <translation id="3019382870990049182">Reiniciar para actualizar &amp;ChromeOS Flex</translation>
-<translation id="3033660625209020231">{NUM_DEVICES,plural, =0{Algunas extensiones de Google Chrome estaban accediendo a dispositivos HID}=1{Algunas extensiones de Google Chrome están accediendo a 1 dispositivo HID}other{Algunas extensiones de Google Chrome están accediendo a # dispositivos HID}}</translation>
 <translation id="303514781271618814">Chrome está explorando nuevas funciones que permitan que los sitios ofrezcan la misma experiencia de navegación con un uso menor de tus datos</translation>
 <translation id="3037838751736561277">Google Chrome está en modo de segundo plano.</translation>
 <translation id="3038232873781883849">Esperando para instalar...</translation>
@@ -228,7 +228,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="4970947549776831107">Chrome ha bloqueado este archivo porque este tipo de archivo es peligroso</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5003967926796347400">Haz clic en Gestor de contraseñas de Google</translation>
-<translation id="5005958605836556244">{NUM_DEVICES,plural, =0{Una extensión de Google Chrome estaba accediendo a dispositivos HID}=1{Una extensión de Google Chrome está accediendo a 1 dispositivo HID}other{Una extensión de Google Chrome está accediendo a # dispositivos HID}}</translation>
 <translation id="5098668839038261629">Si activas esta opción, también se cerrará tu sesión en Chrome</translation>
 <translation id="5132929315877954718">Descubre formidables aplicaciones, juegos, extensiones y temas para Google Chrome.</translation>
 <translation id="5139423532931106058">Personaliza tu perfil de Chrome</translation>
@@ -248,6 +247,7 @@ Puede que algunas funciones no estén disponibles. Especifica otro directorio de
 <translation id="5430073640787465221">Tu archivo de preferencias está dañado o no es válido.
 
 Google Chrome no puede recuperar tu configuración.</translation>
+<translation id="5521146392841465297">Chrome te recomienda que revises esta extensión.</translation>
 <translation id="5524761631371622910">Si las pruebas están activas y Chrome te ha incluido aleatoriamente en alguna, tu historial de navegación influirá en los anuncios que veas y en los intereses que se estimen abajo. Para proteger tu privacidad, Chrome elimina tus intereses cada mes.</translation>
 <translation id="5530733413481476019">Haz que Chrome sea más rápido</translation>
 <translation id="5566025111015594046">Google Chrome (tráfico mDNS entrante)</translation>
@@ -285,6 +285,7 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="624230925347970731">Chrome se cerrará dentro de poco</translation>
 <translation id="6247557882553405851">Gestor de contraseñas de Google</translation>
 <translation id="6273793429163604305">Preparados...</translation>
+<translation id="6277547788421725101">Tus padres han desactivado Permisos de sitios web, aplicaciones y extensiones en Chrome</translation>
 <translation id="6291089322031436445">Aplicaciones de Chrome Dev</translation>
 <translation id="6291549208091401781">Google Chrome ya está instalado para todos los usuarios de tu ordenador.</translation>
 <translation id="6326175484149238433">Desinstalar de Chrome</translation>
@@ -321,7 +322,6 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="7036251913954633326">Si quieres usar esta cuenta solo una vez, puedes usar el <ph name="GUEST_LINK_BEGIN" />Modo Invitado<ph name="GUEST_LINK_END" /> en el navegador Chrome. Si quieres añadir una cuenta para otra persona, <ph name="LINK_BEGIN" />añade una persona<ph name="LINK_END" /> a tu <ph name="DEVICE_TYPE" />.
 
 Los permisos que hayas dado a sitios web y aplicaciones se pueden aplicar a esta cuenta. Puedes gestionar tus cuentas de Google en <ph name="SETTINGS_LINK_BEGIN" />Configuración<ph name="SETTINGS_LINK_END" />.</translation>
-<translation id="7062128746136194023">Tus padres han desactivado "Permisos de sitios, aplicaciones y extensiones" en Chrome. No se permite añadir <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="7071827361006050863">Chrome eliminará los datos de navegación dentro de poco</translation>
 <translation id="7085332316435785646">Indica si quieres incluir el historial de Chrome para ofrecer una experiencia más personalizada de los servicios de Google</translation>
 <translation id="7088681679121566888">Chrome está actualizado</translation>
@@ -341,8 +341,10 @@ Los permisos que hayas dado a sitios web y aplicaciones se pueden aplicar a esta
 <translation id="7398801000654795464">Habías iniciado sesión en Chrome como <ph name="USER_EMAIL_ADDRESS" />. Utiliza la misma cuenta para volver a iniciar sesión.</translation>
 <translation id="7410958280246779049">Chrome ha bloqueado este archivo porque es peligroso</translation>
 <translation id="7412494426921990001">Haz clic en el menú de Chrome</translation>
+<translation id="742463671275348370">{NUM_DEVICES,plural, =0{Una o varias extensiones de Chrome estaban accediendo a 1 dispositivo USB}=1{Una o varias extensiones de Chrome están accediendo a 1 dispositivo USB}other{Una o varias extensiones de Chrome están accediendo a # dispositivos USB}}</translation>
 <translation id="7426611252293106642">Es posible que Google Chrome no funcione correctamente porque ya no es compatible con esta distribución Linux</translation>
 <translation id="7449333426561673451">{COUNT,plural, =1{Tu organización cerrará Chrome automáticamente cuando lleve 1 minuto sin usarse.}other{Tu organización cerrará Chrome automáticamente cuando lleve # minutos sin usarse.}}</translation>
+<translation id="7452987490177144319">{COUNT,plural, =1{Tu organización eliminará automáticamente los datos de navegación cuando Chrome lleve 1 minuto sin usarse. Esto podría incluir el historial, los datos de Autocompletar y las descargas. Las pestañas seguirán abiertas.}other{Tu organización eliminará automáticamente los datos de navegación cuando Chrome lleve # minutos sin usarse. Esto podría incluir el historial, los datos de Autocompletar y las descargas. Las pestañas seguirán abiertas.}}</translation>
 <translation id="7481213027396403996">Consigue la seguridad más potente de Chrome</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7583399374488819119">Instalador de <ph name="COMPANY_NAME" /></translation>
@@ -377,14 +379,12 @@ Los permisos que hayas dado a sitios web y aplicaciones se pueden aplicar a esta
 <translation id="8013993649590906847">Si una imagen no tiene ninguna descripción útil, Chrome intentará proporcionártela. Para crear las descripciones, las imágenes se envían a Google.</translation>
 <translation id="8019103195866286235">El desarrollador de esta extensión ha anulado su publicación y la extensión podría no ser segura. Elimínala de Chrome para que no pueda ver ni cambiar tus datos en los sitios que visites, incluida tu información personal.</translation>
 <translation id="80471789339884597">Gracias por realizar la instalación. Debes reiniciar todos tus navegadores para poder usar <ph name="BUNDLE_NAME" />.</translation>
-<translation id="8057070436257749375">{COUNT,plural, =1{Tu organización eliminará automáticamente los datos de navegación cuando Chrome lleve 1 minuto sin usarse. Esto podría incluir el historial, los datos de Autocompletar y las descargas. Tus pestañas actuales permanecerán abiertas.}other{Tu organización eliminará automáticamente los datos de navegación cuando Chrome lleve # minutos sin usarse. Esto podría incluir el historial, los datos de Autocompletar y las descargas. Tus pestañas actuales permanecerán abiertas.}}</translation>
 <translation id="8064015586118426197">ChromeOS Flex</translation>
 <translation id="8129812357326543296">Información de &amp;Google Chrome</translation>
 <translation id="813913629614996137">Inicializando…</translation>
 <translation id="8255190535488645436">Google Chrome está utilizando la cámara y el micrófono.</translation>
 <translation id="8270775718612349140">Certificados gestionados por Chrome</translation>
 <translation id="8286862437124483331">Google Chrome está intentando mostrar contraseñas. Para permitirlo, escribe tu contraseña de Windows.</translation>
-<translation id="828798499196665338">Tus padres han desactivado "Permisos de sitios, aplicaciones y extensiones" en Chrome. No se permite habilitar <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8290100596633877290">¡Vaya! Se ha producido un fallo en Google Chrome. ¿Quieres reiniciar el navegador ahora?</translation>
 <translation id="829923460755755423">Añade un acceso directo al Gestor de contraseñas de Google</translation>
 <translation id="8342675569599923794">Este archivo es peligroso, por lo que Chrome lo ha bloqueado.</translation>

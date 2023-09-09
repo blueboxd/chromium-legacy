@@ -26,6 +26,7 @@ import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
+import org.chromium.base.ResettersForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.UnownedUserDataSupplier;
@@ -614,12 +615,12 @@ public class SearchActivity extends AsyncInitializationActivity
     }
 
     /** See {@link #sDelegate}. */
-    @VisibleForTesting
     static void setDelegateForTests(SearchActivityDelegate delegate) {
+        var oldValue = sDelegate;
         sDelegate = delegate;
+        ResettersForTesting.register(() -> sDelegate = oldValue);
     }
 
-    @VisibleForTesting
     public View getAnchorViewForTesting() {
         return mAnchorView;
     }

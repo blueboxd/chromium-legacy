@@ -138,11 +138,12 @@ void SpeechRecognitionRecognizerImpl::Create(
     media::mojom::SpeechRecognitionOptionsPtr options,
     const base::FilePath& binary_path,
     const base::flat_map<std::string, base::FilePath>& config_paths,
-    const std::string& primary_language_name) {
+    const std::string& primary_language_name,
+    const bool mask_offensive_words) {
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<SpeechRecognitionRecognizerImpl>(
           std::move(remote), std::move(options), binary_path, config_paths,
-          primary_language_name),
+          primary_language_name, mask_offensive_words),
       std::move(receiver));
 }
 
@@ -193,11 +194,13 @@ SpeechRecognitionRecognizerImpl::SpeechRecognitionRecognizerImpl(
     media::mojom::SpeechRecognitionOptionsPtr options,
     const base::FilePath& binary_path,
     const base::flat_map<std::string, base::FilePath>& config_paths,
-    const std::string& primary_language_name)
+    const std::string& primary_language_name,
+    const bool mask_offensive_words)
     : options_(std::move(options)),
       client_remote_(std::move(remote)),
       config_paths_(config_paths),
-      primary_language_name_(primary_language_name) {
+      primary_language_name_(primary_language_name),
+      mask_offensive_words_(mask_offensive_words) {
   recognition_event_callback_ = base::BindPostTaskToCurrentDefault(
       base::BindRepeating(&SpeechRecognitionRecognizerImpl::OnRecognitionEvent,
                           weak_factory_.GetWeakPtr()));
@@ -360,6 +363,12 @@ void SpeechRecognitionRecognizerImpl::OnLanguageChanged(
                      language_component_config.value().language_name));
 }
 
+void SpeechRecognitionRecognizerImpl::OnMaskOffensiveWordsChanged(
+    bool mask_offensive_words) {
+  mask_offensive_words_ = mask_offensive_words;
+  ResetSoda();
+}
+
 void SpeechRecognitionRecognizerImpl::ResetSodaWithNewLanguage(
     base::FilePath config_path,
     std::string language_name,
@@ -414,6 +423,7 @@ void SpeechRecognitionRecognizerImpl::ResetSoda() {
   config_msg.set_enable_formatting(options_->enable_formatting);
   config_msg.set_enable_speaker_change_detection(
       base::FeatureList::IsEnabled(media::kSpeakerChangeDetection));
+  config_msg.set_mask_offensive_words(mask_offensive_words_);
   if (base::FeatureList::IsEnabled(media::kLiveCaptionMultiLanguage) &&
       config_paths_.size() > 0) {
     auto* multilang_config = config_msg.mutable_multilang_config();

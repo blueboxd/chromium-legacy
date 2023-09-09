@@ -4,11 +4,15 @@
 
 #include "services/network/shared_dictionary/shared_dictionary_storage_on_disk.h"
 
+#include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/pattern.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_id_helper.h"
 #include "net/base/io_buffer.h"
@@ -18,6 +22,28 @@
 #include "url/scheme_host_port.h"
 
 namespace network {
+
+namespace {
+
+void RecordMetadataReadTimeMetrics(
+    const net::SQLitePersistentSharedDictionaryStore::DictionaryListOrError&
+        result,
+    base::TimeDelta time_delta) {
+  std::string result_string;
+  if (!result.has_value()) {
+    result_string = "Failure";
+  } else if (result.value().empty()) {
+    result_string = "Empty";
+  } else {
+    result_string = "NonEmpty";
+  }
+  base::UmaHistogramTimes(
+      base::StrCat({"Net.SharedDictionaryStorageOnDisk.MetadataReadTime.",
+                    result_string}),
+      time_delta);
+}
+
+}  // namespace
 
 // This is a RefCounted subclass of SharedDictionaryOnDisk. This is used to
 // share a SharedDictionaryOnDisk for multiple concurrent network requests.
@@ -87,20 +113,42 @@ SharedDictionaryStorageOnDisk::SharedDictionaryStorageOnDisk(
       on_deleted_closure_runner_(std::move(on_deleted_closure_runner)) {
   manager_->metadata_store().GetDictionaries(
       isolation_key_,
-      base::BindOnce(&SharedDictionaryStorageOnDisk::OnDatabaseRead,
-                     weak_factory_.GetWeakPtr()));
+      base::BindOnce(
+          [](base::WeakPtr<SharedDictionaryStorageOnDisk> weak_ptr,
+             base::Time start_time,
+             net::SQLitePersistentSharedDictionaryStore::DictionaryListOrError
+                 result) {
+            RecordMetadataReadTimeMetrics(result,
+                                          base::Time::Now() - start_time);
+            if (weak_ptr) {
+              weak_ptr->OnDatabaseRead(std::move(result));
+            }
+          },
+          weak_factory_.GetWeakPtr(), base::Time::Now()));
 }
 
 SharedDictionaryStorageOnDisk::~SharedDictionaryStorageOnDisk() = default;
 
-std::unique_ptr<SharedDictionary> SharedDictionaryStorageOnDisk::GetDictionary(
-    const GURL& url) {
+std::unique_ptr<SharedDictionary>
+SharedDictionaryStorageOnDisk::GetDictionarySync(const GURL& url) {
+  if (!get_dictionary_called_) {
+    get_dictionary_called_ = true;
+    base::UmaHistogramBoolean(
+        "Net.SharedDictionaryStorageOnDisk.IsMetadataReadyOnFirstUse",
+        is_metadata_ready_);
+  }
+
   if (!manager_) {
     return nullptr;
   }
   net::SharedDictionaryInfo* info =
       GetMatchingDictionaryFromDictionaryInfoMap(dictionary_info_map_, url);
   if (!info) {
+    return nullptr;
+  }
+
+  if (info->response_time() + info->expiration() <= base::Time::Now()) {
+    manager_->MaybePostExpiredDictionaryDeletionTask();
     return nullptr;
   }
 
@@ -129,6 +177,18 @@ std::unique_ptr<SharedDictionary> SharedDictionaryStorageOnDisk::GetDictionary(
       std::move(ref_counted_shared_dictionary));
 }
 
+void SharedDictionaryStorageOnDisk::GetDictionary(
+    const GURL& url,
+    base::OnceCallback<void(std::unique_ptr<SharedDictionary>)> callback) {
+  if (is_metadata_ready_) {
+    std::move(callback).Run(GetDictionarySync(url));
+    return;
+  }
+  pending_get_dictionary_tasks_.emplace_back(
+      base::BindOnce(&SharedDictionaryStorageOnDisk::GetDictionary,
+                     weak_factory_.GetWeakPtr(), url, std::move(callback)));
+}
+
 scoped_refptr<SharedDictionaryWriter>
 SharedDictionaryStorageOnDisk::CreateWriter(const GURL& url,
                                             base::Time response_time,
@@ -145,6 +205,8 @@ SharedDictionaryStorageOnDisk::CreateWriter(const GURL& url,
 
 void SharedDictionaryStorageOnDisk::OnDatabaseRead(
     net::SQLitePersistentSharedDictionaryStore::DictionaryListOrError result) {
+  is_metadata_ready_ = true;
+
   CHECK(dictionary_info_map_.empty());
   if (!result.has_value()) {
     return;
@@ -156,6 +218,11 @@ void SharedDictionaryStorageOnDisk::OnDatabaseRead(
     const std::string match = info.match();
     (dictionary_info_map_[scheme_host_port])
         .insert(std::make_pair(match, std::move(info)));
+  }
+
+  auto callbacks = std::move(pending_get_dictionary_tasks_);
+  for (auto& callback : callbacks) {
+    std::move(callback).Run();
   }
 }
 

@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/platform/network/form_data_encoder.h"
 #include "third_party/blink/renderer/platform/network/wrapped_data_pipe_getter.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
+
 namespace blink {
 
 void WebHTTPBody::Initialize() {

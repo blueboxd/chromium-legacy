@@ -42,7 +42,6 @@
 <translation id="2942241131342758843">Predvolene otvárajte odkazy, vyhľadávajte v miniaplikáciách a automaticky dopĺňajte heslá v iných aplikáciách pomocou prehliadača Chromium</translation>
 <translation id="2977470724722393594">Prehliadač Chromium bol aktualizovaný</translation>
 <translation id="3102849287235003384">Ak sa chcete odhlásiť zo svojho účtu Google na všetkých weboch, <ph name="BEGIN_LINK" />odhláste sa z prehliadača Chromium<ph name="END_LINK" />.</translation>
-<translation id="3115956258722352278">Chcete nastaviť Chromium ako predvolený prehliadač?</translation>
 <translation id="3256316712990552818">Skopírovaná do prehliadača Chromium</translation>
 <translation id="3344973607274501920">Prehliadaču Chromium sa nepodarilo skontrolovať heslá. Skontrolujte internetové pripojenie.</translation>
 <translation id="3472200483164753384">Nepodporované vo verzii Chromium Canary</translation>
@@ -128,6 +127,7 @@
 <translation id="8013573822802650211">Ak chcete vidieť svoje karty vo všetkých zariadeniach, v ktorých používate Chromium, prihláste sa do nich</translation>
 <translation id="8071041515667087705">Prejdite do Nastavení prehliadača Chromium.</translation>
 <translation id="8073677936375100957">Chcete vymazať údaje prehliadača Chromium z tohto zariadenia?</translation>
+<translation id="8235427517854598594">Chcete nastaviť Chromium ako predvolený prehliadač?</translation>
 <translation id="8240981428553046115">Prehliadaču Chromium sa nepodarilo skontrolovať dostupnosť aktualizácií. Skúste to neskôr.</translation>
 <translation id="8409374867500149834">Máte nasilnejšie zabezpečenie prehliadača Chromium proti škodlivým webom</translation>
 <translation id="858114650497379505">Heslá, ktoré ste uložili do správcu hesiel, môžete v iPhone použiť v iných aplikáciách.</translation>

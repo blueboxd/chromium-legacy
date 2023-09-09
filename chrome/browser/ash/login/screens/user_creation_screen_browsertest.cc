@@ -31,15 +31,34 @@ constexpr char kUserCreationId[] = "user-creation";
 
 const test::UIPath kUserCreationDialog = {kUserCreationId,
                                           "userCreationDialog"};
-const test::UIPath kChildSignInDialog = {kUserCreationId, "childSignInDialog"};
+const test::UIPath kUserCreationChildSetupDialog = {kUserCreationId,
+                                                    "childSetupDialog"};
+const test::UIPath kUserCreationEnrollTriageDialog = {kUserCreationId,
+                                                      "enrollTriageDialog"};
+const test::UIPath kUserCreationLearnMoreDialog = {kUserCreationId,
+                                                   "learnMoreDialog"};
 const test::UIPath kSelfButton = {kUserCreationId, "selfButton"};
 const test::UIPath kChildButton = {kUserCreationId, "childButton"};
+const test::UIPath kEnrollButton = {kUserCreationId, "enrollButton"};
 const test::UIPath kBackButton = {kUserCreationId, "backButton"};
 const test::UIPath kNextButton = {kUserCreationId, "nextButton"};
-const test::UIPath kChildCreateButton = {kUserCreationId, "childCreateButton"};
-const test::UIPath kChildSignInButton = {kUserCreationId, "childSignInButton"};
-const test::UIPath kChildBackButton = {kUserCreationId, "childBackButton"};
-const test::UIPath kChildNextButton = {kUserCreationId, "childNextButton"};
+const test::UIPath kChildAccountButton = {kUserCreationId,
+                                          "childAccountButton"};
+const test::UIPath kSchoolAccountButton = {kUserCreationId,
+                                           "schoolAccountButton"};
+const test::UIPath kChildSetupBackButton = {kUserCreationId,
+                                            "childSetupBackButton"};
+const test::UIPath kChildSetupNextButton = {kUserCreationId,
+                                            "childSetupNextButton"};
+const test::UIPath kTriageEnrollButton = {kUserCreationId,
+                                          "triageEnrollButton"};
+const test::UIPath kTriageNotEnrollButton = {kUserCreationId,
+                                             "triageNotEnrollButton"};
+const test::UIPath kEnrollTriageNextButton = {kUserCreationId,
+                                              "enrollTriageNextButton"};
+const test::UIPath kEnrollTriageBackButton = {kUserCreationId,
+                                              "enrollTriageBackButton"};
+const test::UIPath kLearnMoreLink = {kUserCreationId, "learnMoreLink"};
 
 class UserCreationScreenTest
     : public OobeBaseTest,
@@ -65,15 +84,6 @@ class UserCreationScreenTest
     test::OobeJS().ExpectHasAttribute("checked", kSelfButton);
     test::OobeJS().ClickOnPath(element_id);
     test::OobeJS().TapOnPath(kNextButton);
-  }
-
-  void SelectSetUpMethodOnChildScreen(test::UIPath element_id) {
-    OobeScreenWaiter(UserCreationView::kScreenId).Wait();
-    ASSERT_FALSE(LoginScreenTestApi::IsEnterpriseEnrollmentButtonShown());
-    test::OobeJS().ExpectHiddenPath(kUserCreationDialog);
-    test::OobeJS().ExpectVisiblePath(kChildSignInDialog);
-    test::OobeJS().ClickOnPath(element_id);
-    test::OobeJS().TapOnPath(kChildNextButton);
   }
 
   void WaitForScreenExit() {
@@ -127,50 +137,11 @@ IN_PROC_BROWSER_TEST_F(UserCreationScreenTest, SignInForSelf) {
   }
 }
 
-// Verify flow for setting up the device for a child with a newly created gaia
-// account.
-IN_PROC_BROWSER_TEST_F(UserCreationScreenTest, CreateAccountForChild) {
+IN_PROC_BROWSER_TEST_F(UserCreationScreenTest, SelectChild) {
   SelectUserTypeOnUserCreationScreen(kChildButton);
-  SelectSetUpMethodOnChildScreen(kChildCreateButton);
   WaitForScreenExit();
-  EXPECT_TRUE(LoginDisplayHost::default_host()
-                  ->GetWizardContextForTesting()
-                  ->sign_in_as_child);
-  EXPECT_TRUE(LoginDisplayHost::default_host()
-                  ->GetWizardContextForTesting()
-                  ->is_child_gaia_account_new);
-  EXPECT_EQ(screen_result_.value(),
-            UserCreationScreen::Result::CHILD_ACCOUNT_CREATE);
-  OobeScreenWaiter(GaiaView::kScreenId).Wait();
-}
-
-// Verify flow for setting up the device for a child with an existing gaia
-// account.
-IN_PROC_BROWSER_TEST_F(UserCreationScreenTest, SignInForChild) {
-  SelectUserTypeOnUserCreationScreen(kChildButton);
-  SelectSetUpMethodOnChildScreen(kChildSignInButton);
-  WaitForScreenExit();
-  EXPECT_TRUE(LoginDisplayHost::default_host()
-                  ->GetWizardContextForTesting()
-                  ->sign_in_as_child);
-  EXPECT_FALSE(LoginDisplayHost::default_host()
-                   ->GetWizardContextForTesting()
-                   ->is_child_gaia_account_new);
-  EXPECT_EQ(screen_result_.value(), UserCreationScreen::Result::CHILD_SIGNIN);
-  OobeScreenWaiter(GaiaView::kScreenId).Wait();
-}
-
-// Verify back button is hidden during the oobe flow (when no existing users).
-IN_PROC_BROWSER_TEST_F(UserCreationScreenTest, Cancel) {
-  SelectUserTypeOnUserCreationScreen(kChildButton);
-
-  test::OobeJS().ExpectHiddenPath(kUserCreationDialog);
-  test::OobeJS().ExpectVisiblePath(kChildSignInDialog);
-  test::OobeJS().TapOnPath(kChildBackButton);
-
-  test::OobeJS().ExpectVisiblePath(kUserCreationDialog);
-  test::OobeJS().ExpectHiddenPath(kChildSignInDialog);
-  test::OobeJS().ExpectHiddenPath(kBackButton);
+  EXPECT_EQ(screen_result_.value(), UserCreationScreen::Result::ADD_CHILD);
+  OobeScreenWaiter(AddChildScreenView::kScreenId).Wait();
 }
 
 // Verify enterprise enrollment button is available during the oobe flow (when
@@ -208,7 +179,7 @@ class UserCreationScreenLoginTest : public UserCreationScreenTest {
   LoginManagerMixin login_manager_mixin_{&mixin_host_};
 };
 
-// Verify back button is available during the add user flow (when there are
+// Verify back button is available during the add person flow (when there are
 // existing users) and clicking it closes the oobe dialog. Enterprise
 // enrollment button is hidden when there are existing users.
 IN_PROC_BROWSER_TEST_F(UserCreationScreenLoginTest, Cancel) {
@@ -218,15 +189,6 @@ IN_PROC_BROWSER_TEST_F(UserCreationScreenLoginTest, Cancel) {
   ASSERT_FALSE(LoginScreenTestApi::IsEnterpriseEnrollmentButtonShown());
 
   test::OobeJS().ExpectVisiblePath(kUserCreationDialog);
-  test::OobeJS().ClickOnPath(kChildButton);
-  test::OobeJS().TapOnPath(kNextButton);
-
-  test::OobeJS().ExpectHiddenPath(kUserCreationDialog);
-  test::OobeJS().ExpectVisiblePath(kChildSignInDialog);
-  test::OobeJS().TapOnPath(kChildBackButton);
-
-  test::OobeJS().ExpectVisiblePath(kUserCreationDialog);
-  test::OobeJS().ExpectHiddenPath(kChildSignInDialog);
   test::OobeJS().ExpectVisiblePath(kBackButton);
   test::OobeJS().TapOnPath(kBackButton);
 
@@ -247,8 +209,8 @@ class UserCreationScreenEnrolledTest : public UserCreationScreenTest {
   LoginManagerMixin login_manager_mixin_{&mixin_host_};
 };
 
-// Verify user creation screen is skipped when clicking add user button on
-// managed device.
+// Verify user creation screen is skipped when clicking add person button
+// on managed device.
 IN_PROC_BROWSER_TEST_F(UserCreationScreenEnrolledTest,
                        ShouldSkipUserCreationScreen) {
   EXPECT_TRUE(LoginScreenTestApi::ClickAddUserButton());
@@ -259,5 +221,191 @@ IN_PROC_BROWSER_TEST_F(UserCreationScreenEnrolledTest,
   EXPECT_FALSE(LoginScreenTestApi::IsOobeDialogVisible());
 }
 
+class UserCreationScreenSoftwareUpdateTest : public UserCreationScreenTest {
+ public:
+  UserCreationScreenSoftwareUpdateTest() : UserCreationScreenTest() {
+    feature_list_.InitWithFeatures({ash::features::kOobeSoftwareUpdate}, {});
+  }
+
+  // Redefine the SelectUserTypeOnUserCreationScreen and check no default
+  // UserMethod and Next button is disabled
+  void SelectUserTypeOnUserCreationScreen(test::UIPath element_id) {
+    OobeScreenWaiter(UserCreationView::kScreenId).Wait();
+    ASSERT_TRUE(LoginScreenTestApi::IsEnterpriseEnrollmentButtonShown());
+    test::OobeJS().ExpectVisiblePath(kUserCreationDialog);
+    test::OobeJS().ExpectHasNoAttribute("checked", kSelfButton);
+    test::OobeJS().ExpectDisabledPath(kNextButton);
+    test::OobeJS().TapOnPath(element_id);
+    test::OobeJS().TapOnPath(kNextButton);
+  }
+
+ protected:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Verify flow for setting up the device for self.
+IN_PROC_BROWSER_TEST_F(UserCreationScreenSoftwareUpdateTest, SignInForSelf) {
+  SelectUserTypeOnUserCreationScreen(kSelfButton);
+  WaitForScreenExit();
+  EXPECT_FALSE(LoginDisplayHost::default_host()
+                   ->GetWizardContextForTesting()
+                   ->sign_in_as_child);
+  EXPECT_EQ(screen_result_.value(), UserCreationScreen::Result::SIGNIN);
+  if (features::IsOobeGaiaInfoScreenEnabled()) {
+    OobeScreenWaiter(GaiaInfoScreenView::kScreenId).Wait();
+  } else {
+    OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  }
+}
+
+// Verify that google account in the child setup step in user creation
+// screen display add-child screen when software update enabled.
+IN_PROC_BROWSER_TEST_F(UserCreationScreenSoftwareUpdateTest,
+                       SetupChildGoogleAccount) {
+  SelectUserTypeOnUserCreationScreen(kChildButton);
+  test::OobeJS().ExpectVisiblePath(kUserCreationChildSetupDialog);
+  test::OobeJS().TapOnPath(kChildAccountButton);
+  test::OobeJS().TapOnPath(kChildSetupNextButton);
+  WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(), UserCreationScreen::Result::ADD_CHILD);
+}
+
+// Verify that school account in the child setup step in user creation
+// screen display gaia signin when software update enabled.
+IN_PROC_BROWSER_TEST_F(UserCreationScreenSoftwareUpdateTest,
+                       SetupChildSchoolAccount) {
+  SelectUserTypeOnUserCreationScreen(kChildButton);
+  test::OobeJS().ExpectVisiblePath(kUserCreationChildSetupDialog);
+  test::OobeJS().TapOnPath(kSchoolAccountButton);
+  test::OobeJS().TapOnPath(kChildSetupNextButton);
+  WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(), UserCreationScreen::Result::SIGNIN);
+}
+
+// Verify that don't-enroll-the-device in the enorll triage step in user
+// creation screen display gaia signin when software update enabled.
+IN_PROC_BROWSER_TEST_F(UserCreationScreenSoftwareUpdateTest, NotEnrollDevice) {
+  SelectUserTypeOnUserCreationScreen(kEnrollButton);
+  test::OobeJS().ExpectVisiblePath(kUserCreationEnrollTriageDialog);
+  test::OobeJS().TapOnPath(kTriageNotEnrollButton);
+  test::OobeJS().TapOnPath(kEnrollTriageNextButton);
+  WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(), UserCreationScreen::Result::SIGNIN_TRIAGE);
+}
+
+// Verify that enroll-device in the enorll triage step in user creation
+// screen display device enrolllment when software update enabled.
+IN_PROC_BROWSER_TEST_F(UserCreationScreenSoftwareUpdateTest, EnrollDevice) {
+  SelectUserTypeOnUserCreationScreen(kEnrollButton);
+  test::OobeJS().ExpectVisiblePath(kUserCreationEnrollTriageDialog);
+  test::OobeJS().TapOnPath(kTriageEnrollButton);
+  test::OobeJS().TapOnPath(kEnrollTriageNextButton);
+  WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(),
+            UserCreationScreen::Result::ENTERPRISE_ENROLL);
+}
+
+// Verify that back button display create step in the child setup step
+// in user creation screen when software update enabled.
+IN_PROC_BROWSER_TEST_F(UserCreationScreenSoftwareUpdateTest,
+                       BackButtonChildSetup) {
+  SelectUserTypeOnUserCreationScreen(kChildButton);
+  test::OobeJS().ExpectVisiblePath(kUserCreationChildSetupDialog);
+  test::OobeJS().TapOnPath(kChildSetupBackButton);
+  test::OobeJS().ExpectVisiblePath(kUserCreationDialog);
+}
+
+// Verify that back button display create step in the enroll triage step
+// in user creation screen when software update enabled.
+IN_PROC_BROWSER_TEST_F(UserCreationScreenSoftwareUpdateTest,
+                       BackButtonEnrolLTriageSetup) {
+  SelectUserTypeOnUserCreationScreen(kEnrollButton);
+  test::OobeJS().ExpectVisiblePath(kUserCreationEnrollTriageDialog);
+  test::OobeJS().TapOnPath(kEnrollTriageBackButton);
+  test::OobeJS().ExpectVisiblePath(kUserCreationDialog);
+}
+
+// Verify that learn more display the modal dialogue when software update
+// enabled.
+IN_PROC_BROWSER_TEST_F(UserCreationScreenSoftwareUpdateTest, LearnMoreClicked) {
+  SelectUserTypeOnUserCreationScreen(kEnrollButton);
+  test::OobeJS().ExpectVisiblePath(kUserCreationEnrollTriageDialog);
+  test::OobeJS().ExpectAttributeEQ("open", kUserCreationLearnMoreDialog, false);
+  test::OobeJS().TapOnPath(kLearnMoreLink);
+  test::OobeJS().ExpectAttributeEQ("open", kUserCreationLearnMoreDialog, true);
+}
+
+class UserCreationScreenEnrolledSoftwareUpdateTest
+    : public UserCreationScreenSoftwareUpdateTest {
+ public:
+  UserCreationScreenEnrolledSoftwareUpdateTest()
+      : UserCreationScreenSoftwareUpdateTest() {
+    login_manager_mixin_.AppendRegularUsers(1);
+    device_state_.SetState(
+        DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED);
+  }
+
+ private:
+  LoginManagerMixin login_manager_mixin_{&mixin_host_};
+};
+
+// Verify user creation screen is skipped during the add person flow on
+// managed device with software update enabled.
+IN_PROC_BROWSER_TEST_F(UserCreationScreenEnrolledSoftwareUpdateTest,
+                       ShouldSkipUserCreationScreen) {
+  EXPECT_TRUE(LoginScreenTestApi::ClickAddUserButton());
+  EXPECT_TRUE(LoginScreenTestApi::IsOobeDialogVisible());
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  test::OobeJS().ClickOnPath(
+      {"gaia-signin", "signin-frame-dialog", "signin-back-button"});
+  EXPECT_FALSE(LoginScreenTestApi::IsOobeDialogVisible());
+}
+
+class UserCreationScreenLoginSoftwareUpdateTest
+    : public UserCreationScreenSoftwareUpdateTest {
+ public:
+  UserCreationScreenLoginSoftwareUpdateTest()
+      : UserCreationScreenSoftwareUpdateTest() {
+    login_manager_mixin_.AppendRegularUsers(1);
+    device_state_.SetState(
+        DeviceStateMixin::State::OOBE_COMPLETED_CONSUMER_OWNED);
+  }
+
+ private:
+  LoginManagerMixin login_manager_mixin_{&mixin_host_};
+};
+
+// Verify back button is available during the add person flow (when there are
+// existing users) and clicking it closes the oobe dialog. Enterprise
+// enrollment button is hidden when there are existing users with software
+// update enabled.
+IN_PROC_BROWSER_TEST_F(UserCreationScreenLoginSoftwareUpdateTest, Cancel) {
+  EXPECT_TRUE(LoginScreenTestApi::ClickAddUserButton());
+  EXPECT_TRUE(LoginScreenTestApi::IsOobeDialogVisible());
+  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
+  ASSERT_FALSE(LoginScreenTestApi::IsEnterpriseEnrollmentButtonShown());
+
+  test::OobeJS().ExpectVisiblePath(kUserCreationDialog);
+  test::OobeJS().TapOnPath(kBackButton);
+
+  WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(), UserCreationScreen::Result::CANCEL);
+  EXPECT_FALSE(LoginScreenTestApi::IsOobeDialogVisible());
+}
+
+// Verify that during the add person flow when select "For work"
+// skip the enroll triage step and gaia screen is shown with
+// software update enabled.
+IN_PROC_BROWSER_TEST_F(UserCreationScreenLoginSoftwareUpdateTest,
+                       ForWorkSelected) {
+  EXPECT_TRUE(LoginScreenTestApi::ClickAddUserButton());
+  EXPECT_TRUE(LoginScreenTestApi::IsOobeDialogVisible());
+  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
+  test::OobeJS().ExpectVisiblePath(kUserCreationDialog);
+  test::OobeJS().TapOnPath(kEnrollButton);
+  test::OobeJS().TapOnPath(kNextButton);
+  WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(), UserCreationScreen::Result::SIGNIN);
+}
 }  // namespace
 }  // namespace ash

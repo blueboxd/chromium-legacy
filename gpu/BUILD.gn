@@ -6,6 +6,7 @@ import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/cronet/config.gni")
 import("//build/config/ui.gni")
 import("//gpu/vulkan/features.gni")
+import("//skia/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/angle/gni/angle.gni")
@@ -205,6 +206,8 @@ static_library("test_support") {
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/client:webgpu_interface",
     "//gpu/ipc:gpu_thread_holder",
+    "//third_party/dawn/src/dawn:cpp",
+    "//third_party/dawn/src/dawn:proc",
   ]
   deps = [
     "//base/test:test_support",
@@ -457,7 +460,7 @@ test("gl_tests") {
     sources += [ "command_buffer/service/shared_image/angle_vulkan_image_backing_factory_unittest.cc" ]
   }
 
-  if (use_dawn) {
+  if (use_dawn || skia_use_dawn) {
     deps += [
       "//third_party/dawn/src/dawn:cpp",
       "//third_party/dawn/src/dawn:proc",
@@ -653,7 +656,7 @@ test("gpu_unittests") {
     ]
   }
 
-  if (is_linux || is_chromeos || is_android || is_chromeos) {
+  if (is_linux || is_chromeos || is_android) {
     sources += [ "command_buffer/service/gpu_fence_manager_unittest.cc" ]
   }
 
@@ -700,7 +703,7 @@ test("gpu_unittests") {
     "//build:chromeos_buildflags",
     "//cc:test_support",
     "//cc/paint",
-    "//components/viz/common:resource_format",
+    "//components/viz/common:shared_image_format",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:raster",

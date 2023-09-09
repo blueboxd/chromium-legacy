@@ -12,9 +12,6 @@
 #include "components/autofill/core/common/autofill_internals/logging_scope.h"
 #include "components/autofill/core/common/logging/log_macros.h"
 
-using ::autofill::FastCheckoutTriggerOutcome;
-using ::autofill::FastCheckoutUIState;
-
 FastCheckoutTriggerValidatorImpl::FastCheckoutTriggerValidatorImpl(
     autofill::AutofillClient* autofill_client,
     FastCheckoutCapabilitiesFetcher* capabilities_fetcher,

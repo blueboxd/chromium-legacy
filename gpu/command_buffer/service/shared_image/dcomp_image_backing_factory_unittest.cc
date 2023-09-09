@@ -6,7 +6,6 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/shared_image_format.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -485,6 +484,7 @@ class DCompImageBackingFactoryVisualTreeTest
         GrSemaphoresSubmitted::kYes,
         direct_context->flush(write_access->surface(), flush_info, nullptr));
 
+    write_access->ApplyBackendSurfaceEndState();
     direct_context->submit(true);
   }
 

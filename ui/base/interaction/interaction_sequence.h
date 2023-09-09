@@ -153,8 +153,14 @@ class COMPONENT_EXPORT(UI_BASE) InteractionSequence {
   enum class ContextMode {
     // Use the initial context for the sequence.
     kInitial,
-    // Search for the element in any context. Currently can only apply to kShown
-    // steps.
+    // Search for the element in any context.
+    //
+    // Note that these events are sent after events for specific contexts, if
+    // you have two steps in succession that are both `StepType::kActivated`
+    // with the second one having `ContextMode::kAny`, then the same activation
+    // could conceivably trigger both steps. Fortunately, this sort of thing
+    // doesn't happen in any of the real-world use cases; if it does it will be
+    // fixed with special case code.
     kAny,
     // Inherits the context from the previous step. Cannot be used on the first
     // step in a sequence.
@@ -246,6 +252,10 @@ class COMPONENT_EXPORT(UI_BASE) InteractionSequence {
     CustomElementEventType custom_event_type;
     std::string element_name;
     StepContext context = ContextMode::kInitial;
+
+    // This is used for testing; while `context` can be updated as part of
+    // sequence execution, this will never change.
+    bool in_any_context = false;
 
     // These will always have values when the sequence is built, but can be
     // unspecified during construction. If unspecified, they will be set to
@@ -458,6 +468,9 @@ class COMPONENT_EXPORT(UI_BASE) InteractionSequence {
   // always run asynchronously.
   void RunSynchronouslyForTesting();
 
+  // Returns whether the current step uses ContextMode::kAny.
+  bool IsCurrentStepInAnyContextForTesting() const;
+
   // Explicitly fails the sequence.
   void FailForTesting();
 
@@ -500,7 +513,7 @@ class COMPONENT_EXPORT(UI_BASE) InteractionSequence {
   // Callbacks used only during step transitions to cache certain events.
   void OnTriggerDuringStepTransition(TrackedElement* element);
   void OnElementHiddenDuringStepTransition(TrackedElement* element);
-  void OnElementHiddenWaitingForActivate(TrackedElement* element);
+  void OnElementHiddenWaitingForEvent(TrackedElement* element);
 
   // While we're transitioning steps or staging a subsequence, it's possible for
   // an activation that would trigger the following step to come in. This method

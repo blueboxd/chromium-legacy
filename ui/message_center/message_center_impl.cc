@@ -78,6 +78,7 @@ void MessageCenterImpl::AddNotificationBlocker(NotificationBlocker* blocker) {
 
   blocker->AddObserver(this);
   blockers_.push_back(blocker);
+  OnBlockingStateChanged(blocker);
 }
 
 void MessageCenterImpl::RemoveNotificationBlocker(
@@ -234,6 +235,9 @@ Notification* MessageCenterImpl::FindParentNotification(
         return nullptr;
       }
       for (auto* n : notifications) {
+        if (n->group_parent() || n->group_child()) {
+          continue;
+        }
         n->SetGroupChild();
       }
     }

@@ -10,6 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 
@@ -69,7 +70,9 @@ class ASH_EXPORT TimeOfDay {
   int offset_minutes_from_zero_hour_;
 
   // Optional Used in tests to override the time of "Now".
-  const base::Clock* clock_ = nullptr;  // Not owned.
+  // This field is not a raw_ptr<> because it was filtered by the rewriter
+  // for: #constexpr-ctor-field-initializer
+  RAW_PTR_EXCLUSION const base::Clock* clock_ = nullptr;  // Not owned.
 
   // May be null, in which case `GetLocalTimeConverter()` returns the default
   // implementation.

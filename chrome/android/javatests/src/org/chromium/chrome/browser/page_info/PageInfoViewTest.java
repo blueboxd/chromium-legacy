@@ -27,6 +27,7 @@ import static org.junit.Assert.assertTrue;
 
 import static org.chromium.base.test.util.Batch.PER_CLASS;
 import static org.chromium.components.content_settings.PrefNames.COOKIE_CONTROLS_MODE;
+import static org.chromium.components.content_settings.PrefNames.IN_CONTEXT_COOKIE_CONTROLS_OPENED;
 import static org.chromium.ui.test.util.ViewUtils.hasBackgroundColor;
 import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 
@@ -85,6 +86,7 @@ import org.chromium.components.content_settings.CookieControlsMode;
 import org.chromium.components.location.LocationUtils;
 import org.chromium.components.page_info.PageInfoAdPersonalizationController;
 import org.chromium.components.page_info.PageInfoController;
+import org.chromium.components.page_info.PageInfoFeatures;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -212,7 +214,7 @@ public class PageInfoViewTest {
         Tab tab = activity.getActivityTab();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             new ChromePageInfo(activity.getModalDialogManagerSupplier(), null,
-                    PageInfoController.OpenedFromSource.TOOLBAR, null, null)
+                    PageInfoController.OpenedFromSource.TOOLBAR, null, null, null)
                     .show(tab, ChromePageInfoHighlight.forPermission(highlightedPermission));
         });
         onViewWaiting(allOf(withId(R.id.page_info_url_wrapper), isDisplayed()));
@@ -355,9 +357,6 @@ public class PageInfoViewTest {
 
         setThirdPartyCookieBlocking(CookieControlsMode.INCOGNITO_ONLY);
         clearPermissions();
-        HistoryContentManager.setProviderForTests(null);
-        PageInfoHistoryController.setProviderForTests(null);
-        PageInfoAdPersonalizationController.setTopicsForTesting(null);
     }
 
     /**
@@ -563,6 +562,11 @@ public class PageInfoViewTest {
         onView(withId(R.id.page_info_cookies_row)).perform(click());
         onViewWaiting(allOf(
                 withText(containsString("Cookies and other site data are used")), isDisplayed()));
+        // Verify that the pref was recorded successfully.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            assertTrue(UserPrefs.get(Profile.getLastUsedRegularProfile())
+                               .getBoolean(IN_CONTEXT_COOKIE_CONTROLS_OPENED));
+        });
         mRenderTestRule.render(getPageInfoView(), "PageInfo_CookiesSubpage");
     }
 
@@ -612,6 +616,36 @@ public class PageInfoViewTest {
         onViewWaiting(allOf(withText(containsString("stored data")), isDisplayed()));
         // Clear cookies in page info.
         onView(withText(containsString("stored data"))).perform(click());
+        onView(withText("Delete")).perform(click());
+        // Wait until the UI navigates back and check cookies are deleted.
+        onViewWaiting(allOf(withId(R.id.page_info_cookies_row), isDisplayed()));
+        expectHasCookies(false);
+    }
+
+    /**
+     * Tests clearing cookies on the cookies page of the PageInfo UI with User Bypass enabled.
+     */
+    @Test
+    @MediumTest
+    @Features.EnableFeatures({PageInfoFeatures.USER_BYPASS_UI_NAME})
+    public void testClearCookiesOnSubpageUserBypass() throws Exception {
+        setThirdPartyCookieBlocking(CookieControlsMode.BLOCK_THIRD_PARTY);
+        sActivityTestRule.loadUrl(mTestServerRule.getServer().getURL(sSiteDataHtml));
+        // Create cookies.
+        expectHasCookies(false);
+        createCookies();
+        expectHasCookies(true);
+        // Go to cookies subpage.
+        openPageInfo(PageInfoController.NO_HIGHLIGHTED_PERMISSION);
+        onView(withId(R.id.page_info_cookies_row)).perform(click());
+        // Check that cookies usage is displayed.
+        onViewWaiting(allOf(withText(containsString("stored data")), isDisplayed()));
+        // Check that the cookie toggle is displayed and try clicking it.
+        onViewWaiting(allOf(withText(containsString("Block third-party cookies")), isDisplayed()));
+        onView(withText(containsString("Block third-party cookies"))).perform(click());
+        // Clear cookies in page info.
+        onView(withText(containsString("stored data"))).perform(click());
+        onViewWaiting(allOf(withText("Delete"), isDisplayed()));
         onView(withText("Delete")).perform(click());
         // Wait until the UI navigates back and check cookies are deleted.
         onViewWaiting(allOf(withId(R.id.page_info_cookies_row), isDisplayed()));
@@ -695,7 +729,7 @@ public class PageInfoViewTest {
                     new ChromePageInfoControllerDelegate(activity, tab.getWebContents(),
                             activity::getModalDialogManager,
                             new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab), null, null,
-                            ChromePageInfoHighlight.noHighlight()) {
+                            ChromePageInfoHighlight.noHighlight(), null) {
                         @Override
                         public boolean isShowingPaintPreviewPage() {
                             return true;

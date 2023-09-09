@@ -47,6 +47,7 @@ enum UIDisplayDisposition {
   MANUAL_BIOMETRIC_AUTHENTICATION_FOR_FILLING = 13,
   AUTOMATIC_BIOMETRIC_AUTHENTICATION_FOR_FILLING = 14,
   AUTOMATIC_BIOMETRIC_AUTHENTICATION_CONFIRMATION = 15,
+  AUTOMATIC_SHARED_PASSWORDS_NOTIFICATION = 16,
   NUM_DISPLAY_DISPOSITIONS,
 };
 
@@ -305,19 +306,6 @@ enum class IsSyncPasswordHashSaved {
   SAVED_VIA_LIST_PREF = 2,
   IS_SYNC_PASSWORD_HASH_SAVED_COUNT = 3,
   kMaxValue = IS_SYNC_PASSWORD_HASH_SAVED_COUNT,
-};
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-// Metrics: "PasswordManager.CertificateErrorsWhileSeeingForms"
-enum class CertificateError {
-  NONE = 0,
-  OTHER = 1,
-  AUTHORITY_INVALID = 2,
-  DATE_INVALID = 3,
-  COMMON_NAME_INVALID = 4,
-  WEAK_SIGNATURE_ALGORITHM = 5,
-  COUNT
 };
 
 // These values are persisted to logs. Entries should not be renumbered and

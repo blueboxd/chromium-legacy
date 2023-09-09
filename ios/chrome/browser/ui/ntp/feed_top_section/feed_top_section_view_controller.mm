@@ -106,13 +106,9 @@ NSArray<NSLayoutConstraint*>* SameConstraintsWithInsets(
     DCHECK(!self.promoView);
     self.promoViewContainer = [[UIView alloc] init];
     self.promoViewContainer.translatesAutoresizingMaskIntoConstraints = NO;
-    if (GetTopOfFeedPromoStyle() == SigninPromoViewStyleCompactTitled) {
-      self.promoViewContainer.backgroundColor =
-          [UIColor colorNamed:kGroupedPrimaryBackgroundColor];
-    } else {
-      self.promoViewContainer.backgroundColor =
-          [UIColor colorNamed:kGrey100Color];
-    }
+    self.promoViewContainer.backgroundColor =
+        [UIColor colorNamed:kGrey100Color];
+
     // TODO(b/287118358): Cleanup IsMagicStackEnabled() code from the sync promo
     // after experiment.
     if (IsMagicStackEnabled()) {
@@ -192,9 +188,6 @@ NSArray<NSLayoutConstraint*>* SameConstraintsWithInsets(
   SigninPromoViewStyle promoViewStyle = GetTopOfFeedPromoStyle();
   [configurator configureSigninPromoView:promoView withStyle:promoViewStyle];
 
-  // Override promo text for top of feed.
-  promoView.titleLabel.text =
-      l10n_util::GetNSString(IDS_IOS_NTP_FEED_SIGNIN_PROMO_TITLE);
   promoView.textLabel.text =
       l10n_util::GetNSString(IDS_IOS_NTP_FEED_SIGNIN_COMPACT_PROMO_BODY);
   return promoView;

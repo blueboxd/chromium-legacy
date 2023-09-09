@@ -8,7 +8,6 @@
 #include "build/build_config.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_utils.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/shared_image_format.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -221,7 +220,8 @@ const auto kFormats = ::testing::Values(viz::SinglePlaneFormat::kALPHA_8,
                                         viz::SinglePlaneFormat::kRGBX_8888,
                                         viz::SinglePlaneFormat::kRGBA_1010102,
                                         viz::MultiPlaneFormat::kNV12,
-                                        viz::MultiPlaneFormat::kYV12);
+                                        viz::MultiPlaneFormat::kYV12,
+                                        viz::MultiPlaneFormat::kI420);
 
 INSTANTIATE_TEST_SUITE_P(
     ,

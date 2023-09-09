@@ -124,6 +124,8 @@ int ChromeLayoutProvider::GetDistanceMetric(int metric) const {
       return 12;
     case DISTANCE_EXTENSIONS_MENU_BUTTON_ICON_SIZE:
       return features::IsChromeRefresh2023() ? 20 : 16;
+    case DISTANCE_EXTENSIONS_MENU_BUTTON_ICON_SMALL_SIZE:
+      return 16;
     case DISTANCE_EXTENSIONS_MENU_EXTENSION_ICON_SIZE:
       return 28;
     case DISTANCE_EXTENSIONS_MENU_ICON_SPACING:
@@ -170,8 +172,12 @@ int ChromeLayoutProvider::GetDistanceMetric(int metric) const {
       return 20;
     case DISTANCE_SIDE_PANEL_HEADER_INTERIOR_MARGIN_HORIZONTAL:
       return 4;
+    case DISTANCE_HORIZONTAL_SEPARATOR_PADDING_PAGE_INFO_VIEW:
+      return features::IsChromeRefresh2023() ? 20 : 0;
     case DISTANCE_INFOBAR_HORIZONTAL_ICON_LABEL_PADDING:
       return features::IsChromeRefresh2023() ? 16 : 12;
+    case DISTANCE_RICH_HOVER_BUTTON_ICON_HORIZONTAL:
+      return features::IsChromeRefresh2023() ? 8 : 12;
   }
   NOTREACHED_NORETURN();
 }

@@ -7,7 +7,6 @@
 #import "base/files/scoped_temp_dir.h"
 #import "base/ios/ios_util.h"
 #import "base/strings/sys_string_conversions.h"
-#import "base/test/scoped_feature_list.h"
 #import "base/time/default_clock.h"
 #import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/browser/bookmark_utils.h"
@@ -21,6 +20,8 @@
 #import "components/policy/core/common/mock_configuration_policy_provider.h"
 #import "components/prefs/pref_registry_simple.h"
 #import "components/prefs/testing_pref_service.h"
+#import "components/supervised_user/core/browser/supervised_user_preferences.h"
+#import "components/supervised_user/core/common/pref_names.h"
 #import "components/sync/base/features.h"
 #import "components/sync/service/sync_service.h"
 #import "components/sync/test/mock_sync_service.h"
@@ -45,6 +46,8 @@
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/supervised_user/supervised_user_service_factory.h"
+#import "ios/chrome/browser/ui/popup_menu//overflow_menu/overflow_menu_orderer.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/destination_usage_history/constants.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_swift.h"
@@ -118,6 +121,10 @@ class OverflowMenuMediatorTest : public PlatformTest {
   OverflowMenuMediatorTest() {
     pref_service_.registry()->RegisterBooleanPref(
         translate::prefs::kOfferTranslateEnabled, true);
+    pref_service_.registry()->RegisterStringPref(prefs::kSupervisedUserId,
+                                                 std::string());
+    pref_service_.registry()->RegisterBooleanPref(
+        prefs::kChildAccountStatusKnown, false);
   }
 
   void SetUp() override {
@@ -157,6 +164,7 @@ class OverflowMenuMediatorTest : public PlatformTest {
         std::make_unique<web::FakeWebState>();
     test_web_state->SetNavigationManager(std::move(navigation_manager));
     test_web_state->SetLoading(true);
+    test_web_state->SetBrowserState(browser_state_.get());
     web_state_ = test_web_state.get();
 
     auto frames_manager = std::make_unique<web::FakeWebFramesManager>();
@@ -197,19 +205,22 @@ class OverflowMenuMediatorTest : public PlatformTest {
 
  protected:
   OverflowMenuMediator* CreateMediator(BOOL is_incognito) {
+    orderer_ = [[OverflowMenuOrderer alloc] initWithIsIncognito:is_incognito];
+
     mediator_ = [[OverflowMenuMediator alloc] init];
     mediator_.isIncognito = is_incognito;
+    mediator_.menuOrderer = orderer_;
     mediator_.baseViewController = baseViewController_;
+    mediator_.supervisedUserService =
+        SupervisedUserServiceFactory::GetForBrowserState(browser_state_.get());
     return mediator_;
   }
 
   OverflowMenuMediator* CreateMediatorWithBrowserPolicyConnector(
       BOOL is_incognito,
       BrowserPolicyConnectorIOS* browser_policy_connector) {
-    mediator_ = [[OverflowMenuMediator alloc] init];
-    mediator_.isIncognito = is_incognito;
+    CreateMediator(is_incognito);
     mediator_.browserPolicyConnector = browser_policy_connector;
-    mediator_.baseViewController = baseViewController_;
     return mediator_;
   }
 
@@ -228,6 +239,8 @@ class OverflowMenuMediatorTest : public PlatformTest {
         prefs::kOverflowMenuDestinationUsageHistory, PrefRegistry::LOSSY_PREF);
     localStatePrefs_->registry()->RegisterListPref(
         prefs::kOverflowMenuDestinationsOrder);
+    localStatePrefs_->registry()->RegisterDictionaryPref(
+        prefs::kOverflowMenuActionsOrder);
   }
 
   void SetUpBookmarks() {
@@ -323,6 +336,16 @@ class OverflowMenuMediatorTest : public PlatformTest {
     return NO;
   }
 
+  bool HasFamilyLinkInfoItem() {
+    for (OverflowMenuActionGroup* group in mediator_.overflowMenuModel
+             .actionGroups) {
+      if (group.footer.accessibilityIdentifier == kTextMenuFamilyLinkInfo) {
+        return YES;
+      }
+    }
+    return NO;
+  }
+
   OverflowMenuDestination* GetDestination(NSString* accessibility_identifier) {
     OverflowMenuDestination* found_destination = nil;
     for (OverflowMenuDestination* destination in mediator_.overflowMenuModel
@@ -344,6 +367,7 @@ class OverflowMenuMediatorTest : public PlatformTest {
 
   FakeOverlayPresentationContext presentation_context_;
   OverflowMenuMediator* mediator_;
+  OverflowMenuOrderer* orderer_;
   BookmarkModel* local_or_syncable_bookmark_model_;
   BookmarkModel* account_bookmark_model_;
   std::unique_ptr<TestingPrefServiceSimple> browserStatePrefs_;
@@ -396,7 +420,7 @@ TEST_F(OverflowMenuMediatorTest, TestMenuItemsCount) {
     number_of_tab_actions++;
   }
 
-  NSUInteger number_of_help_items = 1;
+  NSUInteger number_of_help_items = 2;
 
   if (ios::provider::IsUserFeedbackSupported()) {
     number_of_help_items++;
@@ -554,6 +578,36 @@ TEST_F(OverflowMenuMediatorTest, TestEnterpriseInfoShown) {
   ASSERT_TRUE(HasEnterpriseInfoItem());
 }
 
+// Tests that the Family Link item is hidden for non-supervised users.
+TEST_F(OverflowMenuMediatorTest, TestFamilyLinkInfoHidden) {
+  supervised_user::DisableParentalControls(*browser_state_->GetPrefs());
+
+  CreateMediator(/*is_incognito=*/NO);
+  SetUpActiveWebState();
+
+  mediator_.webStateList = browser_->GetWebStateList();
+
+  // Force creation of the model.
+  [mediator_ overflowMenuModel];
+
+  ASSERT_FALSE(HasFamilyLinkInfoItem());
+}
+
+// Tests that the Family Link item is shown for supervised users.
+TEST_F(OverflowMenuMediatorTest, TestFamilyLinkInfoShown) {
+  supervised_user::EnableParentalControls(*browser_state_->GetPrefs());
+
+  CreateMediator(/*is_incognito=*/NO);
+  SetUpActiveWebState();
+
+  mediator_.webStateList = browser_->GetWebStateList();
+
+  // Force creation of the model.
+  [mediator_ overflowMenuModel];
+
+  ASSERT_TRUE(HasFamilyLinkInfoItem());
+}
+
 // Tests that 1) the tools menu has an enabled 'Add to Bookmarks' button when
 // the current URL is not in bookmarks 2) the bookmark button changes to an
 // enabled 'Edit bookmark' button when navigating to a bookmarked URL, 3) the
@@ -670,12 +724,6 @@ TEST_F(OverflowMenuMediatorTest, TestOpenWhatsNewDoesntCrashWithNoTracker) {
 // positioned at at most kNewDestinationsInsertionIndex when there is an
 // eligible identity error that can be resolved from the Settings menu.
 TEST_F(OverflowMenuMediatorTest, TestEligibleIdentityErrorWhenSyncOff) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {kIndicateSyncErrorInOverflowMenu,
-       syncer::kIndicateAccountStorageErrorInAccountCell},
-      {});
-
   CreateMediator(/*is_incognito=*/NO);
 
   syncer::MockSyncService syncService;
@@ -699,12 +747,6 @@ TEST_F(OverflowMenuMediatorTest, TestEligibleIdentityErrorWhenSyncOff) {
 // Tests that there is no error badge displayed on the Settings destination when
 // there is no eligible identity error. Sync is OFF.
 TEST_F(OverflowMenuMediatorTest, TestNoEligibleIdentityErrorWhenSyncOff) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {kIndicateSyncErrorInOverflowMenu,
-       syncer::kIndicateAccountStorageErrorInAccountCell},
-      {});
-
   CreateMediator(/*is_incognito=*/NO);
 
   syncer::MockSyncService syncService;
@@ -726,12 +768,6 @@ TEST_F(OverflowMenuMediatorTest, TestNoEligibleIdentityErrorWhenSyncOff) {
 // a Sync error that will be indicated in the Settings menu. The account is
 // signed in and has Sync turned ON.
 TEST_F(OverflowMenuMediatorTest, TestSyncError) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {kIndicateSyncErrorInOverflowMenu,
-       syncer::kIndicateAccountStorageErrorInAccountCell},
-      {});
-
   CreateMediator(/*is_incognito=*/NO);
 
   syncer::MockSyncService syncService;
@@ -755,12 +791,6 @@ TEST_F(OverflowMenuMediatorTest, TestSyncError) {
 // Tests that there is no error cue (red dot) displayed on the Settings
 // destination when there is no error in both Sync and Identity levels.
 TEST_F(OverflowMenuMediatorTest, TestNoSyncError) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {kIndicateSyncErrorInOverflowMenu,
-       syncer::kIndicateAccountStorageErrorInAccountCell},
-      {});
-
   CreateMediator(/*is_incognito=*/NO);
 
   syncer::MockSyncService syncService;
@@ -782,12 +812,6 @@ TEST_F(OverflowMenuMediatorTest, TestNoSyncError) {
 // Tests that the Settings destination that has an error cue has predence over
 // the promoted What's New destination.
 TEST_F(OverflowMenuMediatorTest, TestIdentityErrorWithWhatsNewPromo) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {kIndicateSyncErrorInOverflowMenu,
-       syncer::kIndicateAccountStorageErrorInAccountCell},
-      {});
-
   const GURL kUrl("https://chromium.test");
   web_state_->SetCurrentURL(kUrl);
   CreateBrowserStatePrefs();
@@ -822,12 +846,6 @@ TEST_F(OverflowMenuMediatorTest, TestIdentityErrorWithWhatsNewPromo) {
 // history ranking.
 TEST_F(OverflowMenuMediatorTest,
        TestPromotedDestinationsWhenNoHistoryUsageRanking) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {kIndicateSyncErrorInOverflowMenu,
-       syncer::kIndicateAccountStorageErrorInAccountCell},
-      {});
-
   CreateMediator(/*is_incognito=*/NO);
   syncer::MockSyncService syncService;
   ON_CALL(syncService, GetUserActionableError())

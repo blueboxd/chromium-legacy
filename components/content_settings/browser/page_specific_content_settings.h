@@ -12,11 +12,13 @@
 #include <set>
 #include <string>
 
+#include "base/containers/enum_set.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/browsing_data/content/browsing_data_model.h"
@@ -115,17 +117,21 @@ class PageSpecificContentSettings
       public content::PageUserData<PageSpecificContentSettings> {
  public:
   // Fields describing the current mic/camera state. If a page has attempted to
-  // access a device, the XXX_ACCESSED bit will be set. If access was blocked,
-  // XXX_BLOCKED will be set.
+  // access a device, the kXxxAccessed bit will be set. If access was blocked,
+  // kXxxBlocked will be set.
   enum MicrophoneCameraStateFlags {
-    MICROPHONE_CAMERA_NOT_ACCESSED = 0,
-    MICROPHONE_ACCESSED = 1 << 0,
-    MICROPHONE_BLOCKED = 1 << 1,
-    CAMERA_ACCESSED = 1 << 2,
-    CAMERA_BLOCKED = 1 << 3,
+    kMicrophoneAccessed,
+    kMicrophoneBlocked,
+    kCameraAccessed,
+    kCameraBlocked,
+
+    kMinValue = kMicrophoneAccessed,
+    kMaxValue = kCameraBlocked,
   };
-  // Use signed int, that's what the enum flags implicitly convert to.
-  typedef int32_t MicrophoneCameraState;
+  using MicrophoneCameraState =
+      base::EnumSet<MicrophoneCameraStateFlags,
+                    MicrophoneCameraStateFlags::kMinValue,
+                    MicrophoneCameraStateFlags::kMaxValue>;
 
   class Delegate {
    public:
@@ -245,7 +251,7 @@ class PageSpecificContentSettings
       mojom::ContentSettingsManager::StorageType storage_type,
       int render_process_id,
       int render_frame_id,
-      const GURL& url,
+      const blink::StorageKey& storage_key,
       bool blocked_by_policy);
 
   static void BrowsingDataAccessed(content::RenderFrameHost* rfh,
@@ -392,7 +398,7 @@ class PageSpecificContentSettings
   // embedded page (through |MaybeUpdateParent|).
   void OnStorageAccessed(
       mojom::ContentSettingsManager::StorageType storage_type,
-      const GURL& url,
+      const blink::StorageKey& storage_key,
       bool blocked_by_policy,
       content::Page* originating_page = nullptr);
   void OnSharedWorkerAccessed(const GURL& worker_url,
@@ -455,6 +461,9 @@ class PageSpecificContentSettings
   // called after the page activates.
   void OnPrerenderingPageActivation();
 
+  // This method is called when audio or video capturing is started or finished.
+  void OnCapturingStateChanged(ContentSettingsType type, bool is_capturing);
+
  private:
   friend class content::PageUserData<PageSpecificContentSettings>;
 
@@ -468,6 +477,10 @@ class PageSpecificContentSettings
   };
 
   explicit PageSpecificContentSettings(content::Page& page, Delegate* delegate);
+
+  // Updates `microphone_camera_state_` after audio/video is started/finished.
+  void OnCapturingStateChangedInternal(ContentSettingsType type,
+                                       bool is_capturing);
 
   // content_settings::Observer implementation.
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
@@ -589,6 +602,13 @@ class PageSpecificContentSettings
   bool camera_was_just_granted_on_site_level_ = false;
   bool mic_was_just_granted_on_site_level_ = false;
   bool geolocation_was_just_granted_on_site_level_ = false;
+
+  // The time when the media indicator was displayed.
+  base::TimeTicks media_indicator_time_;
+
+  // Stores timers for delaying hiding an activity indicators.
+  std::map<ContentSettingsType, base::OneShotTimer>
+      indicators_hiding_delay_timer_;
 
   // Observer to watch for content settings changed.
   base::ScopedObservation<HostContentSettingsMap, content_settings::Observer>

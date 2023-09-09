@@ -49,6 +49,8 @@ int GetLayoutConstant(LayoutConstant constant) {
       return 1;
     case LOCATION_BAR_CHILD_INTERIOR_PADDING:
       return 3;
+    case LOCATION_BAR_CHILD_CORNER_RADIUS:
+      return 12;
     case LOCATION_BAR_ELEMENT_PADDING:
       return touch_ui ? 3 : 2;
     case LOCATION_BAR_PAGE_INFO_ICON_VERTICAL_PADDING:
@@ -72,6 +74,8 @@ int GetLayoutConstant(LayoutConstant constant) {
       }
     case LOCATION_BAR_ICON_SIZE:
       return touch_ui ? 20 : 16;
+    case LOCATION_BAR_CHIP_ICON_SIZE:
+      return 16;
     case LOCATION_BAR_LEADING_ICON_SIZE:
       return GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
     case LOCATION_BAR_TRAILING_ICON_SIZE:
@@ -107,7 +111,7 @@ int GetLayoutConstant(LayoutConstant constant) {
         return 0;
       return 1;
     case TOOLBAR_BUTTON_HEIGHT:
-      if (base::FeatureList::IsEnabled(features::kChromeRefresh2023)) {
+      if (features::IsChromeRefresh2023()) {
         return touch_ui ? 48 : 34;
       } else {
         return touch_ui ? 48 : 28;
@@ -115,20 +119,19 @@ int GetLayoutConstant(LayoutConstant constant) {
     case TOOLBAR_ELEMENT_PADDING:
       return touch_ui ? 0 : 4;
     case TOOLBAR_ICON_DEFAULT_MARGIN:
-      if (base::FeatureList::IsEnabled(features::kChromeRefresh2023)) {
+      if (features::IsChromeRefresh2023()) {
         return touch_ui ? 0 : 2;
       } else {
         return GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
       }
     case TOOLBAR_STANDARD_SPACING:
-      if (base::FeatureList::IsEnabled(features::kChromeRefresh2023)) {
+      if (features::IsChromeRefresh2023()) {
         return touch_ui ? 12 : 9;
       } else {
         return touch_ui ? 12 : 8;
       }
     case PAGE_INFO_ICON_SIZE:
-      return base::FeatureList::IsEnabled(features::kChromeRefresh2023) ? 20
-                                                                        : 16;
+      return features::IsChromeRefresh2023() ? 20 : 16;
     case DOWNLOAD_ICON_SIZE:
       return features::IsChromeRefresh2023() ? 20 : 16;
     case TOOLBAR_CORNER_RADIUS:
@@ -149,6 +152,9 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
     case DOWNLOAD_ROW:
       return gfx::Insets::VH(8, features::IsChromeRefresh2023() ? 20 : 16);
     case LOCATION_BAR_ICON_INTERIOR_PADDING:
+      if (features::IsChromeRefresh2023()) {
+        return gfx::Insets::VH(2, 2);
+      }
       return touch_ui ? gfx::Insets::VH(5, 10) : gfx::Insets::VH(4, 8);
 
     case LOCATION_BAR_PAGE_INFO_ICON_PADDING:
@@ -164,30 +170,25 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
     }
 
     case TOOLBAR_BUTTON:
-      return gfx::Insets(
-          touch_ui ? 12
-                   : (base::FeatureList::IsEnabled(features::kChromeRefresh2023)
-                          ? 7
-                          : 6));
+      return gfx::Insets(touch_ui ? 12
+                                  : (features::IsChromeRefresh2023() ? 7 : 6));
 
     case BROWSER_APP_MENU_CHIP_PADDING:
-      if (touch_ui ||
-          !base::FeatureList::IsEnabled(features::kChromeRefresh2023)) {
+      if (touch_ui || !features::IsChromeRefresh2023()) {
         return GetLayoutInsets(TOOLBAR_BUTTON);
       } else {
         return gfx::Insets::TLBR(7, 4, 7, 6);
       }
 
     case AVATAR_CHIP_PADDING:
-      if (touch_ui ||
-          !base::FeatureList::IsEnabled(features::kChromeRefresh2023)) {
+      if (touch_ui || !features::IsChromeRefresh2023()) {
         return GetLayoutInsets(TOOLBAR_BUTTON);
       } else {
         return gfx::Insets::TLBR(7, 10, 7, 4);
       }
 
     case TOOLBAR_INTERIOR_MARGIN:
-      if (base::FeatureList::IsEnabled(features::kChromeRefresh2023)) {
+      if (features::IsChromeRefresh2023()) {
         return touch_ui ? gfx::Insets() : gfx::Insets::VH(6, 5);
       } else {
         return touch_ui ? gfx::Insets() : gfx::Insets::VH(4, 8);

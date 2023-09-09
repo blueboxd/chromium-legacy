@@ -7,22 +7,22 @@
 
 #include <string>
 #include "base/memory/weak_ptr.h"
-#include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/password_manager/core/browser/password_credential_filler.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 
 namespace password_manager {
 
+struct SubmissionReadinessParams;
+
 class PasswordCredentialFillerImpl : public PasswordCredentialFiller {
  public:
-  PasswordCredentialFillerImpl(base::WeakPtr<PasswordManagerDriver> driver,
-                               SubmissionReadinessState submission_readiness);
+  PasswordCredentialFillerImpl(
+      base::WeakPtr<PasswordManagerDriver> driver,
+      const SubmissionReadinessParams& submission_readiness);
   PasswordCredentialFillerImpl(const PasswordCredentialFillerImpl&) = delete;
   PasswordCredentialFillerImpl& operator=(const PasswordCredentialFillerImpl&) =
       delete;
   ~PasswordCredentialFillerImpl() override;
-
-  bool IsReadyToFill() override;
 
   void FillUsernameAndPassword(const std::u16string& username,
                                const std::u16string& password) override;
@@ -35,11 +35,10 @@ class PasswordCredentialFillerImpl : public PasswordCredentialFiller {
 
   const GURL& GetFrameUrl() const override;
 
-  void CleanUp(ToShowVirtualKeyboard should_show) override;
+  void Dismiss(ToShowVirtualKeyboard should_show) override;
 
  private:
-  // Driver supplied by the client. Gets cleared when
-  // FillUsernameAndPassword() or CleanUp() gets called.
+  // Driver supplied by the client.
   base::WeakPtr<PasswordManagerDriver> driver_;
 
   // Readiness state supplied by the client, used to compute

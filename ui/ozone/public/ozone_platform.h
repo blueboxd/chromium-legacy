@@ -156,6 +156,8 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
 
   // Groups platform properties that can only be known at run time.
   struct PlatformRuntimeProperties {
+    PlatformRuntimeProperties();
+
     // Values to override the value of the
     // supports_server_side_window_decorations property in tests.
     enum class SupportsSsdForTest {
@@ -181,6 +183,10 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     // without a backing image via a wayland protocol.
     bool supports_non_backed_solid_color_buffers = false;
 
+    // Wayland only: determines whether single pixel buffer protocol is
+    // supported.
+    bool supports_single_pixel_buffer = false;
+
     // Indicates whether the platform supports native pixmaps.
     bool supports_native_pixmaps = false;
 
@@ -195,6 +201,10 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     // Wayland only: determine whether toplevel surfaces can be activated and
     // deactivated.
     bool supports_activation = false;
+
+    // Wayland only: determines whether non axis-aligned 2d transforms can be
+    // delegated via the wayland protocol.
+    bool supports_affine_transform = false;
   };
 
   // Corresponds to chrome_browser_main_extra_parts.h.

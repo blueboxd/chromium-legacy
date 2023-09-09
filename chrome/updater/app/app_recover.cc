@@ -41,8 +41,7 @@ class AppRecover : public App {
 
  private:
   ~AppRecover() override = default;
-  void Initialize() override;
-  void Uninitialize() override;
+  [[nodiscard]] int Initialize() override;
   void FirstTaskRun() override;
 
   std::vector<RegistrationRequest> RecordRegisteredApps() const;
@@ -56,12 +55,9 @@ class AppRecover : public App {
   scoped_refptr<GlobalPrefs> global_prefs_;
 };
 
-void AppRecover::Initialize() {
+int AppRecover::Initialize() {
   global_prefs_ = CreateGlobalPrefs(updater_scope());
-}
-
-void AppRecover::Uninitialize() {
-  global_prefs_ = nullptr;
+  return kErrorOk;
 }
 
 void AppRecover::FirstTaskRun() {
@@ -182,11 +178,7 @@ void AppRecover::RegisterApps(
       CreateUpdateServiceProxy(updater_scope());
   base::RepeatingClosure barrier = base::BarrierClosure(
       registrations.size(),
-      // The service is bound to keep it alive through all callbacks.
-      base::BindOnce(
-          [](scoped_refptr<UpdateService> /*service*/,
-             base::OnceClosure shutdown) { std::move(shutdown).Run(); },
-          service, base::BindOnce(&AppRecover::Shutdown, this, kErrorOk)));
+      base::BindOnce(&AppRecover::Shutdown, this, kErrorOk));
   for (const RegistrationRequest& registration : registrations) {
     service->RegisterApp(registration,
                          base::BindOnce(

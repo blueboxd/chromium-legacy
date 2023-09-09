@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/containers/span.h"
 #include "base/debug/alias.h"
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/hash/hash.h"
 #include "base/logging.h"
@@ -464,8 +465,8 @@ sk_sp<SkImage> MakeTextureImage(viz::RasterContextProvider* context,
   // Step 2: Apply a color-space conversion if necessary.
   if (uploaded_image && target_color_space) {
     sk_sp<SkImage> pre_converted_image = uploaded_image;
-    uploaded_image = uploaded_image->makeColorSpace(target_color_space,
-                                                    context->GrContext());
+    uploaded_image = uploaded_image->makeColorSpace(context->GrContext(),
+                                                    target_color_space);
 
     if (uploaded_image != pre_converted_image)
       DeleteSkImageAndPreventCaching(context, std::move(pre_converted_image));
@@ -2181,8 +2182,11 @@ void GpuImageDecodeCache::OwnershipChanged(const DrawImage& draw_image,
   const bool has_cpu_data = image_data->decode.HasData() ||
                             (image_data->is_bitmap_backed &&
                              image_data->decode.image(0, AuxImage::kDefault));
-  if (!has_any_refs && !image_data->HasUploadedData() && !has_cpu_data &&
-      !image_data->is_orphaned) {
+  bool is_empty = !has_any_refs && !image_data->HasUploadedData() &&
+                  !has_cpu_data && !image_data->is_orphaned;
+  if (is_empty ||
+      (draw_image.paint_image().no_cache() &&
+       base::FeatureList::IsEnabled(features::kImageCacheNoCache))) {
     auto found_persistent = persistent_cache_.Peek(draw_image.frame_key());
     if (found_persistent != persistent_cache_.end())
       RemoveFromPersistentCache(found_persistent);
@@ -3538,8 +3542,8 @@ sk_sp<SkImage> GpuImageDecodeCache::CreateImageFromYUVATexturesInternal(
       context_->GrContext(), yuva_backend_textures,
       std::move(decoded_color_space));
   if (target_color_space && yuva_image) {
-    return yuva_image->makeColorSpace(target_color_space,
-                                      context_->GrContext());
+    return yuva_image->makeColorSpace(context_->GrContext(),
+                                      target_color_space);
   }
 
   return yuva_image;

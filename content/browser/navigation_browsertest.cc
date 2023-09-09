@@ -46,8 +46,6 @@
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/network_service_util.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -2005,96 +2003,6 @@ IN_PROC_BROWSER_TEST_F(NavigationCorsExemptBrowserTest,
   EXPECT_EQ(header_value, last_cors_header_value());
 }
 
-struct NewWebContentsData {
-  NewWebContentsData() = default;
-  NewWebContentsData(NewWebContentsData&& other)
-      : new_web_contents(std::move(other.new_web_contents)),
-        manager(std::move(other.manager)) {}
-
-  std::unique_ptr<WebContents> new_web_contents;
-  std::unique_ptr<TestNavigationManager> manager;
-};
-
-class CreateWebContentsOnCrashObserver : public NotificationObserver {
- public:
-  CreateWebContentsOnCrashObserver(const GURL& url,
-                                   WebContents* first_web_contents)
-      : url_(url), first_web_contents_(first_web_contents) {}
-
-  CreateWebContentsOnCrashObserver(const CreateWebContentsOnCrashObserver&) =
-      delete;
-  CreateWebContentsOnCrashObserver& operator=(
-      const CreateWebContentsOnCrashObserver&) = delete;
-
-  void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) override {
-    EXPECT_EQ(content::NOTIFICATION_RENDERER_PROCESS_CLOSED, type);
-
-    // Only do this once in the test.
-    if (observed_)
-      return;
-    observed_ = true;
-
-    WebContents::CreateParams new_contents_params(
-        first_web_contents_->GetBrowserContext(),
-        first_web_contents_->GetSiteInstance());
-    data_.new_web_contents = WebContents::Create(new_contents_params);
-    data_.manager = std::make_unique<TestNavigationManager>(
-        data_.new_web_contents.get(), url_);
-    NavigationController::LoadURLParams load_params(url_);
-    data_.new_web_contents->GetController().LoadURLWithParams(load_params);
-  }
-
-  NewWebContentsData TakeNewWebContentsData() { return std::move(data_); }
-
- private:
-  NewWebContentsData data_;
-  bool observed_ = false;
-
-  GURL url_;
-  raw_ptr<WebContents> first_web_contents_;
-
-  ScopedAllowRendererCrashes scoped_allow_renderer_crashes_;
-};
-
-// This test simulates android webview's behavior in apps that handle
-// renderer crashes by synchronously creating a new WebContents and loads
-// the same page again. This reenters into content code.
-IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, WebViewRendererKillReload) {
-  // Webview is limited to one renderer.
-  RenderProcessHost::SetMaxRendererProcessCount(1u);
-
-  // Load a page into first webview.
-  GURL url(embedded_test_server()->GetURL("/simple_links.html"));
-  {
-    TestNavigationObserver observer(web_contents());
-    EXPECT_TRUE(NavigateToURL(web_contents(), url));
-    EXPECT_EQ(url, observer.last_navigation_url());
-  }
-
-  // Install a crash observer that synchronously creates and loads a new
-  // WebContents. Then crash the renderer which triggers the observer.
-  CreateWebContentsOnCrashObserver crash_observer(url, web_contents());
-  content::NotificationRegistrar notification_registrar;
-  notification_registrar.Add(&crash_observer,
-                             content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                             content::NotificationService::AllSources());
-  NavigateToURLBlockUntilNavigationsComplete(web_contents(),
-                                             GetWebUIURL("crash"), 1);
-
-  // Wait for navigation in new WebContents to finish.
-  NewWebContentsData data = crash_observer.TakeNewWebContentsData();
-  ASSERT_TRUE(data.manager->WaitForNavigationFinished());
-
-  // Test passes if renderer is still alive.
-  EXPECT_TRUE(ExecJs(data.new_web_contents.get(), "true;"));
-  EXPECT_TRUE(
-      data.new_web_contents->GetPrimaryMainFrame()->IsRenderFrameLive());
-  EXPECT_EQ(
-      url, data.new_web_contents->GetPrimaryMainFrame()->GetLastCommittedURL());
-}
-
 // Test NavigationRequest::CheckAboutSrcDoc()
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, BlockedSrcDocBrowserInitiated) {
   const char* about_srcdoc_urls[] = {"about:srcdoc", "about:srcdoc?foo",
@@ -3620,6 +3528,112 @@ IN_PROC_BROWSER_TEST_F(
   // navigation in the currently loaded document.
   EXPECT_EQ(main_frame_host, wc->GetPrimaryMainFrame());
   EXPECT_EQ(main_frame_process_host, wc->GetPrimaryMainFrame()->GetProcess());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+                       SameDocumentLongURLHashNavigation) {
+  const GURL url(embedded_test_server()->GetURL("/empty.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  std::string long_url = "#";
+  long_url.append(2 * url::kMaxURLChars, 'a');
+  EXPECT_TRUE(ExecJs(shell(), JsReplace("location = $1", long_url)));
+
+  // If the browser process receives a request to same-document navigate to a
+  // too long URL (>2 MB), it simply pretends that the renderer performed a
+  // same-document navigation to the currently committed URL (previously, it was
+  // mapped to about:blank#blocked, which could be confusing).
+  // TODO(crbug.com/1464018): Ideally this would be blocked in the renderer
+  // instead of having special browser-side handling.
+  EXPECT_EQ(url, web_contents()->GetLastCommittedURL());
+  // The renderer process enforces no such limit and should consider the
+  // same-document navigation to have successfully completed.
+  EXPECT_EQ(long_url, EvalJs(web_contents(), "location.hash"));
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SameDocumentLongURLPushState) {
+  const GURL url(embedded_test_server()->GetURL("/empty.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  std::string long_url = "#";
+  long_url.append(2 * url::kMaxURLChars, 'a');
+  EXPECT_TRUE(ExecJs(
+      shell(), JsReplace("history.pushState('state', '', $1)", long_url)));
+
+  // If the browser process receives a request to same-document navigate to a
+  // too long URL (>2 MB), it simply pretends that the renderer performed a
+  // same-document navigation to the currently committed URL (previously, it was
+  // mapped to about:blank#blocked, which could be confusing).
+  // TODO(crbug.com/1464018): Ideally this would be blocked in the renderer
+  // instead of having special browser-side handling.
+  EXPECT_EQ(url, web_contents()->GetLastCommittedURL());
+  // The renderer process enforces no such limit and should consider the
+  // same-document navigation to have successfully completed.
+  EXPECT_EQ(long_url, EvalJs(web_contents(), "location.hash"));
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+                       SameDocumentLongURL204PopupHashNavigation) {
+  const GURL url(embedded_test_server()->GetURL("/empty.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  // Open a popup window with a navigation that will result in a 204. This will
+  // result in a WebContents where the last committed URL is the empty URL.
+  const GURL nocontent_url(embedded_test_server()->GetURL("/nocontent"));
+  ShellAddedObserver new_shell_observer;
+  EXPECT_TRUE(ExecJs(shell(), JsReplace("window.open($1);", nocontent_url)));
+  Shell* opened_shell = new_shell_observer.GetShell();
+  EXPECT_TRUE(WaitForLoadStop(opened_shell->web_contents()));
+
+  std::string long_url = "#";
+  long_url.append(2 * url::kMaxURLChars, 'a');
+  EXPECT_TRUE(ExecJs(opened_shell, JsReplace("location = $1", long_url)));
+
+  // Hash navigations in a popup in this state (incorrectly) perform a
+  // cross-document navigation. This is because the check for whether or not to
+  // perform a same-document navigation uses the initial empty Document's actual
+  // URL (which is, surprisingly enough, the empty URL) rather than URL the web
+  // platform generally sees (which is about:blank). As a result, the check ends
+  // up comparing the empty URL against the completed URL of about:blank#...,
+  // which means the URLs are not equal ignoring fragments, and Blink performs a
+  // cross-document navigation instead.
+  //
+  // TODO(crbug.com/1464443): This probably should be fixed to be treated as a
+  // same-document navigation.
+  EXPECT_TRUE(WaitForLoadStop(opened_shell->web_contents()));
+  EXPECT_EQ(GURL(kBlockedURL),
+            opened_shell->web_contents()->GetLastCommittedURL());
+  EXPECT_EQ(kBlockedURL, EvalJs(opened_shell->web_contents(), "location.href"));
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+                       SameDocumentLongURL204PopupPushState) {
+  const GURL url(embedded_test_server()->GetURL("/empty.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  // Open a popup window with a navigation that will result in a 204. This will
+  // result in a WebContents where the last committed URL is the empty URL.
+  const GURL nocontent_url(embedded_test_server()->GetURL("/nocontent"));
+  ShellAddedObserver new_shell_observer;
+  EXPECT_TRUE(ExecJs(shell(), JsReplace("window.open($1);", nocontent_url)));
+  Shell* opened_shell = new_shell_observer.GetShell();
+  EXPECT_TRUE(WaitForLoadStop(opened_shell->web_contents()));
+
+  std::string long_url = "#";
+  long_url.append(2 * url::kMaxURLChars, 'a');
+  // Blink incorrectly disallows pushState() because the security check is
+  // broken, since the security check uses the initial empty Document's actual
+  // URL (which is, surprisingly enough, the empty URL) rather than the URL the
+  // web platform generally sees (which is about:blank).
+  //
+  // TODO(crbug.com/1464443): This pushState() should probably be allowed.
+  EXPECT_EQ(
+      "SecurityError",
+      EvalJs(
+          opened_shell,
+          JsReplace(
+              "try { history.pushState('state', '', $1) } catch (e) { e.name }",
+              long_url)));
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
@@ -6992,12 +7006,12 @@ class CacheTransparencyNavigationBrowserTest : public ContentBrowserTest {
          ",2478392C652868C0AAF0316A28284610DBDACF02D66A00B39F3BA75D887F4829"});
 
     feature_list_.InitWithFeaturesAndParameters(
-        {{features::kNetworkServiceInProcess, {}},
-         {network::features::kPervasivePayloadsList,
+        {{network::features::kPervasivePayloadsList,
           {{"pervasive-payloads", pervasive_payloads_params}}},
          {network::features::kCacheTransparency, {}},
          {net::features::kSplitCacheByNetworkIsolationKey, {}}},
         {/* disabled_features */});
+    ForceInProcessNetworkService();
   }
 
   void ExpectCacheUsed() const {
@@ -7406,6 +7420,195 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, AboutMumble) {
   EXPECT_EQ(
       shell()->web_contents()->GetPrimaryMainFrame()->GetLastCommittedURL(),
       GURL("about:blank#blocked"));
+}
+
+// Verifies that cross-origin iframes cannot navigate the top frame to a
+// different origin (sometimes called "framebusting") without user activation.
+//
+// This is non-standard, unspecified behavior.
+// See also https://www.chromestatus.com/features/5851021045661696.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+                       FramebustingWithoutUserActivationFails) {
+  ASSERT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/defaultresponse")));
+
+  RenderFrameHost* child = CreateSubframe(
+      web_contents(), "child",
+      embedded_test_server()->GetURL("other.test", "/defaultresponse"),
+      /*wait_for_navigation=*/true);
+
+  EXPECT_FALSE(
+      ExecJs(child, "top.location = 'foo'", EXECUTE_SCRIPT_NO_USER_GESTURE));
+}
+
+// Verifies that cross-origin iframes can navigate the top frame to a different
+// origin (sometimes called "framebusting") with user activation.
+//
+// This is non-standard, unspecified behavior.
+// See also https://www.chromestatus.com/features/5851021045661696.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+                       FramebustingWithUserActivationSucceeds) {
+  ASSERT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/defaultresponse")));
+
+  GURL other_url =
+      embedded_test_server()->GetURL("other.test", "/defaultresponse");
+  RenderFrameHost* child = CreateSubframe(web_contents(), "child", other_url,
+                                          /*wait_for_navigation=*/true);
+
+  TestNavigationObserver observer(web_contents());
+
+  // By default `ExecJs()` executes the provided script with user activation.
+  EXPECT_TRUE(ExecJs(child, "top.location = '/defaultresponse'"));
+
+  // The top frame is indeed navigated successfully.
+  observer.Wait();
+  EXPECT_EQ(web_contents()->GetLastCommittedURL(), other_url);
+}
+
+// Verifies that cross-origin iframes can navigate the top frame to a different
+// origin (sometimes called "framebusting") with user activation, even after
+// a couple `setTimeout()` calls.
+//
+// This is non-standard, unspecified behavior.
+// See also https://www.chromestatus.com/features/5851021045661696.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+                       FramebustingWithAsyncUserActivationSucceeds) {
+  ASSERT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/defaultresponse")));
+
+  GURL other_url =
+      embedded_test_server()->GetURL("other.test", "/defaultresponse");
+  RenderFrameHost* child = CreateSubframe(web_contents(), "child", other_url,
+                                          /*wait_for_navigation=*/true);
+
+  TestNavigationObserver observer(web_contents());
+
+  // By default `ExecJs()` executes the provided script with a user activation.
+  //
+  // With user activation, the navigation should succeed even through nested
+  // `setTimeout()` calls.
+  EXPECT_TRUE(ExecJs(child, R"(
+    setTimeout(() => {
+      setTimeout(() => {
+        top.location = '/defaultresponse';
+      }, 0);
+    }, 0);
+  )"));
+
+  // The top frame is indeed navigated successfully.
+  observer.Wait();
+  EXPECT_EQ(web_contents()->GetLastCommittedURL(), other_url);
+}
+
+// Ensure that the browser process doesn't see a javascript: URL when opening a
+// new window to a javascript: URL. These URLs are typically handled on the
+// renderer side, and the renderer should not send the javascript: URL to the
+// browser in a navigation request. Previously, this was not correctly handled
+// for initial navigations to javascript: URLs. See https://crbug.com/1357515.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, FilterURL_JavascriptURLs) {
+  GURL http_url = embedded_test_server()->GetURL("a.com", "/title1.html");
+  ASSERT_TRUE(NavigateToURL(shell(), http_url));
+
+  {
+    SCOPED_TRACE(testing::Message() << "Testing opener case.");
+    base::HistogramTester histograms;
+    ShellAddedObserver new_shell_observer;
+    EXPECT_TRUE(
+        ExecJs(shell(), "window.open('javascript:window.foo=\"bar\"');"));
+    WebContents* popup_contents = new_shell_observer.GetShell()->web_contents();
+    EXPECT_EQ(url::kAboutBlankURL, EvalJs(popup_contents, "location.href"));
+    // No commit message is sent to the browser in this case, so the last
+    // committed URL is still empty.
+    EXPECT_EQ(GURL(), popup_contents->GetLastCommittedURL());
+    histograms.ExpectTotalCount("BrowserRenderProcessHost.BlockedByFilterURL",
+                                0);
+
+    // The javascript: URL should have run.
+    EXPECT_EQ("bar", EvalJs(popup_contents, "window.foo"));
+  }
+
+  {
+    SCOPED_TRACE(testing::Message() << "Testing noopener case.");
+    base::HistogramTester histograms;
+    ShellAddedObserver new_shell_observer;
+    EXPECT_TRUE(ExecJs(
+        shell(),
+        "window.open('javascript:window.foo=\"bar\"', '', 'noopener');"));
+    WebContents* popup_contents = new_shell_observer.GetShell()->web_contents();
+    EXPECT_EQ(url::kAboutBlankURL, EvalJs(popup_contents, "location.href"));
+    EXPECT_EQ(url::kAboutBlankURL, popup_contents->GetLastCommittedURL());
+    histograms.ExpectTotalCount("BrowserRenderProcessHost.BlockedByFilterURL",
+                                0);
+
+    // The Javascript URL should not have run in the noopener case, because the
+    // origin should not be inherited according to spec. See:
+    // https://html.spec.whatwg.org/multipage/document-sequences.html#navigable-target-names%3Acreating-a-new-top-level-traversable
+    // https://html.spec.whatwg.org/multipage/document-sequences.html#creating-a-new-browsing-context
+    // TODO(https://crbug.com/1357515): Also prevent the origin from being
+    // inherited.
+    EXPECT_EQ(nullptr, EvalJs(popup_contents, "window.foo"));
+  }
+}
+
+// Ensure that opening popups to empty URLs does not fail FilterURL. The
+// renderer process treats empty URLs as about:blank, but the browser process
+// does not consider them valid and may treat them as attempts to go to the NTP
+// in some cases. As a result, the renderer should map empty URLs to about:blank
+// before making navigation requests. See https://crbug.com/1357515.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, FilterURL_EmptyURL) {
+  GURL http_url = embedded_test_server()->GetURL("a.com", "/title1.html");
+  ASSERT_TRUE(NavigateToURL(shell(), http_url));
+
+  {
+    SCOPED_TRACE(testing::Message() << "Testing opener case.");
+    base::HistogramTester histograms;
+    ShellAddedObserver new_shell_observer;
+    EXPECT_TRUE(ExecJs(shell(), "window.open('');"));
+    WebContents* popup_contents = new_shell_observer.GetShell()->web_contents();
+    EXPECT_EQ(url::kAboutBlankURL, EvalJs(popup_contents, "location.href"));
+    EXPECT_EQ(url::kAboutBlankURL, popup_contents->GetLastCommittedURL());
+    histograms.ExpectTotalCount("BrowserRenderProcessHost.BlockedByFilterURL",
+                                0);
+  }
+
+  {
+    SCOPED_TRACE(testing::Message() << "Testing noopener case.");
+    base::HistogramTester histograms;
+    ShellAddedObserver new_shell_observer;
+    EXPECT_TRUE(ExecJs(shell(), "window.open('', '', 'noopener');"));
+    WebContents* popup_contents = new_shell_observer.GetShell()->web_contents();
+    EXPECT_EQ(url::kAboutBlankURL, EvalJs(popup_contents, "location.href"));
+    EXPECT_EQ(url::kAboutBlankURL, popup_contents->GetLastCommittedURL());
+    histograms.ExpectTotalCount("BrowserRenderProcessHost.BlockedByFilterURL",
+                                0);
+  }
+}
+
+// Verifies that cross-origin iframes can navigate the top frame to another URL
+// belonging to the top frame's origin without user activation.
+//
+// This is non-standard, unspecified behavior.
+// See also https://www.chromestatus.com/features/5851021045661696.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+                       FramebustingSameOriginWithoutUserActivationSucceeds) {
+  ASSERT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/defaultresponse")));
+
+  RenderFrameHost* child = CreateSubframe(
+      web_contents(), "child",
+      embedded_test_server()->GetURL("other.test", "/defaultresponse"),
+      /*wait_for_navigation=*/true);
+
+  TestNavigationObserver observer(web_contents());
+
+  GURL destination = embedded_test_server()->GetURL("/echo");
+  EXPECT_TRUE(ExecJs(child, JsReplace("top.location = $1", destination),
+                     EXECUTE_SCRIPT_NO_USER_GESTURE));
+
+  // The top frame is indeed navigated successfully.
+  observer.Wait();
+  EXPECT_EQ(web_contents()->GetLastCommittedURL(), destination);
 }
 
 }  // namespace content

@@ -233,7 +233,8 @@ void FormCache::ClearElement(WebFormControlElement& control_element,
     return;
 
   if (!form_util::IsAutofillableElement(control_element)) {
-    // TODO(crbug.com/1336051): Handle selectmenu case and make this NOTREACHED.
+    // TODO(crbug.com/1427153): Make NOTREACHED() once AutofillEnableSelectMenu
+    // feature flag is removed.
     CHECK(form_util::IsSelectMenuElement(control_element));
     return;
   }
@@ -423,14 +424,21 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form,
                  element.GetAttribute(kAutocomplete).Utf8().substr(0, 100);
       }
 
-      // Set this debug string to the title so that a developer can easily debug
-      // by hovering the mouse over the input field.
-      element.SetAttribute("title", WebString::FromUTF8(title));
-
       // Set the same debug string to an attribute that does not get mangled if
       // Google Translate is triggered for the site. This is useful for
       // automated processing of the data.
       element.SetAttribute("autofill-information", WebString::FromUTF8(title));
+
+      //  If the field has password manager's annotation, add it as well.
+      if (element.HasAttribute("pm_parser_annotation")) {
+        title =
+            base::StrCat({title, "\npm_parser_annotation: ",
+                          element.GetAttribute("pm_parser_annotation").Utf8()});
+      }
+
+      // Set this debug string to the title so that a developer can easily debug
+      // by hovering the mouse over the input field.
+      element.SetAttribute("title", WebString::FromUTF8(title));
 
       element.SetAttribute("autofill-prediction",
                            WebString::FromUTF8(field.overall_type));

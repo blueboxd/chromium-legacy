@@ -56,6 +56,7 @@ void AddLocalizedStrings(content::WebUIDataSource* source) {
       {"feedbackHelpLinkLabel", IDS_FEEDBACK_TOOL_FEEDBACK_HELP_LINK_LABEL},
       {"pageTitle", IDS_FEEDBACK_TOOL_PAGE_TITLE},
       {"privacyNote", IDS_FEEDBACK_TOOL_PRIVACY_NOTE},
+      {"mayBeShareWithPartnerNote", IDS_FEEDBACK_TOOL_MAY_BE_SHARED_NOTE},
       {"sendButtonLabel", IDS_FEEDBACK_TOOL_SEND_BUTTON_LABEL},
       // The help content strings are needed for browser tests.
       {"suggestedHelpContent", IDS_FEEDBACK_TOOL_SUGGESTED_HELP_CONTENT},
@@ -114,6 +115,10 @@ void AddLocalizedStrings(content::WebUIDataSource* source) {
       {"fileTooBigErrorMessage", IDS_FEEDBACK_TOOL_FILE_TOO_BIG_ERROR_MESSAGE},
       {"bluetoothLogsInfo", IDS_FEEDBACK_TOOL_BLUETOOTH_LOGS_CHECKBOX},
       {"bluetoothLogsMessage", IDS_FEEDBACK_TOOL_BLUETOOTH_LOGS_MESSAGE},
+      {"linkCrossDeviceDogfoodFeedbackInfo",
+       IDS_FEEDBACK_TOOL_LINK_CROSS_DEVICE_DOGFOOD_FEEDBACK_INFO},
+      {"linkCrossDeviceDogfoodFeedbackMessage",
+       IDS_FEEDBACK_TOOL_LINK_CROSS_DEVICE_DOGFOOD_FEEDBACK_MESSAGE},
       {"includeAssistantLogsCheckboxLabel",
        IDS_FEEDBACK_TOOL_ASSISTANT_LOGS_CHECKBOX},
       {"assistantLogsMessage", IDS_FEEDBACK_TOOL_ASSISTANT_LOGS_MESSAGE},
@@ -123,6 +128,9 @@ void AddLocalizedStrings(content::WebUIDataSource* source) {
 
   source->AddLocalizedStrings(kLocalizedStrings);
   source->UseStringsJs();
+
+  source->AddBoolean("enableLinkCrossDeviceDogfoodFeedbackFlag",
+                     features::IsLinkCrossDeviceDogfoodFeedbackEnabled());
 }
 
 }  // namespace

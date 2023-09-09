@@ -6,7 +6,6 @@ package org.chromium.ui.util;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Context;
-import android.content.res.Configuration;
 import android.os.Build.VERSION_CODES;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
@@ -14,7 +13,6 @@ import android.view.accessibility.AccessibilityManager.TouchExplorationStateChan
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
@@ -30,6 +28,7 @@ public class AccessibilityUtil {
     /**
      * An observer to be notified of accessibility status changes.
      */
+    @Deprecated
     public interface Observer {
         /**
          * @param enabled Whether touch exploration or an accessibility service that can perform
@@ -155,13 +154,6 @@ public class AccessibilityUtil {
         getObservers().removeObserver(observer);
     }
 
-    /**
-     * @return True if a hardware keyboard is detected.
-     */
-    public static boolean isHardwareKeyboardAttached(Configuration c) {
-        return c.keyboard != Configuration.KEYBOARD_NOKEYS;
-    }
-
     private AccessibilityManager getAccessibilityManager() {
         return (AccessibilityManager) ContextUtils.getApplicationContext().getSystemService(
                 Context.ACCESSIBILITY_SERVICE);
@@ -233,7 +225,6 @@ public class AccessibilityUtil {
      * has finished.
      * @param isEnabled whether the device has accessibility enabled.
      */
-    @VisibleForTesting
     public void setAccessibilityEnabledForTesting(@Nullable Boolean isEnabled) {
         ThreadUtils.assertOnUiThread();
         mIsAccessibilityEnabled = isEnabled;
@@ -245,7 +236,6 @@ public class AccessibilityUtil {
      * test has finished.
      * @param isEnabled whether the device has touch exploration enabled.
      */
-    @VisibleForTesting
     public void setTouchExplorationEnabledForTesting(@Nullable Boolean isEnabled) {
         ThreadUtils.assertOnUiThread();
         mIsTouchExplorationEnabled = isEnabled;

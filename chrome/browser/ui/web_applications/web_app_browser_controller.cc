@@ -227,9 +227,7 @@ bool WebAppBrowserController::HasReloadButton() const {
 
 #if !BUILDFLAG(IS_CHROMEOS)
 bool WebAppBrowserController::HasProfileMenuButton() const {
-  return (app_id() == web_app::kPasswordManagerAppId) &&
-         base::FeatureList::IsEnabled(
-             password_manager::features::kPasswordManagerRedesign);
+  return app_id() == web_app::kPasswordManagerAppId;
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS)
 
@@ -457,6 +455,17 @@ GURL WebAppBrowserController::GetAppStartUrl() const {
 
 GURL WebAppBrowserController::GetAppNewTabUrl() const {
   return registrar().GetAppNewTabUrl(app_id());
+}
+
+bool WebAppBrowserController::ShouldHideNewTabButton() const {
+  if (!registrar().IsTabbedWindowModeEnabled(app_id())) {
+    return false;
+  }
+
+  // If the app added a pinned home tab without changing their new tab URL, we
+  // hide the new tab button to avoid the start_url being opened in a non home
+  // tab.
+  return IsUrlInHomeTabScope(GetAppNewTabUrl());
 }
 
 bool WebAppBrowserController::IsUrlInHomeTabScope(const GURL& url) const {
@@ -746,7 +755,7 @@ absl::optional<RE2::Set> WebAppBrowserController::GetTabbedHomeTabScope()
   TabStrip tab_strip = web_app->tab_strip().value();
   if (const auto* params =
           absl::get_if<blink::Manifest::HomeTabParams>(&tab_strip.home_tab)) {
-    std::vector<blink::UrlPattern> scope_patterns = params->scope_patterns;
+    std::vector<blink::SafeUrlPattern> scope_patterns = params->scope_patterns;
 
     RE2::Set scope_set = RE2::Set(RE2::Options(), RE2::Anchor::UNANCHORED);
     for (auto& scope : scope_patterns) {

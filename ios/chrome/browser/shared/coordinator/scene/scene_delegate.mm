@@ -47,6 +47,14 @@ NSString* const kOriginDetectedKey = @"OriginDetectedKey";
 
 @implementation SceneDelegate
 
+@synthesize sceneState = _sceneState;
+@synthesize sceneController = _sceneController;
+
+- (void)dealloc {
+  // TODO(crbug.com/1454777)
+  DUMP_WILL_BE_CHECK(!_sceneState);
+}
+
 - (SceneState*)sceneState {
   if (!_sceneState) {
     MainApplicationDelegate* appDelegate =
@@ -89,7 +97,7 @@ NSString* const kOriginDetectedKey = @"OriginDetectedKey";
   return _window;
 }
 
-#pragma mark Connecting and Disconnecting the Scene
+#pragma mark - UISceneDelegate
 
 - (void)scene:(UIScene*)scene
     willConnectToSession:(UISceneSession*)session
@@ -103,6 +111,17 @@ NSString* const kOriginDetectedKey = @"OriginDetectedKey";
     self.sceneState.startupHadExternalIntent = YES;
   }
 }
+
+- (void)sceneDidDisconnect:(UIScene*)scene {
+  CHECK(_sceneState);
+  self.sceneState.activationLevel = SceneActivationLevelDisconnected;
+  _sceneState = nil;
+  // Setting the level to Disconnected had the side effect of tearing down the
+  // controller’s UI.
+  _sceneController = nil;
+}
+
+#pragma mark - private
 
 - (WindowActivityOrigin)originFromSession:(UISceneSession*)session
                                   options:(UISceneConnectionOptions*)options {
@@ -131,10 +150,6 @@ NSString* const kOriginDetectedKey = @"OriginDetectedKey";
   }
 
   return origin;
-}
-
-- (void)sceneDidDisconnect:(UIScene*)scene {
-  self.sceneState.activationLevel = SceneActivationLevelUnattached;
 }
 
 #pragma mark Transitioning to the Foreground

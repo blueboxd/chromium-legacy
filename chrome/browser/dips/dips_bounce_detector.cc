@@ -35,7 +35,9 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/cookies/canonical_cookie.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -354,7 +356,7 @@ void DIPSWebContentsObserver::ReportRedirectorsWithoutInteraction(
   }
 
   dips_service_->storage()
-      ->AsyncCall(&DIPSStorage::FilterSitesWithoutInteraction)
+      ->AsyncCall(&DIPSStorage::FilterSitesWithoutInteractionOrWaa)
       .WithArgs(sites)
       .Then(issue_reporting_callback_);
 }
@@ -376,7 +378,9 @@ void DIPSWebContentsObserver::RecordEvent(DIPSRecordedEvent event,
       return;
     }
     case DIPSRecordedEvent::kWebAuthnAssertion: {
-      // TODO(crbug.com/1446678): Record this events in a dedicated db column.
+      dips_service_->storage()
+          ->AsyncCall(&DIPSStorage::RecordWebAuthnAssertion)
+          .WithArgs(url, time, dips_service_->GetCookieMode());
       return;
     }
   }
@@ -572,6 +576,12 @@ bool HasCHIPS(const net::CookieList& cookie_list) {
 void DIPSWebContentsObserver::OnCookiesAccessed(
     content::RenderFrameHost* render_frame_host,
     const content::CookieAccessDetails& details) {
+  detector_.RecordRedirectHeuristic(render_frame_host->GetPageUkmSourceId(),
+                                    details);
+
+  // Discard all notifications that are:
+  // - From other page types like FencedFrames and Prerendered.
+  // - Blocked by policies.
   if (!IsInPrimaryPage(render_frame_host) || details.blocked_by_policy) {
     return;
   }
@@ -587,6 +597,40 @@ void DIPSWebContentsObserver::OnCookiesAccessed(
   }
 
   detector_.OnClientCookiesAccessed(fpu.value(), details.type);
+}
+
+void DIPSWebContentsObserver::OnCookiesAccessed(
+    NavigationHandle* navigation_handle,
+    const content::CookieAccessDetails& details) {
+  detector_.RecordRedirectHeuristic(navigation_handle->GetNextPageUkmSourceId(),
+                                    details);
+
+  // Discard all notifications that are:
+  // - From other page types like FencedFrames and Prerendered.
+  // - Blocked by policies.
+  if (!IsInPrimaryPage(navigation_handle) || details.blocked_by_policy) {
+    return;
+  }
+
+  // All accesses within the primary page iframes are attributed to the URL of
+  // the main frame (ie the first party URL).
+  if (IsInPrimaryPageIFrame(navigation_handle)) {
+    const absl::optional<GURL> fpu = GetFirstPartyURL(navigation_handle);
+    if (!fpu.has_value()) {
+      return;
+    }
+
+    if (!HasCHIPS(details.cookie_list) &&
+        !IsSameSiteForDIPS(fpu.value(), details.url)) {
+      return;
+    }
+
+    detector_.OnClientSiteDataAccessed(fpu.value(), details.type);
+    return;
+  }
+
+  DIPSNavigationHandleImpl dips_handle(navigation_handle);
+  detector_.OnServerCookiesAccessed(&dips_handle, details.url, details.type);
 }
 
 void DIPSBounceDetector::OnClientCookiesAccessed(const GURL& url,
@@ -609,33 +653,6 @@ void DIPSBounceDetector::OnClientCookiesAccessed(const GURL& url,
   OnClientSiteDataAccessed(url, op);
 }
 
-void DIPSWebContentsObserver::OnCookiesAccessed(
-    NavigationHandle* navigation_handle,
-    const content::CookieAccessDetails& details) {
-  // Discard all notifications that are:
-  // - From other page types like FencedFrames, and Prerendered.
-  // - Blocked by policies.
-  if (!IsInPrimaryPage(navigation_handle) || details.blocked_by_policy) {
-    return;
-  }
-
-  // All access within the primary page iframes are attributed to the URL of the
-  // main frame (ie the first party URL).
-  if (IsInPrimaryPageIFrame(navigation_handle)) {
-    if (!HasCHIPS(details.cookie_list) &&
-        !IsSameSiteForDIPS(GetFirstPartyURL(navigation_handle), details.url)) {
-      return;
-    }
-
-    detector_.OnClientSiteDataAccessed(GetFirstPartyURL(navigation_handle),
-                                       details.type);
-    return;
-  }
-
-  DIPSNavigationHandleImpl dips_handle(navigation_handle);
-  detector_.OnServerCookiesAccessed(&dips_handle, details.url, details.type);
-}
-
 void DIPSBounceDetector::OnServerCookiesAccessed(
     DIPSNavigationHandle* navigation_handle,
     const GURL& url,
@@ -647,6 +664,97 @@ void DIPSBounceDetector::OnServerCookiesAccessed(
   if (state) {
     state->filter.AddAccess(url, op);
   }
+}
+
+void DIPSBounceDetector::RecordRedirectHeuristic(
+    const ukm::SourceId& source_id,
+    const content::CookieAccessDetails& details) {
+  const std::string first_party_site = GetSiteForDIPS(details.first_party_url);
+  const std::string tracker_site = GetSiteForDIPS(details.url);
+
+  // The redirect heuristic only applies when a main frame URL from earlier in
+  // the redirect chain is now attempting to access cookies as a tracker on the
+  // current main frame URL.
+  if (first_party_site == tracker_site ||
+      !committed_redirect_context_.HasSiteInRedirectChain(tracker_site)) {
+    return;
+  }
+
+  // TODO(b/291101513): Record other UKM metrics:
+  // - SitesPassedCount
+  // - MillisecondsSinceRedirect
+  // - HoursSinceLastInteraction
+  // - OpenerHasSameSiteIframe
+  ukm::builders::RedirectHeuristic_CookieAccess(source_id)
+      .SetAccessAllowed(!details.blocked_by_policy)
+      .Record(ukm::UkmRecorder::Get());
+}
+
+void DIPSWebContentsObserver::OnServiceWorkerAccessed(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& scope,
+    content::AllowServiceWorkerResult allowed) {
+  if (!IsInPrimaryPage(render_frame_host) || !allowed) {
+    return;
+  }
+
+  const absl::optional<GURL> fpu = GetFirstPartyURL(render_frame_host);
+  if (fpu.has_value()) {
+    detector_.OnWorkerInitialized(fpu.value());
+  }
+}
+
+void DIPSWebContentsObserver::OnServiceWorkerAccessed(
+    content::NavigationHandle* navigation_handle,
+    const GURL& scope,
+    content::AllowServiceWorkerResult allowed) {
+  if (!IsInPrimaryPage(navigation_handle) || !allowed) {
+    return;
+  }
+
+  const absl::optional<GURL> fpu = GetFirstPartyURL(navigation_handle);
+  if (!fpu.has_value()) {
+    return;
+  }
+
+  detector_.OnWorkerInitialized(fpu.value());
+}
+
+void DIPSWebContentsObserver::OnClientAdded(
+    const blink::SharedWorkerToken& token,
+    content::GlobalRenderFrameHostId render_frame_host_id) {
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(render_frame_host_id);
+
+  if (!IsInPrimaryPage(render_frame_host)) {
+    return;
+  }
+
+  const absl::optional<GURL> fpu = GetFirstPartyURL(render_frame_host);
+  if (fpu.has_value()) {
+    detector_.OnWorkerInitialized(fpu.value());
+  }
+}
+
+void DIPSWebContentsObserver::OnWorkerCreated(
+    const blink::DedicatedWorkerToken& worker_token,
+    int worker_process_id,
+    content::GlobalRenderFrameHostId ancestor_render_frame_host_id) {
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(ancestor_render_frame_host_id);
+
+  if (!IsInPrimaryPage(render_frame_host)) {
+    return;
+  }
+
+  const absl::optional<GURL> fpu = GetFirstPartyURL(render_frame_host);
+  if (fpu.has_value()) {
+    detector_.OnWorkerInitialized(fpu.value());
+  }
+}
+
+void DIPSBounceDetector::OnWorkerInitialized(const GURL& url) {
+  delegate_->RecordEvent(DIPSRecordedEvent::kStorage, url, clock_->Now());
 }
 
 void DIPSWebContentsObserver::DidFinishNavigation(

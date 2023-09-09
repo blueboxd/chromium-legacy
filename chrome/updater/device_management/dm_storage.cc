@@ -46,21 +46,18 @@ constexpr char kPolicyFileName[] = "PolicyFetchResponse";
 bool DeleteObsoletePolicies(const base::FilePath& cache_root,
                             const std::set<std::string>& policy_types_base64) {
   bool result = true;
-  base::FileEnumerator cached_files(cache_root,
-                                    /* recursive */ false,
-                                    base::FileEnumerator::DIRECTORIES,
-                                    FILE_PATH_LITERAL("*"));
-  for (base::FilePath file = cached_files.Next(); !file.empty();
-       file = cached_files.Next()) {
-    const std::string file_base_name = file.BaseName().MaybeAsASCII();
-    if (policy_types_base64.count(file_base_name)) {
-      continue;
-    }
+  base::FileEnumerator(cache_root,
+                       /* recursive */ false, base::FileEnumerator::DIRECTORIES,
+                       FILE_PATH_LITERAL("*"))
+      .ForEach([&policy_types_base64, &result](const base::FilePath& file) {
+        if (policy_types_base64.count(file.BaseName().MaybeAsASCII())) {
+          return;
+        }
 
-    if (!base::DeletePathRecursively(file)) {
-      result = false;
-    }
-  }
+        if (!base::DeletePathRecursively(file)) {
+          result = false;
+        }
+      });
 
   return result;
 }
@@ -178,15 +175,10 @@ std::unique_ptr<CachedPolicyInfo> DMStorage::GetCachedPolicyInfo() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto cached_info = std::make_unique<CachedPolicyInfo>();
 
-  if (!IsValidDMToken()) {
-    return cached_info;
-  }
-
   std::string policy_info_data;
-  if (!base::PathExists(policy_info_file_) ||
-      !base::ReadFileToString(policy_info_file_, &policy_info_data) ||
-      !cached_info->Populate(policy_info_data)) {
-    return cached_info;
+  if (IsValidDMToken() && base::PathExists(policy_info_file_) &&
+      base::ReadFileToString(policy_info_file_, &policy_info_data)) {
+    cached_info->Populate(policy_info_data);
   }
 
   return cached_info;

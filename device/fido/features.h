@@ -86,6 +86,31 @@ BASE_DECLARE_FEATURE(kWebAuthnSkipSingleAccountMacOS);
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnWindowsUIv6);
 
+// List synced GPM passkeys on webauthn credential pickers.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnListSyncedPasskeys);
+
+// Allow sites to opt into experimenting with conditional UI presentations.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthConditionalUIExperimentation);
+
+// Handle caBLE requests on Android with the CredMan-capable code path.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnCableViaCredMan);
+
+// Allow some sites to experiment with removing caBLE linking in requests.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnLinkingExperimentation);
+
+// Enable use of a cloud enclave authenticator service.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnEnclaveAuthenticator);
+
+// Serialize WebAuthn requests to JSON on the desktop. Useful for future
+// projects but only concretely used for better logging at the time of writing.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnJSONSerializeRequests);
+
 }  // namespace device
 
 #endif  // DEVICE_FIDO_FEATURES_H_

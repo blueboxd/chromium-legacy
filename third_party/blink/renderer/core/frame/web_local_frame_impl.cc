@@ -227,6 +227,7 @@
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/lcp_critical_path_predictor/lcp_critical_path_predictor.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
@@ -339,10 +340,24 @@ class ChromePrintContext : public PrintContext {
 
   ~ChromePrintContext() override = default;
 
-  void BeginPrintMode(float width, float height) override {
+  void BeginPrintMode(gfx::SizeF page_size) override {
     DCHECK(!printed_page_width_);
-    printed_page_width_ = width;
-    PrintContext::BeginPrintMode(printed_page_width_, height);
+
+    // Although layout itself can handle subpixels, we'll round down to the
+    // nearest integer. There are a couple of reasons for this. First of all,
+    // PrintContext sets page rectangles in integers, and if the input size is
+    // larger than that (by a fraction of a pixel), excess pages may be
+    // created. Furthermore, the printing code will also round down the sizes
+    // for the output canvas, so anything larger than that will end up getting
+    // clipped.
+    //
+    // TODO(mstensho): Refactor page rectangle calculation, and update the
+    // comment above.
+    page_size.set_width(floorf(page_size.width()));
+    page_size.set_height(floorf(page_size.height()));
+
+    printed_page_width_ = page_size.width();
+    PrintContext::BeginPrintMode(page_size);
   }
 
   virtual float GetPageShrink(uint32_t page_number) const {
@@ -445,11 +460,6 @@ class ChromePrintContext : public PrintContext {
         current_height += page_size_in_pixels.width() + 1;
       }
 
-      // Account for the disabling of scaling in spoolPage. In the context of
-      // SpoolPagesWithBoundariesForTesting the scale HAS NOT been
-      // pre-applied.
-      float scale = GetPageShrink(page_index);
-      transform.Scale(scale, scale);
       context.Save();
       context.ConcatCTM(transform);
 
@@ -465,6 +475,12 @@ class ChromePrintContext : public PrintContext {
   virtual void SpoolPage(GraphicsContext& context, int page_number) {
     gfx::Rect page_rect = page_rects_[page_number];
     AffineTransform transform;
+
+    // Layout may have scaled down content in order to fit more unbreakable
+    // content in the inline direction.
+    float scale = GetPageShrink(page_number);
+    transform.Scale(scale, scale);
+
     transform.Translate(static_cast<float>(-page_rect.x()),
                         static_cast<float>(-page_rect.y()));
     context.Save();
@@ -531,9 +547,9 @@ class ChromePluginPrintContext final : public ChromePrintContext {
     ChromePrintContext::Trace(visitor);
   }
 
-  void BeginPrintMode(float width, float height) override {
-    gfx::Rect rect(gfx::ToFlooredSize(gfx::SizeF(width, height)));
-    print_params_.print_content_area = rect;
+  void BeginPrintMode(gfx::SizeF page_size) override {
+    gfx::Rect rect(gfx::ToFlooredSize(page_size));
+    print_params_.print_content_area_in_css_pixels = gfx::RectF(page_size);
     page_rects_.Fill(rect, plugin_->PrintBegin(print_params_));
   }
 
@@ -1904,15 +1920,10 @@ uint32_t WebLocalFrameImpl::PrintBegin(const WebPrintParams& print_params,
         GetFrame(), print_params.use_printing_layout);
   }
 
-  gfx::SizeF size(print_params.print_content_area.size());
-  print_context_->BeginPrintMode(size.width(), size.height());
+  gfx::SizeF size(print_params.print_content_area_in_css_pixels.size());
+  print_context_->BeginPrintMode(size);
 
   return print_context_->PageCount();
-}
-
-float WebLocalFrameImpl::GetPrintPageShrink(uint32_t page) {
-  DCHECK(print_context_);
-  return print_context_->GetPageShrink(page);
 }
 
 void WebLocalFrameImpl::PrintPage(uint32_t page, cc::PaintCanvas* canvas) {
@@ -2249,6 +2260,7 @@ void WebLocalFrameImpl::Trace(Visitor* visitor) const {
   visitor->Trace(frame_widget_);
   visitor->Trace(print_context_);
   visitor->Trace(input_method_controller_);
+  visitor->Trace(current_history_item_);
 }
 
 void WebLocalFrameImpl::SetCoreFrame(LocalFrame* frame) {
@@ -3190,8 +3202,8 @@ void WebLocalFrameImpl::SetAllowsCrossBrowsingInstanceFrameLookup() {
   window->GetMutableSecurityOrigin()->GrantCrossAgentClusterAccess();
 }
 
-const WebHistoryItem& WebLocalFrameImpl::GetCurrentHistoryItem() const {
-  return current_history_item_;
+WebHistoryItem WebLocalFrameImpl::GetCurrentHistoryItem() const {
+  return WebHistoryItem(current_history_item_);
 }
 
 void WebLocalFrameImpl::SetLocalStorageArea(
@@ -3257,8 +3269,21 @@ void WebLocalFrameImpl::SetLCPPHint(
   CHECK(base::FeatureList::IsEnabled(features::kLCPCriticalPathPredictor));
 
   if (LCPCriticalPathPredictor* lcpp = GetFrame()->GetLCPP()) {
-    // TODO(crbug.com/1419756): Consume hint.
-    NOTIMPLEMENTED();
+    Vector<ElementLocator> lcp_element_locators;
+    lcp_element_locators.reserve(
+        base::checked_cast<wtf_size_t>(hint->lcp_element_locators.size()));
+    for (const std::string& serialized_locator : hint->lcp_element_locators) {
+      lcp_element_locators.push_back(ElementLocator());
+      bool result =
+          lcp_element_locators.back().ParseFromString(serialized_locator);
+      if (!result) {
+        // This can happen when the host LCPP database is corrupted or we
+        // updated the ElementLocator schema in an incompatible way.
+        LOG(INFO) << "Ignoring an invalid lcp_element_locator hint.";
+        lcp_element_locators.pop_back();
+      }
+    }
+    lcpp->set_lcp_element_locators(std::move(lcp_element_locators));
   }
 }
 
@@ -3280,7 +3305,7 @@ void WebLocalFrameImpl::SetResourceCacheRemote(
 }
 
 void WebLocalFrameImpl::SetTargetToCurrentHistoryItem(const WebString& target) {
-  current_history_item_.SetTarget(target);
+  current_history_item_->SetTarget(target);
 }
 
 void WebLocalFrameImpl::UpdateCurrentHistoryItem() {
@@ -3289,7 +3314,7 @@ void WebLocalFrameImpl::UpdateCurrentHistoryItem() {
 }
 
 PageState WebLocalFrameImpl::CurrentHistoryItemToPageState() {
-  return current_history_item_.ToPageState();
+  return current_history_item_->ToPageState();
 }
 
 void WebLocalFrameImpl::ScrollFocusedEditableElementIntoView() {

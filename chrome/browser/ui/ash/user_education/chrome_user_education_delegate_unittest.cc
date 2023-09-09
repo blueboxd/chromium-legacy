@@ -9,10 +9,10 @@
 #include <string>
 #include <utility>
 
+#include "ash/ash_element_identifiers.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/user_education/user_education_class_properties.h"
-#include "ash/user_education/user_education_constants.h"
 #include "ash/user_education/user_education_types.h"
 #include "ash/user_education/user_education_util.h"
 #include "base/functional/callback.h"
@@ -198,7 +198,7 @@ TEST_F(ChromeUserEducationDelegateTest, StartAndAbortTutorial) {
   // Verify the tutorial is not running.
   user_education::TutorialService& tutorial_service =
       UserEducationServiceFactory::GetForProfile(profile())->tutorial_service();
-  EXPECT_FALSE(tutorial_service.IsRunningTutorial());
+  EXPECT_FALSE(delegate()->IsRunningTutorial(account_id()));
 
   // Attempt to start the tutorial.
   UNCALLED_MOCK_CALLBACK(base::OnceClosure, aborted_callback);
@@ -210,8 +210,58 @@ TEST_F(ChromeUserEducationDelegateTest, StartAndAbortTutorial) {
   // Confirm the tutorial is running.
   EXPECT_TRUE(tutorial_service.IsRunningTutorial());
 
+  // Verify the running tutorial's ID.
+  EXPECT_TRUE(
+      delegate()->IsRunningTutorial(account_id(), ash::TutorialId::kTest));
+
   // Abort the tutorial and expect the callback to be called.
   EXPECT_CALL_IN_SCOPE(aborted_callback, Run,
                        delegate()->AbortTutorial(account_id()));
+  EXPECT_FALSE(delegate()->IsRunningTutorial(account_id()));
+}
+
+// Verifies that `AbortTutorial()` will only abort the tutorial associated with
+// the given id, when it is given.
+TEST_F(ChromeUserEducationDelegateTest, AbortSpecificTutorial) {
+  const auto kTestTutorialIdString =
+      ash::user_education_util::ToString(ash::TutorialId::kTest);
+
+  // Create a test element.
+  const ui::ElementContext element_context(1);
+  ui::test::TestElement test_element(kElementId, element_context);
+
+  // Create a tutorial description.
+  user_education::TutorialDescription tutorial_description;
+  tutorial_description.steps.emplace_back(
+      user_education::TutorialDescription::BubbleStep(kElementId)
+          .SetBubbleBodyText(IDS_OK));
+
+  // Register the tutorial.
+  delegate()->RegisterTutorial(account_id(), ash::TutorialId::kTest,
+                               std::move(tutorial_description));
+
+  // Verify the tutorial is not running.
+  user_education::TutorialService& tutorial_service =
+      UserEducationServiceFactory::GetForProfile(profile())->tutorial_service();
+  EXPECT_FALSE(tutorial_service.IsRunningTutorial(kTestTutorialIdString));
+
+  // Attempt to start the tutorial.
+  delegate()->StartTutorial(account_id(), ash::TutorialId::kTest,
+                            element_context,
+                            /*completed_callback=*/base::DoNothing(),
+                            /*aborted_callback=*/base::DoNothing());
+
+  // Confirm the tutorial is running.
+  EXPECT_TRUE(tutorial_service.IsRunningTutorial(kTestTutorialIdString));
+
+  // Abort the tutorial with the incorrect id, and expect the tutorial to still
+  // be running.
+  delegate()->AbortTutorial(account_id(),
+                            ash::TutorialId::kCaptureModeTourPrototype1);
+  EXPECT_TRUE(tutorial_service.IsRunningTutorial(kTestTutorialIdString));
+
+  // Abort the tutorial with the correct id, and expect no tutorial to be
+  // running.
+  delegate()->AbortTutorial(account_id(), ash::TutorialId::kTest);
   EXPECT_FALSE(tutorial_service.IsRunningTutorial());
 }

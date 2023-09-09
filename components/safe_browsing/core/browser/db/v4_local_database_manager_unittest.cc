@@ -363,7 +363,6 @@ class FakeV4LocalDatabaseManager : public V4LocalDatabaseManager {
       scoped_refptr<base::SequencedTaskRunner> task_runner)
       : V4LocalDatabaseManager(base_path,
                                extended_reporting_level_callback,
-                               RecordMigrationMetricsCallback(),
                                base::SequencedTaskRunner::GetCurrentDefault(),
                                base::SequencedTaskRunner::GetCurrentDefault(),
                                task_runner),
@@ -416,7 +415,6 @@ class V4LocalDatabaseManagerTest : public PlatformTest {
     v4_local_database_manager_ =
         base::WrapRefCounted(new V4LocalDatabaseManager(
             base_dir_.GetPath(), erl_callback_,
-            V4LocalDatabaseManager::RecordMigrationMetricsCallback(),
             base::SequencedTaskRunner::GetCurrentDefault(),
             base::SequencedTaskRunner::GetCurrentDefault(), task_runner_));
 
@@ -488,7 +486,6 @@ class V4LocalDatabaseManagerTest : public PlatformTest {
     v4_local_database_manager_ =
         base::WrapRefCounted(new V4LocalDatabaseManager(
             base_dir_.GetPath(), erl_callback_,
-            V4LocalDatabaseManager::RecordMigrationMetricsCallback(),
             base::SequencedTaskRunner::GetCurrentDefault(),
             base::SequencedTaskRunner::GetCurrentDefault(), task_runner_));
     StartLocalDatabaseManager();
@@ -503,16 +500,7 @@ class V4LocalDatabaseManagerTest : public PlatformTest {
 
   void StopLocalDatabaseManager() {
     if (v4_local_database_manager_) {
-      v4_local_database_manager_->StopOnSBThread(/*shutdown=*/false);
-    }
-
-    // Force destruction of the database.
-    WaitForTasksOnTaskRunner();
-  }
-
-  void ShutdownLocalDatabaseManager() {
-    if (v4_local_database_manager_) {
-      v4_local_database_manager_->StopOnSBThread(/*shutdown=*/true);
+      v4_local_database_manager_->StopOnSBThread(true);
     }
 
     // Force destruction of the database.
@@ -1107,26 +1095,6 @@ TEST_F(V4LocalDatabaseManagerTest, CancelPending) {
     StopLocalDatabaseManager();
     EXPECT_TRUE(GetPendingChecks().empty());
     EXPECT_TRUE(client.on_check_browse_url_result_called());
-  }
-
-  // Clean up from the database being shut down.
-  StartLocalDatabaseManager();
-  ReplaceV4Database(store_and_hash_prefixes);
-
-  // Test that the client does not get a response for a pending check when safe
-  // browsing is shutdown.
-  {
-    TestClient client(SB_THREAT_TYPE_SAFE, url_bad);
-    EXPECT_FALSE(v4_local_database_manager_->CheckBrowseUrl(
-        url_bad, usual_threat_types_, &client,
-        MechanismExperimentHashDatabaseCache::kNoExperiment));
-    EXPECT_EQ(1ul, GetPendingChecks().size());
-    EXPECT_FALSE(client.on_check_browse_url_result_called());
-    EXPECT_TRUE((*GetPendingChecks().begin())->is_in_pending_checks);
-    ShutdownLocalDatabaseManager();
-    EXPECT_TRUE(GetPendingChecks().empty());
-    EXPECT_FALSE(client.on_check_browse_url_result_called());
-    v4_local_database_manager_->CancelCheck(&client);
   }
 }
 
@@ -1728,7 +1696,8 @@ TEST_F(V4LocalDatabaseManagerTest, SyncedLists) {
 
 #if BUILDFLAG(IS_IOS)
   std::vector<ListIdentifier> expected_lists{
-      GetUrlSocEngId(), GetUrlMalwareId(), GetUrlBillingId(),
+      GetUrlSocEngId(),       GetUrlMalwareId(),
+      GetUrlUwsId(),          GetUrlBillingId(),
       GetUrlCsdAllowlistId(), GetUrlHighConfidenceAllowlistId()};
 #elif BUILDFLAG(GOOGLE_CHROME_BRANDING)
   std::vector<ListIdentifier> expected_lists{GetUrlSocEngId(),
@@ -1817,7 +1786,6 @@ TEST_F(V4LocalDatabaseManagerTest, DeleteAssociatedFile) {
   ResetLocalDatabaseManager();
   WaitForTasksOnTaskRunner();
   EXPECT_FALSE(base::PathExists(store_file_path));
-  EXPECT_FALSE(base::PathExists(helper_file_path));
 }
 
 }  // namespace safe_browsing

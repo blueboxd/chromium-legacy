@@ -93,26 +93,28 @@ BrowserContext* ShellExtensionsBrowserClient::GetOriginalContext(
 }
 
 content::BrowserContext*
-ShellExtensionsBrowserClient::GetRedirectedContextInIncognito(
+ShellExtensionsBrowserClient::GetContextRedirectedToOriginal(
     content::BrowserContext* context,
-    bool force_guest_profile,
-    bool force_system_profile) {
+    bool force_guest_profile) {
+  return context;
+}
+
+content::BrowserContext* ShellExtensionsBrowserClient::GetContextOwnInstance(
+    content::BrowserContext* context,
+    bool force_guest_profile) {
   return context;
 }
 
 content::BrowserContext*
-ShellExtensionsBrowserClient::GetContextForRegularAndIncognito(
+ShellExtensionsBrowserClient::GetContextForOriginalOnly(
     content::BrowserContext* context,
-    bool force_guest_profile,
-    bool force_system_profile) {
+    bool force_guest_profile) {
   return context;
 }
 
-content::BrowserContext* ShellExtensionsBrowserClient::GetRegularProfile(
-    content::BrowserContext* context,
-    bool force_guest_profile,
-    bool force_system_profile) {
-  return context;
+bool ShellExtensionsBrowserClient::AreExtensionsDisabledForContext(
+    content::BrowserContext* context) {
+  return false;
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

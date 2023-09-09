@@ -20,6 +20,7 @@
 #include "chrome/browser/apps/app_service/app_icon/app_icon_writer.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_base.h"
 #include "chrome/browser/apps/app_service/launch_result_type.h"
+#include "chrome/browser/apps/app_service/package_id.h"
 #include "chrome/browser/apps/app_service/paused_apps.h"
 #include "chrome/browser/apps/app_service/publisher_host.h"
 #include "chrome/browser/apps/app_service/subscriber_crosapi.h"
@@ -52,6 +53,7 @@ class AppPlatformMetricsService;
 class InstanceRegistryUpdater;
 class BrowserAppInstanceRegistry;
 class BrowserAppInstanceTracker;
+class PackageId;
 class PromiseAppRegistryCache;
 class PromiseAppService;
 class ShortcutPublisher;
@@ -155,6 +157,12 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
 
   // Add or update a promise app in the Promise App Registry Cache.
   void OnPromiseApp(PromiseAppPtr delta);
+
+  // Retrieves the icon for a promise app and applies any specified effects.
+  void LoadPromiseIcon(const PackageId& package_id,
+                       int32_t size_hint_in_dip,
+                       IconEffects icon_effects,
+                       apps::LoadIconCallback callback);
 
   // Registers `publisher` with the App Service as exclusively publishing
   // shortcut to app type `app_type`. `publisher` must have a lifetime equal to
@@ -302,6 +310,7 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
                        int32_t size_in_dip,
                        IconEffects icon_effects,
                        IconType icon_type,
+                       int default_icon_resource_id,
                        LoadIconCallback callback,
                        bool install_success);
 

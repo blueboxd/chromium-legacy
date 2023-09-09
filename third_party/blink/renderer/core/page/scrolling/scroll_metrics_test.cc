@@ -149,7 +149,7 @@ TEST_P(ScrollMetricsTest, TouchAndWheelGeneralTest) {
     </div>
   )HTML");
 
-  Element* box = GetDocument().getElementById("box");
+  Element* box = GetDocument().getElementById(AtomicString("box"));
   absl::optional<HistogramTester> histogram_tester;
   histogram_tester.emplace();
 
@@ -195,7 +195,7 @@ TEST_P(ScrollMetricsTest, CompositedScrollableAreaTest) {
     </div>
   )HTML");
 
-  Element* box = GetDocument().getElementById("box");
+  Element* box = GetDocument().getElementById(AtomicString("box"));
   absl::optional<HistogramTester> histogram_tester;
   histogram_tester.emplace();
 
@@ -214,7 +214,8 @@ TEST_P(ScrollMetricsTest, CompositedScrollableAreaTest) {
   // Reset histogram tester.
   histogram_tester.emplace();
 
-  box->setAttribute("class", "composited transform box");
+  box->setAttribute(html_names::kClassAttr,
+                    AtomicString("composited transform box"));
   Compositor().BeginFrame();
   Scroll(box, WebGestureDevice::kTouchpad);
   if (!RuntimeEnabledFeatures::CompositeScrollAfterPaintEnabled()) {
@@ -239,7 +240,7 @@ TEST_P(ScrollMetricsTest, NotScrollableAreaTest) {
     </div>
   )HTML");
 
-  Element* box = GetDocument().getElementById("box");
+  Element* box = GetDocument().getElementById(AtomicString("box"));
   absl::optional<HistogramTester> histogram_tester;
   histogram_tester.emplace();
 
@@ -258,7 +259,8 @@ TEST_P(ScrollMetricsTest, NotScrollableAreaTest) {
   // Reset histogram tester.
   histogram_tester.emplace();
 
-  box->setAttribute("class", "hidden transform box");
+  box->setAttribute(html_names::kClassAttr,
+                    AtomicString("hidden transform box"));
   UpdateAllLifecyclePhases();
   Scroll(box, WebGestureDevice::kTouchpad);
 
@@ -297,7 +299,7 @@ TEST_P(ScrollMetricsTest, NestedScrollersTest) {
     </div>
   )HTML");
 
-  Element* box = GetDocument().getElementById("inner");
+  Element* box = GetDocument().getElementById(AtomicString("inner"));
   absl::optional<HistogramTester> histogram_tester;
   histogram_tester.emplace();
 

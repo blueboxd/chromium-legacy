@@ -162,7 +162,8 @@ public class TabSelectionEditorTest {
         mSnackbarManager = sActivityTestRule.getActivity().getSnackbarManager();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
-                    sActivityTestRule.getActivity(), mParentView, mTabModelSelector,
+                    sActivityTestRule.getActivity(), mParentView,
+                    sActivityTestRule.getActivity().getBrowserControlsManager(), mTabModelSelector,
                     sActivityTestRule.getActivity().getTabContentManager(),
                     mSetRecyclerViewPosition, getMode(),
                     sActivityTestRule.getActivity().getCompositorViewHolderForTesting(),
@@ -178,7 +179,6 @@ public class TabSelectionEditorTest {
 
     @After
     public void tearDown() {
-        TabSelectionEditorShareAction.setIntentCallbackForTesting(null);
         if (mTabSelectionEditorCoordinator != null) {
             if (sActivityTestRule.getActivity().findViewById(R.id.app_menu_list) != null) {
                 Espresso.pressBack();

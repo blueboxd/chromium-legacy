@@ -534,7 +534,8 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
     @Override
     protected boolean isFullHeight() {
         if (ChromeFeatureList.sCctResizableSideSheet.isEnabled()) {
-            return MultiWindowUtils.getInstance().isInMultiWindowMode(mActivity);
+            return MultiWindowUtils.getInstance().isInMultiWindowMode(mActivity)
+                    && !ChromeFeatureList.sCctResizableMultiWindowMode.isEnabled();
         } else {
             return isLandscape() || MultiWindowUtils.getInstance().isInMultiWindowMode(mActivity);
         }
@@ -896,7 +897,6 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
         return isLandscape() && width / density > BOTTOM_SHEET_MAX_WIDTH_DP_LANDSCAPE;
     }
 
-    @VisibleForTesting
     void setMockViewForTesting(LinearLayout navbar, ImageView spinnerView,
             CircularProgressDrawable spinner, CustomTabToolbar toolbar, View toolbarCoordinator,
             PartialCustomTabHandleStrategyFactory handleStrategyFactory) {
@@ -911,17 +911,14 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
         onPostInflationStartup();
     }
 
-    @VisibleForTesting
     int getNavbarHeightForTesting() {
         return mNavbarHeight;
     }
 
-    @VisibleForTesting
     CustomTabToolbar.HandleStrategy getHandleStrategyForTesting() {
         return mHandleStrategy;
     }
 
-    @VisibleForTesting
     CustomTabToolbar.HandleStrategy createHandleStrategyForTesting() {
         // Pass null for context because we don't depend on the GestureDetector inside as we invoke
         // MotionEvents directly in the tests.
@@ -930,7 +927,6 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
         return mHandleStrategy;
     }
 
-    @VisibleForTesting
     void setToolbarColorForTesting(int toolbarColor) {
         mToolbarColor = toolbarColor;
     }

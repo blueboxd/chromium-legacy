@@ -7,6 +7,7 @@
 #include <random>
 #include <vector>
 
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/rand_util.h"
@@ -157,6 +158,8 @@ void RecordBrowsingTopicsApiResultMetrics(ApiAccessResult result,
     return;
   }
 
+  CHECK(!main_frame->IsInLifecycleState(
+      content::RenderFrameHost::LifecycleState::kPrerendering));
   ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
   ukm::builders::BrowsingTopics_DocumentBrowsingTopicsApiResult2 builder(
       main_frame->GetPageUkmSourceId());
@@ -168,6 +171,8 @@ void RecordBrowsingTopicsApiResultMetrics(ApiAccessResult result,
 void RecordBrowsingTopicsApiResultMetrics(
     const std::vector<CandidateTopic>& valid_candidate_topics,
     content::RenderFrameHost* main_frame) {
+  CHECK(!main_frame->IsInLifecycleState(
+      content::RenderFrameHost::LifecycleState::kPrerendering));
   ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
   ukm::builders::BrowsingTopics_DocumentBrowsingTopicsApiResult2 builder(
       main_frame->GetPageUkmSourceId());
@@ -314,6 +319,19 @@ void RecordBrowsingTopicsApiActionTypeMetrics(ApiCallerSource caller_source,
       BrowsingTopicsApiActionType::kObserveViaFetchLikeApi);
 }
 
+std::set<HashedDomain> GetAllObservingDomains(
+    const BrowsingTopicsState& browsing_topics_state) {
+  std::set<HashedDomain> observing_domains;
+  for (const EpochTopics& epoch : browsing_topics_state.epochs()) {
+    for (const auto& topic_and_domains :
+         epoch.top_topics_and_observing_domains()) {
+      observing_domains.insert(topic_and_domains.hashed_domains().begin(),
+                               topic_and_domains.hashed_domains().end());
+    }
+  }
+  return observing_domains;
+}
+
 }  // namespace
 
 BrowsingTopicsServiceImpl::~BrowsingTopicsServiceImpl() = default;
@@ -386,7 +404,8 @@ bool BrowsingTopicsServiceImpl::HandleTopicsWebApi(
   if (observe) {
     // Track the API usage context after the permissions check.
     BrowsingTopicsPageLoadDataTracker::GetOrCreateForPage(main_frame->GetPage())
-        ->OnBrowsingTopicsApiUsed(hashed_context_domain, history_service_);
+        ->OnBrowsingTopicsApiUsed(hashed_context_domain, context_domain,
+                                  history_service_);
   }
 
   if (!get_topics) {
@@ -517,19 +536,23 @@ void BrowsingTopicsServiceImpl::GetBrowsingTopicsStateForWebUi(
 
   if (calculate_now) {
     get_state_for_webui_callbacks_.push_back(std::move(callback));
-
     schedule_calculate_timer_.AbandonAndStop();
     CalculateBrowsingTopics(/*is_manually_triggered=*/true);
     return;
   }
 
-  std::move(callback).Run(GetBrowsingTopicsStateForWebUiHelper());
+  site_data_manager_->GetContextDomainsFromHashedContextDomains(
+      GetAllObservingDomains(browsing_topics_state_),
+      base::BindOnce(
+          &BrowsingTopicsServiceImpl::GetBrowsingTopicsStateForWebUiHelper,
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 std::vector<privacy_sandbox::CanonicalTopic>
 BrowsingTopicsServiceImpl::GetTopTopicsForDisplay() const {
-  if (!browsing_topics_state_loaded_)
+  if (!browsing_topics_state_loaded_) {
     return {};
+  }
 
   std::vector<privacy_sandbox::CanonicalTopic> result;
 
@@ -573,8 +596,9 @@ void BrowsingTopicsServiceImpl::ClearTopic(
 
 void BrowsingTopicsServiceImpl::ClearTopicsDataForOrigin(
     const url::Origin& origin) {
-  if (!browsing_topics_state_loaded_)
+  if (!browsing_topics_state_loaded_) {
     return;
+  }
 
   std::string context_domain =
       net::registry_controlled_domains::GetDomainAndRegistry(
@@ -650,22 +674,41 @@ void BrowsingTopicsServiceImpl::OnCalculateBrowsingTopicsCompleted(
   DCHECK(topics_calculator_);
   topics_calculator_.reset();
 
-  browsing_topics_state_.AddEpoch(std::move(epoch_topics));
+  if (!browsing_topics_state_.epochs().empty()) {
+    // Use 24 days as the max value, because 24 days is the maximum number of
+    // days that works with UmaHistogramCustomTimes due to its conversion of
+    // times into milliseconds. We expect most values to be around
+    // `kBrowsingTopicsTimePeriodPerEpoch`.
+    base::UmaHistogramCustomTimes(
+        "BrowsingTopics.EpochTopicsCalculation.TimeBetweenCalculations",
+        epoch_topics.calculation_time() -
+            browsing_topics_state_.epochs().back().calculation_time(),
+        /*min=*/base::Seconds(1), /*max=*/base::Days(24), /*buckets=*/100);
+  }
+
+  absl::optional<EpochTopics> maybe_removed_epoch =
+      browsing_topics_state_.AddEpoch(std::move(epoch_topics));
+  if (maybe_removed_epoch.has_value()) {
+    site_data_manager_->ExpireDataBefore(
+        maybe_removed_epoch->calculation_time() -
+        blink::features::
+                kBrowsingTopicsNumberOfEpochsOfObservationDataToUseForFiltering
+                    .Get() *
+            blink::features::kBrowsingTopicsTimePeriodPerEpoch.Get());
+  }
   browsing_topics_state_.UpdateNextScheduledCalculationTime();
 
   ScheduleBrowsingTopicsCalculation(
       blink::features::kBrowsingTopicsTimePeriodPerEpoch.Get());
 
-  if (!get_state_for_webui_callbacks_.empty()) {
-    mojom::WebUIGetBrowsingTopicsStateResultPtr webui_state =
-        GetBrowsingTopicsStateForWebUiHelper();
-
-    for (auto& callback : get_state_for_webui_callbacks_) {
-      std::move(callback).Run(webui_state->Clone());
-    }
-
-    get_state_for_webui_callbacks_.clear();
+  for (auto& callback : get_state_for_webui_callbacks_) {
+    site_data_manager_->GetContextDomainsFromHashedContextDomains(
+        GetAllObservingDomains(browsing_topics_state_),
+        base::BindOnce(
+            &BrowsingTopicsServiceImpl::GetBrowsingTopicsStateForWebUiHelper,
+            weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
+  get_state_for_webui_callbacks_.clear();
 }
 
 void BrowsingTopicsServiceImpl::OnBrowsingTopicsStateLoaded() {
@@ -767,8 +810,9 @@ void BrowsingTopicsServiceImpl::OnURLsDeleted(
   }
 }
 
-mojom::WebUIGetBrowsingTopicsStateResultPtr
-BrowsingTopicsServiceImpl::GetBrowsingTopicsStateForWebUiHelper() {
+void BrowsingTopicsServiceImpl::GetBrowsingTopicsStateForWebUiHelper(
+    mojom::PageHandler::GetBrowsingTopicsStateCallback callback,
+    std::map<HashedDomain, std::string> hashed_to_unhashed_context_domains) {
   DCHECK(browsing_topics_state_loaded_);
   DCHECK(!topics_calculator_);
 
@@ -801,9 +845,16 @@ BrowsingTopicsServiceImpl::GetBrowsingTopicsStateForWebUiHelper() {
       std::vector<std::string> webui_observed_by_domains;
       webui_observed_by_domains.reserve(
           topic_and_domains.hashed_domains().size());
-      for (const auto& domain : topic_and_domains.hashed_domains()) {
-        webui_observed_by_domains.push_back(
-            base::NumberToString(domain.value()));
+      for (const HashedDomain& hashed_domain :
+           topic_and_domains.hashed_domains()) {
+        auto it = hashed_to_unhashed_context_domains.find(hashed_domain);
+        if (it != hashed_to_unhashed_context_domains.end()) {
+          webui_observed_by_domains.push_back(it->second);
+        } else {
+          // Default to the hashed value if we don't have the original.
+          webui_observed_by_domains.push_back(
+              base::NumberToString(hashed_domain.value()));
+        }
       }
 
       // Note: if the topic is invalid (i.e. cleared), the output `topic_id`
@@ -825,8 +876,9 @@ BrowsingTopicsServiceImpl::GetBrowsingTopicsStateForWebUiHelper() {
   // Reorder the epochs from latest to oldest.
   base::ranges::reverse(webui_state->epochs);
 
-  return mojom::WebUIGetBrowsingTopicsStateResult::NewBrowsingTopicsState(
-      std::move(webui_state));
+  std::move(callback).Run(
+      mojom::WebUIGetBrowsingTopicsStateResult::NewBrowsingTopicsState(
+          std::move(webui_state)));
 }
 
 }  // namespace browsing_topics

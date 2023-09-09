@@ -12,11 +12,13 @@
 #include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/one_shot_event.h"
 #include "base/test/bind.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
+#include "chrome/browser/web_applications/isolated_web_apps/install_isolated_web_app_from_command_line.h"
 #include "chrome/browser/web_applications/manifest_update_manager.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
@@ -47,6 +49,10 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/test/mock_model_type_change_processor.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+#if (BUILDFLAG(IS_CHROMEOS))
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_update_manager.h"
+#endif
 
 namespace web_app {
 
@@ -94,8 +100,16 @@ void FakeWebAppProvider::SetSynchronizePreinstalledAppsOnStartup(
   synchronize_preinstalled_app_on_startup_ = synchronize_on_startup;
 }
 
+#if BUILDFLAG(IS_CHROMEOS)
+void FakeWebAppProvider::SetEnableAutomaticIwaUpdates(
+    AutomaticIwaUpdateStrategy automatic_iwa_update_strategy) {
+  CheckNotStartedAndDisconnect();
+  automatic_iwa_update_strategy_ = automatic_iwa_update_strategy;
+}
+#endif
+
 void FakeWebAppProvider::SetRegistrar(
-    std::unique_ptr<WebAppRegistrar> registrar) {
+    std::unique_ptr<WebAppRegistrarMutable> registrar) {
   CheckNotStartedAndDisconnect();
   registrar_ = std::move(registrar);
 }
@@ -110,6 +124,12 @@ void FakeWebAppProvider::SetSyncBridge(
     std::unique_ptr<WebAppSyncBridge> sync_bridge) {
   CheckNotStartedAndDisconnect();
   sync_bridge_ = std::move(sync_bridge);
+}
+
+void FakeWebAppProvider::SetFileUtils(
+    scoped_refptr<FileUtilsWrapper> file_utils) {
+  CheckNotStartedAndDisconnect();
+  file_utils_ = file_utils;
 }
 
 void FakeWebAppProvider::SetIconManager(
@@ -155,6 +175,14 @@ void FakeWebAppProvider::SetWebAppUiManager(
   ui_manager_ = std::move(ui_manager);
 }
 
+void FakeWebAppProvider::SetIsolatedWebAppCommandLineInstallManager(
+    std::unique_ptr<IsolatedWebAppCommandLineInstallManager>
+        iwa_command_line_install_manager) {
+  CheckNotStartedAndDisconnect();
+  iwa_command_line_install_manager_ =
+      std::move(iwa_command_line_install_manager);
+}
+
 void FakeWebAppProvider::SetWebAppPolicyManager(
     std::unique_ptr<WebAppPolicyManager> web_app_policy_manager) {
   CheckNotStartedAndDisconnect();
@@ -162,6 +190,12 @@ void FakeWebAppProvider::SetWebAppPolicyManager(
 }
 
 #if BUILDFLAG(IS_CHROMEOS)
+void FakeWebAppProvider::SetIsolatedWebAppUpdateManager(
+    std::unique_ptr<IsolatedWebAppUpdateManager> iwa_update_manager) {
+  CheckNotStartedAndDisconnect();
+  iwa_update_manager_ = std::move(iwa_update_manager);
+}
+
 void FakeWebAppProvider::SetWebAppRunOnOsLoginManager(
     std::unique_ptr<WebAppRunOnOsLoginManager>
         web_app_run_on_os_login_manager) {
@@ -176,6 +210,12 @@ void FakeWebAppProvider::SetCommandManager(
   if (command_manager_)
     command_manager_->Shutdown();
   command_manager_ = std::move(command_manager);
+}
+
+void FakeWebAppProvider::SetScheduler(
+    std::unique_ptr<WebAppCommandScheduler> scheduler) {
+  CheckNotStartedAndDisconnect();
+  command_scheduler_ = std::move(scheduler);
 }
 
 void FakeWebAppProvider::SetPreinstalledWebAppManager(
@@ -266,11 +306,7 @@ void FakeWebAppProvider::SetDefaultFakeSubsystems() {
   SetSyncBridge(std::make_unique<WebAppSyncBridge>(
       &GetRegistrarMutable(), processor().CreateForwardingProcessor()));
 
-  SetIconManager(std::make_unique<WebAppIconManager>(
-      profile_, base::MakeRefCounted<TestFileUtils>()));
-
-  SetTranslationManager(std::make_unique<WebAppTranslationManager>(
-      profile_, base::MakeRefCounted<TestFileUtils>()));
+  SetFileUtils(base::MakeRefCounted<TestFileUtils>());
 
   SetWebAppUiManager(std::make_unique<FakeWebAppUiManager>());
 
@@ -279,12 +315,14 @@ void FakeWebAppProvider::SetDefaultFakeSubsystems() {
 
   SetWebAppPolicyManager(std::make_unique<WebAppPolicyManager>(profile_));
 
-  SetCommandManager(std::make_unique<WebAppCommandManager>(profile_, this));
+  SetCommandManager(std::make_unique<WebAppCommandManager>(profile_));
 
   SetPreinstalledWebAppManager(
       std::make_unique<PreinstalledWebAppManager>(profile_));
 
 #if BUILDFLAG(IS_CHROMEOS)
+  SetIsolatedWebAppUpdateManager(
+      std::make_unique<IsolatedWebAppUpdateManager>(*profile_));
   SetWebAppRunOnOsLoginManager(
       std::make_unique<WebAppRunOnOsLoginManager>(command_scheduler_.get()));
 #endif
@@ -308,9 +346,11 @@ void FakeWebAppProvider::Shutdown() {
     externally_managed_app_manager_->Shutdown();
   if (manifest_update_manager_)
     manifest_update_manager_->Shutdown();
-  if (iwa_command_line_install_manager_) {
-    iwa_command_line_install_manager_->Shutdown();
+#if (BUILDFLAG(IS_CHROMEOS))
+  if (iwa_update_manager_) {
+    iwa_update_manager_->Shutdown();
   }
+#endif
   if (install_manager_)
     install_manager_->Shutdown();
   if (icon_manager_)
@@ -331,6 +371,20 @@ void FakeWebAppProvider::CheckNotStartedAndDisconnect() {
 void FakeWebAppProvider::StartImpl() {
   preinstalled_web_app_manager_->SetSkipStartupSynchronizeForTesting(
       !synchronize_preinstalled_app_on_startup_);
+
+#if BUILDFLAG(IS_CHROMEOS)
+  switch (automatic_iwa_update_strategy_) {
+    case AutomaticIwaUpdateStrategy::kDefault:
+      break;
+    case AutomaticIwaUpdateStrategy::kForceDisabled:
+      iwa_update_manager_->SetEnableAutomaticUpdatesForTesting(false);
+      break;
+    case AutomaticIwaUpdateStrategy::kForceEnabled:
+      iwa_update_manager_->SetEnableAutomaticUpdatesForTesting(true);
+      break;
+  }
+#endif
+
   if (run_subsystem_startup_tasks_) {
     WebAppProvider::StartImpl();
   } else {

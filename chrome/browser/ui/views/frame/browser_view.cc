@@ -934,7 +934,8 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   infobar_container_ =
       AddChildView(std::make_unique<InfoBarContainerView>(this));
 
-  InitStatusBubble();
+  status_bubble_ = std::make_unique<StatusBubbleViews>(contents_web_view_);
+  contents_web_view_->SetStatusBubble(status_bubble_.get());
 
   // Create do-nothing view for the sake of controlling the z-order of the find
   // bar widget.
@@ -1053,11 +1054,6 @@ void BrowserView::SetDownloadShelfForTest(DownloadShelf* download_shelf) {
 // static
 void BrowserView::SetDisableRevealerDelayForTesting(bool disable) {
   g_disable_revealer_delay_for_testing = disable;
-}
-
-void BrowserView::InitStatusBubble() {
-  status_bubble_ = std::make_unique<StatusBubbleViews>(contents_web_view_);
-  contents_web_view_->SetStatusBubble(status_bubble_.get());
 }
 
 gfx::Rect BrowserView::GetFindBarBoundingBox() const {
@@ -1199,11 +1195,20 @@ bool BrowserView::GetIsPictureInPictureType() const {
 }
 
 float BrowserView::GetInitialAspectRatio() const {
-  return browser_->create_params().initial_aspect_ratio;
+  const absl::optional<blink::mojom::PictureInPictureWindowOptions>
+      pip_options = browser_->create_params().pip_options;
+  return pip_options.has_value() ? pip_options->initial_aspect_ratio : 1.0;
+}
+
+absl::optional<blink::mojom::PictureInPictureWindowOptions>
+BrowserView::GetDocumentPictureInPictureOptions() const {
+  return browser_->create_params().pip_options;
 }
 
 bool BrowserView::GetLockAspectRatio() const {
-  return browser_->create_params().lock_aspect_ratio;
+  const absl::optional<blink::mojom::PictureInPictureWindowOptions>
+      pip_options = browser_->create_params().pip_options;
+  return pip_options.has_value() ? pip_options->lock_aspect_ratio : false;
 }
 
 bool BrowserView::GetTopControlsSlideBehaviorEnabled() const {
@@ -1806,7 +1811,8 @@ void BrowserView::UpdateExclusiveAccessExitBubbleContent(
   }
 
   exclusive_access_bubble_ = std::make_unique<ExclusiveAccessBubbleViews>(
-      this, url, bubble_type, std::move(bubble_first_hide_callback));
+      this, url, bubble_type, notify_download,
+      std::move(bubble_first_hide_callback));
 }
 
 bool BrowserView::IsExclusiveAccessBubbleDisplayed() const {
@@ -2215,17 +2221,19 @@ void BrowserView::ToggleWindowControlsOverlayEnabled(base::OnceClosure done) {
           .Then(std::move(done)));
 }
 
-bool BrowserView::ChildOfAnchorWidgetContainsPoint(
+bool BrowserView::WidgetOwnedByAnchorContainsPoint(
     const gfx::Point& point_in_browser_view_coords) {
-  auto* parent_widget = GetWidgetForAnchoring();
-  views::Widget::Widgets widgets;
-  views::Widget::GetAllChildWidgets(parent_widget->GetNativeView(), &widgets);
+  const auto point_in_screen_coords =
+      views::View::ConvertPointToScreen(this, point_in_browser_view_coords);
 
-  return base::ranges::any_of(widgets, [&](auto* widget) {
-    return widget != parent_widget && widget->IsVisible() &&
-           widget->GetWindowBoundsInScreen().Contains(
-               views::View::ConvertPointToScreen(this,
-                                                 point_in_browser_view_coords));
+  auto* anchor_widget = GetWidgetForAnchoring();
+
+  views::Widget::Widgets widgets;
+  views::Widget::GetAllOwnedWidgets(anchor_widget->GetNativeView(), &widgets);
+  return base::ranges::any_of(widgets, [point_in_screen_coords,
+                                        anchor_widget](auto* widget) {
+    return widget != anchor_widget && widget->IsVisible() &&
+           widget->GetWindowBoundsInScreen().Contains(point_in_screen_coords);
   });
 }
 
@@ -2243,6 +2251,10 @@ void BrowserView::ShowChromeLabs() {
 bool BrowserView::AppUsesBorderlessMode() const {
   return browser()->app_controller() &&
          browser()->app_controller()->AppUsesBorderlessMode();
+}
+
+bool BrowserView::AreDraggableRegionsEnabled() const {
+  return IsWindowControlsOverlayEnabled() || IsBorderlessModeEnabled();
 }
 
 void BrowserView::UpdateSidePanelHorizontalAlignment() {
@@ -2286,13 +2298,6 @@ void BrowserView::FocusAppMenu() {
 }
 
 void BrowserView::RotatePaneFocus(bool forwards) {
-  // If an inactive bubble is showing this intentionally focuses that dialog to
-  // provide an easy access method to these dialogs without requiring additional
-  // keyboard shortcuts or commands. To get back out to pane cycling the dialog
-  // needs to be accepted or dismissed.
-  if (ActivateFirstInactiveBubbleForAccessibility())
-    return;
-
   GetFocusManager()->RotatePaneFocus(
       forwards ? views::FocusManager::Direction::kForward
                : views::FocusManager::Direction::kBackward,
@@ -3463,11 +3468,6 @@ ui::ImageModel BrowserView::GetWindowIcon() {
 }
 
 bool BrowserView::ExecuteWindowsCommand(int command_id) {
-  // This function handles WM_SYSCOMMAND, WM_APPCOMMAND, and WM_COMMAND.
-#if BUILDFLAG(IS_WIN)
-  if (command_id == IDC_DEBUG_FRAME_TOGGLE)
-    GetWidget()->DebugToggleFrameType();
-#endif
   // Translate WM_APPCOMMAND command ids into a command id that the browser
   // knows how to handle.
   int command_id_from_app_command = GetCommandIDForAppCommandID(command_id);
@@ -3819,9 +3819,7 @@ bool BrowserView::ShouldDescendIntoChildForEventHandling(
   // Window for PWAs with window-controls-overlay display override should claim
   // mouse events that fall within the draggable region.
   web_app::AppBrowserController* controller = browser()->app_controller();
-  bool is_wco_or_borderless_mode =
-      IsWindowControlsOverlayEnabled() || IsBorderlessModeEnabled();
-  if (is_wco_or_borderless_mode && controller &&
+  if (AreDraggableRegionsEnabled() && controller &&
       controller->draggable_region().has_value()) {
     // Draggable regions are defined relative to the web contents.
     gfx::Point point_in_contents_web_view_coords(location);
@@ -3829,15 +3827,40 @@ bool BrowserView::ShouldDescendIntoChildForEventHandling(
                                       contents_web_view_,
                                       &point_in_contents_web_view_coords);
 
-    // Draggable regions should be ignored for clicks into any child widgets,
-    // for example alerts or find bar.
+    // Draggable regions should be ignored for clicks into any browser view's
+    // owned widgets, for example alerts, permission prompts or find bar.
     return !controller->draggable_region()->contains(
                point_in_contents_web_view_coords.x(),
                point_in_contents_web_view_coords.y()) ||
-           ChildOfAnchorWidgetContainsPoint(point_in_contents_web_view_coords);
+           WidgetOwnedByAnchorContainsPoint(point_in_contents_web_view_coords);
   }
 
   return true;
+}
+
+bool BrowserView::RotatePaneFocusFromView(views::View* focused_view,
+                                          bool forward,
+                                          bool enable_wrapping) {
+  // If an inactive bubble is showing this intentionally focuses that dialog to
+  // provide an easy access method to these dialogs without requiring additional
+  // keyboard shortcuts or commands. To get back out to pane cycling the dialog
+  // needs to be accepted or dismissed.
+  if (ActivateFirstInactiveBubbleForAccessibility()) {
+    // We only want to signal that we have performed a rotation once for an
+    // accessibility bubble. This is important for ChromeOS because the result
+    // of this operation is used to determine whether or not we should rotate
+    // focus out of the browser.
+    // |enable_wrapping| is overloaded with the start of a rotation. Therefore,
+    // we can use it to ensure that we only return that we have rotated once to
+    // the caller.
+    // TODO(crbug.com/1459355): the overloaded |enable_wrapping| is not
+    // intuitive and confusing. Refactor this so that start of rotation is more
+    // clear and not mangled up with wrapping.
+    return enable_wrapping;
+  }
+
+  return views::WidgetDelegate::RotatePaneFocusFromView(focused_view, forward,
+                                                        enable_wrapping);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4055,7 +4078,8 @@ void BrowserView::PaintChildren(const views::PaintInfo& paint_info) {
   static bool did_first_paint = false;
   if (!did_first_paint) {
     did_first_paint = true;
-    startup_metric_utils::RecordBrowserWindowFirstPaint(base::TimeTicks::Now());
+    startup_metric_utils::GetBrowser().RecordBrowserWindowFirstPaint(
+        base::TimeTicks::Now());
   }
 }
 
@@ -4701,10 +4725,9 @@ bool BrowserView::IsFeaturePromoActive(const base::Feature& iph_feature) const {
 
 bool BrowserView::MaybeShowFeaturePromo(
     const base::Feature& iph_feature,
-    user_education::FeaturePromoSpecification::StringReplacements
-        body_text_replacements,
-    user_education::FeaturePromoController::BubbleCloseCallback
-        close_callback) {
+    user_education::FeaturePromoController::BubbleCloseCallback close_callback,
+    user_education::FeaturePromoSpecification::FormatParameters body_params,
+    user_education::FeaturePromoSpecification::FormatParameters title_params) {
   // Trying to show a promo before the browser is initialized can result in a
   // failure to retrieve accelerators, which can cause issues for screen reader
   // users.
@@ -4715,20 +4738,19 @@ bool BrowserView::MaybeShowFeaturePromo(
   }
   return feature_promo_controller_ &&
          feature_promo_controller_->MaybeShowPromo(
-             iph_feature, body_text_replacements, std::move(close_callback));
+             iph_feature, std::move(close_callback), body_params, title_params);
 }
 
 bool BrowserView::MaybeShowStartupFeaturePromo(
     const base::Feature& iph_feature,
-    user_education::FeaturePromoSpecification::StringReplacements
-        body_text_replacements,
     user_education::FeaturePromoController::StartupPromoCallback promo_callback,
-    user_education::FeaturePromoController::BubbleCloseCallback
-        close_callback) {
+    user_education::FeaturePromoController::BubbleCloseCallback close_callback,
+    user_education::FeaturePromoSpecification::FormatParameters body_params,
+    user_education::FeaturePromoSpecification::FormatParameters title_params) {
   return feature_promo_controller_ &&
          feature_promo_controller_->MaybeShowStartupPromo(
-             iph_feature, body_text_replacements, std::move(promo_callback),
-             std::move(close_callback));
+             iph_feature, std::move(promo_callback), std::move(close_callback),
+             body_params, title_params);
 }
 
 bool BrowserView::CloseFeaturePromo(const base::Feature& iph_feature) {

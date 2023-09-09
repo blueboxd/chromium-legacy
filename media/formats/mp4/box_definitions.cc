@@ -713,39 +713,35 @@ bool AVCDecoderConfigurationRecord::ParseInternal(BufferReader* reader,
 
   if (profile_indication == 100 || profile_indication == 110 ||
       profile_indication == 122 || profile_indication == 144) {
-    if (!ParseREXT(reader, media_log)) {
-      DVLOG(2) << __func__ << ": avcC REXT is missing or invalid";
+    if (!reader->HasBytes(4)) {
+      DVLOG(2) << __func__ << ": REXT profile metadata missing";
       chroma_format = 0;
       bit_depth_luma_minus8 = 0;
       bit_depth_chroma_minus8 = 0;
       sps_ext_list.resize(0);
+      return true;
     }
-  }
 
-  return true;
-}
+    RCHECK(reader->Read1(&chroma_format));
+    chroma_format &= 0x3;
 
-bool AVCDecoderConfigurationRecord::ParseREXT(BufferReader* reader,
-                                              MediaLog* media_log) {
-  RCHECK(reader->Read1(&chroma_format));
-  chroma_format &= 0x3;
+    RCHECK(reader->Read1(&bit_depth_luma_minus8));
+    bit_depth_luma_minus8 &= 0x7;
+    RCHECK(bit_depth_luma_minus8 <= 4);
 
-  RCHECK(reader->Read1(&bit_depth_luma_minus8));
-  bit_depth_luma_minus8 &= 0x7;
-  RCHECK(bit_depth_luma_minus8 <= 4);
+    RCHECK(reader->Read1(&bit_depth_chroma_minus8));
+    bit_depth_chroma_minus8 &= 0x7;
+    RCHECK(bit_depth_chroma_minus8 <= 4);
 
-  RCHECK(reader->Read1(&bit_depth_chroma_minus8));
-  bit_depth_chroma_minus8 &= 0x7;
-  RCHECK(bit_depth_chroma_minus8 <= 4);
+    uint8_t num_sps_ext;
+    RCHECK(reader->Read1(&num_sps_ext));
 
-  uint8_t num_sps_ext;
-  RCHECK(reader->Read1(&num_sps_ext));
-
-  sps_ext_list.resize(num_sps_ext);
-  for (int i = 0; i < num_sps_ext; i++) {
-    uint16_t sps_ext_length;
-    RCHECK(reader->Read2(&sps_ext_length) &&
-           reader->ReadVec(&sps_ext_list[i], sps_ext_length));
+    sps_ext_list.resize(num_sps_ext);
+    for (int i = 0; i < num_sps_ext; i++) {
+      uint16_t sps_ext_length;
+      RCHECK(reader->Read2(&sps_ext_length) &&
+             reader->ReadVec(&sps_ext_list[i], sps_ext_length));
+    }
   }
 
   return true;

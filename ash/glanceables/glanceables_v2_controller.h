@@ -11,6 +11,8 @@
 #include "base/memory/raw_ptr.h"
 #include "components/account_id/account_id.h"
 
+class PrefRegistrySimple;
+
 namespace ash {
 
 class GlanceablesClassroomClient;
@@ -33,6 +35,9 @@ class ASH_EXPORT GlanceablesV2Controller : public SessionObserver {
   GlanceablesV2Controller& operator=(const GlanceablesV2Controller&) = delete;
   ~GlanceablesV2Controller() override;
 
+  // Registers syncable user profile prefs with the specified `registry`.
+  static void RegisterUserProfilePrefs(PrefRegistrySimple* registry);
+
   // SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
 
@@ -47,6 +52,10 @@ class ASH_EXPORT GlanceablesV2Controller : public SessionObserver {
   // Returns a tasks client pointer associated with the `active_account_id_`.
   // Could return `nullptr`.
   GlanceablesTasksClient* GetTasksClient() const;
+
+  // Informs registered glanceables clients that the glanceables bubble UI has
+  // been closed.
+  void NotifyGlanceablesBubbleClosed();
 
  private:
   // The currently active user account id.

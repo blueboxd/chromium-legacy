@@ -14,7 +14,7 @@
 #include "components/autofill/core/browser/test_utils/vote_uploads_test_matchers.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
-#include "components/password_manager/core/browser/form_parsing/form_parser.h"
+#include "components/password_manager/core/browser/form_parsing/form_data_parser.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
@@ -252,7 +252,7 @@ class PasswordSaveManagerImplTestBase : public testing::Test {
     saved_match_.username_element = u"field1";
     saved_match_.password_value = u"test1";
     saved_match_.password_element = u"field2";
-    saved_match_.is_public_suffix_match = false;
+    saved_match_.match_type = PasswordForm::MatchType::kExact;
     saved_match_.scheme = PasswordForm::Scheme::kHtml;
     saved_match_.in_store = PasswordForm::Store::kProfileStore;
 
@@ -260,7 +260,7 @@ class PasswordSaveManagerImplTestBase : public testing::Test {
     psl_saved_match_.url = psl_origin;
     psl_saved_match_.action = psl_action;
     psl_saved_match_.signon_realm = "https://myaccounts.google.com/";
-    psl_saved_match_.is_public_suffix_match = true;
+    psl_saved_match_.match_type = PasswordForm::MatchType::kPSL;
 
     parsed_observed_form_ = saved_match_;
     parsed_observed_form_.form_data = observed_form_;
@@ -316,6 +316,8 @@ class PasswordSaveManagerImplTestBase : public testing::Test {
   }
 
   void DestroySaveManagerAndMetricsRecorder() {
+    mock_account_form_saver_ = nullptr;
+    mock_profile_form_saver_ = nullptr;
     password_save_manager_impl_.reset();
     metrics_recorder_.reset();
   }
@@ -402,10 +404,8 @@ class PasswordSaveManagerImplTestBase : public testing::Test {
   // needs to outlive the latter.
   std::unique_ptr<FakeFormFetcher> fetcher_;
   std::unique_ptr<PasswordSaveManagerImpl> password_save_manager_impl_;
-  raw_ptr<NiceMock<MockFormSaver>, DanglingUntriaged> mock_account_form_saver_ =
-      nullptr;
-  raw_ptr<NiceMock<MockFormSaver>, DanglingUntriaged> mock_profile_form_saver_ =
-      nullptr;
+  raw_ptr<NiceMock<MockFormSaver>> mock_account_form_saver_ = nullptr;
+  raw_ptr<NiceMock<MockFormSaver>> mock_profile_form_saver_ = nullptr;
   NiceMock<MockAutofillDownloadManager> mock_autofill_download_manager_;
 };
 
@@ -488,7 +488,7 @@ TEST_P(PasswordSaveManagerImplTest, CreatePendingCredentialsPSLMatchSaved) {
 
   saved_match_.url = GURL("https://m.accounts.google.com/auth");
   saved_match_.signon_realm = "https://m.accounts.google.com/";
-  saved_match_.is_public_suffix_match = true;
+  saved_match_.match_type = PasswordForm::MatchType::kPSL;
 
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
 
@@ -687,9 +687,8 @@ TEST_P(PasswordSaveManagerImplTest, SavePSLToAlreadySaved) {
       /*is_credential_api_save=*/false);
 
   EXPECT_TRUE(password_save_manager_impl()->IsNewLogin());
-  EXPECT_TRUE(password_save_manager_impl()
-                  ->GetPendingCredentials()
-                  .is_public_suffix_match);
+  EXPECT_EQ(PasswordForm::MatchType::kPSL,
+            password_save_manager_impl()->GetPendingCredentials().match_type);
 
   PasswordForm saved_form;
   std::vector<const PasswordForm*> best_matches;
@@ -1460,8 +1459,8 @@ TEST_F(MultiStorePasswordSaveManagerTest, UpdateInBothStores) {
   saved_match_in_account_store.in_store = PasswordForm::Store::kAccountStore;
   PasswordForm saved_match_in_profile_store(saved_match_in_account_store);
   saved_match_in_profile_store.in_store = PasswordForm::Store::kProfileStore;
-  autofill::GaiaIdHash user_id_hash =
-      autofill::GaiaIdHash::FromGaiaId("user@gmail.com");
+  signin::GaiaIdHash user_id_hash =
+      signin::GaiaIdHash::FromGaiaId("user@gmail.com");
   saved_match_in_profile_store.moving_blocked_for_list.push_back(user_id_hash);
 
   SetNonFederatedAndNotifyFetchCompleted(
@@ -1523,7 +1522,7 @@ TEST_F(MultiStorePasswordSaveManagerTest, AutomaticSaveInBothStores) {
       base::Time::Now() - base::Days(10);
   saved_match_in_profile_store.times_used_in_html_form = 10;
   saved_match_in_profile_store.moving_blocked_for_list.push_back(
-      autofill::GaiaIdHash::FromGaiaId("email@gmail.com"));
+      signin::GaiaIdHash::FromGaiaId("email@gmail.com"));
 
   PasswordForm saved_match_in_account_store(saved_match_in_profile_store);
   saved_match_in_account_store.in_store = PasswordForm::Store::kAccountStore;
@@ -1736,7 +1735,7 @@ TEST_F(MultiStorePasswordSaveManagerTest,
   PasswordForm saved_match_in_profile_store(saved_match_);
   saved_match_in_profile_store.in_store = PasswordForm::Store::kProfileStore;
   saved_match_in_profile_store.moving_blocked_for_list.push_back(
-      autofill::GaiaIdHash::FromGaiaId("user@gmail.com"));
+      signin::GaiaIdHash::FromGaiaId("user@gmail.com"));
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_in_profile_store});
 
   password_save_manager_impl()->CreatePendingCredentials(
@@ -1764,7 +1763,7 @@ TEST_F(MultiStorePasswordSaveManagerTest,
   PasswordForm saved_match_in_profile_store(saved_match_);
   saved_match_in_profile_store.in_store = PasswordForm::Store::kProfileStore;
   saved_match_in_profile_store.moving_blocked_for_list.push_back(
-      autofill::GaiaIdHash::FromGaiaId("user@gmail.com"));
+      signin::GaiaIdHash::FromGaiaId("user@gmail.com"));
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_in_profile_store});
 
   password_save_manager_impl()->CreatePendingCredentials(
@@ -1929,10 +1928,10 @@ TEST_F(MultiStorePasswordSaveManagerTest,
 }
 
 TEST_F(MultiStorePasswordSaveManagerTest, BlockMovingWhenExistsInProfileStore) {
-  autofill::GaiaIdHash user1_id_hash =
-      autofill::GaiaIdHash::FromGaiaId("user1@gmail.com");
-  autofill::GaiaIdHash user2_id_hash =
-      autofill::GaiaIdHash::FromGaiaId("user2@gmail.com");
+  signin::GaiaIdHash user1_id_hash =
+      signin::GaiaIdHash::FromGaiaId("user1@gmail.com");
+  signin::GaiaIdHash user2_id_hash =
+      signin::GaiaIdHash::FromGaiaId("user2@gmail.com");
 
   PasswordForm profile_saved_match(saved_match_);
   profile_saved_match.username_value = parsed_submitted_form_.username_value;
@@ -1959,10 +1958,10 @@ TEST_F(MultiStorePasswordSaveManagerTest, BlockMovingWhenExistsInProfileStore) {
 }
 
 TEST_F(MultiStorePasswordSaveManagerTest, BlockMovingWhenExistsInBothStores) {
-  autofill::GaiaIdHash user1_id_hash =
-      autofill::GaiaIdHash::FromGaiaId("user1@gmail.com");
-  autofill::GaiaIdHash user2_id_hash =
-      autofill::GaiaIdHash::FromGaiaId("user2@gmail.com");
+  signin::GaiaIdHash user1_id_hash =
+      signin::GaiaIdHash::FromGaiaId("user1@gmail.com");
+  signin::GaiaIdHash user2_id_hash =
+      signin::GaiaIdHash::FromGaiaId("user2@gmail.com");
 
   PasswordForm account_saved_match(saved_match_);
   account_saved_match.username_value = parsed_submitted_form_.username_value;

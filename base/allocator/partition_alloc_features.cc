@@ -7,6 +7,7 @@
 #include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/base_export.h"
 #include "base/feature_list.h"
+#include "base/features.h"
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
 #include "build/chromeos_buildflags.h"
@@ -34,7 +35,9 @@ const base::FeatureParam<UnretainedDanglingPtrMode>
 
 BASE_FEATURE(kPartitionAllocDanglingPtr,
              "PartitionAllocDanglingPtr",
-#if BUILDFLAG(ENABLE_DANGLING_RAW_PTR_FEATURE_FLAG)
+#if BUILDFLAG(ENABLE_DANGLING_RAW_PTR_FEATURE_FLAG) ||                   \
+    (BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS) && BUILDFLAG(IS_LINUX) && \
+     !defined(NDEBUG))
              FEATURE_ENABLED_BY_DEFAULT
 #else
              FEATURE_DISABLED_BY_DEFAULT
@@ -125,17 +128,10 @@ constexpr FeatureParam<BackupRefPtrEnabledProcesses>::Option
         {BackupRefPtrEnabledProcesses::kAllProcesses, "all-processes"}};
 
 const base::FeatureParam<BackupRefPtrEnabledProcesses>
-    kBackupRefPtrEnabledProcessesParam {
-  &kPartitionAllocBackupRefPtr, "enabled-processes",
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN) ||    \
-    BUILDFLAG(ENABLE_BACKUP_REF_PTR_FEATURE_FLAG) || \
-    (BUILDFLAG(USE_ASAN_BACKUP_REF_PTR) && BUILDFLAG(IS_LINUX))
-      BackupRefPtrEnabledProcesses::kNonRenderer,
-#else
-      BackupRefPtrEnabledProcesses::kBrowserOnly,
-#endif
-      &kBackupRefPtrEnabledProcessesOptions
-};
+    kBackupRefPtrEnabledProcessesParam{
+        &kPartitionAllocBackupRefPtr, "enabled-processes",
+        BackupRefPtrEnabledProcesses::kNonRenderer,
+        &kBackupRefPtrEnabledProcessesOptions};
 
 constexpr FeatureParam<BackupRefPtrRefCountSize>::Option
     kBackupRefPtrRefCountSizeOptions[] = {
@@ -149,22 +145,27 @@ const base::FeatureParam<BackupRefPtrRefCountSize>
         &kPartitionAllocBackupRefPtr, "ref-count-size",
         BackupRefPtrRefCountSize::kNatural, &kBackupRefPtrRefCountSizeOptions};
 
+// Map -with-memory-reclaimer modes onto their counterpars without the suffix.
+// They are the same, as memory reclaimer is now controlled independently.
+// However, we need to keep both option strings, as there is a long tail of
+// clients that may have an old field trial config, which used these modes.
+//
+// DO NOT USE -with-memory-reclaimer modes in new configs!
 constexpr FeatureParam<BackupRefPtrMode>::Option kBackupRefPtrModeOptions[] = {
     {BackupRefPtrMode::kDisabled, "disabled"},
     {BackupRefPtrMode::kEnabled, "enabled"},
-    {BackupRefPtrMode::kEnabledWithMemoryReclaimer,
-     "enabled-with-memory-reclaimer"},
+    {BackupRefPtrMode::kEnabled, "enabled-with-memory-reclaimer"},
     {BackupRefPtrMode::kDisabledButSplitPartitions2Way,
      "disabled-but-2-way-split"},
-    {BackupRefPtrMode::kDisabledButSplitPartitions2WayWithMemoryReclaimer,
+    {BackupRefPtrMode::kDisabledButSplitPartitions2Way,
      "disabled-but-2-way-split-with-memory-reclaimer"},
     {BackupRefPtrMode::kDisabledButSplitPartitions3Way,
      "disabled-but-3-way-split"},
 };
 
 const base::FeatureParam<BackupRefPtrMode> kBackupRefPtrModeParam{
-    &kPartitionAllocBackupRefPtr, "brp-mode",
-    BackupRefPtrMode::kEnabledWithMemoryReclaimer, &kBackupRefPtrModeOptions};
+    &kPartitionAllocBackupRefPtr, "brp-mode", BackupRefPtrMode::kEnabled,
+    &kBackupRefPtrModeOptions};
 
 BASE_FEATURE(kPartitionAllocMemoryTagging,
              "PartitionAllocMemoryTagging",
@@ -230,6 +231,10 @@ const base::FeatureParam<BucketDistributionMode>
       &kPartitionAllocBucketDistributionOption
 };
 
+BASE_FEATURE(kPartitionAllocMemoryReclaimer,
+             "PartitionAllocMemoryReclaimer",
+             FEATURE_ENABLED_BY_DEFAULT);
+
 // Configures whether we set a lower limit for renderers that do not have a main
 // frame, similar to the limit that is already done for backgrounded renderers.
 BASE_FEATURE(kLowerPAMemoryLimitForNonMainRenderers,
@@ -277,6 +282,18 @@ BASE_FEATURE(kPartitionAllocSortActiveSlotSpans,
 BASE_FEATURE(kPageAllocatorRetryOnCommitFailure,
              "PageAllocatorRetryOnCommitFailure",
              FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
+#if BUILDFLAG(IS_ANDROID)
+// A parameter to exclude or not exclude PartitionAllocSupport from
+// PartialLowModeOnMidRangeDevices. This is used to see how it affects
+// renderer performances, e.g. blink_perf.parser benchmark.
+// The feature: kPartialLowEndModeOnMidRangeDevices is defined in
+// //base/features.cc. Since the following feature param is related to
+// PartitionAlloc, define the param here.
+const FeatureParam<bool> kPartialLowEndModeExcludePartitionAllocSupport{
+    &kPartialLowEndModeOnMidRangeDevices, "exclude-partition-alloc-support",
+    false};
 #endif
 
 }  // namespace features

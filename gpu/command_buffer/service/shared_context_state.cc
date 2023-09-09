@@ -25,6 +25,8 @@
 #include "gpu/vulkan/buildflags.h"
 #include "skia/buildflags.h"
 #include "third_party/skia/include/gpu/graphite/Context.h"
+#include "third_party/skia/include/gpu/graphite/Image.h"
+#include "third_party/skia/include/gpu/graphite/ImageProvider.h"
 #include "third_party/skia/include/gpu/mock/GrMockTypes.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -59,6 +61,7 @@
 #endif
 
 namespace {
+
 static constexpr size_t kInitialScratchDeserializationBufferSize = 1024;
 
 size_t MaxNumSkSurface() {
@@ -74,7 +77,39 @@ size_t MaxNumSkSurface() {
   return kNormalMaxNumSkSurface;
 #endif
 }
+
+// This class is used by Graphite to create Graphite-backed SkImages from non-
+// Graphite-backed SkImages. It is given to a Graphite Recorder on creation. If
+// no ImageProvider is given to a Recorder, then any non-Graphite-backed SkImage
+// draws on that Recorder will fail.
+//
+// See https://crsrc.org/c/third_party/skia/include/gpu/graphite/ImageProvider.h
+// for details on Skia's requirements for ImageProvider.
+//
+// TODO(https://crbug.com/1457525): Currently this class uploads every image it
+// encounters to a new texture. Instead, it could do some caching to avoid
+// redundant work.
+class GraphiteImageProvider : public skgpu::graphite::ImageProvider {
+ public:
+  ~GraphiteImageProvider() override = default;
+
+  sk_sp<SkImage> findOrCreate(
+      skgpu::graphite::Recorder* recorder,
+      const SkImage* image,
+      SkImage::RequiredProperties requiredProps) override {
+    return SkImages::TextureFromImage(recorder, image, requiredProps);
+  }
+};
+
+// Creates a Graphite recorder, supplying it with a GraphiteImageProvider.
+std::unique_ptr<skgpu::graphite::Recorder>
+MakeGraphiteRecorderWithImageProvider(skgpu::graphite::Context* context) {
+  skgpu::graphite::RecorderOptions options;
+  options.fImageProvider = sk_make_sp<GraphiteImageProvider>();
+  return context->makeRecorder(options);
 }
+
+}  // anonymous namespace
 
 namespace gpu {
 
@@ -188,9 +223,6 @@ SharedContextState::SharedContextState(
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
         this, "SharedContextState",
         base::SingleThreadTaskRunner::GetCurrentDefault());
-
-    // Create |gr_cache_controller_| only if we have task runner.
-    gr_cache_controller_.emplace(this);
   }
   // Initialize the scratch buffer to some small initial size.
   scratch_deserialization_buffer_.resize(
@@ -284,6 +316,8 @@ bool SharedContextState::InitializeGanesh(
   // in GetCapabilities and ensuring these are also used by the
   // PaintOpBufferSerializer.
   GrContextOptions options = GetDefaultGrContextOptions();
+
+  options.fAllowMSAAOnNewIntel = !gles2::MSAAIsSlow(workarounds);
   options.fPersistentCache = cache;
   options.fShaderErrorHandler = this;
   if (gpu_preferences.force_max_texture_size)
@@ -398,8 +432,17 @@ bool SharedContextState::InitializeGraphite(
     LOG(ERROR) << "Skia Graphite disabled: Graphite Context creation failed.";
     return false;
   }
-  gpu_main_graphite_recorder_ = graphite_context_->makeRecorder();
-  viz_compositor_graphite_recorder_ = graphite_context_->makeRecorder();
+
+  // We need image providers for both the OOP-R (gpu_main) recorder and the
+  // SkiaRenderer (viz thread) recorder, as both need to process CPU-backed
+  // images (for the SkiaRenderer recorder, this occurs in special cases such as
+  // an SVG/CSS filter effect that references an image but that got the effect
+  // promoted to composited).
+  gpu_main_graphite_recorder_ =
+      MakeGraphiteRecorderWithImageProvider(graphite_context_);
+  viz_compositor_graphite_recorder_ =
+      MakeGraphiteRecorderWithImageProvider(graphite_context_);
+
   transfer_cache_ = std::make_unique<ServiceTransferCache>(gpu_preferences);
   return true;
 }
@@ -934,8 +977,7 @@ bool SharedContextState::CheckResetStatus(bool need_gl) {
 }
 
 void SharedContextState::ScheduleGrContextCleanup() {
-  if (gr_cache_controller_)
-    gr_cache_controller_->ScheduleGrContextCleanup();
+  gr_cache_controller_.ScheduleGrContextCleanup();
 }
 
 int32_t SharedContextState::GetMaxTextureSize() const {
@@ -969,6 +1011,7 @@ Microsoft::WRL::ComPtr<ID3D11Device> SharedContextState::GetD3D11Device()
     const {
   switch (gr_context_type_) {
     case GrContextType::kGL:
+    case GrContextType::kVulkan:
       return gl::QueryD3D11DeviceObjectFromANGLE();
     case GrContextType::kGraphiteDawn:
       return dawn_context_provider_->GetD3D11Device();

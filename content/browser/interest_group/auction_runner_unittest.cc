@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
@@ -33,6 +34,7 @@
 #include "build/build_config.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/browser/fenced_frame/fenced_frame_reporter.h"
+#include "content/browser/interest_group/ad_auction_page_data.h"
 #include "content/browser/interest_group/auction_process_manager.h"
 #include "content/browser/interest_group/auction_result.h"
 #include "content/browser/interest_group/auction_worklet_manager.h"
@@ -46,6 +48,7 @@
 #include "content/browser/interest_group/test_interest_group_manager_impl.h"
 #include "content/browser/interest_group/test_interest_group_private_aggregation_manager.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
+#include "content/public/browser/page.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_renderer_host.h"
@@ -62,11 +65,13 @@
 #include "content/services/auction_worklet/worklet_devtools_debug_test_util.h"
 #include "content/services/auction_worklet/worklet_test_util.h"
 #include "content/test/test_content_browser_client.h"
+#include "crypto/sha2.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/system/functions.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -94,6 +99,14 @@ using InterestGroupKey = blink::InterestGroupKey;
 using PostAuctionSignals = InterestGroupAuction::PostAuctionSignals;
 using blink::FencedFrame::ReportingDestination;
 using PrivateAggregationRequests = AuctionRunner::PrivateAggregationRequests;
+
+// Same as the key in ad_auction_service_impl_unittest.cc.
+// Randomly generated using EVP_HPKE_KEY_generate.
+const uint8_t kTestPublicKey[] = {
+    0xa1, 0x5f, 0x40, 0x65, 0x86, 0xfa, 0xc4, 0x7b, 0x99, 0x59, 0x70,
+    0xf1, 0x85, 0xd9, 0xd8, 0x91, 0xc7, 0x4d, 0xcf, 0x1e, 0xb9, 0x1a,
+    0x7d, 0x50, 0xa5, 0x8b, 0x01, 0x68, 0x3e, 0x60, 0x05, 0x2d,
+};
 
 std::string kBidder1Name{"Ad Platform"};
 const std::string kBidder1NameAlt{"Ad Platform Alt"};
@@ -1198,6 +1211,23 @@ void AuthorizeKAnonAdComponent(const blink::InterestGroup::Ad& ad,
   group.component_ads_kanon.back().last_updated = base::Time::Now();
 }
 
+quiche::ObliviousHttpRequest::Context
+CreateBiddingAndAuctionEncryptionContext() {
+  const quiche::ObliviousHttpHeaderKeyConfig config =
+      quiche::ObliviousHttpHeaderKeyConfig::Create(
+          '0', EVP_HPKE_DHKEM_X25519_HKDF_SHA256, EVP_HPKE_HKDF_SHA256,
+          EVP_HPKE_AES_256_GCM)
+          .value();
+  quiche::ObliviousHttpRequest request =
+      quiche::ObliviousHttpRequest::CreateClientObliviousRequest(
+          "{}",
+          std::string(reinterpret_cast<const char*>(kTestPublicKey),
+                      sizeof(kTestPublicKey)),
+          config)
+          .value();
+  return std::move(request).ReleaseContext();
+}
+
 class SameProcessAuctionProcessManager : public AuctionProcessManager {
  public:
   SameProcessAuctionProcessManager() = default;
@@ -1550,6 +1580,11 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
           MaybePromiseDirectFromSellerSignals::FromPromise();
     }
 
+    if (server_response_request_id_) {
+      auction_config.server_response.emplace();
+      auction_config.server_response->request_id = *server_response_request_id_;
+    }
+
     auction_config.non_shared_params.interest_group_buyers = std::move(buyers);
 
     auction_config.non_shared_params.seller_signals = MakeSellerSignals(
@@ -1669,7 +1704,6 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
     }
 
     interest_group_manager_->ClearLoggedData();
-
     source_id_ = ukm::AssignNewSourceId();
 
     task_environment()->FastForwardBy(between_join_run_auction_delay_);
@@ -1682,7 +1716,9 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
         private_aggregation_manager_.GetLogPrivateAggregationRequestsCallback(),
         std::move(auction_config), top_frame_origin_, frame_origin_, source_id_,
         GetClientSecurityState(), dummy_report_shared_url_loader_factory_,
-        IsInterestGroupApiAllowedCallback(),
+        IsInterestGroupApiAllowedCallback(), base::BindLambdaForTesting([&]() {
+          return ad_auction_page_data_.get();
+        }),
         abortable_ad_auction_.BindNewPipeAndPassReceiver(),
         base::BindOnce(&AuctionRunnerTest::OnAuctionComplete,
                        base::Unretained(this)));
@@ -2743,6 +2779,10 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
   uint16_t all_buyers_group_limit_ = std::numeric_limits<std::uint16_t>::max();
   absl::optional<base::flat_map<std::string, double>>
       all_buyers_priority_signals_;
+
+  // This is also tested only with promises at this level.
+  absl::optional<base::Uuid> server_response_request_id_;
+  raw_ptr<AdAuctionPageData> ad_auction_page_data_;
 
   absl::optional<std::vector<absl::uint128>> auction_report_buyer_keys_;
   absl::optional<base::flat_map<
@@ -7865,6 +7905,88 @@ TEST_F(AuctionRunnerTest, PromiseSignalsUpdateNonPromise8) {
   task_environment()->RunUntilIdle();
   EXPECT_EQ("ResolvedDirectFromSellerSignalsPromise updating non-promise",
             TakeBadMessage());
+}
+
+// Server response was not passed in, but promise response called.
+TEST_F(AuctionRunnerTest, PromiseServerResponseUpdateNonPromise) {
+  server_response_request_id_ = absl::nullopt;
+
+  std::vector<StorageInterestGroup> bidders;
+  bidders.emplace_back(MakeInterestGroup(
+      kBidder1, kBidder1Name, kBidder1Url,
+      /*trusted_bidding_signals_url=*/absl::nullopt,
+      /*trusted_bidding_signals_keys=*/{}, GURL("https://ad1.com"),
+      /*ad_component_urls=*/absl::nullopt));
+  bidders.emplace_back(MakeInterestGroup(
+      kBidder2, kBidder2Name, kBidder2Url,
+      /*trusted_bidding_signals_url=*/absl::nullopt,
+      /*trusted_bidding_signals_keys=*/{}, GURL("https://ad2.com"),
+      /*ad_component_urls=*/absl::nullopt));
+  StartAuction(kSellerUrl, std::move(bidders));
+
+  abortable_ad_auction_->ResolvedAuctionAdResponsePromise(
+      blink::mojom::AuctionAdConfigAuctionId::NewMainAuction(0),
+      mojo_base::BigBuffer());
+
+  task_environment()->RunUntilIdle();
+  EXPECT_EQ("ResolvedAuctionAdResponsePromise updating non-promise",
+            TakeBadMessage());
+}
+
+// Server response passed in, but promise response called twice.
+TEST_F(AuctionRunnerTest, PromiseServerResponseResolveTwice) {
+  data_decoder::test::InProcessDataDecoder data_decoder;
+  const base::Uuid request_id = base::Uuid();
+  server_response_request_id_ = request_id;
+
+  const char kResponse[] = {0x02, 0x00, 0x00, 0x00, 0x02, '{', '}'};
+
+  quiche::ObliviousHttpRequest::Context client_context =
+      CreateBiddingAndAuctionEncryptionContext();
+  std::string encrypted_response =
+      quiche::ObliviousHttpResponse::CreateServerObliviousResponse(
+          std::string(kResponse, sizeof(kResponse)), client_context)
+          ->EncapsulateAndSerialize();
+
+  std::string witnessed_hash = crypto::SHA256HashString(encrypted_response);
+  ad_auction_page_data_ = PageUserData<AdAuctionPageData>::GetOrCreateForPage(
+      web_contents()->GetPrimaryPage());
+  ad_auction_page_data_->AddAuctionResultWitnessForOrigin(kSeller,
+                                                          witnessed_hash);
+
+  AdAuctionRequestContext context(kSeller, {}, std::move(client_context));
+  ad_auction_page_data_->RegisterAdAuctionRequestContext(request_id,
+                                                         std::move(context));
+
+  std::vector<StorageInterestGroup> bidders;
+  bidders.emplace_back(MakeInterestGroup(
+      kBidder1, kBidder1Name, kBidder1Url,
+      /*trusted_bidding_signals_url=*/absl::nullopt,
+      /*trusted_bidding_signals_keys=*/{}, GURL("https://ad1.com"),
+      /*ad_component_urls=*/absl::nullopt));
+  bidders.emplace_back(MakeInterestGroup(
+      kBidder2, kBidder2Name, kBidder2Url,
+      /*trusted_bidding_signals_url=*/absl::nullopt,
+      /*trusted_bidding_signals_keys=*/{}, GURL("https://ad2.com"),
+      /*ad_component_urls=*/absl::nullopt));
+  StartAuction(kSellerUrl, std::move(bidders));
+
+  abortable_ad_auction_->ResolvedAuctionAdResponsePromise(
+      blink::mojom::AuctionAdConfigAuctionId::NewMainAuction(0),
+      mojo_base::BigBuffer(
+          base::as_bytes(base::make_span(encrypted_response))));
+
+  abortable_ad_auction_->ResolvedAuctionAdResponsePromise(
+      blink::mojom::AuctionAdConfigAuctionId::NewMainAuction(0),
+      mojo_base::BigBuffer(
+          base::as_bytes(base::make_span(encrypted_response))));
+
+  task_environment()->RunUntilIdle();
+  EXPECT_EQ("ResolvedAuctionAdResponsePromise updating non-promise",
+            TakeBadMessage());
+
+  // Clear this before the page expires to avoid the dangling ptr error.
+  ad_auction_page_data_ = nullptr;
 }
 
 // Trying to update perBuyerCurrencies twice.
@@ -18536,6 +18658,182 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(auction_worklet::mojom::KAnonymityBidMode::kNone,
                       auction_worklet::mojom::KAnonymityBidMode::kEnforce,
                       auction_worklet::mojom::KAnonymityBidMode::kSimulate));
+
+// Server response passed in, but promise response called twice.
+TEST_F(AuctionRunnerTest, ServerResponseLogsErrors) {
+  data_decoder::test::InProcessDataDecoder data_decoder;
+  const base::Uuid bad_request_id = base::Uuid();
+
+  std::string bad_framing_response;
+  // CBOR {isChaff: true} | xxd -r -p | gzip | base64 (no framing)
+  ASSERT_TRUE(base::Base64Decode("H4sIAAAAAAAAAwMAAAAAAAAAAAA=",
+                                 &bad_framing_response));
+  std::string not_zipped_response;
+  // CBOR {isChaff: true} | xxd -r -p | sed 's/^/02<size>/' | xxd -p -c 0|
+  // base64 (no compression)
+  ASSERT_TRUE(
+      base::Base64Decode("AgAAAA6hZ2lzQ2hhZmb1AAAAAA==", &not_zipped_response));
+  std::string not_cbor_response;
+  // "{isChaff: true}" | xxd -p | xxd -p -r | gzip | xxd -p -c 0 | sed
+  // 's/^/02<size>/' | xxd -r -p | base64
+  ASSERT_TRUE(base::Base64Decode(
+      "AgAAACQfiwgAAAAAAAADq84sds5ITEuzUigpKk2t5QIAAAgvJxAAAAA=",
+      &not_cbor_response));
+  std::string missing_fields_response;
+  // CBOR {isChaff: false} | xxd -r -p | gzip | xxd -p -c 0 | sed
+  // 's/^/02<size>/' | xxd -r -p | base64
+  ASSERT_TRUE(
+      base::Base64Decode("AgAAAB4fiwgAAAAAAAADW5ieWeyckZiW9gUATA0P6QoAAAA=",
+                         &missing_fields_response));
+  std::string chaff_response;
+  // CBOR {isChaff: true} | xxd -r -p | gzip | xxd -p -c 0 | sed 's/^/02<size>/'
+  // | xxd -r -p | base64
+  ASSERT_TRUE(base::Base64Decode(
+      "AgAAAB4fiwgAAAAAAAADW5ieWeyckZiW9hUA2j0IngoAAAA=", &chaff_response));
+
+  std::string response_with_error;
+  // CBOR {isChaff: true, error: { message: "Error on server"}} | xxd -r -p |
+  // gzip | xxd -p -c 0 | sed 's/^/02<size>/' | xxd -r -p | base64
+  ASSERT_TRUE(
+      base::Base64Decode("AgAAADsfiwgAAAAAAAADW5SaWlSUX7QwPTe1uDgxPTXfFcRVyM9TK"
+                         "E4tKkstSs8sds5ITEv7CgD8"
+                         "/h5bKQAAAA==",
+                         &response_with_error));
+
+  const struct {
+    std::string test_name;
+    std::string response;
+    bool witnessed;
+    bool use_correct_request_id;
+    GURL seller_decision_logic_url;
+    bool encrypt;
+    std::vector<std::string> errors;
+  } kTestCases[] = {
+      {"Bad framing",
+       bad_framing_response,
+       true,
+       true,
+       kSellerUrl,
+       true,
+       {"runAdAuction(): Could not parse response framing"}},
+      {"not zipped",
+       not_zipped_response,
+       true,
+       true,
+       kSellerUrl,
+       true,
+       {"runAdAuction(): Could not decompress server response"}},
+      {"not CBOR",
+       not_cbor_response,
+       true,
+       true,
+       kSellerUrl,
+       true,
+       {"runAdAuction(): Could not parse server response"}},
+      {"missing fields",
+       missing_fields_response,
+       true,
+       true,
+       kSellerUrl,
+       true,
+       {"runAdAuction(): Could not parse server response"}},
+      {"not witnessed",
+       chaff_response,
+       false,
+       true,
+       kSellerUrl,
+       true,
+       {"runAdAuction(): Server response was not witnessed from " +
+        kSeller.Serialize()}},
+      {"wrong request id",
+       chaff_response,
+       true,
+       false,
+       kSellerUrl,
+       true,
+       {"runAdAuction(): No corresponding request with ID: " +
+        bad_request_id.AsLowercaseString()}},
+      {"wrong seller",
+       chaff_response,
+       true,
+       true,
+       kBidder1Url,  // Not the seller
+       true,
+       {"runAdAuction(): Seller in response doesn't match request"}},
+      {"not encrypted",
+       chaff_response,
+       true,
+       true,
+       kSellerUrl,
+       false,
+       {"runAdAuction(): Could not decrypt server response"}},
+      {"error on server",
+       response_with_error,
+       true,
+       true,
+       kSellerUrl,
+       true,
+       {"runAdAuction(): Error on server"}},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(test_case.test_name);
+
+    const base::Uuid request_id = base::Uuid::GenerateRandomV4();
+    server_response_request_id_ =
+        (test_case.use_correct_request_id) ? request_id : bad_request_id;
+
+    quiche::ObliviousHttpRequest::Context client_context =
+        CreateBiddingAndAuctionEncryptionContext();
+    std::string encrypted_response;
+    if (test_case.encrypt) {
+      encrypted_response =
+          quiche::ObliviousHttpResponse::CreateServerObliviousResponse(
+              test_case.response, client_context)
+              ->EncapsulateAndSerialize();
+    } else {
+      encrypted_response = test_case.response;
+    }
+
+    ad_auction_page_data_ = PageUserData<AdAuctionPageData>::GetOrCreateForPage(
+        web_contents()->GetPrimaryPage());
+
+    if (test_case.witnessed) {
+      std::string witnessed_hash = crypto::SHA256HashString(encrypted_response);
+      ad_auction_page_data_->AddAuctionResultWitnessForOrigin(
+          url::Origin::Create(test_case.seller_decision_logic_url),
+          witnessed_hash);
+    }
+
+    AdAuctionRequestContext context(kSeller, {}, std::move(client_context));
+    ad_auction_page_data_->RegisterAdAuctionRequestContext(request_id,
+                                                           std::move(context));
+
+    std::vector<StorageInterestGroup> bidders;
+    bidders.emplace_back(MakeInterestGroup(
+        kBidder1, kBidder1Name, kBidder1Url,
+        /*trusted_bidding_signals_url=*/absl::nullopt,
+        /*trusted_bidding_signals_keys=*/{}, GURL("https://ad1.com"),
+        /*ad_component_urls=*/absl::nullopt));
+    bidders.emplace_back(MakeInterestGroup(
+        kBidder2, kBidder2Name, kBidder2Url,
+        /*trusted_bidding_signals_url=*/absl::nullopt,
+        /*trusted_bidding_signals_keys=*/{}, GURL("https://ad2.com"),
+        /*ad_component_urls=*/absl::nullopt));
+    StartAuction(test_case.seller_decision_logic_url, std::move(bidders));
+
+    abortable_ad_auction_->ResolvedAuctionAdResponsePromise(
+        blink::mojom::AuctionAdConfigAuctionId::NewMainAuction(0),
+        mojo_base::BigBuffer(
+            base::as_bytes(base::make_span(encrypted_response))));
+
+    task_environment()->RunUntilIdle();
+    EXPECT_THAT(result_.errors, testing::ElementsAreArray(test_case.errors));
+  }
+
+  // Clear this before the page expires to avoid the dangling ptr error.
+  ad_auction_page_data_ = nullptr;
+}
 
 }  // namespace
 }  // namespace content

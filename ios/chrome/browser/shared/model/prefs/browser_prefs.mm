@@ -34,6 +34,7 @@
 #import "components/payments/core/payment_prefs.h"
 #import "components/policy/core/browser/browser_policy_connector.h"
 #import "components/policy/core/browser/url_blocklist_manager.h"
+#import "components/policy/core/common/local_test_policy_provider.h"
 #import "components/policy/core/common/policy_pref_names.h"
 #import "components/policy/core/common/policy_statistics_collector.h"
 #import "components/pref_registry/pref_registry_syncable.h"
@@ -47,11 +48,13 @@
 #import "components/signin/public/base/signin_pref_names.h"
 #import "components/signin/public/identity_manager/identity_manager.h"
 #import "components/strings/grit/components_locale_settings.h"
+#import "components/supervised_user/core/browser/child_account_service.h"
 #import "components/supervised_user/core/browser/supervised_user_metrics_service.h"
 #import "components/supervised_user/core/browser/supervised_user_service.h"
 #import "components/supervised_user/core/common/buildflags.h"
-#import "components/sync/base/sync_prefs.h"
+#import "components/supervised_user/core/common/pref_names.h"
 #import "components/sync/service/glue/sync_transport_data_prefs.h"
+#import "components/sync/service/sync_prefs.h"
 #import "components/sync_device_info/device_info_prefs.h"
 #import "components/sync_sessions/session_sync_prefs.h"
 #import "components/translate/core/browser/translate_pref_names.h"
@@ -132,6 +135,9 @@ const char* kTrialGroupMICeAndDefaultBrowserVersionPrefName =
 
 // Deprecated 04/2023.
 const char kTrialPrefName[] = "trending_queries.trial_version";
+
+// Deprecated 07/2023.
+const char kUnifiedConsentMigrationState[] = "unified_consent.migration_state";
 }  // namespace
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
@@ -197,6 +203,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kOverflowMenuNewDestinations,
                              PrefRegistry::LOSSY_PREF);
   registry->RegisterListPref(prefs::kOverflowMenuDestinationsOrder);
+  registry->RegisterDictionaryPref(prefs::kOverflowMenuActionsOrder);
 
   // Preferences related to Enterprise policies.
   registry->RegisterListPref(prefs::kRestrictAccountsToPatterns);
@@ -251,15 +258,6 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 
   registry->RegisterIntegerPref(prefs::kIosSyncSegmentsNewTabPageDisplayCount,
                                 0);
-
-  // Pref used to store the latest Most Visited Sites to detect changes
-  // to the top Most Visited Sites.
-  registry->RegisterListPref(prefs::kIosLatestMostVisitedSites,
-                             PrefRegistry::LOSSY_PREF);
-  // Pref used to store the number of impressions of the Most Visited Sites
-  // since a freshness signal of the Most Visited Sites.
-  registry->RegisterIntegerPref(
-      prefs::kIosMagicStackSegmentationMVTImpressionsSinceFreshness, -1);
 }
 
 void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -272,6 +270,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   HostContentSettingsMap::RegisterProfilePrefs(registry);
   invalidation::InvalidatorRegistrarWithMemory::RegisterProfilePrefs(registry);
   invalidation::PerUserTopicSubscriptionManager::RegisterProfilePrefs(registry);
+  policy::LocalTestPolicyProvider::RegisterProfilePrefs(registry);
   language::LanguagePrefs::RegisterProfilePrefs(registry);
   metrics::RegisterDemographicsProfilePrefs(registry);
   ntp_tiles::MostVisitedSites::RegisterProfilePrefs(registry);
@@ -289,6 +288,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   segmentation_platform::DeviceSwitcherResultDispatcher::RegisterProfilePrefs(
       registry);
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  supervised_user::ChildAccountService::RegisterProfilePrefs(registry);
   supervised_user::SupervisedUserService::RegisterProfilePrefs(registry);
   supervised_user::SupervisedUserMetricsService::RegisterProfilePrefs(registry);
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -350,9 +350,9 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterInt64Pref(prefs::kNtpShownBookmarksFolder, 3);
 
   // The Following feed sort type comes from
-  // ios/chrome/browser/discover_feed/feed_constants.h Defaults to 1, which is
-  // grouped by publisher.
-  registry->RegisterIntegerPref(prefs::kNTPFollowingFeedSortType, 1);
+  // ios/chrome/browser/discover_feed/feed_constants.h Defaults to 2, which is
+  // sort by latest.
+  registry->RegisterIntegerPref(prefs::kNTPFollowingFeedSortType, 2);
 
   // Register pref to determine if the user changed the Following sort type.
   registry->RegisterBooleanPref(prefs::kDefaultFollowingFeedSortTypeChanged,
@@ -429,6 +429,9 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   ntp_snippets::prefs::RegisterProfilePrefsForMigrationApril2023(registry);
 
   registry->RegisterBooleanPref(kDeprecatedReadingListHasUnseenEntries, false);
+
+  // Deprecated 07/2023.
+  registry->RegisterIntegerPref(kUnifiedConsentMigrationState, 0);
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -503,4 +506,8 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
 
   // Added 04/2023.
   ntp_snippets::prefs::MigrateObsoleteProfilePrefsApril2023(prefs);
+
+  // Added 07/2023.
+  prefs->ClearPref(kUnifiedConsentMigrationState);
+  syncer::SyncPrefs::MigrateAutofillWalletImportEnabledPref(prefs);
 }

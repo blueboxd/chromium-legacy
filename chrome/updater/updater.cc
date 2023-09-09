@@ -23,6 +23,7 @@
 #include "chrome/updater/app/app.h"
 #include "chrome/updater/app/app_install.h"
 #include "chrome/updater/app/app_recover.h"
+#include "chrome/updater/app/app_server.h"
 #include "chrome/updater/app/app_uninstall.h"
 #include "chrome/updater/app/app_uninstall_self.h"
 #include "chrome/updater/app/app_update.h"
@@ -46,11 +47,8 @@
 #if BUILDFLAG(IS_WIN)
 #include "base/win/process_startup_helper.h"
 #include "base/win/scoped_com_initializer.h"
-#include "chrome/updater/app/server/win/server.h"
 #include "chrome/updater/app/server/win/service_main.h"
 #include "chrome/updater/util/win_util.h"
-#elif BUILDFLAG(IS_POSIX)
-#include "chrome/updater/app/server/posix/app_server_posix.h"
 #endif
 
 // Instructions For Windows.
@@ -147,12 +145,7 @@ int HandleUpdaterCommands(UpdaterScope updater_scope,
 #endif
 
   if (command_line->HasSwitch(kServerSwitch)) {
-#if BUILDFLAG(IS_WIN)
-    // By design, Windows uses a leaky singleton server for its RPC server.
-    return AppServerSingletonInstance()->Run();
-#else
     return MakeAppServer()->Run();
-#endif
   }
 
   if (command_line->HasSwitch(kUpdateSwitch))
@@ -267,8 +260,10 @@ int UpdaterMain(int argc, const char* const* argv) {
   base::AtExitManager exit_manager;
 
   base::CommandLine::Init(argc, argv);
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+#if BUILDFLAG(IS_WIN)
+  *command_line = GetCommandLineLegacyCompatible();
+#endif
 
   const UpdaterScope updater_scope = GetUpdaterScope();
   InitLogging(updater_scope);

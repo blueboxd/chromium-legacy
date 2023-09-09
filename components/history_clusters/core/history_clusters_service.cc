@@ -9,7 +9,6 @@
 #include <string>
 #include <utility>
 
-#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/i18n/case_conversion.h"
 #include "base/json/values_util.h"
@@ -26,7 +25,6 @@
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history_clusters/core/config.h"
-#include "components/history_clusters/core/features.h"
 #include "components/history_clusters/core/file_clustering_backend.h"
 #include "components/history_clusters/core/history_clusters_debug_jsons.h"
 #include "components/history_clusters/core/history_clusters_prefs.h"
@@ -38,7 +36,7 @@
 #include "components/history_clusters/core/history_clusters_util.h"
 #include "components/history_clusters/core/on_device_clustering_backend.h"
 #include "components/optimization_guide/core/entity_metadata_provider.h"
-#include "components/optimization_guide/core/new_optimization_guide_decider.h"
+#include "components/optimization_guide/core/optimization_guide_decider.h"
 #include "components/prefs/pref_service.h"
 #include "components/site_engagement/core/site_engagement_score_provider.h"
 
@@ -120,7 +118,7 @@ HistoryClustersService::HistoryClustersService(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     site_engagement::SiteEngagementScoreProvider* engagement_score_provider,
     TemplateURLService* template_url_service,
-    optimization_guide::NewOptimizationGuideDecider* optimization_guide_decider,
+    optimization_guide::OptimizationGuideDecider* optimization_guide_decider,
     PrefService* prefs)
     : persist_caches_to_prefs_(GetConfig().persist_caches_to_prefs),
       is_journeys_feature_flag_enabled_(
@@ -171,14 +169,8 @@ base::WeakPtr<HistoryClustersService> HistoryClustersService::GetWeakPtr() {
 void HistoryClustersService::Shutdown() {}
 
 bool HistoryClustersService::IsJourneysEnabledAndVisible() const {
-  const bool rename_journeys = base::FeatureList::IsEnabled(kRenameJourneys);
-  const bool journeys_is_managed =
-      pref_service_->IsManagedPreference(prefs::kVisible);
-  // When history_clusters::kRenameJourneys is enabled, history clusters are
-  // always visible unless the visibility prefs is set to false by policy.
   return is_journeys_feature_flag_enabled_ &&
-         (pref_service_->GetBoolean(prefs::kVisible) ||
-          (rename_journeys && !journeys_is_managed));
+         pref_service_->GetBoolean(prefs::kVisible);
 }
 
 // static

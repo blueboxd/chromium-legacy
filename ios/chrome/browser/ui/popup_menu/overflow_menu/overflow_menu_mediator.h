@@ -20,6 +20,9 @@ class Tracker;
 namespace web {
 class WebState;
 }
+namespace supervised_user {
+class SupervisedUserService;
+}
 namespace syncer {
 class SyncService;
 }
@@ -31,6 +34,8 @@ class SyncService;
 class BrowserPolicyConnectorIOS;
 @protocol FindInPageCommands;
 class FollowBrowserAgent;
+@protocol OverflowMenuCustomizationCommands;
+@class OverflowMenuOrderer;
 class OverlayPresenter;
 @protocol PageInfoCommands;
 @protocol PopupMenuCommands;
@@ -58,6 +63,7 @@ class WebStateList;
                               ApplicationCommands,
                               BrowserCoordinatorCommands,
                               FindInPageCommands,
+                              OverflowMenuCustomizationCommands,
                               PriceNotificationsCommands,
                               TextZoomCommands>
     dispatcher;
@@ -71,6 +77,9 @@ class WebStateList;
 
 // If the current session is off the record or not.
 @property(nonatomic, assign) bool isIncognito;
+
+// The Orderer to control the order of the overflow menu.
+@property(nonatomic, weak) OverflowMenuOrderer* menuOrderer;
 
 // BaseViewController for presenting some UI.
 @property(nonatomic, weak) UIViewController* baseViewController;
@@ -108,6 +117,10 @@ class WebStateList;
 
 // The Sync Service that provides the status of Sync.
 @property(nonatomic, assign) syncer::SyncService* syncService;
+
+// Service that describes the supervision state of the account.
+@property(nonatomic, assign)
+    supervised_user::SupervisedUserService* supervisedUserService;
 
 // The Promos Manager to alert if the user uses What's New.
 @property(nonatomic, assign) PromosManager* promosManager;

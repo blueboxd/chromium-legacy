@@ -36,7 +36,6 @@
 #include "components/url_formatter/url_formatter.h"
 #include "components/viz/common/features.h"
 #include "content/child/child_process.h"
-#include "content/common/android/sync_compositor_statics.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/features.h"
 #include "content/public/common/content_features.h"
@@ -120,6 +119,10 @@
 
 #if BUILDFLAG(IS_POSIX)
 #include "base/file_descriptor_posix.h"
+#endif
+
+#if BUILDFLAG(IS_ANDROID)
+#include "content/common/android/sync_compositor_statics.h"
 #endif
 
 using blink::Platform;
@@ -853,7 +856,7 @@ void RendererBlinkPlatformImpl::CreateServiceWorkerSubresourceLoaderFactory(
           std::move(service_worker_container_host),
           /*remote_controller=*/mojo::NullRemote(), client_id.Utf8(),
           blink::mojom::ServiceWorkerFetchHandlerBypassOption::kDefault,
-          /*router_rules=*/absl::nullopt),
+          /*router_rules=*/absl::nullopt, blink::EmbeddedWorkerStatus::STOPPED),
       network::SharedURLLoaderFactory::Create(std::move(fallback_factory)),
       std::move(receiver), std::move(task_runner));
 }

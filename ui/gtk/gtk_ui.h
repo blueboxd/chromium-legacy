@@ -25,6 +25,8 @@
 #endif
 
 typedef struct _GParamSpec GParamSpec;
+typedef struct _GdkDisplay GdkDisplay;
+typedef struct _GdkMonitor GdkMonitor;
 typedef struct _GtkParamSpec GtkParamSpec;
 typedef struct _GtkSettings GtkSettings;
 typedef struct _GtkStyle GtkStyle;
@@ -63,7 +65,6 @@ class GtkUi : public ui::LinuxUiAndTheme {
   gfx::Image GetIconForContentType(const std::string& content_type,
                                    int size,
                                    float scale) const override;
-  float GetDeviceScaleFactor() const override;
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
 #if BUILDFLAG(ENABLE_PRINTING)
   printing::PrintDialogLinuxInterface* CreatePrintDialog(
@@ -131,6 +132,8 @@ class GtkUi : public ui::LinuxUiAndTheme {
                      void*,
                      GParamSpec*);
 
+  CHROMEG_CALLBACK_1(GtkUi, void, OnMonitorAdded, GdkDisplay*, GdkMonitor*);
+
   // Loads all GTK-provided settings.
   void LoadGtkValues();
 
@@ -141,11 +144,14 @@ class GtkUi : public ui::LinuxUiAndTheme {
   // Updates |default_font_*|.
   void UpdateDefaultFont();
 
+  // Listen for scale factor changes on `monitor`.
+  void TrackMonitor(GdkMonitor* monitor);
+
   // Updates the device scale factor so that the default font size can be
   // recalculated.
   void UpdateDeviceScaleFactor();
 
-  float GetRawDeviceScaleFactor();
+  ui::DisplayConfig GetDisplayConfig() const;
 
   std::unique_ptr<GtkUiPlatform> platform_;
 
@@ -187,8 +193,6 @@ class GtkUi : public ui::LinuxUiAndTheme {
   // The action to take when middle, double, or right clicking the titlebar.
   base::flat_map<WindowFrameActionSource, WindowFrameAction>
       window_frame_actions_;
-
-  float device_scale_factor_ = 1.0f;
 
   // Paints a native window frame.  Typically only one of these will be
   // non-null.  The exception is when the user starts or stops their compositor

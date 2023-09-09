@@ -137,7 +137,8 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // Returns the sampled color of the given user's wallpaper.
   absl::optional<SkColor> GetCachedWallpaperColorForUser(
-      const AccountId& account_id) const;
+      const AccountId& account_id,
+      bool should_use_k_means) const;
 
   // Returns the set of calculated colors. If the colors have not yet been
   // calculated yet, returns an empty object.
@@ -411,7 +412,7 @@ class ASH_EXPORT WallpaperControllerImpl
   FRIEND_TEST_ALL_PREFIXES(WallpaperControllerTest, BasicReparenting);
   FRIEND_TEST_ALL_PREFIXES(WallpaperControllerTest,
                            WallpaperMovementDuringUnlock);
-  friend class WallpaperControllerTest;
+  friend class WallpaperControllerTestBase;
   friend class WallpaperControllerTestApi;
   friend class KeyboardBacklightColorControllerTest;
 
@@ -621,7 +622,7 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // Used as the callback of wallpaper decoding. (Wallpapers of type
   // `WallpaperType::kOnline`, `WallpaperType::kDefault`,
-  // `WallpaperType::kCustom`, and `Wallpapertype::kDevice` should use their
+  // `WallpaperType::kCustomized`, and `Wallpapertype::kDevice` should use their
   // corresponding `*Decoded`, and all other types should use this.) Shows the
   // wallpaper immediately if `show_wallpaper` is true. Otherwise, only updates
   // the cache.
@@ -754,8 +755,6 @@ class ASH_EXPORT WallpaperControllerImpl
       const WallpaperInfo& wallpaper_info,
       base::Time modification_time);
 
-  PrefService* GetUserPrefServiceSyncable(const AccountId& account_id) const;
-
   // This will not update a new wallpaper if the synced |info.collection_id| is
   // the same as the user's current collection_id.
   void HandleDailyWallpaperInfoSyncedIn(const AccountId& account_id,
@@ -772,6 +771,9 @@ class ASH_EXPORT WallpaperControllerImpl
 
   void CleanUpBeforeSettingUserWallpaperInfo(const AccountId& account_id,
                                              const WallpaperInfo& info);
+
+  // Returns whether session state is oobe or the oobe ui dialog is visible.
+  bool IsOobeState() const;
 
   bool is_session_active_ = false;
 
@@ -836,8 +838,6 @@ class ASH_EXPORT WallpaperControllerImpl
   base::OneShotTimer timer_;
 
   base::TimeDelta wallpaper_reload_delay_;
-
-  bool is_wallpaper_blurred_for_lock_state_ = false;
 
   // The wallpaper animation duration. An empty value disables the animation.
   base::TimeDelta animation_duration_;

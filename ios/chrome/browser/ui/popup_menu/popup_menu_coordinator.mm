@@ -39,6 +39,7 @@
 #import "ios/chrome/browser/shared/public/commands/find_in_page_commands.h"
 #import "ios/chrome/browser/shared/public/commands/lens_commands.h"
 #import "ios/chrome/browser/shared/public/commands/omnibox_commands.h"
+#import "ios/chrome/browser/shared/public/commands/overflow_menu_customization_commands.h"
 #import "ios/chrome/browser/shared/public/commands/page_info_commands.h"
 #import "ios/chrome/browser/shared/public/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/shared/public/commands/price_notifications_commands.h"
@@ -47,13 +48,16 @@
 #import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
+#import "ios/chrome/browser/supervised_user/supervised_user_service_factory.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_mediator.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_controller_presenter.h"
+#import "ios/chrome/browser/ui/popup_menu/overflow_menu/action_customization_coordinator.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_mediator.h"
+#import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_orderer.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_swift.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_action_handler.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
@@ -92,7 +96,8 @@ enum class IOSOverflowMenuActionType {
 
 }  // namespace
 
-@interface PopupMenuCoordinator () <PopupMenuCommands,
+@interface PopupMenuCoordinator () <OverflowMenuCustomizationCommands,
+                                    PopupMenuCommands,
                                     PopupMenuMetricsHandler,
                                     PopupMenuPresenterDelegate,
                                     UIPopoverPresentationControllerDelegate,
@@ -127,7 +132,11 @@ enum class IOSOverflowMenuActionType {
 
 @end
 
-@implementation PopupMenuCoordinator
+@implementation PopupMenuCoordinator {
+  OverflowMenuOrderer* _overflowMenuOrderer;
+
+  ActionCustomizationCoordinator* _actionCustomizationCoordinator;
+}
 
 @synthesize mediator = _mediator;
 @synthesize presenter = _presenter;
@@ -148,6 +157,9 @@ enum class IOSOverflowMenuActionType {
   [self.browser->GetCommandDispatcher()
       startDispatchingToTarget:self
                    forProtocol:@protocol(PopupMenuCommands)];
+  [self.browser->GetCommandDispatcher()
+      startDispatchingToTarget:self
+                   forProtocol:@protocol(OverflowMenuCustomizationCommands)];
   NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
   [defaultCenter addObserver:self
                     selector:@selector(applicationDidEnterBackground:)
@@ -248,8 +260,11 @@ enum class IOSOverflowMenuActionType {
       UIContentSizeCategory contentSizeCategory =
           self.baseViewController.traitCollection.preferredContentSizeCategory;
 
-      self.overflowMenuMediator.isIncognito =
-          self.browser->GetBrowserState()->IsOffTheRecord();
+      BOOL isIncognito = self.browser->GetBrowserState()->IsOffTheRecord();
+      self.overflowMenuMediator.isIncognito = isIncognito;
+      _overflowMenuOrderer =
+          [[OverflowMenuOrderer alloc] initWithIsIncognito:isIncognito];
+      self.overflowMenuMediator.menuOrderer = _overflowMenuOrderer;
       self.overflowMenuMediator.visibleDestinationsCount =
           [OverflowMenuUIConfiguration
               numDestinationsVisibleWithoutHorizontalScrollingForScreenWidth:
@@ -259,6 +274,7 @@ enum class IOSOverflowMenuActionType {
       self.overflowMenuMediator.dispatcher =
           static_cast<id<ActivityServiceCommands, ApplicationCommands,
                          BrowserCoordinatorCommands, FindInPageCommands,
+                         OverflowMenuCustomizationCommands,
                          PriceNotificationsCommands, TextZoomCommands>>(
               self.browser->GetCommandDispatcher());
       self.overflowMenuMediator.bookmarksCommandsHandler = HandlerForProtocol(
@@ -290,6 +306,9 @@ enum class IOSOverflowMenuActionType {
           GetApplicationContext()->GetBrowserPolicyConnector();
       self.overflowMenuMediator.syncService =
           SyncServiceFactory::GetForBrowserState(
+              self.browser->GetBrowserState());
+      self.overflowMenuMediator.supervisedUserService =
+          SupervisedUserServiceFactory::GetForBrowserState(
               self.browser->GetBrowserState());
       self.overflowMenuMediator.promosManager =
           PromosManagerFactory::GetForBrowserState(
@@ -543,6 +562,21 @@ enum class IOSOverflowMenuActionType {
   id<SnackbarCommands> snackbarCommandsHandler = HandlerForProtocol(
       self.browser->GetCommandDispatcher(), SnackbarCommands);
   [snackbarCommandsHandler showSnackbarMessage:message];
+}
+
+#pragma mark - OverflowMenuCustomizationCommands
+
+- (void)showActionCustomization {
+  _actionCustomizationCoordinator = [[ActionCustomizationCoordinator alloc]
+      initWithBaseViewController:self.baseViewController
+                         browser:self.browser];
+  _actionCustomizationCoordinator.menuOrderer = _overflowMenuOrderer;
+  [_actionCustomizationCoordinator start];
+}
+
+- (void)hideActionCustomization {
+  [_actionCustomizationCoordinator stop];
+  _actionCustomizationCoordinator = nil;
 }
 
 #pragma mark - ContainedPresenterDelegate

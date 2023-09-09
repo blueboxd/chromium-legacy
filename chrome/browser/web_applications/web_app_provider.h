@@ -9,10 +9,11 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/one_shot_event.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
-#include "chrome/browser/web_applications/isolated_web_apps/install_isolated_web_app_from_command_line.h"
+#include "chrome/browser/web_applications/file_utils_wrapper.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -34,6 +35,11 @@ class PrefRegistrySyncable;
 namespace web_app {
 
 class AbstractWebAppDatabaseFactory;
+class ExtensionsManager;
+class IsolatedWebAppCommandLineInstallManager;
+#if (BUILDFLAG(IS_CHROMEOS))
+class IsolatedWebAppUpdateManager;
+#endif
 class ManifestUpdateManager;
 class OsIntegrationManager;
 class PreinstalledWebAppManager;
@@ -77,10 +83,9 @@ class WebAppProvider : public KeyedService {
   // Deprecated: Use GetForWebApps instead.
   static WebAppProvider* GetDeprecated(Profile* profile);
 
-  // On Chrome OS: if Lacros Web App (WebAppsCrosapi) is enabled, returns
-  // WebAppProvider in Lacros and nullptr in Ash. Otherwise does the reverse
-  // (nullptr in Lacros, WebAppProvider in Ash). On other platforms, always
-  // returns a WebAppProvider.
+  // On Chrome OS: In Ash, returns nullptr if Lacros Web App (WebAppsCrosapi) is
+  // enabled and it is not the Shimless RMA app profile. On other platforms,
+  // always returns a WebAppProvider.
   static WebAppProvider* GetForWebApps(Profile* profile);
 
   // Returns the WebAppProvider for the current process. In particular:
@@ -126,6 +131,8 @@ class WebAppProvider : public KeyedService {
   // chrome/browser/web_applications/locks/ for more info).
   WebAppRegistrar& registrar_unsafe();
   const WebAppRegistrar& registrar_unsafe() const;
+  // Must be exclusively accessed by WebAppSyncBridge.
+  WebAppRegistrarMutable& registrar_mutable(base::PassKey<WebAppSyncBridge>);
   // Unsafe access to the WebAppSyncBridge. Reading or data from here should be
   // considered an 'uncommitted read', and writing data is unsafe and could
   // interfere with other operations. For safe access use locks to ensure no
@@ -147,10 +154,21 @@ class WebAppProvider : public KeyedService {
   // Clients can use `IsolatedWebAppCommandLineInstallManager` to request the
   // installation of IWAs based on command line switches.
   IsolatedWebAppCommandLineInstallManager& iwa_command_line_install_manager();
+#if (BUILDFLAG(IS_CHROMEOS))
+  // Keeps Isolated Web Apps up to date by regularly checking for updates,
+  // downloading them, and applying them.
+  // TODO(crbug.com/1458725): We currently only support automatic updates on
+  // ChromeOS.
+  IsolatedWebAppUpdateManager& iwa_update_manager();
+#endif
 
   WebAppUiManager& ui_manager();
 
   WebAppAudioFocusIdMap& audio_focus_id_map();
+
+  // Interface for file access, allowing mocking for tests. `scoped_refptr` for
+  // thread safety as this is used on other task runners.
+  scoped_refptr<FileUtilsWrapper> file_utils();
 
   // Implements fetching of app icons.
   WebAppIconManager& icon_manager();
@@ -164,6 +182,12 @@ class WebAppProvider : public KeyedService {
   WebAppOriginAssociationManager& origin_association_manager();
 
   WebContentsManager& web_contents_manager();
+
+  PreinstalledWebAppManager& preinstalled_web_app_manager();
+
+  ExtensionsManager& extensions_manager();
+
+  AbstractWebAppDatabaseFactory& database_factory();
 
   // KeyedService:
   void Shutdown() override;
@@ -186,10 +210,6 @@ class WebAppProvider : public KeyedService {
   // Returns whether the app registry is ready.
   bool is_registry_ready() const { return is_registry_ready_; }
 
-  PreinstalledWebAppManager& preinstalled_web_app_manager() {
-    return *preinstalled_web_app_manager_;
-  }
-
  protected:
   virtual void StartImpl();
 
@@ -209,8 +229,10 @@ class WebAppProvider : public KeyedService {
   // after 02-2022.
   void DoMigrateProfilePrefs(Profile* profile);
 
+  void MaybeScheduleGarbageCollection();
+
   std::unique_ptr<AbstractWebAppDatabaseFactory> database_factory_;
-  std::unique_ptr<WebAppRegistrar> registrar_;
+  std::unique_ptr<WebAppRegistrarMutable> registrar_;
   std::unique_ptr<WebAppSyncBridge> sync_bridge_;
   std::unique_ptr<PreinstalledWebAppManager> preinstalled_web_app_manager_;
   std::unique_ptr<WebAppIconManager> icon_manager_;
@@ -224,6 +246,7 @@ class WebAppProvider : public KeyedService {
   std::unique_ptr<IsolatedWebAppCommandLineInstallManager>
       iwa_command_line_install_manager_;
 #if (BUILDFLAG(IS_CHROMEOS))
+  std::unique_ptr<IsolatedWebAppUpdateManager> iwa_update_manager_;
   std::unique_ptr<WebAppRunOnOsLoginManager> web_app_run_on_os_login_manager_;
 #endif  // BUILDFLAG(IS_CHROMEOS)
   std::unique_ptr<WebAppUiManager> ui_manager_;
@@ -232,6 +255,8 @@ class WebAppProvider : public KeyedService {
   std::unique_ptr<WebAppCommandScheduler> command_scheduler_;
   std::unique_ptr<WebAppOriginAssociationManager> origin_association_manager_;
   std::unique_ptr<WebContentsManager> web_contents_manager_;
+  std::unique_ptr<ExtensionsManager> extensions_manager_;
+  scoped_refptr<FileUtilsWrapper> file_utils_;
 
   base::OneShotEvent on_registry_ready_;
   base::OneShotEvent on_external_managers_synchronized_;

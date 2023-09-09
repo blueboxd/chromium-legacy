@@ -30,7 +30,6 @@ import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
@@ -102,7 +101,7 @@ public class SaveUpdateAddressProfilePromptRenderTest extends BlankUiTestActivit
         MockitoAnnotations.initMocks(this);
         runOnUiThreadBlocking(() -> {
             PersonalDataManager.setInstanceForTesting(mPersonalDataManager);
-            SyncServiceFactory.overrideForTests(mSyncService);
+            SyncServiceFactory.setInstanceForTesting(mSyncService);
             IdentityServicesProvider.setInstanceForTests(mIdentityServicesProvider);
             when(mIdentityServicesProvider.getIdentityManager(any())).thenReturn(mIdentityManager);
         });
@@ -120,7 +119,6 @@ public class SaveUpdateAddressProfilePromptRenderTest extends BlankUiTestActivit
     @Override
     public void tearDownTest() throws Exception {
         runOnUiThreadBlocking(mPrompt::dismiss);
-        PersonalDataManager.setInstanceForTesting(null);
         super.tearDownTest();
     }
 

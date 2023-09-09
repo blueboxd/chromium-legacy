@@ -38,8 +38,8 @@ SystemPermission CheckSystemScreenCapturePermission();
 // Note: these functions should really never be called for pre-10.14 since one
 // would normally check the permission first, and only call this if it's not
 // determined.
-void RequestSystemAudioCapturePermisson(base::OnceClosure callback);
-void RequestSystemVideoCapturePermisson(base::OnceClosure callback);
+void RequestSystemAudioCapturePermission(base::OnceClosure callback);
+void RequestSystemVideoCapturePermission(base::OnceClosure callback);
 
 // Sets the wrapper object for OS calls. For test mocking purposes.
 void SetMediaAuthorizationWrapperForTesting(MediaAuthorizationWrapper* wrapper);

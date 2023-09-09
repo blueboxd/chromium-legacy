@@ -42,7 +42,6 @@ aom_av1_common_intrin_sse2 = [
   "//third_party/libaom/source/libaom/av1/common/x86/convolve_2d_sse2.c",
   "//third_party/libaom/source/libaom/av1/common/x86/convolve_sse2.c",
   "//third_party/libaom/source/libaom/av1/common/x86/jnt_convolve_sse2.c",
-  "//third_party/libaom/source/libaom/av1/common/x86/warp_plane_sse2.c",
   "//third_party/libaom/source/libaom/av1/common/x86/wiener_convolve_sse2.c",
 ]
 
@@ -192,13 +191,14 @@ aom_av1_encoder_intrin_avx2 = [
   "//third_party/libaom/source/libaom/av1/encoder/x86/rdopt_avx2.c",
   "//third_party/libaom/source/libaom/av1/encoder/x86/av1_k_means_avx2.c",
   "//third_party/libaom/source/libaom/av1/encoder/x86/temporal_filter_avx2.c",
+  "//third_party/libaom/source/libaom/av1/encoder/x86/ml_avx2.c",
 ]
 
 aom_av1_encoder_intrin_neon = [
   "//third_party/libaom/source/libaom/av1/encoder/arm/neon/quantize_neon.c",
   "//third_party/libaom/source/libaom/av1/encoder/arm/neon/av1_highbd_quantize_neon.c",
   "//third_party/libaom/source/libaom/av1/encoder/arm/neon/ml_neon.c",
-  "//third_party/libaom/source/libaom/av1/encoder/arm/neon/picksrt_neon.c",
+  "//third_party/libaom/source/libaom/av1/encoder/arm/neon/pickrst_neon.c",
   "//third_party/libaom/source/libaom/av1/encoder/arm/neon/rdopt_neon.c",
   "//third_party/libaom/source/libaom/av1/encoder/arm/neon/av1_error_neon.c",
   "//third_party/libaom/source/libaom/av1/encoder/arm/neon/encodetxb_neon.c",
@@ -225,8 +225,10 @@ aom_av1_encoder_intrin_sse2 = [
   "//third_party/libaom/source/libaom/av1/encoder/x86/av1_temporal_denoiser_sse2.c",
 ]
 
-aom_av1_encoder_intrin_sse3 =
-    [ "//third_party/libaom/source/libaom/av1/encoder/x86/ml_sse3.c" ]
+aom_av1_encoder_intrin_sse3 = [
+  "//third_party/libaom/source/libaom/av1/encoder/x86/ml_sse3.c",
+  "//third_party/libaom/source/libaom/av1/encoder/x86/ml_sse3.h",
+]
 
 aom_av1_encoder_intrin_sse4_1 = [
   "//third_party/libaom/source/libaom/av1/encoder/x86/av1_fwd_txfm1d_sse4.c",
@@ -587,6 +589,7 @@ aom_dsp_encoder_intrin_neon = [
   "//third_party/libaom/source/libaom/aom_dsp/arm/obmc_sad_neon.c",
   "//third_party/libaom/source/libaom/aom_dsp/arm/sse_neon.c",
   "//third_party/libaom/source/libaom/aom_dsp/arm/sum_squares_neon.c",
+  "//third_party/libaom/source/libaom/aom_dsp/arm/blk_sse_sum_neon.c",
 ]
 
 aom_dsp_encoder_intrin_sse2 = [

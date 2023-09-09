@@ -410,9 +410,9 @@ const CSSValue* HTMLFontSizeEquivalent::AttributeValueAsCSSValue(
   return CSSIdentifierValue::Create(size);
 }
 
-EditingStyle::EditingStyle(ContainerNode* node,
+EditingStyle::EditingStyle(Element* element,
                            PropertiesToInclude properties_to_include) {
-  Init(node, properties_to_include);
+  Init(element, properties_to_include);
 }
 
 EditingStyle::EditingStyle(const Position& position,
@@ -527,6 +527,11 @@ static bool IsRedundantTextAlign(MutableCSSPropertyValueSet* style,
     return false;
   if (text_align == base_text_align)
     return true;
+  const ComputedStyle* node_style = node->GetComputedStyle();
+  if (!node_style) {
+    return true;
+  }
+  TextDirection node_direction = node_style->Direction();
   if (base_text_align == CSSValueID::kStart ||
       base_text_align == CSSValueID::kEnd) {
     // Returns true for "text-align:left" of <p>
@@ -538,8 +543,7 @@ static bool IsRedundantTextAlign(MutableCSSPropertyValueSet* style,
     //   <div style="text-align:start"><p dir="rtl" style="text-align:left">
     // because meaning of "text-align:start" in <p> is identical to
     // "text-align:right".
-    return TextAlignResolvingStartAndEnd(
-               base_text_align, node->EnsureComputedStyle()->Direction()) ==
+    return TextAlignResolvingStartAndEnd(base_text_align, node_direction) ==
            text_align;
   }
   if (text_align == CSSValueID::kStart || text_align == CSSValueID::kEnd) {
@@ -549,12 +553,27 @@ static bool IsRedundantTextAlign(MutableCSSPropertyValueSet* style,
     // Returns false for "text-align:start" of <p>
     //  <div style="text-align:left"><p dir="rtl" style="text-align:start">
     //  <div style="text-align:right"><p dir="ltr" style="text-align:start">
-    return TextAlignResolvingStartAndEnd(
-               text_align, node->EnsureComputedStyle()->Direction()) ==
+    return TextAlignResolvingStartAndEnd(text_align, node_direction) ==
            base_text_align;
   }
   return false;
 }
+
+namespace {
+
+Element* ElementFromStyledNode(Node* node) {
+  if (Element* element = DynamicTo<Element>(node)) {
+    return element;
+  }
+  if (node) {
+    // This should probably be FlatTreeTraversal::ParentElement() instead, but
+    // it breaks tests.
+    return node->ParentOrShadowHostElement();
+  }
+  return nullptr;
+}
+
+}  // namespace
 
 void EditingStyle::Init(Node* node, PropertiesToInclude properties_to_include) {
   if (IsTabHTMLSpanElementTextNode(node))
@@ -563,7 +582,8 @@ void EditingStyle::Init(Node* node, PropertiesToInclude properties_to_include) {
     node = node->parentNode();
   node_ = node;
   auto* computed_style_at_position =
-      MakeGarbageCollected<CSSComputedStyleDeclaration>(node);
+      MakeGarbageCollected<CSSComputedStyleDeclaration>(
+          ElementFromStyledNode(node));
   mutable_style_ =
       properties_to_include == kAllProperties && computed_style_at_position
           ? computed_style_at_position->CopyProperties()
@@ -587,9 +607,7 @@ void EditingStyle::Init(Node* node, PropertiesToInclude properties_to_include) {
     }
   }
 
-  if (node && node->EnsureComputedStyle()) {
-    const ComputedStyle* computed_style = node->EnsureComputedStyle();
-
+  if (const ComputedStyle* computed_style = node->GetComputedStyle()) {
     // Fix for crbug.com/768261: due to text-autosizing, reading the current
     // computed font size and re-writing it to an element may actually cause the
     // font size to become larger (since the autosizer will run again on the new
@@ -839,37 +857,41 @@ void EditingStyle::RemoveBlockProperties(
 }
 
 void EditingStyle::RemoveStyleAddedByElement(Element* element) {
-  if (!element || !element->parentNode())
+  if (!element || !element->parentElement()) {
     return;
-  MutableCSSPropertyValueSet* parent_style = CopyEditingProperties(
-      element->parentNode()->GetExecutionContext(),
-      MakeGarbageCollected<CSSComputedStyleDeclaration>(element->parentNode()),
-      kAllEditingProperties);
-  MutableCSSPropertyValueSet* node_style = CopyEditingProperties(
+  }
+  MutableCSSPropertyValueSet* parent_style =
+      CopyEditingProperties(element->parentElement()->GetExecutionContext(),
+                            MakeGarbageCollected<CSSComputedStyleDeclaration>(
+                                element->parentElement()),
+                            kAllEditingProperties);
+  MutableCSSPropertyValueSet* element_style = CopyEditingProperties(
       element->GetExecutionContext(),
       MakeGarbageCollected<CSSComputedStyleDeclaration>(element),
       kAllEditingProperties);
-  node_style->RemoveEquivalentProperties(parent_style);
-  mutable_style_->RemoveEquivalentProperties(node_style);
+  element_style->RemoveEquivalentProperties(parent_style);
+  mutable_style_->RemoveEquivalentProperties(element_style);
 }
 
 void EditingStyle::RemoveStyleConflictingWithStyleOfElement(Element* element) {
-  if (!element || !element->parentNode() || !mutable_style_)
+  if (!element || !element->parentElement() || !mutable_style_) {
     return;
+  }
 
-  MutableCSSPropertyValueSet* parent_style = CopyEditingProperties(
-      element->parentNode()->GetExecutionContext(),
-      MakeGarbageCollected<CSSComputedStyleDeclaration>(element->parentNode()),
-      kAllEditingProperties);
-  MutableCSSPropertyValueSet* node_style = CopyEditingProperties(
+  MutableCSSPropertyValueSet* parent_style =
+      CopyEditingProperties(element->parentElement()->GetExecutionContext(),
+                            MakeGarbageCollected<CSSComputedStyleDeclaration>(
+                                element->parentElement()),
+                            kAllEditingProperties);
+  MutableCSSPropertyValueSet* element_style = CopyEditingProperties(
       element->GetExecutionContext(),
       MakeGarbageCollected<CSSComputedStyleDeclaration>(element),
       kAllEditingProperties);
-  node_style->RemoveEquivalentProperties(parent_style);
+  element_style->RemoveEquivalentProperties(parent_style);
 
-  unsigned property_count = node_style->PropertyCount();
+  unsigned property_count = element_style->PropertyCount();
   for (unsigned i = 0; i < property_count; ++i)
-    mutable_style_->RemoveProperty(node_style->PropertyAt(i).Id());
+    mutable_style_->RemoveProperty(element_style->PropertyAt(i).Id());
 }
 
 void EditingStyle::CollapseTextDecorationProperties(
@@ -959,8 +981,8 @@ EditingTriState EditingStyle::TriStateOfStyle(
   bool node_is_start = true;
   for (Node& node : NodeTraversal::StartsAt(*selection.Start().AnchorNode())) {
     if (node.GetLayoutObject() && IsEditable(node)) {
-      auto* computed_style =
-          MakeGarbageCollected<CSSComputedStyleDeclaration>(&node);
+      auto* computed_style = MakeGarbageCollected<CSSComputedStyleDeclaration>(
+          ElementFromStyledNode(&node));
       CSSStyleDeclaration* node_style = computed_style;
       if (computed_style) {
         // If the selected element has <sub> or <sup> ancestor element, apply
@@ -1247,10 +1269,10 @@ bool EditingStyle::ExtractConflictingImplicitStyleOfAttributes(
 
 bool EditingStyle::StyleIsPresentInComputedStyleOfNode(Node* node) const {
   return !mutable_style_ ||
-         GetPropertiesNotIn(
-             mutable_style_.Get(), node,
-             MakeGarbageCollected<CSSComputedStyleDeclaration>(node),
-             node->GetExecutionContext()->GetSecureContextMode())
+         GetPropertiesNotIn(mutable_style_.Get(), node,
+                            MakeGarbageCollected<CSSComputedStyleDeclaration>(
+                                ElementFromStyledNode(node)),
+                            node->GetExecutionContext()->GetSecureContextMode())
              ->IsEmpty();
 }
 
@@ -1613,7 +1635,7 @@ static void RemovePropertiesInStyle(
 }
 
 void EditingStyle::RemoveStyleFromRulesAndContext(Element* element,
-                                                  ContainerNode* context) {
+                                                  Element* context) {
   DCHECK(element);
   if (!mutable_style_)
     return;

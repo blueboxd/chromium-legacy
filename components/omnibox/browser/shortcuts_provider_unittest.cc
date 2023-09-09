@@ -199,7 +199,7 @@ struct TestShortcutData shortcut_test_db[] = {
      AutocompleteMatch::DocumentType::NONE, "", "0,1", "", "0,1",
      ui::PAGE_TRANSITION_TYPED, AutocompleteMatchType::HISTORY_URL, "", 2, 2},
 
-    // 7 shortcuts to verify the interaction of the provider limit and
+    // 8 shortcuts to verify the interaction of the provider limit and
     // aggregating shortcuts.
     {GetGuid(), "zebra1", "", "https://wikipedia.org/zebra-a",
      AutocompleteMatch::DocumentType::NONE, "", "0,1", "", "0,1",
@@ -220,6 +220,9 @@ struct TestShortcutData shortcut_test_db[] = {
      AutocompleteMatch::DocumentType::NONE, "", "0,1", "", "0,1",
      ui::PAGE_TRANSITION_TYPED, AutocompleteMatchType::HISTORY_URL, "", 1, 4},
     {GetGuid(), "zebra7", "", "https://wikipedia.org/zebra-c",
+     AutocompleteMatch::DocumentType::NONE, "", "0,1", "", "0,1",
+     ui::PAGE_TRANSITION_TYPED, AutocompleteMatchType::HISTORY_URL, "", 1, 10},
+    {GetGuid(), "zebra8", "", "https://wikipedia.org/zebra-d",
      AutocompleteMatch::DocumentType::NONE, "", "0,1", "", "0,1",
      ui::PAGE_TRANSITION_TYPED, AutocompleteMatchType::HISTORY_URL, "", 1, 10},
 };
@@ -261,9 +264,9 @@ class ShortcutsProviderTest : public testing::Test {
       size_t input_length,
       const std::vector<const ShortcutsDatabase::Shortcut*>& shortcuts);
 
-  // Passthrough to the private `GetMatches`. Enables populating scoring
+  // Passthrough to the private `DoAutocomplete`. Enables populating scoring
   // signals.
-  void GetMatchesWithScoringSignals(const AutocompleteInput& input);
+  void DoAutocompleteWithScoringSignals(const AutocompleteInput& input);
 
   // ScopedFeatureList needs to be defined before TaskEnvironment, so that it is
   // destroyed after TaskEnvironment, to prevent data races on the
@@ -326,10 +329,10 @@ int ShortcutsProviderTest::CalculateAggregateScore(
       .relevance;
 }
 
-void ShortcutsProviderTest::GetMatchesWithScoringSignals(
+void ShortcutsProviderTest::DoAutocompleteWithScoringSignals(
     const AutocompleteInput& input) {
   provider_->matches_.clear();
-  provider_->GetMatches(input, /*populate_scoring_signals=*/true);
+  provider_->DoAutocomplete(input, /*populate_scoring_signals=*/true);
 }
 
 // Actual tests ---------------------------------------------------------------
@@ -712,7 +715,7 @@ TEST_F(ShortcutsProviderTest, DoesNotProvideOnFocus) {
   EXPECT_TRUE(provider_->matches().empty());
 }
 
-TEST_F(ShortcutsProviderTest, GetMatches) {
+TEST_F(ShortcutsProviderTest, DoAutocomplete) {
   {
     // When multiple shortcuts with the same destination URL match the input,
     // they should be scored together (i.e. their visit counts summed, the most
@@ -755,9 +758,10 @@ TEST_F(ShortcutsProviderTest, GetMatches) {
   {
     // The provider limit should not affect number of shortcuts aggregated, only
     // the matches returned, i.e. the number of aggregate shortcuts. There are
-    // 7 shortcuts matching the input with 3 unique URLs. The 3 aggregate
+    // 8 shortcuts matching the input with 4 unique URLs. The top 3 aggregate
     // shortcuts have the same aggregate score factors and should be scored the
-    // same (other than the `+ 1` limitation).
+    // same (other than the `+ 1` limitation). The 4th match is above the
+    // provider limit and should not be returned.
     AutocompleteInput input(u"zebra", metrics::OmniboxEventProto::OTHER,
                             TestSchemeClassifier());
     provider_->Start(input, false);
@@ -773,15 +777,44 @@ TEST_F(ShortcutsProviderTest, GetMatches) {
     EXPECT_EQ(matches[1].relevance, matches[2].relevance + 1);
     EXPECT_GT(matches[2].relevance, 0);
   }
+
+  {
+    // The provider should not limit the number of suggestions when ML scoring
+    // w/increased candidates is enabled. Any matches beyond the limit should be
+    // marked as culled_by_provider and have a relevance of 0.
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        /*enabled_features=*/
+        {{omnibox::kUrlScoringModel, {}},
+         {omnibox::kMlUrlScoring,
+          {{"MlUrlScoringIncreaseNumCandidates", "true"}}}},
+        /*disabled_features=*/{});
+
+    OmniboxFieldTrial::ScopedMLConfigForTesting scoped_ml_config;
+
+    AutocompleteInput input(u"zebra", metrics::OmniboxEventProto::OTHER,
+                            TestSchemeClassifier());
+    provider_->Start(input, false);
+    const auto& matches = provider_->matches();
+    EXPECT_EQ(matches.size(), 4u);
+    // Matches below the limit.
+    EXPECT_FALSE(matches[0].culled_by_provider);
+    EXPECT_GT(matches[0].relevance, 0);
+
+    // Matches that would've originally been culled above the limit should be
+    // marked as such and have a zero relevance score.
+    EXPECT_TRUE(matches[3].culled_by_provider);
+    EXPECT_EQ(matches[3].relevance, 0);
+  }
 }
 
-TEST_F(ShortcutsProviderTest, GetMatchesWithScoringSignals) {
+TEST_F(ShortcutsProviderTest, DoAutocompleteWithScoringSignals) {
   // When multiple shortcuts with the same destination URL match the input,
   // they should be scored together (i.e. their visit counts summed, the most
   // recent visit date and shortest text considered).
   AutocompleteInput input(u"wi", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
-  GetMatchesWithScoringSignals(input);
+  DoAutocompleteWithScoringSignals(input);
   auto& matches = provider_->matches();
   EXPECT_EQ(matches.size(), 3u);
   // These matches are all HISTORY_URL type, so should have scoring signals
@@ -807,7 +840,7 @@ TEST_F(ShortcutsProviderTest, GetMatchesWithScoringSignals) {
   // that the match does not have scoring signals attached.
   AutocompleteInput input2(u"que", metrics::OmniboxEventProto::OTHER,
                            TestSchemeClassifier());
-  GetMatchesWithScoringSignals(input2);
+  DoAutocompleteWithScoringSignals(input2);
   EXPECT_EQ(matches.size(), 1u);
 
   EXPECT_FALSE(
@@ -892,6 +925,9 @@ TEST_F(ShortcutsProviderTest, ScoreBoost) {
       create_shortcut_data("searches-before-urls", false, 1),
       create_shortcut_data("urls-before-searches", false, 2),
       create_shortcut_data("urls-before-searches", true, 1),
+      create_shortcut_data("urls-saddling-searches", false, 3),
+      create_shortcut_data("urls-saddling-searches", true, 2),
+      create_shortcut_data("urls-saddling-searches", false, 1),
   };
 
   PopulateShortcutsBackendWithTestData(client_->GetShortcutsBackend(),
@@ -1000,6 +1036,63 @@ TEST_F(ShortcutsProviderTest, ScoreBoost) {
               "https://urls-before-searches.com/1");
     EXPECT_LE(matches[0].relevance, kMaxUnboostedScore);
     EXPECT_LE(matches[1].relevance, kMaxUnboostedScore);
+    EXPECT_TRUE(trigger_service->GetFeatureTriggeredInSession(trigger_feature));
+  }
+
+  {
+    // All URLs meeting `ShortcutBoostNonTopHitThreshold` should be boosted.
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        omnibox_feature_configs::ShortcutBoosting::kShortcutBoost,
+        {{"ShortcutBoostUrlScore", "1300"},
+         {"ShortcutBoostNonTopHitThreshold", "1"}});
+    scoped_config.Reset();
+
+    trigger_service->ResetSession();
+    AutocompleteInput input(u"urls-saddling-searches",
+                            metrics::OmniboxEventProto::OTHER,
+                            TestSchemeClassifier());
+    provider_->Start(input, false);
+    const auto& matches = provider_->matches();
+    EXPECT_EQ(matches.size(), 3u);
+    EXPECT_EQ(matches[0].destination_url.spec(),
+              "https://urls-saddling-searches.com/3");
+    EXPECT_EQ(matches[1].destination_url.spec(),
+              "https://urls-saddling-searches.com/1");
+    EXPECT_EQ(matches[2].destination_url.spec(),
+              "https://urls-saddling-searches.com/2");
+    EXPECT_EQ(matches[0].relevance, 1303);
+    EXPECT_EQ(matches[1].relevance, 1301);
+    EXPECT_LE(matches[2].relevance, kMaxUnboostedScore);
+    EXPECT_TRUE(trigger_service->GetFeatureTriggeredInSession(trigger_feature));
+  }
+
+  {
+    // URLs not meeting `ShortcutBoostNonTopHitThreshold` should not be boosted
+    // except for the top shortcut.
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        omnibox_feature_configs::ShortcutBoosting::kShortcutBoost,
+        {{"ShortcutBoostUrlScore", "1300"},
+         {"ShortcutBoostNonTopHitThreshold", "10"}});
+    scoped_config.Reset();
+
+    trigger_service->ResetSession();
+    AutocompleteInput input(u"urls-saddling-searches",
+                            metrics::OmniboxEventProto::OTHER,
+                            TestSchemeClassifier());
+    provider_->Start(input, false);
+    const auto& matches = provider_->matches();
+    EXPECT_EQ(matches.size(), 3u);
+    EXPECT_EQ(matches[0].destination_url.spec(),
+              "https://urls-saddling-searches.com/3");
+    EXPECT_EQ(matches[1].destination_url.spec(),
+              "https://urls-saddling-searches.com/2");
+    EXPECT_EQ(matches[2].destination_url.spec(),
+              "https://urls-saddling-searches.com/1");
+    EXPECT_EQ(matches[0].relevance, 1300);
+    EXPECT_LE(matches[1].relevance, kMaxUnboostedScore);
+    EXPECT_LE(matches[2].relevance, kMaxUnboostedScore);
     EXPECT_TRUE(trigger_service->GetFeatureTriggeredInSession(trigger_feature));
   }
 }

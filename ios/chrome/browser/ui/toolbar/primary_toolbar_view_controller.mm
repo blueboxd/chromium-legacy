@@ -19,10 +19,8 @@
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
-#import "ios/chrome/browser/ui/gestures/view_revealing_vertical_pan_handler.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
-#import "ios/chrome/browser/ui/thumb_strip/thumb_strip_feature.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_view_controller+subclassing.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
@@ -63,49 +61,18 @@
                         }];
 }
 
-- (void)setPanGestureHandler:
-    (ViewRevealingVerticalPanHandler*)panGestureHandler {
-  _panGestureHandler = panGestureHandler;
-  [self.view removeGestureRecognizer:self.panGestureRecognizer];
-
-  UIPanGestureRecognizer* panGestureRecognizer =
-      [[ViewRevealingPanGestureRecognizer alloc]
-          initWithTarget:panGestureHandler
-                  action:@selector(handlePanGesture:)
-                 trigger:ViewRevealTrigger::PrimaryToolbar];
-  panGestureRecognizer.delegate = panGestureHandler;
-  panGestureRecognizer.maximumNumberOfTouches = 1;
-  [self.view addGestureRecognizer:panGestureRecognizer];
-
-  self.panGestureRecognizer = panGestureRecognizer;
-}
-
-#pragma mark - viewRevealingAnimatee
-
-- (void)willAnimateViewRevealFromState:(ViewRevealState)currentViewRevealState
-                               toState:(ViewRevealState)nextViewRevealState {
-  if (currentViewRevealState != ViewRevealState::Hidden ||
-      nextViewRevealState != ViewRevealState::Hidden) {
-    // Dismiss the edit menu if visible.
-    UIMenuController* menu = [UIMenuController sharedMenuController];
-    if ([menu isMenuVisible]) {
-      [menu hideMenu];
-    }
-  }
-}
-
-- (void)animateViewReveal:(ViewRevealState)nextViewRevealState {
-  self.view.topCornersRounded =
-      (nextViewRevealState != ViewRevealState::Hidden);
-}
-
 #pragma mark - AdaptiveToolbarViewController
 
-- (void)updateForSideSwipeSnapshotOnNTP:(BOOL)onNTP {
-  [super updateForSideSwipeSnapshotOnNTP:onNTP];
-  if (!onNTP)
+- (void)updateForSideSwipeSnapshot:(BOOL)onNonIncognitoNTP {
+  [super updateForSideSwipeSnapshot:onNonIncognitoNTP];
+  if (!onNonIncognitoNTP) {
     return;
+  }
 
+  // An opaque image is expected during a snapshot. Make sure the view is not
+  // hidden and display a blank view by using the NTP background and by hidding
+  // the location bar.
+  self.view.hidden = NO;
   self.view.backgroundColor =
       self.buttonFactory.toolbarConfiguration.NTPBackgroundColor;
   self.view.locationBarContainer.hidden = YES;
@@ -113,9 +80,15 @@
 
 - (void)resetAfterSideSwipeSnapshot {
   [super resetAfterSideSwipeSnapshot];
+  // Note: the view is made visible or not by an `updateToolbar` call when the
+  // snapshot animation ends.
   self.view.backgroundColor =
       self.buttonFactory.toolbarConfiguration.backgroundColor;
-  self.view.locationBarContainer.hidden = NO;
+  if (self.hasOmnibox) {
+    self.view.locationBarContainer.hidden = NO;
+  } else {
+    DCHECK(IsBottomOmniboxSteadyStateEnabled());
+  }
 }
 
 #pragma mark - NewTabPageControllerDelegate
@@ -167,7 +140,7 @@
   [self.view setUp];
 
   [self.layoutGuideCenter referenceView:self.view.locationBarContainer
-                              underName:kOmniboxGuide];
+                              underName:kTopOmniboxGuide];
   self.view.locationBarBottomConstraint.constant =
       [self verticalMarginForLocationBarForFullscreenProgress:1];
 }
@@ -177,10 +150,7 @@
   self.view.locationBarBottomConstraint.constant =
       [self verticalMarginForLocationBarForFullscreenProgress:
                 self.previousFullscreenProgress];
-
-  if (!ShowThumbStripInTraitCollection(self.traitCollection)) {
-    self.view.topCornersRounded = NO;
-  }
+  self.view.topCornersRounded = NO;
   [self.delegate
       viewControllerTraitCollectionDidChange:previousTraitCollection];
 }

@@ -4,28 +4,13 @@
 
 package org.chromium.chrome.browser.autofill.editors;
 
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.CUSTOM_ERROR_MESSAGE;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.ERROR_MESSAGE;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.IS_REQUIRED;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.LABEL;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.VALUE;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.LENGTH_COUNTER_LIMIT_NONE;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.TEXT_INPUT_TYPE;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.TEXT_LENGTH_COUNTER_LIMIT;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.TEXT_SUGGESTIONS;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextInputType.ALPHA_NUMERIC_INPUT;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextInputType.EMAIL_ADDRESS_INPUT;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextInputType.PERSON_NAME_INPUT;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextInputType.PHONE_NUMBER_INPUT;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextInputType.REGION_INPUT;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextInputType.STREET_ADDRESS_INPUT;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.getValidationErrorMessage;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.hasMaximumLength;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.isFieldValid;
 
 import android.content.Context;
 import android.text.Editable;
-import android.text.InputFilter;
-import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -41,14 +26,16 @@ import android.widget.ImageView;
 import android.widget.TextView.OnEditorActionListener;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 import androidx.core.view.ViewCompat;
 
 import com.google.android.material.textfield.TextInputLayout;
 
+import org.chromium.base.ResettersForTesting;
 import org.chromium.chrome.browser.autofill.R;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.text.EmptyTextWatcher;
+
+import java.util.List;
 
 /** Handles validation and display of one field from the {@link EditorProperties.ItemType}. */
 // TODO(b/173103628): Re-enable this
@@ -62,35 +49,41 @@ class TextFieldView extends FrameLayout implements FieldView {
     private static EditorObserverForTest sObserverForTest;
 
     @Nullable
-    private final TextWatcher mFormatter;
-
+    private Runnable mDoneRunnable;
+    @SuppressWarnings("WrongConstant") // https://crbug.com/1038784
+    private final OnEditorActionListener mEditorActionListener = (view, actionId, event) -> {
+        if (actionId == EditorInfo.IME_ACTION_DONE && mDoneRunnable != null) {
+            mDoneRunnable.run();
+            return true;
+        } else if (actionId != EditorInfo.IME_ACTION_NEXT) {
+            return false;
+        }
+        View next = view.focusSearch(View.FOCUS_FORWARD);
+        if (next == null) {
+            return false;
+        }
+        next.requestFocus();
+        return true;
+    };
     private PropertyModel mEditorFieldModel;
-    private OnEditorActionListener mEditorActionListener;
     private TextInputLayout mInputLayout;
     private AutoCompleteTextView mInput;
     private View mIconsLayer;
     private ImageView mActionIcon;
+    private boolean mShowRequiredIndicator;
+    @Nullable
+    private EditorFieldValidator mValidator;
+    @Nullable
+    private TextWatcher mTextFormatter;
 
-    public TextFieldView(Context context, final PropertyModel fieldModel,
-            OnEditorActionListener actionListener, @Nullable TextWatcher formatter,
-            boolean hasRequiredIndicator) {
+    public TextFieldView(Context context, final PropertyModel fieldModel) {
         super(context);
         mEditorFieldModel = fieldModel;
-        mEditorActionListener = actionListener;
 
         LayoutInflater.from(context).inflate(R.layout.payments_request_editor_textview, this, true);
         mInputLayout = (TextInputLayout) findViewById(R.id.text_input_layout);
 
-        // Build up the label.  Required fields are indicated by appending a '*'.
-        CharSequence label = fieldModel.get(LABEL);
-        if (fieldModel.get(IS_REQUIRED) && hasRequiredIndicator) {
-            label = label + REQUIRED_FIELD_INDICATOR;
-        }
-        mInputLayout.setHint(label);
-
         mInput = (AutoCompleteTextView) mInputLayout.findViewById(R.id.text_view);
-        mInput.setText(fieldModel.get(VALUE));
-        mInput.setContentDescription(label);
         mInput.setOnEditorActionListener(mEditorActionListener);
         // AutoCompleteTextView requires and explicit onKeyListener to show the OSK upon receiving
         // a KEYCODE_DPAD_CENTER.
@@ -105,6 +98,8 @@ class TextFieldView extends FrameLayout implements FieldView {
             imm.showSoftInput(v, 0);
             return true;
         });
+
+        setShowRequiredIndicator(/*showRequiredIndicator=*/false);
 
         mIconsLayer = findViewById(R.id.icons_layer);
         mIconsLayer.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
@@ -123,11 +118,9 @@ class TextFieldView extends FrameLayout implements FieldView {
                 if (!hasFocus) {
                     // Validate the field when the user de-focuses it.
                     // Show no errors until the user has already tried to edit the field once.
-                    updateDisplayedError(!isFieldValid(mEditorFieldModel));
-                }
-
-                if (mEditorFieldModel.get(TEXT_LENGTH_COUNTER_LIMIT) != LENGTH_COUNTER_LIMIT_NONE) {
-                    mInputLayout.setCounterEnabled(hasFocus);
+                    if (mValidator != null) {
+                        mValidator.validate(mEditorFieldModel);
+                    }
                 }
             }
         });
@@ -137,83 +130,78 @@ class TextFieldView extends FrameLayout implements FieldView {
             @Override
             public void afterTextChanged(Editable s) {
                 fieldModel.set(VALUE, s.toString());
-                updateDisplayedError(false);
+                mEditorFieldModel.set(ERROR_MESSAGE, null);
                 if (sObserverForTest != null) {
                     sObserverForTest.onEditorTextUpdate();
-                }
-                if (!hasMaximumLength(mEditorFieldModel)) return;
-                updateDisplayedError(true);
-                if (isValid()) {
-                    // Simulate editor action to select next selectable field.
-                    mEditorActionListener.onEditorAction(mInput, EditorInfo.IME_ACTION_NEXT,
-                            new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
                 }
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (mInput.hasFocus()) {
-                    fieldModel.set(CUSTOM_ERROR_MESSAGE, null);
+                    mEditorFieldModel.set(ERROR_MESSAGE, null);
                 }
             }
         });
+    }
 
+    void setLabel(String label, boolean isRequired) {
+        // Build up the label. Required fields are indicated by appending a '*'.
+        if (isRequired && mShowRequiredIndicator) {
+            label += REQUIRED_FIELD_INDICATOR;
+        }
+        mInputLayout.setHint(label);
+        mInput.setContentDescription(label);
+    }
+
+    void setValidator(@Nullable EditorFieldValidator validator) {
+        mValidator = validator;
+    }
+
+    void setErrorMessage(@Nullable String errorMessage) {
+        mInputLayout.setError(errorMessage);
+    }
+
+    void setValue(@Nullable String value) {
+        value = value == null ? "" : value;
+        if (mInput.getText().toString().equals(value)) {
+            return;
+        }
+        mInput.setText(value);
+        if (mTextFormatter != null) {
+            mTextFormatter.afterTextChanged(mInput.getText());
+        }
+    }
+
+    void setTextInputType(int textInputType) {
+        mInput.setInputType(textInputType);
+    }
+
+    void setTextSuggestions(@Nullable List<String> suggestions) {
         // Display any autofill suggestions.
-        if (fieldModel.get(TEXT_SUGGESTIONS) != null
-                && !fieldModel.get(TEXT_SUGGESTIONS).isEmpty()) {
-            mInput.setAdapter(
-                    new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item,
-                            fieldModel.get(TEXT_SUGGESTIONS)));
+        if (suggestions != null && !suggestions.isEmpty()) {
+            mInput.setAdapter(new ArrayAdapter<>(
+                    getContext(), android.R.layout.simple_spinner_dropdown_item, suggestions));
             mInput.setThreshold(0);
         }
+    }
 
-        final int lengthCounter = mEditorFieldModel.get(TEXT_LENGTH_COUNTER_LIMIT);
-        if (lengthCounter != LENGTH_COUNTER_LIMIT_NONE) {
-            // Limit input length for field and counter.
-            mInput.setFilters(new InputFilter[] {new InputFilter.LengthFilter(lengthCounter)});
-            mInputLayout.setCounterMaxLength(lengthCounter);
+    void setTextFormatter(@Nullable TextWatcher formatter) {
+        mTextFormatter = formatter;
+        if (mTextFormatter != null) {
+            mInput.addTextChangedListener(mTextFormatter);
+            mTextFormatter.afterTextChanged(mInput.getText());
         }
+    }
 
-        mFormatter = formatter;
-        if (formatter != null) {
-            mInput.addTextChangedListener(formatter);
-            formatter.afterTextChanged(mInput.getText());
-        }
+    void setDoneRunnable(@Nullable Runnable doneRunnable) {
+        mDoneRunnable = doneRunnable;
+    }
 
-        switch (fieldModel.get(TEXT_INPUT_TYPE)) {
-            case PHONE_NUMBER_INPUT:
-                // Show the keyboard with numbers and phone-related symbols.
-                mInput.setInputType(InputType.TYPE_CLASS_PHONE);
-                break;
-            case EMAIL_ADDRESS_INPUT:
-                mInput.setInputType(
-                        InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
-                break;
-            case STREET_ADDRESS_INPUT:
-                // TODO(rouslan): Provide a hint to the keyboard that the street lines are
-                // likely to have numbers.
-                mInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS
-                        | InputType.TYPE_TEXT_FLAG_MULTI_LINE
-                        | InputType.TYPE_TEXT_VARIATION_POSTAL_ADDRESS);
-                break;
-            case PERSON_NAME_INPUT:
-                mInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS
-                        | InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
-                break;
-            case ALPHA_NUMERIC_INPUT:
-            // Intentionally fall through.
-            // TODO(rouslan): Provide a hint to the keyboard that postal code and sorting
-            // code are likely to have numbers.
-            case REGION_INPUT:
-                mInput.setInputType(InputType.TYPE_CLASS_TEXT
-                        | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
-                        | InputType.TYPE_TEXT_VARIATION_POSTAL_ADDRESS);
-                break;
-            default:
-                mInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS
-                        | InputType.TYPE_TEXT_VARIATION_POSTAL_ADDRESS);
-                break;
-        }
+    @Override
+    public void setShowRequiredIndicator(boolean showRequiredIndicator) {
+        mShowRequiredIndicator = showRequiredIndicator;
+        setLabel(mEditorFieldModel.get(LABEL), mEditorFieldModel.get(IS_REQUIRED));
     }
 
     @Override
@@ -235,11 +223,6 @@ class TextFieldView extends FrameLayout implements FieldView {
         }
     }
 
-    /** @return The PropertyModel that the TextView represents. */
-    public PropertyModel getFieldModel() {
-        return mEditorFieldModel;
-    }
-
     /** @return The AutoCompleteTextView this field associates*/
     public AutoCompleteTextView getEditText() {
         return mInput;
@@ -247,17 +230,16 @@ class TextFieldView extends FrameLayout implements FieldView {
 
     @Override
     public boolean isValid() {
-        return isFieldValid(mEditorFieldModel);
+        if (mValidator == null) {
+            return true;
+        }
+        mValidator.validate(mEditorFieldModel);
+        return mInputLayout.getError() == null;
     }
 
     @Override
     public boolean isRequired() {
         return mEditorFieldModel.get(IS_REQUIRED);
-    }
-
-    @Override
-    public void updateDisplayedError(boolean showError) {
-        mInputLayout.setError(showError ? getValidationErrorMessage(mEditorFieldModel) : null);
     }
 
     @Override
@@ -268,19 +250,14 @@ class TextFieldView extends FrameLayout implements FieldView {
         sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
     }
 
-    @Override
-    public void update() {
-        mInput.setText(mEditorFieldModel.get(VALUE));
-    }
-
     public void removeTextChangedListeners() {
-        if (mFormatter != null) {
-            mInput.removeTextChangedListener(mFormatter);
+        if (mTextFormatter != null) {
+            mInput.removeTextChangedListener(mTextFormatter);
         }
     }
 
-    @VisibleForTesting
     public static void setEditorObserverForTest(EditorObserverForTest observerForTest) {
         sObserverForTest = observerForTest;
+        ResettersForTesting.register(() -> sObserverForTest = null);
     }
 }

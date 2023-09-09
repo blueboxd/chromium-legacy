@@ -36,6 +36,7 @@ import "services/network/public/mojom/net_log.mojom";
 import "services/network/public/mojom/network_isolation_key.mojom";
 import "services/network/public/mojom/network_anonymization_key.mojom";
 import "services/network/public/mojom/oblivious_http_request.mojom";
+import "services/network/public/mojom/hash_value.mojom";
 import "services/network/public/mojom/isolation_info.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/parsed_headers.mojom";
@@ -45,6 +46,9 @@ import "services/network/public/mojom/proxy_lookup_client.mojom";
 import "services/network/public/mojom/proxy_resolving_socket.mojom";
 import "services/network/public/mojom/reporting_service.mojom";
 import "services/network/public/mojom/restricted_cookie_manager.mojom";
+import "services/network/public/mojom/shared_dictionary_access_observer.mojom";
+import "services/network/public/mojom/shared_dictionary_isolation_key.mojom";
+import "services/network/public/mojom/shared_dictionary_usage_info.mojom";
 import "services/network/public/mojom/site_for_cookies.mojom";
 import "services/network/public/mojom/socket_broker.mojom";
 import "services/network/public/mojom/ssl_config.mojom";
@@ -216,6 +220,17 @@ struct CTPolicy {
 };
 
 struct NetworkContextFilePaths {
+  // Points to the shared dictionary directory containing the sqlite database
+  // file named "db" for metadata and the disk cache directory named "cache".
+  // This field is used only when `shared_dictionary_enabled` field is set to
+  // true. If this field is empty, shared dictionaries will be stored in-memory
+  // only.
+  TransferableDirectory? shared_dictionary_directory;
+
+  // Points to the HTTP cache directory. Ignored if the cache is disabled.
+  // If null and the cache is enabled, an in-memory database is used.
+  TransferableDirectory? http_cache_directory;
+
   // Points to a path that contains all the network service files and databases
   // as listed below. If this network context is running inside a sandboxed
   // network service, then this path should contain no other sensitive data
@@ -309,6 +324,9 @@ struct NetworkContextParams {
   // Whether Brotli content-encoding should be enabled for HTTPS responses.
   bool enable_brotli = true;
 
+  // Whether Zstd content-encoding should be enabled for HTTPS responses.
+  bool enable_zstd = false;
+
   // QUIC user agent.
   string quic_user_agent_id;
 
@@ -361,9 +379,6 @@ struct NetworkContextParams {
   // Maximum size of the HTTP cache. 0 means to use the default size.
   // Ignored if the cache is disabled.
   int32 http_cache_max_size = 0;
-  // Points to the HTTP cache directory. Ignored if the cache is disabled.
-  // If null and the cache is enabled, an in-memory database is used.
-  TransferableDirectory? http_cache_directory;
 
   // A factory to broker file operations needed for the HTTP cache on some
   // platforms (depending on the sandboxing mechanism the platform provides).
@@ -429,6 +444,10 @@ struct NetworkContextParams {
   // Broker used by the network service sandbox to create sockets in
   // the browser. Set when the sandbox is enabled.
   pending_remote<SocketBroker>? socket_broker;
+
+  // A service to fetch blind-signed auth tokens for IP protection. If this
+  // is not set, then no tokens are available.
+  pending_remote<IpProtectionAuthTokenGetter>? ip_protection_auth_token_getter;
 
   // When PAC quick checking is enabled, DNS lookups for PAC script's host are
   // timed out aggressively. This prevents hanging all network request on DNS
@@ -546,16 +565,7 @@ struct NetworkContextParams {
   bool block_trust_tokens;
 
   // Whether "Compression dictionary transport" feature should be enabled.
-  // This feature is under construction. TODO(crbug.com/1413922): Update this
-  // comment when we finish the implementation.
   bool shared_dictionary_enabled = false;
-
-  // Points to the shared dictionary directory containing the sqlite database
-  // file named "db" for metadata and the disk cache directory named "cache".
-  // This field is used only when `shared_dictionary_enabled` field is set to
-  // true. If this field is empty, shared dictionaries will be stored in-memory
-  // only.
-  TransferableDirectory? shared_dictionary_directory;
 
   // Maximum size of the shared dictionary cache. If this value is 0, the max
   // size will be propagated via SetSharedDictionaryCacheMaxSize message.
@@ -590,6 +600,17 @@ struct NetworkConditions {
   // Maximal aggregated upload throughput (bytes/sec). <=0 disables upload
   // throttling.
   double upload_throughput;
+};
+
+// Represents a shared dictionary.
+struct SharedDictionaryInfo {
+  string match;
+  url.mojom.Url dictionary_url;
+  mojo_base.mojom.Time response_time;
+  mojo_base.mojom.TimeDelta expiration;
+  mojo_base.mojom.Time last_used_time;
+  uint64 size;
+  SHA256HashValue hash;
 };
 
 // Represents a signed exchange report.
@@ -774,6 +795,9 @@ struct URLLoaderFactoryParams {
   // Used to notify clients about Trust Token accesses.
   pending_remote<TrustTokenAccessObserver>? trust_token_observer;
 
+  // Used to notify clients about shared dictionary reads or writes.
+  pending_remote<SharedDictionaryAccessObserver>? shared_dictionary_observer;
+
   // Used to notify clients about authentication and certificate events.
   pending_remote<URLLoaderNetworkServiceObserver>? url_loader_network_observer;
 
@@ -862,6 +886,26 @@ interface NetworkContextClient {
   // clients.
   [EnableIf=is_ct_supported]
   OnNewSCTAuditingReportSent();
+};
+
+// A blind-signed auth token, suitable for use with IP protection proxies.
+struct BlindSignedAuthToken {
+  // The token value, for inclusion in a header.
+  string token;
+
+  // The expiration time of this token.
+  mojo_base.mojom.Time expiration;
+};
+
+// A source for new BlindSignedAuthTokens.
+interface IpProtectionAuthTokenGetter {
+  // Try to get a batch of new tokens.
+  //
+  // This may take some time, if external network requests are required. If no
+  // tokens are available, it will return NULL. It is forbidden for two calls
+  // to this method to be outstanding at the same time.
+  TryGetAuthTokens(uint32 batch_size) =>
+    (array<BlindSignedAuthToken>? bsa_token);
 };
 
 // Represents a distinct context for making network requests, with its own
@@ -1067,6 +1111,11 @@ interface NetworkContext {
   ClearSharedDictionaryCache(mojo_base.mojom.Time start_time,
                              mojo_base.mojom.Time end_time,
                              ClearDataFilter? filter) => ();
+
+  // Clears dictionaries registered for `isolation_key` from the shared
+  // dictionary cache.
+  ClearSharedDictionaryCacheForIsolationKey(
+      SharedDictionaryIsolationKey isolation_key) => ();
 
   // Configures per-resource reporting endpoints set with the
   // Reporting-Endpoints header.
@@ -1430,6 +1479,10 @@ interface NetworkContext {
                                                    bool pkp_bypassed,
                                                    string pinning_failure_log);
 
+  // Initiates an IP Protection token request to the browser process and
+  // returns a received token, for testing.
+  VerifyIpProtectionAuthTokenGetterForTesting() => (BlindSignedAuthToken token);
+
   // Adds explicitly-specified data as if it was processed from an
   // HSTS header. Used by tests and implementation of chrome://net-internals.
   AddHSTS(string host, mojo_base.mojom.Time expiry,
@@ -1552,6 +1605,19 @@ interface NetworkContext {
   [EnableIf=enable_reporting]
   AddReportingApiObserver(pending_remote<ReportingApiObserver> observer);
 
+  // Get the usage information of shared dictionaries.
+  GetSharedDictionaryUsageInfo()
+      => (array<SharedDictionaryUsageInfo> usage_info);
+
+  // Get shared dictionaries information for `isolation_key`.
+  GetSharedDictionaryInfo(SharedDictionaryIsolationKey isolation_key)
+      => (array<SharedDictionaryInfo> dictionaries);
+
   // Sets maximum size of the shared dictionary cache.
   SetSharedDictionaryCacheMaxSize(uint64 cache_max_size);
+
+  // Called when visibility of ResourceSchedulerClient has changed.
+  // `client_token` identifies which client has changed its visibility.
+  ResourceSchedulerClientVisibilityChanged(
+      mojo_base.mojom.UnguessableToken client_token, bool visible);
 };

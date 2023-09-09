@@ -13,6 +13,7 @@
 #import "components/feed/core/v2/public/ios/pref_names.h"
 #import "components/ntp_tiles/most_visited_sites.h"
 #import "components/prefs/pref_service.h"
+#import "components/sync/base/features.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/discover_feed/discover_feed_service.h"
@@ -47,7 +48,6 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
-#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
@@ -170,8 +170,7 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
       [self.NTPDelegate isGoogleDefaultSearchEngine];
 
   self.contentSuggestionsMetricsRecorder =
-      [[ContentSuggestionsMetricsRecorder alloc]
-          initWithLocalState:GetApplicationContext()->GetLocalState()];
+      [[ContentSuggestionsMetricsRecorder alloc] init];
 
   AuthenticationService* authenticationService =
       AuthenticationServiceFactory::GetForBrowserState(
@@ -232,8 +231,6 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
   }
   [self.contentSuggestionsMediator disconnect];
   self.contentSuggestionsMediator = nil;
-  [self.contentSuggestionsMetricsRecorder disconnect];
-  self.contentSuggestionsMetricsRecorder = nil;
   self.contentSuggestionsViewController = nil;
   [self.sharingCoordinator stop];
   self.sharingCoordinator = nil;
@@ -480,17 +477,17 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
 
 // Shows the SigninSync UI with the SetUpList access point.
 - (void)showSignIn {
-  ShowSigninCommandCompletionCallback callback =
-      ^(SigninCoordinatorResult result) {
-        if (result == SigninCoordinatorResultSuccess ||
-            result == SigninCoordinatorResultCanceledByUser) {
-          PrefService* localState = GetApplicationContext()->GetLocalState();
-          set_up_list_prefs::MarkItemComplete(localState,
-                                              SetUpListItemType::kSignInSync);
-        }
-      };
+  ShowSigninCommandCompletionCallback callback = ^(BOOL success) {
+    PrefService* localState = GetApplicationContext()->GetLocalState();
+    set_up_list_prefs::MarkItemComplete(localState,
+                                        SetUpListItemType::kSignInSync);
+  };
+  AuthenticationOperation operation =
+      base::FeatureList::IsEnabled(syncer::kReplaceSyncPromosWithSignInPromos)
+          ? AuthenticationOperationSigninOnly
+          : AuthenticationOperationSigninAndSyncWithTwoScreens;
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
-      initWithOperation:AuthenticationOperationSigninAndSyncWithTwoScreens
+      initWithOperation:operation
                identity:nil
             accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_SET_UP_LIST
             promoAction:signin_metrics::PromoAction::

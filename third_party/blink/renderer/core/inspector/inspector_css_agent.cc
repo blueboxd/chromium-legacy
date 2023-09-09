@@ -905,13 +905,13 @@ protocol::Response InspectorCSSAgent::getMediaQueries(
   for (auto& style : id_to_inspector_style_sheet_) {
     InspectorStyleSheet* style_sheet = style.value;
     CollectMediaQueriesFromStyleSheet(style_sheet->PageStyleSheet(),
-                                      medias->get());
+                                      medias->get(), nullptr);
     const CSSRuleVector& flat_rules = style_sheet->FlatRules();
     for (unsigned i = 0; i < flat_rules.size(); ++i) {
       CSSRule* rule = flat_rules.at(i).Get();
       if (rule->GetType() == CSSRule::kMediaRule ||
           rule->GetType() == CSSRule::kImportRule)
-        CollectMediaQueriesFromRule(rule, medias->get());
+        CollectMediaQueriesFromRule(rule, medias->get(), nullptr);
     }
   }
   return protocol::Response::Success();
@@ -1006,6 +1006,9 @@ protocol::Response InspectorCSSAgent::getMatchedStylesForNode(
 
   PseudoId element_pseudo_id = kPseudoIdNone;
   AtomicString view_transition_name = g_null_atom;
+  // If the requested element is a pseudo element, `element` becomes
+  // the first non-pseudo parent element or shadow host element
+  // after `GetPseudoIdAndTag` call below.
   element = GetPseudoIdAndTag(element, element_pseudo_id, view_transition_name);
   if (!element)
     return protocol::Response::ServerError("Pseudo element has no parent");
@@ -1046,8 +1049,10 @@ protocol::Response InspectorCSSAgent::getMatchedStylesForNode(
             style_sheet->BuildObjectForStyle(style_sheet->InlineStyle()));
       }
     }
-    inherited_entries->fromJust()->emplace_back(std::move(entry));
+    inherited_entries->value().emplace_back(std::move(entry));
   }
+
+  *css_keyframes_rules = AnimationsForNode(element, animating_element);
 
   // Pseudo elements.
   if (element_pseudo_id)
@@ -1064,14 +1069,14 @@ protocol::Response InspectorCSSAgent::getMatchedStylesForNode(
       std::make_unique<protocol::Array<protocol::CSS::PseudoElementMatches>>();
 
   for (InspectorCSSMatchedRules* match : resolver.PseudoElementRules()) {
-    pseudo_id_matches->fromJust()->emplace_back(
+    pseudo_id_matches->value().emplace_back(
         protocol::CSS::PseudoElementMatches::create()
             .setPseudoType(
                 InspectorDOMAgent::ProtocolPseudoElementType(match->pseudo_id))
             .setMatches(BuildArrayForMatchedRuleList(match->matched_rules))
             .build());
     if (match->view_transition_name) {
-      pseudo_id_matches->fromJust()->back()->setPseudoIdentifier(
+      pseudo_id_matches->value().back()->setPseudoIdentifier(
           match->view_transition_name);
     }
   }
@@ -1103,11 +1108,10 @@ protocol::Response InspectorCSSAgent::getMatchedStylesForNode(
                 .setPseudoElements(std::move(parent_pseudo_element_matches))
                 .build();
 
-    inherited_pseudo_id_matches->fromJust()->emplace_back(
+    inherited_pseudo_id_matches->value().emplace_back(
         std::move(inherited_pseudo_element_matches));
   }
 
-  *css_keyframes_rules = AnimationsForNode(element, animating_element);
   *css_position_fallback_rules = PositionFallbackRulesForNode(element);
 
   auto* parentLayoutNode = LayoutTreeBuilderTraversal::LayoutParent(*element);
@@ -1215,7 +1219,7 @@ InspectorCSSAgent::PositionFallbackRulesForNode(Element* element) {
     InspectorStyleSheet* inspector_style_sheet =
         BindStyleSheet(css_position_fallback_rule->parentStyleSheet());
     try_rules->emplace_back(inspector_style_sheet->BuildObjectForTryRule(
-        css_position_fallback_rule->Item(j)));
+        To<CSSTryRule>(css_position_fallback_rule->Item(j))));
   }
 
   InspectorStyleSheet* inspector_style_sheet =
@@ -1247,8 +1251,10 @@ InspectorCSSAgent::AnimationsForNode(Element* element,
       std::make_unique<protocol::Array<protocol::CSS::CSSKeyframesRule>>();
   Document& document = element->GetDocument();
   DCHECK(!document.NeedsLayoutTreeUpdateForNode(*element));
-
-  const ComputedStyle* style = element->EnsureComputedStyle();
+  // We want to match the animation name of the animating element not the parent
+  // element's animation names for pseudo elements. When the `element` is a
+  // non-pseudo element then `animating_element` and the `element` are the same.
+  const ComputedStyle* style = animating_element->EnsureComputedStyle();
   if (!style)
     return css_keyframes_rules;
   const CSSAnimationData* animation_data = style->Animations();
@@ -1341,17 +1347,26 @@ protocol::Response InspectorCSSAgent::getComputedStyleForNode(
     return protocol::Response::ServerError(
         "Node does not have an owner document");
   }
+  Element* element = DynamicTo<Element>(node);
+  if (!element) {
+    element = FlatTreeTraversal::ParentElement(*node);
+  }
+  if (!element) {
+    return protocol::Response::ServerError(
+        "Node is not an element and does not have a parent element");
+  }
 
   auto* computed_style_info =
-      MakeGarbageCollected<CSSComputedStyleDeclaration>(node, true);
+      MakeGarbageCollected<CSSComputedStyleDeclaration>(element, true);
   *style = std::make_unique<
       protocol::Array<protocol::CSS::CSSComputedStyleProperty>>();
   for (CSSPropertyID property_id : CSSPropertyIDList()) {
     const CSSProperty& property_class =
         CSSProperty::Get(ResolveCSSPropertyID(property_id));
-    if (!property_class.IsWebExposed(node->GetExecutionContext()) ||
-        property_class.IsShorthand() || !property_class.IsProperty())
+    if (!property_class.IsWebExposed(element->GetExecutionContext()) ||
+        property_class.IsShorthand() || !property_class.IsProperty()) {
       continue;
+    }
     (*style)->emplace_back(
         protocol::CSS::CSSComputedStyleProperty::create()
             .setName(property_class.GetPropertyNameString())
@@ -2107,7 +2122,8 @@ std::unique_ptr<protocol::CSS::CSSMedia> InspectorCSSAgent::BuildMediaObject(
 
 void InspectorCSSAgent::CollectMediaQueriesFromStyleSheet(
     CSSStyleSheet* style_sheet,
-    protocol::Array<protocol::CSS::CSSMedia>* media_array) {
+    protocol::Array<protocol::CSS::CSSMedia>* media_array,
+    protocol::Array<protocol::CSS::CSSRuleType>* rule_types) {
   MediaList* media_list = style_sheet->media();
   String source_url;
   if (media_list && media_list->length()) {
@@ -2123,12 +2139,16 @@ void InspectorCSSAgent::CollectMediaQueriesFromStyleSheet(
                          style_sheet->ownerNode() ? kMediaListSourceLinkedSheet
                                                   : kMediaListSourceInlineSheet,
                          source_url, style_sheet));
+    if (rule_types) {
+      rule_types->emplace_back(protocol::CSS::CSSRuleTypeEnum::MediaRule);
+    }
   }
 }
 
 void InspectorCSSAgent::CollectMediaQueriesFromRule(
     CSSRule* rule,
-    protocol::Array<protocol::CSS::CSSMedia>* media_array) {
+    protocol::Array<protocol::CSS::CSSMedia>* media_array,
+    protocol::Array<protocol::CSS::CSSRuleType>* rule_types) {
   MediaList* media_list;
   String source_url;
   CSSStyleSheet* parent_style_sheet = nullptr;
@@ -2153,11 +2173,15 @@ void InspectorCSSAgent::CollectMediaQueriesFromRule(
     source_url = "";
   }
 
-  if (media_list && media_list->length())
+  if (media_list && media_list->length()) {
     media_array->emplace_back(BuildMediaObject(
         media_list,
         is_media_rule ? kMediaListSourceMediaRule : kMediaListSourceImportRule,
         source_url, parent_style_sheet));
+    if (rule_types) {
+      rule_types->emplace_back(protocol::CSS::CSSRuleTypeEnum::MediaRule);
+    }
+  }
 }
 
 std::unique_ptr<protocol::CSS::CSSContainerQuery>
@@ -2211,9 +2235,12 @@ InspectorCSSAgent::BuildContainerQueryObject(CSSContainerRule* rule) {
 
 void InspectorCSSAgent::CollectContainerQueriesFromRule(
     CSSRule* rule,
-    protocol::Array<protocol::CSS::CSSContainerQuery>* container_queries) {
-  if (auto* container_rule = DynamicTo<CSSContainerRule>(rule))
+    protocol::Array<protocol::CSS::CSSContainerQuery>* container_queries,
+    protocol::Array<protocol::CSS::CSSRuleType>* rule_types) {
+  if (auto* container_rule = DynamicTo<CSSContainerRule>(rule)) {
     container_queries->emplace_back(BuildContainerQueryObject(container_rule));
+    rule_types->emplace_back(protocol::CSS::CSSRuleTypeEnum::ContainerRule);
+  }
 }
 
 std::unique_ptr<protocol::CSS::CSSSupports>
@@ -2240,9 +2267,12 @@ InspectorCSSAgent::BuildSupportsObject(CSSSupportsRule* rule) {
 
 void InspectorCSSAgent::CollectSupportsFromRule(
     CSSRule* rule,
-    protocol::Array<protocol::CSS::CSSSupports>* supports_list) {
-  if (auto* supports_rule = DynamicTo<CSSSupportsRule>(rule))
+    protocol::Array<protocol::CSS::CSSSupports>* supports_list,
+    protocol::Array<protocol::CSS::CSSRuleType>* rule_types) {
+  if (auto* supports_rule = DynamicTo<CSSSupportsRule>(rule)) {
     supports_list->emplace_back(BuildSupportsObject(supports_rule));
+    rule_types->emplace_back(protocol::CSS::CSSRuleTypeEnum::SupportsRule);
+  }
 }
 
 std::unique_ptr<protocol::CSS::CSSLayer> InspectorCSSAgent::BuildLayerObject(
@@ -2285,11 +2315,16 @@ InspectorCSSAgent::BuildLayerObjectFromImport(CSSImportRule* rule) {
 
 void InspectorCSSAgent::CollectLayersFromRule(
     CSSRule* rule,
-    protocol::Array<protocol::CSS::CSSLayer>* layers_list) {
+    protocol::Array<protocol::CSS::CSSLayer>* layers_list,
+    protocol::Array<protocol::CSS::CSSRuleType>* rule_types) {
   if (auto* layer_rule = DynamicTo<CSSLayerBlockRule>(rule)) {
     layers_list->emplace_back(BuildLayerObject(layer_rule));
+    rule_types->emplace_back(protocol::CSS::CSSRuleTypeEnum::LayerRule);
   } else if (auto* import_rule = DynamicTo<CSSImportRule>(rule)) {
-    layers_list->emplace_back(BuildLayerObjectFromImport(import_rule));
+    if (import_rule->layerName() != g_null_atom) {
+      layers_list->emplace_back(BuildLayerObjectFromImport(import_rule));
+      rule_types->emplace_back(protocol::CSS::CSSRuleTypeEnum::LayerRule);
+    }
   }
 }
 
@@ -2305,20 +2340,34 @@ void InspectorCSSAgent::FillAncestorData(CSSRule* rule,
       std::make_unique<protocol::Array<protocol::CSS::CSSContainerQuery>>();
   auto scopes_list =
       std::make_unique<protocol::Array<protocol::CSS::CSSScope>>();
+  auto rule_types_list =
+      std::make_unique<protocol::Array<protocol::CSS::CSSRuleType>>();
 
-  CSSRule* parent_rule = rule;
+  CSSRule* parent_rule = rule->parentRule();
+  auto nesting_selectors = std::make_unique<protocol::Array<String>>();
   while (parent_rule) {
-    CollectLayersFromRule(parent_rule, layers_list.get());
-    CollectMediaQueriesFromRule(parent_rule, media_list.get());
-    CollectContainerQueriesFromRule(parent_rule, container_queries_list.get());
-    CollectSupportsFromRule(parent_rule, supports_list.get());
-    CollectScopesFromRule(parent_rule, scopes_list.get());
+    CollectLayersFromRule(parent_rule, layers_list.get(),
+                          rule_types_list.get());
+    CollectMediaQueriesFromRule(parent_rule, media_list.get(),
+                                rule_types_list.get());
+    CollectContainerQueriesFromRule(parent_rule, container_queries_list.get(),
+                                    rule_types_list.get());
+    CollectSupportsFromRule(parent_rule, supports_list.get(),
+                            rule_types_list.get());
+    CollectScopesFromRule(parent_rule, scopes_list.get(),
+                          rule_types_list.get());
+    if (auto* style_rule = DynamicTo<CSSStyleRule>(parent_rule)) {
+      nesting_selectors->emplace_back(style_rule->selectorText());
+      rule_types_list->emplace_back(protocol::CSS::CSSRuleTypeEnum::StyleRule);
+    }
+
     if (parent_rule->parentRule()) {
       parent_rule = parent_rule->parentRule();
     } else {
       CSSStyleSheet* style_sheet = parent_rule->parentStyleSheet();
       while (style_sheet) {
-        CollectMediaQueriesFromStyleSheet(style_sheet, media_list.get());
+        CollectMediaQueriesFromStyleSheet(style_sheet, media_list.get(),
+                                          rule_types_list.get());
         parent_rule = style_sheet->ownerRule();
         if (parent_rule)
           break;
@@ -2332,6 +2381,10 @@ void InspectorCSSAgent::FillAncestorData(CSSRule* rule,
   std::reverse(layers_list.get()->begin(), layers_list.get()->end());
   result->setLayers(std::move(layers_list));
   result->setContainerQueries(std::move(container_queries_list));
+  result->setRuleTypes(std::move(rule_types_list));
+  if (nesting_selectors->size() > 0) {
+    result->setNestingSelectors(std::move(nesting_selectors));
+  }
 }
 
 std::unique_ptr<protocol::CSS::CSSScope> InspectorCSSAgent::BuildScopeObject(
@@ -2355,9 +2408,12 @@ std::unique_ptr<protocol::CSS::CSSScope> InspectorCSSAgent::BuildScopeObject(
 
 void InspectorCSSAgent::CollectScopesFromRule(
     CSSRule* rule,
-    protocol::Array<protocol::CSS::CSSScope>* scopes_list) {
-  if (auto* scope_rule = DynamicTo<CSSScopeRule>(rule))
+    protocol::Array<protocol::CSS::CSSScope>* scopes_list,
+    protocol::Array<protocol::CSS::CSSRuleType>* rule_types) {
+  if (auto* scope_rule = DynamicTo<CSSScopeRule>(rule)) {
     scopes_list->emplace_back(BuildScopeObject(scope_rule));
+    rule_types->emplace_back(protocol::CSS::CSSRuleTypeEnum::ScopeRule);
+  }
 }
 
 InspectorStyleSheetForInlineStyle* InspectorCSSAgent::AsInspectorStyleSheet(
@@ -2900,7 +2956,7 @@ protocol::Response InspectorCSSAgent::getBackgroundColors(
   if (bgcolors.size()) {
     *background_colors = std::make_unique<protocol::Array<String>>();
     for (const auto& color : bgcolors) {
-      background_colors->fromJust()->emplace_back(
+      background_colors->value().emplace_back(
           cssvalue::CSSColor::SerializeAsCSSComponentValue(color));
     }
   }

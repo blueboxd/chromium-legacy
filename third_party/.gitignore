@@ -193,6 +193,7 @@
 /llvm-build
 /llvm-build-tools
 /lss
+/mainline_clang/linux-amd64
 /material_color_utilities/src
 /material_design_icons/src
 /mesa/src
@@ -249,9 +250,9 @@
 /requests/src
 /robolectric/lib/
 /robolectric/robolectric
+/rust-src
 /rust-toolchain
 /rust-toolchain-intermediate
-/rust_src/src
 /ruy/src
 /scan-build/src
 /scons-2.0.1
@@ -313,3 +314,4 @@
 /xdg-utils
 /xnnpack/src
 /xulrunner-sdk
+/zstd/src

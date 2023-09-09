@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
+#include "chrome/browser/extensions/api/developer_private/developer_private_api.h"
 #include "chrome/browser/extensions/api/developer_private/inspectable_views_finder.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
@@ -60,6 +61,7 @@
 #include "extensions/common/permissions/permission_message_util.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/grit/extensions_browser_resources.h"
+#include "extensions/strings/grit/extensions_strings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -539,7 +541,8 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
     absl::optional<CWSInfoService::CWSInfo> cws_info =
         cws_info_service_->GetCWSInfo(extension);
     if (cws_info.has_value()) {
-      info->safety_check_text = CreateSafetyCheckDisplayString(*cws_info);
+      info->safety_check_text =
+          CreateSafetyCheckDisplayString(*cws_info, state);
     }
   }
 
@@ -638,6 +641,11 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   info->incognito_access.is_enabled = util::CanBeIncognitoEnabled(&extension);
   info->incognito_access.is_active =
       util::IsIncognitoEnabled(extension.id(), browser_context_);
+
+  // Safety check warning acknowledge status.
+  extension_prefs_->ReadPrefAsBoolean(
+      extension.id(), extensions::kPrefAcknowledgeSafetyCheckWarning,
+      &info->acknowledge_safety_check_warning);
 
   // Install warnings, but only if unpacked, the error console isn't enabled
   // (otherwise it shows these), and we're in developer mode (normal users don't
@@ -786,8 +794,8 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
 
 developer::SafetyCheckStrings
 ExtensionInfoGenerator::CreateSafetyCheckDisplayString(
-    CWSInfoService::CWSInfo& cws_info) {
-  // TODO(crbug.com/1432194): Add panel_page_string logic.
+    const CWSInfoService::CWSInfo& cws_info,
+    developer::ExtensionState state) {
   developer::SafetyCheckStrings display_strings;
   std::string detail_page_string;
   std::string panel_page_string;
@@ -796,10 +804,16 @@ ExtensionInfoGenerator::CreateSafetyCheckDisplayString(
       case CWSInfoService::CWSViolationType::kMalware:
         detail_page_string =
             l10n_util::GetStringUTF8(IDS_SAFETY_CHECK_EXTENSIONS_MALWARE);
+        panel_page_string = l10n_util::GetStringUTF8(IDS_EXTENSIONS_SC_MALWARE);
         break;
       case CWSInfoService::CWSViolationType::kPolicy:
         detail_page_string = l10n_util::GetStringUTF8(
             IDS_SAFETY_CHECK_EXTENSIONS_POLICY_VIOLATION);
+        panel_page_string = state == developer::EXTENSION_STATE_ENABLED
+                                ? l10n_util::GetStringUTF8(
+                                      IDS_EXTENSIONS_SC_POLICY_VIOLATION_ON)
+                                : l10n_util::GetStringUTF8(
+                                      IDS_EXTENSIONS_SC_POLICY_VIOLATION_OFF);
         break;
       case CWSInfoService::CWSViolationType::kNone:
       case CWSInfoService::CWSViolationType::kMinorPolicy:
@@ -807,6 +821,10 @@ ExtensionInfoGenerator::CreateSafetyCheckDisplayString(
         if (cws_info.unpublished_long_ago) {
           detail_page_string =
               l10n_util::GetStringUTF8(IDS_SAFETY_CHECK_EXTENSIONS_UNPUBLISHED);
+          panel_page_string =
+              state == developer::EXTENSION_STATE_ENABLED
+                  ? l10n_util::GetStringUTF8(IDS_EXTENSIONS_SC_UNPUBLISHED_ON)
+                  : l10n_util::GetStringUTF8(IDS_EXTENSIONS_SC_UNPUBLISHED_OFF);
         }
         break;
     }

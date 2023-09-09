@@ -9,6 +9,8 @@
 #include "base/check.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_icon/icon_effects.h"
 #include "chrome/browser/apps/app_service/package_id.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_almanac_connector.h"
@@ -17,10 +19,13 @@
 #include "chrome/browser/image_fetcher/image_decoder_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
+#include "components/services/app_service/public/cpp/icon_types.h"
+#include "google_apis/google_api_keys.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
 namespace {
@@ -101,6 +106,13 @@ void PromiseAppService::OnPromiseApp(PromiseAppPtr delta) {
     return;
   }
 
+  // Ensure that the build uses the Google-internal file containing the
+  // official API keys, which are required to make queries to the Almanac.
+  if (!google_apis::IsGoogleChromeAPIKeyUsed() &&
+      !skip_api_key_check_for_testing_) {
+    return;
+  }
+
   // If this is a new promise app, send an Almanac request to fetch more
   // details.
   promise_app_almanac_connector_->GetPromiseAppInfo(
@@ -109,13 +121,52 @@ void PromiseAppService::OnPromiseApp(PromiseAppPtr delta) {
                      weak_ptr_factory_.GetWeakPtr(), package_id));
 }
 
+void PromiseAppService::LoadIcon(const PackageId& package_id,
+                                 int32_t size_hint_in_dip,
+                                 apps::IconEffects icon_effects,
+                                 apps::LoadIconCallback callback) {
+  // We will always be able to synchronously get the icon from the cache because
+  // we already downloaded them all immediately after the promise app was
+  // registered, and verified that all the icons were valid before allowing the
+  // promise app to surface in the Launcher or Shelf.
+  gfx::ImageSkia icon =
+      promise_app_icon_cache_->GetIcon(package_id, size_hint_in_dip);
+
+  if (icon.isNull()) {
+    VLOG(1) << "No icon loaded for Package ID: " << package_id.ToString();
+    std::move(callback).Run(std::make_unique<apps::IconValue>());
+    return;
+  }
+
+  IconValuePtr icon_value = std::make_unique<IconValue>();
+  icon_value->icon_type = IconType::kStandard;
+  icon_value->is_placeholder_icon = false;
+  icon_value->is_maskable_icon = true;
+  icon_value->uncompressed = icon;
+
+  if (icon_effects == apps::IconEffects::kNone) {
+    std::move(callback).Run(std::move(icon_value));
+    return;
+  }
+  apps::ApplyIconEffects(
+      /*profile=*/nullptr, /*app_id=*/absl::nullopt, icon_effects,
+      size_hint_in_dip, std::move(icon_value), std::move(callback));
+}
+
+void PromiseAppService::RemovePromiseApp(const PackageId& package_id) {
+  PromiseAppPtr promise_app = std::make_unique<PromiseApp>(package_id);
+  promise_app->status = PromiseStatus::kRemove;
+  promise_app->should_show = false;
+  OnPromiseApp(std::move(promise_app));
+  promise_app_icon_cache_->RemoveIconsForPackageId(package_id);
+}
+
 void PromiseAppService::SetSkipAlmanacForTesting(bool skip_almanac) {
   skip_almanac_for_testing_ = skip_almanac;
 }
 
-void PromiseAppService::SetImageFetcherForTesting(
-    std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher) {
-  image_fetcher_ = std::move(image_fetcher);
+void PromiseAppService::SetSkipApiKeyCheckForTesting(bool skip_api_key_check) {
+  skip_api_key_check_for_testing_ = skip_api_key_check;
 }
 
 void PromiseAppService::OnGetPromiseAppInfoCompleted(
@@ -164,15 +215,10 @@ void PromiseAppService::OnGetPromiseAppInfoCompleted(
   pending_download_count_[package_id] = promise_app_info->GetIcons().size();
 
   for (auto icon : promise_app_info->GetIcons()) {
-    PromiseAppIconPtr promise_app_icon = std::make_unique<PromiseAppIcon>();
-    promise_app_icon->width_in_pixels = icon.GetWidthInPixels();
-    promise_app_icon->is_masking_allowed = icon.IsMaskingAllowed();
-
     image_fetcher_->FetchImage(
         icon.GetUrl(),
         base::BindOnce(&PromiseAppService::OnIconDownloaded,
-                       weak_ptr_factory_.GetWeakPtr(), package_id,
-                       std::move(promise_app_icon)),
+                       weak_ptr_factory_.GetWeakPtr(), package_id),
         image_fetcher::ImageFetcherParams(kTrafficAnnotation,
                                           "Promise App Service Icon Fetcher"));
   }
@@ -180,7 +226,6 @@ void PromiseAppService::OnGetPromiseAppInfoCompleted(
 
 void PromiseAppService::OnIconDownloaded(
     const PackageId& package_id,
-    PromiseAppIconPtr promise_app_icon,
     const gfx::Image& image,
     const image_fetcher::RequestMetadata& metadata) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -201,7 +246,9 @@ void PromiseAppService::OnIconDownloaded(
 
   // Save valid icons to the icon cache.
   if (!image.IsEmpty()) {
-    promise_app_icon->icon = image.AsImageSkia();
+    PromiseAppIconPtr promise_app_icon = std::make_unique<PromiseAppIcon>();
+    promise_app_icon->icon = image.AsBitmap();
+    promise_app_icon->width_in_pixels = promise_app_icon->icon.width();
     promise_app_icon_cache_->SaveIcon(package_id, std::move(promise_app_icon));
   }
 

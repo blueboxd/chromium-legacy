@@ -85,10 +85,6 @@ class COMPONENT_EXPORT(CHROMEOS_STARTUP) BrowserParamsProxy {
 
   const absl::optional<std::vector<GURL>>& AcceptedInternalAshUrls() const;
 
-  bool IsHoldingSpaceIncognitoProfileIntegrationEnabled() const;
-
-  bool IsHoldingSpaceInProgressDownloadsNotificationSuppressionEnabled() const;
-
   bool IsDeviceEnterprisedManaged() const;
 
   crosapi::mojom::BrowserInitParams::DeviceType DeviceType() const;
@@ -103,6 +99,8 @@ class COMPONENT_EXPORT(CHROMEOS_STARTUP) BrowserParamsProxy {
   bool UseCupsForPrinting() const;
 
   bool UseFlossBluetooth() const;
+
+  bool IsFlossAvailable() const;
 
   bool IsCurrentUserDeviceOwner() const;
 
@@ -137,6 +135,10 @@ class COMPONENT_EXPORT(CHROMEOS_STARTUP) BrowserParamsProxy {
   bool EnableClipboardHistoryRefresh() const;
 
   bool IsVariableRefreshRateEnabled() const;
+
+  bool IsPdfOcrEnabled() const;
+
+  bool IsDriveFsBulkPinningEnabled() const;
 
  private:
   friend base::NoDestructor<BrowserParamsProxy>;

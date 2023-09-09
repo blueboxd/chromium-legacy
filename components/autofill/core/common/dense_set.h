@@ -151,6 +151,13 @@ class Bitset<Word, kNumWords, std::enable_if_t<kNumWords == 1>> {
 
 }  // namespace internal
 
+template <typename T>
+struct DenseSetTraits {
+  static constexpr T kMinValue = T(0);
+  static constexpr T kMaxValue = T::kMaxValue;
+  static constexpr bool kPacked = false;
+};
+
 // A set container with a std::set<T>-like interface for integral or enum types
 // T that have a dense and small representation as unsigned integers.
 //
@@ -158,39 +165,62 @@ class Bitset<Word, kNumWords, std::enable_if_t<kNumWords == 1>> {
 // representation.
 //
 // The lower and upper bounds of elements storable in a container are
-// [T(0), kMaxValue]. By default, kMaxValue is T::kMaxValue.
+// [Traits::kMinValue, Traits::kMaxValue]. The default is [T(0), T::kMaxValue].
 //
-// The `packed` parameter indicates whether the memory consumption of a DenseSet
-// object should be minimized. That comes at the cost of slightly larger code
-// size.
+// The `Traits::kPacked` parameter indicates whether the memory consumption of a
+// DenseSet object should be minimized. That comes at the cost of slightly
+// larger code size.
 //
 // Time and space complexity:
 // - insert(), erase(), contains() run in time O(1)
-// - empty(), size(), iteration run in time O(kMaxValue)
-// - sizeof(DenseSet) is, for N = kMaxValue + 1,
-//   - if `!packed`: the minimum of {1, 2, 4, 8 * ceil(N / 64)} bytes that has
-//     at least N bits;
-//   - if `packed`: ceil(N / 8) bytes.
+// - empty(), size(), iteration run in time O(Traits::kMaxValue)
+// - sizeof(DenseSet) is, for N = `Traits::kMaxValue - Traits::kMinValue + 1,
+//   - if `!Traits::kPacked`: the minimum of {1, 2, 4, 8 * ceil(N / 64)} bytes
+//     that has at least N bits;
+//   - if `Traits::kPacked`: ceil(N / 8) bytes.
 //
 // Iterators are invalidated when the owning container is destructed or moved,
 // or when the element the iterator points to is erased from the container.
-template <typename T, T kMaxValue = T::kMaxValue, bool packed = false>
+template <typename T, typename Traits = DenseSetTraits<T>>
 class DenseSet {
  private:
-  // The index of a bit.
-  using Index = std::make_unsigned_t<T>;
-
   static_assert(std::is_integral<T>::value || std::is_enum<T>::value);
-  static_assert(0 <= base::checked_cast<Index>(kMaxValue) + 1);
+
+  // Needed for std::conditional_t.
+  struct Wrapper {
+    using type = T;
+  };
+
+  // For arithmetic on `T`.
+  using UnderlyingType = typename std::conditional_t<std::is_enum<T>::value,
+                                                     std::underlying_type<T>,
+                                                     Wrapper>::type;
+
+  // The index of a bit in the underlying bitset. Use
+  // value_to_index() and index_to_value() for conversion.
+  using Index = std::make_unsigned_t<UnderlyingType>;
+
+  // We can't use `base::to_underlying()` because `T` may be not an enum.
+  static constexpr UnderlyingType to_underlying(T x) {
+    return static_cast<UnderlyingType>(x);
+  }
+
+  static_assert(to_underlying(Traits::kMinValue) <=
+                to_underlying(Traits::kMaxValue));
 
   // The maximum supported bit index. Indexing starts at 0, so kMaxBitIndex ==
-  // 63 means we need 64 bits.
-  static constexpr size_t kMaxBitIndex = base::checked_cast<Index>(kMaxValue);
+  // 63 means we need 64 bits. This is a `size_t` to avoid `kMaxBitIndex + 1`
+  // from overflowing.
+  static constexpr size_t kMaxBitIndex = base::checked_cast<Index>(
+      to_underlying(Traits::kMaxValue) - to_underlying(Traits::kMinValue));
+
+  static_assert(kMaxBitIndex <
+                std::numeric_limits<decltype(kMaxBitIndex)>::max());
 
  public:
   // The bitset is represented as array of words.
   using Word = std::conditional_t<
-      (packed || kMaxBitIndex < 8),
+      (Traits::kPacked || kMaxBitIndex < 8),
       uint8_t,
       std::conditional_t<
           (kMaxBitIndex < 16),
@@ -230,7 +260,7 @@ class DenseSet {
     }
 
     T operator*() const {
-      DCHECK(derefenceable());
+      DCHECK(dereferenceable());
       return index_to_value(index_);
     }
 
@@ -270,12 +300,12 @@ class DenseSet {
     // non-empty one.
     void Skip(Direction direction) {
       DCHECK_LE(index_, owner_->max_size());
-      while (index_ < owner_->max_size() && !derefenceable()) {
+      while (index_ < owner_->max_size() && !dereferenceable()) {
         index_ += direction;
       }
     }
 
-    bool derefenceable() const {
+    bool dereferenceable() const {
       DCHECK_LT(index_, owner_->max_size());
       return owner_->bitset_.get_bit(index_);
     }
@@ -307,6 +337,14 @@ class DenseSet {
     for (auto it = first; it != last; ++it) {
       insert(*it);
     }
+  }
+
+  static constexpr DenseSet all() {
+    DenseSet set;
+    for (auto x = Traits::kMinValue; x <= Traits::kMaxValue; ++x) {
+      set.insert(x);
+    }
+    return set;
   }
 
   // Returns a raw bitmask. Useful for serialization.
@@ -382,7 +420,7 @@ class DenseSet {
 
   // Erases the element |*it| and returns an iterator to its successor.
   iterator erase(const_iterator it) {
-    DCHECK(it.owner_ == this && it.derefenceable());
+    DCHECK(it.owner_ == this && it.dereferenceable());
     bitset_.unset_bit(it.index_);
     it.Skip(const_iterator::kForward);
     return it;
@@ -450,23 +488,17 @@ class DenseSet {
 
   using Bitset = internal::Bitset<Word, kNumWords>;
 
-  // Needed to use std::conditional_t.
-  // Must be declared outside of index_to_value() to avoid compiler errors.
-  struct Wrapper {
-    using type = T;
-  };
-
   static constexpr Index value_to_index(T x) {
-    DCHECK(index_to_value(0) <= x && x <= kMaxValue);
-    return base::checked_cast<Index>(x);
+    DCHECK_LE(Traits::kMinValue, x);
+    DCHECK_LE(x, Traits::kMaxValue);
+    return base::checked_cast<Index>(to_underlying(x) -
+                                     to_underlying(Traits::kMinValue));
   }
 
   static constexpr T index_to_value(Index i) {
-    DCHECK_LE(i, base::checked_cast<Index>(kMaxValue));
-    using UnderlyingType =
-        typename std::conditional_t<std::is_enum<T>::value,
-                                    std::underlying_type<T>, Wrapper>::type;
-    return static_cast<T>(base::checked_cast<UnderlyingType>(i));
+    DCHECK_LE(i, base::checked_cast<Index>(Traits::kMaxValue));
+    return static_cast<T>(base::checked_cast<UnderlyingType>(i) +
+                          to_underlying(Traits::kMinValue));
   }
 
   Bitset bitset_{};

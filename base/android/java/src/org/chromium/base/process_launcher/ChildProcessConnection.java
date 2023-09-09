@@ -903,8 +903,6 @@ public class ChildProcessConnection {
 
     public void updateGroupImportance(int group, int importanceInGroup) {
         assert isRunningOnLauncherThread();
-        assert !mUnbound;
-        assert mWaivedBinding.isBound();
         assert group != 0 || importanceInGroup == 0;
         if (mGroup != group || mImportanceInGroup != importanceInGroup) {
             mGroup = group;
@@ -1123,7 +1121,6 @@ public class ChildProcessConnection {
         return mLauncherHandler.getLooper() == Looper.myLooper();
     }
 
-    @VisibleForTesting
     public void crashServiceForTesting() {
         try {
             mService.forceKill();
@@ -1132,7 +1129,6 @@ public class ChildProcessConnection {
         }
     }
 
-    @VisibleForTesting
     public boolean didOnServiceConnectedForTesting() {
         return mDidOnServiceConnected;
     }

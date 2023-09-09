@@ -21,6 +21,7 @@ import android.util.Size;
 import org.chromium.base.Callback;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUtils;
@@ -38,10 +39,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * A {@link TabListMediator.ThumbnailProvider} that will create a single Bitmap Thumbnail for all
+ * A {@link ThumbnailProvider} that will create a single Bitmap Thumbnail for all
  * the related tabs for the given tabs.
  */
-public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProvider {
+public class MultiThumbnailCardProvider implements ThumbnailProvider {
     private final TabContentManager mTabContentManager;
     private final TabModelSelector mTabModelSelector;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
@@ -58,6 +59,7 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
     private final int mFaviconBackgroundPaintColor;
     private TabListFaviconProvider mTabListFaviconProvider;
     private Context mContext;
+    private final BrowserControlsStateProvider mBrowserControlsStateProvider;
 
     private class MultiThumbnailFetcher {
         private final PseudoTab mInitialTab;
@@ -98,7 +100,8 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
 
             if (thumbnailSize == null || thumbnailSize.getHeight() <= 0
                     || thumbnailSize.getWidth() <= 0) {
-                float expectedThumbnailAspectRatio = TabUtils.getTabThumbnailAspectRatio(mContext);
+                float expectedThumbnailAspectRatio = TabUtils.getTabThumbnailAspectRatio(
+                        mContext, mBrowserControlsStateProvider);
                 mThumbnailWidth = (int) mContext.getResources().getDimension(
                         R.dimen.tab_grid_thumbnail_card_default_size);
                 mThumbnailHeight = (int) (mThumbnailWidth / expectedThumbnailAspectRatio);
@@ -283,9 +286,11 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
         }
     }
 
-    MultiThumbnailCardProvider(Context context, TabContentManager tabContentManager,
-            TabModelSelector tabModelSelector) {
+    MultiThumbnailCardProvider(Context context,
+            BrowserControlsStateProvider browserControlsStateProvider,
+            TabContentManager tabContentManager, TabModelSelector tabModelSelector) {
         mContext = context;
+        mBrowserControlsStateProvider = browserControlsStateProvider;
         Resources resources = context.getResources();
 
         mTabContentManager = tabContentManager;
@@ -294,7 +299,8 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
         mFaviconFrameCornerRadius =
                 resources.getDimension(R.dimen.tab_grid_thumbnail_favicon_frame_corner_radius);
 
-        mTabListFaviconProvider = new TabListFaviconProvider(context, false);
+        mTabListFaviconProvider =
+                new TabListFaviconProvider(context, false, R.dimen.default_favicon_corner_radius);
 
         // Initialize Paints to use.
         mEmptyThumbnailPaint = new Paint();

@@ -140,6 +140,8 @@ CloseWatcher* CloseWatcher::CreateInternal(
     WatcherStack& stack,
     CloseWatcherOptions* options,
     HTMLDialogElement* dialog_for_use_counters) {
+  CHECK(window->document()->IsActive());
+
   CloseWatcher* watcher =
       MakeGarbageCollected<CloseWatcher>(window, dialog_for_use_counters);
 
@@ -226,7 +228,7 @@ const AtomicString& CloseWatcher::InterfaceName() const {
 void CloseWatcher::Trace(Visitor* visitor) const {
   visitor->Trace(abort_handle_);
   visitor->Trace(dialog_for_use_counters_);
-  EventTargetWithInlineData::Trace(visitor);
+  EventTarget::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
 }
 

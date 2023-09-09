@@ -36,6 +36,7 @@ import org.robolectric.annotation.Implements;
 import org.chromium.base.UserDataHost;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.UserActionTester;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController;
@@ -169,14 +170,13 @@ public class SearchResumptionModuleMediatorUnitTest {
         IdentityServicesProvider.setInstanceForTests(mIdentityServicesProvider);
         doReturn(mSignInManager).when(mIdentityServicesProvider).getSigninManager(any());
 
-        SyncServiceFactory.overrideForTests(mSyncServiceMock);
+        SyncServiceFactory.setInstanceForTesting(mSyncServiceMock);
 
         mActionTester = new UserActionTester();
     }
 
     @After
     public void tearDown() {
-        IdentityServicesProvider.setInstanceForTests(null);
         ShadowChromeFeatureList.sEnableSearchResumptionModule = false;
         ShadowChromeFeatureList.sParamValues.clear();
         mActionTester.tearDown();
@@ -188,6 +188,7 @@ public class SearchResumptionModuleMediatorUnitTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1462860")
     public void testDoNotBuildModuleWithoutEnoughSuggestions() {
         createMediator(null, false /* useNewServiceEnabled */);
         List<AutocompleteMatch> list = Arrays.asList(mNonSearchSuggest1, mNonSearchSuggest1);
@@ -206,6 +207,7 @@ public class SearchResumptionModuleMediatorUnitTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1462863")
     public void testShowModuleWithEnoughResults() {
         createMediator(null, false /* useNewServiceEnabled */);
         List<AutocompleteMatch> list =
@@ -222,6 +224,7 @@ public class SearchResumptionModuleMediatorUnitTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1462884")
     public void testShowModuleWithCachedResults() {
         List<AutocompleteMatch> list =
                 Arrays.asList(mNonSearchSuggest1, mSearchSuggest1, mSearchSuggest2);
@@ -238,6 +241,7 @@ public class SearchResumptionModuleMediatorUnitTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1462890")
     public void testDoNotBuildModuleWithoutEnoughSuggestions_newServiceAPI() {
         String[] texts = {"suggestion 1"};
         GURL[] gUrls = {JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_1)};
@@ -256,6 +260,7 @@ public class SearchResumptionModuleMediatorUnitTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1462869")
     public void testShowModuleWithEnoughResults_newServiceAPI() {
         initSuggestions();
 
@@ -278,6 +283,7 @@ public class SearchResumptionModuleMediatorUnitTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1462873")
     public void testShowModuleWithCachedResults_newServiceAPI() {
         initSuggestions();
         SuggestionResult suggestionResult = createCachedSuggestions();
@@ -293,6 +299,7 @@ public class SearchResumptionModuleMediatorUnitTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1462882")
     public void testModuleVisibility() {
         testShowModuleWithEnoughResults();
         mMediator.onSignedOut();
@@ -320,6 +327,7 @@ public class SearchResumptionModuleMediatorUnitTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1462867")
     public void testDestroy() {
         testShowModuleWithEnoughResults();
         mMediator.destroy();

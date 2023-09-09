@@ -39,13 +39,14 @@ POLICY_EXPORT BASE_DECLARE_FEATURE(kPolicyLogsPageAndroid);
 POLICY_EXPORT BASE_DECLARE_FEATURE(kSafeSitesFilterBehaviorPolicyAndroid);
 #endif  // BUILDFLAG(IS_ANDROID)
 
-// Prevent policies set by a single source from being treated as merged.
-POLICY_EXPORT BASE_DECLARE_FEATURE(kPolicyMergeMultiSource);
-
 #if BUILDFLAG(IS_IOS)
 // Enable logging and chrome://policy/logs page on IOS.
 POLICY_EXPORT BASE_DECLARE_FEATURE(kPolicyLogsPageIOS);
 #endif  // BUILDFLAG(IS_IOS)
+
+#if !BUILDFLAG(IS_IOS) || !BUILDFLAG(IS_ANDROID)
+POLICY_EXPORT BASE_DECLARE_FEATURE(kPolicyLogsPageDesktop);
+#endif  // !BUILDFLAG(IS_IOS) || !!BUILDFLAG(IS_ANDROID)
 
 }  // namespace features
 }  // namespace policy

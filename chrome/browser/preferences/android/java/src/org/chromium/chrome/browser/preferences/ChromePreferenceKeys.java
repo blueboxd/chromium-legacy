@@ -243,18 +243,6 @@ public final class ChromePreferenceKeys {
     public static final String DESKTOP_SITE_GLOBAL_SETTING_OPT_IN_MESSAGE_COHORT =
             "Chrome.RequestDesktopSiteGlobalSetting.OptInMessageCohort";
     /**
-     * Indicates whether the desktop site global setting was enabled prior to downgrade of desktop
-     * site domain level exceptions.
-     */
-    public static final String DESKTOP_SITE_EXCEPTIONS_DOWNGRADE_GLOBAL_SETTING_ENABLED =
-            "Chrome.RequestDesktopSiteExceptionsDowngrade.GlobalSettingEnabled";
-    /**
-     * Holds a set of tab IDs for tabs whose desktop site tab level settings have to be updated on
-     * downgrade of desktop site domain level exceptions.
-     */
-    public static final String DESKTOP_SITE_EXCEPTIONS_DOWNGRADE_TAB_SETTING_SET =
-            "Chrome.RequestDesktopSiteExceptionsDowngrade.TabSettingSet";
-    /**
      * Indicates display spec when the device is added to the default-on cohort for the desktop site
      * global setting experiment.
      */
@@ -862,6 +850,10 @@ public final class ChromePreferenceKeys {
 
     public static final String SURVEY_DATE_LAST_ROLLED = "last_rolled_for_chrome_survey_key";
 
+    // sWAA (Supplemental Web and App Activity) user setting.
+    public static final String SWAA_TIMESTAMP = "Chrome.Swaa.Timestamp";
+    public static final String SWAA_STATUS = "Chrome.Swaa.Status";
+
     // The UI used to be an infobar in the past.
     public static final String SYNC_ERROR_MESSAGE_SHOWN_AT_TIME =
             "sync_error_infobar_shown_shown_at_time";
@@ -907,7 +899,7 @@ public final class ChromePreferenceKeys {
     public static final String UI_THEME_SETTING = "ui_theme_setting";
 
     // Diagnostic counters for short sessions; see histogram
-    // UMA.PreNative.ChromeTabbedActivityCounter.
+    // UMA.PreNative.ChromeActivityCounter.
     public static final String UMA_ON_PRECREATE_COUNTER = "Chrome.UMA.OnPreCreateCounter";
     public static final String UMA_ON_RESUME_COUNTER = "Chrome.UMA.OnResumeCounter";
 
@@ -1013,8 +1005,6 @@ public final class ChromePreferenceKeys {
                 DEFAULT_BROWSER_PROMO_SESSION_COUNT,
                 DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING,
                 DEFAULT_ENABLE_DESKTOP_SITE_GLOBAL_SETTING_COHORT,
-                DESKTOP_SITE_EXCEPTIONS_DOWNGRADE_GLOBAL_SETTING_ENABLED,
-                DESKTOP_SITE_EXCEPTIONS_DOWNGRADE_TAB_SETTING_SET,
                 DESKTOP_SITE_GLOBAL_SETTING_DEFAULT_ON_COHORT_DISPLAY_SPEC,
                 DESKTOP_SITE_GLOBAL_SETTING_OPT_IN_MESSAGE_COHORT,
                 DOWNLOAD_INTERSTITIAL_DOWNLOAD_PENDING_REMOVAL,
@@ -1101,6 +1091,8 @@ public final class ChromePreferenceKeys {
                 SIGNIN_PROMO_NTP_LAST_SHOWN_TIME,
                 SYNC_PROMO_TOTAL_SHOW_COUNT,
                 SEARCH_RESUMPTION_MODULE_COLLAPSE_ON_NTP,
+                SWAA_TIMESTAMP,
+                SWAA_STATUS,
                 TABBED_ACTIVITY_LAST_VISIBLE_TIME_MS,
                 TWA_DISCLOSURE_SEEN_PACKAGES,
                 UMA_ON_PRECREATE_COUNTER,

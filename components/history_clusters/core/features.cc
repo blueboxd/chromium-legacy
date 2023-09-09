@@ -97,10 +97,6 @@ BASE_FEATURE(kJourneysNamedNewTabGroups,
              "JourneysNamedNewTabGroups",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kUseUrlForDisplayCache,
-             "HistoryClustersUrlForDisplayCache",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kJourneysZeroStateFiltering,
              "JourneysZeroStateFiltering",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -114,9 +110,5 @@ BASE_FEATURE(kSidePanelJourneys,
 // entrypoints open Journeys in Side Panel rather than the History WebUI.
 const base::FeatureParam<bool> kSidePanelJourneysOpensFromOmnibox{
     &kSidePanelJourneys, "SidePanelJourneysOpensFromOmnibox", true};
-
-BASE_FEATURE(kRenameJourneys,
-             "RenameJourneys",
-             enabled_by_default_desktop_only);
 
 }  // namespace history_clusters

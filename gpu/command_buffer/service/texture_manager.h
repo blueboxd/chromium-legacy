@@ -36,7 +36,6 @@ class ProgressReporter;
 
 namespace gpu {
 class DecoderContext;
-class GLImageNativePixmap;
 class ServiceDiscardableManager;
 
 namespace gles2 {
@@ -79,10 +78,6 @@ class GPU_GLES2_EXPORT TexturePassthrough final
   // native GL texture in the destructor
   void MarkContextLost();
 
-#if BUILDFLAG(IS_OZONE)
-  void SetLevelImage(GLenum target, GLint level, GLImageNativePixmap* image);
-#endif
-
 #if BUILDFLAG(IS_ANDROID)
   void BindToServiceId(GLuint service_id);
 #endif
@@ -103,13 +98,6 @@ class GPU_GLES2_EXPORT TexturePassthrough final
 
  private:
   bool LevelInfoExists(GLenum target, GLint level, size_t* out_face_idx) const;
-
-#if BUILDFLAG(IS_OZONE)
-  void SetLevelImageInternal(GLenum target,
-                             GLint level,
-                             GLImageNativePixmap* image,
-                             GLuint service_id);
-#endif
 
   friend class base::RefCounted<TexturePassthrough>;
 
@@ -135,10 +123,6 @@ class GPU_GLES2_EXPORT TexturePassthrough final
     GLint border = 0;
     GLenum format = 0;
     GLenum type = 0;
-
-#if BUILDFLAG(IS_OZONE)
-    scoped_refptr<GLImageNativePixmap> image;
-#endif
   };
 
   LevelInfo* GetLevelInfo(GLenum target, GLint level);
@@ -151,16 +135,6 @@ class GPU_GLES2_EXPORT TexturePassthrough final
 // jointly owned by possibly multiple TextureRef.
 class GPU_GLES2_EXPORT Texture final : public TextureBase {
  public:
-#if BUILDFLAG(IS_OZONE)
-  enum ImageState {
-    // If image state is BOUND, then sampling from the texture will return the
-    // contents of the image and using it as a target will modify the image.
-    BOUND,
-    // State when there is no image present.
-    NOIMAGE,
-  };
-#endif
-
   struct CompatibilitySwizzle {
     GLenum format;
     GLenum dest_format;
@@ -185,20 +159,11 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
     GLint border = 0;
     GLenum format = 0;
     GLenum type = 0;
-#if BUILDFLAG(IS_OZONE)
-    scoped_refptr<GLImageNativePixmap> image;
-#endif
     uint32_t estimated_size = 0;
     bool internal_workaround = false;
 
    private:
     friend class Texture;
-
-#if BUILDFLAG(IS_OZONE)
-    // Nothing outside of Texture should directly access the binding state of
-    // the image.
-    ImageState image_state = NOIMAGE;
-#endif
   };
 
   explicit Texture(GLuint service_id);
@@ -312,20 +277,6 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   bool GetLevelType(
       GLint target, GLint level, GLenum* type, GLenum* internal_format) const;
 
-#if BUILDFLAG(IS_OZONE)
-  // Set an image that has already been bound for a particular level. If a
-  // GLImage was previously set with BindToServiceId(), this will reset
-  // |service_id_| back to |owned_service_id_|, removing the service id override
-  // set by the BindToServiceId.
-  void SetBoundLevelImage(GLenum target,
-                          GLint level,
-                          GLImageNativePixmap* image);
-
-  // Unset the image for a particular level. After this call, GetLevelImage()
-  // will return nullptr.
-  void UnsetLevelImage(GLenum target, GLint level);
-#endif
-
 #if BUILDFLAG(IS_ANDROID)
   // Overrides |service_id_| with a texture bound to
   // the stream texture. See SetStreamTextureServiceId() for the details of
@@ -336,10 +287,6 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   bool CompatibleWithSamplerUniformType(
       GLenum type,
       const SamplerState& sampler_state) const;
-
-  bool HasImages() const {
-    return has_images_;
-  }
 
   // Returns true of the given dimensions are inside the dimensions of the
   // level.
@@ -511,14 +458,6 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
     std::vector<LevelInfo> level_infos;
   };
 
-#if BUILDFLAG(IS_OZONE)
-  // Helper for Set*LevelImage.
-  void SetLevelImageInternal(GLenum target,
-                             GLint level,
-                             GLImageNativePixmap* image,
-                             ImageState state);
-#endif
-
   // Returns NULL if the base level is not defined.
   const LevelInfo* GetBaseLevelInfo() const;
 
@@ -630,10 +569,6 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   // texture.
   void UpdateCanRenderCondition();
 
-  // Updates the images count in all the managers referencing this
-  // texture.
-  void UpdateHasImages();
-
   // Increment the framebuffer state change count in all the managers
   // referencing this texture.
   void IncAllFramebufferStateChangeCount();
@@ -724,9 +659,6 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   // Indicates that the storage for the texture is allocated using glTexStorage*
   // functions.
   bool immutable_storage_ = false;
-
-  // Whether or not this texture has images.
-  bool has_images_ = false;
 
   // Size in bytes this texture is assumed to take in memory.
   uint32_t estimated_size_ = 0;
@@ -1072,10 +1004,6 @@ class GPU_GLES2_EXPORT TextureManager
     return num_uncleared_mips_ > 0;
   }
 
-  bool HaveImages() const {
-    return num_images_ > 0;
-  }
-
   GLuint black_texture_id(GLenum target) const {
     switch (target) {
       case GL_SAMPLER_2D:
@@ -1103,15 +1031,6 @@ class GPU_GLES2_EXPORT TextureManager
   size_t mem_represented() const {
     return memory_type_tracker_->GetMemRepresented();
   }
-
-#if BUILDFLAG(IS_OZONE)
-  void SetBoundLevelImage(TextureRef* ref,
-                          GLenum target,
-                          GLint level,
-                          GLImageNativePixmap* image);
-
-  void UnsetLevelImage(TextureRef* ref, GLenum target, GLint level);
-#endif
 
   size_t GetSignatureSize() const;
 
@@ -1356,7 +1275,6 @@ class GPU_GLES2_EXPORT TextureManager
 
   int num_unsafe_textures_;
   int num_uncleared_mips_;
-  int num_images_;
 
   // Counts the number of Textures allocated with 'this' as its manager.
   // Allows to check no Texture will outlive this.

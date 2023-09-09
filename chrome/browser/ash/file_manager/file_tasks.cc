@@ -54,6 +54,7 @@
 #include "chrome/browser/ash/file_system_provider/service.h"
 #include "chrome/browser/ash/fileapi/file_system_backend.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_files_utils.h"
+#include "chrome/browser/chromeos/upload_office_to_cloud/upload_office_to_cloud.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -69,6 +70,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/drive/drive_api_util.h"
+#include "components/drive/drive_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -158,6 +160,7 @@ const char kWebAppTaskType[] = "web";
 
 constexpr char kPdfMimeType[] = "application/pdf";
 constexpr char kPdfFileExtension[] = ".pdf";
+constexpr char kEncryptedMimeType[] = "application/vnd.google-gsuite.encrypted";
 
 void RecordChangesInDefaultPdfApp(const std::string& new_default_app_id,
                                   const std::set<std::string>& mime_types,
@@ -372,7 +375,7 @@ void PostProcessFoundTasks(Profile* profile,
   disabled_actions.emplace("view-pdf");
 #endif  // !BUILDFLAG(ENABLE_PDF)
 
-  if (!ash::cloud_upload::IsEligibleAndEnabledUploadOfficeToCloud(profile)) {
+  if (!chromeos::IsEligibleAndEnabledUploadOfficeToCloud(profile)) {
     disabled_actions.emplace(kActionIdWebDriveOfficeWord);
     disabled_actions.emplace(kActionIdWebDriveOfficeExcel);
     disabled_actions.emplace(kActionIdWebDriveOfficePowerPoint);
@@ -423,7 +426,7 @@ bool ShouldBeOpenedWithBrowser(const std::string& extension_id,
                                const std::string& action_id) {
   return IsFilesAppId(extension_id) &&
          (action_id == "view-pdf" || action_id == "view-in-browser" ||
-          action_id == "open-hosted-generic" ||
+          action_id == "open-encrypted" || action_id == "open-hosted-generic" ||
           action_id == "open-hosted-gdoc" ||
           action_id == "open-hosted-gsheet" ||
           action_id == "open-hosted-gslides");
@@ -558,10 +561,17 @@ void RecordDriveOfflineUMAs(Profile* profile,
 
   for (const FileSystemURL& file_url : file_urls) {
     if (file_url.type() == storage::kFileSystemTypeDriveFs) {
+      ViewFileType type = GetViewFileType(file_url.path());
       integration_service->GetMetadata(
           file_url.path(),
-          base::BindOnce(&RecordDriveOfflineUMAsGotMetadata, profile,
-                         GetViewFileType(file_url.path())));
+          base::BindOnce(&RecordDriveOfflineUMAsGotMetadata, profile, type));
+      if (!integration_service->IsOnline() &&
+          drive::util::IsDriveFsBulkPinningEnabled(profile) &&
+          profile->GetPrefs()->GetBoolean(
+              drive::prefs::kDriveFsBulkPinningEnabled)) {
+        base::UmaHistogramEnumeration(
+            "FileBrowser.GoogleDrive.BulkPinning.OfflineOpen", type);
+      }
     }
   }
 }
@@ -1090,7 +1100,23 @@ void FindAllTypesOfTasks(Profile* profile,
                          FindTasksCallback callback) {
   DCHECK(profile);
   auto resulting_tasks = std::make_unique<ResultingTasks>();
-  if (!ash::features::ShouldArcFileTasksUseAppService()) {
+  bool has_encrypted_item = std::any_of(
+      entries.begin(), entries.end(), [](const extensions::EntryInfo& entry) {
+        return IsEncryptedMimeType(entry.mime_type);
+      });
+  bool all_encrypted_items = std::all_of(
+      entries.begin(), entries.end(), [](const extensions::EntryInfo& entry) {
+        return IsEncryptedMimeType(entry.mime_type);
+      });
+  if (has_encrypted_item) {
+    if (all_encrypted_items) {
+      resulting_tasks->tasks.emplace_back(FullTaskDescriptor(
+          TaskDescriptor(kFileManagerAppId, TASK_TYPE_FILE_HANDLER,
+                         "open-encrypted"),
+          "", GURL(), false, false, false));
+    }
+    std::move(callback).Run(std::move(resulting_tasks));
+  } else if (!ash::features::ShouldArcFileTasksUseAppService()) {
     // 1. Find and append ARC handler tasks if ARC file tasks aren't
     // provided by App Service.
     FindArcTasks(
@@ -1267,6 +1293,10 @@ bool IsOfficeFile(const base::FilePath& path) {
     }
   }
   return false;
+}
+
+bool IsEncryptedMimeType(std::string mime_type) {
+  return mime_type.substr(0, strlen(kEncryptedMimeType)) == kEncryptedMimeType;
 }
 
 namespace {

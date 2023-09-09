@@ -26,6 +26,7 @@ import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
+import org.chromium.base.ResettersForTesting;
 import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
 import org.chromium.chrome.tab_ui.R;
@@ -124,8 +125,6 @@ class TabGridViewBinder {
             }
 
             updateFavicon(view, model);
-        } else if (TabProperties.THUMBNAIL_FETCHER == propertyKey) {
-            updateThumbnail(view, model);
         } else if (TabProperties.CONTENT_DESCRIPTION_STRING == propertyKey) {
             view.setContentDescription(model.get(TabProperties.CONTENT_DESCRIPTION_STRING));
         } else if (TabProperties.GRID_CARD_SIZE == propertyKey) {
@@ -137,6 +136,8 @@ class TabGridViewBinder {
             view.setLayoutParams(view.getLayoutParams());
             TabGridThumbnailView thumbnail =
                     (TabGridThumbnailView) view.fastFindViewById(R.id.tab_thumbnail);
+            updateThumbnail(view, model);
+        } else if (TabProperties.THUMBNAIL_FETCHER == propertyKey) {
             updateThumbnail(view, model);
         }
     }
@@ -305,7 +306,7 @@ class TabGridViewBinder {
                     && cardSize.equals(model.get(TabProperties.GRID_CARD_SIZE));
             if (result != null) {
                 // TODO(crbug/1395467): look into cancelling if there are multiple in-flight
-                // requests. Ensure only the most recently requested bitmap it used.
+                // requests. Ensure only the most recently requested bitmap is used.
                 if (!isMostRecentRequest) {
                     result.recycle();
                     return;
@@ -470,8 +471,8 @@ class TabGridViewBinder {
         }
     }
 
-    @VisibleForTesting
     static void setThumbnailFeatureForTesting(TabListMediator.ThumbnailFetcher fetcher) {
         sThumbnailFetcherForTesting = fetcher;
+        ResettersForTesting.register(() -> sThumbnailFetcherForTesting = null);
     }
 }

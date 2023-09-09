@@ -76,6 +76,10 @@ class SyncPointManager;
 class VulkanImplementation;
 }  // namespace gpu
 
+namespace gpu::webgpu {
+class DawnCachingInterfaceFactory;
+}  // namespace gpu::webgpu
+
 namespace media {
 class MediaGpuChannelManager;
 }  // namespace media
@@ -255,7 +259,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl
   void DidLoseContext(bool offscreen,
                       gpu::error::ContextLostReason reason,
                       const GURL& active_url) override;
-  void GetDawnInfo(GetDawnInfoCallback callback) override;
+  void GetDawnInfo(bool collect_metrics, GetDawnInfoCallback callback) override;
 
   void GetIsolationKey(int client_id,
                        const blink::WebGPUExecutionContextToken& token,
@@ -498,9 +502,17 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl
   void UpdateOverlayAndDXGIInfo();
 #endif
 
-  void GetDawnInfoOnMain(GetDawnInfoCallback callback);
+  void GetDawnInfoOnMain(bool collect_metrics, GetDawnInfoCallback callback);
 
   void RemoveGmbClient(int client_id);
+
+  gpu::webgpu::DawnCachingInterfaceFactory* dawn_caching_interface_factory() {
+#if BUILDFLAG(USE_DAWN) || BUILDFLAG(SKIA_USE_DAWN)
+    return dawn_caching_interface_factory_.get();
+#else
+    return nullptr;
+#endif
+  }
 
   scoped_refptr<base::SingleThreadTaskRunner> main_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
@@ -552,6 +564,11 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl
 
   std::unique_ptr<gpu::Scheduler> owned_scheduler_;
   raw_ptr<gpu::Scheduler, DanglingUntriaged> scheduler_;
+
+#if BUILDFLAG(USE_DAWN) || BUILDFLAG(SKIA_USE_DAWN)
+  std::unique_ptr<gpu::webgpu::DawnCachingInterfaceFactory>
+      dawn_caching_interface_factory_;
+#endif
 
 #if BUILDFLAG(ENABLE_VULKAN)
   raw_ptr<gpu::VulkanImplementation> vulkan_implementation_;

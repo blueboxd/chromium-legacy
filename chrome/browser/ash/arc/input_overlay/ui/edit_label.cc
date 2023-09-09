@@ -10,8 +10,10 @@
 #include "chrome/browser/ash/arc/input_overlay/actions/action.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/input_element.h"
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
+#include "chrome/browser/ash/arc/input_overlay/ui/edit_labels.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/ui_utils.h"
 #include "chrome/browser/ash/arc/input_overlay/util.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -34,7 +36,7 @@ EditLabel::EditLabel(DisplayOverlayController* controller,
 
 EditLabel::~EditLabel() = default;
 
-void EditLabel::OnActionUpdated() {
+void EditLabel::OnActionInputBindingUpdated() {
   if (action_->GetCurrentDisplayedInput().input_sources() ==
       InputSource::IS_NONE) {
     SetTextLabel(kUnknownBind);
@@ -61,21 +63,30 @@ void EditLabel::Init() {
   SetHotTracked(false);
   SetShowInkDropWhenHotTracked(false);
   SetHasInkDropActionOnClick(false);
-
-  OnActionUpdated();
+  ash::bubble_utils::ApplyStyle(label(), ash::TypographyToken::kCrosHeadline1,
+                                cros_tokens::kCrosSysOnPrimaryContainer);
+  OnActionInputBindingUpdated();
 }
 
 void EditLabel::SetTextLabel(const std::u16string& text) {
   SetText(text);
   SetAccessibleName(CalculateAccessibleName());
-
-  if (text == kUnknownBind) {
-    SetToUnbound();
-  } else if (HasFocus()) {
+  SetBackground(views::CreateThemedRoundedRectBackground(
+      text == kUnknownBind ? cros_tokens::kCrosSysErrorHighlight
+                           : cros_tokens::kCrosSysHighlightShape,
+      /*radius=*/8));
+  if (HasFocus()) {
     SetToFocused();
   } else {
     SetToDefault();
   }
+}
+
+void EditLabel::SetNameTagState(bool is_error,
+                                const std::u16string& error_tooltip) {
+  DCHECK(parent());
+  auto* parent_view = static_cast<EditLabels*>(parent());
+  parent_view->SetNameTagState(is_error, error_tooltip);
 }
 
 std::u16string EditLabel::CalculateAccessibleName() {
@@ -85,48 +96,29 @@ std::u16string EditLabel::CalculateAccessibleName() {
 }
 
 void EditLabel::SetToDefault() {
-  SetBackground(views::CreateThemedRoundedRectBackground(
-      cros_tokens::kCrosSysHighlightShape, /*corner_radius=*/8));
-  ash::bubble_utils::ApplyStyle(label(), ash::TypographyToken::kCrosHeadline1,
-                                cros_tokens::kCrosSysOnPrimaryContainer);
+  SetEnabledTextColorIds(IsInputUnbound()
+                             ? cros_tokens::kCrosSysError
+                             : cros_tokens::kCrosSysOnPrimaryContainer);
   SetBorder(nullptr);
 }
 
 void EditLabel::SetToFocused() {
-  SetBackground(views::CreateThemedRoundedRectBackground(
-      cros_tokens::kCrosSysHighlightShape, /*corner_radius=*/8));
-  ash::bubble_utils::ApplyStyle(label(), ash::TypographyToken::kCrosHeadline1,
-                                cros_tokens::kCrosSysHighlightText);
+  SetEnabledTextColorIds(IsInputUnbound() ? cros_tokens::kCrosSysError
+                                          : cros_tokens::kCrosSysHighlightText);
   SetBorder(views::CreateThemedRoundedRectBorder(
       /*thickness=*/2, /*corner_radius=*/8, cros_tokens::kCrosSysPrimary));
 }
 
-void EditLabel::SetToUnbound() {
-  SetBackground(views::CreateThemedRoundedRectBackground(
-      cros_tokens::kCrosRefError30, /*corner_radius=*/8));
-  ash::bubble_utils::ApplyStyle(label(), ash::TypographyToken::kCrosHeadline1,
-                                cros_tokens::kCrosRefError0);
-  SetBorder(nullptr);
-}
-
 void EditLabel::OnFocus() {
   LabelButton::OnFocus();
-
-  if (IsInputUnbound()) {
-    SetToUnbound();
-  } else {
-    SetToFocused();
-  }
+  SetToFocused();
 }
 
 void EditLabel::OnBlur() {
   LabelButton::OnBlur();
-
-  if (IsInputUnbound()) {
-    SetToUnbound();
-  } else {
-    SetToDefault();
-  }
+  SetToDefault();
+  // Reset the error state if an reserved key was pressed.
+  SetNameTagState(/*is_error=*/false, u"");
 }
 
 bool EditLabel::OnKeyPressed(const ui::KeyEvent& event) {
@@ -136,6 +128,9 @@ bool EditLabel::OnKeyPressed(const ui::KeyEvent& event) {
       (!action_->support_modifier_key() &&
        ModifierDomCodeToEventFlag(code) != ui::EF_NONE) ||
       IsReservedDomCode(code)) {
+    SetNameTagState(
+        /*is_error=*/true,
+        l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_EDIT_RESERVED_KEYS));
     return false;
   }
 

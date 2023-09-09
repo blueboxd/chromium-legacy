@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
+#include "third_party/blink/renderer/core/layout/svg/transform_helper.h"
 #include "third_party/blink/renderer/core/layout/svg/transformed_hit_test_location.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/scoped_svg_paint_state.h"
@@ -52,6 +53,16 @@ void LayoutNGSVGText::StyleDidChange(StyleDifference diff,
     diff.SetNeedsFullLayout();
   LayoutNGBlockFlowMixin<LayoutSVGBlock>::StyleDidChange(diff, old_style);
   SVGResources::UpdatePaints(*this, old_style, StyleRef());
+
+  if (old_style) {
+    const ComputedStyle& style = StyleRef();
+    if (transform_uses_reference_box_ && !needs_transform_update_) {
+      if (TransformHelper::CheckReferenceBoxDependencies(*old_style, style)) {
+        SetNeedsTransformUpdate();
+        SetNeedsPaintPropertyUpdate();
+      }
+    }
+  }
 }
 
 void LayoutNGSVGText::WillBeDestroyed() {
@@ -217,11 +228,7 @@ void LayoutNGSVGText::UpdateLayout() {
     // should be fine. We update the transform again after computing
     // the bounding box below, and after that we clear the
     // |needs_transform_update_| flag.
-    if (needs_transform_update_) {
-      local_transform_ =
-          GetElement()->CalculateTransform(SVGElement::kIncludeMotionTransform);
-    }
-
+    UpdateTransformBeforeLayout();
     UpdateFont();
     SetNeedsCollectInlines(true);
     needs_text_metrics_update_ = false;
@@ -288,9 +295,15 @@ gfx::RectF LayoutNGSVGText::ObjectBoundingBox() const {
 gfx::RectF LayoutNGSVGText::StrokeBoundingBox() const {
   NOT_DESTROYED();
   gfx::RectF box = ObjectBoundingBox();
-  if (box.IsEmpty())
+  if (box.IsEmpty()) {
     return gfx::RectF();
+  }
   return SVGLayoutSupport::ExtendTextBBoxWithStroke(*this, box);
+}
+
+gfx::RectF LayoutNGSVGText::DecoratedBoundingBox() const {
+  NOT_DESTROYED();
+  return StrokeBoundingBox();
 }
 
 gfx::RectF LayoutNGSVGText::VisualRectInLocalSVGCoordinates() const {
@@ -305,12 +318,13 @@ gfx::RectF LayoutNGSVGText::VisualRectInLocalSVGCoordinates() const {
 void LayoutNGSVGText::AbsoluteQuads(Vector<gfx::QuadF>& quads,
                                     MapCoordinatesFlags mode) const {
   NOT_DESTROYED();
-  quads.push_back(LocalToAbsoluteQuad(gfx::QuadF(StrokeBoundingBox()), mode));
+  quads.push_back(
+      LocalToAbsoluteQuad(gfx::QuadF(DecoratedBoundingBox()), mode));
 }
 
 gfx::RectF LayoutNGSVGText::LocalBoundingBoxRectForAccessibility() const {
   NOT_DESTROYED();
-  return StrokeBoundingBox();
+  return DecoratedBoundingBox();
 }
 
 bool LayoutNGSVGText::NodeAtPoint(HitTestResult& result,

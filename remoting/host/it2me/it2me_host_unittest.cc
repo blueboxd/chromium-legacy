@@ -22,8 +22,10 @@
 #include "components/policy/policy_constants.h"
 #include "net/base/network_change_notifier.h"
 #include "remoting/base/auto_thread_task_runner.h"
+#include "remoting/host/chromeos/chromeos_enterprise_params.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
+#include "remoting/host/host_event_reporter.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog.h"
 #include "remoting/host/policy_watcher.h"
 #include "remoting/host/xmpp_register_support_host_request.h"
@@ -68,6 +70,21 @@ const char kMismatchedDomain3[] = "not_even_close.com";
 const char kPortRange[] = "12401-12408";
 
 const char kTestStunServer[] = "test_relay_server.com";
+
+class HostEventReporterStub : public HostEventReporter {
+ public:
+  HostEventReporterStub() = default;
+  HostEventReporterStub(const HostEventReporterStub&) = delete;
+  HostEventReporterStub& operator=(const HostEventReporterStub&) = delete;
+  ~HostEventReporterStub() override = default;
+};
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+std::unique_ptr<HostEventReporter> CreateHostEventReporterStub(
+    scoped_refptr<HostStatusMonitor>) {
+  return std::make_unique<HostEventReporterStub>();
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace
 
@@ -209,6 +226,7 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
   void RunValidationCallback(const std::string& remote_jid);
 
   void StartHost();
+  void StartHost(absl::optional<ChromeOsEnterpriseParams> enterprise_params);
   void ShutdownHost();
 
   static base::Value MakeList(std::initializer_list<base::StringPiece> values);
@@ -233,7 +251,8 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
   ErrorCode last_error_code_ = ErrorCode::OK;
 
   // Used to set ConfirmationDialog behavior.
-  raw_ptr<FakeIt2MeDialogFactory, DanglingUntriaged> dialog_factory_ = nullptr;
+  raw_ptr<FakeIt2MeDialogFactory, AcrossTasksDanglingUntriaged>
+      dialog_factory_ = nullptr;
 
   absl::optional<base::Value::Dict> policies_;
 
@@ -258,7 +277,7 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
   base::WeakPtrFactory<It2MeHostTest> weak_factory_{this};
 };
 
-It2MeHostTest::It2MeHostTest() {}
+It2MeHostTest::It2MeHostTest() = default;
 It2MeHostTest::~It2MeHostTest() = default;
 
 void It2MeHostTest::SetUp() {
@@ -365,6 +384,11 @@ void It2MeHostTest::StartHost() {
     it2me_host_->set_authorized_helper(authorized_helper_.value());
   }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  it2me_host_->SetHostEventReporterFactoryForTesting(
+      base::BindRepeating(CreateHostEventReporterStub));
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
   auto create_connection_context = base::BindOnce(
       [](std::unique_ptr<SignalStrategy> signal_strategy,
          ChromotingHostContext* host_context) {
@@ -388,6 +412,12 @@ void It2MeHostTest::StartHost() {
       base::BindOnce(&It2MeHostTest::StartupHostStateHelper,
                      base::Unretained(this), run_loop.QuitClosure());
   run_loop.Run();
+}
+
+void It2MeHostTest::StartHost(
+    absl::optional<ChromeOsEnterpriseParams> enterprise_params) {
+  enterprise_params_ = enterprise_params;
+  StartHost();
 }
 
 void It2MeHostTest::RunUntilStateChanged(It2MeHostState expected_state) {
@@ -841,50 +871,81 @@ TEST_F(It2MeHostTest, AllowSupportHostConnectionsPolicyDisabled) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(It2MeHostTest, ConnectRespectsSuppressDialogsParameter) {
-  enterprise_params_ = {.suppress_user_dialogs = true};
-  StartHost();
+  StartHost(ChromeOsEnterpriseParams{.suppress_user_dialogs = true});
+
   EXPECT_FALSE(dialog_factory_->dialog_created());
   EXPECT_FALSE(
       GetHost()->desktop_environment_options().enable_user_interface());
 }
 
 TEST_F(It2MeHostTest, ConnectRespectsSuppressNotificationsParameter) {
-  enterprise_params_ = {.suppress_notifications = true};
-  StartHost();
+  StartHost(ChromeOsEnterpriseParams{.suppress_notifications = true});
+
   EXPECT_FALSE(dialog_factory_->dialog_created());
   EXPECT_FALSE(GetHost()->desktop_environment_options().enable_notifications());
 }
 
 TEST_F(It2MeHostTest, ConnectRespectsTerminateUponInputParameter) {
-  enterprise_params_ = {.terminate_upon_input = true};
-  StartHost();
+  StartHost(ChromeOsEnterpriseParams{.terminate_upon_input = true});
+
   EXPECT_TRUE(GetHost()->desktop_environment_options().terminate_upon_input());
 }
 
 TEST_F(It2MeHostTest, TerminateUponInputDefaultsToFalse) {
-  StartHost();
+  StartHost(/*enterprise_params=*/absl::nullopt);
+
   EXPECT_FALSE(GetHost()->desktop_environment_options().terminate_upon_input());
 }
 
 TEST_F(It2MeHostTest, ConnectRespectsEnableCurtainingParameter) {
-  enterprise_params_ = {.curtain_local_user_session = true};
-  StartHost();
+  StartHost(ChromeOsEnterpriseParams{.curtain_local_user_session = true});
+
   EXPECT_TRUE(GetHost()->desktop_environment_options().enable_curtaining());
 }
 
 TEST_F(It2MeHostTest, EnableCurtainingDefaultsToFalse) {
-  StartHost();
+  StartHost(/*enterprise_params=*/absl::nullopt);
+
   EXPECT_FALSE(GetHost()->desktop_environment_options().enable_curtaining());
 }
 
-TEST_F(It2MeHostTest, ConnectRespectsAllowFileTransferParameter) {
-  enterprise_params_ = {.allow_file_transfer = true};
-  StartHost();
+TEST_F(It2MeHostTest, AllowEnterpriseFileTransferWithPolicyEnabled) {
+  SetPolicies({{policy::key::kRemoteAccessHostAllowEnterpriseFileTransfer,
+                base::Value(true)}});
+
+  StartHost(ChromeOsEnterpriseParams{.allow_file_transfer = true});
+
   EXPECT_TRUE(GetHost()->desktop_environment_options().enable_file_transfer());
 }
 
+TEST_F(It2MeHostTest, AllowEnterpriseFileTransferWithPolicyDisabled) {
+  SetPolicies({{policy::key::kRemoteAccessHostAllowEnterpriseFileTransfer,
+                base::Value(false)}});
+
+  StartHost(ChromeOsEnterpriseParams{.allow_file_transfer = true});
+
+  EXPECT_FALSE(GetHost()->desktop_environment_options().enable_file_transfer());
+}
+
+TEST_F(It2MeHostTest,
+       AllowEnterpriseFileTransferWithPolicyEnabledForNonEnterpriseSession) {
+  SetPolicies({{policy::key::kRemoteAccessHostAllowEnterpriseFileTransfer,
+                base::Value(true)}});
+
+  StartHost(/*enterprise_params=*/absl::nullopt);
+
+  EXPECT_FALSE(GetHost()->desktop_environment_options().enable_file_transfer());
+}
+
+TEST_F(It2MeHostTest, AllowEnterpriseFileTransferWithPolicyNotSet) {
+  StartHost(ChromeOsEnterpriseParams{.allow_file_transfer = true});
+
+  EXPECT_FALSE(GetHost()->desktop_environment_options().enable_file_transfer());
+}
+
 TEST_F(It2MeHostTest, EnableFileTransferDefaultsToFalse) {
-  StartHost();
+  StartHost(/*enterprise_params=*/absl::nullopt);
+
   EXPECT_FALSE(GetHost()->desktop_environment_options().enable_file_transfer());
 }
 
@@ -893,8 +954,7 @@ TEST_F(It2MeHostTest,
   SetPolicies({{policy::key::kRemoteAccessHostAllowRemoteSupportConnections,
                 base::Value(false)}});
 
-  enterprise_params_ = ChromeOsEnterpriseParams();
-  StartHost();
+  StartHost(ChromeOsEnterpriseParams());
   ASSERT_EQ(It2MeHostState::kReceivedAccessCode, last_host_state_);
 
   ShutdownHost();
@@ -906,8 +966,7 @@ TEST_F(It2MeHostTest, EnterpriseSessionsShouldNotCheckHostDomain) {
   SetPolicies({{policy::key::kRemoteAccessHostDomainList,
                 MakeList({"other-domain.com"})}});
 
-  enterprise_params_ = ChromeOsEnterpriseParams();
-  StartHost();
+  StartHost(ChromeOsEnterpriseParams());
   ASSERT_EQ(It2MeHostState::kReceivedAccessCode, last_host_state_);
 
   ShutdownHost();
@@ -922,8 +981,7 @@ TEST_F(
       {{policy::key::kRemoteAccessHostAllowEnterpriseRemoteSupportConnections,
         base::Value(false)}});
 
-  enterprise_params_ = ChromeOsEnterpriseParams();
-  StartHost();
+  StartHost(ChromeOsEnterpriseParams());
   ASSERT_EQ(It2MeHostState::kError, last_host_state_);
   ASSERT_EQ(ErrorCode::DISALLOWED_BY_POLICY, last_error_code_);
 }
@@ -935,8 +993,7 @@ TEST_F(
       {{policy::key::kRemoteAccessHostAllowEnterpriseRemoteSupportConnections,
         base::Value(false)}});
 
-  enterprise_params_ = absl::nullopt;
-  StartHost();
+  StartHost(/*enterprise_params=*/absl::nullopt);
   ASSERT_EQ(It2MeHostState::kReceivedAccessCode, last_host_state_);
 }
 #endif

@@ -12,6 +12,7 @@
 #include "base/functional/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/task/sequenced_task_runner.h"
+#include "build/build_config.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_types.h"
 #include "media/gpu/buildflags.h"
@@ -156,7 +157,7 @@ std::unique_ptr<ImageProcessor> CreateV4L2ImageProcessorWithInputCandidates(
     return v4l2_vda_helpers::CreateImageProcessor(
         input_fourcc, *output_fourcc, input_size, output_size, visible_rect,
         VideoFrame::StorageType::STORAGE_GPU_MEMORY_BUFFER, num_buffers,
-        V4L2Device::Create(), ImageProcessor::OutputMode::IMPORT,
+        new V4L2Device(), ImageProcessor::OutputMode::IMPORT,
         std::move(client_task_runner), std::move(error_cb));
   }
   return nullptr;
@@ -248,8 +249,9 @@ std::unique_ptr<ImageProcessor> ImageProcessorFactory::Create(
   create_funcs.push_back(
       base::BindRepeating(&VaapiImageProcessorBackend::Create));
 #elif BUILDFLAG(USE_V4L2_CODEC)
-  create_funcs.push_back(base::BindRepeating(
-      &V4L2ImageProcessorBackend::Create, V4L2Device::Create(), num_buffers));
+  create_funcs.push_back(base::BindRepeating(&V4L2ImageProcessorBackend::Create,
+                                             base::MakeRefCounted<V4L2Device>(),
+                                             num_buffers));
 #endif
   create_funcs.push_back(
       base::BindRepeating(&LibYUVImageProcessorBackend::Create));
@@ -337,9 +339,13 @@ ImageProcessorFactory::CreateGLImageProcessorWithInputCandidatesForTesting(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     PickFormatCB out_format_picker,
     ImageProcessor::ErrorCB error_cb) {
+#if defined(ARCH_CPU_ARM_FAMILY)
   return CreateGLImageProcessorWithInputCandidates(
       input_candidates, input_visible_rect, output_size, client_task_runner,
       out_format_picker, error_cb);
+#else
+  return nullptr;
+#endif
 }
 #endif
 

@@ -9,7 +9,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/containers/circular_deque.h"
 #include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/preloading/prefetch/no_vary_search_helper.h"
@@ -111,12 +110,16 @@ class CONTENT_EXPORT PrefetchDocumentManager
   GetAllForUrlWithoutRefAndQueryForTesting(const GURL& url) const;
   void EnableNoVarySearchSupport();
 
-  // Returns true if we can prefetch |next_prefetch| based on the number of
-  // existing completed prefetches. This method will make room for
-  // another prefetch by evicting an existing prefetch if possible. The
-  // eagerness of |next_prefetch| is taken into account when making the
-  // decision.
-  bool CanPrefetchNow(PrefetchContainer* next_prefetch);
+  // Returns a tuple: (can_prefetch_now, prefetch_to_evict). 'can_prefetch_now'
+  // is true if we can prefetch |next_prefetch| based on the state of the
+  // document, and the number of existing completed prefetches (only if
+  // |kPrefetchNewLimits| is enabled). The eagerness of |next_prefetch| is taken
+  // into account when making the decision. 'prefetch_to_evict' is set to an
+  // existing prefetch if one needs to be evicted to make space for the prefetch
+  // of |next_prefetch|, or nullptr otherwise. 'prefetch_to_evict' will only be
+  // non-null if 'can_prefetch_now' is true.
+  std::tuple<bool, base::WeakPtr<PrefetchContainer>> CanPrefetchNow(
+      PrefetchContainer* next_prefetch);
 
   // See documentation for |prefetch_destruction_callback_|.
   void SetPrefetchDestructionCallback(PrefetchDestructionCallback callback);
@@ -158,13 +161,12 @@ class CONTENT_EXPORT PrefetchDocumentManager
   // requested by this page.
   int number_prefetch_request_attempted_{0};
 
-  // The number of eager prefetch requests (from this page) that have completed.
-  // An 'eager' prefetch is a prefetch whose eagerness is kEager.
-  size_t number_eager_prefetches_completed_{0};
+  // A list of eager prefetch requests (from this page) that have completed
+  // (oldest to newest).
+  std::vector<base::WeakPtr<PrefetchContainer>> completed_eager_prefetches_;
   // A list of non-eager prefetch requests (from this page) that have completed
   // (oldest to newest).
-  base::circular_deque<base::WeakPtr<PrefetchContainer>>
-      completed_non_eager_prefetches_;
+  std::vector<base::WeakPtr<PrefetchContainer>> completed_non_eager_prefetches_;
 
   // Metrics related to the prefetches requested by this page load.
   PrefetchReferringPageMetrics referring_page_metrics_;

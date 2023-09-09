@@ -9,6 +9,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ash/file_manager/file_tasks.h"
 #include "chrome/browser/ash/file_system_provider/mount_path_util.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload.mojom.h"
+#include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_util.h"
 #include "chrome/browser/ui/webui/ash/system_web_dialog_delegate.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "ui/gfx/geometry/size.h"
@@ -31,6 +33,9 @@ namespace file_manager::file_tasks {
 FORWARD_DECLARE_TEST(DriveTest, OpenFileInDrive);
 FORWARD_DECLARE_TEST(OneDriveTest, OpenFileFromODFS);
 FORWARD_DECLARE_TEST(OneDriveTest, OpenFileNotFromODFS);
+FORWARD_DECLARE_TEST(OneDriveTest,
+                     FailToOpenFileFromODFSReauthenticationRequired);
+FORWARD_DECLARE_TEST(OneDriveTest, FailToOpenFileFromODFSOtherAccessError);
 FORWARD_DECLARE_TEST(OneDriveTest, OpenFileFromAndroidOneDriveViaODFS);
 FORWARD_DECLARE_TEST(OneDriveTest,
                      FailToOpenFileFromAndroidOneDriveViaODFSDiffEmail);
@@ -54,7 +59,10 @@ enum class OfficeFilesTransferRequired {
 namespace ash::cloud_upload {
 
 struct ODFSFileSystemAndPath {
-  file_system_provider::ProvidedFileSystemInterface* file_system;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter
+  // for: #union
+  RAW_PTR_EXCLUSION file_system_provider::ProvidedFileSystemInterface*
+      file_system;
   base::FilePath file_path_within_odfs;
 };
 
@@ -67,10 +75,6 @@ const char kUserActionConfirmOrUploadToGoogleDrive[] =
     "confirm-or-upload-google-drive";
 const char kUserActionConfirmOrUploadToOneDrive[] =
     "confirm-or-upload-onedrive";
-
-// Custom action ids passed from ODFS.
-const char kOneDriveUrlActionId[] = "HIDDEN_ONEDRIVE_URL";
-const char kUserEmailActionId[] = "HIDDEN_ONEDRIVE_USER_EMAIL";
 
 // Either OneDrive for the Office PWA or Drive for Drive Web editing.
 enum class CloudProvider {
@@ -130,6 +134,10 @@ class CloudOpenTask : public BrowserListObserver,
   FRIEND_TEST_ALL_PREFIXES(::file_manager::file_tasks::OneDriveTest,
                            OpenFileNotFromODFS);
   FRIEND_TEST_ALL_PREFIXES(::file_manager::file_tasks::OneDriveTest,
+                           FailToOpenFileFromODFSReauthenticationRequired);
+  FRIEND_TEST_ALL_PREFIXES(::file_manager::file_tasks::OneDriveTest,
+                           FailToOpenFileFromODFSOtherAccessError);
+  FRIEND_TEST_ALL_PREFIXES(::file_manager::file_tasks::OneDriveTest,
                            OpenFileFromAndroidOneDriveViaODFS);
   FRIEND_TEST_ALL_PREFIXES(::file_manager::file_tasks::OneDriveTest,
                            FailToOpenFileFromAndroidOneDriveViaODFSDiffEmail);
@@ -156,9 +164,10 @@ class CloudOpenTask : public BrowserListObserver,
   void OpenAlreadyHostedDriveUrls();
   void OpenODFSUrls();
   void OpenAndroidOneDriveUrlsIfAccountMatchedODFS();
-  void CheckEmailAndOpenURLs(const std::string& android_onedrive_email,
-                             const file_system_provider::Actions& actions,
-                             base::File::Error result);
+  void CheckEmailAndOpenURLs(
+      const std::string& android_onedrive_email,
+      base::expected<cloud_upload::ODFSMetadata, base::File::Error>
+          metadata_or_error);
 
   bool ShouldShowConfirmationDialog();
   void ConfirmMoveOrStartUpload();
@@ -212,10 +221,6 @@ class CloudOpenTask : public BrowserListObserver,
       OfficeFilesTransferRequired::kNotRequired;
 };
 
-// Return True if feature `kUploadOfficeToCloud` is enabled and is eligible for
-// the user of the |profile|. A user is eligible if they are not managed.
-bool IsEligibleAndEnabledUploadOfficeToCloud(Profile* profile);
-
 // Returns True if OneDrive is the selected `cloud_provider` but either ODFS
 // is not mounted or the Office PWA is not installed. Returns False otherwise.
 bool ShouldFixUpOffice(Profile* profile, const CloudProvider cloud_provider);
@@ -255,6 +260,9 @@ absl::optional<ODFSFileSystemAndPath> AndroidOneDriveUrlToODFS(
 // connect to OneDrive. There is no 'done' callback because files app doesn't
 // need it.
 bool ShowConnectOneDriveDialog(gfx::NativeWindow modal_parent);
+
+// Launches the setup flow to set up opening Office files in Microsoft 365.
+void LaunchMicrosoft365Setup(Profile* profile, gfx::NativeWindow modal_parent);
 
 // Defines the web dialog used to help users upload Office files to the cloud.
 class CloudUploadDialog : public SystemWebDialogDelegate {

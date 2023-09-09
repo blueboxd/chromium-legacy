@@ -1,8 +1,8 @@
 This is a testharness.js-based test.
-Found 292 tests; 271 PASS, 21 FAIL, 0 TIMEOUT, 0 NOTRUN.
-FAIL CSS Transitions: property <offset-path> from [circle(10px)] to [inset(20px)] at (-0.3) should be [inset(20px)] assert_equals: expected "inset ( 20px ) " but got "circle ( 10px ) "
-FAIL CSS Transitions: property <offset-path> from [circle(10px)] to [inset(20px)] at (0) should be [inset(20px)] assert_equals: expected "inset ( 20px ) " but got "circle ( 10px ) "
-FAIL CSS Transitions: property <offset-path> from [circle(10px)] to [inset(20px)] at (0.3) should be [inset(20px)] assert_equals: expected "inset ( 20px ) " but got "circle ( 10px ) "
+Found 316 tests; 292 PASS, 24 FAIL, 0 TIMEOUT, 0 NOTRUN.
+PASS CSS Transitions: property <offset-path> from [circle(10px)] to [inset(20px)] at (-0.3) should be [inset(20px)]
+PASS CSS Transitions: property <offset-path> from [circle(10px)] to [inset(20px)] at (0) should be [inset(20px)]
+PASS CSS Transitions: property <offset-path> from [circle(10px)] to [inset(20px)] at (0.3) should be [inset(20px)]
 PASS CSS Transitions: property <offset-path> from [circle(10px)] to [inset(20px)] at (0.5) should be [inset(20px)]
 PASS CSS Transitions: property <offset-path> from [circle(10px)] to [inset(20px)] at (0.6) should be [inset(20px)]
 PASS CSS Transitions: property <offset-path> from [circle(10px)] to [inset(20px)] at (1) should be [inset(20px)]
@@ -28,9 +28,9 @@ PASS Web Animations: property <offset-path> from [circle(10px)] to [inset(20px)]
 PASS Web Animations: property <offset-path> from [circle(10px)] to [inset(20px)] at (0.6) should be [inset(20px)]
 PASS Web Animations: property <offset-path> from [circle(10px)] to [inset(20px)] at (1) should be [inset(20px)]
 PASS Web Animations: property <offset-path> from [circle(10px)] to [inset(20px)] at (1.5) should be [inset(20px)]
-FAIL CSS Transitions: property <offset-path> from [ellipse(at center)] to [none] at (-0.3) should be [none] assert_equals: expected "none " but got "ellipse ( at 50 % 50 % ) "
-FAIL CSS Transitions: property <offset-path> from [ellipse(at center)] to [none] at (0) should be [none] assert_equals: expected "none " but got "ellipse ( at 50 % 50 % ) "
-FAIL CSS Transitions: property <offset-path> from [ellipse(at center)] to [none] at (0.3) should be [none] assert_equals: expected "none " but got "ellipse ( at 50 % 50 % ) "
+PASS CSS Transitions: property <offset-path> from [ellipse(at center)] to [none] at (-0.3) should be [none]
+PASS CSS Transitions: property <offset-path> from [ellipse(at center)] to [none] at (0) should be [none]
+PASS CSS Transitions: property <offset-path> from [ellipse(at center)] to [none] at (0.3) should be [none]
 PASS CSS Transitions: property <offset-path> from [ellipse(at center)] to [none] at (0.5) should be [none]
 PASS CSS Transitions: property <offset-path> from [ellipse(at center)] to [none] at (0.6) should be [none]
 PASS CSS Transitions: property <offset-path> from [ellipse(at center)] to [none] at (1) should be [none]
@@ -80,9 +80,9 @@ PASS Web Animations: property <offset-path> from neutral to [circle(20px)] at (0
 PASS Web Animations: property <offset-path> from neutral to [circle(20px)] at (0.6) should be [circle(16px)]
 PASS Web Animations: property <offset-path> from neutral to [circle(20px)] at (1) should be [circle(20px)]
 PASS Web Animations: property <offset-path> from neutral to [circle(20px)] at (1.5) should be [circle(25px)]
-FAIL CSS Transitions: property <offset-path> from [initial] to [ellipse()] at (-0.3) should be [ellipse()] assert_equals: expected "ellipse ( ) " but got "none "
-FAIL CSS Transitions: property <offset-path> from [initial] to [ellipse()] at (0) should be [ellipse()] assert_equals: expected "ellipse ( ) " but got "none "
-FAIL CSS Transitions: property <offset-path> from [initial] to [ellipse()] at (0.3) should be [ellipse()] assert_equals: expected "ellipse ( ) " but got "none "
+PASS CSS Transitions: property <offset-path> from [initial] to [ellipse()] at (-0.3) should be [ellipse()]
+PASS CSS Transitions: property <offset-path> from [initial] to [ellipse()] at (0) should be [ellipse()]
+PASS CSS Transitions: property <offset-path> from [initial] to [ellipse()] at (0.3) should be [ellipse()]
 PASS CSS Transitions: property <offset-path> from [initial] to [ellipse()] at (0.5) should be [ellipse()]
 PASS CSS Transitions: property <offset-path> from [initial] to [ellipse()] at (0.6) should be [ellipse()]
 PASS CSS Transitions: property <offset-path> from [initial] to [ellipse()] at (1) should be [ellipse()]
@@ -132,9 +132,9 @@ PASS Web Animations: property <offset-path> from [inherit] to [ellipse(40% 50% a
 PASS Web Animations: property <offset-path> from [inherit] to [ellipse(40% 50% at 25% 25%)] at (0.6) should be [ellipse(28% 34% at 35% 35%)]
 PASS Web Animations: property <offset-path> from [inherit] to [ellipse(40% 50% at 25% 25%)] at (1) should be [ellipse(40% 50% at 25% 25%)]
 PASS Web Animations: property <offset-path> from [inherit] to [ellipse(40% 50% at 25% 25%)] at (1.5) should be [ellipse(55% 70% at 12.5% 12.5%)]
-FAIL CSS Transitions: property <offset-path> from [unset] to [inset(10%)] at (-0.3) should be [inset(10%)] assert_equals: expected "inset ( 10 % ) " but got "none "
-FAIL CSS Transitions: property <offset-path> from [unset] to [inset(10%)] at (0) should be [inset(10%)] assert_equals: expected "inset ( 10 % ) " but got "none "
-FAIL CSS Transitions: property <offset-path> from [unset] to [inset(10%)] at (0.3) should be [inset(10%)] assert_equals: expected "inset ( 10 % ) " but got "none "
+PASS CSS Transitions: property <offset-path> from [unset] to [inset(10%)] at (-0.3) should be [inset(10%)]
+PASS CSS Transitions: property <offset-path> from [unset] to [inset(10%)] at (0) should be [inset(10%)]
+PASS CSS Transitions: property <offset-path> from [unset] to [inset(10%)] at (0.3) should be [inset(10%)]
 PASS CSS Transitions: property <offset-path> from [unset] to [inset(10%)] at (0.5) should be [inset(10%)]
 PASS CSS Transitions: property <offset-path> from [unset] to [inset(10%)] at (0.6) should be [inset(10%)]
 PASS CSS Transitions: property <offset-path> from [unset] to [inset(10%)] at (1) should be [inset(10%)]
@@ -160,9 +160,9 @@ PASS Web Animations: property <offset-path> from [unset] to [inset(10%)] at (0.5
 PASS Web Animations: property <offset-path> from [unset] to [inset(10%)] at (0.6) should be [inset(10%)]
 PASS Web Animations: property <offset-path> from [unset] to [inset(10%)] at (1) should be [inset(10%)]
 PASS Web Animations: property <offset-path> from [unset] to [inset(10%)] at (1.5) should be [inset(10%)]
-FAIL CSS Transitions: property <offset-path> from [none] to [rect(10px 10px 10px 10px)] at (-0.3) should be [rect(10px 10px 10px 10px)] assert_equals: expected "rect ( 10px 10px 10px 10px ) " but got "none "
-FAIL CSS Transitions: property <offset-path> from [none] to [rect(10px 10px 10px 10px)] at (0) should be [rect(10px 10px 10px 10px)] assert_equals: expected "rect ( 10px 10px 10px 10px ) " but got "none "
-FAIL CSS Transitions: property <offset-path> from [none] to [rect(10px 10px 10px 10px)] at (0.3) should be [rect(10px 10px 10px 10px)] assert_equals: expected "rect ( 10px 10px 10px 10px ) " but got "none "
+PASS CSS Transitions: property <offset-path> from [none] to [rect(10px 10px 10px 10px)] at (-0.3) should be [rect(10px 10px 10px 10px)]
+PASS CSS Transitions: property <offset-path> from [none] to [rect(10px 10px 10px 10px)] at (0) should be [rect(10px 10px 10px 10px)]
+PASS CSS Transitions: property <offset-path> from [none] to [rect(10px 10px 10px 10px)] at (0.3) should be [rect(10px 10px 10px 10px)]
 PASS CSS Transitions: property <offset-path> from [none] to [rect(10px 10px 10px 10px)] at (0.5) should be [rect(10px 10px 10px 10px)]
 PASS CSS Transitions: property <offset-path> from [none] to [rect(10px 10px 10px 10px)] at (0.6) should be [rect(10px 10px 10px 10px)]
 PASS CSS Transitions: property <offset-path> from [none] to [rect(10px 10px 10px 10px)] at (1) should be [rect(10px 10px 10px 10px)]
@@ -236,9 +236,33 @@ PASS Web Animations: property <offset-path> from [xywh(5px 5px 150% 150%)] to [x
 PASS Web Animations: property <offset-path> from [xywh(5px 5px 150% 150%)] to [xywh(10px 10px 100% 100%)] at (0.875) should be [xywh(9.38px 9.38px 106.25% 106.25%)]
 PASS Web Animations: property <offset-path> from [xywh(5px 5px 150% 150%)] to [xywh(10px 10px 100% 100%)] at (1) should be [xywh(10px 10px 100% 100%)]
 PASS Web Animations: property <offset-path> from [xywh(5px 5px 150% 150%)] to [xywh(10px 10px 100% 100%)] at (2) should be [xywh(15px 15px 50% 50%)]
-FAIL CSS Transitions: property <offset-path> from [circle(farthest-side)] to [circle(closest-side)] at (-0.3) should be [circle(closest-side)] assert_equals: expected "circle ( ) " but got "circle ( farthest - side ) "
-FAIL CSS Transitions: property <offset-path> from [circle(farthest-side)] to [circle(closest-side)] at (0) should be [circle(closest-side)] assert_equals: expected "circle ( ) " but got "circle ( farthest - side ) "
-FAIL CSS Transitions: property <offset-path> from [circle(farthest-side)] to [circle(closest-side)] at (0.3) should be [circle(closest-side)] assert_equals: expected "circle ( ) " but got "circle ( farthest - side ) "
+FAIL CSS Transitions: property <offset-path> from [xywh(10px 10px 200px 100px)] to [inset(50px)] at (-1) should be [inset(-30px calc(200% - 470px) calc(200% - 270px) -30px)] assert_equals: expected "inset ( - 30px calc ( 200 % - 470px ) calc ( 200 % - 270px ) - 30px ) " but got "inset ( 50px ) "
+FAIL CSS Transitions: property <offset-path> from [xywh(10px 10px 200px 100px)] to [inset(50px)] at (0) should be [inset(10px calc(100% - 210px) calc(100% - 110px) 10px)] assert_equals: expected "inset ( 10px calc ( 100 % - 210px ) calc ( 100 % - 110px ) 10px ) " but got "inset ( 50px ) "
+FAIL CSS Transitions: property <offset-path> from [xywh(10px 10px 200px 100px)] to [inset(50px)] at (0.125) should be [inset(15px calc(87.5% - 177.5px) calc(87.5% - 90px) 15px)] assert_equals: expected "inset ( 15px calc ( 87.5 % - 177.5px ) calc ( 87.5 % - 90px ) 15px ) " but got "inset ( 50px ) "
+FAIL CSS Transitions: property <offset-path> from [xywh(10px 10px 200px 100px)] to [inset(50px)] at (0.875) should be [inset(45px calc(12.5% + 17.5px) calc(12.5% + 30px) 45px)] assert_equals: expected "inset ( 45px calc ( 12.5 % + 17.5px ) calc ( 12.5 % + 30px ) 45px ) " but got "inset ( 50px ) "
+FAIL CSS Transitions: property <offset-path> from [xywh(10px 10px 200px 100px)] to [inset(50px)] at (1) should be [inset(50px calc(0% + 50px) calc(0% + 50px) 50px)] assert_equals: expected "inset ( 50px calc ( 0 % + 50px ) calc ( 0 % + 50px ) 50px ) " but got "inset ( 50px ) "
+FAIL CSS Transitions: property <offset-path> from [xywh(10px 10px 200px 100px)] to [inset(50px)] at (2) should be [inset(90px calc(-100% + 310px) calc(-100% + 210px) 90px)] assert_equals: expected "inset ( 90px calc ( - 100 % + 310px ) calc ( - 100 % + 210px ) 90px ) " but got "inset ( 50px ) "
+FAIL CSS Transitions with transition: all: property <offset-path> from [xywh(10px 10px 200px 100px)] to [inset(50px)] at (-1) should be [inset(-30px calc(200% - 470px) calc(200% - 270px) -30px)] assert_equals: expected "inset ( - 30px calc ( 200 % - 470px ) calc ( 200 % - 270px ) - 30px ) " but got "inset ( 50px ) "
+FAIL CSS Transitions with transition: all: property <offset-path> from [xywh(10px 10px 200px 100px)] to [inset(50px)] at (0) should be [inset(10px calc(100% - 210px) calc(100% - 110px) 10px)] assert_equals: expected "inset ( 10px calc ( 100 % - 210px ) calc ( 100 % - 110px ) 10px ) " but got "inset ( 50px ) "
+FAIL CSS Transitions with transition: all: property <offset-path> from [xywh(10px 10px 200px 100px)] to [inset(50px)] at (0.125) should be [inset(15px calc(87.5% - 177.5px) calc(87.5% - 90px) 15px)] assert_equals: expected "inset ( 15px calc ( 87.5 % - 177.5px ) calc ( 87.5 % - 90px ) 15px ) " but got "inset ( 50px ) "
+FAIL CSS Transitions with transition: all: property <offset-path> from [xywh(10px 10px 200px 100px)] to [inset(50px)] at (0.875) should be [inset(45px calc(12.5% + 17.5px) calc(12.5% + 30px) 45px)] assert_equals: expected "inset ( 45px calc ( 12.5 % + 17.5px ) calc ( 12.5 % + 30px ) 45px ) " but got "inset ( 50px ) "
+FAIL CSS Transitions with transition: all: property <offset-path> from [xywh(10px 10px 200px 100px)] to [inset(50px)] at (1) should be [inset(50px calc(0% + 50px) calc(0% + 50px) 50px)] assert_equals: expected "inset ( 50px calc ( 0 % + 50px ) calc ( 0 % + 50px ) 50px ) " but got "inset ( 50px ) "
+FAIL CSS Transitions with transition: all: property <offset-path> from [xywh(10px 10px 200px 100px)] to [inset(50px)] at (2) should be [inset(90px calc(-100% + 310px) calc(-100% + 210px) 90px)] assert_equals: expected "inset ( 90px calc ( - 100 % + 310px ) calc ( - 100 % + 210px ) 90px ) " but got "inset ( 50px ) "
+FAIL CSS Animations: property <offset-path> from [xywh(10px 10px 200px 100px)] to [inset(50px)] at (-1) should be [inset(-30px calc(200% - 470px) calc(200% - 270px) -30px)] assert_equals: expected "inset ( - 30px calc ( 200 % - 470px ) calc ( 200 % - 270px ) - 30px ) " but got "rect ( 10px 10px 200px 100px ) "
+FAIL CSS Animations: property <offset-path> from [xywh(10px 10px 200px 100px)] to [inset(50px)] at (0) should be [inset(10px calc(100% - 210px) calc(100% - 110px) 10px)] assert_equals: expected "inset ( 10px calc ( 100 % - 210px ) calc ( 100 % - 110px ) 10px ) " but got "rect ( 10px 10px 200px 100px ) "
+FAIL CSS Animations: property <offset-path> from [xywh(10px 10px 200px 100px)] to [inset(50px)] at (0.125) should be [inset(15px calc(87.5% - 177.5px) calc(87.5% - 90px) 15px)] assert_equals: expected "inset ( 15px calc ( 87.5 % - 177.5px ) calc ( 87.5 % - 90px ) 15px ) " but got "rect ( 10px 10px 200px 100px ) "
+FAIL CSS Animations: property <offset-path> from [xywh(10px 10px 200px 100px)] to [inset(50px)] at (0.875) should be [inset(45px calc(12.5% + 17.5px) calc(12.5% + 30px) 45px)] assert_equals: expected "inset ( 45px calc ( 12.5 % + 17.5px ) calc ( 12.5 % + 30px ) 45px ) " but got "inset ( 50px ) "
+FAIL CSS Animations: property <offset-path> from [xywh(10px 10px 200px 100px)] to [inset(50px)] at (1) should be [inset(50px calc(0% + 50px) calc(0% + 50px) 50px)] assert_equals: expected "inset ( 50px calc ( 0 % + 50px ) calc ( 0 % + 50px ) 50px ) " but got "inset ( 50px ) "
+FAIL CSS Animations: property <offset-path> from [xywh(10px 10px 200px 100px)] to [inset(50px)] at (2) should be [inset(90px calc(-100% + 310px) calc(-100% + 210px) 90px)] assert_equals: expected "inset ( 90px calc ( - 100 % + 310px ) calc ( - 100 % + 210px ) 90px ) " but got "inset ( 50px ) "
+FAIL Web Animations: property <offset-path> from [xywh(10px 10px 200px 100px)] to [inset(50px)] at (-1) should be [inset(-30px calc(200% - 470px) calc(200% - 270px) -30px)] assert_equals: expected "inset ( - 30px calc ( 200 % - 470px ) calc ( 200 % - 270px ) - 30px ) " but got "rect ( 10px 10px 200px 100px ) "
+FAIL Web Animations: property <offset-path> from [xywh(10px 10px 200px 100px)] to [inset(50px)] at (0) should be [inset(10px calc(100% - 210px) calc(100% - 110px) 10px)] assert_equals: expected "inset ( 10px calc ( 100 % - 210px ) calc ( 100 % - 110px ) 10px ) " but got "rect ( 10px 10px 200px 100px ) "
+FAIL Web Animations: property <offset-path> from [xywh(10px 10px 200px 100px)] to [inset(50px)] at (0.125) should be [inset(15px calc(87.5% - 177.5px) calc(87.5% - 90px) 15px)] assert_equals: expected "inset ( 15px calc ( 87.5 % - 177.5px ) calc ( 87.5 % - 90px ) 15px ) " but got "rect ( 10px 10px 200px 100px ) "
+FAIL Web Animations: property <offset-path> from [xywh(10px 10px 200px 100px)] to [inset(50px)] at (0.875) should be [inset(45px calc(12.5% + 17.5px) calc(12.5% + 30px) 45px)] assert_equals: expected "inset ( 45px calc ( 12.5 % + 17.5px ) calc ( 12.5 % + 30px ) 45px ) " but got "inset ( 50px ) "
+FAIL Web Animations: property <offset-path> from [xywh(10px 10px 200px 100px)] to [inset(50px)] at (1) should be [inset(50px calc(0% + 50px) calc(0% + 50px) 50px)] assert_equals: expected "inset ( 50px calc ( 0 % + 50px ) calc ( 0 % + 50px ) 50px ) " but got "inset ( 50px ) "
+FAIL Web Animations: property <offset-path> from [xywh(10px 10px 200px 100px)] to [inset(50px)] at (2) should be [inset(90px calc(-100% + 310px) calc(-100% + 210px) 90px)] assert_equals: expected "inset ( 90px calc ( - 100 % + 310px ) calc ( - 100 % + 210px ) 90px ) " but got "inset ( 50px ) "
+PASS CSS Transitions: property <offset-path> from [circle(farthest-side)] to [circle(closest-side)] at (-0.3) should be [circle(closest-side)]
+PASS CSS Transitions: property <offset-path> from [circle(farthest-side)] to [circle(closest-side)] at (0) should be [circle(closest-side)]
+PASS CSS Transitions: property <offset-path> from [circle(farthest-side)] to [circle(closest-side)] at (0.3) should be [circle(closest-side)]
 PASS CSS Transitions: property <offset-path> from [circle(farthest-side)] to [circle(closest-side)] at (0.5) should be [circle(closest-side)]
 PASS CSS Transitions: property <offset-path> from [circle(farthest-side)] to [circle(closest-side)] at (0.6) should be [circle(closest-side)]
 PASS CSS Transitions: property <offset-path> from [circle(farthest-side)] to [circle(closest-side)] at (1) should be [circle(closest-side)]
@@ -264,9 +288,9 @@ PASS Web Animations: property <offset-path> from [circle(farthest-side)] to [cir
 PASS Web Animations: property <offset-path> from [circle(farthest-side)] to [circle(closest-side)] at (0.6) should be [circle(closest-side)]
 PASS Web Animations: property <offset-path> from [circle(farthest-side)] to [circle(closest-side)] at (1) should be [circle(closest-side)]
 PASS Web Animations: property <offset-path> from [circle(farthest-side)] to [circle(closest-side)] at (1.5) should be [circle(closest-side)]
-FAIL CSS Transitions: property <offset-path> from [ellipse(closest-side farthest-side)] to [ellipse(closest-side closest-side)] at (-0.3) should be [ellipse(closest-side closest-side)] assert_equals: expected "ellipse ( ) " but got "ellipse ( closest - side farthest - side ) "
-FAIL CSS Transitions: property <offset-path> from [ellipse(closest-side farthest-side)] to [ellipse(closest-side closest-side)] at (0) should be [ellipse(closest-side closest-side)] assert_equals: expected "ellipse ( ) " but got "ellipse ( closest - side farthest - side ) "
-FAIL CSS Transitions: property <offset-path> from [ellipse(closest-side farthest-side)] to [ellipse(closest-side closest-side)] at (0.3) should be [ellipse(closest-side closest-side)] assert_equals: expected "ellipse ( ) " but got "ellipse ( closest - side farthest - side ) "
+PASS CSS Transitions: property <offset-path> from [ellipse(closest-side farthest-side)] to [ellipse(closest-side closest-side)] at (-0.3) should be [ellipse(closest-side closest-side)]
+PASS CSS Transitions: property <offset-path> from [ellipse(closest-side farthest-side)] to [ellipse(closest-side closest-side)] at (0) should be [ellipse(closest-side closest-side)]
+PASS CSS Transitions: property <offset-path> from [ellipse(closest-side farthest-side)] to [ellipse(closest-side closest-side)] at (0.3) should be [ellipse(closest-side closest-side)]
 PASS CSS Transitions: property <offset-path> from [ellipse(closest-side farthest-side)] to [ellipse(closest-side closest-side)] at (0.5) should be [ellipse(closest-side closest-side)]
 PASS CSS Transitions: property <offset-path> from [ellipse(closest-side farthest-side)] to [ellipse(closest-side closest-side)] at (0.6) should be [ellipse(closest-side closest-side)]
 PASS CSS Transitions: property <offset-path> from [ellipse(closest-side farthest-side)] to [ellipse(closest-side closest-side)] at (1) should be [ellipse(closest-side closest-side)]

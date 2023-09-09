@@ -14,11 +14,11 @@ import './ambient/albums_subpage_element.js';
 import './ambient/animation_theme_item_element.js';
 import './ambient/animation_theme_list_element.js';
 import './ambient/art_album_dialog_element.js';
+import './ambient/ambient_duration_element.js';
 import './ambient/ambient_preview_large_element.js';
 import './ambient/ambient_preview_small_element.js';
 import './ambient/ambient_subpage_element.js';
 import './ambient/ambient_weather_element.js';
-import './ambient/duration_list_element.js';
 import './ambient/toggle_row_element.js';
 import './ambient/topic_source_item_element.js';
 import './ambient/topic_source_list_element.js';
@@ -112,7 +112,6 @@ export {GooglePhotosSharedAlbumDialog, AcceptEvent} from './wallpaper/google_pho
 export {GooglePhotosZeroState} from './wallpaper/google_photos_zero_state_element.js';
 export {DEFAULT_COLOR_SCHEME} from './theme/utils.js';
 export {LocalImages} from './wallpaper/local_images_element.js';
-export {TimeOfDayAcceptEvent, TimeOfDayWallpaperDialog} from './wallpaper/time_of_day_wallpaper_dialog_element.js';
 export {isDefaultImage, isFilePath, isGooglePhotosPhoto, isWallpaperImage} from './wallpaper/utils.js';
 export * from './wallpaper/wallpaper_actions.js';
 export {WallpaperCollections} from './wallpaper/wallpaper_collections_element.js';
@@ -125,6 +124,7 @@ export {setWallpaperProviderForTesting} from './wallpaper/wallpaper_interface_pr
 export {WallpaperObserver} from './wallpaper/wallpaper_observer.js';
 export {WallpaperPreview} from './wallpaper/wallpaper_preview_element.js';
 export {WallpaperSelected} from './wallpaper/wallpaper_selected_element.js';
+export {WallpaperSubpage} from './wallpaper/wallpaper_subpage_element.js';
 export {DailyRefreshType} from './wallpaper/wallpaper_state.js';
 
 PersonalizationStore.getInstance().init(emptyState());

@@ -160,6 +160,27 @@ class GpuWatchdogInit {
   RAW_PTR_EXCLUSION GpuWatchdogThread* watchdog_ptr_ = nullptr;
 };
 
+void PauseGpuWatchdog(GpuWatchdogThread* watchdog_thread) {
+  if (watchdog_thread) {
+    if (base::FeatureList::IsEnabled(
+            features::kEnableWatchdogReportOnlyModeOnGpuInit)) {
+      watchdog_thread->EnableReportOnlyMode();
+    } else {
+      watchdog_thread->PauseWatchdog();
+    }
+  }
+}
+void ResumeGpuWatchdog(GpuWatchdogThread* watchdog_thread) {
+  if (watchdog_thread) {
+    if (base::FeatureList::IsEnabled(
+            features::kEnableWatchdogReportOnlyModeOnGpuInit)) {
+      watchdog_thread->DisableReportOnlyMode();
+    } else {
+      watchdog_thread->ResumeWatchdog();
+    }
+  }
+}
+
 // TODO(https://crbug.com/1095744): We currently do not handle
 // VK_ERROR_DEVICE_LOST in in-process-gpu.
 // Android WebView is allowed for now because it CHECKs on context loss.
@@ -411,14 +432,8 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   gl::GLDisplay* gl_display = nullptr;
 
   // Pause watchdog. LoadLibrary in GLBindings may take long time.
-  if (watchdog_thread_) {
-    if (base::FeatureList::IsEnabled(
-            features::kEnableWatchdogReportOnlyModeOnGpuInit)) {
-      watchdog_thread_->EnableReportOnlyMode();
-    } else {
-      watchdog_thread_->PauseWatchdog();
-    }
-  }
+  PauseGpuWatchdog(watchdog_thread_.get());
+
   if (!gl::init::InitializeStaticGLBindingsOneOff()) {
     VLOG(1) << "gl::init::InitializeStaticGLBindingsOneOff failed";
     return false;
@@ -435,14 +450,6 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
       return false;
     }
   }
-  if (watchdog_thread_) {
-    if (base::FeatureList::IsEnabled(
-            features::kEnableWatchdogReportOnlyModeOnGpuInit)) {
-      watchdog_thread_->DisableReportOnlyMode();
-    } else {
-      watchdog_thread_->ResumeWatchdog();
-    }
-  }
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   // The ContentSandboxHelper is currently the only one implementation of
@@ -452,16 +459,12 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // sure the watchdog is paused as loadLibrary may take a long time and
   // restarting the GPU process will not help.
   if (!attempted_startsandbox) {
-    if (watchdog_thread_)
-      watchdog_thread_->PauseWatchdog();
-
     // The sandbox is not started yet.
     sandbox_helper_->PreSandboxStartup(gpu_preferences);
-
-    if (watchdog_thread_)
-      watchdog_thread_->ResumeWatchdog();
   }
 #endif
+
+  ResumeGpuWatchdog(watchdog_thread_.get());
 
   auto impl = gl::GetGLImplementationParts();
   bool gl_disabled = impl == gl::kGLImplementationDisabled;
@@ -605,14 +608,23 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     // On Windows, MITIGATION_FORCE_MS_SIGNED_BINS is used which disallows
     // loading any .dll that is not signed by Microsoft. Preload the SwiftShader
     // .dll so it may be accessed later. This is needed for WebGPU to
-    // initialize a software fallback adapter.
-    // Don't handle errors as failure here is non-fatal. Loading SwiftShader
+    // initialize a software fallback adapter. Also do the same for DXC,
+    // which WebGPU may use on D3D12 devices.
+    // Don't handle errors as failure here is non-fatal. Loading either DLL
     // again at a later point will fail as well.
+    PauseGpuWatchdog(watchdog_thread_.get());
+
     base::FilePath module_path;
     if (base::PathService::Get(base::DIR_MODULE, &module_path)) {
       base::LoadNativeLibrary(module_path.Append(L"vk_swiftshader.dll"),
                               nullptr);
+
+#if defined(DAWN_USE_BUILT_DXC)
+      base::LoadNativeLibrary(module_path.Append(L"dxcompiler.dll"), nullptr);
+#endif
     }
+
+    ResumeGpuWatchdog(watchdog_thread_.get());
   }
 #endif  // BUILDFLAG(IS_WIN)
 

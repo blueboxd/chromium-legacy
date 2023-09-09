@@ -38,6 +38,7 @@
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/credential_cache.h"
+#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/mock_password_store_interface.h"
 #include "components/password_manager/core/browser/mock_webauthn_credentials_delegate.h"
 #include "components/password_manager/core/browser/origin_credential_store.h"
@@ -342,7 +343,9 @@ TEST_F(PasswordAccessoryControllerTest, IsNotRecreatedForSameWebContents) {
 TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
   CreateSheetController();
   cache()->SaveCredentialsAndBlocklistedForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite),
+                   PasswordForm::MatchType::kExact)
+           .get()},
       CredentialCache::IsOriginBlocklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
 
@@ -362,7 +365,9 @@ TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
 TEST_F(PasswordAccessoryControllerTest, HintsToEmptyUserNames) {
   CreateSheetController();
   cache()->SaveCredentialsAndBlocklistedForOrigin(
-      {CreateEntry("", "S3cur3", GURL(kExampleSite), false, false).get()},
+      {CreateEntry("", "S3cur3", GURL(kExampleSite),
+                   PasswordForm::MatchType::kExact)
+           .get()},
       CredentialCache::IsOriginBlocklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
 
@@ -382,10 +387,18 @@ TEST_F(PasswordAccessoryControllerTest, HintsToEmptyUserNames) {
 TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
   CreateSheetController();
   cache()->SaveCredentialsAndBlocklistedForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get(),
-       CreateEntry("Zebra", "M3h", GURL(kExampleSite), false, false).get(),
-       CreateEntry("Alf", "PWD", GURL(kExampleSite), false, false).get(),
-       CreateEntry("Cat", "M1@u", GURL(kExampleSite), false, false).get()},
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite),
+                   PasswordForm::MatchType::kExact)
+           .get(),
+       CreateEntry("Zebra", "M3h", GURL(kExampleSite),
+                   PasswordForm::MatchType::kExact)
+           .get(),
+       CreateEntry("Alf", "PWD", GURL(kExampleSite),
+                   PasswordForm::MatchType::kExact)
+           .get(),
+       CreateEntry("Cat", "M1@u", GURL(kExampleSite),
+                   PasswordForm::MatchType::kExact)
+           .get()},
       CredentialCache::IsOriginBlocklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
 
@@ -414,7 +427,9 @@ TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
 TEST_F(PasswordAccessoryControllerTest, RepeatsSuggestionsForSameFrame) {
   CreateSheetController();
   cache()->SaveCredentialsAndBlocklistedForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite),
+                   PasswordForm::MatchType::kExact)
+           .get()},
       CredentialCache::IsOriginBlocklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
 
@@ -451,8 +466,12 @@ TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
 TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
   CreateSheetController();
   cache()->SaveCredentialsAndBlocklistedForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get(),
-       CreateEntry("", "p455w0rd", GURL(kExampleSite), false, false).get()},
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite),
+                   PasswordForm::MatchType::kExact)
+           .get(),
+       CreateEntry("", "p455w0rd", GURL(kExampleSite),
+                   PasswordForm::MatchType::kExact)
+           .get()},
       CredentialCache::IsOriginBlocklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
 
@@ -497,7 +516,9 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
 TEST_F(PasswordAccessoryControllerTest, CacheChangesReplacePasswords) {
   CreateSheetController();
   cache()->SaveCredentialsAndBlocklistedForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite),
+                   PasswordForm::MatchType::kExact)
+           .get()},
       CredentialCache::IsOriginBlocklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
   EXPECT_CALL(filling_source_observer_,
@@ -514,7 +535,9 @@ TEST_F(PasswordAccessoryControllerTest, CacheChangesReplacePasswords) {
           .Build());
 
   cache()->SaveCredentialsAndBlocklistedForOrigin(
-      {CreateEntry("Alf", "M3lm4k", GURL(kExampleSite), false, false).get()},
+      {CreateEntry("Alf", "M3lm4k", GURL(kExampleSite),
+                   PasswordForm::MatchType::kExact)
+           .get()},
       CredentialCache::IsOriginBlocklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
   EXPECT_CALL(filling_source_observer_,
@@ -531,42 +554,14 @@ TEST_F(PasswordAccessoryControllerTest, CacheChangesReplacePasswords) {
           .Build());
 }
 
-TEST_F(PasswordAccessoryControllerTest, HidesEntriesForPSLMatchedOriginsInV1) {
-  CreateSheetController();
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      autofill::features::kAutofillKeyboardAccessory);
-  cache()->SaveCredentialsAndBlocklistedForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get(),
-       CreateEntry("Alf", "R4nd0m", GURL(kExampleSiteMobile), true, false)
-           .get()},
-      CredentialCache::IsOriginBlocklisted(false),
-      url::Origin::Create(GURL(kExampleSite)));
-
-  AccessorySheetData result(AccessoryTabType::PASSWORDS, std::u16string());
-  EXPECT_CALL(mock_manual_filling_controller_, RefreshSuggestions)
-      .WillOnce(SaveArg<0>(&result));
-
-  controller()->RefreshSuggestionsForField(
-      FocusedFieldType::kFillableUsernameField,
-      /*is_manual_generation_available=*/false);
-
-  EXPECT_EQ(
-      result,
-      PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
-          .AddUserInfo(kExampleSite)
-          .AppendField(u"Ben", u"Ben",
-                       /*is_obfuscated=*/false, /*selectable=*/true)
-          .AppendField(u"S3cur3", password_for_str(u"Ben"),
-                       /*is_obfuscated=*/true, /*selectable=*/false)
-          .Build());
-}
-
 TEST_F(PasswordAccessoryControllerTest, SetsTitleForPSLMatchedOriginsInV2) {
   CreateSheetController();
   cache()->SaveCredentialsAndBlocklistedForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get(),
-       CreateEntry("Alf", "R4nd0m", GURL(kExampleSiteMobile), true, false)
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite),
+                   PasswordForm::MatchType::kExact)
+           .get(),
+       CreateEntry("Alf", "R4nd0m", GURL(kExampleSiteMobile),
+                   PasswordForm::MatchType::kPSL)
            .get()},
       CredentialCache::IsOriginBlocklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
@@ -596,7 +591,9 @@ TEST_F(PasswordAccessoryControllerTest, SetsTitleForPSLMatchedOriginsInV2) {
 TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
   CreateSheetController();
   cache()->SaveCredentialsAndBlocklistedForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite),
+                   PasswordForm::MatchType::kExact)
+           .get()},
       CredentialCache::IsOriginBlocklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
 
@@ -631,7 +628,9 @@ TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
   // Set any, non-empty password list and pretend a username field was focused.
   // This should result in non-emtpy suggestions.
   cache()->SaveCredentialsAndBlocklistedForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite),
+                   PasswordForm::MatchType::kExact)
+           .get()},
       CredentialCache::IsOriginBlocklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
 
@@ -907,7 +906,9 @@ TEST_F(PasswordAccessoryControllerTest, SavePasswordsDisabledUpdatesStore) {
 TEST_F(PasswordAccessoryControllerTest, FillsUsername) {
   CreateSheetController();
   cache()->SaveCredentialsAndBlocklistedForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite),
+                   PasswordForm::MatchType::kExact)
+           .get()},
       CredentialCache::IsOriginBlocklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
 
@@ -929,7 +930,9 @@ TEST_F(PasswordAccessoryControllerTest, FillsPasswordIfNoAuthAvailable) {
   CreateSheetController();
 
   cache()->SaveCredentialsAndBlocklistedForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite),
+                   PasswordForm::MatchType::kExact)
+           .get()},
       CredentialCache::IsOriginBlocklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
 
@@ -957,7 +960,9 @@ TEST_F(PasswordAccessoryControllerTest, FillsPasswordIfAuthSuccessful) {
   CreateSheetController();
 
   cache()->SaveCredentialsAndBlocklistedForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite),
+                   PasswordForm::MatchType::kExact)
+           .get()},
       CredentialCache::IsOriginBlocklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
 
@@ -989,7 +994,9 @@ TEST_F(PasswordAccessoryControllerTest, DoesntFillPasswordIfAuthFails) {
   CreateSheetController();
 
   cache()->SaveCredentialsAndBlocklistedForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite),
+                   PasswordForm::MatchType::kExact)
+           .get()},
       CredentialCache::IsOriginBlocklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
 
@@ -1022,7 +1029,9 @@ TEST_F(PasswordAccessoryControllerTest, CancelsOngoingAuthIfDestroyed) {
   CreateSheetController();
 
   cache()->SaveCredentialsAndBlocklistedForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite),
+                   PasswordForm::MatchType::kExact)
+           .get()},
       CredentialCache::IsOriginBlocklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
 
@@ -1190,7 +1199,9 @@ TEST_F(PasswordAccessoryControllerTest,
 
   // Set up credentials for filling.
   cache()->SaveCredentialsAndBlocklistedForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite),
+                   PasswordForm::MatchType::kExact)
+           .get()},
       CredentialCache::IsOriginBlocklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
   controller()->RefreshSuggestionsForField(
@@ -1216,7 +1227,9 @@ TEST_F(PasswordAccessoryControllerTest, DontShowMigrationSheetlIfDisabled) {
   // Set up credentials for filling.
   CreateSheetController();
   cache()->SaveCredentialsAndBlocklistedForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite),
+                   PasswordForm::MatchType::kExact)
+           .get()},
       CredentialCache::IsOriginBlocklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
 

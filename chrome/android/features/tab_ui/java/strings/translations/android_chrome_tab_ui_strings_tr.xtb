@@ -3,7 +3,6 @@
 <translationbundle lang="tr">
 <translation id="1075622780330595106"><ph name="NUMBER_OF_TABS" /> sekmeyi son zamanlarda hiç kullanmadınız. Bunlar kapatılsın mı?</translation>
 <translation id="125153950246128346">Başka bir sekmeyi görmek için dokunun</translation>
-<translation id="1403228085774130835">Kapatılan sekmelerinizi, Chrome ana menüsündeki son sekmelerde bulabilirsiniz</translation>
 <translation id="1455506303394048917">Bu Gizli sekmelerdeki etkinliğiniz bu cihazdan silinecektir</translation>
 <translation id="1499635324672558517">Tüm Gizli sekmeler kapatılsın mı?</translation>
 <translation id="1657719826150349398">Sekmeyi aşağı taşı</translation>
@@ -47,6 +46,7 @@
 <translation id="5073204694187207510">Tam ekran ızgarayı gizler</translation>
 <translation id="5076161749301278626">Mağaza yorumları gösterilsin mi?</translation>
 <translation id="5082793167783849073">Grup oluşturarak sayfaları hızlıca karşılaştırın. Başlamak için bir bağlantıya dokunup basılı tutun.</translation>
+<translation id="5339733443032484186">Son sekmeniz</translation>
 <translation id="5490235265819901748">Sekme grubu genişletildi</translation>
 <translation id="5494920125229734069">Tümünü seç</translation>
 <translation id="5556417849629758491">Mağaza bilgilerini görüntüleme seçeneği, ekranın üst kısmına yakın bir yerdedir</translation>

@@ -30,7 +30,7 @@ std::u16string HostedDomainForPrimaryAccount(Browser* browser) {
   return base::UTF8ToUTF16(
       identity_manager
           ->FindExtendedAccountInfo(identity_manager->GetPrimaryAccountInfo(
-              signin::ConsentLevel::kSync))
+              signin::ConsentLevel::kSignin))
           .hosted_domain);
 }
 
@@ -48,7 +48,7 @@ AlertCoordinator* ErrorCoordinator(NSError* error,
                               action:dismissAction
                                style:UIAlertActionStyleDefault];
 
-  [alertCoordinator setCancelAction:dismissAction];
+  alertCoordinator.noInteractionAction = dismissAction;
 
   return alertCoordinator;
 }

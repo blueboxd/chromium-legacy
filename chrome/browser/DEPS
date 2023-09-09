@@ -136,6 +136,7 @@ include_rules = [
   "+components/embedder_support",
   "+components/encrypted_messages",
   "+components/enterprise",
+  "+components/environment_integrity/android",
   "+components/error_page/content/browser",
   "+components/exo",
   "+components/external_intents",
@@ -189,6 +190,7 @@ include_rules = [
   "+components/location/android",
   "+components/lookalikes/core",
   "+components/login",
+  "+components/media_device_salt",
   "+components/media_message_center",
   "+components/media_router/browser",
   "+components/history_clusters",
@@ -322,6 +324,7 @@ include_rules = [
   "+components/sqlite_proto",
   "+components/ssl_errors",
   "+components/startup_metric_utils/browser",
+  "+components/startup_metric_utils/common",
   "+components/storage_monitor",
   "+components/strings/grit",
   "+components/subresource_filter/android",
@@ -598,5 +601,8 @@ specific_include_rules = {
   ],
   "webauth_interactive_uitest.cc": [
     "+device/fido",
+  ],
+  "shared_storage_browsertest.cc": [
+    "+components/services/storage/shared_storage/shared_storage_manager.h",
   ],
 }

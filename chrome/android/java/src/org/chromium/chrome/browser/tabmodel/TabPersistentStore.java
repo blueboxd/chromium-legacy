@@ -514,7 +514,7 @@ public class TabPersistentStore {
                     mPersistencePolicy.setMergeInProgress(true);
                     readSavedStateFile(stream,
                             createOnTabStateReadCallback(mTabModelSelector.isIncognitoSelected(),
-                                    mTabsToRestore.size() == 0 ? false : true),
+                                    mTabsToRestore.size() != 0),
                             null);
                 }
                 if (!mMergedFileNames.isEmpty()) {
@@ -1944,27 +1944,22 @@ public class TabPersistentStore {
         return MIGRATE_TO_CRITICAL_PERSISTED_TAB_DATA_DEFAULT_BATCH_SIZE;
     }
 
-    @VisibleForTesting
     SequencedTaskRunner getTaskRunnerForTests() {
         return mSequencedTaskRunner;
     }
 
-    @VisibleForTesting
     void addTabToRestoreForTesting(TabRestoreDetails tabDetails) {
         mTabsToRestore.add(tabDetails);
     }
 
-    @VisibleForTesting
     public TabPersistencePolicy getTabPersistencePolicyForTesting() {
         return mPersistencePolicy;
     }
 
-    @VisibleForTesting
     public List<Pair<AsyncTask<DataInputStream>, String>> getTabListToMergeTasksForTesting() {
         return mPrefetchTabListToMergeTasks;
     }
 
-    @VisibleForTesting
     public AsyncTask<TabState> getPrefetchTabStateActiveTabTaskForTesting() {
         return mPrefetchTabStateActiveTabTask;
     }

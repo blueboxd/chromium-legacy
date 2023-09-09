@@ -5,13 +5,10 @@
 #include "chrome/browser/top_level_storage_access_api/top_level_storage_access_permission_context.h"
 
 #include "base/check.h"
-#include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
-#include "base/ranges/algorithm.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/first_party_sets/first_party_sets_policy_service.h"
 #include "chrome/browser/first_party_sets/first_party_sets_policy_service_factory.h"
@@ -20,28 +17,23 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_constraints.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/permissions/permission_request_id.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
-#include "net/base/features.h"
 #include "net/base/schemeful_site.h"
 #include "net/first_party_sets/first_party_set_entry.h"
 #include "net/first_party_sets/first_party_set_metadata.h"
-#include "net/first_party_sets/same_party_context.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
-#include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom.h"
 
 namespace {
 
 constexpr base::TimeDelta kGrantDuration = base::Hours(24);
 
-void RecordOutcomeSample(CookieRequestOutcome outcome) {
+void RecordOutcomeSample(TopLevelStorageAccessRequestOutcome outcome) {
   base::UmaHistogramEnumeration("API.TopLevelStorageAccess.RequestOutcome",
                                 outcome);
 }
@@ -78,21 +70,23 @@ void TopLevelStorageAccessPermissionContext::DecidePermission(
   if (!user_gesture ||
       !base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI) ||
       !requesting_origin.is_valid() || !embedding_origin.is_valid()) {
-    RecordOutcomeSample(CookieRequestOutcome::kDeniedByPrerequisites);
+    RecordOutcomeSample(
+        TopLevelStorageAccessRequestOutcome::kDeniedByPrerequisites);
     std::move(callback).Run(CONTENT_SETTING_BLOCK);
     return;
   }
 
   if (!base::FeatureList::IsEnabled(features::kFirstPartySets)) {
     // First-Party Sets is disabled, so reject the request.
-    RecordOutcomeSample(CookieRequestOutcome::kDeniedByPrerequisites);
+    RecordOutcomeSample(
+        TopLevelStorageAccessRequestOutcome::kDeniedByPrerequisites);
     std::move(callback).Run(CONTENT_SETTING_BLOCK);
     return;
   }
 
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromID(id.global_render_frame_host_id());
-  DCHECK(rfh);
+  CHECK(rfh);
 
   net::SchemefulSite embedding_site(embedding_origin);
 
@@ -118,24 +112,24 @@ void TopLevelStorageAccessPermissionContext::CheckForAutoGrantOrAutoDenial(
     // Service domains are not allowed to request storage access on behalf
     // of other domains, even in the same First-Party Set.
     if (metadata.top_frame_entry()->site_type() == net::SiteType::kService) {
-      NotifyPermissionSetInternal(id, requesting_origin, embedding_origin,
-                                  std::move(callback),
-                                  /*persist=*/true, CONTENT_SETTING_BLOCK,
-                                  CookieRequestOutcome::kDeniedByPrerequisites);
+      NotifyPermissionSetInternal(
+          id, requesting_origin, embedding_origin, std::move(callback),
+          /*persist=*/true, CONTENT_SETTING_BLOCK,
+          TopLevelStorageAccessRequestOutcome::kDeniedByPrerequisites);
       return;
     }
     // Since the sites are in the same First-Party Set, risk of abuse due to
     // allowing access is considered to be low.
-    NotifyPermissionSetInternal(id, requesting_origin, embedding_origin,
-                                std::move(callback),
-                                /*persist=*/true, CONTENT_SETTING_ALLOW,
-                                CookieRequestOutcome::kGrantedByFirstPartySet);
+    NotifyPermissionSetInternal(
+        id, requesting_origin, embedding_origin, std::move(callback),
+        /*persist=*/true, CONTENT_SETTING_ALLOW,
+        TopLevelStorageAccessRequestOutcome::kGrantedByFirstPartySet);
     return;
   }
-  NotifyPermissionSetInternal(id, requesting_origin, embedding_origin,
-                              std::move(callback),
-                              /*persist=*/true, CONTENT_SETTING_BLOCK,
-                              CookieRequestOutcome::kDeniedByFirstPartySet);
+  NotifyPermissionSetInternal(
+      id, requesting_origin, embedding_origin, std::move(callback),
+      /*persist=*/true, CONTENT_SETTING_BLOCK,
+      TopLevelStorageAccessRequestOutcome::kDeniedByFirstPartySet);
 }
 
 ContentSetting
@@ -181,15 +175,15 @@ void TopLevelStorageAccessPermissionContext::NotifyPermissionSet(
     ContentSetting content_setting,
     bool is_one_time,
     bool is_final_decision) {
-  DCHECK(!is_one_time);
-  DCHECK(is_final_decision);
+  CHECK(!is_one_time);
+  CHECK(is_final_decision);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   NotifyPermissionSetInternal(
       id, requesting_origin, embedding_origin, std::move(callback), persist,
       content_setting,
       content_setting == CONTENT_SETTING_ALLOW
-          ? CookieRequestOutcome::kGrantedByFirstPartySet
-          : CookieRequestOutcome::kDeniedByFirstPartySet);
+          ? TopLevelStorageAccessRequestOutcome::kGrantedByFirstPartySet
+          : TopLevelStorageAccessRequestOutcome::kDeniedByFirstPartySet);
 }
 
 void TopLevelStorageAccessPermissionContext::NotifyPermissionSetInternal(
@@ -199,7 +193,7 @@ void TopLevelStorageAccessPermissionContext::NotifyPermissionSetInternal(
     permissions::BrowserPermissionCallback callback,
     bool persist,
     ContentSetting content_setting,
-    CookieRequestOutcome outcome) {
+    TopLevelStorageAccessRequestOutcome outcome) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI)) {
@@ -222,8 +216,8 @@ void TopLevelStorageAccessPermissionContext::NotifyPermissionSetInternal(
 
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser_context());
-  DCHECK(settings_map);
-  DCHECK(persist);
+  CHECK(settings_map);
+  CHECK(persist);
 
   // This permission was allowed, so store it. Because this is a superset of the
   // regular storage access permission, we also store that one.
@@ -253,12 +247,11 @@ void TopLevelStorageAccessPermissionContext::NotifyPermissionSetInternal(
       secondary_site_pattern, ContentSettingsType::STORAGE_ACCESS,
       content_setting, constraints);
 
-  ContentSettingsForOneType top_level_grants;
-  settings_map->GetSettingsForOneType(
-      ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS, &top_level_grants);
-  ContentSettingsForOneType storage_access_grants;
-  settings_map->GetSettingsForOneType(ContentSettingsType::STORAGE_ACCESS,
-                                      &storage_access_grants);
+  ContentSettingsForOneType top_level_grants =
+      settings_map->GetSettingsForOneType(
+          ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS);
+  ContentSettingsForOneType storage_access_grants =
+      settings_map->GetSettingsForOneType(ContentSettingsType::STORAGE_ACCESS);
 
   // TODO(https://crbug.com/989663): Ensure that this update of settings doesn't
   // cause a double update with
@@ -281,7 +274,7 @@ void TopLevelStorageAccessPermissionContext::UpdateContentSetting(
     const GURL& embedding_origin,
     ContentSetting content_setting,
     bool is_one_time) {
-  DCHECK(!is_one_time);
+  CHECK(!is_one_time);
   // We need to notify the network service of content setting updates before we
   // run our callback. As a result we do our updates when we're notified of a
   // permission being set and should not be called here.

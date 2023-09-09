@@ -41,12 +41,7 @@ namespace {
 
 class PasswordsPrivateApiTest : public ExtensionApiTest {
  public:
-  PasswordsPrivateApiTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {password_manager::features::kPasswordManagerRedesign,
-         password_manager::features::kPasswordsGrouping},
-        {});
-  }
+  PasswordsPrivateApiTest() = default;
 
   PasswordsPrivateApiTest(const PasswordsPrivateApiTest&) = delete;
   PasswordsPrivateApiTest& operator=(const PasswordsPrivateApiTest&) = delete;
@@ -80,6 +75,10 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
     return test_delegate_->ImportPasswordsTriggered();
   }
 
+  bool fetch_family_members_was_triggered() {
+    return test_delegate_->FetchFamilyMembersTriggered();
+  }
+
   bool continue_import_was_triggered() {
     return test_delegate_->ContinueImportTriggered();
   }
@@ -92,16 +91,8 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
     return test_delegate_->ExportPasswordsTriggered();
   }
 
-  bool cancelExportPasswordsWasTriggered() {
-    return test_delegate_->CancelExportPasswordsTriggered();
-  }
-
   bool start_password_check_triggered() {
     return test_delegate_->StartPasswordCheckTriggered();
-  }
-
-  bool stop_password_check_triggered() {
-    return test_delegate_->StopPasswordCheckTriggered();
   }
 
   void set_start_password_check_state(
@@ -127,10 +118,6 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
     test_delegate_->SetIsAccountStoreDefault(is_default);
   }
 
-  const std::string& last_change_flow_url() {
-    return test_delegate_->last_change_flow_url();
-  }
-
   const std::vector<int>& last_moved_passwords() const {
     return test_delegate_->last_moved_passwords();
   }
@@ -148,7 +135,6 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   scoped_refptr<TestPasswordsPrivateDelegate> test_delegate_;
 };
 
@@ -185,28 +171,6 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, AddPasswordWhenOperationFails) {
   EXPECT_TRUE(RunPasswordsSubtest("addPasswordWhenOperationFails")) << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, ChangeSavedPasswordSucceeds) {
-  EXPECT_TRUE(RunPasswordsSubtest("changeSavedPasswordSucceeds")) << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
-                       ChangeSavedPasswordWithIncorrectIdFails) {
-  EXPECT_TRUE(RunPasswordsSubtest("changeSavedPasswordWithIncorrectIdFails"))
-      << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
-                       ChangeSavedPasswordWithEmptyPasswordFails) {
-  EXPECT_TRUE(RunPasswordsSubtest("changeSavedPasswordWithEmptyPasswordFails"))
-      << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
-                       ChangeSavedPasswordWithNoteSucceeds) {
-  EXPECT_TRUE(RunPasswordsSubtest("ChangeSavedPasswordWithNoteSucceeds"))
-      << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
@@ -267,6 +231,12 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, GetPasswordExceptionList) {
   EXPECT_TRUE(RunPasswordsSubtest("getPasswordExceptionList")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, FetchFamilyMembers) {
+  EXPECT_FALSE(fetch_family_members_was_triggered());
+  EXPECT_TRUE(RunPasswordsSubtest("fetchFamilyMembers")) << message_;
+  EXPECT_TRUE(fetch_family_members_was_triggered());
+}
+
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, ImportPasswords) {
   EXPECT_FALSE(importPasswordsWasTriggered());
   EXPECT_TRUE(RunPasswordsSubtest("importPasswords")) << message_;
@@ -289,12 +259,6 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, ExportPasswords) {
   EXPECT_FALSE(exportPasswordsWasTriggered());
   EXPECT_TRUE(RunPasswordsSubtest("exportPasswords")) << message_;
   EXPECT_TRUE(exportPasswordsWasTriggered());
-}
-
-IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, CancelExportPasswords) {
-  EXPECT_FALSE(cancelExportPasswordsWasTriggered());
-  EXPECT_TRUE(RunPasswordsSubtest("cancelExportPasswords")) << message_;
-  EXPECT_TRUE(cancelExportPasswordsWasTriggered());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, RequestExportProgressStatus) {
@@ -339,21 +303,6 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, UnmuteInsecureCredentialFails) {
   EXPECT_TRUE(RunPasswordsSubtest("unmuteInsecureCredentialFails")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
-                       RecordChangePasswordFlowStarted) {
-  EXPECT_TRUE(RunPasswordsSubtest("recordChangePasswordFlowStarted"))
-      << message_;
-  EXPECT_EQ(last_change_flow_url(),
-            "https://example.com/.well-known/change-password");
-}
-
-IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
-                       RecordChangePasswordFlowStartedAppNoUrl) {
-  EXPECT_TRUE(RunPasswordsSubtest("recordChangePasswordFlowStartedAppNoUrl"))
-      << message_;
-  EXPECT_EQ(last_change_flow_url(), "");
-}
-
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, StartPasswordCheck) {
   set_start_password_check_state(
       password_manager::BulkLeakCheckService::State::kRunning);
@@ -368,12 +317,6 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, StartPasswordCheckFailed) {
   EXPECT_FALSE(start_password_check_triggered());
   EXPECT_TRUE(RunPasswordsSubtest("startPasswordCheckFailed")) << message_;
   EXPECT_TRUE(start_password_check_triggered());
-}
-
-IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, StopPasswordCheck) {
-  EXPECT_FALSE(stop_password_check_triggered());
-  EXPECT_TRUE(RunPasswordsSubtest("stopPasswordCheck")) << message_;
-  EXPECT_TRUE(stop_password_check_triggered());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, GetPasswordCheckStatus) {

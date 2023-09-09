@@ -163,17 +163,17 @@ class CORE_EXPORT LayoutFlowThread : public LayoutBlockFlow {
   }
   // Return the visual bounding box based on the supplied flow-thread bounding
   // box. Both rectangles are completely physical in terms of writing mode.
-  LayoutRect FragmentsBoundingBox(const LayoutRect& layer_bounding_box) const;
+  PhysicalRect FragmentsBoundingBox(
+      const PhysicalRect& layer_bounding_box) const;
 
   // Convert a logical position in the flow thread coordinate space to a logical
   // position in the containing coordinate space.
-  void FlowThreadToContainingCoordinateSpace(LayoutUnit& block_position,
-                                             LayoutUnit& inline_position) const;
+  LogicalOffset FlowThreadToContainingCoordinateSpace(
+      LayoutUnit block_position,
+      LayoutUnit inline_position) const;
 
-  virtual LayoutPoint FlowThreadPointToVisualPoint(
-      const LayoutPoint& flow_thread_point) const = 0;
-  virtual LayoutPoint VisualPointToFlowThreadPoint(
-      const LayoutPoint& visual_point) const = 0;
+  virtual PhysicalOffset VisualPointToFlowThreadPoint(
+      const PhysicalOffset& visual_point) const = 0;
 
   virtual LayoutMultiColumnSet* ColumnSetAtBlockOffset(
       LayoutUnit,

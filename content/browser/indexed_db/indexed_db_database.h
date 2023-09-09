@@ -118,7 +118,7 @@ class CONTENT_EXPORT IndexedDBDatabase {
       scoped_refptr<IndexedDBClientStateCheckerWrapper> client_state_checker);
 
   void ScheduleDeleteDatabase(IndexedDBBucketStateHandle bucket_state_handle,
-                              scoped_refptr<IndexedDBCallbacks> callbacks,
+                              std::unique_ptr<IndexedDBCallbacks> callbacks,
                               base::OnceClosure on_deletion_complete);
 
   void AddObjectStoreToMetadata(blink::IndexedDBObjectStoreMetadata metadata,
@@ -170,10 +170,8 @@ class CONTENT_EXPORT IndexedDBDatabase {
   void RenameObjectStoreAbortOperation(int64_t object_store_id,
                                        std::u16string old_name);
 
-  leveldb::Status VersionChangeOperation(
-      int64_t version,
-      scoped_refptr<IndexedDBCallbacks> callbacks,
-      IndexedDBTransaction* transaction);
+  leveldb::Status VersionChangeOperation(int64_t version,
+                                         IndexedDBTransaction* transaction);
   void VersionChangeAbortOperation(int64_t previous_version);
 
   leveldb::Status CreateIndexOperation(int64_t object_store_id,
@@ -279,7 +277,7 @@ class CONTENT_EXPORT IndexedDBDatabase {
       int64_t object_store_id,
       int64_t index_id,
       std::unique_ptr<blink::IndexedDBKeyRange> key_range,
-      scoped_refptr<IndexedDBCallbacks> callbacks,
+      blink::mojom::IDBDatabase::CountCallback callback,
       IndexedDBTransaction* transaction);
 
   leveldb::Status DeleteRangeOperation(
@@ -290,7 +288,7 @@ class CONTENT_EXPORT IndexedDBDatabase {
 
   leveldb::Status GetKeyGeneratorCurrentNumberOperation(
       int64_t object_store_id,
-      scoped_refptr<IndexedDBCallbacks> callbacks,
+      blink::mojom::IDBDatabase::GetKeyGeneratorCurrentNumberCallback callback,
       IndexedDBTransaction* transaction);
 
   leveldb::Status ClearOperation(

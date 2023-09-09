@@ -47,7 +47,6 @@
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/paint/layout_object_counter.h"
 #include "third_party/blink/renderer/core/view_transition/view_transition_request_forward.h"
-#include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
@@ -216,11 +215,16 @@ class CORE_EXPORT LocalFrameView final
   enum IntersectionObservationState {
     // The next painting frame does not need an intersection observation.
     kNotNeeded = 0,
+    // The next painting frame only needs to update frame viewport intersection,
+    // not intersection observations. Note that intersection observations in
+    // child remote frames happen during the parent frame's viewport
+    // intersection update, with kDesired or kRequired set on the child frames.
+    kFrameViewportIntersectionOnly = 1,
     // The next painting frame needs an intersection observation.
-    kDesired = 1,
+    kDesired = 2,
     // The next painting frame must be generated up to intersection observation
     // (even if frame is throttled).
-    kRequired = 2
+    kRequired = 3
   };
 
   // Sets the internal IntersectionObservationState to the max of the
@@ -419,7 +423,6 @@ class CORE_EXPORT LocalFrameView final
   void DisableAutoSizeMode();
 
   void ForceLayoutForPagination(const gfx::SizeF& page_size,
-                                const gfx::SizeF& aspect_ratio,
                                 float maximum_shrink_factor);
 
   // Updates the fragment anchor element based on URL's fragment identifier.
@@ -956,7 +959,7 @@ class CORE_EXPORT LocalFrameView final
 
   void ForAllRemoteFrameViews(base::FunctionRef<void(RemoteFrameView&)>);
 
-  bool UpdateViewportIntersectionsForSubtree(
+  IntersectionUpdateResult UpdateViewportIntersectionsForSubtree(
       unsigned parent_flags,
       absl::optional<base::TimeTicks>& monotonic_time) override;
   void DeliverSynchronousIntersectionObservations();
@@ -998,8 +1001,8 @@ class CORE_EXPORT LocalFrameView final
   void GetUserScrollTranslationNodes(
       Vector<const TransformPaintPropertyNode*>& scroll_translation_nodes);
 
-  void GetAnchorScrollContainerNodes(
-      Vector<const TransformPaintPropertyNode*>& anchor_scroll_container_nodes);
+  void GetAnchorPositionScrollerIds(
+      Vector<const TransformPaintPropertyNode*>& anchor_position_scrollers);
 
   // Return the sticky-ad detector for this frame, creating it if necessary.
   StickyAdDetector& EnsureStickyAdDetector();
@@ -1017,8 +1020,6 @@ class CORE_EXPORT LocalFrameView final
   DarkModeFilter& EnsureDarkModeFilter();
 
   bool HasViewTransitionThrottlingRendering() const;
-
-  LayoutSize size_;
 
   typedef HeapHashSet<Member<LayoutEmbeddedObject>> EmbeddedObjectSet;
   EmbeddedObjectSet part_update_set_;

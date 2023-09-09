@@ -98,7 +98,7 @@ ListInfos GetListInfos() {
                SB_THREAT_TYPE_URL_PHISHING),
       ListInfo(kSyncAlways, "UrlMalware.store", GetUrlMalwareId(),
                SB_THREAT_TYPE_URL_MALWARE),
-      ListInfo(kSyncOnDesktopBuilds, "UrlUws.store", GetUrlUwsId(),
+      ListInfo(kSyncAlways, "UrlUws.store", GetUrlUwsId(),
                SB_THREAT_TYPE_URL_UNWANTED),
       ListInfo(kSyncOnDesktopBuilds, "UrlMalBin.store", GetUrlMalBinId(),
                SB_THREAT_TYPE_URL_BINARY_MALWARE),
@@ -254,15 +254,13 @@ void MaybeDeleteStore(const base::FilePath& path) {
   base::UmaHistogramBoolean(
       "SafeBrowsing.V4UnusedStoreFileExists" + GetUmaSuffixForStore(path),
       path_exists);
-  if (!path_exists) {
-    return;
-  }
 
   // The MmapHashPrefixMap maintains several helper files stored in the same
   // directory as the main store file. These are usually found by looking at the
   // `hash_files` field in the `V4StoreFileFormat`, but we haven't read the
   // store at this point. Instead we use the fact that these helper files have a
   // simple structure to delete them all.
+  std::vector<base::FilePath> paths_to_delete;
   base::FileEnumerator enumerator(
       path.DirName(), false, base::FileEnumerator::FILES,
       path.BaseName().value() + FILE_PATH_LITERAL("*"),
@@ -272,12 +270,11 @@ void MaybeDeleteStore(const base::FilePath& path) {
       base::FileEnumerator::ErrorPolicy::STOP_ENUMERATION);
   for (base::FilePath store_path = enumerator.Next(); !store_path.empty();
        store_path = enumerator.Next()) {
-    base::DeleteFile(store_path);
+    paths_to_delete.push_back(std::move(store_path));
   }
 
-  if (enumerator.GetError() != base::File::FILE_OK) {
-    LOG(ERROR) << "Removing store at " << path << " failed with error "
-               << base::File::ErrorToString(enumerator.GetError());
+  for (const base::FilePath& delete_path : paths_to_delete) {
+    base::DeleteFile(delete_path);
   }
 }
 
@@ -347,11 +344,9 @@ scoped_refptr<V4LocalDatabaseManager> V4LocalDatabaseManager::Create(
     const base::FilePath& base_path,
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-    ExtendedReportingLevelCallback extended_reporting_level_callback,
-    RecordMigrationMetricsCallback record_migration_metrics_callback) {
+    ExtendedReportingLevelCallback extended_reporting_level_callback) {
   return base::WrapRefCounted(new V4LocalDatabaseManager(
-      base_path, extended_reporting_level_callback,
-      std::move(record_migration_metrics_callback), std::move(ui_task_runner),
+      base_path, extended_reporting_level_callback, std::move(ui_task_runner),
       std::move(io_task_runner), nullptr));
 }
 
@@ -375,7 +370,6 @@ void V4LocalDatabaseManager::CollectDatabaseManagerInfo(
 V4LocalDatabaseManager::V4LocalDatabaseManager(
     const base::FilePath& base_path,
     ExtendedReportingLevelCallback extended_reporting_level_callback,
-    RecordMigrationMetricsCallback record_migration_metrics_callback,
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner,
     scoped_refptr<base::SequencedTaskRunner> task_runner_for_tests)
@@ -383,8 +377,6 @@ V4LocalDatabaseManager::V4LocalDatabaseManager(
                                   std::move(io_task_runner)),
       base_path_(base_path),
       extended_reporting_level_callback_(extended_reporting_level_callback),
-      record_migration_metrics_callback_(
-          std::move(record_migration_metrics_callback)),
       list_infos_(GetListInfos()),
       task_runner_(task_runner_for_tests
                        ? task_runner_for_tests
@@ -411,9 +403,8 @@ V4LocalDatabaseManager::~V4LocalDatabaseManager() {
 
 void V4LocalDatabaseManager::CancelCheck(Client* client) {
   DCHECK(sb_task_runner()->RunsTasksInCurrentSequence());
-  // If we've stopped responding due to browser shutdown, it's possible that a
-  // client will call CancelCheck even though we're disabled.
-  DCHECK(enabled_ || is_shutdown_);
+  DCHECK(enabled_);
+
   auto pending_it =
       base::ranges::find(pending_checks_, client, &PendingCheck::client);
   if (pending_it != pending_checks_.end()) {
@@ -654,7 +645,6 @@ void V4LocalDatabaseManager::StartOnSBThread(
   SetupDatabase();
 
   enabled_ = true;
-  is_shutdown_ = false;
 
   current_local_database_manager_ = this;
 }
@@ -663,16 +653,10 @@ void V4LocalDatabaseManager::StopOnSBThread(bool shutdown) {
   DCHECK(sb_task_runner()->RunsTasksInCurrentSequence());
 
   enabled_ = false;
-  is_shutdown_ = shutdown;
 
   current_local_database_manager_ = nullptr;
 
-  // On shutdown, it's acceptable to fail to respond.
-  if (shutdown) {
-    DropQueuedAndPendingChecks();
-  } else {
-    RespondSafeToQueuedAndPendingChecks();
-  }
+  RespondSafeToQueuedAndPendingChecks();
 
   // Delete the V4Database. Any pending writes to disk are completed.
   // This operation happens on the task_runner on which v4_database_ operates
@@ -709,12 +693,6 @@ void V4LocalDatabaseManager::DatabaseReadyForChecks(
     v4_database_ = std::move(v4_database);
 
     v4_database_->RecordFileSizeHistograms();
-    if (record_migration_metrics_callback_) {
-      ui_task_runner()->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(record_migration_metrics_callback_),
-                         v4_database_->GetMigrateResult()));
-    }
 
     PopulateArtificialDatabase();
 
@@ -1200,15 +1178,6 @@ void V4LocalDatabaseManager::RespondSafeToQueuedAndPendingChecks() {
     RespondToClientWithoutPendingCheckCleanup(it);
   }
 }
-
-void V4LocalDatabaseManager::DropQueuedAndPendingChecks() {
-  DCHECK(sb_task_runner()->RunsTasksInCurrentSequence());
-
-  queued_checks_.clear();
-  // Intentionally ignore the checks this method returns
-  CopyAndRemoveAllPendingChecks();
-}
-
 void V4LocalDatabaseManager::RespondToClient(
     std::unique_ptr<PendingCheck> check) {
   RespondToClientWithoutPendingCheckCleanup(check.get());

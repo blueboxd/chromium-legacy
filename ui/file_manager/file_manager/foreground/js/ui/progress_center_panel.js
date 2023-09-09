@@ -243,8 +243,15 @@ export class ProgressCenterPanel {
         }
         return item.message;
       case ProgressItemState.PAUSED:
-        // TODO(b/279435843): Replace with translation strings.
-        return 'Confirmation required';
+        switch (item.type) {
+          case ProgressItemType.COPY:
+            return str('DLP_FILES_COPY_REVIEW_TITLE');
+          case ProgressItemType.MOVE:
+            return str('DLP_FILES_MOVE_REVIEW_TITLE');
+          default:
+            console.error('Unexpected operation type: ' + item.type);
+            return '';
+        }
       case ProgressItemState.ERROR:
         if (item.policyError) {
           return getStrForPolicyError(item);
@@ -273,17 +280,36 @@ export class ProgressCenterPanel {
 
     function getStrForPolicyError(item) {
       if (!item.policyError) {
-        console.warn('Policy error type must be supplied');
+        console.warn('Policy error must be supplied');
         return '';
       }
       // TODO(b/279435843): Replace with translation strings.
       switch (item.policyError) {
         case PolicyErrorType.DLP:
         case PolicyErrorType.ENTERPRISE_CONNECTORS:
-          return (item.itemCount === 1) ? `${item.sourceMessage} was blocked` :
-                                          `${item.itemCount} files blocked`;
+          switch (item.type) {
+            case ProgressItemType.COPY:
+              return 'Blocked copy';
+            case ProgressItemType.MOVE:
+              return 'Blocked move';
+            case ProgressItemType.TRANSFER:
+              return 'Blocked transfer';
+            default:
+              console.warn(`Unexpected task type: ${item.type}`);
+              return '';
+          }
         case PolicyErrorType.DLP_WARNING_TIMEOUT:
-          return `Action failed`;
+          switch (item.type) {
+            case ProgressItemType.COPY:
+              return 'Copy cancelled';
+            case ProgressItemType.MOVE:
+              return 'Move cancelled';
+            case ProgressItemType.TRANSFER:
+              return 'Transfer cancelled';
+            default:
+              console.warn(`Unexpected task type: ${item.type}`);
+              return '';
+          }
         default:
           console.warn(`Unexpected security error type: ${item.policyError}`);
           return '';
@@ -311,10 +337,19 @@ export class ProgressCenterPanel {
    */
   generateSecondaryString_(item) {
     if (item.state === ProgressItemState.PAUSED) {
-      // TODO(b/279435843): Replace with translation strings.
-      return (item.itemCount === 1) ?
-          `${item.sourceMessage} may contain sensitive content` :
-          `${item.itemCount} files may contain sensitive content`;
+      if (!item.policyFileCount) {
+        console.warn('Policy file count missing');
+        return '';
+      }
+      if (item.policyFileCount === 1) {
+        if (!item.policyFileName) {
+          console.warn('Policy file name missing');
+          return '';
+        }
+        return strf('DLP_FILES_WARN_MESSAGE_SINGLE', item.policyFileName);
+      } else {
+        return strf('DLP_FILES_WARN_MESSAGE_MULTIPLE', item.policyFileCount);
+      }
     }
 
     if (item.state === ProgressItemState.ERROR) {
@@ -322,16 +357,31 @@ export class ProgressCenterPanel {
         // General error doesn't have secondary text.
         return '';
       }
+      if (!item.policyFileCount) {
+        console.warn('Policy file count missing');
+        return '';
+      }
       // TODO(b/279435843): Replace with translation strings.
       switch (item.policyError) {
         case PolicyErrorType.DLP:
         case PolicyErrorType.ENTERPRISE_CONNECTORS:
-          return (item.itemCount === 1) ?
-              `This file doesn't meet your organization's security policies.` :
-              `Review for more details`;
+          return (item.policyFileCount === 1) ? `File was blocked.` :
+                                                `Review for further details`;
         case PolicyErrorType.DLP_WARNING_TIMEOUT:
-          return `Items you are trying to copy may have contained` +
-              `sensitive information, and required review. Please try again.`;
+          switch (item.type) {
+            case ProgressItemType.COPY:
+              return 'Confirmation was required to continue copying' +
+                  ' your files. Please try again';
+            case ProgressItemType.MOVE:
+              return 'Confirmation was required to continue moving' +
+                  ' your files. Please try again';
+            case ProgressItemType.TRANSFER:
+              return 'Confirmation was required to continue' +
+                  ' transferring your files. Please try again';
+            default:
+              console.warn(`Unexpected task type: ${item.type}`);
+              return '';
+          }
       }
     }
 

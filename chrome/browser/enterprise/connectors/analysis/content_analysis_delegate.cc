@@ -87,6 +87,7 @@ StringAnalysisRequest::StringAnalysisRequest(
     std::string text,
     BinaryUploadService::ContentAnalysisCallback callback)
     : Request(std::move(callback), std::move(settings)) {
+  DCHECK_GT(text.size(), 0u);
   data_.size = text.size();
 
   // Only remember strings less than the maximum allowed.
@@ -511,7 +512,8 @@ bool ContentAnalysisDelegate::CancelDialog() {
   if (!dialog_)
     return false;
 
-  return dialog_->CancelDialogAndDelete();
+  dialog_->CancelDialogAndDelete();
+  return true;
 }
 
 void ContentAnalysisDelegate::PageRequestCallback(

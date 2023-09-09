@@ -322,11 +322,8 @@ int BrowserViewLayout::NonClientHitTest(const gfx::Point& point) {
   // if we're in an app defined draggable region so we can return htcaption.
   web_app::AppBrowserController* controller =
       browser_view_->browser()->app_controller();
-  bool is_wco_or_borderless_mode =
-      browser_view_->IsWindowControlsOverlayEnabled() ||
-      browser_view_->IsBorderlessModeEnabled();
 
-  if (is_wco_or_borderless_mode && controller &&
+  if (browser_view_->AreDraggableRegionsEnabled() && controller &&
       controller->draggable_region().has_value()) {
     // Draggable regions are defined relative to the web contents.
     gfx::Point point_in_contents_web_view_coords(point_in_browser_view_coords);
@@ -337,9 +334,9 @@ int BrowserViewLayout::NonClientHitTest(const gfx::Point& point) {
     if (controller->draggable_region()->contains(
             point_in_contents_web_view_coords.x(),
             point_in_contents_web_view_coords.y())) {
-      // Draggable regions should be ignored for clicks into any child widgets,
-      // for example alerts or find bar.
-      return browser_view_->ChildOfAnchorWidgetContainsPoint(
+      // Draggable regions should be ignored for clicks into any browser view's
+      // owned widgets, for example alerts, permission prompts or find bar.
+      return browser_view_->WidgetOwnedByAnchorContainsPoint(
                  point_in_browser_view_coords)
                  ? HTCLIENT
                  : HTCAPTION;
@@ -640,7 +637,8 @@ int BrowserViewLayout::LayoutInfoBar(int top) {
       (delegate_->IsTopControlsSlideBehaviorEnabled() &&
        delegate_->GetTopControlsSlideBehaviorShownRatio() == 0.f)) {
     // Can be null in tests.
-    top = browser_view_ ? browser_view_->y() : 0;
+    top = (browser_view_ ? browser_view_->y() : 0) +
+          immersive_mode_controller_->GetMinimumContentOffset();
   }
 
   SetViewVisibility(infobar_container_, IsInfobarVisible());

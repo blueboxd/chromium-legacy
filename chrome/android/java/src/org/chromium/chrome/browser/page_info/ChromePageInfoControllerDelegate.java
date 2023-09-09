@@ -13,7 +13,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 
@@ -38,6 +37,7 @@ import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.site_settings.ChromeSiteSettingsDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUtils;
+import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
@@ -81,13 +81,14 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
     private final ChromePageInfoHighlight mPageInfoHighlight;
     private final OfflinePageLoadUrlDelegate mOfflinePageLoadUrlDelegate;
     private String mOfflinePageCreationDate;
+    private final TabCreator mTabCreator;
 
     public ChromePageInfoControllerDelegate(Context context, WebContents webContents,
             Supplier<ModalDialogManager> modalDialogManagerSupplier,
             OfflinePageLoadUrlDelegate offlinePageLoadUrlDelegate,
             @Nullable Supplier<StoreInfoActionHandler> storeInfoActionHandlerSupplier,
             Supplier<EphemeralTabCoordinator> ephemeralTabCoordinatorSupplier,
-            ChromePageInfoHighlight pageInfoHighlight) {
+            ChromePageInfoHighlight pageInfoHighlight, TabCreator tabCreator) {
         super(new ChromeAutocompleteSchemeClassifier(Profile.fromWebContents(webContents)),
                 /** isSiteSettingsAvailable= */
                 SiteSettingsHelper.isSiteSettingsAvailable(webContents),
@@ -100,6 +101,7 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
         mProfile = Profile.fromWebContents(mWebContents);
         mStoreInfoActionHandlerSupplier = storeInfoActionHandlerSupplier;
         mPageInfoHighlight = pageInfoHighlight;
+        mTabCreator = tabCreator;
 
         initOfflinePageParams();
         mOfflinePageLoadUrlDelegate = offlinePageLoadUrlDelegate;
@@ -240,7 +242,7 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
             aboutThisSiteRow.setId(PageInfoAboutThisSiteController.ROW_ID);
             rowWrapper.addView(aboutThisSiteRow);
             new PageInfoAboutThisSiteController(mainController, mEphemeralTabCoordinatorSupplier,
-                    aboutThisSiteRow, this, mWebContents);
+                    aboutThisSiteRow, this, mWebContents, mTabCreator);
         }
         if (PageInfoFeatures.PAGE_INFO_STORE_INFO.isEnabled() && !isIncognito()) {
             var storeInfoRow = new PageInfoRowView(rowWrapper.getContext(), null);
@@ -299,11 +301,6 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
     @Override
     public boolean isAccessibilityEnabled() {
         return ChromeAccessibilityUtil.get().isAccessibilityEnabled();
-    }
-
-    @VisibleForTesting
-    void setOfflinePageStateForTesting(@OfflinePageState int offlinePageState) {
-        mOfflinePageState = offlinePageState;
     }
 
     @Override

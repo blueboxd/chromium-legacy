@@ -90,7 +90,6 @@ typedef NS_ENUM(NSUInteger, UserSigninPromoAction) {
                                 PromoActionCount);
       break;
     }
-    case SigninCoordinatorResultDisabled:
     case SigninCoordinatorResultInterrupted: {
       // TODO(crbug.com/951145): Add metric for when the sign-in has been
       // interrupted.

@@ -93,7 +93,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Signin.AccountConsistencyPromoAction"
-    enum="AccountConsistencyPromoAction" expires_after="2023-10-22">
+    enum="AccountConsistencyPromoAction" expires_after="2023-12-24">
   <owner>bsazonov@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -191,7 +191,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Signin.AccountFetcher.AccountUserInfoFetchTime" units="ms"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>triploblastic@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -205,7 +205,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Signin.AccountReconcilorState.OnGaiaResponse"
-    enum="SigninAccountReconcilorState" expires_after="2023-10-22">
+    enum="SigninAccountReconcilorState" expires_after="2023-12-24">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -231,7 +231,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.AccountTracker.GaiaIdMigrationState"
-    enum="OAuth2LoginAccountRevokedMigrationState" expires_after="2023-10-22">
+    enum="OAuth2LoginAccountRevokedMigrationState" expires_after="2023-12-24">
   <owner>msarda@chromium.org</owner>
   <owner>sdefresne@chromium.org</owner>
   <summary>
@@ -248,17 +248,31 @@ prefs when the profile is loaded.  -->
   </summary>
 </histogram>
 
-<histogram name="Signin.AccountTracker.IsAccountIdEmpty" enum="BooleanEmpty"
-    expires_after="2023-12-31">
+<histogram name="Signin.AccountTracker.RefreshAccountInfo.IsTrackingAccount"
+    enum="Boolean" expires_after="2023-12-31">
+  <owner>msarda@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Indicates whether the account was seeded when the account info needs to be
+    refreshed.
+
+    This histogram will be used to decide whether the account needs to be seeded
+    during while refreshing the account info.
+  </summary>
+</histogram>
+
+<histogram name="Signin.AccountTracker.SeedAccountInfo.IsAccountIdEmpty"
+    enum="BooleanEmpty" expires_after="2023-12-31">
+  <owner>msarda@chromium.org</owner>
   <owner>sinhak@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
-    Indicates if the account being tracked by AccountTracker has an empty
-    account id. This is recorded whenever AccountTracker starts tracking a new
-    account.
+    Indicates if the account being seeded by AccountTracker has an empty account
+    id. This is in general an error as the account with an empty id cannot be
+    tracked.
 
     This histogram will be used to decide the severity of AccountTracker
-    receiving malformed account ids.
+    receiving malformed account ids during the seeding process.
   </summary>
 </histogram>
 
@@ -314,7 +328,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.AndroidGetAccountIdsTime" units="ms"
-    expires_after="2023-11-05">
+    expires_after="2024-01-07">
   <owner>alexilin@chromium.org</owner>
   <owner>bsazonov@chromium.org</owner>
   <summary>
@@ -323,7 +337,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram base="true" name="Signin.AndroidGetAccountsTime" units="ms"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>alexilin@chromium.org</owner>
   <owner>bsazonov@chromium.org</owner>
   <summary>
@@ -343,7 +357,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.AndroidNumberOfDeviceAccounts" units="accounts"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>triploblastic@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -352,7 +366,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.AuthError" enum="GoogleServiceAuthError"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>msarda@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>
@@ -518,7 +532,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.Extensions.LaunchWebAuthFlowResult"
-    enum="LaunchWebAuthFlowResult" expires_after="2023-11-12">
+    enum="LaunchWebAuthFlowResult" expires_after="2024-01-14">
   <owner>alexilin@chromium.org</owner>
   <owner>rsult@google.com</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -549,7 +563,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.GetAccessTokenFinished" enum="GoogleServiceAuthError"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>droger@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <summary>
@@ -631,7 +645,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.IOSDeviceRestoreIdentityCountAfter" units="identities"
-    expires_after="2023-08-13">
+    expires_after="2024-04-01">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -642,7 +656,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.IOSDeviceRestoreIdentityCountBefore" units="identities"
-    expires_after="2023-08-13">
+    expires_after="2024-04-01">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -780,14 +794,14 @@ the browser and content area. -->
 </histogram>
 
 <histogram name="Signin.ListFamilyMembersRequest.Latency" units="ms"
-    expires_after="2023-11-01">
+    expires_after="2023-12-31">
   <owner>tju@google.com</owner>
   <owner>chrome-kids-eng@google.com</owner>
   <summary>Tracks the latency of calls to the Kids Management API.</summary>
 </histogram>
 
 <histogram name="Signin.ListFamilyMembersRequest.Status"
-    enum="SupervisedUserProtoFetcherStatus" expires_after="2023-11-01">
+    enum="SupervisedUserProtoFetcherStatus" expires_after="2023-12-31">
   <owner>tju@google.com</owner>
   <owner>chrome-kids-eng@google.com</owner>
   <summary>The status of the fetch to the Kids Management API.</summary>
@@ -878,7 +892,7 @@ the browser and content area. -->
 </histogram>
 
 <histogram name="Signin.OAuth2MintToken.ApiCallResult"
-    enum="OAuth2MintTokenApiCallResult" expires_after="2023-11-12">
+    enum="OAuth2MintTokenApiCallResult" expires_after="2024-01-14">
   <owner>alexilin@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>
@@ -920,6 +934,20 @@ should be kept to monitor/debug signin Multilogin issues-->
   <owner>droger@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <summary>Response status received from gaia Multilogin.</summary>
+</histogram>
+
+<histogram name="Signin.ProcessMirrorHeaders.AllowedFromInitiator.GoIncognito"
+    enum="BooleanAllowed" expires_after="2024-01-14">
+  <owner>bsazonov@chromium.org</owner>
+  <owner>msarda@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Recorded when request intitator is checked after receiving
+    X-Chrome-Connected header with GAIA_SERVICE_TYPE_INCOGNITO. The recorded
+    bucket represents the result of the check (i.e. whether the received
+    initiator origin is allowed to trigger requests that end up sending
+    X-Chrome-Connected header).
+  </summary>
 </histogram>
 
 <histogram name="Signin.Reconciler.AllExternalCcResultCompleted"
@@ -1085,24 +1113,6 @@ OAuth Multilogin call. -->
   </summary>
 </histogram>
 
-<histogram name="Signin.SignedInAccountsViewImpression" enum="BooleanShown"
-    expires_after="2024-04-01">
-  <owner>jlebel@chromium.org</owner>
-  <owner>msarda@chromium.org</owner>
-  <owner>chrome-signin-team@google.com</owner>
-  <summary>
-    Track the number of times the view that displays the accounts that are
-    signed is shown. This view only exists on iOS and is shown every time the
-    application enters forground iff the accounts changed while it was in
-    background. Only bucket &quot;Shown&quot; is being recorded (this histogram
-    is a counter).
-
-    This histogram was added following crbug.com/1006717 (stable regression)
-    where the signed-in accounts view was repeatedly shown for a set of users.
-    It is used as a counter to monitor that there are no bumps in its timeline.
-  </summary>
-</histogram>
-
 <histogram name="Signin.SignIn.Completed" enum="SigninAccessPoint"
     expires_after="2023-12-19">
   <owner>bsazonov@chromium.org</owner>
@@ -1182,7 +1192,7 @@ OAuth Multilogin call. -->
 </histogram>
 
 <histogram name="Signin.SigninDisabledNotificationShown"
-    enum="SigninAccessPoint" expires_after="2023-09-22">
+    enum="SigninAccessPoint" expires_after="2023-12-24">
   <owner>birnie@google.com</owner>
   <owner>bsazonov@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -1342,17 +1352,6 @@ kept as long as profile signout is possible -->
   </summary>
 </histogram>
 
-<histogram name="Signin.SyncConsentScreen.DataRowClicked"
-    enum="SigninSyncConsentDataRow" expires_after="2023-08-18">
-  <owner>arthurmilchior@chromium.org</owner>
-  <owner>triploblastic@chromium.org</owner>
-  <owner>chrome-signin-team@google.com</owner>
-  <summary>
-    This histogram records which sync data row was clicked by the user on the
-    tangible sync consent page on Android and iOS.
-  </summary>
-</histogram>
-
 <histogram name="Signin.SyncDisabledNotificationShown" enum="SigninAccessPoint"
     expires_after="2023-12-04">
   <owner>birnie@google.com</owner>
@@ -1493,7 +1492,7 @@ should be kept for as long as we store refresh tokens in an SQLite DB. -->
 </histogram>
 
 <histogram name="Signin.TransactionalReauthResult" enum="SigninReauthResult"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
 <!-- Name completed by histogram_suffixes
 name="TransactionalReauthEntryPoint" -->
 
@@ -1547,7 +1546,7 @@ Chrome adds accounts to the Gaia cookies. -->
 </histogram>
 
 <histogram name="Signin.UserRequestedWipeDataOnSignout" enum="BooleanRequested"
-    expires_after="2023-10-09">
+    expires_after="2023-12-24">
   <owner>triploblastic@google.com</owner>
   <owner>bsazonov@chromium.org</owner>
   <summary>

@@ -100,9 +100,11 @@ class FirstRunInteractiveUiTest
     auto* identity_manager = IdentityManagerFactory::GetForProfile(profile());
 
     // Kombucha note: This function waits on a `base::RunLoop`.
-    AccountInfo account_info = signin::MakeAccountAvailableWithCookies(
-        identity_manager, test_url_loader_factory(), account_email,
-        signin::GetTestGaiaIdForEmail(account_email));
+    AccountInfo account_info = signin::MakeAccountAvailable(
+        identity_manager,
+        signin::AccountAvailabilityOptionsBuilder(test_url_loader_factory())
+            .WithCookie()
+            .Build(account_email));
 
     FillNonCoreInfo(account_info, account_given_name);
     ASSERT_TRUE(account_info.IsValid());
@@ -212,7 +214,31 @@ IN_PROC_BROWSER_TEST_F(FirstRunInteractiveUiTest,
 }
 #endif
 
-IN_PROC_BROWSER_TEST_F(FirstRunInteractiveUiTest, SignInAndSync) {
+class FirstRunParameterizedInteractiveUiTest
+    : public FirstRunInteractiveUiTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  FirstRunParameterizedInteractiveUiTest() {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        kForYouFre, {{kForYouFreWithDefaultBrowserStep.name,
+                      WithDefaultBrowserStep() ? "forced" : "no"}});
+  }
+
+  bool WithDefaultBrowserStep() const { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         FirstRunParameterizedInteractiveUiTest,
+                         testing::Bool(),
+                         [](const testing::TestParamInfo<bool>& info) {
+                           return info.param ? "WithDefaultBrowserStep"
+                                             : "Default";
+                         });
+
+IN_PROC_BROWSER_TEST_P(FirstRunParameterizedInteractiveUiTest, SignInAndSync) {
   base::test::TestFuture<bool> proceed_future;
   base::HistogramTester histogram_tester;
 
@@ -276,7 +302,14 @@ IN_PROC_BROWSER_TEST_F(FirstRunInteractiveUiTest, SignInAndSync) {
       }),
 
       EnsurePresent(kWebContentsId, kOptInSyncButton),
-      PressJsButton(kWebContentsId, kOptInSyncButton));
+      PressJsButton(kWebContentsId, kOptInSyncButton)
+          .SetMustRemainVisible(false),
+
+      If([&] { return WithDefaultBrowserStep(); },
+         WaitForWebContentsNavigation(kWebContentsId,
+                                      // TODO(crbug.com/1465822): Replace this
+                                      // placeholder URL and act on the page
+                                      GURL("chrome://version"))));
 
   WaitForPickerClosed();
 

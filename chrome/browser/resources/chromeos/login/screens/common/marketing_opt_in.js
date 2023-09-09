@@ -7,9 +7,10 @@
  * opt-in screen.
  */
 
+import '//resources/cr_elements/chromeos/cros_color_overrides.css.js';
+import '//resources/cr_elements/cr_toggle/cr_toggle.js';
 import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '//resources/polymer/v3_0/iron-iconset-svg/iron-iconset-svg.js';
-import '//resources/cr_elements/cr_toggle/cr_toggle.js';
 import '../../components/oobe_cr_lottie.js';
 import '../../components/oobe_icons.html.js';
 import '../../components/common_styles/oobe_common_styles.css.js';
@@ -45,18 +46,6 @@ const MarketingOptInStep = {
   OVERVIEW: 'overview',
   ACCESSIBILITY: 'accessibility',
 };
-
-/**
- * URL of the animation in the light mode.
- * @type {string}
- */
-const ANIMATION_LIGHT_URL = 'animations/all_set_light.json';
-
-/**
- * URL of the animation in the dark mode.
- * @type {string}
- */
-const ANIMATION_DARK_URL = 'animations/all_set_dark.json';
 
 /**
  * @typedef {{
@@ -107,15 +96,6 @@ class MarketingOptIn extends MarketingScreenElementBase {
        * Canada only.
        */
       hasLegalFooter_: {
-        type: Boolean,
-        value: false,
-      },
-
-      /**
-       * Whether the marketing opt-in page is being rendered in dark mode.
-       * @private {boolean}
-       */
-      isDarkModeActive_: {
         type: Boolean,
         value: false,
       },
@@ -245,16 +225,6 @@ class MarketingOptIn extends MarketingScreenElementBase {
   getMarginTop_() {
     return this.isCloudGamingDevice_ ? 'margin-top: 65px;' :
                                        'margin-top: 20px;';
-  }
-
-
-
-  /**
-   * Returns the url of the animation asset.
-   * @private
-   */
-  getAnimationUrl_() {
-    return this.isDarkModeActive_ ? ANIMATION_DARK_URL : ANIMATION_LIGHT_URL;
   }
 }
 

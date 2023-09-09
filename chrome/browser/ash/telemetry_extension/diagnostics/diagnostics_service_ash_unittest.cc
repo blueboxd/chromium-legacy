@@ -207,6 +207,20 @@ TEST_F(DiagnosticsServiceAshTest, RunAcPowerRoutineSuccess) {
                   ->DidExpectedDiagnosticsParametersMatch());
 }
 
+TEST_F(DiagnosticsServiceAshTest, RunAudioDriverRoutineSuccess) {
+  // Configure FakeCrosHealthd.
+  SetSuccessfulRoutineResponse();
+
+  base::test::TestFuture<crosapi::mojom::DiagnosticsRunRoutineResponsePtr>
+      future;
+  diagnostics_service()->RunAudioDriverRoutine(future.GetCallback());
+
+  ASSERT_TRUE(future.Wait());
+  const auto& result = future.Get();
+  ValidateResponse(result,
+                   cros_healthd::mojom::DiagnosticRoutineEnum::kAudioDriver);
+}
+
 TEST_F(DiagnosticsServiceAshTest, RunBatteryCapacityRoutineSuccess) {
   // Configure FakeCrosHealthd.
   SetSuccessfulRoutineResponse();
@@ -279,6 +293,20 @@ TEST_F(DiagnosticsServiceAshTest, RunBatteryHealthRoutineSuccess) {
   const auto& result = future.Get();
   ValidateResponse(result,
                    cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryHealth);
+}
+
+TEST_F(DiagnosticsServiceAshTest, RunBluetoothPowerRoutine) {
+  // Configure FakeCrosHealthd.
+  SetSuccessfulRoutineResponse();
+
+  base::test::TestFuture<crosapi::mojom::DiagnosticsRunRoutineResponsePtr>
+      future;
+  diagnostics_service()->RunBluetoothPowerRoutine(future.GetCallback());
+
+  ASSERT_TRUE(future.Wait());
+  const auto& result = future.Get();
+  ValidateResponse(result,
+                   cros_healthd::mojom::DiagnosticRoutineEnum::kBluetoothPower);
 }
 
 TEST_F(DiagnosticsServiceAshTest, RunCpuCacheRoutineSuccess) {
@@ -593,6 +621,43 @@ TEST_F(DiagnosticsServiceAshTest, RunSmartctlCheckRoutineWithParameterSuccess) {
   const auto& result = future.Get();
   ValidateResponse(result, cros_healthd::mojom::DiagnosticRoutineEnum::
                                kSmartctlCheckWithPercentageUsed);
+  EXPECT_TRUE(cros_healthd::FakeCrosHealthd::Get()
+                  ->DidExpectedDiagnosticsParametersMatch());
+}
+
+TEST_F(DiagnosticsServiceAshTest, RunUfsLifetimeRoutineSuccess) {
+  // Configure FakeCrosHealthd.
+  SetSuccessfulRoutineResponse();
+
+  base::test::TestFuture<crosapi::mojom::DiagnosticsRunRoutineResponsePtr>
+      future;
+  diagnostics_service()->RunUfsLifetimeRoutine(future.GetCallback());
+
+  ASSERT_TRUE(future.Wait());
+  const auto& result = future.Get();
+  ValidateResponse(result,
+                   cros_healthd::mojom::DiagnosticRoutineEnum::kUfsLifetime);
+}
+
+TEST_F(DiagnosticsServiceAshTest, RunPowerButtonRoutineSuccess) {
+  // Configure FakeCrosHealthd.
+  SetSuccessfulRoutineResponse();
+  constexpr uint32_t kTimeout = 10;
+  base::Value::Dict expected_passed_parameters;
+  expected_passed_parameters.Set("timeout_seconds",
+                                 static_cast<int32_t>(kTimeout));
+  cros_healthd::FakeCrosHealthd::Get()
+      ->SetExpectedLastPassedDiagnosticsParametersForTesting(
+          std::move(expected_passed_parameters));
+
+  base::test::TestFuture<crosapi::mojom::DiagnosticsRunRoutineResponsePtr>
+      future;
+  diagnostics_service()->RunPowerButtonRoutine(kTimeout, future.GetCallback());
+
+  ASSERT_TRUE(future.Wait());
+  const auto& result = future.Get();
+  ValidateResponse(result,
+                   cros_healthd::mojom::DiagnosticRoutineEnum::kPowerButton);
   EXPECT_TRUE(cros_healthd::FakeCrosHealthd::Get()
                   ->DidExpectedDiagnosticsParametersMatch());
 }

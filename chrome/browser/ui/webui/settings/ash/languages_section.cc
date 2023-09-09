@@ -195,6 +195,8 @@ void AddInputMethodOptionsStrings(
        IDS_SETTINGS_INPUT_METHOD_OPTIONS_USER_DICTIONARIES},
       {"inputMethodOptionsPrivacySectionTitle",
        IDS_SETTINGS_INPUT_METHOD_OPTIONS_PRIVACY},
+      {"inputMethodOptionsVietnameseShorthandTypingTitle",
+       IDS_SETTINGS_INPUT_METHOD_HEADING_SHORTHAND_TYPING},
       {"inputMethodOptionsJapaneseAutomaticallySwitchToHalfwidth",
        IDS_SETTINGS_INPUT_METHOD_OPTIONS_JAPANESE_AUTOMATICALLY_SWITCH_TO_HALFWIDTH},
       {"inputMethodOptionsJapaneseShiftKeyModeStyle",
@@ -339,6 +341,26 @@ void AddInputMethodOptionsStrings(
        IDS_SETTINGS_INPUT_METHOD_OPTIONS_KEYBOARD_DVORAK},
       {"inputMethodOptionsColemakKeyboard",
        IDS_SETTINGS_INPUT_METHOD_OPTIONS_KEYBOARD_COLEMAK},
+      {"inputMethodOptionsVietnameseModernToneMarkPlacement",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_VIETNAMESE_MODERN_TONE_MARK_PLACEMENT},
+      {"inputMethodOptionsVietnameseModernToneMarkPlacementDescription",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_DESCRIPTION_VIETNAMESE_MODERN_TONE_MARK_PLACEMENT},
+      {"inputMethodOptionsVietnameseFlexibleTyping",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_VIETNAMESE_FLEXIBLE_TYPING},
+      {"inputMethodOptionsVietnameseTelexFlexibleTypingDescription",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_VIETNAMESE_TELEX_FLEXIBLE_TYPING_DESCRIPTION},
+      {"inputMethodOptionsVietnameseVniFlexibleTypingDescription",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_VIETNAMESE_VNI_FLEXIBLE_TYPING_DESCRIPTION},
+      {"inputMethodOptionsVietnameseVniUoHookShortcut",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_VIETNAMESE_VNI_UO_HOOK_SHORTCUT},
+      {"inputMethodOptionsVietnameseTelexUoHookShortcut",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_VIETNAMESE_TELEX_UO_HOOK_SHORTCUT},
+      {"inputMethodOptionsVietnameseTelexWShortcut",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_VIETNAMESE_TELEX_W_SHORTCUT},
+      {"inputMethodOptionsVietnameseShowUnderline",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_VIETNAMESE_SHOW_UNDERLINE},
+      {"inputMethodOptionsVietnameseShowUnderlineDescription",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_DESCRIPTION_VIETNAMESE_SHOW_UNDERLINE},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
   html_source->AddBoolean("isPhysicalKeyboardAutocorrectAllowed",
@@ -357,6 +379,9 @@ void AddInputMethodOptionsStrings(
   html_source->AddBoolean(
       "autocorrectEnableByDefault",
       base::FeatureList::IsEnabled(features::kAutocorrectByDefault));
+  html_source->AddBoolean(
+      "allowFirstPartyVietnameseInput",
+      base::FeatureList::IsEnabled(features::kFirstPartyVietnameseInput));
 }
 
 void AddLanguagesPageStringsV2(content::WebUIDataSource* html_source) {
@@ -515,8 +540,9 @@ LanguagesSection::LanguagesSection(Profile* profile,
 
   if (IsEmojiSuggestionAllowed()) {
     updater.AddSearchTags(GetSmartInputsSearchConcepts());
-    if (IsEmojiSuggestionAllowed())
+    if (IsEmojiSuggestionAllowed()) {
       updater.AddSearchTags(GetEmojiSuggestionSearchConcepts());
+    }
   }
   updater.AddSearchTags(GetAutoCorrectionSearchConcepts());
 }
@@ -557,7 +583,6 @@ void LanguagesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   AddLanguagesPageStringsV2(html_source);
   AddInputPageStringsV2(html_source);
 
-  html_source->AddBoolean("enableLanguageSettingsV2Update2", true);
   html_source->AddBoolean(
       "onDeviceGrammarCheckEnabled",
       base::FeatureList::IsEnabled(features::kOnDeviceGrammarCheck));

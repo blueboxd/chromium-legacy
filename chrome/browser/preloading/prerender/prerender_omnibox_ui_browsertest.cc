@@ -38,6 +38,7 @@
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/omnibox/browser/base_search_provider.h"
+#include "components/omnibox/browser/omnibox_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/search_engines/template_url_data.h"
@@ -506,10 +507,14 @@ class PrerenderPreloaderHoldbackBrowserTest
     : public PrerenderOmniboxUIBrowserTest {
  public:
   PrerenderPreloaderHoldbackBrowserTest() {
-    feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kPrerender2Holdback},
-        /* disabled_features=*/{
-            kSearchPrefetchOnlyAllowDefaultMatchPreloading});
+    feature_list_.InitAndEnableFeatureWithParameters(
+        features::kPreloadingConfig, {{"preloading_config", R"(
+  [{
+    "preloading_type": "Prerender",
+    "preloading_predictor": "OmniboxDirectURLInput",
+    "holdback": true
+  }]
+  )"}});
   }
   ~PrerenderPreloaderHoldbackBrowserTest() override = default;
 
@@ -644,8 +649,11 @@ class PrerenderOmniboxSearchSuggestionUIBrowserTest
       : prerender_helper_(base::BindRepeating(
             &PrerenderOmniboxUIBrowserTest::GetActiveWebContents,
             base::Unretained(this))) {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kSupportSearchSuggestionForPrerender2},
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kSupportSearchSuggestionForPrerender2,
+          {
+              {"implementation_type", "ignore_prefetch"},
+          }}},
         {prerender_utils::kHidePrefetchParameter,
          kSearchPrefetchOnlyAllowDefaultMatchPreloading});
   }
@@ -831,7 +839,7 @@ class PrerenderOmniboxSearchSuggestionUIBrowserTest
   AutocompleteController* GetAutocompleteController() {
     OmniboxView* omnibox =
         browser()->window()->GetLocationBar()->GetOmniboxView();
-    return omnibox->model()->autocomplete_controller();
+    return omnibox->controller()->autocomplete_controller();
   }
 
  protected:

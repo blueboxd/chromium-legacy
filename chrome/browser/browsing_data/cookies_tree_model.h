@@ -231,17 +231,19 @@ class CookieTreeHostNode : public CookieTreeNode {
   // the COOKIES node to add children. Checking each child and interrogating
   // them to see if they are a COOKIES, DATABASES, etc node seems
   // less preferable than storing an extra pointer per origin.
-  raw_ptr<CookieTreeCookiesNode, DanglingUntriaged> cookies_child_ = nullptr;
-  raw_ptr<CookieTreeDatabasesNode, DanglingUntriaged> databases_child_ =
+  raw_ptr<CookieTreeCookiesNode, AcrossTasksDanglingUntriaged> cookies_child_ =
       nullptr;
-  raw_ptr<CookieTreeLocalStoragesNode, DanglingUntriaged>
+  raw_ptr<CookieTreeDatabasesNode, AcrossTasksDanglingUntriaged>
+      databases_child_ = nullptr;
+  raw_ptr<CookieTreeLocalStoragesNode, AcrossTasksDanglingUntriaged>
       local_storages_child_ = nullptr;
-  raw_ptr<CookieTreeSessionStoragesNode, DanglingUntriaged>
+  raw_ptr<CookieTreeSessionStoragesNode, AcrossTasksDanglingUntriaged>
       session_storages_child_ = nullptr;
-  raw_ptr<CookieTreeIndexedDBsNode, DanglingUntriaged> indexed_dbs_child_ =
-      nullptr;
+  raw_ptr<CookieTreeIndexedDBsNode, AcrossTasksDanglingUntriaged>
+      indexed_dbs_child_ = nullptr;
   raw_ptr<CookieTreeFileSystemsNode> file_systems_child_ = nullptr;
-  raw_ptr<CookieTreeQuotaNode, DanglingUntriaged> quota_child_ = nullptr;
+  raw_ptr<CookieTreeQuotaNode, AcrossTasksDanglingUntriaged> quota_child_ =
+      nullptr;
   raw_ptr<CookieTreeServiceWorkersNode> service_workers_child_ = nullptr;
   raw_ptr<CookieTreeSharedWorkersNode> shared_workers_child_ = nullptr;
   raw_ptr<CookieTreeCacheStoragesNode> cache_storages_child_ = nullptr;

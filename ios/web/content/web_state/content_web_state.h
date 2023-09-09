@@ -43,9 +43,16 @@ class ContentWebState : public WebState,
  public:
   explicit ContentWebState(const CreateParams& params);
 
-  // Constructor for ContentWebState created for deserialized sessions
+  // Constructor for ContentWebState created for deserialized sessions.
   ContentWebState(const CreateParams& params,
                   CRWSessionStorage* session_storage);
+
+  // Constructor for ContentWebState created for deserialized sessions.
+  ContentWebState(BrowserState* browser_state,
+                  SessionID unique_identifier,
+                  proto::WebStateMetadataStorage metadata,
+                  WebStateStorageLoader storage_loader,
+                  NativeSessionFetcher session_fetcher);
 
   ~ContentWebState() override;
 
@@ -53,8 +60,10 @@ class ContentWebState : public WebState,
   content::WebContents* GetWebContents();
 
   // WebState implementation.
+  void SerializeToProto(proto::WebStateStorage& storage) const override;
   WebStateDelegate* GetDelegate() override;
   void SetDelegate(WebStateDelegate* delegate) override;
+  std::unique_ptr<WebState> Clone() const override;
   bool IsRealized() const final;
   WebState* ForceRealized() final;
   bool IsWebUsageEnabled() const override;
@@ -84,7 +93,7 @@ class ContentWebState : public WebState,
   const SessionCertificatePolicyCache* GetSessionCertificatePolicyCache()
       const override;
   SessionCertificatePolicyCache* GetSessionCertificatePolicyCache() override;
-  CRWSessionStorage* BuildSessionStorage() override;
+  CRWSessionStorage* BuildSessionStorage() const override;
   void LoadData(NSData* data, NSString* mime_type, const GURL& url) override;
   void ExecuteUserJavaScript(NSString* javaScript) override;
   NSString* GetStableIdentifier() const override;
@@ -184,6 +193,7 @@ class ContentWebState : public WebState,
   bool DoBrowserControlsShrinkRendererSize(
       content::WebContents* web_contents) override;
   bool OnlyExpandTopControlsAtPageTop() override;
+  void SetTopControlsGestureScrollInProgress(bool in_progress) override;
 
  private:
   WebStateDelegate* delegate_ = nullptr;
@@ -201,6 +211,8 @@ class ContentWebState : public WebState,
   std::unique_ptr<ContentNavigationManager> navigation_manager_;
   std::unique_ptr<ContentWebFramesManager> web_frames_manager_;
   FaviconStatus favicon_status_;
+  bool top_control_scroll_in_progress_ = false;
+  bool cached_shrink_controls_ = false;
 
   base::WeakPtrFactory<ContentWebState> weak_factory_{this};
 };

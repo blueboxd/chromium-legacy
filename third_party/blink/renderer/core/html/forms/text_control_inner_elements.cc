@@ -57,6 +57,7 @@ EditingViewPortElement::CustomStyleForLayoutObject(const StyleRecalcContext&) {
 
   style_builder.SetFlexGrow(1);
   style_builder.SetMinWidth(Length::Fixed(0));
+  style_builder.SetMinHeight(Length::Fixed(0));
   style_builder.SetDisplay(EDisplay::kBlock);
   style_builder.SetDirection(TextDirection::kLtr);
 
@@ -194,7 +195,7 @@ TextControlInnerEditorElement::CustomStyleForLayoutObject(
 
   // Using StyleAdjuster::adjustComputedStyle updates unwanted style. We'd like
   // to apply only editing-related and alignment-related.
-  StyleAdjuster::AdjustStyleForEditing(style_builder);
+  StyleAdjuster::AdjustStyleForEditing(style_builder, this);
   if (!is_visible_)
     style_builder.SetOpacity(0);
 

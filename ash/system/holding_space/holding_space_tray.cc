@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/ash_element_identifiers.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/tray_background_view_catalog.h"
 #include "ash/public/cpp/holding_space/holding_space_client.h"
@@ -28,10 +29,10 @@
 #include "ash/system/holding_space/holding_space_tray_icon.h"
 #include "ash/system/holding_space/pinned_files_section.h"
 #include "ash/system/progress_indicator/progress_indicator.h"
+#include "ash/system/progress_indicator/progress_indicator_animation_registry.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/user_education/user_education_class_properties.h"
-#include "ash/user_education/user_education_constants.h"
 #include "base/check.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
@@ -227,8 +228,8 @@ HoldingSpaceTray::HoldingSpaceTray(Shelf* shelf)
     // NOTE: Set `kHelpBubbleContextKey` before `views::kElementIdentifierKey`
     // in case registration causes a help bubble to be created synchronously.
     SetProperty(kHelpBubbleContextKey, HelpBubbleContext::kAsh);
-    SetProperty(views::kElementIdentifierKey, kHoldingSpaceTrayElementId);
   }
+  SetProperty(views::kElementIdentifierKey, kHoldingSpaceTrayElementId);
 
   // Default icon.
   default_tray_icon_ =
@@ -735,7 +736,8 @@ void HoldingSpaceTray::UpdatePreviewsState() {
   if (auto* model = HoldingSpaceController::Get()->model(); model) {
     auto* registry = HoldingSpaceAnimationRegistry::GetInstance();
     for (const auto& item : model->items()) {
-      auto* animation = registry->GetProgressIconAnimationForKey(item.get());
+      auto* animation = registry->GetProgressIconAnimationForKey(
+          ProgressIndicatorAnimationRegistry::AsAnimationKey(item.get()));
       if (animation && !animation->HasAnimated())
         animation->Start();
     }

@@ -19,6 +19,7 @@
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "chromeos/ash/components/drivefs/drivefs_host.h"
 #include "chromeos/ash/components/drivefs/drivefs_pin_manager.h"
@@ -98,6 +99,10 @@ class DriveIntegrationServiceObserver : public base::CheckedObserver {
 
   // Triggered when the bulk pinning manager reports progress.
   virtual void OnBulkPinProgress(const drivefs::pinning::Progress& progress) {}
+
+  // Triggered when the network connection to Drive could have changed.
+  virtual void OnDriveConnectionStatusChanged(
+      util::ConnectionStatusType status) {}
 };
 
 // DriveIntegrationService is used to integrate Drive to Chrome. This class
@@ -148,6 +153,8 @@ class DriveIntegrationService : public KeyedService,
   void SetEnabled(bool enabled);
   bool is_enabled() const { return enabled_; }
 
+  bool IsOnline() const;
+
   bool IsMounted() const;
 
   bool mount_failed() const { return mount_failed_; }
@@ -169,8 +176,9 @@ class DriveIntegrationService : public KeyedService,
   bool IsSharedDrive(const base::FilePath& local_path) const;
 
   // Adds and removes the observer.
-  void AddObserver(DriveIntegrationServiceObserver* observer);
-  void RemoveObserver(DriveIntegrationServiceObserver* observer);
+  using Observer = DriveIntegrationServiceObserver;
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // MountObserver implementation.
   void OnMounted(const base::FilePath& mount_path) override;
@@ -326,6 +334,8 @@ class DriveIntegrationService : public KeyedService,
   void GetDocsOfflineStats(
       drivefs::mojom::DriveFs::GetDocsOfflineStatsCallback callback);
 
+  void UpdateNetworkState(bool pause_syncing, bool is_offline);
+
  private:
   enum State {
     NOT_INITIALIZED,
@@ -405,7 +415,7 @@ class DriveIntegrationService : public KeyedService,
   // Pin all the files in |files_to_pin| with DriveFS.
   void PinFiles(const std::vector<base::FilePath>& files_to_pin);
 
-  // Enable or disable DriveFS bulk pinning.
+  // Enables or disables DriveFS bulk pinning.
   void ToggleBulkPinning();
 
   // Regularly samples the bulk-pinning preference and stores the result in a
@@ -443,6 +453,10 @@ class DriveIntegrationService : public KeyedService,
                                      base::OnceClosure callback,
                                      drive::FileError error);
 
+  void OnGetOfflineFilesSpaceUsage(base::OnceCallback<void(int64_t)> callback,
+                                   drive::FileError error,
+                                   int64_t total_size);
+
   friend class DriveIntegrationServiceFactory;
 
   raw_ptr<Profile, ExperimentalAsh> profile_;
@@ -465,7 +479,7 @@ class DriveIntegrationService : public KeyedService,
   std::unique_ptr<internal::ResourceMetadataStorage, util::DestroyHelper>
       metadata_storage_;
 
-  base::ObserverList<DriveIntegrationServiceObserver> observers_;
+  base::ObserverList<Observer> observers_;
 
   std::unique_ptr<DriveFsHolder> drivefs_holder_;
   std::unique_ptr<PreferenceWatcher> preference_watcher_;
@@ -479,6 +493,9 @@ class DriveIntegrationService : public KeyedService,
   std::unique_ptr<google_apis::AuthServiceInterface> auth_service_;
 
   base::TimeTicks mount_start_;
+
+  base::Time last_offline_storage_size_time_;
+  int64_t last_offline_storage_size_result_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

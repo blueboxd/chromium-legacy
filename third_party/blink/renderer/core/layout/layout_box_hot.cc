@@ -88,8 +88,7 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
   // re-layout when unlocking.
   bool is_blocked_by_display_lock = ChildLayoutBlockedByDisplayLock();
   bool child_needs_layout_unless_locked =
-      !is_blocked_by_display_lock &&
-      (PosChildNeedsLayout() || NormalChildNeedsLayout());
+      !is_blocked_by_display_lock && NormalChildNeedsLayout();
 
   const NGPhysicalBoxFragment& physical_fragment =
       To<NGPhysicalBoxFragment>(cached_layout_result->PhysicalFragment());
@@ -100,10 +99,8 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
       (break_token && break_token->IsRepeated()))
     return nullptr;
 
-  if (SelfNeedsLayoutForStyle() || child_needs_layout_unless_locked ||
-      NeedsSimplifiedNormalFlowLayout() ||
-      (NeedsPositionedMovementLayout() &&
-       !NeedsPositionedMovementLayoutOnly())) {
+  if (SelfNeedsLayout() || child_needs_layout_unless_locked ||
+      NeedsSimplifiedNormalFlowLayout()) {
     if (!ChildrenInline()) {
       // Check if we only need "simplified" layout. We don't abort yet, as we
       // need to check if other things (like floats) will require us to perform
@@ -472,14 +469,6 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
   physical_fragment.CheckType();
 
   DCHECK_EQ(*out_cache_status, NGLayoutCacheStatus::kHit);
-
-  // We can safely re-use this fragment if we are positioned, and only our
-  // position constraints changed (left/top/etc). However we need to clear the
-  // dirty layout bit(s). Note that we may be here because we are display locked
-  // and have cached a locked layout result. In that case, this function will
-  // not clear the child dirty bits.
-  if (NeedsLayout())
-    ClearNeedsLayout();
 
   // For example, for elements with a transform change we can re-use the cached
   // result but we still need to recalculate the layout overflow.

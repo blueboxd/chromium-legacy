@@ -9,11 +9,9 @@
 
 #include "components/signin/public/base/signin_metrics.h"
 
-typedef NS_ENUM(NSUInteger, SigninCoordinatorResult);
 @protocol SystemIdentity;
 
-using ShowSigninCommandCompletionCallback =
-    void (^)(SigninCoordinatorResult result);
+typedef void (^ShowSigninCommandCompletionCallback)(BOOL succeeded);
 
 typedef NS_ENUM(NSInteger, AuthenticationOperation) {
   // Operation to start a re-authenticate operation. The user is presented with

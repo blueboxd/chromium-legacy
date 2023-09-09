@@ -761,6 +761,10 @@ scoped_refptr<VideoFrame> ReadbackTextureBackedFrameToMemorySync(
   result->metadata().MergeMetadataFrom(txt_frame.metadata());
   result->metadata().ClearTextureFrameMedatada();
 
+  // NOTE: Iterating over the number of planes of the readback format (rather
+  // than `txt_frame`) ensures that frames with external
+  // sampling are correctly sampled as a single opaque texture, as
+  // ReadbackFormat() returns RGB for such frames.
   size_t planes = VideoFrame::NumPlanes(format);
   for (size_t plane = 0; plane < planes; plane++) {
     gfx::Rect src_rect(0, 0, txt_frame.columns(plane), txt_frame.rows(plane));

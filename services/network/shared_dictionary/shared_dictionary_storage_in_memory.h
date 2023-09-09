@@ -90,7 +90,15 @@ class SharedDictionaryStorageInMemory : public SharedDictionaryStorage {
       const SharedDictionaryStorageInMemory&) = delete;
 
   // SharedDictionaryStorage
-  std::unique_ptr<SharedDictionary> GetDictionary(const GURL& url) override;
+  std::unique_ptr<SharedDictionary> GetDictionarySync(const GURL& url) override;
+  void GetDictionary(const GURL& url,
+                     base::OnceCallback<void(std::unique_ptr<SharedDictionary>)>
+                         callback) override;
+  scoped_refptr<SharedDictionaryWriter> CreateWriter(
+      const GURL& url,
+      base::Time response_time,
+      base::TimeDelta expiration,
+      const std::string& match) override;
 
   const std::map<url::SchemeHostPort, std::map<std::string, DictionaryInfo>>&
   GetDictionaryMap() {
@@ -102,18 +110,12 @@ class SharedDictionaryStorageInMemory : public SharedDictionaryStorage {
   void ClearData(base::Time start_time,
                  base::Time end_time,
                  base::RepeatingCallback<bool(const GURL&)> url_matcher);
+  void ClearAllDictionaries();
 
  private:
   friend class SharedDictionaryManagerTest;
   friend class network::cors::CorsURLLoaderSharedDictionaryTest;
   ~SharedDictionaryStorageInMemory() override;
-
-  // SharedDictionaryStorage
-  scoped_refptr<SharedDictionaryWriter> CreateWriter(
-      const GURL& url,
-      base::Time response_time,
-      base::TimeDelta expiration,
-      const std::string& match) override;
 
   // Called when SharedDictionaryWriterInMemory::Finish() is called.
   void OnDictionaryWritten(const GURL& url,

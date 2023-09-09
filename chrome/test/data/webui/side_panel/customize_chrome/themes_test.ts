@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://webui-test/mojo_webui_test_support.js';
 import 'chrome://customize-chrome-side-panel.top-chrome/themes.js';
 
 import {BackgroundCollection, CollectionImage, CustomizeChromePageCallbackRouter, CustomizeChromePageHandlerRemote, CustomizeChromePageRemote} from 'chrome://customize-chrome-side-panel.top-chrome/customize_chrome.mojom-webui.js';
 import {CustomizeChromeApiProxy} from 'chrome://customize-chrome-side-panel.top-chrome/customize_chrome_api_proxy.js';
 import {CHROME_THEME_BACK_ELEMENT_ID, CHROME_THEME_ELEMENT_ID, ThemesElement} from 'chrome://customize-chrome-side-panel.top-chrome/themes.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {fakeMetricsPrivate, MetricsTracker} from 'chrome://webui-test/metrics_test_support.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import {TestMock} from 'chrome://webui-test/test_mock.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
@@ -43,6 +43,7 @@ suite('ThemesTest', () => {
   let themesElement: ThemesElement;
   let callbackRouterRemote: CustomizeChromePageRemote;
   let handler: TestMock<CustomizeChromePageHandlerRemote>;
+  let metrics: MetricsTracker;
 
   async function setCollection(collectionName: string, numImages: number) {
     handler.setResultFor('getBackgroundImages', Promise.resolve({
@@ -63,6 +64,7 @@ suite('ThemesTest', () => {
                                .callbackRouter.$.bindNewPipeAndPassRemote();
     themesElement = document.createElement('customize-chrome-themes');
     document.body.appendChild(themesElement);
+    metrics = fakeMetricsPrivate();
   });
 
   test('themes buttons create events', async () => {
@@ -121,6 +123,24 @@ suite('ThemesTest', () => {
     assertEquals(
         'https://preview_5.jpg',
         themes[4]!.querySelector('img')!.getAttribute('auto-src'));
+  });
+
+  test('theme preview images create metrics when loaded', async () => {
+    const startTime = Date.now();
+    await setCollection('test1', 1);
+    const imageLoadTime = 123;
+
+    Date.now = () => imageLoadTime;
+    themesElement.shadowRoot!.querySelectorAll('.theme')[0]!
+        .querySelector('img')!.dispatchEvent(new Event('load'));
+
+    assertEquals(
+        1, metrics.count('NewTabPage.Images.ShownTime.ThemePreviewImage'));
+    assertEquals(
+        1,
+        metrics.count(
+            'NewTabPage.Images.ShownTime.ThemePreviewImage',
+            Math.floor(imageLoadTime - startTime)));
   });
 
   test('set collection id on refresh daily toggle on', async () => {

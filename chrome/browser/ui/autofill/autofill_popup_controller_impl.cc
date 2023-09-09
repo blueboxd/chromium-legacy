@@ -13,7 +13,6 @@
 #include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
@@ -131,13 +130,14 @@ AutofillPopupControllerImpl::~AutofillPopupControllerImpl() = default;
 
 void AutofillPopupControllerImpl::Show(
     std::vector<Suggestion> suggestions,
-    AutoselectFirstSuggestion autoselect_first_suggestion) {
+    AutofillSuggestionTriggerSource trigger_source) {
   if (IsMouseLocked()) {
     Hide(PopupHidingReason::kMouseLocked);
     return;
   }
 
   SetSuggestions(std::move(suggestions));
+  trigger_source_ = trigger_source;
 
   if (view_) {
     OnSuggestionsChanged();
@@ -157,7 +157,10 @@ void AutofillPopupControllerImpl::Show(
         ->UpdateSourceAvailability(FillingSource::AUTOFILL,
                                    !suggestions_.empty());
 #endif
-    if (!view_.Call(&AutofillPopupView::Show, autoselect_first_suggestion)) {
+    if (!view_.Call(&AutofillPopupView::Show,
+                    AutoselectFirstSuggestion(
+                        trigger_source == AutofillSuggestionTriggerSource::
+                                              kTextFieldDidReceiveKeyDown))) {
       return;
     }
 
@@ -181,6 +184,11 @@ void AutofillPopupControllerImpl::Show(
       GetDriver());
 
   delegate_->OnPopupShown();
+}
+
+AutofillSuggestionTriggerSource
+AutofillPopupControllerImpl::GetAutofillSuggestionTriggerSource() const {
+  return trigger_source_;
 }
 
 void AutofillPopupControllerImpl::UpdateDataListValues(
@@ -297,14 +305,9 @@ void AutofillPopupControllerImpl::AcceptSuggestion(int index) {
   // Ignore clicks immediately after the popup was shown. This is to prevent
   // users accidentally accepting suggestions (crbug.com/1279268).
   DCHECK(!time_view_shown_.is_null());
-  const base::TimeDelta time_elapsed =
-      base::TimeTicks::Now() - time_view_shown_;
-  if ((time_elapsed < kIgnoreEarlyClicksOnPopupDuration) &&
+  if ((base::TimeTicks::Now() - time_view_shown_ <
+       kIgnoreEarlyClicksOnPopupDuration) &&
       !disable_threshold_for_testing_) {
-    base::UmaHistogramCustomTimes(
-        "Autofill.Popup.AcceptanceDelayThresholdNotMet", time_elapsed,
-        base::Milliseconds(0), kIgnoreEarlyClicksOnPopupDuration,
-        /*buckets=*/50);
     return;
   }
 
@@ -360,7 +363,7 @@ void AutofillPopupControllerImpl::AcceptSuggestionWithoutThreshold(int index) {
     std::ignore = view_.Call(&AutofillPopupView::AxAnnounce, *announcement);
   }
 
-  delegate_->DidAcceptSuggestion(suggestion, index);
+  delegate_->DidAcceptSuggestion(suggestion, index, trigger_source_);
 #if BUILDFLAG(IS_ANDROID)
   if ((suggestion.popup_item_id == PopupItemId::kPasswordEntry ||
        suggestion.popup_item_id == PopupItemId::kUsernameEntry) &&
@@ -482,7 +485,7 @@ void AutofillPopupControllerImpl::SelectSuggestion(
   }
 
   if (index) {
-    delegate_->DidSelectSuggestion(GetSuggestionAt(*index));
+    delegate_->DidSelectSuggestion(GetSuggestionAt(*index), trigger_source_);
   } else {
     delegate_->ClearPreviewedForm();
   }

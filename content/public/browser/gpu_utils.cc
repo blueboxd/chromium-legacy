@@ -24,6 +24,7 @@
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_switches.h"
 #include "media/base/media_switches.h"
+#include "media/gpu/buildflags.h"
 #include "media/media_buildflags.h"
 #include "ui/gfx/switches.h"
 
@@ -146,6 +147,9 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
     gpu_preferences.enable_chromeos_direct_video_decoder =
         should_use_direct_video_decoder;
   }
+#if BUILDFLAG(USE_VAAPI)
+  CHECK(gpu_preferences.enable_chromeos_direct_video_decoder);
+#endif  // BUILDFLAG(USE_VAAPI)
 #else   // !BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
   gpu_preferences.enable_chromeos_direct_video_decoder = false;
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
@@ -190,8 +194,13 @@ void DumpGpuProfilingData(base::OnceClosure callback) {
       FROM_HERE, content::GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
       base::BindOnce(
           [](base::OnceClosure callback, content::GpuProcessHost* host) {
-            host->gpu_service()->WriteClangProfilingProfile(
-                std::move(callback));
+            if (host) {
+              host->gpu_service()->WriteClangProfilingProfile(
+                  std::move(callback));
+            } else {
+              LOG(ERROR) << "DumpGpuProfilingData() failed to dump.";
+              std::move(callback).Run();
+            }
           },
           std::move(callback)));
 }

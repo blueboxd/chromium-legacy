@@ -6,15 +6,11 @@ package org.chromium.chrome.browser.autofill.editors;
 
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.DropdownFieldProperties.DROPDOWN_HINT;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.DropdownFieldProperties.DROPDOWN_KEY_VALUE_LIST;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.CUSTOM_ERROR_MESSAGE;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.INVALID_ERROR_MESSAGE;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.IS_REQUIRED;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.LABEL;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.REQUIRED_ERROR_MESSAGE;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.VALIDATOR;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.VALUE;
 
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Pair;
 
@@ -37,6 +33,22 @@ import java.util.stream.Stream;
  * Properties defined here reflect the visible state of the {@link EditorDialog}.
  */
 public class EditorProperties {
+    /**
+     * Contains information needed by {@link EditorDialogView} to display fields.
+     */
+    public static class FieldItem extends ListItem {
+        public final boolean isFullLine;
+
+        public FieldItem(int type, PropertyModel model) {
+            this(type, model, /*isFullLine=*/false);
+        }
+
+        public FieldItem(int type, PropertyModel model, boolean isFullLine) {
+            super(type, model);
+            this.isFullLine = isFullLine;
+        }
+    }
+
     public static final PropertyModel.ReadableObjectPropertyKey<String> EDITOR_TITLE =
             new PropertyModel.ReadableObjectPropertyKey<>("editor_title");
     public static final PropertyModel.ReadableObjectPropertyKey<String> CUSTOM_DONE_BUTTON_TEXT =
@@ -49,17 +61,9 @@ public class EditorProperties {
             new PropertyModel.ReadableObjectPropertyKey<>("delete_confirmation_text");
     public static final PropertyModel.ReadableBooleanPropertyKey SHOW_REQUIRED_INDICATOR =
             new PropertyModel.ReadableBooleanPropertyKey("show_required_indicator");
-    /**
-     * If true, done callback is triggered immediately after the user clicked
-     * on the done button. Otherwise, by default, it is triggered only after the dialog is
-     * dismissed with animation.
-     */
-    public static final PropertyModel
-            .ReadableBooleanPropertyKey TRIGGER_DONE_CALLBACK_BEFORE_CLOSE_ANIMATION =
-            new PropertyModel.ReadableBooleanPropertyKey(
-                    "trigger_done_callback_before_close_animation");
 
-    public static final PropertyModel.WritableObjectPropertyKey<ListModel<ListItem>> EDITOR_FIELDS =
+    public static final PropertyModel
+            .WritableObjectPropertyKey<ListModel<FieldItem>> EDITOR_FIELDS =
             new PropertyModel.WritableObjectPropertyKey<>("editor_fields");
 
     public static final PropertyModel.ReadableObjectPropertyKey<Runnable> DONE_RUNNABLE =
@@ -72,10 +76,20 @@ public class EditorProperties {
     public static final PropertyModel.ReadableObjectPropertyKey<Runnable> DELETE_RUNNABLE =
             new PropertyModel.ReadableObjectPropertyKey<>("delete_callback");
 
+    public static final PropertyModel.WritableBooleanPropertyKey VISIBLE =
+            new PropertyModel.WritableBooleanPropertyKey("visible");
+    /**
+     * This property is temporary way to trigger field error message update process.
+     * It also triggers field focus update.
+     * TODO(crbug.com/1435314): remove this property once fields are updated through MCP.
+     */
+    public static final PropertyModel.WritableBooleanPropertyKey FORM_VALID =
+            new PropertyModel.WritableBooleanPropertyKey("form_valid");
+
     public static final PropertyKey[] ALL_KEYS = {EDITOR_TITLE, CUSTOM_DONE_BUTTON_TEXT,
             FOOTER_MESSAGE, DELETE_CONFIRMATION_TITLE, DELETE_CONFIRMATION_TEXT,
-            SHOW_REQUIRED_INDICATOR, TRIGGER_DONE_CALLBACK_BEFORE_CLOSE_ANIMATION, EDITOR_FIELDS,
-            DONE_RUNNABLE, CANCEL_RUNNABLE, ALLOW_DELETE, DELETE_RUNNABLE};
+            SHOW_REQUIRED_INDICATOR, EDITOR_FIELDS, DONE_RUNNABLE, CANCEL_RUNNABLE, ALLOW_DELETE,
+            DELETE_RUNNABLE, VISIBLE, FORM_VALID};
 
     private EditorProperties() {}
 
@@ -89,55 +103,6 @@ public class EditorProperties {
         int DROPDOWN = 1;
         // User can fill in a sequence of characters subject to input type restrictions.
         int TEXT_INPUT = 2;
-    }
-
-    @IntDef({
-            TextInputType.PLAIN_TEXT_INPUT,
-            TextInputType.PHONE_NUMBER_INPUT,
-            TextInputType.EMAIL_ADDRESS_INPUT,
-            TextInputType.STREET_ADDRESS_INPUT,
-            TextInputType.PERSON_NAME_INPUT,
-            TextInputType.ALPHA_NUMERIC_INPUT,
-            TextInputType.REGION_INPUT,
-    })
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface TextInputType {
-        // All symbols are allowed.
-        int PLAIN_TEXT_INPUT = 1;
-        // Only numbers and phone related symbols should be entered.
-        int PHONE_NUMBER_INPUT = 2;
-        // Text with email address symbols should be entered.
-        int EMAIL_ADDRESS_INPUT = 3;
-        // Text with numbers should be entered.
-        int STREET_ADDRESS_INPUT = 4;
-        // Only text symbols should be entered.
-        int PERSON_NAME_INPUT = 5;
-        // Text symbols and number should be entered.
-        int ALPHA_NUMERIC_INPUT = 6;
-        // All letters will be capitalized.
-        int REGION_INPUT = 7;
-    }
-
-    /**
-     * The interface to be implemented by the field validator.
-     */
-    public interface EditorFieldValidator {
-        /**
-         * Called to check the validity of the field value.
-         *
-         * @param value The value of the field to check.
-         * @return True if the value is valid.
-         */
-        boolean isValid(@Nullable String value);
-
-        /**
-         * Called to check whether the length of the field value is maximum.
-         *
-         * @param value The value of the field to check.
-         * @return True if the field value length is maximum among all the possible valid values in
-         *         this field.
-         */
-        boolean isLengthMaximum(@Nullable String value);
     }
 
     /**
@@ -171,26 +136,19 @@ public class EditorProperties {
         public static final PropertyModel.WritableObjectPropertyKey<String> LABEL =
                 new PropertyModel.WritableObjectPropertyKey<>("label");
         public static final PropertyModel
-                .ReadableObjectPropertyKey<EditorFieldValidator> VALIDATOR =
-                new PropertyModel.ReadableObjectPropertyKey<>("validator");
+                .WritableObjectPropertyKey<EditorFieldValidator> VALIDATOR =
+                new PropertyModel.WritableObjectPropertyKey<>("validator");
+        public static final PropertyModel.WritableObjectPropertyKey<String> ERROR_MESSAGE =
+                new PropertyModel.WritableObjectPropertyKey<>("error_message");
         // TODO(crbug.com/1435314): make this field read-only.
         public static final PropertyModel.WritableBooleanPropertyKey IS_REQUIRED =
                 new PropertyModel.WritableBooleanPropertyKey("is_required");
         // TODO(crbug.com/1435314): make this field read-only.
-        public static final PropertyModel.WritableObjectPropertyKey<String> REQUIRED_ERROR_MESSAGE =
-                new PropertyModel.WritableObjectPropertyKey<>("required_error_message");
-        public static final PropertyModel.ReadableObjectPropertyKey<String> INVALID_ERROR_MESSAGE =
-                new PropertyModel.ReadableObjectPropertyKey<>("invalid_error_message");
-        public static final PropertyModel.WritableObjectPropertyKey<String> CUSTOM_ERROR_MESSAGE =
-                new PropertyModel.WritableObjectPropertyKey<>("custom_error_message");
-        public static final PropertyModel.WritableBooleanPropertyKey IS_FULL_LINE =
-                new PropertyModel.WritableBooleanPropertyKey("is_full_line");
         public static final PropertyModel.WritableObjectPropertyKey<String> VALUE =
                 new PropertyModel.WritableObjectPropertyKey<>("value");
 
-        public static final PropertyKey[] FIELD_ALL_KEYS = {LABEL, VALIDATOR, IS_REQUIRED,
-                REQUIRED_ERROR_MESSAGE, INVALID_ERROR_MESSAGE, CUSTOM_ERROR_MESSAGE, IS_FULL_LINE,
-                VALUE};
+        public static final PropertyKey[] FIELD_ALL_KEYS = {
+                LABEL, VALIDATOR, IS_REQUIRED, ERROR_MESSAGE, VALUE};
     }
 
     /**
@@ -219,23 +177,17 @@ public class EditorProperties {
      * Properties specific for the text fields.
      */
     public static class TextFieldProperties {
-        /* Indicates that the length counter is disabled. */
-        public static final int LENGTH_COUNTER_LIMIT_NONE = 0;
-
-        public static final PropertyModel.ReadableIntPropertyKey TEXT_INPUT_TYPE =
-                new PropertyModel.ReadableIntPropertyKey("text_input_type");
+        public static final PropertyModel.ReadableIntPropertyKey TEXT_FIELD_TYPE =
+                new PropertyModel.ReadableIntPropertyKey("field_type");
         public static final PropertyModel.WritableObjectPropertyKey<List<String>> TEXT_SUGGESTIONS =
                 new PropertyModel.WritableObjectPropertyKey<>("suggestions");
         public static final PropertyModel.ReadableObjectPropertyKey<TextWatcher> TEXT_FORMATTER =
                 new PropertyModel.ReadableObjectPropertyKey<>("formatter");
-        public static final PropertyModel.ReadableIntPropertyKey TEXT_LENGTH_COUNTER_LIMIT =
-                new PropertyModel.ReadableIntPropertyKey("length_counter_limit");
 
         public static final PropertyKey[] TEXT_SPECIFIC_KEYS = {
-                TEXT_INPUT_TYPE,
+                TEXT_FIELD_TYPE,
                 TEXT_SUGGESTIONS,
                 TEXT_FORMATTER,
-                TEXT_LENGTH_COUNTER_LIMIT,
         };
 
         public static final PropertyKey[] TEXT_ALL_KEYS =
@@ -280,32 +232,15 @@ public class EditorProperties {
         }
     }
 
-    public static boolean hasMaximumLength(PropertyModel textField) {
-        EditorFieldValidator validator = textField.get(FieldProperties.VALIDATOR);
-        return validator != null && validator.isLengthMaximum(textField.get(FieldProperties.VALUE));
-    }
-
-    public static @Nullable String getValidationErrorMessage(PropertyModel textField) {
-        final String customErrorMessage = textField.get(FieldProperties.CUSTOM_ERROR_MESSAGE);
-        if (!TextUtils.isEmpty(customErrorMessage)) {
-            return customErrorMessage;
+    public static boolean validateForm(PropertyModel editorModel) {
+        boolean isValid = true;
+        for (ListItem item : editorModel.get(EditorProperties.EDITOR_FIELDS)) {
+            if (item.model.get(FieldProperties.VALIDATOR) == null) {
+                continue;
+            }
+            item.model.get(FieldProperties.VALIDATOR).validate(item.model);
+            isValid &= item.model.get(FieldProperties.ERROR_MESSAGE) == null;
         }
-
-        final String value = textField.get(FieldProperties.VALUE);
-        if (textField.get(FieldProperties.IS_REQUIRED)
-                && (TextUtils.isEmpty(value) || TextUtils.getTrimmedLength(value) == 0)) {
-            return textField.get(FieldProperties.REQUIRED_ERROR_MESSAGE);
-        }
-
-        final @Nullable EditorFieldValidator validator = textField.get(FieldProperties.VALIDATOR);
-        if (validator != null && !validator.isValid(value)) {
-            return textField.get(FieldProperties.INVALID_ERROR_MESSAGE);
-        }
-
-        return null;
-    }
-
-    public static boolean isFieldValid(PropertyModel textField) {
-        return getValidationErrorMessage(textField) == null;
+        return isValid;
     }
 }

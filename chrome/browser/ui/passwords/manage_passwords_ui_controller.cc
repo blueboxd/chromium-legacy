@@ -48,6 +48,7 @@
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
+#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/form_saver_impl.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/move_password_to_account_store_helper.h"
@@ -269,39 +270,61 @@ void ManagePasswordsUIController::OnPasswordAutofilled(
         federated_matches) {
   // To change to managed state only when the managed state is more important
   // for the user that the current state.
-  if (passwords_data_.state() == password_manager::ui::INACTIVE_STATE ||
-      passwords_data_.state() == password_manager::ui::MANAGE_STATE) {
-    ClearPopUpFlagForBubble();
-    passwords_data_.OnPasswordAutofilled(password_forms, origin,
-                                         federated_matches);
-    // Don't close the existing bubble. Update the icon later.
-    if (bubble_status_ == BubbleStatus::SHOWN) {
-      bubble_status_ = BubbleStatus::SHOWN_PENDING_ICON_UPDATE;
-    }
-    if (bubble_status_ != BubbleStatus::SHOWN_PENDING_ICON_UPDATE) {
-      UpdateBubbleAndIconVisibility();
-    }
-
-    if (GetState() == password_manager::ui::MANAGE_STATE) {
-      if (Browser* browser =
-              chrome::FindBrowserWithWebContents(web_contents())) {
-        if (browser->tab_strip_model()->GetActiveWebContents() ==
-            web_contents()) {
-          const bool has_non_empty_note =
-              !base::ranges::all_of(GetCurrentForms(), &std::u16string::empty,
-                                    &password_manager::PasswordForm::
-                                        GetNoteWithEmptyUniqueDisplayName);
-          if (has_non_empty_note &&
-              browser->window()->MaybeShowFeaturePromo(
-                  feature_engagement::
-                      kIPHPasswordsManagementBubbleDuringSigninFeature)) {
-            return;
-          }
-          MaybeShowPasswordManagerShortcutIPH(browser);
-        }
-      }
-    }
+  if (passwords_data_.state() != password_manager::ui::INACTIVE_STATE &&
+      passwords_data_.state() != password_manager::ui::MANAGE_STATE) {
+    return;
   }
+  ClearPopUpFlagForBubble();
+  passwords_data_.OnPasswordAutofilled(password_forms, origin,
+                                       federated_matches);
+  // Don't close the existing bubble. Update the icon later.
+  if (bubble_status_ == BubbleStatus::SHOWN) {
+    bubble_status_ = BubbleStatus::SHOWN_PENDING_ICON_UPDATE;
+  }
+  if (bubble_status_ != BubbleStatus::SHOWN_PENDING_ICON_UPDATE) {
+    UpdateBubbleAndIconVisibility();
+  }
+
+  if (GetState() != password_manager::ui::MANAGE_STATE) {
+    return;
+  }
+  // There nothing to do if this controller is not attached to currently active
+  // tab.
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  if (!browser) {
+    return;
+  }
+  if (browser->tab_strip_model()->GetActiveWebContents() != web_contents()) {
+    return;
+  }
+
+  const bool has_unnotified_shared_credentials = base::ranges::any_of(
+      GetCurrentForms(),
+      [](const std::unique_ptr<password_manager::PasswordForm>& form) {
+        return form->type ==
+                   password_manager::PasswordForm::Type::kReceivedViaSharing &&
+               !form->sharing_notification_displayed;
+      });
+  if (has_unnotified_shared_credentials &&
+      base::FeatureList::IsEnabled(
+          password_manager::features::kSharedPasswordNotificationUI)) {
+    passwords_data_.TransitionToState(
+        password_manager::ui::NOTIFY_RECEIVED_SHARED_CREDENTIALS);
+    bubble_status_ = BubbleStatus::SHOULD_POP_UP;
+    UpdateBubbleAndIconVisibility();
+    return;
+  }
+
+  const bool has_non_empty_note = !base::ranges::all_of(
+      GetCurrentForms(), &std::u16string::empty,
+      &password_manager::PasswordForm::GetNoteWithEmptyUniqueDisplayName);
+  if (has_non_empty_note &&
+      browser->window()->MaybeShowFeaturePromo(
+          feature_engagement::
+              kIPHPasswordsManagementBubbleDuringSigninFeature)) {
+    return;
+  }
+  MaybeShowPasswordManagerShortcutIPH(browser);
 }
 
 void ManagePasswordsUIController::OnCredentialLeak(
@@ -713,13 +736,6 @@ void ManagePasswordsUIController::NavigateToPasswordManagerSettingsPage(
       chrome::FindBrowserWithWebContents(web_contents()), referrer);
 }
 
-void ManagePasswordsUIController::NavigateToPasswordManagerAccountDashboard(
-    password_manager::ManagePasswordsReferrer referrer) {
-  NavigateToGooglePasswordManager(
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
-      referrer);
-}
-
 void ManagePasswordsUIController::NavigateToPasswordCheckup(
     password_manager::PasswordCheckReferrer referrer) {
   chrome::ShowPasswordCheck(chrome::FindBrowserWithWebContents(web_contents()));
@@ -951,6 +967,8 @@ void ManagePasswordsUIController::WebContentsDestroyed() {
   if (account_password_store)
     account_password_store->RemoveObserver(this);
   HidePasswordBubble();
+  web_contents()->RemoveUserData(UserDataKey());
+  // `this` is now destroyed - do not add code here.
 }
 
 void ManagePasswordsUIController::

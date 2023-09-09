@@ -10,10 +10,11 @@
         },
         "name": "foo_test",
         "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimensions": {
-            "os": "Mac"
-          }
+          "dimension_sets": [
+            {
+              "os": "Mac"
+            }
+          ]
         }
       }
     ]

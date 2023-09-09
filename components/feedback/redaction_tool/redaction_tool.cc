@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -92,7 +91,7 @@ CustomPatternWithAlias kCustomPatternsWithContext[] = {
     // wpa_supplicant
     {"SSID", "(?i-s)(\\bssid[= ]')(.+)(')", PIIType::kSSID},
     {"SSID", "(?i-s)(\\bssid[= ]\")(.+)(\")", PIIType::kSSID},
-    {"SSID", "(\\* SSID=)(.+)($)", PIIType::kSSID},
+    {"SSID", "(\\* SSID=)([^\n]+)(.*)", PIIType::kSSID},
     {"SSIDHex", "(?-s)(\\bSSID - hexdump\\(len=[0-9]+\\): )(.+)()",
      PIIType::kSSID},
 
@@ -150,6 +149,10 @@ CustomPatternWithAlias kCustomPatternsWithContext[] = {
 
     // IPP (Internet Printing Protocol) Addresses
     {"IPP Address", R"xxx((ipp:\/\/)(.+?)(\/ipp))xxx", PIIType::kIPPAddress},
+    // Crash ID. This pattern only applies to ChromeOS and it matches the
+    // log entries from ChromeOS's crash_sender program.
+    {"Crash ID", R"xxx((Crash report receipt ID )([0-9a-fA-F]+)(.+?))xxx",
+     PIIType::kCrashId},
 };
 
 bool MaybeUnmapAddress(IPAddress* addr) {
@@ -529,26 +532,6 @@ const char* const kUnredactedMacAddresses[] = {
 };
 constexpr size_t kNumUnredactedMacs = std::size(kUnredactedMacAddresses);
 
-void RecordPIIRedactedHistogram(const PIIType pii_type) {
-  UMA_HISTOGRAM_ENUMERATION("Feedback.RedactionTool", pii_type);
-}
-
-// These values are logged to UMA. Entries should not be renumbered and
-// numeric values should never be reused. Please keep in sync with
-// "CreditCardDetection" in //tools/metrics/histograms/enums.xml.
-enum class CreditCardDetection {
-  kRegexMatch = 1,
-  kTimestamp = 2,
-  kRepeatedChars = 3,
-  kDoesntValidate = 4,
-  kValidated = 5,
-  kMaxValue = kValidated,
-};
-
-void RecordCreditCardRedactionHistogram(CreditCardDetection step) {
-  UMA_HISTOGRAM_ENUMERATION("Feedback.RedactionTool.CreditCardMatch", step);
-}
-
 bool IsFeatureEnabled(const base::Feature& feature) {
   return base::FeatureList::GetInstance()
              ? base::FeatureList::IsEnabled(feature)
@@ -557,7 +540,15 @@ bool IsFeatureEnabled(const base::Feature& feature) {
 }  // namespace
 
 RedactionTool::RedactionTool(const char* const* first_party_extension_ids)
-    : first_party_extension_ids_(first_party_extension_ids) {
+    : RedactionTool(first_party_extension_ids,
+                    RedactionToolMetricsRecorder::Create()) {}
+
+RedactionTool::RedactionTool(
+    const char* const* first_party_extension_ids,
+    std::unique_ptr<RedactionToolMetricsRecorder> metrics_recorder)
+    : first_party_extension_ids_(first_party_extension_ids),
+      metrics_recorder_(std::move(metrics_recorder)) {
+  CHECK(metrics_recorder_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
   // Identity-map these, so we don't mangle them.
   for (const char* mac : kUnredactedMacAddresses) {
@@ -604,6 +595,8 @@ std::string RedactionTool::RedactAndKeepSelected(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AssertLongCPUWorkAllowed();
 
+  const base::TimeTicks redaction_start = base::TimeTicks::Now();
+
   // Copy |input| so we can modify it.
   std::string redacted = input;
 
@@ -639,6 +632,10 @@ std::string RedactionTool::RedactAndKeepSelected(
       pii_types_to_keep.find(PIIType::kIBAN) == pii_types_to_keep.end()) {
     redacted = RedactIbans(std::move(redacted), nullptr);
   }
+
+  metrics_recorder_->RecordTimeSpentRedactingHistogram(base::TimeTicks::Now() -
+                                                       redaction_start);
+
   return redacted;
 }
 
@@ -705,7 +702,7 @@ std::string RedactionTool::RedactMACAddresses(
     }
     result.append(skipped);
     result += replacement_mac;
-    RecordPIIRedactedHistogram(PIIType::kMACAddress);
+    metrics_recorder_->RecordPIIRedactedHistogram(PIIType::kMACAddress);
   }
 
   result.append(text);
@@ -763,7 +760,7 @@ std::string RedactionTool::RedactHashes(
 
     result += replacement_hash;
 
-    RecordPIIRedactedHistogram(PIIType::kStableIdentifier);
+    metrics_recorder_->RecordPIIRedactedHistogram(PIIType::kStableIdentifier);
   }
 
   result.append(text);
@@ -830,7 +827,8 @@ std::string RedactionTool::RedactAndroidAppStoragePaths(
     if (detected != nullptr) {
       (*detected)[PIIType::kAndroidAppStoragePath].emplace(app_specific);
     }
-    RecordPIIRedactedHistogram(PIIType::kAndroidAppStoragePath);
+    metrics_recorder_->RecordPIIRedactedHistogram(
+        PIIType::kAndroidAppStoragePath);
   }
 
   result.append(text);
@@ -867,20 +865,23 @@ std::string RedactionTool::RedactCreditCardNumbers(
   while (FindAndConsumeAndGetSkipped(&text, *cc_re, &skipped, &sequence,
                                      &post_sequence)) {
     result.append(skipped);
-    RecordCreditCardRedactionHistogram(CreditCardDetection::kRegexMatch);
+    metrics_recorder_->RecordCreditCardRedactionHistogram(
+        CreditCardDetection::kRegexMatch);
 
     // Timestamps in ms have a surprisingly high number of false positives.
     // Also log entries but those usually only match if there are several spaces
     // tying unrelated numbers together.
     if (post_sequence.find("ms") != re2::StringPiece::npos) {
-      RecordCreditCardRedactionHistogram(CreditCardDetection::kTimestamp);
+      metrics_recorder_->RecordCreditCardRedactionHistogram(
+          CreditCardDetection::kTimestamp);
       result.append(sequence);
       result.append(post_sequence);
       continue;
     }
 
     if (HasRepeatedChar(sequence, ' ') || HasRepeatedChar(sequence, '-')) {
-      RecordCreditCardRedactionHistogram(CreditCardDetection::kRepeatedChars);
+      metrics_recorder_->RecordCreditCardRedactionHistogram(
+          CreditCardDetection::kRepeatedChars);
       result.append(sequence);
       result.append(post_sequence);
       continue;
@@ -893,18 +894,21 @@ std::string RedactionTool::RedactCreditCardNumbers(
     if (cc_it != credit_cards_.cend()) {
       result += cc_it->second;
       result.append(post_sequence);
-      RecordCreditCardRedactionHistogram(CreditCardDetection::kValidated);
+      metrics_recorder_->RecordCreditCardRedactionHistogram(
+          CreditCardDetection::kValidated);
+      metrics_recorder_->RecordPIIRedactedHistogram(PIIType::kCreditCard);
       continue;
     }
 
     if (redaction::IsValidCreditCardNumber(number)) {
-      RecordCreditCardRedactionHistogram(CreditCardDetection::kValidated);
+      metrics_recorder_->RecordCreditCardRedactionHistogram(
+          CreditCardDetection::kValidated);
       const auto& [it, success] = credit_cards_.emplace(
           number,
           base::StrCat({"(CREDITCARD: ",
                         base::NumberToString(credit_cards_.size() + 1), ")"}));
       if (redact_credit_cards_) {
-        RecordPIIRedactedHistogram(PIIType::kCreditCard);
+        metrics_recorder_->RecordPIIRedactedHistogram(PIIType::kCreditCard);
         result += it->second;
       } else {
         result.append(sequence);
@@ -913,7 +917,8 @@ std::string RedactionTool::RedactCreditCardNumbers(
         (*detected)[PIIType::kCreditCard].insert(it->first);
       }
     } else {
-      RecordCreditCardRedactionHistogram(CreditCardDetection::kDoesntValidate);
+      metrics_recorder_->RecordCreditCardRedactionHistogram(
+          CreditCardDetection::kDoesntValidate);
       result.append(sequence);
     }
     result.append(post_sequence);
@@ -961,6 +966,7 @@ std::string RedactionTool::RedactIbans(
         previous_iban != ibans_.end()) {
       result += previous_iban->second;
       result.append(post_separating_char);
+      metrics_recorder_->RecordPIIRedactedHistogram(PIIType::kIBAN);
       continue;
     }
 
@@ -1027,7 +1033,7 @@ std::string RedactionTool::RedactIbans(
       (*detected)[PIIType::kIBAN].insert(it->first);
     }
 
-    RecordPIIRedactedHistogram(PIIType::kIBAN);
+    metrics_recorder_->RecordPIIRedactedHistogram(PIIType::kIBAN);
   }
 
   result.append(text);
@@ -1099,7 +1105,7 @@ std::string RedactionTool::RedactCustomPatternWithContext(
     result.append(pre_matched_id);
     result += replacement_id;
     result.append(post_matched_id);
-    RecordPIIRedactedHistogram(pattern.pii_type);
+    metrics_recorder_->RecordPIIRedactedHistogram(pattern.pii_type);
   }
   result.append(text);
 
@@ -1181,46 +1187,46 @@ std::string RedactionTool::RedactCustomPatternWithoutContext(
   re2::StringPiece skipped;
   re2::StringPiece matched_id;
   while (FindAndConsumeAndGetSkipped(&text, *re, &skipped, &matched_id)) {
+    result.append(skipped);
+
     if (IsUrlExempt(matched_id, first_party_extension_ids_)) {
-      result.append(skipped);
       result.append(matched_id);
       continue;
     }
-    std::string matched_id_as_string(matched_id);
-    std::string replacement_id;
-    if (identifier_space->count(matched_id_as_string) == 0) {
-      replacement_id = MaybeScrubIPAddress(matched_id_as_string);
-      if (replacement_id != matched_id_as_string) {
-        // Double-check overly opportunistic IPv4 address matching.
-        if ((strcmp("IPv4", pattern.alias) == 0) &&
-            ShouldSkipIPAddress(skipped)) {
-          result.append(skipped);
-          result.append(matched_id);
-          continue;
-        }
 
-        // The weird NumberToString trick is because Windows does not like
-        // to deal with %zu and a size_t in printf, nor does it support %llu.
-        replacement_id = base::StringPrintf(
-            "(%s: %s)",
-            replacement_id.empty() ? pattern.alias : replacement_id.c_str(),
-            base::NumberToString(identifier_space->size() + 1).c_str());
-        (*identifier_space)[matched_id_as_string] = replacement_id;
-        if (detected != nullptr) {
-          (*detected)[pattern.pii_type].insert(matched_id_as_string);
-        }
-      }
-    } else {
-      replacement_id = (*identifier_space)[matched_id_as_string];
-      if (detected != nullptr) {
-        (*detected)[pattern.pii_type].insert(matched_id_as_string);
-      }
+    const std::string matched_id_as_string(matched_id);
+    if (const auto previous_replacement =
+            identifier_space->find(matched_id_as_string);
+        previous_replacement != identifier_space->end()) {
+      metrics_recorder_->RecordPIIRedactedHistogram(pattern.pii_type);
+      result.append(previous_replacement->second);
+      continue;
     }
 
-    result.append(skipped);
-    result += replacement_id;
+    const std::string scrubbed_match =
+        MaybeScrubIPAddress(matched_id_as_string);
+    if (scrubbed_match == matched_id_as_string ||
+        // Double-check overly opportunistic IPv4 address matching.
+        ((strcmp("IPv4", pattern.alias) == 0) &&
+         ShouldSkipIPAddress(skipped))) {
+      result.append(matched_id);
+      continue;
+    }
 
-    RecordPIIRedactedHistogram(pattern.pii_type);
+    // The weird NumberToString trick is because Windows does not like
+    // to deal with %zu and a size_t in printf, nor does it support %llu.
+    const auto [redacted_pair, success] = identifier_space->insert_or_assign(
+        matched_id_as_string,
+        base::StringPrintf(
+            "(%s: %s)",
+            scrubbed_match.empty() ? pattern.alias : scrubbed_match.c_str(),
+            base::NumberToString(identifier_space->size() + 1).c_str()));
+    if (detected != nullptr) {
+      (*detected)[pattern.pii_type].insert(matched_id_as_string);
+    }
+
+    result += redacted_pair->second;
+    metrics_recorder_->RecordPIIRedactedHistogram(pattern.pii_type);
   }
   result.append(text);
 
@@ -1231,6 +1237,14 @@ RedactionToolContainer::RedactionToolContainer(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     const char* const* first_party_extension_ids)
     : redactor_(new RedactionTool(first_party_extension_ids)),
+      task_runner_(task_runner) {}
+
+RedactionToolContainer::RedactionToolContainer(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    const char* const* first_party_extension_ids,
+    std::unique_ptr<RedactionToolMetricsRecorder> metrics_recorder)
+    : redactor_(new RedactionTool(first_party_extension_ids,
+                                  std::move(metrics_recorder))),
       task_runner_(task_runner) {}
 
 RedactionToolContainer::~RedactionToolContainer() {

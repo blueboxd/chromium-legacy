@@ -11,7 +11,10 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/system/privacy_hub/privacy_hub_notification.h"
+#include "base/functional/callback.h"
+#include "base/sequence_checker.h"
 #include "base/supports_user_data.h"
+#include "base/time/time.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 
@@ -72,13 +75,46 @@ class ASH_EXPORT CameraPrivacySwitchController
   // active applications has stopped accessing the camera.
   void ActiveApplicationsChanged(bool application_added);
 
+  // Checks if we use the fallback solution for the camera LED.
+  // Returns the boolean value via callback.
+  // (go/privacy-hub:camera-led-fallback).
+  // TODO(b/289510726): remove when all cameras fully support the software
+  // switch.
+  bool UsingCameraLEDFallback();
+
+  // This checks whether the LED fallback mechanism is used directly (using the
+  // filesystem). Is used during initialization and can be used externally in
+  // case that the controller object does not exist. (E.g. to initialize the
+  // PrivacyHubNotificationController, which exists even if privacy hub is
+  // disabled). Should be used only in that case to avoid repeated blocking
+  // calls to the filesystem.
+  static bool CheckCameraLEDFallbackDirectly();
+
  private:
+  // Used for first time initialization of the cached value.
+  // Can be called only once.
+  void InitUsingCameraLEDFallback();
+
+  void ShowNotification() VALID_CONTEXT_REQUIRED(sequence_checker_);
+  void RemoveNotification() VALID_CONTEXT_REQUIRED(sequence_checker_);
+  void UpdateNotification() VALID_CONTEXT_REQUIRED(sequence_checker_);
+  void ScheduleNotificationRemoval() VALID_CONTEXT_REQUIRED(sequence_checker_);
+  bool InNotificationExtensionPeriod()
+      VALID_CONTEXT_REQUIRED(sequence_checker_);
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   std::unique_ptr<CameraPrivacySwitchAPI> switch_api_;
-  int active_applications_using_camera_count_ = 0;
+  int GUARDED_BY_CONTEXT(sequence_checker_)
+      active_applications_using_camera_count_ = 0;
   bool is_camera_observer_added_ = false;
   int camera_count_ = -1;
-  bool camera_used_while_deactivated_ = false;
+  bool using_camera_led_fallback_ = true;
+  base::Time GUARDED_BY_CONTEXT(sequence_checker_)
+      last_active_notification_update_time_;
+
+  base::WeakPtrFactory<CameraPrivacySwitchController> weak_ptr_factory_{this};
 };
 
 }  // namespace ash

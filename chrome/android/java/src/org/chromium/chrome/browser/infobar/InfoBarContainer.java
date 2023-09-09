@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
@@ -35,6 +34,7 @@ import org.chromium.components.infobars.InfoBarUiItem;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.KeyboardVisibilityDelegate.KeyboardVisibilityListener;
+import org.chromium.ui.accessibility.AccessibilityState;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -49,11 +49,14 @@ import java.util.ArrayList;
 public class InfoBarContainer implements UserData, KeyboardVisibilityListener, InfoBar.Container {
     private static final Class<InfoBarContainer> USER_DATA_KEY = InfoBarContainer.class;
 
-    private static final ChromeAccessibilityUtil.Observer sAccessibilityObserver;
+    private static final AccessibilityState.Listener sAccessibilityStateListener;
 
     static {
-        sAccessibilityObserver = (enabled) -> setIsAllowedToAutoHide(!enabled);
-        ChromeAccessibilityUtil.get().addObserver(sAccessibilityObserver);
+        sAccessibilityStateListener = (oldAccessibilityState, newAccessibilityState) -> {
+            setIsAllowedToAutoHide(!newAccessibilityState.isTouchExplorationEnabled
+                    && !newAccessibilityState.isPerformGesturesEnabled);
+        };
+        AccessibilityState.addListener(sAccessibilityStateListener);
     }
 
     /**
@@ -241,7 +244,6 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener, I
         return tab.getUserDataHost().getUserData(USER_DATA_KEY);
     }
 
-    @VisibleForTesting
     public static void removeInfoBarContainerForTesting(Tab tab) {
         InfoBarContainer container = get(tab);
         if (container != null) {
@@ -339,7 +341,6 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener, I
      * Adds an InfoBar to the view hierarchy.
      * @param infoBar InfoBar to add to the View hierarchy.
      */
-    @VisibleForTesting
     public void addInfoBarForTesting(InfoBar infoBar) {
         addInfoBar(infoBar);
     }
@@ -403,7 +404,6 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener, I
     /**
      * @return all of the InfoBars held in this container.
      */
-    @VisibleForTesting
     public ArrayList<InfoBar> getInfoBarsForTesting() {
         return mInfoBars;
     }
@@ -586,7 +586,6 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener, I
     /**
      * @return The {@link InfoBarContainerView} this class holds.
      */
-    @VisibleForTesting
     public InfoBarContainerView getContainerViewForTesting() {
         return mInfoBarContainerView;
     }

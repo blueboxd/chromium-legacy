@@ -43,6 +43,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
@@ -62,6 +64,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.feed.FeedPlaceholderLayout;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -100,7 +103,8 @@ import java.util.concurrent.atomic.AtomicInteger;
     Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "force-fieldtrials=Study/Group"})
 @EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
     ChromeFeatureList.START_SURFACE_RETURN_TIME + "<Study,",
-    ChromeFeatureList.START_SURFACE_ANDROID + "<Study", ChromeFeatureList.INSTANT_START})
+    ChromeFeatureList.START_SURFACE_ANDROID + "<Study", ChromeFeatureList.INSTANT_START,
+    ChromeFeatureList.EMPTY_STATES})
 @Restriction({Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE,
     UiRestriction.RESTRICTION_TYPE_PHONE})
 @DoNotBatch(reason = "This test suite tests startup behaviours and thus can't be batched.")
@@ -119,6 +123,9 @@ public class InstantStartTabSwitcherTest {
                     .build();
     @Rule
     public JniMocker mJniMocker = new JniMocker();
+
+    @Mock
+    public BrowserControlsStateProvider mBrowserControlsStateProvider;
 
     @Rule
     public MockitoRule mMockitoRule = MockitoJUnit.rule();
@@ -142,6 +149,7 @@ public class InstantStartTabSwitcherTest {
 
     @Before
     public void setUp() {
+        MockitoAnnotations.initMocks(this);
         ReturnToChromeUtil.setSkipInitializationCheckForTesting(true);
     }
 
@@ -161,7 +169,7 @@ public class InstantStartTabSwitcherTest {
     @CommandLineFlags.Add({INSTANT_START_TEST_BASE_PARAMS + "/show_last_active_tab_only/true"})
     public void startSurfaceMoreTabsButtonTest() throws IOException {
         StartSurfaceTestUtils.createTabStateFile(new int[] {0});
-        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(0);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(0, mBrowserControlsStateProvider);
         TabAttributeCache.setTitleForTesting(0, "Google");
 
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
@@ -190,9 +198,9 @@ public class InstantStartTabSwitcherTest {
     public void renderTabSwitcher() throws IOException, InterruptedException {
         // clang-format on
         StartSurfaceTestUtils.createTabStateFile(new int[] {0, 1, 2});
-        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(0);
-        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(1);
-        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(2);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(0, mBrowserControlsStateProvider);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(1, mBrowserControlsStateProvider);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(2, mBrowserControlsStateProvider);
         TabAttributeCache.setTitleForTesting(0, "title");
         TabAttributeCache.setTitleForTesting(1, "漢字");
         TabAttributeCache.setTitleForTesting(2, "اَلْعَرَبِيَّةُ");
@@ -227,11 +235,11 @@ public class InstantStartTabSwitcherTest {
         sdk_is_greater_than = Build.VERSION_CODES.O)
     public void renderTabGroups() throws IOException {
         // clang-format on
-        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(0);
-        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(1);
-        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(2);
-        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(3);
-        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(4);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(0, mBrowserControlsStateProvider);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(1, mBrowserControlsStateProvider);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(2, mBrowserControlsStateProvider);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(3, mBrowserControlsStateProvider);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(4, mBrowserControlsStateProvider);
         TabAttributeCache.setRootIdForTesting(0, 0);
         TabAttributeCache.setRootIdForTesting(1, 0);
         TabAttributeCache.setRootIdForTesting(2, 0);
@@ -280,13 +288,13 @@ public class InstantStartTabSwitcherTest {
         sdk_is_greater_than = Build.VERSION_CODES.O)
     public void renderTabGroups_ThemeRefactor() throws IOException {
         // clang-format on
-        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(0);
-        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(1);
-        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(2);
-        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(3);
-        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(4);
-        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(5);
-        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(6);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(0, mBrowserControlsStateProvider);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(1, mBrowserControlsStateProvider);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(2, mBrowserControlsStateProvider);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(3, mBrowserControlsStateProvider);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(4, mBrowserControlsStateProvider);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(5, mBrowserControlsStateProvider);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(6, mBrowserControlsStateProvider);
         TabAttributeCache.setRootIdForTesting(0, 0);
         TabAttributeCache.setRootIdForTesting(1, 0);
         TabAttributeCache.setRootIdForTesting(2, 0);
@@ -320,7 +328,7 @@ public class InstantStartTabSwitcherTest {
             throws IOException, ExecutionException {
         // clang-format on
         StartSurfaceTestUtils.createTabStateFile(new int[] {0});
-        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(0);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(0, mBrowserControlsStateProvider);
         TabAttributeCache.setTitleForTesting(0, "Google");
 
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
@@ -479,7 +487,7 @@ public class InstantStartTabSwitcherTest {
 
     private void testShowStartWhenHomepageDisabledWithImmediateReturnImpl() throws IOException {
         StartSurfaceTestUtils.createTabStateFile(new int[] {0});
-        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(0);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(0, mBrowserControlsStateProvider);
         TabAttributeCache.setTitleForTesting(0, "Google");
 
         TestThreadUtils.runOnUiThreadBlocking(
@@ -575,8 +583,8 @@ public class InstantStartTabSwitcherTest {
         StartSurfaceTestUtils.createTabStateFile(new int[] {0, 1},
                 new String[] {"https://www.google.com/search?q=test", "https://www.google.com"},
                 isSRP ? 0 : 1);
-        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(0);
-        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(1);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(0, mBrowserControlsStateProvider);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(1, mBrowserControlsStateProvider);
         TabAttributeCache.setTitleForTesting(0, "Google SRP");
         TabAttributeCache.setTitleForTesting(1, "Google Homepage");
         SharedPreferencesManager.getInstance().writeBoolean(

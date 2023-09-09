@@ -57,11 +57,17 @@ FakeWebState::~FakeWebState() {
     observer.ResetWebState();
 }
 
+void FakeWebState::SerializeToProto(proto::WebStateStorage& storage) const {}
+
 WebStateDelegate* FakeWebState::GetDelegate() {
   return nil;
 }
 
 void FakeWebState::SetDelegate(WebStateDelegate* delegate) {}
+
+std::unique_ptr<WebState> FakeWebState::Clone() const {
+  return std::make_unique<FakeWebState>();
+}
 
 bool FakeWebState::IsRealized() const {
   return is_realized_;
@@ -173,7 +179,7 @@ FakeWebState::GetSessionCertificatePolicyCache() {
   return nullptr;
 }
 
-CRWSessionStorage* FakeWebState::BuildSessionStorage() {
+CRWSessionStorage* FakeWebState::BuildSessionStorage() const {
   CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
   session_storage.userData =
       web::SerializableUserDataManager::FromWebState(this)

@@ -117,13 +117,6 @@
     'android_webview_network_service': {
       'filepath': 'android_webview/browser/network_service/',
     },
-    'app_management': {
-      'filepath': 'chrome/browser/resources/settings/chromeos/os_apps_page'\
-                  '|chrome/browser/ui/webui/app_management',
-    },
-    'app_preload_service': {
-      'filepath': 'chrome/browser/apps/app_preload_service'
-    },
     'app_service': {
       'filepath': 'chrome/browser/apps/app_service/'\
                   '|chrome/browser/ash/app_list/app_service/'\
@@ -199,8 +192,8 @@
                   '|chromeos/ash/services/libassistant/'\
                   '|chromeos/services/assistant/'\
                   '|chrome/browser/ash/wallpaper_handlers/'\
-                  '|chrome/browser/ash/web_applications/personalization_app/'\
-                  '|chrome/browser/resources/settings/chromeos/ambient_mode_page/'\
+                  '|chrome/browser/ash/system_web_apps/apps/personalization_app/'\
+                  '|chrome/browser/resources/ash/settings/ambient_mode_page/'\
                   '|chrome/browser/ui/ash/.*wallpaper.*/'\
                   '|chrome/browser/ui/ash/ambient/'\
                   '|chrome/browser/ui/ash/assistant/'\
@@ -697,7 +690,7 @@
     'chrome_camera_app': {
       'filepath': # Exclude string translation .xtb files.
                   'ash/webui/camera_app_ui/.*$(?<!\.xtb)'\
-                  '|chrome/browser/ash/web_applications/camera_app'\
+                  '|chrome/browser/ash/system_web_apps/apps/camera_app'\
                   '|components/arc/intent_helper/control_camera_app_delegate.h'\
                   '|components/arc/mojom/camera_intent.mojom'\
                   '|media/capture/video/chromeos/camera_app'\
@@ -722,6 +715,7 @@
                   '|third_party/fp16'\
                   '|third_party/gemmlowp'\
                   '|third_party/libzip'\
+                  '|third_party/mediapipe'\
                   '|third_party/neon_2_sse'\
                   '|third_party/ruy'\
                   '|third_party/tensorflow-text'\
@@ -760,7 +754,7 @@
                   '|chromeos/ash/components/hid_detection/'\
                   '|chromeos/ash/services/bluetooth_config/'\
                   '|chrome/browser/ui/webui/ash/bluetooth'\
-                  '|chrome/browser/resources/settings/chromeos/os_bluetooth_page/'\
+                  '|chrome/browser/resources/ash/settings/os_bluetooth_page/'\
                   '|chrome/browser/resources/chromeos/bluetooth_pairing_dialog/'\
                   '|chrome/test/data/webui/cr_components/chromeos/bluetooth/'\
                   '|device/bluetooth/bluez/'\
@@ -789,7 +783,7 @@
     },
     'chromeos_media_app': {
       'filepath': 'ash/webui/media_app_ui/|'\
-                  'chrome/browser/ash/web_applications/media_app/',
+                  'chrome/browser/ash/system_web_apps/apps/media_app/',
     },
     'chromeos_net': {
       'filepath': 'ash/system/network/|'\
@@ -799,7 +793,7 @@
                   'chrome/browser/resources/chromeos/internet_config_dialog/|'\
                   'chrome/browser/resources/chromeos/internet_detail_dialog/|'\
                   'chrome/browser/resources/chromeos/network_ui/|'\
-                  'chrome/browser/resources/settings/chromeos/internet_page/|'\
+                  'chrome/browser/resources/ash/settings/internet_page/|'\
                   'chrome/browser/ui/ash/network/|'\
                   'chrome/browser/ui/webui/ash/network|'\
                   'chrome/test/data/webui/cr_components/chromeos/network/|'\
@@ -912,18 +906,10 @@
                   '|components/policy/'\
                   '|docs/website/site/administrators/',
     },
-    'cros_discovery': {
-      'filepath': 'chrome/browser/apps/app_discovery_service/'\
-                  '|chrome/browser/apps/app_provisioning_service/',
-    },
     'cros_reporting': {
       'filepath': 'chrome/browser/policy/messaging_layer/'\
                   '|chrome/browser/ash/policy/status_collector/'\
                   '|components/policy/proto/record',
-    },
-    'cros_sharesheet': {
-      'filepath': 'chrome/browser/ui/ash/sharesheet/'\
-                  '|chrome/browser/ash/sharesheet/',
     },
     'crosapi_mojom': {
       'filepath': 'chromeos/crosapi/mojom/crosapi.mojom',
@@ -936,7 +922,7 @@
                   '|plugin_vm',
     },
     'cups_printing' : {
-      'filepath': 'chrome/browser/resources/settings/chromeos/os_printing_page/'\
+      'filepath': 'chrome/browser/resources/ash/settings/os_printing_page/'\
                   '|chrome/test/data/webui/settings/cups_printer_page_tests.js'\
                   '|chrome/browser/ui/webui/settings/ash/cups_printers_handler'\
                   '|chrome/browser/ash/printing/'\
@@ -1070,8 +1056,8 @@
     },
     'face_ml': {
       'filepath': 'ash/webui/face_ml_app_ui/|' \
-                  'chrome/browser/ash/web_applications/face_ml_system_web_app_info.*|' \
-                  'chrome/browser/ash/web_applications/face_ml/'
+                  'chrome/browser/ash/system_web_apps/apps/face_ml_system_web_app_info.*|' \
+                  'chrome/browser/ash/system_web_apps/apps/face_ml/'
     },
     'feed': {
       'filepath': 'chrome/android/feed|' \
@@ -1255,7 +1241,7 @@
     },
     'input_device_settings': {
       'filepath': 'ash/system/input_device_settings/|'\
-                  'chrome/browser/resources/settings/chromeos/device_page/|'\
+                  'chrome/browser/resources/ash/settings/device_page/|'\
                   'chrome/browser/ui/webui/settings/ash/device_section.(cc|h)$|'\
                   'chrome/browser/ui/webui/settings/ash/input_device_settings/',
     },
@@ -1473,7 +1459,7 @@
                   '|chrome/browser/ash/multidevice_setup/'\
                   '|chrome/browser/ash/secure_channel/'\
                   '|chrome/browser/resources/chromeos/multidevice_setup/'\
-                  '|chrome/browser/resources/settings/chromeos/multidevice_page/'\
+                  '|chrome/browser/resources/ash/settings/multidevice_page/'\
                   '|chrome/browser/ui/webui/ash/multidevice_setup/'\
                   '|chrome/browser/ui/webui/settings/ash/multidevice'\
                   '|chrome/test/data/webui/multidevice_setup/'\
@@ -1508,7 +1494,7 @@
       'filepath': 'chrome/browser/nearby_sharing/|'\
                   'chrome/browser/resources/nearby_internals/|'\
                   'chrome/browser/resources/nearby_share/|'\
-                  'chrome/browser/resources/settings/chromeos/nearby_share_page/|'\
+                  'chrome/browser/resources/ash/settings/nearby_share_page/|'\
                   'chrome/browser/ui/webui/nearby_internals/|'\
                   'chrome/browser/ui/webui/nearby_share/|'\
                   'chrome/services/sharing/'
@@ -1854,14 +1840,11 @@
                   '|chrome/test/data/webui/settings/',
     },
     'settings_os_settings': {
-      'filepath': 'chrome/browser/resources/settings/chromeos/'\
+      'filepath': 'chrome/browser/resources/ash/settings/'\
                   '|chrome/browser/ui/webui/settings/ash/'\
                   '|chrome/browser/ui/webui/settings/chromeos/'\
                   '|chrome/test/data/webui/settings/chromeos/'\
                   '|ui/webui/resources/cr_elements/chromeos/',
-    },
-    'share_service': {
-      'filepath': 'chrome/browser/sharesheet/',
     },
     'share_sheet': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/share/'\
@@ -1892,7 +1875,7 @@
                   '|ash/public/cpp/smartlock'\
                   '|chrome/browser/ash/login/easy_unlock/'\
                   '|chrome/browser/resources/chromeos/quick_unlock/'\
-                  '|chrome/browser/resources/settings/chromeos/multidevice_page/multidevice_smartlock'\
+                  '|chrome/browser/resources/ash/settings/multidevice_page/multidevice_smartlock'\
                   '|chrome/test/data/webui/settings/chromeos/multidevice_smartlock'\
                   '|chromeos/ash/components/dbus/easy_unlock/'\
                   '|chromeos/ash/components/proximity_auth/',
@@ -2290,10 +2273,9 @@
                                 'wnwen+watch@chromium.org'],
     'android_flags': ['hnakashima+watch@chromium.org'],
     'android_infobars': ['dfalcantara+watch@chromium.org'],
-    'android_infra': ['agrieve+watch@chromium.org',
-                      'wnwen+watch@chromium.org'],
+    'android_infra': ['agrieve+watch@chromium.org'],
     'android_item_chooser_dialogs': [],
-    'android_lint': ['wnwen+watch.lint@chromium.org'],
+    'android_lint': ['wnwen+watch@chromium.org'],
     'android_omnibox': ['ender+watch@chromium.org'],
     'android_search_widget': ['tedchoc+watch@chromium.org',
                               'yusufo+watch@chromium.org'],
@@ -2309,8 +2291,6 @@
                        'webapks-watchlist@chromium.org'],
     'android_webview': ['android-webview-reviews@chromium.org'],
     'android_webview_network_service': [],
-    'app_management': ['jshikaram+watch-app_management@chromium.org'],
-    'app_preload_service': ['jshikaram+watch-app_preload_service@chromium.org'],
     'app_service': ['dominickn+watch-app_service@chromium.org',
                     'nancylingwang@chromium.org',
                     'tsergeant+watch@chromium.org'],
@@ -2392,7 +2372,8 @@
     'blink': ['blink-reviews@chromium.org'],
     'blink_accessibility': ['je_julie.kim@chromium.org',
                             'kbabbitt@microsoft.com',
-                            'nektar@chromium.org'],
+                            'nektar@chromium.org',
+                            'blink-reviews-a11y@chromium.org'],
     'blink_animation': ['alexis.menard@intel.com',
                         'gerchiko@microsoft.com',
                         'blink-reviews-animation@chromium.org'],
@@ -2658,9 +2639,7 @@
               'wiss+watch-creator@chromium.org',
               'wry+watch-creator@chromium.org',],
     'cros_commercial_policy': ['enterprise-policy-review@google.com'],
-    'cros_discovery': ['melzhang+watch+discovery@chromium.org'],
     'cros_reporting': ['cros-reporting-reviews@google.com'],
-    'cros_sharesheet': ['melzhang+watch+sharesheet@chromium.org'],
     'crosapi_mojom': ['elkurin+watch@chromium.org'],
     'crostini': ['crostini-ui@chromium.org'],
     'cups_printing': ['print-reviews+cups@chromium.org',
@@ -2737,7 +2716,8 @@
     'freetype_update': ['drott+watch@chromium.org',
                         'thestig@chromium.org'],
     'fsp': ['mtomasz+watch@chromium.org'],
-    'fuchsia': ['fuchsia-reviews@chromium.org'],
+    'fuchsia': ['fuchsia-reviews@chromium.org',
+                'zijiehe@google.com'],
     'full_restore': ['nancylingwang@chromium.org'],
     'fuzzing': ['fuzzing@chromium.org'],
     'gamepad': ['mattreynolds+watch@chromium.org'],
@@ -2811,8 +2791,7 @@
     'libwebp': ['jzern@chromium.org',
                 'skal@google.com',
                 'urvang@chromium.org'],
-    'libxml_xslt': ['ail@google.com',
-                    'dominicc+watchlist@chromium.org'],
+    'libxml_xslt': ['dominicc+watchlist@chromium.org'],
     'linux_sandboxing': ['mpdenton+watch@chromium.org',
                          'rsesek+watch@chromium.org'],
     'linux_seccomp_bpf': ['mpdenton+watch@chromium.org',
@@ -3011,7 +2990,6 @@
     'settings': ['michaelpg+watch-settings@chromium.org'],
     'settings_os_settings': ['croissant-eng+reviews@chromium.org',
                              'cros-settings+reviews@google.com'],
-    'share_service': ['melzhang+watch+share-service@chromium.org'],
     'share_sheet': ['chrome-sharing-eng+watch@google.com'],
     'sharing': ['knollr+watch-sharing@chromium.org',
                 'mvanouwerkerk+watch-sharing@chromium.org'],

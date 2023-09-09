@@ -17,9 +17,8 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "components/content_settings/core/browser/content_settings_uma_util.h"
-#include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/permissions/constants.h"
 #include "components/permissions/permission_actions_history.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
@@ -29,7 +28,6 @@
 #include "components/permissions/prediction_service/prediction_common.h"
 #include "components/permissions/prediction_service/prediction_request_features.h"
 #include "components/permissions/request_type.h"
-#include "components/permissions/unused_site_permissions_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
@@ -111,10 +109,6 @@ RequestTypeForUma GetUmaValueForRequestType(RequestType request_type) {
 #if !BUILDFLAG(IS_ANDROID)
     case RequestType::kRegisterProtocolHandler:
       return RequestTypeForUma::REGISTER_PROTOCOL_HANDLER;
-    case RequestType::kSecurityAttestation:
-      return RequestTypeForUma::PERMISSION_SECURITY_KEY_ATTESTATION;
-    case RequestType::kU2fApiRequest:
-      return RequestTypeForUma::PERMISSION_U2F_API_REQUEST;
 #endif
     case RequestType::kStorageAccess:
       return RequestTypeForUma::PERMISSION_STORAGE_ACCESS;
@@ -155,8 +149,6 @@ std::string GetPermissionRequestString(RequestTypeForUma type) {
       return "AudioCapture";
     case RequestTypeForUma::PERMISSION_MEDIASTREAM_CAMERA:
       return "VideoCapture";
-    case RequestTypeForUma::PERMISSION_SECURITY_KEY_ATTESTATION:
-      return "SecurityKeyAttestation";
     case RequestTypeForUma::PERMISSION_PAYMENT_HANDLER:
       return "PaymentHandler";
     case RequestTypeForUma::PERMISSION_NFC:
@@ -179,8 +171,6 @@ std::string GetPermissionRequestString(RequestTypeForUma type) {
       return "LocalFonts";
     case RequestTypeForUma::PERMISSION_IDLE_DETECTION:
       return "IdleDetection";
-    case RequestTypeForUma::PERMISSION_U2F_API_REQUEST:
-      return "U2fApiRequest";
     case RequestTypeForUma::PERMISSION_ACCESSIBILITY_EVENTS:
       return "AccessibilityEvents";
 
@@ -280,8 +270,7 @@ void RecordPermissionUsageUkm(ContentSettingsType permission_type,
 
   ukm::builders::PermissionUsage builder(source_id.value());
   builder.SetPermissionType(static_cast<int64_t>(
-      content_settings_uma_util::ContentSettingTypeToHistogramValue(
-          permission_type)));
+      ContentSettingTypeToHistogramValue(permission_type)));
   builder.Record(ukm::UkmRecorder::Get());
 }
 
@@ -319,9 +308,8 @@ void RecordPermissionActionUkm(
   ukm::builders::Permission builder(source_id.value());
   builder.SetAction(static_cast<int64_t>(action))
       .SetGesture(static_cast<int64_t>(gesture_type))
-      .SetPermissionType(static_cast<int64_t>(
-          content_settings_uma_util::ContentSettingTypeToHistogramValue(
-              permission)))
+      .SetPermissionType(
+          static_cast<int64_t>(ContentSettingTypeToHistogramValue(permission)))
       .SetPriorDismissals(std::min(kPriorCountCap, dismiss_count))
       .SetPriorIgnores(std::min(kPriorCountCap, ignore_count))
       .SetSource(static_cast<int64_t>(source_ui))
@@ -1603,8 +1591,8 @@ void PermissionUmaUtil::RecordPermissionRegrantForUnusedSites(
     base::Time current_time) {
   auto* hcsm = PermissionsClient::Get()->GetSettingsMap(browser_context);
   absl::optional<uint32_t> days_since_revocation =
-      UnusedSitePermissionsService::GetDaysSinceRevocation(
-          origin, content_settings_type, current_time, hcsm);
+      GetDaysSinceUnusedSitePermissionRevocation(origin, content_settings_type,
+                                                 current_time, hcsm);
   if (!days_since_revocation.has_value()) {
     return;
   }
@@ -1631,6 +1619,45 @@ void PermissionUmaUtil::RecordPermissionRegrantForUnusedSites(
       "Settings.SafetyCheck.UnusedSitePermissionsRegrantDays" +
           source_ui_string + ".All",
       days_since_revocation.value(), 31);
+}
+
+// static
+absl::optional<uint32_t>
+PermissionUmaUtil::GetDaysSinceUnusedSitePermissionRevocation(
+    const GURL& origin,
+    ContentSettingsType content_settings_type,
+    base::Time current_time,
+    HostContentSettingsMap* hcsm) {
+  content_settings::SettingInfo info;
+  base::Value stored_value(hcsm->GetWebsiteSetting(
+      origin, origin, ContentSettingsType::REVOKED_UNUSED_SITE_PERMISSIONS,
+      &info));
+  if (!stored_value.is_dict()) {
+    return absl::nullopt;
+  }
+  base::Value::List* permission_type_list =
+      stored_value.GetDict().FindList(permissions::kRevokedKey);
+  if (!permission_type_list) {
+    return absl::nullopt;
+  }
+  base::Time revoked_time =
+      info.metadata.expiration() -
+      content_settings::features::
+          kSafetyCheckUnusedSitePermissionsRevocationCleanUpThreshold.Get();
+  uint32_t days_since_revoked = (current_time - revoked_time).InDays();
+
+  for (auto& permission_type : *permission_type_list) {
+    auto type_int = permission_type.GetIfInt();
+    if (!type_int.has_value()) {
+      continue;
+    }
+    if (content_settings_type ==
+        static_cast<ContentSettingsType>(type_int.value())) {
+      return days_since_revoked;
+    }
+  }
+
+  return absl::nullopt;
 }
 
 }  // namespace permissions

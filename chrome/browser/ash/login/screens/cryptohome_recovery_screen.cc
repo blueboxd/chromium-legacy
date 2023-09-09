@@ -43,7 +43,6 @@ std::string CryptohomeRecoveryScreen::GetResultString(Result result) {
   }
 }
 
-// TODO(b/285079648): add browser test for the recovery flow.
 CryptohomeRecoveryScreen::CryptohomeRecoveryScreen(
     base::WeakPtr<CryptohomeRecoveryScreenView> view,
     const ScreenExitCallback& exit_callback)
@@ -137,6 +136,21 @@ void CryptohomeRecoveryScreen::OnAuthenticateWithRecovery(
     context()->user_context = std::move(user_context);
     view_->OnRecoveryFailed();
     return;
+  }
+
+  auth_factor_editor_.RotateRecoveryFactor(
+      std::move(user_context),
+      base::BindOnce(&CryptohomeRecoveryScreen::OnRotateRecoveryFactor,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CryptohomeRecoveryScreen::OnRotateRecoveryFactor(
+    std::unique_ptr<UserContext> user_context,
+    absl::optional<AuthenticationError> error) {
+  if (error.has_value()) {
+    LOG(ERROR) << "Failed to rotate recovery factor, code "
+               << error->get_cryptohome_code();
+    // TODO(b/289472295): handle failure scenario.
   }
 
   std::string key_label;

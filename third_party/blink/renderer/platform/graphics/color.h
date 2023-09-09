@@ -103,7 +103,7 @@ class PLATFORM_EXPORT Color {
     kNone,
   };
 
-  static bool IsColorFunction(ColorSpace color_space) {
+  static bool IsPredefinedColorSpace(ColorSpace color_space) {
     return color_space == ColorSpace::kSRGB ||
            color_space == ColorSpace::kSRGBLinear ||
            color_space == ColorSpace::kDisplayP3 ||
@@ -134,6 +134,11 @@ class PLATFORM_EXPORT Color {
 
   static bool IsChromaSecondComponent(ColorSpace color_space) {
     return color_space == ColorSpace::kLch || color_space == ColorSpace::kOklch;
+  }
+
+  static bool IsLegacyColorSpace(ColorSpace color_space) {
+    return color_space == ColorSpace::kSRGBLegacy ||
+           color_space == ColorSpace::kHSL || color_space == ColorSpace::kHWB;
   }
 
   static bool ColorSpaceHasHue(ColorSpace color_space) {
@@ -355,7 +360,7 @@ class PLATFORM_EXPORT Color {
 
   // Colors can parse calc(NaN) and calc(Infinity). At computed value time this
   // function is called which resolves all NaNs to zero and +/-infinities to
-  // maximum/minimum values, if they exist.
+  // maximum/minimum values, if they exist. It leaves finite values unchanged.
   // See https://github.com/w3c/csswg-drafts/issues/8629
   void ResolveNonFiniteValues();
 
@@ -368,6 +373,7 @@ class PLATFORM_EXPORT Color {
   FRIEND_TEST_ALL_PREFIXES(BlinkColor, ExportAsXYZD50Floats);
 
  private:
+  String SerializeLegacyColorAsCSSColor() const;
   constexpr explicit Color(RGBA32 color)
       : param0_is_none_(0),
         param1_is_none_(0),

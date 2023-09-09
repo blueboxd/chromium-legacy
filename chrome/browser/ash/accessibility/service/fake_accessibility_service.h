@@ -9,9 +9,11 @@
 #include "base/unguessable_token.h"
 #include "chrome/browser/accessibility/service/accessibility_service_router.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/accessibility/public/mojom/accessibility_service.mojom.h"
+#include "services/accessibility/public/mojom/automation.mojom.h"
 #include "services/accessibility/public/mojom/tts.mojom.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_event.h"
@@ -42,9 +44,13 @@ class FakeAccessibilityService
       const std::vector<ax::mojom::AssistiveTechnologyType>& enabled_features)
       override;
 
+  void ConnectDevToolsAgent(
+      mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent,
+      ax::mojom::AssistiveTechnologyType type) override;
+
   // TODO(crbug.com/1355633): Override from ax::mojom::Automation:
-  void DispatchTreeDestroyedEvent(const ui::AXTreeID& tree_id);
-  void DispatchActionResult(const ui::AXActionData& data, bool result);
+  void DispatchTreeDestroyedEvent(const ui::AXTreeID& tree_id) override;
+  void DispatchActionResult(const ui::AXActionData& data, bool result) override;
   void DispatchAccessibilityEvents(
       const ui::AXTreeID& tree_id,
       const std::vector<ui::AXTreeUpdate>& updates,
@@ -54,6 +60,9 @@ class FakeAccessibilityService
       const ui::AXTreeID& tree_id,
       int node_id,
       const ui::AXRelativeBounds& bounds) override;
+  void DispatchGetTextLocationResult(
+      const ui::AXActionData& data,
+      const absl::optional<gfx::Rect>& rect) override;
 
   // ax::mojom::AssistiveTechnologyController:
   void EnableAssistiveTechnology(
@@ -74,6 +83,8 @@ class FakeAccessibilityService
   const std::set<ax::mojom::AssistiveTechnologyType>& GetEnabledATs() const {
     return enabled_ATs_;
   }
+
+  int GetDevtoolsConnectionCount(ax::mojom::AssistiveTechnologyType type) const;
 
   // Allows tests to bind APIs multiple times, mimicking multiple
   // V8 instances in the service.
@@ -137,7 +148,9 @@ class FakeAccessibilityService
   std::vector<ui::AXTreeID> accessibility_events_;
   std::vector<ui::AXTreeID> location_changes_;
 
-  mojo::ReceiverSet<ax::mojom::Automation> automation_receivers_;
+  std::map<ax::mojom::AssistiveTechnologyType, int> connect_devtools_counts;
+
+  mojo::AssociatedReceiverSet<ax::mojom::Automation> automation_receivers_;
   mojo::RemoteSet<ax::mojom::AutomationClient> automation_client_remotes_;
 
   mojo::RemoteSet<ax::mojom::Tts> tts_remotes_;

@@ -6,13 +6,6 @@ package org.chromium.chrome.browser.autofill.editors;
 
 /** The interface for editor fields that handle validation, display errors, and can be updated. */
 interface FieldView {
-    /**
-     * Updates the error display.
-     *
-     * @param showError If true, displays the error message.  If false, clears it.
-     */
-    void updateDisplayedError(boolean showError);
-
     /** @return True if this field is valid. */
     boolean isValid();
 
@@ -22,6 +15,11 @@ interface FieldView {
     /** Scrolls to and focuses the field to bring user's attention to it. */
     void scrollToAndFocus();
 
-    /** Rereads the field value from the model, which may have been updated. */
-    void update();
+    /**
+     * Shows '*' required field indicator according to the provided boolean flag
+     *
+     * @param showRequiredIndicator boolean flag indicating if this field should me marked with
+     *         required indicator.
+     */
+    void setShowRequiredIndicator(boolean showRequiredIndicator);
 }

@@ -50,6 +50,7 @@
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
+#include "components/user_manager/user_type.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/env.h"
@@ -422,7 +423,8 @@ void AshTestBase::SimulateGuestLogin() {
 
 void AshTestBase::SimulateKioskMode(user_manager::UserType user_type) {
   DCHECK(user_type == user_manager::USER_TYPE_ARC_KIOSK_APP ||
-         user_type == user_manager::USER_TYPE_KIOSK_APP);
+         user_type == user_manager::USER_TYPE_KIOSK_APP ||
+         user_type == user_manager::USER_TYPE_WEB_KIOSK_APP);
 
   const std::string user_email = "fake_kiosk@kioks-apps.device-local.localhost";
   TestSessionControllerClient* session = GetSessionControllerClient();
@@ -584,6 +586,17 @@ void AshTestBase::WaitForShelfAnimation() {
 void AshTestBase::MaybeRunDragAndDropSequenceForAppList(
     std::list<base::OnceClosure>* tasks,
     bool is_touch) {
+  // The app list drag and drop require this extra step since drag actually
+  // starts when the cursor is moved. In the case of the drag and drop refactor,
+  // this movement is done outside of the LoopClosure, but a second one is
+  // required since OnDragEnter() is invoked when the drag is updated.
+  tasks->push_front(base::BindLambdaForTesting([&]() {
+    if (is_touch) {
+      GetEventGenerator()->MoveTouchBy(10, 10);
+      return;
+    }
+    GetEventGenerator()->MoveMouseBy(10, 10);
+  }));
   if (!app_list_features::IsDragAndDropRefactorEnabled()) {
     while (!tasks->empty()) {
       std::move(tasks->front()).Run();
@@ -598,15 +611,7 @@ void AshTestBase::MaybeRunDragAndDropSequenceForAppList(
         tasks->pop_front();
       }),
       base::DoNothing());
-  tasks->push_front(base::BindLambdaForTesting([&]() {
-    // Generate OnDragEnter() event for the host view.
-    if (is_touch) {
-      GetEventGenerator()->MoveTouchBy(10, 10);
-      return;
-    }
-    GetEventGenerator()->MoveMouseBy(10, 10);
-  }));
-  // Start Drag and Drop Sequence by moving the pointer.
+
   if (is_touch) {
     GetEventGenerator()->MoveTouchBy(10, 10);
     return;

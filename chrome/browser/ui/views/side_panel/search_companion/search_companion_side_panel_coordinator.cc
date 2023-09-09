@@ -28,6 +28,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/vector_icons/vector_icons.h"
+#include "ui/base/ui_base_features.h"
 
 namespace {
 
@@ -47,13 +48,18 @@ SearchCompanionSidePanelCoordinator::SearchCompanionSidePanelCoordinator(
     Browser* browser)
     : BrowserUserData<SearchCompanionSidePanelCoordinator>(*browser),
       browser_(browser),
-      accessible_name_(
-          l10n_util::GetStringUTF16(IDS_ACCNAME_SIDE_PANEL_COMPANION_SHOW)),
       // TODO(b/269331995): Localize menu item label.
       name_(l10n_util::GetStringUTF16(IDS_SIDE_PANEL_COMPANION_TITLE)),
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-      icon_(vector_icons::kGoogleSearchCompanionMonochromeLogoIcon),
-      disabled_icon_(vector_icons::kGoogleSearchCompanionMonochromeLogoIcon),
+      icon_(features::IsChromeRefresh2023()
+                ? vector_icons::
+                      kGoogleSearchCompanionMonochromeLogoChromeRefreshIcon
+                : vector_icons::kGoogleSearchCompanionMonochromeLogoIcon),
+      disabled_icon_(
+          features::IsChromeRefresh2023()
+              ? vector_icons::
+                    kGoogleSearchCompanionMonochromeLogoChromeRefreshIcon
+              : vector_icons::kGoogleSearchCompanionMonochromeLogoIcon),
 #else
       icon_(vector_icons::kSearchIcon),
       disabled_icon_(vector_icons::kSearchIcon),
@@ -126,20 +132,6 @@ BrowserView* SearchCompanionSidePanelCoordinator::GetBrowserView() const {
 std::u16string SearchCompanionSidePanelCoordinator::GetTooltipForToolbarButton()
     const {
   return l10n_util::GetStringUTF16(IDS_SIDE_PANEL_COMPANION_TOOLBAR_TOOLTIP);
-}
-
-void SearchCompanionSidePanelCoordinator::SetAccessibleNameForToolbarButton(
-    BrowserView* browser_view,
-    bool is_open) {
-  SidePanelToolbarContainer* container =
-      browser_view->toolbar()->side_panel_container();
-  if (container && container->IsPinned(SidePanelEntry::Id::kSearchCompanion)) {
-    ToolbarButton& button =
-        container->GetPinnedButtonForId(SidePanelEntry::Id::kSearchCompanion);
-    button.SetAccessibleName(l10n_util::GetStringUTF16(
-        is_open ? IDS_ACCNAME_SIDE_PANEL_COMPANION_HIDE
-                : IDS_ACCNAME_SIDE_PANEL_COMPANION_SHOW));
-  }
 }
 
 void SearchCompanionSidePanelCoordinator::NotifyCompanionOfSidePanelOpenTrigger(
@@ -220,7 +212,7 @@ void SearchCompanionSidePanelCoordinator::
         CompanionSidePanelAvailabilityChanged::kUnavailableToAvailable);
     is_currently_observing_tab_changes_ = true;
     container->AddPinnedEntryButtonFor(SidePanelEntry::Id::kSearchCompanion,
-                                       accessible_name(), name(), icon());
+                                       name(), icon());
     browser_->tab_strip_model()->AddObserver(this);
     CreateAndRegisterEntriesForExistingWebContents(browser_->tab_strip_model());
     return;

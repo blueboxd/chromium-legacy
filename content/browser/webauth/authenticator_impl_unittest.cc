@@ -1518,6 +1518,14 @@ TEST_F(AuthenticatorImplTest, GetAssertionResponseWithAttestedCredentialData) {
       AuthenticatorStatus::NOT_ALLOWED_ERROR);
 }
 
+TEST_F(AuthenticatorImplTest, GPMPasskeys_IsConditionalMediationAvailable) {
+  // Conditional mediation should always be available if gpm passkeys are
+  // enabled.
+  base::test::ScopedFeatureList scoped_feature_list{
+      device::kWebAuthnListSyncedPasskeys};
+  ASSERT_TRUE(AuthenticatorIsConditionalMediationAvailable());
+}
+
 #if BUILDFLAG(IS_WIN)
 TEST_F(AuthenticatorImplTest, IsUVPAA) {
   virtual_device_factory_->set_discover_win_webauthn_api_authenticator(true);
@@ -6959,8 +6967,8 @@ class BlockingDelegateContentBrowserClient : public ContentBrowserClient {
 
  private:
   TestWebAuthenticationDelegate web_authentication_delegate_;
-  raw_ptr<BlockingAuthenticatorRequestDelegate, DanglingUntriaged> delegate_ =
-      nullptr;
+  raw_ptr<BlockingAuthenticatorRequestDelegate, AcrossTasksDanglingUntriaged>
+      delegate_ = nullptr;
 };
 
 class BlockingDelegateAuthenticatorImplTest : public AuthenticatorImplTest {
@@ -7179,10 +7187,9 @@ class ResidentKeyTestAuthenticatorRequestDelegate
       EXPECT_EQ(info.has_platform_authenticator_credential,
                 device::FidoRequestHandlerBase::RecognizedCredential::
                     kHasRecognizedCredential);
-      EXPECT_TRUE(
-          base::Contains(info.recognized_platform_authenticator_credentials,
-                         *config_.preselected_credential_id,
-                         &device::DiscoverableCredentialMetadata::cred_id));
+      EXPECT_TRUE(base::Contains(
+          info.recognized_credentials, *config_.preselected_credential_id,
+          &device::DiscoverableCredentialMetadata::cred_id));
       std::move(account_preselected_callback_)
           .Run(*config_.preselected_credential_id);
       request_callback_.Run(*config_.preselected_authenticator_id);
@@ -8926,6 +8933,11 @@ TEST_F(TouchIdAuthenticatorImplTest, OptionalUv) {
     auto options = GetTestPublicKeyCredentialCreationOptions();
     options->authenticator_selection->authenticator_attachment =
         device::AuthenticatorAttachment::kPlatform;
+    // Set rk to required. On platform authenticators Chrome should not
+    // universally require UV to make make a resident/discoverable credential,
+    // like it would on a security key.
+    options->authenticator_selection->resident_key =
+        device::ResidentKeyRequirement::kRequired;
     options->authenticator_selection->user_verification_requirement = uv;
     bool requires_uv = uv == device::UserVerificationRequirement::kRequired;
     if (requires_uv) {
@@ -9104,7 +9116,7 @@ TEST_F(ICloudKeychainAuthenticatorImplTest, Discovery) {
                   tai) {
             tai_seen = true;
             CHECK_EQ(tai.has_icloud_keychain, feature_enabled);
-            CHECK_EQ(tai.recognized_platform_authenticator_credentials.size(),
+            CHECK_EQ(tai.recognized_credentials.size(),
                      feature_enabled ? 1u : 0u);
             CHECK_EQ(tai.has_icloud_keychain_credential,
                      feature_enabled
@@ -9114,9 +9126,7 @@ TEST_F(ICloudKeychainAuthenticatorImplTest, Discovery) {
                                RecognizedCredential::kNoRecognizedCredential);
 
             if (feature_enabled) {
-              CHECK_EQ(tai.recognized_platform_authenticator_credentials[0]
-                           .user.name.value(),
-                       "name");
+              CHECK_EQ(tai.recognized_credentials[0].user.name.value(), "name");
             }
           });
 
@@ -9829,13 +9839,24 @@ TEST_F(AuthenticatorCableV2AuthenticatorTest, PRFMakeCredential) {
   EXPECT_TRUE(result.response->prf);
 }
 
+static std::vector<uint8_t> HashPRFInput(base::span<const uint8_t> input) {
+  std::vector<uint8_t> hash_input;
+  constexpr char kPrefix[] = "WebAuthn PRF";
+  hash_input.insert(hash_input.end(), std::begin(kPrefix), std::end(kPrefix));
+  hash_input.insert(hash_input.end(), std::begin(input), std::end(input));
+  return device::fido_parsing_utils::Materialize(
+      crypto::SHA256Hash(hash_input));
+}
+
 static std::tuple<PublicKeyCredentialRequestOptionsPtr,
                   std::vector<uint8_t>,
                   std::vector<uint8_t>>
 BuildPRFGetAssertion(device::VirtualCtap2Device& virtual_device,
                      bool use_eval_by_credential) {
-  const std::vector<uint8_t> salt1(32, 1);
-  const std::vector<uint8_t> salt2(32, 2);
+  const std::vector<uint8_t> input1(32, 1);
+  const std::vector<uint8_t> input2(32, 2);
+  const std::vector<uint8_t> salt1 = HashPRFInput(input1);
+  const std::vector<uint8_t> salt2 = HashPRFInput(input2);
   const std::array<uint8_t, 32> key1 = {1};
   const std::array<uint8_t, 32> key2 = {2};
   const std::array<uint8_t, 32> output1 = EvaluateHMAC(key2, salt1);
@@ -9850,8 +9871,8 @@ BuildPRFGetAssertion(device::VirtualCtap2Device& virtual_device,
 
   std::vector<blink::mojom::PRFValuesPtr> prf_inputs;
   auto prf_value = blink::mojom::PRFValues::New();
-  prf_value->first = salt1;
-  prf_value->second = salt2;
+  prf_value->first = input1;
+  prf_value->second = input2;
   if (use_eval_by_credential) {
     prf_value->id = options->allow_credentials[0].id;
   }

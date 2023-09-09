@@ -47,7 +47,7 @@ class LargeIconCache;
 - (void)fetchFaviconForMostVisited:(ContentSuggestionsMostVisitedItem*)item;
 
 // Recorder for content suggestions metrics.
-@property(nonatomic, weak)
+@property(nonatomic, assign)
     ContentSuggestionsMetricsRecorder* contentSuggestionsMetricsRecorder;
 
 @end

@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -29,7 +30,6 @@
 #include "chrome/browser/ash/file_system_provider/mount_path_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification_display_service.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -42,8 +42,8 @@
 #include "chrome/browser/ui/webui/ash/cloud_upload/one_drive_upload_handler.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/api/file_handlers/mime_util.h"
@@ -124,13 +124,6 @@ enum class Microsoft365Availability {
   kMaxValue = kODFS,
 };
 
-std::vector<ProvidedFileSystemInfo> GetODFSFileSystems(Profile* profile) {
-  Service* service = Service::Get(profile);
-  ProviderId provider_id = ProviderId::CreateFromExtensionId(
-      file_manager::file_tasks::GetODFSExtensionId(profile));
-  return service->GetProvidedFileSystemInfoList(provider_id);
-}
-
 // Open a hosted MS Office file e.g. .docx, from a url hosted in
 // DriveFS. Check the file was successfully uploaded to DriveFS.
 void OpenUploadedDriveUrl(const GURL& url) {
@@ -180,16 +173,33 @@ void HandleSignInClick(Profile* profile, absl::optional<int> button_index) {
                               kNotificationId);
 }
 
-// Show system authentication error notification to prompt the user to
-// reauthenticate to ODFS via a "Sign in" button and to communicate why their
-// file can't be opened.
-void ShowUnableToOpenNotification(Profile* profile) {
-  // TODO(b/254586358): i18n these strings.
+// TODO(b/288038136): Use a notification manager to handle error notifications.
+// Show system error notification to communicate that their file can't be
+// opened. If the user needs to reauthenticate to OneDrive, prompt the user to
+// reauthenticate to ODFS via a "Sign in" button.
+void ShowUnableToOpenNotification(Profile* profile,
+                                  bool reauthentication_required = false) {
+  std::string message = GetGenericErrorMessage();
+  std::vector<message_center::ButtonInfo> notification_buttons;
+
+  // Special case of |FILE_ERROR_ACCESS_DENIED| where the user needs to
+  // reauthenticate to OneDrive.
+  if (reauthentication_required) {
+    message = GetReauthenticationRequiredMessage();
+    //  Add "Sign in" button.
+    notification_buttons.emplace_back(
+        l10n_util::GetStringUTF16(IDS_OFFICE_NOTIFICATION_SIGN_IN_BUTTON));
+  }
+
   auto notification = ash::CreateSystemNotificationPtr(
       /*type=*/message_center::NOTIFICATION_TYPE_SIMPLE,
-      /*id=*/kNotificationId, /*title=*/u"Can't open file",
-      /*message=*/
-      u"Sign in to your Microsoft account and then try again",
+      /*id=*/kNotificationId,
+      // TODO(b/242685536) Use "files" for multi-files when support for
+      // multi-files is added.
+      /*title=*/
+      l10n_util::GetPluralStringFUTF16(IDS_OFFICE_UPLOAD_ERROR_CANT_OPEN_FILE,
+                                       1),
+      /*message=*/base::UTF8ToUTF16(message),
       /*display_source=*/
       l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_SYSTEM_APP_NAME_FILES),
       /*origin_url=*/GURL(),
@@ -202,17 +212,42 @@ void ShowUnableToOpenNotification(Profile* profile) {
       /*warning_level=*/
       message_center::SystemNotificationWarningLevel::WARNING);
 
-  //  Add "Sign in" button.
-  std::vector<message_center::ButtonInfo> notification_buttons = {
-      message_center::ButtonInfo(u"Sign in")};
   notification->set_buttons(notification_buttons);
-
   notification->set_never_timeout(true);
   NotificationDisplayService* notification_service =
       NotificationDisplayServiceFactory::GetForProfile(profile);
   notification_service->Display(NotificationHandler::Type::TRANSIENT,
                                 *notification,
                                 /*metadata=*/nullptr);
+}
+
+// Check if reauthentication to OneDrive is required from the ODFS metadata
+// and show the reuathentication is required notification if true. Otherwise
+// show the generic access error notification.
+void OnGetReauthenticationRequired(
+    Profile* profile,
+    base::expected<ODFSMetadata, base::File::Error> metadata_or_error) {
+  if (!metadata_or_error.has_value()) {
+    LOG(ERROR) << "Failed to get reauthentication required state: "
+               << metadata_or_error.error();
+    return;
+  }
+  ShowUnableToOpenNotification(profile,
+                               metadata_or_error->reauthentication_required);
+}
+
+// Show the correct error notification for base::File::FILE_ERROR_ACCESS_DENIED.
+// Request ODFS metadata and show the correct notification in the
+// |OnGetReauthenticationRequired| callback.
+void ShowAccessDeniedNotification(Profile* profile) {
+  absl::optional<file_system_provider::ProvidedFileSystemInterface*>
+      file_system = GetODFS(profile);
+  if (!file_system.has_value()) {
+    ShowUnableToOpenNotification(profile, /*reauthentication_required=*/false);
+    return;
+  }
+  GetODFSMetadata(file_system.value(),
+                  base::BindOnce(&OnGetReauthenticationRequired, profile));
 }
 
 // Open file with |file_path| from ODFS |file_system|. Open in the OneDrive PWA
@@ -231,14 +266,12 @@ void OpenFileFromODFS(
             if (!profile) {
               return;
             }
-            // TODO(b/288022200 b/275911611): Distinguish between
-            // reauthentication required and generic error.
             if (result == base::File::Error::FILE_ERROR_ACCESS_DENIED) {
-              ShowUnableToOpenNotification(profile);
+              ShowAccessDeniedNotification(profile);
               return;
             }
             if (result != base::File::Error::FILE_OK) {
-              // TODO(b/275911611): Add generic "failed to open" notification.
+              ShowUnableToOpenNotification(profile);
               return;
             }
             for (const file_system_provider::Action& action : actions) {
@@ -470,10 +503,10 @@ void CloudOpenTask::OpenOrMoveFiles() {
     OpenAndroidOneDriveUrlsIfAccountMatchedODFS();
   } else {
     // The files need to be moved.
-    auto operation = GetOperationTypeForUpload(profile_, file_urls_.front()) ==
-                             file_manager::io_task::OperationType::kCopy
-                         ? OfficeFilesTransferRequired::kCopy
-                         : OfficeFilesTransferRequired::kMove;
+    auto operation =
+        GetUploadType(profile_, file_urls_.front()) == UploadType::kCopy
+            ? OfficeFilesTransferRequired::kCopy
+            : OfficeFilesTransferRequired::kMove;
     transfer_required_ = operation;
     switch (cloud_provider_) {
       case CloudProvider::kGoogleDrive:
@@ -577,20 +610,6 @@ void CloudOpenTask::ConfirmMoveOrStartUpload() {
   }
 }
 
-bool IsEligibleAndEnabledUploadOfficeToCloud(Profile* profile) {
-  if (!chromeos::features::IsUploadOfficeToCloudEnabled()) {
-    return false;
-  }
-  if (!profile) {
-    return false;
-  }
-  // Managed users, e.g. enterprise account, child account, are not eligible.
-  if (profile->GetProfilePolicyConnector()->IsManaged()) {
-    return false;
-  }
-  return true;
-}
-
 bool ShouldFixUpOffice(Profile* profile, const CloudProvider cloud_provider) {
   return cloud_provider == CloudProvider::kOneDrive &&
          !(CloudUploadDialog::IsODFSMounted(profile) &&
@@ -668,11 +687,9 @@ void CloudOpenTask::OpenAndroidOneDriveUrlsIfAccountMatchedODFS() {
     LOG(ERROR) << "Android OneDrive Url cannot be converted to ODFS";
     return;
   }
-  // TODO(b/288022200): Query '/' instead to get user email.
-  fs_and_path->file_system->GetActions(
-      {fs_and_path->file_path_within_odfs},
-      base::BindOnce(&CloudOpenTask::CheckEmailAndOpenURLs, this,
-                     android_onedrive_email.value()));
+  GetODFSMetadata(fs_and_path->file_system,
+                  base::BindOnce(&CloudOpenTask::CheckEmailAndOpenURLs, this,
+                                 android_onedrive_email.value()));
 }
 
 absl::optional<ODFSFileSystemAndPath> AndroidOneDriveUrlToODFS(
@@ -684,14 +701,12 @@ absl::optional<ODFSFileSystemAndPath> AndroidOneDriveUrlToODFS(
   }
 
   // Get the ODFS mount path.
-  std::vector<ProvidedFileSystemInfo> odfs_file_system_infos =
-      GetODFSFileSystems(profile);
-  if (odfs_file_system_infos.size() != 1u) {
-    LOG(ERROR) << "One and only one filesystem should be mounted for the ODFS "
-                  "extension";
+  absl::optional<ProvidedFileSystemInfo> odfs_file_system_info =
+      GetODFSInfo(profile);
+  if (!odfs_file_system_info.has_value()) {
     return absl::nullopt;
   }
-  base::FilePath odfs_path = odfs_file_system_infos[0].mount_path();
+  base::FilePath odfs_path = odfs_file_system_info->mount_path();
 
   // Find the relative path from Android OneDrive Url.
   std::string authority;
@@ -730,24 +745,22 @@ absl::optional<ODFSFileSystemAndPath> AndroidOneDriveUrlToODFS(
 
 void CloudOpenTask::CheckEmailAndOpenURLs(
     const std::string& android_onedrive_email,
-    const file_system_provider::Actions& actions,
-    base::File::Error result) {
-  if (result != base::File::Error::FILE_OK) {
-    LOG(ERROR) << "Failed to get actions: " << result;
+    base::expected<ODFSMetadata, base::File::Error> metadata_or_error) {
+  if (!metadata_or_error.has_value()) {
+    LOG(ERROR) << "Failed to get user email: " << metadata_or_error.error();
+    return;
+  }
+  if (metadata_or_error->user_email.empty()) {
+    LOG(ERROR) << "User email is empty";
     return;
   }
   // Query whether the account logged into Android OneDrive is the
   // same as ODFS.
-  for (const file_system_provider::Action& action : actions) {
-    if (action.id == kUserEmailActionId) {
-      if (android_onedrive_email == action.title) {
-        OpenAndroidOneDriveUrls(profile_, file_urls_);
-      } else {
-        LOG(ERROR) << "Email accounts associated with ODFS and "
-                      "Android OneDrive don't match.";
-      }
-      return;
-    }
+  if (android_onedrive_email == metadata_or_error->user_email) {
+    OpenAndroidOneDriveUrls(profile_, file_urls_);
+  } else {
+    LOG(ERROR) << "Email accounts associated with ODFS and "
+                  "Android OneDrive don't match.";
   }
 }
 
@@ -868,24 +881,15 @@ mojom::DialogArgsPtr CloudOpenTask::CreateDialogArgs(
     args->file_names.push_back(file_url.path().BaseName().value());
   }
   args->dialog_page = dialog_page;
-  args->first_time_setup = !HaveExplicitFileHandlers(profile_, file_urls_);
-  const file_manager::io_task::OperationType operation_type =
-      GetOperationTypeForUpload(profile_, file_urls_[0]);
-  switch (operation_type) {
-    case file_manager::io_task::OperationType::kMove:
+  args->set_office_as_default_handler =
+      !HaveExplicitFileHandlers(profile_, file_urls_);
+  const UploadType upload_type = GetUploadType(profile_, file_urls_[0]);
+  switch (upload_type) {
+    case UploadType::kMove:
       args->operation_type = mojom::OperationType::kMove;
       break;
-    case file_manager::io_task::OperationType::kCopy:
+    case UploadType::kCopy:
       args->operation_type = mojom::OperationType::kCopy;
-      break;
-    case file_manager::io_task::OperationType::kDelete:
-    case file_manager::io_task::OperationType::kEmptyTrash:
-    case file_manager::io_task::OperationType::kExtract:
-    case file_manager::io_task::OperationType::kRestore:
-    case file_manager::io_task::OperationType::kRestoreToDestination:
-    case file_manager::io_task::OperationType::kTrash:
-    case file_manager::io_task::OperationType::kZip:
-      NOTREACHED() << "Unexpected upload operation type";
       break;
   }
   return args;
@@ -1184,7 +1188,7 @@ void CloudUploadDialog::RequestODFSMount(
 
 bool CloudUploadDialog::IsODFSMounted(Profile* profile) {
   // Assume any file system mounted by ODFS is the correct one.
-  return !GetODFSFileSystems(profile).empty();
+  return GetODFSInfo(profile).has_value();
 }
 
 bool CloudUploadDialog::IsOfficeWebAppInstalled(Profile* profile) {
@@ -1251,13 +1255,13 @@ const int kDialogWidthForOneDriveSetup = 512;
 const int kDialogHeightForOneDriveSetup = 556;
 
 const int kDialogWidthForFileHandlerDialog = 512;
-const int kDialogHeightForFileHandlerDialog = 375;
-const int kDialogHeightForFileHandlerDialogNoLocalApp = 311;
+const int kDialogHeightForFileHandlerDialog = 379;
+const int kDialogHeightForFileHandlerDialogNoLocalApp = 315;
 
 const int kDialogWidthForMoveConfirmation = 512;
-const int kDialogHeightForMoveConfirmationWithCheckbox = 500;
+const int kDialogHeightForMoveConfirmationWithCheckbox = 524;
 
-const int kDialogHeightForMoveConfirmationWithoutCheckbox = 448;
+const int kDialogHeightForMoveConfirmationWithoutCheckbox = 472;
 
 const int kDialogWidthForConnectToOneDrive = 512;
 const int kDialogHeightForConnectToOneDrive = 556;
@@ -1315,6 +1319,36 @@ bool ShowConnectOneDriveDialog(gfx::NativeWindow modal_parent) {
 
   dialog->ShowSystemDialog(modal_parent);
   return true;
+}
+
+void LaunchMicrosoft365Setup(Profile* profile, gfx::NativeWindow modal_parent) {
+  mojom::DialogPage dialog_page = mojom::DialogPage::kOneDriveSetup;
+  mojom::DialogArgsPtr args = mojom::DialogArgs::New();
+  args->dialog_page = dialog_page;
+  std::set<std::string> office_extensions =
+      file_manager::file_tasks::WordGroupExtensions();
+  office_extensions.merge(file_manager::file_tasks::ExcelGroupExtensions());
+  office_extensions.merge(
+      file_manager::file_tasks::PowerPointGroupExtensions());
+  // If `set_office_as_default_handler` is false, it indicates that we already
+  // ran the Office setup and set file handler preferences for all handled
+  // Office file types, or that the user has pre-existing preferences for these
+  // file types.
+  args->set_office_as_default_handler = !std::all_of(
+      office_extensions.begin(), office_extensions.end(),
+      [profile](const std::string& extension) {
+        return file_manager::file_tasks::HasExplicitDefaultFileHandler(
+            profile, extension);
+      });
+
+  // This CloudUploadDialog pointer is managed by an instance of
+  // `views::WebDialogView` and deleted in
+  // `SystemWebDialogDelegate::OnDialogClosed`.
+  CloudUploadDialog* dialog =
+      new CloudUploadDialog(std::move(args), base::DoNothing(), dialog_page,
+                            /*office_move_confirmation_shown=*/false);
+
+  dialog->ShowSystemDialog(modal_parent);
 }
 
 }  // namespace ash::cloud_upload

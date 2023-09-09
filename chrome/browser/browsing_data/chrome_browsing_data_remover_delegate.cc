@@ -51,8 +51,8 @@
 #include "chrome/browser/login_detection/login_detection_prefs.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
-#include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/media/media_engagement_service.h"
+#include "chrome/browser/media/webrtc/media_device_salt_service_factory.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
@@ -102,16 +102,17 @@
 #include "components/history/core/common/pref_names.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/language/core/browser/url_language_histogram.h"
+#include "components/media_device_salt/media_device_salt_service.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/pnacl_host.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
+#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/field_info_store.h"
 #include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/password_manager/core/browser/smart_bubble_stats_store.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/permissions/permission_actions_history.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
@@ -157,9 +158,13 @@
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
+#include "content/public/browser/isolated_web_apps_policy.h"
+#include "content/public/browser/storage_partition_config.h"
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -283,12 +288,15 @@ bool ChromeBrowsingDataRemoverDelegate::MayRemoveDownloadHistory() {
 
 std::vector<std::string>
 ChromeBrowsingDataRemoverDelegate::GetDomainsForDeferredCookieDeletion(
+    content::StoragePartition* storage_partition,
     uint64_t remove_mask) {
   if (!base::FeatureList::IsEnabled(
           password_manager::features::kEnablePasswordsAccountStorage)) {
     return {};
   }
-  if ((remove_mask & constants::DEFERRED_COOKIE_DELETION_DATA_TYPES) == 0) {
+  // The Google/Gaia cookies we care about live in the default StoragePartition.
+  if (!storage_partition->GetConfig().is_default() ||
+      (remove_mask & constants::DEFERRED_COOKIE_DELETION_DATA_TYPES) == 0) {
     return {};
   }
 
@@ -640,8 +648,6 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       if (privacy_sandbox_settings)
         privacy_sandbox_settings->OnCookiesCleared();
 
-      MediaDeviceIDSalt::Reset(profile_->GetPrefs());
-
 #if BUILDFLAG(IS_ANDROID)
       Java_PackageHash_onCookiesDeleted(
           base::android::AttachCurrentThread(),
@@ -668,6 +674,18 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           profile_->GetOriginTrialsControllerDelegate();
       if (delegate)
         delegate->ClearPersistedTokens();
+    }
+
+    if (auto* media_device_salt_service =
+            MediaDeviceSaltServiceFactory::GetInstance()->GetForBrowserContext(
+                profile_)) {
+      content::StoragePartition::StorageKeyMatcherFunction storage_key_matcher;
+      if (!filter_builder->MatchesAllOriginsAndDomains()) {
+        storage_key_matcher = filter_builder->BuildStorageKeyFilter();
+      }
+      media_device_salt_service->DeleteSalts(
+          delete_begin_, delete_end_, std::move(storage_key_matcher),
+          CreateTaskCompletionClosure(TracingDataType::kMediaDeviceSalts));
     }
   }
 
@@ -1259,6 +1277,59 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       (constants::DATA_TYPE_SITE_DATA | constants::DATA_TYPE_HISTORY)) {
     login_detection::prefs::RemoveLoginDetectionData(prefs);
   }
+
+#if !BUILDFLAG(IS_ANDROID)
+  //////////////////////////////////////////////////////////////////////////////
+  // Isolated Web Apps.
+  // If no StoragePartition was specified in the filter, make additional
+  // BrowsingDataRemover::Remove* calls for each StoragePartition of Isolated
+  // Web Apps (IWA) that match the filter.
+  //
+  // The data types specified in `remove_mask` will be removed from the
+  // primary StoragePartition of an IWA, but all data will be removed from
+  // Controlled Frame StoragePartitions if DATA_TYPE_CONTROLLED_FRAME is
+  // specified in `remove_mask`.
+  if (!filter_builder->GetStoragePartitionConfig().has_value() &&
+      content::IsolatedWebAppsPolicy::AreIsolatedWebAppsEnabled(profile_)) {
+    const web_app::WebAppRegistrar& web_app_registrar =
+        web_app::WebAppProvider::GetForLocalAppsUnchecked(profile_)
+            ->registrar_unsafe();
+    for (const web_app::WebApp& web_app : web_app_registrar.GetApps()) {
+      if (!web_app_registrar.IsIsolated(web_app.app_id()) ||
+          !filter.Run(web_app.scope())) {
+        continue;
+      }
+      std::vector<content::StoragePartitionConfig> partitions =
+          web_app_registrar.GetIsolatedWebAppStoragePartitionConfigs(
+              web_app.app_id());
+      for (const content::StoragePartitionConfig& partition : partitions) {
+        // The filter specified a StoragePartition, so only delete data that
+        // lives in a StoragePartition.
+        uint64_t iwa_remove_mask =
+            content::BrowsingDataRemover::DATA_TYPE_ON_STORAGE_PARTITION;
+        bool is_primary_partition = partition.partition_name().empty();
+        if (is_primary_partition) {
+          iwa_remove_mask &= remove_mask;
+        } else {
+          if (!(remove_mask & constants::DATA_TYPE_CONTROLLED_FRAME)) {
+            continue;
+          }
+          // For Controlled Frame partitions, all data should be deleted, so
+          // |iwa_remove_mask| should stay DATA_TYPE_ON_STORAGE_PARTITION.
+        }
+
+        // We can't wait for the `RemoveWithFilter` call to finish because
+        // BrowsingDataRemover doesn't support nested Remove calls.
+        auto iwa_filter_builder = content::BrowsingDataFilterBuilder::Create(
+            content::BrowsingDataFilterBuilder::Mode::kPreserve);
+        iwa_filter_builder->SetStoragePartitionConfig(partition);
+        profile_->GetBrowsingDataRemover()->RemoveWithFilter(
+            delete_begin, delete_end, iwa_remove_mask, origin_type_mask,
+            std::move(iwa_filter_builder));
+      }
+    }
+  }
+#endif  // !BUILDFLAG(IS_ANDROID)
 }
 
 void ChromeBrowsingDataRemoverDelegate::OnTaskStarted(
@@ -1407,6 +1478,8 @@ const char* ChromeBrowsingDataRemoverDelegate::GetHistogramSuffix(
       return "WebAuthnCredentials";
     case TracingDataType::kWebrtcVideoPerfHistory:
       return "WebrtcVideoPerfHistory";
+    case TracingDataType::kMediaDeviceSalts:
+      return "MediaDeviceSalts";
   }
 }
 

@@ -48,6 +48,7 @@
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_encryption_passphrase_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/tabs/inactive_tabs/inactive_tabs_settings_coordinator.h"
+#import "ios/chrome/browser/ui/settings/utils/password_utils.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
@@ -536,6 +537,11 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   return self;
 }
 
+- (void)dealloc {
+  // TODO(crbug.com/1454777)
+  DUMP_WILL_BE_CHECK(!_browser);
+}
+
 - (void)viewDidLoad {
   [super viewDidLoad];
 
@@ -602,10 +608,15 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   [self stopClearBrowsingDataCoordinator];
   [self stopPrivacySafeBrowsingCoordinator];
   [self stopPrivacySettingsCoordinator];
+  [self stopInactiveTabSettingsCoordinator];
 
   // Reset the delegate to prevent any queued transitions from attempting to
   // close the settings.
   self.settingsNavigationDelegate = nil;
+  self.snackbarCommandsHandler = nil;
+  self.currentPresentedViewController = nil;
+  self.presentationController.delegate = nil;
+  _browser = nil;
 }
 
 - (void)closeSettings {
@@ -780,7 +791,8 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
       initWithBaseNavigationController:self
                                browser:self.browser
                             credential:credential
-                          reauthModule:[[ReauthenticationModule alloc] init]
+                          reauthModule:password_manager::
+                                           BuildReauthenticationModule()
                                context:DetailsContext::kOutsideSettings];
   self.passwordDetailsCoordinator.delegate = self;
   self.passwordDetailsCoordinator.showCancelButton = showCancelButton;
@@ -799,6 +811,12 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   [self.clearBrowsingDataCoordinator stop];
   self.clearBrowsingDataCoordinator.delegate = nil;
   self.clearBrowsingDataCoordinator = nil;
+}
+
+// Stops the underlying inactive tabs settings coordinator if it exists.
+- (void)stopInactiveTabSettingsCoordinator {
+  [self.inactiveTabsSettingsCoordinator stop];
+  self.inactiveTabsSettingsCoordinator = nil;
 }
 
 // Stops the underlying SafetyCheck coordinator if it exists.
@@ -962,6 +980,19 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   self.currentPresentedViewController = base::mac::ObjCCast<
       UIViewController<UIAdaptivePresentationControllerDelegate>>(
       viewController);
+}
+
+- (id<UIViewControllerAnimatedTransitioning>)
+               navigationController:
+                   (UINavigationController*)navigationController
+    animationControllerForOperation:(UINavigationControllerOperation)operation
+                 fromViewController:(UIViewController*)fromVC
+                   toViewController:(UIViewController*)toVC {
+  if (operation == UINavigationControllerOperationPop &&
+      [fromVC respondsToSelector:@selector(settingsWillBeDismissed)]) {
+    [fromVC performSelector:@selector(settingsWillBeDismissed)];
+  }
+  return nil;
 }
 
 #pragma mark - UIResponder

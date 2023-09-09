@@ -13,12 +13,14 @@
 #include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_util.h"
+#include "chrome/browser/apps/app_service/app_icon/icon_effects.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_registry.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_tracker.h"
 #include "chrome/browser/apps/app_service/instance_registry_updater.h"
 #include "chrome/browser/apps/app_service/metrics/app_platform_metrics.h"
 #include "chrome/browser/apps/app_service/metrics/app_platform_metrics_service.h"
 #include "chrome/browser/apps/app_service/metrics/app_service_metrics.h"
+#include "chrome/browser/apps/app_service/package_id.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_registry_cache.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_service.h"
@@ -36,6 +38,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
+#include "chromeos/ash/components/browser_context_helper/browser_context_types.h"
 #include "components/account_id/account_id.h"
 #include "components/app_constants/constants.h"
 #include "components/app_restore/full_restore_save_handler.h"
@@ -140,7 +143,9 @@ void AppServiceProxyAsh::Initialize() {
           crosapi::BrowserManager::Feature::kAppService);
     }
   }
-  if (!profile_->AsTestingProfile()) {
+  if (!profile_->AsTestingProfile() &&
+      (!::ash::features::IsShimlessRMA3pDiagnosticsEnabled() ||
+       !::ash::IsShimlessRmaAppBrowserContext(profile_))) {
     app_platform_metrics_service_ =
         std::make_unique<apps::AppPlatformMetricsService>(profile_);
     base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
@@ -407,7 +412,15 @@ void AppServiceProxyAsh::OnPromiseApp(PromiseAppPtr delta) {
   if (!promise_app_service_) {
     return;
   }
-  PromiseAppService()->OnPromiseApp(std::move(delta));
+  promise_app_service_->OnPromiseApp(std::move(delta));
+}
+
+void AppServiceProxyAsh::LoadPromiseIcon(const PackageId& package_id,
+                                         int32_t size_hint_in_dip,
+                                         IconEffects icon_effects,
+                                         apps::LoadIconCallback callback) {
+  PromiseAppService()->LoadIcon(package_id, size_hint_in_dip, icon_effects,
+                                std::move(callback));
 }
 
 void AppServiceProxyAsh::RegisterShortcutPublisher(
@@ -811,6 +824,7 @@ void AppServiceProxyAsh::OnIconRead(AppType app_type,
         base::BindOnce(&AppServiceProxyAsh::OnIconInstalled,
                        weak_ptr_factory_.GetWeakPtr(), app_type, app_id,
                        size_in_dip, icon_effects, icon_type,
+                       publisher->DefaultIconResourceId(),
                        std::move(callback)));
     return;
   }
@@ -823,14 +837,13 @@ void AppServiceProxyAsh::OnIconInstalled(AppType app_type,
                                          int32_t size_in_dip,
                                          IconEffects icon_effects,
                                          IconType icon_type,
+                                         int default_icon_resource_id,
                                          LoadIconCallback callback,
                                          bool install_success) {
   if (!install_success) {
-    int resource_id = app_type == AppType::kCrostini ? IDR_LOGO_CROSTINI_DEFAULT
-                                                     : IDR_APP_DEFAULT_ICON;
-    LoadIconFromResource(profile_, app_id, icon_type, size_in_dip, resource_id,
-                         /*is_placeholder_icon=*/false, icon_effects,
-                         std::move(callback));
+    LoadIconFromResource(
+        profile_, app_id, icon_type, size_in_dip, default_icon_resource_id,
+        /*is_placeholder_icon=*/false, icon_effects, std::move(callback));
     return;
   }
 

@@ -3,7 +3,6 @@
 <translationbundle lang="no">
 <translation id="1075622780330595106"><ph name="NUMBER_OF_TABS" /> av fanene dine er ikke brukt i det siste. Vil du lukke dem?</translation>
 <translation id="125153950246128346">Trykk for å se en annen fane</translation>
-<translation id="1403228085774130835">Du finner de lukkede fanene dine under Nylige faner på hovedmenyen i Chrome</translation>
 <translation id="1455506303394048917">Aktiviteten din på disse inkognitofanene blir fjernet fra enheten</translation>
 <translation id="1499635324672558517">Vil du lukke alle inkognitofaner?</translation>
 <translation id="1657719826150349398">Flytt fanen nedover</translation>
@@ -47,6 +46,7 @@
 <translation id="5073204694187207510">Skjul fullskjermrutenett</translation>
 <translation id="5076161749301278626">Vil du se butikkanmeldelser?</translation>
 <translation id="5082793167783849073">Sammenlign sider raskt ved å lage en gruppe. For å begynne, trykk og hold på en link.</translation>
+<translation id="5339733443032484186">Den siste fanen du brukte</translation>
 <translation id="5490235265819901748">Fanegruppen er utvidet</translation>
 <translation id="5494920125229734069">Velg alle</translation>
 <translation id="5556417849629758491">Vis butikkinformasjon – alternativet er tilgjengelig nær toppen av skjermen</translation>

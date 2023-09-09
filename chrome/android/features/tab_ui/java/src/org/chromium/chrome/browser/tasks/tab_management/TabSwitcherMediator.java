@@ -30,6 +30,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.CallbackController;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
+import org.chromium.base.ResettersForTesting;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
@@ -112,6 +113,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     private final ObservableSupplierImpl<Boolean> mIsDialogVisibleSupplier =
             new ObservableSupplierImpl<>();
     private final Callback<Boolean> mNotifyBackPressedCallback = this::notifyBackPressStateChanged;
+    private Runnable mOnTabSwitcherShownCallback;
 
     /**
      * The callback which is supplied to the {@link IncognitoReauthController} that takes care of
@@ -278,6 +280,9 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
      * @param backPressManager {@link BackPressManager} to handle back press gesture.
      * @param tabGridDialogControllerSupplier {@link TabGridDialogMediator.DialogController}
      *         supplier for lazy initialization on first use.
+     * @param onTabSwitcherShownCallback is a callback method to notify {@link
+     *         TabSwitcherCoordinator} class to attach empty view when #showTabSwitcherView is
+     * invoked.
      */
     TabSwitcherMediator(Context context, ResetHandler resetHandler,
             PropertyModel containerViewModel, TabModelSelector tabModelSelector,
@@ -288,7 +293,8 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
             @Nullable OneshotSupplier<IncognitoReauthController> incognitoReauthControllerSupplier,
             @Nullable BackPressManager backPressManager,
             @Nullable OneshotSupplier<TabGridDialogMediator.DialogController>
-                    tabGridDialogControllerSupplier) {
+                    tabGridDialogControllerSupplier,
+            Runnable onTabSwitcherShownCallback) {
         mResetHandler = resetHandler;
         mContainerViewModel = containerViewModel;
         mTabModelSelector = tabModelSelector;
@@ -300,6 +306,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         mIsStartSurfaceEnabled = ReturnToChromeUtil.isStartSurfaceEnabled(context);
         mIsStartSurfaceRefactorEnabled = ReturnToChromeUtil.isStartSurfaceRefactorEnabled(context);
         mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(context);
+        mOnTabSwitcherShownCallback = onTabSwitcherShownCallback;
 
         if (incognitoReauthControllerSupplier != null) {
             mCallbackController = new CallbackController();
@@ -562,7 +569,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         }
     }
 
-    @VisibleForTesting
     int getSoftCleanupDelayForTesting() {
         return getSoftCleanupDelay();
     }
@@ -578,7 +584,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                 DEFAULT_SOFT_CLEANUP_DELAY_MS);
     }
 
-    @VisibleForTesting
     int getCleanupDelayForTesting() {
         return getCleanupDelay();
     }
@@ -781,11 +786,14 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         notifyBackPressStateChangedInternal();
     }
 
+    // @Todo(crbug.com/1464856) clean up empty state implementation after Start Surface Refactor is
+    // fully launched.
     @Override
     public void showTabSwitcherView(boolean animate) {
         mIsTransitionInProgress = false;
         mHandler.removeCallbacks(mSoftClearTabListRunnable);
         mHandler.removeCallbacks(mClearTabListRunnable);
+        mOnTabSwitcherShownCallback.run();
 
         if (!mTabModelSelector.isIncognitoSelected() || !clearIncognitoTabListForReauth()) {
             if (mTabModelSelector.isTabStateInitialized()) {
@@ -1043,6 +1051,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
      */
     void setSoftCleanupDelayForTesting(int timeoutMs) {
         mSoftCleanupDelayMsForTesting = timeoutMs;
+        ResettersForTesting.register(() -> mSoftCleanupDelayMsForTesting = null);
     }
 
     /**
@@ -1050,6 +1059,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
      */
     void setCleanupDelayForTesting(int timeoutMs) {
         mCleanupDelayMsForTesting = timeoutMs;
+        ResettersForTesting.register(() -> mCleanupDelayMsForTesting = null);
     }
 
     /**

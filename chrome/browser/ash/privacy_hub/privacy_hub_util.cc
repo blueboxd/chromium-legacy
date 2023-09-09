@@ -4,28 +4,19 @@
 
 #include "chrome/browser/ash/privacy_hub/privacy_hub_util.h"
 
+#include <string>
+
 #include "ash/shell.h"
 #include "ash/system/privacy_hub/camera_privacy_switch_controller.h"
 #include "ash/system/privacy_hub/privacy_hub_controller.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/ash/camera_presence_notifier.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash::privacy_hub_util {
 
-namespace {
-PrivacyHubController* ControllerIfAvailable() {
-  if (!Shell::HasInstance()) {
-    // Shell may not be available when used from a test.
-    return nullptr;
-  }
-  Shell* const shell = Shell::Get();
-  DCHECK(shell != nullptr);
-  return shell->privacy_hub_controller();
-}
-}  // namespace
-
 void SetFrontend(PrivacyHubDelegate* ptr) {
-  PrivacyHubController* const controller = ControllerIfAvailable();
+  PrivacyHubController* const controller = PrivacyHubController::Get();
   if (controller != nullptr) {
     // Controller may not be available when used from a test.
     controller->set_frontend(ptr);
@@ -55,6 +46,53 @@ void SetUpCameraCountObserver() {
     static const char kUserDataKey = '\0';
     camera_controller.SetUserData(&kUserDataKey, std::move(notifier));
   }
+}
+
+// Notifies the Privacy Hub controller.
+void TrackGeolocationAttempted(const std::string& name) {
+  PrivacyHubController* controller = PrivacyHubController::Get();
+  // TODO(b/288854399): Remove this if.
+  if (controller) {
+    controller->geolocation_controller().TrackGeolocationAttempted(name);
+  }
+}
+
+// Notifies the Privacy Hub controller.
+void TrackGeolocationRelinquished(const std::string& name) {
+  PrivacyHubController* controller = PrivacyHubController::Get();
+  if (controller) {
+    controller->geolocation_controller().TrackGeolocationRelinquished(name);
+  }
+}
+
+namespace {
+absl::optional<bool> camera_led_fallback_for_testing{};
+}
+
+// TODO(b/289510726): remove when all cameras fully support the software
+// switch.
+bool UsingCameraLEDFallback() {
+  if (!camera_led_fallback_for_testing.has_value()) {
+    PrivacyHubController* const controller = PrivacyHubController::Get();
+    CHECK(controller);
+    return controller->camera_controller().UsingCameraLEDFallback();
+  }
+
+  // Can happen in some testing environments
+  CHECK(camera_led_fallback_for_testing.has_value());
+  return camera_led_fallback_for_testing.value();
+}
+
+ScopedCameraLedFallbackForTesting::ScopedCameraLedFallbackForTesting(
+    bool value) {
+  CHECK(!camera_led_fallback_for_testing.has_value());
+  camera_led_fallback_for_testing = value;
+}
+
+ScopedCameraLedFallbackForTesting::~ScopedCameraLedFallbackForTesting() {
+  CHECK(camera_led_fallback_for_testing.has_value());
+  camera_led_fallback_for_testing.reset();
+  CHECK(!camera_led_fallback_for_testing.has_value());
 }
 
 }  // namespace ash::privacy_hub_util

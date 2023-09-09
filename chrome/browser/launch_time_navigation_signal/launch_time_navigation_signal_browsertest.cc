@@ -309,8 +309,9 @@ IN_PROC_BROWSER_TEST_P(LaunchNavigationBrowserRestartTest,
 }
 
 // We attempt to restart the browser in this test body.
+// Flaky. See http://crbug.com/1448030.
 IN_PROC_BROWSER_TEST_P(LaunchNavigationBrowserRestartTest,
-                       CmdLineURLRestartTest) {
+                       DISABLED_CmdLineURLRestartTest) {
   const ParamType& test_params = GetParam();
   const size_t expected_initial_tab_count = GetExpectedTabCountFromRestore();
   const bool expect_valid_system_entropy =

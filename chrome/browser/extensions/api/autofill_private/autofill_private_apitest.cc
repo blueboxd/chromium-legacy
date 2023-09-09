@@ -18,10 +18,10 @@
 #include "components/autofill/content/browser/test_autofill_client_injector.h"
 #include "components/autofill/content/browser/test_content_autofill_client.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/payments/test/mock_mandatory_reauth_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/common/autofill_prefs.h"
-#include "components/device_reauth/mock_device_authenticator.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
@@ -45,6 +45,8 @@ class AutofillPrivateApiTest : public ExtensionApiTest {
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     content::RunAllPendingInMessageLoop();
+    autofill_client()->GetPersonalDataManager()->SetPrefService(
+        autofill_client()->GetPrefs());
   }
 
  protected:
@@ -61,9 +63,6 @@ class AutofillPrivateApiTest : public ExtensionApiTest {
     return test_autofill_client_injector_
         [browser()->tab_strip_model()->GetActiveWebContents()];
   }
-
-  std::unique_ptr<autofill::TestPersonalDataManager>
-      test_personal_data_manager_;
 
  private:
   autofill::TestAutofillClientInjector<autofill::TestContentAutofillClient>
@@ -84,10 +83,6 @@ IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, GetAddressComponents) {
 
 IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, RemoveEntry) {
   EXPECT_TRUE(RunAutofillSubtest("removeEntry")) << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, ValidatePhoneNumbers) {
-  EXPECT_TRUE(RunAutofillSubtest("validatePhoneNumbers")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, AddAndUpdateAddress) {
@@ -153,19 +148,20 @@ IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, isValidIban) {
 IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest,
                        authenticateUserAndFlipMandatoryAuthToggle) {
   base::UserActionTester user_action_tester;
-  auto mock_device_authenticator = autofill_client()->GetDeviceAuthenticator();
+  auto* mock_mandatory_reauth_manager =
+      autofill_client()->GetOrCreatePaymentsMandatoryReauthManager();
 
-  ON_CALL(*static_cast<device_reauth::MockDeviceAuthenticator*>(
-              mock_device_authenticator.get()),
+  ON_CALL(*static_cast<autofill::payments::MockMandatoryReauthManager*>(
+              mock_mandatory_reauth_manager),
           AuthenticateWithMessage)
       .WillByDefault(
           testing::WithArg<1>([](base::OnceCallback<void(bool)> callback) {
             std::move(callback).Run(true);
           }));
 
-  EXPECT_CALL(*static_cast<device_reauth::MockDeviceAuthenticator*>(
-                  mock_device_authenticator.get()),
-              AuthenticateWithMessage(testing::_, testing::_))
+  EXPECT_CALL(*static_cast<autofill::payments::MockMandatoryReauthManager*>(
+                  mock_mandatory_reauth_manager),
+              AuthenticateWithMessage)
       .Times(1);
   EXPECT_TRUE(RunAutofillSubtest("authenticateUserAndFlipMandatoryAuthToggle"))
       << message_;
@@ -182,19 +178,20 @@ IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest,
   autofill_client()
       ->GetPersonalDataManager()
       ->SetPaymentMethodsMandatoryReauthEnabled(true);
-  auto mock_device_authenticator = autofill_client()->GetDeviceAuthenticator();
+  auto* mock_mandatory_reauth_manager =
+      autofill_client()->GetOrCreatePaymentsMandatoryReauthManager();
 
-  ON_CALL(*static_cast<device_reauth::MockDeviceAuthenticator*>(
-              mock_device_authenticator.get()),
+  ON_CALL(*static_cast<autofill::payments::MockMandatoryReauthManager*>(
+              mock_mandatory_reauth_manager),
           AuthenticateWithMessage)
       .WillByDefault(
           testing::WithArg<1>([](base::OnceCallback<void(bool)> callback) {
             std::move(callback).Run(true);
           }));
 
-  EXPECT_CALL(*static_cast<device_reauth::MockDeviceAuthenticator*>(
-                  mock_device_authenticator.get()),
-              AuthenticateWithMessage(testing::_, testing::_))
+  EXPECT_CALL(*static_cast<autofill::payments::MockMandatoryReauthManager*>(
+                  mock_mandatory_reauth_manager),
+              AuthenticateWithMessage)
       .Times(1);
   EXPECT_TRUE(RunAutofillSubtest("authenticateUserToEditLocalCard"))
       << message_;

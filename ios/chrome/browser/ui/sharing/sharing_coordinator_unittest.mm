@@ -162,6 +162,7 @@ TEST_F(SharingCoordinatorTest, Start_ShareCurrentPage) {
   [activityHandler activityServiceDidEndPresenting];
 
   [vc_partial_mock verify];
+  [coordinator stop];
 }
 
 // Tests that the coordinator handles the QRGenerationCommands protocol.
@@ -191,6 +192,7 @@ TEST_F(SharingCoordinatorTest, GenerateQRCode) {
   [handler hideQRCode];
 
   [vc_partial_mock verify];
+  [coordinator stop];
 }
 
 // Tests that the start method shares the given URL and ends up presenting
@@ -222,4 +224,10 @@ TEST_F(SharingCoordinatorTest, Start_ShareURL) {
   [coordinator start];
 
   [vc_partial_mock verify];
+
+  // Make sure share sheet finishes it's init (which means calling
+  // canPerformWithActivityItems and reading prefs) before the
+  // WebTaskEnvironment is shut down.
+  base::RunLoop().RunUntilIdle();
+  [coordinator stop];
 }

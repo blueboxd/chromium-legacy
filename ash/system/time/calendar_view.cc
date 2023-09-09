@@ -12,11 +12,15 @@
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/cpp/metrics_util.h"
+#include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/root_window_controller.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/icon_button.h"
 #include "ash/style/pill_button.h"
 #include "ash/style/typography.h"
+#include "ash/system/model/clock_model.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/system/time/calendar_event_list_view.h"
 #include "ash/system/time/calendar_metrics.h"
 #include "ash/system/time/calendar_month_view.h"
@@ -26,13 +30,17 @@
 #include "ash/system/time/date_helper.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
+#include "ash/system/unified/unified_system_tray.h"
+#include "ash/system/unified/unified_system_tray_bubble.h"
 #include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -56,6 +64,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/scrollbar/scroll_bar.h"
+#include "ui/views/highlight_border.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/table_layout.h"
@@ -427,10 +436,8 @@ void CalendarHeaderView::UpdateHeaders(const std::u16string& month,
 BEGIN_METADATA(CalendarHeaderView, views::View)
 END_METADATA
 
-CalendarView::CalendarView(DetailedViewDelegate* delegate,
-                           UnifiedSystemTrayController* controller)
-    : TrayDetailedView(delegate),
-      controller_(controller),
+CalendarView::CalendarView(DetailedViewDelegate* delegate)
+    : GlanceableTrayChildBubble(delegate),
       calendar_view_controller_(std::make_unique<CalendarViewController>()),
       scrolling_settled_timer_(
           FROM_HERE,
@@ -620,9 +627,9 @@ void CalendarView::CreateExtraTitleRowButtons() {
     managed_button_ = tri_view()->AddView(
         TriView::Container::END,
         std::make_unique<IconButton>(
-            base::BindRepeating(
-                &UnifiedSystemTrayController::HandleEnterpriseInfoAction,
-                base::Unretained(controller_)),
+            base::BindRepeating([]() {
+              Shell::Get()->system_tray_model()->client()->ShowEnterpriseInfo();
+            }),
             IconButton::Type::kMedium, &kSystemTrayManagedIcon,
             IDS_ASH_CALENDAR_DISABLED_BY_ADMIN));
   }
@@ -638,9 +645,15 @@ void CalendarView::CreateExtraTitleRowButtons() {
 
   DCHECK(!settings_button_);
   settings_button_ = CreateSettingsButton(
-      base::BindRepeating(
-          &UnifiedSystemTrayController::HandleOpenDateTimeSettingsAction,
-          base::Unretained(controller_)),
+      base::BindRepeating([]() {
+        ClockModel* model = Shell::Get()->system_tray_model()->clock();
+
+        if (Shell::Get()->session_controller()->ShouldEnableSettings()) {
+          model->ShowDateSettings();
+        } else if (model->can_set_time()) {
+          model->ShowSetTimeDialog();
+        }
+      }),
       IDS_ASH_CALENDAR_SETTINGS);
   settings_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_ASH_CALENDAR_SETTINGS_TOOLTIP));
@@ -805,7 +818,7 @@ void CalendarView::UpdateOnScreenMonthMap() {
       calendar_model_->FindFetchingStatus(start_time);
 
   // Checks if `next_month_` is in the visible view. If so, adds it to
-  // `on_screen_month_` if not already presents. Otherwise updates the fetching
+  // `on_screen_month_` if not already present. Otherwise updates the fetching
   // status. This is needed since a refetching request may be sent when this
   // function is called and we need to update the fetching status to toggle the
   // visibility of the loading bar.
@@ -1129,7 +1142,7 @@ void CalendarView::OnEventsFetched(
     const CalendarModel::FetchingStatus status,
     const base::Time start_time,
     const google_apis::calendar::EventList* events) {
-  if (on_screen_month_.find(start_time) != on_screen_month_.end()) {
+  if (base::Contains(on_screen_month_, start_time)) {
     on_screen_month_[start_time] = status;
   }
 
@@ -1143,7 +1156,7 @@ void CalendarView::OnEventsFetched(
 }
 
 void CalendarView::OnTimeout(const base::Time start_time) {
-  if (on_screen_month_.find(start_time) != on_screen_month_.end()) {
+  if (base::Contains(on_screen_month_, start_time)) {
     on_screen_month_[start_time] = CalendarModel::kNever;
   }
 
@@ -1627,7 +1640,15 @@ void CalendarView::OnEvent(ui::Event* event) {
       const auto* next_reverse_view = focus_manager->GetNextFocusableView(
           focus_manager->GetFocusedView(), GetWidget(), /*reverse=*/true,
           /*dont_loop=*/true);
-      if (!next_reverse_view && controller_->FocusOut(/*reverse=*/true)) {
+      auto* unified_system_tray_bubble =
+          RootWindowController::ForWindow(GetWidget()->GetNativeWindow())
+              ->GetStatusAreaWidget()
+              ->unified_system_tray()
+              ->bubble();
+
+      if (!next_reverse_view && unified_system_tray_bubble &&
+          unified_system_tray_bubble->unified_system_tray_controller()
+              ->FocusOut(/*reverse=*/true)) {
         event->StopPropagation();
       }
     }
@@ -2038,7 +2059,7 @@ void CalendarView::SetCalendarSlidingSurfaceBounds(bool event_list_view_open) {
     const int up_next_view_preferred_height =
         up_next_view_->GetPreferredSize().height();
     calendar_sliding_surface_->SetBounds(
-        x_position, GetVisibleBounds().bottom() - up_next_view_preferred_height,
+        x_position, GetLocalBounds().bottom() - up_next_view_preferred_height,
         width, event_list_view_height);
     return;
   }

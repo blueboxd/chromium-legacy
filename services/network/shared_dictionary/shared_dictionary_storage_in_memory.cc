@@ -5,6 +5,7 @@
 #include "services/network/shared_dictionary/shared_dictionary_storage_in_memory.h"
 
 #include "base/containers/cxx20_erase_map.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
@@ -27,16 +28,27 @@ SharedDictionaryStorageInMemory::SharedDictionaryStorageInMemory(
 SharedDictionaryStorageInMemory::~SharedDictionaryStorageInMemory() = default;
 
 std::unique_ptr<SharedDictionary>
-SharedDictionaryStorageInMemory::GetDictionary(const GURL& url) {
+SharedDictionaryStorageInMemory::GetDictionarySync(const GURL& url) {
   DictionaryInfo* info =
       GetMatchingDictionaryFromDictionaryInfoMap(dictionary_info_map_, url);
 
   if (!info) {
     return nullptr;
   }
+
+  if (info->response_time() + info->expiration() <= base::Time::Now()) {
+    DeleteDictionary(url::SchemeHostPort(info->url()), info->match());
+    return nullptr;
+  }
   info->set_last_used_time(base::Time::Now());
   return std::make_unique<SharedDictionaryInMemory>(info->data(), info->size(),
                                                     info->hash());
+}
+
+void SharedDictionaryStorageInMemory::GetDictionary(
+    const GURL& url,
+    base::OnceCallback<void(std::unique_ptr<SharedDictionary>)> callback) {
+  std::move(callback).Run(GetDictionarySync(url));
 }
 
 void SharedDictionaryStorageInMemory::DeleteDictionary(
@@ -65,6 +77,10 @@ void SharedDictionaryStorageInMemory::ClearData(
   }
   base::EraseIf(dictionary_info_map_,
                 [](auto& it) { return it.second.empty(); });
+}
+
+void SharedDictionaryStorageInMemory::ClearAllDictionaries() {
+  dictionary_info_map_.clear();
 }
 
 scoped_refptr<SharedDictionaryWriter>

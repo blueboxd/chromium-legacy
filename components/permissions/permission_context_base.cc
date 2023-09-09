@@ -21,9 +21,7 @@
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/content_settings/core/common/features.h"
 #include "components/permissions/features.h"
-#include "components/permissions/permission_context_base.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_request.h"
 #include "components/permissions/permission_request_id.h"
@@ -32,7 +30,6 @@
 #include "components/permissions/permission_util.h"
 #include "components/permissions/permissions_client.h"
 #include "components/permissions/request_type.h"
-#include "components/permissions/unused_site_permissions_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/navigation_entry.h"
@@ -561,14 +558,6 @@ void PermissionContextBase::UpdateContentSetting(const GURL& requesting_origin,
     }
   }
 #endif  // !BUILDFLAG(IS_ANDROID)
-
-  if (base::FeatureList::IsEnabled(permissions::features::kOneTimePermission) &&
-      is_one_time) {
-    if (base::FeatureList::IsEnabled(
-            content_settings::features::kActiveContentSettingExpiry)) {
-      constraints.set_lifetime(kOneTimePermissionMaximumLifetime);
-    }
-  }
 
   PermissionsClient::Get()
       ->GetSettingsMap(browser_context_)

@@ -42,7 +42,6 @@
 <translation id="2942241131342758843">Używaj domyślnie Chromium, aby otwierać linki, wyszukiwać z widżetów i korzystać z autouzupełniania haseł w innych aplikacjach</translation>
 <translation id="2977470724722393594">Masz aktualną wersję Chromium</translation>
 <translation id="3102849287235003384">Aby wylogować się z konta Google na wszystkich stronach, <ph name="BEGIN_LINK" />wyloguj się z Chromium<ph name="END_LINK" />.</translation>
-<translation id="3115956258722352278">Ustawić Chromium jako przeglądarkę domyślną?</translation>
 <translation id="3256316712990552818">Skopiowana do Chromium</translation>
 <translation id="3344973607274501920">Przeglądarce Chromium nie udało się sprawdzić Twoich haseł. Sprawdź połączenie z internetem.</translation>
 <translation id="3472200483164753384">Nieobsługiwane w Chromium Canary</translation>
@@ -128,6 +127,7 @@
 <translation id="8013573822802650211">Aby widzieć swoje karty zawsze, kiedy korzystasz z Chromium, zaloguj się na wszystkich urządzeniach</translation>
 <translation id="8071041515667087705">Otwórz ustawienia Chromium.</translation>
 <translation id="8073677936375100957">Usunąć dane Chromium z tego urządzenia?</translation>
+<translation id="8235427517854598594">Ustawić Chromium jako przeglądarkę domyślną?</translation>
 <translation id="8240981428553046115">Chromium nie udało się sprawdzić dostępności aktualizacji. Spróbuj ponownie później.</translation>
 <translation id="8409374867500149834">Korzystasz z najlepszych zabezpieczeń Chromium przed szkodliwymi stronami</translation>
 <translation id="858114650497379505">Haseł zapisanych w menedżerze haseł możesz używać w innych aplikacjach na iPhonie.</translation>

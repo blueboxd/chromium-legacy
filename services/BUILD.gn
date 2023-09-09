@@ -53,6 +53,10 @@ test("services_unittests") {
       "//services/viz/public/cpp/hit_test:tests",
       "//services/webnn:tests",
     ]
+    if (is_ios) {
+      bundle_deps =
+          [ "//services/tracing:services_tracing_perfetto_bundle_data" ]
+    }
   }
 
   if (is_android && (current_cpu == "arm" || current_cpu == "arm64")) {
@@ -91,8 +95,6 @@ test("services_unittests") {
   }
 
   if (is_fuchsia) {
-    test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
-
     additional_manifest_fragments = [
       "//build/config/fuchsia/test/mark_vmo_executable.shard.test-cml",
       "//build/config/fuchsia/test/network.shard.test-cml",

@@ -12,27 +12,40 @@
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/ash/login/drive_pinning_screen_handler.h"
+#include "chromeos/ash/components/drivefs/drivefs_pin_manager.h"
+#include "components/drive/drive_pref_names.h"
 #include "ui/base/text/bytes_formatting.h"
 
 namespace ash {
 namespace {
 
-constexpr const char kUserActionDecline[] = "driveDecline";
-constexpr const char kUserActionAccept[] = "driveAccept";
+constexpr const char kUserActionNext[] = "driveNext";
+constexpr const char kUserActionReturn[] = "return";
 
+using drivefs::pinning::PinManager;
 using drivefs::pinning::Progress;
 
-drivefs::pinning::PinManager* GetPinManager() {
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-
-  drive::DriveIntegrationService* service =
-      drive::DriveIntegrationServiceFactory::FindForProfile(profile);
-
-  if (!service || !service->IsMounted() || !service->GetPinManager()) {
-    return nullptr;
+bool ShouldShowChoobeReturnButton(ChoobeFlowController* controller) {
+  if (!features::IsOobeChoobeEnabled() || !controller) {
+    return false;
   }
+  return controller->ShouldShowReturnButton(DrivePinningScreenView::kScreenId);
+}
 
-  return service->GetPinManager();
+void ReportScreenCompletedToChoobe(ChoobeFlowController* controller) {
+  if (!features::IsOobeChoobeEnabled() || !controller) {
+    return;
+  }
+  controller->OnScreenCompleted(
+      *ProfileManager::GetActiveUserProfile()->GetPrefs(),
+      DrivePinningScreenView::kScreenId);
+}
+
+PinManager* GetPinManager() {
+  drive::DriveIntegrationService* const service =
+      drive::DriveIntegrationServiceFactory::FindForProfile(
+          ProfileManager::GetActiveUserProfile());
+  return service && service->IsMounted() ? service->GetPinManager() : nullptr;
 }
 
 }  // namespace
@@ -40,13 +53,25 @@ drivefs::pinning::PinManager* GetPinManager() {
 // static
 std::string DrivePinningScreen::GetResultString(Result result) {
   switch (result) {
-    case Result::ACCEPT:
-      return "Accept";
-    case Result::DECLINE:
-      return "Decline";
+    case Result::NEXT:
+      return "Next";
     case Result::NOT_APPLICABLE:
       return BaseScreen::kNotApplicable;
   }
+}
+
+void DrivePinningScreen::ApplyDrivePinningPref(Profile* profile) {
+  auto* prefs = profile->GetPrefs();
+  if (!prefs->HasPrefPath(prefs::kOobeDrivePinningEnabledDeferred)) {
+    return;
+  }
+  bool drive_pinning =
+      profile->GetPrefs()->GetBoolean(prefs::kOobeDrivePinningEnabledDeferred);
+  profile->GetPrefs()->SetBoolean(drive::prefs::kDriveFsBulkPinningEnabled,
+                                  drive_pinning);
+  drivefs::pinning::RecordBulkPinningEnabledSource(
+      drivefs::pinning::BulkPinningEnabledSource::kChoobe);
+  prefs->ClearPref(prefs::kOobeDrivePinningEnabledDeferred);
 }
 
 DrivePinningScreen::DrivePinningScreen(
@@ -57,7 +82,11 @@ DrivePinningScreen::DrivePinningScreen(
       view_(std::move(view)),
       exit_callback_(exit_callback) {}
 
-DrivePinningScreen::~DrivePinningScreen() = default;
+DrivePinningScreen::~DrivePinningScreen() {
+  if (PinManager* const pin_manager = GetPinManager()) {
+    pin_manager->RemoveObserver(this);
+  }
+}
 
 bool DrivePinningScreen::ShouldBeSkipped(const WizardContext& context) const {
   if (context.skip_post_login_screens_for_tests) {
@@ -85,13 +114,14 @@ bool DrivePinningScreen::MaybeSkip(WizardContext& context) {
   return false;
 }
 
-void DrivePinningScreen::CalculateRequiredSpace() {
-  auto* pin_manager = GetPinManager();
-
-  if (pin_manager) {
-    pin_manager->AddObserver(this);
-    pin_manager->CalculateRequiredSpace();
+bool DrivePinningScreen::CalculateRequiredSpace() {
+  PinManager* const pin_manager = GetPinManager();
+  if (!pin_manager) {
+    return false;
   }
+
+  pin_manager->AddObserver(this);
+  return pin_manager->CalculateRequiredSpace();
 }
 
 void DrivePinningScreen::OnProgressForTest(
@@ -109,15 +139,11 @@ void DrivePinningScreen::OnProgress(const Progress& progress) {
   }
 }
 
-void DrivePinningScreen::OnDecline() {
-  exit_callback_.Run(Result::DECLINE);
-}
-
-void DrivePinningScreen::OnAccept() {
+void DrivePinningScreen::OnNext(bool drive_pinning) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   profile->GetPrefs()->SetBoolean(prefs::kOobeDrivePinningEnabledDeferred,
-                                  true);
-  exit_callback_.Run(Result::ACCEPT);
+                                  drive_pinning);
+  exit_callback_.Run(Result::NEXT);
 }
 
 void DrivePinningScreen::ShowImpl() {
@@ -125,24 +151,66 @@ void DrivePinningScreen::ShowImpl() {
     return;
   }
 
-  view_->Show();
+  base::Value::Dict data;
+  data.Set(
+      "shouldShowReturn",
+      ShouldShowChoobeReturnButton(
+          WizardController::default_controller()->choobe_flow_controller()));
+  view_->Show(std::move(data));
 }
 
 void DrivePinningScreen::HideImpl() {}
 
 void DrivePinningScreen::OnUserAction(const base::Value::List& args) {
   const std::string& action_id = args[0].GetString();
-  if (action_id == kUserActionDecline) {
-    OnDecline();
+  if (action_id == kUserActionNext) {
+    CHECK_EQ(args.size(), 2u);
+    ReportScreenCompletedToChoobe(
+        WizardController::default_controller()->choobe_flow_controller());
+    const bool drive_pinning = args[1].GetBool();
+    OnNext(drive_pinning);
     return;
   }
 
-  if (action_id == kUserActionAccept) {
-    OnAccept();
+  if (action_id == kUserActionReturn) {
+    CHECK_EQ(args.size(), 2u);
+    ReportScreenCompletedToChoobe(
+        WizardController::default_controller()->choobe_flow_controller());
+    const bool drive_pinning = args[1].GetBool();
+    LoginDisplayHost::default_host()
+        ->GetWizardContext()
+        ->return_to_choobe_screen = true;
+    OnNext(drive_pinning);
     return;
   }
 
   BaseScreen::OnUserAction(args);
+}
+
+std::string DrivePinningScreen::RetrieveChoobeSubtitle() {
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  bool drive_pinning =
+      profile->GetPrefs()->GetBoolean(prefs::kOobeDrivePinningEnabledDeferred);
+  if (drive_pinning) {
+    return "choobeDevicePinningSubtitleEnabled";
+  }
+  return "choobeDevicePinningSubtitleDisabled";
+}
+
+ScreenSummary DrivePinningScreen::GetScreenSummary() {
+  ScreenSummary summary;
+  summary.screen_id = DrivePinningScreenView::kScreenId;
+  summary.icon_id = "oobe-40:drive-pinning-choobe";
+  summary.title_id = "choobeDrivePinningTitle";
+  summary.is_revisitable = true;
+  summary.is_synced = false;
+  if (WizardController::default_controller()
+          ->choobe_flow_controller()
+          ->IsScreenCompleted(DrivePinningScreenView::kScreenId)) {
+    summary.subtitle_resource = RetrieveChoobeSubtitle();
+  }
+
+  return summary;
 }
 
 }  // namespace ash

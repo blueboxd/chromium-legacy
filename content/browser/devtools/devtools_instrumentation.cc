@@ -65,6 +65,9 @@ namespace devtools_instrumentation {
 
 namespace {
 
+namespace AttributionReportingIssueTypeEnum =
+    protocol::Audits::AttributionReportingIssueTypeEnum;
+
 const char kPrivacySandboxExtensionsAPI[] = "PrivacySandboxExtensionsAPI";
 
 template <typename Handler, typename... MethodArgs, typename... Args>
@@ -149,6 +152,81 @@ std::unique_ptr<protocol::Audits::InspectorIssue> BuildHeavyAdIssue(
           .SetCode(protocol::Audits::InspectorIssueCodeEnum::HeavyAdIssue)
           .SetDetails(std::move(protocol_issue_details))
           .Build();
+  return issue;
+}
+
+protocol::Audits::AttributionReportingIssueType
+BuildAttributionReportingIssueViolationType(
+    blink::mojom::AttributionReportingIssueType type) {
+  switch (type) {
+    case blink::mojom::AttributionReportingIssueType::kPermissionPolicyDisabled:
+      return AttributionReportingIssueTypeEnum::PermissionPolicyDisabled;
+    case blink::mojom::AttributionReportingIssueType::
+        kUntrustworthyReportingOrigin:
+      return AttributionReportingIssueTypeEnum::UntrustworthyReportingOrigin;
+    case blink::mojom::AttributionReportingIssueType::kInsecureContext:
+      return AttributionReportingIssueTypeEnum::InsecureContext;
+    case blink::mojom::AttributionReportingIssueType::
+        kInvalidRegisterSourceHeader:
+      return AttributionReportingIssueTypeEnum::InvalidHeader;
+    case blink::mojom::AttributionReportingIssueType::
+        kInvalidRegisterTriggerHeader:
+      return AttributionReportingIssueTypeEnum::InvalidRegisterTriggerHeader;
+    case blink::mojom::AttributionReportingIssueType::kSourceAndTriggerHeaders:
+      return AttributionReportingIssueTypeEnum::SourceAndTriggerHeaders;
+    case blink::mojom::AttributionReportingIssueType::kSourceIgnored:
+      return AttributionReportingIssueTypeEnum::SourceIgnored;
+    case blink::mojom::AttributionReportingIssueType::kTriggerIgnored:
+      return AttributionReportingIssueTypeEnum::TriggerIgnored;
+    case blink::mojom::AttributionReportingIssueType::kOsSourceIgnored:
+      return AttributionReportingIssueTypeEnum::OsSourceIgnored;
+    case blink::mojom::AttributionReportingIssueType::kOsTriggerIgnored:
+      return AttributionReportingIssueTypeEnum::OsTriggerIgnored;
+    case blink::mojom::AttributionReportingIssueType::
+        kInvalidRegisterOsSourceHeader:
+      return AttributionReportingIssueTypeEnum::InvalidRegisterOsSourceHeader;
+    case blink::mojom::AttributionReportingIssueType::
+        kInvalidRegisterOsTriggerHeader:
+      return AttributionReportingIssueTypeEnum::InvalidRegisterOsTriggerHeader;
+    case blink::mojom::AttributionReportingIssueType::kWebAndOsHeaders:
+      return AttributionReportingIssueTypeEnum::WebAndOsHeaders;
+    case blink::mojom::AttributionReportingIssueType::kNoWebOrOsSupport:
+      return AttributionReportingIssueTypeEnum::NoWebOrOsSupport;
+  }
+}
+
+std::unique_ptr<protocol::Audits::InspectorIssue>
+BuildAttributionReportingIssue(
+    const blink::mojom::AttributionReportingIssueDetailsPtr& issue_details) {
+  protocol::String violation_type = BuildAttributionReportingIssueViolationType(
+      issue_details->violation_type);
+
+  CHECK(issue_details->request->url.has_value());
+  auto request = protocol::Audits::AffectedRequest::Create()
+                     .SetRequestId(issue_details->request->request_id)
+                     .SetUrl(issue_details->request->url.value())
+                     .Build();
+  auto attribution_reporting_issue_details =
+      protocol::Audits::AttributionReportingIssueDetails::Create()
+          .SetViolationType(violation_type)
+          .SetRequest(std::move(request))
+          .Build();
+  if (issue_details->invalid_parameter.has_value()) {
+    attribution_reporting_issue_details->SetInvalidParameter(
+        issue_details->invalid_parameter.value());
+  }
+
+  auto protocol_issue_details =
+      protocol::Audits::InspectorIssueDetails::Create()
+          .SetAttributionReportingIssueDetails(
+              std::move(attribution_reporting_issue_details))
+          .Build();
+
+  auto issue = protocol::Audits::InspectorIssue::Create()
+                   .SetCode(protocol::Audits::InspectorIssueCodeEnum::
+                                AttributionReportingIssue)
+                   .SetDetails(std::move(protocol_issue_details))
+                   .Build();
   return issue;
 }
 
@@ -503,9 +581,18 @@ void OnFrameTreeNodeDestroyed(FrameTreeNode& frame_tree_node) {
 }
 
 bool IsPrerenderAllowed(FrameTree& frame_tree) {
+  FrameTreeNode* ftn = frame_tree.root();
+
+  auto* render_frame_agent_host = static_cast<RenderFrameDevToolsAgentHost*>(
+      RenderFrameDevToolsAgentHost::GetFor(ftn));
+  if (render_frame_agent_host &&
+      render_frame_agent_host->HasSessionsWithoutTabTargetSupport()) {
+    return false;
+  }
+
   bool is_allowed = true;
-  DispatchToAgents(frame_tree.root(),
-                   &protocol::PageHandler::IsPrerenderingAllowed, is_allowed);
+  DispatchToAgents(ftn, &protocol::PageHandler::IsPrerenderingAllowed,
+                   is_allowed);
   return is_allowed;
 }
 
@@ -549,7 +636,8 @@ void DidUpdatePrefetchStatus(
     const base::UnguessableToken& initiator_devtools_navigation_token,
     const GURL& prefetch_url,
     PreloadingTriggeringOutcome status,
-    PrefetchStatus prefetch_status) {
+    PrefetchStatus prefetch_status,
+    const std::string& request_id) {
   if (!ftn) {
     return;
   }
@@ -558,7 +646,7 @@ void DidUpdatePrefetchStatus(
       ftn->current_frame_host()->devtools_frame_token().ToString();
   DispatchToAgents(ftn, &protocol::PreloadHandler::DidUpdatePrefetchStatus,
                    initiator_devtools_navigation_token, initiating_frame_id,
-                   prefetch_url, status, prefetch_status);
+                   prefetch_url, status, prefetch_status, request_id);
 }
 
 void DidUpdatePrerenderStatus(
@@ -566,7 +654,8 @@ void DidUpdatePrerenderStatus(
     const base::UnguessableToken& initiator_devtools_navigation_token,
     const GURL& prerender_url,
     PreloadingTriggeringOutcome status,
-    absl::optional<PrerenderFinalStatus> prerender_status) {
+    absl::optional<PrerenderFinalStatus> prerender_status,
+    absl::optional<std::string> disallowed_mojo_interface) {
   auto* ftn = FrameTreeNode::GloballyFindByID(initiator_frame_tree_node_id);
   // ftn will be null if this is browser-initiated, which has no initiator.
   if (!ftn) {
@@ -575,7 +664,7 @@ void DidUpdatePrerenderStatus(
 
   DispatchToAgents(ftn, &protocol::PreloadHandler::DidUpdatePrerenderStatus,
                    initiator_devtools_navigation_token, prerender_url, status,
-                   prerender_status);
+                   prerender_status, disallowed_mojo_interface);
 }
 
 namespace {
@@ -1357,12 +1446,13 @@ void FencedFrameCreated(
 }
 
 void WillStartDragging(FrameTreeNode* main_frame_tree_node,
+                       const content::DropData& drop_data,
                        const blink::mojom::DragDataPtr drag_data,
                        blink::DragOperationsMask drag_operations_mask,
                        bool* intercepted) {
   DCHECK(main_frame_tree_node->frame_tree().root() == main_frame_tree_node);
   DispatchToAgents(main_frame_tree_node, &protocol::InputHandler::StartDragging,
-                   *drag_data, drag_operations_mask, intercepted);
+                   drop_data, *drag_data, drag_operations_mask, intercepted);
 }
 
 void DragEnded(FrameTreeNode& node) {
@@ -1395,16 +1485,6 @@ std::unique_ptr<protocol::Array<protocol::String>> BuildExclusionReasons(
           net::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT)) {
     exclusion_reasons->push_back(
         protocol::Audits::CookieExclusionReasonEnum::ExcludeSameSiteStrict);
-  }
-  if (status.HasExclusionReason(
-          net::CookieInclusionStatus::EXCLUDE_INVALID_SAMEPARTY)) {
-    exclusion_reasons->push_back(
-        protocol::Audits::CookieExclusionReasonEnum::ExcludeInvalidSameParty);
-  }
-  if (status.HasExclusionReason(
-          net::CookieInclusionStatus::EXCLUDE_SAMEPARTY_CROSS_PARTY_CONTEXT)) {
-    exclusion_reasons->push_back(protocol::Audits::CookieExclusionReasonEnum::
-                                     ExcludeSamePartyCrossPartyContext);
   }
   if (status.HasExclusionReason(
           net::CookieInclusionStatus::EXCLUDE_DOMAIN_NON_ASCII)) {
@@ -1478,6 +1558,12 @@ std::unique_ptr<protocol::Array<protocol::String>> BuildWarningReasons(
           net::CookieInclusionStatus::WARN_DOMAIN_NON_ASCII)) {
     warning_reasons->push_back(
         protocol::Audits::CookieWarningReasonEnum::WarnDomainNonASCII);
+  }
+
+  if (status.HasWarningReason(
+          net::CookieInclusionStatus::WARN_THIRD_PARTY_PHASEOUT)) {
+    warning_reasons->push_back(
+        protocol::Audits::CookieWarningReasonEnum::WarnThirdPartyPhaseout);
   }
 
   return warning_reasons;
@@ -1608,6 +1694,10 @@ void BuildAndReportBrowserInitiatedIssue(
                                kFederatedAuthUserInfoRequestIssue) {
     issue = BuildFederatedAuthUserInfoRequestIssue(
         info->details->federated_auth_user_info_request_details);
+  } else if (info->code ==
+             blink::mojom::InspectorIssueCode::kAttributionReportingIssue) {
+    issue = BuildAttributionReportingIssue(
+        info->details->attribution_reporting_issue_details);
   } else {
     NOTREACHED() << "Unsupported type of browser-initiated issue";
   }
@@ -1909,6 +1999,9 @@ protocol::Audits::GenericIssueErrorType GenericIssueErrorTypeToProtocol(
         kFormInputHasWrongButWellIntendedAutocompleteValueError:
       return protocol::Audits::GenericIssueErrorTypeEnum::
           FormInputHasWrongButWellIntendedAutocompleteValueError;
+    case blink::mojom::GenericIssueErrorType::kResponseWasBlockedByORB:
+      return protocol::Audits::GenericIssueErrorTypeEnum::
+          ResponseWasBlockedByORB;
   }
 }
 

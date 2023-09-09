@@ -50,7 +50,7 @@ namespace {
 
 std::unique_ptr<JPEGImageDecoder> CreateJPEGDecoder(size_t max_decoded_bytes) {
   return std::make_unique<JPEGImageDecoder>(
-      ImageDecoder::kAlphaNotPremultiplied, ColorBehavior::TransformToSRGB(),
+      ImageDecoder::kAlphaNotPremultiplied, ColorBehavior::kTransformToSRGB,
       max_decoded_bytes);
 }
 
@@ -491,8 +491,9 @@ TEST_P(ColorSpaceTest, CorrectColorSpaceUMARecorded) {
 // subsamplings if applicable).
 TEST_P(ColorSpaceTest, YuvDecode) {
   // Test only successful decoding
-  if (!GetParam().expected_success)
+  if (!GetParam().expected_success) {
     return;
+  }
 
   if (GetParam().expect_yuv_decoding) {
     const auto jpeg_file = ("/images/resources/" + GetParam().file);
@@ -506,8 +507,9 @@ TEST_P(ColorSpaceTest, YuvDecode) {
 // subsamplings if applicable).
 TEST_P(ColorSpaceTest, RgbDecode) {
   // Test only successful decoding
-  if (!GetParam().expected_success)
+  if (!GetParam().expected_success) {
     return;
+  }
 
   if (!GetParam().expect_yuv_decoding) {
     const auto jpeg_file = ("/images/resources/" + GetParam().file);

@@ -77,8 +77,6 @@ source_set("crosapi") {
     "clipboard_history_ash.h",
     "content_protection_ash.cc",
     "content_protection_ash.h",
-    "copy_migrator.cc",
-    "copy_migrator.h",
     "crosapi_ash.cc",
     "crosapi_ash.h",
     "crosapi_dependency_registry.cc",
@@ -98,6 +96,10 @@ source_set("crosapi") {
     "device_local_account_extension_service_ash.h",
     "device_oauth2_token_service_ash.cc",
     "device_oauth2_token_service_ash.h",
+    "device_ownership_waiter.cc",
+    "device_ownership_waiter.h",
+    "device_ownership_waiter_impl.cc",
+    "device_ownership_waiter_impl.h",
     "device_settings_ash.cc",
     "device_settings_ash.h",
     "dlp_ash.cc",
@@ -192,6 +194,8 @@ source_set("crosapi") {
     "networking_private_ash.h",
     "parent_access_ash.cc",
     "parent_access_ash.h",
+    "payment_app_instance_ash.cc",
+    "payment_app_instance_ash.h",
     "persistent_forced_extension_keep_alive.cc",
     "persistent_forced_extension_keep_alive.h",
     "policy_service_ash.cc",
@@ -246,6 +250,8 @@ source_set("crosapi") {
     "wallpaper_ash.h",
     "web_app_service_ash.cc",
     "web_app_service_ash.h",
+    "web_kiosk_service_ash.cc",
+    "web_kiosk_service_ash.h",
     "web_page_info_ash.cc",
     "web_page_info_ash.h",
     "window_util.cc",
@@ -263,10 +269,12 @@ source_set("crosapi") {
 
   deps = [
     "//ash",
+    "//ash/components/arc",
     "//ash/components/arc:arc_base_utils",
     "//ash/components/arc/mojom",
     "//ash/components/arc/session",
     "//ash/constants",
+    "//ash/public/cpp/external_arc",
     "//ash/webui/camera_app_ui",
     "//ash/webui/connectivity_diagnostics",
     "//ash/webui/diagnostics_ui",
@@ -284,6 +292,7 @@ source_set("crosapi") {
     "//chrome/browser/ash/system_web_apps/types:types",
     "//chrome/browser/ash/telemetry_extension/diagnostics",
     "//chrome/browser/ash/telemetry_extension/events",
+    "//chrome/browser/ash/telemetry_extension/routines",
     "//chrome/browser/ash/telemetry_extension/telemetry",
     "//chrome/browser/ash/video_conference",
     "//chrome/browser/image_decoder:image_decoder",
@@ -346,6 +355,7 @@ source_set("crosapi") {
     "//components/metrics",
     "//components/metrics/structured",
     "//components/metrics_services_manager:metrics_services_manager",
+    "//components/payments/core:error_strings",
     "//components/policy/core/common:common_constants",
     "//components/prefs",
     "//components/printing/browser",
@@ -394,6 +404,21 @@ source_set("crosapi") {
   ]
 }
 
+# TODO(b/291266467): Merge this with the `test_support` target.
+source_set("fake_device_ownership_waiter") {
+  testonly = true
+  sources = [
+    "fake_device_ownership_waiter.cc",
+    "fake_device_ownership_waiter.h",
+  ]
+  deps = [
+    ":crosapi",
+    "//base",
+    "//chrome/browser",
+    "//components/user_manager",
+  ]
+}
+
 source_set("test_support") {
   testonly = true
   sources = [
@@ -419,6 +444,7 @@ source_set("test_support") {
     ":crosapi",
     "//ash",
     "//ash/app_list",
+    "//ash/components/arc:arc_test_support",
     "//base",
     "//chrome/browser/apps/app_service",
     "//chrome/browser/ash:test_support",
@@ -447,15 +473,16 @@ source_set("unit_tests") {
     "cert_provisioning_ash_unittest.cc",
     "chrome_app_window_tracker_ash_unittest.cc",
     "clipboard_history_ash_unittest.cc",
-    "copy_migrator_unittest.cc",
     "crosapi_util_unittest.cc",
     "desk_ash_unittest.cc",
     "device_attributes_ash_unittest.cc",
     "device_oauth2_token_service_ash_unittest.cc",
+    "device_ownership_waiter_unittest.cc",
     "device_settings_ash_unittest.cc",
     "dlp_ash_unittest.cc",
     "document_scan_ash_unittest.cc",
     "download_controller_ash_unittest.cc",
+    "download_status_updater_ash_unittest.cc",
     "drive_integration_service_ash_unittest.cc",
     "fake_migration_progress_tracker.h",
     "field_trial_service_ash_unittest.cc",
@@ -473,10 +500,12 @@ source_set("unit_tests") {
     "network_settings_translation_unittest.cc",
     "networking_attributes_ash_unittest.cc",
     "parent_access_ash_unittest.cc",
+    "payment_app_instance_ash_unittest.cc",
     "persistent_forced_extension_keep_alive_unittest.cc",
     "prefs_ash_unittest.cc",
     "primary_profile_creation_waiter_unittest.cc",
     "rootfs_lacros_loader_unittest.cc",
+    "screen_ai_downloader_ash_unittest.cc",
     "stateful_lacros_loader_unittest.cc",
     "test_local_printer_ash.cc",
     "test_local_printer_ash.h",
@@ -490,9 +519,11 @@ source_set("unit_tests") {
 
   deps = [
     ":crosapi",
+    ":fake_device_ownership_waiter",
     ":test_support",
     "//ash",
     "//ash/components/arc:arc_test_support",
+    "//ash/public/cpp/external_arc:test_support",
     "//base",
     "//base/test:test_config",
     "//base/test:test_support",

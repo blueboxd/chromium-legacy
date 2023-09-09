@@ -20,6 +20,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/test/bind.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -64,14 +65,14 @@
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/sync/base/pref_names.h"
-#include "components/sync/base/sync_prefs.h"
+#include "components/sync/service/sync_prefs.h"
 #include "components/sync_user_events/user_event_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/load_notification_details.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -726,7 +727,7 @@ class DiceBrowserTestWithBoundSessionCredentialsEnabled
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_{
-      switches::kEnableBoundSessionCrendentials};
+      switches::kEnableBoundSessionCredentials};
 };
 
 // Checks that signin on Gaia triggers the fetch for a refresh token.
@@ -932,85 +933,6 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, MAYBE_NoDiceFromWebUI) {
   WaitForReconcilorUnblockedCount(0);
 }
 
-// These tests should be removed once `features::kWebAuthFlowInBrowserTab` is
-// launched.
-class DiceBrowserTestWithWebAuthFlowInBrowserTabOff : public DiceBrowserTest {
- public:
-  DiceBrowserTestWithWebAuthFlowInBrowserTabOff() {
-    scoped_feature_list_.InitAndDisableFeature(
-        features::kWebAuthFlowInBrowserTab);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(DiceBrowserTestWithWebAuthFlowInBrowserTabOff,
-                       NoDiceExtensionConsent_LaunchWebAuthFlow) {
-  auto web_auth_flow = std::make_unique<extensions::WebAuthFlow>(
-      nullptr, browser()->profile(), https_server_.GetURL(kSigninURL),
-      extensions::WebAuthFlow::INTERACTIVE,
-      extensions::WebAuthFlow::LAUNCH_WEB_AUTH_FLOW,
-      /*user_gesture=*/true);
-  web_auth_flow->Start();
-
-  if (dice_request_header_.empty()) {
-    WaitForClosure(&signin_requested_quit_closure_);
-  }
-
-  EXPECT_EQ(kNoDiceRequestHeader, dice_request_header_);
-  EXPECT_EQ(0, reconcilor_blocked_count_);
-  WaitForReconcilorUnblockedCount(0);
-
-  // Delete the web auth flow (uses DeleteSoon).
-  web_auth_flow.release()->DetachDelegateAndDelete();
-  base::RunLoop().RunUntilIdle();
-}
-
-IN_PROC_BROWSER_TEST_F(DiceBrowserTestWithWebAuthFlowInBrowserTabOff,
-                       DiceExtensionConsent_GetAuthToken) {
-  // Signin from extension consent flow.
-  class DummyDelegate : public extensions::WebAuthFlow::Delegate {
-   public:
-    void OnAuthFlowFailure(extensions::WebAuthFlow::Failure failure) override {}
-    ~DummyDelegate() override = default;
-  };
-
-  DummyDelegate delegate;
-  auto web_auth_flow = std::make_unique<extensions::WebAuthFlow>(
-      &delegate, browser()->profile(), https_server_.GetURL(kSigninURL),
-      extensions::WebAuthFlow::INTERACTIVE,
-      extensions::WebAuthFlow::GET_AUTH_TOKEN,
-      /*user_gesture=*/true);
-  web_auth_flow->Start();
-
-  // Check that the token was requested and added to the token service.
-  SendRefreshTokenResponse();
-  EXPECT_TRUE(
-      GetIdentityManager()->HasAccountWithRefreshToken(GetMainAccountID()));
-
-  // Check that the Dice request header was sent.
-  std::string client_id = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
-  EXPECT_EQ(base::StringPrintf("version=%s,client_id=%s,device_id=%s,"
-                               "signin_mode=all_accounts,"
-                               "signout_mode=show_confirmation",
-                               signin::kDiceProtocolVersion, client_id.c_str(),
-                               GetDeviceId().c_str()),
-            dice_request_header_);
-
-  // Sync should not be enabled.
-  EXPECT_EQ(absl::nullopt,
-            signin::GetPrimaryAccountConsentLevel(GetIdentityManager()));
-
-  EXPECT_EQ(1, reconcilor_blocked_count_);
-  WaitForReconcilorUnblockedCount(1);
-  EXPECT_EQ(1, reconcilor_started_count_);
-
-  // Delete the web auth flow (uses DeleteSoon).
-  web_auth_flow.release()->DetachDelegateAndDelete();
-  base::RunLoop().RunUntilIdle();
-}
-
 // Tests that Sync is enabled if the ENABLE_SYNC response is received after the
 // refresh token.
 IN_PROC_BROWSER_TEST_F(DiceBrowserTest, EnableSyncAfterToken) {
@@ -1042,17 +964,22 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, EnableSyncAfterToken) {
                                GetDeviceId().c_str()),
             dice_request_header_);
 
-  content::WindowedNotificationObserver ntp_url_observer(
-      content::NOTIFICATION_LOAD_STOP,
-      base::BindRepeating([](const content::NotificationSource&,
-                             const content::NotificationDetails& details) {
-        auto url =
-            content::Details<content::LoadNotificationDetails>(details)->url;
-        // Some test flags (e.g. ForceWebRequestProxyForTest) can change whether
-        // the reported NTP URL is chrome://newtab or chrome://new-tab-page.
-        return url == GURL(chrome::kChromeUINewTabPageURL) ||
-               url == GURL(chrome::kChromeUINewTabURL);
-      }));
+  content::WebContents* tab_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  base::RunLoop ntp_run_loop;
+  content::DidFinishNavigationObserver ntp_url_observer(
+      tab_contents,
+      base::BindLambdaForTesting(
+          [&ntp_run_loop](content::NavigationHandle* navigation_handle) {
+            const GURL& url = navigation_handle->GetURL();
+            // Some test flags (e.g. ForceWebRequestProxyForTest) can change
+            // whether the reported NTP URL is chrome://newtab or
+            // chrome://new-tab-page.
+            if (url == GURL(chrome::kChromeUINewTabPageURL) ||
+                url == GURL(chrome::kChromeUINewTabURL)) {
+              ntp_run_loop.Quit();
+            }
+          }));
 
   WaitForSigninSucceeded();
   EXPECT_EQ(GetMainAccountID(), GetIdentityManager()->GetPrimaryAccountId(
@@ -1067,7 +994,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, EnableSyncAfterToken) {
   EXPECT_EQ(1, reconcilor_started_count_);
 
   // Check that the tab was navigated to the NTP.
-  ntp_url_observer.Wait();
+  ntp_run_loop.Run();
 
   // Dismiss the Sync confirmation UI.
   EXPECT_TRUE(login_ui_test_utils::ConfirmSyncConfirmationDialog(browser()));

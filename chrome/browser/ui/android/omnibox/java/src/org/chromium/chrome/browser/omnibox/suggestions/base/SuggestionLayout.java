@@ -87,7 +87,7 @@ class SuggestionLayout extends ViewGroup {
         private final @SuggestionViewType int mSuggestionViewType;
         private final @NonNull Rect mPlacement;
 
-        public LayoutParams(int width, int height, @SuggestionViewType int type) {
+        private LayoutParams(int width, int height, @SuggestionViewType int type) {
             super(width, height);
             mPlacement = new Rect();
             mSuggestionViewType = type;
@@ -306,7 +306,13 @@ class SuggestionLayout extends ViewGroup {
         assert contentView != null : "No content views";
 
         // Pad suggestion around to guarantee appropriate spacing around suggestions.
-        if (!hasFooter) contentHeightPx += mContentPaddingPx;
+        // "Shorter" suggestions (no extra padding) are used to present footer closer to
+        // the suggestions content to make them show as related.
+        // Modernized UI present their content in distinc blocks, and the extra space
+        // does not break visually the relationship between the content and footer parts.
+        if (OmniboxFeatures.shouldShowModernizeVisualUpdate(getContext()) || !hasFooter) {
+            contentHeightPx += mContentPaddingPx;
+        }
 
         // Guarantee that the suggestion height meets our required minimum tap target size.
         var height =
@@ -374,8 +380,9 @@ class SuggestionLayout extends ViewGroup {
             // Note that at this stage everything else has already been measured.
             var viewWidthSpec = 0;
             if (params.getViewType() == LayoutParams.SuggestionViewType.DECORATION) {
-                viewWidthSpec =
-                        MeasureSpec.makeMeasureSpec(mDecorationIconWidthPx, MeasureSpec.EXACTLY);
+                viewWidthSpec = getChildMeasureSpec(
+                        MeasureSpec.makeMeasureSpec(mDecorationIconWidthPx, MeasureSpec.AT_MOST), 0,
+                        params.width);
             } else if (params.getViewType() == LayoutParams.SuggestionViewType.ACTION_BUTTON) {
                 viewWidthSpec =
                         MeasureSpec.makeMeasureSpec(mActionButtonWidthPx, MeasureSpec.EXACTLY);

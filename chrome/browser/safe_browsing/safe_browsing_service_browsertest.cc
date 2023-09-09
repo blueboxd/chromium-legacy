@@ -606,12 +606,12 @@ class V4SafeBrowsingServiceTest : public InProcessBrowserTest {
  private:
   std::unique_ptr<TestSafeBrowsingServiceFactory> sb_factory_;
   // Owned by the V4Database.
-  raw_ptr<TestV4DatabaseFactory, DanglingUntriaged> v4_db_factory_;
+  raw_ptr<TestV4DatabaseFactory, AcrossTasksDanglingUntriaged> v4_db_factory_;
   // Owned by the V4GetHashProtocolManager.
-  raw_ptr<TestV4GetHashProtocolManagerFactory, DanglingUntriaged>
+  raw_ptr<TestV4GetHashProtocolManagerFactory, AcrossTasksDanglingUntriaged>
       v4_get_hash_factory_;
   // Owned by the V4Database.
-  raw_ptr<TestV4StoreFactory, DanglingUntriaged> store_factory_;
+  raw_ptr<TestV4StoreFactory, AcrossTasksDanglingUntriaged> store_factory_;
 
 #if defined(ADDRESS_SANITIZER)
   // TODO(lukasza): https://crbug.com/971820: Disallow renderer crashes once the
@@ -727,8 +727,15 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, MainFrameHitWithReferrer) {
 }
 
 // TODO(https://crbug.com/1399454): Test is flaky.
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_SubResourceHitWithMainFrameReferrer \
+  DISABLED_SubResourceHitWithMainFrameReferrer
+#else
+#define MAYBE_SubResourceHitWithMainFrameReferrer \
+  SubResourceHitWithMainFrameReferrer
+#endif
 IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
-                       SubResourceHitWithMainFrameReferrer) {
+                       MAYBE_SubResourceHitWithMainFrameReferrer) {
   GURL first_url = embedded_test_server()->GetURL(kEmptyPage);
   GURL second_url = embedded_test_server()->GetURL(kMalwarePage);
   GURL bad_url = embedded_test_server()->GetURL(kMalwareImg);
@@ -858,7 +865,14 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
   EXPECT_TRUE(hit_report().is_subresource);
 }
 
-IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, SubResourceHitOnFreshTab) {
+#if (BUILDFLAG(IS_LINUX))
+// TODO(crbug.com/1463452): Address Linux-specific flaky failure.
+#define MAYBE_SubResourceHitOnFreshTab DISABLED_SubResourceHitOnFreshTab
+#else
+#define MAYBE_SubResourceHitOnFreshTab SubResourceHitOnFreshTab
+#endif
+IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
+                       MAYBE_SubResourceHitOnFreshTab) {
   // Allow popups.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetDefaultContentSetting(ContentSettingsType::POPUPS,

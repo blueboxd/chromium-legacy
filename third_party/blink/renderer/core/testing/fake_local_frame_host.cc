@@ -35,6 +35,12 @@ void FakeLocalFrameHost::FullscreenStateChanged(
     bool is_fullscreen,
     mojom::blink::FullscreenOptionsPtr options) {}
 
+#if defined(USE_AURA)
+void FakeLocalFrameHost::Maximize() {}
+void FakeLocalFrameHost::Minimize() {}
+void FakeLocalFrameHost::Restore() {}
+#endif
+
 void FakeLocalFrameHost::RegisterProtocolHandler(const WTF::String& scheme,
                                                  const ::blink::KURL& url,
                                                  bool user_gesture) {}
@@ -264,6 +270,10 @@ void FakeLocalFrameHost::SetFencedFrameAutomaticBeaconReportEventData(
     network::AttributionReportingRuntimeFeatures
         attribution_reporting_runtime_features,
     bool once) {}
+
+void FakeLocalFrameHost::SendLegacyTechEvent(
+    const WTF::String& type,
+    mojom::blink::LegacyTechEventCodeLocationPtr code_location) {}
 
 void FakeLocalFrameHost::SendPrivateAggregationRequestsForFencedFrameEvent(
     const WTF::String& event_type) {}

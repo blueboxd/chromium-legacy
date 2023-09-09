@@ -108,7 +108,7 @@ class MoveLoopMouseWatcher {
   void Unhook();
 
   // HWNDMessageHandler that created us.
-  raw_ptr<HWNDMessageHandler, DanglingUntriaged> host_;
+  raw_ptr<HWNDMessageHandler, AcrossTasksDanglingUntriaged> host_;
 
   // Should the window be hidden when escape is pressed?
   const bool hide_on_escape_;
@@ -317,6 +317,19 @@ gfx::Rect ScaleWindowBoundsMaybe(HWND hwnd, const gfx::Rect& bounds) {
   }
 
   return bounds;
+}
+
+// Returns true if the window is arranged via Snap. For example, the browser
+// window is snapped via buttons shown when the mouse is hovered over window
+// maximize button.
+bool IsWindowArranged(HWND window) {
+  // IsWindowArranged() is not a part of any header file.
+  // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-iswindowarranged
+  using IsWindowArrangedFuncType = BOOL(WINAPI*)(HWND);
+  static const auto is_window_arranged_func =
+      reinterpret_cast<IsWindowArrangedFuncType>(
+          base::win::GetUser32FunctionPointer("IsWindowArranged"));
+  return is_window_arranged_func ? is_window_arranged_func(window) : false;
 }
 
 }  // namespace
@@ -1738,20 +1751,6 @@ void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
   }
 }
 
-void HWNDMessageHandler::UpdateDwmNcRenderingPolicy() {
-  if (IsFullscreen())
-    return;
-
-  DWMNCRENDERINGPOLICY policy =
-      custom_window_region_.is_valid() ||
-              delegate_->GetFrameMode() == FrameMode::CUSTOM_DRAWN
-          ? DWMNCRP_DISABLED
-          : DWMNCRP_ENABLED;
-
-  DwmSetWindowAttribute(hwnd(), DWMWA_NCRENDERING_POLICY, &policy,
-                        sizeof(DWMNCRENDERINGPOLICY));
-}
-
 LRESULT HWNDMessageHandler::DefWindowProcWithRedrawLock(UINT message,
                                                         WPARAM w_param,
                                                         LPARAM l_param) {
@@ -3068,8 +3067,12 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
       const bool fullscreen_without_hack =
           IsFullscreen() && !background_fullscreen_hack_;
 
-      if (same_monitor && (incorrect_maximized_bounds ||
-                           fullscreen_without_hack || work_area_changed)) {
+      // If the browser window is arranged by Snap, then we should not change
+      // its position but let Windows do it.
+      if (same_monitor &&
+          (incorrect_maximized_bounds || fullscreen_without_hack ||
+           work_area_changed) &&
+          !IsWindowArranged(hwnd())) {
         // A rect for the monitor we're on changed.  Normally Windows notifies
         // us about this (and thus we're reaching here due to the SetWindowPos()
         // call in OnSettingChange() above), but with some software (e.g.
@@ -3598,34 +3601,11 @@ bool HWNDMessageHandler::IsSynthesizedMouseMessage(unsigned int message,
 }
 
 void HWNDMessageHandler::PerformDwmTransition() {
+  CHECK(IsFrameSystemDrawn());
+
   dwm_transition_desired_ = false;
-
-  UpdateDwmNcRenderingPolicy();
-  // Don't redraw the window here, because we need to hide and show the window
-  // which will also trigger a redraw.
-  ResetWindowRegion(true, false);
-  // The non-client view needs to update too.
   delegate_->HandleFrameChanged();
-  // This calls DwmExtendFrameIntoClientArea which must be called when DWM
-  // composition state changes.
-  UpdateDwmFrame();
-
-  if (IsVisible() && IsFrameSystemDrawn()) {
-    // For some reason, we need to hide the window after we change from a custom
-    // frame to a native frame.  If we don't, the client area will be filled
-    // with black.  This seems to be related to an interaction between DWM and
-    // SetWindowRgn, but the details aren't clear. Additionally, we need to
-    // specify SWP_NOZORDER here, otherwise if you have multiple chrome windows
-    // open they will re-appear with a non-deterministic Z-order.
-    // Note: caused http://crbug.com/895855, where a laptop lid close+reopen
-    // puts window in the background but acts like a foreground window. Fixed by
-    // not calling this unless DWM composition actually changes. Finally, since
-    // we don't want windows stealing focus if they're not already active, we
-    // set SWP_NOACTIVATE.
-    UINT flags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE;
-    SetWindowPos(hwnd(), nullptr, 0, 0, 0, 0, flags | SWP_HIDEWINDOW);
-    SetWindowPos(hwnd(), nullptr, 0, 0, 0, 0, flags | SWP_SHOWWINDOW);
-  }
+  SendFrameChanged();
 }
 
 void HWNDMessageHandler::UpdateDwmFrame() {

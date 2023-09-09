@@ -10,20 +10,22 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
+#include "components/user_manager/multi_user/multi_user_sign_in_policy.h"
 
 class PrefChangeRegistrar;
 class PrefRegistrySimple;
 class PrefService;
 class Profile;
 
+namespace user_manager {
+class UserManager;
+}
+
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
 namespace ash {
-
-class MultiProfileUserControllerDelegate;
-enum class MultiProfileUserBehavior;
 
 // MultiProfileUserController decides whether a user is allowed to be in a
 // multi-profiles session. It caches the multi-profile user behavior pref backed
@@ -36,9 +38,6 @@ class MultiProfileUserController {
     // User is allowed in multi-profile session.
     ALLOWED,
 
-    // Owner of the device is not allowed to be added as a secondary user.
-    NOT_ALLOWED_OWNER_AS_SECONDARY,
-
     // Not allowed since primary user policy forbids it to be part of
     // multi-profiles session.
     NOT_ALLOWED_PRIMARY_USER_POLICY_FORBIDS,
@@ -48,8 +47,8 @@ class MultiProfileUserController {
     NOT_ALLOWED_POLICY_FORBIDS
   };
 
-  MultiProfileUserController(MultiProfileUserControllerDelegate* delegate,
-                             PrefService* local_state);
+  MultiProfileUserController(PrefService* local_state,
+                             user_manager::UserManager* user_manager);
 
   MultiProfileUserController(const MultiProfileUserController&) = delete;
   MultiProfileUserController& operator=(const MultiProfileUserController&) =
@@ -60,16 +59,19 @@ class MultiProfileUserController {
   static void RegisterPrefs(PrefRegistrySimple* registry);
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // Stops to work.
+  void Shutdown();
+
   // Returns the cached policy value for `user_email`.
   std::string GetCachedValue(const std::string& user_email) const;
 
   // Returns primary user policy (only ALLOW,
   // NOT_ALLOWED_PRIMARY_POLICY_CERT_TAINTED,
   // NOT_ALLOWED_PRIMARY_USER_POLICY_FORBIDS)
-  static UserAllowedInSessionReason GetPrimaryUserPolicy();
+  UserAllowedInSessionReason GetPrimaryUserPolicy() const;
 
-  // Returns the user behavior in MultiProfileUserBehavior enum.
-  static MultiProfileUserBehavior UserBehaviorStringToEnum(
+  // Returns the user behavior in MultiUserSignInPolicy enum.
+  static user_manager::MultiUserSignInPolicy UserBehaviorStringToEnum(
       const std::string& behavior);
 
   // Returns true if user allowed to be in the current session. If `reason` not
@@ -87,7 +89,6 @@ class MultiProfileUserController {
   static const char kBehaviorUnrestricted[];
   static const char kBehaviorPrimaryOnly[];
   static const char kBehaviorNotAllowed[];
-  static const char kBehaviorOwnerPrimaryOnly[];
 
  private:
   friend class MultiProfileUserControllerTest;
@@ -102,9 +103,8 @@ class MultiProfileUserController {
   // Invoked when user behavior pref value changes.
   void OnUserPrefChanged(Profile* profile);
 
-  raw_ptr<MultiProfileUserControllerDelegate, ExperimentalAsh>
-      delegate_;                                       // Not owned.
-  raw_ptr<PrefService, ExperimentalAsh> local_state_;  // Not owned.
+  base::raw_ptr<PrefService, ExperimentalAsh> local_state_;
+  base::raw_ptr<user_manager::UserManager> user_manager_;
   std::vector<std::unique_ptr<PrefChangeRegistrar>> pref_watchers_;
 };
 

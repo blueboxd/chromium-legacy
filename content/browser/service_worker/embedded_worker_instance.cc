@@ -710,6 +710,7 @@ void EmbeddedWorkerInstance::OnStarted(
 
   DCHECK_EQ(EmbeddedWorkerStatus::STARTING, status_);
   status_ = EmbeddedWorkerStatus::RUNNING;
+  pause_initializing_global_scope_ = false;
   thread_id_ = thread_id;
   inflight_start_info_.reset();
   for (auto& observer : listener_list_) {
@@ -805,7 +806,8 @@ void EmbeddedWorkerInstance::BindUsbService(
     return;
   }
   if (usb_delegate->IsServiceWorkerAllowedForOrigin(origin)) {
-    WebUsbServiceImpl::Create(context_, origin, std::move(receiver));
+    WebUsbServiceImpl::Create(owner_version_->GetWeakPtr(), origin,
+                              std::move(receiver));
   }
 }
 
@@ -1013,6 +1015,7 @@ void EmbeddedWorkerInstance::ReleaseProcess() {
   // from UpdateForegroundPriority() since we don't want it to be
   // re-added at this stage.
   status_ = EmbeddedWorkerStatus::STOPPING;
+  pause_initializing_global_scope_ = false;
   NotifyForegroundServiceWorkerRemoved();
 
   instance_host_receiver_.reset();

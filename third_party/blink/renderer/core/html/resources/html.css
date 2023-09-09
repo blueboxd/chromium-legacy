@@ -151,6 +151,16 @@ audio {
   height: 54px;
 }
 
+video, canvas, img {
+  overflow: clip;
+  overflow-clip-margin: content-box;
+}
+
+iframe, embed, object, fencedframe, portal {
+   overflow: clip !important;
+   overflow-clip-margin: content-box !important;
+}
+
 /* heading elements */
 
 h1 {
@@ -407,11 +417,6 @@ button {
     appearance: auto;
 }
 
-/* Form controls don't go vertical. */
-input:not([type="range"]):not([type="color"]):not([type="button"]):not([type="reset"]):not([type="submit"]):not([type="file"]), select {
-    writing-mode: horizontal-tb !important;
-}
-
 input, textarea, select, button {
     margin: 0__qem;
     font: -webkit-small-control;
@@ -513,7 +518,8 @@ input[type="search" i],
 input[type="tel" i],
 input[type="text" i],
 input[type="url" i] {
-  padding: 1px 2px;
+  padding-block: 1px;
+  padding-inline: 2px;
 }
 
 input::-webkit-inner-spin-button {
@@ -866,9 +872,10 @@ input[type="color" i][list]::-webkit-color-swatch {
 
 input::-webkit-calendar-picker-indicator {
     display: inline-block;
-    width: 0.66em;
-    height: 0.66em;
-    padding: 0.17em 0.34em;
+    inline-size: 0.66em;
+    block-size: 0.66em;
+    padding-block: 0.17em;
+    padding-inline: 0.34em;
     -webkit-user-modify: read-only !important;
     opacity: 0;
     cursor: default;
@@ -930,8 +937,8 @@ select:disabled {
 select:-internal-list-box {
     appearance: auto;
     align-items: flex-start;
-    overflow-x: hidden;
-    overflow-y: scroll;
+    -internal-overflow-inline: hidden;
+    -internal-overflow-block: scroll;
     vertical-align: text-bottom;
     white-space: nowrap;
     border-radius: 2px;
@@ -1225,8 +1232,8 @@ input[type="week" i]::-webkit-calendar-picker-indicator {
   background-origin: content-box;
   background-repeat: no-repeat;
   background-size: contain;
-  height: 1.0em;
-  width: 1.0em;
+  block-size: 1.0em;
+  inline-size: 1.0em;
   opacity: 1;
   outline: none;
   padding: 2px;
@@ -1245,15 +1252,14 @@ input[type="time" i]::-webkit-calendar-picker-indicator {
   background-origin: content-box;
   background-repeat: no-repeat;
   background-size: contain;
-  height: 1.05em;
-  margin-inline-start: 8px;
   opacity: 1;
   outline: none;
-  padding-bottom: 3px;
+  margin-inline-start: 8px;
   padding-inline-start: 3px;
   padding-inline-end: 3px;
-  padding-top: 3px;
-  width: 1.05em;
+  padding-block: 3px;
+  block-size: 1.05em;
+  inline-size: 1.05em;
 }
 
 input[type="time" i]::-webkit-calendar-picker-indicator:focus-visible {

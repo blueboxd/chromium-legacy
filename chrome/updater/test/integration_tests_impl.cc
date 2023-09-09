@@ -47,6 +47,7 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/updater/constants.h"
+#include "chrome/updater/device_management/dm_policy_builder_for_testing.h"
 #include "chrome/updater/device_management/dm_storage.h"
 #include "chrome/updater/external_constants_builder.h"
 #include "chrome/updater/external_constants_override.h"
@@ -61,8 +62,9 @@
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
-#include "chrome/updater/util/unittest_util.h"
+#include "chrome/updater/util/unit_test_util.h"
 #include "chrome/updater/util/util.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -74,6 +76,8 @@
 #include "chrome/updater/util/win_util.h"
 #include "chrome/updater/win/test/test_executables.h"
 #include "chrome/updater/win/win_constants.h"
+#elif BUILDFLAG(IS_LINUX)
+#include "chrome/updater/util/linux_util.h"
 #endif
 
 namespace updater::test {
@@ -253,6 +257,25 @@ void ExpectUpdateSequence(UpdaterScope scope,
                           ")]}'\n");
 }
 
+void ExpectDeviceManagementRequest(ScopedServer* test_server,
+                                   const std::string& request_type,
+                                   const std::string& authorization_type,
+                                   const std::string& authorization_token,
+                                   const std::string& response) {
+  test_server->ExpectOnce(
+      {request::GetPathMatcher(base::StringPrintf(
+           R"(%s\?request=%s&apptype=Chrome&)"
+           R"(agent=Updater-%s&platform=.*&deviceid=%s)",
+           test_server->device_management_path().c_str(), request_type.c_str(),
+           kUpdaterVersion, GetDefaultDMStorage()->GetDeviceID().c_str())),
+       request::GetHeaderMatcher(
+           "Authorization",
+           base::StringPrintf("%s token=%s", authorization_type.c_str(),
+                              authorization_token.c_str())),
+       request::GetHeaderMatcher("Content-Type", "application/x-protobuf")},
+      response);
+}
+
 }  // namespace
 
 void ExitTestMode(UpdaterScope scope) {
@@ -260,11 +283,9 @@ void ExitTestMode(UpdaterScope scope) {
 }
 
 int CountDirectoryFiles(const base::FilePath& dir) {
-  base::FileEnumerator it(dir, false, base::FileEnumerator::FILES);
   int res = 0;
-  for (base::FilePath name = it.Next(); !name.empty(); name = it.Next()) {
-    ++res;
-  }
+  base::FileEnumerator(dir, false, base::FileEnumerator::FILES)
+      .ForEach([&res](const base::FilePath& /*name*/) { ++res; });
   return res;
 }
 
@@ -390,16 +411,16 @@ void ExpectNoCrashes(UpdaterScope scope) {
   dest_dir = dest_dir.AppendASCII(GetTestName());
   EXPECT_TRUE(base::CreateDirectory(dest_dir));
 
-  base::FileEnumerator it(*database_path, true, base::FileEnumerator::FILES,
-                          FILE_PATH_LITERAL("*.dmp"),
-                          base::FileEnumerator::FolderSearchPolicy::ALL);
   int count = 0;
-  for (base::FilePath name = it.Next(); !name.empty(); name = it.Next()) {
-    VLOG(0) << __func__ << "Copying " << name << " to: " << dest_dir;
-    EXPECT_TRUE(base::CopyFile(name, dest_dir.Append(name.BaseName())));
+  base::FileEnumerator(*database_path, true, base::FileEnumerator::FILES,
+                       FILE_PATH_LITERAL("*.dmp"),
+                       base::FileEnumerator::FolderSearchPolicy::ALL)
+      .ForEach([&count, &dest_dir](const base::FilePath& name) {
+        VLOG(0) << __func__ << "Copying " << name << " to: " << dest_dir;
+        EXPECT_TRUE(base::CopyFile(name, dest_dir.Append(name.BaseName())));
 
-    ++count;
-  }
+        ++count;
+      });
 
   EXPECT_EQ(count, 0) << ": " << count << " crashes found";
 }
@@ -534,8 +555,8 @@ void DeleteFile(UpdaterScope /*scope*/, const base::FilePath& path) {
 }
 
 void SetupFakeUpdaterLowerVersion(UpdaterScope scope) {
-  SetupFakeUpdaterVersion(scope, base::Version(kUpdaterVersion),
-                          /*major_version_offset=*/-1,
+  SetupFakeUpdaterVersion(scope, base::Version("100.0.0.0"),
+                          /*major_version_offset=*/0,
                           /*should_create_updater_executable=*/false);
 }
 
@@ -846,7 +867,7 @@ std::set<base::FilePath::StringType> GetTestProcessNames() {
       }(),
   };
 #else
-  return {GetExecutableRelativePath().BaseName().value()};
+  return {GetExecutableRelativePath().BaseName().value(), kLauncherName};
 #endif
 }
 
@@ -862,7 +883,8 @@ void CleanProcesses() {
 
 void ExpectCleanProcesses() {
   for (const base::FilePath::StringType& process_name : GetTestProcessNames()) {
-    EXPECT_FALSE(IsProcessRunning(process_name)) << process_name;
+    EXPECT_FALSE(IsProcessRunning(process_name))
+        << PrintProcesses(process_name);
   }
 }
 
@@ -896,6 +918,49 @@ void DMCleanup(UpdaterScope scope) {
   scoped_refptr<DMStorage> storage = GetDefaultDMStorage();
   EXPECT_TRUE(storage->StoreEnrollmentToken(""));
   EXPECT_TRUE(storage->DeleteDMToken());
+  EXPECT_TRUE(base::DeletePathRecursively(storage->policy_cache_folder()));
+
+#if BUILDFLAG(IS_WIN)
+  RegDeleteKey(HKEY_LOCAL_MACHINE, kRegKeyCompanyCloudManagement);
+#endif
+}
+
+void ExpectDeviceManagementRegistrationRequest(
+    ScopedServer* test_server,
+    const std::string& enrollment_token,
+    const std::string& dm_token) {
+  ExpectDeviceManagementRequest(
+      test_server, "register_policy_agent", "GoogleEnrollmentToken",
+      enrollment_token, [&dm_token]() {
+        enterprise_management::DeviceManagementResponse dm_response;
+        dm_response.mutable_register_response()->set_device_management_token(
+            dm_token);
+        return dm_response.SerializeAsString();
+      }());
+}
+
+void ExpectDeviceManagementPolicyFetchRequest(
+    ScopedServer* test_server,
+    const std::string& dm_token,
+    const ::wireless_android_enterprise_devicemanagement::
+        OmahaSettingsClientProto& omaha_settings) {
+  ExpectDeviceManagementRequest(
+      test_server, "policy", "GoogleDMToken", dm_token,
+      [&dm_token, &omaha_settings]() {
+        std::unique_ptr<::enterprise_management::DeviceManagementResponse>
+            dm_response = GetDMResponseForOmahaPolicy(
+                /*first_request=*/true, /*rotate_to_new_key=*/false,
+                DMPolicyBuilderForTesting::SigningOption::kSignNormally,
+                dm_token, GetDefaultDMStorage()->GetDeviceID(), omaha_settings);
+        return dm_response->SerializeAsString();
+      }());
+}
+
+void ExpectDeviceManagementPolicyValidationRequest(
+    ScopedServer* test_server,
+    const std::string& dm_token) {
+  ExpectDeviceManagementRequest(test_server, "policy_validation_report",
+                                "GoogleDMToken", dm_token, "");
 }
 
 }  // namespace updater::test

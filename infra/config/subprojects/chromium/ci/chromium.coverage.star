@@ -10,7 +10,7 @@ load("//lib/consoles.star", "consoles")
 load("//project.star", "settings")
 
 # crbug/1408581 - The code coverage CI builders are expected to be triggered
-# off the same ref every 12 hours. This poller is configured with a schedule
+# off the same ref every 24 hours. This poller is configured with a schedule
 # to ensure this - setting schedules on the builder configuration does not
 # guarantee that they are triggered off the same ref.
 luci.gitiles_poller(
@@ -18,7 +18,8 @@ luci.gitiles_poller(
     bucket = "ci",
     repo = "https://chromium.googlesource.com/chromium/src",
     refs = [settings.ref],
-    schedule = "with 12h interval",
+    # Trigger coverage jobs once a day at 4 am UTC(8 pm PST)
+    schedule = "0 4 * * *",
 )
 
 ci.defaults.set(
@@ -32,6 +33,7 @@ ci.defaults.set(
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = reclient.jobs.DEFAULT,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
+    shadow_service_account = ci.DEFAULT_SHADOW_SERVICE_ACCOUNT,
 )
 
 consoles.console_view(

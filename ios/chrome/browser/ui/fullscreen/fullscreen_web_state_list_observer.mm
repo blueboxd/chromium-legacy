@@ -60,12 +60,23 @@ void FullscreenWebStateListObserver::Disconnect() {
 
 #pragma mark - WebStateListObserver
 
-void FullscreenWebStateListObserver::WebStateListChanged(
+void FullscreenWebStateListObserver::WebStateListWillChange(
+    WebStateList* web_state_list,
+    const WebStateListChangeDetach& detach_change,
+    const WebStateListStatus& status) {
+  if (!detach_change.is_closing()) {
+    return;
+  }
+
+  WebStateWasRemoved(detach_change.detached_web_state());
+}
+
+void FullscreenWebStateListObserver::WebStateListDidChange(
     WebStateList* web_state_list,
     const WebStateListChange& change,
-    const WebStateSelection& selection) {
+    const WebStateListStatus& status) {
   switch (change.type()) {
-    case WebStateListChange::Type::kSelectionOnly:
+    case WebStateListChange::Type::kStatusOnly:
       // TODO(crbug.com/1442546): Move the implementation from
       // WebStateActivatedAt() to here. Note that here is reachable only when
       // `reason` == ActiveWebStateChangeReason::Activated.
@@ -93,7 +104,7 @@ void FullscreenWebStateListObserver::WebStateListChanged(
     }
     case WebStateListChange::Type::kInsert: {
       DCHECK_EQ(web_state_list_, web_state_list);
-      if (selection.activating) {
+      if (status.active_web_state_change()) {
         controller_->ExitFullscreen();
       }
       break;
@@ -108,14 +119,6 @@ void FullscreenWebStateListObserver::WebStateActivatedAt(
     int active_index,
     ActiveWebStateChangeReason reason) {
   WebStateWasActivated(new_web_state);
-}
-
-void FullscreenWebStateListObserver::WillCloseWebStateAt(
-    WebStateList* web_state_list,
-    web::WebState* web_state,
-    int index,
-    bool user_action) {
-  WebStateWasRemoved(web_state);
 }
 
 void FullscreenWebStateListObserver::WebStateWasActivated(

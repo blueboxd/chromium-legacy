@@ -45,6 +45,7 @@ void AutofillMetricsBaseTest::SetUpHelper() {
 
   personal_data().set_auto_accept_address_imports_for_testing(true);
   personal_data().SetPrefService(autofill_client_->GetPrefs());
+  personal_data().SetSyncServiceForTest(&sync_service_);
 
   autofill_driver_ = std::make_unique<TestAutofillDriver>();
   autofill_driver_->SetIsInAnyMainFrame(is_in_any_main_frame_);
@@ -74,7 +75,8 @@ void AutofillMetricsBaseTest::SetUpHelper() {
   auto external_delegate = std::make_unique<AutofillExternalDelegate>(
       &autofill_manager(), autofill_driver_.get());
   external_delegate_ = external_delegate.get();
-  autofill_manager().SetExternalDelegateForTest(std::move(external_delegate));
+  test_api(autofill_manager())
+      .SetExternalDelegate(std::move(external_delegate));
 
 #if !BUILDFLAG(IS_IOS)
   autofill_manager()
@@ -193,13 +195,15 @@ void AutofillMetricsBaseTest::OnCreditCardFetchingSuccessful(
                       : CreditCard::RecordType::MASKED_SERVER_CARD);
   credit_card_.SetNumber(real_pan);
 
-  autofill_manager().OnCreditCardFetchedForTest(CreditCardFetchResult::kSuccess,
-                                                &credit_card_, u"123");
+  test_api(autofill_manager())
+      .OnCreditCardFetched(CreditCardFetchResult::kSuccess, &credit_card_,
+                           u"123");
 }
 
 void AutofillMetricsBaseTest::OnCreditCardFetchingFailed() {
-  autofill_manager().OnCreditCardFetchedForTest(
-      CreditCardFetchResult::kPermanentError, nullptr, u"");
+  test_api(autofill_manager())
+      .OnCreditCardFetched(CreditCardFetchResult::kPermanentError, nullptr,
+                           u"");
 }
 
 void AutofillMetricsBaseTest::RecreateCreditCards(
@@ -233,7 +237,7 @@ void AutofillMetricsBaseTest::CreateCreditCards(
     masked_server_credit_card.SetNumber(u"9424");
     if (masked_card_is_enrolled_for_virtual_card) {
       masked_server_credit_card.set_virtual_card_enrollment_state(
-          CreditCard::ENROLLED);
+          CreditCard::VirtualCardEnrollmentState::kEnrolled);
     }
     personal_data().AddServerCreditCard(masked_server_credit_card);
   }

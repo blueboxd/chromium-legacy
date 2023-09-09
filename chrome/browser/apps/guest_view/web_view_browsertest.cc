@@ -44,8 +44,6 @@
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/login/login_handler.h"
-#include "chrome/browser/ui/login/login_handler_test_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -71,7 +69,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_creation_observer.h"
@@ -816,23 +813,12 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   }
 
   TestGuestViewManager* GetGuestViewManager() {
-    TestGuestViewManager* manager = static_cast<TestGuestViewManager*>(
-        TestGuestViewManager::FromBrowserContext(browser()->profile()));
-    // Test code may access the TestGuestViewManager before it would be created
-    // during creation of the first guest.
-    if (!manager) {
-      manager = static_cast<TestGuestViewManager*>(
-          GuestViewManager::CreateWithDelegate(
-              browser()->profile(),
-              ExtensionsAPIClient::Get()->CreateGuestViewManagerDelegate(
-                  browser()->profile())));
-    }
-    return manager;
+    return factory_.GetOrCreateTestGuestViewManager(
+        browser()->profile(),
+        ExtensionsAPIClient::Get()->CreateGuestViewManagerDelegate());
   }
 
-  WebViewTest() : guest_view_(nullptr), embedder_web_contents_(nullptr) {
-    GuestViewManager::set_factory_for_testing(&factory_);
-  }
+  WebViewTest() = default;
 
   ~WebViewTest() override = default;
 
@@ -855,8 +841,10 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
 
   TestGuestViewManagerFactory factory_;
   // Note that these are only set if you launch app using LoadAppWithGuest().
-  raw_ptr<guest_view::GuestViewBase, DanglingUntriaged> guest_view_;
-  raw_ptr<content::WebContents, DanglingUntriaged> embedder_web_contents_;
+  raw_ptr<guest_view::GuestViewBase, AcrossTasksDanglingUntriaged> guest_view_ =
+      nullptr;
+  raw_ptr<content::WebContents, AcrossTasksDanglingUntriaged>
+      embedder_web_contents_ = nullptr;
 };
 
 // The following test suites are created to group tests based on specific
@@ -2048,42 +2036,23 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveWebviewOnExit) {
   content::WebContents* embedder_web_contents = GetFirstAppWindowWebContents();
   ASSERT_TRUE(embedder_web_contents);
 
-  GURL::Replacements replace_host;
-  replace_host.SetHostStr("localhost");
-
-  std::string guest_path(
-      "/extensions/platform_apps/web_view/shim/empty_guest.html");
-  GURL guest_url = embedded_test_server()->GetURL(guest_path);
-  guest_url = guest_url.ReplaceComponents(replace_host);
-
-  ui_test_utils::UrlLoadObserver guest_observer(
-      guest_url, content::NotificationService::AllSources());
-
   // Run the test and wait until the guest WebContents is available and has
   // finished loading.
   ExtensionTestMessageListener guest_loaded_listener("guest-loaded");
   EXPECT_TRUE(content::ExecJs(embedder_web_contents,
                               "runTest('testRemoveWebviewOnExit')"));
-  guest_observer.Wait();
 
-  content::Source<content::NavigationController> source =
-      guest_observer.source();
-  EXPECT_TRUE(source->DeprecatedGetWebContents()
-                  ->GetPrimaryMainFrame()
-                  ->GetProcess()
-                  ->IsForGuestsOnly());
-
+  auto* guest_view = GetGuestViewManager()->WaitForSingleGuestViewCreated();
+  EXPECT_TRUE(guest_view);
+  EXPECT_TRUE(guest_view->GetGuestMainFrame()->GetProcess()->IsForGuestsOnly());
   ASSERT_TRUE(guest_loaded_listener.WaitUntilSatisfied());
-
-  content::WebContentsDestroyedWatcher destroyed_watcher(
-      source->DeprecatedGetWebContents());
 
   // Tell the embedder to kill the guest.
   EXPECT_TRUE(
       content::ExecJs(embedder_web_contents, "removeWebviewOnExitDoCrash();"));
 
   // Wait until the guest WebContents is destroyed.
-  destroyed_watcher.Wait();
+  GetGuestViewManager()->WaitForLastGuestDeleted();
 }
 
 // Remove <webview> immediately after navigating it.
@@ -4025,91 +3994,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestZoomBeforeNavigation) {
   TestHelper("testZoomBeforeNavigation", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, HttpAuth) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
-  LoadAppWithGuest("web_view/simple");
-
-  const GURL auth_url = embedded_test_server()->GetURL("/auth-basic");
-  content::NavigationController* guest_controller =
-      &GetGuestView()->GetController();
-  LoginPromptBrowserTestObserver login_observer;
-  login_observer.Register(
-      content::Source<content::NavigationController>(guest_controller));
-  WindowedAuthNeededObserver auth_needed(guest_controller);
-  WindowedAuthSuppliedObserver auth_supplied(guest_controller);
-  // There are two navigations occurring here. The first fails due to the need
-  // for auth. After it's supplied, a second navigation will succeed.
-  content::TestNavigationObserver nav_observer(GetGuestWebContents(), 2);
-  nav_observer.set_wait_event(
-      content::TestNavigationObserver::WaitEvent::kNavigationFinished);
-
-  EXPECT_TRUE(
-      content::ExecJs(GetGuestRenderFrameHost(),
-                      content::JsReplace("location.href = $1;", auth_url)));
-  auth_needed.Wait();
-
-  LoginHandler* login_handler = login_observer.handlers().front();
-  login_handler->SetAuth(u"basicuser", u"secret");
-  auth_supplied.Wait();
-  nav_observer.WaitForNavigationFinished();
-}
-
-IN_PROC_BROWSER_TEST_F(WebViewTest, HttpAuthIdentical) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
-  LoadAppWithGuest("web_view/simple");
-
-  const GURL auth_url = embedded_test_server()->GetURL("/auth-basic");
-  content::NavigationController* guest_controller =
-      &GetGuestView()->GetController();
-  content::NavigationController* tab_controller =
-      &browser()->tab_strip_model()->GetActiveWebContents()->GetController();
-  LoginPromptBrowserTestObserver login_observer;
-  login_observer.Register(
-      content::Source<content::NavigationController>(guest_controller));
-  login_observer.Register(
-      content::Source<content::NavigationController>(tab_controller));
-  WindowedAuthNeededObserver guest_auth_needed(guest_controller);
-  WindowedAuthNeededObserver tab_auth_needed(tab_controller);
-  WindowedAuthSuppliedObserver guest_auth_supplied(guest_controller);
-  // There are two navigations occurring here. The first fails due to the need
-  // for auth. After it's supplied, a second navigation will succeed.
-  content::TestNavigationObserver guest_nav_observer(GetGuestWebContents(), 2);
-  guest_nav_observer.set_wait_event(
-      content::TestNavigationObserver::WaitEvent::kNavigationFinished);
-
-  EXPECT_TRUE(
-      content::ExecJs(GetGuestRenderFrameHost(),
-                      content::JsReplace("location.href = $1;", auth_url)));
-  guest_auth_needed.Wait();
-
-  // While the login UI is showing for the app, navigate a tab to the same URL
-  // requiring auth.
-  tab_controller->LoadURL(auth_url, content::Referrer(),
-                          ui::PAGE_TRANSITION_TYPED, std::string());
-  tab_auth_needed.Wait();
-
-  // Both the guest and the tab should be prompting for credentials and the auth
-  // challenge should be the same. Normally, the login code de-duplicates
-  // identical challenges if multiple prompts are shown for them. However,
-  // credentials can't be shared across StoragePartitions. So providing
-  // credentials within the guest should not affect the tab.
-  ASSERT_EQ(2u, login_observer.handlers().size());
-  LoginHandler* guest_login_handler = login_observer.handlers().front();
-  LoginHandler* tab_login_handler = login_observer.handlers().back();
-  EXPECT_EQ(tab_controller,
-            &tab_login_handler->web_contents()->GetController());
-  EXPECT_TRUE(guest_login_handler->auth_info().MatchesExceptPath(
-      tab_login_handler->auth_info()));
-
-  guest_login_handler->SetAuth(u"basicuser", u"secret");
-  guest_auth_supplied.Wait();
-  guest_nav_observer.WaitForNavigationFinished();
-
-  // The tab should still be prompting for credentials.
-  ASSERT_EQ(1u, login_observer.handlers().size());
-  EXPECT_EQ(tab_login_handler, login_observer.handlers().front());
-}
-
 namespace {
 
 class NullWebContentsDelegate : public content::WebContentsDelegate {
@@ -4311,10 +4195,7 @@ IN_PROC_BROWSER_TEST_P(
   Profile* profile = browser()->profile();
   int rules_registry_id =
       extensions::WebViewGuest::GetOrGenerateRulesRegistryID(
-          guest_view->owner_web_contents()
-              ->GetPrimaryMainFrame()
-              ->GetProcess()
-              ->GetID(),
+          guest_view->owner_rfh()->GetProcess()->GetID(),
           guest_view->view_instance_id());
 
   extensions::RulesRegistryService* registry_service =
@@ -4355,10 +4236,7 @@ IN_PROC_BROWSER_TEST_P(WebViewChannelTest,
       extensions::RulesRegistryService::Get(profile);
   int rules_registry_id =
       extensions::WebViewGuest::GetOrGenerateRulesRegistryID(
-          guest_view->owner_web_contents()
-              ->GetPrimaryMainFrame()
-              ->GetProcess()
-              ->GetID(),
+          guest_view->owner_rfh()->GetProcess()->GetID(),
           guest_view->view_instance_id());
 
   // Get an existing registered rule for the guest.
@@ -4517,6 +4395,15 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
                        Shim_TestRendererNavigationRedirectWhileUnattached) {
   TestHelper("testRendererNavigationRedirectWhileUnattached",
              "web_view/shim", NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveBeforeAttach) {
+  TestHelper("testRemoveBeforeAttach", "web_view/shim", NO_TEST_SERVER);
+
+  // Ensure browser side state for the immediately destroyed guest is cleared
+  // without having to wait for the embedder to be closed.
+  // If it's not cleared then this will timeout.
+  GetGuestViewManager()->WaitForAllGuestsDeleted();
 }
 
 // Tests that the embedder can create a blob URL and navigate a WebView to it.
@@ -5595,9 +5482,9 @@ IN_PROC_BROWSER_TEST_F(GuestViewExtensionNameCollisionTest,
   EXPECT_EQ("PASSED", test_passed);
 }
 
-class LocalNetworkAccessWebViewTest : public WebViewTest {
+class PrivateNetworkAccessWebViewTest : public WebViewTest {
  public:
-  LocalNetworkAccessWebViewTest() {
+  PrivateNetworkAccessWebViewTest() {
     features_.InitAndEnableFeature(
         features::kBlockInsecurePrivateNetworkRequests);
   }
@@ -5606,14 +5493,14 @@ class LocalNetworkAccessWebViewTest : public WebViewTest {
   base::test::ScopedFeatureList features_;
 };
 
-// Verify that Local Network Access has the correct understanding of guests.
+// Verify that Private Network Access has the correct understanding of guests.
 // The local/private/public classification should not be affected by being
 // within a guest. See https://crbug.com/1167698 for details.
 //
 // Note: This test is put in this file for convenience of reusing the entire
 // app testing infrastructure. Other similar tests that do not require that
-// infrastructure live in LocalNetworkAccessBrowserTest.*
-IN_PROC_BROWSER_TEST_F(LocalNetworkAccessWebViewTest, ClassificationInGuest) {
+// infrastructure live in PrivateNetworkAccessBrowserTest.*
+IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWebViewTest, ClassificationInGuest) {
   LoadAppWithGuest("web_view/simple");
   content::RenderFrameHost* guest_frame_host = GetGuestRenderFrameHost();
   ASSERT_TRUE(guest_frame_host);
@@ -5752,6 +5639,32 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ShutdownWithUnshownPopup) {
                               "window.open(location.href);");
   run_loop.Run();
   CloseAppWindow(GetFirstAppWindow());
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, InsertIntoIframe) {
+  TestHelper("testInsertIntoIframe", "web_view/shim", NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, CreateAndInsertInIframe) {
+  TestHelper("testCreateAndInsertInIframe", "web_view/shim", NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, InsertIntoMainFrameFromIframe) {
+  TestHelper("testInsertIntoMainFrameFromIframe", "web_view/shim",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, InsertIntoOtherWindow) {
+  TestHelper("testInsertIntoOtherWindow", "web_view/shim", NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, CreateAndInsertInOtherWindow) {
+  TestHelper("testCreateAndInsertInOtherWindow", "web_view/shim",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, InsertFromOtherWindow) {
+  TestHelper("testInsertFromOtherWindow", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, InsertIntoDetachedIframe) {

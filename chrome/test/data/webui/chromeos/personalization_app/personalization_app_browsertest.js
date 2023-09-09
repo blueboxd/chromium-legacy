@@ -6,7 +6,7 @@
  * @fileoverview E2E test suite for chrome://personalization.
  */
 
-GEN('#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_browsertest_fixture.h"');
+GEN('#include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_browsertest_fixture.h"');
 
 GEN('#include "ash/constants/ash_features.h"');
 GEN('#include "ash/public/cpp/ambient/ambient_client.h"');
@@ -232,12 +232,21 @@ TEST_F(
       mocha.run();
     });
 
+// TODO(b/282050032): Remove this class and its associated tests when Jelly
+// launches.
 class PersonalizationAppAmbientModeDisallowedBrowserTest extends
     PersonalizationAppBrowserTest {
   /** @override */
   get testGenPreamble() {
     return () => {
       GEN('ash::AmbientClient::Get()->SetAmbientModeAllowedForTesting(false);');
+    };
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      disabled: ['chromeos::features::kJelly'],
     };
   }
 }
@@ -334,7 +343,19 @@ TEST_F(
 
 
 class PersonalizationAppWallpaperSubpageBrowserTest extends
-    PersonalizationAppBrowserTest {}
+    PersonalizationAppBrowserTest {
+  /** @override */
+  get featureList() {
+    return {
+      // The mock set of collections created for this test does not contain the
+      // time of day collection. If time of day wallpaper happens to be enabled,
+      // the test will fail because the time of day collection is missing, which
+      // is irrelevant for these test cases. It must explicitly be disabled
+      // here.
+      disabled: ['ash::features::kTimeOfDayWallpaper'],
+    };
+  }
+}
 
 this[PersonalizationAppWallpaperSubpageBrowserTest.name] =
     PersonalizationAppWallpaperSubpageBrowserTest;
@@ -411,7 +432,8 @@ TEST_F(PersonalizationAppWallpaperSubpageBrowserTest.name, 'All', async () => {
     });
   });
 
-  suite('backdrop', function() {
+  // TODO(b/278166473) flaky.
+  suite.skip('backdrop', function() {
     test('selects wallpaper', async () => {
       const wallpaperSelected = getWallpaperSelected();
       const textContainer =
@@ -545,7 +567,8 @@ TEST_F(PersonalizationAppWallpaperSubpageBrowserTest.name, 'All', async () => {
           'album id and is shared param should appear in location.search');
     });
 
-    test('select shared album as daily refresh', async () => {
+    // TODO(b/278166473) flaky.
+    test.skip('select shared album as daily refresh', async () => {
       const sharedAlbumId = 'fake_google_photos_shared_album_id_2';
       await openGooglePhotosSharedAlbumById(sharedAlbumId);
 
@@ -599,8 +622,16 @@ class PersonalizationAppDynamicColorEnabledBrowserTest extends
 this[PersonalizationAppDynamicColorEnabledBrowserTest.name] =
     PersonalizationAppDynamicColorEnabledBrowserTest;
 
+// TODO(b/292076437): Flaky on debug builds.
+GEN('#if !defined(NDEBUG)');
+GEN('#define MAYBE_All DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_All All');
+GEN('#endif');
+
 TEST_F(
-    PersonalizationAppDynamicColorEnabledBrowserTest.name, 'All', async () => {
+    PersonalizationAppDynamicColorEnabledBrowserTest.name, 'MAYBE_All',
+    async () => {
       await import('chrome://webui-test/mojo_webui_test_support.js');
 
       function getDynamicColorElement() {
@@ -644,7 +675,7 @@ TEST_F(
           toggle.click();
           await waitUntil(
               () => originalColor !== getComputedStyle(toggleDescription).color,
-              'toggle failed to update colors');
+              'toggle failed to update colors', 200, 5000);
         }
       }
 
@@ -663,7 +694,8 @@ TEST_F(
           assertTrue(!!getStaticColorSelector());
         });
 
-        test('clicks toggle', async () => {
+        // TODO(b/277811561) flaky test
+        test.skip('clicks toggle', async () => {
           const toggleDescription =
               getDynamicColorElement().shadowRoot.getElementById(
                   'dynamicColorToggleDescription');
@@ -675,7 +707,7 @@ TEST_F(
 
           await waitUntil(
               () => originalColor !== getComputedStyle(toggleDescription).color,
-              'failed to update colors');
+              'failed to update colors', 200, 5000);
         });
 
         test('shows color scheme options', async () => {
@@ -686,7 +718,8 @@ TEST_F(
           assertFalse(getColorSchemeSelector().hidden);
         });
 
-        test('selects color scheme options', async () => {
+        // TODO(b/277811561): Fails with TimeOfDayWallpaper feature enabled.
+        test.skip('selects color scheme options', async () => {
           const toggleDescription =
               getDynamicColorElement().shadowRoot.getElementById(
                   'dynamicColorToggleDescription');
@@ -705,7 +738,7 @@ TEST_F(
                   () => originalColor !==
                       getComputedStyle(toggleDescription).color,
                   'failed to update colors', /* intervalMs= */ 200,
-                  /* timeoutMs= */ 3000);
+                  /* timeoutMs= */ 5000);
             }
 
             const newColor = getComputedStyle(toggleDescription).color;
@@ -727,7 +760,8 @@ TEST_F(
           assertTrue(getColorSchemeSelector().hidden);
         });
 
-        test('selects static color options', async () => {
+        // TODO(b/277811561) flaky test
+        test.skip('selects static color options', async () => {
           const theme = getRouter()
                             .shadowRoot.querySelector('personalization-main')
                             .shadowRoot.querySelector('personalization-theme');
@@ -754,7 +788,7 @@ TEST_F(
                   () => originalColor !==
                       getComputedStyle(lightButton).backgroundColor,
                   'failed to update colors', /* intervalMs= */ 200,
-                  /* timeoutMs= */ 3000);
+                  /* timeoutMs= */ 5000);
             }
 
             const newColor = getComputedStyle(lightButton).backgroundColor;

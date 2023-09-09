@@ -24,7 +24,7 @@ import {stringToMojoString16} from 'chrome://shortcut-customization/js/mojo_util
 import {FakeShortcutSearchHandler} from 'chrome://shortcut-customization/js/search/fake_shortcut_search_handler.js';
 import {setShortcutSearchHandlerForTesting} from 'chrome://shortcut-customization/js/search/shortcut_search_handler.js';
 import {ShortcutCustomizationAppElement} from 'chrome://shortcut-customization/js/shortcut_customization_app.js';
-import {AcceleratorCategory, AcceleratorConfig, AcceleratorConfigResult, AcceleratorSource, AcceleratorState, AcceleratorSubcategory, AcceleratorType, LayoutInfo, LayoutStyle, Modifier, MojoLayoutInfo, TextAcceleratorPartType} from 'chrome://shortcut-customization/js/shortcut_types.js';
+import {AcceleratorCategory, AcceleratorConfigResult, AcceleratorSource, AcceleratorState, AcceleratorSubcategory, AcceleratorType, LayoutInfo, LayoutStyle, Modifier, MojoAcceleratorConfig, MojoLayoutInfo, TextAcceleratorPartType} from 'chrome://shortcut-customization/js/shortcut_types.js';
 import {getSubcategoryNameStringId} from 'chrome://shortcut-customization/js/shortcut_utils.js';
 import {AcceleratorResultData} from 'chrome://shortcut-customization/mojom-webui/ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom-webui.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
@@ -555,7 +555,9 @@ suite('shortcutCustomizationAppTest', function() {
   test('ValidateAcceleratorMaximumAccelerators', async () => {
     const acceleratorConfigResult =
         AcceleratorConfigResult.kMaximumAcceleratorsReached;
-    const expectedErrorMessage = 'Maximum accelerators have reached.';
+    const expectedErrorMessage =
+        'You can only customize 5 shortcuts. Delete a shortcut to add a new ' +
+        'one.';
     await validateAcceleratorInDialog(
         acceleratorConfigResult, expectedErrorMessage);
   });
@@ -573,7 +575,7 @@ suite('shortcutCustomizationAppTest', function() {
   test('ValidateAcceleratorMissingAccelerator', async () => {
     const acceleratorConfigResult = AcceleratorConfigResult.kMissingModifier;
     const expectedErrorMessage =
-        'Shortcut is not valid. Must include at lease one modifier key. ' +
+        'Shortcut is not valid. Must include at least one modifier key. ' +
         'Press a new shortcut.';
     await validateAcceleratorInDialog(
         acceleratorConfigResult, expectedErrorMessage);
@@ -821,7 +823,7 @@ suite('shortcutCustomizationAppTest', function() {
     // This config is constructed to match the generated mojo type for an
     // accelerator configuration. `layoutProperties` is an union type, so
     // we do not have an undefined `standardAccelerator`.
-    const testAcceleratorConfig: AcceleratorConfig = {
+    const testAcceleratorConfig: MojoAcceleratorConfig = {
       [AcceleratorSource.kAmbient]: {
         [1]: [{
           type: AcceleratorType.kDefault,

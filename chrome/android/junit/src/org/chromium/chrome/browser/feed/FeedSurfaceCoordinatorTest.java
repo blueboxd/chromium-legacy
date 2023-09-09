@@ -64,10 +64,10 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger;
-import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger.SurfaceType;
 import org.chromium.chrome.browser.xsurface.HybridListRenderer;
 import org.chromium.chrome.browser.xsurface.ProcessScope;
+import org.chromium.chrome.browser.xsurface.feed.FeedLaunchReliabilityLogger;
+import org.chromium.chrome.browser.xsurface.feed.FeedLaunchReliabilityLogger.SurfaceType;
 import org.chromium.chrome.browser.xsurface.feed.FeedSurfaceScope;
 import org.chromium.chrome.browser.xsurface.feed.FeedSurfaceScopeDependencyProvider;
 import org.chromium.chrome.test.util.browser.Features;
@@ -179,7 +179,7 @@ public class FeedSurfaceCoordinatorTest {
 
     // Mocked JNI.
     @Mock
-    private FeedStream.Natives mFeedStreamJniMock;
+    private FeedSurfaceRendererBridge.Natives mFeedSurfaceRendererBridgeJniMock;
     @Mock
     private FeedServiceBridge.Natives mFeedServiceBridgeJniMock;
     @Mock
@@ -240,7 +240,7 @@ public class FeedSurfaceCoordinatorTest {
     public void setUp() {
         mActivity = Robolectric.buildActivity(Activity.class).get();
         mActivity.setTheme(R.style.Theme_BrowserUI_DayNight);
-        mocker.mock(FeedStreamJni.TEST_HOOKS, mFeedStreamJniMock);
+        mocker.mock(FeedSurfaceRendererBridgeJni.TEST_HOOKS, mFeedSurfaceRendererBridgeJniMock);
         mocker.mock(FeedServiceBridgeJni.TEST_HOOKS, mFeedServiceBridgeJniMock);
         mocker.mock(WebFeedBridge.getTestHooksForTesting(), mWebFeedBridgeJniMock);
         mocker.mock(FeedProcessScopeDependencyProviderJni.TEST_HOOKS, mProcessScopeJniMock);
@@ -254,7 +254,7 @@ public class FeedSurfaceCoordinatorTest {
         IdentityServicesProvider.setInstanceForTests(mIdentityService);
         when(mIdentityService.getSigninManager(any(Profile.class))).thenReturn(mSigninManager);
         when(mSigninManager.getIdentityManager()).thenReturn(mIdentityManager);
-        SignInPromo.setDisablePromoForTests(true);
+        SignInPromo.setDisablePromoForTesting(true);
 
         // Preferences to enable feed.
         FeedSurfaceMediator.setPrefForTest(mPrefChangeRegistrar, mPrefService);
@@ -301,11 +301,7 @@ public class FeedSurfaceCoordinatorTest {
     public void tearDown() {
         mCoordinator.destroy();
         FeedSurfaceTracker.getInstance().resetForTest();
-        IdentityServicesProvider.setInstanceForTests(null);
-        FeedFeatures.setFakePrefsForTest(null);
         FeedSurfaceMediator.setPrefForTest(null, null);
-        TemplateUrlServiceFactory.setInstanceForTesting(null);
-        FeedServiceBridge.setProcessScopeForTesting(null);
     }
 
     @Test

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://webui-test/mojo_webui_test_support.js';
 import 'chrome://new-tab-page/new_tab_page.js';
 
 import {$$, BrowserProxyImpl, decodeString16, MetricsReporterImpl, mojoString16, RealboxBrowserProxy, RealboxElement, RealboxIconElement, RealboxMatchElement} from 'chrome://new-tab-page/new_tab_page.js';
@@ -2611,36 +2610,6 @@ suite('NewTabPageRealboxTest', () => {
       assertEquals(0, args.line);
       assertEquals(
           NavigationPredictor.kUpOrDownArrowButton, args.navigationPredictor);
-    });
-  });
-
-  test('mouse down events are sent to handler', async () => {
-    realbox.$.input.value = 'he';
-    realbox.$.input.dispatchEvent(new InputEvent('input'));
-
-    const matches = [createSearchMatch()];
-    testProxy.callbackRouterRemote.autocompleteResultChanged({
-      input: mojoString16(realbox.$.input.value.trimStart()),
-      matches,
-      suggestionGroupsMap: {},
-    });
-    await testProxy.callbackRouterRemote.$.flushForTesting();
-    assertTrue(areMatchesShowing());
-
-    const matchEls =
-        realbox.$.matches.shadowRoot!.querySelectorAll('cr-realbox-match');
-
-    const mouseDown = new MouseEvent('mousedown', {
-      bubbles: true,
-      button: 0,
-      cancelable: true,
-      composed: true,  // So it propagates across shadow DOM boundary.
-    });
-    matchEls[0]!.$.contents.dispatchEvent(mouseDown);
-
-    await testProxy.handler.whenCalled('onNavigationLikely').then((args) => {
-      assertEquals(0, args.line);
-      assertEquals(NavigationPredictor.kMouseDown, args.navigationPredictor);
     });
   });
 });

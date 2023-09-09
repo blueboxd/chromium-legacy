@@ -7,30 +7,30 @@
 #import <Metal/Metal.h>
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace metal {
 
-MTLDevicePtr CreateDefaultDevice() {
+id<MTLDevice> GetDefaultDevice() {
   // First attempt to find a low power device to use.
-  base::scoped_nsprotocol<id<MTLDevice>> device_to_use;
 #if BUILDFLAG(IS_MAC)
-  base::scoped_nsobject<NSArray<id<MTLDevice>>> devices(MTLCopyAllDevices());
-  for (id<MTLDevice> device in devices.get()) {
-    if ([device isLowPower]) {
-      device_to_use.reset(device, base::scoped_policy::RETAIN);
-      break;
+  for (id<MTLDevice> device in MTLCopyAllDevices()) {
+    if (device.lowPower) {
+      return device;
     }
   }
 #endif
   // Failing that, use the system default device.
-  if (!device_to_use)
-    device_to_use.reset(MTLCreateSystemDefaultDevice());
-  if (!device_to_use) {
+  id<MTLDevice> system_default = MTLCreateSystemDefaultDevice();
+  if (!system_default) {
     DLOG(ERROR) << "Failed to find MTLDevice.";
-    return nullptr;
+    return nil;
   }
-  return device_to_use.release();
+
+  return system_default;
 }
 
 }  // namespace metal

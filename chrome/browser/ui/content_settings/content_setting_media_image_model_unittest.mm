@@ -6,7 +6,6 @@
 
 #import <AVFoundation/AVFoundation.h>
 
-#include "base/mac/mac_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
@@ -88,9 +87,6 @@ class ContentSettingMediaImageModelTest
 };
 
 TEST_F(ContentSettingMediaImageModelTest, MediaUpdate) {
-  if (!base::mac::IsAtLeastOS10_14())
-    return;
-
   PageSpecificContentSettings::CreateForWebContents(
       web_contents(),
       std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
@@ -108,7 +104,7 @@ TEST_F(ContentSettingMediaImageModelTest, MediaUpdate) {
   // Camera allowed per site: Test for system level permissions.
   {
     content_settings->OnMediaStreamPermissionSet(
-        kTestOrigin, PageSpecificContentSettings::CAMERA_ACCESSED,
+        kTestOrigin, {PageSpecificContentSettings::kCameraAccessed},
         std::string(), GetDefaultVideoDevice(), std::string(), std::string());
     auth_wrapper.SetMockMediaPermissionStatus(kAllowed);
     content_setting_image_model->Update(web_contents());
@@ -129,7 +125,7 @@ TEST_F(ContentSettingMediaImageModelTest, MediaUpdate) {
   // Microphone allowed per site: Test for system level permissions.
   {
     content_settings->OnMediaStreamPermissionSet(
-        kTestOrigin, PageSpecificContentSettings::MICROPHONE_ACCESSED,
+        kTestOrigin, {PageSpecificContentSettings::kMicrophoneAccessed},
         std::string(), GetDefaultVideoDevice(), std::string(), std::string());
     auth_wrapper.SetMockMediaPermissionStatus(kAllowed);
     content_setting_image_model->Update(web_contents());
@@ -151,8 +147,8 @@ TEST_F(ContentSettingMediaImageModelTest, MediaUpdate) {
   {
     content_settings->OnMediaStreamPermissionSet(
         kTestOrigin,
-        (PageSpecificContentSettings::MICROPHONE_ACCESSED |
-         PageSpecificContentSettings::CAMERA_ACCESSED),
+        {PageSpecificContentSettings::kMicrophoneAccessed,
+         PageSpecificContentSettings::kCameraAccessed},
         std::string(), GetDefaultVideoDevice(), std::string(), std::string());
     auth_wrapper.SetMockMediaPermissionStatus(kAllowed);
     auth_wrapper.SetMockMediaPermissionStatus(kAllowed);
@@ -185,8 +181,8 @@ TEST_F(ContentSettingMediaImageModelTest, MediaUpdate) {
     {
       content_settings->OnMediaStreamPermissionSet(
           kTestOrigin,
-          PageSpecificContentSettings::CAMERA_ACCESSED |
-              PageSpecificContentSettings::CAMERA_BLOCKED,
+          {PageSpecificContentSettings::kCameraAccessed,
+           PageSpecificContentSettings::kCameraBlocked},
           GetDefaultAudioDevice(), GetDefaultVideoDevice(), std::string(),
           std::string());
       content_setting_image_model->Update(web_contents());
@@ -200,8 +196,8 @@ TEST_F(ContentSettingMediaImageModelTest, MediaUpdate) {
     {
       content_settings->OnMediaStreamPermissionSet(
           kTestOrigin,
-          PageSpecificContentSettings::MICROPHONE_ACCESSED |
-              PageSpecificContentSettings::MICROPHONE_BLOCKED,
+          {PageSpecificContentSettings::kMicrophoneAccessed,
+           PageSpecificContentSettings::kMicrophoneBlocked},
           GetDefaultAudioDevice(), GetDefaultVideoDevice(), std::string(),
           std::string());
       content_setting_image_model->Update(web_contents());
@@ -215,10 +211,10 @@ TEST_F(ContentSettingMediaImageModelTest, MediaUpdate) {
     {
       content_settings->OnMediaStreamPermissionSet(
           kTestOrigin,
-          PageSpecificContentSettings::CAMERA_ACCESSED |
-              PageSpecificContentSettings::CAMERA_BLOCKED |
-              PageSpecificContentSettings::MICROPHONE_ACCESSED |
-              PageSpecificContentSettings::MICROPHONE_BLOCKED,
+          {PageSpecificContentSettings::kCameraAccessed,
+           PageSpecificContentSettings::kCameraBlocked,
+           PageSpecificContentSettings::kMicrophoneAccessed,
+           PageSpecificContentSettings::kMicrophoneBlocked},
           GetDefaultAudioDevice(), GetDefaultVideoDevice(), std::string(),
           std::string());
       content_setting_image_model->Update(web_contents());

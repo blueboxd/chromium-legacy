@@ -64,7 +64,7 @@ try_.builder(
     name = "mac-inverse-fieldtrials-fyi-rel",
     mirrors = [
         "ci/Mac Builder",
-        "ci/Mac12 Tests",
+        "ci/Mac13 Tests",
         "ci/GPU Mac Builder",
         "ci/Mac Release (Intel)",
         "ci/Mac Retina Release (AMD)",
@@ -115,7 +115,7 @@ try_.orchestrator_builder(
     branch_selector = branches.selector.MAC_BRANCHES,
     mirrors = [
         "ci/Mac Builder",
-        "ci/Mac12 Tests",
+        "ci/Mac13 Tests",
         "ci/GPU Mac Builder",
         "ci/Mac Release (Intel)",
         "ci/Mac Retina Release (AMD)",
@@ -145,6 +145,8 @@ try_.compilator_builder(
     name = "mac-rel-compilator",
     branch_selector = branches.selector.MAC_BRANCHES,
     os = os.MAC_DEFAULT,
+    # Allow both x64 and arm64 bots.
+    cpu = None,
     check_for_flakiness = True,
     main_list_view = "try",
 )
@@ -238,24 +240,6 @@ try_.builder(
 # NOTE: the following trybots aren't sensitive to Mac version on which
 # they are built, hence no additional dimension is specified.
 # The 10.xx version translates to which bots will run isolated tests.
-try_.builder(
-    name = "mac_chromium_10.13_rel_ng",
-    mirrors = [
-        "ci/Mac Builder",
-        "ci/Mac10.13 Tests",
-    ],
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
-)
-
-try_.builder(
-    name = "mac_chromium_10.14_rel_ng",
-    mirrors = [
-        "ci/Mac Builder",
-        "ci/Mac10.14 Tests",
-    ],
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
-)
-
 try_.builder(
     name = "mac_chromium_10.15_rel_ng",
     mirrors = [
@@ -520,6 +504,7 @@ ios_builder(
     mirrors = [
         "ci/ios-simulator-noncq",
     ],
+    cpu = cpu.ARM64,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
         location_filters = [
@@ -571,6 +556,7 @@ ios_builder(
 ios_builder(
     name = "ios-simulator-code-coverage",
     mirrors = ["ci/ios-simulator-code-coverage"],
+    builderless = True,
     execution_timeout = 20 * time.hour,
 )
 

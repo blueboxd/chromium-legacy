@@ -8,6 +8,7 @@
 #import "components/prefs/pref_service.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/new_tab_page_util.h"
+#import "ios/chrome/browser/overlays/public/overlay_presentation_context.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
@@ -27,6 +28,8 @@
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_omnibox_consumer.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_type.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
 #import "ios/chrome/browser/ui/toolbar/secondary_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinatee.h"
@@ -37,8 +40,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface ToolbarCoordinator () <PrimaryToolbarCoordinatorDelegate,
-                                  PrimaryToolbarViewControllerDelegate,
+@interface ToolbarCoordinator () <PrimaryToolbarViewControllerDelegate,
                                   ToolbarCommands,
                                   ToolbarMediatorDelegate> {
   PrerenderService* _prerenderService;
@@ -61,14 +63,20 @@
 @property(nonatomic, strong) OmniboxFocusOrchestrator* orchestrator;
 /// Whether the omnibox is currently focused.
 @property(nonatomic, assign) BOOL locationBarFocused;
-/// Whether the omnibox focusing should happen with animation.
-@property(nonatomic, assign) BOOL enableAnimationsForOmniboxFocus;
 
 @end
 
 @implementation ToolbarCoordinator {
-  /// Type of toolbar containing the omnibox.
+  /// Type of toolbar containing the omnibox. Unlike
+  /// `_steadyStateOmniboxPosition`, this tracks the omnibox position at all
+  /// time.
   ToolbarType _omniboxPosition;
+  /// Type of the toolbar that contains the omnibox when it's not focused. The
+  /// animation of focusing/defocusing the omnibox changes depending on this
+  /// position.
+  ToolbarType _steadyStateOmniboxPosition;
+  /// Whether the omnibox focusing should happen with animation.
+  BOOL _enableAnimationsForOmniboxFocus;
 }
 
 - (instancetype)initWithBrowser:(Browser*)browser {
@@ -81,10 +89,6 @@
         [[PrimaryToolbarCoordinator alloc] initWithBrowser:browser];
     _secondaryToolbarCoordinator =
         [[SecondaryToolbarCoordinator alloc] initWithBrowser:browser];
-
-    [self.browser->GetCommandDispatcher()
-        startDispatchingToTarget:self
-                     forProtocol:@protocol(ToolbarCommands)];
   }
   return self;
 }
@@ -93,11 +97,14 @@
   if (self.started) {
     return;
   }
-  self.enableAnimationsForOmniboxFocus = YES;
+  _enableAnimationsForOmniboxFocus = YES;
   // Set a default position, overriden by `setInitialOmniboxPosition` below.
   _omniboxPosition = ToolbarType::kPrimary;
 
   Browser* browser = self.browser;
+  [browser->GetCommandDispatcher()
+      startDispatchingToTarget:self
+                   forProtocol:@protocol(ToolbarCommands)];
   [browser->GetCommandDispatcher()
       startDispatchingToTarget:self
                    forProtocol:@protocol(FakeboxFocuser)];
@@ -117,8 +124,9 @@
   self.locationBarCoordinator.popupPresenterDelegate =
       self.popupPresenterDelegate;
   [self.locationBarCoordinator start];
+  self.toolbarMediator.omniboxConsumer =
+      self.locationBarCoordinator.toolbarOmniboxConsumer;
 
-  self.primaryToolbarCoordinator.delegate = self;
   self.primaryToolbarCoordinator.viewControllerDelegate = self;
   [self.primaryToolbarCoordinator start];
   [self.secondaryToolbarCoordinator start];
@@ -232,17 +240,32 @@
 #pragma mark Omnibox and LocationBar
 
 - (void)transitionToLocationBarFocusedState:(BOOL)focused {
+  // Disable infobarBanner overlays when focusing the omnibox as they overlap
+  // with primary toolbar.
+  OverlayPresentationContext* infobarBannerContext =
+      OverlayPresentationContext::FromBrowser(self.browser,
+                                              OverlayModality::kInfobarBanner);
+  if (infobarBannerContext) {
+    infobarBannerContext->SetUIDisabled(focused);
+  }
+
   if (self.traitEnvironment.traitCollection.verticalSizeClass ==
       UIUserInterfaceSizeClassUnspecified) {
     return;
   }
   [self.toolbarMediator locationBarFocusChangedTo:focused];
 
+  // Disable toolbar animations when focusing the omnibox on secondary toolbar.
+  // TODO(crbug.com/1462889): Add animation in OmniboxFocusOrchestrator if
+  // needed.
+  BOOL animateTransition = _enableAnimationsForOmniboxFocus &&
+                           _steadyStateOmniboxPosition == ToolbarType::kPrimary;
+
   [self.orchestrator
       transitionToStateOmniboxFocused:focused
                       toolbarExpanded:focused && !IsRegularXRegularSizeClass(
                                                      self.traitEnvironment)
-                             animated:self.enableAnimationsForOmniboxFocus];
+                             animated:animateTransition];
   self.locationBarFocused = focused;
 }
 
@@ -254,25 +277,12 @@
   return [self.locationBarCoordinator showingOmniboxPopup];
 }
 
-#pragma mark SnapshotProviding
-
-- (id<SideSwipeToolbarSnapshotProviding>)primaryToolbarSnapshotProvider {
-  return self.primaryToolbarCoordinator;
-}
-
-- (id<SideSwipeToolbarSnapshotProviding>)secondaryToolbarSnapshotProvider {
-  return self.secondaryToolbarCoordinator;
-}
-
 #pragma mark ToolbarHeightProviding
 
 - (CGFloat)collapsedPrimaryToolbarHeight {
   if (_omniboxPosition == ToolbarType::kSecondary) {
     CHECK(IsBottomOmniboxSteadyStateEnabled());
-    // TODO(crbug.com/1455030): Return 0 here once overlay message is fixed.
-    // Currently, it's in a infinite loop when we try to show a message with a
-    // non-expanded primary toolbar.
-    return self.expandedPrimaryToolbarHeight;
+    return 0.0;
   }
 
   return ToolbarCollapsedHeight(
@@ -282,9 +292,7 @@
 - (CGFloat)expandedPrimaryToolbarHeight {
   if (_omniboxPosition == ToolbarType::kSecondary) {
     CHECK(IsBottomOmniboxSteadyStateEnabled());
-    // TODO(crbug.com/1455030): Return 0 here once overlay message is fixed.
-    // Currently, it's in a infinite loop when we try to show a message with a
-    // non-expanded primary toolbar.
+    return 0.0;
   }
 
   CGFloat height =
@@ -318,24 +326,12 @@
   return height;
 }
 
-#pragma mark ViewRevealing
-
-- (id<ViewRevealingAnimatee>)viewRevealingAnimatee {
-  CHECK(self.primaryToolbarCoordinator.animatee);
-  return self.primaryToolbarCoordinator.animatee;
-}
-
-- (void)setPanGestureHandler:
-    (ViewRevealingVerticalPanHandler*)panGestureHandler {
-  [self.primaryToolbarCoordinator setPanGestureHandler:panGestureHandler];
-}
-
 #pragma mark - FakeboxFocuser
 
 - (void)focusOmniboxNoAnimation {
-  self.enableAnimationsForOmniboxFocus = NO;
+  _enableAnimationsForOmniboxFocus = NO;
   [self fakeboxFocused];
-  self.enableAnimationsForOmniboxFocus = YES;
+  _enableAnimationsForOmniboxFocus = YES;
   // If the pasteboard is containing a URL, the omnibox popup suggestions are
   // displayed as soon as the omnibox is focused.
   // If the fake omnibox animation is triggered at the same time, it is possible
@@ -375,6 +371,10 @@
   return self.locationBarCoordinator.omniboxScribbleForwardingTarget;
 }
 
+- (void)didNavigateToNTPOnActiveWebState {
+  [self.toolbarMediator didNavigateToNTPOnActiveWebState];
+}
+
 #pragma mark - PopupMenuUIUpdating
 
 - (void)updateUIForOverflowMenuIPHDisplayed {
@@ -389,31 +389,13 @@
   }
 }
 
-#pragma mark - PrimaryToolbarCoordinatorDelegate
-
-- (void)updateToolbarForSideSwipeSnapshot:(web::WebState*)webState {
-  BOOL isNTP = IsVisibleURLNewTabPage(webState);
-
-  // Don't do anything for a live non-ntp tab.
-  if (webState == self.browser->GetWebStateList()->GetActiveWebState() &&
-      !isNTP) {
-    [self.locationBarCoordinator.locationBarViewController.view setHidden:NO];
-  } else {
-    self.primaryToolbarViewController.view.hidden = NO;
-    [self.locationBarCoordinator.locationBarViewController.view setHidden:YES];
-  }
-}
-
-- (void)resetToolbarAfterSideSwipeSnapshot {
-  [self.locationBarCoordinator.locationBarViewController.view setHidden:NO];
-}
-
 #pragma mark - PrimaryToolbarViewControllerDelegate
 
 - (void)viewControllerTraitCollectionDidChange:
     (UITraitCollection*)previousTraitCollection {
-  [self.toolbarMediator
-      toolbarTraitCollectionChangedTo:self.traitEnvironment.traitCollection];
+  if (!_started) {
+    return;
+  }
   [self updateToolbarsLayout];
 }
 
@@ -443,23 +425,58 @@
   return NO;
 }
 
+#pragma mark - SideSwipeToolbarSnapshotProviding
+
+- (UIImage*)toolbarSideSwipeSnapshotForWebState:(web::WebState*)webState
+                                withToolbarType:(ToolbarType)toolbarType {
+  AdaptiveToolbarCoordinator* adaptiveToolbarCoordinator =
+      [self coordinatorWithToolbarType:toolbarType];
+
+  [adaptiveToolbarCoordinator updateToolbarForSideSwipeSnapshot:webState];
+  [self updateLocationBarForSideSwipeSnapshot:webState];
+
+  UIImage* toolbarSnapshot = CaptureViewWithOption(
+      adaptiveToolbarCoordinator.viewController.view,
+      [[UIScreen mainScreen] scale], kClientSideRendering);
+
+  [adaptiveToolbarCoordinator resetToolbarAfterSideSwipeSnapshot];
+  [self resetLocationBarAfterSideSwipeSnapshot];
+
+  return toolbarSnapshot;
+}
+
+#pragma mark SideSwipeToolbarSnapshotProviding Private
+
+/// Returns the coordinator coresponding to `toolbarType`.
+- (AdaptiveToolbarCoordinator*)coordinatorWithToolbarType:
+    (ToolbarType)toolbarType {
+  switch (toolbarType) {
+    case ToolbarType::kPrimary:
+      return self.primaryToolbarCoordinator;
+    case ToolbarType::kSecondary:
+      return self.secondaryToolbarCoordinator;
+  }
+}
+
+/// Prepares location bar for a side swipe snapshot with`webState`.
+- (void)updateLocationBarForSideSwipeSnapshot:(web::WebState*)webState {
+  // Hide LocationBarView when taking a snapshot on a web state that is not the
+  // active one, as the URL is not updated.
+  if (webState != self.browser->GetWebStateList()->GetActiveWebState()) {
+    [self.locationBarCoordinator.locationBarViewController.view setHidden:YES];
+  }
+}
+
+/// Resets location bar after a side swipe snapshot.
+- (void)resetLocationBarAfterSideSwipeSnapshot {
+  [self.locationBarCoordinator.locationBarViewController.view setHidden:NO];
+}
+
 #pragma mark - ToolbarCommands
 
 - (void)triggerToolbarSlideInAnimation {
   for (id<ToolbarCommands> coordinator in self.coordinators) {
     [coordinator triggerToolbarSlideInAnimation];
-  }
-}
-
-- (void)setTabGridButtonIPHHighlighted:(BOOL)iphHighlighted {
-  for (id<ToolbarCommands> coordinator in self.coordinators) {
-    [coordinator setTabGridButtonIPHHighlighted:iphHighlighted];
-  }
-}
-
-- (void)setNewTabButtonIPHHighlighted:(BOOL)iphHighlighted {
-  for (id<ToolbarCommands> coordinator in self.coordinators) {
-    [coordinator setNewTabButtonIPHHighlighted:iphHighlighted];
   }
 }
 
@@ -484,6 +501,10 @@
   [self.toolbarHeightDelegate toolbarsHeightChanged];
 }
 
+- (void)transitionSteadyStateOmniboxToToolbarType:(ToolbarType)toolbarType {
+  _steadyStateOmniboxPosition = toolbarType;
+}
+
 #pragma mark - Private
 
 /// Returns primary and secondary coordinator in a array. Helper to call method
@@ -497,8 +518,11 @@
   return self.primaryToolbarViewController;
 }
 
-/// Updates toolbars layout whith current omnibox focus state.
+/// Updates toolbars layout whith current omnibox focus state and trait
+/// collection.
 - (void)updateToolbarsLayout {
+  [self.toolbarMediator
+      toolbarTraitCollectionChangedTo:self.traitEnvironment.traitCollection];
   BOOL omniboxFocused =
       self.isOmniboxFirstResponder || self.showingOmniboxPopup;
   [self.orchestrator

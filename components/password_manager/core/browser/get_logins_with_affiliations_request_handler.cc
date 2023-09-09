@@ -34,14 +34,39 @@ using LoginsResult = std::vector<std::unique_ptr<PasswordForm>>;
 using LoginsResultOrError =
     absl::variant<LoginsResult, PasswordStoreBackendError>;
 
+void operator|=(absl::optional<PasswordForm::MatchType>& lhs,
+                PasswordForm::MatchType rhs) {
+  lhs = lhs.has_value() ? (lhs.value() | rhs) : rhs;
+}
+
 bool FormSupportsPSL(const PasswordFormDigest& digest) {
   return digest.scheme == PasswordForm::Scheme::kHtml &&
          !GetRegistryControlledDomain(GURL(digest.signon_realm)).empty();
 }
 
+bool IsExtendedPublicSuffixDomainMatch(
+    const GURL& url1,
+    const GURL& url2,
+    const base::flat_set<std::string>& psl_extensions) {
+  if (!url1.is_valid() || !url2.is_valid()) {
+    return false;
+  }
+
+  std::string domain1(
+      password_manager_util::GetExtendedTopLevelDomain(url1, psl_extensions));
+  std::string domain2(
+      password_manager_util::GetExtendedTopLevelDomain(url2, psl_extensions));
+  if (domain1.empty() || domain2.empty()) {
+    return false;
+  }
+
+  return domain1 == domain2;
+}
+
 // Do post-processing on forms and mark PSL matches as such.
 LoginsResultOrError ProccessExactAndPSLForms(
     const PasswordFormDigest& digest,
+    const base::flat_set<std::string>& psl_extensions,
     LoginsResultOrError logins_or_error) {
   if (absl::holds_alternative<PasswordStoreBackendError>(logins_or_error)) {
     return logins_or_error;
@@ -53,14 +78,41 @@ LoginsResultOrError ProccessExactAndPSLForms(
         NOTREACHED_NORETURN();
       case MatchResult::EXACT_MATCH:
       case MatchResult::FEDERATED_MATCH:
+        form->match_type = PasswordForm::MatchType::kExact;
         break;
       case MatchResult::PSL_MATCH:
+        if (IsExtendedPublicSuffixDomainMatch(GURL(form->signon_realm),
+                                              GURL(digest.signon_realm),
+                                              psl_extensions)) {
+          form->match_type = PasswordForm::MatchType::kPSL;
+        }
+        break;
       case MatchResult::FEDERATED_PSL_MATCH:
-        form->is_public_suffix_match = true;
+        if (IsExtendedPublicSuffixDomainMatch(form->url, digest.url,
+                                              psl_extensions)) {
+          form->match_type = PasswordForm::MatchType::kPSL;
+        }
         break;
     }
   }
+  // Erase any form which has no match_type assigned.
+  base::EraseIf(absl::get<LoginsResult>(logins_or_error),
+                [](const auto& form) { return !form->match_type.has_value(); });
   return logins_or_error;
+}
+
+void InjectAffiliationAndBrandingInformation(
+    AffiliatedMatchHelper* affiliated_match_helper,
+    LoginsOrErrorReply callback,
+    LoginsResultOrError forms_or_error) {
+  if (!affiliated_match_helper ||
+      absl::holds_alternative<PasswordStoreBackendError>(forms_or_error) ||
+      absl::get<LoginsResult>(forms_or_error).empty()) {
+    std::move(callback).Run(std::move(forms_or_error));
+    return;
+  }
+  affiliated_match_helper->InjectAffiliationAndBrandingInformation(
+      std::move(absl::get<LoginsResult>(forms_or_error)), std::move(callback));
 }
 
 class GetLoginsHelper : public base::RefCounted<GetLoginsHelper> {
@@ -75,6 +127,11 @@ class GetLoginsHelper : public base::RefCounted<GetLoginsHelper> {
  private:
   friend class base::RefCounted<GetLoginsHelper>;
   ~GetLoginsHelper() = default;
+
+  void OnPSLExtensionsReceived(
+      base::RepeatingCallback<void(LoginsResultOrError)>
+          forms_received_callback,
+      const base::flat_set<std::string>& psl_extensions);
 
   // From the affiliated realms returns all the forms to be additionally queried
   // in the password store. The list excludes the PSL matches because those will
@@ -97,28 +154,50 @@ class GetLoginsHelper : public base::RefCounted<GetLoginsHelper> {
   // The group realms for 'requested_digest_'.
   base::flat_set<std::string> group_;
 
-  raw_ptr<PasswordStoreBackend, FlakyDanglingUntriaged> backend_;
+  raw_ptr<PasswordStoreBackend, AcrossTasksDanglingUntriaged> backend_;
 };
 
 void GetLoginsHelper::Init(AffiliatedMatchHelper* affiliated_match_helper,
                            LoginsOrErrorReply callback) {
+  if (!affiliated_match_helper) {
+    // If |affiliated_match_helper| is unavailable return only exact and PSL
+    // matches.
+    backend_->FillMatchingLoginsAsync(
+        base::BindOnce(&ProccessExactAndPSLForms, requested_digest_,
+                       base::flat_set<std::string>())
+            .Then(std::move(callback)),
+        FormSupportsPSL(requested_digest_), {requested_digest_});
+    return;
+  }
   // Number of time 'forms_received_' closure should be called before executing.
   // Once for perfect matches and once for affiliations.
   const int kCallsNumber = 2;
 
+  auto affiliation_info_injection =
+      base::BindOnce(&InjectAffiliationAndBrandingInformation,
+                     affiliated_match_helper, std::move(callback));
   auto forms_received_callback = base::BarrierCallback<LoginsResultOrError>(
       kCallsNumber, base::BindOnce(&GetLoginsHelper::MergeResults, this)
-                        .Then(std::move(callback)));
+                        .Then(std::move(affiliation_info_injection)));
 
-  backend_->FillMatchingLoginsAsync(
-      base::BindOnce(&ProccessExactAndPSLForms, requested_digest_)
-          .Then(forms_received_callback),
-      FormSupportsPSL(requested_digest_), {requested_digest_});
+  affiliated_match_helper->GetPSLExtensions(
+      base::BindOnce(&GetLoginsHelper::OnPSLExtensionsReceived, this,
+                     forms_received_callback));
 
   affiliated_match_helper->GetAffiliatedAndGroupedRealms(
       requested_digest_,
       base::BindOnce(&GetLoginsHelper::HandleAffiliationsAndGroupsReceived,
                      this, std::move(forms_received_callback)));
+}
+
+void GetLoginsHelper::OnPSLExtensionsReceived(
+    base::RepeatingCallback<void(LoginsResultOrError)> forms_received_callback,
+    const base::flat_set<std::string>& psl_extensions) {
+  backend_->FillMatchingLoginsAsync(
+      base::BindOnce(&ProccessExactAndPSLForms, requested_digest_,
+                     psl_extensions)
+          .Then(std::move(forms_received_callback)),
+      FormSupportsPSL(requested_digest_), {requested_digest_});
 }
 
 void GetLoginsHelper::HandleAffiliationsAndGroupsReceived(
@@ -183,17 +262,18 @@ LoginsResultOrError GetLoginsHelper::MergeResults(
           signon_realm = url::Origin::Create(form->url).GetURL().spec();
         }
         if (base::Contains(affiliations_, signon_realm)) {
-          form->is_affiliation_based_match = true;
+          form->match_type |= PasswordForm::MatchType::kAffiliated;
         }
         if (base::Contains(group_, signon_realm)) {
-          form->is_grouped_match = true;
+          form->match_type |= PasswordForm::MatchType::kGrouped;
           // TODO(crbug.com/1432264): Delete after proper handling of
           // affiliated groups filling is implemented.
-          form->is_affiliation_based_match = true;
+          form->match_type |= PasswordForm::MatchType::kAffiliated;
         }
         break;
       }
     }
+    CHECK(form->match_type.has_value());
   }
 
   password_manager_util::TrimUsernameOnlyCredentials(&final_result);

@@ -51,11 +51,21 @@ gfx::RectF LayoutNGSVGForeignObject::ObjectBoundingBox() const {
 
 gfx::RectF LayoutNGSVGForeignObject::StrokeBoundingBox() const {
   NOT_DESTROYED();
+  return viewport_;
+}
+
+gfx::RectF LayoutNGSVGForeignObject::DecoratedBoundingBox() const {
+  NOT_DESTROYED();
   return VisualRectInLocalSVGCoordinates();
 }
 
 gfx::RectF LayoutNGSVGForeignObject::VisualRectInLocalSVGCoordinates() const {
   NOT_DESTROYED();
+  if (RuntimeEnabledFeatures::LayoutNGNoLocationEnabled()) {
+    PhysicalOffset offset = PhysicalLocation();
+    PhysicalSize size = Size();
+    return gfx::RectF(offset.left, offset.top, size.width, size.height);
+  }
   return gfx::RectF(FrameRect());
 }
 
@@ -70,7 +80,7 @@ AffineTransform LayoutNGSVGForeignObject::LocalToSVGParentTransform() const {
   return transform;
 }
 
-LayoutPoint LayoutNGSVGForeignObject::Location() const {
+LayoutPoint LayoutNGSVGForeignObject::LocationInternal() const {
   NOT_DESTROYED();
   return overridden_location_;
 }
@@ -100,12 +110,9 @@ void LayoutNGSVGForeignObject::UpdateLayout() {
   // TODO(fs): Remove this. AFAICS in all cases where descendants compute some
   // form of CTM, they stop at their nearest ancestor LayoutSVGRoot, and thus
   // will not care about (reach) this value.
-  if (needs_transform_update_) {
-    local_transform_ =
-        foreign->CalculateTransform(SVGElement::kIncludeMotionTransform);
-  }
+  UpdateTransformBeforeLayout();
 
-  LayoutRect old_frame_rect = FrameRect();
+  PhysicalRect old_frame_rect(PhysicalLocation(), Size());
 
   // Resolve the viewport in the local coordinate space - this does not include
   // zoom.
@@ -147,7 +154,8 @@ void LayoutNGSVGForeignObject::UpdateLayout() {
   NGBlockNode(this).Layout(builder.ToConstraintSpace());
 
   DCHECK(!NeedsLayout() || ChildLayoutBlockedByDisplayLock());
-  const bool bounds_changed = old_frame_rect != FrameRect();
+  const bool bounds_changed =
+      old_frame_rect != PhysicalRect(PhysicalLocation(), Size());
 
   // Invalidate all resources of this client if our reference box changed.
   if (EverHadLayout() && bounds_changed)
@@ -195,7 +203,7 @@ bool LayoutNGSVGForeignObject::NodeAtPointFromSVG(
   HitTestLocation local_without_offset(*local_location, -PhysicalLocation());
   HitTestResult layer_result(result.GetHitTestRequest(), local_without_offset);
   bool retval = Layer()->HitTest(local_without_offset, layer_result,
-                                 PhysicalRect(PhysicalRect::InfiniteIntRect()));
+                                 PhysicalRect(InfiniteIntRect()));
 
   // Preserve the "point in inner node frame" from the original request,
   // since |layer_result| is a hit test rooted at the <foreignObject> element,

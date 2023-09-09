@@ -79,6 +79,11 @@ constexpr int kImageIconCornerRadius = 4;
 // The maximum number of lines that can be shown in the details text.
 constexpr int kMultiLineLimit = 3;
 
+// For the progress bar.
+constexpr int kProgressBarWidth = 540;
+constexpr int kProgressBarHeight = 9;
+constexpr int kBarChartAnswerCardVerticalOffset = 5;
+
 // Flex layout orders detailing how container views are prioritized.
 constexpr int kSeparatorOrder = 1;
 constexpr int kRatingOrder = 1;
@@ -300,6 +305,28 @@ views::Label* SetupChildLabelView(
   return label;
 }
 
+views::ProgressBar* SetupChildProgressBarView(views::FlexLayoutView* parent,
+                                              double value) {
+  views::ProgressBar* progress_bar_view =
+      parent->AddChildView(std::make_unique<views::ProgressBar>());
+  progress_bar_view->GetViewAccessibility().OverrideIsIgnored(true);
+  progress_bar_view->SetCanProcessEventsWithinSubtree(false);
+  progress_bar_view->SetPreferredSize(
+      gfx::Size(kProgressBarWidth, kProgressBarHeight));
+  progress_bar_view->SizeToPreferredSize();
+  progress_bar_view->SetValue(value);
+  progress_bar_view->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                               views::MaximumFlexSizeRule::kUnbounded,
+                               /*adjust_height_for_width=*/false));
+  progress_bar_view->SetForegroundColorId(
+      kColorAshSystemInfoBarChartColorForeground);
+  progress_bar_view->SetBackgroundColorId(
+      kColorAshSystemInfoBarChartColorBackground);
+  return progress_bar_view;
+}
+
 SearchResultInlineIconView* SetupChildInlineIconView(
     views::FlexLayoutView* parent) {
   SearchResultInlineIconView* inline_icon_view =
@@ -389,13 +416,6 @@ SearchResultView::SearchResultView(
       view_delegate_(view_delegate),
       dialog_controller_(dialog_controller),
       view_type_(view_type) {
-  // Result views are not expected to be focused - while the results UI is shown
-  // the focus is kept within the `SearchBoxView`, which manages result
-  // selection state in response to keyboard navigation keys, and forwards
-  // all relevant key events (e.g. ENTER key for result activation) to search
-  // result views as needed.
-  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-
   SetCallback(base::BindRepeating(&SearchResultView::OnButtonPressed,
                                   base::Unretained(this)));
 
@@ -471,6 +491,16 @@ SearchResultView::SearchResultView(
           .WithWeight(1));
   title_container_->SetFlexAllocationOrder(
       views::FlexAllocationOrder::kReverse);
+
+  progress_bar_container_ = title_and_details_container_->AddChildView(
+      std::make_unique<views::FlexLayoutView>());
+  progress_bar_container_->SetCrossAxisAlignment(
+      views::LayoutAlignment::kStretch);
+  progress_bar_container_->SetOrientation(
+      views::LayoutOrientation::kHorizontal);
+  progress_bar_container_->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets::TLBR(kBarChartAnswerCardVerticalOffset, 0,
+                        kBarChartAnswerCardVerticalOffset, 0)));
 
   result_text_separator_label_ = SetupChildLabelView(
       title_and_details_container_, view_type_, LabelType::kDetails,
@@ -849,6 +879,7 @@ void SearchResultView::UpdateBigTitleContainer() {
   // Big title is only shown for answer card views.
   big_title_main_text_container_->RemoveAllChildViews();
   big_title_label_tags_.clear();
+
   if (!result() || result()->big_title_text_vector().empty()) {
     big_title_main_text_container_->SetVisible(false);
   } else {
@@ -981,6 +1012,22 @@ void SearchResultView::UpdateKeyboardShortcutContainer() {
     // shortcut text vector has valid contents.
     title_and_details_container_->SetOrientation(
         views::LayoutOrientation::kHorizontal);
+  }
+}
+
+void SearchResultView::UpdateProgressBarContainer() {
+  progress_bar_container_->RemoveAllChildViews();
+  if (result() && result()->is_system_info_card_bar_chart()) {
+    is_progress_bar_answer_card_ = true;
+    progress_bar_ = SetupChildProgressBarView(
+        progress_bar_container_, result()->bar_chart_value().value() / 100);
+    text_container_->SetVisible(true);
+    title_container_->SetVisible(false);
+    title_and_details_container_->SetVisible(true);
+    progress_bar_container_->SetVisible(true);
+  } else {
+    is_progress_bar_answer_card_ = false;
+    progress_bar_container_->SetVisible(false);
   }
 }
 
@@ -1174,6 +1221,13 @@ void SearchResultView::Layout() {
     gfx::Rect centered_text_bounds(text_bounds);
     centered_text_bounds.ClampToCenteredSize(text_size);
     text_container_->SetBoundsRect(centered_text_bounds);
+  } else if (!details_label_tags_.empty() && is_progress_bar_answer_card_ &&
+             result() && result()->is_system_info_card_bar_chart()) {
+    gfx::Size label_size(text_bounds.width(),
+                         PrimaryTextHeight() + SecondaryTextHeight());
+    gfx::Rect centered_text_bounds(text_bounds);
+    centered_text_bounds.ClampToCenteredSize(label_size);
+    text_container_->SetBoundsRect(centered_text_bounds);
   }
 }
 
@@ -1256,29 +1310,6 @@ void SearchResultView::OnMouseExited(const ui::MouseEvent& event) {
   actions_view()->UpdateButtonsOnStateChanged();
 }
 
-void SearchResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  if (!GetVisible())
-    return;
-
-  // Mark the result is a list item in the list of search results.
-  // Also avoids an issue with the nested button case(append and remove
-  // button are child button of SearchResultView), which is not supported by
-  // ChromeVox. see details in crbug.com/924776.
-  node_data->role = ax::mojom::Role::kListBoxOption;
-  node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kClick);
-
-  // It is possible for the view to be visible but lack a result. When this
-  // happens, GetAccessibleName() will return an empty string. Because the
-  // focusable state is set in the constructor and not updated when the
-  // result is removed, the accessibility paint checks will fail.
-  if (!result()) {
-    node_data->SetNameExplicitlyEmpty();
-    return;
-  }
-
-  node_data->SetName(GetAccessibleName());
-}
-
 void SearchResultView::VisibilityChanged(View* starting_from, bool is_visible) {
   NotifyAccessibilityEvent(ax::mojom::Event::kLayoutComplete, true);
 }
@@ -1317,6 +1348,7 @@ void SearchResultView::OnMetadataChanged() {
     UpdateKeyboardShortcutContainer();
   }
   UpdateTitleContainer();
+  UpdateProgressBarContainer();
   UpdateDetailsContainer();
   UpdateAccessibleName();
   UpdateBadgeIcon();

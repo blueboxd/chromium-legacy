@@ -21,7 +21,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_navigation_result.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_navigation_transition.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_navigation_update_current_entry_options.h"
-#include "third_party/blink/renderer/core/dom/abort_signal.h"
+#include "third_party/blink/renderer/core/dom/abort_controller.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/event_target_names.h"
 #include "third_party/blink/renderer/core/events/error_event.h"
@@ -741,9 +741,11 @@ NavigationApi::DispatchResult NavigationApi::DispatchNavigateEvent(
   if (params->form && params->form->Method() == FormSubmission::kPostMethod) {
     init->setFormData(FormData::Create(params->form, ASSERT_NO_EXCEPTION));
   }
-  if (ongoing_navigation_)
+  if (ongoing_navigation_) {
     init->setInfo(ongoing_navigation_->GetInfo());
-  init->setSignal(MakeGarbageCollected<AbortSignal>(window_));
+  }
+  auto* controller = AbortController::Create(script_state);
+  init->setSignal(controller->signal());
   init->setDownloadRequest(params->download_filename);
   // This unique_ptr needs to be in the function's scope, to maintain the
   // SoftNavigationEventScope until the event handler runs.
@@ -759,8 +761,8 @@ NavigationApi::DispatchResult NavigationApi::DispatchNavigateEvent(
 
     soft_navigation_heuristics->SameDocumentNavigationStarted(script_state);
   }
-  auto* navigate_event =
-      NavigateEvent::Create(window_, event_type_names::kNavigate, init);
+  auto* navigate_event = NavigateEvent::Create(
+      window_, event_type_names::kNavigate, init, controller);
   navigate_event->SetDispatchParams(params);
 
   CHECK(!ongoing_navigate_event_);
@@ -927,8 +929,7 @@ const AtomicString& NavigationApi::InterfaceName() const {
 void NavigationApi::AddedEventListener(
     const AtomicString& event_type,
     RegisteredEventListener& registered_listener) {
-  EventTargetWithInlineData::AddedEventListener(event_type,
-                                                registered_listener);
+  EventTarget::AddedEventListener(event_type, registered_listener);
   LocalFrame* frame = window_->GetFrame();
   if (event_type != event_type_names::kNavigate || !frame) {
     return;
@@ -942,8 +943,7 @@ void NavigationApi::AddedEventListener(
 void NavigationApi::RemovedEventListener(
     const AtomicString& event_type,
     const RegisteredEventListener& registered_listener) {
-  EventTargetWithInlineData::RemovedEventListener(event_type,
-                                                  registered_listener);
+  EventTarget::RemovedEventListener(event_type, registered_listener);
   LocalFrame* frame = window_->GetFrame();
   if (event_type != event_type_names::kNavigate || !frame) {
     return;
@@ -955,7 +955,7 @@ void NavigationApi::RemovedEventListener(
 }
 
 void NavigationApi::Trace(Visitor* visitor) const {
-  EventTargetWithInlineData::Trace(visitor);
+  EventTarget::Trace(visitor);
   visitor->Trace(window_);
   visitor->Trace(entries_);
   visitor->Trace(transition_);

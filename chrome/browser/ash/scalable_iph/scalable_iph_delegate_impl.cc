@@ -6,29 +6,405 @@
 
 #include <memory>
 
+#include "apps/launcher.h"
+#include "ash/constants/notifier_catalogs.h"
+#include "ash/public/cpp/network_config_service.h"
+#include "ash/public/cpp/new_window_delegate.h"
+#include "ash/public/cpp/notification_utils.h"
+#include "ash/public/cpp/system/anchored_nudge_data.h"
+#include "ash/public/cpp/system/anchored_nudge_manager.h"
+#include "ash/scalable_iph/wallpaper_ash_notification_view.h"
+#include "ash/system/message_center/message_view_factory.h"
+#include "base/notreached.h"
+#include "base/strings/utf_string_conversions.h"
+#include "build/chromeos_buildflags.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
+#include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ash/crosapi/crosapi_util.h"
+#include "chrome/browser/ash/crosapi/files_app_launcher.h"
+#include "chrome/browser/ash/crosapi/url_handler_ash.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
+#include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
 #include "chromeos/ash/components/scalable_iph/iph_session.h"
 #include "chromeos/ash/components/scalable_iph/scalable_iph_delegate.h"
+#include "chromeos/crosapi/cpp/gurl_os_handler_utils.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/message_center/public/cpp/notification.h"
+#include "ui/message_center/public/cpp/notification_delegate.h"
+#include "url/gurl.h"
 
 namespace ash {
 
+namespace {
+
+using ::chromeos::network_config::mojom::ConnectionStateType;
+using ::chromeos::network_config::mojom::FilterType;
+using ::chromeos::network_config::mojom::kNoLimit;
+using ::chromeos::network_config::mojom::NetworkFilter;
+using ::chromeos::network_config::mojom::NetworkStatePropertiesPtr;
+using ::chromeos::network_config::mojom::NetworkType;
+using Observer = ::scalable_iph::ScalableIphDelegate::Observer;
+using NotificationParams =
+    ::scalable_iph::ScalableIphDelegate::NotificationParams;
+using NotificationImageType =
+    ::scalable_iph::ScalableIphDelegate::NotificationImageType;
+using scalable_iph::ActionType;
+
+constexpr char kNotificationSourceName[] = "ChromeOS";
+constexpr char kWallpaperNotificationType[] = "wallpaper_notification_type";
+constexpr char kNotifierId[] = "scalable_iph";
+constexpr char kButtonIndex = 0;
+
+const base::flat_map<ActionType, std::string>& GetActionTypeURLs() {
+  static const base::NoDestructor<base::flat_map<ActionType, std::string>>
+      action_type_urls(
+          {{ActionType::kOpenChrome, "chrome://new-tab-page/"},
+           {ActionType::kOpenPersonalizationApp, "chrome://personalization/"},
+           {ActionType::kOpenGoogleDocs,
+            "https://docs.google.com/document/?usp=installed_webapp/"},
+           {ActionType::kOpenSettingsPrinter,
+            "chrome://os-settings/cupsPrinters/"},
+           {ActionType::kOpenPhoneHub, "chrome://os-settings/multidevice/"},
+           {ActionType::kOpenYouTube, "https://www.youtube.com/"}});
+  return *action_type_urls;
+}
+
+bool HasOnlineNetwork(const std::vector<NetworkStatePropertiesPtr>& networks) {
+  for (const NetworkStatePropertiesPtr& network : networks) {
+    if (network->connection_state == ConnectionStateType::kOnline) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Adds the given `notification` to the message center after it removes any
+// existing notification that has the same ID.
+void AddOrReplaceNotification(
+    std::unique_ptr<message_center::Notification> notification) {
+  auto* message_center = message_center::MessageCenter::Get();
+  message_center->RemoveNotification(notification->id(),
+                                     /*by_user=*/false);
+  message_center->AddNotification(std::move(notification));
+}
+
+message_center::NotifierId GetNotifierId() {
+  return message_center::NotifierId(
+      message_center::NotifierType::SYSTEM_COMPONENT, kNotifierId,
+      NotificationCatalogName::kScalableIphNotification);
+}
+
+bool IsWallpaperNotification(const NotificationParams& params) {
+  return params.image_type == NotificationImageType::kWallpaper;
+}
+
+message_center::NotificationType GetNotificationType(
+    const NotificationParams& params) {
+  switch (params.image_type) {
+    case NotificationImageType::kWallpaper:
+      return message_center::NOTIFICATION_TYPE_CUSTOM;
+    case NotificationImageType::kNoImage:
+      return message_center::NOTIFICATION_TYPE_SIMPLE;
+  }
+  NOTREACHED_NORETURN();
+}
+
+void OpenUrlForProfile(Profile* profile, const GURL& url) {
+  if (crosapi::browser_util::IsLacrosPrimaryBrowser()) {
+    const GURL sanitized_url =
+        crosapi::gurl_os_handler_utils::SanitizeAshURL(url);
+    // Handle settings-related urls to open in their respective windows
+    // rather than a browser window.
+    if (ChromeWebUIControllerFactory::GetInstance()->CanHandleUrl(
+            sanitized_url)) {
+      crosapi::UrlHandlerAsh().OpenUrl(sanitized_url);
+      return;
+    }
+
+    // TODO(b/291771298): Opening personalization hub links doesn't work in
+    // the lacros browser so we need to handle it separately.
+    if (url.spec() ==
+        GetActionTypeURLs().at(ActionType::kOpenPersonalizationApp)) {
+      NavigateParams navigate_params(
+          profile, url,
+          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                    ui::PAGE_TRANSITION_FROM_API));
+      navigate_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+      navigate_params.window_action = NavigateParams::SHOW_WINDOW;
+      Navigate(&navigate_params);
+      return;
+    }
+  }
+
+  ash::NewWindowDelegate::GetPrimary()->OpenUrl(
+      url, ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction,
+      ash::NewWindowDelegate::Disposition::kNewWindow);
+}
+
+class ScalableIphNotificationDelegate
+    : public message_center::NotificationDelegate {
+ public:
+  // TODO(b/284158779): Add `ActionType`.
+  ScalableIphNotificationDelegate(
+      std::unique_ptr<scalable_iph::IphSession> iph_session,
+      std::string notification_id,
+      ActionType action_type)
+      : iph_session_(std::move(iph_session)),
+        notification_id_(notification_id),
+        action_type_(action_type) {}
+
+  // message_center::NotificationDelegate:
+  void Click(const absl::optional<int>& button_index,
+             const absl::optional<std::u16string>& reply) override {
+    if (!button_index.has_value() || button_index.value() != kButtonIndex) {
+      return;
+    }
+
+    iph_session_->PerformAction(action_type_);
+    message_center::MessageCenter::Get()->RemoveNotification(notification_id_,
+                                                             /*by_user=*/false);
+  }
+
+ private:
+  ~ScalableIphNotificationDelegate() override = default;
+
+  std::unique_ptr<scalable_iph::IphSession> iph_session_;
+  std::string notification_id_;
+  ActionType action_type_;
+};
+
+}  // namespace
+
 ScalableIphDelegateImpl::ScalableIphDelegateImpl(Profile* profile)
-    : profile_(profile) {}
+    : profile_(profile) {
+  GetNetworkConfigService(
+      remote_cros_network_config_.BindNewPipeAndPassReceiver());
+  remote_cros_network_config_->AddObserver(
+      receiver_cros_network_config_observer_.BindNewPipeAndPassRemote());
+
+  QueryOnlineNetworkState();
+
+  MessageViewFactory::SetCustomNotificationViewFactory(
+      kWallpaperNotificationType,
+      base::BindRepeating(&WallpaperAshNotificationView::CreateWithPreview));
+}
 
 // Remember NOT to interact with `iph_session` from the destructor. See the
 // comment of `ScalableIphDelegate::ShowBubble` for details.
-ScalableIphDelegateImpl::~ScalableIphDelegateImpl() = default;
+ScalableIphDelegateImpl::~ScalableIphDelegateImpl() {
+  // Remove the custom notification view factories.
+  MessageViewFactory::ClearCustomNotificationViewFactory(
+      kWallpaperNotificationType);
+}
 
 void ScalableIphDelegateImpl::ShowBubble(
     const scalable_iph::ScalableIphDelegate::BubbleParams& params,
     std::unique_ptr<scalable_iph::IphSession> iph_session) {
-  // TODO(b/284158855): Add implementation.
+  // It will be no-op if the `bubble_id_` is an empty string when the first time
+  // to show a bubble.
+  ash::AnchoredNudgeManager::Get()->Cancel(bubble_id_);
+  bubble_id_ = params.bubble_id;
+  bubble_iph_session_ = std::move(iph_session);
+
+  ash::AnchoredNudgeData nudge_data(
+      params.bubble_id, NudgeCatalogName::kScalableIphBubble,
+      base::UTF8ToUTF16(params.text), /*anchor_view=*/nullptr);
+
+  nudge_data.first_button_text = base::UTF8ToUTF16(params.button.text);
+  nudge_data.first_button_callback =
+      base::BindRepeating(&ScalableIphDelegateImpl::OnNudgeButtonClicked,
+                          weak_ptr_factory_.GetWeakPtr(), params.bubble_id,
+                          params.button.action.action_type);
+  nudge_data.dismiss_callback =
+      base::BindRepeating(&ScalableIphDelegateImpl::OnNudgeDismissed,
+                          weak_ptr_factory_.GetWeakPtr(), params.bubble_id);
+  ash::AnchoredNudgeManager::Get()->Show(nudge_data);
 }
 
 void ScalableIphDelegateImpl::ShowNotification(
-    const scalable_iph::ScalableIphDelegate::NotificationParams& params,
+    const NotificationParams& params,
     std::unique_ptr<scalable_iph::IphSession> iph_session) {
   // TODO(b/284158831): Add implementation.
+  std::string notification_source_name = kNotificationSourceName;
+  std::string notification_title = params.title;
+  std::string notification_text = params.text;
+
+  message_center::RichNotificationData rich_notification_data;
+  CHECK(!params.button.text.empty())
+      << "Scalable IPH notification should have a button";
+  std::string button_text = params.button.text;
+  message_center::ButtonInfo button_info;
+  button_info.title = base::UTF8ToUTF16(button_text);
+  rich_notification_data.buttons.push_back(button_info);
+
+  std::unique_ptr<message_center::Notification> notification =
+      ash::CreateSystemNotificationPtr(
+          GetNotificationType(params), params.notification_id,
+          base::UTF8ToUTF16(notification_title),
+          base::UTF8ToUTF16(notification_text),
+          base::UTF8ToUTF16(notification_source_name), GURL(), GetNotifierId(),
+          rich_notification_data,
+          base::MakeRefCounted<ScalableIphNotificationDelegate>(
+              std::move(iph_session), params.notification_id,
+              params.button.action.action_type),
+          gfx::kNoneIcon,
+          message_center::SystemNotificationWarningLevel::NORMAL);
+  if (IsWallpaperNotification(params)) {
+    notification->set_custom_view_type(kWallpaperNotificationType);
+  }
+  AddOrReplaceNotification(std::move(notification));
+}
+
+void ScalableIphDelegateImpl::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ScalableIphDelegateImpl::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+bool ScalableIphDelegateImpl::IsOnline() {
+  return has_online_network_;
+}
+
+int ScalableIphDelegateImpl::ClientAgeInDays() {
+  const base::Time& creation_time = profile_->GetCreationTime();
+  const base::TimeDelta& delta = base::Time::Now() - creation_time;
+  return delta.InDaysFloored();
+}
+
+void ScalableIphDelegateImpl::PerformActionForScalableIph(
+    ActionType action_type) {
+  switch (action_type) {
+    case ActionType::kOpenChrome: {
+      OpenUrlForProfile(profile_,
+                        GURL(GetActionTypeURLs().at(ActionType::kOpenChrome)));
+      break;
+    }
+    case ActionType::kOpenPersonalizationApp: {
+      OpenUrlForProfile(
+          profile_,
+          GURL(GetActionTypeURLs().at(ActionType::kOpenPersonalizationApp)));
+      break;
+    }
+    case ActionType::kOpenPlayStore: {
+      arc::LaunchApp(profile_, arc::kPlayStoreAppId, ui::EF_NONE,
+                     arc::UserInteractionType::APP_STARTED_FROM_OTHER_APP);
+      break;
+    }
+    case ActionType::kOpenGoogleDocs: {
+      OpenUrlForProfile(
+          profile_, GURL(GetActionTypeURLs().at(ActionType::kOpenGoogleDocs)));
+      break;
+    }
+    case ActionType::kOpenGooglePhotos: {
+      arc::LaunchApp(profile_, arc::kGooglePhotosAppId, ui::EF_NONE,
+                     arc::UserInteractionType::APP_STARTED_FROM_OTHER_APP);
+      break;
+    }
+    case ActionType::kOpenSettingsPrinter: {
+      OpenUrlForProfile(
+          profile_,
+          GURL(GetActionTypeURLs().at(ActionType::kOpenSettingsPrinter)));
+      break;
+    }
+    case ActionType::kOpenPhoneHub: {
+      OpenUrlForProfile(
+          profile_, GURL(GetActionTypeURLs().at(ActionType::kOpenPhoneHub)));
+      break;
+    }
+    case ActionType::kOpenYouTube: {
+      if (apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(
+              profile_)) {
+        auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
+        proxy->LaunchAppWithUrl(
+            extension_misc::kYoutubePwaAppId,
+            apps::GetEventFlags(WindowOpenDisposition::NEW_WINDOW,
+                                /*prefer_container=*/true),
+            GURL(GetActionTypeURLs().at(ActionType::kOpenYouTube)),
+            apps::LaunchSource::kFromOtherApp,
+            std::make_unique<apps::WindowInfo>(display::kDefaultDisplayId));
+      } else {
+        OpenUrlForProfile(
+            profile_, GURL(GetActionTypeURLs().at(ActionType::kOpenYouTube)));
+      }
+      break;
+    }
+    case ActionType::kOpenFileManager: {
+      std::string user_id_hash =
+          ash::BrowserContextHelper::GetUserIdHashFromBrowserContext(profile_);
+      std::unique_ptr<crosapi::FilesAppLauncher> files_app_launcher =
+          std::make_unique<crosapi::FilesAppLauncher>(
+              apps::AppServiceProxyFactory::GetForProfile(profile_));
+      files_app_launcher->Launch(base::BindOnce(
+          crosapi::browser_util::ClearGotoFilesClicked,
+          g_browser_process->local_state(), std::move(user_id_hash)));
+      break;
+    }
+    case ActionType::kOpenLauncher:
+    case ActionType::kInvalid: {
+      DLOG(WARNING)
+          << "Action type does not have an implemented call-to-action.";
+      return;
+    }
+  }
+}
+
+void ScalableIphDelegateImpl::OnActiveNetworksChanged(
+    std::vector<NetworkStatePropertiesPtr> networks) {
+  SetHasOnlineNetwork(HasOnlineNetwork(networks));
+}
+
+void ScalableIphDelegateImpl::SetHasOnlineNetwork(bool has_online_network) {
+  if (has_online_network_ == has_online_network) {
+    return;
+  }
+
+  has_online_network_ = has_online_network;
+
+  for (Observer& observer : observers_) {
+    observer.OnConnectionChanged(has_online_network_);
+  }
+}
+
+void ScalableIphDelegateImpl::QueryOnlineNetworkState() {
+  remote_cros_network_config_->GetNetworkStateList(
+      NetworkFilter::New(FilterType::kActive, NetworkType::kAll, kNoLimit),
+      base::BindOnce(&ScalableIphDelegateImpl::OnNetworkStateList,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ScalableIphDelegateImpl::OnNetworkStateList(
+    std::vector<NetworkStatePropertiesPtr> networks) {
+  SetHasOnlineNetwork(HasOnlineNetwork(networks));
+}
+
+void ScalableIphDelegateImpl::OnNudgeButtonClicked(
+    const std::string& bubble_id,
+    ActionType action_type) {
+  if (bubble_id_ != bubble_id) {
+    DCHECK(false) << "Callback for an obsolete bubble id gets called "
+                  << bubble_id;
+    return;
+  }
+  bubble_iph_session_->PerformAction(action_type);
+}
+
+void ScalableIphDelegateImpl::OnNudgeDismissed(const std::string& bubble_id) {
+  if (bubble_id_ != bubble_id) {
+    DCHECK(false) << "Callback for an obsolete bubble id gets called "
+                  << bubble_id;
+    return;
+  }
+  bubble_iph_session_.reset();
+  bubble_id_ = "";
 }
 
 }  // namespace ash

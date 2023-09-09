@@ -11,12 +11,17 @@
 #include <sys/mman.h>
 
 #include "base/functional/callback.h"
+#include "base/time/time.h"
 #include "media/base/video_codecs.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #ifndef V4L2_PIX_FMT_QC08C
 #define V4L2_PIX_FMT_QC08C \
   v4l2_fourcc('Q', '0', '8', 'C') /* Qualcomm 8-bit compressed */
+#endif
+
+#ifndef V4L2_PIX_FMT_INVALID
+#define V4L2_PIX_FMT_INVALID v4l2_fourcc('0', '0', '0', '0')
 #endif
 
 namespace gfx {
@@ -33,6 +38,21 @@ using IoctlAsCallback = base::RepeatingCallback<int(int, void*)>;
 // TODO(b/279980150): correct types and argument order and use decltype.
 using MmapAsCallback =
     base::RepeatingCallback<void*(void*, unsigned int, int, int, unsigned int)>;
+
+// These values are logged to UMA. Entries should not be renumbered and numeric
+// values should never be reused. Please keep in sync with
+// "MediaIoctlRequests" in src/tools/metrics/histograms/enums.xml.
+enum class MediaIoctlRequests {
+  kMediaIocDeviceInfo = 0,
+  kMediaIocRequestAlloc = 1,
+  kMediaRequestIocQueue = 2,
+  kMediaRequestIocReinit = 3,
+  kMaxValue = kMediaRequestIocReinit,
+};
+
+// Records Media.V4L2VideoDecoder.MediaIoctlError UMA when errors happen with
+// media controller API ioctl requests.
+void RecordMediaIoctlUMA(MediaIoctlRequests function);
 
 // Returns a human readable description of |memory|.
 const char* V4L2MemoryToString(v4l2_memory memory);
@@ -82,6 +102,18 @@ void GetSupportedResolution(const IoctlAsCallback& ioctl_cb,
                             uint32_t pixelformat,
                             gfx::Size* min_resolution,
                             gfx::Size* max_resolution);
+
+// Translates a media::VideoCodecProfile to a supported pixel format
+// (e.g. V4L2_PIX_FMT_VP9) if those are supported by Chrome. It returns
+// V4L2_PIX_FMT_INVALID otherwise.
+uint32_t VideoCodecProfileToV4L2PixFmt(VideoCodecProfile profile,
+                                       bool slice_based);
+
+// Translates a POSIX |timeval| to Chrome's base::TimeDelta.
+base::TimeDelta TimeValToTimeDelta(const struct timeval& timeval);
+
+// Translates a Chrome |time_delta| to a POSIX struct timeval.
+struct timeval TimeDeltaToTimeVal(base::TimeDelta time_delta);
 
 }  // namespace media
 

@@ -196,6 +196,10 @@ void UserContext::SetKey(const Key& key) {
   key_ = key;
 }
 
+void UserContext::SetReplacementKey(const Key& replacement_key) {
+  replacement_key_ = replacement_key;
+}
+
 void UserContext::SaveKeyForReplacement() {
   if (replacement_key_.has_value())
     return;
@@ -344,6 +348,10 @@ const AuthFactorsConfiguration& UserContext::GetAuthFactorsConfiguration() {
 
 const std::string& UserContext::GetAuthSessionId() const {
   return authsession_id_;
+}
+
+AuthSessionIntents UserContext::GetAuthorizedIntents() const {
+  return authorized_for_;
 }
 
 void UserContext::AddAuthorizedIntent(const AuthSessionIntent auth_intent) {

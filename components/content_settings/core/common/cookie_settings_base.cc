@@ -45,6 +45,23 @@ CookieSettingsBase::CookieSettingsBase()
       ) {
 }
 
+CookieSettingsBase::CookieSettingWithMetadataBase::
+    CookieSettingWithMetadataBase(
+        ContentSetting cookie_setting,
+        absl::optional<ThirdPartyBlockingScope> third_party_blocking_scope,
+        bool is_explicit_setting)
+    : cookie_setting_(cookie_setting),
+      third_party_blocking_scope_(third_party_blocking_scope),
+      is_explicit_setting_(is_explicit_setting) {
+  DCHECK(!third_party_blocking_scope_.has_value() ||
+         !IsAllowed(cookie_setting_));
+}
+
+bool CookieSettingsBase::CookieSettingWithMetadataBase::
+    BlockedByThirdPartyCookieBlocking() const {
+  return !IsAllowed(cookie_setting_) && third_party_blocking_scope_.has_value();
+}
+
 // static
 bool CookieSettingsBase::IsThirdPartyRequest(
     const GURL& url,
@@ -105,11 +122,11 @@ ContentSetting CookieSettingsBase::GetCookieSetting(
     const GURL& url,
     const GURL& first_party_url,
     net::CookieSettingOverrides overrides,
-    content_settings::SettingSource* source) const {
+    content_settings::SettingInfo* info) const {
   return GetCookieSettingInternal(
       url, first_party_url,
       IsThirdPartyRequest(url, net::SiteForCookies::FromUrl(first_party_url)),
-      overrides, source);
+      overrides, info);
 }
 
 bool CookieSettingsBase::IsFullCookieAccessAllowed(

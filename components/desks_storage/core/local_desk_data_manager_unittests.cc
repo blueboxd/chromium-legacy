@@ -362,9 +362,9 @@ class LocalDeskDataManagerTest : public testing::Test {
               LocalDeskDataManager::UpdateEntryStatus::kOk);
   }
 
-  void VerifyUpdateEntryBadPolicy() {
+  void VerifyUpdateEntryOutdatePolicy() {
     EXPECT_EQ(data_manager_->last_update_status_,
-              LocalDeskDataManager::UpdateEntryStatus::kBadPolicy);
+              LocalDeskDataManager::UpdateEntryStatus::kOutdatedPolicy);
   }
 
   void VerifyUpdateEntryNotFound() {
@@ -456,6 +456,28 @@ TEST_F(LocalDeskDataManagerTest, CanGetAllEntries) {
 
   // Sanity check for the search function.
   EXPECT_FALSE(FindUuidInUuidList(GetTestUuid(TestUuidId(4)), result.entries));
+}
+
+TEST_F(LocalDeskDataManagerTest, CanGetAllUuids) {
+  data_manager_->AddOrUpdateEntry(std::move(sample_desk_template_one_),
+                                  base::BindOnce(&VerifyEntryAddedCorrectly));
+
+  data_manager_->AddOrUpdateEntry(std::move(sample_desk_template_two_),
+                                  base::BindOnce(&VerifyEntryAddedCorrectly));
+
+  data_manager_->AddOrUpdateEntry(std::move(sample_desk_template_three_),
+                                  base::BindOnce(&VerifyEntryAddedCorrectly));
+
+  task_environment_.RunUntilIdle();
+
+  std::set<base::Uuid> entry_uuids = data_manager_->GetAllEntryUuids();
+
+  entry_uuids.erase(GetTestUuid(TestUuidId(1)));
+  entry_uuids.erase(GetTestUuid(TestUuidId(2)));
+  entry_uuids.erase(GetTestUuid(TestUuidId(3)));
+
+  // We should have exactly the correct set of IDs returned from the model.
+  EXPECT_TRUE(entry_uuids.empty());
 }
 
 TEST_F(LocalDeskDataManagerTest, GetAllEntriesIncludesPolicyValues) {
@@ -1106,9 +1128,11 @@ TEST_F(LocalDeskDataManagerTest, DoesNotOverwriteOnDifferentPolicy) {
   data_manager_->AddOrUpdateEntry(parsed_policy.at(0)->Clone(),
                                   base::BindOnce(&VerifyEntryAddedCorrectly));
 
-  // If we update the template it should return kDuplicate.
+  // If we update the template it should return kOutdatedPolicy because the
+  // policy definitions differ.  During runtime this happens if we attempt to
+  // update a template that has had a new policy pushed to it.
   data_manager_->UpdateEntry(MakePolicyTemplateWithEmptyPolicy());
-  VerifyUpdateEntryBadPolicy();
+  VerifyUpdateEntryOutdatePolicy();
 }
 
 }  // namespace desks_storage

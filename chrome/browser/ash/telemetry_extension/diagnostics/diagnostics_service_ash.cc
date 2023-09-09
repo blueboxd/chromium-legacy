@@ -114,6 +114,18 @@ void DiagnosticsServiceAsh::RunAcPowerRoutine(
           std::move(callback)));
 }
 
+void DiagnosticsServiceAsh::RunAudioDriverRoutine(
+    RunAudioDriverRoutineCallback callback) {
+  GetService()->RunAudioDriverRoutine(base::BindOnce(
+      [](crosapi::mojom::DiagnosticsService::RunAudioDriverRoutineCallback
+             callback,
+         cros_healthd::mojom::RunRoutineResponsePtr ptr) {
+        std::move(callback).Run(
+            converters::ConvertDiagnosticsPtr(std::move(ptr)));
+      },
+      std::move(callback)));
+}
+
 void DiagnosticsServiceAsh::RunBatteryCapacityRoutine(
     RunBatteryCapacityRoutineCallback callback) {
   GetService()->RunBatteryCapacityRoutine(base::BindOnce(
@@ -162,6 +174,18 @@ void DiagnosticsServiceAsh::RunBatteryHealthRoutine(
     RunBatteryHealthRoutineCallback callback) {
   GetService()->RunBatteryHealthRoutine(base::BindOnce(
       [](crosapi::mojom::DiagnosticsService::RunBatteryHealthRoutineCallback
+             callback,
+         cros_healthd::mojom::RunRoutineResponsePtr ptr) {
+        std::move(callback).Run(
+            converters::ConvertDiagnosticsPtr(std::move(ptr)));
+      },
+      std::move(callback)));
+}
+
+void DiagnosticsServiceAsh::RunBluetoothPowerRoutine(
+    RunBluetoothPowerRoutineCallback callback) {
+  GetService()->RunBluetoothPowerRoutine(base::BindOnce(
+      [](crosapi::mojom::DiagnosticsService::RunBluetoothPowerRoutineCallback
              callback,
          cros_healthd::mojom::RunRoutineResponsePtr ptr) {
         std::move(callback).Run(
@@ -394,6 +418,33 @@ void DiagnosticsServiceAsh::RunSmartctlCheckRoutine(
       converters::ConvertDiagnosticsPtr(std::move(percentage_used_threshold)),
       base::BindOnce(
           [](crosapi::mojom::DiagnosticsService::RunSmartctlCheckRoutineCallback
+                 callback,
+             cros_healthd::mojom::RunRoutineResponsePtr ptr) {
+            std::move(callback).Run(
+                converters::ConvertDiagnosticsPtr(std::move(ptr)));
+          },
+          std::move(callback)));
+}
+
+void DiagnosticsServiceAsh::RunUfsLifetimeRoutine(
+    RunUfsLifetimeRoutineCallback callback) {
+  GetService()->RunUfsLifetimeRoutine(base::BindOnce(
+      [](crosapi::mojom::DiagnosticsService::RunUfsLifetimeRoutineCallback
+             callback,
+         cros_healthd::mojom::RunRoutineResponsePtr ptr) {
+        std::move(callback).Run(
+            converters::ConvertDiagnosticsPtr(std::move(ptr)));
+      },
+      std::move(callback)));
+}
+
+void DiagnosticsServiceAsh::RunPowerButtonRoutine(
+    uint32_t timeout_seconds,
+    RunPowerButtonRoutineCallback callback) {
+  GetService()->RunPowerButtonRoutine(
+      timeout_seconds,
+      base::BindOnce(
+          [](crosapi::mojom::DiagnosticsService::RunPowerButtonRoutineCallback
                  callback,
              cros_healthd::mojom::RunRoutineResponsePtr ptr) {
             std::move(callback).Run(

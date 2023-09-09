@@ -141,12 +141,22 @@ class PrintTestContentAnalysisDelegate : public ContentAnalysisDelegate {
 
 class PrintContentAnalysisUtilsTest
     : public PrintPreviewTest,
-      public testing::WithParamInterface<const char*> {
+      public testing::WithParamInterface<testing::tuple<const char*, bool>> {
  public:
   PrintContentAnalysisUtilsTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        printing::features::kEnableLocalScanAfterPreview);
+    if (local_scan_after_preview_feature_enabled()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          printing::features::kEnableLocalScanAfterPreview);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          printing::features::kEnableLocalScanAfterPreview);
+    }
     ContentAnalysisDelegate::DisableUIForTesting();
+  }
+
+  const char* policy_value() const { return std::get<0>(GetParam()); }
+  bool local_scan_after_preview_feature_enabled() const {
+    return std::get<1>(GetParam());
   }
 
   void SetUp() override {
@@ -179,7 +189,7 @@ class PrintContentAnalysisUtilsTest
             identity_test_environment_.identity_manager());
 
     enterprise_connectors::test::SetAnalysisConnector(profile()->GetPrefs(),
-                                                      PRINT, GetParam());
+                                                      PRINT, policy_value());
     test::SetOnSecurityEventReporting(profile()->GetPrefs(), true);
   }
 
@@ -210,7 +220,87 @@ class PrintContentAnalysisUtilsTest
 
 }  // namespace
 
-TEST_P(PrintContentAnalysisUtilsTest, Allowed) {
+TEST_P(PrintContentAnalysisUtilsTest, GetPrintAnalysisData_BeforeSystemDialog) {
+  auto data = GetPrintAnalysisData(contents(),
+                                   PrintScanningContext::kBeforeSystemDialog);
+
+  // TODO(b/281087582): Update assertions after the cloud policy is added to
+  // tests.
+  ASSERT_TRUE(data);
+  ASSERT_TRUE(data->settings.cloud_or_local_settings.is_local_analysis());
+  ASSERT_EQ(data->settings.block_until_verdict, BlockUntilVerdict::kBlock);
+}
+
+TEST_P(PrintContentAnalysisUtilsTest, GetPrintAnalysisData_BeforePreview) {
+  auto data =
+      GetPrintAnalysisData(contents(), PrintScanningContext::kBeforePreview);
+
+  // TODO(b/281087582): Update assertions after the cloud policy is added to
+  // tests.
+  if (local_scan_after_preview_feature_enabled()) {
+    ASSERT_FALSE(data);
+  } else {
+    ASSERT_TRUE(data);
+    ASSERT_TRUE(data->settings.cloud_or_local_settings.is_local_analysis());
+    ASSERT_EQ(data->settings.block_until_verdict, BlockUntilVerdict::kBlock);
+  }
+}
+
+TEST_P(PrintContentAnalysisUtilsTest,
+       GetPrintAnalysisData_SystemPrintAfterPreview) {
+  auto data = GetPrintAnalysisData(
+      contents(), PrintScanningContext::kSystemPrintAfterPreview);
+
+  // TODO(b/281087582): Update assertions after the cloud policy is added to
+  // tests.
+  if (local_scan_after_preview_feature_enabled()) {
+    ASSERT_TRUE(data);
+    ASSERT_TRUE(data->settings.cloud_or_local_settings.is_local_analysis());
+    ASSERT_EQ(data->settings.block_until_verdict, BlockUntilVerdict::kBlock);
+  } else {
+    ASSERT_FALSE(data);
+  }
+}
+
+TEST_P(PrintContentAnalysisUtilsTest,
+       GetPrintAnalysisData_NormalPrintAfterPreview) {
+  auto data = GetPrintAnalysisData(
+      contents(), PrintScanningContext::kNormalPrintAfterPreview);
+
+  // TODO(b/281087582): Update assertions after the cloud policy is added to
+  // tests.
+  if (local_scan_after_preview_feature_enabled()) {
+    ASSERT_TRUE(data);
+    ASSERT_TRUE(data->settings.cloud_or_local_settings.is_local_analysis());
+    ASSERT_EQ(data->settings.block_until_verdict, BlockUntilVerdict::kBlock);
+  } else {
+    ASSERT_FALSE(data);
+  }
+}
+
+TEST_P(PrintContentAnalysisUtilsTest,
+       GetPrintAnalysisData_NormalPrintBeforePrintDocument) {
+  auto data = GetPrintAnalysisData(
+      contents(), PrintScanningContext::kNormalPrintBeforePrintDocument);
+
+  // TODO(b/285048545): Update this test once the `kSystemPrintAfterPreview`
+  // case's logic is used in code.
+  ASSERT_FALSE(data);
+}
+
+TEST_P(PrintContentAnalysisUtilsTest,
+       GetPrintAnalysisData_SystemPrintBeforePrintDocument) {
+  auto data = GetPrintAnalysisData(
+      contents(), PrintScanningContext::kSystemPrintBeforePrintDocument);
+
+  // This enum values should never return a populated `data` since scanning
+  // should either take place before the preview dialog with the
+  // `kBeforePreview` context, or right after it with the
+  // `kNormalPrintAfterPreview` context.
+  ASSERT_FALSE(data);
+}
+
+TEST_P(PrintContentAnalysisUtilsTest, PrintIfAllowedByPolicyAllowed) {
   ContentAnalysisDelegate::SetFactoryForTesting(base::BindRepeating(
       &PrintTestContentAnalysisDelegate::Create,
       ContentAnalysisResponse::Result::TriggeredRule::ACTION_UNSPECIFIED));
@@ -225,34 +315,41 @@ TEST_P(PrintContentAnalysisUtilsTest, Allowed) {
     run_loop.Quit();
   });
 
-  PrintIfAllowedByPolicy(data, contents(), kPrinterName, std::move(on_verdict),
+  PrintIfAllowedByPolicy(data, contents(), kPrinterName,
+                         PrintScanningContext::kNormalPrintAfterPreview,
+                         std::move(on_verdict),
                          /*hide_preview=*/base::DoNothing());
   run_loop.Run();
 }
 
-TEST_P(PrintContentAnalysisUtilsTest, ReportOnly) {
+TEST_P(PrintContentAnalysisUtilsTest, PrintIfAllowedByPolicyReportOnly) {
   ContentAnalysisDelegate::SetFactoryForTesting(base::BindRepeating(
       &PrintTestContentAnalysisDelegate::Create,
       ContentAnalysisResponse::Result::TriggeredRule::REPORT_ONLY));
 
   test::EventReportValidator validator(client_.get());
-  validator.ExpectSensitiveDataEvent(
-      /*url*/ "",
-      /*source*/ "",
-      /*destination*/ kPrinterName,
-      /*filename*/ "New Tab",
-      /*sha*/ "",
-      /*trigger*/
-      extensions::SafeBrowsingPrivateEventRouter::kTriggerPagePrint,
-      /*dlp_verdict*/
-      CreateResult(ContentAnalysisResponse::Result::TriggeredRule::REPORT_ONLY),
-      /*mimetype*/ PrintMimeTypes(),
-      /*size*/ absl::nullopt,
-      /*result*/
-      safe_browsing::EventResultToString(safe_browsing::EventResult::ALLOWED),
-      /*username*/ kUserName,
-      /*profile_identifier*/ profile()->GetPath().AsUTF8Unsafe(),
-      /*scan_id*/ kScanId);
+  if (local_scan_after_preview_feature_enabled()) {
+    validator.ExpectSensitiveDataEvent(
+        /*url*/ "",
+        /*source*/ "",
+        /*destination*/ kPrinterName,
+        /*filename*/ "New Tab",
+        /*sha*/ "",
+        /*trigger*/
+        extensions::SafeBrowsingPrivateEventRouter::kTriggerPagePrint,
+        /*dlp_verdict*/
+        CreateResult(
+            ContentAnalysisResponse::Result::TriggeredRule::REPORT_ONLY),
+        /*mimetype*/ PrintMimeTypes(),
+        /*size*/ absl::nullopt,
+        /*result*/
+        safe_browsing::EventResultToString(safe_browsing::EventResult::ALLOWED),
+        /*username*/ kUserName,
+        /*profile_identifier*/ profile()->GetPath().AsUTF8Unsafe(),
+        /*scan_id*/ kScanId);
+  } else {
+    validator.ExpectNoReport();
+  }
 
   auto data = CreateData();
   base::RunLoop run_loop;
@@ -261,12 +358,14 @@ TEST_P(PrintContentAnalysisUtilsTest, ReportOnly) {
     run_loop.Quit();
   });
 
-  PrintIfAllowedByPolicy(data, contents(), kPrinterName, std::move(on_verdict),
+  PrintIfAllowedByPolicy(data, contents(), kPrinterName,
+                         PrintScanningContext::kNormalPrintAfterPreview,
+                         std::move(on_verdict),
                          /*hide_preview=*/base::DoNothing());
   run_loop.Run();
 }
 
-TEST_P(PrintContentAnalysisUtilsTest, WarnThenCancel) {
+TEST_P(PrintContentAnalysisUtilsTest, PrintIfAllowedByPolicyWarnThenCancel) {
   ContentAnalysisDelegate::SetFactoryForTesting(base::BindRepeating(
       &PrintTestContentAnalysisDelegate::Create,
       ContentAnalysisResponse::Result::TriggeredRule::WARN));
@@ -278,37 +377,43 @@ TEST_P(PrintContentAnalysisUtilsTest, WarnThenCancel) {
     ASSERT_TRUE(test_delegate_);
     test_delegate_->Cancel(/*warning=*/true);
   }));
-  validator.ExpectSensitiveDataEvent(
-      /*url*/ "",
-      /*source*/ "",
-      /*destination*/ kPrinterName,
-      /*filename*/ "New Tab",
-      /*sha*/ "",
-      /*trigger*/
-      extensions::SafeBrowsingPrivateEventRouter::kTriggerPagePrint,
-      /*dlp_verdict*/
-      CreateResult(ContentAnalysisResponse::Result::TriggeredRule::WARN),
-      /*mimetype*/ PrintMimeTypes(),
-      /*size*/ absl::nullopt,
-      /*result*/
-      safe_browsing::EventResultToString(safe_browsing::EventResult::WARNED),
-      /*username*/ kUserName,
-      /*profile_identifier*/ profile()->GetPath().AsUTF8Unsafe(),
-      /*scan_id*/ kScanId);
+  if (local_scan_after_preview_feature_enabled()) {
+    validator.ExpectSensitiveDataEvent(
+        /*url*/ "",
+        /*source*/ "",
+        /*destination*/ kPrinterName,
+        /*filename*/ "New Tab",
+        /*sha*/ "",
+        /*trigger*/
+        extensions::SafeBrowsingPrivateEventRouter::kTriggerPagePrint,
+        /*dlp_verdict*/
+        CreateResult(ContentAnalysisResponse::Result::TriggeredRule::WARN),
+        /*mimetype*/ PrintMimeTypes(),
+        /*size*/ absl::nullopt,
+        /*result*/
+        safe_browsing::EventResultToString(safe_browsing::EventResult::WARNED),
+        /*username*/ kUserName,
+        /*profile_identifier*/ profile()->GetPath().AsUTF8Unsafe(),
+        /*scan_id*/ kScanId);
+  } else {
+    validator.ExpectNoReport();
+  }
 
   auto data = CreateData();
   base::RunLoop run_loop;
-  auto on_verdict = base::BindLambdaForTesting([&run_loop](bool allowed) {
-    ASSERT_FALSE(allowed);
+  auto on_verdict = base::BindLambdaForTesting([this, &run_loop](bool allowed) {
+    ASSERT_NE(local_scan_after_preview_feature_enabled(), allowed);
     run_loop.Quit();
   });
 
-  PrintIfAllowedByPolicy(data, contents(), kPrinterName, std::move(on_verdict),
+  PrintIfAllowedByPolicy(data, contents(), kPrinterName,
+                         PrintScanningContext::kNormalPrintAfterPreview,
+                         std::move(on_verdict),
                          /*hide_preview=*/base::DoNothing());
   run_loop.Run();
 }
 
-TEST_P(PrintContentAnalysisUtilsTest, WarnedThenBypass) {
+TEST_P(PrintContentAnalysisUtilsTest, PrintIfAllowedByPolicyWarnedThenBypass) {
   ContentAnalysisDelegate::SetFactoryForTesting(base::BindRepeating(
       &PrintTestContentAnalysisDelegate::Create,
       ContentAnalysisResponse::Result::TriggeredRule::WARN));
@@ -347,23 +452,27 @@ TEST_P(PrintContentAnalysisUtilsTest, WarnedThenBypass) {
     }
   }));
 
-  validator.ExpectSensitiveDataEvent(
-      /*url*/ "",
-      /*source*/ "",
-      /*destination*/ kPrinterName,
-      /*filename*/ "New Tab",
-      /*sha*/ "",
-      /*trigger*/
-      extensions::SafeBrowsingPrivateEventRouter::kTriggerPagePrint,
-      /*dlp_verdict*/
-      CreateResult(ContentAnalysisResponse::Result::TriggeredRule::WARN),
-      /*mimetype*/ PrintMimeTypes(),
-      /*size*/ absl::nullopt,
-      /*result*/
-      safe_browsing::EventResultToString(safe_browsing::EventResult::WARNED),
-      /*username*/ kUserName,
-      /*profile_identifier*/ profile()->GetPath().AsUTF8Unsafe(),
-      /*scan_id*/ kScanId);
+  if (local_scan_after_preview_feature_enabled()) {
+    validator.ExpectSensitiveDataEvent(
+        /*url*/ "",
+        /*source*/ "",
+        /*destination*/ kPrinterName,
+        /*filename*/ "New Tab",
+        /*sha*/ "",
+        /*trigger*/
+        extensions::SafeBrowsingPrivateEventRouter::kTriggerPagePrint,
+        /*dlp_verdict*/
+        CreateResult(ContentAnalysisResponse::Result::TriggeredRule::WARN),
+        /*mimetype*/ PrintMimeTypes(),
+        /*size*/ absl::nullopt,
+        /*result*/
+        safe_browsing::EventResultToString(safe_browsing::EventResult::WARNED),
+        /*username*/ kUserName,
+        /*profile_identifier*/ profile()->GetPath().AsUTF8Unsafe(),
+        /*scan_id*/ kScanId);
+  } else {
+    validator.ExpectNoReport();
+  }
 
   auto data = CreateData();
   base::RunLoop run_loop;
@@ -372,51 +481,62 @@ TEST_P(PrintContentAnalysisUtilsTest, WarnedThenBypass) {
     run_loop.Quit();
   });
 
-  PrintIfAllowedByPolicy(data, contents(), kPrinterName, std::move(on_verdict),
+  PrintIfAllowedByPolicy(data, contents(), kPrinterName,
+                         PrintScanningContext::kNormalPrintAfterPreview,
+                         std::move(on_verdict),
                          /*hide_preview=*/base::DoNothing());
   run_loop.Run();
 }
 
-TEST_P(PrintContentAnalysisUtilsTest, Blocked) {
+TEST_P(PrintContentAnalysisUtilsTest, PrintIfAllowedByPolicyBlocked) {
   ContentAnalysisDelegate::SetFactoryForTesting(base::BindRepeating(
       &PrintTestContentAnalysisDelegate::Create,
       ContentAnalysisResponse::Result::TriggeredRule::BLOCK));
 
   test::EventReportValidator validator(client_.get());
-  validator.ExpectSensitiveDataEvent(
-      /*url*/ "",
-      /*source*/ "",
-      /*destination*/ kPrinterName,
-      /*filename*/ "New Tab",
-      /*sha*/ "",
-      /*trigger*/
-      extensions::SafeBrowsingPrivateEventRouter::kTriggerPagePrint,
-      /*dlp_verdict*/
-      CreateResult(ContentAnalysisResponse::Result::TriggeredRule::BLOCK),
-      /*mimetype*/ PrintMimeTypes(),
-      /*size*/ absl::nullopt,
-      /*result*/
-      safe_browsing::EventResultToString(safe_browsing::EventResult::BLOCKED),
-      /*username*/ kUserName,
-      /*profile_identifier*/ profile()->GetPath().AsUTF8Unsafe(),
-      /*scan_id*/ kScanId);
+  if (local_scan_after_preview_feature_enabled()) {
+    validator.ExpectSensitiveDataEvent(
+        /*url*/ "",
+        /*source*/ "",
+        /*destination*/ kPrinterName,
+        /*filename*/ "New Tab",
+        /*sha*/ "",
+        /*trigger*/
+        extensions::SafeBrowsingPrivateEventRouter::kTriggerPagePrint,
+        /*dlp_verdict*/
+        CreateResult(ContentAnalysisResponse::Result::TriggeredRule::BLOCK),
+        /*mimetype*/ PrintMimeTypes(),
+        /*size*/ absl::nullopt,
+        /*result*/
+        safe_browsing::EventResultToString(safe_browsing::EventResult::BLOCKED),
+        /*username*/ kUserName,
+        /*profile_identifier*/ profile()->GetPath().AsUTF8Unsafe(),
+        /*scan_id*/ kScanId);
+  } else {
+    validator.ExpectNoReport();
+  }
 
   auto data = CreateData();
   base::RunLoop run_loop;
-  auto on_verdict = base::BindLambdaForTesting([&run_loop](bool allowed) {
-    ASSERT_FALSE(allowed);
+  auto on_verdict = base::BindLambdaForTesting([this, &run_loop](bool allowed) {
+    ASSERT_NE(local_scan_after_preview_feature_enabled(), allowed);
     run_loop.Quit();
   });
 
-  PrintIfAllowedByPolicy(data, contents(), kPrinterName, std::move(on_verdict),
+  PrintIfAllowedByPolicy(data, contents(), kPrinterName,
+                         PrintScanningContext::kNormalPrintAfterPreview,
+                         std::move(on_verdict),
                          /*hide_preview=*/base::DoNothing());
   run_loop.Run();
 }
 
 // TODO(b/281087582): Add the cloud value, aka:
 // testing::Values(kLocalPolicy, kCloudPolicy)
-INSTANTIATE_TEST_SUITE_P(All,
-                         PrintContentAnalysisUtilsTest,
-                         testing::Values(kLocalPolicy));
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    PrintContentAnalysisUtilsTest,
+    testing::Combine(
+        /*policy_value=*/testing::Values(kLocalPolicy),
+        /*local_scan_after_preview_feature_enabled=*/testing::Bool()));
 
 }  // namespace enterprise_connectors

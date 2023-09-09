@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/functional/callback.h"
+#include "base/memory/raw_ref.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
@@ -24,6 +25,7 @@ class MockIndexedDBCallbacks : public IndexedDBCallbacks {
  public:
   MockIndexedDBCallbacks();
   explicit MockIndexedDBCallbacks(bool expect_connection);
+  ~MockIndexedDBCallbacks() override;
 
   MockIndexedDBCallbacks(const MockIndexedDBCallbacks&) = delete;
   MockIndexedDBCallbacks& operator=(const MockIndexedDBCallbacks&) = delete;
@@ -54,8 +56,6 @@ class MockIndexedDBCallbacks : public IndexedDBCallbacks {
   bool info_called() { return info_called_; }
 
  protected:
-  ~MockIndexedDBCallbacks() override;
-
   std::unique_ptr<IndexedDBConnection> connection_;
 
  private:
@@ -66,6 +66,32 @@ class MockIndexedDBCallbacks : public IndexedDBCallbacks {
   base::OnceClosure call_on_upgrade_needed_;
   base::OnceClosure call_on_db_success_;
   base::RepeatingClosure call_on_info_success_;
+};
+
+// This class wraps a `MockIndexedDBCallbacks`, passing through all
+// `IndexedDBCallbacks` methods. This allows a test to create an underlying
+// `MockIndexedDBCallbacks` and pass ownership of a wrapper to the pending
+// connection.
+class ThunkCallbacks : public MockIndexedDBCallbacks {
+ public:
+  // `wrapped` must outlast this.
+  explicit ThunkCallbacks(IndexedDBCallbacks& wrapped);
+  ~ThunkCallbacks() override = default;
+  ThunkCallbacks(const ThunkCallbacks&) = delete;
+  ThunkCallbacks& operator=(const ThunkCallbacks&) = delete;
+
+  void OnError(const IndexedDBDatabaseError& error) override;
+  void OnBlocked(int64_t existing_version) override;
+  void OnUpgradeNeeded(int64_t old_version,
+                       std::unique_ptr<IndexedDBConnection> connection,
+                       const blink::IndexedDBDatabaseMetadata& metadata,
+                       const IndexedDBDataLossInfo& data_loss_info) override;
+  void OnSuccess(std::unique_ptr<IndexedDBConnection> connection,
+                 const blink::IndexedDBDatabaseMetadata& metadata) override;
+  void OnSuccess(int64_t value) override;
+
+ private:
+  const raw_ref<IndexedDBCallbacks> wrapped_;
 };
 
 }  // namespace content

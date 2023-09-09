@@ -160,6 +160,21 @@ bool OverviewController::InOverviewSession() const {
   return overview_session_ && !overview_session_->is_shutting_down();
 }
 
+bool OverviewController::HandleContinuousScroll(float y_offset,
+                                                OverviewEnterExitType type) {
+  CHECK((type ==
+         OverviewEnterExitType::kContinuousAnimationEnterOnScrollUpdate) ||
+        (type == OverviewEnterExitType::kContinuousAnimationEnterOnScrollEnd));
+
+  if (!overview_session_) {
+    ToggleOverview(type);
+    return true;
+  }
+
+  overview_session_->set_enter_exit_overview_type(type);
+  return overview_session_->HandleContinuousScrollIntoOverview(y_offset);
+}
+
 void OverviewController::IncrementSelection(bool forward) {
   DCHECK(InOverviewSession());
   overview_session_->IncrementSelection(forward);

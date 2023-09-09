@@ -35,17 +35,15 @@ TEST(KeyFrameRequestProcessorTest, DefaultConfigurationIsUnconfigured) {
 }
 
 TEST_F(KeyFrameRequestProcessorClockTest,
-       DefaultProcessorRequestKeyFrameEvery100Frames) {
+       DefaultProcessorNeverSuggestsKeyframes) {
+  // At least not during the first 1000 frames or during 24 hours of runtime.
   KeyFrameRequestProcessor processor;
   OnKeyFrame(processor);
   ASSERT_FALSE(OnFrameAndShouldRequestKeyFrame(processor));
-  for (int i = 0; i != 99; i++) {
+  for (int i = 0; i != 1000; i++) {
     Advance(base::Seconds(1));
     ASSERT_FALSE(OnFrameAndShouldRequestKeyFrame(processor));
   }
-  // 101-th frame.
-  ASSERT_TRUE(OnFrameAndShouldRequestKeyFrame(processor));
-  // No keyframe during 24 hours of runtime.
   Advance(base::Hours(24));
   ASSERT_FALSE(OnFrameAndShouldRequestKeyFrame(processor));
 }

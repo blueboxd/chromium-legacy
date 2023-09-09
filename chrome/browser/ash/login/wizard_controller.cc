@@ -20,6 +20,7 @@
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
+#include "ash/public/cpp/login_types.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
@@ -51,12 +52,14 @@
 #include "chrome/browser/ash/login/login_wizard.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
+#include "chrome/browser/ash/login/screens/add_child_screen.h"
 #include "chrome/browser/ash/login/screens/app_downloading_screen.h"
 #include "chrome/browser/ash/login/screens/arc_vm_data_migration_screen.h"
 #include "chrome/browser/ash/login/screens/assistant_optin_flow_screen.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 #include "chrome/browser/ash/login/screens/choobe_screen.h"
 #include "chrome/browser/ash/login/screens/consolidated_consent_screen.h"
+#include "chrome/browser/ash/login/screens/consumer_update_screen.h"
 #include "chrome/browser/ash/login/screens/cryptohome_recovery_screen.h"
 #include "chrome/browser/ash/login/screens/cryptohome_recovery_setup_screen.h"
 #include "chrome/browser/ash/login/screens/demo_preferences_screen.h"
@@ -131,6 +134,7 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/webui/ash/login/add_child_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/app_downloading_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/arc_vm_data_migration_screen_handler.h"
@@ -138,6 +142,7 @@
 #include "chrome/browser/ui/webui/ash/login/auto_enrollment_check_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/choobe_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/consolidated_consent_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/consumer_update_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/cryptohome_recovery_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/cryptohome_recovery_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/demo_preferences_screen_handler.h"
@@ -215,6 +220,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
@@ -255,6 +261,8 @@ const StaticOobeScreenId kResumableOobeScreens[] = {
     UpdateView::kScreenId,
     EnrollmentScreenView::kScreenId,
     AutoEnrollmentCheckScreenView::kScreenId,
+    UserCreationView::kScreenId,
+    AddChildScreenView::kScreenId,
 };
 
 const StaticOobeScreenId kResumablePostLoginScreens[] = {
@@ -356,6 +364,33 @@ void RecordUMAHistogramForOOBEStepCompletionTime(OobeScreenId screen,
       "OOBE.StepCompletionTimeByExitReason." + screen_name + "." + exit_reason;
   base::UmaHistogramCustomTimes(histogram_name_with_reason, step_time,
                                 base::Milliseconds(10), base::Minutes(10), 100);
+}
+
+void RecordUMAHistogramForOOBECompletion(
+    WizardController::CompletedOobeFlowType flow_type) {
+  base::TimeTicks startup_time =
+      startup_metric_utils::GetCommon().MainEntryPointTicks();
+  if (startup_time.is_null()) {
+    return;
+  }
+  base::TimeDelta delta = base::TimeTicks::Now() - startup_time;
+
+  std::string type_string;
+  switch (flow_type) {
+    case WizardController::CompletedOobeFlowType::kAutoEnrollment:
+      type_string = "AutoEnrollment";
+      break;
+    case WizardController::CompletedOobeFlowType::kDemo:
+      type_string = "Demo";
+      break;
+    case WizardController::CompletedOobeFlowType::kRegular:
+      type_string = "Regular";
+      break;
+  }
+
+  std::string histogram_name = "OOBE.BootToOOBECompleted." + type_string;
+  base::UmaHistogramCustomTimes(histogram_name, delta, base::Milliseconds(10),
+                                base::Minutes(10), 100);
 }
 
 LoginDisplayHost* GetLoginDisplayHost() {
@@ -503,9 +538,13 @@ void WizardController::Init(OobeScreenId first_screen) {
 
 void WizardController::OnDestroyingOobeUI() {
   previous_screens_.clear();
+
   // Reset `current_screen_` to prevent its usage after OobeUI is gone.
-  current_screen_->Hide();
-  current_screen_ = nullptr;
+  if (current_screen_) {
+    current_screen_->Hide();
+    current_screen_ = nullptr;
+  }
+
   // Reset screens, they should not access handlers anymore.
   // TODO(https://crbug.com/1309022): This should probably be removed when all
   // the screen/handlers migrated to the new patterns.
@@ -515,6 +554,17 @@ void WizardController::OnDestroyingOobeUI() {
 
 void WizardController::HideCurrentScreen() {
   SetCurrentScreen(nullptr);
+}
+
+void WizardController::ContinueOobeFlow() {
+  // Use the saved screen preference from Local State if exist.
+  const std::string screen_pref =
+      GetLocalState()->GetString(prefs::kOobeScreenPending);
+  if (!screen_pref.empty() && HasScreen(PrefToScreenId(screen_pref))) {
+    AdvanceToScreen(PrefToScreenId(screen_pref));
+  } else {
+    ShowPackagedLicenseScreen();
+  }
 }
 
 void WizardController::AdvanceToScreenAfterHIDDetection(
@@ -807,6 +857,12 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnUserCreationScreenExit,
                           weak_factory_.GetWeakPtr())));
 
+  append(std::make_unique<AddChildScreen>(
+      oobe_ui->GetView<AddChildScreenHandler>()->AsWeakPtr(),
+      oobe_ui->GetErrorScreen(),
+      base::BindRepeating(&WizardController::OnAddChildScreenExit,
+                          weak_factory_.GetWeakPtr())));
+
   append(std::make_unique<EduCoexistenceLoginScreen>(
       base::BindRepeating(&WizardController::OnEduCoexistenceLoginScreenExit,
                           weak_factory_.GetWeakPtr())));
@@ -893,6 +949,14 @@ WizardController::CreateScreens() {
                             weak_factory_.GetWeakPtr())));
   }
 
+  if (features::IsOobeSoftwareUpdateEnabled()) {
+    append(std::make_unique<ConsumerUpdateScreen>(
+        oobe_ui->GetView<ConsumerUpdateScreenHandler>()->AsWeakPtr(),
+        oobe_ui->GetErrorScreen(),
+        base::BindRepeating(&WizardController::OnConsumerUpdateScreenExit,
+                            weak_factory_.GetWeakPtr())));
+  }
+
   return result;
 }
 
@@ -914,7 +978,7 @@ void WizardController::ShowNetworkScreen() {
 void WizardController::OnOwnershipStatusCheckDone(
     DeviceSettingsService::OwnershipStatus status) {
   if (status == DeviceSettingsService::OwnershipStatus::kOwnershipNone) {
-    ShowPackagedLicenseScreen();
+    ContinueOobeFlow();
   } else {
     ShowLoginScreen();
   }
@@ -979,6 +1043,14 @@ void WizardController::ShowGaiaPasswordChangedScreen(
 
 void WizardController::ShowGaiaInfoScreen() {
   SetCurrentScreen(GetScreen(GaiaInfoScreenView::kScreenId));
+}
+
+void WizardController::ShowAddChildScreen() {
+  SetCurrentScreen(GetScreen(AddChildScreenView::kScreenId));
+}
+
+void WizardController::ShowConsumerUpdateScreen() {
+  SetCurrentScreen(GetScreen(ConsumerUpdateScreenView::kScreenId));
 }
 
 void WizardController::ShowEnrollmentScreen() {
@@ -1067,9 +1139,6 @@ void WizardController::ShowWrongHWIDScreen() {
 
 void WizardController::ShowAutoEnrollmentCheckScreen() {
   AutoEnrollmentCheckScreen* screen = GetScreen<AutoEnrollmentCheckScreen>();
-  if (retry_auto_enrollment_check_) {
-    screen->ClearState();
-  }
   screen->set_auto_enrollment_controller(GetAutoEnrollmentController());
   SetCurrentScreen(screen);
 }
@@ -1200,6 +1269,9 @@ void WizardController::OnUserCreationScreenExit(
   OnScreenExit(UserCreationView::kScreenId,
                UserCreationScreen::GetResultString(result));
   switch (result) {
+    case UserCreationScreen::Result::SIGNIN_TRIAGE:
+      AdvanceToSigninScreen();
+      break;
     case UserCreationScreen::Result::SIGNIN:
     case UserCreationScreen::Result::SKIPPED:
       if (features::IsOobeGaiaInfoScreenEnabled()) {
@@ -1215,13 +1287,8 @@ void WizardController::OnUserCreationScreenExit(
           QuickStartScreen::FlowState::CONTINUING_AFTER_ENROLLMENT_CHECKS);
       AdvanceToScreen(QuickStartView::kScreenId);
       break;
-    case UserCreationScreen::Result::CHILD_SIGNIN:
-      GetScreen<GaiaScreen>()->LoadOnlineForChildSignin();
-      AdvanceToScreen(GaiaView::kScreenId);
-      break;
-    case UserCreationScreen::Result::CHILD_ACCOUNT_CREATE:
-      GetScreen<GaiaScreen>()->LoadOnlineForChildSignup();
-      AdvanceToScreen(GaiaView::kScreenId);
+    case UserCreationScreen::Result::ADD_CHILD:
+      ShowAddChildScreen();
       break;
     case UserCreationScreen::Result::ENTERPRISE_ENROLL:
       ShowEnrollmentScreenIfEligible();
@@ -1237,30 +1304,43 @@ void WizardController::OnUserCreationScreenExit(
   }
 }
 
+void WizardController::OnConsumerUpdateScreenExit(
+    ConsumerUpdateScreen::Result result) {
+  OnScreenExit(ConsumerUpdateScreenView::kScreenId,
+               ConsumerUpdateScreen::GetResultString(result));
+  // ToDo(b/278855932) Implement the consumerUpdateScreenExit
+  NOTIMPLEMENTED();
+}
+
 void WizardController::OnGaiaScreenExit(GaiaScreen::Result result) {
   OnScreenExit(GaiaView::kScreenId, GaiaScreen::GetResultString(result));
   switch (result) {
-    case GaiaScreen::Result::BACK:
     case GaiaScreen::Result::BACK_CHILD:
+      ShowAddChildScreen();
+      break;
+    case GaiaScreen::Result::BACK:
     case GaiaScreen::Result::CANCEL: {
+      if (features::IsOobeSoftwareUpdateEnabled()) {
+        // When `OobeSoftwareUpdate` is enabled, clicking the back button should
+        // return the user to the user creation screen if it was enabled.
+        if (wizard_context_->is_user_creation_enabled &&
+            result == GaiaScreen::Result::BACK) {
+          AdvanceToScreen(UserCreationView::kScreenId);
+          break;
+        }
+      }
       if (features::IsOobeGaiaInfoScreenEnabled()) {
         if (wizard_context_->is_user_creation_enabled) {
           // `Result::BACK` and `Result::BACK_CHILD` are only triggered when
           // pressing back button. It goes back to GaiaInfoScreenView if user
           // creation is enabled; otherwise, it behaves the same as
           // `Result::CANCEL` which is triggered by pressing ESC key.
-          // In the child flow the GaiaInfo screen is not shown, so in case of
-          // `Result::BACK_CHILD` we should go back to user creation screen
           if (result == GaiaScreen::Result::BACK) {
             if (wizard_context_->is_add_person_flow) {
               AdvanceToScreen(UserCreationView::kScreenId);
             } else {
               AdvanceToScreen(GaiaInfoScreenView::kScreenId);
             }
-            break;
-          }
-          if (result == GaiaScreen::Result::BACK_CHILD) {
-            AdvanceToScreen(UserCreationView::kScreenId);
             break;
           }
         }
@@ -1298,6 +1378,9 @@ void WizardController::OnGaiaScreenExit(GaiaScreen::Result result) {
     case GaiaScreen::Result::START_CONSUMER_KIOSK:
       LoginDisplayHost::default_host()->AttemptShowEnableConsumerKioskScreen();
       break;
+    case GaiaScreen::Result::QUICK_START:
+      ShowQuickStartScreen();
+      break;
   }
 }
 
@@ -1311,6 +1394,38 @@ void WizardController::OnGaiaInfoScreenExit(GaiaInfoScreen::Result result) {
     case GaiaInfoScreen::Result::kNext:
     case GaiaInfoScreen::Result::kNotApplicable:
       AdvanceToSigninScreen();
+      break;
+  }
+}
+
+void WizardController::OnAddChildScreenExit(AddChildScreen::Result result) {
+  OnScreenExit(AddChildScreenView::kScreenId,
+               AddChildScreen::GetResultString(result));
+  switch (result) {
+    case AddChildScreen::Result::CHILD_SIGNIN:
+      GetScreen<GaiaScreen>()->LoadOnlineForChildSignin();
+      AdvanceToScreen(GaiaView::kScreenId);
+      break;
+    case AddChildScreen::Result::CHILD_ACCOUNT_CREATE:
+      GetScreen<GaiaScreen>()->LoadOnlineForChildSignup();
+      AdvanceToScreen(GaiaView::kScreenId);
+      break;
+    case AddChildScreen::Result::ENTERPRISE_ENROLL:
+      ShowEnrollmentScreenIfEligible();
+      break;
+    case AddChildScreen::Result::KIOSK_ENTERPRISE_ENROLL:
+      wizard_context_->enrollment_preference_ =
+          WizardContext::EnrollmentPreference::kKiosk;
+      ShowEnrollmentScreenIfEligible();
+      break;
+    case AddChildScreen::Result::SKIPPED:
+      AdvanceToSigninScreen();
+      break;
+    case AddChildScreen::Result::BACK:
+      AdvanceToScreen(UserCreationView::kScreenId);
+      if (features::IsOobeSoftwareUpdateEnabled()) {
+        GetScreen<UserCreationScreen>()->SetChildSetupStep();
+      }
       break;
   }
 }
@@ -1391,8 +1506,10 @@ void WizardController::OnConsolidatedConsentScreenExit(
   OnScreenExit(ConsolidatedConsentScreenView::kScreenId,
                ConsolidatedConsentScreen::GetResultString(result));
 
-  if (features::IsOobeDrivePinningEnabled()) {
-    GetScreen<DrivePinningScreen>()->CalculateRequiredSpace();
+  if (features::IsOobeDrivePinningEnabled() &&
+      !GetScreen<DrivePinningScreen>()->CalculateRequiredSpace()) {
+    LOG(ERROR)
+        << "DriveFS bulk-pinning manager cannot calculate the required space";
   }
 
   if (wizard_context_->is_cloud_ready_update_flow) {
@@ -1719,6 +1836,9 @@ void WizardController::OnNetworkScreenExit(NetworkScreen::Result result) {
         demo_setup_controller_.reset();
         ShowWelcomeScreen();
         break;
+      case NetworkScreen::Result::QUICK_START:
+        NOTREACHED();
+        break;
     }
     return;
   }
@@ -1735,6 +1855,9 @@ void WizardController::OnNetworkScreenExit(NetworkScreen::Result result) {
       case NetworkScreen::Result::BACK:
         ShowOsTrialScreen();
         break;
+      case NetworkScreen::Result::QUICK_START:
+        NOTREACHED();
+        break;
     }
     return;
   }
@@ -1749,6 +1872,9 @@ void WizardController::OnNetworkScreenExit(NetworkScreen::Result result) {
       break;
     case NetworkScreen::Result::BACK:
       ShowWelcomeScreen();
+      break;
+    case NetworkScreen::Result::QUICK_START:
+      ShowQuickStartScreen();
       break;
   }
 }
@@ -1815,7 +1941,12 @@ void WizardController::OnEnrollmentScreenExit(EnrollmentScreen::Result result) {
       break;
     case EnrollmentScreen::Result::BACK:
     case EnrollmentScreen::Result::SKIPPED_FOR_TESTS:
-      PerformOOBECompletedActions();
+      // The following `PerformOOBECompletedAction()` call will occur in both
+      // manual and auto enrollment. However, in the manual enrollment case,
+      // `PerformOOBECompletedAction()` method would be already called before
+      // with `CompletedOobeFlowType::kRegular` argument. OOBECompletedActions
+      // are only performed in the first call.
+      PerformOOBECompletedActions(CompletedOobeFlowType::kAutoEnrollment);
       DCHECK(!prescribed_enrollment_config_.is_forced());
       ShowLoginScreen();
       break;
@@ -1830,14 +1961,18 @@ void WizardController::OnEnrollmentScreenExit(EnrollmentScreen::Result result) {
       AdvanceToScreen(TpmErrorView::kScreenId);
       break;
     case EnrollmentScreen::Result::BACK_TO_AUTO_ENROLLMENT_CHECK:
-      retry_auto_enrollment_check_ = true;
       ShowAutoEnrollmentCheckScreen();
       break;
   }
 }
 
 void WizardController::OnEnrollmentDone() {
-  PerformOOBECompletedActions();
+  // The following `PerformOOBECompletedAction()` call will occur in both
+  // manual and auto enrollment. However, in the manual enrollment case,
+  // `PerformOOBECompletedAction()` method would be already called before
+  // with `CompletedOobeFlowType::kRegular` argument. OOBECompletedActions
+  // are only performed in the first call.
+  PerformOOBECompletedActions(CompletedOobeFlowType::kAutoEnrollment);
 
   // Restart to make the login page pick up the policy changes resulting from
   // enrollment recovery.  (Not pretty, but this codepath is rarely exercised.)
@@ -1935,7 +2070,7 @@ void WizardController::OnDemoSetupScreenExit(DemoSetupScreen::Result result) {
 
   switch (result) {
     case DemoSetupScreen::Result::COMPLETED:
-      PerformOOBECompletedActions();
+      PerformOOBECompletedActions(CompletedOobeFlowType::kDemo);
       SwitchWebUItoMojo();
       break;
     case DemoSetupScreen::Result::CANCELED:
@@ -2195,7 +2330,7 @@ void WizardController::OnDeviceDisabledChecked(bool device_disabled) {
             << prescribed_enrollment_config_.should_enroll();
     StartEnrollmentScreen(wizard_context_->enrollment_triggered_early);
   } else {
-    PerformOOBECompletedActions();
+    PerformOOBECompletedActions(CompletedOobeFlowType::kRegular);
     ShowPackagedLicenseScreen();
   }
 }
@@ -2261,9 +2396,13 @@ void WizardController::PerformPostNetworkScreenActions() {
   DelayNetworkCall(ServicesCustomizationDocument::GetInstance()
                        ->EnsureCustomizationAppliedClosure());
   GetAutoEnrollmentController()->Start();
+
+  // Triggers DLC installation here to ensure network availability
+  cros_healthd::internal::TriggerDlcInstall();
 }
 
-void WizardController::PerformOOBECompletedActions() {
+void WizardController::PerformOOBECompletedActions(
+    CompletedOobeFlowType flow_type) {
   // Avoid marking OOBE as completed multiple times if going from login screen
   // to enrollment screen (and back).
   if (oobe_marked_completed_) {
@@ -2271,10 +2410,7 @@ void WizardController::PerformOOBECompletedActions() {
   }
 
   StartupUtils::MarkOobeCompleted();
-  oobe_marked_completed_ = true;
-
-  // Triggers DLC installation once OOBE is complete.
-  cros_healthd::internal::TriggerDlcInstall();
+  RecordUMAHistogramForOOBECompletion(flow_type);
 }
 
 void WizardController::SetCurrentScreen(BaseScreen* new_current) {
@@ -2324,7 +2460,8 @@ void WizardController::SetCurrentScreen(BaseScreen* new_current) {
 
   // First remember how far have we reached so that we can resume if needed.
   if (!demo_setup_controller_) {
-    if (is_out_of_box_ && IsResumableOobeScreen(current_screen_->screen_id())) {
+    if (!wizard_context_->is_add_person_flow &&
+        IsResumableOobeScreen(current_screen_->screen_id())) {
       StartupUtils::SaveOobePendingScreen(current_screen_->screen_id().name);
     } else if (IsResumablePostLoginScreen(current_screen_->screen_id()) &&
                !wizard_context_->is_cloud_ready_update_flow &&
@@ -2515,6 +2652,8 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
     ShowDisplaySizeScreen();
   } else if (screen_id == ChoobeScreenView::kScreenId) {
     ShowChoobeScreen();
+  } else if (screen_id == AddChildScreenView::kScreenId) {
+    ShowAddChildScreen();
   } else if (screen_id == TpmErrorView::kScreenId ||
              screen_id == GaiaPasswordChangedView::kScreenId ||
              screen_id == FamilyLinkNoticeView::kScreenId ||

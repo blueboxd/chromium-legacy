@@ -41,7 +41,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
-#include "ui/gl/buffer_format_utils.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
@@ -128,9 +127,7 @@ class IOSurfaceGpuMemoryBuffer : public gfx::GpuMemoryBuffer {
     iosurface_ = gfx::CreateIOSurface(size, gfx::BufferFormat::BGRA_8888);
   }
 
-  ~IOSurfaceGpuMemoryBuffer() override {
-    CFRelease(iosurface_);
-  }
+  ~IOSurfaceGpuMemoryBuffer() override = default;
 
   // Overridden from gfx::GpuMemoryBuffer:
   bool Map() override {
@@ -174,7 +171,7 @@ class IOSurfaceGpuMemoryBuffer : public gfx::GpuMemoryBuffer {
 
  private:
   bool mapped_;
-  IOSurfaceRef iosurface_;
+  base::ScopedCFTypeRef<IOSurfaceRef> iosurface_;
   const gfx::Size size_;
   gfx::BufferFormat format_;
 };
@@ -521,6 +518,10 @@ const Capabilities& GLManager::GetCapabilities() const {
 }
 
 void GLManager::SignalQuery(uint32_t query, base::OnceClosure callback) {
+  NOTREACHED();
+}
+
+void GLManager::CancelAllQueries() {
   NOTREACHED();
 }
 

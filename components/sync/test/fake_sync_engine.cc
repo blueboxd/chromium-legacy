@@ -142,12 +142,15 @@ void FakeSyncEngine::OnCookieJarChanged(bool account_mismatch,
   }
 }
 
-void FakeSyncEngine::SetInvalidationsForSessionsEnabled(bool enabled) {}
-
 bool FakeSyncEngine::IsNextPollTimeInThePast() const {
   return is_next_poll_time_in_the_past_;
 }
 
 void FakeSyncEngine::GetNigoriNodeForDebugging(AllNodesCallback callback) {}
+
+void FakeSyncEngine::GetTypesWithUnsyncedData(
+    base::OnceCallback<void(ModelTypeSet)> cb) const {
+  std::move(cb).Run(ModelTypeSet());
+}
 
 }  // namespace syncer

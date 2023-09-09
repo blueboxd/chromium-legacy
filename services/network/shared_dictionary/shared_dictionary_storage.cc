@@ -4,12 +4,16 @@
 
 #include "services/network/shared_dictionary/shared_dictionary_storage.h"
 
+#include <algorithm>
+
+#include "base/feature_list.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/structured_headers.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/shared_dictionary/shared_dictionary_constants.h"
 #include "services/network/shared_dictionary/shared_dictionary_writer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -94,7 +98,8 @@ scoped_refptr<SharedDictionaryWriter>
 SharedDictionaryStorage::MaybeCreateWriter(
     const GURL& url,
     base::Time response_time,
-    const net::HttpResponseHeaders& headers) {
+    const net::HttpResponseHeaders& headers,
+    base::OnceCallback<bool()> access_allowed_check_callback) {
   absl::optional<UseAsDictionaryHeaderInfo> info =
       ParseUseAsDictionaryHeaderInfo(headers);
   if (!info) {
@@ -104,6 +109,14 @@ SharedDictionaryStorage::MaybeCreateWriter(
   if (info->expiration) {
     expiration = *info->expiration;
   }
+  if (!base::FeatureList::IsEnabled(
+          network::features::kCompressionDictionaryTransport)) {
+    // During the Origin Trial experiment, kCompressionDictionaryTransport is
+    // disabled in the network service. In that case, we have a maximum
+    // expiration time on the dictionary entry to keep the duration constrained.
+    expiration =
+        std::min(expiration, shared_dictionary::kMaxExpirationForOriginTrial);
+  }
   if (info->algorithms) {
     // Currently we only support support sha-256.
     // TODO(crbug.com/1413922): Investigate the spec and decide whether to
@@ -112,6 +125,9 @@ SharedDictionaryStorage::MaybeCreateWriter(
                   "sha-256") == info->algorithms->end()) {
       return nullptr;
     }
+  }
+  if (!std::move(access_allowed_check_callback).Run()) {
+    return nullptr;
   }
 
   return CreateWriter(url, response_time, expiration, info->match);

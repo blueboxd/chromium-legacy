@@ -10,7 +10,6 @@
 
 #include "ash/system/diagnostics/mojom/input.mojom.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_events.mojom.h"
-#include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_exception.mojom.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/nullable_primitives.mojom.h"
 #include "chromeos/crosapi/mojom/telemetry_event_service.mojom.h"
 #include "chromeos/crosapi/mojom/telemetry_extension_exception.mojom.h"
@@ -22,6 +21,9 @@ namespace ash::converters {
 // convert its types to/from cros_healthd EventService types.
 
 namespace unchecked {
+
+absl::optional<uint32_t> UncheckedConvertEventNullablePrimitivePtr(
+    cros_healthd::mojom::NullableUint32Ptr input);
 
 crosapi::mojom::TelemetryAudioJackEventInfoPtr UncheckedConvertPtr(
     cros_healthd::mojom::AudioJackEventInfoPtr input);
@@ -37,6 +39,9 @@ crosapi::mojom::TelemetryLidEventInfoPtr UncheckedConvertPtr(
 
 crosapi::mojom::TelemetryUsbEventInfoPtr UncheckedConvertPtr(
     cros_healthd::mojom::UsbEventInfoPtr input);
+
+crosapi::mojom::TelemetryHdmiEventInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::HdmiEventInfoPtr input);
 
 crosapi::mojom::TelemetrySdCardEventInfoPtr UncheckedConvertPtr(
     cros_healthd::mojom::SdCardEventInfoPtr input);
@@ -59,26 +64,20 @@ crosapi::mojom::TelemetryTouchpadTouchEventInfoPtr UncheckedConvertPtr(
 crosapi::mojom::TelemetryTouchpadConnectedEventInfoPtr UncheckedConvertPtr(
     cros_healthd::mojom::TouchpadConnectedEventPtr input);
 
+crosapi::mojom::TelemetryStylusTouchEventInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::StylusTouchEventPtr input);
+
+crosapi::mojom::TelemetryStylusConnectedEventInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::StylusConnectedEventPtr input);
+
+crosapi::mojom::TelemetryStylusTouchPointInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::StylusTouchPointInfoPtr input);
+
 crosapi::mojom::UInt32ValuePtr UncheckedConvertPtr(
     cros_healthd::mojom::NullableUint32Ptr input);
 
 crosapi::mojom::TelemetryEventInfoPtr UncheckedConvertPtr(
     cros_healthd::mojom::EventInfoPtr input);
-
-crosapi::mojom::TelemetryExtensionExceptionPtr UncheckedConvertPtr(
-    cros_healthd::mojom::ExceptionPtr input);
-
-crosapi::mojom::TelemetryExtensionSupportedPtr UncheckedConvertPtr(
-    cros_healthd::mojom::SupportedPtr input);
-
-crosapi::mojom::TelemetryExtensionUnsupportedReasonPtr UncheckedConvertPtr(
-    cros_healthd::mojom::UnsupportedReasonPtr input);
-
-crosapi::mojom::TelemetryExtensionUnsupportedPtr UncheckedConvertPtr(
-    cros_healthd::mojom::UnsupportedPtr input);
-
-crosapi::mojom::TelemetryExtensionSupportStatusPtr UncheckedConvertPtr(
-    cros_healthd::mojom::SupportStatusPtr input);
 
 }  // namespace unchecked
 
@@ -121,11 +120,11 @@ crosapi::mojom::TelemetryPowerEventInfo::State Convert(
 crosapi::mojom::TelemetryStylusGarageEventInfo::State Convert(
     cros_healthd::mojom::StylusGarageEventInfo::State input);
 
+crosapi::mojom::TelemetryHdmiEventInfo::State Convert(
+    cros_healthd::mojom::HdmiEventInfo::State input);
+
 crosapi::mojom::TelemetryInputTouchButton Convert(
     cros_healthd::mojom::InputTouchButton input);
-
-crosapi::mojom::TelemetryExtensionException::Reason Convert(
-    cros_healthd::mojom::Exception::Reason input);
 
 cros_healthd::mojom::EventCategoryEnum Convert(
     crosapi::mojom::TelemetryEventCategoryEnum input);
@@ -139,6 +138,14 @@ std::vector<OutputT> ConvertVector(std::vector<InputT> input) {
     result.push_back(Convert(elem));
   }
   return result;
+}
+
+template <class InputT>
+auto ConvertEventNullablePrimitivePtr(InputT input) {
+  return (!input.is_null())
+             ? unchecked::UncheckedConvertEventNullablePrimitivePtr(
+                   std::move(input))
+             : absl::nullopt;
 }
 
 template <class InputT>

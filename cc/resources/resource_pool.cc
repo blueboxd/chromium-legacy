@@ -26,7 +26,6 @@
 #include "cc/base/container_util.h"
 #include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/common/capabilities.h"
@@ -74,22 +73,6 @@ bool ResourceMeetsSizeRequirements(const gfx::Size& requested_size,
 
 constexpr base::TimeDelta ResourcePool::kDefaultExpirationDelay;
 constexpr base::TimeDelta ResourcePool::kDefaultMaxFlushDelay;
-
-void ResourcePool::GpuBacking::InitOverlayCandidateAndTextureTarget(
-    const viz::SharedImageFormat format,
-    const gpu::Capabilities& caps,
-    bool use_gpu_memory_buffer_resources) {
-  overlay_candidate =
-      use_gpu_memory_buffer_resources && caps.supports_scanout_shared_images &&
-      CanCreateGpuMemoryBufferForSinglePlaneSharedImageFormat(format);
-  if (overlay_candidate) {
-    texture_target = gpu::GetBufferTextureTarget(
-        gfx::BufferUsage::SCANOUT,
-        viz::SinglePlaneSharedImageFormatToBufferFormat(format), caps);
-  } else {
-    texture_target = GL_TEXTURE_2D;
-  }
-}
 
 ResourcePool::ResourcePool(
     viz::ClientResourceProvider* resource_provider,

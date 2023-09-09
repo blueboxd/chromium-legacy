@@ -54,11 +54,11 @@ chromium-metrics-reviews@google.com.
   </variant>
   <variant name="CdmService">
     <owner>xhwang@chromium.org</owner>
-    <owner>media-dev@chromium.org</owner>
+    <owner>media-dev-uma@chromium.org</owner>
   </variant>
   <variant name="MediaFoundationService">
     <owner>xhwang@chromium.org</owner>
-    <owner>media-dev@chromium.org</owner>
+    <owner>media-dev-uma@chromium.org</owner>
   </variant>
   <variant name="PaintPreviewCompositor">
     <owner>ckitagawa@chromium.org</owner>
@@ -70,11 +70,11 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <variants name="VmmSwapVmName">
-  <variant name="ArcVm" summary="ARCVM"/>
+  <variant name="ARCVM" summary="ARCVM"/>
 </variants>
 
 <histogram name="HeapProfiling.AndroidStackUnwinder"
-    enum="AndroidStackUnwinder" expires_after="2023-11-12">
+    enum="AndroidStackUnwinder" expires_after="2024-01-14">
   <owner>joenotcharles@google.com</owner>
   <owner>chrome-memory@google.com</owner>
   <summary>
@@ -174,7 +174,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="HeapProfiling.SamplingIntervalKB" units="KB"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>joenotcharles@google.com</owner>
   <owner>chrome-memory@google.com</owner>
   <summary>
@@ -510,7 +510,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Experimental.AvailableMemoryMB" units="MB"
-    expires_after="2023-09-22">
+    expires_after="2024-01-07">
   <owner>anthonyvd@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -911,7 +911,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Experimental.Renderer.HighestPrivateMemoryFootprint"
-    units="MB" expires_after="2023-10-22">
+    units="MB" expires_after="2023-12-24">
   <owner>tasak@google.com</owner>
   <owner>bartekn@google.com</owner>
   <summary>
@@ -1397,7 +1397,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.LowMemoryKiller.FreedSize" units="KB"
-    expires_after="2023-08-27">
+    expires_after="2024-01-07">
   <owner>khmel@google.com</owner>
   <owner>vovoy@google.com</owner>
   <summary>The memory size freed by each low memory kill event.</summary>
@@ -1467,7 +1467,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.NetworkService.PrivateMemoryFootprint" units="MiB"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>mmenke@chromium.org</owner>
   <owner>morlovich@chromium.org</owner>
   <owner>erikchen@chromium.org</owner>
@@ -1615,7 +1615,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.OOMKills.Count" units="kills"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>vovoy@google.com</owner>
   <owner>wvk@google.com</owner>
   <summary>Cumulative count of OOM kills in one user session.</summary>
@@ -1689,16 +1689,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Memory.ParkableImage.Read.Size" units="KiB"
-    expires_after="2022-12-25">
-  <owner>thiabaud@google.com</owner>
-  <owner>lizeb@chromium.org</owner>
-  <summary>
-    Recorded each time a ParkableImage is read from disk. Records the size of
-    the read, in KiB.
-  </summary>
-</histogram>
-
 <histogram name="Memory.ParkableImage.Read.Throughput" units="MiBps"
     expires_after="2023-07-02">
   <owner>thiabaud@google.com</owner>
@@ -1706,16 +1696,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Recorded each time a ParkableImage is read from disk. Records the throughput
     of reading the ParkableImage from disk, in MiB/s.
-  </summary>
-</histogram>
-
-<histogram name="Memory.ParkableImage.Read.TimeSinceFreeze" units="ms"
-    expires_after="2022-12-25">
-  <owner>thiabaud@google.com</owner>
-  <owner>lizeb@chromium.org</owner>
-  <summary>
-    Recorded each time a ParkableImage is read from disk. Records the time since
-    the ParkableImage was frozen.
   </summary>
 </histogram>
 
@@ -1782,16 +1762,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Memory.ParkableImage.Write.Throughput" units="MiBps"
-    expires_after="2022-10-23">
-  <owner>thiabaud@google.com</owner>
-  <owner>lizeb@chromium.org</owner>
-  <summary>
-    Recorded each time a ParkableImage is written to disk. Records the
-    throughput of writing the ParkableImage to disk, in MiB/s.
-  </summary>
-</histogram>
-
 <histogram name="Memory.ParkableString.CompressedSizeKb" units="KB"
     expires_after="M87">
   <owner>lizeb@chromium.org</owner>
@@ -1802,7 +1772,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableString.Compression.Latency"
-    units="microseconds" expires_after="2023-11-12">
+    units="microseconds" expires_after="2024-01-14">
   <owner>lizeb@chromium.org</owner>
   <owner>thiabaud@google.com</owner>
   <summary>
@@ -1815,15 +1785,6 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Memory.ParkableString.Compression.SizeKb" units="KB"
     expires_after="2023-12-10">
-  <owner>lizeb@chromium.org</owner>
-  <owner>thiabaud@google.com</owner>
-  <summary>
-    Size of a compressed ParkableString, recorded at compression time.
-  </summary>
-</histogram>
-
-<histogram name="Memory.ParkableString.Compression.ThroughputMBps" units="MBps"
-    expires_after="2022-04-17">
   <owner>lizeb@chromium.org</owner>
   <owner>thiabaud@google.com</owner>
   <summary>
@@ -1854,16 +1815,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Memory.ParkableString.Decompression.SizeKb" units="KB"
-    expires_after="2022-04-17">
-  <owner>lizeb@chromium.org</owner>
-  <owner>thiabaud@google.com</owner>
-  <summary>
-    Original size of a compressed ParkableString, recorded at decompression
-    time.
-  </summary>
-</histogram>
-
 <histogram name="Memory.ParkableString.Decompression.ThroughputMBps"
     units="MBps" expires_after="2023-07-02">
   <owner>lizeb@chromium.org</owner>
@@ -1871,18 +1822,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Original size of a compressed ParkableString, recorded at decompression
     time.
-  </summary>
-</histogram>
-
-<histogram name="Memory.ParkableString.DiskIsUsable.5min" enum="BooleanYesNo"
-    expires_after="2022-04-17">
-  <owner>lizeb@chromium.org</owner>
-  <owner>pasko@chromium.org</owner>
-  <summary>
-    Whether the disk allocator is usable. Recorded at the same time as
-    &quot;Memory.ParkableString.TotalSizeKb.5min&quot;. The disk may not be
-    usable for several reasons, including the profile being an Incognito one,
-    permssions error, or disk write error.
   </summary>
 </histogram>
 
@@ -1908,40 +1847,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Memory.ParkableString.MainThreadTime.5min" units="ms"
-    expires_after="2022-10-23">
-  <owner>lizeb@chromium.org</owner>
-  <owner>pasko@chromium.org</owner>
-  <summary>
-    Total main thread time used by ParkableStrings over the first 5 minutes of a
-    renderer lifetime. Starting time is from the first ParkableString being
-    added.
-  </summary>
-</histogram>
-
-<histogram name="Memory.ParkableString.MemorySavingsKb.5min" units="KB"
-    expires_after="2022-08-21">
-  <owner>lizeb@chromium.org</owner>
-  <owner>pasko@chromium.org</owner>
-  <summary>
-    Sum of memory saved by compression and disk discarding, in KB. Recorded at
-    the same time as &quot;Memory.ParkableString.TotalSizeKb.5min&quot;, when
-    disk discarding is enabled.
-  </summary>
-</histogram>
-
-<histogram name="Memory.ParkableString.OnDiskFootprintKb.5min" units="KB"
-    expires_after="2022-04-17">
-  <owner>lizeb@chromium.org</owner>
-  <owner>pasko@chromium.org</owner>
-  <summary>
-    Total disk footprint used by ParkableStrings including allocator waste, in
-    KB. Recorded once, 5 minutes after the first ParkableString is added to a
-    renderer, at the same time as
-    &quot;Memory.ParkableString.MemorySavings.5min&quot;.
-  </summary>
-</histogram>
-
 <histogram name="Memory.ParkableString.OnDiskSizeKb.5min" units="KB"
     expires_after="2023-01-22">
   <owner>lizeb@chromium.org</owner>
@@ -1951,17 +1856,6 @@ chromium-metrics-reviews@google.com.
     in KB. Recorded once, 5 minutes after the first ParkableString is added to a
     renderer, at the same time as
     &quot;Memory.ParkableString.MemorySavings.5min&quot;.
-  </summary>
-</histogram>
-
-<histogram name="Memory.ParkableString.ParkingThreadTime.5min" units="ms"
-    expires_after="2022-12-25">
-  <owner>lizeb@chromium.org</owner>
-  <owner>pasko@chromium.org</owner>
-  <summary>
-    Total thread time used by ParkableStrings for parking over the first 5
-    minutes of a renderer lifetime. Starting time is from the first
-    ParkableString being added.
   </summary>
 </histogram>
 
@@ -1977,29 +1871,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Memory.ParkableString.Read.SinceLastDiskWrite" units="ms"
-    expires_after="2022-08-21">
-  <owner>lizeb@chromium.org</owner>
-  <owner>pasko@chromium.org</owner>
-  <summary>
-    When reading a parked string from disk, time since it was last parked.
-  </summary>
-</histogram>
-
-<histogram name="Memory.ParkableString.Read.SizeKb" units="KB"
-    expires_after="2022-08-21">
-  <owner>lizeb@chromium.org</owner>
-  <owner>pasko@chromium.org</owner>
-  <summary>Size read from disk for a ParkableString.</summary>
-</histogram>
-
-<histogram name="Memory.ParkableString.Read.ThroughputMBps" units="MBps"
-    expires_after="2022-04-17">
-  <owner>lizeb@chromium.org</owner>
-  <owner>pasko@chromium.org</owner>
-  <summary>Read throughput from disk for a ParkableString.</summary>
-</histogram>
-
 <histogram name="Memory.ParkableString.SavingsKb" units="KB"
     expires_after="M87">
   <owner>lizeb@chromium.org</owner>
@@ -2007,26 +1878,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Sum of memory saved by compression, in KB. Recorded at the same time as
     &quot;Memory.ParkableString.TotalSizeKb&quot;.
-  </summary>
-</histogram>
-
-<histogram name="Memory.ParkableString.SavingsKb.5min" units="KB"
-    expires_after="2022-10-23">
-  <owner>lizeb@chromium.org</owner>
-  <owner>pasko@chromium.org</owner>
-  <summary>
-    Sum of memory saved by compression, in KB. Recorded at the same time as
-    &quot;Memory.ParkableString.TotalSizeKb.5min&quot;.
-  </summary>
-</histogram>
-
-<histogram name="Memory.ParkableString.Snappy.CompressedLargerThanOriginal"
-    enum="Boolean" expires_after="2022-03-14">
-  <owner>peilinwang@google.com</owner>
-  <owner>lizeb@google.com</owner>
-  <summary>
-    Whether the compressed string is larger than the original string, if it were
-    compressed by snappy.
   </summary>
 </histogram>
 
@@ -2041,34 +1892,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Memory.ParkableString.Write.Latency" units="microseconds"
-    expires_after="2022-04-17">
-  <owner>lizeb@chromium.org</owner>
-  <owner>pasko@chromium.org</owner>
-  <summary>
-    Time to write a ParkableString to disk, in us. Note: This metric drops
-    reports on clients with low-resolution clocks, which means these reports
-    will be biased against a portion of the population on Windows. See
-    Windows.HasHighResolutionTimeTicks for the affected sample.
-  </summary>
-</histogram>
-
-<histogram name="Memory.ParkableString.Write.SizeKb" units="KB"
-    expires_after="2022-04-17">
-  <owner>lizeb@chromium.org</owner>
-  <owner>pasko@chromium.org</owner>
-  <summary>Size of an on-disk ParkableString, recorded at write time.</summary>
-</histogram>
-
-<histogram name="Memory.ParkableString.Write.ThroughputMBps" units="MBps"
-    expires_after="2022-04-17">
-  <owner>lizeb@chromium.org</owner>
-  <owner>pasko@chromium.org</owner>
-  <summary>Throughput of a ParkableString disk write.</summary>
-</histogram>
-
 <histogram name="Memory.PartitionAlloc.MemoryReclaim" units="microseconds"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>lizeb@chromium.org</owner>
   <owner>bartekn@chromium.org</owner>
   <summary>
@@ -2096,7 +1921,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.PartitionAlloc.PeriodicPurge" units="microseconds"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>lizeb@chromium.org</owner>
   <owner>bartekn@chromium.org</owner>
   <summary>
@@ -2166,7 +1991,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Memory.PressureWindowDuration" units="ms"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
 <!-- Name completed by histogram_suffixes name="Memory.Pressure.TransitionType" -->
 
   <owner>fdoray@chromium.org</owner>
@@ -2274,7 +2099,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.RendererProcessCount" units="processes"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>creis@chromium.org</owner>
   <owner>nasko@chromium.org</owner>
   <summary>
@@ -2350,7 +2175,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.RenderProcessHost.Count.SandboxedIframeOverhead"
-    units="processes" expires_after="2023-07-09">
+    units="processes" expires_after="2024-01-09">
   <owner>wjmaclean@chromium.org</owner>
   <owner>alexmos@chromium.org</owner>
   <owner>creis@chromium.org</owner>
@@ -2426,7 +2251,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.System.AvailableMB" units="MB"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>fdoray@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -2600,7 +2425,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Total.RendererPrivateMemoryFootprint" units="MB"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>tommckee@chromium.org</owner>
   <summary>
     A rough estimate of the private memory footprint of all renderer processes.
@@ -2696,7 +2521,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Memory.Total.TileMemory" units="MB" expires_after="2023-10-22">
+<histogram name="Memory.Total.TileMemory" units="MB" expires_after="2023-12-24">
   <owner>lizeb@chromium.org</owner>
   <owner>chrome-gpu-memory@google.com</owner>
   <summary>
@@ -2716,6 +2541,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Memory.VmmSwap.TotalBytesWrittenInAWeek" units="MiB"
+    expires_after="2024-01-31">
+  <owner>kawasin@google.com</owner>
+  <owner>sstan@google.com</owner>
+  <summary>
+    The total bytes written by vmm-swap feature for a week. This is sent weekly
+    once any disk writes for vmm-swap has done. Once reporting has started it
+    reports weekly even if the total bytes written is zero.
+  </summary>
+</histogram>
+
 <histogram name="Memory.VmmSwap.{VmName}.ActiveAfterEnableDuration"
     units="Hours" expires_after="2024-01-31">
   <owner>kawasin@google.com</owner>
@@ -2726,6 +2562,19 @@ chromium-metrics-reviews@google.com.
     Shorter &quot;.InactiveBeforeEnableDuration&quot; and longer
     &quot;.ActiveAfterEnableDuration&quot; indicates the vmm-swap policies are
     doing a good job at deciding when to enable vmm-swap.
+  </summary>
+  <token key="VmName" variants="VmmSwapVmName"/>
+</histogram>
+
+<histogram name="Memory.VmmSwap.{VmName}.AvgPagesInFile" units="Pages"
+    expires_after="2024-01-31">
+  <owner>kawasin@google.com</owner>
+  <owner>sstan@google.com</owner>
+  <summary>
+    An lower bound estimate of the average number of pages resident on disk over
+    the duration of the vmm-swap period. Even if the actual page size is not
+    4KiB, it is recalculated to be the number of 4KiB pages. This is sent when
+    vmm-swap is disabled.
   </summary>
   <token key="VmName" variants="VmmSwapVmName"/>
 </histogram>
@@ -2751,6 +2600,33 @@ chromium-metrics-reviews@google.com.
     swappable-idle. This is sent when vmm-swap is disabled. If reported values
     are mostly long, it indicates that the policies are missing chances to
     enable vmm-swap.
+  </summary>
+  <token key="VmName" variants="VmmSwapVmName"/>
+</histogram>
+
+<histogram name="Memory.VmmSwap.{VmName}.MinPagesInFile" units="Pages"
+    expires_after="2024-01-31">
+  <owner>kawasin@google.com</owner>
+  <owner>sstan@google.com</owner>
+  <summary>
+    The minimum number of pages resident on disk any given point during the
+    vmm-swap period. Even if the actual page size is not 4KiB, it is
+    recalculated to be the number of 4KiB pages. This is sent when vmm-swap is
+    disabled.
+  </summary>
+  <token key="VmName" variants="VmmSwapVmName"/>
+</histogram>
+
+<histogram name="Memory.VmmSwap.{VmName}.PageAverageDurationInFile"
+    units="Seconds" expires_after="2024-01-31">
+  <owner>kawasin@google.com</owner>
+  <owner>sstan@google.com</owner>
+  <summary>
+    The average duration of each page of the guest memory lives in the swap
+    file. We expect most cold pages live in the swap file for a long time and
+    hot pages are not swapped out but kept in the memory. The durations are
+    measured every 10 minutes to estimate the average duration. This is sent
+    when vmm-swap is disabled.
   </summary>
   <token key="VmName" variants="VmmSwapVmName"/>
 </histogram>

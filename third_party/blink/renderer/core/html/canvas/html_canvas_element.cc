@@ -537,9 +537,8 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
 void HTMLCanvasElement::configureHighDynamicRange(
     const CanvasHighDynamicRangeOptions* options,
     ExceptionState& exception_state) {
-  gfx::HDRMode hdr_mode = gfx::HDRMode::kDefault;
-  absl::optional<gfx::HDRMetadata> hdr_metadata;
-  ParseCanvasHighDynamicRangeOptions(options, hdr_mode, hdr_metadata);
+  gfx::HDRMetadata hdr_metadata;
+  ParseCanvasHighDynamicRangeOptions(options, hdr_metadata);
 
   if (IsOffscreenCanvasRegistered()) {
     // TODO(https://crbug.com/1274220): Implement HDR support for offscreen
@@ -547,11 +546,11 @@ void HTMLCanvasElement::configureHighDynamicRange(
     NOTIMPLEMENTED();
   }
 
-  CanvasResourceHost::SetHDRConfiguration(hdr_mode, hdr_metadata);
+  CanvasResourceHost::SetHdrMetadata(hdr_metadata);
   if (context_ && (IsWebGL() || IsWebGPU())) {
-    context_->SetHDRConfiguration(hdr_mode, hdr_metadata);
+    context_->SetHdrMetadata(hdr_metadata);
   } else if (canvas2d_bridge_) {
-    canvas2d_bridge_->SetHDRConfiguration(hdr_mode, hdr_metadata);
+    canvas2d_bridge_->SetHdrMetadata(hdr_metadata);
   }
 }
 
@@ -653,17 +652,18 @@ void HTMLCanvasElement::PostFinalizeFrame(
   if (LowLatencyEnabled() && !dirty_rect_.IsEmpty() &&
       GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferGPU)) {
     const base::TimeTicks start_time = base::TimeTicks::Now();
-    scoped_refptr<CanvasResource> canvas_resource =
-        ResourceProvider()->ProduceCanvasResource(reason);
-    const gfx::RectF src_rect((gfx::SizeF(Size())));
-    dirty_rect_.Intersect(src_rect);
-    const gfx::Rect int_dirty = gfx::ToEnclosingRect(dirty_rect_);
-    const SkIRect damage_rect = SkIRect::MakeXYWH(
-        int_dirty.x(), int_dirty.y(), int_dirty.width(), int_dirty.height());
-    const bool needs_vertical_flip = !RenderingContext()->IsOriginTopLeft();
-    frame_dispatcher_->DispatchFrame(std::move(canvas_resource), start_time,
-                                     damage_rect, needs_vertical_flip,
-                                     IsOpaque());
+    if (scoped_refptr<CanvasResource> canvas_resource =
+            ResourceProvider()->ProduceCanvasResource(reason)) {
+      const gfx::RectF src_rect((gfx::SizeF(Size())));
+      dirty_rect_.Intersect(src_rect);
+      const gfx::Rect int_dirty = gfx::ToEnclosingRect(dirty_rect_);
+      const SkIRect damage_rect = SkIRect::MakeXYWH(
+          int_dirty.x(), int_dirty.y(), int_dirty.width(), int_dirty.height());
+      const bool needs_vertical_flip = !canvas_resource->IsOriginTopLeft();
+      frame_dispatcher_->DispatchFrame(std::move(canvas_resource), start_time,
+                                       damage_rect, needs_vertical_flip,
+                                       IsOpaque());
+    }
     dirty_rect_ = gfx::RectF();
   }
 
@@ -1012,6 +1012,10 @@ void HTMLCanvasElement::PaintInternal(GraphicsContext& context,
 
     // display list rendering: we replay the last full PaintRecord, if Canvas
     // has been redraw since beforeprint happened.
+
+    // Note: Test coverage for this is assured by manual (non-automated)
+    // web test printing/manual/canvas2d-vector-text.html
+    // That test should be run manually against CLs that touch this code.
     if (IsPrinting() && IsRenderingContext2D() && canvas2d_bridge_) {
       canvas2d_bridge_->FlushRecording(
           CanvasResourceProvider::FlushReason::kPrinting);

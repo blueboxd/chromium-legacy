@@ -280,7 +280,7 @@ version = "0.2.17"
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.56"
+version = "1.0.66"
 dependencies = [
  "unicode-ident",
 ]
@@ -458,7 +458,7 @@ dependencies = [
 
 [[package]]
 name = "small_ctor"
-version = "0.1.0"
+version = "0.1.1"
 
 [[package]]
 name = "static_assertions"

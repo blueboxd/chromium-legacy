@@ -351,6 +351,19 @@ void BaseUIManager::DisplayBlockingPage(const UnsafeResource& resource) {
 
   if (load_post_commit_error_page) {
     DCHECK(!IsAllowlisted(resource));
+
+    security_interstitials::SecurityInterstitialTabHelper* helper =
+        security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+            outermost_contents);
+    if (helper && helper->HasPendingOrActiveInterstitial()) {
+      // If a blocking page exists for the current navigation or an interstitial
+      // is being displayed, do not create a new error page. This is to ensure
+      // at most one blocking page is created for one single page so that the
+      // SHOW bucket in the histogram does not log more than once. See
+      // https://crbug.com/1195411 for details.
+      return;
+    }
+
     // In some cases the interstitial must be loaded here since there will be
     // no navigation to intercept in the throttle.
     std::unique_ptr<BaseBlockingPage> blocking_page =
@@ -359,7 +372,7 @@ void BaseUIManager::DisplayBlockingPage(const UnsafeResource& resource) {
     base::WeakPtr<content::NavigationHandle> error_page_navigation_handle =
         outermost_contents->GetController().LoadPostCommitErrorPage(
             outermost_contents->GetPrimaryMainFrame(), unsafe_url,
-            blocking_page->GetHTMLContents(), net::ERR_BLOCKED_BY_CLIENT);
+            blocking_page->GetHTMLContents());
     if (error_page_navigation_handle) {
       blocking_page->CreatedPostCommitErrorPageNavigation(
           error_page_navigation_handle.get());

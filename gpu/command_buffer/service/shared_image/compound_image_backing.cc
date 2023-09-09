@@ -10,7 +10,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/trace_event/memory_allocator_dump_guid.h"
 #include "base/trace_event/process_memory_dump.h"
-#include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/shared_image_format.h"
 #include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
@@ -288,7 +287,7 @@ class WrappedDawnCompoundImageRepresentation : public DawnImageRepresentation {
   }
 
   // DawnImageRepresentation implementation.
-  WGPUTexture BeginAccess(WGPUTextureUsage webgpu_usage) final {
+  wgpu::Texture BeginAccess(wgpu::TextureUsage webgpu_usage) final {
     AccessMode access_mode =
         webgpu_usage & kWriteUsage ? AccessMode::kWrite : AccessMode::kRead;
     compound_backing()->NotifyBeginAccess(SharedImageAccessStream::kDawn,
@@ -561,9 +560,9 @@ void CompoundImageBacking::SetClearedRect(const gfx::Rect& cleared_rect) {}
 std::unique_ptr<DawnImageRepresentation> CompoundImageBacking::ProduceDawn(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
-    WGPUDevice device,
-    WGPUBackendType backend_type,
-    std::vector<WGPUTextureFormat> view_formats) {
+    const wgpu::Device& device,
+    wgpu::BackendType backend_type,
+    std::vector<wgpu::TextureFormat> view_formats) {
   auto* backing = GetBacking(SharedImageAccessStream::kDawn);
   if (!backing)
     return nullptr;

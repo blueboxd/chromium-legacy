@@ -10,7 +10,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "content/browser/browser_context_impl.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
-#include "content/browser/preloading/prefetch/prefetch_container.h"
 #include "content/browser/preloading/prefetch/prefetch_features.h"
 #include "content/browser/preloading/prefetch/prefetch_service.h"
 #include "content/browser/preloading/prefetch/prefetch_streaming_url_loader.h"
@@ -46,10 +45,6 @@ std::unique_ptr<PrefetchURLLoaderInterceptor>
 PrefetchURLLoaderInterceptor::MaybeCreateInterceptor(
     int frame_tree_node_id,
     const GlobalRenderFrameHostId& referring_render_frame_host_id) {
-  if (!base::FeatureList::IsEnabled(features::kPrefetchUseContentRefactor)) {
-    return nullptr;
-  }
-
   if (!referring_render_frame_host_id) {
     // This is expected to occur only in unit tests.
     return nullptr;
@@ -79,20 +74,19 @@ void PrefetchURLLoaderInterceptor::MaybeCreateLoader(
   DCHECK(!loader_callback_);
   loader_callback_ = std::move(callback);
 
-  if (redirect_prefetch_container_ &&
-      redirect_prefetch_container_->GetReader().DoesCurrentURLToServeMatch(
-          tentative_resource_request.url)) {
+  if (redirect_reader_ && redirect_reader_.DoesCurrentURLToServeMatch(
+                              tentative_resource_request.url)) {
     OnGotPrefetchToServe(
         frame_tree_node_id_, tentative_resource_request,
         base::BindOnce(&PrefetchURLLoaderInterceptor::OnGetPrefetchComplete,
                        weak_factory_.GetWeakPtr()),
-        redirect_prefetch_container_);
+        std::move(redirect_reader_));
     return;
   }
 
-  if (redirect_prefetch_container_) {
+  if (redirect_reader_) {
     RecordWasFullRedirectChainServedHistogram(false);
-    redirect_prefetch_container_ = nullptr;
+    redirect_reader_ = PrefetchContainer::Reader();
   }
 
   GetPrefetch(
@@ -103,12 +97,12 @@ void PrefetchURLLoaderInterceptor::MaybeCreateLoader(
 
 void PrefetchURLLoaderInterceptor::GetPrefetch(
     const network::ResourceRequest& tentative_resource_request,
-    base::OnceCallback<void(base::WeakPtr<PrefetchContainer>)>
-        get_prefetch_callback) const {
+    base::OnceCallback<void(PrefetchContainer::Reader)> get_prefetch_callback)
+    const {
   PrefetchService* prefetch_service =
       PrefetchService::GetFromFrameTreeNodeId(frame_tree_node_id_);
   if (!prefetch_service) {
-    std::move(get_prefetch_callback).Run(nullptr);
+    std::move(get_prefetch_callback).Run({});
     return;
   }
 
@@ -121,50 +115,31 @@ void PrefetchURLLoaderInterceptor::GetPrefetch(
 }
 
 void PrefetchURLLoaderInterceptor::OnGetPrefetchComplete(
-    base::WeakPtr<PrefetchContainer> prefetch_container) {
-  if (!prefetch_container) {
+    PrefetchContainer::Reader reader) {
+  if (!reader) {
     // Do not intercept the request.
-    redirect_prefetch_container_ = nullptr;
+    redirect_reader_ = PrefetchContainer::Reader();
     std::move(loader_callback_).Run({});
     return;
   }
 
-  // Set up a URL loader factory to "create" the streaming URL loader from the
-  // prefetch. After this point, the streaming URL loader will manager its own
-  // lifetime, and will delete itself once the prefetch response is completed
-  // and served.
-  DCHECK(prefetch_container->GetFirstStreamingURLLoader());
-  scoped_refptr<network::SingleRequestURLLoaderFactory>
-      single_request_url_loader_factory;
-  if (prefetch_container->GetFirstStreamingURLLoader()
-          ->IsReadyToServeLastEvents()) {
-    std::unique_ptr<PrefetchStreamingURLLoader> prefetch_streaming_url_loader =
-        prefetch_container->ReleaseFirstStreamingURLLoader();
-    auto* raw_prefetch_streaming_url_loader =
-        prefetch_streaming_url_loader.get();
+  PrefetchResponseReader::RequestHandler request_handler =
+      reader.CreateRequestHandler();
 
-    single_request_url_loader_factory =
-        base::MakeRefCounted<network::SingleRequestURLLoaderFactory>(
-            raw_prefetch_streaming_url_loader->ServingFinalResponseHandler(
-                std::move(prefetch_streaming_url_loader)));
-  } else {
-    single_request_url_loader_factory =
-        base::MakeRefCounted<network::SingleRequestURLLoaderFactory>(
-            prefetch_container->GetFirstStreamingURLLoader()
-                ->ServingRedirectHandler());
-  }
+  scoped_refptr<network::SingleRequestURLLoaderFactory>
+      single_request_url_loader_factory =
+          base::MakeRefCounted<network::SingleRequestURLLoaderFactory>(
+              std::move(request_handler));
 
   // If |prefetch_container| is done serving the prefetch, clear out
-  // |redirect_prefetch_container_|, but otherwise cache it in
-  // |redirect_prefetch_container_|.
-  if (!prefetch_container->GetFirstStreamingURLLoader()) {
-    if (redirect_prefetch_container_) {
+  // |redirect_reader_|, but otherwise cache it in |redirect_reader_|.
+  if (reader.IsEnd()) {
+    if (redirect_reader_) {
       RecordWasFullRedirectChainServedHistogram(true);
     }
-    redirect_prefetch_container_ = nullptr;
+    redirect_reader_ = PrefetchContainer::Reader();
   } else {
-    prefetch_container->GetReader().AdvanceCurrentURLToServe();
-    redirect_prefetch_container_ = prefetch_container;
+    redirect_reader_ = std::move(reader);
   }
 
   // Create URL loader factory pipe that can be possibly proxied by Extensions.

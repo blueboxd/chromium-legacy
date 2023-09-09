@@ -28,6 +28,7 @@
 #include "cc/trees/clip_node.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/proxy_impl.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/transform_node.h"
@@ -2401,7 +2402,8 @@ class LayerTreeHostScrollTestElasticOverscroll
   // These values should be used on the impl thread only.
   int num_begin_main_frames_impl_thread_;
   MockInputHandlerClient input_handler_client_;
-  raw_ptr<ScrollElasticityHelper, DanglingUntriaged> scroll_elasticity_helper_;
+  raw_ptr<ScrollElasticityHelper, AcrossTasksDanglingUntriaged>
+      scroll_elasticity_helper_;
 
   // These values should be used on the main thread only.
   int num_begin_main_frames_main_thread_;
@@ -2658,14 +2660,8 @@ class LayerTreeHostScrollTestImplSideInvalidation
 
 MULTI_THREAD_TEST_F(LayerTreeHostScrollTestImplSideInvalidation);
 
-class LayerTreeHostScrollTestMainRepaint : public LayerTreeHostScrollTest {
+class LayerTreeHostRasterPriorityTest : public LayerTreeHostScrollTest {
  public:
-  LayerTreeHostScrollTestMainRepaint() {
-    scoped_feature_list.InitWithFeatures(
-        {features::kScrollUnification},
-        {features::kMainRepaintScrollPrefersNewContent});
-  }
-
   void SetupTree() override {
     LayerTreeHostScrollTest::SetupTree();
     GetViewportScrollNode()->main_thread_scrolling_reasons =
@@ -2683,15 +2679,17 @@ class LayerTreeHostScrollTestMainRepaint : public LayerTreeHostScrollTest {
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
     int frame_number = host_impl->active_tree()->source_frame_number();
     InputHandler& input_handler = host_impl->GetInputHandler();
+    auto* proxy_impl =
+        static_cast<const ProxyImpl*>(host_impl->client_for_testing());
 
     if (frame_number == 0) {
       EXPECT_EQ(SAME_PRIORITY_FOR_BOTH_TREES, host_impl->GetTreePriority());
       DoScrollBeginAndUpdate(input_handler);
 
-      // In frame 0, scroll node has main_thread_scrolling_reasons. Do not
-      // prioritize smoothness, since we need to repaint on the main thread for
-      // the user to see the scroll.
-      EXPECT_EQ(ExpectedMainRepaintPriority(), host_impl->GetTreePriority());
+      // In frame 0, scroll node has main_thread_scrolling_reasons. Prioritize
+      // new content and not smoothness, since we need to repaint on the main
+      // thread for the user to see the scroll.
+      EXPECT_EQ(NEW_CONTENT_TAKES_PRIORITY, host_impl->GetTreePriority());
       input_handler.ScrollEnd();
       PostSetNeedsCommitToMainThread();
     }
@@ -2704,13 +2702,30 @@ class LayerTreeHostScrollTestMainRepaint : public LayerTreeHostScrollTest {
       // Prioritize smoothness.
       EXPECT_EQ(SMOOTHNESS_TAKES_PRIORITY, host_impl->GetTreePriority());
       input_handler.ScrollEnd();
-      EndTest();
+      PostSetNeedsCommitToMainThread();
     }
-  }
 
- protected:
-  virtual TreePriority ExpectedMainRepaintPriority() {
-    return SAME_PRIORITY_FOR_BOTH_TREES;
+    if (frame_number == 2) {
+      // We should stay in smoothness mode for another 250ms.
+      EXPECT_EQ(SMOOTHNESS_TAKES_PRIORITY, host_impl->GetTreePriority());
+      PostSetNeedsCommitToMainThread();
+    }
+
+    if (frame_number > 2) {
+      if (proxy_impl->SmoothnessPriorityExpirationNotifierForTesting()
+              .HasPendingNotification()) {
+        EXPECT_EQ(SMOOTHNESS_TAKES_PRIORITY, host_impl->GetTreePriority());
+        MainThreadTaskRunner()->PostDelayedTask(
+            FROM_HERE,
+            base::BindOnce(&LayerTreeTest::PostSetNeedsCommitToMainThread,
+                           base::Unretained(this)),
+            base::Milliseconds(50));
+      } else {
+        // Once the notifier fires, we should return to the default.
+        EXPECT_EQ(SAME_PRIORITY_FOR_BOTH_TREES, host_impl->GetTreePriority());
+        EndTest();
+      }
+    }
   }
 
  private:
@@ -2728,30 +2743,9 @@ class LayerTreeHostScrollTestMainRepaint : public LayerTreeHostScrollTest {
     input_handler.ScrollUpdate(
         UpdateState(gfx::Point(), gfx::Vector2dF(0, 10)).get());
   }
-
-  base::test::ScopedFeatureList scoped_feature_list;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostScrollTestMainRepaint);
-
-class LayerTreeHostScrollTestMainRepaintNewContent
-    : public LayerTreeHostScrollTestMainRepaint {
- public:
-  LayerTreeHostScrollTestMainRepaintNewContent() {
-    scoped_feature_list.InitAndEnableFeature(
-        features::kMainRepaintScrollPrefersNewContent);
-  }
-
- protected:
-  TreePriority ExpectedMainRepaintPriority() override {
-    return NEW_CONTENT_TAKES_PRIORITY;
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list;
-};
-
-MULTI_THREAD_TEST_F(LayerTreeHostScrollTestMainRepaintNewContent);
+MULTI_THREAD_TEST_F(LayerTreeHostRasterPriorityTest);
 
 class NonScrollingNonFastScrollableRegion : public LayerTreeHostScrollTest {
  public:
@@ -2898,10 +2892,6 @@ SINGLE_THREAD_TEST_F(NonScrollingNonFastScrollableRegion);
 // from LayerTreeHostScrollTest since that enables LayerLists.
 class UnifiedScrollingRepaintOnScroll : public LayerTreeTest {
  public:
-  UnifiedScrollingRepaintOnScroll() {
-    scoped_feature_list.InitAndEnableFeature(features::kScrollUnification);
-  }
-
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void SetupTree() override {

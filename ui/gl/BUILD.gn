@@ -49,8 +49,6 @@ component("gl") {
   output_name = "gl_wrapper"  # Avoid colliding with OS X"s libGL.dylib.
 
   sources = [
-    "buffer_format_utils.cc",
-    "buffer_format_utils.h",
     "dual_gpu_state.cc",
     "dual_gpu_state.h",
     "egl_timestamps.h",
@@ -235,10 +233,7 @@ component("gl") {
         "gl_fence_android_native_fence_sync.h",
       ]
 
-      deps += [
-        "//components/crash/core/common",
-        "//third_party/libsync",
-      ]
+      deps += [ "//third_party/libsync" ]
     }
   }
 
@@ -261,8 +256,6 @@ component("gl") {
       "gl_surface_egl_x11.h",
       "gl_surface_egl_x11_gles2.cc",
       "gl_surface_egl_x11_gles2.h",
-      "native_pixmap_egl_x11_binding_helper.cc",
-      "native_pixmap_egl_x11_binding_helper.h",
     ]
 
     deps += [
@@ -343,24 +336,29 @@ component("gl") {
       data_deps += [ "//third_party/vulkan-deps/vulkan-loader/src:libvulkan" ]
     }
   }
-  if (is_mac) {
+  if (is_apple) {
     sources += [
       "ca_renderer_layer_params.cc",
       "ca_renderer_layer_params.h",
-      "dual_gpu_state_mac.cc",
-      "dual_gpu_state_mac.h",
       "egl_surface_io_surface.cc",
       "egl_surface_io_surface.h",
       "gl_display_egl.mm",
       "gl_fence_apple.cc",
       "gl_fence_apple.h",
-      "scoped_cgl.cc",
-      "scoped_cgl.h",
     ]
 
     frameworks = [
       "CoreFoundation.framework",
       "IOSurface.framework",
+    ]
+  }
+  if (is_mac) {
+    sources += [
+      "dual_gpu_state_mac.cc",
+      "dual_gpu_state_mac.h",
+    ]
+
+    frameworks += [
       "OpenGL.framework",
       "Quartz.framework",
     ]
@@ -378,26 +376,7 @@ component("gl") {
       ]
     }
 
-    deps += [ "//components/metal_util:metal_util_types" ]
-
     defines += [ "GL_SILENCE_DEPRECATION" ]
-  }
-  if (is_ios) {
-    sources += [
-      "ca_renderer_layer_params.cc",
-      "ca_renderer_layer_params.h",
-      "egl_surface_io_surface.cc",
-      "egl_surface_io_surface.h",
-      "gl_display_egl.mm",
-      "gl_fence_apple.cc",
-      "gl_fence_apple.h",
-    ]
-    frameworks = [
-      "CoreFoundation.framework",
-      "IOSurface.framework",
-    ]
-
-    deps += [ "//components/metal_util:metal_util_types" ]
   }
   if (is_android) {
     defines += [

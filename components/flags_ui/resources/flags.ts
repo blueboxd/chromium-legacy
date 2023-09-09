@@ -6,24 +6,24 @@
 import 'chrome://resources/js/ios/web_ui.js';
 // </if>
 
-import 'chrome://resources/js/jstemplate_compiled.js';
 import './strings.m.js';
 import './experiment.js';
 
-import {assert} from 'chrome://resources/js/assert_ts.js';
-import {sendWithPromise} from 'chrome://resources/js/cr.js';
 import {FocusOutlineManager} from 'chrome://resources/js/focus_outline_manager.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
-import {isIOS} from 'chrome://resources/js/platform.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
 import {$, getDeepActiveElement, getRequiredElement} from 'chrome://resources/js/util_ts.js';
 
 import {FlagsExperimentElement} from './experiment.js';
+import {ExperimentalFeaturesData, Feature, FlagsBrowserProxyImpl} from './flags_browser_proxy.js';
 
 let lastChanged: HTMLElement|null = null;
+
+// <if expr="not is_ios">
 let lastFocused: HTMLElement|null = null;
 
-const restartButton = $('experiment-restart-button');
+const restartButton = getRequiredElement('experiment-restart-button');
+// </if>
 
 const experimentalFeaturesResolver: PromiseResolver<void> =
     new PromiseResolver();
@@ -63,15 +63,6 @@ function selectTab(selectedTabEl: HTMLElement) {
   }
 }
 
-declare global {
-  class JsEvalContext {
-    constructor(data: any);
-  }
-
-  function jstGetTemplate(id: string): HTMLElement;
-  function jstProcess(context: JsEvalContext, template: HTMLElement): void;
-}
-
 /**
  * This variable structure is here to document the structure that the template
  * expects to correctly populate the page.
@@ -79,64 +70,34 @@ declare global {
 
 /**
  * Takes the |experimentalFeaturesData| input argument which represents data
- * about all the current feature entries and populates the html jstemplate with
+ * about all the current feature entries and populates the page with
  * that data. It expects an object structure like the above.
  * @param experimentalFeaturesData Information about all experiments.
  */
-function renderTemplate(experimentalFeaturesData: ExperimentalFeaturesData) {
-  const templateToProcess = jstGetTemplate('tab-content-available-template');
-  const context = new JsEvalContext(experimentalFeaturesData);
-  const content = getRequiredElement('tab-content-available');
+function render(experimentalFeaturesData: ExperimentalFeaturesData) {
+  const defaultFeatures: Feature[] = [];
+  const nonDefaultFeatures: Feature[] = [];
 
-  // Duplicate the template into the content area.
-  // This prevents the misrendering of available flags when the template
-  // is rerendered. Example - resetting flags.
-  content.textContent = '';
-  content.appendChild(templateToProcess);
+  experimentalFeaturesData.supportedFeatures.forEach(
+      f => (f.is_default ? defaultFeatures : nonDefaultFeatures).push(f));
 
-  // Process the templates: available / unavailable flags.
-  jstProcess(context, templateToProcess);
+  renderExperiments(
+      nonDefaultFeatures, getRequiredElement('non-default-experiments'));
 
-  // Unavailable flags are not shown on iOS.
-  const unavailableTemplate = $('tab-content-unavailable');
-  if (unavailableTemplate) {
-    jstProcess(context, getRequiredElement('tab-content-unavailable'));
-  }
+  renderExperiments(defaultFeatures, getRequiredElement('default-experiments'));
+
+  // <if expr="not is_ios">
+  renderExperiments(
+      experimentalFeaturesData.unsupportedFeatures,
+      getRequiredElement('unavailable-experiments'), true);
+  // </if>
 
   showRestartToast(experimentalFeaturesData.needsRestart);
 
-  // Add handlers to dynamically created HTML elements.
-  const experiments = document.body.querySelectorAll('flags-experiment');
-  for (const experiment of experiments) {
-    const select =
-        experiment.shadowRoot!.querySelector<HTMLSelectElement>('select');
-    if (select) {
-      select.onchange = function() {
-        if (select.classList.contains('experiment-select')) {
-          handleSelectExperimentalFeatureChoice(select, select.selectedIndex);
-        } else {
-          handleEnableExperimentalFeature(
-              select, select.options[select.selectedIndex]!.value == 'enabled');
-        }
-        lastChanged = select;
-        return false;
-      };
-      registerFocusEvents(select);
-    }
-    const textarea =
-        experiment.shadowRoot!.querySelector<HTMLTextAreaElement>('textarea');
-    if (textarea) {
-      textarea.onchange = function() {
-        handleSetOriginListFlag(textarea, textarea.value);
-        return false;
-      };
-    }
-  }
-
-  assert(restartButton || isIOS);
-  if (restartButton) {
-    restartButton.onclick = restartBrowser;
-  }
+  // <if expr="not is_ios">
+  restartButton.onclick = () =>
+      FlagsBrowserProxyImpl.getInstance().restartBrowser();
+  // </if>
 
   // Tab panel selection.
   for (const tab of tabs) {
@@ -146,16 +107,6 @@ function renderTemplate(experimentalFeaturesData: ExperimentalFeaturesData) {
     });
   }
 
-  const smallScreenCheck = window.matchMedia('(max-width: 480px)');
-  // Toggling of experiment description overflow content on smaller screens.
-  if (smallScreenCheck.matches) {
-    const elements = document.body.querySelectorAll<HTMLElement>(
-        '.experiment .flex:first-child');
-    for (const element of elements) {
-      element.onclick = () => element.classList.toggle('expand');
-    }
-  }
-
   const resetAllButton = getRequiredElement('experiment-reset-all');
   resetAllButton.onclick = () => {
     resetAllFlags();
@@ -163,14 +114,15 @@ function renderTemplate(experimentalFeaturesData: ExperimentalFeaturesData) {
   };
   registerFocusEvents(resetAllButton);
 
+  // <if expr="is_chromeos">
   const crosUrlFlagsRedirectButton = $('os-link-href');
   if (crosUrlFlagsRedirectButton) {
-    crosUrlFlagsRedirectButton.onclick = crosUrlFlagsRedirect;
+    crosUrlFlagsRedirectButton.onclick =
+        FlagsBrowserProxyImpl.getInstance().crosUrlFlagsRedirect;
   }
+  // </if>
 
   highlightReferencedFlag();
-  const search = FlagSearch.getInstance();
-  search.init();
 }
 
 /**
@@ -181,12 +133,11 @@ function renderTemplate(experimentalFeaturesData: ExperimentalFeaturesData) {
 function registerFocusEvents(el: HTMLElement) {
   el.addEventListener('keydown', function(e) {
     if (lastChanged && e.key === 'Tab' && !e.shiftKey) {
-      lastFocused = lastChanged;
       e.preventDefault();
-      // There is no restart button on iOS.
-      if (restartButton) {
-        restartButton.focus();
-      }
+      // <if expr="not is_ios">
+      lastFocused = lastChanged;
+      restartButton.focus();
+      // </if>
     }
   });
   el.addEventListener('blur', function() {
@@ -209,9 +160,9 @@ function highlightReferencedFlag() {
     const experiment = el.querySelector('flags-experiment');
     if (experiment && !experiment.classList.contains('referenced')) {
       // Unhighlight whatever's highlighted.
-      if (document.body.querySelector('.referenced')) {
-        document.body.querySelector('.referenced')!.classList.remove(
-            'referenced');
+      const previous = document.body.querySelector('.referenced');
+      if (previous) {
+        previous.classList.remove('referenced');
       }
       // Highlight the referenced element.
       experiment.classList.add('referenced');
@@ -232,13 +183,8 @@ function highlightReferencedFlag() {
  * |returnExperimentalFeatures()| will be called with reply.
  */
 function requestExperimentalFeaturesData() {
-  sendWithPromise('requestExperimentalFeatures')
-      .then(returnExperimentalFeatures);
-}
-
-/** Restart browser and restore tabs. */
-function restartBrowser() {
-  chrome.send('restartBrowser');
+  FlagsBrowserProxyImpl.getInstance().requestExperimentalFeatures().then(
+      returnExperimentalFeatures);
 }
 
 /**
@@ -254,15 +200,43 @@ function announceStatus(text: string) {
 
 /** Reset all flags to their default values and refresh the UI. */
 function resetAllFlags() {
-  chrome.send('resetAllFlags');
+  FlagsBrowserProxyImpl.getInstance().resetAllFlags();
   FlagSearch.getInstance().clearSearch();
   announceStatus(loadTimeData.getString('reset-acknowledged'));
   showRestartToast(true);
   requestExperimentalFeaturesData();
 }
 
-function crosUrlFlagsRedirect() {
-  chrome.send('crosUrlFlagsRedirect');
+function renderExperiments(
+    features: Feature[], container: HTMLElement, unsupported = false) {
+  const fragment = document.createDocumentFragment();
+  for (const feature of features) {
+    const experiment = document.createElement('flags-experiment');
+
+    experiment.toggleAttribute('unsupported', unsupported);
+    experiment.data = feature;
+    experiment.id = feature.internal_name;
+
+    const select = experiment.getSelect();
+    if (select) {
+      experiment.addEventListener('select-change', () => {
+        showRestartToast(true);
+        lastChanged = select;
+        return false;
+      });
+      registerFocusEvents(select);
+    }
+
+    const textarea = experiment.getTextarea();
+    if (textarea) {
+      experiment.addEventListener('textarea-change', () => {
+        showRestartToast(true);
+        return false;
+      });
+    }
+    fragment.appendChild(experiment);
+  }
+  container.replaceChildren(fragment);
 }
 
 /**
@@ -272,43 +246,12 @@ function crosUrlFlagsRedirect() {
 function showRestartToast(show: boolean) {
   getRequiredElement('needs-restart').classList.toggle('show', show);
   // There is no restart button on iOS.
-  if (restartButton) {
-    restartButton.setAttribute('tabindex', show ? '9' : '-1');
-  }
+  // <if expr="not is_ios">
+  restartButton.setAttribute('tabindex', show ? '9' : '-1');
+  // </if>
   if (show) {
     getRequiredElement('needs-restart').setAttribute('role', 'alert');
   }
-}
-
-/**
- * `enabled` and `is_default` are only set if the feature is single valued.
- * `enabled` is true if the feature is currently enabled.
- * `is_default` is true if the feature is in its default state.
- * `options` is only set if the entry has multiple values.
- */
-export interface Feature {
-  internal_name: string;
-  name: string;
-  description: string;
-  enabled: boolean;
-  is_default: boolean;
-  supported_platforms: string[];
-  origin_list_value?: string;
-  options?: Array<{
-    internal_name: string,
-    description: string,
-    selected: boolean,
-  }>;
-}
-
-interface ExperimentalFeaturesData {
-  supportedFeatures: Feature[];
-  unsupportedFeatures: Feature[];
-  needsRestart: boolean;
-  showBetaChannelPromotion: boolean;
-  showDevChannelPromotion: boolean;
-  showOwnerWarning: boolean;
-  showSystemFlagsLink: boolean;
 }
 
 /**
@@ -318,7 +261,7 @@ interface ExperimentalFeaturesData {
 function returnExperimentalFeatures(
     experimentalFeaturesData: ExperimentalFeaturesData) {
   const bodyContainer = getRequiredElement('body-container');
-  renderTemplate(experimentalFeaturesData);
+  render(experimentalFeaturesData);
 
   if (experimentalFeaturesData.showBetaChannelPromotion) {
     getRequiredElement('channel-promo-beta').hidden = false;
@@ -331,6 +274,9 @@ function returnExperimentalFeatures(
       !experimentalFeaturesData.showDevChannelPromotion;
 
   bodyContainer.style.visibility = 'visible';
+
+  FlagSearch.getInstance().init();
+
   const ownerWarningDiv = $('owner-warning');
   if (ownerWarningDiv) {
     ownerWarningDiv.hidden = !experimentalFeaturesData.showOwnerWarning;
@@ -344,94 +290,6 @@ function returnExperimentalFeatures(
   experimentalFeaturesResolver.resolve();
 }
 
-/**
- * Handles updating the UI after experiment selections have been made.
- * Adds or removes experiment highlighting depending on whether the experiment
- * is set to the default option then shows the restart button.
- * @param node The select node for the experiment being changed.
- * @param index The selected option index.
- */
-function experimentChangesUiUpdates(node: HTMLSelectElement, index: number) {
-  const selected = node.options[index]!;
-  const internalName = node.dataset['internalName'];
-  if (!internalName) {
-    return;
-  }
-  const experimentContainerEl =
-      getRequiredElement(internalName)
-          .firstElementChild!.shadowRoot!.querySelector(
-              '.experiment-default, .experiment-switched')!;
-  const isDefault =
-      ('default' in selected.dataset && selected.dataset['default'] === '1') ||
-      (!('default' in selected.dataset) && index === 0);
-  experimentContainerEl.classList.toggle('experiment-default', isDefault);
-  experimentContainerEl.classList.toggle('experiment-switched', !isDefault);
-
-  showRestartToast(true);
-}
-
-/**
- * Handles a 'enable' or 'disable' button getting clicked.
- * @param node The node for the experiment being changed.
- * @param enable Whether to enable or disable the experiment.
- */
-function handleEnableExperimentalFeature(
-    node: HTMLSelectElement, enable: boolean) {
-  /* This function is an onchange handler, which can be invoked during page
-   * restore - see https://crbug.com/1038638. */
-  const internalName = node.dataset['internalName'];
-  if (!internalName) {
-    return;
-  }
-  chrome.send(
-      'enableExperimentalFeature', [String(internalName), String(enable)]);
-  experimentChangesUiUpdates(node, enable ? 1 : 0);
-}
-
-function handleSetOriginListFlag(node: HTMLElement, value: string) {
-  /* This function is an onchange handler, which can be invoked during page
-   * restore - see https://crbug.com/1038638. */
-  const internalName = node.dataset['internalName'];
-  if (!internalName) {
-    return;
-  }
-  chrome.send('setOriginListFlag', [String(internalName), value]);
-  showRestartToast(true);
-}
-
-/**
- * Invoked when the selection of a multi-value choice is changed to the
- * specified index.
- * @param node The node for the experiment being changed.
- * @param index The index of the option that was selected.
- */
-function handleSelectExperimentalFeatureChoice(
-    node: HTMLSelectElement, index: number) {
-  /* This function is an onchange handler, which can be invoked during page
-   * restore - see https://crbug.com/1038638. */
-  const internalName = node.dataset['internalName'];
-  if (!internalName) {
-    return;
-  }
-  chrome.send(
-      'enableExperimentalFeature',
-      [String(internalName) + '@' + index, 'true']);
-  experimentChangesUiUpdates(node, index);
-}
-
-/** Type for storing the elements which are searched on. */
-interface SearchContent {
-  link: HTMLElement[];
-  title: HTMLElement[];
-  description: HTMLElement[];
-}
-
-const emptySearchContent: SearchContent = Object.freeze({
-  link: [],
-  title: [],
-  description: [],
-});
-
 // Delay in ms following a keypress, before a search is made.
 const SEARCH_DEBOUNCE_TIME_MS: number = 150;
 
@@ -439,11 +297,6 @@ const SEARCH_DEBOUNCE_TIME_MS: number = 150;
  * Handles in page searching. Matches against the experiment flag name.
  */
 class FlagSearch {
-  private experiments_: SearchContent = Object.assign({}, emptySearchContent);
-  // <if expr="not is_ios">
-  private unavailableExperiments_: SearchContent =
-      Object.assign({}, emptySearchContent);
-  // </if>
   private searchIntervalId_: number|null = null;
 
   private searchBox_: HTMLInputElement;
@@ -461,12 +314,6 @@ class FlagSearch {
    * collates the text elements used for string matching.
    */
   init() {
-    this.experiments_ = this.getSearchableElements('tab-content-available');
-    // <if expr="not is_ios">
-    this.unavailableExperiments_ =
-        this.getSearchableElements('tab-content-unavailable');
-    // </if>
-
     if (!this.initialized) {
       this.searchBox_.addEventListener('input', this.debounceSearch.bind(this));
 
@@ -493,85 +340,12 @@ class FlagSearch {
     }
   }
 
-  getSearchableElements(tabId: string): SearchContent {
-    const content = Object.assign({}, emptySearchContent);
-    const experiments = document.body.querySelectorAll<FlagsExperimentElement>(
-        `#${tabId} flags-experiment`);
-    for (const experiment of experiments) {
-      const link = experiment.getRequiredElement('.permalink');
-      const title = experiment.getRequiredElement('.experiment-name');
-      const description = experiment.getRequiredElement('p');
-
-      content.link.push(link);
-      content.title.push(title);
-      content.description.push(description);
-    }
-
-    return content;
-  }
-
   /**
    * Clears a search showing all experiments.
    */
   clearSearch() {
     this.searchBox_.value = '';
     this.doSearch();
-  }
-
-  /**
-   * Reset existing highlights on an element.
-   * @param el The element to remove all highlighted mark up on.
-   * @param text Text to reset the element's textContent to.
-   */
-  resetHighlights(el: HTMLElement, text: string) {
-    if (el.children) {
-      el.textContent = text;
-    }
-  }
-
-  /**
-   * Highlights the search term within a given element.
-   * @param searchTerm Search term user entered.
-   * @param el The node containing the text to match against.
-   * @return Whether there was a match.
-   */
-  highlightMatchInElement(searchTerm: string, el: HTMLElement): boolean {
-    // Experiment container.
-    const parentEl = el.parentElement!.parentElement!.parentElement;
-    assert(parentEl);
-    const text = el.textContent!;
-    const match = text.toLowerCase().indexOf(searchTerm);
-
-    parentEl.classList.toggle('hidden', match === -1);
-
-    if (match === -1) {
-      this.resetHighlights(el, text);
-      return false;
-    }
-
-    if (searchTerm !== '') {
-      // Clear all nodes.
-      el.textContent = '';
-
-      if (match > 0) {
-        const textNodePrefix =
-            document.createTextNode(text.substring(0, match));
-        el.appendChild(textNodePrefix);
-      }
-
-      const matchEl = document.createElement('mark');
-      matchEl.textContent = text.substr(match, searchTerm.length);
-      el.appendChild(matchEl);
-
-      const matchSuffix = text.substring(match + searchTerm.length);
-      if (matchSuffix) {
-        const textNodeSuffix = document.createTextNode(matchSuffix);
-        el.appendChild(textNodeSuffix);
-      }
-    } else {
-      this.resetHighlights(el, text);
-    }
-    return true;
   }
 
   /**
@@ -583,39 +357,14 @@ class FlagSearch {
    *     search against.
    * @return The number of matches found.
    */
-  highlightAllMatches(searchContent: SearchContent, searchTerm: string):
-      number {
+  highlightAllMatches(
+      experiments: NodeListOf<FlagsExperimentElement>,
+      searchTerm: string): number {
     let matches = 0;
-    for (let i = 0, j = searchContent.link.length; i < j; i++) {
-      if (this.highlightMatchInElement(searchTerm, searchContent.title[i]!)) {
-        this.resetHighlights(
-            searchContent.description[i]!,
-            searchContent.description[i]!.textContent!);
-        this.resetHighlights(
-            searchContent.link[i]!, searchContent.link[i]!.textContent!);
-        matches++;
-        continue;
-      }
-      if (this.highlightMatchInElement(
-              searchTerm, searchContent.description[i]!)) {
-        this.resetHighlights(
-            searchContent.title[i]!, searchContent.title[i]!.textContent!);
-        this.resetHighlights(
-            searchContent.link[i]!, searchContent.link[i]!.textContent!);
-        matches++;
-        continue;
-      }
-      // Match links, replace spaces with hyphens as flag names don't
-      // have spaces.
-      if (this.highlightMatchInElement(
-              searchTerm.replace(/\s/, '-'), searchContent.link[i]!)) {
-        this.resetHighlights(
-            searchContent.title[i]!, searchContent.title[i]!.textContent!);
-        this.resetHighlights(
-            searchContent.description[i]!,
-            searchContent.description[i]!.textContent!);
-        matches++;
-      }
+    for (const experiment of experiments) {
+      const hasMatch = experiment.match(searchTerm);
+      matches += hasMatch ? 1 : 0;
+      experiment.classList.toggle('hidden', !hasMatch);
     }
     return matches;
   }
@@ -628,17 +377,23 @@ class FlagSearch {
 
     if (searchTerm || searchTerm === '') {
       document.body.classList.toggle('searching', Boolean(searchTerm));
+
       // Available experiments
+      const availableExperiments =
+          document.body.querySelectorAll<FlagsExperimentElement>(
+              '#tab-content-available flags-experiment');
       this.noMatchMsg_[0]!.classList.toggle(
           'hidden',
-          this.highlightAllMatches(this.experiments_, searchTerm) > 0);
+          this.highlightAllMatches(availableExperiments, searchTerm) > 0);
 
       // <if expr="not is_ios">
       // Unavailable experiments, which are undefined on iOS.
+      const unavailableExperiments =
+          document.body.querySelectorAll<FlagsExperimentElement>(
+              '#tab-content-unavailable flags-experiment');
       this.noMatchMsg_[1]!.classList.toggle(
           'hidden',
-          this.highlightAllMatches(this.unavailableExperiments_, searchTerm) >
-              0);
+          this.highlightAllMatches(unavailableExperiments, searchTerm) > 0);
       // </if>
       this.announceSearchResults();
     }
@@ -655,7 +410,7 @@ class FlagSearch {
     const selectedTab =
         tabs.find(tab => tab.panelEl.classList.contains('selected'))!;
     const selectedTabId = selectedTab.panelEl.id;
-    const queryString = `#${selectedTabId} .experiment:not(.hidden)`;
+    const queryString = `#${selectedTabId} flags-experiment:not(.hidden)`;
     const total = document.body.querySelectorAll(queryString).length;
     if (total) {
       announceStatus(
@@ -686,16 +441,12 @@ class FlagSearch {
 
 let instance: FlagSearch|null = null;
 
+// <if expr="not is_ios">
 /**
  * Allows the restart button to jump back to the previously focused experiment
  * in the list instead of going to the top of the page.
  */
 function setupRestartButton() {
-  // There is no restart button on iOS.
-  if (!restartButton) {
-    return;
-  }
-
   restartButton.addEventListener('keydown', function(e) {
     if (e.shiftKey && e.key === 'Tab' && lastFocused) {
       e.preventDefault();
@@ -706,11 +457,15 @@ function setupRestartButton() {
     lastFocused = null;
   });
 }
+// </if>
 
 document.addEventListener('DOMContentLoaded', function() {
   // Get and display the data upon loading.
   requestExperimentalFeaturesData();
+  // There is no restart button on iOS.
+  // <if expr="not is_ios">
   setupRestartButton();
+  // </if>
   FocusOutlineManager.forDocument(document);
 });
 

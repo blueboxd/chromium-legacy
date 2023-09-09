@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/types/optional_util.h"
@@ -32,7 +33,6 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -63,17 +63,17 @@ namespace {
 // members. The `Papers` will be sorted in place when this function returns.
 void PopulateAndSortAllPaperNames(PrinterSemanticCapsAndDefaults& info) {
   MediaSizeInfo default_paper =
-      LocalizePaperDisplayName(info.default_paper.size_um);
-  info.default_paper.vendor_id = default_paper.vendor_id;
-  info.default_paper.display_name =
-      base::UTF16ToUTF8(default_paper.display_name);
+      LocalizePaperDisplayName(info.default_paper.size_um());
+  info.default_paper.set_display_name(
+      base::UTF16ToUTF8(default_paper.display_name));
+  info.default_paper.set_vendor_id(default_paper.vendor_id);
 
   // Pair the paper entries with their sort info so they can be sorted.
   std::vector<PaperWithSizeInfo> size_list;
   for (PrinterSemanticCapsAndDefaults::Paper& paper : info.papers) {
     // Copy `paper.size_um` to avoid potentially using `paper` after calling
     // std::move(paper).
-    gfx::Size size_um = paper.size_um;
+    gfx::Size size_um = paper.size_um();
     size_list.emplace_back(LocalizePaperDisplayName(size_um), std::move(paper));
   }
 
@@ -82,8 +82,8 @@ void PopulateAndSortAllPaperNames(PrinterSemanticCapsAndDefaults& info) {
   info.papers.clear();
   for (auto& pair : size_list) {
     auto& paper = info.papers.emplace_back(std::move(pair.paper));
-    paper.vendor_id = pair.size_info.vendor_id;
-    paper.display_name = base::UTF16ToUTF8(pair.size_info.display_name);
+    paper.set_display_name(base::UTF16ToUTF8(pair.size_info.display_name));
+    paper.set_vendor_id(pair.size_info.vendor_id);
   }
 }
 #endif  // BUILDFLAG(PRINT_MEDIA_L10N_ENABLED)
@@ -204,9 +204,9 @@ base::Value::Dict GetSettingsOnBlockingTaskRunner(
                                                 base::BlockingType::MAY_BLOCK);
 
   PRINTER_LOG(EVENT) << "Get printer capabilities start for " << device_name;
-  const std::string driver_info =
+  const std::vector<std::string> driver_info =
       print_backend->GetPrinterDriverInfo(device_name);
-  PRINTER_LOG(EVENT) << "Driver info: " << driver_info;
+  PRINTER_LOG(EVENT) << "Driver info: " << base::JoinString(driver_info, ";");
 
   crash_keys::ScopedPrinterInfo crash_key(driver_info);
 

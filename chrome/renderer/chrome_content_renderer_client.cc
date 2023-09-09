@@ -36,6 +36,7 @@
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/pdf_util.h"
 #include "chrome/common/pepper_permission_util.h"
+#include "chrome/common/ppapi_utils.h"
 #include "chrome/common/privacy_budget/privacy_budget_settings_provider.h"
 #include "chrome/common/profiler/thread_profiler.h"
 #include "chrome/common/profiler/unwind_util.h"
@@ -104,8 +105,6 @@
 #include "components/subresource_filter/content/renderer/unverified_ruleset_dealer.h"
 #include "components/subresource_filter/core/common/common_features.h"
 #include "components/supervised_user/core/common/buildflags.h"
-#include "components/translate/content/renderer/per_frame_translate_agent.h"
-#include "components/translate/core/common/translate_util.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_switches.h"
 #include "components/version_info/version_info.h"
@@ -622,9 +621,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
 #endif
 
   TrustedVaultEncryptionKeysExtension::Create(render_frame);
-  if (base::FeatureList::IsEnabled(features::kWebAuthFlowInBrowserTab)) {
-    GoogleAccountsPrivateApiExtension::Create(render_frame);
-  }
+  GoogleAccountsPrivateApiExtension::Create(render_frame);
 
   if (render_frame->IsMainFrame())
     new webapps::WebPageMetadataAgent(render_frame);
@@ -669,15 +666,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
       render_frame_observer->associated_interfaces();
 
   if (!render_frame->IsInFencedFrameTree() ||
-      (base::FeatureList::IsEnabled(
-           autofill::features::kAutofillEnableWithinFencedFrame) &&
-       base::FeatureList::IsEnabled(
-           blink::features::kFencedFramesAPIChanges)) ||
-      (base::FeatureList::IsEnabled(
-           password_manager::features::
-               kEnablePasswordManagerWithinFencedFrame) &&
-       base::FeatureList::IsEnabled(
-           blink::features::kFencedFramesAPIChanges))) {
+      base::FeatureList::IsEnabled(blink::features::kFencedFramesAPIChanges)) {
     PasswordAutofillAgent* password_autofill_agent =
         new PasswordAutofillAgent(render_frame, associated_interfaces);
     PasswordGenerationAgent* password_generation_agent =
@@ -717,11 +706,6 @@ void ChromeContentRendererClient::RenderFrameCreated(
             render_frame, subresource_filter_ruleset_dealer_.get(),
             std::move(ad_resource_tracker));
     subresource_filter_agent->Initialize();
-  }
-
-  if (translate::IsSubFrameTranslationEnabled()) {
-    new translate::PerFrameTranslateAgent(
-        render_frame, ISOLATED_WORLD_ID_TRANSLATE, associated_interfaces);
   }
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -1033,24 +1017,29 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
           const Extension* extension =
               extensions::RendererExtensionRegistry::Get()
                   ->GetExtensionOrAppByURL(manifest_url);
-          if (extension) {
-            is_module_allowed =
-                IsNativeNaClAllowed(app_url, is_nacl_unrestricted, extension);
+          if (IsNaclAllowed()) {
+            if (extension) {
+              is_module_allowed =
+                  IsNativeNaClAllowed(app_url, is_nacl_unrestricted, extension);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-            // Allow Terminal System App to load the SSH extension NaCl module.
-          } else if (IsTerminalSystemWebAppNaClPage(app_url)) {
-            is_module_allowed = true;
+              // Allow Terminal System App to load the SSH extension NaCl
+              // module.
+            } else if (IsTerminalSystemWebAppNaClPage(app_url)) {
+              is_module_allowed = true;
 #endif
-          } else {
-            WebDocument document = frame->GetDocument();
-            is_module_allowed =
-                has_enable_nacl_switch ||
-                (is_pnacl_mime_type &&
-                 blink::WebOriginTrials::isTrialEnabled(&document, "PNaCl"));
+            } else {
+              WebDocument document = frame->GetDocument();
+              is_module_allowed =
+                  has_enable_nacl_switch ||
+                  (is_pnacl_mime_type &&
+                   blink::WebOriginTrials::isTrialEnabled(&document, "PNaCl"));
+            }
           }
           if (!is_module_allowed) {
             WebString error_message;
-            if (is_nacl_mime_type) {
+            if (!IsNaclAllowed()) {
+              error_message = "NaCl is disabled.";
+            } else if (is_nacl_mime_type) {
               error_message =
                   "Only unpacked extensions and apps installed from the Chrome "
                   "Web Store can load NaCl modules without enabling Native "

@@ -46,6 +46,7 @@ void PrivacyScreenToastController::ShowToast() {
   tray_->CloseSecondaryBubbles();
 
   TrayBubbleView::InitParams init_params;
+  init_params.type = TrayBubbleView::TrayBubbleType::kSecondaryBubble;
   init_params.shelf_alignment = tray_->shelf()->alignment();
   init_params.preferred_width = kPrivacyScreenToastMinWidth;
   init_params.delegate = GetWeakPtr();
@@ -152,8 +153,7 @@ void PrivacyScreenToastController::UpdateToastView() {
 void PrivacyScreenToastController::ButtonPressed() {
   auto* privacy_screen_controller = Shell::Get()->privacy_screen_controller();
   privacy_screen_controller->SetEnabled(
-      !privacy_screen_controller->GetEnabled(),
-      PrivacyScreenController::kToggleUISurfaceToastButton);
+      !privacy_screen_controller->GetEnabled());
 }
 
 void PrivacyScreenToastController::StopAutocloseTimer() {

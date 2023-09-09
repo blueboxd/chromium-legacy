@@ -28,12 +28,7 @@ bool KeyFrameRequestProcessor::OnFrameAndShouldRequestKeyFrame(
                          return now >=
                                 last_key_frame_received_.timestamp + duration;
                        },
-                       [&](auto&) {
-                         constexpr size_t kDefaultKeyIntervalCount = 100;
-                         return frame_counter_ >
-                                last_key_frame_received_.frame_counter +
-                                    kDefaultKeyIntervalCount;
-                       }},
+                       [](auto&) { return false; }},
       config_);
   if (request_keyframe && consider_key_frame_request_) {
     consider_key_frame_request_ = false;

@@ -3,7 +3,6 @@
 <translationbundle lang="ja">
 <translation id="1075622780330595106">しばらく使用していないタブが <ph name="NUMBER_OF_TABS" /> 個あります。これらのタブを閉じますか？</translation>
 <translation id="125153950246128346">タップすると他のタブが表示されます</translation>
-<translation id="1403228085774130835">閉じたタブは Chrome メインメニューの [最近使ったタブ] で確認できます</translation>
 <translation id="1455506303394048917">これらのシークレット タブでのアクティビティはこのデバイスから削除されます</translation>
 <translation id="1499635324672558517">すべてのシークレット タブを閉じますか？</translation>
 <translation id="1657719826150349398">タブを下に移動</translation>
@@ -47,6 +46,7 @@
 <translation id="5073204694187207510">全画面グリッドを非表示</translation>
 <translation id="5076161749301278626">店舗の審査を確認しますか？</translation>
 <translation id="5082793167783849073">グループを作成して簡単にページを比較できます。グループを作成するには、リンクを長押しします。</translation>
+<translation id="5339733443032484186">最後のタブ</translation>
 <translation id="5490235265819901748">タブグループを展開しました</translation>
 <translation id="5494920125229734069">すべて選択する</translation>
 <translation id="5556417849629758491">ストア情報を表示、画面上部付近に表示されるオプション</translation>

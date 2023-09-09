@@ -212,8 +212,12 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
   void AddResult(
       const NGLayoutResult&,
       const LogicalOffset,
+      absl::optional<const NGBoxStrut> margins,
       absl::optional<LogicalOffset> relative_offset = absl::nullopt,
       const NGInlineContainer<LogicalOffset>* inline_container = nullptr);
+  // AddResult() with the default margin computation.
+  void AddResult(const NGLayoutResult& child_layout_result,
+                 const LogicalOffset offset);
 
   // Add a child fragment and propagate info from it. Called by AddResult().
   // Other callers should call AddResult() instead of this when possible, since
@@ -479,7 +483,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
 
   void SetIsFieldsetContainer() { is_fieldset_container_ = true; }
   void SetIsTableNGPart() { is_table_ng_part_ = true; }
-  void SetIsLegacyLayoutRoot() { is_legacy_layout_root_ = true; }
 
   void SetIsInlineFormattingContext(bool is_inline_formatting_context) {
     is_inline_formatting_context_ = is_inline_formatting_context;
@@ -657,11 +660,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
     return child_break_tokens_.back().Get();
   }
 
-  void InsertLegacyPositionedObject(const NGBlockNode& positioned) const {
-    positioned.InsertIntoLegacyPositionedObjectsOf(
-        To<LayoutBlock>(layout_object_));
-  }
-
   // Propagate the break-before/break-after of the child (if applicable).
   void PropagateChildBreakValues(const NGLayoutResult& child_layout_result);
 
@@ -764,6 +762,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
   friend class NGBlockBreakToken;
   friend class NGPhysicalBoxFragment;
   friend class NGLayoutResult;
+  friend class PhysicalFragmentRareData;
 };
 
 }  // namespace blink

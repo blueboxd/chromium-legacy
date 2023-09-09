@@ -50,6 +50,7 @@
 #include "content/browser/startup_data_impl.h"
 #include "content/browser/startup_helper.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/browser/tracing/background_tracing_manager_impl.h"
 #include "content/browser/tracing/memory_instrumentation_util.h"
 #include "content/browser/tracing/startup_tracing_controller.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
@@ -598,7 +599,7 @@ void BrowserTestBase::SetUp() {
   // Unlike other platforms, android_browsertests can reuse the same process for
   // multiple tests. Need to reset startup metrics to allow recording them
   // again.
-  startup_metric_utils::ResetSessionForTesting();
+  startup_metric_utils::GetBrowser().ResetSessionForTesting();
 
   base::i18n::AllowMultipleInitializeCallsForTesting();
   base::i18n::InitializeICU();

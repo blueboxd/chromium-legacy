@@ -1186,6 +1186,8 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method neg
 [Worker]     method pad
 [Worker]     method prelu
+[Worker]     method reduceMean
+[Worker]     method reduceSum
 [Worker]     method relu
 [Worker]     method resample2d
 [Worker]     method reshape
@@ -1649,6 +1651,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method clone
 [Worker]     method constructor
 [Worker]     method getMetadata
+[Worker]     method setTimestamp
 [Worker]     method toString
 [Worker]     setter data
 [Worker] interface RTCEncodedVideoFrame
@@ -1660,6 +1663,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker]     method getMetadata
 [Worker]     method setMetadata
+[Worker]     method setTimestamp
 [Worker]     method toString
 [Worker]     setter data
 [Worker] interface ReadableByteStreamController
@@ -3748,7 +3752,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute OPENED
 [Worker]     attribute UNSENT
 [Worker]     getter onreadystatechange
-[Worker]     getter privateTokenOperationError
 [Worker]     getter readyState
 [Worker]     getter response
 [Worker]     getter responseText

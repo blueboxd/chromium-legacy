@@ -184,6 +184,15 @@ found in the LICENSE file.
   :host-context([orientation='horizontal']) .welcome-header-text {
     text-align: start;
   }
+
+  :host-context(.jelly-enabled) oobe-icon-button.bg-transparent {
+    --oobe-button-icon-fill-color: var(--cros-sys-primary);
+  }
+
+  .illustration-jelly {
+    width: 100%;
+    height: 100%;
+  }
 </style>
 <div id="dialog" class="layout vertical">
   <h1 id="title" class="welcome-header-text">
@@ -258,9 +267,9 @@ found in the LICENSE file.
     <template is="dom-if" if="[[showAnimationSlot()]]">
       <div id="welcomeAnimationSlot">
         <template is="dom-if" if="[[!isMeet_]]">
-          <!-- TODO(b/288071884) - Replace SVG with one that supports dynamic colors -->
-          <img id="welcomeAnimationFirstFrame" src="images/welcome_animation_first_frame.svg"
-            class="oobe-illustration stacked-animations" aria-hidden="true" hidden="[[isOobeLoaded_]]">
+          <iron-icon id="welcomeAnimationFirstFrame" icon="oobe-illos:connect-illo"
+              class="illustration-jelly stacked-animations" hidden="[[isOobeLoaded_]]">
+          </iron-icon>
           <oobe-cr-lottie
             id="welcomeAnimation" preload
             animation-url="animations/welcome_screen_animation.json"
@@ -281,22 +290,44 @@ found in the LICENSE file.
   </div>
 </div>
 <oobe-modal-dialog id="chromeVoxHint">
-  <div slot="title">
-    <p>[[i18nDynamic(locale, 'chromeVoxHintText')]]</p>
-  </div>
-  <div slot="buttons">
-    <oobe-text-button
-      id="dismissChromeVoxButton"
-      on-click="dismissChromeVoxHint_"
-      text-key="continueWithoutChromeVox"
-    >
-    </oobe-text-button>
-    <oobe-text-button
-      id="activateChromeVoxButton"
-      inverse
-      on-click="activateChromeVox_"
-      text-key="activateChromeVox"
-    >
-    </oobe-text-button>
-  </div>
+  <template is="dom-if" if="[[isChromeVoxHintImprovementsEnabled_]]">
+    <!-- New version of ChromeVox hint dialog -->
+    <div id="chromeVoxHintTitle"
+      slot="title">
+      <hd-iron-icon icon1x="oobe-20:welcome-accessibility"
+        icon2x="oobe-40:welcome-accessibility"></hd-iron-icon>
+      <p>[[i18nDynamic(locale, 'chromevoxHintTitle')]]</p>
+    </div>
+    <div id="chromeVoxHintContent"
+      slot="content">[[i18nDynamic(locale, 'chromeVoxHintTextExpanded')]]</div>
+    <div slot="buttons">
+      <oobe-text-button
+        id="dismissChromeVoxButton"
+        on-click="dismissChromeVoxHint_"
+        text-key="chromevoxHintClose"
+      >
+      </oobe-text-button>
+    </div>
+  </template>
+  <template is="dom-if" if="[[!isChromeVoxHintImprovementsEnabled_]]">
+    <!-- Old version of ChromeVox hint dialog -->
+    <div slot="title">
+      [[i18nDynamic(locale, 'chromeVoxHintText')]]
+    </div>
+    <div slot="buttons">
+      <oobe-text-button
+        id="dismissChromeVoxButton"
+        on-click="dismissChromeVoxHint_"
+        text-key="continueWithoutChromeVox"
+      >
+      </oobe-text-button>
+      <oobe-text-button
+        id="activateChromeVoxButton"
+        inverse
+        on-click="activateChromeVox_"
+        text-key="activateChromeVox"
+      >
+      </oobe-text-button>
+    </div>
+  </template>
 </oobe-modal-dialog>

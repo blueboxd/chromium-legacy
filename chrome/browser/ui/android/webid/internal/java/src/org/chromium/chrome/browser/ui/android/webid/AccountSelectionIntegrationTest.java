@@ -41,11 +41,17 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.Batch;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
+import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.android.webid.data.Account;
 import org.chromium.chrome.browser.ui.android.webid.data.ClientIdMetadata;
 import org.chromium.chrome.browser.ui.android.webid.data.IdentityProviderMetadata;
@@ -55,6 +61,7 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetTestSupport;
 import org.chromium.content.webid.IdentityRequestDialogDismissReason;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
@@ -105,7 +112,9 @@ public class AccountSelectionIntegrationTest {
             mBottomSheetController = BottomSheetControllerProvider.from(
                     mActivityTestRule.getActivity().getWindowAndroid());
             mAccountSelection = new AccountSelectionCoordinator(
-                    mActivityTestRule.getActivity(), mBottomSheetController, mMockBridge);
+                    mActivityTestRule.getActivity().getActivityTab(),
+                    mActivityTestRule.getActivity().getWindowAndroid(), mBottomSheetController,
+                    mMockBridge);
         });
 
         mTestUrlTermsOfService =
@@ -129,6 +138,23 @@ public class AccountSelectionIntegrationTest {
         Espresso.pressBack();
 
         waitForEvent(mMockBridge).onDismissed(IdentityRequestDialogDismissReason.OTHER);
+        verify(mMockBridge, never()).onAccountSelected(any(), any());
+    }
+
+    @Test
+    @MediumTest
+    public void testSwipeDismissesAndCallsCallback() {
+        runOnUiThreadBlocking(() -> {
+            mAccountSelection.showAccounts(EXAMPLE_ETLD_PLUS_ONE, TEST_ETLD_PLUS_ONE_1,
+                    TEST_ETLD_PLUS_ONE_2, Arrays.asList(ANA, BOB), IDP_METADATA, mClientIdMetadata,
+                    false /* isAutoReauthn */, "signin" /* rpContext */);
+        });
+        pollUiThread(() -> getBottomSheetState() == BottomSheetController.SheetState.FULL);
+        BottomSheetTestSupport sheetSupport = new BottomSheetTestSupport(mBottomSheetController);
+        runOnUiThreadBlocking(() -> {
+            sheetSupport.suppressSheet(BottomSheetController.StateChangeReason.SWIPE);
+        });
+        waitForEvent(mMockBridge).onDismissed(IdentityRequestDialogDismissReason.SWIPE);
         verify(mMockBridge, never()).onAccountSelected(any(), any());
     }
 
@@ -205,6 +231,63 @@ public class AccountSelectionIntegrationTest {
         pollUiThread(() -> getBottomSheetState() == BottomSheetController.SheetState.HIDDEN);
     }
 
+    @Test
+    @MediumTest
+    public void testFailureDialogBackDismissesAndCallsCallback() {
+        runOnUiThreadBlocking(() -> {
+            mAccountSelection.showFailureDialog(EXAMPLE_ETLD_PLUS_ONE, TEST_ETLD_PLUS_ONE_1,
+                    TEST_ETLD_PLUS_ONE_2, IDP_METADATA, "signin" /* rpContext */);
+        });
+        pollUiThread(() -> getBottomSheetState() == BottomSheetController.SheetState.FULL);
+
+        Espresso.pressBack();
+
+        waitForEvent(mMockBridge).onDismissed(IdentityRequestDialogDismissReason.OTHER);
+        verify(mMockBridge, never()).onAccountSelected(any(), any());
+    }
+
+    @Test
+    @MediumTest
+    public void testFailureDialogSwipeDismissesAndCallsCallback() {
+        runOnUiThreadBlocking(() -> {
+            mAccountSelection.showFailureDialog(EXAMPLE_ETLD_PLUS_ONE, TEST_ETLD_PLUS_ONE_1,
+                    TEST_ETLD_PLUS_ONE_2, IDP_METADATA, "signin" /* rpContext */);
+        });
+        pollUiThread(() -> getBottomSheetState() == BottomSheetController.SheetState.FULL);
+        BottomSheetTestSupport sheetSupport = new BottomSheetTestSupport(mBottomSheetController);
+        runOnUiThreadBlocking(() -> {
+            sheetSupport.suppressSheet(BottomSheetController.StateChangeReason.SWIPE);
+        });
+        waitForEvent(mMockBridge).onDismissed(IdentityRequestDialogDismissReason.SWIPE);
+        verify(mMockBridge, never()).onAccountSelected(any(), any());
+    }
+
+    @Test
+    @MediumTest
+    public void testShowModalDialog() throws Exception {
+        final TabModelSelector tabSelector = mActivityTestRule.getActivity().getTabModelSelector();
+
+        final CallbackHelper openTabHelper = new CallbackHelper();
+        final CallbackHelper closeTabHelper = new CallbackHelper();
+        runOnUiThreadBlocking(() -> {
+            tabSelector.getModel(false).addObserver(new TabModelObserver() {
+                @Override
+                public void didAddTab(Tab tab, @TabLaunchType int type,
+                        @TabCreationState int creationState, boolean markedForSelection) {
+                    openTabHelper.notifyCalled();
+                    mAccountSelection.closeModalDialog();
+                }
+                @Override
+                public void onFinishingTabClosure(Tab tab) {
+                    closeTabHelper.notifyCalled();
+                }
+            });
+            mAccountSelection.showModalDialog(new GURL(EXAMPLE_ETLD_PLUS_ONE));
+        });
+        openTabHelper.waitForCallback(0, 1);
+        closeTabHelper.waitForCallback(0, 1);
+    }
+
     public static <T> T waitForEvent(T mock) {
         return verify(mock,
                 timeout(ScalableTimeout.scaleTimeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL)));
@@ -242,7 +325,7 @@ public class AccountSelectionIntegrationTest {
 
             @Override
             public boolean swipeToDismissEnabled() {
-                return false;
+                return true;
             }
 
             @Override

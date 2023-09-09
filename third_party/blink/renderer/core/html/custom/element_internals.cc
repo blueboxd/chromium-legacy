@@ -62,7 +62,6 @@ const V8ControlValue* RestoreFromFormControlState(
     return nullptr;
   }
   if (state[index] != section_title) {
-    NOTREACHED();
     return nullptr;
   }
   const V8ControlValue* restored_value = nullptr;
@@ -158,7 +157,7 @@ void ElementInternals::setValidity(ValidityStateFlags* flags,
 
 void ElementInternals::setValidity(ValidityStateFlags* flags,
                                    const String& message,
-                                   Element* anchor,
+                                   HTMLElement* anchor,
                                    ExceptionState& exception_state) {
   if (!IsTargetFormAssociated()) {
     exception_state.ThrowDOMException(

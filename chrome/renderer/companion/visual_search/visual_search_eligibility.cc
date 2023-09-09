@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 
@@ -24,7 +23,7 @@ constexpr int kMaxNumStored = 200;
 // Return true if p1 should be sorted before p2.
 bool SortDesc(const std::pair<std::string, double>& p1,
               const std::pair<std::string, double>& p2) {
-  return p1.second >= p2.second;
+  return p1.second > p2.second;
 }
 bool SortAsc(const std::pair<std::string, double>& p1,
              const std::pair<std::string, double>& p2) {
@@ -71,13 +70,7 @@ double ComputeFractionCover(const Rect& image1_onpage_rect,
 }  // namespace
 
 EligibilityModule::EligibilityModule(const EligibilitySpec& spec)
-    : spec_(spec),
-      have_run_first_pass_(false),
-      num_shoppy_images_(0),
-      num_sensitive_images_(0),
-      most_shoppy_id_(""),
-      most_shoppy_shopping_score_(0.0),
-      most_shoppy_sens_score_(1.0) {}
+    : spec_(spec), have_run_first_pass_(false) {}
 
 EligibilityModule::~EligibilityModule() = default;
 
@@ -105,9 +98,6 @@ EligibilityModule::RunFirstPassEligibilityAndCacheFeatureValues(
     }
     eligible_after_first_pass_.insert(image.image_identifier);
   }
-  base::UmaHistogramCounts100(
-      "Companion.VisualQuery.EligibilityStatus.NumImages",
-      eligible_after_first_pass_.size());
 
   RunAdditionalCheapPruning(images);
 
@@ -138,12 +128,6 @@ EligibilityModule::RunSecondPassPostClassificationEligibility(
       image_level_features_[each_pair.first]
                            [FeatureLibrary::SHOPPING_CLASSIFIER_SCORE] =
                                each_pair.second;
-
-      // Scale up the decimal scores by a factor of 100 for the sake of integer
-      // histogram values.
-      base::UmaHistogramCounts100(
-          "Companion.VisualQuery.MaybeShoppy.ShoppingClassificationScore",
-          100 * each_pair.second);
     }
   }
   for (const auto& each_pair : sensitivity_classifier_scores) {
@@ -151,10 +135,6 @@ EligibilityModule::RunSecondPassPostClassificationEligibility(
       image_level_features_[each_pair.first]
                            [FeatureLibrary::SENS_CLASSIFIER_SCORE] =
                                each_pair.second;
-
-      base::UmaHistogramCounts100(
-          "Companion.VisualQuery.MaybeSensitive.SensitivityClassificationScore",
-          100 * each_pair.second);
     }
   }
 
@@ -178,41 +158,6 @@ EligibilityModule::RunSecondPassPostClassificationEligibility(
   for (auto& id_score_pair : images_with_feature_values) {
     eligible_image_ids.push_back(std::move(id_score_pair.first));
   }
-
-  if (eligible_image_ids.size() > 0) {
-    // Scale up the decimal scores by a factor of 100 for the sake of integer
-    // histogram values.
-    int winning_image_shopping_score =
-        100 * shopping_classifier_scores.find(eligible_image_ids[0])->second;
-    int winning_image_sens_score =
-        100 * sensitivity_classifier_scores.find(eligible_image_ids[0])->second;
-
-    base::UmaHistogramCounts100(
-        "Companion.VisualQuery.MostShoppyNotSensitive."
-        "ShoppingClassificationScore",
-        winning_image_shopping_score);
-    base::UmaHistogramCounts100(
-        "Companion.VisualQuery.MostShoppyNotSensitive."
-        "SensitivityClassificationScore",
-        winning_image_sens_score);
-    base::UmaHistogramCounts100(
-        "Companion.VisualQuery.MostShoppy.ShoppingClassificationScore",
-        100 * most_shoppy_shopping_score_);
-    base::UmaHistogramCounts100(
-        "Companion.VisualQuery.MostShoppy.SensitivityClassificationScore",
-        100 * most_shoppy_sens_score_);
-  }
-
-  // Image counts for funnel metrics
-  base::UmaHistogramCounts100(
-      "Companion.VisualQuery.EligibilityStatus.NumShoppy", num_shoppy_images_);
-  base::UmaHistogramCounts100(
-      "Companion.VisualQuery.EligibilityStatus.NumSensitive",
-      num_sensitive_images_);
-  base::UmaHistogramCounts100(
-      "Companion.VisualQuery.EligibilityStatus.NumShoppyNotSensitive",
-      eligible_after_second_pass_.size());
-
   return eligible_image_ids;
 }
 
@@ -235,11 +180,6 @@ void EligibilityModule::Clear() {
   eligible_after_first_pass_.clear();
   eligible_after_second_pass_.clear();
   have_run_first_pass_ = false;
-  num_shoppy_images_ = 0;
-  num_sensitive_images_ = 0;
-  most_shoppy_id_ = "";
-  most_shoppy_shopping_score_ = 0.0;
-  most_shoppy_sens_score_ = 1.0;
 }
 
 void EligibilityModule::ComputeNormalizingFeatures(
@@ -293,39 +233,7 @@ bool EligibilityModule::EvaluateEligibilityRule(
   // Compute the OR of the thresholding rules.
   for (const auto& thresholding_rule : eligibility_rule.rules()) {
     if (EvaluateThresholdingRule(thresholding_rule, image_id)) {
-      if (thresholding_rule.feature_name() ==
-          FeatureLibrary::SHOPPING_CLASSIFIER_SCORE) {
-        num_shoppy_images_ += 1;
-      }
       return true;
-    } else if (thresholding_rule.feature_name() ==
-               FeatureLibrary::SENS_CLASSIFIER_SCORE) {
-      num_sensitive_images_ += 1;
-    }
-  }
-  return false;
-}
-
-bool EligibilityModule::IsImageShoppyForMetrics(const std::string& image_id) {
-  for (const auto& classifier_rules : spec_.classifier_score_rules()) {
-    for (const auto& thresholding_rule : classifier_rules.rules()) {
-      if (thresholding_rule.feature_name() ==
-          FeatureLibrary::SHOPPING_CLASSIFIER_SCORE) {
-        return EvaluateThresholdingRule(thresholding_rule, image_id);
-      }
-    }
-  }
-  return false;
-}
-
-bool EligibilityModule::IsImageSensitiveForMetrics(
-    const std::string& image_id) {
-  for (const auto& classifier_rules : spec_.classifier_score_rules()) {
-    for (const auto& thresholding_rule : classifier_rules.rules()) {
-      if (thresholding_rule.feature_name() ==
-          FeatureLibrary::SENS_CLASSIFIER_SCORE) {
-        return !EvaluateThresholdingRule(thresholding_rule, image_id);
-      }
     }
   }
   return false;
@@ -346,23 +254,8 @@ bool EligibilityModule::EvaluateThresholdingRule(
     }
   }
   if (thresholding_rule.thresholding_op() == FeatureLibrary::GT) {
-    // Update the most shoppy image id + shopping score seen so far if the
-    // current image is shoppier
-    if (thresholding_rule.feature_name() ==
-            FeatureLibrary::SHOPPING_CLASSIFIER_SCORE &&
-        feature_value > most_shoppy_shopping_score_) {
-      most_shoppy_shopping_score_ = feature_value;
-      most_shoppy_id_ = image_id;
-    }
     return feature_value > thresholding_rule.threshold();
   } else if (thresholding_rule.thresholding_op() == FeatureLibrary::LT) {
-    // Update the most shoppy image sensitivity score if the current image is
-    // the shoppiest so far.
-    if (thresholding_rule.feature_name() ==
-            FeatureLibrary::SENS_CLASSIFIER_SCORE &&
-        image_id.compare(most_shoppy_id_)) {
-      most_shoppy_sens_score_ = feature_value;
-    }
     return feature_value < thresholding_rule.threshold();
   } else {
     NOTREACHED();

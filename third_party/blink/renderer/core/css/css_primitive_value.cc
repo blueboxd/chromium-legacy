@@ -335,6 +335,14 @@ double CSSPrimitiveValue::ComputeLength(
       ComputeLengthDouble(length_resolver));
 }
 
+int CSSPrimitiveValue::ComputeInteger(
+    const CSSLengthResolver& length_resolver) const {
+  DCHECK(IsNumber());
+  return IsCalculated()
+             ? To<CSSMathFunctionValue>(this)->ComputeInteger(length_resolver)
+             : To<CSSNumericLiteralValue>(this)->ComputeInteger();
+}
+
 double CSSPrimitiveValue::ComputeLengthDouble(
     const CSSLengthResolver& length_resolver) const {
   if (IsCalculated()) {
@@ -566,6 +574,12 @@ bool CSSPrimitiveValue::UnitTypeToLengthUnitType(UnitType unit_type,
     case CSSPrimitiveValue::UnitType::kIcs:
       length_type = kUnitTypeIdeographicFullWidth;
       return true;
+    case CSSPrimitiveValue::UnitType::kCaps:
+      length_type = kUnitTypeFontCapitalHeight;
+      return true;
+    case CSSPrimitiveValue::UnitType::kRcaps:
+      length_type = kUnitTypeRootFontCapitalHeight;
+      return true;
     case CSSPrimitiveValue::UnitType::kLhs:
       length_type = kUnitTypeLineHeight;
       return true;
@@ -691,6 +705,10 @@ CSSPrimitiveValue::UnitType CSSPrimitiveValue::LengthUnitTypeToUnitType(
       return CSSPrimitiveValue::UnitType::kChs;
     case kUnitTypeIdeographicFullWidth:
       return CSSPrimitiveValue::UnitType::kIcs;
+    case kUnitTypeFontCapitalHeight:
+      return CSSPrimitiveValue::UnitType::kCaps;
+    case kUnitTypeRootFontCapitalHeight:
+      return CSSPrimitiveValue::UnitType::kRcaps;
     case kUnitTypeLineHeight:
       return CSSPrimitiveValue::UnitType::kLhs;
     case kUnitTypeRootLineHeight:
@@ -793,6 +811,10 @@ const char* CSSPrimitiveValue::UnitTypeToString(UnitType type) {
       return "lh";
     case UnitType::kRlhs:
       return "rlh";
+    case UnitType::kCaps:
+      return "cap";
+    case UnitType::kRcaps:
+      return "rcap";
     case UnitType::kPixels:
       return "px";
     case UnitType::kCentimeters:

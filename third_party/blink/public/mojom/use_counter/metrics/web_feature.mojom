@@ -2666,8 +2666,8 @@ enum WebFeature {
   kHtmlClipboardApiWrite = 3363,
   kOBSOLETE_CSSSystemColorComputeToSelf = 3364,
   kConversionAPIAll = 3365,
-  kImpressionRegistration = 3366,
-  kConversionRegistration = 3367,
+  kOBSOLETE_ImpressionRegistration = 3366,
+  kOBSOLETE_ConversionRegistration = 3367,
   kWebSharePolicyAllow = 3368,
   kWebSharePolicyDisallow = 3369,
   kFormAssociatedCustomElement = 3370,
@@ -3937,6 +3937,15 @@ enum WebFeature {
   kEventTimingPresentationPromiseResolvedAfterReport = 4597,
   kGetCoalescedEventsInInsecureContext = 4598,
   kCSPEESameOriginBlanketEnforcement = 4599,
+  kV8Navigator_GetEnvironmentIntegrity_Method = 4600,
+  kSharedDictionaryUsed = 4601,
+  kSharedDictionaryUsedForNavigation = 4602,
+  kSharedDictionaryUsedForMainFrameNavigation = 4603,
+  kSharedDictionaryUsedForSubFrameNavigation = 4604,
+  kSharedDictionaryUsedForSubresource = 4605,
+  kPriceChangeConfirmation = 4606,
+  kPaymentRequestActivationlessShow = 4607,
+  kWebAppTabbed = 4608,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

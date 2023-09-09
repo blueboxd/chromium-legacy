@@ -30,7 +30,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/mojom/extra_response_data.mojom.h"
-#include "ipc/ipc_message.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-forward.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-forward.h"
@@ -302,9 +301,6 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
     return extension_->id();
   }
 
-  void set_request_id(int request_id) { request_id_ = request_id; }
-  int request_id() { return request_id_; }
-
   void set_request_uuid(base::Uuid uuid) { request_uuid_ = std::move(uuid); }
   const base::Uuid& request_uuid() const { return request_uuid_; }
 
@@ -368,10 +364,6 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
 
   bool did_respond() const { return did_respond_; }
 
-  // Called when a message was received.
-  // Should return true if it processed the message.
-  virtual bool OnMessageReceived(const IPC::Message& message);
-
   // Set the browser context which contains the extension that has originated
   // this function call. Only meant for testing; if unset, uses the
   // BrowserContext from dispatcher().
@@ -406,6 +398,11 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
   // unsure, please consult the extensions team.
   virtual bool ShouldKeepWorkerAliveIndefinitely();
 
+  // Notifies the function that the renderer received the reply from the
+  // browser. The function will only receive this notification if it registers
+  // via `AddResponseTarget()`.
+  virtual void OnResponseAck();
+
   // Sets did_respond_ to true so that the function won't DCHECK if it never
   // sends a response. Typically, this shouldn't be used, even in testing. It's
   // only for when you want to test functionality that doesn't exercise the
@@ -416,10 +413,6 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
 
   // Same as above, but global. Yuck. Do not add any more uses of this.
   static bool ignore_all_did_respond_for_testing_do_not_use;
-
-  // Called when the service worker in the renderer ACKS the function's
-  // response.
-  virtual void OnServiceWorkerAck();
 
  protected:
   // ResponseValues.
@@ -510,7 +503,7 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
 
   // Adds this instance to the set of targets waiting for an ACK from the
   // renderer.
-  void AddWorkerResponseTarget();
+  void AddResponseTarget();
 
   virtual ~ExtensionFunction();
 
@@ -594,11 +587,7 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
   // The callback to run once the function has done execution.
   ResponseCallback response_callback_;
 
-  // Id of this request, used to map the response back to the caller.
-  int request_id_ = -1;
-
-  // UUID for this request. Currently only set for worker calls.
-  // TODO(crbug.com/1444561): Replace `request_id_` with this.
+  // UUID for this request.
   base::Uuid request_uuid_;
 
   // The name of this function.

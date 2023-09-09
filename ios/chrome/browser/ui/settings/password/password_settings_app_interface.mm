@@ -10,7 +10,6 @@
 #import "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
-#import "base/test/bind.h"
 #import "base/test/ios/wait_util.h"
 #import "base/time/time.h"
 #import "components/keyed_service/core/service_access_type.h"
@@ -35,9 +34,6 @@
 #error "This file requires ARC support."
 #endif
 
-using chrome_test_util::SetUpAndReturnMockReauthenticationModule;
-using chrome_test_util::
-    SetUpAndReturnMockReauthenticationModuleForExportFromSettings;
 using chrome_test_util::
     SetUpAndReturnMockReauthenticationModuleForPasswordManager;
 using password_manager::FakeBulkLeakCheckService;
@@ -159,47 +155,35 @@ bool ClearPasswordStore() {
 
 @implementation PasswordSettingsAppInterface
 
-static MockReauthenticationModule* _mockReauthenticationModule;
 static std::unique_ptr<ScopedPasswordSettingsReauthModuleOverride>
     _scopedReauthOverride;
 
 + (void)setUpMockReauthenticationModule {
-  _mockReauthenticationModule = SetUpAndReturnMockReauthenticationModule();
-}
-
-+ (void)setUpMockReauthenticationModuleForAddPassword {
-  _mockReauthenticationModule = SetUpAndReturnMockReauthenticationModule(true);
-}
-
-+ (void)setUpMockReauthenticationModuleForPasswordManager {
-  _mockReauthenticationModule =
+  _scopedReauthOverride =
       SetUpAndReturnMockReauthenticationModuleForPasswordManager();
+}
+
++ (void)removeMockReauthenticationModule {
+  _scopedReauthOverride = nullptr;
 }
 
 + (void)mockReauthenticationModuleExpectedResult:
     (ReauthenticationResult)expectedResult {
-  if (_mockReauthenticationModule) {
-    _mockReauthenticationModule.expectedResult = expectedResult;
-  }
-  if (_scopedReauthOverride) {
-    MockReauthenticationModule* mockModule =
-        base::mac::ObjCCastStrict<MockReauthenticationModule>(
-            _scopedReauthOverride->module);
-    mockModule.expectedResult = expectedResult;
-  }
+  DCHECK(_scopedReauthOverride);
+
+  MockReauthenticationModule* mockModule =
+      base::mac::ObjCCastStrict<MockReauthenticationModule>(
+          _scopedReauthOverride->module);
+  mockModule.expectedResult = expectedResult;
 }
 
 + (void)mockReauthenticationModuleCanAttempt:(BOOL)canAttempt {
-  _mockReauthenticationModule.canAttempt = canAttempt;
-}
+  DCHECK(_scopedReauthOverride);
 
-+ (void)setUpMockReauthenticationModuleForExportFromSettings {
-  _scopedReauthOverride =
-      SetUpAndReturnMockReauthenticationModuleForExportFromSettings();
-}
-
-+ (void)removeMockReauthenticationModuleForExportFromSettings {
-  _scopedReauthOverride = nullptr;
+  MockReauthenticationModule* mockModule =
+      base::mac::ObjCCastStrict<MockReauthenticationModule>(
+          _scopedReauthOverride->module);
+  mockModule.canAttempt = canAttempt;
 }
 
 + (void)dismissSnackBar {
@@ -304,15 +288,6 @@ static std::unique_ptr<ScopedPasswordSettingsReauthModuleOverride>
       chrome_test_util::GetOriginalBrowserState();
   return browserState->GetPrefs()->GetBoolean(
       password_manager::prefs::kCredentialsEnableService);
-}
-
-+ (void)setupFakeBulkLeakCheckService {
-  IOSChromeBulkLeakCheckServiceFactory::GetInstance()->SetTestingFactory(
-      chrome_test_util::GetOriginalBrowserState(),
-      base::BindRepeating(base::BindLambdaForTesting([](web::BrowserState*) {
-        return std::unique_ptr<KeyedService>(
-            std::make_unique<password_manager::FakeBulkLeakCheckService>());
-      })));
 }
 
 + (void)setFakeBulkLeakCheckBufferedState:

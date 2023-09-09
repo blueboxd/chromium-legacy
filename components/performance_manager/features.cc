@@ -83,8 +83,8 @@ BASE_FEATURE(kForceHeuristicMemorySaver,
 BASE_FEATURE(kHighEfficiencyMultistateMode,
              "HighEfficiencyMultistateMode",
              base::FEATURE_DISABLED_BY_DEFAULT);
-const base::FeatureParam<bool> kHighEfficiencyDefaultHeuristicMode{
-    &kHighEfficiencyMultistateMode, "default_heuristic_mode", false};
+const base::FeatureParam<bool> kHighEfficiencyShowRecommendedBadge{
+    &kHighEfficiencyMultistateMode, "show_recommended_badge", false};
 
 BASE_FEATURE(kDiscardedTabTreatment,
              "DiscardedTabTreatment",
@@ -136,16 +136,14 @@ const base::FeatureParam<int> kMemoryUsageInHovercardsHighThresholdBytes{
     &kMemoryUsageInHovercards,
     "memory_usage_in_hovercards_high_threshold_bytes", 800 * 1024 * 1024};
 
+const base::FeatureParam<bool> kMemoryUsageInHovercardsUpdateOnNavigation{
+    &kMemoryUsageInHovercards, "update_memory_on_navigation", false};
+
 #endif
 
 BASE_FEATURE(kBFCachePerformanceManagerPolicy,
              "BFCachePerformanceManagerPolicy",
-#if !BUILDFLAG(IS_ANDROID)
-             base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kUrgentPageDiscarding,
              "UrgentPageDiscarding",

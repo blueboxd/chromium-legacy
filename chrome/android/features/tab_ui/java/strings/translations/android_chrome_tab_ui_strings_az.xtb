@@ -3,7 +3,6 @@
 <translationbundle lang="az">
 <translation id="1075622780330595106"><ph name="NUMBER_OF_TABS" /> tab son zamanlarda istifadə edilməyib. Onlar bağlansın?</translation>
 <translation id="125153950246128346">Başqa taba baxmaq üçün klikləyin</translation>
-<translation id="1403228085774130835">Qapalı tablarınızı Chrome əsas menyusunda Son tablarda tapa bilərsiniz</translation>
 <translation id="1455506303394048917">Incognito tablarındakı fəaliyyətiniz bu cihazdan silinəcək</translation>
 <translation id="1499635324672558517">Bütün Incognito tabları qapadılsın?</translation>
 <translation id="1657719826150349398">Tabı aşağıya daşıyın</translation>
@@ -47,6 +46,7 @@
 <translation id="5073204694187207510">Tam ekran cədvəlini gizlədin</translation>
 <translation id="5076161749301278626">Mağaza rəyləri göstərilsin?</translation>
 <translation id="5082793167783849073">Qruplaşdırmaqla səhifələri asanlıqla müqayisə edin. Başlamaq üçün linkə toxunub saxlayın.</translation>
+<translation id="5339733443032484186">Son tab</translation>
 <translation id="5490235265819901748">Tab qrupu genişləndirildi</translation>
 <translation id="5494920125229734069">Hamısını seçin</translation>
 <translation id="5556417849629758491">Mağaza məlumatlarına baxın, seçim ekranın yuxarı hissəsində əlçatandır</translation>

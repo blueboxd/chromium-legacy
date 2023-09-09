@@ -21,7 +21,7 @@
 #include "components/autofill/core/common/signatures.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
-#include "components/password_manager/core/browser/form_parsing/form_parser.h"
+#include "components/password_manager/core/browser/form_parsing/form_data_parser.h"
 #include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
 #include "components/password_manager/core/browser/password_form_digest.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
@@ -175,7 +175,6 @@ class PasswordFormManager : public PasswordFormManagerForUI,
 
   bool IsNewLogin() const;
   FormFetcher* GetFormFetcher();
-  bool IsPendingCredentialsPublicSuffixMatch() const;
   void PresaveGeneratedPassword(const autofill::FormData& form_data,
                                 const std::u16string& generated_password);
   void PasswordNoLongerGenerated();
@@ -355,7 +354,7 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   bool WebAuthnCredentialsAvailable() const;
 
   // The client which implements embedder-specific PasswordManager operations.
-  raw_ptr<PasswordManagerClient, DanglingUntriaged> client_;
+  const raw_ptr<PasswordManagerClient> client_;
 
   base::WeakPtr<PasswordManagerDriver> driver_;
 
@@ -390,7 +389,7 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   std::unique_ptr<FormFetcher> owned_form_fetcher_;
 
   // FormFetcher instance which owns the login data from PasswordStore.
-  raw_ptr<FormFetcher, DanglingUntriaged> form_fetcher_;
+  const raw_ptr<FormFetcher> form_fetcher_;
 
   std::unique_ptr<PasswordSaveManager> password_save_manager_;
 

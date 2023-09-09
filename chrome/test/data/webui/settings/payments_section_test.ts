@@ -9,7 +9,7 @@ import {CrButtonElement, loadTimeData, MetricsBrowserProxyImpl, PrivacyElementIn
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {isMac, isWindows} from 'chrome://resources/js/platform.js';
 
-import {createCreditCardEntry, TestPaymentsManager} from './passwords_and_autofill_fake_data.js';
+import {createCreditCardEntry, TestPaymentsManager} from './autofill_fake_data.js';
 import {createPaymentsSection, getLocalAndServerCreditCardListItems, getDefaultExpectations, getCardRowShadowRoot} from './payments_section_utils.js';
 import {TestMetricsBrowserProxy} from './test_metrics_browser_proxy.js';
 
@@ -45,7 +45,6 @@ suite('PaymentsSection', function() {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
     loadTimeData.overrideValues({
       migrationEnabled: true,
-      removeCardExpirationAndTypeTitles: true,
       virtualCardEnrollmentEnabled: true,
       showIbansSettings: true,
       deviceAuthAvailable: true,
@@ -73,12 +72,6 @@ suite('PaymentsSection', function() {
     assertTrue(!!noPaymentMethodsLabel);
     assertFalse(noPaymentMethodsLabel.hidden);
 
-    const creditCardsHeading =
-        creditCardList.shadowRoot!.querySelector<HTMLElement>(
-            '#creditCardsHeading');
-    assertTrue(!!creditCardsHeading);
-    assertTrue(creditCardsHeading.hidden);
-
     assertFalse(section.$.autofillCreditCardToggle.disabled);
 
     const addPaymentMethodsButton =
@@ -104,9 +97,6 @@ suite('PaymentsSection', function() {
   });
 
   test('verifyCreditCardCount', async function() {
-    loadTimeData.overrideValues({
-      removeCardExpirationAndTypeTitles: true,
-    });
     const creditCards = [
       createCreditCardEntry(),
       createCreditCardEntry(),
@@ -129,12 +119,6 @@ suite('PaymentsSection', function() {
             '#noPaymentMethodsLabel');
     assertTrue(!!noPaymentMethodsLabel);
     assertTrue(noPaymentMethodsLabel.hidden);
-
-    const creditCardsHeading =
-        creditCardList.shadowRoot!.querySelector<HTMLElement>(
-            '#creditCardsHeading');
-    assertTrue(!!creditCardsHeading);
-    assertTrue(creditCardsHeading.hidden);
 
     assertFalse(section.$.autofillCreditCardToggle.disabled);
 

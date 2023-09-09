@@ -189,6 +189,20 @@ may sacrifice a little bit of correctness in favor of simplicity.
     * Implements `AutofillClient` interface.
     * Has siblings `AwAutofillClient`, `ChromeAutofillClientIOS` and
       `WebViewAutofillClientIOS`.
+  * `PersonalDataManager`
+    * One instance per `BrowserContext` (Chrome profile). In incognito mode, the
+      original profile's instance is used. This enables filling even in
+      incognito mode. Imports are disabled in incognito mode by the
+      `BrowserAutofillManager`.
+    * Responsibilities:
+      * Reading/writing/updating AutofillProfiles and payment information from
+        `AutofillTable` - an SQLite database used to persist data across browser
+        shutdown.
+      * Keeps a copy of `AutofillTable`'s data in memory, making them available
+        to the rest of Autofill.
+      * Modifications triggered through the `PersonalDataManager` generally
+        happen asynchronously. For details, see
+        [go/pdm-autofill-table-interface](http://go/pdm-autofill-table-interface).
 
 ## What's the difference between Autofill and Autocomplete?
 
@@ -254,6 +268,19 @@ may sacrifice a little bit of correctness in favor of simplicity.
     the server can handle small forms differently, see
     [`http://cs/IsSmallForm%20file:autofill`](http://cs/IsSmallForm%20file:autofill).
   * Crowd sourcing trumps local heuristics.
+  * For testing purposes, crowd sourcing can be overridden manually by command
+    line parameter:
+    ```
+    chrome --enable-features=AutofillOverridePredictions:spec/1_2_4-7_8_9
+    ```
+
+    This creates two manual overrides that supersede server predictions as
+    follows:
+    * The server prediction for the field with signature 2 in the form with
+      signature 1 is overridden to be 4 (`NAME_MIDDLE`).
+    * The server prediction for the field with signature 8 in the form with
+      signature 7 is overridden to be 9 (`EMAIL_ADDRESS`).
+    For more detail, see the documentation of [`ServerPredictionOverrides`](https://source.chromium.org/chromium/chromium/src/+/main:components/autofill/core/browser/server_prediction_overrides.h).
 * Autocomplete attribute
   * The autocomplete attribute is parsed in `ParseAutocompleteAttribute`.
   * The autocomplete attribute trumps local heuristics and crowd sourcing
@@ -281,13 +308,12 @@ Several important subsets of ServerFieldTypes exist:
   * Not all supported types of AutofillProfile are stored, since types following a standard format can unambiguously be derived from
     another type. See derived types below.
   * Since parsing and formatting are not necessarily inverse operations, most supported types of AutofillProfile are stored.
-* Derived types of AutofillProfile: The relative complement of stored types in the supported types of AutofillProfile. Every derived type is derived directly from a stored type. Examples include:
-  * PHONE_HOME_COUNTRY_CODE is parsed from the PHONE_HOME_WHOLE_NUMBER.
-  * ADDRESS_HOME_LINE{1,2,3} is parsed from the different lines of ADDRESS_HOME_STREET_ADDRESS.
-  * ADDRESS_HOME_ADDRESS is a special case: Since it is not stored, it is considered derived. It only exists as an artificial
-    [root node in the address tree](https://source.chromium.org/chromium/chromium/src/+/main:components/autofill/core/browser/data_model/autofill_structured_address.h;l=244;drc=ecd18b587cccb10ed916e80c8cd352960dd075a1)
-    and is unused for filling.
+* Derived types of AutofillProfile: The relative complement of stored types in the supported types of AutofillProfile. Every derived type is derived directly from a stored type. The set of derived types and their corresponding stored types are listed [here](https://source.chromium.org/chromium/chromium/src/+/main:components/autofill/core/browser/profile_token_quality.cc;l=32-62;drc=c50f718fc17e5a616359370bb4bbe9e702934aa1).
 * Setting-visible types of AutofillProfiles: The types shown in the "Addresses and more" settings UI. They correspond to the top-level types of the hierarchy: NAME_FULL, ADDRESS_HOME_COUNTRY, etc.
+
+## How to introduce new field types?
+
+See [go/autofill-new-fieldtypes-in-data-model-dd](http://go/autofill-new-fieldtypes-in-data-model-dd).
 
 ## How is data represented internally?
 * See `components/autofill/core/browser/data_model/`
@@ -387,10 +413,6 @@ The cache is flushed on form submission.
 As the votes generation is asynchronous, it is not guaranteed that the results
 are available by the time the upload cache is flushed. In this case, votes are
 only uploaded on the next navigation.
-
-## How to introduce new field types?
-
-See go/autofill-new-fieldtypes-in-data-model-dd.
 
 <!-- TODO:
 ## How are addresses compared, updated or added?

@@ -8,11 +8,12 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimensions": {
-            "integrity": "high",
-            "os": "Linux"
-          },
+          "dimension_sets": [
+            {
+              "integrity": "high",
+              "os": "Linux"
+            }
+          ],
           "expiration": 120,
           "value": "exception"
         },

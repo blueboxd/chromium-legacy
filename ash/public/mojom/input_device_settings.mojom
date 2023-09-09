@@ -194,3 +194,17 @@ struct PointingStickSettings {
   // Controls whether acceleration is enabled.
   bool acceleration_enabled;
 };
+
+// Contains all information needed to display, apply, and update stylus
+// settings.
+// TODO(wangdanny): add `settings` and other missing fields to
+// `mojom::Stylus` struct.
+struct Stylus {
+};
+
+// Contains all information needed to display, apply, and update graphics
+// tablet settings.
+// TODO(wangdanny): add `settings` and other missing fields to
+// `mojom::GraphicsTablet` struct.
+struct GraphicsTablet {
+};

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
+
 type AddressEntry = chrome.autofillPrivate.AddressEntry;
 
 /**
@@ -20,11 +22,10 @@ function isValueNonEmpty(value: string|undefined): boolean {
  * The base class for data behind an address component. It exposes the `value`
  * property, which is how interface controls (e.g. input) communicate with it.
  */
-export abstract class AddressComponentUi<ValueT> {
-  protected readonly property: KeySubset<AddressEntry, ValueT>;
-
+export class AddressComponentUi {
   private readonly address_: AddressEntry;
   private readonly originalAddress_?: AddressEntry;
+  private readonly property_: KeySubset<AddressEntry, string|undefined>;
   private readonly skipValidation_: boolean;
   private isValidatable_: boolean;
   readonly isTextarea: boolean;
@@ -35,6 +36,7 @@ export abstract class AddressComponentUi<ValueT> {
   constructor(
       address: AddressEntry,
       originalAddress: AddressEntry|undefined,
+      fieldType: chrome.autofillPrivate.ServerFieldType,
       label: string,
       additionalClassName: string = '',
       isTextarea: boolean = false,
@@ -43,6 +45,7 @@ export abstract class AddressComponentUi<ValueT> {
   ) {
     this.address_ = address;
     this.originalAddress_ = originalAddress;
+    this.property_ = this.getProperty(fieldType);
     this.label = label;
     this.additionalClassName = additionalClassName;
     this.isTextarea = isTextarea;
@@ -104,86 +107,55 @@ export abstract class AddressComponentUi<ValueT> {
     this.isValidatable_ = true;
   }
 
+  // TODO(crbug.com/1441904): remove this switch case in favour of field
+  // mapping in AddressEntry.
+  protected getProperty(fieldType: chrome.autofillPrivate.ServerFieldType):
+      KeySubset<AddressEntry, string|undefined> {
+    switch (fieldType) {
+      case chrome.autofillPrivate.ServerFieldType.NAME_FULL:
+        return 'fullName';
+      case chrome.autofillPrivate.ServerFieldType.NAME_HONORIFIC_PREFIX:
+        return 'honorific';
+      case chrome.autofillPrivate.ServerFieldType.COMPANY_NAME:
+        return 'companyName';
+      case chrome.autofillPrivate.ServerFieldType.ADDRESS_HOME_STREET_ADDRESS:
+        return 'addressLines';
+      case chrome.autofillPrivate.ServerFieldType.ADDRESS_HOME_STATE:
+        return 'addressLevel1';
+      case chrome.autofillPrivate.ServerFieldType.ADDRESS_HOME_CITY:
+        return 'addressLevel2';
+      case chrome.autofillPrivate.ServerFieldType
+          .ADDRESS_HOME_DEPENDENT_LOCALITY:
+        return 'addressLevel3';
+      case chrome.autofillPrivate.ServerFieldType.ADDRESS_HOME_ZIP:
+        return 'postalCode';
+      case chrome.autofillPrivate.ServerFieldType.ADDRESS_HOME_SORTING_CODE:
+        return 'sortingCode';
+      case chrome.autofillPrivate.ServerFieldType.ADDRESS_HOME_COUNTRY:
+        return 'countryCode';
+      case chrome.autofillPrivate.ServerFieldType.PHONE_HOME_WHOLE_NUMBER:
+        return 'phoneNumber';
+      case chrome.autofillPrivate.ServerFieldType.EMAIL_ADDRESS:
+        return 'emailAddress';
+    }
+    assertNotReached('Unsupported field type: ' + fieldType);
+  }
+
   /**
    * Gets the value from the address that's associated with this component.
    */
-  protected abstract getValue(address: AddressEntry): string|undefined;
+  protected getValue(address: AddressEntry): string|undefined {
+    return address[this.property_];
+  }
 
   /**
    * Sets the value in the address that's associated with this component.
    */
-  protected abstract setValue(value: string|undefined, address: AddressEntry):
-      void;
+  protected setValue(value: string|undefined, address: AddressEntry): void {
+    address[this.property_] = value;
+  }
 
   private hasValue_(address = this.address_): boolean {
     return isValueNonEmpty(this.getValue(address));
   }
-}
-
-/**
- * Base class for address fields whose value is stored as
- * a simple string (optional) property.
- */
-export class StringComponentUi extends AddressComponentUi<string|undefined> {
-  protected getValue(address: AddressEntry): string|undefined {
-    return address[this.property];
-  }
-
-  protected setValue(value: string|undefined, address: AddressEntry): void {
-    address[this.property] = value;
-  }
-}
-
-/**
- * Base class for address fields whose value is stored as
- * a single valued string array (optional) property, for
- * historical reason, see crbug.com/497934 for details.
- */
-export class ArrayStringComponentUi extends
-    AddressComponentUi<string[]|undefined> {
-  protected getValue(address: AddressEntry): string|undefined {
-    const value = address[this.property];
-    return value ? value[0] : undefined;
-  }
-
-  protected setValue(value: string|undefined, address: AddressEntry): void {
-    address[this.property] = isValueNonEmpty(value) ? [value!] : [];
-  }
-}
-
-export class HonorificComponentUi extends StringComponentUi {
-  protected override readonly property = 'honorific';
-}
-export class CompanyNameComponentUi extends StringComponentUi {
-  protected override readonly property = 'companyName';
-}
-export class FullNamesComponentUi extends ArrayStringComponentUi {
-  protected override readonly property = 'fullNames';
-}
-export class AddressLinesComponentUi extends StringComponentUi {
-  protected override readonly property = 'addressLines';
-}
-export class AddressLevel1ComponentUi extends StringComponentUi {
-  protected override readonly property = 'addressLevel1';
-}
-export class AddressLevel2ComponentUi extends StringComponentUi {
-  protected override readonly property = 'addressLevel2';
-}
-export class AddressLevel3ComponentUi extends StringComponentUi {
-  protected override readonly property = 'addressLevel3';
-}
-export class PostalCodeComponentUi extends StringComponentUi {
-  protected override readonly property = 'postalCode';
-}
-export class CountryCodeComponentUi extends StringComponentUi {
-  protected override readonly property = 'countryCode';
-}
-export class SortingCodeComponentUi extends StringComponentUi {
-  protected override readonly property = 'sortingCode';
-}
-export class PhoneComponentUi extends ArrayStringComponentUi {
-  protected override readonly property = 'phoneNumbers';
-}
-export class EmailComponentUi extends ArrayStringComponentUi {
-  protected override readonly property = 'emailAddresses';
 }

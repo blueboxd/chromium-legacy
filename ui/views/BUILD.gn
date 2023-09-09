@@ -98,6 +98,7 @@ component("views") {
     "animation/ink_drop_state.h",
     "animation/ink_drop_stub.h",
     "animation/ink_drop_util.h",
+    "animation/pulsing_ink_drop_mask.h",
     "animation/scroll_animator.h",
     "animation/slide_out_controller.h",
     "animation/slide_out_controller_delegate.h",
@@ -332,6 +333,7 @@ component("views") {
     "animation/ink_drop_state.cc",
     "animation/ink_drop_stub.cc",
     "animation/ink_drop_util.cc",
+    "animation/pulsing_ink_drop_mask.cc",
     "animation/scroll_animator.cc",
     "animation/slide_out_controller.cc",
     "animation/square_ink_drop_ripple.cc",
@@ -576,6 +578,7 @@ component("views") {
     "//ui/gfx",
     "//ui/gfx/animation",
     "//ui/gfx/geometry",
+    "//ui/touch_selection/vector_icons",
     "//ui/views/resources",
     "//ui/views/window/vector_icons",
   ]
@@ -668,6 +671,7 @@ component("views") {
       "windows_stationarity_monitor_mac.mm",
     ]
     public_deps += [ "//components/remote_cocoa/common:mojo" ]
+    configs += [ "//build/config/compiler:enable_arc" ]
     deps += [
       "//components/crash/core/common",
       "//components/remote_cocoa/app_shim",
@@ -723,6 +727,7 @@ component("views") {
       "/DELAYLOAD:user32.dll",
     ]
     deps += [
+      "//services/tracing/public/cpp:cpp",
       "//third_party/iaccessible2",
       "//third_party/wtl",
     ]
@@ -1128,6 +1133,8 @@ source_set("test_support") {
       "test/widget_test_mac.mm",
     ]
 
+    configs += [ "//build/config/compiler:enable_arc" ]
+
     deps += [
       "//components/remote_cocoa/app_shim",
       "//ui/display:test_support",
@@ -1168,22 +1175,6 @@ source_set("test_support") {
       "test/ui_controls_factory_desktop_aura_ozone.cc",
     ]
     deps += [ "//ui/ozone:ui_test_support" ]
-  }
-}
-
-if (is_mac) {
-  # TODO(https://crbug.com/1280317): Merge back into views_unittests once all
-  # .mm files are ARCed.
-  source_set("views_unittests_arc") {
-    testonly = true
-    sources = [ "widget/ax_native_widget_mac_unittest.mm" ]
-    configs += [ "//build/config/compiler:enable_arc" ]
-    deps = [
-      ":views",
-      "//testing/gtest",
-      "//ui/accessibility",
-      "//ui/views:test_support",
-    ]
   }
 }
 
@@ -1424,6 +1415,7 @@ test("views_unittests") {
       "controls/native/native_view_host_mac_unittest.mm",
       "controls/tabbed_pane/tabbed_pane_accessibility_mac_unittest.mm",
       "view_unittest_mac.mm",
+      "widget/ax_native_widget_mac_unittest.mm",
       "widget/native_widget_mac_unittest.mm",
       "widget/sublevel_manager_mac_unittest.mm",
     ]
@@ -1431,8 +1423,9 @@ test("views_unittests") {
     # views_unittests not yet compiling on Mac. http://crbug.com/378134
     sources -= [ "controls/native/native_view_host_unittest.cc" ]
 
+    configs += [ "//build/config/compiler:enable_arc" ]
+
     public_deps = [
-      ":views_unittests_arc",
       "//components/remote_cocoa/app_shim",
       "//ui/accelerated_widget_mac",
     ]

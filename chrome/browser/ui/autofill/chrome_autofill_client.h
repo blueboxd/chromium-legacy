@@ -48,6 +48,7 @@ struct AutofillErrorDialogContext;
 class AutofillOptimizationGuide;
 class AutofillPopupControllerImpl;
 #if BUILDFLAG(IS_ANDROID)
+class AutofillSaveCardBottomSheetBridge;
 class AutofillSnackbarControllerImpl;
 #endif  // BUILDFLAG(IS_ANDROID)
 struct VirtualCardEnrollmentFields;
@@ -211,6 +212,7 @@ class ChromeAutofillClient : public ContentAutofillClient,
   void CreditCardUploadCompleted(bool card_saved) override;
   void ConfirmCreditCardFillAssist(const CreditCard& card,
                                    base::OnceClosure callback) override;
+  void ShowDeleteAddressProfileDialog() override;
   void ConfirmSaveAddressProfile(
       const AutofillProfile& profile,
       const AutofillProfile* original_profile,
@@ -231,9 +233,11 @@ class ChromeAutofillClient : public ContentAutofillClient,
       const std::vector<std::u16string>& labels) override;
   std::vector<Suggestion> GetPopupSuggestions() const override;
   void PinPopupView() override;
-  PopupOpenArgs GetReopenPopupArgs() const override;
+  PopupOpenArgs GetReopenPopupArgs(
+      AutofillSuggestionTriggerSource trigger_source) const override;
   void UpdatePopup(const std::vector<Suggestion>& suggestions,
-                   PopupType popup_type) override;
+                   PopupType popup_type,
+                   AutofillSuggestionTriggerSource trigger_source) override;
   void HideAutofillPopup(PopupHidingReason reason) override;
   void UpdateOfferNotification(const AutofillOfferData* offer,
                                bool notification_has_been_shown) override;
@@ -301,6 +305,11 @@ class ChromeAutofillClient : public ContentAutofillClient,
 
  protected:
   explicit ChromeAutofillClient(content::WebContents* web_contents);
+#if BUILDFLAG(IS_ANDROID)
+  void SetAutofillSaveCardBottomSheetBridgeForTesting(
+      std::unique_ptr<AutofillSaveCardBottomSheetBridge>
+          autofill_save_card_bottom_sheet_bridge);
+#endif
 
  private:
   Profile* GetProfile() const;
@@ -336,6 +345,8 @@ class ChromeAutofillClient : public ContentAutofillClient,
   std::unique_ptr<AutofillSnackbarControllerImpl>
       autofill_snackbar_controller_impl_;
   std::unique_ptr<FastCheckoutClient> fast_checkout_client_;
+  std::unique_ptr<AutofillSaveCardBottomSheetBridge>
+      autofill_save_card_bottom_sheet_bridge_;
 #endif
   std::unique_ptr<CardUnmaskPromptControllerImpl> unmask_controller_;
   AutofillErrorDialogControllerImpl autofill_error_dialog_controller_;

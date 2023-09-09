@@ -1588,14 +1588,11 @@ CommandHandler.COMMANDS_['empty-trash'] = new (class extends FilesCommand {
 
   /** @override */
   canExecute(event, fileManager) {
-    // Always allow execute regardless of which files are selected to allow the
-    // trash toolbar action to run even if no files are selected.
-    event.canExecute = true;
-
     const entries = CommandUtil.getCommandEntries(fileManager, event.target);
-    const visible = entries.length === 1 && util.isTrashRoot(entries[0]) &&
+    const isTrashRoot = entries.length === 1 && util.isTrashRoot(entries[0]) &&
         fileManager.trashEnabled;
-    event.command.setHidden(!visible);
+    event.canExecute = isTrashRoot || CommandUtil.isOnTrashRoot(fileManager);
+    event.command.setHidden(!isTrashRoot);
   }
 })();
 
@@ -2617,8 +2614,17 @@ CommandHandler.COMMANDS_['zip-selection'] = new (class extends FilesCommand {
     // TODO(crbug/1226915) Make it work with MTP.
     const isOnEligibleLocation = fileManager.directoryModel.isOnNative();
 
+    // Hide if any encrypted files are selected, as we can't read them.
+    const hasEncryptedFile =
+        fileManager.metadataModel
+            .getCache(selection.entries, ['contentMimeType'])
+            .some(
+                (metadata, i) => FileType.isEncrypted(
+                    selection.entries[i], metadata.contentMimeType));
+
     event.canExecute = dirEntry && !fileManager.directoryModel.isReadOnly() &&
-        isOnEligibleLocation && selection && selection.totalCount > 0;
+        isOnEligibleLocation && selection && selection.totalCount > 0 &&
+        !hasEncryptedFile;
   }
 })();
 

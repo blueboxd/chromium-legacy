@@ -228,10 +228,9 @@ TEST_F(TextureLayerTest, CheckPropertyChangeCausesCorrectBehavior) {
                                                gfx::PointF(0.75f, 0.75f)));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetPremultipliedAlpha(false));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetBlendBackgroundColor(true));
-  EXPECT_SET_NEEDS_COMMIT(0, test_layer->SetHDRConfiguration(
-                                 gfx::HDRMode::kDefault, absl::nullopt));
-  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetHDRConfiguration(
-                                 gfx::HDRMode::kDefault, gfx::HDRMetadata()));
+  EXPECT_SET_NEEDS_COMMIT(0, test_layer->SetHdrMetadata(gfx::HDRMetadata()));
+  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetHdrMetadata(gfx::HDRMetadata(
+                                 gfx::HdrMetadataCta861_3(123, 456))));
 }
 
 class RunOnCommitLayerTreeHostClient : public FakeLayerTreeHostClient {
@@ -1450,7 +1449,8 @@ class SoftwareTextureLayerTest : public LayerTreeTest {
   scoped_refptr<Layer> root_;
   scoped_refptr<SolidColorLayer> solid_color_layer_;
   scoped_refptr<TextureLayer> texture_layer_;
-  raw_ptr<TestLayerTreeFrameSink, DanglingUntriaged> frame_sink_ = nullptr;
+  raw_ptr<TestLayerTreeFrameSink, AcrossTasksDanglingUntriaged> frame_sink_ =
+      nullptr;
   int num_frame_sinks_created_ = 0;
 };
 
@@ -1931,7 +1931,7 @@ class SoftwareTextureLayerLoseFrameSinkTest : public SoftwareTextureLayerTest {
   scoped_refptr<CrossThreadSharedBitmap> bitmap_;
   // Keeps a pointer value of the first frame sink, which will be removed
   // from the host and destroyed.
-  raw_ptr<void, DanglingUntriaged> first_frame_sink_;
+  raw_ptr<void, AcrossTasksDanglingUntriaged> first_frame_sink_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(SoftwareTextureLayerLoseFrameSinkTest);

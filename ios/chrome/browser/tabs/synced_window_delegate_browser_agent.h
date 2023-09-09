@@ -41,16 +41,15 @@ class SyncedWindowDelegateBrowserAgent
   bool HasWindow() const override;
   SessionID GetSessionId() const override;
   int GetTabCount() const override;
-  int GetActiveIndex() const override;
   bool IsTypeNormal() const override;
   bool IsTypePopup() const override;
   bool IsTabPinned(const sync_sessions::SyncedTabDelegate* tab) const override;
   sync_sessions::SyncedTabDelegate* GetTabAt(int index) const override;
 
   // WebStateListObserver:
-  void WebStateListChanged(WebStateList* web_state_list,
-                           const WebStateListChange& change,
-                           const WebStateSelection& selection) override;
+  void WebStateListDidChange(WebStateList* web_state_list,
+                             const WebStateListChange& change,
+                             const WebStateListStatus& status) override;
 
  private:
   friend class BrowserUserData<SyncedWindowDelegateBrowserAgent>;

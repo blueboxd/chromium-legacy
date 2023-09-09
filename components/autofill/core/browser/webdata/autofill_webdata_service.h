@@ -24,7 +24,7 @@
 class WebDatabaseService;
 
 namespace base {
-class SingleThreadTaskRunner;
+class SequencedTaskRunner;
 }
 
 namespace autofill {
@@ -41,12 +41,12 @@ class IBAN;
 class AutofillWebDataService : public WebDataServiceBase {
  public:
   AutofillWebDataService(
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> db_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> db_task_runner);
   AutofillWebDataService(
       scoped_refptr<WebDatabaseService> wdbs,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> db_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> db_task_runner);
 
   AutofillWebDataService(const AutofillWebDataService&) = delete;
   AutofillWebDataService& operator=(const AutofillWebDataService&) = delete;
@@ -146,6 +146,13 @@ class AutofillWebDataService : public WebDataServiceBase {
   // Schedules a task to add a full server credit card to the web database.
   void AddFullServerCreditCard(const CreditCard& credit_card);
 
+  // Methods to schedule a task to add, update, remove, clear server cvc in the
+  // web database.
+  void AddServerCvc(int64_t instrument_id, const std::u16string& cvc);
+  void UpdateServerCvc(int64_t instrument_id, const std::u16string& cvc);
+  void RemoveServerCvc(int64_t instrument_id);
+  void ClearServerCvcs();
+
   // Initiates the request for local/server credit cards.  The method
   // OnWebDataServiceRequestDone of |consumer| gets called when the request is
   // finished, with the credit cards included in the argument |result|.  The
@@ -232,7 +239,7 @@ class AutofillWebDataService : public WebDataServiceBase {
 
   // Returns a task runner that can be used to schedule tasks on the DB
   // sequence.
-  base::SingleThreadTaskRunner* GetDBTaskRunner();
+  base::SequencedTaskRunner* GetDBTaskRunner();
 
   // Triggers an Autocomplete retention policy run which will cleanup data that
   // hasn't been used since over the retention threshold.
@@ -255,10 +262,10 @@ class AutofillWebDataService : public WebDataServiceBase {
       ui_observer_list_;
 
   // The task runner that this class uses for UI tasks.
-  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
 
   // The task runner that this class uses for DB tasks.
-  scoped_refptr<base::SingleThreadTaskRunner> db_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> db_task_runner_;
 
   scoped_refptr<AutofillWebDataBackendImpl> autofill_backend_;
 

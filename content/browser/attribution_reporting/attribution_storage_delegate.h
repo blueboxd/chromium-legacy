@@ -12,13 +12,15 @@
 #include "base/sequence_checker.h"
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
-#include "base/uuid.h"
 #include "components/attribution_reporting/source_type.mojom-forward.h"
 #include "content/browser/attribution_reporting/attribution_config.h"
 #include "content/browser/attribution_reporting/attribution_reporting.mojom-forward.h"
-#include "content/browser/attribution_reporting/destination_throttler.h"
 #include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+namespace base {
+class Uuid;
+}  // namespace base
 
 namespace network {
 class TriggerVerification;
@@ -32,7 +34,9 @@ class CommonSourceInfo;
 class StoredSource;
 
 // Storage delegate that can supplied to extend basic attribution storage
-// functionality like annotating reports.
+// functionality like annotating reports. Users and subclasses must NOT assume
+// that the delegate has the same lifetime as the `AttributionManager` or
+// `AttributionStorage` classes.
 class CONTENT_EXPORT AttributionStorageDelegate {
  public:
   // Both bounds are inclusive.
@@ -60,7 +64,14 @@ class CONTENT_EXPORT AttributionStorageDelegate {
 
   explicit AttributionStorageDelegate(const AttributionConfig& config);
 
-  virtual ~AttributionStorageDelegate() = default;
+  virtual ~AttributionStorageDelegate();
+
+  AttributionStorageDelegate(const AttributionStorageDelegate&) = delete;
+  AttributionStorageDelegate& operator=(const AttributionStorageDelegate&) =
+      delete;
+
+  AttributionStorageDelegate(AttributionStorageDelegate&&) = delete;
+  AttributionStorageDelegate& operator=(AttributionStorageDelegate&&) = delete;
 
   // Returns the time an event-level report should be sent for a given trigger
   // time and its corresponding source.
@@ -101,7 +112,7 @@ class CONTENT_EXPORT AttributionStorageDelegate {
   int GetMaxDestinationsPerSourceSiteReportingSite() const;
 
   // Returns the rate limits for capping contributions per window.
-  AttributionConfig::RateLimitConfig GetRateLimits() const;
+  const AttributionConfig::RateLimitConfig& GetRateLimits() const;
 
   // Returns the maximum frequency at which to delete expired sources.
   // Must be positive.
@@ -164,7 +175,7 @@ class CONTENT_EXPORT AttributionStorageDelegate {
 
   int GetMaxAggregatableReportsPerSource() const;
 
-  DestinationThrottler::Policy GetDestinationThrottlerPolicy() const;
+  AttributionConfig::DestinationRateLimit GetDestinationRateLimit() const;
 
   // Sanitizes `trigger_data` according to the data limits for `source_type`.
   uint64_t SanitizeTriggerData(uint64_t trigger_data,

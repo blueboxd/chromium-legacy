@@ -220,8 +220,12 @@ class PrerenderOmniboxSearchSuggestionBrowserTest
     : public OmniboxPrerenderBrowserTest {
  public:
   PrerenderOmniboxSearchSuggestionBrowserTest() {
-    feature_list_.InitWithFeatures(
-        {features::kSupportSearchSuggestionForPrerender2}, {});
+    feature_list_.InitWithFeaturesAndParameters(
+        {{features::kSupportSearchSuggestionForPrerender2,
+          {
+              {"implementation_type", "ignore_prefetch"},
+          }}},
+        {});
   }
 
   void SetUp() override {
@@ -360,7 +364,7 @@ class PrerenderOmniboxSearchSuggestionBrowserTest
 
   constexpr static char kSearchDomain[] = "a.test";
   constexpr static char16_t kSearchDomain16[] = u"a.test";
-  raw_ptr<PrerenderManager, DanglingUntriaged> prerender_manager_;
+  raw_ptr<PrerenderManager, AcrossTasksDanglingUntriaged> prerender_manager_;
   net::test_server::EmbeddedTestServer search_engine_server_{
       net::test_server::EmbeddedTestServer::TYPE_HTTPS};
   std::string prerender_page_target_ = "/title1.html";
@@ -372,9 +376,12 @@ class PrerenderOmniboxSearchSuggestionReloadBrowserTest
       public PrerenderOmniboxSearchSuggestionBrowserTest {
  public:
   PrerenderOmniboxSearchSuggestionReloadBrowserTest() {
-    // Disable BFCache, to test the HTTP Cache path.
-    feature_list_.InitWithFeatures(
-        {features::kSupportSearchSuggestionForPrerender2},
+    feature_list_.InitWithFeaturesAndParameters(
+        {{features::kSupportSearchSuggestionForPrerender2,
+          {
+              {"implementation_type", "ignore_prefetch"},
+          }}},
+        // Disable BFCache, to test the HTTP Cache path.
         {features::kBackForwardCache});
   }
 
@@ -434,7 +441,10 @@ class PrerenderOmniboxSearchSuggestionExpiryBrowserTest
  public:
   PrerenderOmniboxSearchSuggestionExpiryBrowserTest() {
     feature_list_.InitWithFeaturesAndParameters(
-        {{features::kSupportSearchSuggestionForPrerender2, {}},
+        {{features::kSupportSearchSuggestionForPrerender2,
+          {
+              {"implementation_type", "ignore_prefetch"},
+          }},
          {kSearchPrefetchServicePrefetching,
           {
               {"prefetch_caching_limit_ms", "10"},

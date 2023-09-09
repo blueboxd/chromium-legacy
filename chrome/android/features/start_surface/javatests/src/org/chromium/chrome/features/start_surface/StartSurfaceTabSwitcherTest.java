@@ -39,6 +39,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
@@ -52,6 +54,7 @@ import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
@@ -78,7 +81,8 @@ import java.util.List;
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @Restriction(
         {UiRestriction.RESTRICTION_TYPE_PHONE, Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-@EnableFeatures({ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
+@EnableFeatures(
+        {ChromeFeatureList.START_SURFACE_ANDROID + "<Study", ChromeFeatureList.EMPTY_STATES})
 @DoNotBatch(reason = "StartSurface*Test tests startup behaviours and thus can't be batched.")
 @CommandLineFlags.
 Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "force-fieldtrials=Study/Group"})
@@ -88,6 +92,9 @@ public class StartSurfaceTabSwitcherTest {
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
+    @Mock
+    private BrowserControlsStateProvider mBrowserControlsStateProvider;
 
     /**
      * Whether feature {@link ChromeFeatureList#INSTANT_START} is enabled.
@@ -114,6 +121,7 @@ public class StartSurfaceTabSwitcherTest {
 
     @Before
     public void setUp() throws IOException {
+        MockitoAnnotations.initMocks(this);
         StartSurfaceTestUtils.setUpStartSurfaceTests(mImmediateReturn, mActivityTestRule);
 
         mLayoutChangedCallbackHelper = new CallbackHelper();
@@ -204,8 +212,8 @@ public class StartSurfaceTabSwitcherTest {
     public void testCreateTabWithinTabGroup() throws Exception {
         // Create tab state files for a group with two tabs.
         TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
-        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(0);
-        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(1);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(0, mBrowserControlsStateProvider);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(1, mBrowserControlsStateProvider);
         TabAttributeCache.setRootIdForTesting(0, 0);
         TabAttributeCache.setRootIdForTesting(1, 0);
         StartSurfaceTestUtils.createTabStateFile(new int[] {0, 1});

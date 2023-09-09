@@ -246,11 +246,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(
       std::make_unique<SecurityKeysBioEnrollmentHandler>());
   AddSettingsPageUIHandler(std::make_unique<SecurityKeysPhonesHandler>());
-
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordManagerRedesign)) {
-    AddSettingsPageUIHandler(std::make_unique<PasswordManagerHandler>());
-  }
+  AddSettingsPageUIHandler(std::make_unique<PasswordManagerHandler>());
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   AddSettingsPageUIHandler(std::make_unique<PasskeysHandler>());
 #endif
@@ -290,29 +286,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       "turnOffSyncAllowedForManagedProfiles",
       base::FeatureList::IsEnabled(kDisallowManagedProfileSignout));
 
-  const bool enable_new_password_manager_page = base::FeatureList::IsEnabled(
-      password_manager::features::kPasswordManagerRedesign);
-
-  // Turn-off all Password related features when kPasswordManagerRedesign is on.
-  html_source->AddBoolean(
-      "enablePasswordsImportM2",
-      !enable_new_password_manager_page &&
-          base::FeatureList::IsEnabled(
-              password_manager::features::kPasswordsImportM2));
-
-  html_source->AddBoolean(
-      "enablePasswordViewPage",
-      !enable_new_password_manager_page &&
-          base::FeatureList::IsEnabled(syncer::kPasswordNotesWithBackup));
-
-  html_source->AddBoolean("enableSendPasswords",
-                          !enable_new_password_manager_page &&
-                              base::FeatureList::IsEnabled(
-                                  password_manager::features::kSendPasswords));
-
-  html_source->AddBoolean("enableNewPasswordManagerPage",
-                          enable_new_password_manager_page);
-
   commerce::ShoppingService* shopping_service =
       commerce::ShoppingServiceFactory::GetForBrowserContext(profile);
   html_source->AddBoolean("changePriceEmailNotificationsEnabled",
@@ -321,12 +294,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
     commerce::ShoppingServiceFactory::GetForBrowserContext(profile)
         ->FetchPriceEmailPref();
   }
-
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-  html_source->AddBoolean(
-      "enableDesktopDetailedLanguageSettings",
-      base::FeatureList::IsEnabled(language::kDesktopDetailedLanguageSettings));
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   html_source->AddBoolean(
@@ -363,6 +330,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean(
       "enableEsbCollapse",
       safe_browsing::kEsbIphBubbleAndCollapseSettingsEnableCollapse.Get());
+
+  html_source->AddBoolean("enableFriendlierSafeBrowsingSettings",
+                          base::FeatureList::IsEnabled(
+                              safe_browsing::kFriendlierSafeBrowsingSettings));
 
   html_source->AddBoolean("downloadBubbleEnabled",
                           download::IsDownloadBubbleEnabled(profile));

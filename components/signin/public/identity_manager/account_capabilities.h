@@ -44,6 +44,7 @@ class AccountCapabilities {
 
 #if BUILDFLAG(IS_IOS)
   AccountCapabilities(base::flat_map<std::string, bool> capabilities);
+  const base::flat_map<std::string, bool>& ConvertToAccountCapabilitiesIOS();
 #endif
   // Keep sorted alphabetically.
 
@@ -63,6 +64,9 @@ class AccountCapabilities {
 
   // Chrome can toggle auto updates with this capability.
   signin::Tribool can_toggle_auto_updates() const;
+
+  // The user account is able to use IP Protection.
+  signin::Tribool can_use_chrome_ip_protection() const;
 
   // Chrome can send user data to Google servers for machine learning purposes
   // with this capability.

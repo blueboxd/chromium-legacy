@@ -42,7 +42,6 @@
 <translation id="2942241131342758843">Холбооснуудыг нээх, жижиг хэрэгслүүдээс хайх, бусад аппад нууц үгнүүдийг автоматаар бөглөхийн тулд Chromium-г өгөгдмөлөөр ашиглана уу</translation>
 <translation id="2977470724722393594">Chromium-г шинэчилсэн байна</translation>
 <translation id="3102849287235003384">Бүх вебсайт дээр Google Бүртгэлээсээ гарахын тулд <ph name="BEGIN_LINK" />Chromium-с гарна уу<ph name="END_LINK" />.</translation>
-<translation id="3115956258722352278">Chromium-г таны өгөгдмөл хөтөч болгох уу?</translation>
 <translation id="3256316712990552818">Chromium руу хуулсан</translation>
 <translation id="3344973607274501920">Chromium таны нууц үгнүүдийг шалгаж чадсангүй. Интернэт холболтоо шалгаж үзнэ үү.</translation>
 <translation id="3472200483164753384">Chromium Канар дээр дэмжихгүй</translation>
@@ -128,6 +127,7 @@
 <translation id="8013573822802650211">Та Chromium-г хаанаас ч ашигласан бай табуудаа харахын тулд бүх төхөөрөмж дээрээ нэвтэрнэ үү</translation>
 <translation id="8071041515667087705">Chromium-н Тохиргоо руу очно уу.</translation>
 <translation id="8073677936375100957">Энэ төхөөрөмжөөс Chromium-н өгөгдлөө устгах уу?</translation>
+<translation id="8235427517854598594">Chromium-г өгөгдмөл хөтчөө болгох уу?</translation>
 <translation id="8240981428553046115">Chromium-н шинэчлэлтийг шалгаж чадсангүй. Дараа дахин оролдоно уу.</translation>
 <translation id="8409374867500149834">Танд аюултай вебсайтуудын эсрэг Chromium-н хамгийн хүчирхэг өюулгүй байдлын хамгаалалт бий</translation>
 <translation id="858114650497379505">Та Нууц үгний менежерт хадгалсан нууц үгнүүдээ iPhone дээрх бусад аппад ашиглах боломжтой.</translation>

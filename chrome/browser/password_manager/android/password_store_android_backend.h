@@ -23,7 +23,6 @@
 #include "chrome/browser/password_manager/android/password_sync_controller_delegate_android.h"
 #include "components/password_manager/core/browser/password_store_backend.h"
 #include "components/password_manager/core/browser/password_store_backend_metrics_recorder.h"
-#include "components/password_manager/core/browser/password_store_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
@@ -157,7 +156,8 @@ class PasswordStoreAndroidBackend
       std::unordered_map<JobId, JobReturnHandler, JobId::Hasher>>;
 
   // Implements PasswordStoreBackend interface.
-  void InitBackend(RemoteChangesReceived remote_form_changes_received,
+  void InitBackend(AffiliatedMatchHelper* affiliated_match_helper,
+                   RemoteChangesReceived remote_form_changes_received,
                    base::RepeatingClosure sync_enabled_or_disabled_cb,
                    base::OnceCallback<void(bool)> completion) override;
   void Shutdown(base::OnceClosure shutdown_completed) override;
@@ -169,6 +169,8 @@ class PasswordStoreAndroidBackend
       LoginsOrErrorReply callback,
       bool include_psl,
       const std::vector<PasswordFormDigest>& forms) override;
+  void GetGroupedMatchingLoginsAsync(const PasswordFormDigest& form_digest,
+                                     LoginsOrErrorReply callback) override;
   void AddLoginAsync(const PasswordForm& form,
                      PasswordChangesOrErrorReply callback) override;
   void UpdateLoginAsync(const PasswordForm& form,
@@ -342,6 +344,8 @@ class PasswordStoreAndroidBackend
   std::unique_ptr<PasswordStoreAndroidBackendBridgeHelper> bridge_helper_;
 
   raw_ptr<const syncer::SyncService> sync_service_ = nullptr;
+
+  base::raw_ptr<AffiliatedMatchHelper> affiliated_match_helper_;
 
   // Delegate to handle sync events.
   std::unique_ptr<PasswordSyncControllerDelegateAndroid>

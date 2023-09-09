@@ -83,12 +83,27 @@ void ClosingWebStateObserverBrowserAgent::BrowserDestroyed(Browser* browser) {
 
 #pragma mark - WebStateListObserving
 
-void ClosingWebStateObserverBrowserAgent::WebStateListChanged(
+void ClosingWebStateObserverBrowserAgent::WebStateListWillChange(
+    WebStateList* web_state_list,
+    const WebStateListChangeDetach& detach_change,
+    const WebStateListStatus& status) {
+  if (!detach_change.is_closing()) {
+    return;
+  }
+
+  web::WebState* detached_web_state = detach_change.detached_web_state();
+  RecordHistoryForWebStateAtIndex(detached_web_state, status.index);
+  if (detach_change.is_user_action()) {
+    SnapshotTabHelper::FromWebState(detached_web_state)->RemoveSnapshot();
+  }
+}
+
+void ClosingWebStateObserverBrowserAgent::WebStateListDidChange(
     WebStateList* web_state_list,
     const WebStateListChange& change,
-    const WebStateSelection& selection) {
+    const WebStateListStatus& status) {
   switch (change.type()) {
-    case WebStateListChange::Type::kSelectionOnly:
+    case WebStateListChange::Type::kStatusOnly:
       // Do nothing when a WebState is selected and its status is updated.
       break;
     case WebStateListChange::Type::kDetach:
@@ -107,16 +122,5 @@ void ClosingWebStateObserverBrowserAgent::WebStateListChanged(
     case WebStateListChange::Type::kInsert:
       // Do nothing when a new WebState is inserted.
       break;
-  }
-}
-
-void ClosingWebStateObserverBrowserAgent::WillCloseWebStateAt(
-    WebStateList* web_state_list,
-    web::WebState* web_state,
-    int index,
-    bool user_action) {
-  RecordHistoryForWebStateAtIndex(web_state, index);
-  if (user_action) {
-    SnapshotTabHelper::FromWebState(web_state)->RemoveSnapshot();
   }
 }

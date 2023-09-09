@@ -11,12 +11,15 @@
 #include <vector>
 
 #include "base/apple/bundle_locations.h"
+#include "base/containers/adapters.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/notreached.h"
 #include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/ranges/algorithm.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -25,16 +28,12 @@
 #import <AppKit/AppKit.h>
 #endif
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 extern "C" {
 CFTypeID SecKeyGetTypeID();
-#if !BUILDFLAG(IS_IOS)
-// The NSFont/CTFont toll-free bridging is broken before 10.15.
-// https://openradar.appspot.com/15341349
-//
-// TODO(https://crbug.com/1076527): This is fixed in 10.15. When 10.15 is the
-// minimum OS for Chromium, remove this SPI declaration.
-Boolean _CFIsObjC(CFTypeID typeID, CFTypeRef obj);
-#endif
 }  // extern "C"
 
 namespace base::mac {
@@ -55,7 +54,7 @@ bool UncachedAmIBundled() {
     return g_override_am_i_bundled_value;
 
   // Yes, this is cheap.
-  return [[base::apple::OuterBundle() bundlePath] hasSuffix:@".app"];
+  return [apple::OuterBundle().bundlePath hasSuffix:@".app"];
 #endif
 }
 
@@ -94,12 +93,14 @@ bool IsBackgroundOnlyProcess() {
   // This function really does want to examine NSBundle's idea of the main
   // bundle dictionary.  It needs to look at the actual running .app's
   // Info.plist to access its LSUIElement property.
-  NSDictionary* info_dictionary = [base::apple::MainBundle() infoDictionary];
-  return [info_dictionary[@"LSUIElement"] boolValue] != NO;
+  @autoreleasepool {
+    NSDictionary* info_dictionary = [apple::MainBundle() infoDictionary];
+    return [info_dictionary[@"LSUIElement"] boolValue] != NO;
+  }
 }
 
 FilePath PathForFrameworkBundleResource(const char* resource_name) {
-  NSBundle* bundle = base::apple::FrameworkBundle();
+  NSBundle* bundle = apple::FrameworkBundle();
   NSURL* resource_url = [bundle URLForResource:@(resource_name)
                                  withExtension:nil];
   return NSURLToFilePath(resource_url);
@@ -107,7 +108,7 @@ FilePath PathForFrameworkBundleResource(const char* resource_name) {
 
 OSType CreatorCodeForCFBundleRef(CFBundleRef bundle) {
   OSType creator = kUnknownType;
-  CFBundleGetPackageInfo(bundle, NULL, &creator);
+  CFBundleGetPackageInfo(bundle, /*packageType=*/nullptr, &creator);
   return creator;
 }
 
@@ -125,7 +126,7 @@ bool GetSearchPathDirectory(NSSearchPathDirectory directory,
   DCHECK(result);
   NSArray<NSString*>* dirs =
       NSSearchPathForDirectoriesInDomains(directory, domain_mask, YES);
-  if ([dirs count] < 1) {
+  if (dirs.count < 1) {
     return false;
   }
   *result = NSStringToFilePath(dirs[0]);
@@ -204,6 +205,51 @@ FilePath GetAppBundlePath(const FilePath& exec_name) {
   return FilePath();
 }
 
+// Takes a path to an (executable) binary and tries to provide the path to an
+// application bundle containing it. It takes the innermost bundle that it can
+// find (so for "/Foo/Bar.app/.../Baz.app/..." it produces
+// "/Foo/Bar.app/.../Baz.app").
+//   |exec_name| - path to the binary
+//   returns - path to the application bundle, or empty on error
+FilePath GetInnermostAppBundlePath(const FilePath& exec_name) {
+  static constexpr char kExt[] = ".app";
+  static constexpr size_t kExtLength = std::size(kExt) - 1;
+
+  // Split the path into components.
+  std::vector<std::string> components = exec_name.GetComponents();
+
+  // It's an error if we don't get any components.
+  if (components.empty()) {
+    return FilePath();
+  }
+
+  auto app = ranges::find_if(
+      Reversed(components), [](const std::string& component) -> bool {
+        return component.size() > kExtLength && EndsWith(component, kExt);
+      });
+
+  if (app == components.rend()) {
+    return FilePath();
+  }
+
+  // Remove all path components after the final ".app" extension.
+  components.erase(app.base(), components.end());
+
+  std::string bundle_path;
+  for (const std::string& component : components) {
+    // Don't prepend a slash if this is the first component or if the
+    // previous component ended with a slash, which can happen when dealing
+    // with an absolute path.
+    if (!bundle_path.empty() && bundle_path.back() != '/') {
+      bundle_path += '/';
+    }
+
+    bundle_path += component;
+  }
+
+  return FilePath(bundle_path);
+}
+
 #define TYPE_NAME_FOR_CF_TYPE_DEFN(TypeCF) \
 std::string TypeNameForCFType(TypeCF##Ref) { \
   return #TypeCF; \
@@ -253,92 +299,9 @@ const char* BaseBundleID() {
 void SetBaseBundleID(const char* new_base_bundle_id) {
   if (new_base_bundle_id != base_bundle_id) {
     free((void*)base_bundle_id);
-    base_bundle_id = new_base_bundle_id ? strdup(new_base_bundle_id) : NULL;
+    base_bundle_id = new_base_bundle_id ? strdup(new_base_bundle_id) : nullptr;
   }
 }
-
-// Definitions for the corresponding CF_TO_NS_CAST_DECL macros in
-// foundation_util.h.
-#define CF_TO_NS_CAST_DEFN(TypeCF, TypeNS) \
-\
-TypeNS* CFToNSCast(TypeCF##Ref cf_val) { \
-  DCHECK(!cf_val || TypeCF##GetTypeID() == CFGetTypeID(cf_val)); \
-  TypeNS* ns_val = \
-      const_cast<TypeNS*>(reinterpret_cast<const TypeNS*>(cf_val)); \
-  return ns_val; \
-} \
-\
-TypeCF##Ref NSToCFCast(TypeNS* ns_val) { \
-  TypeCF##Ref cf_val = reinterpret_cast<TypeCF##Ref>(ns_val); \
-  DCHECK(!cf_val || TypeCF##GetTypeID() == CFGetTypeID(cf_val)); \
-  return cf_val; \
-}
-
-#define CF_TO_NS_MUTABLE_CAST_DEFN(name) \
-CF_TO_NS_CAST_DEFN(CF##name, NS##name) \
-\
-NSMutable##name* CFToNSCast(CFMutable##name##Ref cf_val) { \
-  DCHECK(!cf_val || CF##name##GetTypeID() == CFGetTypeID(cf_val)); \
-  NSMutable##name* ns_val = reinterpret_cast<NSMutable##name*>(cf_val); \
-  return ns_val; \
-} \
-\
-CFMutable##name##Ref NSToCFCast(NSMutable##name* ns_val) { \
-  CFMutable##name##Ref cf_val = \
-      reinterpret_cast<CFMutable##name##Ref>(ns_val); \
-  DCHECK(!cf_val || CF##name##GetTypeID() == CFGetTypeID(cf_val)); \
-  return cf_val; \
-}
-
-CF_TO_NS_MUTABLE_CAST_DEFN(Array)
-CF_TO_NS_MUTABLE_CAST_DEFN(AttributedString)
-CF_TO_NS_CAST_DEFN(CFCalendar, NSCalendar)
-CF_TO_NS_MUTABLE_CAST_DEFN(CharacterSet)
-CF_TO_NS_MUTABLE_CAST_DEFN(Data)
-CF_TO_NS_CAST_DEFN(CFDate, NSDate)
-CF_TO_NS_MUTABLE_CAST_DEFN(Dictionary)
-CF_TO_NS_CAST_DEFN(CFError, NSError)
-CF_TO_NS_CAST_DEFN(CFLocale, NSLocale)
-CF_TO_NS_CAST_DEFN(CFNumber, NSNumber)
-CF_TO_NS_CAST_DEFN(CFRunLoopTimer, NSTimer)
-CF_TO_NS_CAST_DEFN(CFTimeZone, NSTimeZone)
-CF_TO_NS_MUTABLE_CAST_DEFN(Set)
-CF_TO_NS_CAST_DEFN(CFReadStream, NSInputStream)
-CF_TO_NS_CAST_DEFN(CFWriteStream, NSOutputStream)
-CF_TO_NS_MUTABLE_CAST_DEFN(String)
-CF_TO_NS_CAST_DEFN(CFURL, NSURL)
-
-#if BUILDFLAG(IS_IOS)
-CF_TO_NS_CAST_DEFN(CTFont, UIFont)
-#else
-// The NSFont/CTFont toll-free bridging is broken before 10.15.
-// https://openradar.appspot.com/15341349
-//
-// TODO(https://crbug.com/1076527): This is fixed in 10.15. When 10.15 is the
-// minimum OS for Chromium, remove this specialization and replace it with just:
-//
-// CF_TO_NS_CAST_DEFN(CTFont, NSFont)
-NSFont* CFToNSCast(CTFontRef cf_val) {
-  NSFont* ns_val =
-      const_cast<NSFont*>(reinterpret_cast<const NSFont*>(cf_val));
-  DCHECK(!cf_val ||
-         CTFontGetTypeID() == CFGetTypeID(cf_val) ||
-         (_CFIsObjC(CTFontGetTypeID(), cf_val) &&
-          [ns_val isKindOfClass:[NSFont class]]));
-  return ns_val;
-}
-
-CTFontRef NSToCFCast(NSFont* ns_val) {
-  CTFontRef cf_val = reinterpret_cast<CTFontRef>(ns_val);
-  DCHECK(!cf_val ||
-         CTFontGetTypeID() == CFGetTypeID(cf_val) ||
-         [ns_val isKindOfClass:[NSFont class]]);
-  return cf_val;
-}
-#endif
-
-#undef CF_TO_NS_CAST_DEFN
-#undef CF_TO_NS_MUTABLE_CAST_DEFN
 
 #define CF_CAST_DEFN(TypeCF) \
 template<> TypeCF##Ref \
@@ -374,46 +337,11 @@ CF_CAST_DEFN(CFUUID)
 
 CF_CAST_DEFN(CGColor)
 
+CF_CAST_DEFN(CTFont)
 CF_CAST_DEFN(CTFontDescriptor)
 CF_CAST_DEFN(CTRun)
 
 CF_CAST_DEFN(SecCertificate)
-
-#if BUILDFLAG(IS_IOS)
-CF_CAST_DEFN(CTFont)
-#else
-// The NSFont/CTFont toll-free bridging is broken before 10.15.
-// https://openradar.appspot.com/15341349
-//
-// TODO(https://crbug.com/1076527): This is fixed in 10.15. When 10.15 is the
-// minimum OS for Chromium, remove this specialization and the #if IOS above,
-// and rely just on the one CF_CAST_DEFN(CTFont).
-template<> CTFontRef
-CFCast<CTFontRef>(const CFTypeRef& cf_val) {
-  if (cf_val == NULL) {
-    return NULL;
-  }
-  if (CFGetTypeID(cf_val) == CTFontGetTypeID()) {
-    return (CTFontRef)(cf_val);
-  }
-
-  if (!_CFIsObjC(CTFontGetTypeID(), cf_val))
-    return NULL;
-
-  id<NSObject> ns_val = reinterpret_cast<id>(const_cast<void*>(cf_val));
-  if ([ns_val isKindOfClass:[NSFont class]]) {
-    return (CTFontRef)(cf_val);
-  }
-  return NULL;
-}
-
-template<> CTFontRef
-CFCastStrict<CTFontRef>(const CFTypeRef& cf_val) {
-  CTFontRef rv = CFCast<CTFontRef>(cf_val);
-  DCHECK(cf_val == NULL || rv);
-  return rv;
-}
-#endif
 
 #if !BUILDFLAG(IS_IOS)
 CF_CAST_DEFN(SecAccessControl)
@@ -427,13 +355,9 @@ std::string GetValueFromDictionaryErrorMessage(
     CFStringRef key, const std::string& expected_type, CFTypeRef value) {
   ScopedCFTypeRef<CFStringRef> actual_type_ref(
       CFCopyTypeIDDescription(CFGetTypeID(value)));
-  return "Expected value for key " +
-      base::SysCFStringRefToUTF8(key) +
-      " to be " +
-      expected_type +
-      " but it was " +
-      base::SysCFStringRefToUTF8(actual_type_ref) +
-      " instead";
+  return "Expected value for key " + SysCFStringRefToUTF8(key) + " to be " +
+         expected_type + " but it was " +
+         SysCFStringRefToUTF8(actual_type_ref) + " instead";
 }
 
 NSURL* FilePathToNSURL(const FilePath& path) {
@@ -449,42 +373,44 @@ NSString* FilePathToNSString(const FilePath& path) {
 }
 
 FilePath NSStringToFilePath(NSString* str) {
-  if (![str length])
+  if (!str.length) {
     return FilePath();
-  return FilePath([str fileSystemRepresentation]);
+  }
+  return FilePath(str.fileSystemRepresentation);
 }
 
 FilePath NSURLToFilePath(NSURL* url) {
-  if (![url isFileURL])
+  if (!url.fileURL) {
     return FilePath();
-  return NSStringToFilePath([url path]);
+  }
+  return NSStringToFilePath(url.path);
 }
 
-base::ScopedCFTypeRef<CFURLRef> FilePathToCFURL(const FilePath& path) {
+ScopedCFTypeRef<CFURLRef> FilePathToCFURL(const FilePath& path) {
   DCHECK(!path.empty());
 
   // The function's docs promise that it does not require an NSAutoreleasePool.
   // A straightforward way to accomplish this is to use *Create* functions,
-  // combined with base::ScopedCFTypeRef.
+  // combined with ScopedCFTypeRef.
   const std::string& path_string = path.value();
-  base::ScopedCFTypeRef<CFStringRef> path_cfstring(CFStringCreateWithBytes(
+  ScopedCFTypeRef<CFStringRef> path_cfstring(CFStringCreateWithBytes(
       kCFAllocatorDefault, reinterpret_cast<const UInt8*>(path_string.data()),
       checked_cast<CFIndex>(path_string.length()), kCFStringEncodingUTF8,
       /*isExternalRepresentation=*/FALSE));
   if (!path_cfstring)
-    return base::ScopedCFTypeRef<CFURLRef>();
+    return ScopedCFTypeRef<CFURLRef>();
 
-  return base::ScopedCFTypeRef<CFURLRef>(CFURLCreateWithFileSystemPath(
+  return ScopedCFTypeRef<CFURLRef>(CFURLCreateWithFileSystemPath(
       kCFAllocatorDefault, path_cfstring, kCFURLPOSIXPathStyle,
       /*isDirectory=*/FALSE));
 }
 
 bool CFRangeToNSRange(CFRange range, NSRange* range_out) {
   NSUInteger end;
-  if (base::IsValueInRangeForNumericType<NSUInteger>(range.location) &&
-      base::IsValueInRangeForNumericType<NSUInteger>(range.length) &&
-      base::CheckAdd(range.location, range.length).AssignIfValid(&end) &&
-      base::IsValueInRangeForNumericType<NSUInteger>(end)) {
+  if (IsValueInRangeForNumericType<NSUInteger>(range.location) &&
+      IsValueInRangeForNumericType<NSUInteger>(range.length) &&
+      CheckAdd(range.location, range.length).AssignIfValid(&end) &&
+      IsValueInRangeForNumericType<NSUInteger>(end)) {
     *range_out = NSMakeRange(static_cast<NSUInteger>(range.location),
                              static_cast<NSUInteger>(range.length));
     return true;
@@ -501,7 +427,7 @@ std::ostream& operator<<(std::ostream& o, const CFStringRef string) {
 std::ostream& operator<<(std::ostream& o, const CFErrorRef err) {
   base::ScopedCFTypeRef<CFStringRef> desc(CFErrorCopyDescription(err));
   base::ScopedCFTypeRef<CFDictionaryRef> user_info(CFErrorCopyUserInfo(err));
-  CFStringRef errorDesc = NULL;
+  CFStringRef errorDesc = nullptr;
   if (user_info.get()) {
     errorDesc = reinterpret_cast<CFStringRef>(
         CFDictionaryGetValue(user_info.get(), kCFErrorDescriptionKey));

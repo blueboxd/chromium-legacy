@@ -50,9 +50,13 @@ class ContentfulPaintTimingInfo {
              blink::LargestContentfulPaintType type,
              double image_bpp,
              const absl::optional<net::RequestPriority>& image_request_priority,
+             const absl::optional<base::TimeDelta>& image_discovery_time,
              const absl::optional<base::TimeDelta>& image_load_start,
              const absl::optional<base::TimeDelta>& image_load_end);
   absl::optional<base::TimeDelta> Time() const { return time_; }
+  absl::optional<base::TimeDelta> ImageDiscoveryTime() const {
+    return image_discovery_time_;
+  }
   absl::optional<base::TimeDelta> ImageLoadStart() const {
     return image_load_start_;
   }
@@ -95,6 +99,7 @@ class ContentfulPaintTimingInfo {
   double image_bpp_ = 0.0;
   absl::optional<net::RequestPriority> image_request_priority_;
   bool in_main_frame_;
+  absl::optional<base::TimeDelta> image_discovery_time_;
   absl::optional<base::TimeDelta> image_load_start_;
   absl::optional<base::TimeDelta> image_load_end_;
 };
@@ -177,6 +182,15 @@ class LargestContentfulPaintHandler {
     return main_frame_contentful_paint_.Image();
   }
 
+  void UpdateSoftNavigationLargestContentfulPaint(
+      const page_load_metrics::mojom::LargestContentfulPaintTiming&);
+
+  const ContentfulPaintTimingInfo& GetSoftNavigationLargestContentfulPaint()
+      const {
+    return soft_navigation_contentful_paint_candidate_
+        .MergeTextAndImageTiming();
+  }
+
  private:
   void RecordSubFrameTimingInternal(
       const page_load_metrics::mojom::LargestContentfulPaintTiming&
@@ -208,6 +222,9 @@ class LargestContentfulPaintHandler {
   // `cross_site_subframe_contentful_paint_` keeps track of the most plausible
   // LCP candidate computed from the cross-site subframes.
   ContentfulPaint cross_site_subframe_contentful_paint_;
+
+  // Keeps track of the LCP candidate of a soft navigation.
+  ContentfulPaint soft_navigation_contentful_paint_candidate_;
 
   // Used for Telemetry to distinguish the LCP events from different
   // navigations.

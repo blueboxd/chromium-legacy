@@ -200,6 +200,11 @@ TEST_F(PromoCardBaseTest, GetAllPromoCards) {
   ASSERT_THAT(pref_service()->GetList(prefs::kPasswordManagerPromoCardsList),
               IsEmpty());
 
+  // Enforce delegate creation before retrieving promo cards.
+  scoped_refptr<extensions::PasswordsPrivateDelegate> delegate =
+      extensions::PasswordsPrivateDelegateFactory::GetForBrowserContext(
+          profile(), true);
+
   std::vector<std::unique_ptr<PromoCardInterface>> promo_cards =
       PromoCardInterface::GetAllPromoCardsForProfile(profile());
   const base::Value::List& list =

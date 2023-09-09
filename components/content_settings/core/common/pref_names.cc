@@ -55,7 +55,7 @@ const char kManagedDefaultFileSystemWriteGuardSetting[] =
     "profile.managed_default_content_settings.file_system_write_guard";
 const char kManagedDefaultSerialGuardSetting[] =
     "profile.managed_default_content_settings.serial_guard";
-const char kManagedDefaultInsecureLocalNetworkSetting[] =
+const char kManagedDefaultInsecurePrivateNetworkSetting[] =
     "profile.managed_default_content_settings.insecure_private_network";
 const char kManagedDefaultJavaScriptJitSetting[] =
     "profile.managed_default_content_settings.javascript_jit";
@@ -67,6 +67,8 @@ const char kManagedDefaultLocalFontsSetting[] =
     "profile.managed_default_content_settings.local_fonts";
 const char kManagedDefaultThirdPartyStoragePartitioningSetting[] =
     "profile.managed_default_content_settings.third_party_storage_partitioning";
+const char kManagedDefaultMidi[] =
+    "profile.managed_default_content_settings.midi";
 
 // Preferences that are exclusively used to store managed
 // content settings patterns.
@@ -127,7 +129,7 @@ const char kManagedLegacyCookieAccessAllowedForDomains[] =
 const char kManagedSerialAskForUrls[] = "profile.managed_serial_ask_for_urls";
 const char kManagedSerialBlockedForUrls[] =
     "profile.managed_serial_blocked_for_urls";
-const char kManagedInsecureLocalNetworkAllowedForUrls[] =
+const char kManagedInsecurePrivateNetworkAllowedForUrls[] =
     "profile.managed_insecure_private_network_allowed_for_urls";
 const char kManagedJavaScriptJitAllowedForSites[] =
     "profile.managed_javascript_jit_allowed_for_sites";
@@ -146,6 +148,10 @@ const char kManagedLocalFontsBlockedForUrls[] =
     "profile.managed_local_fonts_blocked_for_urls";
 const char kManagedThirdPartyStoragePartitioningBlockedForOrigins[] =
     "profile.managed_third_party_storage_partitioning_blocked_for_origins";
+const char kManagedMidiAllowedForUrls[] =
+    "profile.managed_midi_allowed_for_urls";
+const char kManagedMidiBlockedForUrls[] =
+    "profile.managed_midi_blocked_for_urls";
 
 // Boolean indicating whether the quiet UI is enabled for notification
 // permission requests.
@@ -180,6 +186,9 @@ const char kDesktopSitePeripheralSettingEnabled[] =
 // Display setting for request desktop site. When enabled, we will always
 // request desktop site if a monitor is connected.
 const char kDesktopSiteDisplaySettingEnabled[] = "desktop_site.display_setting";
+// Window setting for request desktop site. When enabled, we will request
+// mobile site if the window is narrow.
+const char kDesktopSiteWindowSettingEnabled[] = "desktop_site.window_setting";
 #endif
 
 }  // namespace prefs

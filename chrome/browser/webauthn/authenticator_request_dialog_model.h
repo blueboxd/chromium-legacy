@@ -11,12 +11,11 @@
 
 #include "base/containers/span.h"
 #include "base/functional/callback_forward.h"
-#include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
-#include "base/strings/string_piece.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/types/strong_alias.h"
 #include "build/build_config.h"
@@ -28,7 +27,6 @@
 #include "device/fido/cable/v2_constants.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_request_handler_base.h"
-#include "device/fido/fido_transport_protocol.h"
 #include "device/fido/fido_types.h"
 #include "device/fido/pin.h"
 #include "device/fido/public_key_credential_user_entity.h"
@@ -178,12 +176,21 @@ class AuthenticatorRequestDialogModel {
     virtual void OnManageDevicesClicked() {}
   };
 
-  // A Mechanism is a user-visable method of authenticating. It might be a
+  // A Mechanism is a user-visible method of authenticating. It might be a
   // transport (such as USB), a platform authenticator, a phone, or even a
-  // delegation to a platform API. Mechanisms are listed in the UI for the
-  // user to select between.
+  // delegation to a platform API. Selecting a mechanism starts the flow for the
+  // user to authenticate with it (e.g. by showing a QR code or dispatching to a
+  // platform authenticator).
+  //
+  // On get assertion requests, mechanisms can also represent credentials for
+  // authenticators that support silent discovery. In this case, the |type| is
+  // |Credential| and it is annotated with the source of the credential (phone,
+  // icloud, etc). Selecting such a mechanism dispatches a request narrowed down
+  // to the specific credential to an authenticator that can fulfill it.
   struct Mechanism {
     // These types describe the type of Mechanism.
+    using Credential =
+        base::StrongAlias<class CredentialTag, device::AuthenticatorType>;
     using Transport =
         base::StrongAlias<class TransportTag, AuthenticatorTransport>;
     using WindowsAPI = base::StrongAlias<class WindowsAPITag, absl::monostate>;
@@ -191,8 +198,12 @@ class AuthenticatorRequestDialogModel {
         base::StrongAlias<class iCloudKeychainTag, absl::monostate>;
     using Phone = base::StrongAlias<class PhoneTag, std::string>;
     using AddPhone = base::StrongAlias<class AddPhoneTag, absl::monostate>;
-    using Type =
-        absl::variant<Transport, WindowsAPI, Phone, AddPhone, ICloudKeychain>;
+    using Type = absl::variant<Credential,
+                               Transport,
+                               WindowsAPI,
+                               Phone,
+                               AddPhone,
+                               ICloudKeychain>;
 
     Mechanism(Type type,
               std::u16string name,
@@ -207,24 +218,37 @@ class AuthenticatorRequestDialogModel {
     const Type type;
     const std::u16string name;
     const std::u16string short_name;
+    std::u16string description;
     const raw_ref<const gfx::VectorIcon> icon;
     const base::RepeatingClosure callback;
   };
 
   // PairedPhone represents a paired caBLEv2 device.
   struct PairedPhone {
+    // Indicates the source of the pairing information.
+    enum class PairingSource {
+      kQR,
+      kSyncDeviceInfo,
+    };
+
     PairedPhone() = delete;
     PairedPhone(const PairedPhone&);
     PairedPhone(
+        PairingSource paired_source,
         const std::string& name,
         size_t contact_id,
-        const std::array<uint8_t, device::kP256X962Length> public_key_x962);
+        const std::array<uint8_t, device::kP256X962Length> public_key_x962,
+        base::Time last_updated);
     ~PairedPhone();
 
     PairedPhone& operator=(const PairedPhone&);
 
     static bool CompareByName(const PairedPhone& a, const PairedPhone& b);
 
+    // pairing_source indicates the source of this pairing. Pairings from sync
+    // device info also sync their passkey metadata to Chrome, so they should be
+    // the ones dispatched to when preselecting one such credential.
+    PairingSource pairing_source;
     // name is the human-friendly name of the phone. It may be unreasonably
     // long, however, and should be elided to fit within UIs.
     std::string name;
@@ -234,6 +258,9 @@ class AuthenticatorRequestDialogModel {
     size_t contact_id;
     // public_key_x962 is the phone's public key.
     std::array<uint8_t, device::kP256X962Length> public_key_x962;
+    // last_updated is the timestamp for the phone's last sync, or null if the
+    // PairingSource is not kSyncDeviceInfo.
+    base::Time last_updated;
   };
 
   // CableUIType enumerates the different types of caBLE UI that we've ended
@@ -509,13 +536,13 @@ class AuthenticatorRequestDialogModel {
 
   // OnAccountSelected is called when one of the accounts from |SelectAccount|
   // has been picked. |index| is the index of the selected account in
-  // |responses()|.
+  // |creds()|.
   void OnAccountSelected(size_t index);
 
   // OnAccountPreselected is called when the user selects a discoverable
   // credential from a platform authenticator prior to providing user
   // authentication. `crededential_id` must match one of the credentials in
-  // `creds()`.
+  // `transport_availability_.recognized_credentials`.
   void OnAccountPreselected(const std::vector<uint8_t>& credential_id);
 
   // Like `OnAccountPreselected()`, but this takes an index into `creds()`
@@ -526,10 +553,6 @@ class AuthenticatorRequestDialogModel {
 
   virtual base::span<const Mechanism> mechanisms() const;
 
-  // current_mechanism returns the index into |mechanisms| of the most recently
-  // activated mechanism, or nullopt if there isn't one.
-  absl::optional<size_t> current_mechanism() const;
-
   // Contacts the "priority" paired phone. This is only valid to call when there
   // is a single phone paired.
   void ContactPriorityPhone();
@@ -538,6 +561,11 @@ class AuthenticatorRequestDialogModel {
   // Only for unittests. UI should use |mechanisms()| to enumerate the
   // user-visible mechanisms and use the callbacks therein.
   void ContactPhoneForTesting(const std::string& name);
+
+  // Returns the name of the phone from sync that will be dispatched to when a
+  // user selects a Mechanism::Credential corresponding to a phone credential,
+  // or absl::nullopt if there isn't one.
+  virtual absl::optional<std::u16string> GetPrioritySyncedPhoneName() const;
 
   // StartTransportFlowForTesting moves the UI to focus on the given transport.
   // UI should use |mechanisms()| to enumerate the user-visible mechanisms and
@@ -550,9 +578,6 @@ class AuthenticatorRequestDialogModel {
   TransportAvailabilityInfo& transport_availability_for_testing() {
     return transport_availability_;
   }
-
-  void ReplaceCredListForTesting(
-      std::vector<device::DiscoverableCredentialMetadata> creds);
 
   ObservableAuthenticatorList& saved_authenticators() {
     return ephemeral_state_.saved_authenticators_;
@@ -675,20 +700,23 @@ class AuthenticatorRequestDialogModel {
   // Valid action when at step: kNotStarted. kMechanismSelection, and steps
   // where the other transports menu is shown, namely, kUsbInsertAndActivate,
   // kCableActivate.
-  void StartGuidedFlowForTransport(AuthenticatorTransport transport,
-                                   size_t mechanism_index);
+  void StartGuidedFlowForTransport(AuthenticatorTransport transport);
 
   // Starts the flow for adding an unlisted phone by showing a QR code.
-  void StartGuidedFlowForAddPhone(size_t mechanism_index);
+  void StartGuidedFlowForAddPhone();
 
   // Displays a resident-key warning if needed and then calls
   // |HideDialogAndDispatchToNativeWindowsApi|.
-  void StartWinNativeApi(size_t mechanism_index);
+  void StartWinNativeApi();
 
-  void StartICloudKeychain(size_t mechanism_index);
+  void StartICloudKeychain();
+
+  // Contacts the "priority" paired phone from sync. At least one sync phone
+  // must be available to call this.
+  void ContactPrioritySyncedPhone();
 
   // Contacts a paired phone. The phone is specified by name.
-  void ContactPhone(const std::string& name, size_t mechanism_index);
+  void ContactPhone(const std::string& name);
   void ContactPhoneAfterOffTheRecordInterstitial(std::string name);
   void ContactPhoneAfterBleIsPowered(std::string name);
 
@@ -697,6 +725,10 @@ class AuthenticatorRequestDialogModel {
   void DispatchRequestAsync(AuthenticatorReference* authenticator);
 
   void ContactNextPhoneByName(const std::string& name);
+
+  // Returns a phone that has been paired through Chrome Sync, or absl::nullopt
+  // if there isn't one.
+  absl::optional<PairedPhone> GetPrioritySyncedPhone() const;
 
   // PopulateMechanisms fills in |mechanisms_|.
   void PopulateMechanisms();
@@ -787,10 +819,6 @@ class AuthenticatorRequestDialogModel {
   // priority_mechanism_index_ contains an index in `mechanisms_` for the
   // mechanism that should immediately be triggered, if any.
   absl::optional<size_t> priority_mechanism_index_;
-
-  // current_mechanism_ contains the index of the most recently activated
-  // mechanism.
-  absl::optional<size_t> current_mechanism_;
 
   // cable_ui_type_ contains the type of UI to display for a caBLE transaction.
   absl::optional<CableUIType> cable_ui_type_;

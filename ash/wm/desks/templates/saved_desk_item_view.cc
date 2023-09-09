@@ -39,11 +39,8 @@
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
-#include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/text_constants.h"
 #include "ui/views/animation/animation_builder.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/focus_ring.h"
@@ -136,9 +133,8 @@ SavedDeskItemView::SavedDeskItemView(std::unique_ptr<DeskTemplate> saved_desk)
       .SetBorder(std::make_unique<views::HighlightBorder>(
           kSaveDeskCornerRadius,
           chromeos::features::IsJellyrollEnabled()
-              ? views::HighlightBorder::Type::kHighlightBorderNoShadow
+              ? views::HighlightBorder::Type::kHighlightBorderOnShadow
               : views::HighlightBorder::Type::kHighlightBorder1))
-      // TODO(b/274025495): Update Shadow for SavedDeskItemView.
       .AddChildren(
           views::Builder<View>()
               .CopyAddressTo(&background_view)
@@ -235,6 +231,11 @@ SavedDeskItemView::SavedDeskItemView(std::unique_ptr<DeskTemplate> saved_desk)
   SetPaintToLayer();
   // We need to ensure that the layer is non-opaque when animating.
   layer()->SetFillsBoundsOpaquely(false);
+
+  // Create a shadow for the view.
+  shadow_ = SystemShadow::CreateShadowOnNinePatchLayerForView(
+      this, SystemShadow::Type::kElevation12);
+  shadow_->SetRoundedCornerRadius(kSaveDeskCornerRadius);
 
   // Note this view needs to be set to paint to layer so other view won't
   // paint over it.
@@ -556,7 +557,7 @@ void SavedDeskItemView::OnViewBlurred(views::View* observed_view) {
 }
 
 void SavedDeskItemView::OnFocus() {
-  UpdateOverviewHighlightForFocusAndSpokenFeedback(this);
+  UpdateOverviewHighlightForFocus(this);
   OnViewHighlighted();
   View::OnFocus();
 }

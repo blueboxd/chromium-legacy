@@ -8,6 +8,7 @@
 #include <cmath>
 #include <list>
 #include <memory>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -17,12 +18,11 @@
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_piece.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/password_manager/android/password_manager_lifecycle_helper_impl.h"
@@ -31,8 +31,9 @@
 #include "chrome/browser/password_manager/android/password_sync_controller_delegate_android.h"
 #include "chrome/browser/password_manager/android/password_sync_controller_delegate_bridge_impl.h"
 #include "components/autofill/core/common/autofill_regexes.h"
+#include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/android_backend_error.h"
-#include "components/password_manager/core/browser/login_database.h"
+#include "components/password_manager/core/browser/get_logins_with_affiliations_request_handler.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_eviction_util.h"
 #include "components/password_manager/core/browser/password_store_android_backend_api_error_codes.h"
@@ -40,13 +41,12 @@
 #include "components/password_manager/core/browser/password_store_backend_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_store_util.h"
 #include "components/password_manager/core/browser/password_sync_util.h"
+#include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/sync/base/user_selectable_type.h"
 #include "components/sync/model/proxy_model_type_controller_delegate.h"
 #include "components/sync/service/sync_service.h"
-#include "components/sync/service/sync_user_settings.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace password_manager {
@@ -92,7 +92,8 @@ std::string FormToSignonRealmQuery(const PasswordFormDigest& form,
     // Check PSL matches and matches for exact signon realm.
     return GetRegistryControlledDomain(GURL(form.signon_realm));
   }
-  if (form.scheme == PasswordForm::Scheme::kHtml) {
+  if (form.scheme == PasswordForm::Scheme::kHtml &&
+      !IsValidAndroidFacetURI(form.signon_realm)) {
     // Check federated matches and matches for exact signon realm.
     return form.url.host();
   }
@@ -100,8 +101,8 @@ std::string FormToSignonRealmQuery(const PasswordFormDigest& form,
   return form.signon_realm;
 }
 
-bool MatchesRegexWithCache(base::StringPiece16 input,
-                           base::StringPiece16 regex) {
+bool MatchesRegexWithCache(std::u16string_view input,
+                           std::u16string_view regex) {
   static base::NoDestructor<autofill::AutofillRegexCache> cache(
       autofill::ThreadSafe(true));
   const icu::RegexPattern* regex_pattern = cache->GetRegexPattern(regex);
@@ -578,9 +579,11 @@ PasswordStoreAndroidBackend::PasswordStoreAndroidBackend(
 PasswordStoreAndroidBackend::~PasswordStoreAndroidBackend() = default;
 
 void PasswordStoreAndroidBackend::InitBackend(
+    AffiliatedMatchHelper* affiliated_match_helper,
     RemoteChangesReceived remote_form_changes_received,
     base::RepeatingClosure sync_enabled_or_disabled_cb,
     base::OnceCallback<void(bool)> completion) {
+  affiliated_match_helper_ = affiliated_match_helper;
   main_task_runner_ = base::SequencedTaskRunner::GetCurrentDefault();
   stored_passwords_changed_ = std::move(remote_form_changes_received);
   lifecycle_helper_->RegisterObserver(base::BindRepeating(
@@ -592,6 +595,7 @@ void PasswordStoreAndroidBackend::InitBackend(
 
 void PasswordStoreAndroidBackend::Shutdown(
     base::OnceClosure shutdown_completed) {
+  affiliated_match_helper_ = nullptr;
   sync_service_ = nullptr;
   lifecycle_helper_->UnregisterObserver();
   // TODO(https://crbug.com/1229654): Implement (e.g. unsubscribe from GMS).
@@ -651,6 +655,14 @@ void PasswordStoreAndroidBackend::FillMatchingLoginsAsync(
         PasswordStoreOperation::kFillMatchingLoginsAsync);
   }
   std::move(callbacks_chain).Run();
+}
+
+void PasswordStoreAndroidBackend::GetGroupedMatchingLoginsAsync(
+    const PasswordFormDigest& form_digest,
+    LoginsOrErrorReply callback) {
+  // TODO(crbug.com/1428539): Use the new API to get affiliated passwords.
+  GetLoginsWithAffiliationsRequestHandler(
+      form_digest, this, affiliated_match_helper_.get(), std::move(callback));
 }
 
 void PasswordStoreAndroidBackend::AddLoginAsync(

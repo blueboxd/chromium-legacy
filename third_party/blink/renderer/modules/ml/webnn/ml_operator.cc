@@ -56,6 +56,10 @@ String MLOperator::OperatorKindToString(MLOperator::OperatorKind kind) {
       return "pad";
     case MLOperator::OperatorKind::kPRelu:
       return "prelu";
+    case MLOperator::OperatorKind::kReduceMean:
+      return "reduceMean";
+    case MLOperator::OperatorKind::kReduceSum:
+      return "reduceSum";
     case MLOperator::OperatorKind::kRelu:
       return "relu";
     case MLOperator::OperatorKind::kReshape:
@@ -119,6 +123,16 @@ void MLOperator::Connect(HeapVector<Member<const MLOperand>> inputs,
   inputs_ = std::move(inputs);
   outputs_ = std::move(outputs);
   is_connected_ = true;
+}
+
+MLConcatOperator::MLConcatOperator(MLGraphBuilder* builder, const uint32_t axis)
+    : MLOperator(builder, MLOperator::OperatorKind::kConcat, nullptr),
+      axis_(axis) {}
+
+MLConcatOperator::~MLConcatOperator() = default;
+
+uint32_t MLConcatOperator::Axis() const {
+  return axis_;
 }
 
 MLPadOperator::MLPadOperator(MLGraphBuilder* builder,

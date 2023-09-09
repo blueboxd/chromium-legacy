@@ -44,7 +44,8 @@ class SpeechRecognitionRecognizerImpl
       media::mojom::SpeechRecognitionOptionsPtr options,
       const base::FilePath& binary_path,
       const base::flat_map<std::string, base::FilePath>& config_paths,
-      const std::string& primary_language_name);
+      const std::string& primary_language_name,
+      const bool mask_offensive_words);
 
   SpeechRecognitionRecognizerImpl(const SpeechRecognitionRecognizerImpl&) =
       delete;
@@ -63,7 +64,8 @@ class SpeechRecognitionRecognizerImpl
       media::mojom::SpeechRecognitionOptionsPtr options,
       const base::FilePath& binary_path,
       const base::flat_map<std::string, base::FilePath>& config_paths,
-      const std::string& primary_language_name);
+      const std::string& primary_language_name,
+      const bool mask_offensive_words);
 
   static bool IsMultichannelSupported();
 
@@ -120,6 +122,8 @@ class SpeechRecognitionRecognizerImpl
  private:
   void OnLanguageChanged(const std::string& language) final;
 
+  void OnMaskOffensiveWordsChanged(bool mask_offensive_words) final;
+
   void ResetSodaWithNewLanguage(base::FilePath config_path,
                                 std::string language_name,
                                 bool config_exists);
@@ -155,6 +159,7 @@ class SpeechRecognitionRecognizerImpl
   std::string primary_language_name_;
   int sample_rate_ = 0;
   int channel_count_ = 0;
+  bool mask_offensive_words_ = false;
 
   base::TimeDelta caption_bubble_visible_duration_;
   base::TimeDelta caption_bubble_hidden_duration_;

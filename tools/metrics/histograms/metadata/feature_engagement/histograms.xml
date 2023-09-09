@@ -136,6 +136,8 @@ chromium-metrics-reviews@google.com.
       summary="new label on the context menu for Ephemeral Tab"/>
   <variant name="IPH_ExploreSitesTile" summary="Explore Sites feature"/>
   <variant name="IPH_ExtensionsMenu" summary="extensions menu opened"/>
+  <variant name="IPH_ExtensionsRequestAccessButton"
+      summary="extensions request access button shown"/>
   <variant name="IPH_FeatureNotificationGuideDefaultBrowserNotificationShown"
       summary="feature notification guide default browser notification"/>
   <variant name="IPH_FeatureNotificationGuideDefaultBrowserPromo"
@@ -256,6 +258,10 @@ chromium-metrics-reviews@google.com.
       summary="price insights page action icon label triggering"/>
   <variant name="IPH_PriceTrackingChipFeature"
       summary="first time user sees the price tracking page action icon"/>
+  <variant name="IPH_PriceTrackingEmailConsentFeature"
+      summary="An email consent dialog shown after saving a product if a
+               decision about receiving email notifications has not been
+               made."/>
   <variant name="IPH_PriceTrackingInSidePanel"
       summary="first time user tracks a product to educate them to see the
                price tracking list in side panel"/>
@@ -294,15 +300,32 @@ chromium-metrics-reviews@google.com.
   <variant name="IPH_RequestDesktopSiteExceptionsGeneric"
       summary="educating tablet users about using the desktop site per-site
                settings in general"/>
-  <variant name="IPH_RequestDesktopSiteExceptionsSpecific"
-      summary="educating users about using the desktop site per-site settings
-               for websites that are more functional in desktop mode"/>
   <variant name="IPH_RequestDesktopSiteOptIn"
       summary="the in product help message to let users turn on the desktop
                site global settings"/>
   <variant name="IPH_RestoreTabsOnFRE"
       summary="the in product help sheet to let users know they can restore
                tabs from other synced devices on a fresh Chrome install"/>
+  <variant name="IPH_ScalableIphTimerBasedEight"
+      summary="A variant of timer based scalable iph"/>
+  <variant name="IPH_ScalableIphTimerBasedFive"
+      summary="A variant of timer based scalable iph"/>
+  <variant name="IPH_ScalableIphTimerBasedFour"
+      summary="A variant of timer based scalable iph"/>
+  <variant name="IPH_ScalableIphTimerBasedNine"
+      summary="A variant of timer based scalable iph"/>
+  <variant name="IPH_ScalableIphTimerBasedOne"
+      summary="A variant of timer based scalable iph"/>
+  <variant name="IPH_ScalableIphTimerBasedSeven"
+      summary="A variant of timer based scalable iph"/>
+  <variant name="IPH_ScalableIphTimerBasedSix"
+      summary="A variant of timer based scalable iph"/>
+  <variant name="IPH_ScalableIphTimerBasedTen"
+      summary="A variant of timer based scalable iph"/>
+  <variant name="IPH_ScalableIphTimerBasedThree"
+      summary="A variant of timer based scalable iph"/>
+  <variant name="IPH_ScalableIphTimerBasedTwo"
+      summary="A variant of timer based scalable iph"/>
   <variant name="IPH_SharedHighlightingBuilder"
       summary="the in product help message to notify the user that the share
                action can preemptively share a link-to-text"/>
@@ -368,7 +391,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="InProductHelp.Config.ParsingEvent" enum="ConfigParsingEvent"
-    expires_after="2023-11-05">
+    expires_after="2024-01-07">
   <owner>nyquist@chromium.org</owner>
   <summary>
     Records if in-product help configuration is parsed correctly, and the

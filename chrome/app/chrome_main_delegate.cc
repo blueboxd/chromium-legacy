@@ -75,7 +75,7 @@
 #include "components/memory_system/parameters.h"
 #include "components/metrics/persistent_histograms.h"
 #include "components/nacl/common/buildflags.h"
-#include "components/startup_metric_utils/browser/startup_metric_utils.h"
+#include "components/startup_metric_utils/common/startup_metric_utils.h"
 #include "components/version_info/channel.h"
 #include "components/version_info/version_info.h"
 #include "content/public/app/initialize_mojo_core.h"
@@ -230,6 +230,7 @@
 #include "chromeos/startup/startup_switches.h"          // nogncheck
 #include "content/public/browser/zygote_host/zygote_host_linux.h"
 #include "media/base/media_switches.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/base/resource/data_pack_with_resource_sharing_lacros.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/switches.h"
@@ -450,6 +451,19 @@ void RedirectLacrosLogging() {
     }
   }
 }
+
+void AddFeatureFlagsToCommandLine(
+    const chromeos::BrowserParamsProxy& init_params) {
+  base::ScopedAddFeatureFlags flags(base::CommandLine::ForCurrentProcess());
+
+  if (init_params.IsVariableRefreshRateEnabled()) {
+    flags.EnableIfNotSet(features::kEnableVariableRefreshRate);
+  }
+
+  if (init_params.IsPdfOcrEnabled()) {
+    flags.EnableIfNotSet(features::kPdfOcr);
+  }
+}
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_ANDROID)
@@ -604,7 +618,8 @@ void RecordMainStartupMetrics(base::TimeTicks application_start_time) {
 
 #if BUILDFLAG(IS_WIN)
   DCHECK(!application_start_time.is_null());
-  startup_metric_utils::RecordApplicationStartTime(application_start_time);
+  startup_metric_utils::GetCommon().RecordApplicationStartTime(
+      application_start_time);
 #elif BUILDFLAG(IS_ANDROID)
   // On Android the main entry point time is the time when the Java code starts.
   // This happens before the shared library containing this code is even loaded.
@@ -614,18 +629,18 @@ void RecordMainStartupMetrics(base::TimeTicks application_start_time) {
 #else
   // On other platforms, |application_start_time| == |now| since the application
   // starts with ChromeMain().
-  startup_metric_utils::RecordApplicationStartTime(now);
+  startup_metric_utils::GetCommon().RecordApplicationStartTime(now);
 #endif
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS)
   // Record the startup process creation time on supported platforms. On Android
   // this is recorded in ChromeMainDelegateAndroid.
-  startup_metric_utils::RecordStartupProcessCreationTime(
+  startup_metric_utils::GetCommon().RecordStartupProcessCreationTime(
       base::Process::Current().CreationTime());
 #endif
 
-  startup_metric_utils::RecordChromeMainEntryTime(now);
+  startup_metric_utils::GetCommon().RecordChromeMainEntryTime(now);
 }
 
 }  // namespace
@@ -770,8 +785,8 @@ absl::optional<int> ChromeMainDelegate::PostEarlyInitialization(
   //
   // IMPORTANT NOTE: If your code requires access to post-login parameters
   // (which are only known after login), please place them *after* this call.
-  chrome::SetLacrosDefaultPathsFromInitParams(
-      chromeos::BrowserParamsProxy::Get()->DefaultPaths().get());
+  const auto& init_params = *chromeos::BrowserParamsProxy::Get();
+  chrome::SetLacrosDefaultPathsFromInitParams(init_params.DefaultPaths().get());
 
   // NOTE: When launching Lacros at login screen, after this point,
   // the user should have logged in. The cryptohome is now accessible.
@@ -782,10 +797,7 @@ absl::optional<int> ChromeMainDelegate::PostEarlyInitialization(
 
   // Must be added before feature list is created otherwise the added flag won't
   // be picked up.
-  if (chromeos::BrowserParamsProxy::Get()->IsVariableRefreshRateEnabled()) {
-    base::ScopedAddFeatureFlags(base::CommandLine::ForCurrentProcess())
-        .EnableIfNotSet(features::kEnableVariableRefreshRate);
-  }
+  AddFeatureFlagsToCommandLine(init_params);
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   // The DBus initialization above is needed for FeatureList creation here;
@@ -806,13 +818,10 @@ absl::optional<int> ChromeMainDelegate::PostEarlyInitialization(
   // sequences later.
   lacros_service_ = std::make_unique<chromeos::LacrosService>();
   {
-    const chromeos::BrowserParamsProxy* init_params =
-        chromeos::BrowserParamsProxy::Get();
-
     // Override the login user DIR_HOME path for the Lacros browser process.
-    if (init_params->CrosUserIdHash().has_value()) {
+    if (init_params.CrosUserIdHash().has_value()) {
       base::FilePath homedir(kUserHomeDirPrefix);
-      homedir = homedir.Append(init_params->CrosUserIdHash().value());
+      homedir = homedir.Append(init_params.CrosUserIdHash().value());
       base::PathService::OverrideAndCreateIfNeeded(
           base::DIR_HOME, homedir, /*is_absolute=*/true, /*create=*/false);
     }
@@ -822,9 +831,9 @@ absl::optional<int> ChromeMainDelegate::PostEarlyInitialization(
     // to the GPU process.
     // All the flags in the block below relate to HW protected content, which
     // require OOP video decoding as well.
-    if (init_params->BuildFlags().has_value() &&
-        init_params->OopVideoDecodingEnabled()) {
-      for (auto flag : init_params->BuildFlags().value()) {
+    if (init_params.BuildFlags().has_value() &&
+        init_params.OopVideoDecodingEnabled()) {
+      for (auto flag : init_params.BuildFlags().value()) {
         switch (flag) {
           case crosapi::mojom::BuildFlag::kUnknown:
             break;
@@ -847,7 +856,7 @@ absl::optional<int> ChromeMainDelegate::PostEarlyInitialization(
       }
     }
 
-    if (init_params->EnableCpuMappableNativeGpuMemoryBuffers()) {
+    if (init_params.EnableCpuMappableNativeGpuMemoryBuffers()) {
       base::CommandLine::ForCurrentProcess()->AppendSwitch(
           switches::kEnableNativeGpuMemoryBuffers);
     }
@@ -1063,7 +1072,15 @@ absl::optional<int> ChromeMainDelegate::BasicStartupComplete() {
   // The DevTools remote debugging pipe file descriptors need to be checked
   // before any other files are opened, see https://crbug.com/1423048.
   const bool is_browser = !command_line.HasSwitch(switches::kProcessType);
+#if BUILDFLAG(IS_WIN)
+  const bool pipes_are_specified_explicitly =
+      command_line.HasSwitch(::switches::kRemoteDebuggingIoPipes);
+#else
+  const bool pipes_are_specified_explicitly = false;
+#endif
+
   if (is_browser && command_line.HasSwitch(::switches::kRemoteDebuggingPipe) &&
+      !pipes_are_specified_explicitly &&
       !devtools_pipe::AreFileDescriptorsOpen()) {
     LOG(ERROR) << "Remote debugging pipe file descriptors are not open.";
     return chrome::RESULT_CODE_UNSUPPORTED_PARAM;
@@ -1196,8 +1213,7 @@ absl::optional<int> ChromeMainDelegate::BasicStartupComplete() {
     const char* const kSwitchNames[] = {
         switches::kUserDataDir,
     };
-    interim_command_line.CopySwitchesFrom(command_line, kSwitchNames,
-                                          std::size(kSwitchNames));
+    interim_command_line.CopySwitchesFrom(command_line, kSwitchNames);
     interim_command_line.AppendSwitch(switches::kDiagnostics);
     interim_command_line.AppendSwitch(switches::kDiagnosticsRecovery);
 
@@ -1799,6 +1815,7 @@ void ChromeMainDelegate::InitializeMemorySystem() {
       .SetDispatcherParameters(memory_system::DispatcherParameters::
                                    PoissonAllocationSamplerInclusion::kEnforce,
                                memory_system::DispatcherParameters::
-                                   AllocationTraceRecorderInclusion::kDynamic)
+                                   AllocationTraceRecorderInclusion::kDynamic,
+                               process_type)
       .Initialize(memory_system_);
 }

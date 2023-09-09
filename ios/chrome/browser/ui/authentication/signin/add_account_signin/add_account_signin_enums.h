@@ -9,9 +9,10 @@
 
 // Intent for the add account sign-in flow.
 enum class AddAccountSigninIntent {
-  // Adds a new account to the device. This can happen regardless of whether
-  // there is a primary account set.
-  kAddNewAccount,
+  // Adds a new account to the device. This can happen to add a secondary
+  // account (when there is a primary account) or to add an account when the
+  // user is signed out.
+  kAddAccount,
   // Reauthenticates with the current primary account, using the SSOAuth add
   // account dialog. The sync consent screen will not be presented to the user.
   // This intent can only be used when there is a primary account with sync

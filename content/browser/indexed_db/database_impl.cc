@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/sequence_checker.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "content/browser/indexed_db/indexed_db_callback_helpers.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
@@ -361,6 +362,11 @@ void DatabaseImpl::SetIndexKeys(
   if (!transaction)
     return;
 
+  if (!primary_key.IsValid()) {
+    mojo::ReportBadMessage("SetIndexKeys used with invalid key.");
+    return;
+  }
+
   if (transaction->mode() != blink::mojom::IDBTransactionMode::VersionChange) {
     mojo::ReportBadMessage(
         "SetIndexKeys must be called from a version change transaction.");
@@ -487,26 +493,23 @@ void DatabaseImpl::OpenCursor(
                         bucket_locator(), dispatcher_host_->AsWeakPtr()));
 }
 
-void DatabaseImpl::Count(
-    int64_t transaction_id,
-    int64_t object_store_id,
-    int64_t index_id,
-    const IndexedDBKeyRange& key_range,
-    mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
-        pending_callbacks) {
+void DatabaseImpl::Count(int64_t transaction_id,
+                         int64_t object_store_id,
+                         int64_t index_id,
+                         const IndexedDBKeyRange& key_range,
+                         CountCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto callbacks = base::MakeRefCounted<IndexedDBCallbacks>(
-      dispatcher_host_->AsWeakPtr(), bucket_info_, std::move(pending_callbacks),
-      idb_runner_);
-  if (!connection_->IsConnected())
+
+  auto wrapped_callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+      std::move(callback), /*success=*/false, 0);
+
+  if (!connection_->IsConnected()) {
     return;
+  }
 
   IndexedDBTransaction* transaction =
       connection_->GetTransaction(transaction_id);
-  if (!transaction)
-    return;
-
-  if (!transaction->IsAcceptingRequests()) {
+  if (!transaction || !transaction->IsAcceptingRequests()) {
     // TODO(https://crbug.com/1249908): If the transaction was already committed
     // (or is in the process of being committed) we should kill the renderer.
     // This branch however also includes cases where the browser process aborted
@@ -519,7 +522,7 @@ void DatabaseImpl::Count(
       &IndexedDBDatabase::CountOperation, connection_->database()->AsWeakPtr(),
       object_store_id, index_id,
       std::make_unique<blink::IndexedDBKeyRange>(key_range),
-      std::move(callbacks)));
+      std::move(wrapped_callback)));
 }
 
 void DatabaseImpl::DeleteRange(int64_t transaction_id,
@@ -560,14 +563,13 @@ void DatabaseImpl::DeleteRange(int64_t transaction_id,
 void DatabaseImpl::GetKeyGeneratorCurrentNumber(
     int64_t transaction_id,
     int64_t object_store_id,
-    mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
-        pending_callbacks) {
+    GetKeyGeneratorCurrentNumberCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto callbacks = base::MakeRefCounted<IndexedDBCallbacks>(
-      dispatcher_host_->AsWeakPtr(), bucket_info_, std::move(pending_callbacks),
-      idb_runner_);
-  if (!connection_->IsConnected())
-    return;
+  auto wrapped_callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+      std::move(callback), -1,
+      blink::mojom::IDBError::New(
+          blink::mojom::IDBException::kIgnorableAbortError,
+          u"Aborting due to unknown failure."));
 
   IndexedDBTransaction* transaction =
       connection_->GetTransaction(transaction_id);
@@ -586,7 +588,7 @@ void DatabaseImpl::GetKeyGeneratorCurrentNumber(
   transaction->ScheduleTask(BindWeakOperation(
       &IndexedDBDatabase::GetKeyGeneratorCurrentNumberOperation,
       connection_->database()->AsWeakPtr(), object_store_id,
-      std::move(callbacks)));
+      std::move(wrapped_callback)));
 }
 
 void DatabaseImpl::Clear(int64_t transaction_id,
@@ -739,10 +741,6 @@ void DatabaseImpl::Abort(int64_t transaction_id) {
 
 void DatabaseImpl::DidBecomeInactive() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CHECK(blink::features::
-            IsAllowPageWithIDBConnectionAndTransactionInBFCacheEnabled())
-      << "This method will only be called if a page with IndexedDB transaction "
-         "is eligible for BFCache.";
   if (!connection_->IsConnected()) {
     return;
   }

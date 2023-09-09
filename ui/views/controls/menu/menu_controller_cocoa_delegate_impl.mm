@@ -4,9 +4,9 @@
 
 #import "ui/views/controls/menu/menu_controller_cocoa_delegate_impl.h"
 
+#include "base/apple/bridging.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/mac/mac_util.h"
 #import "base/message_loop/message_pump_mac.h"
 #import "skia/ext/skia_utils_mac.h"
@@ -22,6 +22,10 @@
 #include "ui/views/badge_painter.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/layout/layout_provider.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -48,7 +52,7 @@ NSImage* NewTagImage(const ui::ColorProvider* color_provider) {
       color_provider->GetColor(ui::kColorBadgeInCocoaMenuForeground));
 
   NSDictionary* badge_attrs = @{
-    NSFontAttributeName : base::mac::CFToNSCast(badge_font.GetCTFont()),
+    NSFontAttributeName : base::apple::CFToNSPtrCast(badge_font.GetCTFont()),
     NSForegroundColorAttributeName : badge_text_color,
   };
 
@@ -80,7 +84,7 @@ NSImage* NewTagImage(const ui::ColorProvider* color_provider) {
   // 3. Craft the image.
 
   if (@available(macOS 10.8, *)) {
-    return [[NSImage
+    return [NSImage
      imageWithSize:badge_size
            flipped:NO
       drawingHandler:^(NSRect dest_rect) {
@@ -107,7 +111,7 @@ NSImage* NewTagImage(const ui::ColorProvider* color_provider) {
         [badge_attr_string drawAtPoint:badge_text_location];
 
         return YES;
-        }] retain];
+      }];
     } else {
       NSImage *badge_image = [[NSImage alloc] initWithSize:badge_size];
       NSRect dest_rect = NSMakeRect(0, 0, badge_size.width, badge_size.height);
@@ -132,7 +136,7 @@ NSImage* NewTagImage(const ui::ColorProvider* color_provider) {
               views::BadgePainter::kBadgeInternalPaddingTopMac);
       [badge_attr_string drawAtPoint:badge_text_location];
       [badge_image unlockFocus];
-      return [badge_image retain];
+      return badge_image;
     }
 }
 
@@ -152,8 +156,8 @@ NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
           [dot_color set];
           [dot_path fill];
 
-          return YES;
-        }];
+        return YES;
+      }];
   } else {
     NSImage *dot_image = [[NSImage alloc] initWithSize:NSMakeSize(2 * kIPHDotSize, kIPHDotSize)];
     [dot_image lockFocus];
@@ -165,7 +169,7 @@ NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
     [dot_color set];
     [dot_path fill];
     [dot_image unlockFocus];
-    return [dot_image retain];
+    return dot_image;
   }
 }
 
@@ -246,10 +250,6 @@ NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
   for (NSObject* obj in _menuObservers) {
     [[NSNotificationCenter defaultCenter] removeObserver:obj];
   }
-
-  [_menuObservers release];
-
-  [super dealloc];
 }
 
 - (void)setAnchorRect:(gfx::Rect)rect {
@@ -261,16 +261,16 @@ NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
                       atIndex:(size_t)index
             withColorProvider:(const ui::ColorProvider*)colorProvider {
   if (model->IsNewFeatureAt(index)) {
-    NSMutableAttributedString* attrTitle = [[[NSMutableAttributedString alloc]
-        initWithString:menuItem.title] autorelease];
+    NSMutableAttributedString* attrTitle = [[NSMutableAttributedString alloc]
+        initWithString:menuItem.title];
 
     // /!\ WARNING /!\ Do not update this to use NSTextAttachment.image until
     // macOS 10.15 is the minimum required OS. See the details on the class
     // comment above.
     NSTextAttachment* attachment =
-        [[[NSTextAttachment alloc] init] autorelease];
-    attachment.attachmentCell = [[[NewTagAttachmentCell alloc]
-        initWithColorProvider:colorProvider] autorelease];
+        [[NSTextAttachment alloc] init];
+    attachment.attachmentCell = [[NewTagAttachmentCell alloc]
+        initWithColorProvider:colorProvider];
 
     [attrTitle
         appendAttributedString:[NSAttributedString
@@ -345,7 +345,7 @@ NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
             // guess whether the menu should appear to the left or right of the
             // anchor, if the anchor is near one side of the screen the menu
             // could end up on the other side.
-            gfx::Rect screen_rect = _anchorRect;
+            gfx::Rect screen_rect = self->_anchorRect;
             CGSize menu_size = [menu_obj size];
             screen_rect.Inset(gfx::Insets::TLBR(
                 0, -menu_size.width, -menu_size.height, -menu_size.width));
@@ -373,7 +373,7 @@ NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
     };
 
     [_menuObservers
-        addObject:[[NSNotificationCenter defaultCenter]
+        addObject:[NSNotificationCenter.defaultCenter
                       addObserverForName:NSMenuDidBeginTrackingNotification
                                   object:menu
                                    queue:nil
@@ -402,7 +402,7 @@ NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
     };
 
     [_menuObservers
-        addObject:[[NSNotificationCenter defaultCenter]
+        addObject:[NSNotificationCenter.defaultCenter
                       addObserverForName:NSMenuDidEndTrackingNotification
                                   object:menu
                                    queue:nil

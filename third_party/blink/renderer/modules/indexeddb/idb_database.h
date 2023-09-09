@@ -57,7 +57,7 @@ class ScriptState;
 class V8UnionStringOrStringSequence;
 
 class MODULES_EXPORT IDBDatabase final
-    : public EventTargetWithInlineData,
+    : public EventTarget,
       public ActiveScriptWrappable<IDBDatabase>,
       public ExecutionContextLifecycleObserver,
       public mojom::blink::IDBDatabaseCallbacks {
@@ -189,9 +189,6 @@ class MODULES_EXPORT IDBDatabase final
 
   HeapMojoAssociatedReceiver<mojom::blink::IDBDatabaseCallbacks, IDBDatabase>
       callbacks_receiver_;
-
-  FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle
-      feature_handle_for_scheduler_;
 };
 
 }  // namespace blink

@@ -12,7 +12,7 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 
 import {Cart} from '../../cart.mojom-webui.js';
 import {Cluster, URLVisit} from '../../history_cluster_types.mojom-webui.js';
-import {LayoutType} from '../../history_clusters.mojom-webui.js';
+import {LayoutType} from '../../history_clusters_layout_type.mojom-webui.js';
 import {I18nMixin, loadTimeData} from '../../i18n_setup.js';
 import {NewTabPageProxy} from '../../new_tab_page_proxy.js';
 import {InfoDialogElement} from '../info_dialog';
@@ -200,8 +200,8 @@ export class HistoryClustersModuleElement extends I18nMixin
       composed: true,
       detail: {
         message: loadTimeData.getStringF(
-            'disableQuestsModuleToastMessage',
-            loadTimeData.getString('disableQuestsModuleToastName')),
+            'disableModuleToastMessage',
+            loadTimeData.getString('modulesJourneysSentence2')),
       },
     });
     this.dispatchEvent(disableEvent);
@@ -255,28 +255,23 @@ function recordSelectedLayout(option: LayoutType) {
       Object.keys(LayoutType).length);
 }
 
-// Sort the first "n" visits with images to the front of the list and splice the
-// `visits` array so that "Open All" and "Dismiss" cluster operations are
-// limited to the visible URL visits for the given card layout.
 function processLayoutVisits(
-    visits: URLVisit[], numVisits: number, numImageVisits: number) {
-  // Indexes are stored in reverse order and spliced in that order from the
-  // visits array to avoid affecting subsequent splice index order.
-  const nVisitsWithImagesIndices: number[] =
-      visits.reduce((acc: number[], visit: URLVisit, index: number) => {
-        if (acc.length < numImageVisits && visit.hasUrlKeyedImage) {
-          acc.unshift(index);
-        }
-        return acc;
-      }, []);
-
-  const nVisitsWithImages: URLVisit[] = [];
-  nVisitsWithImagesIndices.forEach(visitWithImageIndex => {
-    nVisitsWithImages.unshift(visits.splice(visitWithImageIndex, 1)[0]);
-  });
-
-  visits.unshift(...nVisitsWithImages);
-  visits.splice(numVisits, visits.length - numVisits);
+    visits: URLVisit[], numVisits: number, numImageVisits: number): URLVisit[] {
+  const result: URLVisit[] = Array<URLVisit>(numVisits);
+  let currentImageIdx = 0;
+  let currentVisitIdx = numImageVisits;
+  for (let i = 0; i < visits.length; i++) {
+    if (currentImageIdx < numImageVisits && visits[i].hasUrlKeyedImage) {
+      result[currentImageIdx] = visits[i];
+      currentImageIdx++;
+    } else if (currentVisitIdx < numVisits) {
+      result[currentVisitIdx] = visits[i];
+      currentVisitIdx++;
+    } else {
+      break;
+    }
+  }
+  return result;
 }
 
 async function createElement(): Promise<HistoryClustersModuleElement|null> {
@@ -300,15 +295,18 @@ async function createElement(): Promise<HistoryClustersModuleElement|null> {
   }
   // Pull out the SRP to be used in the header and to open the cluster
   // in tab group.
-  element.searchResultPage = clusters[0]!.visits.shift()!;
+  element.searchResultPage = clusters[0]!.visits[0];
 
+  // History cluster visits minus the SRP that is included, since the SRP
+  // isn't used in the layout.
+  const visits = element.cluster.visits.slice(1);
   // Count number of visits with images.
-  const imageCount = element.cluster.visits
+  const imageCount = visits
                          .filter(
                              (visit: URLVisit) =>
                                  visit.hasUrlKeyedImage && visit.isKnownToSync)
                          .length;
-  const visitCount = element.cluster.visits.length;
+  const visitCount = visits.length;
 
   // Calculate which layout to use.
   if (imageCount >= LAYOUT_3_MIN_IMAGE_VISITS) {
@@ -317,23 +315,21 @@ async function createElement(): Promise<HistoryClustersModuleElement|null> {
     // visits for layout 3.
     if (visitCount >= LAYOUT_3_MIN_VISITS) {
       element.layoutType = LayoutType.kLayout3;
-      processLayoutVisits(
-          element.cluster.visits, LAYOUT_3_MIN_VISITS,
-          LAYOUT_3_MIN_IMAGE_VISITS);
+      element.cluster.visits = processLayoutVisits(
+          visits, LAYOUT_3_MIN_VISITS, LAYOUT_3_MIN_IMAGE_VISITS);
     } else {
       // If we have enough image visits, we have enough total visits
       // for layout 1, since all visits shown are image visits.
       element.layoutType = LayoutType.kLayout1;
-      processLayoutVisits(
-          element.cluster.visits, LAYOUT_1_MIN_VISITS,
-          LAYOUT_1_MIN_IMAGE_VISITS);
+      element.cluster.visits = processLayoutVisits(
+          visits, LAYOUT_1_MIN_VISITS, LAYOUT_1_MIN_IMAGE_VISITS);
     }
   } else if (
       imageCount === LAYOUT_2_MIN_IMAGE_VISITS &&
       visitCount >= LAYOUT_2_MIN_VISITS) {
     element.layoutType = LayoutType.kLayout2;
-    processLayoutVisits(
-        element.cluster.visits, LAYOUT_2_MIN_VISITS, LAYOUT_2_MIN_IMAGE_VISITS);
+    element.cluster.visits = processLayoutVisits(
+        visits, LAYOUT_2_MIN_VISITS, LAYOUT_2_MIN_IMAGE_VISITS);
   } else {
     // If the data doesn't fit any layout, don't show the module.
     recordSelectedLayout(LayoutType.kNone);

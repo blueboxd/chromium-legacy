@@ -926,7 +926,20 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.RestoreTab", delta);
       LogMenuAction(MENU_ACTION_RESTORE_TAB);
       break;
-
+    case IDC_OPEN_RECENT_TAB:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.OpenRecentTab",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_RECENT_TAB);
+      break;
+    case IDC_RECENT_TABS_LOGIN_FOR_DEVICE_TABS:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.LoginForDeviceTabs",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_RECENT_TABS_LOGIN_FOR_DEVICE_TABS);
+      break;
     case IDC_DISTILL_PAGE:
       if (!uma_action_recorded_) {
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.DistillPage",
@@ -1118,7 +1131,6 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
       }
       LogMenuAction(MENU_ACTION_FULLSCREEN);
       break;
-
     case IDC_SHOW_HISTORY:
       if (!uma_action_recorded_) {
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ShowHistory",
@@ -1216,7 +1228,7 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
       LogMenuAction(MENU_ACTION_PASSWORD_MANAGER);
       break;
 
-    // Profile submenu.
+      // Profile submenu.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
     case IDC_CUSTOMIZE_CHROME:
       if (!uma_action_recorded_) {
@@ -1282,6 +1294,55 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
       LogMenuAction(MENU_ACTION_MANAGE_CHROME_PROFILES);
       break;
 #endif
+
+    // Reading list submenu.
+    case IDC_READING_LIST_MENU_ADD_TAB:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ReadingListAddTab",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_READING_LIST_ADD_TAB);
+      break;
+    case IDC_READING_LIST_MENU_SHOW_UI:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ReadingListShowUi",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_READING_LIST_SHOW_UI);
+      break;
+
+    // Password autofill submenu.
+    case IDC_SHOW_PASSWORD_MANAGER:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "WrenchMenu.TimeToAction.ShowPasswordManager", delta);
+      }
+      LogMenuAction(MENU_ACTION_SHOW_PASSWORD_MANAGER);
+      break;
+    case IDC_SHOW_PAYMENT_METHODS:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ShowPaymentMethods",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_SHOW_PAYMENT_METHODS);
+      break;
+    case IDC_SHOW_ADDRESSES:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ShowAddresses",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_SHOW_ADDRESSES);
+      break;
+    default: {
+      if (IsOtherProfileCommand(command_id)) {
+        if (!uma_action_recorded_) {
+          UMA_HISTOGRAM_MEDIUM_TIMES(
+              "WrenchMenu.TimeToAction.SwitchToAnotherProfile", delta);
+        }
+        LogMenuAction(MENU_ACTION_SWITCH_TO_ANOTHER_PROFILE);
+      }
+      break;
+    }
   }
 
   if (!uma_action_recorded_) {
@@ -1362,9 +1423,13 @@ void AppMenuModel::Build() {
   if (app_menu_icon_controller_ &&
       app_menu_icon_controller_->GetTypeAndSeverity().type ==
           AppMenuIconController::IconType::UPGRADE_NOTIFICATION) {
-    const auto update_icon = ui::ImageModel::FromVectorIcon(
-        kBrowserToolsUpdateIcon,
-        app_menu_icon_controller_->GetIconColor(absl::nullopt));
+    const auto update_icon =
+        features::IsChromeRefresh2023()
+            ? ui::ImageModel::FromVectorIcon(
+                  kBrowserToolsUpdateIcon, ui::kColorMenuIcon, kDefaultIconSize)
+            : ui::ImageModel::FromVectorIcon(
+                  kBrowserToolsUpdateIcon,
+                  app_menu_icon_controller_->GetIconColor(absl::nullopt));
     if (browser_defaults::kShowUpgradeMenuItem) {
       AddItemWithIcon(IDC_UPGRADE_DIALOG, GetUpgradeDialogMenuItemName(),
                       update_icon);
@@ -1406,13 +1471,12 @@ void AppMenuModel::Build() {
                profile_submenu_model->profile_name(), profile_submenu_model);
     SetIcon(GetIndexOfCommandId(IDC_PROFILE_MENU_IN_APP_MENU).value(),
             profile_submenu_model->avatar_image_model());
+    AddSeparator(ui::SPACING_SEPARATOR);
   }
 #endif
 
   if (!browser_->profile()->IsGuestSession() &&
-      features::IsChromeRefresh2023() &&
-      !base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordManagerRedesign)) {
+      features::IsChromeRefresh2023()) {
     sub_menus_.push_back(
         std::make_unique<PasswordsAndAutofillSubMenuModel>(this));
     AddSubMenuWithStringId(IDC_PASSWORDS_AND_AUTOFILL_MENU,
@@ -1421,8 +1485,11 @@ void AppMenuModel::Build() {
   }
 
   if (!browser_->profile()->IsOffTheRecord()) {
-    sub_menus_.push_back(
-        std::make_unique<RecentTabsSubMenuModel>(provider_, browser_));
+    auto recent_tabs_sub_menu =
+        std::make_unique<RecentTabsSubMenuModel>(provider_, browser_);
+    recent_tabs_sub_menu->RegisterLogMenuMetricsCallback(base::BindRepeating(
+        &AppMenuModel::LogMenuMetrics, base::Unretained(this)));
+    sub_menus_.push_back(std::move(recent_tabs_sub_menu));
     AddSubMenuWithStringId(IDC_RECENT_TABS_MENU, IDS_HISTORY_MENU,
                            sub_menus_.back().get());
     SetElementIdentifierAt(GetIndexOfCommandId(IDC_RECENT_TABS_MENU).value(),
@@ -1447,8 +1514,7 @@ void AppMenuModel::Build() {
       browser_->tab_strip_model()->GetActiveWebContents();
   if (!browser_->profile()->IsOffTheRecord() && web_contents &&
       !IsPasswordManagerPage(web_contents->GetURL()) &&
-      base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordManagerRedesign)) {
+      !features::IsChromeRefresh2023()) {
     AddItemWithStringId(IDC_VIEW_PASSWORDS, IDS_VIEW_PASSWORDS);
     SetElementIdentifierAt(GetIndexOfCommandId(IDC_VIEW_PASSWORDS).value(),
                            kPasswordManagerMenuItem);
@@ -1471,6 +1537,12 @@ void AppMenuModel::Build() {
                      vector_icons::kExtensionChromeRefreshIcon);
     }
   }
+  if (features::IsChromeRefresh2023()) {
+    AddItemWithStringIdAndIcon(
+        IDC_CLEAR_BROWSING_DATA, IDS_CLEAR_BROWSING_DATA,
+        ui::ImageModel::FromVectorIcon(kTrashCanRefreshIcon, ui::kColorMenuIcon,
+                                       kDefaultIconSize));
+  }
 
   AddSeparator(features::IsChromeRefresh2023() ? ui::NORMAL_SEPARATOR
                                                : ui::LOWER_SEPARATOR);
@@ -1488,9 +1560,7 @@ void AppMenuModel::Build() {
 #endif
     AddItemWithStringId(IDC_SHOW_TRANSLATE, IDS_SHOW_TRANSLATE);
 
-    sub_menus_.push_back(std::make_unique<FindAndEditSubMenuModel>(this));
-    AddSubMenuWithStringId(IDC_FIND_AND_EDIT_MENU, IDS_FIND_AND_EDIT_MENU,
-                           sub_menus_.back().get());
+    CreateFindAndEditSubMenu();
 
     sub_menus_.push_back(
         std::make_unique<SaveAndShareSubMenuModel>(this, browser_));
@@ -1537,8 +1607,18 @@ void AppMenuModel::Build() {
   // Always show this option if we're in tablet mode on Chrome OS.
   if (chromeos::TabletState::Get() &&
       chromeos::TabletState::Get()->InTabletMode()) {
-    AddCheckItemWithStringId(IDC_TOGGLE_REQUEST_TABLET_SITE,
-                             IDS_TOGGLE_REQUEST_TABLET_SITE);
+    if (features::IsChromeRefresh2023()) {
+      AddItemWithStringIdAndIcon(
+          IDC_TOGGLE_REQUEST_TABLET_SITE, IDS_TOGGLE_REQUEST_TABLET_SITE,
+          ui::ImageModel::FromVectorIcon(
+              chrome::IsRequestingTabletSite(browser_)
+                  ? kRequestMobileSiteCheckedIcon
+                  : kRequestMobileSiteUncheckedIcon,
+              ui::kColorMenuIcon, ui::SimpleMenuModel::kDefaultIconSize));
+    } else {
+      AddCheckItemWithStringId(IDC_TOGGLE_REQUEST_TABLET_SITE,
+                               IDS_TOGGLE_REQUEST_TABLET_SITE);
+    }
   }
 #endif
 
@@ -1615,14 +1695,14 @@ void AppMenuModel::Build() {
     SetCommandIcon(this, IDC_RECENT_TABS_MENU, kHistoryIcon);
     SetCommandIcon(this, IDC_SHOW_DOWNLOADS, kDownloadMenuIcon);
     SetCommandIcon(this, IDC_BOOKMARKS_MENU, kBookmarksListsMenuIcon);
-    SetCommandIcon(this, IDC_VIEW_PASSWORDS, kKeyChromeRefreshIcon);
+    SetCommandIcon(this, IDC_VIEW_PASSWORDS, kKeyOpenChromeRefreshIcon);
     SetCommandIcon(this, IDC_ZOOM_MENU, kZoomInIcon);
     SetCommandIcon(this, IDC_PRINT, kPrintMenuIcon);
     SetCommandIcon(this, IDC_SHOW_TRANSLATE, kTranslateIcon);
     SetCommandIcon(this, IDC_FIND_AND_EDIT_MENU, kSearchMenuIcon);
     SetCommandIcon(this, IDC_SAVE_AND_SHARE_MENU, kFileSaveChromeRefreshIcon);
     SetCommandIcon(this, IDC_PASSWORDS_AND_AUTOFILL_MENU,
-                   kKeyChromeRefreshIcon);
+                   kKeyOpenChromeRefreshIcon);
     SetCommandIcon(this, IDC_MORE_TOOLS_MENU, kMoreToolsMenuIcon);
     SetCommandIcon(this, IDC_OPTIONS, kSettingsMenuIcon);
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -1637,15 +1717,18 @@ void AppMenuModel::Build() {
 }
 
 void AppMenuModel::CreateCutCopyPasteMenu() {
-  // WARNING: Mac does not use the ButtonMenuItemModel, but instead defines
-  // the layout for this menu item in AppMenu.xib. It does, however, use the
-  // command_id value from AddButtonItem() to identify this special item.
   edit_menu_item_model_ =
       std::make_unique<ui::ButtonMenuItemModel>(IDS_EDIT, this);
   edit_menu_item_model_->AddGroupItemWithStringId(IDC_CUT, IDS_CUT);
   edit_menu_item_model_->AddGroupItemWithStringId(IDC_COPY, IDS_COPY);
   edit_menu_item_model_->AddGroupItemWithStringId(IDC_PASTE, IDS_PASTE);
   AddButtonItem(IDC_EDIT_MENU, edit_menu_item_model_.get());
+}
+
+void AppMenuModel::CreateFindAndEditSubMenu() {
+  sub_menus_.push_back(std::make_unique<FindAndEditSubMenuModel>(this));
+  AddSubMenuWithStringId(IDC_FIND_AND_EDIT_MENU, IDS_FIND_AND_EDIT_MENU,
+                         sub_menus_.back().get());
 }
 
 void AppMenuModel::CreateZoomMenu() {

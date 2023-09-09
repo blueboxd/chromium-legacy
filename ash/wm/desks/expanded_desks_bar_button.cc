@@ -10,6 +10,7 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/color_util.h"
 #include "ash/style/style_util.h"
+#include "ash/style/typography.h"
 #include "ash/wm/desks/desk_bar_view_base.h"
 #include "ash/wm/desks/desk_button_base.h"
 #include "ash/wm/desks/desk_mini_view.h"
@@ -137,25 +138,29 @@ ExpandedDesksBarButton::ExpandedDesksBarButton(
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  label_->SetFontList(TypographyProvider::Get()->ResolveTypographyToken(
+      TypographyToken::kCrosAnnotation1));
   SetButtonState(initially_enabled);
 
   views::InstallRoundRectHighlightPathGenerator(
       inner_button_, gfx::Insets(kFocusRingHaloInset), kBorderCornerRadius);
-  auto* focus_ring = views::FocusRing::Get(inner_button_);
-  focus_ring->SetHasFocusPredicate(base::BindRepeating(
-      [](const ExpandedDesksBarButton* desks_bar_button,
-         const views::View* view) {
-        const auto* inner_button =
-            views::AsViewClass<InnerExpandedDesksBarButton>(view);
-        CHECK(inner_button);
-        return inner_button->IsViewHighlighted() ||
-               ((desks_bar_button->bar_view_->dragged_item_over_bar() &&
-                 desks_bar_button->IsPointOnButton(
-                     desks_bar_button->bar_view_
-                         ->last_dragged_item_screen_location())) ||
-                desks_bar_button->active_);
-      },
-      base::Unretained(this)));
+  if (bar_view_->type() == DeskBarViewBase::Type::kOverview) {
+    auto* focus_ring = views::FocusRing::Get(inner_button_);
+    focus_ring->SetHasFocusPredicate(base::BindRepeating(
+        [](const ExpandedDesksBarButton* desks_bar_button,
+           const views::View* view) {
+          const auto* inner_button =
+              views::AsViewClass<InnerExpandedDesksBarButton>(view);
+          CHECK(inner_button);
+          return inner_button->IsViewHighlighted() ||
+                 ((desks_bar_button->bar_view_->dragged_item_over_bar() &&
+                   desks_bar_button->IsPointOnButton(
+                       desks_bar_button->bar_view_
+                           ->last_dragged_item_screen_location())) ||
+                  desks_bar_button->active_);
+        },
+        base::Unretained(this)));
+  }
 }
 
 DeskButtonBase* ExpandedDesksBarButton::GetInnerButton() {

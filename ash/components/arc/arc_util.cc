@@ -173,6 +173,11 @@ bool IsHostUreadaheadGeneration() {
       ash::switches::kArcHostUreadaheadGeneration);
 }
 
+bool IsArcUseDevCaches() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ash::switches::kArcUseDevCaches);
+}
+
 ArcVmUreadaheadMode GetArcVmUreadaheadMode() {
   ArcVmUreadaheadMode mode = IsUreadaheadDisabled()
                                  ? ArcVmUreadaheadMode::DISABLED
@@ -470,6 +475,12 @@ bool ShouldUseVirtioBlkData(PrefService* prefs) {
   }
   VLOG(1) << "ARCVM /data migration hasn't finished yet. Status=" << status;
   return false;
+}
+
+bool ShouldUseArcKeyMint() {
+  auto version = GetArcAndroidSdkVersionAsInt();
+  return version >= kArcVersionT && version < kMaxArcVersion &&
+         base::FeatureList::IsEnabled(kSwitchToKeyMintOnT);
 }
 
 int GetDaysUntilArcVmDataMigrationDeadline(PrefService* prefs) {

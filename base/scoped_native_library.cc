@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/scoped_native_library.h"
-#include "base/native_library.h"
 
 namespace base {
 
@@ -20,10 +19,9 @@ ScopedNativeLibrary::~ScopedNativeLibrary() = default;
 ScopedNativeLibrary::ScopedNativeLibrary(NativeLibrary library)
     : BaseClass(library), error_() {}
 
-ScopedNativeLibrary::ScopedNativeLibrary(const FilePath& library_path,
-                                         NativeLibraryOptions options)
+ScopedNativeLibrary::ScopedNativeLibrary(const FilePath& library_path)
     : ScopedNativeLibrary() {
-  reset(LoadNativeLibrary(library_path, &error_, options));
+  reset(LoadNativeLibrary(library_path, &error_));
 }
 
 ScopedNativeLibrary::ScopedNativeLibrary(ScopedNativeLibrary&& scoped_library)

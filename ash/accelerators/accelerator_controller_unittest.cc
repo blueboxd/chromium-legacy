@@ -21,6 +21,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
+#include "ash/display/display_configuration_controller_test_api.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/frame/non_client_frame_view_ash.h"
@@ -29,6 +30,7 @@
 #include "ash/ime/test_ime_controller_client.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/public/cpp/accelerators.h"
+#include "ash/public/cpp/arc_game_controls_flag.h"
 #include "ash/public/cpp/capture_mode/capture_mode_test_api.h"
 #include "ash/public/cpp/ime_info.h"
 #include "ash/public/cpp/test/shell_test_api.h"
@@ -56,6 +58,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_writer.h"
@@ -684,6 +687,58 @@ TEST_F(AcceleratorControllerTest, WindowSnap) {
                                         {});
     EXPECT_TRUE(window_state->IsSnapped());
   }
+}
+
+// Tests that if the screen is upside down, the left/right accelerators go to
+// the physical left/top side of the screen.
+TEST_F(AcceleratorControllerTest, WindowSnapUpsideDown) {
+  const int64_t primary_display_id =
+      WindowTreeHostManager::GetPrimaryDisplayId();
+
+  // Make the display upside down.
+  DisplayConfigurationController* controller =
+      Shell::Get()->display_configuration_controller();
+  controller->SetDisplayRotation(
+      primary_display_id, display::Display::ROTATE_180,
+      display::Display::RotationSource::USER,
+      DisplayConfigurationController::ANIMATION_SYNC);
+  display::Display current_display =
+      display_manager()->GetDisplayForId(primary_display_id);
+  ASSERT_TRUE(chromeos::IsDisplayLayoutHorizontal(current_display));
+  ASSERT_FALSE(chromeos::IsDisplayLayoutPrimary(current_display));
+
+  // Snap the window. Test that it goes to the physical left/right as expected.
+  auto window = CreateAppWindow(gfx::Rect(300, 300));
+  controller_->PerformActionIfEnabled(AcceleratorAction::kWindowCycleSnapLeft,
+                                      {});
+  EXPECT_EQ(gfx::Point(0, 0), window->GetBoundsInScreen().origin());
+
+  gfx::Rect work_area_bounds = current_display.work_area();
+  controller_->PerformActionIfEnabled(AcceleratorAction::kWindowCycleSnapRight,
+                                      {});
+  EXPECT_EQ(work_area_bounds.top_right(),
+            window->GetBoundsInScreen().top_right());
+
+  // Make the display 90 degrees (upside down vertically).
+  controller->SetDisplayRotation(
+      primary_display_id, display::Display::ROTATE_90,
+      display::Display::RotationSource::USER,
+      DisplayConfigurationController::ANIMATION_SYNC);
+  current_display = display_manager()->GetDisplayForId(primary_display_id);
+  ASSERT_FALSE(chromeos::IsDisplayLayoutHorizontal(current_display));
+  ASSERT_FALSE(chromeos::IsDisplayLayoutPrimary(current_display));
+
+  window = CreateAppWindow(gfx::Rect(300, 300));
+  work_area_bounds = current_display.work_area();
+
+  // Snap the window. Test that it goes to the physical top/bottom as expected.
+  controller_->PerformActionIfEnabled(AcceleratorAction::kWindowCycleSnapLeft,
+                                      {});
+  EXPECT_EQ(gfx::Point(0, 0), window->GetBoundsInScreen().origin());
+  controller_->PerformActionIfEnabled(AcceleratorAction::kWindowCycleSnapRight,
+                                      {});
+  EXPECT_EQ(work_area_bounds.bottom_left(),
+            window->GetBoundsInScreen().bottom_left());
 }
 
 // Tests that window snapping works.
@@ -2098,9 +2153,9 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
   for (size_t k = 0; k < kActionsAllowedAtModalWindowLength; ++k)
     actionsAllowedAtModalWindow.insert(kActionsAllowedAtModalWindow[k]);
   for (const auto& action : actionsAllowedAtModalWindow) {
-    EXPECT_TRUE(all_actions.find(action) != all_actions.end() ||
-                all_debug_actions.find(action) != all_debug_actions.end() ||
-                all_dev_actions.find(action) != all_dev_actions.end())
+    EXPECT_TRUE(base::Contains(all_actions, action) ||
+                base::Contains(all_debug_actions, action) ||
+                base::Contains(all_dev_actions, action))
         << " action from kActionsAllowedAtModalWindow"
         << " not found in kAcceleratorData, kDebugAcceleratorData or"
         << " kDeveloperAcceleratorData action: " << action;
@@ -2110,8 +2165,7 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
   wm::ActivateWindow(window.get());
   ShellTestApi().SimulateModalWindowOpenForTest(true);
   for (const auto& action : all_actions) {
-    if (actionsAllowedAtModalWindow.find(action) ==
-        actionsAllowedAtModalWindow.end()) {
+    if (!base::Contains(actionsAllowedAtModalWindow, action)) {
       EXPECT_TRUE(controller_->PerformActionIfEnabled(action, {}))
           << " for action (disallowed at modal window): " << action;
     }
@@ -2213,13 +2267,15 @@ TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
   for (size_t i = 0; i < kAcceleratorDataLength; ++i) {
     const auto& accelerator_data = kAcceleratorData[i];
     auto iter = actions_needing_window.find(accelerator_data.action);
-    if (iter == actions_needing_window.end())
+    if (!base::Contains(actions_needing_window, accelerator_data.action)) {
       continue;
+    }
 
     ui::Accelerator accelerator{accelerator_data.keycode,
                                 accelerator_data.modifiers};
-    if (!accelerator_data.trigger_on_press)
+    if (!accelerator_data.trigger_on_press) {
       accelerator.set_key_state(ui::Accelerator::KeyState::RELEASED);
+    }
     accelerators_needing_window[*iter] = accelerator;
   }
 
@@ -3367,6 +3423,8 @@ TEST_F(AcceleratorControllerGameDashboardTests,
       CreateAppWindow(gfx::Rect(5, 5, 20, 20), AppType::ARC_APP);
   window->SetProperty(kAppIDKey,
                       std::string(TestGameDashboardDelegate::kGameAppId));
+  EXPECT_FALSE(ProcessInController(accelerator));
+  window->SetProperty(kArcGameControlsFlagsKey, ArcGameControlsFlag::kKnown);
   EXPECT_TRUE(ProcessInController(accelerator));
 }
 

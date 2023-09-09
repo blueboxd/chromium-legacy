@@ -55,6 +55,8 @@ chromium-metrics-reviews@google.com.
   <variant name="PainfulPageLoad" summary="Painful page load"/>
   <variant name="SegmentationAdaptiveToolbar"
       summary="Segmentation: Adaptive toolbar button"/>
+  <variant name="SegmentationBottomToolbar"
+      summary="Segmentation: Bottom toolbar user"/>
   <variant name="SegmentationChromeLowUserEngagement"
       summary="Segmentation: Low user engagement with Chrome"/>
   <variant name="SegmentationChromeStartAndroid"
@@ -137,6 +139,9 @@ chromium-metrics-reviews@google.com.
   <variant name="ThankCreatorEligible"
       summary="This optimization provides information for whether a page is
                eligible for the 'Thank Creator' feature."/>
+  <variant name="V8CompileHints"
+      summary="Information about which JavaScript functions should be eager
+               compiled."/>
   <variant name="VcnMerchantOptOutVisa"
       summary="This optimization provides information about whether a
                merchant is opted-out of Visa virtual cards for a URL."/>
@@ -175,20 +180,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     The decision made for whether {OptimizationType} can be applied on the page
     load.
-  </summary>
-  <token key="OptimizationType" variants="OptimizationType"/>
-</histogram>
-
-<histogram name="OptimizationGuide.ApplyDecisionAsync.{OptimizationType}"
-    enum="OptimizationGuideOptimizationTypeDecision" expires_after="M121">
-  <owner>sophiechang@chromium.org</owner>
-  <owner>mcrouse@chromium.org</owner>
-  <summary>
-    Records the decision made for whether {OptimizationType} can be applied on a
-    page load when all information for that page load has been sufficiently
-    gathered. This will be recorded once per callback registered, so if two
-    callbacks were registered for {OptimizationType} on the same page load, this
-    will be recorded twice for that case.
   </summary>
   <token key="OptimizationType" variants="OptimizationType"/>
 </histogram>
@@ -239,7 +230,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult"
     enum="OptimizationGuideHintCacheLevelDBStoreLoadMetadataResult"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -250,7 +241,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="OptimizationGuide.HintCacheLevelDBStore.Status"
     enum="OptimizationGuideHintCacheLevelDBStoreStatus"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -310,7 +301,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount"
-    units="units" expires_after="2023-11-12">
+    units="units" expires_after="2024-01-14">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -350,7 +341,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.HintsFetcher.GetHintsRequest.UrlCount"
-    units="total url count" expires_after="2023-11-12">
+    units="total url count" expires_after="2024-01-14">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -421,7 +412,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="OptimizationGuide.HintsManager.RaceNavigationFetchAttemptStatus"
     enum="OptimizationGuideRaceNavigationFetchAttemptStatus"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -664,7 +655,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PageContentAnnotations.AnnotateVisitResultCached"
-    enum="BooleanCacheHit" expires_after="2023-11-12">
+    enum="BooleanCacheHit" expires_after="2024-01-14">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -751,7 +742,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PageContentAnnotations.SalientImageAvailability"
-    enum="OptimizationGuideSalientImageAvailability" expires_after="2023-11-12">
+    enum="OptimizationGuideSalientImageAvailability" expires_after="2024-01-14">
   <owner>tbansal@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>Records the availability of salient images on page load.</summary>
@@ -920,7 +911,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PageContentAnnotationsService.VisibilityScoreOfGoogleSRP"
-    units="score" expires_after="2023-11-12">
+    units="score" expires_after="2024-01-14">
   <owner>robertogden@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -1434,7 +1425,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.ProcessHintsResult"
-    enum="OptimizationGuideProcessHintsResult" expires_after="2023-11-12">
+    enum="OptimizationGuideProcessHintsResult" expires_after="2024-01-14">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -1527,7 +1518,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.RemoteFetchingEnabled" enum="BooleanEnabled"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>sophiechang@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <summary>

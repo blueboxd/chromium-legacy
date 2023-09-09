@@ -75,7 +75,7 @@ class SegmentResultProviderImpl : public SegmentResultProvider {
  private:
   struct RequestState {
     std::unordered_map<DefaultModelManager::SegmentSource,
-                       raw_ptr<ModelProvider, DanglingUntriaged>>
+                       raw_ptr<ModelProvider, AcrossTasksDanglingUntriaged>>
         model_providers;
     DefaultModelManager::SegmentInfoList available_segments;
     std::unique_ptr<GetResultOptions> options;
@@ -149,8 +149,10 @@ void SegmentResultProviderImpl::OnGetSegmentInfo(
   request_state->options = std::move(options);
   request_state->available_segments.swap(available_segments);
   request_state->model_providers[DefaultModelManager::SegmentSource::DATABASE] =
-      execution_service_ ? execution_service_->GetModelProvider(segment_id)
-                         : nullptr;
+      execution_service_
+          ? execution_service_->GetModelProvider(
+                segment_id, proto::ModelSource::SERVER_MODEL_SOURCE)
+          : nullptr;
   // Default manager can be null in tests.
   request_state
       ->model_providers[DefaultModelManager::SegmentSource::DEFAULT_MODEL] =
@@ -357,7 +359,7 @@ void SegmentResultProviderImpl::OnModelExecuted(
                              : ResultState::kTfliteModelScoreUsed;
     prediction_result = metadata_utils::CreatePredictionResult(
         result->scores, segment_info->model_metadata().output_config(),
-        clock_->Now());
+        clock_->Now(), segment_info->model_version());
     segment_info->mutable_prediction_result()->CopyFrom(prediction_result);
     float rank = ComputeDiscreteMapping(
         request_state->options->discrete_mapping_key, *segment_info);

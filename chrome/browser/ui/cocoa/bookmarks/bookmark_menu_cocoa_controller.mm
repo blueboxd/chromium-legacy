@@ -25,6 +25,10 @@
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/window_open_disposition.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using base::UserMetricsAction;
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
@@ -150,7 +154,8 @@ void OpenBookmarkByGUID(WindowOpenDisposition disposition,
 }  // namespace
 
 @implementation BookmarkMenuCocoaController {
-  raw_ptr<BookmarkMenuBridge, DanglingUntriaged> _bridge;  // Weak. Owns |self|.
+  raw_ptr<BookmarkMenuBridge, AcrossTasksDanglingUntriaged>
+      _bridge;  // Weak. Owns |self|.
 }
 
 + (NSString*)tooltipForNode:(const BookmarkNode*)node {

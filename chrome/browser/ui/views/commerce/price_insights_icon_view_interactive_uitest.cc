@@ -60,9 +60,10 @@ class PriceInsightsIconViewInteractiveTest : public InteractiveBrowserTest {
   }
 
  protected:
-  raw_ptr<commerce::MockShoppingService, DanglingUntriaged>
+  raw_ptr<commerce::MockShoppingService, AcrossTasksDanglingUntriaged>
       mock_shopping_service_;
-  raw_ptr<MockShoppingListUiTabHelper, DanglingUntriaged> mock_tab_helper_;
+  raw_ptr<MockShoppingListUiTabHelper, AcrossTasksDanglingUntriaged>
+      mock_tab_helper_;
   absl::optional<commerce::PriceInsightsInfo> price_insights_info_;
 
  private:
@@ -145,34 +146,10 @@ IN_PROC_BROWSER_TEST_F(PriceInsightsIconViewInteractiveTest,
       EnsureNotPresent(kSidePanelElementId),
       // Click on the action chip to open the side panel
       PressButton(kPriceInsightsChipElementId),
-      WaitForShow(kSidePanelElementId), FlushEvents(),
-      // Click on the action chip again to close the side panel
-      PressButton(kPriceInsightsChipElementId),
-      WaitForHide(kSidePanelElementId), FlushEvents());
+      WaitForShow(kSidePanelElementId), FlushEvents());
 
   histogram_tester.ExpectTotalCount(
-      "Commerce.PriceInsights.OmniboxIconClickedAfterLabelShown", 2);
-}
-
-IN_PROC_BROWSER_TEST_F(PriceInsightsIconViewInteractiveTest,
-                       IconIsNotHighlightedAfterClicking) {
-  EXPECT_CALL(*mock_shopping_service_, GetProductInfoForUrl);
-  EXPECT_CALL(*mock_shopping_service_, GetPriceInsightsInfoForUrl);
-
-  const bool expected_to_highlight = false;
-
-  RunTestSequence(
-      InstrumentTab(kShoppingTab),
-      NavigateWebContents(kShoppingTab,
-                          embedded_test_server()->GetURL(kShoppingURL)),
-      FlushEvents(), EnsurePresent(kPriceInsightsChipElementId),
-      PressButton(kPriceInsightsChipElementId), FlushEvents(),
-      CheckView(
-          kPriceInsightsChipElementId,
-          [](PriceInsightsIconView* icon) {
-            return icon->IsIconHighlightedForTesting();
-          },
-          expected_to_highlight));
+      "Commerce.PriceInsights.OmniboxIconClickedAfterLabelShown", 1);
 }
 
 class PriceInsightsIconViewEngagementTest

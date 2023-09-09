@@ -37,7 +37,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/omnibox_client.h"
-#include "components/omnibox/browser/omnibox_edit_model.h"
+#include "components/omnibox/browser/omnibox_controller.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -131,7 +131,7 @@ class BrowserFocusTest : public InProcessBrowserTest {
 
       // From the location icon we must traverse backwards one more time to
       // traverse past the tab search caption button if present.
-      if (WindowFrameUtil::IsWin10TabSearchCaptionButtonEnabled(browser()) &&
+      if (WindowFrameUtil::IsWindowsTabSearchCaptionButtonEnabled(browser()) &&
           reverse) {
         ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), key, false, true,
                                                     false, false));
@@ -172,7 +172,7 @@ class BrowserFocusTest : public InProcessBrowserTest {
 #endif
 
       // Traverse over the tab search frame caption button if present.
-      if (WindowFrameUtil::IsWin10TabSearchCaptionButtonEnabled(browser()) &&
+      if (WindowFrameUtil::IsWindowsTabSearchCaptionButtonEnabled(browser()) &&
           !reverse) {
         ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), key, false,
                                                     false, false, false));
@@ -630,7 +630,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, NavigateFromOmniboxIntoNewTab) {
                                       ->window()
                                       ->GetLocationBar()
                                       ->GetOmniboxView()
-                                      ->model()
+                                      ->controller()
                                       ->client();
 
   // Simulate an alt-enter.

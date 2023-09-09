@@ -94,6 +94,9 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
     // Returns true if the DrawingBuffer is currently bound for draw.
     virtual bool DrawingBufferClientIsBoundForDraw() = 0;
     virtual void DrawingBufferClientRestoreScissorTest() = 0;
+    // Interrupt and restore pixel local storage, if it was active.
+    virtual void DrawingBufferClientInterruptPixelLocalStorage() = 0;
+    virtual void DrawingBufferClientRestorePixelLocalStorage() = 0;
     // Restores the mask and clear value for color, depth, and stencil buffers.
     virtual void DrawingBufferClientRestoreMaskAndClearValues() = 0;
     // Assume client knows the GL/WebGL version and restore necessary params
@@ -109,7 +112,8 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
     virtual void DrawingBufferClientRestorePixelPackBufferBinding() = 0;
     virtual bool
     DrawingBufferClientUserAllocatedMultisampledRenderbuffers() = 0;
-    virtual void DrawingBufferClientForceLostContextWithAutoRecovery() = 0;
+    virtual void DrawingBufferClientForceLostContextWithAutoRecovery(
+        const char* reason) = 0;
   };
 
   enum PreserveDrawingBuffer {
@@ -219,8 +223,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
 
   void SetIsInHiddenPage(bool);
   void SetFilterQuality(cc::PaintFlags::FilterQuality);
-  void SetHDRConfiguration(gfx::HDRMode hdr_mode,
-                           absl::optional<gfx::HDRMetadata> hdr_metadata);
+  void SetHdrMetadata(const gfx::HDRMetadata& hdr_metadata);
   cc::PaintFlags::FilterQuality FilterQuality() const {
     return filter_quality_;
   }
@@ -677,8 +680,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   bool is_hidden_ = false;
   bool has_eqaa_support = false;
 
-  gfx::HDRMode hdr_mode_ = gfx::HDRMode::kDefault;
-  absl::optional<gfx::HDRMetadata> hdr_metadata_;
+  gfx::HDRMetadata hdr_metadata_;
   cc::PaintFlags::FilterQuality filter_quality_ =
       cc::PaintFlags::FilterQuality::kLow;
 

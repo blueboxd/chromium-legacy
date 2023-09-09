@@ -969,7 +969,9 @@ const NGLayoutResult* NGBlockLayoutAlgorithm::FinishLayout(
           previous_inflow_position->logical_block_offset + margin_strut_sum);
     }
 
-    if (!ShouldIncludeBlockEndBorderPadding(container_builder_)) {
+    if ((BreakToken() && BreakToken()->IsAtBlockEnd()) ||
+        (container_builder_.HasInflowChildBreakInside() &&
+         !container_builder_.IsKnownToFitInFragmentainer())) {
       // The block-end edge isn't in this fragment. We either haven't got there
       // yet, or we're past it (and are overflowing). So don't add trailing
       // border/padding.
@@ -1557,14 +1559,14 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::HandleNewFormattingContext(
 
   PropagateBaselineFromBlockChild(physical_fragment, child_data.margins,
                                   logical_offset.block_offset);
-  container_builder_.AddResult(*layout_result, logical_offset);
 
   // The margins we store will be used by e.g. getComputedStyle().
   // When calculating these values, ignore any floats that might have
   // affected the child. This is what Edge does.
   ResolveInlineMargins(child_style, Style(), ChildAvailableSize().inline_size,
                        fragment.InlineSize(), &child_data.margins);
-  To<NGBlockNode>(child).StoreMargins(ConstraintSpace(), child_data.margins);
+  container_builder_.AddResult(*layout_result, logical_offset,
+                               child_data.margins);
 
   *previous_inflow_position = ComputeInflowPosition(
       *previous_inflow_position, child, child_data,
@@ -2145,7 +2147,6 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
     PropagateBaselineFromBlockChild(physical_fragment, child_data->margins,
                                     logical_offset.block_offset);
   }
-  container_builder_.AddResult(*layout_result, logical_offset);
 
   if (auto* block_child = DynamicTo<NGBlockNode>(child)) {
     // We haven't yet resolved margins wrt. overconstrainedness, unless that was
@@ -2159,7 +2160,10 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
       child_data->margins_fully_resolved = true;
     }
 
-    block_child->StoreMargins(ConstraintSpace(), child_data->margins);
+    container_builder_.AddResult(*layout_result, logical_offset,
+                                 child_data->margins);
+  } else {
+    container_builder_.AddResult(*layout_result, logical_offset);
   }
 
   *previous_inflow_position = ComputeInflowPosition(
@@ -2732,7 +2736,7 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
 
     // Always shrink-to-fit children within a <mtd> element.
     if (Node().GetDOMNode() &&
-        Node().GetDOMNode()->HasTagName(mathml_names::kMtdTag)) {
+        IsA<MathMLTableCellElement>(Node().GetDOMNode())) {
       builder.SetInlineAutoBehavior(NGAutoBehavior::kFitContent);
     }
 

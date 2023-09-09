@@ -12,6 +12,8 @@ source_set("browser") {
     "hash_realtime_mechanism.h",
     "ping_manager.cc",
     "ping_manager.h",
+    "safe_browsing_hats_delegate.cc",
+    "safe_browsing_hats_delegate.h",
     "safe_browsing_lookup_mechanism.cc",
     "safe_browsing_lookup_mechanism.h",
     "safe_browsing_lookup_mechanism_experimenter.cc",
@@ -139,6 +141,7 @@ source_set("verdict_cache_manager") {
     "//components/safe_browsing/core/browser:sync_observer",
     "//components/safe_browsing/core/browser/db:v4_protocol_manager_util",
     "//components/safe_browsing/core/browser/hashprefix_realtime:hash_realtime_cache",
+    "//components/safe_browsing/core/browser/hashprefix_realtime:hash_realtime_utils",
     "//components/safe_browsing/core/common",
     "//components/safe_browsing/core/common/proto:csd_proto",
     "//components/safe_browsing/core/common/proto:realtimeapi_proto",
@@ -157,6 +160,9 @@ source_set("verdict_cache_manager_unittest") {
     "//base/test:test_support",
     "//components/content_settings/core/browser",
     "//components/safe_browsing/core/browser:sync_observer",
+    "//components/safe_browsing/core/browser/db:v4_protocol_manager_util",
+    "//components/safe_browsing/core/browser/hashprefix_realtime:hash_realtime_utils",
+    "//components/safe_browsing/core/common",
     "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//components/safe_browsing/core/common/proto:csd_proto",
     "//components/safe_browsing/core/common/proto:realtimeapi_proto",
@@ -216,6 +222,16 @@ source_set("token_fetcher_testing_helper") {
     ":token_fetcher",
     "//base",
     "//testing/gmock",
+  ]
+}
+
+source_set("safe_browsing_hats_delegate_unittest") {
+  testonly = true
+  sources = [ "safe_browsing_hats_delegate_unittest.cc" ]
+  deps = [
+    ":browser",
+    "//base/test:test_support",
+    "//testing/gtest",
   ]
 }
 

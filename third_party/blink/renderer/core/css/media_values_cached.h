@@ -56,6 +56,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
     float ex_size = 8.f;
     float ch_size = 8.f;
     float ic_size = 16.f;
+    float cap_size = 16.f;
     float line_height = 0;
     bool three_d_enabled = false;
     bool strict_mode = true;
@@ -69,6 +70,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
         mojom::blink::PreferredContrast::kNoPreference;
     bool prefers_reduced_motion = false;
     bool prefers_reduced_data = false;
+    bool prefers_reduced_transparency = false;
     ForcedColors forced_colors = ForcedColors::kNone;
     NavigationControls navigation_controls = NavigationControls::kNone;
     int horizontal_viewport_segments = 0;
@@ -108,6 +110,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
       data.preferred_contrast = preferred_contrast;
       data.prefers_reduced_motion = prefers_reduced_motion;
       data.prefers_reduced_data = prefers_reduced_data;
+      data.prefers_reduced_transparency = prefers_reduced_transparency;
       data.forced_colors = forced_colors;
       data.navigation_controls = navigation_controls;
       data.horizontal_viewport_segments = horizontal_viewport_segments;
@@ -146,6 +149,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
   mojom::blink::PreferredContrast GetPreferredContrast() const override;
   bool PrefersReducedMotion() const override;
   bool PrefersReducedData() const override;
+  bool PrefersReducedTransparency() const override;
   ForcedColors GetForcedColors() const override;
   NavigationControls GetNavigationControls() const override;
   int GetHorizontalViewportSegments() const override;
@@ -166,6 +170,8 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
   float RicFontSize(float zoom) const override;
   float LineHeight(float zoom) const override;
   float RootLineHeight(float zoom) const override;
+  float CapFontSize(float zoom) const override;
+  float RcapFontSize(float zoom) const override;
   double ViewportWidth() const override;
   double ViewportHeight() const override;
   double SmallViewportWidth() const override;

@@ -49,6 +49,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/isolation_info.h"
 #include "net/base/proxy_server.h"
 #include "net/dns/public/resolve_error_info.h"
@@ -56,6 +57,7 @@
 #include "services/network/public/cpp/content_security_policy/csp_context.h"
 #include "services/network/public/mojom/blocked_by_response_reason.mojom-shared.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
+#include "services/network/public/mojom/shared_dictionary_access_observer.mojom.h"
 #include "services/network/public/mojom/trust_token_access_observer.mojom-shared.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -106,7 +108,8 @@ class CONTENT_EXPORT NavigationRequest
       public mojom::NavigationRendererCancellationListener,
       private RenderProcessHostObserver,
       private network::mojom::CookieAccessObserver,
-      private network::mojom::TrustTokenAccessObserver {
+      private network::mojom::TrustTokenAccessObserver,
+      private network::mojom::SharedDictionaryAccessObserver {
  public:
   // Keeps track of the various stages of a NavigationRequest.
   // To see what state transitions are allowed, see |SetState|.
@@ -422,6 +425,7 @@ class CONTENT_EXPORT NavigationRequest
   void WriteIntoTrace(perfetto::TracedProto<TraceProto> context) const override;
   bool SetNavigationTimeout(base::TimeDelta timeout) override;
   void SetAllowCookiesFromBrowser(bool allow_cookies_from_browser) override;
+  void GetResponseBody(ResponseBodyCallback callback) override;
   PrerenderTriggerType GetPrerenderTriggerType() override;
   std::string GetPrerenderEmbedderHistogramSuffix() override;
 #if BUILDFLAG(IS_ANDROID)
@@ -838,6 +842,13 @@ class CONTENT_EXPORT NavigationRequest
       mojo::PendingReceiver<network::mojom::TrustTokenAccessObserver>>
   TakeTrustTokenObservers();
 
+  // Take all shared dictionary observers associated with this navigation.
+  // Typically this is called when navigation commits to move these observers to
+  // the committed document.
+  [[nodiscard]] std::vector<
+      mojo::PendingReceiver<network::mojom::SharedDictionaryAccessObserver>>
+  TakeSharedDictionaryAccessObservers();
+
   // Returns the coop status information relevant to the current navigation.
   CrossOriginOpenerPolicyStatus& coop_status() { return coop_status_; }
 
@@ -924,9 +935,9 @@ class CONTENT_EXPORT NavigationRequest
   // separate callback, WillCommitWithoutUrlLoader().
   bool NeedsUrlLoader();
 
-  network::mojom::LocalNetworkRequestPolicy local_network_request_policy()
+  network::mojom::PrivateNetworkRequestPolicy private_network_request_policy()
       const {
-    return local_network_request_policy_;
+    return private_network_request_policy_;
   }
 
   // Whether this navigation request waits for the result of beforeunload before
@@ -1641,11 +1652,11 @@ class CONTENT_EXPORT NavigationRequest
   // redirect.
   void UpdateStateFollowingRedirect(const GURL& new_referrer_url);
 
-  // Updates |local_network_request_policy_| for ReadyToCommitNavigation().
+  // Updates |private_network_request_policy_| for ReadyToCommitNavigation().
   //
   // Must not be called for same-document navigation requests nor for requests
   // served from the back-forward cache or from prerendered pages.
-  void UpdateLocalNetworkRequestPolicy();
+  void UpdatePrivateNetworkRequestPolicy();
 
   // Called when the navigation is ready to be committed. This will update the
   // |state_| and inform the delegate.
@@ -1742,6 +1753,16 @@ class CONTENT_EXPORT NavigationRequest
       network::mojom::TrustTokenAccessDetailsPtr details) override;
   void Clone(mojo::PendingReceiver<network::mojom::TrustTokenAccessObserver>
                  observer) override;
+
+  mojo::PendingRemote<network::mojom::SharedDictionaryAccessObserver>
+  CreateSharedDictionaryAccessObserver();
+
+  // network::mojom::SharedDictionaryAccessObserver:
+  void OnSharedDictionaryAccessed(
+      network::mojom::SharedDictionaryAccessDetailsPtr details) override;
+  void Clone(
+      mojo::PendingReceiver<network::mojom::SharedDictionaryAccessObserver>
+          observer) override;
 
   // Convenience function to return the NavigationControllerImpl this
   // NavigationRequest is in.
@@ -1917,6 +1938,11 @@ class CONTENT_EXPORT NavigationRequest
 
   // Returns the `StoragePartition` based on the config from the `site_info_`.
   StoragePartition* GetStoragePartitionWithCurrentSiteInfo();
+
+  // Passes the response body contents to the original caller using the stored
+  // callback once the body has been successfully read from its corresponding
+  // data pipe.
+  void OnResponseBodyReady(MojoResult result);
 
   // Never null. The pointee node owns this navigation request instance.
   // This field is not a raw_ptr because of incompatibilities with tracing
@@ -2349,6 +2375,11 @@ class CONTENT_EXPORT NavigationRequest
   mojo::ReceiverSet<network::mojom::TrustTokenAccessObserver>
       trust_token_observers_;
 
+  // Observers listening to shared dictionary access notifications for the
+  // network requests made by this navigation.
+  mojo::ReceiverSet<network::mojom::SharedDictionaryAccessObserver>
+      shared_dictionary_observers_;
+
   OriginAgentClusterEndResult origin_agent_cluster_end_result_ =
       OriginAgentClusterEndResult::kNotRequestedAndNotOriginKeyed;
 
@@ -2409,8 +2440,8 @@ class CONTENT_EXPORT NavigationRequest
   // TODO(ahemery, titouan): Move some elements to the policy container or
   // rework inheritance.
   // https://crbug.com/1154729
-  network::mojom::LocalNetworkRequestPolicy local_network_request_policy_ =
-      network::mojom::LocalNetworkRequestPolicy::kWarn;
+  network::mojom::PrivateNetworkRequestPolicy private_network_request_policy_ =
+      network::mojom::PrivateNetworkRequestPolicy::kWarn;
 
   // The list of web features that were used by the new document during
   // navigation. These can only be logged once the document commits, so they are
@@ -2607,6 +2638,22 @@ class CONTENT_EXPORT NavigationRequest
   // been picked for the navigation, the WebUI object will be moved to be owned
   // by the RenderFrameHost.
   std::unique_ptr<WebUIImpl> web_ui_;
+
+  // Returns whether this navigation is currently deferred.
+  bool IsDeferred();
+
+  // The watcher used to asynchronously read the response body from the data
+  // pipe. Once the response body is read, it is passed to the original caller
+  // using the stored callback. This is instantiated when a response body is
+  // requested and destroyed upon returning the response body.
+  std::unique_ptr<mojo::SimpleWatcher> response_body_watcher_;
+  ResponseBodyCallback response_body_callback_;
+  // Used to confirm that any NavigationThrottle that calls `GetResponseBody()`
+  // becomes deferred.
+  bool was_get_response_body_called_ = false;
+
+  // Used to prevent re-entrancy into `Resume()`.
+  bool is_resuming_ = false;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 };

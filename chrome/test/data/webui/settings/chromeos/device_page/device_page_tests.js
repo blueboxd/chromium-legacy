@@ -4,7 +4,7 @@
 
 import 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 
-import {crosAudioConfigMojom, DevicePageBrowserProxyImpl, fakeCrosAudioConfig, FakeInputDeviceSettingsProvider, fakeKeyboards, fakeMice, fakePointingSticks, fakeTouchpads, IdleBehavior, LidClosedBehavior, NoteAppLockScreenSupport, Router, routes, setCrosAudioConfigForTesting, setDisplayApiForTesting, setInputDeviceSettingsProviderForTesting, StorageSpaceState} from 'chrome://os-settings/os_settings.js';
+import {crosAudioConfigMojom, DevicePageBrowserProxyImpl, fakeCrosAudioConfig, fakeGraphicsTablets, FakeInputDeviceSettingsProvider, fakeKeyboards, fakeMice, fakePointingSticks, fakeTouchpads, IdleBehavior, LidClosedBehavior, NoteAppLockScreenSupport, Router, routes, setCrosAudioConfigForTesting, setDisplayApiForTesting, setInputDeviceSettingsProviderForTesting, StorageSpaceState} from 'chrome://os-settings/os_settings.js';
 import {assert} from 'chrome://resources/ash/common/assert.js';
 import {webUIListenerCallback} from 'chrome://resources/ash/common/cr.m.js';
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
@@ -2068,6 +2068,14 @@ suite('SettingsDevicePage', function() {
 
   suite(assert(TestNames.GraphicsTablet), function() {
     let graphicsTabletPage;
+    let inputDeviceSettingsProvider;
+
+    suiteSetup(() => {
+      inputDeviceSettingsProvider = new FakeInputDeviceSettingsProvider();
+      inputDeviceSettingsProvider.setFakeGraphicsTablets(fakeGraphicsTablets);
+      setInputDeviceSettingsProviderForTesting(inputDeviceSettingsProvider);
+    });
+
     setup(async function() {
       setPeripheralCustomizationEnabled(true);
       await init();
@@ -2083,10 +2091,59 @@ suite('SettingsDevicePage', function() {
       });
     });
 
-    test('graphics tablet subpage visibility', function() {
+    test('graphics tablet subpage visibility', async () => {
       assertEquals(routes.GRAPHICS_TABLET, Router.getInstance().currentRoute);
-      assertTrue(isVisible(graphicsTabletPage.shadowRoot.querySelector(
-          '#graphicsTabletSubpageTitle')));
+      const items = graphicsTabletPage.shadowRoot.querySelectorAll('.device');
+      // Verify that all graphics tablets are displayed and their ids are same
+      // with the data in the provider.
+      assertEquals(items.length, fakeGraphicsTablets.length);
+      assertTrue(isVisible(items[0]));
+      assertEquals(
+          Number(items[0].getAttribute('data-evdev-id')),
+          fakeGraphicsTablets[0].id);
+      assertTrue(isVisible(items[1]));
+      assertEquals(
+          Number(items[1].getAttribute('data-evdev-id')),
+          fakeGraphicsTablets[1].id);
+
+      // Verify that the customize-tablet-buttons and customize-pen-buttons
+      // crLinkRow are visible.
+      const customizeTabletButtons =
+          graphicsTabletPage.shadowRoot.querySelector(
+              '#customizeTabletButtons');
+      assert(customizeTabletButtons);
+      assertTrue(isVisible(customizeTabletButtons));
+
+      // Verify clicking the customize table buttons row will be redirecting
+      // to the customize table buttons subpage.
+      customizeTabletButtons.click();
+      await flushTasks();
+      assertEquals(
+          routes.CUSTOMIZE_TABLET_BUTTONS, Router.getInstance().currentRoute);
+
+      const urlSearchQuery =
+          Router.getInstance().getQueryParameters().get('graphicsTabletId');
+      assertTrue(!!urlSearchQuery);
+      const graphicsTabletId = Number(urlSearchQuery);
+      assertFalse(isNaN(graphicsTabletId));
+      assertEquals(fakeGraphicsTablets[0].id, graphicsTabletId);
+
+      // Verify clicking the customize pen buttons row will be redirected
+      // to the customize table buttons subpage.
+      Router.getInstance().navigateTo(routes.GRAPHICS_TABLET);
+      assertEquals(routes.GRAPHICS_TABLET, Router.getInstance().currentRoute);
+      const customizePenButtons =
+          graphicsTabletPage.shadowRoot.querySelector('#customizePenButtons');
+
+      assertTrue(isVisible(customizePenButtons));
+      customizePenButtons.click();
+      await flushTasks();
+      assertEquals(
+          routes.CUSTOMIZE_PEN_BUTTONS, Router.getInstance().currentRoute);
+      const graphicsTabletPenId = Number(
+          Router.getInstance().getQueryParameters().get('graphicsTabletId'));
+      assertFalse(isNaN(graphicsTabletPenId));
+      assertEquals(fakeGraphicsTablets[0].id, graphicsTabletPenId);
     });
   });
 

@@ -9,16 +9,23 @@
 
 #include <memory>
 
+#include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/signin/bound_session_credentials/bound_session_cookie_controller.h"
+#include "chrome/browser/signin/bound_session_credentials/bound_session_registration_fetcher.h"
+#include "chrome/browser/signin/bound_session_credentials/bound_session_registration_fetcher_param.h"
 #include "chrome/browser/signin/bound_session_credentials/bound_session_registration_params.pb.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 
 class SigninClient;
+
+namespace unexportable_keys {
+class UnexportableKeyService;
+}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -34,6 +41,7 @@ class BoundSessionCookieRefreshServiceImpl
       public BoundSessionCookieController::Delegate {
  public:
   explicit BoundSessionCookieRefreshServiceImpl(
+      unexportable_keys::UnexportableKeyService& key_service,
       SigninClient* client,
       signin::IdentityManager* identity_manager);
 
@@ -56,6 +64,9 @@ class BoundSessionCookieRefreshServiceImpl
   void OnRequestBlockedOnCookie(
       OnRequestBlockedOnCookieCallback resume_blocked_request) override;
 
+  void CreateRegistrationRequest(
+      BoundSessionRegistrationFetcherParam registration_params) override;
+
   base::WeakPtr<BoundSessionCookieRefreshService> GetWeakPtr() override;
 
  private:
@@ -67,7 +78,8 @@ class BoundSessionCookieRefreshServiceImpl
   using BoundSessionCookieControllerFactoryForTesting =
       base::RepeatingCallback<std::unique_ptr<BoundSessionCookieController>(
           const GURL& url,
-          const std::string& cookie_name,
+          const std::vector<std::string>& cookie_names,
+          base::span<const uint8_t> wrapped_key,
           Delegate* delegate)>;
 
   // BoundSessionCookieRefreshService:
@@ -80,19 +92,25 @@ class BoundSessionCookieRefreshServiceImpl
     controller_factory_for_testing_ = controller_factory_for_testing;
   }
 
+  void OnRegistrationRequestComplete(
+      absl::optional<bound_session_credentials::RegistrationParams>
+          registration_params);
+
   // BoundSessionCookieController::Delegate
   void OnCookieExpirationDateChanged() override;
   void TerminateSession() override;
 
   std::unique_ptr<BoundSessionCookieController>
   CreateBoundSessionCookieController(const GURL& url,
-                                     const std::string& cookie_name);
+                                     const std::string& cookie_name,
+                                     base::span<const uint8_t> wrapped_key);
   void StartManagingBoundSessionCookie();
   void StopManagingBoundSessionCookie();
   void OnBoundSessionUpdated();
 
   void UpdateAllRenderers();
 
+  const raw_ref<unexportable_keys::UnexportableKeyService> key_service_;
   const raw_ptr<SigninClient> client_;
   const raw_ptr<signin::IdentityManager> identity_manager_;
   BoundSessionCookieControllerFactoryForTesting controller_factory_for_testing_;
@@ -109,6 +127,9 @@ class BoundSessionCookieRefreshServiceImpl
   // On next startup, the session will still be bound. This is fine as the
   // feature is still WIP.
   bool force_terminate_bound_session_ = false;
+
+  // There is only one active session registration at a time.
+  std::unique_ptr<BoundSessionRegistrationFetcher> active_registration_request_;
 
   base::WeakPtrFactory<BoundSessionCookieRefreshService> weak_ptr_factory_{
       this};

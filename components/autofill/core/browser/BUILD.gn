@@ -135,6 +135,8 @@ static_library("browser") {
     "data_model/autofill_structured_address_component.h",
     "data_model/autofill_structured_address_constants.cc",
     "data_model/autofill_structured_address_constants.h",
+    "data_model/autofill_structured_address_format_provider.cc",
+    "data_model/autofill_structured_address_format_provider.h",
     "data_model/autofill_structured_address_name.cc",
     "data_model/autofill_structured_address_name.h",
     "data_model/autofill_structured_address_regex_provider.cc",
@@ -206,6 +208,8 @@ static_library("browser") {
     "form_parsing/regex_patterns.h",
     "form_parsing/search_field.cc",
     "form_parsing/search_field.h",
+    "form_parsing/standalone_cvc_field.cc",
+    "form_parsing/standalone_cvc_field.h",
     "form_parsing/travel_field.cc",
     "form_parsing/travel_field.h",
     "form_processing/label_processing_util.cc",
@@ -265,6 +269,8 @@ static_library("browser") {
     "metrics/autofill_metrics_utils.h",
     "metrics/converge_to_extreme_length_address_metrics.cc",
     "metrics/converge_to_extreme_length_address_metrics.h",
+    "metrics/fallback_autocomplete_unrecognized_metrics.cc",
+    "metrics/fallback_autocomplete_unrecognized_metrics.h",
     "metrics/form_events/address_form_event_logger.cc",
     "metrics/form_events/address_form_event_logger.h",
     "metrics/form_events/credit_card_form_event_logger.cc",
@@ -339,8 +345,6 @@ static_library("browser") {
     "payments/full_card_request.h",
     "payments/iban_save_manager.cc",
     "payments/iban_save_manager.h",
-    "payments/legal_message_line.cc",
-    "payments/legal_message_line.h",
     "payments/mandatory_reauth_manager.cc",
     "payments/mandatory_reauth_manager.h",
     "payments/offer_notification_handler.cc",
@@ -386,6 +390,10 @@ static_library("browser") {
     "personal_data_manager_cleaner.cc",
     "personal_data_manager_cleaner.h",
     "personal_data_manager_observer.h",
+    "profile_requirement_utils.cc",
+    "profile_requirement_utils.h",
+    "profile_token_quality.cc",
+    "profile_token_quality.h",
     "randomized_encoder.cc",
     "randomized_encoder.h",
     "rationalization_util.cc",
@@ -439,7 +447,6 @@ static_library("browser") {
     "ui/country_combobox_model.h",
     "ui/fast_checkout_client.h",
     "ui/fast_checkout_delegate.h",
-    "ui/fast_checkout_enums.h",
     "ui/label_formatter.cc",
     "ui/label_formatter.h",
     "ui/label_formatter_utils.cc",
@@ -482,6 +489,8 @@ static_library("browser") {
     "webdata/autofill_table_encryptor.h",
     "webdata/autofill_table_encryptor_factory.cc",
     "webdata/autofill_table_encryptor_factory.h",
+    "webdata/autofill_wallet_credential_sync_bridge.cc",
+    "webdata/autofill_wallet_credential_sync_bridge.h",
     "webdata/autofill_wallet_metadata_sync_bridge.cc",
     "webdata/autofill_wallet_metadata_sync_bridge.h",
     "webdata/autofill_wallet_offer_sync_bridge.cc",
@@ -565,6 +574,7 @@ static_library("browser") {
   configs += [ "//build/config:precompiled_headers" ]
 
   public_deps = [
+    ":legal_message_line",
     "//components/autofill/core/browser/proto",
     "//components/autofill/core/common",
     "//components/autofill/core/common/mojom:mojo_types",
@@ -639,7 +649,10 @@ static_library("browser") {
   }
 
   if (is_android) {
-    deps += [ "//components/messages/android:feature_flags" ]
+    deps += [
+      "//components/autofill/android:payments_jni_headers",
+      "//components/messages/android:feature_flags",
+    ]
   }
 
   if (is_ios || is_android) {
@@ -652,6 +665,8 @@ static_library("browser") {
       "payments/local_card_migration_manager.h",
       "payments/upi_vpa_save_manager.cc",
       "payments/upi_vpa_save_manager.h",
+      "server_prediction_overrides.cc",
+      "server_prediction_overrides.h",
       "strike_databases/payments/local_card_migration_strike_database.cc",
       "strike_databases/payments/local_card_migration_strike_database.h",
       "ui/payments/local_card_migration_bubble_controller.h",
@@ -664,13 +679,29 @@ static_library("browser") {
   }
 }
 
+static_library("legal_message_line") {
+  sources = [
+    "payments/legal_message_line.cc",
+    "payments/legal_message_line.h",
+  ]
+  deps = [
+    "//base",
+    "//base:i18n",
+    "//ui/gfx/range:range",
+    "//url:url",
+  ]
+}
+
 static_library("test_support") {
   testonly = true
   sources = [
     "autofill_form_test_utils.cc",
     "autofill_form_test_utils.h",
+    "autofill_manager_test_api.h",
     "autofill_test_utils.cc",
     "autofill_test_utils.h",
+    "browser_autofill_manager_test_api.cc",
+    "browser_autofill_manager_test_api.h",
     "data_model/autofill_structured_address_test_utils.cc",
     "data_model/autofill_structured_address_test_utils.h",
     "data_model/test_autofill_data_model.cc",
@@ -756,7 +787,10 @@ static_library("test_support") {
     "webdata/mock_autofill_webdata_service.h",
   ]
 
-  public_deps = [ ":browser" ]
+  public_deps = [
+    ":browser",
+    "//components/autofill/core/common:test_support",
+  ]
 
   deps = [
     ":autofill_address_rewriter_resources",
@@ -882,6 +916,7 @@ source_set("unit_tests") {
     "data_model/autofill_profile_comparator_unittest.cc",
     "data_model/autofill_profile_unittest.cc",
     "data_model/autofill_structured_address_component_unittest.cc",
+    "data_model/autofill_structured_address_format_provider_unittest.cc",
     "data_model/autofill_structured_address_name_unittest.cc",
     "data_model/autofill_structured_address_regex_provider_unittest.cc",
     "data_model/autofill_structured_address_unittest.cc",
@@ -913,6 +948,7 @@ source_set("unit_tests") {
     "form_parsing/price_field_unittest.cc",
     "form_parsing/regex_patterns_unittest.cc",
     "form_parsing/search_field_unittest.cc",
+    "form_parsing/standalone_cvc_field_unittest.cc",
     "form_processing/label_processing_util_unittest.cc",
     "form_processing/name_processing_util_unittest.cc",
     "form_structure_rationalizer_unittest.cc",
@@ -968,6 +1004,8 @@ source_set("unit_tests") {
     "personal_data_manager_test_base.cc",
     "personal_data_manager_test_base.h",
     "personal_data_manager_unittest.cc",
+    "profile_requirement_utils_unittest.cc",
+    "profile_token_quality_unittest.cc",
     "randomized_encoder_unittest.cc",
     "rationalization_util_unittest.cc",
     "single_field_form_fill_router_unittest.cc",
@@ -1031,6 +1069,7 @@ source_set("unit_tests") {
   if (!is_ios && !is_android) {
     sources += [
       "payments/local_card_migration_manager_unittest.cc",
+      "server_prediction_overrides_unittest.cc",
       "ui/address_contact_form_label_formatter_unittest.cc",
       "ui/address_email_form_label_formatter_unittest.cc",
       "ui/address_form_label_formatter_unittest.cc",

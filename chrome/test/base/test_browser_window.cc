@@ -14,6 +14,7 @@
 #include "components/user_education/common/feature_promo_handle.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "ui/base/interaction/element_identifier.h"
+#include "ui/color/color_provider_key.h"
 #include "ui/color/color_provider_manager.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -104,10 +105,9 @@ const ui::ThemeProvider* TestBrowserWindow::GetThemeProvider() const {
 
 const ui::ColorProvider* TestBrowserWindow::GetColorProvider() const {
   return ui::ColorProviderManager::Get().GetColorProviderFor(
-      {ui::ColorProviderManager::ColorMode::kLight,
-       ui::ColorProviderManager::ContrastMode::kNormal,
-       ui::SystemTheme::kDefault,
-       ui::ColorProviderManager::FrameType::kChromium});
+      {ui::ColorProviderKey::ColorMode::kLight,
+       ui::ColorProviderKey::ContrastMode::kNormal, ui::SystemTheme::kDefault,
+       ui::ColorProviderKey::FrameType::kChromium});
 }
 
 ui::ElementContext TestBrowserWindow::GetElementContext() {
@@ -353,27 +353,26 @@ bool TestBrowserWindow::IsFeaturePromoActive(
 
 bool TestBrowserWindow::MaybeShowFeaturePromo(
     const base::Feature& iph_feature,
-    user_education::FeaturePromoSpecification::StringReplacements
-        body_text_replacements,
-    user_education::FeaturePromoController::BubbleCloseCallback
-        close_callback) {
+    user_education::FeaturePromoController::BubbleCloseCallback close_callback,
+    user_education::FeaturePromoSpecification::FormatParameters body_params,
+    user_education::FeaturePromoSpecification::FormatParameters title_params) {
   return feature_promo_controller_ &&
          feature_promo_controller_->MaybeShowPromo(
-             iph_feature, body_text_replacements, std::move(close_callback));
+             iph_feature, std::move(close_callback), std::move(body_params),
+             std::move(title_params));
 }
 
 bool TestBrowserWindow::MaybeShowStartupFeaturePromo(
     const base::Feature& iph_feature,
-    user_education::FeaturePromoSpecification::StringReplacements
-        body_text_replacements,
     user_education::FeaturePromoController::StartupPromoCallback promo_callback,
-    user_education::FeaturePromoController::BubbleCloseCallback
-        close_callback) {
+    user_education::FeaturePromoController::BubbleCloseCallback close_callback,
+    user_education::FeaturePromoSpecification::FormatParameters body_params,
+    user_education::FeaturePromoSpecification::FormatParameters title_params) {
   if (!feature_promo_controller_)
     return false;
   return feature_promo_controller_->MaybeShowStartupPromo(
-      iph_feature, body_text_replacements, std::move(promo_callback),
-      std::move(close_callback));
+      iph_feature, std::move(promo_callback), std::move(close_callback),
+      std::move(body_params), std::move(title_params));
 }
 
 bool TestBrowserWindow::CloseFeaturePromo(const base::Feature& iph_feature) {

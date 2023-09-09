@@ -471,10 +471,11 @@ TEST_F(SelectFileDialogMacTest, MultipleDialogs) {
   // but if not, at least try to close them all.
   base::RunLoop run_loop2;
   SetDialogClosedCallback(run_loop2.QuitClosure());
-  if (base::mac::IsAtMostOS10_14())
+  if (base::mac::IsAtMostOS10_14()) {
     [panel2 ok:nil];
-  else
+  } else {
     [panel2 cancel:nil];
+  }
   run_loop2.Run();
   EXPECT_EQ(0lu, GetActivePanelCount());
 

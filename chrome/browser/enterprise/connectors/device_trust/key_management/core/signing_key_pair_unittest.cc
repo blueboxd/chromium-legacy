@@ -7,7 +7,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/memory/scoped_refptr.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/ec_signing_key.h"
 #include "crypto/scoped_mock_unexportable_key_provider.h"
 #include "crypto/signature_verifier.h"
@@ -62,7 +61,7 @@ class SigningKeyPairTest : public testing::Test {
 // Tests that the SigningKeyPair instance is correctly initialized with a
 // hardware-backed SigningKeyPair if it was available.
 TEST_F(SigningKeyPairTest, SigningKeyPairInstance_WithHwKey) {
-  auto key_pair = base::MakeRefCounted<SigningKeyPair>(
+  auto key_pair = std::make_unique<SigningKeyPair>(
       GenerateSigningKey(BPKUR::CHROME_BROWSER_HW_KEY),
       BPKUR::CHROME_BROWSER_HW_KEY);
   ValidateSigningKey(key_pair.get(), BPKUR::CHROME_BROWSER_HW_KEY);
@@ -71,7 +70,7 @@ TEST_F(SigningKeyPairTest, SigningKeyPairInstance_WithHwKey) {
 // Tests that the SigningKeyPair instance is correctly initialized with a
 // crypto::ECPrivateKey-backed SigningKeyPair if it was available.
 TEST_F(SigningKeyPairTest, Create_WithECPrivateKey) {
-  auto key_pair = base::MakeRefCounted<SigningKeyPair>(
+  auto key_pair = std::make_unique<SigningKeyPair>(
       GenerateSigningKey(BPKUR::CHROME_BROWSER_OS_KEY),
       BPKUR::CHROME_BROWSER_OS_KEY);
   ValidateSigningKey(key_pair.get(), BPKUR::CHROME_BROWSER_OS_KEY);

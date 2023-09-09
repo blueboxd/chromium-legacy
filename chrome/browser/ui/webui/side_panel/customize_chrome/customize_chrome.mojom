@@ -53,6 +53,10 @@ struct Theme {
   bool colors_managed_by_policy;
   // True if the background is managed by a policy.
   bool background_managed_by_policy;
+  // True if using grey baseline theme.
+  bool is_grey_baseline;
+  // BrowserColorVariant for the current theme.
+  BrowserColorVariant browser_color_variant;
 };
 
 struct ChromeColor {
@@ -65,8 +69,10 @@ struct ChromeColor {
   // The background color.
   skia.mojom.SkColor foreground;
   // The base color.
-  // TODO(crbug/1454868): Make base  no longer optional once GM2 is removed.
+  // TODO(crbug/1454868): Make base no longer optional once GM2 is removed.
   skia.mojom.SkColor? base;
+  // The color variant for this color palette.
+  BrowserColorVariant variant;
 };
 
 // A collection of background images.
@@ -110,6 +116,14 @@ enum CustomizeChromeSection {
   kModules,
 };
 
+enum BrowserColorVariant {
+  kSystem,
+  kTonalSpot,
+  kNeutral,
+  kVibrant,
+  kExpressive,
+};
+
 // Used by the WebUI page to bootstrap bidirectional communication.
 interface CustomizeChromePageHandlerFactory {
   // The WebUI calls this method when the page is first initialized.
@@ -146,8 +160,11 @@ interface CustomizeChromePageHandler {
   // Sets Chrome's theme according to the default color.
   SetDefaultColor();
 
+  // Sets Chrome's theme according to the grey version of the default color.
+  SetGreyDefaultColor();
+
   // Sets a Chrome theme generated from |seed_color|.
-  SetSeedColor(skia.mojom.SkColor seed_color);
+  SetSeedColor(skia.mojom.SkColor seed_color, BrowserColorVariant variant);
 
   // Removes background image.
   RemoveBackgroundImage();

@@ -22,6 +22,7 @@
 #include "components/url_formatter/elide_url.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/toggle_button.h"
@@ -38,8 +39,10 @@ PermissionToggleRowView::PermissionToggleRowView(
     : permission_(permission),
       delegate_(delegate),
       navigation_handler_(navigation_handler) {
+  // TODO(crbug.com/1446230): Directly subclass `RichControlsContainerView`
+  // instead of adding it as the only child.
   SetUseDefaultFillLayout(true);
-  row_view_ = AddChildView(std::make_unique<PageInfoRowView>());
+  row_view_ = AddChildView(std::make_unique<RichControlsContainerView>());
   row_view_->SetTitle(PageInfoUI::PermissionTypeToUIString(permission.type));
 
   // Add extra details as sublabel.
@@ -77,11 +80,12 @@ PermissionToggleRowView::PermissionToggleRowView(
   } else {
     InitForManagedSource(delegate);
   }
-  // Set flex rule, defined in `PageInfoRowView`, to wrap the subtitle text but
-  // size the parent view to match the content.
-  SetProperty(views::kFlexBehaviorKey,
-              views::FlexSpecification(base::BindRepeating(
-                  &PageInfoRowView::FlexRule, base::Unretained(row_view_))));
+  // Set flex rule, defined in `RichControlsContainerView`, to wrap the subtitle
+  // text but size the parent view to match the content.
+  SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(base::BindRepeating(
+          &RichControlsContainerView::FlexRule, base::Unretained(row_view_))));
   UpdateUiOnPermissionChanged();
 }
 
@@ -163,6 +167,9 @@ void PermissionToggleRowView::InitForManagedSource(
   auto state_label = std::make_unique<views::Label>(
       PageInfoUI::PermissionStateToUIString(delegate, permission_),
       views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY);
+  if (features::IsChromeRefresh2023()) {
+    state_label->SetTextStyle(views::style::STYLE_BODY_1);
+  }
   state_label->SetProperty(views::kMarginsKey,
                            gfx::Insets::VH(0, icon_label_spacing));
   row_view_->AddControl(std::move(state_label));

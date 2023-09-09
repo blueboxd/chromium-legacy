@@ -74,7 +74,12 @@ It2MeHost::DeferredConnectContext::DeferredConnectContext() = default;
 
 It2MeHost::DeferredConnectContext::~DeferredConnectContext() = default;
 
-It2MeHost::It2MeHost() = default;
+It2MeHost::It2MeHost() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  host_event_reporter_factory_ =
+      base::BindRepeating(&HostEventReporter::Create);
+#endif
+}
 
 It2MeHost::~It2MeHost() {
   // Check that resources that need to be torn down on the UI thread are gone.
@@ -267,9 +272,9 @@ void It2MeHost::ConnectOnNetworkThread(
         chrome_os_enterprise_params_->terminate_upon_input);
     options.set_enable_curtaining(
         chrome_os_enterprise_params_->curtain_local_user_session);
-    // TODO(b/286835721): Inform in UI when file transfer is disabled by policy.
     options.set_enable_file_transfer(
-        chrome_os_enterprise_params_->allow_file_transfer);
+        chrome_os_enterprise_params_->allow_file_transfer &&
+        enterprise_file_transfer_allowed_);
   }
 #endif
 
@@ -290,7 +295,8 @@ void It2MeHost::ConnectOnNetworkThread(
   host_event_logger_ =
       HostEventLogger::Create(host_->status_monitor(), kApplicationName);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  host_event_reporter_ = HostEventReporter::Create(host_->status_monitor());
+  host_event_reporter_ =
+      host_event_reporter_factory_.Run(host_->status_monitor());
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Connect signaling and start the host.
@@ -358,6 +364,13 @@ ValidationCallback It2MeHost::GetValidationCallbackForTesting() {
                              base::Unretained(this));
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+void It2MeHost::SetHostEventReporterFactoryForTesting(
+    HostEventReporterFactory factory) {
+  host_event_reporter_factory_ = factory;
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 void It2MeHost::OnPolicyUpdate(base::Value::Dict policies) {
   // The policy watcher runs on the |ui_task_runner|.
   if (!host_context_->network_task_runner()->BelongsToCurrentThread()) {
@@ -372,6 +385,13 @@ void It2MeHost::OnPolicyUpdate(base::Value::Dict policies) {
   // the connection process.
   remote_support_connections_allowed_ =
       policies.FindBool(GetRemoteSupportPolicyKey()).value_or(true);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  enterprise_file_transfer_allowed_ =
+      policies
+          .FindBool(policy::key::kRemoteAccessHostAllowEnterpriseFileTransfer)
+          .value_or(false);
+#endif
 
   absl::optional<bool> nat_policy_value =
       policies.FindBool(policy::key::kRemoteAccessHostFirewallTraversal);
@@ -763,6 +783,10 @@ const char* It2MeHost::GetRemoteSupportPolicyKey() const {
 
 It2MeHostFactory::It2MeHostFactory() = default;
 It2MeHostFactory::~It2MeHostFactory() = default;
+
+std::unique_ptr<It2MeHostFactory> It2MeHostFactory::Clone() const {
+  return std::make_unique<It2MeHostFactory>();
+}
 
 scoped_refptr<It2MeHost> It2MeHostFactory::CreateIt2MeHost() {
   return new It2MeHost();

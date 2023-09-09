@@ -120,7 +120,7 @@ interface MediaStreamTrack : EventTarget
   method getCaptureHandle
 interface BrowserCaptureMediaStreamTrack : MediaStreamTrack
 interface CropTarget
-interface CaptureController
+interface CaptureController : EventTarget
 
 # WebAuthN API should not be exposed in WebView, crbug.com/828168
 interface AuthenticatorAssertionResponse : AuthenticatorResponse
@@ -142,11 +142,6 @@ interface ServiceWorkerRegistration : EventTarget
 interface PeriodicSyncManager
 interface ServiceWorkerRegistration : EventTarget
     getter periodicSync
-
-# User Agent Client Hints are not enabled in Android WebView, crbug.com/921655
-interface Navigator
-    getter userAgentData
-interface NavigatorUAData
 
 # WebXR dependent interfaces are not supported on WebView crbug.com/1012899
 interface XRView

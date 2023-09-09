@@ -18,6 +18,16 @@
 #import "ui/base/cocoa/user_interface_item_command_handler.h"
 #import "ui/base/cocoa/window_size_constants.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+@interface NSWindow (Private)
+// Available in later point releases of 10.10. On 10.11+, use the public
+// -performWindowDragWithEvent: instead.
+- (void)beginWindowDragWithEvent:(NSEvent*)event;
+@end
+
 namespace {
 
 bool AreWindowShadowsDisabled() {
@@ -52,7 +62,7 @@ void OrderChildWindow(NSWindow* child_window,
   NSArray<NSWindow*>* children = [[child_window parentWindow] childWindows];
   std::vector<std::pair<NSInteger, NSWindow*>> ordered_children;
   for (NSWindow* child in children)
-    ordered_children.push_back({[child orderedIndex], child});
+    ordered_children.emplace_back([child orderedIndex], child);
   std::sort(ordered_children.begin(), ordered_children.end(), std::greater<>());
 
   // If `other_window` is nullptr, place `child_window` in front of (or behind)
@@ -193,9 +203,9 @@ NSPoint clickedLocation;
 
 @implementation NativeWidgetMacNSWindow {
  @private
-  base::scoped_nsobject<CommandDispatcher> _commandDispatcher;
-  base::scoped_nsprotocol<id<UserInterfaceItemCommandHandler>> _commandHandler;
-  id<WindowTouchBarDelegate> _touchBarDelegate;  // Weak.
+  CommandDispatcher* __strong _commandDispatcher;
+  id<UserInterfaceItemCommandHandler> __strong _commandHandler;
+  id<WindowTouchBarDelegate> __weak _touchBarDelegate;
   uint64_t _bridgedNativeWidgetId;
   // This field is not a raw_ptr<> because it requires @property rewrite.
   RAW_PTR_EXCLUSION remote_cocoa::NativeWidgetNSWindowBridge* _bridge;
@@ -222,7 +232,8 @@ NSPoint clickedLocation;
                                styleMask:windowStyle
                                  backing:bufferingType
                                    defer:deferCreation])) {
-    _commandDispatcher.reset([[CommandDispatcher alloc] initWithOwner:self]);
+    _commandDispatcher = [[CommandDispatcher alloc] initWithOwner:self];
+    self.releasedWhenClosed = NO;
   }
   return self;
 }
@@ -250,9 +261,6 @@ NSPoint clickedLocation;
   }
   _willUpdateRestorableState = YES;
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
-  [_childWindowAddedHandler dealloc];
-  [_childWindowRemovedHandler dealloc];
-  [super dealloc];
 }
 
 - (void)addChildWindow:(NSWindow*)childWin ordered:(NSWindowOrderingMode)place {
@@ -336,15 +344,14 @@ NSPoint clickedLocation;
   // Temporarily prevent the window from becoming the key window until after
   // the space change completes.
   _preventKeyWindow = ![self isKeyWindow];
-  NSNotificationCenter* notificationCenter =
-      [[NSWorkspace sharedWorkspace] notificationCenter];
-  __block id observer = [notificationCenter
+  __block id observer = [NSWorkspace.sharedWorkspace.notificationCenter
       addObserverForName:NSWorkspaceActiveSpaceDidChangeNotification
                   object:[NSWorkspace sharedWorkspace]
                    queue:[NSOperationQueue mainQueue]
               usingBlock:^(NSNotification* notification) {
-                _preventKeyWindow = NO;
-                [notificationCenter removeObserver:observer];
+                self->_preventKeyWindow = NO;
+                [NSWorkspace.sharedWorkspace.notificationCenter
+                    removeObserver:observer];
               }];
   [self orderWindow:NSWindowAbove relativeTo:0];
 }
@@ -374,7 +381,7 @@ NSPoint clickedLocation;
 - (id<NSAccessibility>)rootAccessibilityObject {
   id<NSAccessibility> obj =
       _bridge ? _bridge->host_helper()->GetNativeViewAccessible() : nil;
-  // We should like to DCHECK that the object returned implemements the
+  // We should like to DCHECK that the object returned implements the
   // NSAccessibility protocol, but the NSAccessibilityRemoteUIElement interface
   // does not conform.
   // TODO(https://crbug.com/944698): Create a sub-class that does.
@@ -635,17 +642,17 @@ NSPoint clickedLocation;
   if (![self _isConsideredOpenForPersistentState])
     return;
 
-  base::scoped_nsobject<NSMutableData> restorableStateData(
+  NSMutableData* restorableStateData(
       [[NSMutableData alloc] init]);
-  base::scoped_nsobject<NSKeyedArchiver> encoder([[NSKeyedArchiver alloc]
+  NSKeyedArchiver* encoder([[NSKeyedArchiver alloc]
       initForWritingWithMutableData:restorableStateData]);
-  encoder.get().delegate = self;
+  encoder.delegate = self;
   [self encodeRestorableStateWithCoder:encoder];
   [encoder finishEncoding];
 
-  auto* bytes = static_cast<uint8_t const*>(restorableStateData.get().bytes);
+  auto* bytes = static_cast<uint8_t const*>(restorableStateData.bytes);
   _bridge->host()->OnWindowStateRestorationDataChanged(
-      std::vector<uint8_t>(bytes, bytes + restorableStateData.get().length));
+      std::vector<uint8_t>(bytes, bytes + restorableStateData.length));
   _willUpdateRestorableState = NO;
 }
 
@@ -691,11 +698,11 @@ NSPoint clickedLocation;
 // CommandDispatchingWindow implementation.
 
 - (void)setCommandHandler:(id<UserInterfaceItemCommandHandler>)commandHandler {
-  _commandHandler.reset([commandHandler retain]);
+  _commandHandler = commandHandler;
 }
 
 - (CommandDispatcher*)commandDispatcher {
-  return _commandDispatcher.get();
+  return _commandDispatcher;
 }
 
 - (BOOL)defaultPerformKeyEquivalent:(NSEvent*)event {

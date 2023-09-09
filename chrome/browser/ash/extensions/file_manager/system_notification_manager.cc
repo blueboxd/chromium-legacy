@@ -31,6 +31,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
+#include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -473,18 +474,9 @@ void SystemNotificationManager::HandleDeviceEvent(
 
 static const char kBulkPinningNotificationId[] = "drive-bulk-pinning-error";
 
-void SystemNotificationManager::HandleBulkPinningNotificationClick(
-    absl::optional<int> button_index) {
-  if (button_index.has_value()) {
-    VLOG(1) << "Click on button #" << *button_index;
-    DCHECK_EQ(*button_index, 0);
-    drive_settings_open_count_++;
-    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-        profile_, chromeos::settings::mojom::kGoogleDriveSubpagePath);
-  } else {
-    VLOG(1) << "Click on notification body";
-  }
-
+void SystemNotificationManager::HandleBulkPinningNotificationClick() {
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      profile_, chromeos::settings::mojom::kGoogleDriveSubpagePath);
   GetNotificationDisplayService()->Close(NotificationHandler::Type::TRANSIENT,
                                          kBulkPinningNotificationId);
 }
@@ -500,32 +492,56 @@ NotificationPtr SystemNotificationManager::MakeBulkPinningErrorNotification(
   }
 
   // Remember the bulk-pinning stage.
+  using enum BulkPinStage;
   const BulkPinStage old_stage = bulk_pin_stage_;
   bulk_pin_stage_ = progress.stage;
 
-  // Check the bulk-pinning stage.
-  using enum fmp::BulkPinStage;
-  if (bulk_pin_stage_ != BULK_PIN_STAGE_NOT_ENOUGH_SPACE ||
-      old_stage != BULK_PIN_STAGE_SYNCING) {
-    VLOG(1) << "Ignored BulkPinProgress event with stage '"
-            << ToString(bulk_pin_stage_) << "'";
+  if (old_stage != BULK_PIN_STAGE_SYNCING) {
     return nullptr;
   }
 
-  // Not enough space for bulk-pinning.
-  VLOG(1) << "Creating bulk-pinning error notification";
-  NotificationPtr notification = CreateSystemNotification(
-      kBulkPinningNotificationId,
-      GetStringUTF16(IDS_FILE_BROWSER_DRIVE_SYNC_ERROR_TITLE),
-      GetStringUTF16(
-          IDS_FILE_BROWSER_BULK_PINNING_NOT_ENOUGH_SPACE_NOTIFICATION),
-      MakeRefCounted<HandleNotificationClickDelegate>(BindRepeating(
-          &SystemNotificationManager::HandleBulkPinningNotificationClick,
-          weak_ptr_factory_.GetWeakPtr())));
+  // Check the bulk-pinning stage.
+  switch (bulk_pin_stage_) {
+    case BULK_PIN_STAGE_NONE:
+    case BULK_PIN_STAGE_STOPPED:
+    case BULK_PIN_STAGE_PAUSED_OFFLINE:
+    case BULK_PIN_STAGE_PAUSED_BATTERY_SAVER:
+    case BULK_PIN_STAGE_GETTING_FREE_SPACE:
+    case BULK_PIN_STAGE_LISTING_FILES:
+    case BULK_PIN_STAGE_SYNCING:
+    case BULK_PIN_STAGE_SUCCESS:
+      return nullptr;
 
-  // Add button to the notification.
-  notification->set_buttons(
-      {ButtonInfo(GetStringUTF16(IDS_FILE_BROWSER_SETTINGS_LABEL))});
+    case BULK_PIN_STAGE_NOT_ENOUGH_SPACE:
+    case BULK_PIN_STAGE_CANNOT_GET_FREE_SPACE:
+    case BULK_PIN_STAGE_CANNOT_LIST_FILES:
+    case BULK_PIN_STAGE_CANNOT_ENABLE_DOCS_OFFLINE:
+      break;
+  }
+
+  VLOG(1) << "Creating bulk-pinning error notification";
+  int title_id, message_id;
+
+  if (bulk_pin_stage_ == BULK_PIN_STAGE_NOT_ENOUGH_SPACE) {
+    if (progress.emptied_queue) {
+      title_id = IDS_FILE_BROWSER_DRIVE_SYNC_TURNED_OFF_TITLE;
+      message_id =
+          IDS_FILE_BROWSER_BULK_PINNING_NOT_ENOUGH_SPACE_NOTIFICATION_2;
+    } else {
+      title_id = IDS_FILE_BROWSER_DRIVE_SYNC_ERROR_TITLE;
+      message_id = IDS_FILE_BROWSER_BULK_PINNING_NOT_ENOUGH_SPACE_NOTIFICATION;
+    }
+  } else {
+    title_id = IDS_FILE_BROWSER_DRIVE_SYNC_TURNED_OFF_TITLE;
+    message_id = IDS_FILE_BROWSER_BULK_PINNING_ERROR;
+  }
+
+  NotificationPtr notification = CreateSystemNotification(
+      kBulkPinningNotificationId, GetStringUTF16(title_id),
+      GetStringUTF16(message_id),
+      BindRepeating(
+          &SystemNotificationManager::HandleBulkPinningNotificationClick,
+          weak_ptr_factory_.GetWeakPtr()));
 
   return notification;
 }
@@ -779,7 +795,7 @@ void SystemNotificationManager::HandleIOTaskProgress(
       return;
     }
     Dismiss(id);
-    manager->ShowsFilesPolicyNotification(id, status);
+    manager->ShowFilesPolicyNotification(id, status);
     return;
   }
 

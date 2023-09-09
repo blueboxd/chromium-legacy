@@ -16,7 +16,6 @@
 #include "services/device/public/cpp/bluetooth/bluetooth_utils.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/device/public/mojom/serial.mojom.h"
-#include "services/device/serial/bluetooth_serial_port_impl.h"
 
 namespace device {
 
@@ -45,19 +44,11 @@ class BluetoothSerialDeviceEnumerator::AdapterHelper
                 scoped_refptr<base::SequencedTaskRunner> enumerator_runner);
 
   void OnGotClassicAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
-  void OnGotAdapterForTesting(base::OnceClosure callback);
 
   // BluetoothAdapter::Observer methods:
   void DeviceAdded(BluetoothAdapter* adapter, BluetoothDevice* device) override;
   void DeviceRemoved(BluetoothAdapter* adapter,
                      BluetoothDevice* device) override;
-
-  void OpenPort(const std::string& address,
-                const BluetoothUUID& service_class_id,
-                mojom::SerialConnectionOptionsPtr options,
-                mojo::PendingRemote<mojom::SerialPortClient> client,
-                mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher,
-                BluetoothSerialPortImpl::OpenCallback callback);
 
  private:
   // The enumerator that owns this instance.
@@ -74,7 +65,6 @@ class BluetoothSerialDeviceEnumerator::AdapterHelper
   base::ScopedObservation<BluetoothAdapter, BluetoothAdapter::Observer>
       observation_{this};
   SEQUENCE_CHECKER(sequence_checker_);
-  base::OnceClosure got_adapter_callback_;
   base::WeakPtrFactory<AdapterHelper> weak_ptr_factory_{this};
 };
 
@@ -99,20 +89,10 @@ void BluetoothSerialDeviceEnumerator::AdapterHelper::OnGotClassicAdapter(
     DeviceAdded(adapter_.get(), device);
   }
   observation_.Observe(adapter_.get());
-  if (got_adapter_callback_) {
-    std::move(got_adapter_callback_).Run();
-  }
-}
-
-void BluetoothSerialDeviceEnumerator::AdapterHelper::OnGotAdapterForTesting(
-    base::OnceClosure callback) {
-  if (adapter_) {
-    std::move(callback).Run();
-    return;
-  }
-
-  DCHECK(!got_adapter_callback_);
-  got_adapter_callback_ = std::move(callback);
+  enumerator_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&BluetoothSerialDeviceEnumerator::SetClassicAdapter,
+                     enumerator_, adapter_));
 }
 
 void BluetoothSerialDeviceEnumerator::AdapterHelper::DeviceAdded(
@@ -135,18 +115,6 @@ void BluetoothSerialDeviceEnumerator::AdapterHelper::DeviceRemoved(
                                 enumerator_, device->GetAddress()));
 }
 
-void BluetoothSerialDeviceEnumerator::AdapterHelper::OpenPort(
-    const std::string& address,
-    const BluetoothUUID& service_class_id,
-    mojom::SerialConnectionOptionsPtr options,
-    mojo::PendingRemote<mojom::SerialPortClient> client,
-    mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher,
-    BluetoothSerialPortImpl::OpenCallback callback) {
-  BluetoothSerialPortImpl::Open(adapter_, address, service_class_id,
-                                std::move(options), std::move(client),
-                                std::move(watcher), std::move(callback));
-}
-
 BluetoothSerialDeviceEnumerator::BluetoothSerialDeviceEnumerator(
     scoped_refptr<base::SingleThreadTaskRunner> adapter_runner) {
   DCHECK(base::FeatureList::IsEnabled(
@@ -158,6 +126,16 @@ BluetoothSerialDeviceEnumerator::BluetoothSerialDeviceEnumerator(
 }
 
 BluetoothSerialDeviceEnumerator::~BluetoothSerialDeviceEnumerator() = default;
+
+void BluetoothSerialDeviceEnumerator::SetClassicAdapter(
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(adapter);
+  adapter_ = std::move(adapter);
+  if (got_adapter_callback_) {
+    std::move(got_adapter_callback_).Run();
+  }
+}
 
 void BluetoothSerialDeviceEnumerator::DeviceAdded(
     base::StringPiece device_address,
@@ -196,16 +174,8 @@ void BluetoothSerialDeviceEnumerator::DeviceRemoved(
   });
 }
 
-void BluetoothSerialDeviceEnumerator::OpenPort(
-    const std::string& address,
-    const BluetoothUUID& service_class_id,
-    mojom::SerialConnectionOptionsPtr options,
-    mojo::PendingRemote<mojom::SerialPortClient> client,
-    mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher,
-    BluetoothSerialPortImpl::OpenCallback callback) {
-  helper_.AsyncCall(&AdapterHelper::OpenPort)
-      .WithArgs(address, service_class_id, std::move(options),
-                std::move(client), std::move(watcher), std::move(callback));
+scoped_refptr<BluetoothAdapter> BluetoothSerialDeviceEnumerator::GetAdapter() {
+  return adapter_;
 }
 
 absl::optional<std::string>
@@ -231,8 +201,13 @@ BluetoothUUID BluetoothSerialDeviceEnumerator::GetServiceClassIdFromToken(
 
 void BluetoothSerialDeviceEnumerator::OnGotAdapterForTesting(
     base::OnceClosure closure) {
-  helper_.AsyncCall(&AdapterHelper::OnGotAdapterForTesting)
-      .WithArgs(std::move(closure));
+  if (adapter_) {
+    std::move(closure).Run();
+    return;
+  }
+
+  DCHECK(!got_adapter_callback_);
+  got_adapter_callback_ = std::move(closure);
 }
 
 void BluetoothSerialDeviceEnumerator::DeviceAddedForTesting(

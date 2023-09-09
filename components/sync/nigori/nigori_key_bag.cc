@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "components/sync/engine/nigori/nigori.h"
+#include "components/sync/protocol/nigori_local_data.pb.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
 
 namespace syncer {
@@ -28,17 +29,6 @@ sync_pb::NigoriKey NigoriToProto(const Nigori& nigori,
   return proto;
 }
 
-sync_pb::CrossUserSharingPrivateKey KeyPairToPrivateKeyProto(
-    const uint32_t version,
-    const CrossUserSharingPublicPrivateKeyPair& key_pair) {
-  auto raw_private_key = key_pair.GetRawPrivateKey();
-  sync_pb::CrossUserSharingPrivateKey output;
-  output.set_version(version);
-  output.set_x25519_private_key(
-      std::string(std::begin(raw_private_key), std::end(raw_private_key)));
-  return output;
-}
-
 std::unique_ptr<Nigori> CloneNigori(const Nigori& nigori) {
   std::string user_key;
   std::string encryption_key;
@@ -51,17 +41,6 @@ std::unique_ptr<Nigori> CloneNigori(const Nigori& nigori) {
   return nigori_copy;
 }
 
-CrossUserSharingPublicPrivateKeyPair CloneKeyPair(
-    const CrossUserSharingPublicPrivateKeyPair& key_pair) {
-  const auto raw_private_key = key_pair.GetRawPrivateKey();
-  std::vector<uint8_t> key_for_import(raw_private_key.begin(),
-                                      raw_private_key.end());
-  absl::optional<CrossUserSharingPublicPrivateKeyPair> clone =
-      CrossUserSharingPublicPrivateKeyPair::CreateByImport(key_for_import);
-  CHECK(clone.has_value());
-  return std::move(clone.value());
-}
-
 }  // namespace
 
 // static
@@ -70,7 +49,8 @@ NigoriKeyBag NigoriKeyBag::CreateEmpty() {
 }
 
 // static
-NigoriKeyBag NigoriKeyBag::CreateFromProto(const sync_pb::NigoriKeyBag& proto) {
+NigoriKeyBag NigoriKeyBag::CreateFromProto(
+    const sync_pb::LocalNigoriKeyBag& proto) {
   NigoriKeyBag output;
   for (const sync_pb::NigoriKey& key : proto.key()) {
     if (output.AddKeyFromProto(key).empty()) {
@@ -79,13 +59,6 @@ NigoriKeyBag NigoriKeyBag::CreateFromProto(const sync_pb::NigoriKeyBag& proto) {
       DLOG(ERROR) << "Invalid NigoriKey protocol buffer message.";
     }
   }
-  for (const sync_pb::CrossUserSharingPrivateKey& key :
-       proto.cross_user_sharing_private_key()) {
-    if (!output.AddKeyPairFromProto(key)) {
-      DLOG(WARNING) << "Could not add PrivateKey protocol buffer message.";
-    }
-  }
-
   return output;
 }
 
@@ -93,19 +66,10 @@ NigoriKeyBag::NigoriKeyBag(NigoriKeyBag&& other) = default;
 
 NigoriKeyBag::~NigoriKeyBag() = default;
 
-void NigoriKeyBag::CopyFrom(const NigoriKeyBag& other) {
-  nigori_map_.clear();
-  AddAllUnknownKeysFrom(other);
-}
-
-sync_pb::NigoriKeyBag NigoriKeyBag::ToProto() const {
-  sync_pb::NigoriKeyBag output;
+sync_pb::LocalNigoriKeyBag NigoriKeyBag::ToProto() const {
+  sync_pb::LocalNigoriKeyBag output;
   for (const auto& [key_name, nigori] : nigori_map_) {
     *output.add_key() = NigoriToProto(*nigori, key_name);
-  }
-  for (const auto& [key_version, key_pair] : key_pairs_map_) {
-    *output.add_cross_user_sharing_private_key() =
-        KeyPairToPrivateKeyProto(key_version, key_pair);
   }
 
   return output;
@@ -123,10 +87,6 @@ size_t NigoriKeyBag::size() const {
 
 bool NigoriKeyBag::HasKey(const std::string& key_name) const {
   return nigori_map_.count(key_name) != 0;
-}
-
-bool NigoriKeyBag::HasKeyPair(uint32_t key_pair_version) const {
-  return key_pairs_map_.contains(key_pair_version);
 }
 
 sync_pb::NigoriKey NigoriKeyBag::ExportKey(const std::string& key_name) const {
@@ -171,29 +131,6 @@ void NigoriKeyBag::AddAllUnknownKeysFrom(const NigoriKeyBag& other) {
     // Only use this key if we don't already know about it.
     nigori_map_.emplace(key_name, CloneNigori(*nigori));
   }
-  for (const auto& [public_key, key_pair] : other.key_pairs_map_) {
-    key_pairs_map_.emplace(public_key, CloneKeyPair(key_pair));
-  }
-}
-
-bool NigoriKeyBag::AddKeyPairFromProto(
-    const sync_pb::CrossUserSharingPrivateKey& key) {
-  std::vector<uint8_t> private_key(key.x25519_private_key().begin(),
-                                   key.x25519_private_key().end());
-  absl::optional<CrossUserSharingPublicPrivateKeyPair> key_pair =
-      CrossUserSharingPublicPrivateKeyPair::CreateByImport(private_key);
-
-  if (!key_pair.has_value()) {
-    return false;
-  }
-
-  AddKeyPair(std::move(key_pair.value()), key.version());
-  return true;
-}
-
-void NigoriKeyBag::AddKeyPair(CrossUserSharingPublicPrivateKeyPair key_pair,
-                              uint32_t version) {
-  key_pairs_map_.emplace(version, std::move(key_pair));
 }
 
 bool NigoriKeyBag::EncryptWithKey(

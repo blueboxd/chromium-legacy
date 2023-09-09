@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/find_in_page/find_in_page_egtest_util.h"
 
 #import "base/test/ios/wait_util.h"
-#import "ios/chrome/browser/find_in_page/features.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_app_interface.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
@@ -27,8 +26,6 @@ constexpr char kFindInPageSearchFieldID[] = "find.searchField";
 constexpr char kFindInPageResultLabelID[] = "find.resultLabel";
 constexpr char kFindInPageNextButtonID[] = "find.nextButton";
 constexpr char kFindInPagePreviousButtonID[] = "find.previousButton";
-constexpr char kFindInPageClearButtonKindOfClassName[] =
-    "_UITextFieldClearButton";
 }
 
 // Tests for Native Find in Page. This tests the variant of Native Find in Page
@@ -42,21 +39,6 @@ constexpr char kFindInPageClearButtonKindOfClassName[] =
 
 @implementation FindInPageTestCase {
   FindInPageTestCaseHelper* _helper;
-}
-
-- (AppLaunchConfiguration)appConfigurationForTestCase {
-  AppLaunchConfiguration config = [super appConfigurationForTestCase];
-
-  // Enable `kNativeFindInPage`. This test case only tests the "System Find
-  // Panel" variant of Native Find in Page i.e. the one relying on a Find
-  // interaction and the new system UI.
-  config.additional_args.push_back(
-      "--enable-features=" + std::string(kNativeFindInPage.name) + "<" +
-      std::string(kNativeFindInPage.name));
-  config.additional_args.push_back(
-      "--force-fieldtrials=" + std::string(kNativeFindInPage.name) + "/Test");
-
-  return config;
 }
 
 - (void)setUp {
@@ -97,10 +79,9 @@ constexpr char kFindInPageClearButtonKindOfClassName[] =
       performAction:grey_tap()];
 }
 
-- (void)typeFindInPageText:(NSString*)text {
-  // TODO(crbug.com/1454851): This should use grey_replaceText, but the clear
-  // button doesn't show up, so use simulatePhysicalKeyboardEvent instead.
-  [ChromeEarlGrey simulatePhysicalKeyboardEvent:text flags:0];
+- (void)replaceFindInPageText:(NSString*)text {
+  [[EarlGrey selectElementWithMatcher:[self findInPageInputField]]
+      performAction:grey_replaceText(text)];
 }
 
 - (void)pasteTextToFindInPage:(NSString*)text {
@@ -111,10 +92,8 @@ constexpr char kFindInPageClearButtonKindOfClassName[] =
 }
 
 - (void)clearFindInPageText {
-  [[EarlGrey
-      selectElementWithMatcher:grey_kindOfClassName(
-                                   @(kFindInPageClearButtonKindOfClassName))]
-      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:[self findInPageInputField]]
+      performAction:grey_replaceText(@"")];
 }
 
 - (id<GREYMatcher>)findInPageInputField {
@@ -278,6 +257,13 @@ constexpr char kFindInPageClearButtonKindOfClassName[] =
 // Tests that there is no query persistence when coming back to a normal tab
 // after switching temporarily to another tab.
 - (void)testFindInPageSwitchingTabs {
+  // TODO(crbug.com/1464379): Failing on iOS17 iPhone.
+  if (@available(iOS 17.0, *)) {
+    if (![ChromeEarlGrey isIPadIdiom]) {
+      XCTSkip(@"Failing on iOS17 iPhone");
+    }
+  }
+
   [_helper helperTestFindInPageSwitchingTabsWithQueryPersistence:NO];
 }
 

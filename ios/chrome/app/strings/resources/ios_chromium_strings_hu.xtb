@@ -42,7 +42,6 @@
 <translation id="2942241131342758843">A Chromiumot alapértelmezett böngészőként használva linkek nyithatók meg, modulokban lehet keresni, és jelszavak tölthetők be automatikusan az egyéb alkalmazásokban</translation>
 <translation id="2977470724722393594">A Chromium naprakész</translation>
 <translation id="3102849287235003384">Ha az összes webhelyen ki szeretne jelentkezni Google-fiókjából, <ph name="BEGIN_LINK" />jelentkezzen ki a Chromiumból<ph name="END_LINK" />.</translation>
-<translation id="3115956258722352278">Legyen a Chromium az alapértelmezett böngészője?</translation>
 <translation id="3256316712990552818">A Chromiumra másolva</translation>
 <translation id="3344973607274501920">A Chromium nem tudta ellenőrizni a jelszavakat. Ellenőrizze az internetkapcsolatot.</translation>
 <translation id="3472200483164753384">A Chromium Canary nem támogatja</translation>
@@ -128,6 +127,7 @@
 <translation id="8013573822802650211">Jelentkezzen be minden eszközén, hogy bárhol hozzáférhessen a lapjaihoz, ahol a Chromiumot használja.</translation>
 <translation id="8071041515667087705">Lépjen a Chromium beállításaihoz.</translation>
 <translation id="8073677936375100957">Törli Chromium-adatait az eszközről?</translation>
+<translation id="8235427517854598594">A Chromium legyen az alapértelmezett böngésző?</translation>
 <translation id="8240981428553046115">A Chromium nem tudott frissítéseket keresni. Próbálja újra később.</translation>
 <translation id="8409374867500149834">A Chromium a legerősebb védelmet biztosítja a kártékony webhelyek ellen</translation>
 <translation id="858114650497379505">A Jelszókezelőbe mentett jelszavakat használhatja más alkalmazásokban iPhone eszközén.</translation>

@@ -7,8 +7,8 @@
 #include "base/feature_list.h"
 #include "base/functional/callback_forward.h"
 #include "base/json/json_writer.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/ui/webui/waffle/waffle_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
@@ -18,6 +18,7 @@
 #include "chrome/grit/waffle_resources_map.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
 
@@ -35,6 +36,7 @@ std::string GetChoiceListJSON(Profile* profile) {
 
   for (const auto& choice : choices) {
     base::Value::Dict choice_value;
+    choice_value.Set("id", base::NumberToString(choice->prepopulate_id));
     choice_value.Set("name", choice->short_name());
     choice_value_list.Append(std::move(choice_value));
   }
@@ -47,7 +49,7 @@ std::string GetChoiceListJSON(Profile* profile) {
 
 WaffleUI::WaffleUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui, true) {
-  CHECK(base::FeatureList::IsEnabled(kWaffle));
+  CHECK(base::FeatureList::IsEnabled(switches::kWaffle));
   auto* profile = Profile::FromWebUI(web_ui);
 
   content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
@@ -56,8 +58,10 @@ WaffleUI::WaffleUI(content::WebUI* web_ui)
 
   source->AddLocalizedString("title", IDS_WAFFLE_PAGE_TITLE);
   source->AddLocalizedString("subtitle", IDS_WAFFLE_PAGE_SUBTITLE);
-  source->AddLocalizedString("firstButton", IDS_WAFFLE_FIRST_BUTTON_TITLE);
-  source->AddLocalizedString("secondButton", IDS_WAFFLE_SECOND_BUTTON_TITLE);
+  source->AddLocalizedString("subtitleInfoLink",
+                             IDS_WAFFLE_PAGE_SUBTITLE_INFO_LINK);
+  source->AddLocalizedString("buttonText", IDS_WAFFLE_BUTTON_TITLE);
+  source->AddLocalizedString("infoTitle", IDS_WAFFLE_INFO_DIALOG_TITLE);
 
   source->AddResourcePath("images/left_illustration.svg",
                           IDR_SIGNIN_IMAGES_SHARED_LEFT_BANNER_SVG);
@@ -85,7 +89,8 @@ void WaffleUI::BindInterface(
   page_factory_receiver_.Bind(std::move(receiver));
 }
 
-void WaffleUI::Initialize(base::OnceClosure display_dialog_callback) {
+void WaffleUI::Initialize(
+    base::OnceCallback<void(int)> display_dialog_callback) {
   CHECK(display_dialog_callback);
   display_dialog_callback_ = std::move(display_dialog_callback);
 }

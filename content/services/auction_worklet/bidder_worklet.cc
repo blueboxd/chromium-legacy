@@ -403,6 +403,7 @@ void BidderWorklet::ReportWin(
     const absl::optional<GURL>& direct_from_seller_auction_signals,
     const std::string& seller_signals_json,
     mojom::KAnonymityBidMode kanon_mode,
+    bool bid_is_kanon,
     const GURL& browser_signal_render_url,
     double browser_signal_bid,
     const absl::optional<blink::AdCurrency>& browser_signal_bid_currency,
@@ -430,6 +431,7 @@ void BidderWorklet::ReportWin(
   report_win_task->per_buyer_signals_json = per_buyer_signals_json;
   report_win_task->seller_signals_json = seller_signals_json;
   report_win_task->kanon_mode = kanon_mode;
+  report_win_task->bid_is_kanon = bid_is_kanon;
   report_win_task->browser_signal_render_url = browser_signal_render_url;
   report_win_task->browser_signal_bid = browser_signal_bid;
   report_win_task->browser_signal_bid_currency = browser_signal_bid_currency;
@@ -615,6 +617,7 @@ void BidderWorklet::V8State::ReportWin(
         direct_from_seller_result_auction_signals,
     const std::string& seller_signals_json,
     mojom::KAnonymityBidMode kanon_mode,
+    bool bid_is_kanon,
     const GURL& browser_signal_render_url,
     double browser_signal_bid,
     const absl::optional<blink::AdCurrency>& browser_signal_bid_currency,
@@ -677,6 +680,23 @@ void BidderWorklet::V8State::ReportWin(
       break;
   }
 
+  std::string kanon_status;
+  if (kanon_mode == mojom::KAnonymityBidMode::kEnforce) {
+    // If k-anon was truly enforced and it passed.
+    kanon_status = "passedAndEnforced";
+  } else if (kanon_mode == mojom::KAnonymityBidMode::kSimulate) {
+    if (bid_is_kanon) {
+      // If K-anon can determine the value and kSimulate is on.
+      kanon_status = "passedNotEnforced";
+    } else {
+      // Number of ad was below the threshold and kSimulate is on.
+      kanon_status = "belowThreshold";
+    }
+  } else if (kanon_mode == mojom::KAnonymityBidMode::kNone) {
+    // K-anon cannot determine the theoretical outcome.
+    kanon_status = "notCalculated";
+  }
+
   if (!browser_signals_dict.Set("topWindowHostname",
                                 top_window_origin_.host()) ||
       !browser_signals_dict.Set(
@@ -718,15 +738,16 @@ void BidderWorklet::V8State::ReportWin(
       (bidding_signals_data_version.has_value() &&
        !browser_signals_dict.Set("dataVersion",
                                  bidding_signals_data_version.value())) ||
-      !browser_signals_dict.Set(
-          "enforcedKAnon", kanon_mode == mojom::KAnonymityBidMode::kEnforce)) {
+      (!kanon_status.empty() &&
+       !browser_signals_dict.Set("kAnonStatus", kanon_status))) {
     PostReportWinCallbackToUserThread(std::move(callback),
                                       /*report_url=*/absl::nullopt,
-                                      /*ad_beacon_map=*/{}, /*pa_requests=*/{},
-                                      base::TimeDelta(),
+                                      /*ad_beacon_map=*/{},
+                                      /*pa_requests=*/{}, base::TimeDelta(),
                                       /*errors=*/std::vector<std::string>());
     return;
   }
+
   args.push_back(browser_signals);
 
   std::vector<std::string> errors_out;
@@ -759,9 +780,11 @@ void BidderWorklet::V8State::ReportWin(
   v8::Local<v8::UnboundScript> unbound_worklet_script =
       worklet_script_.Get(isolate);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "report_win", trace_id);
+  std::unique_ptr<AuctionV8Helper::TimeLimit> total_timeout =
+      v8_helper_->CreateTimeLimit(/*script_timeout=*/absl::nullopt);
   bool script_failed =
       !v8_helper_->RunScript(context, unbound_worklet_script, debug_id_.get(),
-                             /*script_timeout=*/absl::nullopt, errors_out);
+                             total_timeout.get(), errors_out);
   if (script_failed) {
     TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "report_win", trace_id);
     PostReportWinCallbackToUserThread(
@@ -787,8 +810,7 @@ void BidderWorklet::V8State::ReportWin(
       v8_helper_
           ->CallFunction(context, debug_id_.get(),
                          v8_helper_->FormatScriptName(unbound_worklet_script),
-                         "reportWin", args, /*script_timeout=*/absl::nullopt,
-                         errors_out)
+                         "reportWin", args, total_timeout.get(), errors_out)
           .IsEmpty();
   TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "report_win", trace_id);
 
@@ -1014,10 +1036,13 @@ BidderWorklet::V8State::GenerateSingleBid(
   v8_helper_->MaybeTriggerInstrumentationBreakpoint(
       *debug_id_, "beforeBidderWorkletBiddingStart");
 
+  std::unique_ptr<AuctionV8Helper::TimeLimit> total_timeout =
+      v8_helper_->CreateTimeLimit(per_buyer_timeout);
+
   // No recycled context, make a fresh one.
   if (!context_recycler) {
     fresh_context_recycler = CreateContextRecyclerAndRunTopLevelForGenerateBid(
-        trace_id, per_buyer_timeout, should_deep_freeze, errors_out);
+        trace_id, total_timeout.get(), should_deep_freeze, errors_out);
 
     if (!fresh_context_recycler) {
       return absl::make_optional(SingleGenerateBidResult(
@@ -1079,7 +1104,8 @@ BidderWorklet::V8State::GenerateSingleBid(
   v8::Local<v8::Context> context = context_recycler_scope.GetContext();
 
   context_recycler->set_bid_bindings()->ReInitialize(
-      start, browser_signal_top_level_seller_origin != nullptr,
+      start, total_timeout.get(),
+      browser_signal_top_level_seller_origin != nullptr,
       &bidder_worklet_non_shared_params, expected_buyer_currency,
       should_exclude_ad_due_to_kanon, should_exclude_component_ad_due_to_kanon);
 
@@ -1226,17 +1252,19 @@ BidderWorklet::V8State::GenerateSingleBid(
           ->CallFunction(
               context, debug_id_.get(),
               v8_helper_->FormatScriptName(worklet_script_.Get(isolate)),
-              "generateBid", args, std::move(per_buyer_timeout), errors_out)
+              "generateBid", args, total_timeout.get(), errors_out)
           .ToLocal(&generate_bid_result);
   TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "generate_bid", trace_id);
   base::UmaHistogramTimes("Ads.InterestGroup.Auction.GenerateBidTime",
                           base::TimeTicks::Now() - start);
 
   if (got_return_value) {
+    v8::MaybeLocal<v8::Value> ignore_exception;  // only need the message.
+    bool ignore_timeout;  // handle timeout the same way as everything else.
     context_recycler->set_bid_bindings()->SetBid(
         generate_bid_result,
         base::StrCat({script_source_url_.spec(), " generateBid() "}),
-        errors_out);
+        ignore_exception, errors_out, ignore_timeout);
   }
 
   if (!context_recycler->set_bid_bindings()->has_bid()) {
@@ -1282,7 +1310,7 @@ BidderWorklet::V8State::GenerateSingleBid(
 std::unique_ptr<ContextRecycler>
 BidderWorklet::V8State::CreateContextRecyclerAndRunTopLevelForGenerateBid(
     uint64_t trace_id,
-    const absl::optional<base::TimeDelta> per_buyer_timeout,
+    AuctionV8Helper::TimeLimit* total_timeout,
     bool should_deep_freeze,
     std::vector<std::string>& errors_out) {
   base::TimeTicks start = base::TimeTicks::Now();
@@ -1298,7 +1326,7 @@ BidderWorklet::V8State::CreateContextRecyclerAndRunTopLevelForGenerateBid(
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "biddingScript", trace_id);
   bool success =
       v8_helper_->RunScript(context, unbound_worklet_script, debug_id_.get(),
-                            per_buyer_timeout, errors_out);
+                            total_timeout, errors_out);
   TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "biddingScript", trace_id);
   base::UmaHistogramTimes("Ads.InterestGroup.Auction.BidScriptTime",
                           base::TimeTicks::Now() - start);
@@ -1830,6 +1858,7 @@ void BidderWorklet::RunReportWinIfReady(ReportWinTaskList::iterator task) {
           std::move(task->direct_from_seller_result_per_buyer_signals),
           std::move(task->direct_from_seller_result_auction_signals),
           std::move(task->seller_signals_json), std::move(task->kanon_mode),
+          std::move(task->bid_is_kanon),
           std::move(task->browser_signal_render_url),
           std::move(task->browser_signal_bid),
           std::move(task->browser_signal_bid_currency),

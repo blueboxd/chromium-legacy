@@ -102,12 +102,11 @@ static_assert(sizeof(void*) != 8, "");
 // - On Linux, futex(2)
 // - On Windows, a fast userspace "try" operation which is available
 //   with SRWLock
-// - Otherwise, a fast userspace pthread_mutex_trylock().
-//
-// On macOS, pthread_mutex_trylock() is fast by default starting with macOS
-// 10.14. Chromium targets an earlier version, so it cannot be known at
-// compile-time. So we use something different. On other POSIX systems, we
-// assume that pthread_mutex_trylock() is suitable.
+// - On macOS, pthread_mutex_trylock() is fast by default starting with macOS
+//   10.14. Chromium targets an earlier version, so it cannot be known at
+//   compile-time. So we use something different.
+// - Otherwise, on POSIX we assume that a fast userspace pthread_mutex_trylock()
+//   is available.
 //
 // Otherwise, a userspace spinlock implementation is used.
 #if PA_CONFIG(HAS_LINUX_KERNEL) || BUILDFLAG(IS_WIN) || !BUILDFLAG(IS_APPLE) && \
@@ -255,12 +254,14 @@ constexpr bool kUseLazyCommit = false;
     BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)))
 
 // Use available space in the reference count to store the initially requested
-// size from the application. This is used for debugging. On mac, it is used to
-// workaround a bug. (crbug.com/1378822)
-#if BUILDFLAG(IS_MAC) && !PA_CONFIG(REF_COUNT_CHECK_COOKIE) && \
+// size from the application. This is used for debugging.
+#if !PA_CONFIG(REF_COUNT_CHECK_COOKIE) && \
     !BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS)
-#define PA_CONFIG_REF_COUNT_STORE_REQUESTED_SIZE() 1
+// Set to 1 when needed.
+#define PA_CONFIG_REF_COUNT_STORE_REQUESTED_SIZE() 0
 #else
+// You probably want it at 0, outside of local testing, or else
+// PartitionRefCount will grow past 8B.
 #define PA_CONFIG_REF_COUNT_STORE_REQUESTED_SIZE() 0
 #endif
 

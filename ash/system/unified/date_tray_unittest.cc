@@ -4,10 +4,19 @@
 
 #include "ash/system/unified/date_tray.h"
 
+#include <memory>
+#include <vector>
+
+#include "ash/constants/ash_features.h"
+#include "ash/glanceables/classroom/glanceables_classroom_client.h"
+#include "ash/glanceables/classroom/glanceables_classroom_types.h"
+#include "ash/glanceables/common/glanceables_list_footer_view.h"
+#include "ash/glanceables/common/glanceables_view_id.h"
 #include "ash/glanceables/glanceables_v2_controller.h"
 #include "ash/glanceables/tasks/fake_glanceables_tasks_client.h"
 #include "ash/glanceables/tasks/glanceables_task_view.h"
 #include "ash/public/cpp/test/shell_test_api.h"
+#include "ash/public/cpp/test/test_new_window_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
@@ -22,18 +31,113 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "base/time/time_override.h"
+#include "base/types/cxx23_to_underlying.h"
+#include "components/account_id/account_id.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/view_utils.h"
 #include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_client.h"
-
-namespace {
-constexpr char kUserEmail[] = "test_user@gmail.com";
-}
+#include "url/gurl.h"
 
 namespace ash {
+
+namespace {
+
+class TestGlanceablesClassroomClient : public GlanceablesClassroomClient {
+ public:
+  TestGlanceablesClassroomClient() {
+    EXPECT_TRUE(features::AreGlanceablesV2Enabled());
+  }
+
+  // GlanceablesClassroomClient:
+  void IsStudentRoleActive(
+      GlanceablesClassroomClient::IsRoleEnabledCallback cb) override {
+    pending_is_student_role_enabled_callbacks_.push_back(std::move(cb));
+  }
+  void IsTeacherRoleActive(
+      GlanceablesClassroomClient::IsRoleEnabledCallback cb) override {
+    pending_is_teacher_role_enabled_callbacks_.push_back(std::move(cb));
+  }
+  void GetCompletedStudentAssignments(
+      GlanceablesClassroomClient::GetAssignmentsCallback cb) override {
+    std::move(cb).Run({});
+  }
+  void GetStudentAssignmentsWithApproachingDueDate(
+      GlanceablesClassroomClient::GetAssignmentsCallback cb) override {
+    std::move(cb).Run({});
+  }
+  void GetStudentAssignmentsWithMissedDueDate(
+      GlanceablesClassroomClient::GetAssignmentsCallback cb) override {
+    std::move(cb).Run({});
+  }
+  void GetStudentAssignmentsWithoutDueDate(
+      GlanceablesClassroomClient::GetAssignmentsCallback cb) override {
+    std::move(cb).Run({});
+  }
+  void GetTeacherAssignmentsWithApproachingDueDate(
+      GlanceablesClassroomClient::GetAssignmentsCallback cb) override {
+    std::move(cb).Run({});
+  }
+  void GetTeacherAssignmentsRecentlyDue(
+      GlanceablesClassroomClient::GetAssignmentsCallback cb) override {
+    std::move(cb).Run({});
+  }
+  void GetTeacherAssignmentsWithoutDueDate(
+      GlanceablesClassroomClient::GetAssignmentsCallback cb) override {
+    std::move(cb).Run({});
+  }
+  void GetGradedTeacherAssignments(
+      GlanceablesClassroomClient::GetAssignmentsCallback cb) override {
+    std::move(cb).Run({});
+  }
+  void OpenUrl(const GURL& url) const override {}
+  void OnGlanceablesBubbleClosed() override { ++bubble_closed_count_; }
+
+  // Returns `bubble_closed_count_`, while also resetting the counter.
+  int GetAndResetBubbleClosedCount() {
+    int result = bubble_closed_count_;
+    bubble_closed_count_ = 0;
+    return result;
+  }
+
+  void RespondToPendingIsStudentRoleEnabledCallbacks(bool is_active) {
+    for (auto& cb : pending_is_student_role_enabled_callbacks_) {
+      std::move(cb).Run(is_active);
+    }
+    pending_is_student_role_enabled_callbacks_.clear();
+  }
+
+  void RespondToPendingIsTeacherRoleEnabledCallbacks(bool is_active) {
+    for (auto& cb : pending_is_teacher_role_enabled_callbacks_) {
+      std::move(cb).Run(is_active);
+    }
+    pending_is_teacher_role_enabled_callbacks_.clear();
+  }
+
+ private:
+  std::vector<GlanceablesClassroomClient::IsRoleEnabledCallback>
+      pending_is_student_role_enabled_callbacks_;
+  std::vector<GlanceablesClassroomClient::IsRoleEnabledCallback>
+      pending_is_teacher_role_enabled_callbacks_;
+
+  // Number of times `OnGlanceablesBubbleClosed()` has been called.
+  int bubble_closed_count_ = 0;
+};
+
+class MockNewWindowDelegate : public testing::NiceMock<TestNewWindowDelegate> {
+ public:
+  // TestNewWindowDelegate:
+  MOCK_METHOD(void,
+              OpenUrl,
+              (const GURL& url, OpenUrlFrom from, Disposition disposition),
+              (override));
+};
+
+}  // namespace
 
 class DateTrayTest
     : public AshTestBase,
@@ -43,6 +147,12 @@ class DateTrayTest
   DateTrayTest() {
     scoped_feature_list_.InitWithFeatureState(features::kGlanceablesV2,
                                               GetParam());
+
+    auto delegate = std::make_unique<MockNewWindowDelegate>();
+    new_window_delegate_ = delegate.get();
+    window_delegate_provider_ =
+        std::make_unique<ash::TestNewWindowDelegateProvider>(
+            std::move(delegate));
   }
 
   DateTrayTest(const DateTrayTest&) = delete;
@@ -63,7 +173,7 @@ class DateTrayTest
 
     AshTestBase::SetUp();
 
-    SimulateUserLogin(GetAccountId(kUserEmail));
+    SimulateUserLogin(account_id_);
 
     widget_ = CreateFramelessTestWidget();
     widget_->SetContentsView(std::make_unique<views::View>());
@@ -77,18 +187,22 @@ class DateTrayTest
     date_tray_->unified_system_tray_->SetVisiblePreferred(true);
 
     if (AreGlanceablesV2Enabled()) {
+      glanceables_classroom_client_ =
+          std::make_unique<TestGlanceablesClassroomClient>();
       fake_glanceables_tasks_client_ =
           std::make_unique<FakeGlanceablesTasksClient>();
       Shell::Get()->glanceables_v2_controller()->UpdateClientsRegistration(
-          GetAccountId(kUserEmail),
+          account_id_,
           GlanceablesV2Controller::ClientsRegistration{
+              .classroom_client = glanceables_classroom_client_.get(),
               .tasks_client = fake_glanceables_tasks_client_.get()});
     }
   }
 
   void TearDown() override {
     if (AreGlanceablesV2Enabled()) {
-      fake_glanceables_tasks_client_.reset();
+      Shell::Get()->glanceables_v2_controller()->UpdateClientsRegistration(
+          account_id_, GlanceablesV2Controller::ClientsRegistration{});
     }
 
     widget_.reset();
@@ -152,16 +266,21 @@ class DateTrayTest
     GetUnifiedSystemTray()->CloseBubble();
   }
 
-  AccountId GetAccountId(base::StringPiece email) {
-    return AccountId::FromUserEmail(std::string(email));
+  TestGlanceablesClassroomClient* glanceables_classroom_client() {
+    return glanceables_classroom_client_.get();
   }
 
   FakeGlanceablesTasksClient* fake_glanceables_tasks_client() {
     return fake_glanceables_tasks_client_.get();
   }
 
+  MockNewWindowDelegate* new_window_delegate() { return new_window_delegate_; }
+
  private:
   std::unique_ptr<views::Widget> widget_;
+  AccountId account_id_ =
+      AccountId::FromUserEmailGaiaId("test_user@gmail.com", "123456");
+  std::unique_ptr<TestGlanceablesClassroomClient> glanceables_classroom_client_;
   std::unique_ptr<FakeGlanceablesTasksClient> fake_glanceables_tasks_client_;
   bool observering_activation_changes_ = false;
 
@@ -171,6 +290,10 @@ class DateTrayTest
   raw_ptr<UnifiedSystemTray, ExperimentalAsh> unified_system_tray_ = nullptr;
 
   base::test::ScopedFeatureList scoped_feature_list_;
+
+  std::unique_ptr<ash::TestNewWindowDelegateProvider> window_delegate_provider_;
+  raw_ptr<MockNewWindowDelegate, DanglingUntriaged> new_window_delegate_ =
+      nullptr;
 };
 
 INSTANTIATE_TEST_SUITE_P(GlanceablesV2, DateTrayTest, testing::Bool());
@@ -193,6 +316,12 @@ TEST_P(DateTrayTest, InitialState) {
   // Initial state: not showing the calendar bubble.
   EXPECT_FALSE(IsBubbleShown());
   EXPECT_FALSE(AreContentsViewShown());
+  if (AreGlanceablesV2Enabled()) {
+    EXPECT_EQ(0,
+              fake_glanceables_tasks_client()->GetAndResetBubbleClosedCount());
+    EXPECT_EQ(0,
+              glanceables_classroom_client()->GetAndResetBubbleClosedCount());
+  }
 }
 
 TEST_P(DateTrayTest, ShowTasksComboModel) {
@@ -223,12 +352,7 @@ TEST_P(DateTrayTest, ShowTasksComboModel) {
     PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
 
     // Verify the number of items in task_items_container_view()->children().
-    EXPECT_EQ(GetGlanceableTrayBubble()
-                  ->GetTasksView()
-                  ->task_items_container_view()
-                  ->children()
-                  .size(),
-              3u);
+    EXPECT_EQ(tasks_view->task_items_container_view()->children().size(), 3u);
   }
 }
 
@@ -273,6 +397,24 @@ TEST_P(DateTrayTest, MarkTaskAsComplete) {
   }
 }
 
+// Tests that tapping the tasks glanceable action button opens a browser page.
+TEST_P(DateTrayTest, ShowTasksWebUI) {
+  LeftClickOn(GetDateTray());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(IsBubbleShown());
+  EXPECT_TRUE(AreContentsViewShown());
+
+  if (!AreGlanceablesV2Enabled()) {
+    EXPECT_EQ(GetGlanceableTrayBubble(), nullptr);
+  } else {
+    const auto* const see_all_button = views::AsViewClass<views::LabelButton>(
+        GetGlanceableTrayBubble()->GetTasksView()->GetViewByID(
+            base::to_underlying(GlanceablesViewId::kListFooterSeeAllButton)));
+    EXPECT_CALL(*new_window_delegate(), OpenUrl).Times(1);
+    GestureTapOn(see_all_button);
+  }
+}
+
 // Tests clicking/tapping the DateTray shows/closes the calendar bubble.
 TEST_P(DateTrayTest, ShowCalendarBubble) {
   base::HistogramTester histogram_tester;
@@ -293,6 +435,12 @@ TEST_P(DateTrayTest, ShowCalendarBubble) {
   EXPECT_FALSE(AreContentsViewShown());
   EXPECT_FALSE(GetUnifiedSystemTray()->is_active());
   EXPECT_FALSE(GetDateTray()->is_active());
+  if (AreGlanceablesV2Enabled()) {
+    EXPECT_EQ(1,
+              fake_glanceables_tasks_client()->GetAndResetBubbleClosedCount());
+    EXPECT_EQ(1,
+              glanceables_classroom_client()->GetAndResetBubbleClosedCount());
+  }
 
   // Tapping on the `DateTray` again -> open the calendar bubble.
   GestureTapOn(GetDateTray());
@@ -312,6 +460,12 @@ TEST_P(DateTrayTest, ShowCalendarBubble) {
   EXPECT_FALSE(AreContentsViewShown());
   EXPECT_FALSE(GetUnifiedSystemTray()->is_active());
   EXPECT_FALSE(GetDateTray()->is_active());
+  if (AreGlanceablesV2Enabled()) {
+    EXPECT_EQ(1,
+              fake_glanceables_tasks_client()->GetAndResetBubbleClosedCount());
+    EXPECT_EQ(1,
+              glanceables_classroom_client()->GetAndResetBubbleClosedCount());
+  }
 }
 
 // Tests the behavior when clicking on different areas.
@@ -336,6 +490,12 @@ TEST_P(DateTrayTest, ClickingArea) {
   EXPECT_TRUE(GetUnifiedSystemTray()->IsBubbleShown());
   EXPECT_TRUE(GetUnifiedSystemTray()->is_active());
   EXPECT_FALSE(GetDateTray()->is_active());
+  if (AreGlanceablesV2Enabled()) {
+    EXPECT_EQ(1,
+              fake_glanceables_tasks_client()->GetAndResetBubbleClosedCount());
+    EXPECT_EQ(1,
+              glanceables_classroom_client()->GetAndResetBubbleClosedCount());
+  }
 
   // Clicking on the `DateTray` -> switch to the calendar bubble.
   LeftClickOn(GetDateTray());
@@ -351,6 +511,12 @@ TEST_P(DateTrayTest, ClickingArea) {
   EXPECT_FALSE(GetUnifiedSystemTray()->IsBubbleShown());
   EXPECT_FALSE(GetUnifiedSystemTray()->is_active());
   EXPECT_FALSE(GetDateTray()->is_active());
+  if (AreGlanceablesV2Enabled()) {
+    EXPECT_EQ(1,
+              fake_glanceables_tasks_client()->GetAndResetBubbleClosedCount());
+    EXPECT_EQ(1,
+              glanceables_classroom_client()->GetAndResetBubbleClosedCount());
+  }
 }
 
 TEST_P(DateTrayTest, EscapeKeyForClose) {
@@ -372,6 +538,12 @@ TEST_P(DateTrayTest, EscapeKeyForClose) {
   EXPECT_FALSE(AreContentsViewShown());
   EXPECT_FALSE(GetUnifiedSystemTray()->is_active());
   EXPECT_FALSE(GetDateTray()->is_active());
+  if (AreGlanceablesV2Enabled()) {
+    EXPECT_EQ(1,
+              fake_glanceables_tasks_client()->GetAndResetBubbleClosedCount());
+    EXPECT_EQ(1,
+              glanceables_classroom_client()->GetAndResetBubbleClosedCount());
+  }
 }
 
 // Tests that calling `DateTray::CloseBubble()` actually closes the bubble.
@@ -389,6 +561,12 @@ TEST_P(DateTrayTest, CloseBubble) {
   EXPECT_FALSE(IsBubbleShown());
   EXPECT_FALSE(GetUnifiedSystemTray()->is_active());
   EXPECT_FALSE(GetDateTray()->is_active());
+  if (AreGlanceablesV2Enabled()) {
+    EXPECT_EQ(1,
+              fake_glanceables_tasks_client()->GetAndResetBubbleClosedCount());
+    EXPECT_EQ(1,
+              glanceables_classroom_client()->GetAndResetBubbleClosedCount());
+  }
 
   // Calling `DateTray::CloseBubble()` on an already-closed bubble should do
   // nothing.
@@ -396,6 +574,61 @@ TEST_P(DateTrayTest, CloseBubble) {
   EXPECT_FALSE(IsBubbleShown());
   EXPECT_FALSE(GetUnifiedSystemTray()->is_active());
   EXPECT_FALSE(GetDateTray()->is_active());
+  if (AreGlanceablesV2Enabled()) {
+    EXPECT_EQ(0,
+              fake_glanceables_tasks_client()->GetAndResetBubbleClosedCount());
+    EXPECT_EQ(0,
+              glanceables_classroom_client()->GetAndResetBubbleClosedCount());
+  }
+}
+
+TEST_P(DateTrayTest, DoesNotRenderClassroomBubblesForInactiveRoles) {
+  LeftClickOn(GetDateTray());
+  EXPECT_TRUE(IsBubbleShown());
+  EXPECT_TRUE(AreContentsViewShown());
+
+  if (!AreGlanceablesV2Enabled()) {
+    EXPECT_FALSE(GetGlanceableTrayBubble());
+    return;
+  }
+
+  glanceables_classroom_client()->RespondToPendingIsStudentRoleEnabledCallbacks(
+      false);
+  glanceables_classroom_client()->RespondToPendingIsTeacherRoleEnabledCallbacks(
+      false);
+
+  // Only static bubbles are rendered in `scroll_view` (tasks and calendar).
+  const auto* const scroll_view = views::AsViewClass<views::ScrollView>(
+      GetGlanceableTrayBubble()->GetBubbleView()->children().at(0));
+  ASSERT_TRUE(scroll_view);
+  EXPECT_EQ(scroll_view->contents()->children().size(), 2u);
+}
+
+TEST_P(DateTrayTest, RendersClassroomBubblesForActiveRoles) {
+  LeftClickOn(GetDateTray());
+  EXPECT_TRUE(IsBubbleShown());
+  EXPECT_TRUE(AreContentsViewShown());
+
+  if (!AreGlanceablesV2Enabled()) {
+    EXPECT_FALSE(GetGlanceableTrayBubble());
+    return;
+  }
+
+  // Only static bubbles are rendered in `scroll_view` (tasks and calendar).
+  const auto* const scroll_view = views::AsViewClass<views::ScrollView>(
+      GetGlanceableTrayBubble()->GetBubbleView()->children().at(0));
+  ASSERT_TRUE(scroll_view);
+  EXPECT_EQ(scroll_view->contents()->children().size(), 2u);
+
+  // Classroom student bubble is added.
+  glanceables_classroom_client()->RespondToPendingIsStudentRoleEnabledCallbacks(
+      true);
+  EXPECT_EQ(scroll_view->contents()->children().size(), 3u);
+
+  // Classroom teacher bubble is added.
+  glanceables_classroom_client()->RespondToPendingIsTeacherRoleEnabledCallbacks(
+      true);
+  EXPECT_EQ(scroll_view->contents()->children().size(), 4u);
 }
 
 }  // namespace ash

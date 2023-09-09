@@ -37,7 +37,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Translate.ApplicationStart.AlwaysTranslateLanguage.Count"
-    units="languages" expires_after="2023-08-31">
+    units="languages" expires_after="2023-12-10">
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -49,7 +49,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Translate.ApplicationStart.NeverTranslateLanguage"
-    enum="LocaleCodeISO639" expires_after="2023-11-12">
+    enum="LocaleCodeISO639" expires_after="2023-12-10">
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -99,7 +99,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Translate.CLD3.LanguageDetected" enum="LocaleCodeISO639"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -157,17 +157,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     The number of times the translate infobar was shown in the old translate UI
     on Android. Only true is recorded.
-  </summary>
-</histogram>
-
-<histogram name="Translate.InitiationStatus.v2"
-    enum="TranslateInitiationStatus" expires_after="2023-12-04">
-  <owner>megjablon@google.com</owner>
-  <owner>chrome-language@google.com</owner>
-  <summary>
-    The reason why Chrome decided to perform the next action (e.g., to show
-    infobar, to translate a page without any prompting, and so on) when Chrome
-    Translate is ready to translate a page.
   </summary>
 </histogram>
 
@@ -240,7 +229,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Translate.MenuTranslation.IsAvailable" enum="BooleanAvailable"
-    expires_after="2023-11-12">
+    expires_after="2023-12-10">
   <owner>cuianthony@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -250,7 +239,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Translate.MenuTranslation.UnavailableReasons"
-    enum="MenuTranslationUnavailableReason" expires_after="2023-11-12">
+    enum="MenuTranslationUnavailableReason" expires_after="2023-12-10">
   <owner>cuianthony@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -263,7 +252,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Translate.PageLoad.FinalSourceLanguage"
-    enum="LocaleCodeISO639" expires_after="2023-10-22">
+    enum="LocaleCodeISO639" expires_after="2023-12-24">
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -314,7 +303,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Translate.PageLoad.InitialSourceLanguage"
-    enum="LocaleCodeISO639" expires_after="2023-11-05">
+    enum="LocaleCodeISO639" expires_after="2024-01-07">
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -419,7 +408,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Translate.PageLoad.Ranker.Decision"
-    enum="TranslateRankerDecision" expires_after="2023-11-12">
+    enum="TranslateRankerDecision" expires_after="2023-12-10">
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -431,7 +420,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Translate.PageLoad.Ranker.Timer.ShouldOfferTranslation"
-    units="ms" expires_after="2023-08-31">
+    units="ms" expires_after="2023-12-10">
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -444,7 +433,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Translate.PageLoad.Ranker.Version" units="version"
-    expires_after="2023-11-12">
+    expires_after="2023-12-10">
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -466,7 +455,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Translate.PartialTranslateBubbleUiEvent"
-    enum="PartialTranslateBubbleUiEvent" expires_after="2023-11-12">
+    enum="PartialTranslateBubbleUiEvent" expires_after="2023-12-10">
   <owner>cuianthony@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>Tracks UI events related to the Partial Translate bubble.</summary>
@@ -545,36 +534,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Translate.Ranker.Model.Status2" enum="RankerModelStatus"
-    expires_after="2023-11-12">
+    expires_after="2023-12-10">
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
     Tracks the outcome of attempts to download a Translate Ranker Model. Only
     recorded for profiles where Translate is available (not recorded in System
     profiles nor Ash non-user profiles).
-  </summary>
-</histogram>
-
-<histogram name="Translate.TranslateAssistContentResult"
-    enum="TranslateAssistContentResult" expires_after="2022-06-30">
-  <owner>jds@chromium.org</owner>
-  <owner>chrome-language@google.com</owner>
-  <summary>
-    Android: Records the result of assembling translate data to provide to
-    Assistant via AssistContent. See TranslateAssistContentResult in enums.xml
-    for possible values.
-  </summary>
-</histogram>
-
-<histogram name="Translate.TranslateTabIntentResult"
-    enum="TranslateTabIntentResult" expires_after="2022-06-30">
-  <owner>jds@chromium.org</owner>
-  <owner>chrome-language@google.com</owner>
-  <summary>
-    Android: Records the result of processing a TRANSLATE_TAB intent. See
-    TranslateTabIntentResult in enums.xml for possible values.
-
-    This is recorded once for each TRANSLATE_TAB intent received.
   </summary>
 </histogram>
 
@@ -658,7 +624,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Translate.Translation.TimeToBeReady" units="ms"
-    expires_after="2023-11-12">
+    expires_after="2023-12-10">
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -682,11 +648,11 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Translate.Translation.TimeToTranslate" units="ms"
-    expires_after="2023-10-08">
+    expires_after="2023-12-24">
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
-    Records the time from when the translation script beings translating to when
+    Records the time from when the translation script begins translating to when
     it finishes.
 
     This is recorded when a translation (both manual and automatic) is started.

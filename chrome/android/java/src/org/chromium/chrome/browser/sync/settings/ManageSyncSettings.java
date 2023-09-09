@@ -36,7 +36,6 @@ import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
-import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.back_press.BackPressHelper;
 import org.chromium.chrome.browser.feedback.FragmentHelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
@@ -139,10 +138,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     private PreferenceCategory mSyncingCategory;
 
     private ChromeSwitchPreference mSyncEverything;
-    private ChromeBaseCheckBoxPreference mSyncPaymentsIntegration;
-    // Maps {@link UserSelectableType} to the corresponding preference. There is no entry
-    // for {@code mSyncPaymentsIntegration} because it does not correspond to a {@link
-    // UserSelectableType}
+    // Maps {@link UserSelectableType} to the corresponding preference.
     private Map<Integer, ChromeBaseCheckBoxPreference> mSyncTypePreferencesMap = new HashMap<>();
 
     private Preference mGoogleActivityControls;
@@ -225,16 +221,14 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
         mSyncTypePreferencesMap.put(
                 UserSelectableType.PASSWORDS, findPreference(PREF_SYNC_PASSWORDS));
         mSyncTypePreferencesMap.put(
-                UserSelectableType.READING_LIST, findPreference(PREF_SYNC_READING_LIST));
-        mSyncTypePreferencesMap.put(UserSelectableType.TABS, findPreference(PREF_SYNC_RECENT_TABS));
+                UserSelectableType.PAYMENTS, findPreference(PREF_SYNC_PAYMENTS_INTEGRATION));
         mSyncTypePreferencesMap.put(
                 UserSelectableType.PREFERENCES, findPreference(PREF_SYNC_SETTINGS));
+        mSyncTypePreferencesMap.put(
+                UserSelectableType.READING_LIST, findPreference(PREF_SYNC_READING_LIST));
+        mSyncTypePreferencesMap.put(UserSelectableType.TABS, findPreference(PREF_SYNC_RECENT_TABS));
 
         mSyncTypePreferencesMap.values().forEach(pref -> pref.setOnPreferenceChangeListener(this));
-
-        mSyncPaymentsIntegration =
-                (ChromeBaseCheckBoxPreference) findPreference(PREF_SYNC_PAYMENTS_INTEGRATION);
-        mSyncPaymentsIntegration.setOnPreferenceChangeListener(this);
 
         // Prevent sync settings changes from taking effect until the user leaves this screen.
         mSyncSetupInProgressHandle = mSyncService.getSetupInProgressHandle();
@@ -372,17 +366,10 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     }
 
     /**
-     * Gets the state from data type checkboxes and saves this state into {@link SyncService}
-     * and {@link PersonalDataManager}.
+     * Gets the state from data type checkboxes and saves this state into {@link SyncService}.
      */
     private void updateSyncStateFromSelectedTypes() {
         mSyncService.setSelectedTypes(mSyncEverything.isChecked(), getUserSelectedTypes());
-        // Note: mSyncPaymentsIntegration should be checked if mSyncEverything is checked, but if
-        // mSyncEverything was just enabled, then that state may not have propagated to
-        // mSyncPaymentsIntegration yet. See crbug.com/972863.
-        PersonalDataManager.setPaymentsIntegrationEnabled(mSyncEverything.isChecked()
-                || (mSyncPaymentsIntegration.isChecked()
-                        && mSyncTypePreferencesMap.get(UserSelectableType.AUTOFILL).isChecked()));
 
         // Some calls to setSelectedTypes don't trigger syncStateChanged, so schedule update here.
         PostTask.postTask(TaskTraits.UI_DEFAULT, this::updateSyncPreferences);
@@ -436,10 +423,17 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     }
 
     private Set<Integer> getUserSelectedTypes() {
-        return mSyncTypePreferencesMap.keySet()
-                .stream()
-                .filter(type -> mSyncTypePreferencesMap.get(type).isChecked())
-                .collect(Collectors.toSet());
+        Set<Integer> types = mSyncTypePreferencesMap.keySet()
+                                     .stream()
+                                     .filter(type -> mSyncTypePreferencesMap.get(type).isChecked())
+                                     .collect(Collectors.toSet());
+        // PAYMENTS can only be selected if AUTOFILL is also selected.
+        // TODO(crbug.com/1435431): Remove this coupling.
+        if (!mSyncEverything.isChecked()
+                && !mSyncTypePreferencesMap.get(UserSelectableType.AUTOFILL).isChecked()) {
+            types.remove(UserSelectableType.PAYMENTS);
+        }
+        return types;
     }
 
     private void displayPassphraseTypeDialog() {
@@ -589,7 +583,6 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
         mSyncEverything.setChecked(syncEverything);
 
         Set<Integer> selectedSyncTypes = mSyncService.getSelectedTypes();
-        ChromeManagedPreferenceDelegate autofillChromeManagedPreferenceDelegate = null;
 
         for (Map.Entry<Integer, ChromeBaseCheckBoxPreference> entry :
                 mSyncTypePreferencesMap.entrySet()) {
@@ -597,31 +590,28 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
             int type = entry.getKey();
             ChromeBaseCheckBoxPreference pref = entry.getValue();
             boolean managed = mSyncService.isTypeManagedByPolicy(type);
-            pref.setEnabled(!syncEverything);
-            pref.setChecked(selectedSyncTypes.contains(type));
 
-            ChromeManagedPreferenceDelegate managedDelegate =
-                    new ChromeManagedPreferenceDelegate() {
-                        @Override
-                        public boolean isPreferenceControlledByPolicy(Preference preference) {
-                            return managed;
-                        }
-                    };
-            pref.setManagedPreferenceDelegate(managedDelegate);
-            if (type == UserSelectableType.AUTOFILL) {
-                autofillChromeManagedPreferenceDelegate = managedDelegate;
+            // PAYMENTS can only be selected if AUTOFILL is also selected.
+            // TODO(crbug.com/1435431): Remove this coupling.
+            if (type == UserSelectableType.PAYMENTS) {
+                // TODO(crbug.com/1459963): Consider overriding the delegate's
+                // isPreferenceControlledByCustodian() instead.
+                pref.setEnabled(!syncEverything && !mSyncService.isTypeManagedByCustodian(type)
+                        && selectedSyncTypes.contains(UserSelectableType.AUTOFILL));
+                pref.setChecked(selectedSyncTypes.contains(type)
+                        && selectedSyncTypes.contains(UserSelectableType.AUTOFILL));
+            } else {
+                pref.setEnabled(!syncEverything && !mSyncService.isTypeManagedByCustodian(type));
+                pref.setChecked(selectedSyncTypes.contains(type));
             }
-        }
 
-        // Payments integration requires AUTOFILL user selectable type.
-        mSyncPaymentsIntegration.setChecked(
-                mSyncTypePreferencesMap.get(UserSelectableType.AUTOFILL).isChecked()
-                && PersonalDataManager.isPaymentsIntegrationEnabled());
-        mSyncPaymentsIntegration.setEnabled(!syncEverything
-                && mSyncTypePreferencesMap.get(UserSelectableType.AUTOFILL).isChecked()
-                && !Profile.getLastUsedRegularProfile().isChild());
-        mSyncPaymentsIntegration.setManagedPreferenceDelegate(
-                autofillChromeManagedPreferenceDelegate);
+            pref.setManagedPreferenceDelegate(new ChromeManagedPreferenceDelegate() {
+                @Override
+                public boolean isPreferenceControlledByPolicy(Preference preference) {
+                    return managed;
+                }
+            });
+        }
     }
 
     /**

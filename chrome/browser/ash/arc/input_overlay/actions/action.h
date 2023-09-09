@@ -21,7 +21,6 @@
 #include "chrome/browser/ash/arc/input_overlay/ui/action_label.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/gfx/geometry/point_f.h"
-#include "ui/gfx/geometry/rect_f.h"
 
 namespace arc::input_overlay {
 
@@ -63,9 +62,11 @@ class Action {
 
   virtual bool ParseFromJson(const base::Value::Dict& value);
   // Used to create an action from UI.
-  virtual bool InitFromEditor();
-  bool ParseFromProto(const ActionProto& proto);
-  void OverwriteFromProto(const ActionProto& proto);
+  virtual bool InitByAddingNewAction();
+  virtual void InitByChangingActionType(Action* action);
+
+  bool ParseUserAddedActionFromProto(const ActionProto& proto);
+  void OverwriteDefaultActionFromProto(const ActionProto& proto);
   // 1. Return true & non-empty touch_events:
   //    Call SendEventFinally to send simulated touch event.
   // 2. Return true & empty touch_events:
@@ -85,7 +86,7 @@ class Action {
   // |input_element| should overlap the current displayed binding. If it is
   // partially overlapped, then we only unbind the overlapped input.
   virtual void UnbindInput(const InputElement& input_element) = 0;
-  virtual ActionType GetType() = 0;
+  virtual ActionType GetType() const = 0;
 
   // This is called for editing the actions before change is saved. Or for
   // loading the customized data to override the default input mapping.
@@ -122,6 +123,14 @@ class Action {
 
   bool IsDefaultAction() const;
 
+  // For default action, bind `current_input_` to nothing to indicate the
+  // default action is deleted. For non-default action, the instance is removed
+  // from list.
+  void RemoveDefaultAction();
+  // For default action, it is marked as deleted. For user action, the class
+  // instance is deleted.
+  bool IsDeleted();
+
   InputElement* current_input() const { return current_input_.get(); }
   InputElement* original_input() const { return original_input_.get(); }
   InputElement* pending_input() const { return pending_input_.get(); }
@@ -141,6 +150,10 @@ class Action {
   const std::vector<gfx::PointF>& touch_down_positions() const {
     return touch_down_positions_;
   }
+  absl::optional<ActionType> original_type() { return original_type_; }
+  void set_original_type(ActionType type) {
+    original_type_ = absl::make_optional<ActionType>(type);
+  }
   bool require_mouse_locked() const { return require_mouse_locked_; }
   TouchInjector* touch_injector() const { return touch_injector_; }
   int current_position_idx() const { return current_position_idx_; }
@@ -149,6 +162,8 @@ class Action {
   bool support_modifier_key() const { return support_modifier_key_; }
   ActionView* action_view() const { return action_view_; }
   void set_action_view(ActionView* action_view) { action_view_ = action_view; }
+  void set_name_label(std::u16string name_label) { name_label_ = name_label; }
+  absl::optional<std::u16string> name_label() { return name_label_; }
 
  protected:
   // |touch_injector| must be non-NULL and own this Action.
@@ -175,12 +190,18 @@ class Action {
   // Current input binding.
   std::unique_ptr<InputElement> current_input_;
   // Pending input binding. It is used during the editing before it is saved.
+  // TODO(b/253646354): This will be removed when removing Beta flag.
   std::unique_ptr<InputElement> pending_input_;
 
   // Unique ID for each action.
   int id_ = 0;
+  // Used for the default action.
+  absl::optional<ActionType> original_type_;
   // name_ is basically for debugging and not visible to users.
   std::string name_;
+  // name_label is the user-defined label for the action; by default,
+  // unassigned.
+  absl::optional<std::u16string> name_label_ = absl::nullopt;
   // Position take turns for each key press if there are more than
   // one positions. This is for original default positions.
   std::vector<Position> original_positions_;
@@ -189,6 +210,7 @@ class Action {
   std::vector<Position> current_positions_;
   // Only support the reposition of the first touch position if there are more
   // than one touch position.
+  // TODO(b/253646354): This will be removed when removing Beta flag.
   std::unique_ptr<Position> pending_position_;
   // Root locations of touch point.
   std::vector<gfx::PointF> touch_down_positions_;
@@ -224,10 +246,6 @@ class Action {
                         std::list<ui::TouchEvent>& touch_events);
 
   void PrepareToBindPositionForTesting(std::unique_ptr<Position> position);
-
-  // Corresponds to |kArcInputOverlayBeta| flag to turn on/off the editor
-  // feature of adding or removing actions.
-  bool beta_;
 };
 
 }  // namespace arc::input_overlay

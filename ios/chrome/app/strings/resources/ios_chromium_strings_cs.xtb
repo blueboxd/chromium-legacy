@@ -41,7 +41,6 @@
 <translation id="2942241131342758843">Používejte Chromium jako výchozí prohlížeč k otevírání odkazů, vyhledávání z widgetů a automatickému vyplňování hesel v jiných aplikacích</translation>
 <translation id="2977470724722393594">Chromium je aktuální</translation>
 <translation id="3102849287235003384">Pokud se chcete odhlásit z účtu Google na všech webech, <ph name="BEGIN_LINK" />odhlaste se z Chromia<ph name="END_LINK" />.</translation>
-<translation id="3115956258722352278">Nastavit Chromium jako výchozí prohlížeč?</translation>
 <translation id="3256316712990552818">Zkopírováno do prohlížeče Chromium</translation>
 <translation id="3344973607274501920">Chromiu se nepodařilo zkontrolovat hesla. Zkuste zkontrolovat připojení k internetu.</translation>
 <translation id="3472200483164753384">V Chromium Canary není podporováno</translation>
@@ -127,6 +126,7 @@
 <translation id="8013573822802650211">Chcete-li mít své karty k dispozici všude, kde používáte Chromium, na všech zařízeních se přihlaste</translation>
 <translation id="8071041515667087705">Přejděte do Nastavení prohlížeče Chromium.</translation>
 <translation id="8073677936375100957">Vymazat z tohoto zařízení data prohlížeče Chromium?</translation>
+<translation id="8235427517854598594">Nastavit Chromium jako výchozí prohlížeč?</translation>
 <translation id="8240981428553046115">Chromium nemůže vyhledat dostupné aktualizace. Zkuste to znovu později.</translation>
 <translation id="8409374867500149834">Máte nejsilnější zabezpečení prohlížeče Chromium proti škodlivým webům</translation>
 <translation id="858114650497379505">Hesla, která jste si uložili do Správce hesel, můžete používat v jiných aplikacích na svém iPhonu.</translation>

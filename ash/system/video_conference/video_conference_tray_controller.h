@@ -24,6 +24,7 @@ class UnguessableToken;
 
 namespace ash {
 
+struct AnchoredNudgeData;
 class VideoConferenceTray;
 
 using MediaApps = std::vector<crosapi::mojom::VideoConferenceMediaAppInfoPtr>;
@@ -91,14 +92,21 @@ class ASH_EXPORT VideoConferenceTrayController
   // Whether the tray should be shown.
   bool ShouldShowTray() const;
 
+  // Caches a nudge data object for nudges that attempt to show while the tray
+  // is animating in, so they only show once the tray animation has ended. The
+  // request will be run immediately if the tray is not animating.
+  void CreateNudgeRequest(std::unique_ptr<AnchoredNudgeData> nudge_data);
+
+  // Shows the cached `requested_nudge_data_` object, if one exists.
+  void MaybeRunNudgeRequest();
+
   // Attempts showing the speak-on-mute opt-in nudge.
   void MaybeShowSpeakOnMuteOptInNudge(
       VideoConferenceTray* video_conference_tray);
 
-  // Callbacks to update prefs whenever a user opts in or out of the
-  // speak-on-mute feature.
-  void OnSpeakOnMuteNudgeOptIn();
-  void OnSpeakOnMuteNudgeOptOut();
+  // Callback used to update prefs whenever a user opts in or out of the
+  // speak-on-mute feature. An `opt_in` value of false means the user opted out.
+  void OnSpeakOnMuteNudgeOptInAction(bool opt_in);
 
   // Closes all nudges that are shown anchored to the VC tray, if any.
   void CloseAllVcNudges();
@@ -125,6 +133,9 @@ class ASH_EXPORT VideoConferenceTrayController
 
   // Gets the state for microphone mute. Virtual for testing/mocking.
   virtual bool GetMicrophoneMuted();
+
+  // Stops all screen sharing. Virtual for testing/mocking.
+  virtual void StopAllScreenShare();
 
   // Returns asynchronously a vector of media apps that will be displayed in the
   // "Return to app" panel of the bubble. Virtual for testing/mocking.
@@ -200,6 +211,9 @@ class ASH_EXPORT VideoConferenceTrayController
   // Records repeated shows metric when the timer is stop.
   void RecordRepeatedShows();
 
+  // Returns true if any of the VC nudges are visible on screen.
+  bool IsAnyVcNudgeShown();
+
   // The number of capturing apps, fetched from `VideoConferenceManagerAsh`.
   int capturing_apps_ = 0;
 
@@ -232,8 +246,15 @@ class ASH_EXPORT VideoConferenceTrayController
   // Registered observers.
   base::ObserverList<Observer> observer_list_;
 
-  // The last time speak-on-mute notification showed.
-  absl::optional<base::TimeTicks> last_speak_on_mute_notification_time_;
+  // Boolean flag to indicate whether or not a speak-on-mute notification should
+  // show. At most one notification can show per mute session, and it is reset
+  // if:
+  // - A new VC tray pops up.
+  // - The mic is muted.
+  bool should_show_speak_on_mute_notification = true;
+
+  // The last time mic is muted.
+  base::TimeTicks last_mic_muted_time_;
 
   // video_conference_manager_ should be valid after initialized_.
   // Currently, VideoConferenceTrayController is destroyed inside
@@ -246,6 +267,10 @@ class ASH_EXPORT VideoConferenceTrayController
   // Used to record metrics of repeated shows per 100 ms.
   int count_repeated_shows_ = 0;
   base::DelayTimer repeated_shows_timer_;
+
+  // The contents of a nudge data object that is cached so it can be shown once
+  // the tray has fully animated in.
+  std::unique_ptr<AnchoredNudgeData> requested_nudge_data_;
 
   base::WeakPtrFactory<VideoConferenceTrayController> weak_ptr_factory_{this};
 };

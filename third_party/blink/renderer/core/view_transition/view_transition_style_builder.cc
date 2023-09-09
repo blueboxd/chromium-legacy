@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/view_transition/view_transition_style_builder.h"
 
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
-#include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -47,28 +46,44 @@ void ViewTransitionStyleBuilder::AddRules(const String& selector,
   builder_.Append(" }");
 }
 
-void ViewTransitionStyleBuilder::AddPlusLighter(const String& tag) {
-  AddRules(kImagePairTagName, tag, "isolation: isolate");
-  AddRules(kNewImageTagName, tag, "mix-blend-mode: plus-lighter");
-  AddRules(kOldImageTagName, tag, "mix-blend-mode: plus-lighter");
-}
-
-void ViewTransitionStyleBuilder::AddAnimationAndBlending(
+void ViewTransitionStyleBuilder::AddAnimations(
+    AnimationType type,
     const String& tag,
     const ContainerProperties& source_properties) {
-  const String& animation_name = AddKeyframes(tag, source_properties);
-  StringBuilder rule_builder;
-  rule_builder.Append("animation-name: ");
-  rule_builder.Append(animation_name);
-  rule_builder.Append(";\n");
-  rule_builder.Append("animation-timing-function: ease;\n");
-  rule_builder.Append("animation-delay: 0s;\n");
-  rule_builder.Append("animation-iteration-count: 1;\n");
-  rule_builder.Append("animation-direction: normal;\n");
-  AddRules(kGroupTagName, tag, rule_builder.ReleaseString());
+  switch (type) {
+    case AnimationType::kOldOnly:
+      AddRules(kOldImageTagName, tag,
+               "animation-name: -ua-view-transition-fade-out");
+      break;
 
-  // Add plus-lighter blending.
-  AddPlusLighter(tag);
+    case AnimationType::kNewOnly:
+      AddRules(kNewImageTagName, tag,
+               "animation-name: -ua-view-transition-fade-in");
+      break;
+
+    case AnimationType::kBoth:
+      AddRules(kOldImageTagName, tag,
+               "animation-name: -ua-view-transition-fade-out, "
+               "-ua-mix-blend-mode-plus-lighter");
+
+      AddRules(kNewImageTagName, tag,
+               "animation-name: -ua-view-transition-fade-in, "
+               "-ua-mix-blend-mode-plus-lighter");
+
+      AddRules(kImagePairTagName, tag, "isolation: isolate");
+
+      const String& animation_name = AddKeyframes(tag, source_properties);
+      StringBuilder rule_builder;
+      rule_builder.Append("animation-name: ");
+      rule_builder.Append(animation_name);
+      rule_builder.Append(";\n");
+      rule_builder.Append("animation-timing-function: ease;\n");
+      rule_builder.Append("animation-delay: 0s;\n");
+      rule_builder.Append("animation-iteration-count: 1;\n");
+      rule_builder.Append("animation-direction: normal;\n");
+      AddRules(kGroupTagName, tag, rule_builder.ReleaseString());
+      break;
+  }
 }
 
 String ViewTransitionStyleBuilder::AddKeyframes(
@@ -96,14 +111,9 @@ String ViewTransitionStyleBuilder::AddKeyframes(
           ->CssText()
           .Utf8()
           .c_str(),
-      source_properties.border_box_size_in_css_space.Width().ToFloat(),
-      source_properties.border_box_size_in_css_space.Height().ToFloat());
+      source_properties.border_box_size_in_css_space.width.ToFloat(),
+      source_properties.border_box_size_in_css_space.height.ToFloat());
   return keyframe_name;
-}
-
-void ViewTransitionStyleBuilder::AddContainerStyles(const String& tag,
-                                                    const String& rules) {
-  AddRules(kGroupTagName, tag, rules);
 }
 
 void ViewTransitionStyleBuilder::AddContainerStyles(
@@ -121,8 +131,8 @@ void ViewTransitionStyleBuilder::AddContainerStyles(
         transform: %s;
         writing-mode: %s;
       )CSS",
-      properties.border_box_size_in_css_space.Width().ToFloat(),
-      properties.border_box_size_in_css_space.Height().ToFloat(),
+      properties.border_box_size_in_css_space.width.ToFloat(),
+      properties.border_box_size_in_css_space.height.ToFloat(),
       ComputedStyleUtils::ValueForTransform(properties.snapshot_matrix, 1,
                                             false)
           ->CssText()
@@ -130,7 +140,7 @@ void ViewTransitionStyleBuilder::AddContainerStyles(
           .c_str(),
       writing_mode_stream.str().c_str());
 
-  AddContainerStyles(tag, rule_builder.ReleaseString());
+  AddRules(kGroupTagName, tag, rule_builder.ReleaseString());
 }
 
 }  // namespace blink

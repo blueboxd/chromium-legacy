@@ -83,18 +83,9 @@
   return self.viewController;
 }
 
-- (id<ViewRevealingAnimatee>)animatee {
-  return self.viewController;
-}
-
 - (id<ToolbarAnimatee>)toolbarAnimatee {
   CHECK(self.viewController);
   return self.viewController;
-}
-
-- (void)setPanGestureHandler:
-    (ViewRevealingVerticalPanHandler*)panGestureHandler {
-  self.viewController.panGestureHandler = panGestureHandler;
 }
 
 - (void)showPrerenderingAnimation {
@@ -105,18 +96,6 @@
 
 - (void)triggerToolbarSlideInAnimation {
   [self.viewController triggerToolbarSlideInAnimationFromBelow:NO];
-}
-
-#pragma mark - Protected override
-
-- (void)updateToolbarForSideSwipeSnapshot:(web::WebState*)webState {
-  [super updateToolbarForSideSwipeSnapshot:webState];
-  [self.delegate updateToolbarForSideSwipeSnapshot:webState];
-}
-
-- (void)resetToolbarAfterSideSwipeSnapshot {
-  [super resetToolbarAfterSideSwipeSnapshot];
-  [self.delegate resetToolbarAfterSideSwipeSnapshot];
 }
 
 @end

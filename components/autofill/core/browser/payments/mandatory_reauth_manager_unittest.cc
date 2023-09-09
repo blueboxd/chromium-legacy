@@ -36,17 +36,17 @@ class MandatoryReauthManagerTest : public testing::Test {
         /*history_service=*/nullptr,
         /*sync_service=*/nullptr,
         /*strike_database=*/nullptr,
-        /*image_fetcher=*/nullptr,
-        /*is_off_the_record=*/false);
+        /*image_fetcher=*/nullptr);
     test::SetCreditCardInfo(&server_card_, "Test User", "1111" /* Visa */,
                             test::NextMonth().c_str(), test::NextYear().c_str(),
                             "1");
-    SetCanAuthenticateWithBiometrics(true);
+    SetCanAuthenticate(true);
   }
 
  protected:
-  void SetCanAuthenticateWithBiometrics(bool value) {
-    ON_CALL(*mock_device_authenticator_, CanAuthenticateWithBiometrics)
+  void SetCanAuthenticate(bool value) {
+    ON_CALL(*mock_device_authenticator_,
+            CanAuthenticateWithBiometricOrScreenLock)
         .WillByDefault(testing::Return(value));
   }
 
@@ -58,6 +58,39 @@ class MandatoryReauthManagerTest : public testing::Test {
   CreditCard server_card_ = test::GetMaskedServerCard();
   CreditCard virtual_card_ = test::GetVirtualCard();
 };
+
+// Test that `MandatoryReauthManager::Authenticate()` triggers
+// `DeviceAuthenticator::Authenticate()`.
+TEST_F(MandatoryReauthManagerTest, Authenticate) {
+  EXPECT_CALL(*mock_device_authenticator_, Authenticate).Times(1);
+
+  mandatory_reauth_manager_->Authenticate(
+      /*requester=*/device_reauth::DeviceAuthRequester::kLocalCardAutofill,
+      /*callback=*/base::DoNothing());
+
+  // Test that `MandatoryReauthManager::OnAuthenticationCompleted()` resets the
+  // device authenticator.
+  EXPECT_TRUE(mandatory_reauth_manager_->GetDeviceAuthenticatorForTesting());
+  mandatory_reauth_manager_->OnAuthenticationCompleted(
+      /*callback=*/base::DoNothing(), /*success=*/true);
+  EXPECT_FALSE(mandatory_reauth_manager_->GetDeviceAuthenticatorForTesting());
+}
+
+// Test that `MandatoryReauthManager::AuthenticateWithMessage()` triggers
+// `DeviceAuthenticator::AuthenticateWithMessage()`.
+TEST_F(MandatoryReauthManagerTest, AuthenticateWithMessage) {
+  EXPECT_CALL(*mock_device_authenticator_, AuthenticateWithMessage).Times(1);
+
+  mandatory_reauth_manager_->AuthenticateWithMessage(
+      /*message=*/u"Test", /*callback=*/base::DoNothing());
+
+  // Test that `MandatoryReauthManager::OnAuthenticationCompleted()` resets the
+  // device authenticator.
+  EXPECT_TRUE(mandatory_reauth_manager_->GetDeviceAuthenticatorForTesting());
+  mandatory_reauth_manager_->OnAuthenticationCompleted(
+      /*callback=*/base::DoNothing(), /*success=*/true);
+  EXPECT_FALSE(mandatory_reauth_manager_->GetDeviceAuthenticatorForTesting());
+}
 
 // Test that the MandatoryReauthManager returns that we should offer re-auth
 // opt-in if the conditions for offering it are all met for local cards.
@@ -198,12 +231,13 @@ TEST_F(MandatoryReauthManagerTest, ShouldOfferOptin_UserAlreadyMadeDecision) {
 }
 
 // Test that the MandatoryReauthManager returns that we should not offer re-auth
-// opt-in if biometrics are not available on the device.
-TEST_F(MandatoryReauthManagerTest, ShouldOfferOptin_BiometricsNotAvailable) {
+// opt-in if authentication is not available on the device.
+TEST_F(MandatoryReauthManagerTest,
+       ShouldOfferOptin_AuthenticationNotAvailable) {
   base::test::ScopedFeatureList feature_list(
       features::kAutofillEnablePaymentsMandatoryReauth);
 
-  SetCanAuthenticateWithBiometrics(false);
+  SetCanAuthenticate(false);
 
   autofill_client_->GetPersonalDataManager()->AddCreditCard(local_card_);
 

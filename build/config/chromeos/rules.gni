@@ -10,7 +10,8 @@ import("//build/config/gclient_args.gni")
 import("//build/config/python.gni")
 import("//build/util/generate_wrapper.gni")
 
-assert(is_chromeos && is_chromeos_device)
+assert(is_chromeos)
+assert(is_chromeos_device)
 
 # Determine the real paths for various items in the SDK, which may be used
 # in the 'generate_runner_script' template below. We do so outside the template
@@ -376,7 +377,7 @@ template("generate_runner_script") {
       # gtest unit tests don't need this. However there's no good way to
       # differentiate them, and we don't want to maintain a list based on
       # target names. So here it applies to all gtest targets.
-      if (is_chromeos_lacros && is_chromeos_device) {
+      if (is_chromeos_lacros) {
         executable_args += [
           "--env-var",
           "XDG_RUNTIME_DIR",
@@ -581,6 +582,13 @@ template("tast_test") {
         # A script needed to launch Lacros in Lacros Tast tests.
         "//build/lacros/mojo_connection_lacros_launcher.py",
       ]
+
+      # By default, tast tests download a lacros-chrome from a gcs location and
+      # use it for testing. To support running lacros tast tests from Chromium CI,
+      # a Var is added to support pointing the tast tests to use a specified
+      # pre-deployed lacros-chrome. The location is decided by:
+      # https://source.chromium.org/chromium/chromium/src/+/main:third_party/chromite/scripts/deploy_chrome.py;l=80;drc=86f1234a4be8e9574442e076cdc835897f7bea61
+      tast_vars = [ "lacros.DeployedBinary=/usr/local/lacros-chrome" ]
     }
   }
 }

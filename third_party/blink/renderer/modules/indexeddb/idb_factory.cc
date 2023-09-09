@@ -53,7 +53,6 @@
 #include "third_party/blink/renderer/modules/indexed_db_names.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks_impl.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_transaction.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -268,7 +267,7 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
                                            int64_t version,
                                            ExceptionState& exception_state) {
   TRACE_EVENT1("IndexedDB", "IDBFactory::open", "name", name.Utf8());
-  IDBRequest::AsyncTraceState metrics("IDBFactory::open");
+  IDBRequest::AsyncTraceState metrics(IDBRequest::TypeForMetrics::kFactoryOpen);
   DCHECK(version >= 1 || version == IDBDatabaseMetadata::kNoVersion);
 
   ExecutionContext* context = ExecutionContext::From(script_state);
@@ -327,7 +326,6 @@ void IDBFactory::OpenInternalImpl(
   }
 
   auto callbacks = request->CreateWebCallbacks();
-  callbacks->SetState(WebIDBCallbacksImpl::kNoTransaction);
   factory->Open(GetCallbacksProxy(std::move(callbacks)),
                 std::move(callbacks_remote), name, version,
                 std::move(transaction_receiver), transaction_id);
@@ -362,7 +360,8 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
     ExceptionState& exception_state,
     bool force_close) {
   TRACE_EVENT1("IndexedDB", "IDBFactory::deleteDatabase", "name", name.Utf8());
-  IDBRequest::AsyncTraceState metrics("IDBFactory::deleteDatabase");
+  IDBRequest::AsyncTraceState metrics(
+      IDBRequest::TypeForMetrics::kFactoryDeleteDatabase);
   ExecutionContext* context = ExecutionContext::From(script_state);
 
   DCHECK(context->IsContextThread());
@@ -409,7 +408,6 @@ void IDBFactory::DeleteDatabaseInternalImpl(
   }
 
   auto callbacks = request->CreateWebCallbacks();
-  callbacks->SetState(WebIDBCallbacksImpl::kNoTransaction);
   factory->DeleteDatabase(GetCallbacksProxy(std::move(callbacks)), name,
                           force_close);
 }
@@ -493,7 +491,8 @@ void IDBFactory::DidAllowIndexedDB(base::OnceCallback<void()> callback,
 }
 
 mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks>
-IDBFactory::GetCallbacksProxy(std::unique_ptr<WebIDBCallbacks> callbacks_impl) {
+IDBFactory::GetCallbacksProxy(
+    std::unique_ptr<WebIDBCallbacksImpl> callbacks_impl) {
   mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks> pending_callbacks;
   mojo::MakeSelfOwnedAssociatedReceiver(
       std::move(callbacks_impl),

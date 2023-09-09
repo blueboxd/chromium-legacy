@@ -5,10 +5,12 @@
 #include "ash/components/arc/chrome_feature_flags/arc_chrome_feature_flags_bridge.h"
 
 #include "ash/components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "ash/components/arc/arc_features.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "ash/components/arc/session/arc_service_manager.h"
 #include "ash/constants/ash_features.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/field_trial_params.h"
 #include "chromeos/constants/chromeos_features.h"
 
 namespace arc {
@@ -75,6 +77,19 @@ void ArcChromeFeatureFlagsBridge::NotifyFeatureFlags() {
   mojom::FeatureFlagsPtr flags = mojom::FeatureFlags::New();
   flags->qs_revamp = ash::features::IsQsRevampEnabled();
   flags->jelly_colors = chromeos::features::IsJellyEnabled();
+  flags->touchscreen_emulation =
+      base::FeatureList::IsEnabled(kTouchscreenEmulation);
+  flags->trackpad_scroll_touchscreen_emulation =
+      base::FeatureList::IsEnabled(kTrackpadScrollTouchscreenEmulation);
+  flags->rounded_window_compat_strategy =
+      base::FeatureList::IsEnabled(arc::kRoundedWindowCompat)
+          ? static_cast<mojom::RoundedWindowCompatStrategy>(
+                base::GetFieldTrialParamByFeatureAsInt(
+                    kRoundedWindowCompat, kRoundedWindowCompatStrategy,
+                    static_cast<int>(mojom::RoundedWindowCompatStrategy::
+                                         kLeftRightBottomGesture)))
+          : mojom::RoundedWindowCompatStrategy::kDisabled;
+  flags->rounded_window_radius = chromeos::features::RoundedWindowsRadius();
 
   chrome_feature_flags_instance->NotifyFeatureFlags(std::move(flags));
 }

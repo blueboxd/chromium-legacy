@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/http_auth_manager_impl.h"
 #include "components/password_manager/core/browser/mock_password_store_interface.h"
@@ -27,7 +28,6 @@
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -223,6 +223,7 @@ TEST_F(HttpAuthManagerTest, UpdateLastUsedTimeWhenSubmittingSavedCredentials) {
   stored_form.password_value = u"1234";
   stored_form.in_store = PasswordForm::Store::kProfileStore;
   stored_form.date_last_used = base::Time::Now() - base::Days(1);
+  stored_form.match_type = PasswordForm::MatchType::kExact;
 
   MockHttpAuthObserver observer;
 

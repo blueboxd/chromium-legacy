@@ -37,8 +37,10 @@
 namespace viz {
 namespace {
 
-void RecordShouldSendBeginFrame(const std::string& reason) {
-  TRACE_EVENT1("viz", "ShouldNotSendBeginFrame", "reason", reason);
+bool RecordShouldSendBeginFrame(const std::string& reason, bool should_send) {
+  TRACE_EVENT2("viz", "SendBeginFrameDecision", "reason", reason, "should_send",
+               should_send);
+  return should_send;
 }
 
 void AdjustPresentationFeedback(gfx::PresentationFeedback* feedback,
@@ -492,7 +494,8 @@ void CompositorFrameSinkSupport::DidNotProduceFrame(const BeginFrameAck& ack) {
   modified_ack.has_damage = false;
 
   if (last_activated_surface_id_.is_valid())
-    surface_manager_->SurfaceModified(last_activated_surface_id_, modified_ack);
+    surface_manager_->SurfaceModified(last_activated_surface_id_, modified_ack,
+                                      false);
 
   if (begin_frame_source_) {
     begin_frame_source_->DidFinishFrame(this);
@@ -886,7 +889,7 @@ void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {
   }
 
   bool send_begin_frame_to_client =
-      client_ && ShouldSendBeginFrame(adjusted_args.frame_time);
+      client_ && ShouldSendBeginFrame(adjusted_args.frame_time, args.interval);
   if (send_begin_frame_to_client) {
     if (last_activated_surface_id_.is_valid())
       surface_manager_->SurfaceDamageExpected(last_activated_surface_id_,
@@ -1072,7 +1075,7 @@ void CompositorFrameSinkSupport::RequestCopyOfOutput(
   if (last_activated_surface_id_.is_valid()) {
     BeginFrameAck ack;
     ack.has_damage = true;
-    surface_manager_->SurfaceModified(last_activated_surface_id_, ack);
+    surface_manager_->SurfaceModified(last_activated_surface_id_, ack, false);
   }
 }
 
@@ -1124,12 +1127,13 @@ int64_t CompositorFrameSinkSupport::ComputeTraceId() {
 }
 
 bool CompositorFrameSinkSupport::ShouldSendBeginFrame(
-    base::TimeTicks frame_time) {
+    base::TimeTicks frame_time,
+    base::TimeDelta vsync_interval) {
   // We should throttle OnBeginFrame() if it has been less than
   // |begin_frame_interval_| since the last one was sent because clients have
   // requested to update at such rate.
   const bool should_throttle_as_requested =
-      ShouldThrottleBeginFrameAsRequested(frame_time);
+      ShouldThrottleBeginFrameAsRequested(frame_time, vsync_interval);
   // We might throttle this OnBeginFrame() if it's been less than a second
   // since the last one was sent, either because clients are unresponsive or
   // have submitted too many undrawn frames.
@@ -1139,44 +1143,37 @@ bool CompositorFrameSinkSupport::ShouldSendBeginFrame(
   // If there are pending timing details from the previous frame(s),
   // then the client needs to receive the begin-frame.
   if (!frame_timing_details_.empty() && !should_throttle_as_requested) {
-    RecordShouldSendBeginFrame("SendFrameTiming");
-    return true;
+    return RecordShouldSendBeginFrame("SendFrameTiming", true);
   }
 
   if (!client_needs_begin_frame_) {
-    RecordShouldSendBeginFrame("StopNotRequested");
-    return false;
+    return RecordShouldSendBeginFrame("StopNotRequested", false);
   }
 
   // Stop sending BeginFrames to clients that are totally unresponsive.
   if (begin_frame_tracker_.ShouldStopBeginFrame()) {
-    RecordShouldSendBeginFrame("StopUnresponsiveClient");
-    return false;
+    return RecordShouldSendBeginFrame("StopUnresponsiveClient", false);
   }
 
   // Throttle clients that are unresponsive.
   if (can_throttle_if_unresponsive_or_excessive &&
       begin_frame_tracker_.ShouldThrottleBeginFrame()) {
-    RecordShouldSendBeginFrame("ThrottleUnresponsiveClient");
-    return false;
+    return RecordShouldSendBeginFrame("ThrottleUnresponsiveClient", false);
   }
 
   if (!last_activated_surface_id_.is_valid()) {
-    RecordShouldSendBeginFrame("SendNoActiveSurface");
-    return true;
+    return RecordShouldSendBeginFrame("SendNoActiveSurface", true);
   }
 
   // We should never throttle BeginFrames if there is another client waiting
   // for this client to submit a frame.
   if (surface_manager_->HasBlockedEmbedder(frame_sink_id_)) {
-    RecordShouldSendBeginFrame("SendBlockedEmbedded");
-    return true;
+    return RecordShouldSendBeginFrame("SendBlockedEmbedded", true);
   }
 
   if (should_throttle_as_requested) {
     ++frames_throttled_since_last_;
-    RecordShouldSendBeginFrame("ThrottleRequested");
-    return false;
+    return RecordShouldSendBeginFrame("ThrottleRequested", false);
   }
 
   Surface* surface =
@@ -1198,13 +1195,11 @@ bool CompositorFrameSinkSupport::ShouldSendBeginFrame(
   if (can_throttle_if_unresponsive_or_excessive &&
       num_undrawn_frames > kUndrawnFrameLimit &&
       surface->GetActiveFrameMetadata().may_throttle_if_undrawn_frames) {
-    RecordShouldSendBeginFrame("ThrottleUndrawnFrames");
-    return false;
+    return RecordShouldSendBeginFrame("ThrottleUndrawnFrames", false);
   }
 
   // No other conditions apply so send the begin frame.
-  RecordShouldSendBeginFrame("SendDefault");
-  return true;
+  return RecordShouldSendBeginFrame("SendDefault", true);
 }
 
 void CompositorFrameSinkSupport::CheckPendingSurfaces() {
@@ -1226,31 +1221,39 @@ bool CompositorFrameSinkSupport::ShouldAdjustBeginFrameArgs() const {
 }
 
 bool CompositorFrameSinkSupport::ShouldThrottleBeginFrameAsRequested(
-    base::TimeTicks frame_time) {
-  // It is not good enough to only check whether
-  // |time_since_last_frame| < |begin_frame_interval_|. There are 2 factors
-  // complicating this (examples assume a 30Hz throttled frame rate):
-  // 1) The precision of timing between frames is in microseconds, which
-  //    can result in error accumulation over several throttled frames. For
-  //    instance, on a 60Hz display, the first frame is produced at 0.016666
-  //    seconds, and the second at (0.016666 + 0.016666 = 0.033332) seconds.
-  //    base::Hertz(30) is 0.033333 seconds, so the second frame is considered
-  //    to have been produced too fast, and is therefore throttled.
-  // 2) Small system error in the frame timestamps (often on the order of a few
-  //    microseconds). For example, the first frame may be produced at 0.016662
-  //    seconds (instead of 0.016666), so the second frame's timestamp is
-  //    0.016662 + 0.016666 = 0.033328 and incorrectly gets throttled.
-  //
-  // To correct for this: Ceil the time since last frame to the nearest 100us.
-  // Building off the example above:
-  // Frame 1 time -> 0.016662 -> 0.0167 -> Throttle
-  // Frame 2 time -> 0.016662 + 0.016666 = 0.033328 -> 0.0334 -> Don't Throttle
-  static constexpr base::TimeDelta kFrameTimeQuantization =
-      base::Microseconds(100);
+    base::TimeTicks frame_time,
+    base::TimeDelta vsync_interval) {
+  if (!begin_frame_interval_.is_positive()) {
+    return false;
+  }
+  uint64_t remainder =
+      begin_frame_interval_.InMilliseconds() % vsync_interval.InMilliseconds();
+  if (remainder > 1) {
+    // We test against a remainder more than 1 because when we have 16.X ms
+    // + 16.X ms we can easily end up with 33.X which means added an extra unit
+    // in a perfect cadence so avoid that from being misflagged.
+
+    // This is a perfect cadence so we can throttle.
+    // Example: a 120 hz vsync / 60 fps is a perfect cadence of [2,2,2,2]
+    // We avoid non perfect cadences which means framerate is not a multiple
+    // of vsync rate. Because, throttling those cadences will cause
+    // framerate to be lowered more than the expected throttling, instead
+    // let clients receive their own begin frames at regular vsync periods
+    // and allow them impose their own custom cadence throttling
+    // For instance a 24 FPS content on a 60 HZ screen would yield a 2.5
+    // value. Which usually means [2,3,2,3] cadence, we do not throttle
+    // since throttling here would cause a [3,3,3,3] cadence effectively
+    // lowering the framerate of the content to 20 FPS.
+    return false;
+  }
   base::TimeDelta time_since_last_frame = frame_time - last_frame_time_;
-  return begin_frame_interval_.is_positive() &&
-         time_since_last_frame.CeilToMultiple(kFrameTimeQuantization) <
-             begin_frame_interval_;
+  if (time_since_last_frame.RoundToMultiple(vsync_interval) <
+      begin_frame_interval_.RoundToMultiple(vsync_interval)) {
+    // We will be past the deadline significantly next throttle check, so avoid
+    // throttling here.
+    return true;
+  }
+  return false;
 }
 
 void CompositorFrameSinkSupport::ProcessCompositorFrameTransitionDirective(

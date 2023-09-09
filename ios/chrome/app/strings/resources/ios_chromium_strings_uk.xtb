@@ -42,7 +42,6 @@
 <translation id="2942241131342758843">Зробіть Chromium веб-переглядачем за умовчанням, щоб відкривати посилання, шукати інформацію через віджети й автоматично заповнювати паролі в інших додатках</translation>
 <translation id="2977470724722393594">У вас остання версія Chromium</translation>
 <translation id="3102849287235003384">Щоб вийти з облікового запису Google на всіх веб-сайтах, <ph name="BEGIN_LINK" />вийдіть із Chromium<ph name="END_LINK" />.</translation>
-<translation id="3115956258722352278">Зробити Chromium веб-переглядачем за умовчанням?</translation>
 <translation id="3256316712990552818">Скопійовано в Chromium</translation>
 <translation id="3344973607274501920">Chromium не вдалося перевірити паролі. Переконайтеся, що є інтернет-з'єднання.</translation>
 <translation id="3472200483164753384">Не підтримується в Chromium Canary</translation>
@@ -128,6 +127,7 @@
 <translation id="8013573822802650211">Щоб переглядати свої вкладки Chromium на будь-якому пристрої, увійдіть на ньому в обліковий запис</translation>
 <translation id="8071041515667087705">Перейдіть у налаштування Chromium.</translation>
 <translation id="8073677936375100957">Видалити дані Chromium із цього пристрою?</translation>
+<translation id="8235427517854598594">Зробити Chromium веб-переглядачем за умовчанням?</translation>
 <translation id="8240981428553046115">Веб-переглядачу Chromium не вдалося перевірити наявність оновлень. Повторіть спробу пізніше.</translation>
 <translation id="8409374867500149834">Ви ввімкнули найвищий рівень захисту Chromium від небезпечних веб-сайтів</translation>
 <translation id="858114650497379505">Ви можете використовувати паролі, збережені в Менеджері паролів, в інших додатках на iPhone.</translation>

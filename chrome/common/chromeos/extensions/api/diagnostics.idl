@@ -8,6 +8,10 @@
 // chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom.
 [implemented_in = "chrome/browser/chromeos/extensions/telemetry/api/diagnostics/diagnostics_api.h", modernised_enums]
 namespace os.diagnostics {
+// Note: Please update documentation as well when this interface is changed.
+// The documentation lives here: //docs/telemetry_extension/api_overview.md.
+// LINT.IfChange
+
   enum RoutineType {
     ac_power,
     battery_capacity,
@@ -31,7 +35,11 @@ namespace os.diagnostics {
     nvme_self_test,
     fingerprint_alive,
     smartctl_check_with_percentage_used,
-    emmc_lifetime
+    emmc_lifetime,
+    bluetooth_power,
+    ufs_lifetime,
+    power_button,
+    audio_driver
   };
 
   enum RoutineStatus {
@@ -60,7 +68,8 @@ namespace os.diagnostics {
   enum UserMessageType {
     unknown,
     unplug_ac_power,
-    plug_in_ac_power
+    plug_in_ac_power,
+    press_power_button
   };
 
   enum DiskReadRoutineType {
@@ -137,6 +146,10 @@ namespace os.diagnostics {
     long? percentage_used_threshold;
   };
 
+  dictionary RunPowerButtonRequest {
+    long timeout_seconds;
+  };
+
   dictionary RunRoutineResponse {
     long id;
 
@@ -167,6 +180,8 @@ namespace os.diagnostics {
                                                               RunRoutineCallback callback);
 
     [supportsPromises] static void runBatteryHealthRoutine(RunRoutineCallback callback);
+
+    [supportsPromises] static void runBluetoothPowerRoutine(RunRoutineCallback callback);
 
     [supportsPromises] static void runCpuCacheRoutine(RunCpuRoutineRequest request,
                                                       RunRoutineCallback callback);
@@ -207,5 +222,15 @@ namespace os.diagnostics {
     [supportsPromises] static void runSignalStrengthRoutine(RunRoutineCallback callback);
 
     [supportsPromises] static void runSmartctlCheckRoutine(optional RunSmartctlCheckRequest request, RunRoutineCallback callback);
+
+    [supportsPromises] static void runUfsLifetimeRoutine(RunRoutineCallback callback);
+
+    [supportsPromises] static void runPowerButtonRoutine(RunPowerButtonRequest request, RunRoutineCallback callback);
+
+    [supportsPromises] static void runAudioDriverRoutine(RunRoutineCallback callback);
   };
+  // LINT.ThenChange(//docs/telemetry_extension/api_overview.md)
+  // The following is an empty definition, since the IDL compiler only accepts
+  // comments over valid definitions.
+  callback EOF = void();
 };

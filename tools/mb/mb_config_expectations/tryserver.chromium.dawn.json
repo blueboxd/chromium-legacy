@@ -118,6 +118,7 @@
   "dawn-try-win-x64-intel-exp": {
     "gn_args": {
       "dawn_enable_opengles": true,
+      "dawn_use_built_dxc": true,
       "dcheck_always_on": true,
       "is_component_build": false,
       "is_debug": false,
@@ -136,20 +137,10 @@
       "use_remoteexec": true
     }
   },
-  "dawn-try-win10-x64-intel-asan": {
+  "dawn-try-win10-x64-asan-rel": {
     "gn_args": {
       "dawn_enable_opengles": true,
-      "dcheck_always_on": true,
-      "is_asan": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "symbol_level": 1,
-      "use_remoteexec": true
-    }
-  },
-  "dawn-try-win10-x64-nvidia-asan": {
-    "gn_args": {
-      "dawn_enable_opengles": true,
+      "dawn_use_built_dxc": true,
       "dcheck_always_on": true,
       "is_asan": true,
       "is_component_build": false,
@@ -172,6 +163,7 @@
   "dawn-win10-x64-deps-rel": {
     "gn_args": {
       "dawn_enable_opengles": true,
+      "dawn_use_built_dxc": true,
       "dcheck_always_on": true,
       "is_component_build": false,
       "is_debug": false,
@@ -213,6 +205,7 @@
   "win-dawn-rel": {
     "gn_args": {
       "dawn_enable_opengles": true,
+      "dawn_use_built_dxc": true,
       "dcheck_always_on": true,
       "is_component_build": false,
       "is_debug": false,

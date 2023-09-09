@@ -70,6 +70,8 @@ extern NSString* const kToolsMenuIncognitoSearch;
 extern NSString* const kToolsMenuTextZoom;
 // Text Enterprise info item accessibility identifier.
 extern NSString* const kTextMenuEnterpriseInfo;
+// Text Family Link info item accessibility identifier.
+extern NSString* const kTextMenuFamilyLinkInfo;
 // Follow item accessibility Identifier.
 extern NSString* const kToolsMenuFollow;
 // Unfollow item accessibility Identifier.
@@ -82,5 +84,7 @@ extern NSString* const kToolsMenuShareChromeId;
 extern NSString* const kToolsMenuWhatsNewId;
 // Open Price Notifications accessibility Identifier.
 extern NSString* const kToolsMenuPriceNotifications;
+// Edit Actions item accessibility Identifier.
+extern NSString* const kToolsMenuEditActionsId;
 
 #endif  // IOS_CHROME_BROWSER_UI_POPUP_MENU_POPUP_MENU_CONSTANTS_H_

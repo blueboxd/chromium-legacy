@@ -210,6 +210,12 @@ void OsDiagnosticsRunBatteryHealthRoutineFunction::RunIfAllowed() {
   GetRemoteService()->RunBatteryHealthRoutine(GetOnResult());
 }
 
+// OsDiagnosticsRunBluetoothPowerRoutineFunction -------------------------------
+
+void OsDiagnosticsRunBluetoothPowerRoutineFunction::RunIfAllowed() {
+  GetRemoteService()->RunBluetoothPowerRoutine(GetOnResult());
+}
+
 // OsDiagnosticsRunCpuCacheRoutineFunction -------------------------------------
 
 void OsDiagnosticsRunCpuCacheRoutineFunction::RunIfAllowed() {
@@ -368,6 +374,30 @@ void OsDiagnosticsRunSmartctlCheckRoutineFunction::RunIfAllowed() {
   // without any parameters.
   GetRemoteService()->RunSmartctlCheckRoutine(std::move(percentage_used),
                                               GetOnResult());
+}
+
+// OsDiagnosticsRunUfsLifetimeRoutineFunction -------------------------------
+
+void OsDiagnosticsRunUfsLifetimeRoutineFunction::RunIfAllowed() {
+  GetRemoteService()->RunUfsLifetimeRoutine(GetOnResult());
+}
+
+// OsDiagnosticsRunPowerButtonRoutineFunction -----------------------------
+
+void OsDiagnosticsRunPowerButtonRoutineFunction::RunIfAllowed() {
+  const auto params = GetParams<cx_diag::RunPowerButtonRoutine::Params>();
+  if (!params) {
+    return;
+  }
+
+  GetRemoteService()->RunPowerButtonRoutine(params->request.timeout_seconds,
+                                            GetOnResult());
+}
+
+// OsDiagnosticsRunAudioDriverRoutineFunction -------------------------------
+
+void OsDiagnosticsRunAudioDriverRoutineFunction::RunIfAllowed() {
+  GetRemoteService()->RunAudioDriverRoutine(GetOnResult());
 }
 
 }  // namespace chromeos

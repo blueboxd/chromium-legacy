@@ -42,6 +42,7 @@ import tempfile
 from collections import defaultdict
 from copy import deepcopy
 from datetime import datetime
+from typing import Set
 
 import six
 from six.moves import zip_longest
@@ -149,8 +150,6 @@ class Port(object):
     # the documentation in docs/testing/web_test_expectations.md when this list
     # changes.
     ALL_SYSTEMS = (
-        ('mac10.13', 'x86'),
-        ('mac10.14', 'x86'),
         ('mac10.15', 'x86'),
         ('mac11', 'x86'),
         ('mac11-arm64', 'arm64'),
@@ -167,8 +166,8 @@ class Port(object):
 
     CONFIGURATION_SPECIFIER_MACROS = {
         'mac': [
-            'mac10.13', 'mac10.14', 'mac10.15', 'mac11', 'mac11-arm64',
-            'mac12', 'mac12-arm64', 'mac13', 'mac13-arm64'
+            'mac10.15', 'mac11', 'mac11-arm64', 'mac12', 'mac12-arm64',
+            'mac13', 'mac13-arm64'
         ],
         'win': ['win10.20h2', 'win11-arm64', 'win11'],
         'linux': ['trusty'],
@@ -378,7 +377,7 @@ class Port(object):
                 '--ignore-certificate-errors-spki-list=' + WPT_FINGERPRINT +
                 ',' + SXG_FINGERPRINT + ',' + SXG_WPT_FINGERPRINT,
                 # Required for WebTransport tests.
-                '--origin-to-force-quic-on=web-platform.test:11000',
+                '--webtransport-developer-mode',
                 '--user-data-dir'
             ]
             if self.get_option('nocheck_sys_deps', False):
@@ -1389,10 +1388,11 @@ class Port(object):
         return (self.skipped_due_to_smoke_tests(test)
                 or self.skipped_in_never_fix_tests(test)
                 or self.virtual_test_skipped_due_to_platform_config(test)
-                or self.skipped_due_to_exclusive_virtual_tests(test))
+                or self.skipped_due_to_exclusive_virtual_tests(test)
+                or self.skipped_due_to_skip_base_tests(test))
 
     @memoized
-    def _tests_from_file(self, filename):
+    def tests_from_file(self, filename: str) -> Set[str]:
         tests = set()
         file_contents = self._filesystem.read_text_file(filename)
         for line in file_contents.splitlines():
@@ -1413,7 +1413,7 @@ class Port(object):
         smoke_test_filename = self.path_to_smoke_tests_file()
         if not self._filesystem.exists(smoke_test_filename):
             return False
-        smoke_tests = self._tests_from_file(smoke_test_filename)
+        smoke_tests = self.tests_from_file(smoke_test_filename)
         return test not in smoke_tests
 
     def default_smoke_test_only(self):
@@ -1512,6 +1512,26 @@ class Port(object):
         for suite in self.virtual_test_suites():
             for entry in suite.exclusive_tests:
                 if base_test.startswith(self.normalize_test_name(entry)):
+                    return True
+        return False
+
+    @memoized
+    def skipped_due_to_skip_base_tests(self, test):
+        """Checks if the test should be skipped due to the skip_base_test rule
+        of any virtual suite.
+
+        If the test is not a virtual test, it will be skipped if it's in the
+        skip_base_test list of any virtual suite. If the test is a virtual
+        test, it will not be skipped.
+        """
+        # This check doesn't apply to virtual tests
+        if self.lookup_virtual_test_base(test):
+            return False
+
+        for suite in self.virtual_test_suites():
+            for entry in suite.skip_base_tests:
+                if self.normalize_test_name(test).startswith(
+                        self.normalize_test_name(entry)):
                     return True
         return False
 
@@ -1985,11 +2005,10 @@ class Port(object):
             return expectations
 
         for (_, _, filenames) in self._filesystem.walk(flag_path):
-            if 'README.txt' in filenames:
-                filenames.remove('README.txt')
-            if 'PRESUBMIT.py' in filenames:
-                filenames.remove('PRESUBMIT.py')
             for filename in filenames:
+                if (filename.startswith('README') or filename.endswith('~')
+                        or filename == 'PRESUBMIT.py'):
+                    continue
                 path = self._filesystem.join(flag_path, filename)
                 try:
                     expectations[path] = self._filesystem.read_text_file(path)
@@ -2324,7 +2343,6 @@ class Port(object):
         try:
             test_suite_json = json.loads(
                 self._filesystem.read_text_file(path_to_virtual_test_suites))
-            current_time = datetime.now()
             for json_config in test_suite_json:
                 # Strings are treated as comments.
                 if isinstance(json_config, str):
@@ -2707,6 +2725,7 @@ class VirtualTestSuite(object):
                  platforms=None,
                  bases=None,
                  exclusive_tests=None,
+                 skip_base_tests=None,
                  args=None,
                  owners=None,
                  expires=None):
@@ -2723,10 +2742,17 @@ class VirtualTestSuite(object):
             exclusive_tests = []
         assert isinstance(exclusive_tests, list)
 
+        if skip_base_tests == "ALL":
+            skip_base_tests = bases
+        elif skip_base_tests is None:
+            skip_base_tests = []
+        assert isinstance(skip_base_tests, list)
+
         self.full_prefix = 'virtual/' + prefix + '/'
         self.platforms = [x.lower() for x in platforms]
         self.bases = bases
         self.exclusive_tests = exclusive_tests
+        self.skip_base_tests = skip_base_tests
         self.args = sorted(args)
         # always put --enable-threaded-compositing at the end of list, so that after appending
         # this parameter due to crrev.com/c/4599846, we do not need to restart content shell

@@ -207,14 +207,14 @@ void CreateTestRenderPassDrawQuad(const SharedQuadState* shared_state,
   auto* quad =
       render_pass->CreateAndAppendDrawQuad<AggregatedRenderPassDrawQuad>();
   quad->SetNew(shared_state, rect, rect, pass_id,
-               kInvalidResourceId,  // mask_resource_id
-               gfx::RectF(),        // mask_uv_rect
-               gfx::Size(),         // mask_texture_size
-               gfx::Vector2dF(),    // filters scale
-               gfx::PointF(),       // filter origin
-               gfx::RectF(rect),    // tex_coord_rect
-               false,               // force_anti_aliasing_off
-               1.0f);               // backdrop_filter_quality
+               kInvalidResourceId,    // mask_resource_id
+               gfx::RectF(),          // mask_uv_rect
+               gfx::Size(),           // mask_texture_size
+               gfx::Vector2dF(1, 1),  // filters scale
+               gfx::PointF(),         // filter origin
+               gfx::RectF(rect),      // tex_coord_rect
+               false,                 // force_anti_aliasing_off
+               1.0f);                 // backdrop_filter_quality
 }
 
 // Create a TextureDrawDrawQuad with two given colors.
@@ -493,15 +493,15 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
     bits_per_channel = 10;
   }
 
-  SharedImageFormat yuv_highbit_resource_format =
+  SharedImageFormat yuv_highbit_format =
       video_resource_updater->YuvSharedImageFormat(bits_per_channel);
 
   float offset = 0.0f;
   float multiplier = 1.0f;
 
-  if (yuv_highbit_resource_format == SinglePlaneFormat::kR_16) {
+  if (yuv_highbit_format == SinglePlaneFormat::kR_16) {
     multiplier = 65535.0f / ((1 << bits_per_channel) - 1);
-  } else if (yuv_highbit_resource_format == SinglePlaneFormat::kLUMINANCE_F16) {
+  } else if (yuv_highbit_format == SinglePlaneFormat::kLUMINANCE_F16) {
     std::unique_ptr<media::HalfFloatMaker> half_float_maker =
         media::HalfFloatMaker::NewHalfFloatMaker(bits_per_channel);
     offset = half_float_maker->Offset();
@@ -1799,6 +1799,47 @@ TEST_P(GPURendererPixelTest,
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("green_alpha_vertex_opacity.png")),
       cc::AlphaDiscardingFuzzyPixelOffByOneComparator()));
+}
+
+// Check that the renderer draws a fallback quad for quads that require overlay.
+TEST_P(GPURendererPixelTest, OverlayHintRequiredFallback) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  AggregatedRenderPassId id{1};
+  auto pass = CreateTestRootRenderPass(id, rect);
+
+  SharedQuadState* texture_quad_state = CreateTestSharedQuadState(
+      gfx::Transform(), rect, pass.get(), gfx::MaskFilterInfo());
+
+  // Add a texture quad with the overlay priority of "required". Most properties
+  // shouldn't matter since the renderer shouldn't attempt to draw this quad.
+  TextureDrawQuad* quad = pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
+  const float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+  quad->SetNew(texture_quad_state, gfx::Rect(this->device_viewport_size_),
+               gfx::Rect(this->device_viewport_size_), false,
+               kInvalidResourceId, true, gfx::PointF(), gfx::PointF(),
+               SkColors::kTransparent, &vertex_opacity[0], false, false, false,
+               gfx::ProtectedVideoType::kClear);
+  quad->overlay_priority_hint = OverlayPriority::kRequired;
+
+  // Add a background that's not the expected fallback color.
+  SharedQuadState* color_quad_state = CreateTestSharedQuadState(
+      gfx::Transform(), rect, pass.get(), gfx::MaskFilterInfo());
+  auto* color_quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  color_quad->SetNew(color_quad_state, rect, rect, SkColors::kWhite, false);
+
+  AggregatedRenderPassList pass_list;
+  pass_list.push_back(std::move(pass));
+
+#if DCHECK_IS_ON()
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list, base::FilePath(FILE_PATH_LITERAL("magenta.png")),
+      cc::AlphaDiscardingFuzzyPixelOffByOneComparator()));
+#else
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list, base::FilePath(FILE_PATH_LITERAL("black.png")),
+      cc::AlphaDiscardingFuzzyPixelOffByOneComparator()));
+#endif
 }
 
 class IntersectingQuadPixelTest : public VizPixelTestWithParam {
@@ -3132,7 +3173,7 @@ TEST_P(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
       gfx::ScaleRect(gfx::RectF(sub_rect), 2.f / mask_rect.width(),
                      2.f / mask_rect.height()),  // mask_uv_rect
       gfx::Size(mask_rect.size()),               // mask_texture_size
-      gfx::Vector2dF(),                          // filters scale
+      gfx::Vector2dF(1.0f, 1.0f),                // filters scale
       gfx::PointF(),                             // filter origin
       gfx::RectF(sub_rect),                      // tex_coord_rect
       false,                                     // force_anti_aliasing_off
@@ -3230,7 +3271,7 @@ TEST_P(RendererPixelTest, RenderPassAndMaskWithPartialQuad2) {
       gfx::ScaleRect(gfx::RectF(sub_rect), 2.f / mask_rect.width(),
                      2.f / mask_rect.height()),  // mask_uv_rect
       gfx::Size(mask_rect.size()),               // mask_texture_size
-      gfx::Vector2dF(),                          // filters scale
+      gfx::Vector2dF(1.0f, 1.0f),                // filters scale
       gfx::PointF(),                             // filter origin
       gfx::RectF(sub_rect),                      // tex_coord_rect
       false,                                     // force_anti_aliasing_off
@@ -3316,7 +3357,7 @@ TEST_P(RendererPixelTest, RenderPassAndMaskForRoundedCorner) {
       gfx::ScaleRect(gfx::RectF(viewport_rect), 1.f / mask_rect.width(),
                      1.f / mask_rect.height()),  // mask_uv_rect
       gfx::Size(mask_rect.size()),               // mask_texture_size
-      gfx::Vector2dF(),                          // filters scale
+      gfx::Vector2dF(1.0f, 1.0f),                // filters scale
       gfx::PointF(),                             // filter origin
       gfx::RectF(viewport_rect),                 // tex_coord_rect
       false,                                     // force_anti_aliasing_off
@@ -3445,6 +3486,13 @@ TEST_P(RendererPixelTest, RenderPassAndMaskForRoundedCornerMultiRadii) {
 
 class RendererPixelTestWithBackdropFilter : public VizPixelTestWithParam {
  protected:
+  void SetUp() override {
+    VizPixelTestWithParam::SetUp();
+    filter_pass_layer_rect_ = gfx::Rect(device_viewport_size_);
+    filter_pass_layer_rect_.Inset(gfx::Insets::TLBR(14, 12, 18, 16));
+    backdrop_filter_bounds_ = gfx::RRectF(gfx::RectF(filter_pass_layer_rect_));
+  }
+
   void SetUpRenderPassList() {
     gfx::Rect device_viewport_rect(this->device_viewport_size_);
 
@@ -3609,35 +3657,49 @@ INSTANTIATE_TEST_SUITE_P(,
                          testing::ValuesIn(GetRendererTypes()),
                          testing::PrintToStringParamName());
 
+TEST_P(RendererPixelTestWithBackdropFilter, ZoomFilter) {
+  if (is_software_renderer()) {
+    GTEST_SKIP() << "SoftwareRenderer doesn't support zoom filter";
+  }
+
+  backdrop_filters_.Append(cc::FilterOperation::CreateZoomFilter(2.0f, 20));
+  SetUpRenderPassList();
+  EXPECT_TRUE(RunPixelTest(
+      &pass_list_,
+      base::FilePath(FILE_PATH_LITERAL("backdrop_filter_zoom.png")),
+      cc::ExactPixelComparator()));
+}
+
+TEST_P(RendererPixelTestWithBackdropFilter, OffsetFilter) {
+  backdrop_filters_.Append(
+      cc::FilterOperation::CreateOffsetFilter(gfx::Point(5, 5)));
+  SetUpRenderPassList();
+  EXPECT_TRUE(RunPixelTest(
+      &pass_list_,
+      base::FilePath(FILE_PATH_LITERAL("backdrop_filter_offset.png")),
+      cc::ExactPixelComparator()));
+}
+
 TEST_P(RendererPixelTestWithBackdropFilter, InvertFilter) {
-  this->backdrop_filters_.Append(cc::FilterOperation::CreateInvertFilter(1.f));
-  this->filter_pass_layer_rect_ = gfx::Rect(this->device_viewport_size_);
-  this->filter_pass_layer_rect_.Inset(gfx::Insets::TLBR(14, 12, 18, 16));
-  this->backdrop_filter_bounds_ =
-      gfx::RRectF(gfx::RectF(this->filter_pass_layer_rect_));
-  this->SetUpRenderPassList();
-  EXPECT_TRUE(this->RunPixelTest(
-      &this->pass_list_,
-      base::FilePath(FILE_PATH_LITERAL("backdrop_filter.png")),
+  backdrop_filters_.Append(cc::FilterOperation::CreateInvertFilter(1.f));
+  SetUpRenderPassList();
+  EXPECT_TRUE(RunPixelTest(
+      &pass_list_, base::FilePath(FILE_PATH_LITERAL("backdrop_filter.png")),
       cc::AlphaDiscardingExactPixelComparator()));
 }
 
 TEST_P(RendererPixelTestWithBackdropFilter, InvertFilterWithMask) {
-  this->backdrop_filters_.Append(cc::FilterOperation::CreateInvertFilter(1.f));
-  this->filter_pass_layer_rect_ = gfx::Rect(this->device_viewport_size_);
-  this->filter_pass_layer_rect_.Inset(gfx::Insets::TLBR(14, 12, 18, 16));
-  this->backdrop_filter_bounds_ =
-      gfx::RRectF(gfx::RectF(this->filter_pass_layer_rect_));
-  this->include_backdrop_mask_ = true;
-  this->SetUpRenderPassList();
+  backdrop_filters_.Append(cc::FilterOperation::CreateInvertFilter(1.f));
+  include_backdrop_mask_ = true;
+  SetUpRenderPassList();
 
   base::FilePath expected_path(
       is_software_renderer()
           ? FILE_PATH_LITERAL("backdrop_filter_masked_sw.png")
           : FILE_PATH_LITERAL("backdrop_filter_masked.png"));
 
-  EXPECT_TRUE(this->RunPixelTest(&this->pass_list_, expected_path,
-                                 cc::FuzzyPixelOffByOneComparator()));
+  EXPECT_TRUE(RunPixelTest(&pass_list_, expected_path,
+                           cc::FuzzyPixelOffByOneComparator()));
 }
 
 // Software renderer does not support anti-aliased edges.
@@ -3834,7 +3896,7 @@ TEST_P(GPURendererPixelTest, RenderPassDrawQuadForceAntiAliasingOff) {
       root_pass->CreateAndAppendDrawQuad<AggregatedRenderPassDrawQuad>();
   pass_quad->SetAll(pass_shared_state, rect, rect, needs_blending,
                     child_pass_id, kInvalidResourceId, gfx::RectF(),
-                    gfx::Size(), gfx::Vector2dF(), gfx::PointF(),
+                    gfx::Size(), gfx::Vector2dF(1.0f, 1.0f), gfx::PointF(),
                     gfx::RectF(rect), force_anti_aliasing_off,
                     backdrop_filter_quality, intersects_damage_under);
 
@@ -3997,7 +4059,7 @@ TEST_P(GPURendererPixelTest, TrilinearFiltering) {
       root_pass->CreateAndAppendDrawQuad<AggregatedRenderPassDrawQuad>();
   child_pass_quad->SetNew(
       child_pass_shared_state, child_pass_rect, child_pass_rect, child_pass_id,
-      kInvalidResourceId, gfx::RectF(), gfx::Size(), gfx::Vector2dF(),
+      kInvalidResourceId, gfx::RectF(), gfx::Size(), gfx::Vector2dF(1.0f, 1.0f),
       gfx::PointF(), gfx::RectF(child_pass_rect), false, 1.0f);
 
   AggregatedRenderPassList pass_list;
@@ -5643,7 +5705,13 @@ class ColorTransformPixelTest
   bool premultiplied_alpha_ = false;
 };
 
-TEST_P(ColorTransformPixelTest, Basic) {
+// TODO(https://crbug.com/1462855): use-of-uninitialized-value
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
+TEST_P(ColorTransformPixelTest, MAYBE_Basic) {
 #if BUILDFLAG(IS_LINUX) && defined(THREAD_SANITIZER)
   // Test is flaking with failed large allocations under TSAN when using
   // SkiaRenderer with GL backend. See https://crbug.com/1320955.

@@ -30,6 +30,7 @@ IOSPasswordManagerDriver::IOSPasswordManagerDriver(
     : web_state_(web_state->GetWeakPtr()),
       bridge_(bridge),
       password_manager_(password_manager),
+      web_frame_(web_frame),
       id_(driver_id),
       cached_frame_id_(base::FastHash(web_frame->GetFrameId())),
       frame_id_(web_frame->GetFrameId()) {
@@ -50,15 +51,30 @@ int IOSPasswordManagerDriver::GetId() const {
 
 void IOSPasswordManagerDriver::SetPasswordFillData(
     const autofill::PasswordFormFillData& form_data) {
-  [bridge_ processPasswordFormFillData:form_data
-                            forFrameId:frame_id_
-                           isMainFrame:is_in_main_frame_
-                     forSecurityOrigin:security_origin_];
+  // No need to cache data if the frame is already destroyed.
+  // (crbug.com/1383214): |web_frame_| is not guaranteed to be alive, that's
+  // why cached values for isMainFrame & forSecurityOrigin need to be passed.
+  if (web_frame_) {
+    [bridge_ processPasswordFormFillData:form_data
+                                 inFrame:web_frame_
+                             isMainFrame:is_in_main_frame_
+                       forSecurityOrigin:security_origin_];
+  }
 }
 
 void IOSPasswordManagerDriver::InformNoSavedCredentials(
     bool should_show_popup_without_passwords) {
-  [bridge_ onNoSavedCredentialsWithFrameId:frame_id_];
+  if (!web_state_.get()) {
+    return;
+  }
+  password_manager::PasswordManagerJavaScriptFeature* feature =
+      password_manager::PasswordManagerJavaScriptFeature::GetInstance();
+  web::WebFrame* frame =
+      feature->GetWebFramesManager(web_state_.get())->GetFrameWithId(frame_id_);
+  if (!frame) {
+    return;
+  }
+  [bridge_ onNoSavedCredentialsWithFrame:frame];
 }
 
 void IOSPasswordManagerDriver::FormEligibleForGenerationFound(
@@ -136,4 +152,8 @@ int IOSPasswordManagerDriver::GetFrameId() const {
 
 const GURL& IOSPasswordManagerDriver::GetLastCommittedURL() const {
   return bridge_.lastCommittedURL;
+}
+
+void IOSPasswordManagerDriver::ProcessFrameDeletion() {
+  web_frame_ = nullptr;
 }

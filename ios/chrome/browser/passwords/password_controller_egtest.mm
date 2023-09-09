@@ -12,8 +12,8 @@
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/base/features.h"
-#import "components/sync/base/sync_prefs.h"
 #import "components/sync/base/user_selectable_type.h"
+#import "components/sync/service/sync_prefs.h"
 #import "ios/chrome/browser/passwords/password_manager_app_interface.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
@@ -111,15 +111,11 @@ BOOL WaitForKeyboardToAppear() {
   AppLaunchConfiguration config;
   if ([self
           isRunningTest:@selector(testShowAccountStorageNoticeBeforeSaving)]) {
-    config.features_enabled.push_back(
-        password_manager::features::kEnablePasswordsAccountStorage);
     config.features_disabled.push_back(
         syncer::kReplaceSyncPromosWithSignInPromos);
   }
   if ([self
           isRunningTest:@selector(testShowAccountStorageNoticeBeforeFilling)]) {
-    config.features_enabled.push_back(
-        password_manager::features::kEnablePasswordsAccountStorage);
     config.features_disabled.push_back(
         syncer::kReplaceSyncPromosWithSignInPromos);
     config.features_disabled.push_back(
@@ -127,8 +123,6 @@ BOOL WaitForKeyboardToAppear() {
   }
   if ([self isRunningTest:@selector
             (testShowAccountStorageNoticeBeforeFillingBottomSheet)]) {
-    config.features_enabled.push_back(
-        password_manager::features::kEnablePasswordsAccountStorage);
     config.features_enabled.push_back(
         password_manager::features::kIOSPasswordBottomSheet);
     config.features_disabled.push_back(

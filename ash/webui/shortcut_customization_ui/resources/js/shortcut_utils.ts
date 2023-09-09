@@ -21,6 +21,21 @@ const modifiers: Modifier[] = [
   Modifier.COMMAND,
 ];
 
+export const keyCodeToModifier: {[keyCode: number]: number} = {
+  16: Modifier.SHIFT,
+  17: Modifier.CONTROL,
+  18: Modifier.ALT,
+  91: Modifier.COMMAND,
+  92: Modifier.COMMAND,
+};
+
+export const unidentifiedKeyCodeToKey: {[keyCode: number]: string} = {
+  159: 'MicrophoneMuteToggle',
+  237: 'EmojiPicker',
+  238: 'ToggleDictation',
+  239: 'ViewAllApps',
+};
+
 // Returns true if shortcut customization is disabled via the feature flag.
 export const isCustomizationDisabled = (): boolean => {
   return !loadTimeData.getBoolean('isCustomizationEnabled');
@@ -237,6 +252,8 @@ export function getModifiersForAcceleratorInfo(
 }
 
 export const SHORTCUTS_APP_URL = 'chrome://shortcut-customization';
+export const META_KEY = 'meta';
+export const LWIN_KEY = 'Meta';
 
 export const getURLForSearchResult = (searchResult: MojoSearchResult): URL => {
   const url = new URL(SHORTCUTS_APP_URL);

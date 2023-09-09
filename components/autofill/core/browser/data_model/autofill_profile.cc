@@ -10,6 +10,7 @@
 #include <memory>
 #include <ostream>
 #include <set>
+#include <vector>
 
 #include "base/hash/sha1.h"
 #include "base/i18n/case_conversion.h"
@@ -515,9 +516,9 @@ bool AutofillProfile::IsSubsetOfForFieldSet(
       continue;
     } else if (type == NAME_FULL) {
       if (!comparator.IsNameVariantOf(
-              comparator.NormalizeForComparison(
+              AutofillProfileComparator::NormalizeForComparison(
                   profile.GetInfo(NAME_FULL, app_locale)),
-              comparator.NormalizeForComparison(value))) {
+              AutofillProfileComparator::NormalizeForComparison(value))) {
         // Check whether the full name of |this| can be derived from the full
         // name of |profile| if the form contains a full name field.
         //
@@ -525,7 +526,7 @@ bool AutofillProfile::IsSubsetOfForFieldSet(
         // is Mia L Park. Mia Park can be derived from Mia L Park, so |this|
         // could be a subset of |profile|.
         //
-        // If the form contains fields for a name's constiuent parts, e.g.
+        // If the form contains fields for a name's constituent parts, e.g.
         // NAME_FIRST, then these values are compared according to the
         // conditions that follow.
         return false;
@@ -694,22 +695,27 @@ void AutofillProfile::CreateDifferentiatingLabels(
     const std::string& app_locale,
     std::vector<std::u16string>* labels) {
   const size_t kMinimalFieldsShown = 2;
-  CreateInferredLabels(profiles, nullptr, UNKNOWN_TYPE, kMinimalFieldsShown,
-                       app_locale, labels);
+  CreateInferredLabels(profiles, absl::nullopt, UNKNOWN_TYPE,
+                       kMinimalFieldsShown, app_locale, labels);
   DCHECK_EQ(profiles.size(), labels->size());
 }
 
 // static
 void AutofillProfile::CreateInferredLabels(
     const std::vector<AutofillProfile*>& profiles,
-    const std::vector<ServerFieldType>* suggested_fields,
+    const absl::optional<ServerFieldTypeSet>& suggested_fields,
     ServerFieldType excluded_field,
     size_t minimal_fields_shown,
     const std::string& app_locale,
     std::vector<std::u16string>* labels) {
   std::vector<ServerFieldType> fields_to_use;
-  GetFieldsForDistinguishingProfiles(suggested_fields, excluded_field,
-                                     &fields_to_use);
+  std::vector<ServerFieldType> suggested_fields_types =
+      suggested_fields
+          ? std::vector(suggested_fields->begin(), suggested_fields->end())
+          : std::vector<ServerFieldType>();
+  GetFieldsForDistinguishingProfiles(
+      suggested_fields ? &suggested_fields_types : nullptr, excluded_field,
+      &fields_to_use);
 
   // Construct the default label for each profile. Also construct a map that
   // associates each label with the profiles that have this label. This map is
@@ -762,10 +768,8 @@ std::u16string AutofillProfile::ConstructInferredLabel(
 
   std::vector<ServerFieldType> remaining_fields;
   for (size_t i = 0; i < included_fields_size && num_fields_to_use > 0; ++i) {
-    ::i18n::addressinput::AddressField address_field;
-    if (!i18n::FieldForType(included_fields[i], &address_field) ||
-        !country.IsAddressFieldSettingAccessible(address_field) ||
-        address_field == ::i18n::addressinput::COUNTRY) {
+    if (!country.IsAddressFieldSettingAccessible(included_fields[i]) ||
+        included_fields[i] == ADDRESS_HOME_COUNTRY) {
       remaining_fields.push_back(included_fields[i]);
       continue;
     }
@@ -1117,7 +1121,7 @@ ServerFieldTypeSet AutofillProfile::FindInaccessibleProfileValues() const {
         AddressField::SORTING_CODE}) {
     ServerFieldType server_field_type = i18n::TypeForField(field_type);
     if (HasRawInfo(server_field_type) &&
-        !country.IsAddressFieldSettingAccessible(field_type)) {
+        !country.IsAddressFieldSettingAccessible(server_field_type)) {
       inaccessible_fields.insert(server_field_type);
     }
   }

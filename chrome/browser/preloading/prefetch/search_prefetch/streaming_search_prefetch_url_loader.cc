@@ -367,9 +367,9 @@ void StreamingSearchPrefetchURLLoader::RecordNavigationURLHistogram(
 
 SearchPrefetchURLLoader::RequestHandler
 StreamingSearchPrefetchURLLoader::GetCallbackForReadingViaResponseReader() {
-  return base::BindOnce(
-      &StreamingSearchPrefetchURLLoader::CreateResponseReaderForPrerender,
-      weak_factory_.GetWeakPtr());
+  return base::BindOnce(&StreamingSearchPrefetchURLLoader::
+                            CheckedCreateResponseReaderForPrerender,
+                        weak_factory_.GetWeakPtr());
 }
 
 std::unique_ptr<StreamingSearchPrefetchURLLoader>
@@ -437,6 +437,21 @@ void StreamingSearchPrefetchURLLoader::SetUpForwardingClient(
   }
 
   RunEventQueue();
+}
+
+// static
+void StreamingSearchPrefetchURLLoader::CheckedCreateResponseReaderForPrerender(
+    base::WeakPtr<StreamingSearchPrefetchURLLoader> self,
+    const network::ResourceRequest& resource_request,
+    mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> forwarding_client) {
+  if (!self) {
+    // To measure the impact of crbug.com/1463000 in the wild.
+    base::debug::DumpWithoutCrashing();
+    return;
+  }
+  self->CreateResponseReaderForPrerender(resource_request, std::move(receiver),
+                                         std::move(forwarding_client));
 }
 
 void StreamingSearchPrefetchURLLoader::CreateResponseReaderForPrerender(
@@ -607,7 +622,7 @@ void StreamingSearchPrefetchURLLoader::OnTransferSizeUpdated(
 
 void StreamingSearchPrefetchURLLoader::OnDataAvailable(const void* data,
                                                        size_t num_bytes) {
-  body_content_.append(std::string(static_cast<const char*>(data), num_bytes));
+  body_content_.append(static_cast<const char*>(data), num_bytes);
   bytes_of_raw_data_to_transfer_ += num_bytes;
 
   if (forwarding_client_) {

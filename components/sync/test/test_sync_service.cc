@@ -145,13 +145,21 @@ void TestSyncService::SetDownloadStatusFor(
 }
 
 void TestSyncService::FireStateChanged() {
-  for (SyncServiceObserver& observer : observers_)
+  for (SyncServiceObserver& observer : observers_) {
     observer.OnStateChanged(this);
+  }
+}
+
+void TestSyncService::FirePaymentsIntegrationEnabledChanged() {
+  for (SyncServiceObserver& observer : observers_) {
+    observer.OnSyncPaymentsIntegrationEnabledChanged(this);
+  }
 }
 
 void TestSyncService::FireSyncCycleCompleted() {
-  for (SyncServiceObserver& observer : observers_)
+  for (SyncServiceObserver& observer : observers_) {
     observer.OnSyncCycleCompleted(this);
+  }
 }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -334,17 +342,6 @@ SyncService::ModelTypeDownloadStatus TestSyncService::GetDownloadStatusFor(
 
 void TestSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {}
 
-void TestSyncService::AddTrustedVaultDecryptionKeysFromWeb(
-    const std::string& gaia_id,
-    const std::vector<std::vector<uint8_t>>& keys,
-    int last_key_version) {}
-
-void TestSyncService::AddTrustedVaultRecoveryMethodFromWeb(
-    const std::string& gaia_id,
-    const std::vector<uint8_t>& public_key,
-    int method_type_hint,
-    base::OnceClosure callback) {}
-
 bool TestSyncService::IsSyncFeatureConsideredRequested() const {
   return HasSyncConsent();
 }
@@ -352,6 +349,15 @@ bool TestSyncService::IsSyncFeatureConsideredRequested() const {
 void TestSyncService::Shutdown() {
   for (SyncServiceObserver& observer : observers_)
     observer.OnSyncShutdown(this);
+}
+
+void TestSyncService::SetTypesWithUnsyncedData(const ModelTypeSet& types) {
+  unsynced_types_ = types;
+}
+
+void TestSyncService::GetTypesWithUnsyncedData(
+    base::OnceCallback<void(ModelTypeSet)> cb) const {
+  std::move(cb).Run(unsynced_types_);
 }
 
 }  // namespace syncer

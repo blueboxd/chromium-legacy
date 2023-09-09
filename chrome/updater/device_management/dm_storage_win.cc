@@ -8,6 +8,7 @@
 
 #include "base/base_paths_win.h"
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
@@ -43,8 +44,8 @@ class TokenService : public TokenServiceInterface {
 std::string TokenService::GetDeviceID() const {
   std::wstring device_id;
   base::win::RegKey key;
-  if (key.Open(HKEY_LOCAL_MACHINE, kRegKeyCryptographyKey, KEY_READ) !=
-          ERROR_SUCCESS ||
+  if (key.Open(HKEY_LOCAL_MACHINE, kRegKeyCryptographyKey,
+               KEY_READ | KEY_WOW64_64KEY) != ERROR_SUCCESS ||
       key.ReadValue(kRegValueMachineGuid, &device_id) != ERROR_SUCCESS) {
     return std::string();
   }
@@ -64,31 +65,40 @@ bool TokenService::IsEnrollmentMandatory() const {
 }
 
 bool TokenService::StoreEnrollmentToken(const std::string& token) {
-  base::win::RegKey key;
-  return key.Create(HKEY_LOCAL_MACHINE, kRegKeyCompanyCloudManagement,
-                    Wow6432(KEY_WRITE)) == ERROR_SUCCESS &&
-         key.WriteValue(kRegValueEnrollmentToken,
-                        base::SysUTF8ToWide(token).c_str()) == ERROR_SUCCESS;
+  const bool result =
+      SetRegistryKey(HKEY_LOCAL_MACHINE, kRegKeyCompanyCloudManagement,
+                     kRegValueEnrollmentToken, base::SysUTF8ToWide(token));
+
+  VLOG(1) << "Update enrollment token to: [" << token
+          << "], bool result=" << result;
+  return result;
 }
 
 std::string TokenService::GetEnrollmentToken() const {
   std::wstring token;
-  base::win::RegKey key;
-  if (key.Open(HKEY_LOCAL_MACHINE, kRegKeyCompanyCloudManagement,
-               Wow6432(KEY_READ)) != ERROR_SUCCESS ||
-      key.ReadValue(kRegValueEnrollmentToken, &token) != ERROR_SUCCESS) {
-    return std::string();
+  if (base::win::RegKey key;
+      key.Open(HKEY_LOCAL_MACHINE, kRegKeyCompanyCloudManagement,
+               Wow6432(KEY_READ)) == ERROR_SUCCESS &&
+      key.ReadValue(kRegValueEnrollmentToken, &token) == ERROR_SUCCESS) {
+    return base::SysWideToUTF8(token);
   }
 
-  return base::SysWideToUTF8(token);
+  if (base::win::RegKey key;
+      key.Open(HKEY_LOCAL_MACHINE, kRegKeyCompanyLegacyCloudManagement,
+               Wow6432(KEY_READ)) == ERROR_SUCCESS &&
+      key.ReadValue(kRegValueCloudManagementEnrollmentToken, &token) ==
+          ERROR_SUCCESS) {
+    return base::SysWideToUTF8(token);
+  }
+  return {};
 }
 
 bool TokenService::StoreDmToken(const std::string& token) {
-  base::win::RegKey key;
-  return key.Create(HKEY_LOCAL_MACHINE, kRegKeyCompanyEnrollment,
-                    Wow6432(KEY_WRITE)) == ERROR_SUCCESS &&
-         key.WriteValue(kRegValueDmToken, base::SysUTF8ToWide(token).c_str()) ==
-             ERROR_SUCCESS;
+  const bool result =
+      SetRegistryKey(HKEY_LOCAL_MACHINE, kRegKeyCompanyEnrollment,
+                     kRegValueDmToken, base::SysUTF8ToWide(token));
+  VLOG(1) << "Update DM token to: [" << token << "], bool result=" << result;
+  return result;
 }
 
 bool TokenService::DeleteDmToken() {
@@ -105,12 +115,14 @@ bool TokenService::DeleteDmToken() {
   if (result == ERROR_SUCCESS) {
     result = key.DeleteValue(kRegValueDmToken);
   } else {
+    VLOG(1) << "Failed to delete DM token.";
     return false;
   }
 
   // Delete the key if no other values are present.
   base::win::RegKey(HKEY_LOCAL_MACHINE, L"", Wow6432(KEY_WRITE))
       .DeleteEmptyKey(kRegKeyCompanyEnrollment);
+  VLOG(1) << "DM token is deleted.";
   return true;
 }
 

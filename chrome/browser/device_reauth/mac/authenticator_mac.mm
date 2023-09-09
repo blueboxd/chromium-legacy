@@ -25,9 +25,14 @@ bool AuthenticatorMac::CheckIfBiometricsAvailable() {
 }
 
 bool AuthenticatorMac::CheckIfBiometricsOrScreenLockAvailable() {
-  LAContext* context = [[LAContext alloc] init];
-  return [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthentication
-                              error:nil];
+  if (@available(macOS 10.11, *)) {
+    LAContext* context = [[LAContext alloc] init];
+
+    return [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthentication
+                                error:nil];
+  } else {
+    return NO;
+  }
 }
 
 bool AuthenticatorMac::AuthenticateUserWithNonBiometrics(

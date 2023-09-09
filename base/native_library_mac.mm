@@ -52,7 +52,8 @@ NativeLibrary LoadNativeLibraryWithOptions(const FilePath& library_path,
                                            NativeLibraryLoadError* error) {
   // dlopen() etc. open the file off disk.
   if (library_path.Extension() == "dylib" || !DirectoryExists(library_path)) {
-    void* dylib = dlopen(library_path.value().c_str(), RTLD_LAZY);
+    void* dylib = dlopen(library_path.value().c_str(),
+                         (options.force_bind) ? RTLD_NOW : RTLD_LAZY);
     if (!dylib) {
       if (error)
         error->message = dlerror();

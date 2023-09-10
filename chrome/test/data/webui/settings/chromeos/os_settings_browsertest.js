@@ -16,6 +16,7 @@ GEN('#include "chromeos/constants/chromeos_features.h"');
 GEN('#include "components/app_restore/features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 GEN('#include "ui/accessibility/accessibility_features.h"');
+GEN('#include "ui/base/ui_base_features.h"');
 
 /** Test fixture for shared Polymer 3 elements. */
 var OSSettingsBrowserTest = class extends PolymerTest {
@@ -68,11 +69,11 @@ TEST_F_WITH_PREAMBLE(
 
 // TODO(crbug.com/1234871) Move this test back into the list of tests below once
 // Fast pair is launched.
-var OSSettingsOsBluetoothDevicesSubpageTest =
+var OSSettingsOsBluetoothPageOsBluetoothDevicesSubpageTest =
     class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_bluetooth_page/os_bluetooth_devices_subpage_tests.js';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_bluetooth_page/os_bluetooth_devices_subpage_test.js';
   }
 
   /** @override */
@@ -87,9 +88,11 @@ var OSSettingsOsBluetoothDevicesSubpageTest =
   }
 };
 
-TEST_F('OSSettingsOsBluetoothDevicesSubpageTest', 'AllJsTests', () => {
-  mocha.run();
-});
+TEST_F(
+    'OSSettingsOsBluetoothPageOsBluetoothDevicesSubpageTest', 'AllJsTests',
+    () => {
+      mocha.run();
+    });
 
 // TODO (b/238647706) Move this test back into the list of tests below once
 // Fast pair is launched.
@@ -303,10 +306,18 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    'device_page/per_device_pointing_stick_subsection_test.js',
    {enabled: ['ash::features::kInputDeviceSettingsSplit']},
  ],
+ [
+   'DevicePageFKeyRow', 'device_page/fkey_row_test.js', {
+     enabled: [
+       'ash::features::kInputDeviceSettingsSplit',
+       'ash::features::kAltClickAndSixPackCustomization',
+       'features::kSupportF11AndF12KeyShortcuts',
+     ]
+   }
+ ],
  ['EsimRemoveProfileDialog', 'esim_remove_profile_dialog_test.js'],
  ['GuestOsSharedPaths', 'guest_os/guest_os_shared_paths_test.js'],
  ['GuestOsSharedUsbDevices', 'guest_os/guest_os_shared_usb_devices_test.js'],
- ['InternetDetailMenu', 'internet_detail_menu_test.js'],
  [
    'InternetKnownNetworksSubpage', 'internet_known_networks_subpage_tests.js', {
      enabled: [
@@ -351,6 +362,10 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  ],
  ['InternetPageInternetConfig', 'internet_page/internet_config_test.js'],
  [
+   'InternetPageInternetDetailMenu',
+   'internet_page/internet_detail_menu_test.js'
+ ],
+ [
    'InternetPageInternetDetailSubpage',
    'internet_page/internet_detail_subpage_tests.js', {
      enabled: [
@@ -359,6 +374,10 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
        'ash::features::kPasspointSettings',
      ]
    }
+ ],
+ [
+   'InternetPageInternetSubpageMenu',
+   'internet_page/internet_subpage_menu_test.js'
  ],
  [
    'InternetPageNetworkAlwaysOnVpn',
@@ -403,7 +422,6 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    'internet_page/tether_connection_dialog_test.js'
  ],
  ['InternetSubpage', 'internet_subpage_tests.js'],
- ['InternetSubpageMenu', 'internet_subpage_menu_test.js'],
  ['KerberosPage', 'kerberos_page/kerberos_page_test.js'],
  [
    'KerberosPageKerberosAccountsSubpage',
@@ -418,7 +436,24 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    'keyboard_shortcut_banner/keyboard_shortcut_banner_test.js'
  ],
  ['LockScreenSubpage', 'lock_screen_subpage_test.js'],
- ['MainPageContainer', 'main_page_container_test.js'],
+ [
+   'MainPageContainer',
+   'main_page_container/main_page_container_test.js',
+   {
+     disabled: [
+       'ash::features::kOsSettingsRevampWayfinding',
+     ],
+   },
+ ],
+ [
+   'MainPageContainerRevamp',
+   'main_page_container/main_page_container_test.js',
+   {
+     enabled: [
+       'ash::features::kOsSettingsRevampWayfinding',
+     ],
+   },
+ ],
  [
    'MainPageContainerPageDisplayer',
    'main_page_container/page_displayer_test.js',
@@ -770,8 +805,8 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    'os_search_page/google_assistant_subpage_test.js'
  ],
  [
-   'OsSearchPageSearchAndAssistantCard',
-   'os_search_page/search_and_assistant_card_test.js',
+   'OsSearchPageSearchAndAssistantSettingsCard',
+   'os_search_page/search_and_assistant_settings_card_test.js',
    {disabled: ['ash::features::kOsSettingsRevampWayfinding']},
  ],
  ['OsSearchPageSearchSubpage', 'os_search_page/search_subpage_test.js'],
@@ -874,8 +909,8 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    {enabled: ['ash::features::kOsSettingsRevampWayfinding']},
  ],
  [
-   'SystemPreferencesPageSearchAndAssistantCard',
-   'os_search_page/search_and_assistant_card_test.js',
+   'SystemPreferencesPageSearchAndAssistantSettingsCard',
+   'os_search_page/search_and_assistant_settings_card_test.js',
    {enabled: ['ash::features::kOsSettingsRevampWayfinding']},
  ],
  [

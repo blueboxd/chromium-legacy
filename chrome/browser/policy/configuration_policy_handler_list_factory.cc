@@ -1527,6 +1527,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kGlanceablesEnabled,
     ash::prefs::kGlanceablesEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kFullRestoreMode,
+    ash::full_restore::kRestoreAppsAndPagesPrefName,
+    base::Value::Type::INTEGER },
 #endif // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_LINUX)
@@ -1539,12 +1542,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kApplicationLocaleValue,
     language::prefs::kApplicationLocale,
     base::Value::Type::STRING },
-  { key::kChromeCleanupEnabled,
-    prefs::kSwReporterEnabled,
-    base::Value::Type::BOOLEAN },
-  { key::kChromeCleanupReportingEnabled,
-    prefs::kSwReporterReportingEnabled,
-    base::Value::Type::BOOLEAN },
   { key::kRendererCodeIntegrityEnabled,
     prefs::kRendererCodeIntegrityEnabled,
     base::Value::Type::BOOLEAN },

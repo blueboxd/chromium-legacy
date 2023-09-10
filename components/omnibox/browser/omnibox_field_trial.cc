@@ -554,6 +554,12 @@ bool OmniboxFieldTrial::IsActionsUISimplificationEnabled() {
 }
 
 const base::FeatureParam<bool>
+    OmniboxFieldTrial::kActionsUISimplificationIncludeRealbox(
+        &omnibox::kOmniboxActionsUISimplification,
+        "ActionsUISimplificationIncludeRealbox",
+        true);
+
+const base::FeatureParam<bool>
     OmniboxFieldTrial::kActionsUISimplificationTrimExtra(
         &omnibox::kOmniboxActionsUISimplification,
         "ActionsUISimplificationTrimExtra",
@@ -681,6 +687,10 @@ const base::FeatureParam<double>
         &omnibox::kSquareSuggestIcons,
         "OmniboxSquareSuggestIconEntitiesScale",
         0.8722);
+const base::FeatureParam<bool> OmniboxFieldTrial::kSquareSuggestIconWeather(
+    &omnibox::kSquareSuggestIcons,
+    "OmniboxSquareSuggestIconWeather",
+    true);
 
 bool OmniboxFieldTrial::IsUniformRowHeightEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kUniformRowHeight);
@@ -750,11 +760,8 @@ const base::FeatureParam<int> OmniboxFieldTrial::kFontSizeNonTouchUI(
     13);
 
 bool OmniboxFieldTrial::IsCr23LayoutEnabled() {
-  static const bool enabled =
-      features::GetChromeRefresh2023Level() ==
-          features::ChromeRefresh2023Level::kLevel2 ||
-      base::FeatureList::IsEnabled(omnibox::kExpandedLayout);
-  return enabled;
+  return omnibox::IsOmniboxCr23CustomizeGuardedFeatureEnabled(
+      omnibox::kExpandedLayout);
 }
 
 bool OmniboxFieldTrial::IsChromeRefreshSteadyStateBackgroundColorEnabled() {
@@ -1161,7 +1168,7 @@ const base::FeatureParam<bool> kRealboxSecondaryZeroSuggestCounterfactual(
 const base::FeatureParam<bool> kOmniboxModernizeVisualUpdateMergeClipboardOnNTP(
     &omnibox::kOmniboxModernizeVisualUpdate,
     "modernize_visual_update_merge_clipboard_on_ntp",
-    false);
+    true);
 // <- Android UI Revamp
 // ---------------------------------------------------------
 // Touch Down Trigger For Prefetch ->

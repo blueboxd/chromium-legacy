@@ -9,7 +9,9 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
+#include "components/android_autofill/browser/android_autofill_features.h"
 #include "components/android_autofill/browser/android_autofill_manager.h"
 #include "components/android_autofill/browser/form_data_android.h"
 #include "components/android_autofill/browser/jni_headers/AutofillProvider_jni.h"
@@ -183,15 +185,14 @@ void AutofillProviderAndroid::StartNewSession(AndroidAutofillManager* manager,
     return;
   }
 
-  FormStructure* form_structure = nullptr;
-  AutofillField* autofill_field = nullptr;
-  if (!manager->GetCachedFormAndField(form, field, &form_structure,
-                                      &autofill_field)) {
-    form_structure = nullptr;
+  // Set the field type predictions in `form_`.
+  if (FormStructure* form_structure =
+          manager->FindCachedFormById(form.global_id())) {
+    form_->UpdateFieldTypes(*form_structure);
   }
   gfx::RectF transformed_bounding = ToClientAreaBound(bounding_box);
 
-  ScopedJavaLocalRef<jobject> form_obj = form_->GetJavaPeer(form_structure);
+  ScopedJavaLocalRef<jobject> form_obj = form_->GetJavaPeer();
   manager_ = manager->GetWeakPtrToLeafClass();
   Java_AutofillProvider_startAutofillSession(
       env, obj, form_obj, index, transformed_bounding.x(),
@@ -296,8 +297,25 @@ void AutofillProviderAndroid::OnFormSubmitted(AndroidAutofillManager* manager,
                                               bool known_success,
                                               SubmissionSource source) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!IsCurrentlyLinkedManager(manager) || !IsCurrentlyLinkedForm(form))
+  if (!IsCurrentlyLinkedManager(manager) || !form_) {
     return;
+  }
+
+  // In the case of form submissions, we want to perform less strict form
+  // comparisons than for other form events (focus change, scroll change, etc.):
+  // Even if the page modifies the form between the user interaction and the
+  // form submission, we want to inform `AutofillManager` about the submission.
+  // Otherwise no saving prompt can be offered.
+  if (base::FeatureList::IsEnabled(
+          features::kAndroidAutofillFormSubmissionCheckById)) {
+    if (form_->form().global_id() != form.global_id()) {
+      return;
+    }
+  } else {
+    if (!form_->SimilarFormAs(form)) {
+      return;
+    }
+  }
 
   if (known_success || source == SubmissionSource::FORM_SUBMISSION) {
     FireSuccessfulSubmission(source);
@@ -398,13 +416,28 @@ void AutofillProviderAndroid::OnHidePopup(AndroidAutofillManager* manager) {
   }
 }
 
-void AutofillProviderAndroid::OnServerPredictionsAvailable(FormGlobalId form) {
+void AutofillProviderAndroid::OnServerPredictionsAvailable(
+    AndroidAutofillManager* manager_for_debugging,
+    FormGlobalId form) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!form_ || form_->form().global_id() != form) {
     return;
   }
 
-  CHECK(manager_);
+  if (!manager_) {
+    // TODO(crbug.com/1479006): This should never be reachable. Remove once it
+    // is clear how it can happen.
+    SCOPED_CRASH_KEY_STRING32("crbug1479006", "form_ token",
+                              form_->form().global_id().frame_token.ToString());
+    SCOPED_CRASH_KEY_STRING32("crbug1479006", "form token",
+                              form.frame_token.ToString());
+    SCOPED_CRASH_KEY_STRING32(
+        "crbug1479006", "manager token",
+        manager_for_debugging->driver().GetFrameToken().ToString());
+    base::debug::DumpWithoutCrashing();
+    return;
+  }
+
   const FormStructure* form_structure = manager_->FindCachedFormById(form);
   if (!form_structure) {
     return;

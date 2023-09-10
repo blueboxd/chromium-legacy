@@ -151,7 +151,12 @@ void FakePasswordStoreBackend::RemoveLoginsCreatedBetweenAsync(
     base::Time delete_begin,
     base::Time delete_end,
     PasswordChangesOrErrorReply callback) {
-  NOTIMPLEMENTED();
+  GetTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(
+          &FakePasswordStoreBackend::RemoveLoginsCreatedBetweenInternal,
+          base::Unretained(this), delete_begin, delete_end),
+      std::move(callback));
 }
 
 void FakePasswordStoreBackend::DisableAutoSignInForOriginsAsync(
@@ -282,11 +287,24 @@ PasswordStoreChangeList FakePasswordStoreBackend::UpdateLoginInternal(
   for (auto& stored_form : forms) {
     if (ArePasswordFormUniqueKeysEqual(form, stored_form)) {
       bool password_changed = form.password_value != stored_form.password_value;
+      bool insecure_credentials_changed = false;
+
+      for (auto insecure_type : {InsecureType::kLeaked, InsecureType::kPhished,
+                                 InsecureType::kWeak, InsecureType::kReused}) {
+        if (form.password_issues.contains(insecure_type) !=
+            stored_form.password_issues.contains(insecure_type)) {
+          insecure_credentials_changed = true;
+          break;
+        }
+      }
+
       stored_form = form;
       stored_form.in_store = is_account_store()
                                  ? PasswordForm::Store::kAccountStore
                                  : PasswordForm::Store::kProfileStore;
-      changes.emplace_back(PasswordStoreChange::UPDATE, form, password_changed);
+      changes.emplace_back(
+          PasswordStoreChange::UPDATE, form, password_changed,
+          InsecureCredentialsChanged(insecure_credentials_changed));
     }
   }
   if (changes.empty() && update_always_succeeds_) {
@@ -320,6 +338,21 @@ PasswordStoreChangeList FakePasswordStoreBackend::RemoveLoginInternal(
     }
   }
   return changes;
+}
+
+PasswordStoreChangeList
+FakePasswordStoreBackend::RemoveLoginsCreatedBetweenInternal(
+    base::Time delete_begin,
+    base::Time delete_end) {
+  std::vector<std::unique_ptr<PasswordForm>> all_logins =
+      GetAllLoginsInternal();
+  PasswordStoreChangeList list;
+  for (const auto& form : all_logins) {
+    if (delete_begin <= form->date_created && form->date_created < delete_end) {
+      base::ranges::move(RemoveLoginInternal(*form), std::back_inserter(list));
+    }
+  }
+  return list;
 }
 
 }  // namespace password_manager

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/android/rules.gni")
+import("//third_party/jni_zero/jni_zero.gni")
 
 generate_jni("jni_headers") {
   sources = [ "java/src/org/chromium/chrome/browser/optimization_guide/OptimizationGuideBridge.java" ]
@@ -49,6 +50,7 @@ android_library("native_java_unittests") {
 
   deps = [
     ":java",
+    "//base:base_java_test_support",
     "//base:jni_java",
     "//chrome/browser/flags:java",
     "//chrome/browser/profiles/android:java",

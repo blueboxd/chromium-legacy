@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/coord_box_offset_path_operation.h"
+#include "third_party/blink/renderer/core/style/geometry_box_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/grid_area.h"
 #include "third_party/blink/renderer/core/style/paint_order_array.h"
 #include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
@@ -1747,15 +1748,19 @@ const CSSValue* ClipPath::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     bool allow_visited_style) const {
   if (ClipPathOperation* operation = style.ClipPath()) {
-    if (operation->GetType() == ClipPathOperation::kShape) {
+    if (auto* box = DynamicTo<GeometryBoxClipPathOperation>(operation)) {
       CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-      if (auto* shape = DynamicTo<ShapeClipPathOperation>(operation)) {
-        auto* basic_shape = ValueForBasicShape(style, shape->GetBasicShape());
-        list->Append(*basic_shape);
-        GeometryBox geometry_box = shape->GetGeometryBox();
-        if (geometry_box != GeometryBox::kBorderBox) {
-          list->Append(*CSSIdentifierValue::Create(geometry_box));
-        }
+      GeometryBox geometry_box = box->GetGeometryBox();
+      list->Append(*CSSIdentifierValue::Create(geometry_box));
+      return list;
+    }
+    if (auto* shape = DynamicTo<ShapeClipPathOperation>(operation)) {
+      CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+      auto* basic_shape = ValueForBasicShape(style, shape->GetBasicShape());
+      list->Append(*basic_shape);
+      GeometryBox geometry_box = shape->GetGeometryBox();
+      if (geometry_box != GeometryBox::kBorderBox) {
+        list->Append(*CSSIdentifierValue::Create(geometry_box));
       }
       return list;
     }
@@ -3702,6 +3707,13 @@ const CSSValue* ForcedColorAdjust::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.ForcedColorAdjust());
+}
+
+const CSSValue* FormSizing::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool) const {
+  return CSSIdentifierValue::Create(style.FormSizing());
 }
 
 void InternalVisitedColor::ApplyInitial(StyleResolverState& state) const {
@@ -6385,9 +6397,9 @@ const CSSValue* PerspectiveOrigin::CSSValueFromComputedStyleInternal(
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
   if (layout_object) {
-    LayoutRect box;
+    PhysicalRect box;
     if (layout_object->IsBox()) {
-      box = To<LayoutBox>(layout_object)->BorderBoxRect();
+      box = To<LayoutBox>(layout_object)->PhysicalBorderBoxRect();
     }
 
     return MakeGarbageCollected<CSSValuePair>(
@@ -7393,15 +7405,19 @@ const CSSValue* ShapeOutside::ParseSingleValue(
   }
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   CSSValue* box_value = css_parsing_utils::ConsumeShapeBox(range);
-  if (CSSValue* shape_value = css_parsing_utils::ConsumeBasicShape(
-          range, context, css_parsing_utils::AllowPathValue::kForbid)) {
+  CSSValue* shape_value = css_parsing_utils::ConsumeBasicShape(
+      range, context, css_parsing_utils::AllowPathValue::kForbid);
+  if (shape_value) {
     list->Append(*shape_value);
     if (!box_value) {
       box_value = css_parsing_utils::ConsumeShapeBox(range);
     }
   }
   if (box_value) {
-    list->Append(*box_value);
+    if (!shape_value || To<CSSIdentifierValue>(box_value)->GetValueID() !=
+                            CSSValueID::kMarginBox) {
+      list->Append(*box_value);
+    }
   }
   if (!list->length()) {
     return nullptr;

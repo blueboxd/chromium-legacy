@@ -9,6 +9,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
+#include "base/check_is_test.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
@@ -194,11 +195,14 @@ WelcomeScreen::WelcomeScreen(base::WeakPtr<WelcomeView> view,
   input_method::InputMethodManager::Get()->AddObserver(this);
 
   AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
-  CHECK(accessibility_manager);
-  accessibility_subscription_ = accessibility_manager->RegisterCallback(
-      base::BindRepeating(&WelcomeScreen::OnAccessibilityStatusChanged,
-                          base::Unretained(this)));
-  UpdateA11yState();
+  if (accessibility_manager) {
+    accessibility_subscription_ = accessibility_manager->RegisterCallback(
+        base::BindRepeating(&WelcomeScreen::OnAccessibilityStatusChanged,
+                            base::Unretained(this)));
+    UpdateA11yState();
+  } else {
+    CHECK_IS_TEST();
+  }
 }
 
 WelcomeScreen::~WelcomeScreen() {
@@ -390,9 +394,11 @@ void WelcomeScreen::ShowImpl() {
     view_->Show();
 
   // Determine the QuickStart button visibility
-  WizardController::default_controller()->quick_start_controller()->IsSupported(
-      base::BindOnce(&WelcomeScreen::SetQuickStartButtonVisibility,
-                     weak_ptr_factory_.GetWeakPtr()));
+  WizardController::default_controller()
+      ->quick_start_controller()
+      ->DetermineEntryPointVisibility(
+          base::BindOnce(&WelcomeScreen::SetQuickStartButtonVisibility,
+                         weak_ptr_factory_.GetWeakPtr()));
 
   if (LoginScreenClientImpl::HasInstance()) {
     LoginScreenClientImpl::Get()->AddSystemTrayObserver(this);
@@ -559,7 +565,7 @@ bool WelcomeScreen::HandleAccelerator(LoginAcceleratorAction action) {
     // Update the entry point button visibility.
     WizardController::default_controller()
         ->quick_start_controller()
-        ->IsSupported(
+        ->DetermineEntryPointVisibility(
             base::BindOnce(&WelcomeScreen::SetQuickStartButtonVisibility,
                            weak_ptr_factory_.GetWeakPtr()));
     return true;

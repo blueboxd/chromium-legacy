@@ -6,14 +6,14 @@ import {assertDeepEquals} from 'chrome://webui-test/chromeos/chai_assert.js';
 
 import {setupStore} from '../for_tests.js';
 
-import {Preferences, updatePreferences} from './preferences.js';
+import {type Preferences, updatePreferences} from './preferences.js';
 
 /**
  * Defines an initial state for user preferences that is used in all the tests.
  */
 const INITIAL_PREFERENCES: Preferences = {
   driveEnabled: false,
-  cellularDisabled: false,
+  driveSyncEnabledOnMeteredNetwork: false,
   searchSuggestEnabled: false,
   use24hourClock: false,
   timezone: 'GMT+10',
@@ -78,7 +78,7 @@ export async function testPreferencesWithNoKeysUpdates(done: () => void) {
   // all initially `false` and this updates them all to `true` one by one.
   let preferences = INITIAL_PREFERENCES;
   const booleanPreferences = [
-    'cellularDisabled',
+    'driveSyncEnabledOnMeteredNetwork',
     'arcEnabled',
     'arcRemovableMediaAccessEnabled',
     'driveFsBulkPinningEnabled',

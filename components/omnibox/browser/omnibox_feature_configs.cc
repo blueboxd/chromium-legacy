@@ -7,6 +7,7 @@
 #include "base/check.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "components/omnibox/common/omnibox_features.h"
 
 namespace omnibox_feature_configs {
 
@@ -27,16 +28,25 @@ CalcProvider::CalcProvider() {
 }
 
 // static
+DocumentProvider::DocumentProvider() {
+  enabled = base::FeatureList::IsEnabled(omnibox::kDocumentProvider);
+  min_query_length =
+      base::FeatureParam<int>(&omnibox::kDocumentProvider,
+                              "DocumentProviderMinQueryLength", 4)
+          .Get();
+}
+
+// static
 BASE_FEATURE(ShortcutBoosting::kShortcutBoost,
              "OmniboxShortcutBoost",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 ShortcutBoosting::ShortcutBoosting() {
   enabled = base::FeatureList::IsEnabled(kShortcutBoost);
   search_score =
       base::FeatureParam<int>(&kShortcutBoost, "ShortcutBoostSearchScore", 0)
           .Get();
   url_score =
-      base::FeatureParam<int>(&kShortcutBoost, "ShortcutBoostUrlScore", 0)
+      base::FeatureParam<int>(&kShortcutBoost, "ShortcutBoostUrlScore", 1414)
           .Get();
   counterfactual = base::FeatureParam<bool>(
                        &kShortcutBoost, "ShortcutBoostCounterfactual", false)

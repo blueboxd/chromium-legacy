@@ -221,6 +221,7 @@
 <translation id="1413407968866574823">动作游戏与平台游戏</translation>
 <translation id="1413809658975081374">隐私设置错误</translation>
 <translation id="1414134146594747368">学龄前教育</translation>
+<translation id="141826476809826269">已提取文本的末尾</translation>
 <translation id="1419305130220238697">“管理 Chrome 中的下载内容”按钮，激活它即可管理您已在 Chrome 中下载的文件</translation>
 <translation id="1422930527989633628">可以询问能否发现附近的蓝牙设备</translation>
 <translation id="1426410128494586442">是</translation>
@@ -233,6 +234,7 @@
 <translation id="1432187715652018471">此页面想安装一款服务处理程序。</translation>
 <translation id="1432581352905426595">管理搜索引擎</translation>
 <translation id="1433225466058025572">尝试重新移动文件</translation>
+<translation id="1434317006812369578">Chrome 内置的安全功能可在您浏览网页时为您提供保护，例如 Google 安全浏览功能。安全浏览功能<ph name="BEGIN_LINK" />近期在您尝试访问的网站 <ph name="SITE" /> 上发现了内嵌的恶意软件<ph name="END_LINK" />。</translation>
 <translation id="1435940442311036198">使用另一部设备上的通行密钥</translation>
 <translation id="1436185428532214179">可以询问能否修改您设备上的文件和文件夹</translation>
 <translation id="1442386063175183758">关门折（右侧）</translation>
@@ -277,6 +279,7 @@
 <translation id="1530707389502320859">您刚才尝试访问的网站貌似为虚假网站。攻击者有时会对网址做些令人难以发现的细微更改来仿冒网站。</translation>
 <translation id="1532118530259321453">此网页显示</translation>
 <translation id="1536390784834419204">翻译网页</translation>
+<translation id="1537807545287921620">无法访问此 PDF 文件。请打开上下文菜单，然后从中开启“提取 PDF 文件中的文本”</translation>
 <translation id="1539840569003678498">报告发送时间：</translation>
 <translation id="1542105669288201090">商业教育</translation>
 <translation id="1545757265410828525">既往价格</translation>
@@ -382,6 +385,7 @@
 <translation id="1732445923934584865">改为当面询问</translation>
 <translation id="1733064249834771892">字体</translation>
 <translation id="1733631169686303142">音响设备</translation>
+<translation id="1733762317901693627">即使是通常很安全的网站，有时也会遭到攻击者的入侵。请仅在您确信自己已充分了解风险的情况下访问<ph name="BEGIN_LINK" />这个不安全的网站<ph name="END_LINK" />。</translation>
 <translation id="1734864079702812349">美国运通卡</translation>
 <translation id="1734878702283171397">请尝试联系系统管理员。</translation>
 <translation id="1736420071277903564">计算机</translation>
@@ -434,6 +438,7 @@
 <translation id="1842969606798536927">付款</translation>
 <translation id="1846432862466000825">塑料（存档用）</translation>
 <translation id="1848982255014129637">相纸（高光）</translation>
+<translation id="1853392626017747777">虚拟卡注册对话框已关闭</translation>
 <translation id="1854180393107901205">停止投放</translation>
 <translation id="1855370856221982654">拳击</translation>
 <translation id="1856713167556118146">无痕模式不会做什么</translation>
@@ -470,6 +475,7 @@
 <translation id="1924727005275031552">新</translation>
 <translation id="1935995810530254458">仍然复制</translation>
 <translation id="1939175642807587452">可以询问能否向您发送通知</translation>
+<translation id="1940441167050915935">删除已保存的安全码</translation>
 <translation id="1943994668912612445">设计</translation>
 <translation id="1945968466830820669">您可能会无法再访问所属组织的账号，或被他人盗用身份信息。Chromium 建议您立即更改密码。</translation>
 <translation id="1946849748901605102">12 x 15 英寸</translation>
@@ -713,6 +719,7 @@
 <translation id="2480300195898055381">在您的 Google 账号 <ph name="USER_EMAIL" /> 中更新</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="248348093745724435">设备政策</translation>
+<translation id="2490199669743245365">您正在尝试访问的网站上的攻击者可能会安装有害软件，以窃取或删除某些信息，例如您的密码、照片、消息或信用卡号码。Chrome 强烈建议您返回到安全的浏览环境，以免造成损害。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2491120439723279231">服务器证书中包含错误。</translation>
 <translation id="2491414235131909199">此页面已被某个扩展程序屏蔽</translation>
 <translation id="2495083838625180221">JSON 解析器</translation>
@@ -864,6 +871,7 @@
 <translation id="2803306138276472711">Google安全浏览功能最近在<ph name="SITE" />上<ph name="BEGIN_LINK" />检测到了恶意软件<ph name="END_LINK" />。平常非常安全的网站有时也会感染恶意软件。</translation>
 <translation id="2807052079800581569">图片 Y 轴位置</translation>
 <translation id="2808278141522721006">您可在“<ph name="SETTINGS" />”中开启或关闭 Windows Hello</translation>
+<translation id="2814184336982254349">无法访问此 PDF 文件。请按搜索键 + m 打开上下文菜单，然后从中开启“提取 PDF 文件中的文本”</translation>
 <translation id="2818338148457093657">美容服务与水疗</translation>
 <translation id="2820957248982571256">正在扫描…</translation>
 <translation id="2824775600643448204">地址和搜索栏</translation>
@@ -1044,6 +1052,7 @@
 <translation id="3216313131063488104">蓝调</translation>
 <translation id="3218181027817787318">相对</translation>
 <translation id="3218247554732884571">{DAYS_UNTIL_DEADLINE,plural, =1{必须立即更新}=2{必须在明天更新}other{必须在 # 天内更新}}</translation>
+<translation id="3218388919950135939">请仅在您确信自己已充分了解风险的情况下访问<ph name="BEGIN_LINK" />这个不安全的网站<ph name="END_LINK" />。</translation>
 <translation id="3220264767789936523">正装</translation>
 <translation id="3223287115535306850">“应用正在启动”图标</translation>
 <translation id="3223425961342298674">已拒绝授予位置信息使用权限</translation>
@@ -1105,6 +1114,7 @@
 <translation id="3340978935015468852">设置</translation>
 <translation id="3342018947887487892">之后，您访问的网站便可请求获取以下信息：您的广告主题，或者您访问过的网站建议的广告。</translation>
 <translation id="3342366525167526994">人体艺术</translation>
+<translation id="3344167530090084176">如果想在下次购物时更快捷地付款，请将您的付款卡信息连同安全码一起保存到设备上</translation>
 <translation id="334438173029876234">滑板装备</translation>
 <translation id="3349952286488694786">SRA2</translation>
 <translation id="3355823806454867987">更改代理服务器设置...</translation>
@@ -1165,12 +1175,13 @@
 <translation id="3461266716147554923"><ph name="URL" /> 想查看复制到剪贴板的文字和图片</translation>
 <translation id="3461824795358126837">荧光笔</translation>
 <translation id="3462200631372590220">隐藏详情</translation>
+<translation id="3465972433695735758">无法访问此 PDF 文件。已提取文本，由 Google AI 提供支持</translation>
 <translation id="346601286295919445">化学</translation>
 <translation id="3468054117417088249"><ph name="TAB_SWITCH_SUFFIX" />，目前处于打开状态，按 Tab 键再按 Enter 键可切换到打开的标签页</translation>
 <translation id="3470563864795286535"><ph name="CLOSE_INCOGNITO_WINDOWS_FOCUSED_FRIENDLY_MATCH_TEXT" />，依次按 Tab 键和 Enter 键即可关闭当前打开的所有无痕式窗口</translation>
 <translation id="3474392552865647225">“自定义 Chrome 中的字体”按钮，激活它即可自定义 Chrome 中的字号和字型</translation>
 <translation id="3477679029130949506">上映的影片与放映时间</translation>
-<translation id="3478033058537426179">按群组</translation>
+<translation id="3478033058537426179">按分组</translation>
 <translation id="3479552764303398839">以后再说</translation>
 <translation id="3484560055331845446">您可能会无法再访问自己的 Google 账号。Chrome 建议您立即更改密码。系统会要求您登录。</translation>
 <translation id="3484861421501147767">提醒：可以使用已保存的促销代码</translation>
@@ -1181,6 +1192,7 @@
 <translation id="350069200438440499">文件名：</translation>
 <translation id="3501300228850242680">金属音乐</translation>
 <translation id="350421688684366066">标签（高光）</translation>
+<translation id="350763432931695541">正在提取接下来几页中的文本</translation>
 <translation id="3507869775212388416">法律职位</translation>
 <translation id="3507936815618196901">为您的周边环境创建 3D 地图并跟踪摄像头位置</translation>
 <translation id="3512163584740124171">此政策会被忽略，因为同一政策组中的另一个政策具有更高的优先级。</translation>
@@ -1325,6 +1337,7 @@
 <translation id="3772211998634047851">纸（证券纸）</translation>
 <translation id="377451872037045164"><ph name="CREATE_GOOGLE_KEEP_NOTE_FOCUSED_FRIENDLY_MATCH_TEXT" />，依次按 Tab 键和 Enter 键即可在 Google Keep 中快速创建新记事</translation>
 <translation id="3778403066972421603">要将此卡的信息保存到您的 Google 账号中和此设备上吗？</translation>
+<translation id="378026377453746707">Chrome 内置的安全功能可在您浏览网页时为您提供保护，例如 Google 安全浏览功能。安全浏览功能近期<ph name="BEGIN_LINK" />在您尝试访问的网站 <ph name="SITE" /> 上发现了内嵌的有害软件<ph name="END_LINK" />。</translation>
 <translation id="3780694243617746492">出纸槽</translation>
 <translation id="3781428340399460090">艳粉色</translation>
 <translation id="3783418713923659662">Mastercard</translation>
@@ -1336,6 +1349,7 @@
 <translation id="3795344968043407227">独立音乐与另类音乐</translation>
 <translation id="3799805948399000906">请求的字体</translation>
 <translation id="380329542618494757">名称</translation>
+<translation id="3806932344025766608">您正在尝试访问的网站上的攻击者可能会诱使您安装软件或泄露某些信息，例如您的密码、手机号码或信用卡号码。Chrome 强烈建议您返回到安全的浏览环境，以免造成损害。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3807270098669886186">电话服务提供商</translation>
 <translation id="3807366285948165054">图片沿 X 轴位移</translation>
 <translation id="3807873520724684969">有害内容已被拦截。</translation>
@@ -1401,10 +1415,12 @@
 <translation id="3950820424414687140">登录</translation>
 <translation id="3953505489397572035">此价格即是一般价格</translation>
 <translation id="3958057596965527988">4 x 4 英寸</translation>
+<translation id="3959121317419633580">Chrome 内置的安全功能可在您浏览网页时为您提供保护，例如 Google 安全浏览功能。安全浏览功能近期<ph name="BEGIN_LINK" />在您尝试访问的网站 <ph name="SITE" /> 上发现了内嵌的钓鱼式攻击<ph name="END_LINK" />。<ph name="NEW_LINE" />即使是通常很安全的网站，有时也会遭到攻击者的入侵。如果您认为我们的判定有误，并认为此网站不会构成危险，请<ph name="BEGIN_ERROR_LINK" />告知我们<ph name="END_ERROR_LINK" />。</translation>
 <translation id="3961148744525529027">付款处理程序工作表已在下半屏中打开</translation>
 <translation id="3962859241508114581">上一首</translation>
 <translation id="3963721102035795474">阅读器模式</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{无}=1{来自 1 个网站}other{来自 # 个网站}}</translation>
+<translation id="3966044442021752214">产品安全</translation>
 <translation id="397105322502079400">正在计算...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> 已被屏蔽</translation>
 <translation id="3983340834939868135">“<ph name="VENDOR_NAME" />”中的通行密钥</translation>
@@ -1423,6 +1439,7 @@
 <translation id="401170183602135785">C6 信封</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{包含 {COUNT} 页内容的 PDF 文档}other{包含 {COUNT} 页内容的 PDF 文档}}</translation>
 <translation id="4014895360827978999">商户服务与付款系统</translation>
+<translation id="4018819349042761761">公钥</translation>
 <translation id="4023431997072828269">由于系统正在使用不安全的连接提交此表单，他人将能看到您的信息。</translation>
 <translation id="4030383055268325496">撤消添加(&amp;U)</translation>
 <translation id="4030545038933060179">开启此设置后，这里会列出系统根据您近期的浏览记录而推测的主题</translation>
@@ -1599,6 +1616,7 @@
 <translation id="433013776994920042">网站托管与域名注册</translation>
 <translation id="4331519897422864041">堆叠出纸器 5</translation>
 <translation id="4331708818696583467">不安全</translation>
+<translation id="4333295216031073611">购物清单</translation>
 <translation id="4333561522337981382">管理您的所有显示屏上的窗口</translation>
 <translation id="4340575312453649552">对于您的设备来说，此广告占用了太多资源，因此 Chrome 已将其移除。</translation>
 <translation id="4340810192899866471">从 JSON 文件导入</translation>
@@ -1651,6 +1669,7 @@
 <translation id="4451684391620232683">向用户显示的文本：</translation>
 <translation id="4452328064229197696">您刚才使用的密码遭遇了数据泄露。为确保您的账号安全，Google 密码管理器建议您检查已保存的所有密码。</translation>
 <translation id="4464826014807964867">包含来自贵组织的信息的网站</translation>
+<translation id="4473643328224505070"><ph name="BEGIN_ENHANCED_PROTECTION_LINK" />开启增强型保护<ph name="END_ENHANCED_PROTECTION_LINK" />，获享 Chrome 的最高级别安全防护</translation>
 <translation id="447665707681730621"><ph name="BUBBLE_MESSAGE" />。<ph name="LEARN_MORE_TEXT" /></translation>
 <translation id="4476953670630786061">此表单不安全。因此，系统已关闭自动填充功能。</translation>
 <translation id="4477350412780666475">下一曲</translation>
@@ -1720,6 +1739,7 @@
 <translation id="4628948037717959914">照片</translation>
 <translation id="4629370161347991046">A4x6</translation>
 <translation id="4631649115723685955">已关联返现</translation>
+<translation id="4631881646528206880">虚拟卡注册</translation>
 <translation id="4636930964841734540">信息</translation>
 <translation id="4638670630777875591">Chromium 中的无痕模式</translation>
 <translation id="464342062220857295">搜索功能</translation>
@@ -1834,6 +1854,7 @@
 <translation id="4854853140771946034">在 Google Keep 中快速创建新记事</translation>
 <translation id="485902285759009870">正在核对动态密码…</translation>
 <translation id="4862630594858951805">想在降价时收到电子邮件通知？</translation>
+<translation id="4864406669374375262">已将版本字符串复制到剪贴板</translation>
 <translation id="486459320933704969">必须先征得家长或监护人的同意，然后你才能访问此网站</translation>
 <translation id="4866506163384898554">按 |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />| 可显示鼠标光标</translation>
 <translation id="4873616204573862158">眼镜</translation>
@@ -2068,7 +2089,6 @@
 <translation id="5329858041417644019">您的浏览器不受管理</translation>
 <translation id="5332219387342487447">送货方式</translation>
 <translation id="5332769172018416402">发消息询问</translation>
-<translation id="5333022057423422993">Chrome 发现您刚才使用的密码已遭遇数据泄露。为确保您的账号安全，建议您检查您保存的密码。</translation>
 <translation id="5334013548165032829">详细的系统日志</translation>
 <translation id="5334145288572353250">保存地址？</translation>
 <translation id="5340250774223869109">此应用已被禁用</translation>
@@ -2277,7 +2297,6 @@
 <translation id="5784606427469807560">确认您的信用卡时出现问题。请检查您的互联网连接，然后重试。</translation>
 <translation id="5785756445106461925">而且，此页中包含其他不安全的资源。他人能在这些资源传输过程中进行查看，攻击者也可以修改这些资源，从而改变此页的外观。</translation>
 <translation id="5786044859038896871">要填充您的信用卡信息吗？</translation>
-<translation id="578633867165174378">Chrome 发现您刚才使用的密码已遭遇数据泄露。建议您立即更改此密码。</translation>
 <translation id="5789643057113097023">.</translation>
 <translation id="5793777472500812427">{COUNT,plural, =0{无}=1{1 个账号的登录数据}other{# 个账号的登录数据}}</translation>
 <translation id="5800727402210090597">手机维修和服务</translation>
@@ -2367,6 +2386,7 @@
 <translation id="5992805036496113940">查看向您展示广告时使用的信息</translation>
 <translation id="5995727681868049093">在您的 Google 账号中管理自己的信息、隐私和安全</translation>
 <translation id="5997247540087773573">您刚才使用的密码遭遇了数据泄露。为确保您的账号安全，Google 密码管理工具建议您立即更改此密码并检查您已保存的所有密码。</translation>
+<translation id="5999271311987646952">Chrome 内置的安全功能可在您浏览网页时为您提供保护，例如 Google 安全浏览功能，该功能近期在您尝试访问的网站上<ph name="BEGIN_LINK" />发现了恶意软件<ph name="END_LINK" />。</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> 个与“<ph name="SEARCH_TEXT" />”相符的搜索结果</translation>
 <translation id="6002122790816966947">您的设备</translation>
 <translation id="6005659677094197001">连续纸</translation>
@@ -2650,7 +2670,6 @@
 <translation id="6579858392010591435">假日和节庆活动</translation>
 <translation id="6579990219486187401">浅粉色</translation>
 <translation id="6581831440014388355">脱毛</translation>
-<translation id="6587182488465657433">Chrome 发现您刚才使用的密码已遭遇数据泄露。为确保您的账号安全，建议您立即更改此密码，然后检查您保存的密码。</translation>
 <translation id="6587893660316489419">B5 信封</translation>
 <translation id="6587923378399804057">您复制的链接</translation>
 <translation id="6591833882275308647">您的 <ph name="DEVICE_TYPE" /> 不受管理</translation>
@@ -2670,6 +2689,7 @@
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6633405994164965230">计算机教育</translation>
 <translation id="6633476656216409494">商务与办公软件</translation>
+<translation id="6638353438328951386">Chrome 内置的安全功能可在您浏览网页时为您提供保护，例如 Google 安全浏览功能，该功能近期在您尝试访问的网站上<ph name="BEGIN_LINK" />发现了有害软件<ph name="END_LINK" />。</translation>
 <translation id="6643016212128521049">清除</translation>
 <translation id="6645291930348198241">访问 Cookie 和网站数据。</translation>
 <translation id="6645478838938543427">系统会将降价提醒发送到 <ph name="EMAIL_ADDRESS" /></translation>
@@ -2843,6 +2863,7 @@
 <translation id="6973988895180423160">3.5 x 5 英寸</translation>
 <translation id="6978236010531171013">仍然共享</translation>
 <translation id="6979158407327259162">Google 云端硬盘</translation>
+<translation id="6979332652936434520">已提取文本的开头</translation>
 <translation id="6979440798594660689">静音（默认）</translation>
 <translation id="6987806006823772670">信封（涂布纸）</translation>
 <translation id="6989763994942163495">显示高级设置...</translation>
@@ -2864,6 +2885,7 @@
 <translation id="702146556168549005">系统会将您所访问网页的网址发送给 Google Cloud 或第三方以供分析。例如，这些网页可能会被扫描，以检测不安全的网站或按照管理员设定的规则过滤网站。</translation>
 <translation id="702275896380648118">此网站会先判断您的喜好，然后向其他网站建议相关广告。此网站还会从 Chrome 中了解您的广告主题，从而向您展示与您更相关的广告。</translation>
 <translation id="7023162328967545559">管理员警告</translation>
+<translation id="7024932305105294144">Chrome 内置的安全功能可在您浏览网页时为您提供保护，例如 Google 安全浏览功能，该功能近期在您尝试访问的网站上<ph name="BEGIN_LINK" />发现了钓鱼式攻击<ph name="END_LINK" />。钓鱼式攻击网站会假冒其他网站来诱骗您。<ph name="NEW_LINE" />即使是通常很安全的网站，有时也会遭到攻击者的入侵。如果您认为我们的判定有误，并认为此网站不会构成危险，请<ph name="BEGIN_ERROR_LINK" />告知我们<ph name="END_ERROR_LINK" />。</translation>
 <translation id="7029809446516969842">密码</translation>
 <translation id="7030436163253143341">证书无效</translation>
 <translation id="7031646650991750659">您已安装的 Google Play 应用</translation>
@@ -2898,6 +2920,8 @@
 <translation id="7102760431686146931">炊具与餐具</translation>
 <translation id="7105998430540165694">iCloud 钥匙串中的通行密钥</translation>
 <translation id="7106762743910369165">您的浏览器由贵单位管理</translation>
+<translation id="7107249414147762907">无法访问此 PDF 文件。未提取任何文本</translation>
+<translation id="7107427078069498123">SHA-256 指纹</translation>
 <translation id="7108338896283013870">隐藏</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> 想使用您的摄像头</translation>
 <translation id="7108819624672055576">某款扩展程序允许</translation>
@@ -3062,6 +3086,7 @@
 <translation id="7429429656042611765">Executive</translation>
 <translation id="7437289804838430631">添加联系信息</translation>
 <translation id="7437490109271760224">卡牌游戏</translation>
+<translation id="7438338505272634288">您正在尝试访问的网站上的攻击者可能会诱使您安装影响浏览体验的有害软件，例如，通过更改您的主页或在您访问的网站上展示额外的广告。Chrome 强烈建议您返回到安全的浏览环境，以免造成损害。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="7440140511386898319">离线浏览</translation>
 <translation id="7441627299479586546">策略主题有误</translation>
 <translation id="7441864845853794192">美食和特色食品</translation>
@@ -3388,6 +3413,7 @@
 <translation id="8078006011486731853">{0,plural, =1{上传机密文件？}other{上传机密文件？}}</translation>
 <translation id="8078141288243656252">无法在旋转后添加注释</translation>
 <translation id="8079031581361219619">重新加载此网站？</translation>
+<translation id="8079976827192572403">危险网站</translation>
 <translation id="8081087320434522107">轿车</translation>
 <translation id="8086971161893892807">草稿</translation>
 <translation id="8088680233425245692">无法查看文章。</translation>
@@ -3520,6 +3546,7 @@
 <translation id="8339163506404995330">系统不会自动翻译源语言为<ph name="LANGUAGE" />的网页</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">如果您了解自己将面临的安全风险，则可以在有害程序被清除之前<ph name="BEGIN_LINK" />访问此网站<ph name="END_LINK" />。</translation>
+<translation id="8344776605855290140">虚拟卡注册对话框已全屏打开</translation>
 <translation id="8347658365704983341">远程教学</translation>
 <translation id="8349305172487531364">书签栏</translation>
 <translation id="8351131234907093545">创建记事</translation>
@@ -3573,7 +3600,7 @@
 <translation id="8446275044635689572">表演艺术</translation>
 <translation id="8446884382197647889">了解详情</translation>
 <translation id="8449155699563577224">17 x 24 英寸</translation>
-<translation id="8449836157089738489">在新标签页组中打开全部网址</translation>
+<translation id="8449836157089738489">在新标签页分组中打开全部网址</translation>
 <translation id="8457125768502047971">无限期</translation>
 <translation id="8458202188076138974">Letter Extra</translation>
 <translation id="8460854335417802511">开启</translation>
@@ -3670,6 +3697,7 @@
 <translation id="8680536109547170164"><ph name="QUERY" />，答案，<ph name="ANSWER" /></translation>
 <translation id="8681531050781943054">位于 <ph name="PAGE" /> 的网页无法加载，因为：</translation>
 <translation id="8686424632716064939">计算机安全</translation>
+<translation id="8687278439622293018">已删除条目“<ph name="ENTRY_VOICEOVER" />”</translation>
 <translation id="8687429322371626002">您的设备和账号由 <ph name="MANAGER" /> 管理。</translation>
 <translation id="8688672835843460752">可用</translation>
 <translation id="868922510921656628">每组页数</translation>
@@ -3881,6 +3909,7 @@
 <translation id="9128870381267983090">连接到网络</translation>
 <translation id="9131119348384879525">截取机密内容？</translation>
 <translation id="9133985615769429248">如果您与他人共用此设备，那么您每次使用已保存的密码时，都可以使用屏幕锁定功能来验证您的身份</translation>
+<translation id="913552870853451045"><ph name="IDS_AUTOFILL_VIRTUAL_CARD_NAME_AND_LAST_FOUR_DIGITS" />，虚拟卡</translation>
 <translation id="9136861683332321024">豪华车</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
 <translation id="9137248913990643158">在使用此应用前，请先启动并登录 Chrome。</translation>
@@ -3910,6 +3939,7 @@
 <translation id="917450738466192189">服务器证书无效。</translation>
 <translation id="9174623988242579721">定制车与高性能车</translation>
 <translation id="9174917557437862841">标签页切换按钮，按 Enter 键可切换到此标签页</translation>
+<translation id="9177283544810807743">无法访问此 PDF 文件。正在提取文本，由 Google AI 提供支持</translation>
 <translation id="9179703756951298733">在 Chrome 设置中管理您的付款和信用卡信息</translation>
 <translation id="9179907736442194268">当任一网站上的商品降价时，您会收到电子邮件提醒</translation>
 <translation id="9183302530794969518">Google 文档</translation>

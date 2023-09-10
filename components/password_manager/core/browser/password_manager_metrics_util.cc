@@ -8,6 +8,7 @@
 #include "base/rand_util.h"
 #include "base/strings/strcat.h"
 #include "components/autofill/core/common/password_generation_util.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
@@ -177,18 +178,6 @@ void LogPasswordGenerationAvailableSubmissionEvent(
 void LogAutoSigninPromoUserAction(AutoSigninPromoUserAction action) {
   base::UmaHistogramEnumeration("PasswordManager.AutoSigninFirstRunDialog",
                                 action, AUTO_SIGNIN_PROMO_ACTION_COUNT);
-}
-
-void LogAccountChooserUserActionOneAccount(AccountChooserUserAction action) {
-  base::UmaHistogramEnumeration(
-      "PasswordManager.AccountChooserDialogOneAccount", action,
-      ACCOUNT_CHOOSER_ACTION_COUNT);
-}
-
-void LogAccountChooserUserActionManyAccounts(AccountChooserUserAction action) {
-  base::UmaHistogramEnumeration(
-      "PasswordManager.AccountChooserDialogMultipleAccounts", action,
-      ACCOUNT_CHOOSER_ACTION_COUNT);
 }
 
 void LogCredentialManagerGetResult(CredentialManagerGetResult result,
@@ -405,6 +394,24 @@ void LogUserInteractionsInSharedPasswordsNotificationBubble(
       interaction);
 }
 
+void LogGroupedPasswordsResults(
+    const std::vector<std::unique_ptr<password_manager::PasswordForm>>&
+        logins) {
+  auto is_grouped_match =
+      [](const std::unique_ptr<password_manager::PasswordForm>& form) {
+        return form->match_type ==
+               password_manager::PasswordForm::MatchType::kGrouped;
+      };
+  GroupedPasswordFetchResult result = GroupedPasswordFetchResult::kNoMatches;
+  if (!logins.empty() && base::ranges::all_of(logins, is_grouped_match)) {
+    result = GroupedPasswordFetchResult::kOnlyGroupedMatches;
+  } else if (base::ranges::any_of(logins, is_grouped_match)) {
+    result = GroupedPasswordFetchResult::kBetterMatchesExist;
+  }
+  base::UmaHistogramEnumeration(
+      "PasswordManager.GetLogins.GroupedMatchesStatus", result);
+}
+
 #if BUILDFLAG(IS_IOS)
 void RecordMigrationToOSCryptLatency(bool success,
                                      base::TimeDelta latency,
@@ -436,6 +443,17 @@ void RecordMigrationToOSCryptStatus(base::TimeTicks migration_start_time,
   base::UmaHistogramEnumeration("PasswordManager.MigrationToOSCrypt", status);
   base::UmaHistogramEnumeration(
       base::StrCat({"PasswordManager.MigrationToOSCrypt.", infix_for_store}),
+      status);
+}
+
+void RecordPasswordNotesMigrationToOSCryptStatus(
+    bool is_account_store,
+    PasswordNotesMigrationToOSCrypt status) {
+  base::UmaHistogramEnumeration(
+      "PasswordManager.PasswordNotesMigrationToOSCrypt", status);
+  base::UmaHistogramEnumeration(
+      base::StrCat({"PasswordManager.PasswordNotesMigrationToOSCrypt.",
+                    is_account_store ? "AccountStore" : "ProfileStore"}),
       status);
 }
 #endif  // BUILDFLAG(IS_IOS)

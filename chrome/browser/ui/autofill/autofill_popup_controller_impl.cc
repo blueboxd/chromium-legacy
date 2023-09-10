@@ -97,11 +97,12 @@ WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetOrCreate(
 #if BUILDFLAG(IS_ANDROID)
   AutofillPopupControllerImpl* controller = new AutofillPopupControllerImpl(
       delegate, web_contents, container_view, element_bounds, text_direction,
-      base::BindRepeating(&local_password_migration::ShowWarning));
+      base::BindRepeating(&local_password_migration::ShowWarning),
+      /*parent=*/absl::nullopt);
 #else
   AutofillPopupControllerImpl* controller = new AutofillPopupControllerImpl(
       delegate, web_contents, container_view, element_bounds, text_direction,
-      base::DoNothing());
+      base::DoNothing(), /*parent=*/absl::nullopt);
 #endif
   return controller->GetWeakPtr();
 }
@@ -117,12 +118,14 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
         void(gfx::NativeWindow,
              Profile*,
              password_manager::metrics_util::PasswordMigrationWarningTriggers)>
-        show_pwd_migration_warning_callback)
+        show_pwd_migration_warning_callback,
+    absl::optional<base::WeakPtr<ExpandablePopupParentControllerImpl>> parent)
     : content::WebContentsObserver(web_contents),
       controller_common_(element_bounds, text_direction, container_view),
       delegate_(delegate),
       show_pwd_migration_warning_callback_(
-          std::move(show_pwd_migration_warning_callback)) {
+          std::move(show_pwd_migration_warning_callback)),
+      parent_controller_(parent) {
   ClearState();
   delegate->RegisterDeletionCallback(base::BindOnce(
       &AutofillPopupControllerImpl::HideViewAndDie, GetWeakPtr()));
@@ -157,7 +160,8 @@ void AutofillPopupControllerImpl::OnVisibilityChanged(
 
 void AutofillPopupControllerImpl::Show(
     std::vector<Suggestion> suggestions,
-    AutofillSuggestionTriggerSource trigger_source) {
+    AutofillSuggestionTriggerSource trigger_source,
+    AutoselectFirstSuggestion autoselect_first_suggestion) {
   if (IsMouseLocked()) {
     Hide(PopupHidingReason::kMouseLocked);
     return;
@@ -179,7 +183,10 @@ void AutofillPopupControllerImpl::Show(
   if (view_) {
     OnSuggestionsChanged();
   } else {
-    view_ = AutofillPopupView::Create(GetWeakPtr());
+    bool has_parent = parent_controller_ && parent_controller_->get();
+    view_ = has_parent
+                ? parent_controller_->get()->CreateSubPopupView(GetWeakPtr())
+                : AutofillPopupView::Create(GetWeakPtr());
 
     // It is possible to fail to create the popup, in this case
     // treat the popup as hiding right away.
@@ -193,11 +200,7 @@ void AutofillPopupControllerImpl::Show(
         ->UpdateSourceAvailability(FillingSource::AUTOFILL,
                                    !suggestions_.empty());
 #endif
-    if (!view_
-             .Call(&AutofillPopupView::Show,
-                   AutoselectFirstSuggestion(trigger_source ==
-                                             AutofillSuggestionTriggerSource::
-                                                 kTextFieldDidReceiveKeyDown))
+    if (!view_.Call(&AutofillPopupView::Show, autoselect_first_suggestion)
              .value_or(false)) {
       return;
     }
@@ -208,19 +211,21 @@ void AutofillPopupControllerImpl::Show(
   }
   time_view_shown_ = base::TimeTicks::Now();
 
-  key_press_observer_.rfh = rfh->GetGlobalId();
-  key_press_observer_.handler = base::BindRepeating(
-      // Cannot bind HandleKeyPressEvent() directly because of its
-      // return value.
-      [](base::WeakPtr<AutofillPopupControllerImpl> weak_this,
-         const content::NativeWebKeyboardEvent& event) {
-        return weak_this && weak_this->HandleKeyPressEvent(event);
-      },
-      GetWeakPtr());
-  rfh->GetRenderWidgetHost()->AddKeyPressEventCallback(
-      key_press_observer_.handler);
+  if (IsRootPopup()) {
+    key_press_observer_.rfh = rfh->GetGlobalId();
+    key_press_observer_.handler = base::BindRepeating(
+        // Cannot bind HandleKeyPressEvent() directly because of its
+        // return value.
+        [](base::WeakPtr<AutofillPopupControllerImpl> weak_this,
+           const content::NativeWebKeyboardEvent& event) {
+          return weak_this && weak_this->HandleKeyPressEvent(event);
+        },
+        GetWeakPtr());
+    rfh->GetRenderWidgetHost()->AddKeyPressEventCallback(
+        key_press_observer_.handler);
 
-  delegate_->OnPopupShown();
+    delegate_->OnPopupShown();
+  }
 }
 
 AutofillSuggestionTriggerSource
@@ -231,6 +236,7 @@ AutofillPopupControllerImpl::GetAutofillSuggestionTriggerSource() const {
 bool AutofillPopupControllerImpl::
     ShouldIgnoreMouseObservedOutsideItemBoundsCheck() const {
   return should_ignore_mouse_observed_outside_item_bounds_check_ ||
+         !IsRootPopup() ||
          base::FeatureList::IsEnabled(
              features::kAutofillPopupDisablePaintChecks);
 }
@@ -299,7 +305,7 @@ void AutofillPopupControllerImpl::Hide(PopupHidingReason reason) {
     return;  // Don't close the popup because the browser window is resized.
   }
 
-  if (delegate_) {
+  if (delegate_ && IsRootPopup()) {
     delegate_->ClearPreviewedForm();
     delegate_->OnPopupHidden();
   }
@@ -322,19 +328,19 @@ void AutofillPopupControllerImpl::ViewDestroyed() {
 
 bool AutofillPopupControllerImpl::HandleKeyPressEvent(
     const content::NativeWebKeyboardEvent& event) {
+  if (sub_popup_controller_ &&
+      sub_popup_controller_->HandleKeyPressEvent(event)) {
+    return true;
+  }
+
   // If there is a view, give it the opportunity to handle key press events
   // first.
   if (view_.Call(&AutofillPopupView::HandleKeyPressEvent, event)
           .value_or(false)) {
     return true;
   }
-  switch (event.windows_key_code) {
-    case ui::VKEY_ESCAPE:
-      Hide(PopupHidingReason::kUserAborted);
-      return true;
-    default:
-      return false;
-  }
+
+  return false;
 }
 
 void AutofillPopupControllerImpl::OnSuggestionsChanged() {
@@ -462,6 +468,36 @@ base::i18n::TextDirection AutofillPopupControllerImpl::GetElementTextDirection()
 
 std::vector<Suggestion> AutofillPopupControllerImpl::GetSuggestions() const {
   return suggestions_;
+}
+
+base::WeakPtr<AutofillPopupController>
+AutofillPopupControllerImpl::OpenSubPopup(
+    const gfx::RectF& anchor_bounds,
+    std::vector<Suggestion> suggestions,
+    AutoselectFirstSuggestion autoselect_first_suggestion) {
+  AutofillPopupControllerImpl* controller = new AutofillPopupControllerImpl(
+      delegate_, web_contents(), controller_common_.container_view,
+      anchor_bounds, controller_common_.text_direction, base::DoNothing(),
+      /*parent=*/GetWeakPtr());
+
+  // Show() can fail and cause controller deletion. Therefore store the weak
+  // pointer before, so that this method returns null when that happens.
+  sub_popup_controller_ = controller->GetWeakPtr();
+  controller->Show(std::move(suggestions), trigger_source_,
+                   autoselect_first_suggestion);
+  return sub_popup_controller_;
+}
+
+void AutofillPopupControllerImpl::HideSubPopup() {
+  if (sub_popup_controller_) {
+    sub_popup_controller_->Hide(
+        PopupHidingReason::kExpandedSuggestionCollapsedSubPopup);
+    sub_popup_controller_ = nullptr;
+  }
+}
+
+bool AutofillPopupControllerImpl::IsRootPopup() const {
+  return !parent_controller_;
 }
 
 void AutofillPopupControllerImpl::OnEnterPictureInPicture() {
@@ -595,6 +631,8 @@ void AutofillPopupControllerImpl::ClearState() {
 }
 
 void AutofillPopupControllerImpl::HideViewAndDie() {
+  HideSubPopup();
+
   // Invalidates in particular ChromeAutofillClient's WeakPtr to |this|, which
   // prevents recursive calls triggered by `view_->Hide()`
   // (crbug.com/1267047).
@@ -636,6 +674,14 @@ bool AutofillPopupControllerImpl::IsMouseLocked() const {
   content::RenderWidgetHostView* rwhv;
   return web_contents() && (rfh = web_contents()->GetFocusedFrame()) &&
          (rwhv = rfh->GetView()) && rwhv->IsMouseLocked();
+}
+
+base::WeakPtr<AutofillPopupView>
+AutofillPopupControllerImpl::CreateSubPopupView(
+    base::WeakPtr<AutofillPopupController> controller) {
+  auto sub_view =
+      view_.Call(&AutofillPopupView::CreateSubPopupView, controller);
+  return sub_view.value_or(nullptr);
 }
 
 void AutofillPopupControllerImpl::SetViewForTesting(

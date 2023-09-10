@@ -37,6 +37,7 @@
 #include "components/attribution_reporting/destination_set.h"
 #include "components/attribution_reporting/event_report_windows.h"
 #include "components/attribution_reporting/event_trigger_data.h"
+#include "components/attribution_reporting/features.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/source_registration_time_config.mojom.h"
@@ -74,7 +75,6 @@
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/origin.h"
 
@@ -96,7 +96,7 @@ const base::FilePath::CharType kDatabasePath[] =
 constexpr int64_t kUnsetRecordId = -1;
 
 const base::FeatureParam<bool> kSourceDeactivationAfterFiltering{
-    &blink::features::kConversionMeasurement,
+    &attribution_reporting::features::kConversionMeasurement,
     "source_deactivation_after_filtering", false};
 
 void RecordInitializationStatus(
@@ -602,7 +602,7 @@ AttributionStorageSql::ReadSourceFromStatement(sql::Statement& statement) {
       read_only_source_data_msg->has_randomized_response_rate()
           ? read_only_source_data_msg->randomized_response_rate()
           : delegate_->GetRandomizedResponseRate(
-                *event_report_windows, *source_type, max_event_level_reports);
+                *source_type, *event_report_windows, max_event_level_reports);
   if (randomized_response_rate < 0 || randomized_response_rate > 1) {
     return absl::nullopt;
   }
@@ -854,10 +854,10 @@ StoreSourceResult AttributionStorageSql::StoreSource(
       delegate_->GetDefaultAttributionsPerSource(common_info.source_type()));
 
   const double randomized_response_rate = delegate_->GetRandomizedResponseRate(
-      event_report_windows, common_info.source_type(), max_event_level_reports);
+      common_info.source_type(), event_report_windows, max_event_level_reports);
 
   double channel_capacity = delegate_->ComputeChannelCapacity(
-      common_info, event_report_windows, source_time, max_event_level_reports,
+      common_info.source_type(), event_report_windows, max_event_level_reports,
       randomized_response_rate);
   if (channel_capacity >
       delegate_->GetMaxChannelCapacity(common_info.source_type())) {
@@ -866,9 +866,9 @@ StoreSourceResult AttributionStorageSql::StoreSource(
   }
 
   AttributionStorageDelegate::RandomizedResponse randomized_response =
-      delegate_->GetRandomizedResponse(common_info, event_report_windows,
-                                       source_time, max_event_level_reports,
-                                       randomized_response_rate);
+      delegate_->GetRandomizedResponse(
+          common_info.source_type(), event_report_windows,
+          max_event_level_reports, randomized_response_rate, source_time);
   int num_conversions = 0;
   auto attribution_logic = StoredSource::AttributionLogic::kTruthfully;
   bool event_level_active = true;

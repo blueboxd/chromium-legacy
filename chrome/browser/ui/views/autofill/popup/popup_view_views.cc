@@ -12,7 +12,9 @@
 
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/platform_util.h"
@@ -47,6 +49,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/color/color_id.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -76,6 +79,12 @@ static_assert(kAutofillPopupMinWidth > 128);
 // TODO(crbug.com/831603): move handling the max width to the base class.
 constexpr int kAutofillPopupMaxWidth = kAutofillPopupWidthMultiple * 38;
 
+// Preferred position relative to the control sides of the sub-popup.
+constexpr std::array<views::BubbleArrowSide, 2> kDefaultSubPopupSides = {
+    views::BubbleArrowSide::kLeft, views::BubbleArrowSide::kRight};
+constexpr std::array<views::BubbleArrowSide, 2> kDefaultSubPopupSidesRTL = {
+    views::BubbleArrowSide::kRight, views::BubbleArrowSide::kLeft};
+
 int GetContentsVerticalPadding() {
   return ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_CONTENT_LIST_VERTICAL_SINGLE);
@@ -96,18 +105,53 @@ bool IsFooterItem(const std::vector<Suggestion>& suggestions,
              : IsFooterPopupItemId(popup_item_id);
 }
 
+bool CanShowRootPopup(base::WeakPtr<AutofillPopupController> controller) {
+#if BUILDFLAG(IS_MAC)
+  // It's possible for the container_view to not be in a window. In that case,
+  // cancel the popup since we can't fully set it up.
+  if (!platform_util::GetTopLevel(controller->container_view())) {
+    return false;
+  }
+#else
+  // If the top level widget can't be found, cancel the popup since we can't
+  // fully set it up. On Mac Cocoa browser, |observing_widget| is null
+  // because the parent is not a views::Widget.
+  if (!views::Widget::GetTopLevelWidgetForNativeView(
+          controller->container_view())) {
+    return false;
+  }
+#endif
+
+  return true;
+}
+
 }  // namespace
 
+// Creates a new popup view instance. The Widget parent is taken either from
+// the top level widget for the root popup or from the parent for sub-popups.
+// Setting Widget's parent enables its internal child-lifetime management,
+// see `Widget::InitParams::parent` doc comment for details.
 PopupViewViews::PopupViewViews(
     base::WeakPtr<AutofillPopupController> controller,
+    base::WeakPtr<ExpandablePopupParentView> parent,
     views::Widget* parent_widget)
-    : PopupBaseView(controller, parent_widget), controller_(controller) {
-  views::BoxLayout* layout =
-      SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kVertical));
-  layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
+    : PopupBaseView(controller,
+                    parent_widget,
+                    base::i18n::IsRTL() ? kDefaultSubPopupSidesRTL
+                                        : kDefaultSubPopupSides,
+                    /*show_arrow_pointer=*/false),
+      controller_(controller),
+      parent_(parent) {
+  InitViews();
+}
 
-  CreateChildViews();
+PopupViewViews::PopupViewViews(
+    base::WeakPtr<AutofillPopupController> controller)
+    : PopupBaseView(controller,
+                    views::Widget::GetTopLevelWidgetForNativeView(
+                        controller->container_view())),
+      controller_(controller) {
+  InitViews();
 }
 
 PopupViewViews::~PopupViewViews() = default;
@@ -125,6 +169,14 @@ void PopupViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
       l10n_util::GetStringUTF16(IDS_AUTOFILL_POPUP_ACCESSIBLE_NODE_DATA));
 }
 
+void PopupViewViews::OnMouseEntered(const ui::MouseEvent& event) {
+  OnMouseEnteredInChildren();
+}
+
+void PopupViewViews::OnMouseExited(const ui::MouseEvent& event) {
+  OnMouseExitedInChildren();
+}
+
 bool PopupViewViews::Show(
     AutoselectFirstSuggestion autoselect_first_suggestion) {
   NotifyAccessibilityEvent(ax::mojom::Event::kExpandedChanged, true);
@@ -132,7 +184,8 @@ bool PopupViewViews::Show(
     return false;
   }
   if (autoselect_first_suggestion) {
-    SetSelectedCell(CellIndex{0u, PopupRowView::CellType::kContent});
+    SetSelectedCell(CellIndex{0u, PopupRowView::CellType::kContent},
+                    PopupCellSelectionSource::kNonUserInput);
   }
   return true;
 }
@@ -162,7 +215,8 @@ absl::optional<PopupViewViews::CellIndex> PopupViewViews::GetSelectedCell()
   return absl::nullopt;
 }
 
-void PopupViewViews::SetSelectedCell(absl::optional<CellIndex> cell_index) {
+void PopupViewViews::SetSelectedCell(absl::optional<CellIndex> cell_index,
+                                     PopupCellSelectionSource source) {
   absl::optional<CellIndex> old_index = GetSelectedCell();
   if (old_index == cell_index) {
     return;
@@ -172,11 +226,29 @@ void PopupViewViews::SetSelectedCell(absl::optional<CellIndex> cell_index) {
     GetPopupRowViewAt(old_index->first).SetSelectedCell(absl::nullopt);
   }
 
+  if (open_sub_popup_timer_.IsRunning()) {
+    open_sub_popup_timer_.Stop();
+  }
+
   if (cell_index && HasPopupRowViewAt(cell_index->first)) {
     row_with_selected_cell_ = cell_index->first;
     PopupRowView& new_row = GetPopupRowViewAt(cell_index->first);
     new_row.SetSelectedCell(cell_index->second);
     new_row.ScrollViewToVisible();
+
+    bool can_open_sub_popup =
+        cell_index->second == PopupRowView::CellType::kControl &&
+        !controller_->GetSuggestionAt(cell_index->first).children.empty();
+    absl::optional<CellIndex> open_sub_popup_cell =
+        can_open_sub_popup ? cell_index : absl::nullopt;
+    base::TimeDelta delay = source == PopupCellSelectionSource::kMouse
+                                ? kMouseOpenSubPopupDelay
+                                : kNonMouseOpenSubPopupDelay;
+    open_sub_popup_timer_.Start(
+        FROM_HERE, delay,
+        base::BindOnce(&PopupViewViews::SetCellWithOpenSubPopup,
+                       weak_ptr_factory_.GetWeakPtr(), open_sub_popup_cell,
+                       source));
   } else {
     row_with_selected_cell_ = absl::nullopt;
   }
@@ -184,6 +256,14 @@ void PopupViewViews::SetSelectedCell(absl::optional<CellIndex> cell_index) {
 
 bool PopupViewViews::HandleKeyPressEvent(
     const content::NativeWebKeyboardEvent& event) {
+  // Use the cell with open sub-popup as the selected one when the sub-popup
+  // has not handled the event, it allows to continue working with the parent
+  // (moving selection left/right/up/down) from the row with a sub-pop, which
+  // makes most sense from the UX perspective.
+  if (!GetSelectedCell() && open_sub_popup_cell_) {
+    SetSelectedCell(open_sub_popup_cell_, PopupCellSelectionSource::kKeyboard);
+  }
+
   // If the row can handle the event itself (e.g. switching between cells in the
   // same row), we let it.
   if (absl::optional<CellIndex> selected_cell = GetSelectedCell()) {
@@ -205,18 +285,49 @@ bool PopupViewViews::HandleKeyPressEvent(
     case ui::VKEY_DOWN:
       SelectNextRow();
       return true;
+    case ui::VKEY_LEFT:
+      // `base::i18n::IsRTL` is used here instead of the controller's method
+      // because the controller's `IsRTL` depends on the language of the focused
+      // field and not the overall UI language. However, the layout of the popup
+      // is determined by the overall UI language.
+      if (base::i18n::IsRTL()) {
+        return SelectNextHorizontalCell();
+      } else {
+        return SelectPreviousHorizontalCell();
+      }
+    case ui::VKEY_RIGHT:
+      if (base::i18n::IsRTL()) {
+        return SelectPreviousHorizontalCell();
+      } else {
+        return SelectNextHorizontalCell();
+      }
     case ui::VKEY_PRIOR:  // Page up.
       // Set no line and then select the next line in case the first line is not
       // selectable.
-      SetSelectedCell(absl::nullopt);
+      SetSelectedCell(absl::nullopt, PopupCellSelectionSource::kKeyboard);
       SelectNextRow();
       return true;
     case ui::VKEY_NEXT:  // Page down.
-      SetSelectedCell(absl::nullopt);
+      SetSelectedCell(absl::nullopt, PopupCellSelectionSource::kKeyboard);
       SelectPreviousRow();
       return true;
     case ui::VKEY_DELETE:
       return kHasShiftModifier && RemoveSelectedCell();
+    case ui::VKEY_ESCAPE:
+      if (open_sub_popup_cell_) {
+        // Close the sub-popup by selecting the content cell of the same row.
+        SetSelectedCell(CellIndex{open_sub_popup_cell_->first,
+                                  PopupRowView::CellType::kContent},
+                        PopupCellSelectionSource::kKeyboard);
+        return true;
+      }
+      // If this is the root popup view and there was no sub-popup open (find
+      // the check for it above) just close itself.
+      if (!parent_) {
+        controller_->Hide(PopupHidingReason::kUserAborted);
+        return true;
+      }
+      return false;
     case ui::VKEY_TAB:
       // We want TAB or Shift+TAB press to cause the selected line to be
       // accepted, but still return false so the tab key press propagates and
@@ -247,7 +358,8 @@ void PopupViewViews::SelectPreviousRow() {
   if (new_row < 0) {
     new_row = static_cast<int>(rows_.size()) - 1;
   }
-  SetSelectedCell(CellIndex{new_row, kNewCellType});
+  SetSelectedCell(CellIndex{new_row, kNewCellType},
+                  PopupCellSelectionSource::kKeyboard);
 }
 
 void PopupViewViews::SelectNextRow() {
@@ -264,7 +376,36 @@ void PopupViewViews::SelectNextRow() {
   if (new_row >= rows_.size()) {
     new_row = 0u;
   }
-  SetSelectedCell(CellIndex{new_row, kNewCellType});
+  SetSelectedCell(CellIndex{new_row, kNewCellType},
+                  PopupCellSelectionSource::kKeyboard);
+}
+
+bool PopupViewViews::SelectNextHorizontalCell() {
+  absl::optional<CellIndex> selected_cell = GetSelectedCell();
+  if (selected_cell && HasPopupRowViewAt(selected_cell->first)) {
+    PopupRowView& row = GetPopupRowViewAt(selected_cell->first);
+    if (selected_cell->second == PopupRowView::CellType::kContent &&
+        row.GetControlView()) {
+      SetSelectedCell(
+          CellIndex{selected_cell->first, PopupRowView::CellType::kControl},
+          PopupCellSelectionSource::kKeyboard);
+      return true;
+    }
+  }
+  return false;
+}
+
+bool PopupViewViews::SelectPreviousHorizontalCell() {
+  absl::optional<CellIndex> selected_cell = GetSelectedCell();
+  if (selected_cell && HasPopupRowViewAt(selected_cell->first)) {
+    if (selected_cell->second == PopupRowView::CellType::kControl) {
+      SetSelectedCell(
+          CellIndex{selected_cell->first, PopupRowView::CellType::kContent},
+          PopupCellSelectionSource::kKeyboard);
+      return true;
+    }
+  }
+  return false;
 }
 
 bool PopupViewViews::AcceptSelectedContentOrCreditCardCell(
@@ -315,6 +456,12 @@ bool PopupViewViews::RemoveSelectedCell() {
 }
 
 void PopupViewViews::OnSuggestionsChanged() {
+  if (open_sub_popup_timer_.IsRunning()) {
+    open_sub_popup_timer_.Stop();
+  }
+  SetCellWithOpenSubPopup(absl::nullopt,
+                          PopupCellSelectionSource::kNonUserInput);
+
   CreateChildViews();
   DoUpdateBoundsAndRedrawPopup();
 }
@@ -338,6 +485,16 @@ void PopupViewViews::AxAnnounce(const std::u16string& text) {
     return;
   }
   browser_view->GetViewAccessibility().AnnounceText(text);
+}
+
+base::WeakPtr<AutofillPopupView> PopupViewViews::CreateSubPopupView(
+    base::WeakPtr<AutofillPopupController> controller) {
+  if (GetWidget()) {
+    return (new PopupViewViews(controller, weak_ptr_factory_.GetWeakPtr(),
+                               GetWidget()))
+        ->GetWeakPtr();
+  }
+  return nullptr;
 }
 
 void PopupViewViews::OnWidgetVisibilityChanged(views::Widget* widget,
@@ -367,6 +524,17 @@ void PopupViewViews::OnWidgetVisibilityChanged(views::Widget* widget,
 bool PopupViewViews::HasPopupRowViewAt(size_t index) const {
   return index < rows_.size() &&
          absl::holds_alternative<PopupRowView*>(rows_[index]);
+}
+
+void PopupViewViews::InitViews() {
+  SetNotifyEnterExitOnChild(true);
+
+  views::BoxLayout* layout =
+      SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical));
+  layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
+
+  CreateChildViews();
 }
 
 void PopupViewViews::CreateChildViews() {
@@ -623,6 +791,32 @@ bool PopupViewViews::DoUpdateBoundsAndRedrawPopup() {
   return true;
 }
 
+void PopupViewViews::OnMouseEnteredInChildren() {
+  if (parent_ && parent_->get()) {
+    parent_->get()->OnMouseEnteredInChildren();
+  }
+
+  // Cancel scheluled sub-popup closing.
+  no_selection_sub_popup_close_timer_.Stop();
+}
+
+void PopupViewViews::OnMouseExitedInChildren() {
+  if (GetSelectedCell()) {
+    return;
+  }
+
+  if (parent_ && parent_->get()) {
+    parent_->get()->OnMouseExitedInChildren();
+  }
+
+  // Schedule sub-popup closing.
+  no_selection_sub_popup_close_timer_.Start(
+      FROM_HERE, kNoSelectionHideSubPopupDelay,
+      base::BindRepeating(&PopupViewViews::SetCellWithOpenSubPopup,
+                          weak_ptr_factory_.GetWeakPtr(), absl::nullopt,
+                          PopupCellSelectionSource::kNonUserInput));
+}
+
 bool PopupViewViews::CanShowDropdownInBounds(const gfx::Rect& bounds) const {
   gfx::Rect element_bounds =
       gfx::ToEnclosingRect(controller_->element_bounds());
@@ -641,39 +835,58 @@ bool PopupViewViews::CanShowDropdownInBounds(const gfx::Rect& bounds) const {
   return CanShowDropdownHere(min_height, bounds, element_bounds);
 }
 
+void PopupViewViews::SetCellWithOpenSubPopup(
+    absl::optional<CellIndex> cell_index,
+    PopupCellSelectionSource selection_source) {
+  if (open_sub_popup_cell_ == cell_index) {
+    return;
+  }
+
+  // Close previously open sub-popup if any.
+  if (open_sub_popup_cell_ && HasPopupRowViewAt(open_sub_popup_cell_->first)) {
+    controller_->HideSubPopup();
+    GetPopupRowViewAt(open_sub_popup_cell_->first)
+        .SetCellPermanentlyHighlighted(open_sub_popup_cell_->second, false);
+    open_sub_popup_cell_ = absl::nullopt;
+  }
+
+  // Open a sub-popup on the new cell if provided.
+  if (cell_index && HasPopupRowViewAt(cell_index->first)) {
+    const Suggestion& suggestion =
+        controller_->GetSuggestionAt(cell_index->first);
+
+    CHECK(!suggestion.children.empty());
+    CHECK(cell_index->second == PopupRowView::CellType::kControl);
+
+    PopupRowView& row = GetPopupRowViewAt(cell_index->first);
+    if (controller_->OpenSubPopup(
+            row.GetCellBounds(cell_index->second), suggestion.children,
+            AutoselectFirstSuggestion(selection_source ==
+                                      PopupCellSelectionSource::kKeyboard))) {
+      row.SetCellPermanentlyHighlighted(cell_index->second, true);
+      open_sub_popup_cell_ = cell_index;
+      if (selection_source == PopupCellSelectionSource::kKeyboard) {
+        row.SetSelectedCell(absl::nullopt);
+      }
+    }
+  }
+}
+
 base::WeakPtr<AutofillPopupView> PopupViewViews::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
 BEGIN_METADATA(PopupViewViews, PopupBaseView)
-ADD_PROPERTY_METADATA(absl::optional<PopupViewViews::CellIndex>, SelectedCell)
 END_METADATA
 
 // static
 base::WeakPtr<AutofillPopupView> AutofillPopupView::Create(
     base::WeakPtr<AutofillPopupController> controller) {
-#if BUILDFLAG(IS_MAC)
-  // It's possible for the container_view to not be in a window. In that case,
-  // cancel the popup since we can't fully set it up.
-  if (!platform_util::GetTopLevel(controller->container_view())) {
+  if (!CanShowRootPopup(controller)) {
     return nullptr;
   }
-#endif
 
-  views::Widget* observing_widget =
-      views::Widget::GetTopLevelWidgetForNativeView(
-          controller->container_view());
-
-#if !BUILDFLAG(IS_MAC)
-  // If the top level widget can't be found, cancel the popup since we can't
-  // fully set it up. On Mac Cocoa browser, |observing_widget| is null
-  // because the parent is not a views::Widget.
-  if (!observing_widget) {
-    return nullptr;
-  }
-#endif
-
-  return (new PopupViewViews(controller, observing_widget))->GetWeakPtr();
+  return (new PopupViewViews(controller))->GetWeakPtr();
 }
 
 }  // namespace autofill

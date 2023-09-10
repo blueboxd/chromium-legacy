@@ -16,11 +16,10 @@ enum class AccessPoint : int;
 // Delegate for the history sync coordinator.
 @protocol HistorySyncPopupCoordinatorDelegate <NSObject>
 
-// Called once the dialog has been closed.
-// `declined` is YES if the user explicitly declined the history sync opt-in
-// dialog.
+// Called once the coordinator is done.
+// `result` returns reason why the history sync opt-in dialog was closed.
 - (void)historySyncPopupCoordinator:(HistorySyncPopupCoordinator*)coordinator
-         didCloseWithDeclinedByUser:(BOOL)declined;
+                didFinishWithResult:(SigninCoordinatorResult)result;
 
 @end
 
@@ -35,7 +34,8 @@ enum class AccessPoint : int;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser
-                       dedicatedSignInDone:(BOOL)dedicatedSignInDone
+                             showUserEmail:(BOOL)showUserEmail
+                         signOutIfDeclined:(BOOL)signOutIfDeclined
                                accessPoint:
                                    (signin_metrics::AccessPoint)accessPoint
     NS_DESIGNATED_INITIALIZER;

@@ -8,10 +8,12 @@
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
 #include "base/functional/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "url/origin.h"
 
@@ -42,15 +44,22 @@ class TestAutofillDriverTemplate : public T {
   ~TestAutofillDriverTemplate() override = default;
 
   // AutofillDriver:
-  LocalFrameToken GetFrameToken() const override { return {}; }
-  TestAutofillDriverTemplate* GetParent() override { return nullptr; }
+  LocalFrameToken GetFrameToken() const override { return frame_token_; }
+  TestAutofillDriverTemplate* GetParent() override { return parent_; }
   absl::optional<LocalFrameToken> Resolve(FrameToken query) override {
+    if (auto* local_frame_token = absl::get_if<LocalFrameToken>(&query)) {
+      return *local_frame_token;
+    }
+    auto it = remote_frame_tokens_.find(absl::get<RemoteFrameToken>(query));
+    if (it != remote_frame_tokens_.end()) {
+      return it->second;
+    }
     return absl::nullopt;
   }
   bool IsInActiveFrame() const override { return is_in_active_frame_; }
   bool IsInAnyMainFrame() const override { return is_in_any_main_frame_; }
   bool IsPrerendering() const override { return false; }
-  bool HasSharedAutofillPermission() const override { return false; }
+  bool HasSharedAutofillPermission() const override { return shared_autofill_; }
   bool CanShowAutofillUi() const override { return true; }
   bool RendererIsAvailable() override { return true; }
   void HandleParsedForms(const std::vector<FormData>& forms) override {}
@@ -86,12 +95,16 @@ class TestAutofillDriverTemplate : public T {
 
   // The return value contains the members (field, type) of `field_type_map` for
   // which `field_type_map_filter_.Run(triggered_origin, field, type)` is true.
-  std::vector<FieldGlobalId> FillOrPreviewForm(
+  std::vector<FieldGlobalId> ApplyAutofillAction(
+      mojom::AutofillActionType action_type,
       mojom::AutofillActionPersistence action_persistence,
       const FormData& form_data,
       const url::Origin& triggered_origin,
       const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map)
       override {
+    if (action_type == mojom::AutofillActionType::kUndo) {
+      return {};
+    }
     std::vector<FieldGlobalId> result;
     for (const auto& [id, type] : field_type_map) {
       if (!field_type_map_filter_ ||
@@ -102,14 +115,19 @@ class TestAutofillDriverTemplate : public T {
     return result;
   }
 
-  void UndoAutofill(mojom::AutofillActionPersistence action_persistence,
-                    const FormData& form_data,
-                    const url::Origin& triggered_origin,
-                    const base::flat_map<FieldGlobalId, ServerFieldType>&
-                        field_type_map) override {}
-
   // Methods unique to TestAutofillDriver that tests can use to specialize
   // functionality.
+
+  void SetLocalFrameToken(LocalFrameToken frame_token) {
+    frame_token_ = frame_token;
+  }
+
+  void SetRemoteFrameToken(RemoteFrameToken remote_frame_token,
+                           LocalFrameToken local_frame_token) {
+    remote_frame_tokens_[remote_frame_token] = local_frame_token;
+  }
+
+  void SetParent(TestAutofillDriverTemplate* parent) { parent_ = parent; }
 
   void SetIsInActiveFrame(bool is_in_active_frame) {
     is_in_active_frame_ = is_in_active_frame;
@@ -117,6 +135,10 @@ class TestAutofillDriverTemplate : public T {
 
   void SetIsInAnyMainFrame(bool is_in_any_main_frame) {
     is_in_any_main_frame_ = is_in_any_main_frame;
+  }
+
+  void SetSharedAutofill(bool shared_autofill) {
+    shared_autofill_ = shared_autofill;
   }
 
   void SetIsolationInfo(const net::IsolationInfo& isolation_info) {
@@ -140,8 +162,12 @@ class TestAutofillDriverTemplate : public T {
 #endif
 
  private:
+  LocalFrameToken frame_token_;
+  std::map<RemoteFrameToken, LocalFrameToken> remote_frame_tokens_;
+  raw_ptr<TestAutofillDriverTemplate> parent_ = nullptr;
   bool is_in_active_frame_ = true;
   bool is_in_any_main_frame_ = true;
+  bool shared_autofill_ = false;
   net::IsolationInfo isolation_info_;
   base::RepeatingCallback<
       bool(const url::Origin&, FieldGlobalId, ServerFieldType)>
@@ -161,11 +187,12 @@ class TestAutofillDriver : public TestAutofillDriverTemplate<AutofillDriver> {
   TestAutofillDriver();
   ~TestAutofillDriver() override;
 
+  // AutofillDriver
+  AutofillManager& GetAutofillManager() override;
+
   void set_autofill_manager(std::unique_ptr<AutofillManager> autofill_manager) {
     autofill_manager_ = std::move(autofill_manager);
   }
-
-  AutofillManager* autofill_manager() { return autofill_manager_.get(); }
 
  private:
   std::unique_ptr<AutofillManager> autofill_manager_ = nullptr;

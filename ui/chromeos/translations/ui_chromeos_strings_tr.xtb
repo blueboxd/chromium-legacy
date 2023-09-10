@@ -278,6 +278,7 @@
 <translation id="3264582393905923483">Bağlam</translation>
 <translation id="3272909651715601089">"<ph name="PATH" />" dosyası açılamadı</translation>
 <translation id="3280431534455935878">Hazırlanıyor</translation>
+<translation id="3280719573299097127">Sayaçlı bir ağ kullanıyorsunuz. Dosya Senkronizasyonu duraklatıldı.</translation>
 <translation id="3280987981688031357">Vinil plak</translation>
 <translation id="3290356915286466215">Güvenli değil</translation>
 <translation id="3291218047831493686">SIM kilit ayarını değiştirmek için bu ağa bağlanın</translation>
@@ -632,6 +633,7 @@
 <translation id="5838451609423551646">Tüm girişler seçimden kaldırıldı.</translation>
 <translation id="5838825566232597749">ABD Workman uluslararası</translation>
 <translation id="5845721951356578987">Hemşire</translation>
+<translation id="5858478190805449225">Pil Tasarrufu modu açık. Pil Tasarrufu modu kapatıldığında tekrar deneyin.</translation>
 <translation id="5860491529813859533">Etkinleştir</translation>
 <translation id="5861477046012235702">Oyuncu</translation>
 <translation id="5864471791310927901">DHCP araması başarısız oldu</translation>
@@ -898,7 +900,6 @@
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7920501309908018401">Drive'ım bölümündeki dosyalarınız Chromebook'unuzla otomatik olarak senkronize edildiği için bu dosyalara internet bağlantısı olmadan erişebilirsiniz.</translation>
 <translation id="7925247922861151263">AAA kontrolü başarısız oldu</translation>
-<translation id="7925686952655276919">Senkronizasyon için mobil veri kullanma</translation>
 <translation id="7928710562641958568">Cihazı çıkar</translation>
 <translation id="7933875256234974853">Drive dosyaları senkronize edilmeye hazırlanıyor...</translation>
 <translation id="7943385054491506837">ABD Colemak</translation>
@@ -921,6 +922,7 @@
 <translation id="8087576439476816834">İndir, <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">Benimle paylaşılanlar</translation>
 <translation id="8116072619078571545">Buzlu su</translation>
+<translation id="8120392982188717723">Sayaçlı ağlarda senkronizasyona izin ver</translation>
 <translation id="8124093710070495550">Senkronizasyon sorunu</translation>
 <translation id="8128733386027980860">Dvorak klavye ile İngilizce (ABD)</translation>
 <translation id="8137331602592933310">"<ph name="FILENAME" />" sizinle paylaşıldı. Sahibi siz olmadığınız için bu dosyayı silemezsiniz.</translation>

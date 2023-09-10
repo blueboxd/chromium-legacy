@@ -3896,6 +3896,14 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* script_state,
       SynthesizeGLError(GL_INVALID_ENUM, "getParameter",
                         "invalid parameter name, EXT_clip_control not enabled");
       return ScriptValue::CreateNull(script_state->GetIsolate());
+    case GL_MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT:  // EXT_blend_func_extended
+      if (ExtensionEnabled(kEXTBlendFuncExtendedName)) {
+        return GetUnsignedIntParameter(script_state, pname);
+      }
+      SynthesizeGLError(
+          GL_INVALID_ENUM, "getParameter",
+          "invalid parameter name, EXT_blend_func_extended not enabled");
+      return ScriptValue::CreateNull(script_state->GetIsolate());
     case GL_MAX_COLOR_ATTACHMENTS_EXT:  // EXT_draw_buffers BEGIN
       if (ExtensionEnabled(kWebGLDrawBuffersName) || IsWebGL2())
         return WebGLAny(script_state, MaxColorAttachments());
@@ -8295,20 +8303,32 @@ bool WebGLRenderingContextBase::ValidateTexFuncData(
     SynthesizeGLError(error, function_name, "invalid texture dimensions");
     return false;
   }
-  base::CheckedNumeric<uint32_t> total = src_offset;
+  base::CheckedNumeric<size_t> total = src_offset;
   total *= pixels->TypeSize();
   total += total_bytes_required;
   total += skip_bytes;
-  uint32_t total_val;
-  if (!total.AssignIfValid(&total_val) ||
-      pixels->byteLength() < static_cast<size_t>(total_val)) {
+  size_t total_val;
+  if (!total.AssignIfValid(&total_val) || pixels->byteLength() < total_val) {
     SynthesizeGLError(GL_INVALID_OPERATION, function_name,
                       "ArrayBufferView not big enough for request");
     return false;
   }
-  if (static_cast<size_t>(total_val) > kMaximumSupportedArrayBufferSize) {
+#if UINTPTR_MAX == UINT32_MAX
+  // 32-bit platforms have additional constraints, since src_offset is
+  // added to a pointer value in calling code.
+  if (total_val > kMaximumSupportedArrayBufferSize) {
     SynthesizeGLError(GL_INVALID_VALUE, function_name,
-                      "ArrayBufferView size exceeds the supported range");
+                      "src_offset plus texture data size exceeds the "
+                      "supported range");
+  }
+#endif
+  base::CheckedNumeric<uint32_t> data_size = total_bytes_required;
+  data_size += skip_bytes;
+  uint32_t data_size_val;
+  if (!data_size.AssignIfValid(&data_size_val) ||
+      data_size_val > kMaximumSupportedArrayBufferSize) {
+    SynthesizeGLError(GL_INVALID_VALUE, function_name,
+                      "texture data size exceeds the supported range");
     return false;
   }
   return true;

@@ -199,18 +199,16 @@ std::unique_ptr<EntityData> CreateEntityDataFromAutofillProfile(
       TruncateUTF8(UTF16ToUTF8(entry.GetRawInfo(ADDRESS_HOME_LINE2))));
   specifics->set_address_home_thoroughfare_name(
       UTF16ToUTF8(entry.GetRawInfo(ADDRESS_HOME_STREET_NAME)));
-  specifics->set_address_home_dependent_thoroughfare_name(
-      UTF16ToUTF8(entry.GetRawInfo(ADDRESS_HOME_DEPENDENT_STREET_NAME)));
+  specifics->set_address_home_thoroughfare_number(
+      UTF16ToUTF8(entry.GetRawInfo(ADDRESS_HOME_HOUSE_NUMBER)));
+  specifics->set_address_home_street_location(
+      UTF16ToUTF8(entry.GetRawInfo(ADDRESS_HOME_STREET_LOCATION)));
   specifics->set_address_home_subpremise_name(
       UTF16ToUTF8(entry.GetRawInfo(ADDRESS_HOME_SUBPREMISE)));
   specifics->set_address_home_apt_num(
       UTF16ToUTF8(entry.GetRawInfo(ADDRESS_HOME_APT_NUM)));
   specifics->set_address_home_floor(
       UTF16ToUTF8(entry.GetRawInfo(ADDRESS_HOME_FLOOR)));
-  specifics->set_address_home_premise_name(
-      UTF16ToUTF8(entry.GetRawInfo(ADDRESS_HOME_PREMISE_NAME)));
-  specifics->set_address_home_thoroughfare_number(
-      UTF16ToUTF8(entry.GetRawInfo(ADDRESS_HOME_HOUSE_NUMBER)));
 
   // Set address-related statuses.
   specifics->set_address_home_city_status(
@@ -255,9 +253,12 @@ std::unique_ptr<EntityData> CreateEntityDataFromAutofillProfile(
   specifics->set_address_home_thoroughfare_name_status(
       ConvertProfileToSpecificsVerificationStatus(
           entry.GetVerificationStatus(ADDRESS_HOME_STREET_NAME)));
-  specifics->set_address_home_dependent_thoroughfare_name_status(
+  specifics->set_address_home_thoroughfare_number_status(
       ConvertProfileToSpecificsVerificationStatus(
-          entry.GetVerificationStatus(ADDRESS_HOME_DEPENDENT_STREET_NAME)));
+          entry.GetVerificationStatus(ADDRESS_HOME_HOUSE_NUMBER)));
+  specifics->set_address_home_street_location_status(
+      ConvertProfileToSpecificsVerificationStatus(
+          entry.GetVerificationStatus(ADDRESS_HOME_STREET_LOCATION)));
   specifics->set_address_home_subpremise_name_status(
       ConvertProfileToSpecificsVerificationStatus(
           entry.GetVerificationStatus(ADDRESS_HOME_SUBPREMISE)));
@@ -267,12 +268,6 @@ std::unique_ptr<EntityData> CreateEntityDataFromAutofillProfile(
   specifics->set_address_home_floor_status(
       ConvertProfileToSpecificsVerificationStatus(
           entry.GetVerificationStatus(ADDRESS_HOME_FLOOR)));
-  specifics->set_address_home_premise_name_status(
-      ConvertProfileToSpecificsVerificationStatus(
-          entry.GetVerificationStatus(ADDRESS_HOME_PREMISE_NAME)));
-  specifics->set_address_home_thoroughfare_number_status(
-      ConvertProfileToSpecificsVerificationStatus(
-          entry.GetVerificationStatus(ADDRESS_HOME_HOUSE_NUMBER)));
 
   // Set birthdate-related values.
   specifics->set_birthdate_day(entry.GetRawInfoAsInt(BIRTHDATE_DAY));
@@ -499,22 +494,16 @@ std::unique_ptr<AutofillProfile> CreateAutofillProfileFromSpecifics(
           specifics.address_home_thoroughfare_name_status()));
 
   profile->SetRawInfoWithVerificationStatus(
-      ADDRESS_HOME_DEPENDENT_STREET_NAME,
-      UTF8ToUTF16(specifics.address_home_dependent_thoroughfare_name()),
-      ConvertSpecificsToProfileVerificationStatus(
-          specifics.address_home_dependent_thoroughfare_name_status()));
-
-  profile->SetRawInfoWithVerificationStatus(
       ADDRESS_HOME_HOUSE_NUMBER,
       UTF8ToUTF16(specifics.address_home_thoroughfare_number()),
       ConvertSpecificsToProfileVerificationStatus(
           specifics.address_home_thoroughfare_number_status()));
 
   profile->SetRawInfoWithVerificationStatus(
-      ADDRESS_HOME_PREMISE_NAME,
-      UTF8ToUTF16(specifics.address_home_premise_name()),
+      ADDRESS_HOME_STREET_LOCATION,
+      UTF8ToUTF16(specifics.address_home_street_location()),
       ConvertSpecificsToProfileVerificationStatus(
-          specifics.address_home_premise_name_status()));
+          specifics.address_home_street_location_status()));
 
   profile->SetRawInfoWithVerificationStatus(
       ADDRESS_HOME_SUBPREMISE,

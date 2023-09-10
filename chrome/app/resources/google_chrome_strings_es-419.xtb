@@ -4,7 +4,6 @@
 <translation id="1001534784610492198">El instalador está dañado o no es válido. Descargue Google Chrome nuevamente.</translation>
 <translation id="1026101648481255140">Reanudar la instalación</translation>
 <translation id="102763973188675173">Personalizar y controlar Google Chrome. Hay una actualización disponible.</translation>
-<translation id="1051826050538111504">Tu computadora tiene software dañino. Chrome puede quitarlo, inhabilitar las extensiones y restablecer la configuración para que el navegador vuelva a funcionar correctamente.</translation>
 <translation id="1065672644894730302">No se pueden leer tus preferencias. Es posible que algunas funciones no estén disponibles y que no se guarden los cambios realizados a las preferencias.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> usaba Chrome anteriormente</translation>
 <translation id="110877069173485804">Este es tu navegador Chrome</translation>
@@ -230,6 +229,7 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5003967926796347400">Haz clic en "Administrador de contraseñas de Google"</translation>
 <translation id="5098668839038261629">Si activas esta opción, saldrás de Chrome</translation>
+<translation id="5126049312684316860">Chrome precarga más páginas que probablemente visites para que se carguen más rápido cuando lo hagas</translation>
 <translation id="5132929315877954718">Descubre aplicaciones, juegos, extensiones y temas geniales para Google Chrome.</translation>
 <translation id="5139423532931106058">Personaliza tu perfil de Chrome</translation>
 <translation id="5163087008893166964">Te damos la bienvenida a Chrome; se abrió una nueva ventana del navegador</translation>
@@ -237,6 +237,7 @@
 <translation id="521447420733633466">Si compartes un dispositivo, tus amigos y familiares podrán navegar de forma independiente y configurar Chrome según sus preferencias.</translation>
 <translation id="5239627039202700673">Usa Chrome cada vez que hagas clic en vínculos de mensajes, documentos y otras apps</translation>
 <translation id="5251420635869119124">Los invitados pueden utilizar Chrome sin dejar nada detrás.</translation>
+<translation id="5320351714793324716">Si permites las cookies, Chrome puede usarlas cuando realice la precarga</translation>
 <translation id="5334309298019785904">El ChromeOS no pudo sincronizar los datos porque la sincronización no está disponible para el dominio.</translation>
 <translation id="5334487786912937552">Chrome necesita permiso de acceso al almacenamiento para descargar archivos.</translation>
 <translation id="5337648990166757586">Opcional: Para ayudarnos a mejorar las funciones y el rendimiento de ChromeOS, envía automáticamente datos de uso y diagnóstico a Google.</translation>

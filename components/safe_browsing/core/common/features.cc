@@ -27,7 +27,7 @@ BASE_FEATURE(kAdSamplerTriggerFeature,
 
 BASE_FEATURE(kAntiPhishingTelemetry,
              "AntiPhishingTelemetry",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kClientSideDetectionKillswitch,
              "ClientSideDetectionKillswitch",
@@ -151,6 +151,11 @@ BASE_FEATURE(kExtensionTelemetryReportHostsContactedViaWebSocket,
              "SafeBrowsingExtensionTelemetryReportHostsContactedViaWebsocket",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(
+    kExtensionTelemetryInterceptRemoteHostsContactedInRenderer,
+    "SafeBrowsingExtensionTelmetryInterceptRemoteHostsContactedInRenderer",
+    base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kExtensionTelemetryTabsApiSignal,
              "SafeBrowsingExtensionTelemetryTabsApiSignal",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -170,10 +175,6 @@ BASE_FEATURE(kExtensionTelemetryDeclarativeNetRequestSignal,
 BASE_FEATURE(kExtensionTelemetryDisableOffstoreExtensions,
              "SafeBrowsingExtensionTelemetryDisableOffstoreExtensions",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kFileTypePoliciesTag,
-             "FileTypePoliciesTag",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kFriendlierSafeBrowsingSettingsEnhancedProtection,
              "FriendlierSafeBrowsingSettingsEnhancedProtection",
@@ -385,12 +386,13 @@ constexpr struct {
     {&kExtensionTelemetryDeclarativeNetRequestSignal, true},
     {&kExtensionTelemetryDisableOffstoreExtensions, true},
     {&kExtensionTelemetryFileData, true},
+    {&kExtensionTelemetryInterceptRemoteHostsContactedInRenderer, true},
     {&kExtensionTelemetryPersistence, true},
     {&kExtensionTelemetryPotentialPasswordTheft, true},
     {&kExtensionTelemetryReportContactedHosts, true},
     {&kExtensionTelemetryReportHostsContactedViaWebSocket, true},
+    {&kExtensionTelemetryTabsApiSignal, true},
     {&kExtensionTelemetryTabsExecuteScriptSignal, true},
-    {&kFileTypePoliciesTag, true},
     {&kHashPrefixRealTimeLookups, true},
     {&kHashRealTimeOverOhttp, true},
     {&kImprovedDownloadBubbleWarnings, true},
@@ -439,9 +441,6 @@ base::Value::List GetFeatureStatusList() {
       safe_browsing::kClientSideDetectionModelTag,
       kClientSideDetectionTagParamName));
   param_list.Append(kClientSideDetectionModelTag.name);
-  param_list.Append(base::GetFieldTrialParamValueByFeature(
-      kFileTypePoliciesTag, kFileTypePoliciesTagParamName));
-  param_list.Append(kFileTypePoliciesTag.name);
   param_list.Append(kHashPrefixRealTimeLookupsRelayUrl.Get());
   param_list.Append(kHashPrefixRealTimeLookupsRelayUrl.name);
   param_list.Append(kHashRealTimeOverOhttpRelayUrl.Get());
@@ -463,16 +462,6 @@ std::string GetClientSideDetectionTag() {
 #else
   return "desktop_1_flatbuffer";
 #endif
-}
-
-std::string GetFileTypePoliciesTag() {
-  if (!base::FeatureList::IsEnabled(kFileTypePoliciesTag)) {
-    return "default";
-  }
-  std::string tag_value = base::GetFieldTrialParamValueByFeature(
-      kFileTypePoliciesTag, kFileTypePoliciesTagParamName);
-
-  return tag_value.empty() ? "default" : tag_value;
 }
 
 }  // namespace safe_browsing

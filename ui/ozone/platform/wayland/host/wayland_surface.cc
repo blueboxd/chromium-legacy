@@ -266,8 +266,8 @@ void WaylandSurface::set_acquire_fence(gfx::GpuFenceHandle acquire_fence) {
          connection_->UseImplicitSyncInterop());
   if (!acquire_fence.is_null()) {
     base::TimeTicks ticks;
-    auto status = gfx::GpuFence::GetStatusChangeTime(
-        acquire_fence.owned_fd.get(), &ticks);
+    auto status =
+        gfx::GpuFence::GetStatusChangeTime(acquire_fence.Peek(), &ticks);
     if (status == gfx::GpuFence::kSignaled)
       acquire_fence = gfx::GpuFenceHandle();
   }
@@ -284,7 +284,7 @@ bool WaylandSurface::AttachBuffer(WaylandBufferHandle* buffer_handle) {
   }
 
   pending_state_.buffer_size_px = buffer_handle->size();
-  pending_state_.buffer = buffer_handle->wl_buffer();
+  pending_state_.buffer = buffer_handle->buffer();
   pending_state_.buffer_id = buffer_handle->id();
 
   if (state_.buffer_id == pending_state_.buffer_id &&
@@ -466,7 +466,7 @@ void WaylandSurface::ApplyPendingState() {
       if (surface_sync) {
         if (!pending_state_.acquire_fence.is_null()) {
           zwp_linux_surface_synchronization_v1_set_acquire_fence(
-              surface_sync, pending_state_.acquire_fence.owned_fd.get());
+              surface_sync, pending_state_.acquire_fence.Peek());
         }
 
         if (!next_explicit_release_request_.is_null()) {
@@ -496,8 +496,7 @@ void WaylandSurface::ApplyPendingState() {
       } else if (connection_->UseImplicitSyncInterop()) {
         if (!pending_state_.acquire_fence.is_null()) {
           connection_->buffer_manager_host()->InsertAcquireFence(
-              pending_state_.buffer_id,
-              pending_state_.acquire_fence.owned_fd.get());
+              pending_state_.buffer_id, pending_state_.acquire_fence.Peek());
         }
       }
     }

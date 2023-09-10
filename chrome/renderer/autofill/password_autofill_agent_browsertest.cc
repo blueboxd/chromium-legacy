@@ -627,6 +627,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
 #endif  // BUILDFLAG(IS_ANDROID)
   }
 
+  // TODO(crbug.com/1472209): Only expect one of IsPreviewed()/IsAutofilled().
   void CheckTextFieldsStateForElements(const WebInputElement& username_element,
                                        const std::string& username,
                                        bool username_autofilled,
@@ -640,7 +641,8 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
                               ? username_element.SuggestedValue().Utf8()
                               : username_element.Value().Utf8())
           << "check_suggested_username == " << check_suggested_username;
-      EXPECT_EQ(username_autofilled, username_element.IsAutofilled());
+      EXPECT_EQ(username_autofilled, username_element.IsPreviewed() ||
+                                         username_element.IsAutofilled());
     }
 
     if (!password_element.IsNull()) {
@@ -648,7 +650,8 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
                               ? password_element.SuggestedValue().Utf8()
                               : password_element.Value().Utf8())
           << "check_suggested_password == " << check_suggested_password;
-      EXPECT_EQ(password_autofilled, password_element.IsAutofilled());
+      EXPECT_EQ(password_autofilled, password_element.IsAutofilled() ||
+                                         password_element.IsPreviewed());
     }
   }
 
@@ -4368,6 +4371,17 @@ TEST_F(PasswordAutofillAgentTest, ModifyNonPasswordFieldOneSymbol) {
 
   EXPECT_CALL(fake_driver_, UserModifiedNonPasswordField).Times(0);
   SimulateUsernameTyping("1");
+}
+
+// Tests that inputting 101 symbols into a non-password field does not notify
+// the browser.
+TEST_F(PasswordAutofillAgentTest, ModifyNonPasswordFieldTooManySymbols) {
+  LoadHTML(kSingleUsernameFormHTML);
+  UpdateOnlyUsernameElement();
+
+  EXPECT_CALL(fake_driver_, UserModifiedNonPasswordField).Times(0);
+  std::string not_username(101, 'a');
+  SimulateUsernameTyping(not_username);
 }
 
 // Tests that user modifying a text field with an OTP autocomplete attribute

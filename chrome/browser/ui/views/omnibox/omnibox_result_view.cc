@@ -204,11 +204,21 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupViewViews* popup_view,
 
     suggestion_view_ = suggestion_and_buttons->AddChildView(
         std::make_unique<OmniboxMatchCellView>(this));
-    suggestion_view_->SetProperty(
-        views::kFlexBehaviorKey,
-        views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
-                                 views::MaximumFlexSizeRule::kUnbounded)
-            .WithWeight(4));
+    if (OmniboxFieldTrial::IsActionsUISimplificationEnabled()) {
+      // TODO(crbug/1479721): Fix the relative z-order to ensure that this view
+      // gets prioritized over the suggestion button row view when the user
+      // shrinks the width of the browser window.
+      suggestion_view_->SetProperty(
+          views::kFlexBehaviorKey,
+          views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                                   views::MaximumFlexSizeRule::kPreferred));
+    } else {
+      suggestion_view_->SetProperty(
+          views::kFlexBehaviorKey,
+          views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                                   views::MaximumFlexSizeRule::kUnbounded)
+              .WithWeight(4));
+    }
 
     remove_suggestion_button_ = right->AddChildView(
         std::make_unique<OmniboxRemoveSuggestionButton>(base::BindRepeating(
@@ -388,7 +398,7 @@ void OmniboxResultView::ApplyThemeAndRefreshIcons(bool force_reapply_styles) {
   if (icon.IsEmpty())
     suggestion_view_->ClearIcon();
   else
-    suggestion_view_->SetIcon(*icon.ToImageSkia());
+    suggestion_view_->SetIcon(*icon.ToImageSkia(), match_);
 
   // We must reapply colors for all the text fields here. If we don't, we can
   // break theme changes for ZeroSuggest. See https://crbug.com/1095205.
@@ -635,6 +645,15 @@ gfx::Image OmniboxResultView::GetIcon() const {
     vector_icon_color_id = GetMatchSelected() ? kColorOmniboxResultsIconSelected
                                               : kColorOmniboxResultsIcon;
   }
+
+  if (OmniboxFieldTrial::IsActionsUISimplificationEnabled() &&
+      match_.type != AutocompleteMatchType::STARTER_PACK) {
+    // When `kOmniboxActionsUISimplification` is enabled, (non-starter pack)
+    // vector icons will need a distinctive foreground color in order to stand
+    // out against the blue square background they are painted upon.
+    vector_icon_color_id = kColorOmniboxAnswerIconGM3Foreground;
+  }
+
   return popup_view_->GetMatchIcon(
       match_, GetColorProvider()->GetColor(vector_icon_color_id));
 }

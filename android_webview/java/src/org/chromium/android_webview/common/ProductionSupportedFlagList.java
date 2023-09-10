@@ -156,6 +156,8 @@ public final class ProductionSupportedFlagList {
                     "Enables brotli compression support in WebView."),
             Flag.baseFeature(NetFeatures.ZSTD_CONTENT_ENCODING,
                     "Enables zstd content-encoding support in the browser."),
+            Flag.baseFeature(
+                    AwFeatures.WEBVIEW_EXIT_REASON_METRIC, "Records various system exit reasons"),
             Flag.baseFeature(AwFeatures.WEBVIEW_EXTRA_HEADERS_SAME_ORIGIN_ONLY,
                     "Only allow extra headers added via loadUrl() to be sent to the same origin "
                             + "as the original request."),
@@ -173,6 +175,10 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.GMS_CORE_EMOJI,
                     "Enables retrieval of the emoji font through GMS Core "
                             + "improving emoji glyph coverage."),
+            Flag.baseFeature(
+                    AndroidAutofillFeatures.ANDROID_AUTOFILL_FORM_SUBMISSION_CHECK_BY_ID_NAME,
+                    "When enabled, form submissions are reported to AutofillManager iff the form "
+                            + "global ids match."),
             Flag.baseFeature(
                     AndroidAutofillFeatures
                             .ANDROID_AUTOFILL_VIEW_STRUCTURE_WITH_FORM_HIERARCHY_LAYER_NAME,
@@ -322,10 +328,11 @@ public final class ProductionSupportedFlagList {
                             + "for commit to finish on the compositor thread."),
             Flag.baseFeature(CcFeatures.USE_DMSAA_FOR_TILES,
                     "Switches skia to use DMSAA instead of MSAA for tile raster"),
+            Flag.baseFeature(CcFeatures.USE_DMSAA_FOR_TILES_ANDROID_GL,
+                    "Switches skia to use DMSAA instead of MSAA for tile raster"
+                            + " on Android GL backend."),
             Flag.baseFeature(BlinkFeatures.CSS_PAINTING_FOR_SPELLING_GRAMMAR_ERRORS,
                     "Use the new CSS-based painting for spelling and grammar errors"),
-            Flag.baseFeature(BlinkFeatures.WEB_RTC_ENCODER_ASYNC_ENCODE,
-                    "Make RTCVideoEncoder encode call asynchronous."),
             Flag.baseFeature(BlinkFeatures.WEB_RTC_INITIALIZE_ENCODER_ON_FIRST_FRAME,
                     "Initialize VideoEncodeAccelerator on the first encode."),
             Flag.baseFeature(BlinkFeatures.WEB_RTC_METRONOME,
@@ -524,6 +531,8 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.NON_STANDARD_APPEARANCE_VALUES_LOW_USAGE,
                     "This flag allows non-standard CSS appearance values with page load "
                             + "usage < 0.001% and shows a deprecation warning."),
+            Flag.baseFeature(ContentFeatures.SERVICE_WORKER_STATIC_ROUTER,
+                    "Enables Service Worker static routing API."),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

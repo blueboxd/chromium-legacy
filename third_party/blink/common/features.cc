@@ -477,7 +477,7 @@ BASE_FEATURE(kClientHintsFormFactor,
 // Enable `sec-ch-prefers-reduced-transparency` client hint.
 BASE_FEATURE(kClientHintsPrefersReducedTransparency,
              "ClientHintsPrefersReducedTransparency",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable `sec-ch-width` client hint.
 BASE_FEATURE(kClientHintsResourceWidth,
@@ -531,11 +531,6 @@ BASE_FEATURE(kContentCaptureConstantStreaming,
              "ContentCaptureConstantStreaming",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Controls whether the Conversion Measurement API infrastructure is enabled.
-BASE_FEATURE(kConversionMeasurement,
-             "ConversionMeasurement",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kCorrectFloatExtensionTestForWebGL,
              "CorrectFloatExtensionTestForWebGL",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -545,12 +540,6 @@ BASE_FEATURE(kCorrectFloatExtensionTestForWebGL,
 // and renders the image as encoded.
 BASE_FEATURE(kCreateImageBitmapOrientationNone,
              "CreateImageBitmapOrientationNone",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// TODO(https://crbug.com/1453572): Remove this if this behavior does not need
-// to be rolled back on stable.
-BASE_FEATURE(kCrossOriginAccessOnDetachedWindowDoesNotThrow,
-             "CrossOriginAccessOnDetachedWindowDoesNotThrow",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDOMContentLoadedWaitForAsyncScript,
@@ -639,12 +628,6 @@ const base::FeatureParam<double> kCostReductionOfMultiplexedRequests{
     &kDelayLowPriorityRequestsAccordingToNetworkState,
     "CostReductionOfMultiplexedRequests", 0.5};
 
-// Allows web apps to customize their tab strip. See explainer for more detail:
-// https://github.com/WICG/manifest-incubations/blob/gh-pages/tabbed-mode-explainer.md
-BASE_FEATURE(kDesktopPWAsTabStripCustomizations,
-             "DesktopPWAsTabStripCustomizations",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kDirectCompositorThreadIpc,
              "DirectCompositorThreadIpc",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -698,10 +681,6 @@ BASE_FEATURE(kEarlyExitOnNoopClassOrStyleChange,
              "EarlyExitOnNoopClassOrStyleChange",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kEnableMachineLearningNeuralNetworkService,
-             "MachineLearningNeuralNetworkService",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kEstablishGpuChannelAsync,
              "EstablishGpuChannelAsync",
 #if BUILDFLAG(IS_ANDROID)
@@ -737,6 +716,11 @@ const base::FeatureParam<int> kDeprecateUnloadPercent{&kDeprecateUnload,
 // of the unload deprecation rollout.
 const base::FeatureParam<int> kDeprecateUnloadBucket{&kDeprecateUnload,
                                                      "rollout_bucket", 0};
+
+// A list of hosts for which deprecation of unload is allowed. If it's empty
+// the all hosts are allowed.
+const base::FeatureParam<std::string> kDeprecateUnloadAllowlist{
+    &kDeprecateUnload, "allowlist", ""};
 
 // Controls whether LCP calculations should exclude low-entropy images. If
 // enabled, then the associated parameter sets the cutoff, expressed as the
@@ -1007,7 +991,7 @@ BASE_FEATURE(kKeepAliveInBrowserMigration,
 // painted.
 BASE_FEATURE(kLCPAnimatedImagesReporting,
              "LCPAnimatedImagesReporting",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kLCPCriticalPathPredictor,
              "LCPCriticalPathPredictor",
@@ -1034,10 +1018,16 @@ BASE_FEATURE(kLCPScriptObserver,
              "LCPScriptObserver",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+const base::FeatureParam<int> kLCPScriptObserverMaxUrlLength{
+    &kLCPScriptObserver, "lcpp_max_url_length", 1024};
+
+const base::FeatureParam<int> kLCPScriptObserverMaxUrlCountPerOrigin{
+    &kLCPScriptObserver, "lcpp_max_url_count_per_origin", 5};
+
 // Enables reporting as LCP of the time the first frame of a video was painted.
 BASE_FEATURE(kLCPVideoFirstFrame,
              "LCPVideoFirstFrame",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // A feature to reduce the set of resources fetched by No-State Prefetch.
 BASE_FEATURE(kLightweightNoStatePrefetch,
@@ -1456,6 +1446,10 @@ BASE_FEATURE(kRegisterJSSourceLocationBlockingBFCache,
 BASE_FEATURE(kRemoteResourceCache,
              "RemoteResourceCache",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kRemoveAuthroizationOnCrossOriginRedirect,
+             "RemoveAutorizationOnCrossOriginRedirect",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kRenderBlockingFonts,
              "RenderBlockingFonts",
@@ -1961,10 +1955,6 @@ BASE_FEATURE(kWebRtcH264WithOpenH264FFmpeg,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 
-BASE_FEATURE(kWebRtcEncoderAsyncEncode,
-             "WebRtcEncoderAsyncEncode",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Exposes non-standard stats in the WebRTC getStats() API.
 BASE_FEATURE(kWebRtcExposeNonStandardStats,
              "WebRtc-ExposeNonStandardStats",
@@ -2097,7 +2087,7 @@ bool ParkableStringsUseSnappy() {
   return base::FeatureList::IsEnabled(kUseSnappyForParkableStrings);
 }
 
-bool IsKeepAliveInBrowserMigrationEnabled() {
+bool IsKeepAliveURLLoaderServiceEnabled() {
   return base::FeatureList::IsEnabled(kKeepAliveInBrowserMigration) ||
          base::FeatureList::IsEnabled(kFetchLaterAPI);
 }

@@ -24,6 +24,7 @@
 <translation id="1993104285338243655">Экран көшірмесін көрсетуге ауысты</translation>
 <translation id="2031987842108996681">Қызыл түсті арна</translation>
 <translation id="2060505056492490888">"<ph name="INVALIDDOMAIN" />" ішінде "<ph name="DOT" />" қате орында пайдаланылған.</translation>
+<translation id="2068711044993563745">Минималды мән (<ph name="MINIMUM" />) максималды мәннен (<ph name="MAXIMUM" />) аз болуы керек.</translation>
 <translation id="2148716181193084225">Бүгін</translation>
 <translation id="2226276347425096477">Осы мәтінді <ph name="MAX_CHARACTERS" /> таңбаға немесе одан азырақ етіп қысқартыңыз (сіз қазір  <ph name="CURRENT_LENGTH" /> таңба пайдаланып жатырсыз).</translation>
 <translation id="2247351761944213033"><ph name="WEEKNUMBER" />-апта, <ph name="YEAR" /></translation>
@@ -44,6 +45,7 @@
 <translation id="2761667185364618470">Жалғастырғыңыз келсе, осы ұяшықты белгілеңіз.</translation>
 <translation id="2908441821576996758">Электрондық пошта мекенжайларының үтірмен бөлінген тізімін енгізіңіз.</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> МБ</translation>
+<translation id="3053226512517284904">аудиосипаттамалар мәзірін көрсету</translation>
 <translation id="3075154866155599887">Жарамды мән енгізіңіз. Бұл өріс толық емес немесе күні жарамсыз.</translation>
 <translation id="310520048233152454">URL мекенжайын енгізіңіз.</translation>
 <translation id="3220661731597678625">ағымдағы қадам</translation>

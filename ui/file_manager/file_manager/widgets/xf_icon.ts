@@ -5,7 +5,7 @@
 import {util} from '../common/js/util.js';
 import {constants} from '../foreground/js/constants.js';
 
-import {css, customElement, html, property, PropertyValues, styleMap, svg, XfBase} from './xf_base.js';
+import {css, customElement, html, property, type PropertyValues, styleMap, svg, XfBase} from './xf_base.js';
 
 @customElement('xf-icon')
 export class XfIcon extends XfBase {
@@ -47,6 +47,8 @@ export class XfIcon extends XfBase {
           svg`<use xlink:href="foreground/images/files/ui/cloud_error.svg#cloud_error"></use>`,
       [constants.ICON_TYPES.CLOUD_OFFLINE]:
           svg`<use xlink:href="foreground/images/files/ui/cloud_offline.svg#cloud_offline"></use>`,
+      [constants.ICON_TYPES.CLOUD_PAUSED]:
+          svg`<use xlink:href="foreground/images/files/ui/cloud_paused.svg#cloud_paused"></use>`,
       [constants.ICON_TYPES.CLOUD_SYNC]:
           svg`<use xlink:href="foreground/images/files/ui/cloud_sync.svg#cloud_sync"></use>`,
       [constants.ICON_TYPES.ERROR]:
@@ -118,6 +120,7 @@ function getCSS() {
       --xf-icon-positive-color: var(--cros-sys-positive);
       --xf-icon-error-color: var(--cros-sys-error);
       --xf-icon-progress-color: var(--cros-sys-progress);
+      --xf-secondary-color: var(--cros-sys-secondary);
       display: inline-block;
     }
 
@@ -136,6 +139,10 @@ function getCSS() {
       background-repeat: no-repeat;
     }
 
+    :host-context([disabled]) span.keep-color {
+      opacity: 0.38;
+    }
+
     span.multi-color {
       display: flex;
       align-items: stretch;
@@ -147,6 +154,10 @@ function getCSS() {
       width: 16px;
     }
 
+    :host([size="extra_small"]) span.keep-color {
+      background-size: 16px 16px;
+    }
+
     :host([size="extra_small"]) span:not(.keep-color) {
       -webkit-mask-size: 16px;
     }
@@ -154,6 +165,10 @@ function getCSS() {
     :host([size="small"]) span {
       height: 20px;
       width: 20px;
+    }
+
+    :host([size="small"]) span.keep-color {
+      background-size: 20px 20px;
     }
 
     :host([size="small"]) span:not(.keep-color) {
@@ -165,6 +180,10 @@ function getCSS() {
       width: 32px;
     }
 
+    :host([size="medium"]) span.keep-color {
+      background-size: 32px 32px;
+    }
+
     :host([size="medium"]) span:not(.keep-color) {
       -webkit-mask-size: 32px;
     }
@@ -172,6 +191,10 @@ function getCSS() {
     :host([size="large"]) span {
       height: 48px;
       width: 48px;
+    }
+
+    :host([size="large"]) span.keep-color {
+      background-size: 48px 48px;
     }
 
     :host([size="large"]) span:not(.keep-color) {
@@ -453,6 +476,7 @@ function getCSS() {
     :host([type='cloud_done']) span,
     :host([type='cloud_error']) span,
     :host([type='cloud_offline']) span,
+    :host([type='cloud_paused']) span,
     :host([type='cloud_sync']) span {
       margin-inline-start: 10px;
       margin-top: 8px;

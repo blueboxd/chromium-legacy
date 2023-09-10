@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/password_manager/android/password_generation_controller.h"
 #include "chrome/browser/password_manager/android/password_manager_launcher_android.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
+#include "chrome/browser/password_manager/chrome_webauthn_credentials_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/passwords/ui_utils.h"
@@ -42,7 +44,6 @@
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/webauthn_credentials_delegate.h"
 #include "components/password_manager/core/common/password_manager_features.h"
-#include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/webauthn/android/webauthn_cred_man_delegate.h"
 #include "content/public/browser/render_frame_host.h"
@@ -53,6 +54,7 @@
 using autofill::AccessorySheetData;
 using autofill::AccessorySheetField;
 using autofill::FooterCommand;
+using autofill::PasskeySection;
 using autofill::UserInfo;
 using autofill::mojom::FocusedFieldType;
 using password_manager::CredentialCache;
@@ -151,17 +153,21 @@ PasswordAccessoryControllerImpl::GetSheetData() const {
   // Prevent crashing by returning a nullopt if no field was focused yet or if
   // the frame was (possibly temporarily) unfocused. This signals to the caller
   // that no sheet is available right now.
-  if (GetWebContents().GetFocusedFrame() == nullptr)
+  if (GetWebContents().GetFocusedFrame() == nullptr) {
     return absl::nullopt;
-  if (!last_focused_field_info_)
+  }
+  if (!last_focused_field_info_) {
     return absl::nullopt;
+  }
   url::Origin origin = GetFocusedFrameOrigin();
   // If the focused origin doesn't match the last known origin, it is not safe
   // to provide any suggestions (because e.g. information about field type isn't
   // reliable).
-  if (!last_focused_field_info_->origin.IsSameOriginWith(origin))
+  if (!last_focused_field_info_->origin.IsSameOriginWith(origin)) {
     return absl::nullopt;
+  }
 
+  std::vector<PasskeySection> passkeys_to_add;
   std::vector<UserInfo> info_to_add;
   std::vector<FooterCommand> footer_commands_to_add;
   const bool is_password_field = last_focused_field_info_->focused_field_type ==
@@ -204,6 +210,14 @@ PasswordAccessoryControllerImpl::GetSheetData() const {
           driver_supplier_.Run((&GetWebContents()))) {
     if (password_manager::WebAuthnCredentialsDelegate* credentials_delegate =
             password_client_->GetWebAuthnCredentialsDelegateForDriver(driver)) {
+      if (auto passkeys = credentials_delegate->GetPasskeys()) {
+        passkeys_to_add.reserve(passkeys->size());
+        for (const password_manager::PasskeyCredential& passkey :
+             passkeys.value()) {
+          passkeys_to_add.emplace_back(passkey.display_name(),
+                                       passkey.credential_id());
+        }
+      }
       if (credentials_delegate->IsAndroidHybridAvailable()) {
         std::u16string passkey_other_device_title = l10n_util::GetStringUTF16(
             IDS_PASSWORD_MANAGER_ACCESSORY_USE_DEVICE_PASSKEY);
@@ -214,10 +228,14 @@ PasswordAccessoryControllerImpl::GetSheetData() const {
     }
   }
 
-  bool has_suggestions = !info_to_add.empty();
+  bool has_suggestions = !info_to_add.empty() || !passkeys_to_add.empty();
   AccessorySheetData data = autofill::CreateAccessorySheetData(
       autofill::AccessoryTabType::PASSWORDS, GetTitle(has_suggestions, origin),
       std::move(info_to_add), std::move(footer_commands_to_add));
+  base::ranges::for_each(std::move(passkeys_to_add),
+                         [&data](PasskeySection section) {
+                           data.add_passkey_section(std::move(section));
+                         });
 
   if (ShouldShowRecoveryToggle(origin)) {
     BlocklistedStatus blocklisted_status =
@@ -251,6 +269,17 @@ void PasswordAccessoryControllerImpl::OnFillingTriggered(
       base::BindOnce(&PasswordAccessoryControllerImpl::OnReauthCompleted,
                      base::Unretained(this), selection),
       /*use_last_valid_auth=*/true);
+}
+
+void PasswordAccessoryControllerImpl::OnPasskeySelected(
+    const std::vector<uint8_t>& passkey_id) {
+  if (password_manager::PasswordManagerDriver* driver =
+          driver_supplier_.Run((&GetWebContents()))) {
+    if (password_manager::WebAuthnCredentialsDelegate* credentials_delegate =
+            password_client_->GetWebAuthnCredentialsDelegateForDriver(driver)) {
+      credentials_delegate->SelectPasskey(base::Base64Encode(passkey_id));
+    }
+  }
 }
 
 // static
@@ -378,11 +407,13 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
   // Prevent crashing by not acting at all if frame became unfocused at any
   // point. The next time a focus event happens, this will be called again and
   // ensure we show correct data.
-  if (GetWebContents().GetFocusedFrame() == nullptr)
+  if (GetWebContents().GetFocusedFrame() == nullptr) {
     return;
+  }
   url::Origin origin = GetFocusedFrameOrigin();
-  if (origin.opaque())
+  if (origin.opaque()) {
     return;  // Don't proceed for invalid origins.
+  }
   TRACE_EVENT0("passwords",
                "PasswordAccessoryControllerImpl::RefreshSuggestionsForField");
   last_focused_field_info_.emplace(origin, focused_field_type,
@@ -484,8 +515,9 @@ void PasswordAccessoryControllerImpl::WebContentsDestroyed() {
 void PasswordAccessoryControllerImpl::ChangeCurrentOriginSavePasswordsStatus(
     bool saving_enabled) {
   const url::Origin origin = GetFocusedFrameOrigin();
-  if (origin.opaque())
+  if (origin.opaque()) {
     return;
+  }
 
   const GURL origin_as_gurl = origin.GetURL();
   password_manager::PasswordFormDigest form_digest(
@@ -509,8 +541,9 @@ bool PasswordAccessoryControllerImpl::AppearsInSuggestions(
     const std::u16string& suggestion,
     bool is_password,
     const url::Origin& origin) const {
-  if (origin.opaque())
+  if (origin.opaque()) {
     return false;  // Don't proceed for invalid origins.
+  }
 
   return base::ranges::any_of(
       credential_cache_->GetCredentialStore(origin).GetCredentials(),
@@ -557,8 +590,9 @@ void PasswordAccessoryControllerImpl::ShowAllPasswords() {
   // RenderFrame so that it can use the password manager driver.
   // TODO(https://crbug.com/1286779): Investigate if focused frame really needs
   // to return RenderFrameHosts with non-live RenderFrames.
-  if (!GetWebContents().GetFocusedFrame()->IsRenderFrameLive())
+  if (!GetWebContents().GetFocusedFrame()->IsRenderFrameLive()) {
     return;
+  }
 
   // We can use |base::Unretained| safely because at the time of calling
   // |AllPasswordsSheetDismissed| we are sure that this controller is alive as
@@ -578,8 +612,9 @@ void PasswordAccessoryControllerImpl::ShowAllPasswords() {
 
 bool PasswordAccessoryControllerImpl::ShouldTriggerBiometricReauth(
     const AccessorySheetField& selection) const {
-  if (!selection.is_obfuscated())
+  if (!selection.is_obfuscated()) {
     return false;
+  }
 
   scoped_refptr<device_reauth::DeviceAuthenticator> authenticator =
       password_client_->GetDeviceAuthenticator();
@@ -591,8 +626,9 @@ void PasswordAccessoryControllerImpl::OnReauthCompleted(
     AccessorySheetField selection,
     bool auth_succeeded) {
   authenticator_.reset();
-  if (!auth_succeeded)
+  if (!auth_succeeded) {
     return;
+  }
   FillSelection(selection);
 }
 
@@ -606,8 +642,9 @@ void PasswordAccessoryControllerImpl::FillSelection(
   }
   password_manager::PasswordManagerDriver* driver =
       driver_supplier_.Run(&GetWebContents());
-  if (!driver)
+  if (!driver) {
     return;
+  }
   driver->FillIntoFocusedField(selection.is_obfuscated(),
                                selection.display_text());
   if (base::FeatureList::IsEnabled(

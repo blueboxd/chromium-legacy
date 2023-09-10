@@ -25,7 +25,6 @@
 #include "content/browser/attribution_reporting/stored_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/features.h"
 
 namespace content {
 namespace {
@@ -75,8 +74,8 @@ void RunRandomFakeReportsTest(const SourceType source_type,
   for (int i = 0; i < num_samples; i++) {
     std::vector<FakeReport> fake_reports =
         AttributionStorageDelegateImpl().GetRandomFakeReports(
-            source.common_info(), source.event_report_windows(),
-            source.source_time(), source.max_event_level_reports());
+            source.common_info().source_type(), source.event_report_windows(),
+            source.max_event_level_reports(), source.source_time());
     output_counts[fake_reports]++;
   }
 
@@ -221,10 +220,11 @@ TEST(AttributionStorageDelegateImplTest,
     const auto source =
         SourceBuilder().SetSourceType(source_type).BuildStored();
     EXPECT_EQ(AttributionStorageDelegateImpl(AttributionNoiseMode::kNone)
-                  .GetRandomizedResponse(
-                      source.common_info(), source.event_report_windows(),
-                      source.source_time(), source.max_event_level_reports(),
-                      source.randomized_response_rate()),
+                  .GetRandomizedResponse(source.common_info().source_type(),
+                                         source.event_report_windows(),
+                                         source.max_event_level_reports(),
+                                         source.randomized_response_rate(),
+                                         source.source_time()),
               absl::nullopt);
   }
 }
@@ -361,11 +361,12 @@ TEST(AttributionStorageDelegateImplTest, GetFakeReportsForSequenceIndex) {
                 AttributionStorageDelegateImpl().GetDefaultEventReportWindows(
                     test_case.source_type, /*last_report_window=*/kExpiry))
             .BuildStored();
-    EXPECT_EQ(test_case.expected,
-              AttributionStorageDelegateImpl().GetFakeReportsForSequenceIndex(
-                  source.common_info(), source.source_time(),
-                  source.event_report_windows(),
-                  source.max_event_level_reports(), test_case.sequence_index))
+    EXPECT_EQ(
+        test_case.expected,
+        AttributionStorageDelegateImpl().GetFakeReportsForSequenceIndex(
+            source.common_info().source_type(), source.event_report_windows(),
+            source.max_event_level_reports(), source.source_time(),
+            test_case.sequence_index))
         << test_case.sequence_index;
   }
 }
@@ -420,10 +421,10 @@ TEST(AttributionStorageDelegateImplTest,
     double value =
         std::round(
             AttributionStorageDelegateImpl().ComputeChannelCapacity(
-                source.common_info(), source.event_report_windows(),
-                source.source_time(), source.max_event_level_reports(),
+                test_case.source_type, source.event_report_windows(),
+                source.max_event_level_reports(),
                 AttributionStorageDelegateImpl().GetRandomizedResponseRate(
-                    source.event_report_windows(), test_case.source_type,
+                    test_case.source_type, source.event_report_windows(),
                     source.max_event_level_reports())) *
             100000.0) /
         100000.0;
@@ -626,7 +627,7 @@ class AttributionStorageDelegateImplTestEventFlagEnabled
  public:
   AttributionStorageDelegateImplTestEventFlagEnabled() {
     feature_list_.InitWithFeaturesAndParameters(
-        {{blink::features::kConversionMeasurement,
+        {{attribution_reporting::features::kConversionMeasurement,
           {{"vtc_early_reporting_windows", "true"}}}},
         /*disabled_features=*/{});
   }
@@ -708,7 +709,7 @@ class AttributionStorageDelegateImplTestFeatureConfigured
  public:
   AttributionStorageDelegateImplTestFeatureConfigured() {
     feature_list_.InitWithFeaturesAndParameters(
-        {{blink::features::kConversionMeasurement,
+        {{attribution_reporting::features::kConversionMeasurement,
           {{"vtc_early_reporting_windows", "true"},
            {"first_report_window_deadline", "1d"},
            {"second_report_window_deadline", "5d"},
@@ -789,7 +790,7 @@ class AttributionStorageDelegateImplTestInvalidFeatureConfigured
  public:
   AttributionStorageDelegateImplTestInvalidFeatureConfigured() {
     feature_list_.InitWithFeaturesAndParameters(
-        {{blink::features::kConversionMeasurement,
+        {{attribution_reporting::features::kConversionMeasurement,
           {{"vtc_early_reporting_windows", "true"},
            {"first_report_window_deadline", "-1d"},
            {"second_report_window_deadline", "-5d"},
@@ -866,7 +867,8 @@ TEST_F(AttributionStorageDelegateImplTestInvalidFeatureConfigured,
 TEST(AttributionStorageDelegateImplTest,
      NullAggregatableReports_IncludeSourceRegistrationTime) {
   base::test::ScopedFeatureList scoped_feature_list(
-      attribution_reporting::kAttributionReportingNullAggregatableReports);
+      attribution_reporting::features::
+          kAttributionReportingNullAggregatableReports);
 
   const auto trigger = DefaultTrigger();
 
@@ -895,7 +897,8 @@ TEST(AttributionStorageDelegateImplTest,
 TEST(AttributionStorageDelegateImplTest,
      NullAggregatableReports_ExcludeSourceRegistrationTime) {
   base::test::ScopedFeatureList scoped_feature_list(
-      attribution_reporting::kAttributionReportingNullAggregatableReports);
+      attribution_reporting::features::
+          kAttributionReportingNullAggregatableReports);
 
   const auto trigger = TriggerBuilder()
                            .SetSourceRegistrationTimeConfig(
@@ -925,7 +928,7 @@ TEST(AttributionStorageDelegateImplTest, GetMaxAttributionsPerSource) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitWithFeaturesAndParameters(
-        {{blink::features::kConversionMeasurement,
+        {{attribution_reporting::features::kConversionMeasurement,
           {{"max_attributions_per_event_source", "5"}}}},
         /*disabled_features=*/{});
 

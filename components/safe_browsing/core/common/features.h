@@ -149,6 +149,11 @@ BASE_DECLARE_FEATURE(kExtensionTelemetryReportContactedHosts);
 // Enables reporting of remote hosts contacted by extensions via websockets;
 BASE_DECLARE_FEATURE(kExtensionTelemetryReportHostsContactedViaWebSocket);
 
+// Enables intercepting remote hosts contacted by extensions in renderer
+// throttles.
+BASE_DECLARE_FEATURE(
+    kExtensionTelemetryInterceptRemoteHostsContactedInRenderer);
+
 // Enables collection of potential password theft data and uploads
 // telemetry reports to SB servers.
 BASE_DECLARE_FEATURE(kExtensionTelemetryPotentialPasswordTheft);
@@ -168,13 +173,6 @@ BASE_DECLARE_FEATURE(kExtensionTelemetryDeclarativeNetRequestSignal);
 // Enables remotely disabling of malicious off-store extensions identified in
 // Extension Telemetry service reports.
 BASE_DECLARE_FEATURE(kExtensionTelemetryDisableOffstoreExtensions);
-
-// Determines the tag to pass to Omaha to get a file type policy.
-BASE_DECLARE_FEATURE(kFileTypePoliciesTag);
-
-// The parameter name used for getting the tag value from
-// `kFileTypePoliciesTag`.
-const char kFileTypePoliciesTagParamName[] = "policy_omaha_tag";
 
 // Enables the new text, layout, links, and icons on both the privacy guide
 // and on the security settings page for the enhanced protection security
@@ -332,10 +330,6 @@ base::Value::List GetFeatureStatusList();
 // Returns the tag used for Client Side Phishing Detection models, as
 // computed from the current feature flags.
 std::string GetClientSideDetectionTag();
-
-// Returns the tag used for file type policies, as computed from the current
-// feature flag.
-std::string GetFileTypePoliciesTag();
 
 // Enables new ESB specific threshold fields in Visual TF Lite model files
 BASE_DECLARE_FEATURE(kSafeBrowsingPhishingClassificationESBThreshold);

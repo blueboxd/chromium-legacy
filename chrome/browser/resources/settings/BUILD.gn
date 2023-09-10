@@ -167,6 +167,7 @@ build_webui("build") {
     "safety_hub/safety_hub_entry_point.ts",
     "safety_hub/safety_hub_module.ts",
     "safety_hub/safety_hub_page.ts",
+    "safety_hub/notification_permissions_module.ts",
     "safety_hub/unused_site_permissions_module.ts",
     "search_engines_page/omnibox_extension_entry.ts",
     "search_engines_page/search_engine_edit_dialog.ts",
@@ -315,10 +316,8 @@ build_webui("build") {
   ]
 
   if (is_chromeos_ash) {
-    non_web_component_files += [
-      "people_page/account_manager_browser_proxy.ts",
-      "site_settings/android_info_browser_proxy.ts",
-    ]
+    non_web_component_files +=
+        [ "people_page/account_manager_browser_proxy.ts" ]
   } else {
     if (!is_chromeos_lacros) {
       non_web_component_files += [

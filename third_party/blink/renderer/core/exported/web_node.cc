@@ -245,8 +245,8 @@ WebNode::operator Node*() const {
   return private_.Get();
 }
 
-int WebNode::GetDevToolsNodeId() const {
-  return DOMNodeIds::IdForNode(private_.Get());
+int WebNode::GetDomNodeId() const {
+  return private_.Get()->GetDomNodeId();
 }
 
 }  // namespace blink

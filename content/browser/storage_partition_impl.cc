@@ -37,6 +37,7 @@
 #include "base/types/optional_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/attribution_reporting/features.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/services/storage/privileged/mojom/indexed_db_control.mojom.h"
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
@@ -63,6 +64,7 @@
 #include "content/browser/cache_storage/cache_storage_control_wrapper.h"
 #include "content/browser/code_cache/generated_code_cache.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
+#include "content/browser/cookie_deprecation_label/cookie_deprecation_label_manager.h"
 #include "content/browser/cookie_store/cookie_store_manager.h"
 #include "content/browser/devtools/devtools_background_services_context_impl.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
@@ -126,6 +128,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "net/base/features.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_setting_override.h"
 #include "net/ssl/client_cert_store.h"
@@ -1447,6 +1450,13 @@ void StoragePartitionImpl::Initialize(
   bluetooth_allowed_devices_map_ =
       std::make_unique<BluetoothAllowedDevicesMap>();
 
+  // Must be initialized before the `url_loader_factory_getter_`.
+  if (base::FeatureList::IsEnabled(
+          net::features::kCookieDeprecationFacilitatedTestingLabels)) {
+    cookie_deprecation_label_manager_ =
+        std::make_unique<CookieDeprecationLabelManager>(browser_context_);
+  }
+
   url_loader_factory_getter_ = new URLLoaderFactoryGetter();
   url_loader_factory_getter_->Initialize(this);
 
@@ -1470,7 +1480,7 @@ void StoragePartitionImpl::Initialize(
   subresource_proxying_url_loader_service_ =
       std::make_unique<SubresourceProxyingURLLoaderService>(browser_context_);
 
-  if (blink::features::IsKeepAliveInBrowserMigrationEnabled()) {
+  if (blink::features::IsKeepAliveURLLoaderServiceEnabled()) {
     keep_alive_url_loader_service_ =
         std::make_unique<KeepAliveURLLoaderService>(browser_context_);
   }
@@ -1485,7 +1495,8 @@ void StoragePartitionImpl::Initialize(
 
   bucket_manager_ = std::make_unique<BucketManager>(this);
 
-  if (base::FeatureList::IsEnabled(blink::features::kConversionMeasurement)) {
+  if (base::FeatureList::IsEnabled(
+          attribution_reporting::features::kConversionMeasurement)) {
     // The Conversion Measurement API is not available in Incognito mode, but
     // this is enforced by the `AttributionManagerImpl` itself for better error
     // reporting and metrics.
@@ -1931,6 +1942,12 @@ StoragePartitionImpl::GetPrivateAggregationDataModel() {
 ResourceCacheManager* StoragePartitionImpl::GetResourceCacheManager() {
   CHECK(initialized_);
   return resource_cache_manager_.get();
+}
+
+CookieDeprecationLabelManager*
+StoragePartitionImpl::GetCookieDeprecationLabelManager() {
+  CHECK(initialized_);
+  return cookie_deprecation_label_manager_.get();
 }
 
 void StoragePartitionImpl::OpenLocalStorage(
@@ -3297,6 +3314,11 @@ void StoragePartitionImpl::InitNetworkContext() {
       CalculateAndSetSharedDictionaryCacheMaxSize(
           GetWeakPtr(), is_in_memory() ? base::FilePath() : partition_path_);
     }
+  }
+
+  if (cookie_deprecation_label_manager_) {
+    context_params->cookie_deprecation_label =
+        cookie_deprecation_label_manager_->GetValue();
   }
 
   network_context_.reset();

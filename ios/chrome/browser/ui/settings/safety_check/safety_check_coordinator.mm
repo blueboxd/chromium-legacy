@@ -10,6 +10,7 @@
 #import "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
 #import "base/strings/sys_string_conversions.h"
+#import "components/password_manager/core/browser/ui/password_check_referrer.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/safe_browsing/core/common/features.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
@@ -71,6 +72,9 @@ using password_manager::WarningType;
 @property(nonatomic, strong)
     PrivacySafeBrowsingCoordinator* privacySafeBrowsingCoordinator;
 
+// Where in the app the Safety Check was requested from.
+@property(nonatomic, assign) password_manager::PasswordCheckReferrer referrer;
+
 // Popover view controller with error information.
 @property(nonatomic, strong)
     PopoverLabelViewController* errorInfoPopoverViewController;
@@ -81,15 +85,19 @@ using password_manager::WarningType;
 
 @synthesize baseNavigationController = _baseNavigationController;
 
-- (instancetype)initWithBaseNavigationController:
-                    (UINavigationController*)navigationController
-                                         browser:(Browser*)browser {
+- (instancetype)
+    initWithBaseNavigationController:
+        (UINavigationController*)navigationController
+                             browser:(Browser*)browser
+                            referrer:(password_manager::PasswordCheckReferrer)
+                                         referrer {
   self = [super initWithBaseViewController:navigationController
                                    browser:browser];
   if (self) {
     _baseNavigationController = navigationController;
     _handler = HandlerForProtocol(self.browser->GetCommandDispatcher(),
                                   ApplicationCommands);
+    _referrer = referrer;
   }
   return self;
 }
@@ -115,7 +123,8 @@ using password_manager::WarningType;
                   authService:AuthenticationServiceFactory::GetForBrowserState(
                                   self.browser->GetBrowserState())
                   syncService:SyncServiceFactory::GetForBrowserState(
-                                  self.browser->GetBrowserState())];
+                                  self.browser->GetBrowserState())
+                     referrer:_referrer];
 
   self.mediator.consumer = self.viewController;
   self.mediator.handler = self;
@@ -173,9 +182,8 @@ using password_manager::WarningType;
 
 #pragma mark - SafetyCheckNavigationCommands
 
-// TODO(crbug.com/1464966): Make sure there aren't mutiple active
-// `passwordCheckupCoordinator`s at once.
 - (void)showPasswordCheckupPage {
+  DUMP_WILL_BE_CHECK(!self.passwordCheckupCoordinator);
   CHECK(password_manager::features::IsPasswordCheckupEnabled());
   self.passwordCheckupCoordinator = [[PasswordCheckupCoordinator alloc]
       initWithBaseNavigationController:self.baseNavigationController
@@ -189,7 +197,7 @@ using password_manager::WarningType;
 
 - (void)showPasswordIssuesPage {
   CHECK(!password_manager::features::IsPasswordCheckupEnabled());
-  CHECK(!self.passwordIssuesCoordinator);
+  DUMP_WILL_BE_CHECK(!self.passwordIssuesCoordinator);
   self.passwordIssuesCoordinator = [[PasswordIssuesCoordinator alloc]
             initForWarningType:WarningType::kCompromisedPasswordsWarning
       baseNavigationController:self.baseNavigationController

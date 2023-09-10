@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/allocator/partition_allocator/pointers/raw_ptr.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/login/oobe_quick_start/target_device_bootstrap_controller.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
@@ -30,12 +30,6 @@ class QuickStartScreen
     RESUMING_AFTER_CRITICAL_UPDATE,
     CONTINUING_AFTER_ENROLLMENT_CHECKS,
     UNKNOWN,
-  };
-
-  enum class EntryPoint {
-    WELCOME_SCREEN,
-    NETWORK_SCREEN,
-    SIGNIN_SCREEN,
   };
 
   enum class Result {
@@ -63,10 +57,6 @@ class QuickStartScreen
   // the screen is shown.
   void SetFlowState(FlowState flow_state);
 
-  // Sets the entry point of quick start screen, this is to determine which
-  // screen to return to if quick start screen is cancelled.
-  void SetEntryPoint(EntryPoint entry_point);
-
  private:
   // BaseScreen:
   bool MaybeSkip(WizardContext& context) override;
@@ -90,7 +80,6 @@ class QuickStartScreen
   void SavePhoneInstanceID();
 
   FlowState flow_state_ = FlowState::UNKNOWN;
-  EntryPoint entry_point_ = EntryPoint::WELCOME_SCREEN;
   std::string discoverable_name_;
   base::WeakPtr<TView> view_;
   raw_ptr<QuickStartController> controller_;

@@ -156,13 +156,6 @@ BASE_FEATURE(kUnifiedPasswordManagerSyncUsingAndroidBackendOnly,
              "UnifiedPasswordManagerSyncUsingAndroidBackendOnly",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables all UI branding changes related to Unified Password Manager:
-// the strings containing 'Password Manager' and the password manager
-// icon.
-BASE_FEATURE(kUnifiedPasswordManagerAndroidBranding,
-             "UnifiedPasswordManagerAndroidBranding",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kPasswordsInCredMan,
              "PasswordsInCredMan",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -182,6 +175,12 @@ BASE_FEATURE(kUsernameFirstFlowFallbackCrowdsourcing,
 BASE_FEATURE(kUsernameFirstFlowHonorAutocomplete,
              "UsernameFirstFlowHonorAutocomplete",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables storing more possible username values in the LRU cache. Part of the
+// `kUsernameFirstFlowWithIntermediateValues` feature.
+BASE_FEATURE(kUsernameFirstFlowStoreSeveralValues,
+             "UsernameFirstFlowStoreSeveralValues",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables tolerating intermediate fields like OTP or CAPTCHA
 // between username and password fields in Username First Flow.
@@ -245,11 +244,6 @@ bool UsesUnifiedPasswordManagerUi() {
   }
   NOTREACHED() << "Define explicitly whether UI is required!";
   return false;
-}
-
-bool UsesUnifiedPasswordManagerBranding() {
-  return (UsesUnifiedPasswordManagerUi() ||
-          base::FeatureList::IsEnabled(kUnifiedPasswordManagerAndroidBranding));
 }
 
 bool RequiresMigrationForUnifiedPasswordManager() {

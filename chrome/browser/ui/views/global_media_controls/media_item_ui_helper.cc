@@ -28,7 +28,7 @@ bool ShouldShowDeviceSelectorView(
     const std::string& item_id,
     base::WeakPtr<media_message_center::MediaNotificationItem> item,
     Profile* profile) {
-  auto source_type = item->SourceType();
+  auto source_type = item->GetSourceType();
   if (source_type == media_message_center::SourceType::kCast) {
     return false;
   }
@@ -49,7 +49,7 @@ bool ShouldShowDeviceSelectorView(
 void UpdateMediaSessionItemReceiverName(
     base::WeakPtr<media_message_center::MediaNotificationItem> item,
     const absl::optional<media_router::MediaRoute>& route) {
-  if (item->SourceType() ==
+  if (item->GetSourceType() ==
       media_message_center::SourceType::kLocalMediaSession) {
     auto* media_session_item =
         static_cast<global_media_controls::MediaSessionNotificationItem*>(
@@ -68,7 +68,7 @@ bool HasRemotePlaybackRoute(
     base::WeakPtr<media_message_center::MediaNotificationItem> item) {
   if (base::FeatureList::IsEnabled(media::kMediaRemotingWithoutFullscreen) &&
       item &&
-      item->SourceType() ==
+      item->GetSourceType() ==
           media_message_center::SourceType::kLocalMediaSession) {
     const auto* media_session_item =
         static_cast<global_media_controls::MediaSessionNotificationItem*>(
@@ -89,7 +89,7 @@ absl::optional<media_router::MediaRoute> GetSessionRoute(
   }
 
   // Return absl::nullopt if the item is not a local media session.
-  if (!item || item->SourceType() !=
+  if (!item || item->GetSourceType() !=
                    media_message_center::SourceType::kLocalMediaSession) {
     return absl::nullopt;
   }
@@ -145,7 +145,7 @@ std::unique_ptr<MediaItemUIDeviceSelectorView> BuildDeviceSelector(
   }
 
   const bool is_local_media_session =
-      item->SourceType() ==
+      item->GetSourceType() ==
       media_message_center::SourceType::kLocalMediaSession;
   const bool gmc_cast_start_stop_enabled =
       media_router::GlobalMediaControlsCastStartStopEnabled(profile);
@@ -173,10 +173,9 @@ std::unique_ptr<global_media_controls::MediaItemUIFooter> BuildFooter(
     const std::string& id,
     base::WeakPtr<media_message_center::MediaNotificationItem> item,
     Profile* profile,
-    global_media_controls::GlobalMediaControlsEntryPoint entry_point,
     absl::optional<media_message_center::MediaColorTheme> media_color_theme) {
   // Show a footer view for a Cast item.
-  if (item->SourceType() == media_message_center::SourceType::kCast &&
+  if (item->GetSourceType() == media_message_center::SourceType::kCast &&
       media_router::GlobalMediaControlsCastStartStopEnabled(profile)) {
 #if BUILDFLAG(IS_CHROMEOS)
     if (base::FeatureList::IsEnabled(
@@ -185,21 +184,20 @@ std::unique_ptr<global_media_controls::MediaItemUIFooter> BuildFooter(
       return std::make_unique<MediaItemUICastFooterView>(
           base::BindRepeating(
               &CastMediaNotificationItem::StopCasting,
-              static_cast<CastMediaNotificationItem*>(item.get())->GetWeakPtr(),
-              entry_point),
+              static_cast<CastMediaNotificationItem*>(item.get())
+                  ->GetWeakPtr()),
           media_color_theme.value());
     }
 #endif
     return std::make_unique<MediaItemUILegacyCastFooterView>(
         base::BindRepeating(
             &CastMediaNotificationItem::StopCasting,
-            static_cast<CastMediaNotificationItem*>(item.get())->GetWeakPtr(),
-            entry_point));
+            static_cast<CastMediaNotificationItem*>(item.get())->GetWeakPtr()));
   }
 
   // Show a footer view for a local media item when it has an associated Remote
   // Playback session or a Tab Mirroring Session.
-  if (item->SourceType() !=
+  if (item->GetSourceType() !=
       media_message_center::SourceType::kLocalMediaSession) {
     return nullptr;
   }
@@ -217,17 +215,16 @@ std::unique_ptr<global_media_controls::MediaItemUIFooter> BuildFooter(
 
   auto stop_casting_cb = base::BindRepeating(
       [](const std::string& route_id, media_router::MediaRouter* router,
-         global_media_controls::GlobalMediaControlsEntryPoint entry_point,
          media_router::MediaCastMode cast_mode) {
         router->TerminateRoute(route_id);
-        MediaItemUIMetrics::RecordStopCastingMetrics(cast_mode, entry_point);
+        MediaItemUIMetrics::RecordStopCastingMetrics(cast_mode);
         if (cast_mode == media_router::MediaCastMode::TAB_MIRROR) {
           MediaDialogView::HideDialog();
         }
       },
       route_id,
       media_router::MediaRouterFactory::GetApiForBrowserContext(profile),
-      entry_point, cast_mode);
+      cast_mode);
   return std::make_unique<MediaItemUILegacyCastFooterView>(
       std::move(stop_casting_cb));
 }

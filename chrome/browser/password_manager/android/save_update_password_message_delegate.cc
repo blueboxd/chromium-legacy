@@ -5,6 +5,7 @@
 #include "chrome/browser/password_manager/android/save_update_password_message_delegate.h"
 #include <utility>
 
+#include "base/android/build_info.h"
 #include "base/android/jni_android.h"
 #include "base/check.h"
 #include "base/feature_list.h"
@@ -28,6 +29,8 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
+#include "save_update_password_message_delegate.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/origin.h"
 
@@ -114,7 +117,22 @@ SaveUpdatePasswordMessageDelegate::SaveUpdatePasswordMessageDelegate(
         create_migration_warning_callback)
     : password_edit_dialog_factory_(std::move(password_edit_dialog_factory)),
       create_migration_warning_callback_(
-          std::move(create_migration_warning_callback)) {}
+          std::move(create_migration_warning_callback)),
+      device_lock_bridge_(std::make_unique<DeviceLockBridge>()) {}
+
+SaveUpdatePasswordMessageDelegate::SaveUpdatePasswordMessageDelegate(
+    base::PassKey<class SaveUpdatePasswordMessageDelegateTest>,
+    PasswordEditDialogFactory password_edit_dialog_factory,
+    base::RepeatingCallback<
+        void(gfx::NativeWindow,
+             Profile*,
+             password_manager::metrics_util::PasswordMigrationWarningTriggers)>
+        create_migration_warning_callback,
+    std::unique_ptr<DeviceLockBridge> device_lock_bridge)
+    : SaveUpdatePasswordMessageDelegate(password_edit_dialog_factory,
+                                        create_migration_warning_callback) {
+  device_lock_bridge_ = std::move(device_lock_bridge);
+}
 
 SaveUpdatePasswordMessageDelegate::~SaveUpdatePasswordMessageDelegate() {
   DCHECK(web_contents_ == nullptr);
@@ -221,9 +239,8 @@ void SaveUpdatePasswordMessageDelegate::CreateMessage(bool update_password) {
   }
   message_->SetTitle(l10n_util::GetStringUTF16(title_message_id));
 
-  std::u16string description = GetMessageDescription(
-      pending_credentials, update_password,
-      password_manager::features::UsesUnifiedPasswordManagerBranding());
+  std::u16string description =
+      GetMessageDescription(pending_credentials, update_password);
   message_->SetDescription(description);
 
   update_password_ = update_password;
@@ -232,14 +249,9 @@ void SaveUpdatePasswordMessageDelegate::CreateMessage(bool update_password) {
   message_->SetPrimaryButtonText(l10n_util::GetStringUTF16(
       GetPrimaryButtonTextId(update_password, use_followup_button)));
 
-  if (password_manager::features::UsesUnifiedPasswordManagerBranding()) {
     message_->SetIconResourceId(ResourceMapper::MapToJavaDrawableId(
         IDR_ANDROID_PASSWORD_MANAGER_LOGO_24DP));
     message_->DisableIconTint();
-  } else {
-    message_->SetIconResourceId(
-        ResourceMapper::MapToJavaDrawableId(IDR_ANDROID_INFOBAR_SAVE_PASSWORD));
-  }
 
   // With kPasswordEditDialogWithDetails feature on: the cog button is always
   // shown for the save message and for the update message when there is
@@ -262,10 +274,9 @@ void SaveUpdatePasswordMessageDelegate::SetupCogMenu(
     bool update_password) {
   message->SetSecondaryIconResourceId(
       ResourceMapper::MapToJavaDrawableId(IDR_ANDROID_MESSAGE_SETTINGS));
-  message->SetSecondaryButtonMenuText(l10n_util::GetStringUTF16(
-      password_manager::features::UsesUnifiedPasswordManagerBranding()
-          ? IDS_PASSWORD_MESSAGE_NEVER_SAVE_MENU_ITEM
-          : IDS_PASSWORD_MANAGER_BLOCKLIST_BUTTON));
+  message->SetSecondaryButtonMenuText(
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MESSAGE_NEVER_SAVE_MENU_ITEM));
+
   message->SetSecondaryActionCallback(base::BindRepeating(
       &SaveUpdatePasswordMessageDelegate::HandleNeverSaveClicked,
       base::Unretained(this)));
@@ -312,48 +323,18 @@ void SaveUpdatePasswordMessageDelegate::HandleSaveMessageMenuItemClick(
 
 std::u16string SaveUpdatePasswordMessageDelegate::GetMessageDescription(
     const password_manager::PasswordForm& pending_credentials,
-    bool update_password,
-    bool unified_password_manager) {
-
-  if (unified_password_manager) {
-    return GetUnifiedPasswordManagerMessageDescription(update_password);
-  }
-
+    bool update_password) {
   if (!account_email_.empty()) {
     return l10n_util::GetStringFUTF16(
         update_password
-            ? IDS_UPDATE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_GOOGLE_ACCOUNT
-            : IDS_SAVE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_GOOGLE_ACCOUNT,
+            ? IDS_PASSWORD_MANAGER_UPDATE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION
+            : IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION,
         base::UTF8ToUTF16(account_email_));
   }
-
-    // TODO(crbug.com/1188971): There is no password when federation_origin is
-    // set. Instead we should display federated provider in the description.
-    // GetDisplayFederation() returns federation origin for a given form.
-    const std::u16string masked_password =
-        std::u16string(pending_credentials.password_value.size(), L'•');
-    std::u16string description;
-    description.append(pending_credentials.username_value)
-        .append(u" ")
-        .append(masked_password);
-    return description;
-}
-
-std::u16string
-SaveUpdatePasswordMessageDelegate::GetUnifiedPasswordManagerMessageDescription(
-    bool update_password) {
-    if (!account_email_.empty()) {
-      return l10n_util::GetStringFUTF16(
-          update_password
-              ? IDS_PASSWORD_MANAGER_UPDATE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION
-              : IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION,
-          base::UTF8ToUTF16(account_email_));
-    }
-
-    return l10n_util::GetStringUTF16(
-        update_password
-            ? IDS_PASSWORD_MANAGER_UPDATE_PASSWORD_SIGNED_OUT_MESSAGE_DESCRIPTION
-            : IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SIGNED_OUT_MESSAGE_DESCRIPTION);
+  return l10n_util::GetStringUTF16(
+      update_password
+          ? IDS_PASSWORD_MANAGER_UPDATE_PASSWORD_SIGNED_OUT_MESSAGE_DESCRIPTION
+          : IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SIGNED_OUT_MESSAGE_DESCRIPTION);
 }
 
 int SaveUpdatePasswordMessageDelegate::GetPrimaryButtonTextId(
@@ -390,7 +371,32 @@ unsigned int SaveUpdatePasswordMessageDelegate::GetDisplayUsernames(
 }
 
 void SaveUpdatePasswordMessageDelegate::HandleSaveButtonClicked() {
-  passwords_state_.form_manager()->Save();
+  SavePassword();
+}
+
+void SaveUpdatePasswordMessageDelegate::SavePassword() {
+  if (!device_lock_bridge_->ShowDeviceLockUiBeforeSavingPassword()) {
+    passwords_state_.form_manager()->Save();
+    return;
+  }
+  if (auto* window = web_contents_->GetNativeView()->GetWindowAndroid()) {
+    device_lock_bridge_->LaunchDeviceLockUiBeforeSavingPassword(
+        window,
+        base::BindOnce(
+            &SaveUpdatePasswordMessageDelegate::SavePasswordAfterDeviceLockUi,
+            weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void SaveUpdatePasswordMessageDelegate::SavePasswordAfterDeviceLockUi(
+    bool is_device_lock_set) {
+  CHECK(device_lock_bridge_->RequiresDeviceLock());
+  if (is_device_lock_set) {
+    passwords_state_.form_manager()->Save();
+    TryToShowPasswordMigrationWarning(create_migration_warning_callback_,
+                                      web_contents_);
+  }
+  ClearState();
 }
 
 void SaveUpdatePasswordMessageDelegate::HandleNeverSaveClicked() {
@@ -403,7 +409,7 @@ void SaveUpdatePasswordMessageDelegate::HandleUpdateButtonClicked() {
   if (HasMultipleCredentialsStored()) {
     DisplayEditDialog(/*update_password=*/true);
   } else {
-    passwords_state_.form_manager()->Save();
+    SavePassword();
   }
 }
 
@@ -450,11 +456,17 @@ void SaveUpdatePasswordMessageDelegate::HandleMessageDismissed(
         GetSaveUpdatePasswordMessageDismissReason(dismiss_reason));
   }
 
-  if (dismiss_reason == messages::DismissReason::PRIMARY_ACTION) {
-    TryToShowPasswordMigrationWarning(create_migration_warning_callback_,
-                                      web_contents_);
+  // If Device Lock UI needs to be shown and can be (i.e. WindowAndroid is
+  // available), these lines are handled in the SavePasswordAfterDeviceLockUi()
+  // callback.
+  if (!(device_lock_bridge_->ShowDeviceLockUiBeforeSavingPassword() &&
+        web_contents_->GetNativeView()->GetWindowAndroid())) {
+    if (dismiss_reason == messages::DismissReason::PRIMARY_ACTION) {
+      TryToShowPasswordMigrationWarning(create_migration_warning_callback_,
+                                        web_contents_);
+    }
+    ClearState();
   }
-  ClearState();
 }
 
 bool SaveUpdatePasswordMessageDelegate::HasMultipleCredentialsStored() {
@@ -493,11 +505,17 @@ void SaveUpdatePasswordMessageDelegate::HandleDialogDismissed(
         GetPasswordEditDialogDismissReason(dialog_accepted));
   }
 
-  TryToShowPasswordMigrationWarning(create_migration_warning_callback_,
-                                    web_contents_);
-
   password_edit_dialog_.reset();
-  ClearState();
+
+  // If Device Lock UI needs to be shown and can be (i.e. WindowAndroid is
+  // available), these lines are handled in the SavePasswordAfterDeviceLockUi()
+  // callback.
+  if (!(device_lock_bridge_->ShowDeviceLockUiBeforeSavingPassword() &&
+        web_contents_->GetNativeView()->GetWindowAndroid())) {
+    TryToShowPasswordMigrationWarning(create_migration_warning_callback_,
+                                      web_contents_);
+    ClearState();
+  }
 }
 
 void SaveUpdatePasswordMessageDelegate::HandleSavePasswordFromDialog(
@@ -505,7 +523,7 @@ void SaveUpdatePasswordMessageDelegate::HandleSavePasswordFromDialog(
     const std::u16string& password) {
   UpdatePasswordFormUsernameAndPassword(username, password,
                                         passwords_state_.form_manager());
-  passwords_state_.form_manager()->Save();
+  SavePassword();
 }
 
 void SaveUpdatePasswordMessageDelegate::HandleSavePasswordFromLegacyDialog(
@@ -514,7 +532,7 @@ void SaveUpdatePasswordMessageDelegate::HandleSavePasswordFromLegacyDialog(
       passwords_state_.GetCurrentForms()[username_index]->username_value,
       passwords_state_.form_manager()->GetPendingCredentials().password_value,
       passwords_state_.form_manager());
-  passwords_state_.form_manager()->Save();
+  SavePassword();
 }
 
 void SaveUpdatePasswordMessageDelegate::ClearState() {

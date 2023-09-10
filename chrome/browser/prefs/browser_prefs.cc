@@ -52,12 +52,12 @@
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
-#include "chrome/browser/prefetch/prefetch_prefs.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/preloading/prefetch/prefetch_service/prefetch_origin_decider.h"
 #include "chrome/browser/preloading/prefetch/search_prefetch/search_prefetch_service.h"
+#include "chrome/browser/preloading/preloading_prefs.h"
 #include "chrome/browser/printing/print_preview_sticky_settings.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -378,6 +378,7 @@
 #include "chrome/browser/ash/login/security_token_session_controller.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/login/signin/signin_error_notifier.h"
+#include "chrome/browser/ash/login/signin/token_handle_fetcher.h"
 #include "chrome/browser/ash/login/startup_utils.h"
 #include "chrome/browser/ash/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/ash/login/users/avatar/user_image_prefs.h"
@@ -455,7 +456,6 @@
 #endif
 
 #if BUILDFLAG(IS_WIN)
-#include "chrome/browser/component_updater/sw_reporter_installer_win.h"
 #include "chrome/browser/enterprise/platform_auth/platform_auth_policy_observer.h"
 #include "chrome/browser/font_prewarmer_tab_helper.h"
 #include "chrome/browser/media/cdm_pref_service_helper.h"
@@ -466,10 +466,7 @@
 #include "chrome/browser/win/conflicts/module_database.h"
 #include "chrome/browser/win/conflicts/third_party_conflicts_manager.h"
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
-#include "chrome/browser/safe_browsing/chrome_cleaner/settings_resetter_win.h"
-#include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_prefs_manager.h"
-#endif
+#endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 #include "components/os_crypt/sync/os_crypt.h"
@@ -907,6 +904,14 @@ const char kShutdownType[] = "shutdown.type";
 const char kDriveFsBulkPinningMaxQueueSize[] =
     "drivefs.bulk_pinning.max_queue_size";
 
+// Deprecated 09/2023.
+const char kPrivacySandboxM1Unrestricted[] = "privacy_sandbox.m1.unrestricted";
+#if BUILDFLAG(IS_WIN)
+const char kSwReporter[] = "software_reporter";
+inline constexpr char kChromeCleaner[] = "chrome_cleaner";
+inline constexpr char kSettingsResetPrompt[] = "settings_reset_prompt";
+#endif
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -1030,6 +1035,12 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(kShutdownNumProcesses, 0);
   registry->RegisterIntegerPref(kShutdownNumProcessesSlow, 0);
   registry->RegisterIntegerPref(kShutdownType, 0);
+
+  // Deprecated 09/2023.
+#if BUILDFLAG(IS_WIN)
+  registry->RegisterDictionaryPref(kSwReporter);
+  registry->RegisterDictionaryPref(kChromeCleaner);
+#endif
 }
 
 // Register prefs used only for migration (clearing or moving to a new key).
@@ -1266,6 +1277,14 @@ void RegisterProfilePrefsForMigration(
 
   // Deprecated 08/2023.
   registry->RegisterIntegerPref(kDriveFsBulkPinningMaxQueueSize, 0);
+
+  // Deprecated 09/2023.
+  registry->RegisterBooleanPref(kPrivacySandboxM1Unrestricted, false);
+#if BUILDFLAG(IS_WIN)
+  registry->RegisterDictionaryPref(kSwReporter);
+  registry->RegisterDictionaryPref(kSettingsResetPrompt);
+  registry->RegisterDictionaryPref(kChromeCleaner);
+#endif
 }
 
 }  // namespace
@@ -1497,8 +1516,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
                                 true);
   registry->RegisterBooleanPref(
       policy::policy_prefs::kNativeWindowOcclusionEnabled, true);
-  component_updater::RegisterPrefsForSwReporter(registry);
-  safe_browsing::RegisterChromeCleanerScanCompletionTimePref(registry);
   MediaFoundationServiceMonitor::RegisterPrefs(registry);
   os_crypt::RegisterLocalStatePrefs(registry);
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -1845,12 +1862,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 
 #if BUILDFLAG(IS_WIN)
   CdmPrefServiceHelper::RegisterProfilePrefs(registry);
-  component_updater::RegisterProfilePrefsForSwReporter(registry);
   FontPrewarmerTabHelper::RegisterProfilePrefs(registry);
   NetworkProfileBubble::RegisterProfilePrefs(registry);
-  safe_browsing::SettingsResetPromptPrefsManager::RegisterProfilePrefs(
-      registry);
-  safe_browsing::PostCleanupSettingsResetter::RegisterProfilePrefs(registry);
 #endif
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
@@ -1943,6 +1956,7 @@ void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ash::RegisterUserProfilePrefs(registry, locale);
+  ash::TokenHandleFetcher::RegisterPrefs(registry);
 #endif
 }
 
@@ -2092,6 +2106,12 @@ void MigrateObsoleteLocalStatePrefs(PrefService* local_state) {
   local_state->ClearPref(kShutdownNumProcesses);
   local_state->ClearPref(kShutdownNumProcessesSlow);
   local_state->ClearPref(kShutdownType);
+
+  // Added 09/2023.
+#if BUILDFLAG(IS_WIN)
+  local_state->ClearPref(kSwReporter);
+  local_state->ClearPref(kChromeCleaner);
+#endif
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS
@@ -2404,6 +2424,14 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 08/2023.
   profile_prefs->ClearPref(kDriveFsBulkPinningMaxQueueSize);
+
+  // Added 09/2023
+  profile_prefs->ClearPref(kPrivacySandboxM1Unrestricted);
+#if BUILDFLAG(IS_WIN)
+  profile_prefs->ClearPref(kSwReporter);
+  profile_prefs->ClearPref(kSettingsResetPrompt);
+  profile_prefs->ClearPref(kChromeCleaner);
+#endif
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

@@ -17,6 +17,7 @@
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
@@ -333,7 +334,7 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
       std::move(presentation_callbacks);
 
   root_surface_->AppendSurfaceHierarchyContentsToFrame(
-      gfx::PointF(root_surface_origin_),
+      gfx::PointF(root_surface_origin_pixel_),
       layer_tree_frame_sink_holder_->NeedsFullDamageForNextFrame(),
       layer_tree_frame_sink_holder_->resource_manager(),
       client_submits_surfaces_in_pixel_coordinates()
@@ -431,10 +432,19 @@ void SurfaceTreeHost::UpdateHostWindowSizeAndRootSurfaceOrigin() {
       root_surface_->FillsBoundsOpaquely();
   host_window_->SetTransparent(!fills_bounds_opaquely);
 
-  root_surface_origin_ = gfx::Point() - bounds.OffsetFromOrigin();
+  root_surface_origin_pixel_ = gfx::Point() - bounds.OffsetFromOrigin();
+  gfx::Point root_surface_origin_dp =
+      client_submits_surfaces_in_pixel_coordinates_
+          ? ToFlooredPoint(
+                gfx::PointF() +
+                ScaleVector2d(root_surface_origin_pixel_.OffsetFromOrigin(),
+                              1.f / GetScaleFactor()))
+          : root_surface_origin_pixel_;
+
   const gfx::Rect& window_bounds = root_surface_->window()->bounds();
-  if (root_surface_origin_ != window_bounds.origin()) {
-    gfx::Rect updated_bounds(root_surface_origin_, window_bounds.size());
+  if (root_surface_origin_dp != window_bounds.origin()) {
+    // Set DP origin to root surface.
+    gfx::Rect updated_bounds(root_surface_origin_dp, window_bounds.size());
     root_surface_->window()->SetBounds(updated_bounds);
   }
 }
@@ -483,6 +493,10 @@ SurfaceTreeHost::CreateLayerTreeFrameSink() {
       aura::Env::GetInstance()->context_factory()->GetGpuMemoryBufferManager();
   params.pipes.compositor_frame_sink_remote = std::move(sink_remote);
   params.pipes.client_receiver = std::move(client_receiver);
+
+  params.auto_needs_begin_frame =
+      base::FeatureList::IsEnabled(kExoReactiveFrameSubmission) &&
+      features::IsAutoNeedsBeginFrameEnabled();
   auto frame_sink =
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
           nullptr /* context_provider */, nullptr /* worker_context_provider */,

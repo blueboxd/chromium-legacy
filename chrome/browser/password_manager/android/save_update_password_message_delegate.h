@@ -11,6 +11,7 @@
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/password_edit_dialog/android/password_edit_dialog_bridge.h"
+#include "chrome/browser/password_manager/android/device_lock_bridge.h"
 #include "chrome/browser/password_manager/android/local_passwords_migration_warning_util.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
@@ -62,6 +63,17 @@ class SaveUpdatePasswordMessageDelegate {
   SaveUpdatePasswordMessageDelegate();
   ~SaveUpdatePasswordMessageDelegate();
 
+  // Test-only constructor. Allows test class to set device_lock_bridge_.
+  SaveUpdatePasswordMessageDelegate(
+      base::PassKey<class SaveUpdatePasswordMessageDelegateTest>,
+      PasswordEditDialogFactory password_edit_dialog_factory,
+      base::RepeatingCallback<void(
+          gfx::NativeWindow,
+          Profile*,
+          password_manager::metrics_util::PasswordMigrationWarningTriggers)>
+          password_migration_warning_bridge_callback,
+      std::unique_ptr<DeviceLockBridge> device_lock_bridge);
+
   // Displays a "Save password" message for current |web_contents| and
   // |form_to_save|.
   void DisplaySaveUpdatePasswordPrompt(
@@ -102,13 +114,9 @@ class SaveUpdatePasswordMessageDelegate {
   void HandleSaveMessageMenuItemClick(int item_id);
 
   // Returns the message description depending on whether the password is being
-  // saved or updated and if unified password manager is enabled.
+  // saved or updated.
   std::u16string GetMessageDescription(
       const password_manager::PasswordForm& pending_credentials,
-      bool update_password,
-      bool unified_password_manager);
-
-  std::u16string GetUnifiedPasswordManagerMessageDescription(
       bool update_password);
 
   // Returns string id for the message primary button. Takes into account
@@ -175,6 +183,14 @@ class SaveUpdatePasswordMessageDelegate {
       Profile*,
       password_manager::metrics_util::PasswordMigrationWarningTriggers)>
       create_migration_warning_callback_;
+
+  std::unique_ptr<DeviceLockBridge> device_lock_bridge_;
+
+  void SavePassword();
+  void SavePasswordAfterDeviceLockUi(bool is_device_lock_set);
+
+  base::WeakPtrFactory<SaveUpdatePasswordMessageDelegate> weak_ptr_factory_{
+      this};
 };
 
 #endif  // CHROME_BROWSER_PASSWORD_MANAGER_ANDROID_SAVE_UPDATE_PASSWORD_MESSAGE_DELEGATE_H_

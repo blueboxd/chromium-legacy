@@ -53,6 +53,7 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
@@ -658,8 +659,9 @@ void CaptureModeSession::UpdateCursor(const gfx::Point& location_in_screen,
   }
 
   const CaptureModeSource source = controller_->source();
-  if (source == CaptureModeSource::kWindow && !GetSelectedWindow()) {
-    // If we're in window capture mode and there is no select window at the
+  if (source == CaptureModeSource::kWindow &&
+      !IsPointOverSelectedWindow(location_in_screen)) {
+    // If we're in window capture mode and there is no selected window at the
     // moment, we should use a pointer cursor.
     cursor_setter_->UpdateCursor(root_window, ui::mojom::CursorType::kPointer);
     return;
@@ -1926,7 +1928,9 @@ void CaptureModeSession::OnLocatedEvent(ui::LocatedEvent* event,
       case ui::ET_MOUSE_RELEASED:
       case ui::ET_TOUCH_RELEASED:
         if (is_capture_fullscreen ||
-            (is_capture_window && GetSelectedWindow())) {
+            IsPointOverSelectedWindow(screen_location)) {
+          // Clicking anywhere in fullscreen mode, or over the selected window
+          // in window mode should perform the capture operation.
           DoPerformCapture();  // `this` can be deleted after this.
         }
         break;
@@ -2762,6 +2766,14 @@ void CaptureModeSession::MaybeUpdateRecordingTypeMenu() {
           capture_label_widget_->GetWindowBoundsInScreen(),
           current_root_->GetBoundsInScreen(),
           recording_type_menu_widget_->GetContentsView()));
+}
+
+bool CaptureModeSession::IsPointOverSelectedWindow(
+    const gfx::Point& screen_point) const {
+  auto* selected_window = GetSelectedWindow();
+  return selected_window &&
+         (capture_mode_util::GetTopMostCapturableWindowAtPoint(screen_point) ==
+          selected_window);
 }
 
 void CaptureModeSession::InitInternal() {

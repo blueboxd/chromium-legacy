@@ -208,18 +208,12 @@ bool IsPrimaryAccountId(const AccountId& account_id) {
 
 std::string ToString(TutorialId tutorial_id) {
   switch (tutorial_id) {
-    case TutorialId::kCaptureModeTourPrototype1:
-      return "AshCaptureModeTourPrototype1";
-    case TutorialId::kCaptureModeTourPrototype2:
-      return "AshCaptureModeTourPrototype2";
-    case TutorialId::kHoldingSpaceTourPrototype1:
-      return "AshHoldingSpaceTourPrototype1";
-    case TutorialId::kHoldingSpaceTourPrototype2:
-      return "AshHoldingSpaceTourPrototype2";
-    case TutorialId::kTest:
-      return "AshTest";
-    case TutorialId::kWelcomeTourPrototype1:
-      return "AshWelcomeTourPrototype1";
+    case TutorialId::kTest1:
+      return "AshTest1";
+    case TutorialId::kTest2:
+      return "AshTest2";
+    case TutorialId::kWelcomeTour:
+      return "AshWelcomeTour";
   }
 }
 

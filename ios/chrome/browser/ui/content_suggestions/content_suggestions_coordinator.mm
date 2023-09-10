@@ -43,6 +43,7 @@
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_backed_boolean.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
@@ -85,7 +86,6 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_metrics_delegate.h"
-#import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
 #import "ios/chrome/browser/ui/sharing/sharing_params.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
@@ -309,6 +309,9 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
     case ContentSuggestionsModuleType::kTabResumption:
       [self.contentSuggestionsMediator disableTabResumption];
       break;
+    case ContentSuggestionsModuleType::kSafetyCheck:
+      [self.contentSuggestionsMediator disableSafetyCheck];
+      break;
     case ContentSuggestionsModuleType::kSetUpListSync:
     case ContentSuggestionsModuleType::kSetUpListDefaultBrowser:
     case ContentSuggestionsModuleType::kSetUpListAutofill:
@@ -452,7 +455,10 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
     case SafetyCheckItemType::kDefault:
       [HandlerForProtocol(self.browser->GetCommandDispatcher(),
                           ApplicationCommands)
-          showAndStartSafetyCheckInHalfSheet:YES];
+          showAndStartSafetyCheckInHalfSheet:YES
+                                    referrer:password_manager::
+                                                 PasswordCheckReferrer::
+                                                     kSafetyCheckMagicStack];
 
       break;
   }

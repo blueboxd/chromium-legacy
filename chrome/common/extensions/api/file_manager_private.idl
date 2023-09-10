@@ -818,7 +818,7 @@ dictionary GetVolumeRootOptions {
 
 dictionary Preferences {
   boolean driveEnabled;
-  boolean cellularDisabled;
+  boolean driveSyncEnabledOnMeteredNetwork;
   boolean searchSuggestEnabled;
   boolean use24hourClock;
   DOMString timezone;
@@ -832,7 +832,7 @@ dictionary Preferences {
 };
 
 dictionary PreferencesChange {
-  boolean? cellularDisabled;
+  boolean? driveSyncEnabledOnMeteredNetwork;
   boolean? arcEnabled;
   boolean? arcRemovableMediaAccessEnabled;
   DOMString[]? folderShortcuts;
@@ -902,13 +902,6 @@ dictionary DriveConnectionState {
 
   // Reasons of offline.
   DriveOfflineReason? reason;
-
-  // Whether the device has a cellular network access or not. i.e. the |type|
-  // can be 'metered' or not.
-  boolean hasCellularNetworkAccess;
-
-  // Whether or not hosted files can be pinned.
-  boolean canPinHostedFiles;
 };
 
 // Device event dispatched to listeners of onDeviceChaged.  See also
@@ -1962,8 +1955,9 @@ interface Functions {
   static void resumeIOTask(long taskId, ResumeParams params);
 
   // Notifies the browser that any info still stored about an already completed
-  // I/O task identified by id can be cleared.
-  static void dismissIOTask(long taskId);
+  // I/O task identified by |taskId| can be cleared.
+  [supportsPromises]
+  static void dismissIOTask(long taskId, SimpleCallback callback);
 
   // Shows a policy dialog for a task. Task ids are communicated to the Files
   // App in each I/O task's progress status.

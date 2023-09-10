@@ -125,7 +125,6 @@ def validateJavaScriptAllowed(source_dir, out_dir, is_ios):
       # remove exception.
       'chrome/browser/resources/bluetooth_internals',
       'chrome/browser/resources/chromeos/accessibility',
-      'chrome/browser/resources/ntp4',
       'chrome/test/data/webui',
       'chrome/test/data/webui/chromeos',
       'chrome/test/data/webui/cr_components/chromeos',
@@ -136,6 +135,10 @@ def validateJavaScriptAllowed(source_dir, out_dir, is_ios):
       'components/policy/resources/webui',
       'ui/webui/resources/js',
       'ui/webui/resources/mojo',
+
+      # TODO(crbug.com/1478961) : Migrate to TypeScript.
+      'chrome/test/data/webui/media_internals',
+      'content/browser/resources/media',
   ]
   for directory in migrating_directories:
     if (source_dir.endswith(directory)

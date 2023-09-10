@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/accelerators/keyboard_code_util.h"
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/public/cpp/style/color_provider.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -218,7 +219,7 @@ DeskMiniView::DeskMiniView(DeskBarViewBase* owner_bar,
     desk_shortcut_view_->AddChildView(std::make_unique<views::Label>(u"+"));
     desk_shortcut_view_->AddChildView(
         std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(
-            kDeskBarSearchIcon, cros_tokens::kIconColorPrimary,
+            *GetSearchOrLauncherVectorIcon(), cros_tokens::kIconColorPrimary,
             kShortcutViewIconSize)));
     desk_shortcut_view_->AddChildView(std::make_unique<views::Label>(u"+"));
     desk_shortcut_label_ =
@@ -262,6 +263,8 @@ bool DeskMiniView::IsDeskNameBeingModified() const {
 }
 
 void DeskMiniView::UpdateDeskButtonVisibility() {
+  CHECK(desk_);
+
   auto* controller = DesksController::Get();
 
   // Don't show desk buttons when hovered while the dragged window is on
@@ -706,8 +709,13 @@ void DeskMiniView::OnViewBlurred(views::View* observed_view) {
 
 void DeskMiniView::OnContextMenuClosed() {
   is_context_menu_open_ = false;
-  UpdateDeskButtonVisibility();
-  desk_preview_->SetHighlightOverlayVisibility(false);
+
+  // This mini view's desk may have been destroyed already. In that case, we are
+  // about to be destroyed and can't call functions that need a valid `desk_`.
+  if (desk_) {
+    UpdateDeskButtonVisibility();
+    desk_preview_->SetHighlightOverlayVisibility(false);
+  }
 }
 
 void DeskMiniView::OnDeskPreviewPressed() {

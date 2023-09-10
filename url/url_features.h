@@ -18,6 +18,10 @@ COMPONENT_EXPORT(URL) bool IsUsingIDNA2008NonTransitional();
 // Returns true if Chrome is recording IDNA 2008 related metrics.
 COMPONENT_EXPORT(URL) bool IsRecordingIDNA2008Metrics();
 
+// Returns true if kDontDecodeAsciiPercentEncodedURLPath feature is enabled.
+// See url::kDontDecodeAsciiPercentEncodedURLPath for details.
+COMPONENT_EXPORT(URL) bool IsUsingDontDecodeAsciiPercentEncodedURLPath();
+
 // Returns true if Chrome is enforcing the 4 part check for IPv4 embedded IPv6
 // addresses.
 COMPONENT_EXPORT(URL)
@@ -27,6 +31,11 @@ BASE_DECLARE_FEATURE(kStrictIPv4EmbeddedIPv6AddressParsing);
 // a non-hierarchical URL. (For example '#foo:bar' against 'about:blank'.)
 COMPONENT_EXPORT(URL)
 BASE_DECLARE_FEATURE(kResolveBareFragmentWithColonOnNonHierarchical);
+
+// When enabled, percent-encoded ASCII characters in URL path are not decoded
+// automatically. See https://crbug.com/125231.
+COMPONENT_EXPORT(URL)
+BASE_DECLARE_FEATURE(kDontDecodeAsciiPercentEncodedURLPath);
 
 }  // namespace url
 

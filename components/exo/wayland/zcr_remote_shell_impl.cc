@@ -1130,11 +1130,13 @@ void remote_surface_restore(wl_client* client, wl_resource* resource) {
 }
 
 void remote_surface_fullscreen(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ClientControlledShellSurface>(resource)->SetFullscreen(true);
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetFullscreen(
+      true, display::kInvalidDisplayId);
 }
 
 void remote_surface_unfullscreen(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ClientControlledShellSurface>(resource)->SetFullscreen(false);
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetFullscreen(
+      false, display::kInvalidDisplayId);
 }
 
 void remote_surface_pin(wl_client* client,
@@ -1471,7 +1473,8 @@ void remote_surface_set_resize_lock_type(wl_client* client,
 }
 
 void remote_surface_set_float(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ClientControlledShellSurface>(resource)->SetFloat();
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetFloatToLocation(
+      chromeos::FloatStartLocation::kBottomRight);
 }
 
 void remote_surface_set_scale_factor(wl_client* client,

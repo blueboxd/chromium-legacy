@@ -255,6 +255,7 @@ void HTMLSelectElement::add(
   }
 
   HTMLElement* before_element = nullptr;
+  ContainerNode* target_container = this;
   if (before) {
     switch (before->GetContentType()) {
       case V8UnionHTMLElementOrLong::ContentType::kHTMLElement:
@@ -262,11 +263,15 @@ void HTMLSelectElement::add(
         break;
       case V8UnionHTMLElementOrLong::ContentType::kLong:
         before_element = options()->item(before->GetAsLong());
+        if (before_element && before_element->parentNode()) {
+          target_container = before_element->parentNode();
+        }
         break;
     }
   }
 
-  InsertBefore(element_to_insert, before_element, exception_state);
+  target_container->InsertBefore(element_to_insert, before_element,
+                                 exception_state);
   SetNeedsValidityCheck();
 }
 
@@ -282,7 +287,7 @@ String HTMLSelectElement::Value() const {
 }
 
 void HTMLSelectElement::setValueForBinding(const String& value) {
-  if (GetAutofillState() != WebAutofillState::kAutofilled) {
+  if (!IsAutofilled()) {
     SetValue(value);
   } else {
     String old_value = this->Value();

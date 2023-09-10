@@ -3,7 +3,11 @@
 // found in the LICENSE file.
 
 #import "base/strings/sys_string_conversions.h"
+#import "components/policy/policy_constants.h"
 #import "components/sync/base/features.h"
+#import "ios/chrome/browser/policy/policy_app_interface.h"
+#import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
+#import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
@@ -12,8 +16,10 @@
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
+#import "ios/chrome/common/ui/promo_style/constants.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/web_http_server_chrome_test_case.h"
@@ -26,7 +32,13 @@ using chrome_test_util::SettingsSignInRowMatcher;
 
 namespace {
 
-void SignInWithPromoFromAccountSettings(FakeSystemIdentity* fakeIdentity) {
+NSString* const kPassphrase = @"hello";
+
+void SignInWithPromoFromAccountSettings(FakeSystemIdentity* fake_identity,
+                                        BOOL expect_history_sync) {
+  GREYAssertTrue(
+      [ChromeEarlGrey isReplaceSyncWithSigninEnabled],
+      @"Expected sign-in sheet to show but SyncToSignin flag is disabled");
   // Sign in with fake identity using the settings sign-in promo.
   [ChromeEarlGreyUI
       tapSettingsMenuButton:chrome_test_util::SettingsSignInRowMatcher()];
@@ -35,7 +47,7 @@ void SignInWithPromoFromAccountSettings(FakeSystemIdentity* fakeIdentity) {
       performAction:grey_tap()];
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::IdentityCellMatcherForEmail(
-                                   fakeIdentity.userEmail)]
+                                   fake_identity.userEmail)]
       performAction:grey_tap()];
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
@@ -43,11 +55,17 @@ void SignInWithPromoFromAccountSettings(FakeSystemIdentity* fakeIdentity) {
                                        l10n_util::GetNSStringF(
                                            IDS_IOS_FIRST_RUN_SIGNIN_CONTINUE_AS,
                                            base::SysNSStringToUTF16(
-                                               fakeIdentity.userGivenName))),
+                                               fake_identity.userGivenName))),
                                    grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
+  if (expect_history_sync) {
+    [[EarlGrey selectElementWithMatcher:
+                   grey_accessibilityID(
+                       kPromoStylePrimaryActionAccessibilityIdentifier)]
+        performAction:grey_tap()];
+  }
   [ChromeEarlGreyUI waitForAppToIdle];
-  [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
+  [SigninEarlGrey verifySignedInWithFakeIdentity:fake_identity];
 
   // Check that Settings is presented.
   [[EarlGrey
@@ -124,7 +142,7 @@ void DismissSignOutSnackbar() {
   [ChromeEarlGreyUI openSettingsMenu];
 
   // Sign in with fake identity using the settings sign-in promo.
-  SignInWithPromoFromAccountSettings(fakeIdentity);
+  SignInWithPromoFromAccountSettings(fakeIdentity, /*expect_history_sync=*/YES);
 
   // Verify the Sync settings row is not showing.
   [SigninEarlGrey verifySyncUIIsHidden];
@@ -234,7 +252,9 @@ void DismissSignOutSnackbar() {
   [SigninEarlGrey verifySignedOut];
 
   // Sign back in with the same identity using the settings sign-in promo.
-  SignInWithPromoFromAccountSettings(fakeIdentity);
+  // The history sync opt-in was accepted in the first sign-in earlier in this
+  // test.
+  SignInWithPromoFromAccountSettings(fakeIdentity, /*expect_history_sync=*/NO);
 
   // Verify the account settings row is showing in the settings menu.
   [[EarlGrey selectElementWithMatcher:SettingsAccountButton()]
@@ -338,6 +358,106 @@ void DismissSignOutSnackbar() {
                                           /*is_toggled_on=*/YES,
                                           /*enabled=*/YES)]
       assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests the account settings is reflecting the SyncTypesListDisabled
+// policy.
+- (void)testAccountSettingsWithSyncTypesListDisabled_SyncToSigninEnabled {
+  base::Value::List list;
+  list.Append("passwords");
+  policy_test_utils::SetPolicy(base::Value(std::move(list)),
+                               policy::key::kSyncTypesListDisabled);
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
+
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
+
+  // Verify that for Passwords an "Off" button is shown instead of a toggle.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityLabel(
+                                   l10n_util::GetNSString(IDS_IOS_SETTING_OFF))]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests the account settings is reflecting the SyncDisabled policy.
+- (void)testAccountSettingsWithSyncDisabled_SyncToSigninEnabled {
+  policy_test_utils::SetPolicy(true, policy::key::kSyncDisabled);
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  // Dismiss the sync disabled popup.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
+                                IDS_IOS_SYNC_SYNC_DISABLED_CONTINUE)),
+                            grey_userInteractionEnabled(), nil)]
+      performAction:grey_tap()];
+
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
+
+  [ChromeEarlGreyUI openSettingsMenu];
+  SignInWithPromoFromAccountSettings(fakeIdentity, /*expect_history_sync=*/NO);
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
+
+  // Scroll to the bottom to view all section.
+  id<GREYMatcher> scroll_view_matcher =
+      grey_accessibilityID(kManageSyncTableViewAccessibilityIdentifier);
+  [[EarlGrey selectElementWithMatcher:scroll_view_matcher]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
+
+  // Verify that the advanced settings items are not shown.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
+                                   IDS_IOS_MANAGE_SYNC_ENCRYPTION))]
+      assertWithMatcher:grey_notVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
+                                   IDS_IOS_MANAGE_DATA_IN_YOUR_ACCOUNT_TITLE))]
+      assertWithMatcher:grey_notVisible()];
+  [[EarlGrey selectElementWithMatcher:
+                 grey_accessibilityLabel(l10n_util::GetNSString(
+                     IDS_IOS_MANAGE_SYNC_GOOGLE_ACTIVITY_CONTROLS_TITLE))]
+      assertWithMatcher:grey_notVisible()];
+}
+
+// Tests the account settings is with a user actionable error; enter
+// passphrase error.
+- (void)testAccountSettingsWithError_SyncToSigninEnabled {
+  [ChromeEarlGrey addBookmarkWithSyncPassphrase:kPassphrase];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
+
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
+
+  // Verify the error section is showing.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_accessibilityLabel(l10n_util::GetNSString(
+                     IDS_IOS_ACCOUNT_TABLE_ERROR_ENTER_PASSPHRASE_BUTTON))]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap "Enter Passphrase" button.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_accessibilityLabel(l10n_util::GetNSString(
+                     IDS_IOS_ACCOUNT_TABLE_ERROR_ENTER_PASSPHRASE_BUTTON))]
+      performAction:grey_tap()];
+
+  // Enter the passphrase.
+  [SigninEarlGreyUI submitSyncPassphrase:kPassphrase];
+
+  // Verify it goes back to "manage sync" UI.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kManageSyncTableViewAccessibilityIdentifier)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Verify the error section is not showing anymore.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_accessibilityLabel(l10n_util::GetNSString(
+                     IDS_IOS_ACCOUNT_TABLE_ERROR_ENTER_PASSPHRASE_BUTTON))]
+      assertWithMatcher:grey_notVisible()];
 }
 
 @end

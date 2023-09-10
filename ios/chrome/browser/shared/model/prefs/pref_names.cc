@@ -175,6 +175,11 @@ const char kIosLatestMostVisitedSites[] = "ios.most_visited_sites";
 const char kIosMagicStackSegmentationMVTImpressionsSinceFreshness[] =
     "ios.magic_stack_segmentation.most_visited_sites_freshness";
 
+// Integer representing the number of impressions of the Parcel Tracking module
+// since a freshness signal.
+const char kIosMagicStackSegmentationParcelTrackingImpressionsSinceFreshness[] =
+    "ios.magic_stack_segmentation.parcel_tracking_freshness";
+
 // Integer representing the number of impressions of Shortcuts since a freshness
 // signal.
 const char kIosMagicStackSegmentationShortcutsImpressionsSinceFreshness[] =
@@ -242,15 +247,6 @@ const char kIosSafetyCheckManagerSafeBrowsingCheckResult[] =
 // Google Photos.
 const char kIosSaveToPhotosDefaultGaiaId[] =
     "ios.save_to_photos.default_gaia_id";
-
-// Preference that hold a boolean indicating if the user has already dismissed
-// the sign-in promo in settings view.
-const char kIosSettingsPromoAlreadySeen[] = "ios.settings.promo_already_seen";
-
-// Integer to represent the number of time the sign-in promo has been displayed
-// in the settings view.
-const char kIosSettingsSigninPromoDisplayedCount[] =
-    "ios.settings.signin_promo_displayed_count";
 
 // The count of how many times the user has shared the app.
 const char kIosShareChromeCount[] = "ios.share_chrome.count";

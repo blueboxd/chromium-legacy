@@ -79,9 +79,15 @@ GPU_GLES2_EXPORT GLFormatDesc ToGLFormatDesc(viz::SharedImageFormat format,
 #if BUILDFLAG(ENABLE_VULKAN)
 // Returns true if given `format` is supported by Vulkan.
 GPU_GLES2_EXPORT bool HasVkFormat(viz::SharedImageFormat format);
-// Returns vulkan format for given `format`.
+// Returns vulkan format for given `format` with external sampler.
+GPU_GLES2_EXPORT VkFormat
+ToVkFormatExternalSampler(viz::SharedImageFormat format);
+// Returns vulkan format for given `format`, which must be single-planar.
+GPU_GLES2_EXPORT VkFormat ToVkFormatSinglePlanar(viz::SharedImageFormat format);
+// Returns vulkan format for given `format`, which can be single-planar or
+// multiplanar with per-plane sampling.
 GPU_GLES2_EXPORT VkFormat ToVkFormat(viz::SharedImageFormat format,
-                                     int plane_index = 0);
+                                     int plane_index);
 #endif
 
 // Following functions return the appropriate WebGPU/Dawn format for a

@@ -226,12 +226,24 @@ class LoginDatabase {
     SyncMetadataStore& operator=(const SyncMetadataStore&) = delete;
     ~SyncMetadataStore() override;
 
+    // Test-only variant of the private function with a similar name.
+    std::unique_ptr<sync_pb::EntityMetadata>
+    GetSyncEntityMetadataForStorageKeyForTest(syncer::ModelType model_type,
+                                              const std::string& storage_key);
+
    private:
     // Reads all the stored sync entities metadata for |model_type| in a
     // MetadataBatch. Returns nullptr in case of failure. This is currently used
     // only for passwords.
     std::unique_ptr<syncer::MetadataBatch> GetAllSyncEntityMetadata(
         syncer::ModelType model_type);
+
+    // Reads sync entity data for an individual |model_type| and entity
+    // identified by |storage_key|. Returns null if no entry is found or an
+    // error occurred.
+    std::unique_ptr<sync_pb::EntityMetadata> GetSyncEntityMetadataForStorageKey(
+        syncer::ModelType model_type,
+        const std::string& storage_key);
 
     // Reads the stored ModelTypeState for |model_type|. Returns nullptr in case
     // of failure. This is currently used only for passwords.
@@ -266,18 +278,8 @@ class LoginDatabase {
         password_deletions_have_synced_callback_;
   };
 
-  FRIEND_TEST_ALL_PREFIXES(LoginDatabaseTest, AddLoginWithEncryptedPassword);
-  FRIEND_TEST_ALL_PREFIXES(LoginDatabaseTest,
-                           AddLoginWithEncryptedPasswordAndValue);
-
-#if BUILDFLAG(IS_IOS)
-  friend class LoginDatabaseIOSTest;
-  FRIEND_TEST_ALL_PREFIXES(LoginDatabaseIOSTest, KeychainStorage);
-
-  // On iOS, removes the keychain item that is used to store the encrypted
-  // password for the supplied primary key |id|.
-  void DeleteKeychainItemByPrimaryId(int id);
-#endif  // BUILDFLAG(IS_IOS)
+  FRIEND_TEST_ALL_PREFIXES(LoginDatabaseSyncMetadataTest,
+                           GetSyncEntityMetadataForStorageKey);
 
   void ReportNumberOfAccountsMetrics(bool custom_passphrase_sync_enabled);
   void ReportTimesPasswordUsedMetrics(bool custom_passphrase_sync_enabled);
@@ -376,7 +378,6 @@ class LoginDatabase {
   std::string get_statement_username_;
   std::string created_statement_;
   std::string blocklisted_statement_;
-  std::string keychain_identifier_statement_by_id_;
   std::string id_and_password_statement_;
 };
 

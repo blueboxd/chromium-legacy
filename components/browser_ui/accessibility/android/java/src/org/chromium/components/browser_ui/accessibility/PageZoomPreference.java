@@ -20,6 +20,9 @@ import androidx.annotation.Nullable;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
 
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.components.user_prefs.UserPrefs;
+import org.chromium.content_public.browser.BrowserContextHandle;
 import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.browser.ContentFeatureMap;
 import org.chromium.ui.widget.ChromeImageButton;
@@ -29,6 +32,7 @@ import org.chromium.ui.widget.ChromeImageButton;
  */
 public class PageZoomPreference extends Preference implements SeekBar.OnSeekBarChangeListener {
     private int mInitialValue;
+    private BrowserContextHandle mBrowserContextHandle;
     private SeekBar mSeekBar;
     private ChromeImageButton mDecreaseButton;
     private ChromeImageButton mIncreaseButton;
@@ -60,6 +64,10 @@ public class PageZoomPreference extends Preference implements SeekBar.OnSeekBarC
         super(context, attrs);
 
         setLayoutResource(R.layout.page_zoom_preference);
+    }
+
+    public void setmBrowserContextHandle(BrowserContextHandle browserContextHandle) {
+        mBrowserContextHandle = browserContextHandle;
     }
 
     @Override
@@ -125,8 +133,7 @@ public class PageZoomPreference extends Preference implements SeekBar.OnSeekBarC
             mTextSizeContrastSeekBar.setOnSeekBarChangeListener(this);
             mTextSizeContrastSeekBar.setMax(PageZoomUtils.TEXT_SIZE_CONTRAST_MAX_LEVEL);
             mTextSizeContrastSeekBar.setProgress(mInitialTextSizeContrastLevel);
-            mTextSizeContrastFactor =
-                    PageZoomUtils.TEXT_SIZE_CONTRAST_MAX_LEVEL - mInitialTextSizeContrastLevel;
+            mTextSizeContrastFactor = mInitialTextSizeContrastLevel;
             updateViewsOnProgressChanged(mInitialTextSizeContrastLevel, mTextSizeContrastSeekBar);
 
             mTextSizeContrastCurrentLevelText.setVisibility(View.VISIBLE);
@@ -174,7 +181,7 @@ public class PageZoomPreference extends Preference implements SeekBar.OnSeekBarC
         if (seekBar.getId() == R.id.page_zoom_slider) {
             mCurrentMultiplier = (float) PageZoomUtils.convertSeekBarValueToZoomLevel(progress);
         } else if (seekBar.getId() == R.id.text_size_contrast_slider) {
-            mTextSizeContrastFactor = PageZoomUtils.TEXT_SIZE_CONTRAST_MAX_LEVEL - progress;
+            mTextSizeContrastFactor = progress;
         }
 
         mPreviewLargeText.setTextSize(
@@ -233,8 +240,10 @@ public class PageZoomPreference extends Preference implements SeekBar.OnSeekBarC
             // When a user stops changing the slider value, record the new value in prefs.
             callChangeListener(seekBar.getProgress());
         } else if (seekBar.getId() == R.id.text_size_contrast_slider) {
-            // TODO(crbug.com/1459631): add functionality to save the new progress variable to a
-            // profile setting, which can access on c++ side
+            UserPrefs.get(mBrowserContextHandle)
+                    .setInteger(
+                            Pref.ACCESSIBILITY_TEXT_SIZE_CONTRAST_FACTOR, seekBar.getProgress());
+            // TODO(crbug.com/1459631): Add page refresh functionality
         }
     }
 

@@ -30,6 +30,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
@@ -187,6 +188,33 @@ public class AccessibilitySettingsTest {
                 .perform(RecyclerViewActions.scrollTo(
                         hasDescendant(withText(R.string.accessibility_captions_title))));
         onView(withText(R.string.accessibility_captions_title)).perform(click());
+        monitor.waitForActivityWithTimeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
+        Assert.assertEquals("Monitor for has not been called", 1, monitor.getHits());
+        InstrumentationRegistry.getInstrumentation().removeMonitor(monitor);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Accessibility"})
+    @DisabledTest(message = "https://crbug.com/1480116")
+    public void testZoomInfoPreference() {
+        mSettingsActivityTestRule.startSettingsActivity();
+        AccessibilitySettings accessibilitySettings = mSettingsActivityTestRule.getFragment();
+
+        Preference zoomInfoPref =
+                accessibilitySettings.findPreference(AccessibilitySettings.PREF_ZOOM_INFO);
+        Assert.assertNotNull(zoomInfoPref);
+        Assert.assertNotNull(zoomInfoPref.getOnPreferenceClickListener());
+
+        Instrumentation.ActivityMonitor monitor =
+                InstrumentationRegistry.getInstrumentation().addMonitor(
+                        new IntentFilter(), null, false);
+
+        // First scroll to the Zoom preference, then click.
+        onView(withId(R.id.recycler_view))
+                .perform(RecyclerViewActions.scrollTo(
+                        hasDescendant(withText(R.string.zoom_info_preference_title))));
+        onView(withText(R.string.zoom_info_preference_title)).perform(click());
         monitor.waitForActivityWithTimeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
         Assert.assertEquals("Monitor for has not been called", 1, monitor.getHits());
         InstrumentationRegistry.getInstrumentation().removeMonitor(monitor);

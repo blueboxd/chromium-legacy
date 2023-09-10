@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/core/loader/url_matcher.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/script/document_write_intervention.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -62,7 +63,8 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
     CrossOriginAttributeValue cross_origin,
     const WTF::TextEncoding& encoding,
     ScriptElementBase* element,
-    FetchParameters::DeferOption defer) {
+    FetchParameters::DeferOption defer,
+    absl::optional<scheduler::TaskAttributionId> parent_task_id) {
   ExecutionContext* context = element_document.GetExecutionContext();
   FetchParameters params(options.CreateFetchParameters(
       url, context->GetSecurityOrigin(), context->GetCurrentWorld(),
@@ -80,7 +82,7 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
       MakeGarbageCollected<ClassicPendingScript>(
           element, TextPosition::MinimumPosition(), KURL(), KURL(), String(),
           ScriptSourceLocationType::kExternalFile, options,
-          true /* is_external */);
+          /*is_external=*/true, parent_task_id);
 
   // [Intervention]
   // For users on slow connections, we want to avoid blocking the parser in
@@ -97,8 +99,17 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
   // We allow streaming, as WatchForLoad() is always called when the script
   // needs to execute and the ScriptResource is not finished, so
   // SetClientIsWaitingForFinished is always set on the resource.
+
+  Page* page = element_document.GetPage();
+  v8_compile_hints::V8CrowdsourcedCompileHintsConsumer* compile_hints_consumer =
+      nullptr;
+  if (page->MainFrame()->IsLocalFrame()) {
+    compile_hints_consumer = &page->GetV8CrowdsourcedCompileHintsConsumer();
+  }
+
   ScriptResource::Fetch(params, element_document.Fetcher(), pending_script,
-                        ScriptResource::kAllowStreaming);
+                        ScriptResource::kAllowStreaming,
+                        compile_hints_consumer);
   pending_script->CheckState();
   return pending_script;
 }
@@ -110,11 +121,12 @@ ClassicPendingScript* ClassicPendingScript::CreateInline(
     const KURL& base_url,
     const String& source_text,
     ScriptSourceLocationType source_location_type,
-    const ScriptFetchOptions& options) {
+    const ScriptFetchOptions& options,
+    absl::optional<scheduler::TaskAttributionId> parent_task_id) {
   ClassicPendingScript* pending_script =
       MakeGarbageCollected<ClassicPendingScript>(
           element, starting_position, source_url, base_url, source_text,
-          source_location_type, options, false /* is_external */);
+          source_location_type, options, /*is_external=*/false, parent_task_id);
   pending_script->CheckState();
   return pending_script;
 }
@@ -127,8 +139,9 @@ ClassicPendingScript::ClassicPendingScript(
     const String& source_text_for_inline_script,
     ScriptSourceLocationType source_location_type,
     const ScriptFetchOptions& options,
-    bool is_external)
-    : PendingScript(element, starting_position),
+    bool is_external,
+    absl::optional<scheduler::TaskAttributionId> parent_task_id)
+    : PendingScript(element, starting_position, parent_task_id),
       options_(options),
       source_url_for_inline_script_(source_url_for_inline_script),
       base_url_for_inline_script_(base_url_for_inline_script),

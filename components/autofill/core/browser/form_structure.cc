@@ -485,8 +485,11 @@ std::vector<AutofillUploadContents> FormStructure::EncodeUploadRequest(
   if (!current_page_language_->empty() && randomized_encoder_ != nullptr) {
     upload.set_language(current_page_language_.value());
   }
-  if (single_username_data_)
-    upload.mutable_single_username_data()->CopyFrom(*single_username_data_);
+  for (const auto& form_data : single_username_data_) {
+    AutofillUploadContents::SingleUsernameData* single_username_data =
+        upload.add_single_username_data();
+    single_username_data->CopyFrom(form_data);
+  }
 
   if (form_associations_.last_address_form_submitted) {
     upload.set_last_address_form_submitted(
@@ -1207,17 +1210,20 @@ void FormStructure::ParseFieldTypesWithPatterns(
     const GeoIpCountryCode& client_country,
     LogManager* log_manager) {
   FieldCandidatesMap field_type_map;
+  const LanguageCode& page_language =
+      base::FeatureList::IsEnabled(features::kAutofillPageLanguageDetection)
+          ? current_page_language_
+          : LanguageCode();
   if (ShouldRunHeuristics()) {
-    FormField::ParseFormFields(fields_, client_country, current_page_language_,
+    FormField::ParseFormFields(fields_, client_country, page_language,
                                is_form_tag_, pattern_source, field_type_map,
                                log_manager);
   } else if (ShouldRunHeuristicsForSingleFieldForms()) {
-    FormField::ParseSingleFieldForms(
-        fields_, client_country, current_page_language_, is_form_tag_,
-        pattern_source, field_type_map, log_manager);
-    FormField::ParseStandaloneCVCFields(fields_, current_page_language_,
-                                        pattern_source, field_type_map,
-                                        log_manager);
+    FormField::ParseSingleFieldForms(fields_, client_country, page_language,
+                                     is_form_tag_, pattern_source,
+                                     field_type_map, log_manager);
+    FormField::ParseStandaloneCVCFields(fields_, page_language, pattern_source,
+                                        field_type_map, log_manager);
   }
   if (field_type_map.empty())
     return;

@@ -39,7 +39,7 @@
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
 #include "components/services/storage/privileged/mojom/indexed_db_control.mojom-test-utils.h"
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
-#include "content/browser/indexed_db/indexed_db_bucket_state.h"
+#include "content/browser/indexed_db/indexed_db_bucket_context.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
@@ -342,26 +342,29 @@ class IndexedDBBackingStoreTest : public testing::Test {
   void CreateFactoryAndBackingStore() {
     const blink::StorageKey storage_key =
         blink::StorageKey::CreateFromStringForTesting("http://localhost:81");
-    auto bucket_locator = storage::BucketLocator();
-    bucket_locator.storage_key = storage_key;
-    bucket_locator.is_default = true;
+    auto bucket_info = storage::BucketInfo();
+    bucket_info.id = storage::BucketId::FromUnsafeValue(1);
+    bucket_info.storage_key = storage_key;
+    bucket_info.name = storage::kDefaultBucketName;
+    auto bucket_locator = bucket_info.ToBucketLocator();
+
     idb_factory_ = std::make_unique<TestIDBFactory>(
         idb_context_.get(), blob_context_.get(),
         file_system_access_context_.get());
 
     leveldb::Status s;
-    std::tie(bucket_state_handle_, s, std::ignore, data_loss_info_,
+    std::tie(bucket_context_handle_, s, std::ignore, data_loss_info_,
              std::ignore) =
-        idb_factory_->GetOrOpenBucketFactory(
-            bucket_locator, idb_context_->GetDataPath(bucket_locator),
+        idb_factory_->GetOrCreateBucketContext(
+            bucket_info, idb_context_->GetDataPath(bucket_locator),
             /*create_if_missing=*/true);
-    if (!bucket_state_handle_.IsHeld()) {
+    if (!bucket_context_handle_.IsHeld()) {
       backing_store_ = nullptr;
       return;
     }
     backing_store_ = static_cast<TestableIndexedDBBackingStore*>(
-        bucket_state_handle_.bucket_state()->backing_store());
-    lock_manager_ = bucket_state_handle_.bucket_state()->lock_manager();
+        bucket_context_handle_->backing_store());
+    lock_manager_ = bucket_context_handle_->lock_manager();
   }
 
   std::vector<PartitionedLock> CreateDummyLock() {
@@ -376,7 +379,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
   }
 
   void DestroyFactoryAndBackingStore() {
-    bucket_state_handle_.Release();
+    bucket_context_handle_.Release();
     idb_factory_.reset();
     backing_store_ = nullptr;
   }
@@ -392,8 +395,8 @@ class IndexedDBBackingStoreTest : public testing::Test {
 
       for (const auto& bucket_id : factory->GetOpenBuckets()) {
         base::RunLoop loop;
-        IndexedDBBucketState* per_bucket_factory =
-            factory->GetBucketFactory(bucket_id);
+        IndexedDBBucketContext* per_bucket_factory =
+            factory->GetBucketContext(bucket_id);
 
         auto* leveldb_state =
             per_bucket_factory->backing_store()->db()->leveldb_state();
@@ -466,7 +469,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
   std::unique_ptr<TestIDBFactory> idb_factory_;
   raw_ptr<PartitionedLockManager, DanglingUntriaged> lock_manager_;
 
-  IndexedDBBucketStateHandle bucket_state_handle_;
+  IndexedDBBucketContextHandle bucket_context_handle_;
   raw_ptr<TestableIndexedDBBackingStore, DanglingUntriaged> backing_store_ =
       nullptr;
   IndexedDBDataLossInfo data_loss_info_;

@@ -210,6 +210,8 @@ FeatureInfo::FeatureInfo(
 #elif BUILDFLAG(IS_MAC)
   feature_flags_.chromium_image_ycbcr_p010 =
       base::mac::MacOSMajorVersion() >= 11;
+#elif BUILDFLAG(IS_IOS)
+  feature_flags_.chromium_image_ycbcr_p010 = true;
 #endif
 }
 
@@ -1767,6 +1769,11 @@ void FeatureInfo::InitializeFeatures() {
   if (is_passthrough_cmd_decoder_ &&
       gfx::HasExtension(extensions, "GL_ANGLE_stencil_texturing")) {
     AddExtensionString("GL_ANGLE_stencil_texturing");
+  }
+
+  if (is_passthrough_cmd_decoder_ &&
+      gfx::HasExtension(extensions, "GL_EXT_blend_func_extended")) {
+    AddExtensionString("GL_EXT_blend_func_extended");
   }
 
   if (is_passthrough_cmd_decoder_ &&

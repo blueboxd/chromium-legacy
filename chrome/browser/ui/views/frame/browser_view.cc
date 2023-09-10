@@ -295,6 +295,7 @@
 #if BUILDFLAG(IS_MAC)
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/fullscreen_util_mac.h"
 #include "components/remote_cocoa/app_shim/application_bridge.h"
 #include "components/remote_cocoa/browser/application_host.h"
 #endif
@@ -1042,8 +1043,13 @@ BrowserView::~BrowserView() {
 
   // The TabStrip attaches a listener to the model. Make sure we shut down the
   // TabStrip first so that it can cleanly remove the listener.
-  if (tabstrip_)
-    tabstrip_->parent()->RemoveChildViewT(tabstrip_.get());
+  //
+  // TODO(https://crbug.com/1477838): Is this actually necessary? It should be
+  // perfectly safe to destroy the TabStrip before the TabStripModel?
+  if (tabstrip_) {
+    auto tabstrip = tabstrip_.ExtractAsDangling();
+    tabstrip->parent()->RemoveChildViewT(tabstrip);
+  }
 
   // Child views maintain PrefMember attributes that point to
   // OffTheRecordProfile's PrefService which gets deleted by ~Browser.
@@ -2532,22 +2538,11 @@ bool BrowserView::IsTabStripEditable() const {
 
 bool BrowserView::IsToolbarVisible() const {
 #if BUILDFLAG(IS_MAC)
-  // This Mac-only preference disables display of the toolbar in fullscreen mode
-  // so we need to take it into account when determining if the toolbar is
-  // visible - especially as pertains to anchoring views.
-  bool show_fullscreen_toolbar = true;
-  if (web_app::AppBrowserController::IsWebApp(browser())) {
-    const web_app::AppBrowserController* controller =
-        browser()->app_controller();
-    show_fullscreen_toolbar = controller->AlwaysShowToolbarInFullscreen();
-  } else {
-    show_fullscreen_toolbar = browser()->profile()->GetPrefs()->GetBoolean(
-        prefs::kShowFullscreenToolbar);
-  }
   // Immersive full screen makes it possible to display the toolbar when
   // kShowFullscreenToolbar is not set.
   if (!UsesImmersiveFullscreenMode()) {
-    if (IsFullscreen() && !show_fullscreen_toolbar) {
+    if (IsFullscreen() &&
+        !fullscreen_utils::IsAlwaysShowToolbarEnabled(browser())) {
       return false;
     }
   }
@@ -4482,10 +4477,10 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
     }
   }
 
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS)
   // Request target display fullscreen from lower layers on supported platforms.
   frame_->SetFullscreen(fullscreen, display_id);
-#else   // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
+#else   // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS)
   // TODO(crbug.com/1034783): Reimplement this at lower layers on all platforms.
   if (fullscreen && display_id != display::kInvalidDisplayId) {
     display::Screen* screen = display::Screen::GetScreen();
@@ -4528,7 +4523,6 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
       }
 
       // Restore the window as needed, so it can be moved to the target display.
-      // TODO(crbug.com/1250088): Support cross-display fullscreen for Lacros.
       // TODO(crbug.com/1034783): Support lower-layer fullscreen-on-display.
       if (was_maximized) {
         Restore();
@@ -4540,7 +4534,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   frame_->SetFullscreen(fullscreen);
   if (!fullscreen && restore_pre_fullscreen_bounds_callback_)
     std::move(restore_pre_fullscreen_bounds_callback_).Run();
-#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS)
 
   // Enable immersive before the browser refreshes its list of enabled commands.
   const bool should_stay_in_immersive =
@@ -4555,11 +4549,14 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
     immersive_mode_controller_->SetEnabled(fullscreen);
   }
 
-#if !BUILDFLAG(IS_MAC)
+#if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_CHROMEOS_LACROS)
   // On Mac platforms, FullscreenStateChanged() is invoked from
   // BrowserFrameMac::OnWindowFullscreenTransitionComplete when the asynchronous
   // fullscreen transition is complete. On other platforms, there is no
   // asynchronous transition so we synchronously invoke the function.
+  //
+  // On Lacros, the state change is only realized after the
+  // window has been informed that the state change has been performed.
   FullscreenStateChanged();
 #endif
 
@@ -4858,9 +4855,11 @@ bool BrowserView::MaybeShowStartupFeaturePromo(
              body_params, title_params);
 }
 
-bool BrowserView::CloseFeaturePromo(const base::Feature& iph_feature) {
+bool BrowserView::CloseFeaturePromo(
+    const base::Feature& iph_feature,
+    user_education::FeaturePromoCloseReason close_reason) {
   return feature_promo_controller_ &&
-         feature_promo_controller_->EndPromo(iph_feature);
+         feature_promo_controller_->EndPromo(iph_feature, close_reason);
 }
 
 user_education::FeaturePromoHandle BrowserView::CloseFeaturePromoAndContinue(
@@ -5003,7 +5002,14 @@ void BrowserView::DestroyAnyExclusiveAccessBubble() {
 }
 
 bool BrowserView::CanTriggerOnMouse() const {
+  // Returning false here can prevent the exclusive access bubble from showing
+  // in certain situations in macOS immersive fullscreen. This check only
+  // exists for Chrome running on ChromeOS in a Public Session.
+#if BUILDFLAG(IS_MAC)
+  return true;
+#else
   return !IsImmersiveModeEnabled();
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

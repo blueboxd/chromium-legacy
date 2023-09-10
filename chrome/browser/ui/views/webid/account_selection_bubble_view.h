@@ -63,6 +63,13 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
     // Called when the user clicks "close" button.
     virtual void OnCloseButtonClicked(const ui::Event& event) = 0;
 
+    // Called when the user clicks "more details" button.
+    virtual void OnMoreDetailsButtonClicked(const GURL& url,
+                                            const ui::Event& event) = 0;
+
+    // Called when the user clicks "got it" button.
+    virtual void OnGotItButtonClicked(const ui::Event& event) = 0;
+
     // Called when the user clicks the "continue" button on the sign-in
     // failure dialog.
     virtual void OnSigninToIdP() = 0;
@@ -213,9 +220,6 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
 
   // View containing the continue button.
   raw_ptr<views::MdTextButton> continue_button_ = nullptr;
-
-  // View containing the sign in to IDP button.
-  raw_ptr<views::MdTextButton> signin_to_idp_button_ = nullptr;
 
   // Auto re-authn opt-out checkbox.
   raw_ptr<views::Checkbox> auto_reauthn_checkbox_ = nullptr;

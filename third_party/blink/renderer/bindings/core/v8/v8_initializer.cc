@@ -78,6 +78,7 @@
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/active_script_wrappable_manager.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/source_location.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
@@ -339,10 +340,14 @@ static void PromiseRejectHandlerInWorker(v8::PromiseRejectMessage data) {
 static void FailedAccessCheckCallbackInMainThread(v8::Local<v8::Object> holder,
                                                   v8::AccessType type,
                                                   v8::Local<v8::Value> data) {
-  // FIXME: We should modify V8 to pass in more contextual information (context,
-  // property, and object).
+  // FIXME: This is the access check callback of last resort. We should modify
+  // V8 to pass in more contextual information, so that we can build a full
+  // ExceptionState.
+  ExceptionState exception_state(
+      holder->GetIsolate(), ExceptionState::kUnknownContext, nullptr, nullptr);
   BindingSecurity::FailedAccessCheckFor(holder->GetIsolate(),
-                                        WrapperTypeInfo::Unwrap(data), holder);
+                                        WrapperTypeInfo::Unwrap(data), holder,
+                                        exception_state);
 }
 
 // Check whether Content Security Policy allows script execution.
@@ -631,14 +636,23 @@ v8::MaybeLocal<v8::Promise> HostImportModuleDynamically(
           script_state->GetContext(), v8::Local<v8::Module>(),
           v8_import_assertions, /*v8_import_assertions_has_positions=*/false));
 
-  ReferrerScriptInfo referrer_info =
-      ReferrerScriptInfo::FromV8HostDefinedOptions(
-          context, v8_host_defined_options, referrer_resource_url);
-
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   resolver->SetPropertyName("import");
   ScriptPromise promise = resolver->Promise();
-  modulator->ResolveDynamically(module_request, referrer_info, resolver);
+
+  String invalid_attribute_key;
+  if (module_request.HasInvalidImportAttributeKey(&invalid_attribute_key)) {
+    resolver->Reject(V8ThrowException::CreateTypeError(
+        script_state->GetIsolate(),
+        "Invalid attribute key \"" + invalid_attribute_key + "\"."));
+  } else {
+    ReferrerScriptInfo referrer_info =
+        ReferrerScriptInfo::FromV8HostDefinedOptions(
+            context, v8_host_defined_options, referrer_resource_url);
+
+    modulator->ResolveDynamically(module_request, referrer_info, resolver);
+  }
+
   return v8::Local<v8::Promise>::Cast(promise.V8Value());
 }
 

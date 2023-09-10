@@ -113,6 +113,7 @@ static content::ContextMenuParams CreateParams(int contexts) {
   rv.is_editable = false;
   rv.media_type = blink::mojom::ContextMenuDataMediaType::kNone;
   rv.page_url = GURL("http://test.page/");
+  rv.frame_url = GURL("http://test.page/");
 
   static constexpr char16_t selected_text[] = u"sel";
   if (contexts & MenuItem::SELECTION) {
@@ -143,7 +144,7 @@ static content::ContextMenuParams CreateParams(int contexts) {
   }
 
   if (contexts & MenuItem::FRAME) {
-    rv.frame_url = GURL("http://test.frame/");
+    rv.is_subframe = true;
   }
 
   return rv;
@@ -1636,6 +1637,7 @@ TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearchChromeUIScheme) {
                                        /*supports_image_search=*/true);
   content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
   params.page_url = GURL(chrome::kChromeUISettingsURL);
+  params.frame_url = params.page_url;
   TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
                                  params);
   menu.SetBrowser(GetBrowser());
@@ -1649,11 +1651,8 @@ TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearchChromeUIScheme) {
 TEST_F(RenderViewContextMenuPrefsTest,
        CompanionNewBadgeEnabledForRegionSearchContextMenuItem) {
   base::test::ScopedFeatureList features;
-  features.InitWithFeaturesAndParameters(
-      {{companion::features::internal::kSidePanelCompanion,
-        {{"open-companion-for-image-search", "true"}}},
-       {companion::features::kCompanionEnableNewBadgesInContextMenu, {}}},
-      {});
+  features.InitAndEnableFeature(
+      companion::features::kCompanionEnableNewBadgesInContextMenu);
   SetUserSelectedDefaultSearchProvider("https://www.google.com",
                                        /*supports_image_search=*/true);
   content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
@@ -1676,10 +1675,8 @@ TEST_F(RenderViewContextMenuPrefsTest,
 TEST_F(RenderViewContextMenuPrefsTest,
        CompanionNewBadgeDisabledForRegionSearchContextMenuItem) {
   base::test::ScopedFeatureList features;
-  features.InitWithFeaturesAndParameters(
-      {{companion::features::internal::kSidePanelCompanion,
-        {{"open-companion-for-image-search", "true"}}}},
-      {companion::features::kCompanionEnableNewBadgesInContextMenu});
+  features.InitAndDisableFeature(
+      companion::features::kCompanionEnableNewBadgesInContextMenu);
   SetUserSelectedDefaultSearchProvider("https://www.google.com",
                                        /*supports_image_search=*/true);
   content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
@@ -1702,11 +1699,8 @@ TEST_F(RenderViewContextMenuPrefsTest,
 TEST_F(RenderViewContextMenuPrefsTest,
        CompanionNewBadgeEnabledForImageSearchContextMenuItems) {
   base::test::ScopedFeatureList features;
-  features.InitWithFeaturesAndParameters(
-      {{companion::features::internal::kSidePanelCompanion,
-        {{"open-companion-for-image-search", "true"}}},
-       {companion::features::kCompanionEnableNewBadgesInContextMenu, {}}},
-      {});
+  features.InitAndEnableFeature(
+      companion::features::kCompanionEnableNewBadgesInContextMenu);
   SetUserSelectedDefaultSearchProvider("https://www.google.com",
                                        /*supports_image_search=*/true);
   content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
@@ -1733,10 +1727,8 @@ TEST_F(RenderViewContextMenuPrefsTest,
 TEST_F(RenderViewContextMenuPrefsTest,
        CompanionNewBadgeDisabledForImageSearchContextMenuItems) {
   base::test::ScopedFeatureList features;
-  features.InitWithFeaturesAndParameters(
-      {{companion::features::internal::kSidePanelCompanion,
-        {{"open-companion-for-image-search", "true"}}}},
-      {companion::features::kCompanionEnableNewBadgesInContextMenu});
+  features.InitAndDisableFeature(
+      companion::features::kCompanionEnableNewBadgesInContextMenu);
   SetUserSelectedDefaultSearchProvider("https://www.google.com",
                                        /*supports_image_search=*/true);
   content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
@@ -1804,8 +1796,10 @@ class FormatUrlForClipboardTest
 
 const FormatUrlForClipboardTestData kFormatUrlForClipboardTestData[]{
     {"http://www.foo.com/", "http://www.foo.com/", "HttpNoEscapes"},
-    {"http://www.foo.com/%61%62%63", "http://www.foo.com/abc",
-     "HttpSafeUnescapes"},
+    // Percent-encoded ASCII characters are no longer unescaped.
+    // See https://crbug.com/1252531.
+    {"http://www.foo.com/%61%62%63", "http://www.foo.com/%61%62%63",
+     "HttpNoEscape"},
     {"https://www.foo.com/abc%20def", "https://www.foo.com/abc%20def",
      "HttpsEscapedSpecialCharacters"},
     {"https://www.foo.com/%CE%B1%CE%B2%CE%B3",
@@ -1814,8 +1808,10 @@ const FormatUrlForClipboardTestData kFormatUrlForClipboardTestData[]{
      "FileEscapedUnicodeCharacters"},
     {"file://stuff.host.co/my%2Bshare/foo.txt",
      "file://stuff.host.co/my%2Bshare/foo.txt", "FileEscapedSpecialCharacters"},
+    // Percent-encoded ASCII characters are no longer unescaped.
+    // See https://crbug.com/1252531.
     {"file://stuff.host.co/my%2Dshare/foo.txt",
-     "file://stuff.host.co/my-share/foo.txt", "FileSafeUnescapes"},
+     "file://stuff.host.co/my%2Dshare/foo.txt", "FileNoEscape"},
     {"mailto:me@foo.com", "me@foo.com", "MailToNoEscapes"},
     {"mailto:me@foo.com,you@bar.com?subject=Hello%20world",
      "me@foo.com,you@bar.com", "MailToWithQuery"},

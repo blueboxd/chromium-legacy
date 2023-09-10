@@ -10,6 +10,9 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/events/event_rewriter_controller_impl.h"
+#include "ash/events/peripheral_customization_event_rewriter.h"
+#include "ash/public/mojom/input_device_settings.mojom-forward.h"
 #include "ash/public/mojom/input_device_settings.mojom-shared.h"
 #include "ash/public/mojom/input_device_settings.mojom.h"
 #include "ash/session/session_controller_impl.h"
@@ -28,11 +31,16 @@
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback_forward.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/strcat.h"
+#include "base/strings/to_string.h"
 #include "base/task/sequenced_task_runner.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/known_user.h"
+#include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "ui/events/ash/keyboard_capability.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/keyboard_device.h"
@@ -132,7 +140,19 @@ mojom::GraphicsTabletPtr BuildMojomGraphicsTablet(
   return mojom_graphics_tablet;
 }
 
-}  // namespace
+bool IsGraphicsTabletPenButton(const mojom::Button& button) {
+  return button.is_customizable_button();
+}
+
+void AddButtonToButtonRemappingList(
+    const mojom::Button& button,
+    std::vector<mojom::ButtonRemappingPtr>& button_remappings) {
+  // TODO(b/286930911): Translate "Button" string to other languages.
+  button_remappings.push_back(mojom::ButtonRemapping::New(
+      /*name=*/base::StrCat(
+          {"Button ", base::ToString(button_remappings.size() + 1)}),
+      button.Clone(), /*remapping_action=*/nullptr));
+}
 
 // suppress_meta_fkey_rewrites must never be non-default for internal
 // keyboards, otherwise the keyboard settings are not valid.
@@ -250,6 +270,82 @@ void RecordSetMouseSettingsValidMetric(bool is_valid) {
       "ChromeOS.Settings.Device.Mouse.SetSettingsSucceeded", is_valid);
 }
 
+// Check the list of keyboards to see if any have the same |device_key|.
+// If so, their settings need to also be updated.
+template <typename T>
+void UpdateDuplicateDeviceSettings(
+    const T& updated_device,
+    base::flat_map<InputDeviceSettingsControllerImpl::DeviceId,
+                   mojo::StructPtr<T>>& devices,
+    base::RepeatingCallback<void(InputDeviceSettingsControllerImpl::DeviceId)>
+        settings_updated_callback) {
+  for (const auto& [device_id, device] : devices) {
+    if (device_id != updated_device.id &&
+        device->device_key == updated_device.device_key) {
+      device->settings = updated_device.settings->Clone();
+      settings_updated_callback.Run(device_id);
+    }
+  }
+}
+
+}  // namespace
+
+void DeleteLoginScreenSettingsPrefWhenInputDeviceSettingsSplitDisabled(
+    PrefService* local_state) {
+  // local_state could be null in tests.
+  if (!local_state) {
+    return;
+  }
+  user_manager::KnownUser known_user(local_state);
+  AccountId account_id =
+      Shell::Get()->session_controller()->GetActiveAccountId();
+
+  known_user.SetPath(account_id, prefs::kMouseLoginScreenInternalSettingsPref,
+                     absl::nullopt);
+  known_user.SetPath(account_id, prefs::kMouseLoginScreenExternalSettingsPref,
+                     absl::nullopt);
+  known_user.SetPath(account_id,
+                     prefs::kKeyboardLoginScreenInternalSettingsPref,
+                     absl::nullopt);
+  known_user.SetPath(account_id,
+                     prefs::kKeyboardLoginScreenExternalSettingsPref,
+                     absl::nullopt);
+  known_user.SetPath(account_id,
+                     prefs::kPointingStickLoginScreenInternalSettingsPref,
+                     absl::nullopt);
+  known_user.SetPath(account_id,
+                     prefs::kPointingStickLoginScreenExternalSettingsPref,
+                     absl::nullopt);
+  known_user.SetPath(account_id,
+                     prefs::kTouchpadLoginScreenInternalSettingsPref,
+                     absl::nullopt);
+  known_user.SetPath(account_id,
+                     prefs::kTouchpadLoginScreenExternalSettingsPref,
+                     absl::nullopt);
+}
+
+void DeleteLoginScreenButtonRemappingListPrefWhenPeripheralCustomizationDisabled(
+    PrefService* local_state) {
+  // local_state could be null in tests.
+  if (!local_state) {
+    return;
+  }
+  user_manager::KnownUser known_user(local_state);
+  AccountId account_id =
+      Shell::Get()->session_controller()->GetActiveAccountId();
+
+  known_user.SetPath(
+      account_id,
+      prefs::kGraphicsTabletLoginScreenTabletButtonRemappingListPref,
+      absl::nullopt);
+  known_user.SetPath(
+      account_id, prefs::kGraphicsTabletLoginScreenPenButtonRemappingListPref,
+      absl::nullopt);
+  known_user.SetPath(account_id,
+                     prefs::kMouseLoginScreenButtonRemappingListPref,
+                     absl::nullopt);
+}
+
 InputDeviceSettingsControllerImpl::InputDeviceSettingsControllerImpl(
     PrefService* local_state)
     : local_state_(local_state),
@@ -358,6 +454,16 @@ void InputDeviceSettingsControllerImpl::RegisterProfilePrefs(
 
 void InputDeviceSettingsControllerImpl::OnActiveUserPrefServiceChanged(
     PrefService* pref_service) {
+  // If the flag is disabled, clear the button remapping dictionaries.
+  if (!features::IsPeripheralCustomizationEnabled()) {
+    pref_service->ClearPref(
+        prefs::kGraphicsTabletTabletButtonRemappingsDictPref);
+    pref_service->ClearPref(prefs::kGraphicsTabletPenButtonRemappingsDictPref);
+    pref_service->ClearPref(prefs::kMouseButtonRemappingsDictPref);
+    DeleteLoginScreenButtonRemappingListPrefWhenPeripheralCustomizationDisabled(
+        local_state_);
+  }
+
   // If the flag is disabled, clear all the settings dictionaries.
   if (!features::IsInputDeviceSettingsSplitEnabled()) {
     active_pref_service_ = nullptr;
@@ -366,14 +472,9 @@ void InputDeviceSettingsControllerImpl::OnActiveUserPrefServiceChanged(
     pref_service->SetDict(prefs::kPointingStickDeviceSettingsDictPref, {});
     pref_service->SetDict(prefs::kTouchpadDeviceSettingsDictPref, {});
     pref_service->SetList(prefs::kKeyboardDeviceImpostersListPref, {});
+    DeleteLoginScreenSettingsPrefWhenInputDeviceSettingsSplitDisabled(
+        local_state_);
     return;
-  }
-
-  if (!features::IsPeripheralCustomizationEnabled()) {
-    pref_service->ClearPref(
-        prefs::kGraphicsTabletTabletButtonRemappingsDictPref);
-    pref_service->ClearPref(prefs::kGraphicsTabletPenButtonRemappingsDictPref);
-    pref_service->ClearPref(prefs::kMouseButtonRemappingsDictPref);
   }
 
   // If the flag is disabled, clear the new touchpad and keyboard settings from
@@ -671,6 +772,15 @@ InputDeviceSettingsControllerImpl::GetPointingStickSettings(DeviceId id) {
   return iter->second->settings.get();
 }
 
+const mojom::GraphicsTabletSettings*
+InputDeviceSettingsControllerImpl::GetGraphicsTabletSettings(DeviceId id) {
+  auto iter = graphics_tablets_.find(id);
+  if (iter == graphics_tablets_.end()) {
+    return nullptr;
+  }
+  return iter->second->settings.get();
+}
+
 std::vector<mojom::KeyboardPtr>
 InputDeviceSettingsControllerImpl::GetConnectedKeyboards() {
   std::vector<mojom::KeyboardPtr> keyboard_vector;
@@ -742,14 +852,15 @@ void InputDeviceSettingsControllerImpl::SetKeyboardSettings(
     RecordSetKeyboardSettingsValidMetric(/*is_valid=*/false);
     return;
   }
-
   auto& found_keyboard = *found_keyboard_iter->second;
+
   if (!KeyboardSettingsAreValid(found_keyboard, *settings,
                                 policy_handler_->keyboard_policies())) {
     RecordSetKeyboardSettingsValidMetric(/*is_valid=*/false);
     return;
   }
   RecordSetKeyboardSettingsValidMetric(/*is_valid=*/true);
+
   const auto old_settings = std::move(found_keyboard.settings);
   found_keyboard.settings = settings.Clone();
   keyboard_pref_handler_->UpdateKeyboardSettings(
@@ -757,16 +868,12 @@ void InputDeviceSettingsControllerImpl::SetKeyboardSettings(
       found_keyboard);
   metrics_manager_->RecordKeyboardChangedMetrics(found_keyboard, *old_settings);
   DispatchKeyboardSettingsChanged(id);
-  // Check the list of keyboards to see if any have the same |device_key|.
-  // If so, their settings need to also be updated.
-  for (const auto& [device_id, keyboard] : keyboards_) {
-    if (device_id != found_keyboard.id &&
-        keyboard->device_key == found_keyboard.device_key) {
-      keyboard->settings = settings->Clone();
-      DispatchKeyboardSettingsChanged(device_id);
-    }
-  }
 
+  UpdateDuplicateDeviceSettings(
+      found_keyboard, keyboards_,
+      base::BindRepeating(
+          &InputDeviceSettingsControllerImpl::DispatchKeyboardSettingsChanged,
+          base::Unretained(this)));
   RefreshStoredLoginScreenKeyboardSettings();
 }
 
@@ -788,22 +895,19 @@ void InputDeviceSettingsControllerImpl::SetTouchpadSettings(
     return;
   }
   RecordSetTouchpadSettingsValidMetric(/*is_valid=*/true);
+
   const auto old_settings = std::move(found_touchpad.settings);
   found_touchpad.settings = settings.Clone();
   touchpad_pref_handler_->UpdateTouchpadSettings(active_pref_service_,
                                                  found_touchpad);
   metrics_manager_->RecordTouchpadChangedMetrics(found_touchpad, *old_settings);
   DispatchTouchpadSettingsChanged(id);
-  // Check the list of touchpads to see if any have the same |device_key|.
-  // If so, their settings need to also be updated.
-  for (const auto& [device_id, touchpad] : touchpads_) {
-    if (device_id != found_touchpad.id &&
-        touchpad->device_key == found_touchpad.device_key) {
-      touchpad->settings = settings->Clone();
-      DispatchTouchpadSettingsChanged(device_id);
-    }
-  }
 
+  UpdateDuplicateDeviceSettings(
+      found_touchpad, touchpads_,
+      base::BindRepeating(
+          &InputDeviceSettingsControllerImpl::DispatchTouchpadSettingsChanged,
+          base::Unretained(this)));
   RefreshStoredLoginScreenTouchpadSettings();
 }
 
@@ -825,21 +929,19 @@ void InputDeviceSettingsControllerImpl::SetMouseSettings(
     return;
   }
   RecordSetMouseSettingsValidMetric(/*is_valid=*/true);
+
   const auto old_settings = std::move(found_mouse.settings);
   found_mouse.settings = settings.Clone();
   mouse_pref_handler_->UpdateMouseSettings(
       active_pref_service_, policy_handler_->mouse_policies(), found_mouse);
   metrics_manager_->RecordMouseChangedMetrics(found_mouse, *old_settings);
   DispatchMouseSettingsChanged(id);
-  // Check the list of mice to see if any have the same |device_key|.
-  // If so, their settings need to also be updated.
-  for (const auto& [device_id, mouse] : mice_) {
-    if (device_id != found_mouse.id &&
-        mouse->device_key == found_mouse.device_key) {
-      mouse->settings = settings->Clone();
-      DispatchMouseSettingsChanged(device_id);
-    }
-  }
+
+  UpdateDuplicateDeviceSettings(
+      found_mouse, mice_,
+      base::BindRepeating(
+          &InputDeviceSettingsControllerImpl::DispatchMouseSettingsChanged,
+          base::Unretained(this)));
   RefreshStoredLoginScreenMouseSettings();
 }
 
@@ -892,19 +994,17 @@ void InputDeviceSettingsControllerImpl::SetGraphicsTabletSettings(
   if (!GraphicsTabletSettingsAreValid(found_graphics_tablet, *settings)) {
     return;
   }
+
   found_graphics_tablet.settings = settings.Clone();
   graphics_tablet_pref_handler_->UpdateGraphicsTabletSettings(
       active_pref_service_, found_graphics_tablet);
   DispatchGraphicsTabletSettingsChanged(id);
-  // Check the list of graphics tablets to see if any have the same
-  // |device_key|. If so, their settings need to also be updated.
-  for (const auto& [device_id, graphics_tablet] : graphics_tablets_) {
-    if (device_id != found_graphics_tablet.id &&
-        graphics_tablet->device_key == found_graphics_tablet.device_key) {
-      graphics_tablet->settings = settings->Clone();
-      DispatchGraphicsTabletSettingsChanged(device_id);
-    }
-  }
+
+  UpdateDuplicateDeviceSettings(
+      found_graphics_tablet, graphics_tablets_,
+      base::BindRepeating(&InputDeviceSettingsControllerImpl::
+                              DispatchGraphicsTabletSettingsChanged,
+                          base::Unretained(this)));
 }
 
 void InputDeviceSettingsControllerImpl::AddObserver(Observer* observer) {
@@ -1154,17 +1254,7 @@ void InputDeviceSettingsControllerImpl::OnGraphicsTabletListUpdated(
   for (const auto& graphics_tablet : graphics_tablets_to_add) {
     auto mojom_graphics_tablet = BuildMojomGraphicsTablet(graphics_tablet);
     // TODO(wangdanny): Add InitializeGraphicsTabletSettings.
-    std::vector<mojom::ButtonRemappingPtr> tablet_button_remappings;
-    std::vector<mojom::ButtonRemappingPtr> pen_button_remappings;
-    tablet_button_remappings.push_back(mojom::ButtonRemapping::New(
-        /*name=*/"test1",
-        /*button=*/
-        mojom::Button::NewCustomizableButton(mojom::CustomizableButton::kBack),
-        /*remapping_action=*/
-        mojom::RemappingAction::NewAction(
-            ash::AcceleratorAction::kBrightnessUp)));
-    mojom_graphics_tablet->settings = mojom::GraphicsTabletSettings::New(
-        std::move(tablet_button_remappings), std::move(pen_button_remappings));
+    mojom_graphics_tablet->settings = mojom::GraphicsTabletSettings::New();
     graphics_tablets_.insert_or_assign(graphics_tablet.id,
                                        std::move(mojom_graphics_tablet));
     DispatchGraphicsTabletConnected(graphics_tablet.id);
@@ -1297,6 +1387,138 @@ void InputDeviceSettingsControllerImpl::InitializeTouchpadSettings(
 
   touchpad_pref_handler_->InitializeLoginScreenTouchpadSettings(
       local_state_, active_account_id_.value(), touchpad);
+}
+
+void InputDeviceSettingsControllerImpl::StartObservingButtons(DeviceId id) {
+  DCHECK(features::IsPeripheralCustomizationEnabled());
+  PeripheralCustomizationEventRewriter* rewriter =
+      Shell::Get()
+          ->event_rewriter_controller()
+          ->peripheral_customization_event_rewriter();
+  CHECK(rewriter);
+  if (mice_.contains(id)) {
+    rewriter->StartObservingMouse(id);
+  } else if (graphics_tablets_.contains(id)) {
+    rewriter->StartObservingGraphicsTablet(id);
+  }
+}
+
+void InputDeviceSettingsControllerImpl::StopObservingButtons() {
+  DCHECK(features::IsPeripheralCustomizationEnabled());
+  PeripheralCustomizationEventRewriter* rewriter =
+      Shell::Get()
+          ->event_rewriter_controller()
+          ->peripheral_customization_event_rewriter();
+  CHECK(rewriter);
+  rewriter->StopObserving();
+}
+
+void InputDeviceSettingsControllerImpl::OnMouseButtonPressed(
+    DeviceId device_id,
+    const mojom::Button& button) {
+  DCHECK(features::IsPeripheralCustomizationEnabled());
+  auto mouse_iter = mice_.find(device_id);
+  if (mouse_iter == mice_.end()) {
+    return;
+  }
+
+  auto& mouse = *mouse_iter->second;
+  auto& button_remappings = mouse.settings->button_remappings;
+  auto remapping_iter =
+      base::ranges::find(button_remappings, button,
+                         [](const mojom::ButtonRemappingPtr& remapping) {
+                           return *remapping->button;
+                         });
+  if (remapping_iter != button_remappings.end()) {
+    DispatchCustomizableMouseButtonPressed(mouse, button);
+    return;
+  }
+
+  AddButtonToButtonRemappingList(button, button_remappings);
+  mouse_pref_handler_->UpdateMouseSettings(
+      active_pref_service_, policy_handler_->mouse_policies(), mouse);
+  DispatchCustomizableMouseButtonPressed(mouse, button);
+  DispatchMouseSettingsChanged(device_id);
+
+  UpdateDuplicateDeviceSettings(
+      mouse, mice_,
+      base::BindRepeating(
+          &InputDeviceSettingsControllerImpl::DispatchMouseSettingsChanged,
+          base::Unretained(this)));
+}
+
+void InputDeviceSettingsControllerImpl::OnGraphicsTabletButtonPressed(
+    DeviceId device_id,
+    const mojom::Button& button) {
+  DCHECK(features::IsPeripheralCustomizationEnabled());
+  auto graphics_tablet_iter = graphics_tablets_.find(device_id);
+  if (graphics_tablet_iter == graphics_tablets_.end()) {
+    return;
+  }
+
+  auto& graphics_tablet = *graphics_tablet_iter->second;
+  auto& tablet_button_remappings =
+      graphics_tablet.settings->tablet_button_remappings;
+  auto tablet_remapping_iter =
+      base::ranges::find(tablet_button_remappings, button,
+                         [](const mojom::ButtonRemappingPtr& remapping) {
+                           return *remapping->button;
+                         });
+  if (tablet_remapping_iter != tablet_button_remappings.end()) {
+    DispatchCustomizableTabletButtonPressed(graphics_tablet, button);
+    return;
+  }
+
+  auto& pen_button_remappings = graphics_tablet.settings->pen_button_remappings;
+  auto pen_remapping_iter =
+      base::ranges::find(pen_button_remappings, button,
+                         [](const mojom::ButtonRemappingPtr& remapping) {
+                           return *remapping->button;
+                         });
+  if (pen_remapping_iter != pen_button_remappings.end()) {
+    DispatchCustomizablePenButtonPressed(graphics_tablet, button);
+    return;
+  }
+
+  if (IsGraphicsTabletPenButton(button)) {
+    AddButtonToButtonRemappingList(button, pen_button_remappings);
+    DispatchCustomizablePenButtonPressed(graphics_tablet, button);
+  } else {
+    AddButtonToButtonRemappingList(button, tablet_button_remappings);
+    DispatchCustomizableTabletButtonPressed(graphics_tablet, button);
+  }
+  // TODO(dpad): Update graphics tablet prefs.
+  DispatchGraphicsTabletSettingsChanged(device_id);
+
+  UpdateDuplicateDeviceSettings(
+      graphics_tablet, graphics_tablets_,
+      base::BindRepeating(&InputDeviceSettingsControllerImpl::
+                              DispatchGraphicsTabletSettingsChanged,
+                          base::Unretained(this)));
+}
+
+void InputDeviceSettingsControllerImpl::DispatchCustomizableMouseButtonPressed(
+    const mojom::Mouse& mouse,
+    const mojom::Button& button) {
+  for (auto& observer : observers_) {
+    observer.OnCustomizableMouseButtonPressed(mouse, button);
+  }
+}
+
+void InputDeviceSettingsControllerImpl::DispatchCustomizableTabletButtonPressed(
+    const mojom::GraphicsTablet& graphics_tablet,
+    const mojom::Button& button) {
+  for (auto& observer : observers_) {
+    observer.OnCustomizableTabletButtonPressed(graphics_tablet, button);
+  }
+}
+
+void InputDeviceSettingsControllerImpl::DispatchCustomizablePenButtonPressed(
+    const mojom::GraphicsTablet& graphics_tablet,
+    const mojom::Button& button) {
+  for (auto& observer : observers_) {
+    observer.OnCustomizablePenButtonPressed(graphics_tablet, button);
+  }
 }
 
 }  // namespace ash

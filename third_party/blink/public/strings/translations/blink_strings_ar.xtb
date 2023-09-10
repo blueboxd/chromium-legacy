@@ -24,6 +24,7 @@
 <translation id="1993104285338243655">تم التبديل إلى النسخ المطابق.</translation>
 <translation id="2031987842108996681">درجات اللون الأحمر</translation>
 <translation id="2060505056492490888">تم استخدام "<ph name="DOT" />" في موضع خاطئ في "<ph name="INVALIDDOMAIN" />".</translation>
+<translation id="2068711044993563745">يجب أن يكون الحد الأدنى للقيمة (<ph name="MINIMUM" />) أقل من الحد الأقصى للقيمة (<ph name="MAXIMUM" />).</translation>
 <translation id="2148716181193084225">اليوم</translation>
 <translation id="2226276347425096477">يُرجى اختصار هذا النص حتى يصل إلى <ph name="MAX_CHARACTERS" /> من الحروف أو أقل (أنت الآن تستخدم <ph name="CURRENT_LENGTH" /> من الحروف).</translation>
 <translation id="2247351761944213033">الأسبوع <ph name="WEEKNUMBER" />، <ph name="YEAR" /></translation>
@@ -44,6 +45,7 @@
 <translation id="2761667185364618470">يُرجى وضع علامة في هذا المربع إذا أردت المتابعة.</translation>
 <translation id="2908441821576996758">يُرجى إدخال قائمة مفصولة بفواصل لعناوين البريد الإلكتروني.</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> ميغابايت</translation>
+<translation id="3053226512517284904">عرض قائمة أوصاف الصوت</translation>
 <translation id="3075154866155599887">يرجى إدخال قيمة صالحة. الحقل غير مكتمل أو أن التاريخ غير صالح.</translation>
 <translation id="310520048233152454">‏يُرجى إدخال عنوان URL.</translation>
 <translation id="3220661731597678625">الخطوة الحالية</translation>

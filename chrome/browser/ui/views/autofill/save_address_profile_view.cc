@@ -48,6 +48,7 @@
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/metadata/view_factory_internal.h"
 #include "ui/views/style/typography.h"
+#include "ui/views/style/typography_provider.h"
 #include "ui/views/view_class_properties.h"
 
 namespace autofill {
@@ -59,8 +60,8 @@ constexpr int kIconSize = 16;
 int ComboboxIconSize() {
   // Use the line height of the body small text. This allows the icons to adapt
   // if the user changes the font size.
-  return views::style::GetLineHeight(views::style::CONTEXT_MENU,
-                                     views::style::STYLE_PRIMARY);
+  return views::TypographyProvider::Get().GetLineHeight(
+      views::style::CONTEXT_MENU, views::style::STYLE_PRIMARY);
 }
 
 std::unique_ptr<views::ImageView> CreateAddressSectionIcon(
@@ -166,10 +167,12 @@ SaveAddressProfileView::SaveAddressProfileView(
   SetAcceptCallback(base::BindOnce(
       &SaveUpdateAddressProfileBubbleController::OnUserDecision,
       base::Unretained(controller_),
-      AutofillClient::SaveAddressProfileOfferUserDecision::kAccepted));
+      AutofillClient::SaveAddressProfileOfferUserDecision::kAccepted,
+      controller->GetProfileToSave()));
   SetCancelCallback(base::BindOnce(
       &SaveUpdateAddressProfileBubbleController::OnUserDecision,
-      base::Unretained(controller_), controller_->GetCancelCallbackValue()));
+      base::Unretained(controller_), controller_->GetCancelCallbackValue(),
+      controller->GetProfileToSave()));
 
   SetProperty(views::kElementIdentifierKey, kTopViewId);
   SetTitle(controller_->GetWindowTitle());
@@ -336,7 +339,7 @@ void SaveAddressProfileView::AlignIcons() {
   CHECK(address_components_view_);
   // Adjust margins to make sure the edit button is vertically centered with the
   // first line in the address components view.
-  int label_line_height = views::style::GetLineHeight(
+  int label_line_height = views::TypographyProvider::Get().GetLineHeight(
       views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY);
   for (views::ImageView* icon_view : address_section_icons_) {
     DCHECK(icon_view);

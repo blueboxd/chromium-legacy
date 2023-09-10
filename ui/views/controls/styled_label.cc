@@ -26,6 +26,8 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_fragment.h"
+#include "ui/views/style/typography.h"
+#include "ui/views/style/typography_provider.h"
 #include "ui/views/view_class_properties.h"
 
 namespace views {
@@ -106,7 +108,7 @@ void StyledLabel::SetText(std::u16string text) {
 }
 
 gfx::FontList StyledLabel::GetFontList(const RangeStyleInfo& style_info) const {
-  return style_info.custom_font.value_or(style::GetFont(
+  return style_info.custom_font.value_or(TypographyProvider::Get().GetFont(
       text_context_, style_info.text_style.value_or(default_text_style_)));
 }
 
@@ -157,9 +159,23 @@ void StyledLabel::SetDefaultTextStyle(int text_style) {
   OnPropertyChanged(&default_text_style_, kPropertyEffectsPreferredSizeChanged);
 }
 
+absl::optional<ui::ColorId> StyledLabel::GetDefaultEnabledColorId() const {
+  return default_enabled_color_id_;
+}
+
+void StyledLabel::SetDefaultEnabledColorId(
+    absl::optional<ui::ColorId> enabled_color_id) {
+  if (default_enabled_color_id_ == enabled_color_id) {
+    return;
+  }
+
+  default_enabled_color_id_ = enabled_color_id;
+  OnPropertyChanged(&default_enabled_color_id_, kPropertyEffectsPaint);
+}
+
 int StyledLabel::GetLineHeight() const {
-  return line_height_.value_or(
-      style::GetLineHeight(text_context_, default_text_style_));
+  return line_height_.value_or(TypographyProvider::Get().GetLineHeight(
+      text_context_, default_text_style_));
 }
 
 void StyledLabel::SetLineHeight(int line_height) {
@@ -577,6 +593,8 @@ std::unique_ptr<Label> StyledLabel::CreateLabel(
     result->SetEnabledColorId(style_info.override_color_id.value());
   } else if (style_info.override_color) {
     result->SetEnabledColor(style_info.override_color.value());
+  } else if (default_enabled_color_id_) {
+    result->SetEnabledColorId(default_enabled_color_id_);
   }
   if (!style_info.tooltip.empty())
     result->SetTooltipText(style_info.tooltip);
@@ -630,6 +648,7 @@ ADD_PROPERTY_METADATA(int, DefaultTextStyle)
 ADD_PROPERTY_METADATA(int, LineHeight)
 ADD_PROPERTY_METADATA(bool, AutoColorReadabilityEnabled)
 ADD_PROPERTY_METADATA(StyledLabel::ColorVariant, DisplayedOnBackgroundColor)
+ADD_PROPERTY_METADATA(absl::optional<ui::ColorId>, DefaultEnabledColorId)
 END_METADATA
 
 }  // namespace views

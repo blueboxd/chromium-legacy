@@ -24,6 +24,7 @@
 <translation id="1993104285338243655">បាន​ប្តូរ​ទៅការបញ្ចាំង</translation>
 <translation id="2031987842108996681">បណ្ដាញ​ក្រហម</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />' ត្រូវបានប្រើនៅក្នុងទីតាំងខុសនៅក្នុង '<ph name="INVALIDDOMAIN" />'។</translation>
+<translation id="2068711044993563745">តម្លៃអប្បបរមា (<ph name="MINIMUM" />) ត្រូវតែតូចជាងតម្លៃអតិបរមា (<ph name="MAXIMUM" />)។</translation>
 <translation id="2148716181193084225">ថ្ងៃនេះ</translation>
 <translation id="2226276347425096477">សូមធ្វើឲ្យអត្ថបទនេះខ្លីទៅ <ph name="MAX_CHARACTERS" /> តួអក្សរ ឫតិចជាងនេះ (ឥឡូវនេះអ្នកកំពុងប្រើ <ph name="CURRENT_LENGTH" /> តួអក្សរ)។</translation>
 <translation id="2247351761944213033">សប្តាហ៍ <ph name="WEEKNUMBER" />, <ph name="YEAR" /></translation>
@@ -44,6 +45,7 @@
 <translation id="2761667185364618470">សូមធីកក្នុងប្រអប់នេះប្រសិនបើអ្នកចង់ដំណើរការ។</translation>
 <translation id="2908441821576996758">សូមបញ្ចូលសញ្ញាក្បៀស ដែលបែងចែកបញ្ជីអាសយដ្ឋានអ៊ីម៉ែល។</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
+<translation id="3053226512517284904">បង្ហាញម៉ឺនុយនៃ​ការពណ៌នា​ជាសំឡេង</translation>
 <translation id="3075154866155599887">សូមបញ្ចូលតម្លៃដែលមានសុពលភាព។ ប្រអប់បំពេញមិនបានបញ្ចប់ ឬមានកាលបរិច្ឆេទដែលគ្មានសុពលភាព។</translation>
 <translation id="310520048233152454">សូមបញ្ចូល URL។</translation>
 <translation id="3220661731597678625">ជំហានបច្ចុប្បន្ន</translation>

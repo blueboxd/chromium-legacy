@@ -120,14 +120,7 @@ const BookmarkNode* FindNodeById(bookmarks::BookmarkModel* model, int64_t id) {
 const bookmarks::BookmarkNode* FindNodeByUuid(bookmarks::BookmarkModel* model,
                                               const base::Uuid& uuid) {
   CHECK(model);
-  ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
-  while (iterator.has_next()) {
-    const BookmarkNode* node = iterator.Next();
-    if (node->uuid() == uuid) {
-      return node;
-    }
-  }
-  return nullptr;
+  return model->GetNodeByUuid(uuid);
 }
 
 const BookmarkNode* FindFolderById(bookmarks::BookmarkModel* model,
@@ -181,17 +174,6 @@ bookmarks::BookmarkModel* GetBookmarkModelForNode(
       GetBookmarkModelType(bookmark_node, profile_model, account_model);
   return modelType == bookmarks::StorageType::kAccount ? account_model
                                                        : profile_model;
-}
-
-bool AreAllAvailableBookmarkModelsLoaded(
-    bookmarks::BookmarkModel* profile_model,
-    bookmarks::BookmarkModel* account_model) {
-  DCHECK(profile_model);
-  if (!base::FeatureList::IsEnabled(syncer::kEnableBookmarksAccountStorage)) {
-    return profile_model->loaded();
-  }
-  DCHECK(account_model);
-  return profile_model->loaded() && account_model->loaded();
 }
 
 bool IsAccountBookmarkStorageOptedIn(syncer::SyncService* sync_service) {

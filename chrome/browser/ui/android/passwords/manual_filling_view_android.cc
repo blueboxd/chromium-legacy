@@ -97,6 +97,15 @@ ScopedJavaGlobalRef<jobject> ConvertAccessorySheetDataToJavaObject(
         toggle.is_enabled(), static_cast<int>(toggle.accessory_action()));
   }
 
+  for (const autofill::PasskeySection& passkey_section :
+       tab_data.passkey_section_list()) {
+    Java_ManualFillingComponentBridge_addPasskeySectionToAccessorySheetData(
+        env, java_object, j_tab_data,
+        static_cast<int>(tab_data.get_sheet_type()),
+        ConvertUTF8ToJavaString(env, passkey_section.display_name()),
+        base::android::ToJavaByteArray(env, passkey_section.passkey_id()));
+  }
+
   for (const UserInfo& user_info : tab_data.user_info_list()) {
     ScopedJavaLocalRef<jobject> j_user_info =
         Java_ManualFillingComponentBridge_addUserInfoToAccessorySheetData(
@@ -147,8 +156,9 @@ ManualFillingViewAndroid::ManualFillingViewAndroid(
     : controller_(controller), web_contents_(web_contents) {}
 
 ManualFillingViewAndroid::~ManualFillingViewAndroid() {
-  if (!java_object_internal_)
+  if (!java_object_internal_) {
     return;  // No work to do.
+  }
   Java_ManualFillingComponentBridge_destroy(
       base::android::AttachCurrentThread(), java_object_internal_);
   java_object_internal_.Reset(nullptr);
@@ -225,6 +235,17 @@ void ManualFillingViewAndroid::OnFillingTriggered(
       ConvertJavaUserInfoField(env, j_user_info_field));
 }
 
+void ManualFillingViewAndroid::OnPasskeySelected(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint tab_type,
+    const base::android::JavaParamRef<jbyteArray>& j_passkey_id) {
+  std::vector<uint8_t> passkey;
+  base::android::AppendJavaByteArrayToByteVector(env, j_passkey_id, &passkey);
+  controller_->OnPasskeySelected(
+      static_cast<autofill::AccessoryTabType>(tab_type), passkey);
+}
+
 void ManualFillingViewAndroid::OnOptionSelected(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
@@ -262,8 +283,9 @@ void ManualFillingViewAndroid::OnViewDestroyed(
 
 base::android::ScopedJavaGlobalRef<jobject>
 ManualFillingViewAndroid::GetOrCreateJavaObject() {
-  if (java_object_internal_)
+  if (java_object_internal_) {
     return java_object_internal_;
+  }
   if (controller_->container_view() == nullptr ||
       controller_->container_view()->GetWindowAndroid() == nullptr) {
     return nullptr;  // No window attached (yet or anymore).

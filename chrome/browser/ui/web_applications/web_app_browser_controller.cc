@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/tabs/tab_menu_model_factory.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_tabbed_utils.h"
-#include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
 #include "chrome/browser/web_applications/locks/app_lock.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
@@ -37,6 +36,7 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
+#include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
@@ -44,6 +44,7 @@
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/native_theme/native_theme.h"
@@ -193,7 +194,7 @@ bool WebAppBrowserController::AppUsesBorderlessMode() const {
 }
 
 bool WebAppBrowserController::AppUsesTabbed() const {
-  if (!base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip)) {
+  if (!base::FeatureList::IsEnabled(blink::features::kDesktopPWAsTabStrip)) {
     return false;
   }
   return effective_display_mode_ == DisplayMode::kTabbed;
@@ -598,10 +599,9 @@ bool WebAppBrowserController::CanUserUninstall() const {
 
 void WebAppBrowserController::Uninstall(
     webapps::WebappUninstallSource webapp_uninstall_source) {
-  WebAppUiManagerImpl::Get(&*provider_)
-      ->PresentUserUninstallDialog(app_id(),
-                                   webapps::WebappUninstallSource::kAppMenu,
-                                   browser()->window(), base::DoNothing());
+  provider_->ui_manager().PresentUserUninstallDialog(
+      app_id(), webapps::WebappUninstallSource::kAppMenu, browser()->window(),
+      base::DoNothing());
 }
 
 bool WebAppBrowserController::IsInstalled() const {

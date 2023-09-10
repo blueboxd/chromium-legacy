@@ -24,5 +24,7 @@ intent_definition("intents") {
     "RunSafetyCheckIntent",
     "ManagePasswordsIntent",
     "ManageSettingsIntent",
+    "OpenLatestTabIntent",
+    "OpenLensIntent",
   ]
 }

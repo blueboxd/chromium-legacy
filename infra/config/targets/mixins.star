@@ -152,6 +152,16 @@ targets.mixin(
 )
 
 targets.mixin(
+    name = "android",
+    swarming = targets.swarming(
+        dimensions = {
+            "os": "Android",
+            "cpu": None,
+        },
+    ),
+)
+
+targets.mixin(
     name = "android_r",
     swarming = targets.swarming(
         dimensions = {
@@ -209,6 +219,15 @@ targets.mixin(
     swarming = targets.swarming(
         dimensions = {
             "pool": "chrome.tests.finch",
+        },
+    ),
+)
+
+targets.mixin(
+    name = "chrome-intelligence-swarming-pool",
+    swarming = targets.swarming(
+        dimensions = {
+            "pool": "chrome.tests.intelligence",
         },
     ),
 )
@@ -829,30 +848,6 @@ targets.mixin(
     ),
 )
 
-# TODO(crbug.com/1464635): Remove this once Mac13.4 upgrade
-# is complete. This is only a temp workaround to roll Xcode 15.
-targets.mixin(
-    name = "mac_13.4_arm64",
-    swarming = targets.swarming(
-        dimensions = {
-            "cpu": "arm64",
-            "os": "Mac-13.4",
-        },
-    ),
-)
-
-# TODO(crbug.com/1464635): Remove this once Mac13.4 upgrade
-# is complete. This is only a temp workaround to roll Xcode 15.
-targets.mixin(
-    name = "mac_13.4_x64",
-    swarming = targets.swarming(
-        dimensions = {
-            "cpu": "x86-64",
-            "os": "Mac-13.4",
-        },
-    ),
-)
-
 targets.mixin(
     name = "mac_13_arm64",
     swarming = targets.swarming(
@@ -975,7 +970,7 @@ targets.mixin(
         dimensions = {
             "cpu": "x86-64",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1",
+            "os": "Mac-13.3.1|Mac-13.5",
             "display_attached": "1",
         },
     ),
@@ -1001,7 +996,7 @@ targets.mixin(
             "cpu": "x86-64",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.4.1|Mac-13.5",
+            "os": "Mac-13.5",
             "pool": "chromium.tests.gpu",
             "display_attached": "1",
         },
@@ -1015,7 +1010,7 @@ targets.mixin(
             "cpu": "x86-64",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.2.1|Mac-13.5",
             "pool": "chromium.tests.gpu",
             "display_attached": "1",
         },
@@ -1044,7 +1039,7 @@ targets.mixin(
             "cpu": "x86-64",
             "gpu": "10de:0fe9",
             "hidpi": "1",
-            "os": "Mac-10.14.6",
+            "os": "Mac-11.7.9",
             "pool": "chromium.tests.gpu",
             "display_attached": "1",
         },

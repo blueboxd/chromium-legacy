@@ -29,6 +29,7 @@
 #include "media/base/decoder_factory.h"
 #include "media/base/media_permission.h"
 #include "media/media_buildflags.h"
+#include "media/mojo/clients/mojo_video_encoder_metrics_provider.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "net/net_buildflags.h"
 #include "third_party/blink/public/common/features.h"
@@ -119,19 +120,47 @@ bool IsValidPortRange(uint16_t min_port, uint16_t max_port) {
   return min_port != 0 && max_port != 0;
 }
 
+scoped_refptr<media::MojoVideoEncoderMetricsProviderFactory>
+CreateMojoVideoEncoderMetricsProviderFactory(LocalFrame* local_frame) {
+  CHECK(local_frame);
+  mojo::PendingRemote<media::mojom::VideoEncoderMetricsProvider>
+      video_encoder_metrics_provider;
+  local_frame->GetBrowserInterfaceBroker().GetInterface(
+      video_encoder_metrics_provider.InitWithNewPipeAndPassReceiver());
+  return base::MakeRefCounted<media::MojoVideoEncoderMetricsProviderFactory>(
+      media::mojom::VideoEncoderUseCase::kWebRTC,
+      std::move(video_encoder_metrics_provider));
+}
+
 // PeerConnectionDependencies wants to own the factory, so we provide a simple
 // object that delegates calls to the IpcPacketSocketFactory.
 // TODO(zstein): Move the creation logic from IpcPacketSocketFactory in to this
 // class.
-class ProxyAsyncResolverFactory final : public webrtc::AsyncResolverFactory {
+class ProxyAsyncDnsResolverFactory final
+    : public webrtc::AsyncDnsResolverFactoryInterface {
  public:
-  explicit ProxyAsyncResolverFactory(IpcPacketSocketFactory* ipc_psf)
+  explicit ProxyAsyncDnsResolverFactory(IpcPacketSocketFactory* ipc_psf)
       : ipc_psf_(ipc_psf) {
     DCHECK(ipc_psf);
   }
 
-  rtc::AsyncResolverInterface* Create() override {
-    return ipc_psf_->CreateAsyncResolver();
+  std::unique_ptr<webrtc::AsyncDnsResolverInterface> Create() override {
+    return ipc_psf_->CreateAsyncDnsResolver();
+  }
+  std::unique_ptr<webrtc::AsyncDnsResolverInterface> CreateAndResolve(
+      const rtc::SocketAddress& addr,
+      absl::AnyInvocable<void()> callback) override {
+    auto temp = Create();
+    temp->Start(addr, std::move(callback));
+    return temp;
+  }
+  std::unique_ptr<webrtc::AsyncDnsResolverInterface> CreateAndResolve(
+      const rtc::SocketAddress& addr,
+      int family,
+      absl::AnyInvocable<void()> callback) override {
+    auto temp = Create();
+    temp->Start(addr, family, std::move(callback));
+    return temp;
   }
 
  private:
@@ -512,6 +541,13 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
   worker_thread_started_event.Wait();
   CHECK(GetWorkerThread());
 
+  // Only the JS main thread can establish mojo connection with a browser
+  // process against RendererFrameHost. RTCVideoEncoderFactory and
+  // RTCVideoEncoders run in the webrtc encoder thread. Therefore, we create
+  // MojoVideoEncoderMetricsProviderFactory, establish the mojo connection here
+  // and pass it to RTCVideoEncoder. VideoEncoderMetricsProviders created by
+  // MojoVideoEncoderMetricsProviderFactory::CreateVideoEncoderMetricsProvider()
+  // use the mojo connection. The factory will be destroyed in gpu task runner.
   base::WaitableEvent start_signaling_event(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -524,6 +560,7 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
           Platform::Current()->MediaThreadTaskRunner(),
           CrossThreadUnretained(Platform::Current()->GetGpuFactories()),
           Platform::Current()->GetMediaDecoderFactory(),
+          CreateMojoVideoEncoderMetricsProviderFactory(DomWindow()->GetFrame()),
           CrossThreadUnretained(&start_signaling_event)));
 
   start_signaling_event.Wait();
@@ -538,6 +575,8 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
     scoped_refptr<base::SequencedTaskRunner> media_task_runner,
     media::GpuVideoAcceleratorFactories* gpu_factories,
     base::WeakPtr<media::DecoderFactory> media_decoder_factory,
+    scoped_refptr<media::MojoVideoEncoderMetricsProviderFactory>
+        video_encoder_metrics_provider_factory,
     base::WaitableEvent* event) {
   DCHECK(GetChromeSignalingThread().task_runner()->BelongsToCurrentThread());
   DCHECK(GetNetworkThread());
@@ -596,7 +635,7 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
   // ExecutionContext is destroyed.
   std::unique_ptr<webrtc::VideoEncoderFactory> webrtc_encoder_factory =
       blink::CreateWebrtcVideoEncoderFactory(
-          gpu_factories,
+          gpu_factories, std::move(video_encoder_metrics_provider_factory),
           base::BindRepeating(&WebrtcVideoPerfReporter::StoreWebrtcVideoStats,
                               base::Unretained(&webrtc_video_perf_reporter_)));
   std::unique_ptr<webrtc::VideoDecoderFactory> webrtc_decoder_factory =
@@ -681,7 +720,7 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
                                         .webrtc_allow_legacy_tls_protocols);
     dependencies.allocator = CreatePortAllocator(web_frame);
   }
-  dependencies.async_resolver_factory = CreateAsyncResolverFactory();
+  dependencies.async_dns_resolver_factory = CreateAsyncDnsResolverFactory();
   auto pc_or_error = GetPcFactory()->CreatePeerConnectionOrError(
       config, std::move(dependencies));
   if (pc_or_error.ok()) {
@@ -789,10 +828,10 @@ PeerConnectionDependencyFactory::CreatePortAllocator(
   return port_allocator;
 }
 
-std::unique_ptr<webrtc::AsyncResolverFactory>
-PeerConnectionDependencyFactory::CreateAsyncResolverFactory() {
+std::unique_ptr<webrtc::AsyncDnsResolverFactoryInterface>
+PeerConnectionDependencyFactory::CreateAsyncDnsResolverFactory() {
   EnsureInitialized();
-  return std::make_unique<ProxyAsyncResolverFactory>(socket_factory_.get());
+  return std::make_unique<ProxyAsyncDnsResolverFactory>(socket_factory_.get());
 }
 
 scoped_refptr<webrtc::MediaStreamInterface>

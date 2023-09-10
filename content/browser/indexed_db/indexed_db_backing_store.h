@@ -45,6 +45,7 @@
 
 namespace base {
 class SequencedTaskRunner;
+class WaitableEvent;
 }  // namespace base
 
 namespace blink {
@@ -54,7 +55,7 @@ struct IndexedDBDatabaseMetadata;
 
 namespace content {
 class AutoDidCommitTransaction;
-class IndexedDBBucketState;
+class IndexedDBBucketContext;
 class IndexedDBActiveBlobRegistry;
 class LevelDBWriteBatch;
 class TransactionalLevelDBDatabase;
@@ -406,6 +407,8 @@ class CONTENT_EXPORT IndexedDBBackingStore {
   // operations or method calls on this object.
   leveldb::Status Initialize(bool clean_active_blob_journal);
 
+  virtual void TearDown(base::WaitableEvent* signal_on_destruction);
+
   const storage::BucketLocator& bucket_locator() const {
     return bucket_locator_;
   }
@@ -657,7 +660,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
       blink::mojom::IDBTransactionDurability durability);
 
  protected:
-  friend class IndexedDBBucketState;
+  friend class IndexedDBBucketContext;
 
   leveldb::Status AnyDatabaseContainsBlobs(bool* blobs_exist);
 

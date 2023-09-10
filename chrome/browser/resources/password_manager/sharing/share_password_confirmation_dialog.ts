@@ -6,6 +6,8 @@ import 'chrome://resources/cr_elements/cr_hidden_style.css.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import './share_password_dialog_header.js';
+import './share_password_group_avatar.js';
+import '../site_favicon.js';
 
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
@@ -56,6 +58,7 @@ export class SharePasswordConfirmationDialogElement extends
 
       password: Object,
       passwordName: String,
+      iconUrl: String,
 
       recipients: {
         type: Array,
@@ -72,6 +75,7 @@ export class SharePasswordConfirmationDialogElement extends
 
   password: chrome.passwordsPrivate.PasswordUiEntry;
   passwordName: string;
+  iconUrl: string;
   recipients: chrome.passwordsPrivate.RecipientInfo[];
   private dialogStage_: ConfirmationDialogStage =
       ConfirmationDialogStage.LOADING;

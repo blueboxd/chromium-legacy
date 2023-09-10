@@ -109,6 +109,7 @@ use_libevent = dep_libevent && !is_ios
 
 if (is_android || is_robolectric) {
   import("//build/config/android/rules.gni")
+  import("//third_party/jni_zero/jni_zero.gni")
 }
 
 if (is_fuchsia) {
@@ -442,6 +443,7 @@ component("base") {
     "memory/ref_counted_memory.h",
     "memory/safe_ref.h",
     "memory/safe_ref_traits.h",
+    "memory/safety_checks.h",
     "memory/scoped_policy.h",
     "memory/scoped_refptr.h",
     "memory/shared_memory_hooks.h",
@@ -3197,6 +3199,7 @@ test("base_unittests") {
     "memory/ref_counted_memory_unittest.cc",
     "memory/ref_counted_unittest.cc",
     "memory/safe_ref_unittest.cc",
+    "memory/safety_checks_unitttest.cc",
     "memory/shared_memory_hooks_unittest.cc",
     "memory/shared_memory_mapping_unittest.cc",
     "memory/shared_memory_region_unittest.cc",
@@ -3744,6 +3747,7 @@ test("base_unittests") {
       "power_monitor/thermal_state_observer_mac_unittest.mm",
       "process/memory_unittest_mac.h",
       "process/memory_unittest_mac.mm",
+      "system/sys_info_mac_unittest.mm",
     ]
     data_deps += [ "//base/mac:launch_application_test_helper" ]
   }
@@ -3990,7 +3994,13 @@ test("base_unittests") {
       sources += [ "profiler/win32_stack_frame_unwinder_unittest.cc" ]
       deps += [ ":base_profiler_test_support_library" ]
     }
-    sources += [ "files/os_validation_win_unittest.cc" ]
+
+    # These tests are not built by default because they make heavy use of
+    # parameterized tests. Even when disabled, they incur a startup penalty on
+    # base_unittests. See comments in the file as for why they are disabled by
+    # default, and https://crbug.com/1475518 for one consequence of the process
+    # startup penalty.
+    # sources += [ "files/os_validation_win_unittest.cc" ]
 
     if (toolchain_has_rust && win_enable_cfg_guards) {
       deps += [ ":rust_cfg_win_test" ]

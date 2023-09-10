@@ -278,6 +278,7 @@
 <translation id="3264582393905923483">Համատեքստ</translation>
 <translation id="3272909651715601089">Չհաջողվեց բացել «<ph name="PATH" />» արխիվը</translation>
 <translation id="3280431534455935878">Ֆայլի պատրաստում</translation>
+<translation id="3280719573299097127">Դուք միացած եք վճարովի թրաֆիկով ցանցի։ Ֆայլերի համաժամացումը դադարեցվել է։</translation>
 <translation id="3280987981688031357">Վինիլային ձայնապնակ</translation>
 <translation id="3290356915286466215">Պաշտպանված չէ</translation>
 <translation id="3291218047831493686">Միացեք այս ցանցին՝ SIM քարտի կողպման կարգավորումը փոխելու համար</translation>
@@ -631,6 +632,7 @@
 <translation id="5838451609423551646">Բոլոր գրառումներն ընտրվածքից հեռացվեցին:</translation>
 <translation id="5838825566232597749">US Workman, միջազգային</translation>
 <translation id="5845721951356578987">Բուժքույր</translation>
+<translation id="5858478190805449225">Մարտկոցի տնտեսման ռեժիմը միացված է։ Փորձեք նորից, երբ մարտկոցի տնտեսման ռեժիմն անջատված լինի։</translation>
 <translation id="5860491529813859533">Միացնել</translation>
 <translation id="5861477046012235702">Խաղացող</translation>
 <translation id="5864471791310927901">DHCP-ի որոնումը չհաջողվեց</translation>
@@ -897,7 +899,6 @@
 <translation id="7911118814695487383">Լինուքս</translation>
 <translation id="7920501309908018401">«Իմ դրայվը» պանակի ֆայլերն ավտոմատ կհամաժամացվեն ձեր Chromebook-ի հետ, այնպես որ դրանք կարող եք բացել առանց ինտերնետին միանալու։</translation>
 <translation id="7925247922861151263">AAA ստուգումը չհաջողվեց</translation>
-<translation id="7925686952655276919">Չօգտագործել բջջային սարքերի տվյալները համաժամացման համար</translation>
 <translation id="7928710562641958568">Անջատել սարքը</translation>
 <translation id="7933875256234974853">Պատրաստվում ենք համաժամացնել Drive-ի ֆայլերը…</translation>
 <translation id="7943385054491506837">ԱՄՆ (Colemak)</translation>
@@ -920,6 +921,7 @@
 <translation id="8087576439476816834">Ներբեռնել, <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">Ինձ հասանելի</translation>
 <translation id="8116072619078571545">Սառույցով ջուր</translation>
+<translation id="8120392982188717723">Թույլատրել համաժամացումը վճարովի թրաֆիկով ցանցերում</translation>
 <translation id="8124093710070495550">Համաժամացման խնդիր</translation>
 <translation id="8128733386027980860">անգլերեն (ՄԹ)՝ Dvorak ստեղնաշարով</translation>
 <translation id="8137331602592933310">«<ph name="FILENAME" />» ֆայլը համօգտագործվել է ձեզ հետ: Դուք չեք կարող ջնջել այն, քանի որ այն ձերը չէ:</translation>

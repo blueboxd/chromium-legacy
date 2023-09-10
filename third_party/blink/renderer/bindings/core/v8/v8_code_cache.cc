@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"
 
+#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -28,6 +29,13 @@ namespace blink {
 
 namespace {
 
+BASE_FEATURE(kConfigurableV8CodeCacheHotHours,
+             "ConfigurableV8CodeCacheHotHours",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+constexpr base::FeatureParam<int>
+    kV8CodeCacheHotHours(&kConfigurableV8CodeCacheHotHours, "HotHours", 72);
+
 enum CacheTagKind { kCacheTagCode = 0, kCacheTagTimeStamp = 1, kCacheTagLast };
 
 static const int kCacheTagKindSize = 1;
@@ -50,7 +58,7 @@ uint32_t CacheTag(CacheTagKind kind, const String& encoding) {
 
 // Check previously stored timestamp.
 bool IsResourceHotForCaching(const CachedMetadataHandler* cache_handler) {
-  static constexpr base::TimeDelta kHotHours = base::Hours(72);
+  const base::TimeDelta kHotHours = base::Hours(kV8CodeCacheHotHours.Get());
   scoped_refptr<CachedMetadata> cached_metadata =
       cache_handler->GetCachedMetadata(
           V8CodeCache::TagForTimeStamp(cache_handler));
@@ -115,11 +123,13 @@ std::tuple<v8::ScriptCompiler::CompileOptions,
            v8::ScriptCompiler::NoCacheReason>
 V8CodeCache::GetCompileOptions(mojom::blink::V8CacheOptions cache_options,
                                const ClassicScript& classic_script,
-                               bool might_generate_compile_hints) {
-  return GetCompileOptions(
-      cache_options, classic_script.CacheHandler(),
-      classic_script.SourceText().length(), classic_script.SourceLocationType(),
-      classic_script.SourceUrl(), might_generate_compile_hints);
+                               bool might_generate_compile_hints,
+                               bool can_use_compile_hints) {
+  return GetCompileOptions(cache_options, classic_script.CacheHandler(),
+                           classic_script.SourceText().length(),
+                           classic_script.SourceLocationType(),
+                           classic_script.SourceUrl(),
+                           might_generate_compile_hints, can_use_compile_hints);
 }
 
 std::tuple<v8::ScriptCompiler::CompileOptions,
@@ -130,7 +140,8 @@ V8CodeCache::GetCompileOptions(mojom::blink::V8CacheOptions cache_options,
                                size_t source_text_length,
                                ScriptSourceLocationType source_location_type,
                                const KURL& url,
-                               bool might_generate_compile_hints) {
+                               bool might_generate_compile_hints,
+                               bool can_use_compile_hints) {
   static const int kMinimalCodeLength = 1024;
   v8::ScriptCompiler::NoCacheReason no_cache_reason;
 
@@ -154,6 +165,11 @@ V8CodeCache::GetCompileOptions(mojom::blink::V8CacheOptions cache_options,
     // cached scripts (especially if they've been eagerly compiled by a
     // ServiceWorker) and omitting cached scripts would deteriorate the data.
     no_code_cache_compile_options = v8::ScriptCompiler::kProduceCompileHints;
+  } else if (url.ProtocolIsInHTTPFamily() && can_use_compile_hints) {
+    // This doesn't need to be gated behind a runtime flag, because there won't
+    // be any data unless the v8_compile_hints::kConsumeCompileHints
+    // flag is on.
+    no_code_cache_compile_options = v8::ScriptCompiler::kConsumeCompileHints;
   }
 
   switch (source_location_type) {

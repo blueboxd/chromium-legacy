@@ -22,7 +22,6 @@
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_storage_delegate.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
-#include "content/browser/attribution_reporting/common_source_info.h"
 #include "services/network/public/cpp/trigger_verification.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -132,8 +131,8 @@ void ConfigurableStorageDelegate::ShuffleTriggerVerifications(
 }
 
 double ConfigurableStorageDelegate::GetRandomizedResponseRate(
-    const attribution_reporting::EventReportWindows& event_report_windows,
     attribution_reporting::mojom::SourceType,
+    const attribution_reporting::EventReportWindows&,
     int max_event_level_reports) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return randomized_response_rate_;
@@ -141,21 +140,20 @@ double ConfigurableStorageDelegate::GetRandomizedResponseRate(
 
 AttributionStorageDelegate::RandomizedResponse
 ConfigurableStorageDelegate::GetRandomizedResponse(
-    const CommonSourceInfo& source,
-    const attribution_reporting::EventReportWindows& event_report_windows,
-    base::Time source_time,
+    attribution_reporting::mojom::SourceType,
+    const attribution_reporting::EventReportWindows&,
     int max_event_level_reports,
-    double randomized_response_rate) {
+    double randomized_response_rate,
+    base::Time source_time) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return randomized_response_;
 }
 
 double ConfigurableStorageDelegate::ComputeChannelCapacity(
-    const CommonSourceInfo& source,
-    const attribution_reporting::EventReportWindows& event_report_windows,
-    base::Time source_time,
+    attribution_reporting::mojom::SourceType,
+    const attribution_reporting::EventReportWindows&,
     int max_event_level_reports,
-    double randomized_response_rate) {
+    double randomized_response_rate) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return channel_capacity_;
 }

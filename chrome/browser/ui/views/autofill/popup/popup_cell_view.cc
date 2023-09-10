@@ -24,6 +24,7 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/style/typography.h"
+#include "ui/views/style/typography_provider.h"
 #include "ui/views/view.h"
 
 namespace autofill {
@@ -64,6 +65,19 @@ void PopupCellView::SetSelected(bool selected) {
           selected_ ? on_selected_callback_ : on_unselected_callback_) {
     callback.Run();
   }
+}
+
+void PopupCellView::SetPermanentlyHighlighted(bool permanently_highlighted) {
+  if (permanently_highlighted_ != permanently_highlighted) {
+    permanently_highlighted_ = permanently_highlighted;
+    RefreshStyle();
+    NotifyAccessibilityEvent(ax::mojom::Event::kCheckedStateChanged,
+                             /*send_native_event=*/true);
+  }
+}
+
+bool PopupCellView::IsHighlighted() const {
+  return selected_ || permanently_highlighted_;
 }
 
 void PopupCellView::SetTooltipText(std::u16string tooltip_text) {
@@ -208,7 +222,8 @@ bool PopupCellView::HandleAccessibleAction(
 
 void PopupCellView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (a11y_delegate_) {
-    a11y_delegate_->GetAccessibleNodeData(GetSelected(), node_data);
+    a11y_delegate_->GetAccessibleNodeData(GetSelected(),
+                                          permanently_highlighted_, node_data);
   }
 }
 
@@ -218,7 +233,7 @@ void PopupCellView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void PopupCellView::RefreshStyle() {
-  ui::ColorId kBackgroundColorId = GetSelected()
+  ui::ColorId kBackgroundColorId = IsHighlighted()
                                        ? ui::kColorDropdownBackgroundSelected
                                        : ui::kColorDropdownBackground;
   if (base::FeatureList::IsEnabled(
@@ -242,8 +257,8 @@ void PopupCellView::RefreshStyle() {
                     ? (GetSelected() ? views::style::STYLE_SELECTED
                                      : label->GetTextStyle())
                     : views::style::STYLE_DISABLED;
-    label->SetEnabledColorId(
-        views::style::GetColorId(label->GetTextContext(), style));
+    label->SetEnabledColorId(views::TypographyProvider::Get().GetColorId(
+        label->GetTextContext(), style));
   }
 
   SchedulePaint();

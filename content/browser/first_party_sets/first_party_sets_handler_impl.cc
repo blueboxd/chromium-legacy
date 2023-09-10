@@ -43,8 +43,13 @@ namespace {
 constexpr base::FilePath::CharType kFirstPartySetsDatabase[] =
     FILE_PATH_LITERAL("first_party_sets.db");
 
-// Global FirstPartySetsHandler instance for testing.
+// Global FirstPartySetsHandler instance for testing. This should be preferred
+// by tests when possible.
 FirstPartySetsHandler* g_test_instance = nullptr;
+
+// Global FirstPartySetsHandlerImpl instance for testing. This is mainly useful
+// for tests that need to know about content-internal details.
+FirstPartySetsHandlerImpl* g_impl_test_instance = nullptr;
 
 base::TaskPriority GetTaskPriority() {
   return base::FeatureList::IsEnabled(net::features::kWaitForFirstPartySetsInit)
@@ -61,6 +66,12 @@ void FirstPartySetsHandler::SetInstanceForTesting(
 }
 
 // static
+void FirstPartySetsHandlerImpl::SetInstanceForTesting(
+    FirstPartySetsHandlerImpl* test_instance) {
+  g_impl_test_instance = test_instance;
+}
+
+// static
 FirstPartySetsHandler* FirstPartySetsHandler::GetInstance() {
   if (g_test_instance)
     return g_test_instance;
@@ -73,6 +84,9 @@ FirstPartySetsHandlerImpl* FirstPartySetsHandlerImpl::GetInstance() {
   static base::NoDestructor<FirstPartySetsHandlerImpl> instance(
       GetContentClient()->browser()->IsFirstPartySetsEnabled(),
       GetContentClient()->browser()->WillProvidePublicFirstPartySets());
+  if (g_impl_test_instance) {
+    return g_impl_test_instance;
+  }
   return instance.get();
 }
 
@@ -133,6 +147,12 @@ FirstPartySetsHandlerImpl::ComputeEnterpriseContextConfig(
 }
 
 FirstPartySetsHandlerImpl::FirstPartySetsHandlerImpl(
+    base::PassKey<ScopedMockFirstPartySetsHandler>,
+    bool enabled,
+    bool embedder_will_provide_public_sets)
+    : FirstPartySetsHandlerImpl(enabled, embedder_will_provide_public_sets) {}
+
+FirstPartySetsHandlerImpl::FirstPartySetsHandlerImpl(
     bool enabled,
     bool embedder_will_provide_public_sets)
     : enabled_(enabled),
@@ -149,6 +169,9 @@ FirstPartySetsHandlerImpl::~FirstPartySetsHandlerImpl() = default;
 absl::optional<net::GlobalFirstPartySets> FirstPartySetsHandlerImpl::GetSets(
     SetsReadyOnceCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!IsEnabled()) {
+    return net::GlobalFirstPartySets();
+  }
   CHECK(IsEnabled());
   if (global_sets_.has_value())
     return global_sets_->Clone();
@@ -192,9 +215,9 @@ void FirstPartySetsHandlerImpl::SetPublicFirstPartySets(
     const base::Version& version,
     base::File sets_file) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CHECK(enabled_);
-  CHECK(embedder_will_provide_public_sets_);
-  CHECK(sets_loader_);
+  if (!enabled_ || !embedder_will_provide_public_sets_ || !sets_loader_) {
+    return;
+  }
 
   // TODO(crbug.com/1219656): Use the version to compute sets diff.
   sets_loader_->SetComponentSets(version, std::move(sets_file));

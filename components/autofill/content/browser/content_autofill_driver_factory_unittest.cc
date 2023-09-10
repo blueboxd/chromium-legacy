@@ -10,8 +10,10 @@
 #include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory_test_api.h"
+#include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -74,14 +76,10 @@ class MockAutofillAgent : public mojom::AutofillAgent {
               (base::OnceCallback<void(bool)>),
               (override));
   MOCK_METHOD(void,
-              FillOrPreviewForm,
-              (const FormData& form,
-               mojom::AutofillActionPersistence action_persistence),
-              (override));
-  MOCK_METHOD(void,
-              UndoAutofill,
-              (const FormData& form,
-               mojom::AutofillActionPersistence action_persistence),
+              ApplyAutofillAction,
+              (mojom::AutofillActionType action_type,
+               mojom::AutofillActionPersistence action_persistence,
+               const FormData& form),
               (override));
   MOCK_METHOD(void,
               FieldTypePredictionsAvailable,

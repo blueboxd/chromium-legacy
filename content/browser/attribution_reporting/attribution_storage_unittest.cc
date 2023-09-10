@@ -34,6 +34,7 @@
 #include "components/attribution_reporting/aggregation_keys.h"
 #include "components/attribution_reporting/event_report_windows.h"
 #include "components/attribution_reporting/event_trigger_data.h"
+#include "components/attribution_reporting/features.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_registration_time_config.mojom.h"
 #include "components/attribution_reporting/source_type.mojom.h"
@@ -57,7 +58,6 @@
 #include "net/base/schemeful_site.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -629,17 +629,15 @@ TEST_F(AttributionStorageTest,
 
 TEST_F(AttributionStorageTest,
        NonMatchingImpressionForConvertedImpression_FirstRemainsActive) {
+  auto reporting_origin =
+      SuitableOrigin::Deserialize("https://reporter.test").value();
   SourceBuilder builder;
+  builder.SetReportingOrigin(reporting_origin);
   storage()->StoreSource(builder.Build());
 
-  auto conversion = DefaultTrigger();
+  auto conversion = TriggerBuilder().SetReportingOrigin(reporting_origin);
   EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
-            MaybeCreateAndStoreEventLevelReport(DefaultTrigger()));
-
-  task_environment_.FastForwardBy(kReportDelay);
-
-  // Delete the report.
-  DeleteReports(storage()->GetAttributionReports(base::Time::Now()));
+            MaybeCreateAndStoreEventLevelReport(conversion.Build()));
 
   // Store a new impression with a different reporting origin.
   storage()->StoreSource(SourceBuilder()
@@ -649,14 +647,25 @@ TEST_F(AttributionStorageTest,
 
   // The first impression should still be active and able to convert.
   EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
-            MaybeCreateAndStoreEventLevelReport(conversion));
-
-  AttributionReport expected_report =
-      GetExpectedEventLevelReport(builder.BuildStored(), conversion);
+            MaybeCreateAndStoreEventLevelReport(conversion.Build()));
 
   // Verify it was the first impression that converted.
-  EXPECT_THAT(storage()->GetAttributionReports(base::Time::Now()),
-              ElementsAre(expected_report));
+  EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()),
+              ElementsAre(ReportOriginIs(reporting_origin),
+                          ReportOriginIs(reporting_origin)));
+}
+
+TEST_F(AttributionStorageTest, ImpressionWithDeletedReport_RemainsActive) {
+  storage()->StoreSource(SourceBuilder().Build());
+  EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
+            MaybeCreateAndStoreEventLevelReport(DefaultTrigger()));
+
+  DeleteReports(storage()->GetAttributionReports(base::Time::Max()));
+
+  // The impression should still be active and able to convert.
+  EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
+            MaybeCreateAndStoreEventLevelReport(DefaultTrigger()));
+  EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()), SizeIs(1));
 }
 
 TEST_F(
@@ -1314,7 +1323,7 @@ TEST_F(AttributionStorageTest,
        AttributeFalseImpression_OtherSourceDeactivated) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeatureWithParameters(
-      blink::features::kConversionMeasurement,
+      attribution_reporting::features::kConversionMeasurement,
       {{"source_deactivation_after_filtering", "true"}});
 
   storage()->StoreSource(SourceBuilder().SetSourceEventId(7).Build());

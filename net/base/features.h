@@ -395,6 +395,11 @@ NET_EXPORT extern const base::FeatureParam<std::string>
 NET_EXPORT extern const base::FeatureParam<std::string>
     kIpPrivacyTokenServerGetTokensPath;
 
+// Sets the path component of the IP protection auth token server URL used for
+// getting proxy configuration.
+NET_EXPORT extern const base::FeatureParam<std::string>
+    kIpPrivacyTokenServerGetProxyConfigPath;
+
 // Sets the batch size to fetch new auth tokens for IP protection.
 NET_EXPORT extern const base::FeatureParam<int>
     kIpPrivacyAuthTokenCacheBatchSize;
@@ -443,10 +448,6 @@ NET_EXPORT BASE_DECLARE_FEATURE(kEnableSchemeBoundCookies);
 // Enables enabling third-party cookie blocking from the command line.
 NET_EXPORT BASE_DECLARE_FEATURE(kForceThirdPartyCookieBlocking);
 
-// If the HTTP Cache Transaction write lock should be acquired async with
-// sending the HTTP request.
-NET_EXPORT BASE_DECLARE_FEATURE(kAsyncCacheLock);
-
 // Enables Early Hints on HTTP/1.1.
 NET_EXPORT BASE_DECLARE_FEATURE(kEnableEarlyHintsOnHttp11);
 
@@ -460,6 +461,13 @@ NET_EXPORT BASE_DECLARE_FEATURE(kZstdContentEncoding);
 NET_EXPORT BASE_DECLARE_FEATURE(kDigestAuthEnableSecureAlgorithms);
 
 NET_EXPORT BASE_DECLARE_FEATURE(kThirdPartyPartitionedStorageAllowedByDefault);
+
+// Gate access to cookie deprecation API which allows developers to opt in
+// server side testing without cookies. This doesn't actually do anything in
+// terms of deprecating cookies.
+// (See
+// https://developer.chrome.com/en/docs/privacy-sandbox/chrome-testing/#mode-a)
+NET_EXPORT BASE_DECLARE_FEATURE(kCookieDeprecationFacilitatedTestingLabels);
 
 }  // namespace net::features
 

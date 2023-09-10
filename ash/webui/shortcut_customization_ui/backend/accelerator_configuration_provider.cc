@@ -1341,7 +1341,9 @@ AcceleratorConfigurationProvider::MaybeHandleNonSearchAccelerator(
     pending_accelerator_.reset();
   }
 
-  if ((accelerator.modifiers() & ui::EF_COMMAND_DOWN) == 0) {
+  // Function keys cannot be used with the search modifier so don't warn users.
+  if ((accelerator.modifiers() & ui::EF_COMMAND_DOWN) == 0 &&
+      !ui::KeyboardCapability::IsFunctionKey(accelerator.key_code())) {
     if (!pending_accelerator_ || pending_accelerator_->action != action_id ||
         pending_accelerator_->source != source ||
         pending_accelerator_->accelerator != accelerator) {
@@ -1439,8 +1441,14 @@ void AcceleratorConfigurationProvider::PopulateAshAcceleratorConfig(
     if (id_to_accelerator_iter == id_to_accelerators.end() &&
         ignore_layouts_for_testing_) {
       continue;
-    } else {
-      DCHECK(id_to_accelerator_iter != id_to_accelerators.end());
+    }
+
+    // TODO(jimmyxgong): Re-evaluate this after fixing the root cause of this.
+    if (id_to_accelerator_iter == id_to_accelerators.end()) {
+      LOG(ERROR) << "Error: Layout with action ID: " << layout_info.action_id
+                 << " does not exist in the ID to Accelerator mapping. "
+                 << " Skipping adding this to the Ash configuration map.";
+      continue;
     }
 
     const auto& accelerators = id_to_accelerator_iter->second;

@@ -16,6 +16,7 @@
 #include "google_apis/gaia/gaia_oauth_client.h"
 
 class Profile;
+class PrefRegistrySimple;
 
 namespace signin {
 class IdentityManager;
@@ -42,12 +43,20 @@ class TokenHandleFetcher : public gaia::GaiaOAuthClient::Delegate {
   using TokenFetchingCallback =
       base::OnceCallback<void(const AccountId&, bool success)>;
 
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
   // Fetch token handle for a user who has just signed in via Gaia online auth.
   void FillForNewUser(const std::string& access_token,
+                      const std::string& refresh_token_hash,
                       TokenFetchingCallback callback);
 
   // Fetch token handle for an existing user.
   void BackfillToken(TokenFetchingCallback callback);
+
+  void DiagnoseTokenHandleMapping(const AccountId& account_id,
+                                  const std::string& token);
+  void OnGetTokenHash(const std::string& token,
+                      const std::string& account_manager_stored_hash);
 
   static void EnsureFactoryBuilt();
 
@@ -61,7 +70,9 @@ class TokenHandleFetcher : public gaia::GaiaOAuthClient::Delegate {
   void OnNetworkError(int response_code) override;
   void OnGetTokenInfoResponse(const base::Value::Dict& token_info) override;
 
-  void FillForAccessToken(const std::string& access_token);
+  void FillForAccessToken(const std::string& access_token,
+                          const std::string& refresh_token_hash);
+  void StoreTokenHandleMapping(const std::string& token_handle);
 
   // This is called before profile is detroyed.
   void OnProfileDestroyed();
@@ -72,11 +83,14 @@ class TokenHandleFetcher : public gaia::GaiaOAuthClient::Delegate {
   raw_ptr<signin::IdentityManager, ExperimentalAsh> identity_manager_ = nullptr;
 
   base::TimeTicks tokeninfo_response_start_time_ = base::TimeTicks();
+  std::string refresh_token_hash_;
   TokenFetchingCallback callback_;
   std::unique_ptr<gaia::GaiaOAuthClient> gaia_client_;
   std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher>
       access_token_fetcher_;
   base::CallbackListSubscription profile_shutdown_subscription_;
+
+  base::WeakPtrFactory<TokenHandleFetcher> weak_factory_{this};
 };
 
 }  // namespace ash

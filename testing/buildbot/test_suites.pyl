@@ -617,11 +617,10 @@
 
     'chromeos_chrome_all_tast_tests': {
       'chrome_all_tast_tests': {
-        # This tast_expr needs to be kept in sync with chrome_all_tast_tests target in //chromeos/BUILD.gn.
-        # Adding !no_chrome_dcheck since the builds (except for release builds) are with dcheck.
-        # TODO(b/284405976): Add a !no_chrome_dcheck condition automatically by reading the build configuration.
-        # TODO(b/294489383): Re-enable lacros tests once lacros chrome is deployed to ash skylab builders.
-        'tast_expr': '("group:mainline" && "dep:chrome" && !"dep:no_chrome_dcheck" && !"dep:lacros" && !informational)',
+        # `tast_expr` must be a non-empty string to run the tast tests. But the value of
+        # would be overridden by `tast_arrt_expr` defined in chromeos/BUILD.gn, so that we
+        # put the stub string here.
+        'tast_expr': 'STUB_STRING_TO_RUN_TAST_TESTS',
         'test_level_retries': 2,
         'timeout_sec': 21600,
       },
@@ -630,11 +629,10 @@
     # Test suite for running critical Tast tests.
     'chromeos_chrome_criticalstaging_tast_tests': {
       'chrome_criticalstaging_tast_tests': {
-        # This tast_expr needs to be kept in sync with chrome_criticalstaging_tast_tests target in //chromeos/BUILD.gn.
-        # Adding !no_chrome_dcheck since the builds (except for release builds) are with dcheck.
-        # TODO(b/284405976): Add a !no_chrome_dcheck condition automatically by reading the build configuration.
-        # TODO(b/294489383): Re-enable lacros tests once lacros chrome is deployed to ash skylab builders.
-        'tast_expr': '("group:mainline" && "dep:chrome" && !"dep:no_chrome_dcheck" && !"dep:lacros" && informational && "group:criticalstaging")',
+        # `tast_expr` must be a non-empty string to run the tast tests. But the value of
+        # would be overridden by `tast_arrt_expr` defined in chromeos/BUILD.gn, so that we
+        # put the stub string here.
+        'tast_expr': 'STUB_STRING_TO_RUN_TAST_TESTS',
         'test_level_retries': 2,
         'timeout_sec': 7200,
         'experiment_percentage': 100,
@@ -645,7 +643,10 @@
     # them. The test suite should not be critical to builders.
     'chromeos_chrome_disabled_tast_tests': {
       'chrome_disabled_tast_tests': {
-        'tast_expr': '("group:mainline" && "dep:chrome" && !"dep:no_chrome_dcheck")',
+        # `tast_expr` must be a non-empty string to run the tast tests. But the value of
+        # would be overridden by `tast_arrt_expr` defined in chromeos/BUILD.gn, so that we
+        # put the stub string here.
+        'tast_expr': 'STUB_STRING_TO_RUN_TAST_TESTS',
         'test_level_retries': 1,
         'timeout_sec': 7200,
         'experiment_percentage': 100,
@@ -4062,7 +4063,6 @@
           'shards': 8,
         },
       },
-      'content_nocompile_tests': {},
       'content_unittests': {},
       'crashpad_tests': {},
       'crypto_unittests': {},
@@ -4635,6 +4635,32 @@
       }
     },
 
+    'live_companion_tests': {
+      'live_companion_tests': {
+        'args': [
+          '--gtest_filter=CompanionLiveTest.*',
+          '--run-live-tests',
+          '--run-manual',
+          '--sync-status-change-checker-timeout=600',
+          # Timeout values below are in milliseconds.
+          '--test-tiny-timeout=85000',
+          '--ui-test-action-timeout=90000',
+          '--ui-test-action-max-timeout=95000',
+          '--test-launcher-timeout=100000',
+          '--isolated-script-test-launcher-retry-limit=5',
+        ],
+        'isolate_name': 'browser_tests',
+        'override_compile_targets': [
+          'browser_tests',
+        ],
+        'swarming': {
+          'expiration': 3600,
+          'hard_timeout': 3600,
+        },
+        'test': 'browser_tests',
+      },
+    },
+
     # TODO(crbug.com/1320449): Remove this set of test suites when LSan can be
     # enabled Mac ASan bots. This list will be gradually filled with more tests
     # until the bot has parity with ASan bots, and the ASan bot can then enable
@@ -4674,6 +4700,16 @@
     'minidump_uploader_tests': {
       'minidump_uploader_test': {
         'experiment_percentage': 100,
+      },
+    },
+
+    'model_validation_tests': {
+      'model_validation_tests': {
+        'isolate_name': 'model_validation_tests',
+        'resultdb': {
+          'enable': True,
+          'result_format': 'single'
+        },
       },
     },
 
@@ -4762,10 +4798,6 @@
         },
         'test': 'browser_tests',
       },
-    },
-
-    'nocompile_tests': {
-      'content_nocompile_tests': {},
     },
 
     'non_android_and_cast_and_chromeos_chromium_gtests': {
@@ -4866,6 +4898,32 @@
         },
         'test': 'content_browsertests',
       },
+    },
+
+    'optimization_guide_android_gtests': {
+      'optimization_guide_components_unittests': {
+        'args': [
+            '--gtest_filter=*OptimizationGuide*:*PageEntities*:*EntityAnnotator*',
+        ],
+        'test': 'components_unittests',
+      },
+      # TODO(mgeorgaklis): Add optimization_guide_unittests when they become Android compatible.
+    },
+
+    'optimization_guide_gtests': {
+      'optimization_guide_browser_tests': {
+        'args': [
+            '--gtest_filter=*OptimizationGuide*:*PageContentAnnotations*',
+        ],
+        'test': 'browser_tests',
+      },
+      'optimization_guide_components_unittests': {
+        'args': [
+            '--gtest_filter=*OptimizationGuide*:*PageEntities*:*EntityAnnotator*',
+        ],
+        'test': 'components_unittests',
+      },
+      'optimization_guide_unittests': {},
     },
 
     'perfetto_gtests': {
@@ -5826,16 +5884,25 @@
     },
 
     'wpt_web_tests_android': {
-      'wpt_tests_suite': {
+      'chrome_public_wpt': {
         'merge': {
           'args': [
             '--verbose',
-            '--test-list',
-            '//third_party/blink/web_tests/TestLists/Default.txt'
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'isolate_name': 'chrome_public_wpt',
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 15,
+        },
+      },
+      'system_webview_wpt': {
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 15,
@@ -6275,40 +6342,30 @@
       'chromium_gtests_for_devices_with_graphical_output',
       'chromium_gtests_for_linux_and_mac_only',
       'mac_specific_chromium_gtests',
-      'nocompile_tests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'non_android_chromium_gtests',
     ],
 
+    # When changing something here, change
+    # chromium_mac_gtests_no_nacl_once in the same way.
     'chromium_mac_gtests_no_nacl': [
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
       'chromium_gtests_for_linux_and_mac_only',
-      'mac_specific_chromium_gtests',
-      'nocompile_tests',
-      'non_android_and_cast_and_chromeos_chromium_gtests',
-      'non_android_chromium_gtests_no_nacl',
-    ],
-
-    # When changing something here, change
-    # chromium_mac_gtests_no_nocompile_once in the same way.
-    'chromium_mac_gtests_no_nacl_no_nocompile': [
-      'chromium_gtests',
-      'chromium_gtests_for_devices_with_graphical_output',
       'mac_specific_chromium_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'non_android_chromium_gtests_no_nacl',
     ],
 
     # TODO(crbug.com/1444855): This set should match
-    # chromium_mac_gtests_no_nacl_no_nocompile, except that it also runs
-    # tests that we can only afford to run once on Mac machines (for now,
-    # this is just the cr23_mac_gtests).
+    # chromium_mac_gtests_no_nacl, except that it also runs tests that we can
+    # only afford to run once on Mac machines (for now, this is just the
+    # cr23_mac_gtests).
     #
     # Delete this test suite after the ChromeRefresh2023 is fully rolled out
     # and make sure any bots go back to using
     # chromium_mac_gtests_no_nacl_no_nocompile.
-    'chromium_mac_gtests_no_nacl_no_nocompile_once': [
+    'chromium_mac_gtests_no_nacl_once': [
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
       'cr23_mac_gtests',
@@ -6634,12 +6691,14 @@
 
     'gpu_fyi_android_gtests': [
       'gpu_angle_unit_gtests',
+      'gpu_common_gtests_passthrough',
       'gpu_common_gtests_validating',
       'gpu_fyi_and_optional_non_linux_gtests',
     ],
 
     'gpu_fyi_android_shieldtv_gtests': [
       'gpu_angle_unit_gtests',
+      'gpu_common_gtests_passthrough',
       'gpu_common_gtests_validating',
       'gpu_fyi_and_optional_non_linux_gtests',
     ],
@@ -7106,6 +7165,12 @@
           'SINGLE_GROUP_PER_STUDY_PREFER_NEW_BEHAVIOR',
         ],
       },
+      'system_webview_shell_instrumentation_tests': {
+        'variants': [
+          'SINGLE_GROUP_PER_STUDY_PREFER_EXISTING_BEHAVIOR_WEBVIEW_COMMANDLINE',
+          'SINGLE_GROUP_PER_STUDY_PREFER_NEW_BEHAVIOR_WEBVIEW_COMMANDLINE',
+        ],
+      }
     },
 
     'chromeos_brya_skylab_tests': {
@@ -8078,6 +8143,36 @@
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
           'MAC_RETINA_AMD_GPU_STABLE',
+        ],
+      },
+    },
+
+    'model_validation_tests_linux': {
+      'model_validation_tests': {
+        'variants': [
+          'MODEL_VALIDATION_TRUNK',
+          'MODEL_VALIDATION_STABLE',
+          'MODEL_VALIDATION_BETA',
+          'MODEL_VALIDATION_DEV',
+        ],
+      },
+    },
+    'model_validation_tests_mac': {
+      'model_validation_tests': {
+        'variants': [
+          # TODO(mgeorgaklis): Add versioned variants when supported on mac x86.
+          'MODEL_VALIDATION_TRUNK',
+        ],
+      },
+    },
+    'model_validation_tests_win': {
+      'model_validation_tests': {
+        'variants': [
+          'MODEL_VALIDATION_TRUNK',
+          'MODEL_VALIDATION_STABLE',
+          'MODEL_VALIDATION_BETA',
+          'MODEL_VALIDATION_DEV',
+          'MODEL_VALIDATION_CANARY',
         ],
       },
     },

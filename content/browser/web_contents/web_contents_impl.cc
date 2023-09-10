@@ -46,6 +46,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/attribution_reporting/features.h"
 #include "components/download/public/common/download_stats.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/viz/common/features.h"
@@ -2943,7 +2944,6 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences() {
   prefs.viewport_enabled = command_line.HasSwitch(switches::kEnableViewport);
 
 #if BUILDFLAG(IS_ANDROID)
-  constexpr int kTabletWidthThreshold = 600;
   // TODO(crbug.com/1469720): GetPrimaryDisplay() won't be correct for
   // externally connected displays. Get the display where Chrome is opened
   // instead.
@@ -2955,7 +2955,7 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences() {
   if (prefs.viewport_enabled &&
       base::FeatureList::IsEnabled(
           blink::features::kDefaultViewportIsDeviceWidth) &&
-      min_width_in_dp >= kTabletWidthThreshold &&
+      min_width_in_dp >= kAndroidMinimumTabletWidthDp &&
       ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TV) {
     prefs.viewport_style = blink::mojom::ViewportStyle::kDefault;
   }
@@ -3349,7 +3349,8 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params,
 
   // AttributionHost must be created after `view_->CreateView()` is called as it
   // may invoke `WebContentsAndroid::AddObserver()`.
-  if (base::FeatureList::IsEnabled(blink::features::kConversionMeasurement)) {
+  if (base::FeatureList::IsEnabled(
+          attribution_reporting::features::kConversionMeasurement)) {
     AttributionHost::CreateForWebContents(this);
   }
 
@@ -3817,24 +3818,34 @@ void WebContentsImpl::FullscreenStateChanged(
 
 #if defined(USE_AURA)
 void WebContentsImpl::Maximize() {
-  aura::Window* window = GetTopLevelNativeWindow();
-  // TODO(isandrk, b/289028460): This API function currently works only on Aura
-  // platforms (Win/Lin/CrOS/Fuchsia), make it also work on Mac.
-  wm::SetWindowState(window, ui::SHOW_STATE_MAXIMIZED);
+  SetWindowShowState(ui::SHOW_STATE_MAXIMIZED);
 }
 
 void WebContentsImpl::Minimize() {
-  aura::Window* window = GetTopLevelNativeWindow();
-  // TODO(isandrk, b/289028460): This API function currently works only on Aura
-  // platforms (Win/Lin/CrOS/Fuchsia), make it also work on Mac.
-  wm::SetWindowState(window, ui::SHOW_STATE_MINIMIZED);
+  SetWindowShowState(ui::SHOW_STATE_MINIMIZED);
 }
 
 void WebContentsImpl::Restore() {
+  SetWindowShowState(ui::SHOW_STATE_NORMAL);
+}
+
+void WebContentsImpl::SetWindowShowState(ui::WindowShowState state) {
   aura::Window* window = GetTopLevelNativeWindow();
-  // TODO(isandrk, b/289028460): This API function currently works only on Aura
-  // platforms (Win/Lin/CrOS/Fuchsia), make it also work on Mac.
-  wm::SetWindowState(window, ui::SHOW_STATE_NORMAL);
+
+  // TODO(isandrk, crbug.com/1466855): This API function currently works only on
+  // Aura platforms (Win/Lin/CrOS/Fuchsia), make it also work on Mac.
+  wm::SetWindowState(window, state);
+
+  // This is needed to update `display-state` CSS @media query value.
+  if (RenderWidgetHost* render_widget_host =
+          GetPrimaryMainFrame()->GetRenderWidgetHost()) {
+    render_widget_host->SynchronizeVisualProperties();
+  }
+}
+
+ui::WindowShowState WebContentsImpl::GetWindowShowState() {
+  aura::Window* window = GetTopLevelNativeWindow();
+  return wm::GetWindowState(window);
 }
 #endif
 
@@ -9882,6 +9893,11 @@ void WebContentsImpl::UpdateBrowserControlsState(
   // Browser controls should be synchronised with the scroll state. Therefore,
   // they are controlled from the renderer by the main RenderFrame(Host).
   GetPrimaryPage().UpdateBrowserControlsState(constraints, current, animate);
+}
+
+void WebContentsImpl::SetV8CompileHints(base::ReadOnlySharedMemoryRegion data) {
+  GetPrimaryMainFrame()->GetAssociatedLocalMainFrame()->SetV8CompileHints(
+      std::move(data));
 }
 
 void WebContentsImpl::SetTabSwitchStartTime(base::TimeTicks start_time,

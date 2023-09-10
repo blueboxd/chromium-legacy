@@ -486,6 +486,13 @@
       type: "int",
     },
 
+    // Text size contrast factor for accessibility, applied as part of page zoom.
+    {
+      name: "accessibilityTextSizeContrastFactor",
+      initial: "0",
+      type: "int",
+    },
+
     // Only used by web tests and inspector emulation.
     {
       name: "mediaTypeOverride",
@@ -498,6 +505,14 @@
       initial: "blink::mojom::DisplayMode::kUndefined",
       invalidate: ["MediaQuery"],
       type: "blink::mojom::DisplayMode",
+    },
+
+    // Only used by web tests.
+    {
+      name: "windowShowState",
+      initial: "ui::WindowShowState::SHOW_STATE_DEFAULT",
+      invalidate: ["MediaQuery"],
+      type: "ui::WindowShowState",
     },
 
     // loadsImagesAutomatically only suppresses the network load of

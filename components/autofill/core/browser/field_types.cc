@@ -88,11 +88,6 @@ static constexpr auto kTypeNameToFieldType =
          {"NAME_LAST_CONJUNCTION", NAME_LAST_CONJUNCTION},
          {"NAME_LAST_SECOND", NAME_LAST_SECOND},
          {"NAME_HONORIFIC_PREFIX", NAME_HONORIFIC_PREFIX},
-         {"ADDRESS_HOME_PREMISE_NAME", ADDRESS_HOME_PREMISE_NAME},
-         {"ADDRESS_HOME_DEPENDENT_STREET_NAME",
-          ADDRESS_HOME_DEPENDENT_STREET_NAME},
-         {"ADDRESS_HOME_STREET_AND_DEPENDENT_STREET_NAME",
-          ADDRESS_HOME_STREET_AND_DEPENDENT_STREET_NAME},
          {"ADDRESS_HOME_ADDRESS", ADDRESS_HOME_ADDRESS},
          {"ADDRESS_HOME_ADDRESS_WITH_NAME", ADDRESS_HOME_ADDRESS_WITH_NAME},
          {"ADDRESS_HOME_FLOOR", ADDRESS_HOME_FLOOR},
@@ -124,36 +119,6 @@ static constexpr auto kTypeNameToFieldType =
          {"ADDRESS_HOME_BETWEEN_STREETS_OR_LANDMARK",
           ADDRESS_HOME_BETWEEN_STREETS_OR_LANDMARK},
          {"SINGLE_USERNAME_FORGOT_PASSWORD", SINGLE_USERNAME_FORGOT_PASSWORD}});
-
-ServerFieldType ToSafeServerFieldType(
-    std::underlying_type_t<ServerFieldType> raw_value,
-    ServerFieldType fallback_value) {
-  auto IsValid = [](std::underlying_type_t<ServerFieldType> t) {
-    return NO_SERVER_DATA <= t && t < MAX_VALID_FIELD_TYPE &&
-           // Work phone numbers (values [15,19]) are deprecated.
-           !(15 <= t && t <= 19) &&
-           // Cell phone numbers (values [25,29]) are deprecated.
-           !(25 <= t && t <= 29) &&
-           // Shipping addresses (values [44,50]) are deprecated.
-           !(44 <= t && t <= 50) &&
-           // Probably-account creation password (value 94) is deprecated.
-           t != 94 &&
-           // Billing addresses (values [37,43], 78, 80, 82, 84) are deprecated.
-           !(37 <= t && t <= 43) && t != 78 && t != 80 && t != 82 && t != 84 &&
-           // Billing phone numbers (values [62,66]) are deprecated.
-           !(62 <= t && t <= 66) &&
-           // Billing names (values [67,72]) are deprecated.
-           !(67 <= t && t <= 72) &&
-           // Fax numbers (values [20,24]) are deprecated.
-           !(20 <= t && t <= 24) &&
-           // Reserved for server-side only use.
-           t != 127 && !(130 <= t && t <= 132) && t != 134 &&
-           !(137 <= t && t <= 139) && !(145 <= t && t <= 150) && t != 153 &&
-           t != 155;
-  };
-  return IsValid(raw_value) ? static_cast<ServerFieldType>(raw_value)
-                            : fallback_value;
-}
 
 bool IsFillableFieldType(ServerFieldType field_type) {
   switch (field_type) {
@@ -192,10 +157,8 @@ bool IsFillableFieldType(ServerFieldType field_type) {
     case ADDRESS_HOME_SORTING_CODE:
     case ADDRESS_HOME_DEPENDENT_LOCALITY:
     case ADDRESS_HOME_STREET_NAME:
-    case ADDRESS_HOME_DEPENDENT_STREET_NAME:
-    case ADDRESS_HOME_STREET_AND_DEPENDENT_STREET_NAME:
     case ADDRESS_HOME_HOUSE_NUMBER:
-    case ADDRESS_HOME_PREMISE_NAME:
+    case ADDRESS_HOME_STREET_LOCATION:
     case ADDRESS_HOME_SUBPREMISE:
     case ADDRESS_HOME_OTHER_SUBUNIT:
     case ADDRESS_HOME_ADDRESS:
@@ -207,7 +170,6 @@ bool IsFillableFieldType(ServerFieldType field_type) {
     case ADDRESS_HOME_BETWEEN_STREETS_2:
     case ADDRESS_HOME_ADMIN_LEVEL2:
     case ADDRESS_HOME_OVERFLOW:
-    case ADDRESS_HOME_STREET_LOCATION:
     case ADDRESS_HOME_BETWEEN_STREETS_OR_LANDMARK:
     case ADDRESS_HOME_OVERFLOW_AND_LANDMARK:
     case DELIVERY_INSTRUCTIONS:
@@ -228,7 +190,7 @@ bool IsFillableFieldType(ServerFieldType field_type) {
       return true;
 
     case UPI_VPA:
-      return base::FeatureList::IsEnabled(features::kAutofillSaveAndFillVPA);
+      return false;
 
     case IBAN_VALUE:
       return true;
@@ -401,12 +363,8 @@ base::StringPiece FieldTypeToDeveloperRepresentationString(
       return "Landmark";
     case ADDRESS_HOME_STREET_NAME:
       return "Street name";
-    case ADDRESS_HOME_DEPENDENT_STREET_NAME:
-      return "Dependent home street name";
     case ADDRESS_HOME_HOUSE_NUMBER:
       return "House number";
-    case ADDRESS_HOME_STREET_AND_DEPENDENT_STREET_NAME:
-      return "Street and dependent street name";
     case ADDRESS_HOME_BETWEEN_STREETS:
       return "Address between-streets";
     case ADDRESS_HOME_BETWEEN_STREETS_1:
@@ -419,8 +377,6 @@ base::StringPiece FieldTypeToDeveloperRepresentationString(
       return "Address line 2";
     case ADDRESS_HOME_LINE3:
       return "Address line 3";
-    case ADDRESS_HOME_PREMISE_NAME:
-      return "Address premise";
     case ADDRESS_HOME_SUBPREMISE:
       return "Address subpremise";
     case ADDRESS_HOME_OTHER_SUBUNIT:

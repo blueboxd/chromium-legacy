@@ -17,6 +17,7 @@ class Rect;
 namespace ui {
 
 class WaylandConnection;
+class WaylandOutput;
 class XDGToplevelWrapperImpl;
 enum class ZOrderLevel;
 
@@ -70,8 +71,9 @@ class ShellToplevelWrapper {
   // Sets whether the window can enter fullscreen.
   virtual void SetCanFullscreen(bool can_fullscreen) = 0;
 
-  // Sets a native window to fullscreen state.
-  virtual void SetFullscreen() = 0;
+  // Sets a native window to fullscreen state. If the `wayland_output` is a
+  // `nullptr`, the current output will be used, otherwise the requested one.
+  virtual void SetFullscreen(WaylandOutput* wayland_output) = 0;
 
   // Unsets a native window from fullscreen state.
   virtual void UnSetFullscreen() = 0;
@@ -164,7 +166,8 @@ class ShellToplevelWrapper {
 
   // Sets/usets a native window to float state. This places it on top of other
   // windows.
-  virtual void SetFloat() = 0;
+  virtual void SetFloatToLocation(
+      WaylandFloatStartLocation float_start_location) = 0;
   virtual void UnSetFloat() = 0;
 
   // Sets the z order of the window.
@@ -205,7 +208,7 @@ class ShellToplevelWrapper {
   virtual XDGToplevelWrapperImpl* AsXDGToplevelWrapper();
 };
 
-// Look for |value| in |wl_array| in C++ style.
+// Look for `value` in `wl_array` in C++ style.
 bool CheckIfWlArrayHasValue(struct wl_array* wl_array, uint32_t value);
 
 }  // namespace ui

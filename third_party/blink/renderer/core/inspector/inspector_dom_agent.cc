@@ -1861,8 +1861,9 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
       force_push_children = true;
     }
 
-    if (auto* link_element = DynamicTo<HTMLLinkElement>(*element))
+    if (IsA<HTMLLinkElement>(*element)) {
       force_push_children = true;
+    }
 
     if (auto* template_element = DynamicTo<HTMLTemplateElement>(*element)) {
       // The inspector should not try to access the .content() property of
@@ -2533,8 +2534,7 @@ protocol::Response InspectorDOMAgent::pushNodesByBackendIdsToFrontend(
 class InspectableNode final
     : public v8_inspector::V8InspectorSession::Inspectable {
  public:
-  explicit InspectableNode(Node* node)
-      : node_id_(DOMNodeIds::IdForNode(node)) {}
+  explicit InspectableNode(Node* node) : node_id_(node->GetDomNodeId()) {}
 
   v8::Local<v8::Value> get(v8::Local<v8::Context> context) override {
     return NodeV8Value(context, DOMNodeIds::NodeForId(node_id_));

@@ -51,6 +51,11 @@ extern const char kAutofillDisableSilentProfileUpdatesDescription[];
 extern const char kAutofillEnableCardArtImageName[];
 extern const char kAutofillEnableCardArtImageDescription[];
 
+// Title and description for the flag to send merchant_domain as a top-level
+// parameter in card unmask requests.
+extern const char kAutofillEnableMerchantDomainInUnmaskCardRequestName[];
+extern const char kAutofillEnableMerchantDomainInUnmaskCardRequestDescription[];
+
 // Title and description for the flag to control whether the autofill payments
 // mandatory reauth feature is enabled on Bling.
 extern const char kAutofillEnablePaymentsMandatoryReauthOnBlingName[];
@@ -115,6 +120,11 @@ extern const char kAutofillPruneSuggestionsDescription[];
 // deduped Local card.
 extern const char kAutofillSuggestServerCardInsteadOfLocalCardName[];
 extern const char kAutofillSuggestServerCardInsteadOfLocalCardDescription[];
+
+// Title and description for the flag to update GPay-related links in chrome
+// settings to GPay web instead of the legacy Payments Center.
+extern const char kAutofillUpdateChromeSettingsLinkToGPayWebName[];
+extern const char kAutofillUpdateChromeSettingsLinkToGPayWebDescription[];
 
 // Title and description for the flag to control allowing credit card upload
 // save for accounts from common email providers.
@@ -328,6 +338,11 @@ extern const char kEnableFriendlierSafeBrowsingSettingsStandardProtectionName[];
 extern const char
     kEnableFriendlierSafeBrowsingSettingsStandardProtectionDescription[];
 
+// Title and description for the flag to enable red interstitial facelift UI
+// changes.
+extern const char kEnableRedInterstitialFaceliftName[];
+extern const char kEnableRedInterstitialFaceliftDescription[];
+
 // Title and description for the flag to enable kEditPasswordsInSettings flag on
 // iOS.
 extern const char kEditPasswordsInSettingsName[];
@@ -362,17 +377,9 @@ extern const char kEnableDiscoverFeedDiscoFeedEndpointDescription[];
 extern const char kEnableFeedAblationName[];
 extern const char kEnableFeedAblationDescription[];
 
-// Title and description for the flag to enable the Fullscreen API.
-extern const char kEnableFullscreenAPIName[];
-extern const char kEnableFullscreenAPIDescription[];
-
 // Title and description for the flag to enable the preferences account storage.
 extern const char kEnablePreferencesAccountStorageName[];
 extern const char kEnablePreferencesAccountStorageDescription[];
-
-// Title and description for the flag to enable pinned tabs.
-extern const char kEnablePinnedTabsName[];
-extern const char kEnablePinnedTabsDescription[];
 
 // Title and description for the flag to enable the account storage.
 extern const char kEnableReadingListAccountStorageName[];
@@ -888,19 +895,9 @@ extern const char kSpotlightOpenTabsSourceDescription[];
 extern const char kSpotlightReadingListSourceName[];
 extern const char kSpotlightReadingListSourceDescription[];
 
-// Title and description for the flag to enable the Share Chrome App action
-// in the new overflow menu.
-extern const char kNewOverflowMenuShareChromeActionName[];
-extern const char kNewOverflowMenuShareChromeActionDescription[];
-
 // Title and description for the flag to enable the Start Surface.
 extern const char kStartSurfaceName[];
 extern const char kStartSurfaceDescription[];
-
-// Title and description for the flag to allow batch upload of local data from
-// the new account settings panel.
-extern const char kSyncEnableBatchUploadLocalDataName[];
-extern const char kSyncEnableBatchUploadLocalDataDescription[];
 
 // Title and description for the flag to control if Chrome Sync should use the
 // sandbox servers.

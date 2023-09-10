@@ -74,7 +74,6 @@ constexpr auto kStructuredAddressTypeToNameMap =
          {ADDRESS_HOME_HOUSE_NUMBER, "HouseNumber"},
          {ADDRESS_HOME_FLOOR, "FloorNumber"},
          {ADDRESS_HOME_APT_NUM, "ApartmentNumber"},
-         {ADDRESS_HOME_PREMISE_NAME, "Premise"},
          {ADDRESS_HOME_SUBPREMISE, "SubPremise"}});
 
 // Note: if adding an enum value here, update the corresponding description for
@@ -91,9 +90,7 @@ enum FieldTypeGroupForMetrics {
   GROUP_ADDRESS_ZIP,
   GROUP_ADDRESS_COUNTRY,
   GROUP_ADDRESS_HOME_STREET_NAME,
-  GROUP_ADDRESS_HOME_DEPENDENT_STREET_NAME,
   GROUP_ADDRESS_HOME_HOUSE_NUMBER,
-  GROUP_ADDRESS_HOME_PREMISE_NAME,
   GROUP_ADDRESS_HOME_SUBPREMISE,
   GROUP_PHONE,
   GROUP_FAX,  // Deprecated.
@@ -111,7 +108,6 @@ enum FieldTypeGroupForMetrics {
   GROUP_ADDRESS_HOME_APT_NUM,
   GROUP_ADDRESS_HOME_SORTING_CODE,
   GROUP_ADDRESS_HOME_DEPENDENT_LOCALITY,
-  GROUP_ADDRESS_HOME_STREET_AND_DEPENDENT_STREET_NAME,
   GROUP_ADDRESS_HOME_OTHER_SUBUNIT,
   GROUP_ADDRESS_HOME_ADDRESS,
   GROUP_ADDRESS_HOME_ADDRESS_WITH_NAME,
@@ -219,17 +215,8 @@ int GetFieldTypeGroupPredictionQualityMetric(
         case ADDRESS_HOME_DEPENDENT_LOCALITY:
           group = GROUP_ADDRESS_HOME_DEPENDENT_LOCALITY;
           break;
-        case ADDRESS_HOME_DEPENDENT_STREET_NAME:
-          group = GROUP_ADDRESS_HOME_DEPENDENT_STREET_NAME;
-          break;
         case ADDRESS_HOME_HOUSE_NUMBER:
           group = GROUP_ADDRESS_HOME_HOUSE_NUMBER;
-          break;
-        case ADDRESS_HOME_PREMISE_NAME:
-          group = GROUP_ADDRESS_HOME_PREMISE_NAME;
-          break;
-        case ADDRESS_HOME_STREET_AND_DEPENDENT_STREET_NAME:
-          group = GROUP_ADDRESS_HOME_STREET_AND_DEPENDENT_STREET_NAME;
           break;
         case ADDRESS_HOME_SUBPREMISE:
           group = GROUP_ADDRESS_HOME_SUBPREMISE;
@@ -1785,6 +1772,53 @@ void AutofillMetrics::LogFieldFillingStats(
 
   base::UmaHistogramCounts100(base::StrCat({histogram_prefix, "Total"}),
                               filling_stats.Total());
+}
+
+// static
+void AutofillMetrics::LogFormFillingScore(
+    FormType form_type,
+    const FormGroupFillingStats& filling_stats) {
+  // Do not acquire metrics if Autofill was not used in this form group.
+  if (filling_stats.TotalFilled() == 0) {
+    return;
+  }
+
+  const int score =
+      2 * filling_stats.num_accepted - 3 * filling_stats.TotalCorrected() + 100;
+
+  // Make sure that the score is between 0 and 200 since we are only emitting to
+  // a histogram with equally distributed 201 buckets.
+  base::UmaHistogramCustomCounts(
+      base::StrCat(
+          {"Autofill.FormFillingScore.", FormTypeToStringPiece(form_type)}),
+      std::clamp(score, 1, 200), 1, 200, 200);
+}
+
+// static
+void AutofillMetrics::LogFormFillingComplexScore(
+    FormType form_type,
+    const FormGroupFillingStats& filling_stats) {
+  // Do not acquire metrics if Autofill was not used in this form group.
+  if (filling_stats.TotalFilled() == 0) {
+    return;
+  }
+
+  // Limit the number of accepted fields to 19 and the number of corrected
+  // fields to 9.
+  const size_t value_min = 0;
+
+  const size_t clamped_accepted = std::clamp(
+      filling_stats.num_accepted, value_min, static_cast<size_t>(19));
+  const size_t clamped_corrected = std::clamp(
+      filling_stats.TotalCorrected(), value_min, static_cast<size_t>(9));
+
+  const int complex_score = clamped_accepted * 10 + clamped_corrected;
+
+  // The metric is tracked to an histogram with 199 equally distributed buckets.
+  base::UmaHistogramCustomCounts(
+      base::StrCat({"Autofill.FormFillingComplexScore.",
+                    FormTypeToStringPiece(form_type)}),
+      complex_score, 1, 199, 199);
 }
 
 void AutofillMetrics::LogSectioningMetrics(

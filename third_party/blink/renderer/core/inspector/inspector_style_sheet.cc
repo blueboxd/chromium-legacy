@@ -210,6 +210,20 @@ class StyleSheetHandler final : public CSSParserObserver {
   CSSRuleSourceData* current_rule_data_;
   absl::optional<IssueReportingContext> issueReportingContext_;
   std::unique_ptr<LineEndings> line_endings_;
+  // A property that fails to parse (ObserveProperty with is_parsed=false)
+  // temporarily becomes a replaceable property. A replaceable property can be
+  // replaced by a (valid) style rule at the same offset. This is needed to
+  // interpret the parsing behavior seen with nested style rules that start with
+  // <ident-token>, where we first try to parse the token sequence as a
+  // property, and then (if that fails) restart parsing as a style rule. This
+  // means that we'll see both a ObserveProperty event and a StartRuleHeader
+  // event at the same offset.
+  //
+  // When this situation happens, we remove the CSSPropertySourceData previously
+  // produced by ObserveProperty once we've seen a valid style rule at the same
+  // offset. Note that we do not consider a rule valid until we see the
+  // StartRuleBody event, so the actual replacement takes place there.
+  absl::optional<unsigned> replaceable_property_offset_;
 };
 
 void StyleSheetHandler::StartRuleHeader(StyleRule::RuleType type,
@@ -262,6 +276,22 @@ void StyleSheetHandler::StartRuleBody(unsigned offset) {
   if (parsed_text_[offset] == '{')
     ++offset;  // Skip the rule body opening brace.
   current_rule_data_stack_.back()->rule_body_range.start = offset;
+
+  // If this style rule appears on the same offset as a failed property,
+  // we need to remove the corresponding CSSPropertySourceData.
+  // See `replaceable_property_offset_` for more information.
+  if (replaceable_property_offset_.has_value() &&
+      current_rule_data_stack_.size() >= 2) {
+    if (replaceable_property_offset_ ==
+        current_rule_data_stack_.back()->rule_header_range.start) {
+      // The outer rule holds a property at the same offset. Remove it.
+      CSSRuleSourceData& outer_rule =
+          *current_rule_data_stack_[current_rule_data_stack_.size() - 2];
+      DCHECK(!outer_rule.property_data.empty());
+      outer_rule.property_data.pop_back();
+      replaceable_property_offset_ = absl::nullopt;
+    }
+  }
 }
 
 void StyleSheetHandler::EndRuleBody(unsigned offset) {
@@ -346,6 +376,13 @@ void StyleSheetHandler::ObserveProperty(unsigned start_offset,
   current_rule_data_stack_.back()->property_data.push_back(
       CSSPropertySourceData(name, value, is_important, false, is_parsed,
                             SourceRange(start_offset, end_offset)));
+
+  // Any property with is_parsed=false becomes a replaceable property.
+  // A replaceable property can be replaced by a (valid) style rule
+  // at the same offset.
+  replaceable_property_offset_ = is_parsed
+                                     ? absl::optional<unsigned>()
+                                     : absl::optional<unsigned>(start_offset);
 }
 
 void StyleSheetHandler::ObserveComment(unsigned start_offset,
@@ -699,6 +736,7 @@ void FlattenSourceData(const CSSRuleSourceDataList& data_list,
       case StyleRule::kLayerBlock:
       case StyleRule::kFontFeatureValues:
       case StyleRule::kPositionFallback:
+      case StyleRule::kProperty:
         result->push_back(data);
         FlattenSourceData(data->child_rules, result);
         break;
@@ -738,6 +776,9 @@ CSSRuleList* AsCSSRuleList(CSSRule* rule) {
     return position_fallback_rule->cssRules();
   }
 
+  if (auto* property_rule = DynamicTo<CSSPropertyRule>(rule))
+    return property_rule->cssRules();
+
   return nullptr;
 }
 
@@ -772,6 +813,7 @@ void CollectFlatRules(RuleList rule_list, CSSRuleVector* result) {
       case CSSRule::kLayerBlockRule:
       case CSSRule::kFontFeatureValuesRule:
       case CSSRule::kPositionFallbackRule:
+      case CSSRule::kPropertyRule:
         result->push_back(rule);
         CollectFlatRules(AsCSSRuleList(rule), result);
         break;
@@ -1278,7 +1320,7 @@ CSSRule* InspectorStyleSheet::SetStyleText(const SourceRange& range,
   CSSRule* rule = RuleForSourceData(source_data);
   if (!rule || !rule->parentStyleSheet() ||
       (!IsA<CSSStyleRule>(rule) && !IsA<CSSKeyframeRule>(rule) &&
-       !IsA<CSSTryRule>(rule))) {
+       !IsA<CSSPropertyRule>(rule) && !IsA<CSSTryRule>(rule))) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotFoundError,
         "Source range didn't match existing style source range");
@@ -1290,6 +1332,8 @@ CSSRule* InspectorStyleSheet::SetStyleText(const SourceRange& range,
     style = style_rule->style();
   } else if (auto* try_rule = DynamicTo<CSSTryRule>(rule)) {
     style = try_rule->style();
+  } else if (auto* property_rule = DynamicTo<CSSPropertyRule>(rule)) {
+    style = property_rule->Style();
   } else {
     style = To<CSSKeyframeRule>(rule)->style();
   }
@@ -1822,14 +1866,15 @@ void InspectorStyleSheet::InnerSetText(const String& text,
 
   if (mark_as_locally_modified) {
     Element* element = OwnerStyleElement();
-    if (element)
+    if (element) {
+      resource_container_->StoreStyleElementContent(element->GetDomNodeId(),
+                                                    text);
+    } else if (origin_ == protocol::CSS::StyleSheetOriginEnum::Inspector) {
       resource_container_->StoreStyleElementContent(
-          DOMNodeIds::IdForNode(element), text);
-    else if (origin_ == protocol::CSS::StyleSheetOriginEnum::Inspector)
-      resource_container_->StoreStyleElementContent(
-          DOMNodeIds::IdForNode(page_style_sheet_->OwnerDocument()), text);
-    else
+          page_style_sheet_->OwnerDocument()->GetDomNodeId(), text);
+    } else {
       resource_container_->StoreStyleSheetContent(FinalURL(), text);
+    }
   }
 }
 
@@ -2462,7 +2507,7 @@ bool InspectorStyleSheet::InlineStyleSheetText(String* out) {
     return result;
 
   result = resource_container_->LoadStyleElementContent(
-      DOMNodeIds::IdForNode(owner_element), out);
+      owner_element->GetDomNodeId(), out);
 
   if (!result) {
     *out = owner_element->textContent();
@@ -2483,8 +2528,9 @@ bool InspectorStyleSheet::InspectorStyleSheetText(String* result) {
   if (!page_style_sheet_->OwnerDocument())
     return false;
   if (resource_container_->LoadStyleElementContent(
-          DOMNodeIds::IdForNode(page_style_sheet_->OwnerDocument()), result))
+          page_style_sheet_->OwnerDocument()->GetDomNodeId(), result)) {
     return true;
+  }
   *result = "";
   return true;
 }

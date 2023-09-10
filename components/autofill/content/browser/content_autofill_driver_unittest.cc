@@ -21,12 +21,11 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory_test_api.h"
 #include "components/autofill/content/browser/content_autofill_driver_test_api.h"
-#include "components/autofill/content/browser/content_autofill_router.h"
-#include "components/autofill/content/browser/content_autofill_router_test_api.h"
 #include "components/autofill/content/browser/test_autofill_client_injector.h"
 #include "components/autofill/content/browser/test_autofill_driver_injector.h"
 #include "components/autofill/content/browser/test_autofill_manager_injector.h"
 #include "components/autofill/content/browser/test_content_autofill_client.h"
+#include "components/autofill/core/browser/autofill_driver_router.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
@@ -36,6 +35,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data_predictions.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
@@ -174,9 +174,9 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
   // mojom::AutofillAgent:
   void TriggerFormExtraction() override {}
 
-  void FillOrPreviewForm(
-      const FormData& form,
-      mojom::AutofillActionPersistence action_persistence) override {
+  void ApplyAutofillAction(mojom::AutofillActionType action_type,
+                           mojom::AutofillActionPersistence action_persistence,
+                           const FormData& form) override {
     if (action_persistence == mojom::AutofillActionPersistence::kPreview) {
       preview_form_form_ = form;
     } else {
@@ -184,10 +184,6 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
     }
     CallDone();
   }
-
-  void UndoAutofill(
-      const FormData& form,
-      mojom::AutofillActionPersistence action_persistence) override {}
 
   void FieldTypePredictionsAvailable(
       const std::vector<FormDataPredictions>& forms) override {
@@ -370,7 +366,7 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
     return *client()->GetAutofillDriverFactory();
   }
 
-  ContentAutofillRouter& router() { return factory().autofill_router(); }
+  AutofillDriverRouter& router() { return factory().router(); }
 
   ContentAutofillDriver& driver() {
     return *autofill_driver_injector_[web_contents()];
@@ -378,7 +374,7 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
 
   MockBrowserAutofillManager& manager() {
     return static_cast<MockBrowserAutofillManager&>(
-        *driver().autofill_manager());
+        driver().GetAutofillManager());
   }
 
   LocalFrameToken frame_token() {
@@ -587,9 +583,9 @@ TEST_F(ContentAutofillDriverTest, FormDataSentToRenderer_FillForm) {
   }
   base::RunLoop run_loop;
   fake_agent_.SetQuitLoopClosure(run_loop.QuitClosure());
-  driver().browser_events().FillOrPreviewForm(
-      mojom::AutofillActionPersistence::kFill, input_form_data,
-      triggered_origin, {});
+  driver().browser_events().ApplyAutofillAction(
+      mojom::AutofillActionType::kFill, mojom::AutofillActionPersistence::kFill,
+      input_form_data, triggered_origin, {});
 
   run_loop.RunUntilIdle();
 
@@ -613,7 +609,8 @@ TEST_F(ContentAutofillDriverTest, FormDataSentToRenderer_PreviewForm) {
                                    &FormFieldData::value));
   base::RunLoop run_loop;
   fake_agent_.SetQuitLoopClosure(run_loop.QuitClosure());
-  driver().browser_events().FillOrPreviewForm(
+  driver().browser_events().ApplyAutofillAction(
+      mojom::AutofillActionType::kFill,
       mojom::AutofillActionPersistence::kPreview, input_form_data,
       triggered_origin, {});
 

@@ -56,6 +56,13 @@ const char kAutofillEnableCardArtImageDescription[] =
     "When enabled, card product images (instead of network icons) will be "
     "shown in Payments Autofill UI.";
 
+const char kAutofillEnableMerchantDomainInUnmaskCardRequestName[] =
+    "Enable sending merchant domain in server card unmask requests";
+const char kAutofillEnableMerchantDomainInUnmaskCardRequestDescription[] =
+    "When enabled, requests to unmask cards will include a top-level "
+    "merchant_domain parameter populated with the last origin of the main "
+    "frame.";
+
 const char kAutofillEnablePaymentsMandatoryReauthOnBlingName[] =
     "Enable mandatory re-auth for payments autofill on Bling";
 const char kAutofillEnablePaymentsMandatoryReauthOnBlingDescription[] =
@@ -135,6 +142,12 @@ const char kAutofillSuggestServerCardInsteadOfLocalCardDescription[] =
     "When enabled, Autofill suggestions that consist of a local and server "
     "version of the same card will attempt to fill the server card upon "
     "selection instead of the local card.";
+
+const char kAutofillUpdateChromeSettingsLinkToGPayWebName[] =
+    "Update Chrome Settings Link to GPay Web";
+const char kAutofillUpdateChromeSettingsLinkToGPayWebDescription[] =
+    "When enabled, Chrome Settings link directs to GPay Web rather than "
+    "Payments Center for payment methods management.";
 
 const char kAutofillUpstreamAllowAdditionalEmailDomainsName[] =
     "Allow Autofill credit card upload save for select non-Google-based "
@@ -348,6 +361,11 @@ const char
         "security "
         "settings page.";
 
+const char kEnableRedInterstitialFaceliftName[] = "Red interstitial facelift";
+const char kEnableRedInterstitialFaceliftDescription[] =
+    "Enables red interstitial facelift UI changes, including icon, string, and "
+    "style changes.";
+
 const char kEditPasswordsInSettingsName[] = "Edit passwords in settings";
 const char kEditPasswordsInSettingsDescription[] =
     "Enables password editing in settings.";
@@ -407,10 +425,6 @@ const char kEnableFeedSyntheticCapabilitiesDescription[] =
     "If enabled synthethic capablities will be used to inform the server of "
     "the client capabilities.";
 
-const char kEnableFullscreenAPIName[] = "Enable Fullscreen API";
-const char kEnableFullscreenAPIDescription[] =
-    "Enable the Fullscreen API for web content (iOS 16.0+).";
-
 const char kEnableFollowIPHExpParamsName[] =
     "Enable Follow IPH Experiment Parameters";
 const char kEnableFollowIPHExpParamsDescription[] =
@@ -430,9 +444,6 @@ const char kEnablePreferencesAccountStorageName[] =
 const char kEnablePreferencesAccountStorageDescription[] =
     "Enables storing preferences in a second, Gaia-account-scoped storage for "
     "syncing users";
-
-const char kEnablePinnedTabsName[] = "Enable Pinned Tabs";
-const char kEnablePinnedTabsDescription[] = "Allows users to pin tabs.";
 
 const char kEnableReadingListAccountStorageName[] =
     "Enable Reading List Account Storage";
@@ -1014,16 +1025,6 @@ const char kSpotlightOpenTabsSourceDescription[] =
 const char kSpotlightReadingListSourceName[] = "Show Reading List in Spotlight";
 const char kSpotlightReadingListSourceDescription[] =
     "Donate Reading List items to iOS Search Engine Spotlight";
-
-const char kNewOverflowMenuShareChromeActionName[] =
-    "Share Chrome App action in the new overflow menu";
-const char kNewOverflowMenuShareChromeActionDescription[] =
-    "Enables the Share Chrome App action in the new overflow menu.";
-
-const char kSyncEnableBatchUploadLocalDataName[] =
-    "Enable batch upload of local data";
-const char kSyncEnableBatchUploadLocalDataDescription[] =
-    "Allows batch upload of local data from the account settings panel.";
 
 const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =

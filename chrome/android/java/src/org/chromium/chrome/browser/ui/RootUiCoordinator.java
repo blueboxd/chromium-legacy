@@ -126,6 +126,7 @@ import org.chromium.chrome.browser.tab.TabObscuringHandlerSupplier;
 import org.chromium.chrome.browser.tab.TabUtils.LoadIfNeededCaller;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.tab_management.RecyclerViewPosition;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.ButtonDataProvider;
@@ -212,7 +213,7 @@ public class RootUiCoordinator
     protected final ActivityWindowAndroid mWindowAndroid;
 
     protected final ActivityTabProvider mActivityTabProvider;
-    private ObservableSupplier<ShareDelegate> mShareDelegateSupplier;
+    protected ObservableSupplier<ShareDelegate> mShareDelegateSupplier;
 
     protected @Nullable FindToolbarManager mFindToolbarManager;
     private @Nullable FindToolbarObserver mFindToolbarObserver;
@@ -1736,8 +1737,29 @@ public class RootUiCoordinator
         if (mRestoreTabsFeatureHelper == null) {
             mRestoreTabsFeatureHelper = new RestoreTabsFeatureHelper();
         }
+
+        Supplier<Integer> gtsTabListModelSizeSupplier = () -> {
+            if (mTabSwitcherSupplier.get() != null) {
+                return mTabSwitcherSupplier.get().getTabSwitcherTabListModelSize();
+            } else if (mStartSurfaceSupplier.get() != null) {
+                return mStartSurfaceSupplier.get().getTabSwitcherTabListModelSize();
+            }
+            return 0;
+        };
+
+        Callback<Integer> scrollGTSToRestoredTabsCallback = (tabListModelSize) -> {
+            if (mTabSwitcherSupplier.get() != null) {
+                mTabSwitcherSupplier.get().setTabSwitcherRecyclerViewPosition(
+                        new RecyclerViewPosition(tabListModelSize, 0));
+            } else if (mStartSurfaceSupplier.get() != null) {
+                mStartSurfaceSupplier.get().setTabSwitcherRecyclerViewPosition(
+                        new RecyclerViewPosition(tabListModelSize, 0));
+            }
+        };
+
         mRestoreTabsFeatureHelper.maybeShowPromo(mActivity, mProfileSupplier.get(),
-                mTabCreatorManagerSupplier.get(), getBottomSheetController());
+                mTabCreatorManagerSupplier.get(), getBottomSheetController(),
+                gtsTabListModelSizeSupplier, scrollGTSToRestoredTabsCallback);
     }
 
     // Testing methods

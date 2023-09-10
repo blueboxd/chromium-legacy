@@ -641,6 +641,7 @@ public class LocationBarMediatorTest {
         mMediator.onUrlFocusChange(true);
         mMediator.setIsUrlBarFocusedWithoutAnimationsForTesting(true);
         assertTrue(mMediator.onKey(mView, KeyEvent.KEYCODE_9, mKeyEvent));
+        verify(mAutocompleteCoordinator).handleKeyEvent(KeyEvent.KEYCODE_9, mKeyEvent);
         verify(mUrlCoordinator, times(2)).onUrlFocusChange(true);
     }
 
@@ -700,10 +701,10 @@ public class LocationBarMediatorTest {
 
     @Test
     public void testUpdateColors_setColorScheme() {
-        String url = JUnitTestGURLs.BLUE_1.getSpec();
+        var url = JUnitTestGURLs.BLUE_1;
         UrlBarData urlBarData = UrlBarData.forUrl(url);
         doReturn(urlBarData).when(mLocationBarDataProvider).getUrlBarData();
-        doReturn(new GURL(url)).when(mLocationBarDataProvider).getCurrentGurl();
+        doReturn(url).when(mLocationBarDataProvider).getCurrentGurl();
         doReturn(true).when(mUrlCoordinator).setBrandedColorScheme(anyInt());
 
         mMediator.updateBrandedColorScheme();
@@ -718,14 +719,14 @@ public class LocationBarMediatorTest {
 
     @Test
     public void testSetUrl() {
-        String url = JUnitTestGURLs.BLUE_1.getSpec();
+        var url = JUnitTestGURLs.BLUE_1;
         UrlBarData urlBarData = UrlBarData.forUrl(url);
-        mMediator.setUrl(new GURL(url), urlBarData);
+        mMediator.setUrl(url, urlBarData);
 
         // Assume that the URL bar is now focused without focus animations.
         doReturn(true).when(mUrlCoordinator).hasFocus();
         mMediator.setIsUrlBarFocusedWithoutAnimationsForTesting(true);
-        mMediator.setUrl(new GURL(url), urlBarData);
+        mMediator.setUrl(url, urlBarData);
 
         // Verify that setUrl() never clears focus when the URL bar is focused without animations.
         verify(mUrlCoordinator, never()).clearFocus();

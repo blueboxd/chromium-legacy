@@ -1586,7 +1586,7 @@ double Element::scrollTop() {
   // Don't disclose scroll position in preview state. See crbug.com/1261689.
   auto* select_element = DynamicTo<HTMLSelectElement>(this);
   if (select_element && !select_element->UsesMenuList() &&
-      select_element->GetAutofillState() == WebAutofillState::kPreviewed) {
+      select_element->IsPreviewed()) {
     return 0;
   }
 
@@ -5474,6 +5474,13 @@ bool Element::IsScrollableContainerThatShouldBeKeyboardFocusable() const {
       !IsScrollableNode(this)) {
     return false;
   }
+  // This condition is to avoid clearing the focus in the middle of a
+  // keyboard focused scrolling event. If the scroller is currently focused,
+  // then let it continue to be focused even if focusable children are added.
+  if (GetDocument().FocusedElement() == this) {
+    return true;
+  }
+
   for (Node* node = FlatTreeTraversal::FirstChild(*this); node;
        node = FlatTreeTraversal::Next(*node, this)) {
     if (Element* element = DynamicTo<Element>(node)) {
@@ -6186,6 +6193,8 @@ const AtomicString& Element::ShadowPseudoId() const {
 void Element::SetShadowPseudoId(const AtomicString& id) {
 #if DCHECK_IS_ON()
   {
+    // NOTE: This treats "cue" as kPseudoWebKitCustomElement, so "cue"
+    // is allowed here.
     CSSSelector::PseudoType type =
         CSSSelectorParser::ParsePseudoType(id, false, &GetDocument());
     DCHECK(type == CSSSelector::kPseudoWebKitCustomElement ||

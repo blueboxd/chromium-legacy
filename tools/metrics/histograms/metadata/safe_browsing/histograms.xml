@@ -135,7 +135,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.Android.RealTimeAllowlist.IsInAllowlistElapsed"
-    units="ms" expires_after="2023-12-31">
+    units="ms" expires_after="2024-03-03">
   <owner>skrakowi@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -181,7 +181,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SafeBrowsing.Android.RealTimeAllowlist.PopulateResourceFileElapsed"
-    units="ms" expires_after="2023-12-31">
+    units="ms" expires_after="2024-03-03">
   <owner>skrakowi@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -831,7 +831,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.ExtensionTelemetry.Signals.Discarded"
-    enum="SBExtensionTelemetrySignalsSignalType" expires_after="2023-12-31">
+    enum="SBExtensionTelemetrySignalsSignalType" expires_after="2024-03-03">
   <owner>anunoy@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1651,6 +1651,28 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="SafeBrowsing.NavigationObserver.NotificationNavigationEventAdded"
+    enum="BooleanAccepted" expires_after="2024-02-23">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Logs the number of times we have added Push notification-intiated navigation
+    events.
+  </summary>
+</histogram>
+
+<histogram
+    name="SafeBrowsing.NavigationObserver.NotificationOriginAddedToReferrerChain"
+    enum="BooleanAccepted" expires_after="2024-02-23">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Logs the number of times a notification's service worker's URL is added as a
+    referrer in a referrer chain.
+  </summary>
+</histogram>
+
 <histogram name="SafeBrowsing.PageLoadToken.ClearReason"
     enum="SafeBrowsingPageLoadTokenClearReason" expires_after="2024-02-04">
   <owner>xinghuilu@chromium.org</owner>
@@ -2326,6 +2348,18 @@ chromium-metrics-reviews@google.com.
     Records whether the observer-based retry mechanism for the
     ChromeTailoredSecurityService has been triggered or not which is logged on
     every update to the synced account ESB timestamp.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.TailoredSecurity.ShouldRetryOutcome"
+    enum="SafeBrowsingTailoredSecurityShouldRetryOutcome"
+    expires_after="2024-09-06">
+  <owner>jacastro@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Records the outcome of running the tailored security retry logic. It is
+    logged once each time Chrome starts for syncing users in the cases where the
+    retry attempt could occur.
   </summary>
 </histogram>
 

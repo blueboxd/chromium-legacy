@@ -3438,9 +3438,9 @@ void RenderFrameHostImpl::SetMojomFrameRemote(
 
 namespace {
 
-class DebugHelperForCrbug1425281v2 : public mojom::DebugHelperForCrbug1425281 {
+class DebugHelperForCrbug1425281v4 : public mojom::DebugHelperForCrbug1425281 {
  public:
-  explicit DebugHelperForCrbug1425281v2(
+  explicit DebugHelperForCrbug1425281v4(
       const base::debug::StackTrace& create_rfh_stack_trace,
       const absl::optional<base::debug::StackTrace>&
           last_commit_navigation_stack_trace,
@@ -3459,7 +3459,11 @@ class DebugHelperForCrbug1425281v2 : public mojom::DebugHelperForCrbug1425281 {
         page_is_primary_(page_is_primary),
         browser_is_outermost_main_frame_(browser_is_outermost_main_frame),
         browser_has_parent_(browser_has_parent),
-        browser_is_speculative_(browser_is_speculative) {}
+        browser_is_speculative_(browser_is_speculative),
+        current_site_info_(current_site_info),
+        speculative_site_info_(speculative_site_info),
+        reason_(reason),
+        url_(url) {}
 
   void Failed(mojom::Crbug1425281DebugInfoPtr debug_info) override {
     base::debug::StackTrace create_rfh_stack_trace = create_rfh_stack_trace_;
@@ -3546,7 +3550,7 @@ void RenderFrameHostImpl::DeleteRenderFrame(
     if (intent == mojom::FrameDeleteIntention::
                       kSpeculativeMainFrameForNavigationCancelled) {
       mojo::MakeSelfOwnedReceiver(
-          std::make_unique<DebugHelperForCrbug1425281v2>(
+          std::make_unique<DebugHelperForCrbug1425281v4>(
               create_rfh_stack_trace_, last_commit_navigation_stack_trace_,
               lifecycle_state_, GetPage().IsPrimary(), IsOutermostMainFrame(),
               !!GetParent(),
@@ -4182,10 +4186,7 @@ net::IsolationInfo RenderFrameHostImpl::ComputeIsolationInfoInternal(
 
   net::SiteForCookies candidate_site_for_cookies(top_frame_site);
 
-  std::set<net::SchemefulSite> party_context;
-
-  // Walk up the frame tree to check SiteForCookies and compute the
-  // |party_context|.
+  // Walk up the frame tree to check SiteForCookies.
   //
   // If |request_type| is kOther, then IsolationInfo is being computed
   // for subresource requests. Check/compute starting from the frame itself.
@@ -4203,9 +4204,6 @@ net::IsolationInfo RenderFrameHostImpl::ComputeIsolationInfoInternal(
         rfh == this ? frame_origin : rfh->last_committed_origin_;
     net::SchemefulSite cur_site = net::SchemefulSite(cur_origin);
 
-    if (top_frame_site != cur_site) {
-      party_context.insert(cur_site);
-    }
     candidate_site_for_cookies.CompareWithFrameTreeSiteAndRevise(cur_site);
   }
 
@@ -4223,7 +4221,7 @@ net::IsolationInfo RenderFrameHostImpl::ComputeIsolationInfoInternal(
       ComputeNonce(is_credentialless, fenced_frame_nonce_for_navigation);
   return net::IsolationInfo::Create(request_type, top_frame_origin,
                                     frame_origin, candidate_site_for_cookies,
-                                    std::move(party_context), nonce);
+                                    /*is_internal=*/false, nonce);
 }
 
 absl::optional<base::UnguessableToken> RenderFrameHostImpl::ComputeNonce(
@@ -4463,9 +4461,9 @@ void RenderFrameHostImpl::SetOriginDependentStateOfNewFrame(
           network::mojom::PrivateNetworkRequestPolicy::kAllow;
       break;
     case ContentBrowserClient::PrivateNetworkRequestPolicyOverride::
-        kForcePreflightBlock:
+        kBlockInsteadOfWarn:
       private_network_request_policy_ =
-          network::mojom::PrivateNetworkRequestPolicy::kPreflightBlock;
+          OverrideBlockWithWarn(private_network_request_policy_);
       break;
     case ContentBrowserClient::PrivateNetworkRequestPolicyOverride::kDefault:
       break;
@@ -7735,10 +7733,8 @@ void RenderFrameHostImpl::ShowContextMenu(
   // Freshly constructed ContextMenuParams have empty `page_url` and `frame_url`
   // - populate them based on trustworthy, browser-side data.
   validated_params.page_url = GetOutermostMainFrame()->GetLastCommittedURL();
-  if (GetParentOrOuterDocument()) {
-    // Only populate |frame_url| for subframes and fencedframes.
-    validated_params.frame_url = GetLastCommittedURL();
-  }
+  validated_params.frame_url = GetLastCommittedURL();
+  validated_params.is_subframe = !!GetParentOrOuterDocument();
 
   // We don't validate |unfiltered_link_url| so that this field can be used
   // when users want to copy the original link URL.
@@ -8385,8 +8381,11 @@ void RenderFrameHostImpl::SendLegacyTechEvent(
     const std::string& type,
     blink::mojom::LegacyTechEventCodeLocationPtr code_location) {
   GetContentClient()->browser()->ReportLegacyTechEvent(
-      this, type, GetLastCommittedURL(), code_location->filename,
-      code_location->line, code_location->column);
+      this, type,
+      base::FeatureList::IsEnabled(features::kLegacyTechReportTopLevelUrl)
+          ? GetOutermostMainFrameOrEmbedder()->GetLastCommittedURL()
+          : GetLastCommittedURL(),
+      code_location->filename, code_location->line, code_location->column);
 }
 
 void RenderFrameHostImpl::SendPrivateAggregationRequestsForFencedFrameEvent(
@@ -9001,7 +9000,8 @@ void RenderFrameHostImpl::BeginNavigation(
 
   blink::mojom::CommonNavigationParamsPtr validated_common_params =
       unvalidated_common_params.Clone();
-  if (!VerifyBeginNavigationCommonParams(*this, &*validated_common_params)) {
+  if (!VerifyBeginNavigationCommonParams(*this, &*validated_common_params,
+                                         begin_params->initiator_frame_token)) {
     return;
   }
 
@@ -10138,17 +10138,21 @@ void RenderFrameHostImpl::CommitNavigation(
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   const ProcessLock process_lock =
       ProcessLock::FromSiteInfo(GetSiteInstance()->GetSiteInfo());
-  if (!process_lock.is_error_page() && common_params->url.IsStandard() &&
-      !is_mhtml_subframe &&
-      // TODO(https://crbug.com/888079): Replace `common_params().url` with
-      // the origin to commit calculated on the browser side.
+  auto browser_calc_origin_to_commit =
+      navigation_request->GetOriginToCommitWithDebugInfo();
+  if (!process_lock.is_error_page() && !is_mhtml_subframe &&
       !policy->CanAccessDataForOrigin(
-          GetProcess()->GetID(), url::Origin::Create(common_params->url))) {
+          GetProcess()->GetID(), browser_calc_origin_to_commit.first.value())) {
     SCOPED_CRASH_KEY_STRING64("CommitNavigation", "lock_url",
                               process_lock.ToString());
     SCOPED_CRASH_KEY_STRING64(
-        "CommitNavigation", "commit_origin",
+        "CommitNavigation", "commit_url_origin",
         common_params->url.DeprecatedGetOriginAsURL().spec());
+    SCOPED_CRASH_KEY_STRING64(
+        "CommitNavigation", "browser_calc_origin",
+        browser_calc_origin_to_commit.first.value().GetDebugString());
+    SCOPED_CRASH_KEY_STRING64("CommitNavigation", "origin_debug_info",
+                              browser_calc_origin_to_commit.second);
     SCOPED_CRASH_KEY_BOOL("CommitNavigation", "is_main_frame", is_main_frame());
     // The reason this isn't is_outermost_main_frame is so that the full name of
     // the key does not exceed the 40 character limit.
@@ -10459,7 +10463,7 @@ void RenderFrameHostImpl::CommitNavigation(
     // specified.
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         keep_alive_loader_factory;
-    if (blink::features::IsKeepAliveInBrowserMigrationEnabled() &&
+    if (blink::features::IsKeepAliveURLLoaderServiceEnabled() &&
         subresource_proxying_factory_bundle) {
       // Also setting up URLLoaderFactory for keepalive using the same loader
       // factories.
@@ -15518,7 +15522,11 @@ void RenderFrameHostImpl::Clone(
 
 void RenderFrameHostImpl::OnCookiesAccessed(
     std::vector<network::mojom::CookieAccessDetailsPtr> details_vector) {
+  UMA_HISTOGRAM_COUNTS_1M("Cookie.OnCookiesAccessed.BatchSize",
+                          details_vector.size());
+  size_t access_sum = 0;
   for (auto& details : details_vector) {
+    access_sum += details->cookie_list.size();
     EmitCookieWarningsAndMetrics(this, details);
 
     CookieAccessDetails allowed;
@@ -15531,6 +15539,7 @@ void RenderFrameHostImpl::OnCookiesAccessed(
       delegate_->OnCookiesAccessed(this, blocked);
     }
   }
+  UMA_HISTOGRAM_COUNTS_1M("Cookie.OnCookiesAccessed.TotalAccesses", access_sum);
 }
 
 void RenderFrameHostImpl::OnTrustTokensAccessed(

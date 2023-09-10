@@ -17,8 +17,10 @@
 #include "third_party/blink/renderer/core/paint/paint_auto_dark_mode.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/rounded_border_geometry.h"
 #include "third_party/blink/renderer/core/style/clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/core/style/geometry_box_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -64,29 +66,77 @@ LayoutSVGResourceClipper* ResolveElementReference(
   return resource_clipper;
 }
 
-// https://drafts.fxtf.org/css-masking/#typedef-geometry-box
+PhysicalRect BorderBoxRect(const LayoutBoxModelObject& object) {
+  // It is complex to map from an SVG border box to a reference box (for
+  // example, `GeometryBox::kViewBox` is independent of the border box) so we
+  // use `SVGResources::ReferenceBoxForEffects` for SVG reference boxes.
+  CHECK(!object.IsSVGChild());
+
+  if (auto* box = DynamicTo<LayoutBox>(object)) {
+    // If the box is fragment-less return an empty box.
+    if (box->PhysicalFragmentCount() == 0u) {
+      return PhysicalRect();
+    }
+    return box->PhysicalBorderBoxRect();
+  }
+
+  // The spec doesn't say what to do if there are multiple lines. Gecko uses the
+  // first fragment in that case. We'll do the same here.
+  // See: https://crbug.com/641907
+  const LayoutInline& layout_inline = To<LayoutInline>(object);
+  if (layout_inline.IsInLayoutNGInlineFormattingContext()) {
+    NGInlineCursor cursor;
+    cursor.MoveTo(layout_inline);
+    if (cursor) {
+      return cursor.Current().RectInContainerFragment();
+    }
+  }
+  return PhysicalRect();
+}
+
 // TODO(crbug.com/1473440): Convert this to take a NGPhysicalBoxFragment
 // instead of a LayoutBoxModelObject.
-PhysicalRect ComputeReferenceBoxInternal(GeometryBox geometry_box,
-                                         const LayoutBoxModelObject& object,
-                                         PhysicalRect border_box_rect) {
+NGPhysicalBoxStrut ReferenceBoxBorderBoxOutsets(
+    GeometryBox geometry_box,
+    const LayoutBoxModelObject& object) {
+  // It is complex to map from an SVG border box to a reference box (for
+  // example, `GeometryBox::kViewBox` is independent of the border box) so we
+  // use `SVGResources::ReferenceBoxForEffects` for SVG reference boxes.
+  CHECK(!object.IsSVGChild());
+
   switch (geometry_box) {
     case GeometryBox::kPaddingBox:
-      border_box_rect.Contract(object.BorderOutsets());
-      return border_box_rect;
+      return -object.BorderOutsets();
     case GeometryBox::kContentBox:
     case GeometryBox::kFillBox:
-      border_box_rect.Contract(object.BorderOutsets() +
-                               object.PaddingOutsets());
-      return border_box_rect;
+      return -(object.BorderOutsets() + object.PaddingOutsets());
     case GeometryBox::kMarginBox:
-      border_box_rect.Expand(object.MarginOutsets());
-      return border_box_rect;
+      return object.MarginOutsets();
     case GeometryBox::kBorderBox:
     case GeometryBox::kStrokeBox:
     case GeometryBox::kViewBox:
-      return border_box_rect;
+      return NGPhysicalBoxStrut();
   }
+}
+
+FloatRoundedRect RoundedReferenceBox(GeometryBox geometry_box,
+                                     const LayoutObject& object) {
+  if (object.IsSVGChild()) {
+    return FloatRoundedRect(ClipPathClipper::LocalReferenceBox(object));
+  }
+
+  const auto& box = To<LayoutBoxModelObject>(object);
+  PhysicalRect border_box_rect = BorderBoxRect(box);
+  FloatRoundedRect rounded_border_box_rect =
+      RoundedBorderGeometry::RoundedBorder(box.StyleRef(), border_box_rect);
+  if (geometry_box == GeometryBox::kMarginBox) {
+    rounded_border_box_rect.OutsetForMarginOrShadow(
+        gfx::OutsetsF(ReferenceBoxBorderBoxOutsets(geometry_box, box)));
+  } else {
+    rounded_border_box_rect.Outset(
+        gfx::OutsetsF(ReferenceBoxBorderBoxOutsets(geometry_box, box)));
+  }
+  return rounded_border_box_rect;
 }
 
 }  // namespace
@@ -158,14 +208,11 @@ static bool HasCompositeClipPathAnimation(const LayoutObject& layout_object) {
 static void PaintWorkletBasedClip(GraphicsContext& context,
                                   const LayoutObject& clip_path_owner,
                                   const gfx::RectF& reference_box,
-                                  bool uses_zoomed_reference_box) {
+                                  const LayoutObject& reference_box_object) {
   DCHECK(HasCompositeClipPathAnimation(clip_path_owner));
   DCHECK_EQ(clip_path_owner.StyleRef().ClipPath()->GetType(),
             ClipPathOperation::kShape);
 
-  float zoom = uses_zoomed_reference_box
-                   ? clip_path_owner.StyleRef().EffectiveZoom()
-                   : 1;
   ClipPathPaintImageGenerator* generator =
       clip_path_owner.GetFrame()->GetClipPathPaintImageGenerator();
 
@@ -183,6 +230,10 @@ static void PaintWorkletBasedClip(GraphicsContext& context,
   // an origin of 0,0 as it has its own coordinate space.
   gfx::RectF src_rect = gfx::RectF(bounding_box.value().size());
   gfx::RectF dst_rect = bounding_box.value();
+
+  float zoom = UsesZoomedReferenceBox(reference_box_object)
+                   ? reference_box_object.StyleRef().EffectiveZoom()
+                   : 1;
 
   scoped_refptr<Image> paint_worklet_image = generator->Paint(
       zoom,
@@ -203,10 +254,13 @@ static void PaintWorkletBasedClip(GraphicsContext& context,
 
 gfx::RectF ClipPathClipper::LocalReferenceBox(const LayoutObject& object) {
   ClipPathOperation& clip_path = *object.StyleRef().ClipPath();
-  GeometryBox geometry_box =
-      clip_path.GetType() == ClipPathOperation::kShape
-          ? To<ShapeClipPathOperation>(clip_path).GetGeometryBox()
-          : GeometryBox::kBorderBox;
+  GeometryBox geometry_box = GeometryBox::kBorderBox;
+  if (const auto* shape = DynamicTo<ShapeClipPathOperation>(clip_path)) {
+    geometry_box = shape->GetGeometryBox();
+  } else if (const auto* box =
+                 DynamicTo<GeometryBoxClipPathOperation>(clip_path)) {
+    geometry_box = box->GetGeometryBox();
+  }
 
   if (object.IsSVGChild()) {
     if (!RuntimeEnabledFeatures::ClipPathGeometryBoxEnabled()) {
@@ -219,31 +273,10 @@ gfx::RectF ClipPathClipper::LocalReferenceBox(const LayoutObject& object) {
     return SVGResources::ReferenceBoxForEffects(object, geometry_box);
   }
 
-  if (auto* box = DynamicTo<LayoutBox>(object)) {
-    // If the box is fragment-less return an empty reference box.
-    if (box->PhysicalFragmentCount() == 0u) {
-      return gfx::RectF();
-    }
-    return gfx::RectF(ComputeReferenceBoxInternal(
-        geometry_box, *box, box->PhysicalBorderBoxRect()));
-  }
-
-  const LayoutInline& layout_inline = To<LayoutInline>(object);
-  // The spec doesn't say what to do if there are multiple lines. Gecko uses the
-  // first fragment in that case. We'll do the same here.
-  // See: https://crbug.com/641907
-  if (layout_inline.IsInLayoutNGInlineFormattingContext()) {
-    NGInlineCursor cursor;
-    cursor.MoveTo(layout_inline);
-    if (cursor) {
-      PhysicalRect border_box = cursor.Current().RectInContainerFragment();
-      if (const auto* box_fragment = cursor.Current().BoxFragment()) {
-        return gfx::RectF(ComputeReferenceBoxInternal(
-            geometry_box, layout_inline, border_box));
-      }
-    }
-  }
-  return gfx::RectF();
+  const auto& box = To<LayoutBoxModelObject>(object);
+  PhysicalRect reference_box = BorderBoxRect(box);
+  reference_box.Expand(ReferenceBoxBorderBoxOutsets(geometry_box, box));
+  return gfx::RectF(reference_box);
 }
 
 absl::optional<gfx::RectF> ClipPathClipper::LocalClipPathBoundingBox(
@@ -280,6 +313,11 @@ absl::optional<gfx::RectF> ClipPathClipper::LocalClipPathBoundingBox(
     return bounding_box;
   }
 
+  if (const auto* box = DynamicTo<GeometryBoxClipPathOperation>(clip_path)) {
+    reference_box.Intersect(gfx::RectF(InfiniteIntRect()));
+    return reference_box;
+  }
+
   DCHECK_EQ(clip_path.GetType(), ClipPathOperation::kReference);
   LayoutSVGResourceClipper* clipper = ResolveElementReference(
       object, To<ReferenceClipPathOperation>(clip_path));
@@ -289,7 +327,7 @@ absl::optional<gfx::RectF> ClipPathClipper::LocalClipPathBoundingBox(
   gfx::RectF bounding_box = clipper->ResourceBoundingBox(reference_box);
   if (UsesZoomedReferenceBox(object) &&
       clipper->ClipPathUnits() == SVGUnitTypes::kSvgUnitTypeUserspaceonuse) {
-    bounding_box.Scale(clipper->StyleRef().EffectiveZoom());
+    bounding_box.Scale(object.StyleRef().EffectiveZoom());
     // With kSvgUnitTypeUserspaceonuse, the clip path layout is relative to
     // the current transform space, and the reference box is unused.
     // While SVG object has no concept of paint offset, HTML object's
@@ -302,24 +340,25 @@ absl::optional<gfx::RectF> ClipPathClipper::LocalClipPathBoundingBox(
 
 static AffineTransform UserSpaceToClipPathTransform(
     const LayoutSVGResourceClipper& clipper,
-    bool uses_zoomed_reference_box,
-    const gfx::RectF& reference_box) {
+    const gfx::RectF& reference_box,
+    const LayoutObject& reference_box_object) {
   AffineTransform clip_path_transform;
-  if (uses_zoomed_reference_box) {
+  if (UsesZoomedReferenceBox(reference_box_object)) {
     // If the <clipPath> is using "userspace on use" units, then the origin of
     // the coordinate system is the top-left of the reference box.
     if (clipper.ClipPathUnits() == SVGUnitTypes::kSvgUnitTypeUserspaceonuse) {
       clip_path_transform.Translate(reference_box.x(), reference_box.y());
     }
-    clip_path_transform.Scale(clipper.StyleRef().EffectiveZoom());
+    clip_path_transform.Scale(reference_box_object.StyleRef().EffectiveZoom());
   }
   return clip_path_transform;
 }
 
 static Path GetPathWithObjectZoom(const ShapeClipPathOperation& shape,
-                                  bool uses_zoomed_reference_box,
                                   const gfx::RectF& reference_box,
-                                  float zoom) {
+                                  const LayoutObject& reference_box_object) {
+  bool uses_zoomed_reference_box = UsesZoomedReferenceBox(reference_box_object);
+  float zoom = reference_box_object.StyleRef().EffectiveZoom();
   const gfx::RectF zoomed_reference_box =
       uses_zoomed_reference_box ? reference_box
                                 : gfx::ScaleRect(reference_box, zoom);
@@ -332,49 +371,56 @@ static Path GetPathWithObjectZoom(const ShapeClipPathOperation& shape,
 
 bool ClipPathClipper::HitTest(const LayoutObject& object,
                               const HitTestLocation& location) {
-  return HitTest(object, LocalReferenceBox(object), location);
+  return HitTest(object, LocalReferenceBox(object), object, location);
 }
 
-bool ClipPathClipper::HitTest(const LayoutObject& object,
+bool ClipPathClipper::HitTest(const LayoutObject& clip_path_owner,
                               const gfx::RectF& reference_box,
+                              const LayoutObject& reference_box_object,
                               const HitTestLocation& location) {
-  const ComputedStyle& style = object.StyleRef();
-  DCHECK(style.ClipPath());
-  const float zoom = style.EffectiveZoom();
-  const bool uses_zoomed_reference_box = UsesZoomedReferenceBox(object);
-  const ClipPathOperation& clip_path = *style.ClipPath();
+  const ClipPathOperation& clip_path = *clip_path_owner.StyleRef().ClipPath();
   if (const auto* shape = DynamicTo<ShapeClipPathOperation>(clip_path)) {
-    const Path path = GetPathWithObjectZoom(*shape, uses_zoomed_reference_box,
-                                            reference_box, zoom);
+    const Path path =
+        GetPathWithObjectZoom(*shape, reference_box, reference_box_object);
+    return path.Contains(location.TransformedPoint());
+  }
+  if (const auto* box = DynamicTo<GeometryBoxClipPathOperation>(clip_path)) {
+    Path path;
+    FloatRoundedRect rounded_reference_box =
+        RoundedReferenceBox(box->GetGeometryBox(), reference_box_object);
+    path.AddRoundedRect(rounded_reference_box);
     return path.Contains(location.TransformedPoint());
   }
   const LayoutSVGResourceClipper* clipper = ResolveElementReference(
-      object, To<ReferenceClipPathOperation>(clip_path));
+      clip_path_owner, To<ReferenceClipPathOperation>(clip_path));
   if (!clipper) {
     return true;
   }
   // Transform the HitTestLocation to the <clipPath>s coordinate space - which
   // is not zoomed. Ditto for the reference box.
   const TransformedHitTestLocation unzoomed_location(
-      location, UserSpaceToClipPathTransform(
-                    *clipper, uses_zoomed_reference_box, reference_box));
+      location, UserSpaceToClipPathTransform(*clipper, reference_box,
+                                             reference_box_object));
+  const float zoom = reference_box_object.StyleRef().EffectiveZoom();
+  const bool uses_zoomed_reference_box =
+      UsesZoomedReferenceBox(reference_box_object);
   const gfx::RectF unzoomed_reference_box =
       uses_zoomed_reference_box ? gfx::ScaleRect(reference_box, 1.f / zoom)
                                 : reference_box;
   return clipper->HitTestClipContent(unzoomed_reference_box,
-                                     *unzoomed_location);
+                                     reference_box_object, *unzoomed_location);
 }
 
 static AffineTransform MaskToContentTransform(
     const LayoutSVGResourceClipper& resource_clipper,
-    bool uses_zoomed_reference_box,
-    const gfx::RectF& reference_box) {
+    const gfx::RectF& reference_box,
+    const LayoutObject& reference_box_object) {
   AffineTransform mask_to_content;
   if (resource_clipper.ClipPathUnits() ==
       SVGUnitTypes::kSvgUnitTypeUserspaceonuse) {
-    if (uses_zoomed_reference_box) {
+    if (UsesZoomedReferenceBox(reference_box_object)) {
       mask_to_content.Translate(reference_box.x(), reference_box.y());
-      mask_to_content.Scale(resource_clipper.StyleRef().EffectiveZoom());
+      mask_to_content.Scale(reference_box_object.StyleRef().EffectiveZoom());
     }
   }
 
@@ -385,9 +431,18 @@ static AffineTransform MaskToContentTransform(
 
 static absl::optional<Path> PathBasedClipInternal(
     const LayoutObject& clip_path_owner,
-    bool uses_zoomed_reference_box,
-    const gfx::RectF& reference_box) {
+    const gfx::RectF& reference_box,
+    const LayoutObject& reference_box_object) {
   const ClipPathOperation& clip_path = *clip_path_owner.StyleRef().ClipPath();
+  if (const auto* geometry_box_clip =
+          DynamicTo<GeometryBoxClipPathOperation>(clip_path)) {
+    Path path;
+    FloatRoundedRect rounded_reference_box = RoundedReferenceBox(
+        geometry_box_clip->GetGeometryBox(), reference_box_object);
+    path.AddRoundedRect(rounded_reference_box);
+    return path;
+  }
+
   if (const auto* reference_clip =
           DynamicTo<ReferenceClipPathOperation>(clip_path)) {
     LayoutSVGResourceClipper* resource_clipper =
@@ -397,15 +452,14 @@ static absl::optional<Path> PathBasedClipInternal(
     absl::optional<Path> path = resource_clipper->AsPath();
     if (!path)
       return path;
-    path->Transform(MaskToContentTransform(
-        *resource_clipper, uses_zoomed_reference_box, reference_box));
+    path->Transform(MaskToContentTransform(*resource_clipper, reference_box,
+                                           reference_box_object));
     return path;
   }
 
   DCHECK_EQ(clip_path.GetType(), ClipPathOperation::kShape);
   const auto& shape = To<ShapeClipPathOperation>(clip_path);
-  return GetPathWithObjectZoom(shape, uses_zoomed_reference_box, reference_box,
-                               clip_path_owner.StyleRef().EffectiveZoom());
+  return GetPathWithObjectZoom(shape, reference_box, reference_box_object);
 }
 
 void ClipPathClipper::PaintClipPathAsMaskImage(
@@ -434,15 +488,13 @@ void ClipPathClipper::PaintClipPathAsMaskImage(
   PhysicalOffset paint_offset = layout_object.FirstFragment().PaintOffset();
   context.Translate(paint_offset.left, paint_offset.top);
 
-  bool uses_zoomed_reference_box = UsesZoomedReferenceBox(layout_object);
   gfx::RectF reference_box = LocalReferenceBox(layout_object);
 
   if (HasCompositeClipPathAnimation(layout_object)) {
     if (!layout_object.GetFrame())
       return;
 
-    PaintWorkletBasedClip(context, layout_object, reference_box,
-                          uses_zoomed_reference_box);
+    PaintWorkletBasedClip(context, layout_object, reference_box, layout_object);
   } else {
     bool is_first = true;
     bool rest_of_the_chain_already_appled = false;
@@ -468,13 +520,13 @@ void ClipPathClipper::PaintClipPathAsMaskImage(
       if (resource_clipper->StyleRef().HasClipPath()) {
         // Try to apply nested clip-path as path-based clip.
         if (const absl::optional<Path>& path = PathBasedClipInternal(
-                *resource_clipper, uses_zoomed_reference_box, reference_box)) {
+                *resource_clipper, reference_box, layout_object)) {
           context.ClipPath(path->GetSkPath(), kAntiAliased);
           rest_of_the_chain_already_appled = true;
         }
       }
-      context.ConcatCTM(MaskToContentTransform(
-          *resource_clipper, uses_zoomed_reference_box, reference_box));
+      context.ConcatCTM(MaskToContentTransform(*resource_clipper, reference_box,
+                                               layout_object));
       context.DrawRecord(resource_clipper->CreatePaintRecord());
 
       if (is_first)
@@ -506,9 +558,8 @@ absl::optional<Path> ClipPathClipper::PathBasedClip(
   else if (HasCompositeClipPathAnimation(clip_path_owner))
     return absl::nullopt;
 
-  return PathBasedClipInternal(clip_path_owner,
-                               UsesZoomedReferenceBox(clip_path_owner),
-                               LocalReferenceBox(clip_path_owner));
+  return PathBasedClipInternal(
+      clip_path_owner, LocalReferenceBox(clip_path_owner), clip_path_owner);
 }
 
 }  // namespace blink

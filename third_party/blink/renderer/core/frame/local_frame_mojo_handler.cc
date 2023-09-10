@@ -1004,7 +1004,7 @@ void LocalFrameMojoHandler::BindReportingObserver(
 
 void LocalFrameMojoHandler::UpdateOpener(
     const absl::optional<blink::FrameToken>& opener_frame_token) {
-  if (auto* web_frame = WebFrame::FromCoreFrame(frame_)) {
+  if (WebFrame::FromCoreFrame(frame_)) {
     Frame* opener_frame = nullptr;
     if (opener_frame_token)
       opener_frame = Frame::ResolveFrame(opener_frame_token.value());
@@ -1318,6 +1318,25 @@ void LocalFrameMojoHandler::UpdateBrowserControlsState(
 
   frame_->GetWidgetForLocalRoot()->UpdateBrowserControlsState(constraints,
                                                               current, animate);
+}
+
+void LocalFrameMojoHandler::SetV8CompileHints(
+    base::ReadOnlySharedMemoryRegion data) {
+  Page* page = GetPage();
+  if (page == nullptr) {
+    return;
+  }
+  base::ReadOnlySharedMemoryMapping mapping = data.Map();
+  if (!mapping.IsValid()) {
+    return;
+  }
+  const int64_t* memory = mapping.GetMemoryAs<int64_t>();
+  if (memory == nullptr) {
+    return;
+  }
+
+  page->GetV8CrowdsourcedCompileHintsConsumer().SetData(memory,
+                                                        mapping.size() / 8);
 }
 
 void LocalFrameMojoHandler::SnapshotDocumentForViewTransition(

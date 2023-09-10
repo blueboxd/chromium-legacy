@@ -54,6 +54,7 @@
 #include "ash/wm/float/float_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_session.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -62,7 +63,6 @@
 #include "base/callback_list.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
@@ -1426,9 +1426,23 @@ void AppListControllerImpl::SetHideContinueSection(bool hide) {
   bubble_presenter_->UpdateContinueSectionVisibility();
 }
 
-void AppListControllerImpl::CommitTemporarySortOrder() {
-  DCHECK(client_);
-  client_->CommitTemporarySortOrder();
+bool AppListControllerImpl::IsCategoryEnabled(
+    AppListSearchControlCategory category) {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  return prefs->GetDict(prefs::kLauncherSearchCategoryControlStatus)
+      .FindBool(GetAppListControlCategoryName(category))
+      .value_or(true);
+}
+
+void AppListControllerImpl::SetCategoryEnabled(
+    AppListSearchControlCategory category,
+    bool enabled) {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  ScopedDictPrefUpdate pref_update(prefs,
+                                   prefs::kLauncherSearchCategoryControlStatus);
+  pref_update->Set(GetAppListControlCategoryName(category), enabled);
 }
 
 void AppListControllerImpl::GetAppLaunchedMetricParams(

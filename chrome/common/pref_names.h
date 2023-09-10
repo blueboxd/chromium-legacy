@@ -123,16 +123,6 @@ inline constexpr char kProfileCreationTime[] = "profile.creation_time";
 // prompt. See triggered_profile_resetter.h for more information.
 inline constexpr char kLastProfileResetTimestamp[] =
     "profile.last_reset_timestamp";
-
-// A boolean indicating if settings should be reset for this profile once a
-// run of the Chrome Cleanup Tool has completed.
-inline constexpr char kChromeCleanerResetPending[] =
-    "chrome_cleaner.reset_pending";
-
-// The last time the Chrome cleaner scan completed without finding anything,
-// while Chrome was opened.
-inline constexpr char kChromeCleanerScanCompletionTime[] =
-    "chrome_cleaner.scan_completion_time";
 #endif
 
 // The URL to open the new tab page to. Only set by Group Policy.
@@ -1470,9 +1460,6 @@ inline constexpr char kEnableHyperlinkAuditing[] = "enable_a_ping";
 // Whether to enable sending referrers.
 inline constexpr char kEnableReferrers[] = "enable_referrers";
 
-// Whether to send the DNT header.
-inline constexpr char kEnableDoNotTrack[] = "enable_do_not_track";
-
 // Whether to allow the use of Encrypted Media Extensions (EME), except for the
 // use of Clear Key key sytems, which is always allowed as required by the spec.
 // TODO(crbug.com/784675): This pref was used as a WebPreference which is why
@@ -1708,6 +1695,9 @@ inline constexpr char kFullscreenAllowed[] = "fullscreen.allowed";
 // Exposed only to mobile Android.
 inline constexpr char kAccessibilityFontWeightAdjustment[] =
     "settings.a11y.font_weight_adjustment";
+
+inline constexpr char kAccessibilityTextSizeContrastFactor[] =
+    "settings.a11y.text_size_contrast_factor";
 
 // Boolean pref indicating whether notification permissions were migrated to
 // notification channels (on Android O+ we use channels to store notification
@@ -2347,6 +2337,11 @@ inline constexpr char kWebAppsAppAgnosticIphState[] =
 // Dictionary that stores ML state not scoped to a particular app.
 inline constexpr char kWebAppsAppAgnosticMlState[] =
     "web_apps.app_agnostic_ml_state";
+
+// A boolean value that stores information about whether error loaded policy
+// apps have been migrated for this profile.
+inline constexpr char kErrorLoadedPolicyAppMigrationCompleted[] =
+    "web_apps.error_loaded_policy_apps_migrated";
 
 // A string representing the last version of Chrome preinstalled web apps were
 // synchronised for.
@@ -3389,31 +3384,6 @@ inline constexpr char kRendererAppContainerEnabled[] =
 inline constexpr char kBlockBrowserLegacyExtensionPoints[] =
     "block_browser_legacy_extension_points";
 #endif  // BUILDFLAG(IS_WIN)
-
-// An integer that keeps track of prompt waves for the settings reset
-// prompt. Users will be prompted to reset settings at most once per prompt wave
-// for each setting that the prompt targets (default search, startup URLs and
-// homepage). The value is obtained via a feature parameter. When the stored
-// value is different from the feature parameter, a new prompt wave begins.
-inline constexpr char kSettingsResetPromptPromptWave[] =
-    "settings_reset_prompt.prompt_wave";
-
-// Timestamp of the last time the settings reset prompt was shown during the
-// current prompt wave asking the user if they want to restore their search
-// engine.
-inline constexpr char kSettingsResetPromptLastTriggeredForDefaultSearch[] =
-    "settings_reset_prompt.last_triggered_for_default_search";
-
-// Timestamp of the last time the settings reset prompt was shown during the
-// current prompt wave asking the user if they want to restore their startup
-// settings.
-inline constexpr char kSettingsResetPromptLastTriggeredForStartupUrls[] =
-    "settings_reset_prompt.last_triggered_for_startup_urls";
-
-// Timestamp of the last time the settings reset prompt was shown during the
-// current prompt wave asking the user if they want to restore their homepage.
-inline constexpr char kSettingsResetPromptLastTriggeredForHomepage[] =
-    "settings_reset_prompt.last_triggered_for_homepage";
 
 #if BUILDFLAG(IS_ANDROID)
 // Timestamp of the clipboard's last modified time, stored in base::Time's

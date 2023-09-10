@@ -475,13 +475,16 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
     // Validate Autofill or Preview results.
     for (size_t i = 0; i < number_of_field_cases; ++i) {
-      ValidateFilledField(field_cases[i], get_value_function);
+      ValidateFilledField(field_cases[i], get_value_function,
+                          action_persistence);
     }
   }
 
   // Validate an Autofilled field.
-  void ValidateFilledField(const AutofillFieldCase& field_case,
-                           GetValueFunction get_value_function) {
+  void ValidateFilledField(
+      const AutofillFieldCase& field_case,
+      GetValueFunction get_value_function,
+      mojom::AutofillActionPersistence action_persistence) {
     SCOPED_TRACE(base::StringPrintf("Verify autofilled value for field %s",
                                     field_case.id_attribute));
     WebString value;
@@ -503,7 +506,10 @@ class FormAutofillTest : public ChromeRenderViewTest {
     else
       EXPECT_EQ(expected_value.Utf8(), value.Utf8());
 
-    EXPECT_EQ(field_case.should_be_autofilled, element.IsAutofilled());
+    EXPECT_EQ(field_case.should_be_autofilled,
+              action_persistence == mojom::AutofillActionPersistence::kFill
+                  ? element.IsAutofilled()
+                  : element.IsPreviewed());
   }
 
   WebFormControlElement GetFormControlElementById(const WebString& id) {
@@ -3618,8 +3624,7 @@ TEST_F(FormAutofillTest, Labels) {
 // labels are separated with a space.
 // TODO(crbug.com/1339277): Simplify the test using `ExpectLabels()`. This
 // requires some refactoring of the fixture, as only owned forms are supported
-// at the moment. Moreover, it seems like the form is parsed multiple times, so
-// checking for metrics is tricky.
+// at the moment.
 TEST_F(FormAutofillTest, LabelForAttribute) {
   LoadHTML(R"(
     <label for=fieldId>foo</label>
@@ -3638,9 +3643,7 @@ TEST_F(FormAutofillTest, LabelForAttribute) {
   FormFieldData& form_field_data = form.fields[0];
 
   EXPECT_EQ(form_field_data.label, u"foo bar");
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(kAssignedLabelSourceHistogram),
-      testing::UnorderedElementsAre(base::Bucket(AssignedLabelSource::kId, 2)));
+  EXPECT_EQ(form_field_data.label_source, FormFieldData::LabelSource::kForId);
 }
 
 // Tests that when a label is assigned to an input, text behind it is considered

@@ -78,7 +78,7 @@ namespace {
 NSArray<TabSwitcherItem*>* CreateItems(WebStateList* web_state_list) {
   NSMutableArray<TabSwitcherItem*>* items = [[NSMutableArray alloc] init];
 
-  int first_index = web_state_list->GetIndexOfFirstNonPinnedWebState();
+  int first_index = web_state_list->pinned_tabs_count();
   DCHECK(first_index == 0 || IsPinnedTabsEnabled());
 
   for (int i = first_index; i < web_state_list->count(); i++) {
@@ -200,6 +200,32 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
 - (void)setConsumer:(id<TabCollectionConsumer>)consumer {
   _consumer = consumer;
   [self resetToAllItems];
+}
+
+#pragma mark - Subclassing
+
+- (void)disconnect {
+  _browser = nil;
+  _browserState = nil;
+  _consumer = nil;
+  _delegate = nil;
+  _toolbarsMutator = nil;
+  _containedGridToolbarsProvider = nil;
+  _actionWrangler = nil;
+
+  _scopedWebStateListObservation->RemoveAllObservations();
+  _scopedWebStateObservation->RemoveAllObservations();
+  _scopedWebStateObservation.reset();
+  _scopedWebStateListObservation.reset();
+
+  _webStateObserverBridge.reset();
+  _webStateList->RemoveObserver(_webStateListObserverBridge.get());
+  _webStateListObserverBridge.reset();
+  _webStateList = nil;
+}
+
+- (void)configureToolbarsButtons {
+  NOTREACHED_NORETURN() << "Should be implemented in a subclass.";
 }
 
 #pragma mark - WebStateListObserving
@@ -379,7 +405,7 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
 - (void)snapshotCache:(SnapshotCache*)snapshotCache
     didUpdateSnapshotForID:(SnapshotID)snapshotID {
   web::WebState* webState = nullptr;
-  for (int i = self.webStateList->GetIndexOfFirstNonPinnedWebState();
+  for (int i = self.webStateList->pinned_tabs_count();
        i < self.webStateList->count(); i++) {
     SnapshotTabHelper* snapshotTabHelper =
         SnapshotTabHelper::FromWebState(self.webStateList->GetWebStateAt(i));
@@ -932,9 +958,8 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
 
 // Adds an observations to every non-pinned WebState.
 - (void)addWebStateObservations {
-  int firstIndex = IsPinnedTabsEnabled()
-                       ? self.webStateList->GetIndexOfFirstNonPinnedWebState()
-                       : 0;
+  int firstIndex =
+      IsPinnedTabsEnabled() ? self.webStateList->pinned_tabs_count() : 0;
   for (int i = firstIndex; i < self.webStateList->count(); i++) {
     web::WebState* webState = self.webStateList->GetWebStateAt(i);
     _scopedWebStateObservation->AddObservation(webState);
@@ -1007,11 +1032,11 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
   // If WebStateList's index is invalid or it's inside of pinned WebStates
   // range return invalid index.
   if (index == WebStateList::kInvalidIndex ||
-      index < self.webStateList->GetIndexOfFirstNonPinnedWebState()) {
+      index < self.webStateList->pinned_tabs_count()) {
     return NSNotFound;
   }
 
-  return index - self.webStateList->GetIndexOfFirstNonPinnedWebState();
+  return index - self.webStateList->pinned_tabs_count();
 }
 
 // Converts the collection view's item indexes to the WebStateList indexes by
@@ -1025,7 +1050,7 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
     return WebStateList::kInvalidIndex;
   }
 
-  return index + self.webStateList->GetIndexOfFirstNonPinnedWebState();
+  return index + self.webStateList->pinned_tabs_count();
 }
 
 // Inserts/removes a non pinned item to/from the collection.
@@ -1062,10 +1087,6 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
     return YES;
   }
   return NO;
-}
-
-- (void)configureToolbarsButtons {
-  NOTREACHED_NORETURN() << "Should be implemented in a subclass.";
 }
 
 #pragma mark - TabGridPageMutator

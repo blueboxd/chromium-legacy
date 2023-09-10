@@ -217,7 +217,7 @@ void ServiceWorkerMainResourceLoaderInterceptor::MaybeCreateLoader(
   isolation_info_ = net::IsolationInfo::Create(
       isolation_info_.request_type(),
       isolation_info_.top_frame_origin().value(), new_origin,
-      new_site_for_cookies, absl::nullopt, isolation_info_.nonce());
+      new_site_for_cookies, /*is_internal=*/true, isolation_info_.nonce());
 
   // Attempt to get the storage key from |RenderFrameHostImpl|. This correctly
   // accounts for extension URLs. The absence of this logic was a potential
@@ -287,8 +287,16 @@ ServiceWorkerMainResourceLoaderInterceptor::
   controller_info->sha256_script_checksum =
       container_host->controller()->sha256_script_checksum();
   if (container_host->controller()->router_evaluator()) {
-    controller_info->router_rules =
+    controller_info->router_data = blink::mojom::ServiceWorkerRouterData::New();
+    controller_info->router_data->router_rules =
         container_host->controller()->router_evaluator()->rules();
+    // Pass an endpoint for the cache storage.
+    mojo::PendingRemote<blink::mojom::CacheStorage> remote_cache_storage =
+        container_host->GetRemoteCacheStorage();
+    if (remote_cache_storage) {
+      controller_info->router_data->remote_cache_storage =
+          std::move(remote_cache_storage);
+    }
   }
   // Note that |controller_info->remote_controller| is null if the controller
   // has no fetch event handler. In that case the renderer frame won't get the

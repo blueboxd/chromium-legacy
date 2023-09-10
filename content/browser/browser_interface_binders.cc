@@ -25,6 +25,7 @@
 #include "content/browser/browsing_topics/browsing_topics_document_host.h"
 #include "content/browser/contacts/contacts_manager_impl.h"
 #include "content/browser/content_index/content_index_service_impl.h"
+#include "content/browser/cookie_deprecation_label/cookie_deprecation_label_document_service.h"
 #include "content/browser/cookie_store/cookie_store_manager.h"
 #include "content/browser/eye_dropper_chooser_impl.h"
 #include "content/browser/handwriting/handwriting_recognition_service_factory.h"
@@ -95,6 +96,7 @@
 #include "media/mojo/services/mojo_video_encoder_metrics_provider_service.h"
 #include "media/mojo/services/webrtc_video_perf_recorder.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "net/base/features.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "services/device/public/mojom/pressure_manager.mojom.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
@@ -122,6 +124,7 @@
 #include "third_party/blink/public/mojom/choosers/color_chooser.mojom.h"
 #include "third_party/blink/public/mojom/contacts/contacts_manager.mojom.h"
 #include "third_party/blink/public/mojom/content_index/content_index.mojom.h"
+#include "third_party/blink/public/mojom/cookie_deprecation_label/cookie_deprecation_label.mojom.h"
 #include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom.h"
 #include "third_party/blink/public/mojom/credentialmanagement/credential_manager.mojom.h"
 #include "third_party/blink/public/mojom/device/device.mojom.h"
@@ -229,7 +232,9 @@
 #endif
 
 #if !BUILDFLAG(IS_CHROMEOS)
-#include "services/webnn/public/mojom/webnn_service.mojom.h"
+#include "components/ml/webnn/features.h"
+#include "components/viz/host/gpu_client.h"
+#include "services/webnn/public/mojom/webnn_context_provider.mojom.h"
 #endif
 
 namespace blink {
@@ -281,22 +286,11 @@ void BindTextDetection(
 }
 
 #if !BUILDFLAG(IS_CHROMEOS)
-webnn::mojom::WebNNService* GetWebNNService() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  static base::NoDestructor<mojo::Remote<webnn::mojom::WebNNService>> remote;
-  if (!*remote) {
-    auto* gpu = GpuProcessHost::Get();
-    if (gpu) {
-      gpu->RunService(remote->BindNewPipeAndPassReceiver());
-    }
-  }
-
-  return remote->get();
-}
-
 void BindWebNNContextProvider(
+    RenderFrameHost* host,
     mojo::PendingReceiver<webnn::mojom::WebNNContextProvider> receiver) {
-  GetWebNNService()->BindWebNNContextProvider(std::move(receiver));
+  auto* process_host = static_cast<RenderProcessHostImpl*>(host->GetProcess());
+  process_host->GetGpuClient()->BindWebNNContextProvider(std::move(receiver));
 }
 #endif
 
@@ -920,9 +914,9 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
 
 #if !BUILDFLAG(IS_CHROMEOS)
   if (base::FeatureList::IsEnabled(
-          blink::features::kEnableMachineLearningNeuralNetworkService)) {
+          webnn::features::kEnableMachineLearningNeuralNetworkService)) {
     map->Add<webnn::mojom::WebNNContextProvider>(
-        base::BindRepeating(&BindWebNNContextProvider));
+        base::BindRepeating(&BindWebNNContextProvider, base::Unretained(host)));
   }
 #endif
 
@@ -1147,6 +1141,12 @@ void PopulateBinderMapWithContext(
   if (base::FeatureList::IsEnabled(blink::features::kWebEnvironmentIntegrity)) {
     map->Add<blink::mojom::EnvironmentIntegrityService>(base::BindRepeating(
         &EmptyBinderForFrame<blink::mojom::EnvironmentIntegrityService>));
+  }
+  if (base::FeatureList::IsEnabled(
+          net::features::kCookieDeprecationFacilitatedTestingLabels)) {
+    map->Add<blink::mojom::CookieDeprecationLabelDocumentService>(
+        base::BindRepeating(
+            &CookieDeprecationLabelDocumentService::CreateMojoService));
   }
 #if !BUILDFLAG(IS_ANDROID)
   map->Add<blink::mojom::DirectSocketsService>(

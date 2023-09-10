@@ -69,26 +69,29 @@ struct LogoutRpsRequest {
 // are being prototyped.
 union IdentityProvider {
   IdentityProviderConfig federated;
-  MDocProvider mdoc;
+  WalletProvider holder;
 };
 
-// The details of an mdoc provider.
-struct MDocProvider {
-  // base64-encoded reader HPKE public key.
-  string reader_public_key;
-
-  // The type of the document (e.g. a passport, a driver's license, etc).
-  string document_type;
-
-  // The attributes requested.
-  array<MDocElement> requested_elements;
+// The specification of the query to wallets.
+struct WalletProvider {
+  map<string, string> params;
+  WalletSelector selector;
 };
 
-// The details of MDocElement.
-struct MDocElement {
-  // The namespace of the element (e.g. a "name" in a passport vs a "name" in a driver's license).
-  string element_namespace;
+// The requirements of the credentials that are being requested.
+struct WalletSelector {
+  array<string> format;
+  string? doctype;
+  array<WalletFieldRequirement> fields;
+};
+
+// The requirements that the verifier needs on specific fields.
+struct WalletFieldRequirement {
+  // The name of the field (e.g. "org.iso.18013.5.1.family_name").
   string name;
+
+  // Optionally, whether the field's value is equal to a specific value or not.
+  string? equals;
 };
 
 // The details of a federated identity provider.

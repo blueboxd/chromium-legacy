@@ -35,6 +35,7 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/form_structure_test_api.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics_utils.h"
 #include "components/autofill/core/browser/payments/test_virtual_card_enrollment_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -877,6 +878,51 @@ TEST_P(FormDataImporterTest, ComplementCountry_PhoneNumberParsing) {
   ExtractAddressProfilesAndVerifyExpectation(*form_structure,
                                              {expected_profile});
   histogram_tester.ExpectUniqueSample(kHistogramName, true, 1);
+}
+
+// This test verifies that a phone number is stored correctly in the following
+// situation: A form contains a telephone number field that is classified as
+// a PHONE_HOME_CITY_AND_NUMBER field (either due to heuristics or due to
+// crowdsourcing). If a user enters an international phone number (e.g. +374 10
+// 123456), this must be parsed as such, not as a local number in the assumed
+// country. Otherwise, the stored value is incorrect. Before a fix, the
+// number quoted above would be stored as "(010) 123456" for a DE address
+// profile and not stored at all for a US address profile.
+TEST_P(FormDataImporterTest, ParseI18nPhoneNumberInCityAndNumberField) {
+  // This is an Armenian phone number
+  const char* kInternationalNumber = "+374 10 123456";
+
+  AutofillProfile expected_profile = ConstructDefaultProfile();
+  // Despite the US default profile, we expect the international number.
+  ASSERT_TRUE(expected_profile.SetInfo(PHONE_HOME_WHOLE_NUMBER,
+                                       base::UTF8ToUTF16(kInternationalNumber),
+                                       kLocale));
+
+  // Create an address form with `kInternationalNumber`.
+  TypeValuePairs type_value_pairs = GetDefaultProfileTypeValuePairs();
+  SetValueForType(type_value_pairs, PHONE_HOME_WHOLE_NUMBER,
+                  kInternationalNumber);
+  std::unique_ptr<FormStructure> form_structure =
+      ConstructFormStructureFromTypeValuePairs(type_value_pairs);
+
+  // Replace PHONE_HOME_WHOLE_NUMBER by PHONE_HOME_CITY_AND_NUMBER in field
+  // classifications.
+  std::vector<ServerFieldType> types;
+  for (const auto& field : form_structure->fields()) {
+    if (field->heuristic_type() == PHONE_HOME_WHOLE_NUMBER) {
+      types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+    } else {
+      types.push_back(field->heuristic_type());
+    }
+  }
+  test_api(form_structure.get()).SetFieldTypes(types, types);
+
+  ExtractAddressProfilesAndVerifyExpectation(*form_structure,
+                                             {expected_profile});
+  ASSERT_EQ(personal_data_manager_->GetProfiles().size(), 1u);
+  EXPECT_EQ(base::UTF8ToUTF16(kInternationalNumber),
+            personal_data_manager_->GetProfiles()[0]->GetRawInfo(
+                PHONE_HOME_WHOLE_NUMBER));
 }
 
 // Tests that invalid countries in submitted forms are ignored, and that the
@@ -2561,6 +2607,15 @@ TEST_P(FormDataImporterTest,
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
+
+  // Mandatory re-auth opt-in should not be attempted if no card was extracted
+  // from the form.
+  EXPECT_CALL(
+      *static_cast<::testing::NiceMock<payments::MockMandatoryReauthManager>*>(
+          autofill_client_->GetOrCreatePaymentsMandatoryReauthManager()),
+      ShouldOfferOptin)
+      .Times(0);
+
   ASSERT_FALSE(extracted_data.extracted_credit_card);
   // |credit_card_import_type_| should be kNoCard because the
   // form doesn't have credit card section.
@@ -3099,19 +3154,6 @@ TEST_P(FormDataImporterTest, ExtractFormData_HiddenCreditCardFormAfterEntered) {
   EXPECT_THAT(*results[0], ComparesEqual(expected_card));
 }
 
-// Ensures that no UPI ID value is returned when there's a credit card and no
-// UPI ID.
-TEST_P(FormDataImporterTest,
-       ExtractFormData_DontSetUpiIdWhenOnlyCreditCardExists) {
-  std::unique_ptr<FormStructure> form_structure =
-      ConstructDefaultCreditCardFormStructure();
-  auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
-      *form_structure, /*profile_autofill_enabled=*/true,
-      /*payment_methods_autofill_enabled=*/true);
-  ASSERT_TRUE(extracted_data.extracted_credit_card);
-  ASSERT_FALSE(extracted_data.extracted_upi_id.has_value());
-}
-
 TEST_P(FormDataImporterTest,
        DuplicateFullServerCardWhileContainingLocalCardCopies) {
   std::vector<CreditCard> server_cards;
@@ -3414,52 +3456,6 @@ TEST_P(FormDataImporterTest,
   histogram_tester.ExpectUniqueSample(
       "Autofill.SubmittedServerCardExpirationStatus",
       AutofillMetrics::MASKED_SERVER_CARD_EXPIRATION_DATE_DID_NOT_MATCH, 1);
-}
-
-TEST_P(FormDataImporterTest, ExtractUpiId) {
-  FormData form;
-  form.url = GURL("https://www.foo.com");
-  form.fields = {
-      CreateTestFormField("UPI ID:", "upi_id", "user@indianbank", "text")};
-  FormStructure form_structure(form);
-
-  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
-                                         nullptr);
-  auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
-      form_structure, /*profile_autofill_enabled=*/false,
-      /*payment_methods_autofill_enabled=*/true);
-  ASSERT_TRUE(extracted_data.extracted_upi_id.has_value());
-  EXPECT_EQ(extracted_data.extracted_upi_id.value(), "user@indianbank");
-}
-
-TEST_P(FormDataImporterTest, ExtractUpiIdDisabled) {
-  FormData form;
-  form.url = GURL("https://www.foo.com");
-  form.fields = {
-      CreateTestFormField("UPI ID:", "upi_id", "user@indianbank", "text")};
-  FormStructure form_structure(form);
-
-  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
-                                         nullptr);
-  auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
-      form_structure, /*profile_autofill_enabled=*/false,
-      /*payment_methods_autofill_enabled=*/false);
-  ASSERT_FALSE(extracted_data.extracted_upi_id.has_value());
-}
-
-TEST_P(FormDataImporterTest, ExtractUpiIdIgnoreNonUpiId) {
-  FormData form;
-  form.url = GURL("https://www.foo.com");
-  form.fields = {
-      CreateTestFormField("UPI ID:", "upi_id", "user@gmail.com", "text")};
-  FormStructure form_structure(form);
-
-  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
-                                         nullptr);
-  auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
-      form_structure, /*profile_autofill_enabled=*/false,
-      /*payment_methods_autofill_enabled=*/false);
-  ASSERT_FALSE(extracted_data.extracted_upi_id.has_value());
 }
 
 TEST_P(FormDataImporterTest, SilentlyUpdateExistingProfileByIncompleteProfile) {
@@ -3945,7 +3941,6 @@ class FormDataImporterNonParameterizedTest : public FormDataImporterTestBase,
 TEST_F(FormDataImporterNonParameterizedTest,
        ProcessExtractedCreditCard_EmptyCreditCard) {
   absl::optional<CreditCard> extracted_credit_card;
-  absl::optional<std::string> extracted_upi_id;
   std::unique_ptr<FormStructure> form_structure =
       ConstructDefaultCreditCardFormStructure();
 
@@ -3962,7 +3957,7 @@ TEST_F(FormDataImporterNonParameterizedTest,
   personal_data_manager_->SetSyncServiceForTest(&sync_service);
 
   EXPECT_FALSE(form_data_importer().ProcessExtractedCreditCardForTesting(
-      *form_structure, extracted_credit_card, extracted_upi_id,
+      *form_structure, extracted_credit_card,
       /*payment_methods_autofill_enabled=*/true,
       /*is_credit_card_upstream_enabled=*/true));
   personal_data_manager_->SetSyncServiceForTest(nullptr);
@@ -3976,7 +3971,6 @@ TEST_F(FormDataImporterNonParameterizedTest,
   extracted_credit_card.set_instrument_id(1111);
   extracted_credit_card.set_virtual_card_enrollment_state(
       CreditCard::VirtualCardEnrollmentState::kUnenrolledAndEligible);
-  absl::optional<std::string> extracted_upi_id;
   std::unique_ptr<FormStructure> form_structure =
       ConstructDefaultCreditCardFormStructure();
 
@@ -3996,7 +3990,7 @@ TEST_F(FormDataImporterNonParameterizedTest,
       .Times(0);
 
   EXPECT_FALSE(form_data_importer().ProcessExtractedCreditCardForTesting(
-      *form_structure, extracted_credit_card, extracted_upi_id,
+      *form_structure, extracted_credit_card,
       /*payment_methods_autofill_enabled=*/true,
       /*is_credit_card_upstream_enabled=*/true));
 
@@ -4007,7 +4001,7 @@ TEST_F(FormDataImporterNonParameterizedTest,
       .Times(1);
 
   EXPECT_TRUE(form_data_importer().ProcessExtractedCreditCardForTesting(
-      *form_structure, extracted_credit_card, extracted_upi_id,
+      *form_structure, extracted_credit_card,
       /*payment_methods_autofill_enabled=*/true,
       /*is_credit_card_upstream_enabled=*/true));
 
@@ -4024,9 +4018,8 @@ TEST_F(FormDataImporterNonParameterizedTest,
   std::unique_ptr<FormStructure> form_structure =
       ConstructDefaultCreditCardFormStructure();
   form_data_importer()
-      .SetCardIdentifierIfNonInteractiveAuthenticationFlowCompleted(
-          FormDataImporter::CardLastFourDigits(
-              base::UTF16ToUTF8(extracted_credit_card.LastFourDigits())));
+      .SetCardRecordTypeIfNonInteractiveAuthenticationFlowCompleted(
+          CreditCard::RecordType::kVirtualCard);
   form_data_importer().set_credit_card_import_type_for_testing(
       FormDataImporter::CreditCardImportType::kVirtualCard);
 
@@ -4043,7 +4036,7 @@ TEST_F(FormDataImporterNonParameterizedTest,
       .Times(0);
 
   EXPECT_FALSE(form_data_importer().ProcessExtractedCreditCardForTesting(
-      *form_structure, extracted_credit_card, absl::nullopt,
+      *form_structure, extracted_credit_card,
       /*payment_methods_autofill_enabled=*/true,
       /*is_credit_card_upstream_enabled=*/true));
 }
@@ -4056,8 +4049,8 @@ TEST_F(FormDataImporterNonParameterizedTest,
   std::unique_ptr<FormStructure> form_structure =
       ConstructDefaultCreditCardFormStructure();
   form_data_importer()
-      .SetCardIdentifierIfNonInteractiveAuthenticationFlowCompleted(
-          FormDataImporter::CardGuid(extracted_credit_card.guid()));
+      .SetCardRecordTypeIfNonInteractiveAuthenticationFlowCompleted(
+          CreditCard::RecordType::kLocalCard);
   form_data_importer().set_credit_card_import_type_for_testing(
       FormDataImporter::CreditCardImportType::kVirtualCard);
 
@@ -4074,14 +4067,14 @@ TEST_F(FormDataImporterNonParameterizedTest,
       .Times(1);
 
   EXPECT_TRUE(form_data_importer().ProcessExtractedCreditCardForTesting(
-      *form_structure, extracted_credit_card, absl::nullopt,
+      *form_structure, extracted_credit_card,
       /*payment_methods_autofill_enabled=*/true,
       /*is_credit_card_upstream_enabled=*/true));
 
-  // Ensure that we reset the card identifier at the end of the flow.
+  // Ensure that we reset the record type at the end of the flow.
   EXPECT_FALSE(
       form_data_importer()
-          .GetCardIdentifierIfNonInteractiveAuthenticationFlowCompleted()
+          .GetCardRecordTypeIfNonInteractiveAuthenticationFlowCompleted()
           .has_value());
 }
 #endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)

@@ -115,9 +115,109 @@ void WaitOnceForEvents(int device_fd,
           << events_from_device << ", or |other_events|: 0x" << other_events;
 }
 
+// Lifted from the similarly named method in platform/drm-tests [1].
+// ITU-T H.264 7.4.1.2.4 implementation. Assumes non-interlaced.
+// [1] https://source.chromium.org/chromiumos/chromiumos/codesearch/+/main:src/platform/drm-tests/bitstreams/bitstream_helper_h264.c;l=72-104;drc=a094a84679084106598763d0a551ef33a9ad422b
+bool IsNewH264Frame(const media::H264SPS* sps,
+                    const media::H264PPS* pps,
+                    const media::H264SliceHeader* prev_slice_header,
+                    const media::H264SliceHeader* curr_slice_header) {
+  if (curr_slice_header->frame_num != prev_slice_header->frame_num ||
+      curr_slice_header->pic_parameter_set_id != pps->pic_parameter_set_id ||
+      curr_slice_header->nal_ref_idc != prev_slice_header->nal_ref_idc ||
+      curr_slice_header->idr_pic_flag != prev_slice_header->idr_pic_flag ||
+      (curr_slice_header->idr_pic_flag &&
+       (curr_slice_header->idr_pic_id != prev_slice_header->idr_pic_id ||
+        curr_slice_header->first_mb_in_slice == 0))) {
+    return true;
+  }
+
+  if (sps->pic_order_cnt_type == 0) {
+    if (curr_slice_header->pic_order_cnt_lsb !=
+            prev_slice_header->pic_order_cnt_lsb ||
+        curr_slice_header->delta_pic_order_cnt_bottom !=
+            prev_slice_header->delta_pic_order_cnt_bottom) {
+      return true;
+    }
+  } else if (sps->pic_order_cnt_type == 1) {
+    if (curr_slice_header->delta_pic_order_cnt0 !=
+            prev_slice_header->delta_pic_order_cnt0 ||
+        curr_slice_header->delta_pic_order_cnt1 !=
+            prev_slice_header->delta_pic_order_cnt1) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+// Concatenates |fragments| into a larger DecoderBuffer and empties |fragments|.
+scoped_refptr<media::DecoderBuffer> ReassembleFragments(
+    std::vector<scoped_refptr<media::DecoderBuffer>>& fragments) {
+  size_t frame_size = 0;
+  for (const auto& fragment : fragments) {
+    frame_size += fragment->data_size();
+  }
+  auto temp_buffer = std::make_unique<uint8_t[]>(frame_size);
+  uint8_t* dst = temp_buffer.get();
+  for (const auto& fragment : fragments) {
+    memcpy(dst, fragment->data(), fragment->data_size());
+    dst += fragment->data_size();
+  }
+
+  auto reassembled_frame =
+      media::DecoderBuffer::FromArray(std::move(temp_buffer), frame_size);
+  // Use the last fragment's timestamp as the |reassembled_frame|'s' timestamp.
+  reassembled_frame->set_timestamp(fragments.back()->timestamp());
+
+  fragments.clear();
+  return reassembled_frame;
+}
+
 }  // namespace
 
 namespace media {
+
+// Stateful drivers need to be passed full frames (see IsNewH264Frame() above).
+// This class helps processing and gathering DecoderBuffers into full frames.
+class H264FrameReassembler {
+ public:
+  H264FrameReassembler() = default;
+  ~H264FrameReassembler() = default;
+  // Not copyable, not movable (move ctors will be implicitly deleted).
+  H264FrameReassembler(const H264FrameReassembler&) = delete;
+  H264FrameReassembler& operator=(const H264FrameReassembler&) = delete;
+
+  // This method parses |buffer| and decides whether it's part of a frame, if it
+  // marks the beginning of a new frame, or if it's a full frame itself. In any
+  // case, it might return a pair DecoderBuffer + DecodeCB; if so, the caller
+  // can treat it as ready to be enqueued in the driver: this method will hold
+  // onto and reassemble fragments as needed. |decode_cb| will be called
+  // internally to signal errors or correctly received |buffer|s.
+  absl::optional<
+      std::pair<scoped_refptr<DecoderBuffer>, VideoDecoder::DecodeCB>>
+  Process(scoped_refptr<DecoderBuffer> buffer,
+          VideoDecoder::DecodeCB decode_cb);
+
+  // Used for End-of-Stream situations when a caller needs to reassemble
+  // explcitily (an EOS marks a frame boundary, we can't parse it).
+  scoped_refptr<DecoderBuffer> AssembleAndFlushFragments() {
+    return ReassembleFragments(frame_fragments_);
+  }
+  bool HasFragments() const { return !frame_fragments_.empty(); }
+
+ private:
+  absl::optional<bool> DoesBufferMarkANewH264Frame(
+      const DecoderBuffer* const buffer);
+
+  H264Parser h264_parser_;
+  static constexpr int kInvalidSPS = -1;
+  int sps_id_ = kInvalidSPS;
+  static constexpr int kInvalidPPS = -1;
+  int pps_id_ = kInvalidPPS;
+  std::unique_ptr<H264SliceHeader> previous_slice_header_;
+  std::vector<scoped_refptr<DecoderBuffer>> frame_fragments_;
+};
 
 // static
 std::unique_ptr<VideoDecoderMixin> V4L2StatefulVideoDecoder::Create(
@@ -259,12 +359,12 @@ void V4L2StatefulVideoDecoder::Initialize(const VideoDecoderConfig& config,
   // [1]
   // https://www.kernel.org/doc/html/v5.15/userspace-api/media/v4l/dev-decoder.html#initialization
 
-  OUTPUT_queue_ = base::WrapRefCounted(
-      new V4L2Queue(base::BindRepeating(&HandledIoctl, device_fd_.get()),
-                    /*schedule_poll_cb=*/base::DoNothing(),
-                    /*mmap_cb=*/base::BindRepeating(&Mmap, device_fd_.get()),
-                    V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE,
-                    /*destroy_cb=*/base::DoNothing()));
+  OUTPUT_queue_ = base::WrapRefCounted(new V4L2Queue(
+      base::BindRepeating(&HandledIoctl, device_fd_.get()),
+      /*schedule_poll_cb=*/base::DoNothing(),
+      /*mmap_cb=*/base::BindRepeating(&Mmap, device_fd_.get()),
+      AllocateSecureBufferAsCallback(), V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE,
+      /*destroy_cb=*/base::DoNothing()));
 
   const auto profile_as_v4l2_fourcc =
       VideoCodecProfileToV4L2PixFmt(config.profile(), /*slice_based=*/false);
@@ -304,9 +404,13 @@ void V4L2StatefulVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  profile_ = config.profile();
   aspect_ratio_ = config.aspect_ratio();
   output_cb_ = std::move(output_cb);
+  profile_ = config.profile();
+  if (VideoCodecProfileToVideoCodec(profile_) == VideoCodec::kH264) {
+    h264_frame_reassembler_ = std::make_unique<H264FrameReassembler>();
+  }
+
   std::move(init_cb).Run(DecoderStatus::Codes::kOk);
 }
 
@@ -317,10 +421,20 @@ void V4L2StatefulVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   DVLOGF(3) << buffer->AsHumanReadableString(/*verbose=*/false);
 
   if (buffer->end_of_stream()) {
-    if (!decoder_buffer_and_callbacks_.empty()) {
+    if (h264_frame_reassembler_ && h264_frame_reassembler_->HasFragments()) {
+      decoder_buffer_and_callbacks_.emplace(
+          h264_frame_reassembler_->AssembleAndFlushFragments(),
+          base::DoNothing());
+      TryAndEnqueueOUTPUTQueueBuffers();
+    }
+
+    const bool is_pending_work = !decoder_buffer_and_callbacks_.empty();
+    const bool decoding = !!CAPTURE_queue_;
+    if (is_pending_work || !decoding) {
       // We still have |buffer|s that haven't been enqueued in |OUTPUT_queue_|,
-      // and if we were to SendStopCommand(), they would not be processed. So
-      // let's store the end_of_stream() |buffer| for later processing.
+      // or we're not decoding yet; if we were to SendStopCommand(), they would
+      // not be processed. So let's store the end_of_stream() |buffer| for
+      // later processing.
       decoder_buffer_and_callbacks_.emplace(std::move(buffer),
                                             std::move(decode_cb));
       return;
@@ -343,21 +457,28 @@ void V4L2StatefulVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
     return;
   }
 
-  if (profile_ == H264PROFILE_BASELINE || profile_ == H264PROFILE_MAIN ||
-      profile_ == H264PROFILE_HIGH) {
-    DCHECK(VerifyDecoderBufferHasOnlyWholeNALUs(buffer));
-  }
-
-  if (profile_ == HEVCPROFILE_MAIN) {
-    NOTIMPLEMENTED();
-    std::move(decode_cb).Run(DecoderStatus::Codes::kAborted);
-    return;
-  }
-
   PrintOutQueueStatesForVLOG(FROM_HERE);
 
-  decoder_buffer_and_callbacks_.emplace(std::move(buffer),
-                                        std::move(decode_cb));
+  if (VideoCodecProfileToVideoCodec(profile_) == VideoCodec::kH264) {
+    auto processed_buffer_and_decode_cb = h264_frame_reassembler_->Process(
+        std::move(buffer), std::move(decode_cb));
+    // If Process() returns nothing, then it swallowed its arguments and
+    // there's nothing further to do. Otherwise, just treat whatever it
+    // returned as a normal DecoderBuffer + DecodeCB pair.
+    if (!processed_buffer_and_decode_cb.has_value()) {
+      return;
+    }
+    decoder_buffer_and_callbacks_.emplace(
+        std::move(*processed_buffer_and_decode_cb));
+  } else if (VideoCodecProfileToVideoCodec(profile_) == VideoCodec::kHEVC) {
+    NOTIMPLEMENTED();
+    std::move(decode_cb).Run(DecoderStatus::Codes::kUnsupportedCodec);
+    return;
+  } else {
+    decoder_buffer_and_callbacks_.emplace(std::move(buffer),
+                                          std::move(decode_cb));
+  }
+
   if (!TryAndEnqueueOUTPUTQueueBuffers()) {
     // All accepted entries in |decoder_buffer_and_callbacks_| must have had
     // their |decode_cb|s Run() from inside TryAndEnqueueOUTPUTQueueBuffers().
@@ -389,6 +510,10 @@ void V4L2StatefulVideoDecoder::Reset(base::OnceClosure closure) {
   weak_ptr_factory_for_events_.InvalidateWeakPtrs();
   cancelable_task_tracker_.TryCancelAll();
 
+  if (h264_frame_reassembler_) {
+    h264_frame_reassembler_ = std::make_unique<H264FrameReassembler>();
+  }
+
   // Signal any pending work as kAborted.
   while (!decoder_buffer_and_callbacks_.empty()) {
     auto media_decode_cb =
@@ -413,6 +538,13 @@ void V4L2StatefulVideoDecoder::Reset(base::OnceClosure closure) {
 
   if (flush_cb_) {
     std::move(flush_cb_).Run(DecoderStatus::Codes::kAborted);
+  }
+
+  // There might be available resources for |CAPTURE_queue_| from previous
+  // cycles, i.e. from before Reset(); try and make them available for the
+  // driver.
+  if (CAPTURE_queue_) {
+    TryAndEnqueueCAPTUREQueueBuffers();
   }
 }
 
@@ -514,12 +646,12 @@ bool V4L2StatefulVideoDecoder::InitializeCAPTUREQueue() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsInitialized()) << "V4L2StatefulVideoDecoder must be Initialize()d";
 
-  CAPTURE_queue_ = base::WrapRefCounted(
-      new V4L2Queue(base::BindRepeating(&HandledIoctl, device_fd_.get()),
-                    /*schedule_poll_cb=*/base::DoNothing(),
-                    /*mmap_cb=*/base::BindRepeating(&Mmap, device_fd_.get()),
-                    V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE,
-                    /*destroy_cb=*/base::DoNothing()));
+  CAPTURE_queue_ = base::WrapRefCounted(new V4L2Queue(
+      base::BindRepeating(&HandledIoctl, device_fd_.get()),
+      /*schedule_poll_cb=*/base::DoNothing(),
+      /*mmap_cb=*/base::BindRepeating(&Mmap, device_fd_.get()),
+      AllocateSecureBufferAsCallback(), V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE,
+      /*destroy_cb=*/base::DoNothing()));
 
   const auto v4l2_format_or_error = CAPTURE_queue_->GetFormat();
   if (!v4l2_format_or_error.first || v4l2_format_or_error.second != kIoctlOk) {
@@ -543,6 +675,7 @@ bool V4L2StatefulVideoDecoder::InitializeCAPTUREQueue() {
     return false;
   }
   CHECK(gfx::Rect(coded_size).Contains(*visible_rect));
+  visible_rect_ = *visible_rect;
 
   const auto num_codec_reference_frames = GetNumberOfReferenceFrames();
 
@@ -753,14 +886,13 @@ void V4L2StatefulVideoDecoder::TryAndDequeueCAPTUREQueueBuffers() {
       //  the VideoFrames are pooled in |client_|s;
       //  TryAndEnqueueCAPTUREQueueBuffers() will find them there.
       if (queue_type == V4L2_MEMORY_MMAP) {
-        // TODO(mcasas): Consider carrying this gfx::Rect in the |video_frame|.
-        absl::optional<gfx::Rect> visible_rect =
-            CAPTURE_queue_->GetVisibleRect();
-        CHECK(visible_rect.has_value());
-
+        // Don't query |CAPTURE_queue_|'s GetVisibleRect() here because it races
+        // with hypothetical resolution changes.
+        CHECK(gfx::Rect(video_frame->coded_size()).Contains(visible_rect_));
+        CHECK(video_frame->visible_rect().Contains(visible_rect_));
         auto wrapped_frame = VideoFrame::WrapVideoFrame(
-            video_frame, video_frame->format(), *visible_rect,
-            /*natural_size=*/visible_rect->size());
+            video_frame, video_frame->format(), visible_rect_,
+            /*natural_size=*/visible_rect_.size());
 
         // Make sure |dequeued_buffer| stays alive and its reference released as
         // |wrapped_frame| is destroyed, allowing -maybe- for it to get back to
@@ -865,39 +997,6 @@ bool V4L2StatefulVideoDecoder::DrainOUTPUTQueue() {
   return success;
 }
 
-bool V4L2StatefulVideoDecoder::VerifyDecoderBufferHasOnlyWholeNALUs(
-    scoped_refptr<DecoderBuffer> buffer) {
-  if (!h264_parser_) {
-    h264_parser_ = std::make_unique<H264Parser>();
-  }
-  DCHECK(h264_parser_);
-  h264_parser_->SetStream(buffer->data(), buffer->data_size());
-  size_t accumulator = 0;
-  while (true) {
-    H264NALU nalu;
-    const H264Parser::Result result = h264_parser_->AdvanceToNextNALU(&nalu);
-    if (result == H264Parser::kInvalidStream ||
-        result == H264Parser::kUnsupportedStream) {
-      return false;
-    }
-    if (result == H264Parser::kEOStream) {
-      return accumulator == buffer->data_size();
-    }
-    DCHECK_EQ(result, H264Parser::kOk);
-
-    // Includes the size of the NALU header so that the size adds up to the
-    // actual size of the buffer.
-    const size_t nalu_header_size =
-        base::checked_cast<size_t>(nalu.data - buffer->data());
-    if (!base::CheckAdd(nalu_header_size, nalu.size)
-             .AssignIfValid(&accumulator)) {
-      LOG(ERROR) << "Invalid NALU header and data size.";
-      return false;
-    }
-    DCHECK_LE(accumulator, buffer->data_size());
-  }
-}
-
 bool V4L2StatefulVideoDecoder::TryAndEnqueueOUTPUTQueueBuffers() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsInitialized()) << "V4L2StatefulVideoDecoder must be Initialize()d";
@@ -936,6 +1035,7 @@ bool V4L2StatefulVideoDecoder::TryAndEnqueueOUTPUTQueueBuffers() {
     CHECK_GE(v4l2_buffer->GetPlaneSize(/*plane=*/0), media_buffer->data_size());
     memcpy(dst, media_buffer->data(), media_buffer->data_size());
     v4l2_buffer->SetPlaneBytesUsed(0, media_buffer->data_size());
+    VLOGF(4) << "Enqueuing " << media_buffer->data_size() << " bytes.";
     v4l2_buffer->SetTimeStamp(TimeDeltaToTimeVal(media_buffer->timestamp()));
 
     if (!std::move(*v4l2_buffer).QueueMMap()) {
@@ -962,6 +1062,121 @@ void V4L2StatefulVideoDecoder::PrintOutQueueStatesForVLOG(
 bool V4L2StatefulVideoDecoder::IsInitialized() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return !!OUTPUT_queue_;
+}
+
+absl::optional<std::pair<scoped_refptr<DecoderBuffer>, VideoDecoder::DecodeCB>>
+H264FrameReassembler::Process(scoped_refptr<DecoderBuffer> buffer,
+                              VideoDecoder::DecodeCB decode_cb) {
+  const auto result = DoesBufferMarkANewH264Frame(buffer.get());
+  if (!result.has_value()) {
+    LOG(ERROR) << "Failed parsing H.264 DecoderBuffer";
+    std::move(decode_cb).Run(DecoderStatus::Codes::kFailed);
+    return absl::nullopt;
+  }
+
+  const auto is_new_frame = *result;
+  if (!is_new_frame) {
+    VLOGF(3) << "|buffer| is a frame fragment, storing it for reassembly.";
+    frame_fragments_.emplace_back(std::move(buffer));
+    std::move(decode_cb).Run(DecoderStatus::Codes::kOk);
+    return absl::nullopt;
+  }
+
+  const bool needs_reassembly = HasFragments();
+  if (!needs_reassembly) {
+    // Easy case: |buffer| is a full frame and doesn't need reassembly.
+    return std::make_pair(std::move(buffer), std::move(decode_cb));
+  }
+
+  VLOGF(3) << "|buffer| is a new frame fragment; " << frame_fragments_.size()
+           << " currently stored frame fragment(s) can be reassembled.";
+  auto reassembled_frame = ReassembleFragments(frame_fragments_);
+
+  // Save the current |buffer|, which would be lost otherwise.
+  frame_fragments_.emplace_back(std::move(buffer));
+  std::move(decode_cb).Run(DecoderStatus::Codes::kOk);
+  return std::make_pair(std::move(reassembled_frame), base::DoNothing());
+}
+
+absl::optional<bool> H264FrameReassembler::DoesBufferMarkANewH264Frame(
+    const DecoderBuffer* const buffer) {
+  h264_parser_.SetStream(buffer->data(), buffer->data_size());
+  while (true) {
+    H264NALU nalu;
+    H264Parser::Result result = h264_parser_.AdvanceToNextNALU(&nalu);
+    if (result == H264Parser::kInvalidStream ||
+        result == H264Parser::kUnsupportedStream) {
+      LOG(ERROR) << "Could not parse bitstream.";
+      return absl::nullopt;
+    }
+    if (result == H264Parser::kEOStream) {
+      return false;
+    }
+    DCHECK_EQ(result, H264Parser::kOk);
+
+    static const char* kKnownNALUNames[] = {
+        "Unspecified", "NonIDRSlice",   "SliceDataA",
+        "SliceDataB",  "SliceDataC",    "IDRSlice",
+        "SEIMessage",  "SPS",           "PPS",
+        "AUD",         "EOSeq",         "EOStream",
+        "Filler",      "SPSExt",        "Prefix",
+        "SubsetSPS",   "DPS",           "Reserved17",
+        "Reserved18",  "CodedSliceAux", "CodedSliceExtension",
+    };
+    CHECK_LT(base::checked_cast<size_t>(nalu.nal_unit_type),
+             std::size(kKnownNALUNames));
+    VLOGF(4) << "H264NALU type " << kKnownNALUNames[nalu.nal_unit_type] << ", "
+             << nalu.size << " bytes payload";
+
+    switch (nalu.nal_unit_type) {
+      case H264NALU::kSPS:
+        result = h264_parser_.ParseSPS(&sps_id_);
+        if (result != H264Parser::kOk) {
+          LOG(ERROR) << "Could not parse SPS header.";
+          return absl::nullopt;
+        }
+        return true;
+      case H264NALU::kPPS:
+        result = h264_parser_.ParsePPS(&pps_id_);
+        if (result != H264Parser::kOk) {
+          LOG(ERROR) << "Could not parse PPS header.";
+          return absl::nullopt;
+        }
+        return true;
+      case H264NALU::kNonIDRSlice:
+      case H264NALU::kIDRSlice: {
+        H264SliceHeader curr_slice_header;
+        result = h264_parser_.ParseSliceHeader(nalu, &curr_slice_header);
+        if (result != H264Parser::kOk) {
+          LOG(ERROR) << "Could not parse NALU header.";
+          return absl::nullopt;
+        }
+        const bool is_new_frame =
+            previous_slice_header_ &&
+            IsNewH264Frame(h264_parser_.GetSPS(sps_id_),
+                           h264_parser_.GetPPS(pps_id_),
+                           previous_slice_header_.get(), &curr_slice_header);
+        previous_slice_header_ =
+            std::make_unique<H264SliceHeader>(curr_slice_header);
+        return is_new_frame;
+      }
+      case H264NALU::kSEIMessage:
+      case H264NALU::kAUD:
+      case H264NALU::kEOSeq:
+      case H264NALU::kEOStream:
+      case H264NALU::kFiller:
+      case H264NALU::kSPSExt:
+      case H264NALU::kPrefix:
+      case H264NALU::kSubsetSPS:
+      case H264NALU::kDPS:
+      case H264NALU::kReserved17:
+      case H264NALU::kReserved18:
+        // Anything else than SPS, PPS and Non/IDRs marks a new frame boundary.
+        return true;
+      default:
+        NOTREACHED_NORETURN() << "Unknown NALU, id: " << nalu.nal_unit_type;
+    }
+  }
 }
 
 }  // namespace media

@@ -291,7 +291,7 @@ try_.orchestrator_builder(
 try_.compilator_builder(
     name = "linux-chromeos-rel-compilator",
     branch_selector = branches.selector.CROS_LTS_BRANCHES,
-    cores = "16|32",
+    cores = 32,
     main_list_view = "try",
 )
 
@@ -416,43 +416,4 @@ try_.builder(
             "chrome/test/data/webui/chromeos/chromebox_for_meetings/.+",
         ],
     ),
-)
-
-try_.builder(
-    name = "chromeos-amd64-generic-rel-rts",
-    mirrors = builder_config.copy_from("try/chromeos-amd64-generic-rel"),
-    try_settings = builder_config.try_settings(
-        rts_config = builder_config.rts_config(
-            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
-        ),
-    ),
-    experiments = {
-        "chromium_rts.inverted_rts": 100,
-    },
-)
-
-try_.builder(
-    name = "linux-chromeos-rel-rts",
-    mirrors = builder_config.copy_from("try/linux-chromeos-rel"),
-    try_settings = builder_config.try_settings(
-        rts_config = builder_config.rts_config(
-            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
-        ),
-    ),
-    experiments = {
-        "chromium_rts.inverted_rts": 100,
-    },
-)
-
-try_.builder(
-    name = "linux-lacros-rel-rts",
-    mirrors = builder_config.copy_from("try/linux-lacros-rel"),
-    try_settings = builder_config.try_settings(
-        rts_config = builder_config.rts_config(
-            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
-        ),
-    ),
-    experiments = {
-        "chromium_rts.inverted_rts": 100,
-    },
 )

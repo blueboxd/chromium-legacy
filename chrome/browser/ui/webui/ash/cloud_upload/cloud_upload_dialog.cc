@@ -844,6 +844,7 @@ void CloudOpenTask::FinishedDriveUpload(absl::optional<GURL> url,
   DCHECK_GT(pending_uploads_, 0UL);
   if (url.has_value()) {
     upload_total_size_ += size;
+    fm_tasks::SetOfficeFileMovedToGoogleDrive(profile_, base::Time::Now());
     // Open the URL.
     const OfficeTaskResult task_result_uma =
         transfer_required_ == OfficeFilesTransferRequired::kCopy
@@ -851,14 +852,16 @@ void CloudOpenTask::FinishedDriveUpload(absl::optional<GURL> url,
             : OfficeTaskResult::kMoved;
     OpenUploadedDriveUrl(url.value(), task_result_uma);
   } else {
+    has_upload_errors_ = true;
     UMA_HISTOGRAM_ENUMERATION(kGoogleDriveTaskResultMetricName,
                               OfficeTaskResult::kFailedToUpload);
   }
   if (--pending_uploads_) {
     return;
   }
-  RecordUploadLatencyUMA();
-  fm_tasks::SetOfficeFileMovedToGoogleDrive(profile_, base::Time::Now());
+  if (!has_upload_errors_) {
+    RecordUploadLatencyUMA();
+  }
 }
 
 void CloudOpenTask::FinishedOneDriveUpload(
@@ -873,6 +876,7 @@ void CloudOpenTask::FinishedOneDriveUpload(
       // TODO(b/296950967): metric to log here?
       return;
     }
+    fm_tasks::SetOfficeFileMovedToOneDrive(profile, base::Time::Now());
     const OfficeTaskResult task_result_uma =
         transfer_required_ == OfficeFilesTransferRequired::kCopy
             ? OfficeTaskResult::kCopied
@@ -880,20 +884,16 @@ void CloudOpenTask::FinishedOneDriveUpload(
     OpenODFSUrl(profile, url.value(),
                 base::BindOnce(&LogOneDriveOpenResultUMA, task_result_uma));
   } else {
+    has_upload_errors_ = true;
     UMA_HISTOGRAM_ENUMERATION(kOneDriveTaskResultMetricName,
                               OfficeTaskResult::kFailedToUpload);
   }
-
   if (--pending_uploads_) {
     return;
   }
-  RecordUploadLatencyUMA();
-  Profile* profile = profile_weak_ptr.get();
-  if (!profile) {
-    // TODO(b/296950967): metric to log here?
-    return;
+  if (!has_upload_errors_) {
+    RecordUploadLatencyUMA();
   }
-  fm_tasks::SetOfficeFileMovedToOneDrive(profile, base::Time::Now());
 }
 
 void CloudOpenTask::RecordUploadLatencyUMA() {

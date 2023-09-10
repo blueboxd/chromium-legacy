@@ -77,6 +77,7 @@
     case START_LENS_FROM_APP_ICON_LONG_PRESS:
     case START_LENS_FROM_HOME_SCREEN_WIDGET:
     case START_LENS_FROM_SPOTLIGHT:
+    case START_LENS_FROM_INTENTS:
       [description appendString:@", should launch Lens"];
       break;
     case START_VOICE_SEARCH:
@@ -115,6 +116,9 @@
     case MANAGE_SETTINGS:
       [description appendString:@", should open settings page"];
       break;
+    case OPEN_LATEST_TAB:
+      [description appendString:@", should resume latest tab"];
+      break;
     default:
       break;
   }
@@ -147,6 +151,8 @@
     case START_LENS_FROM_APP_ICON_LONG_PRESS:
     case START_LENS_FROM_HOME_SCREEN_WIDGET:
     case START_LENS_FROM_SPOTLIGHT:
+    case OPEN_LATEST_TAB:
+    case START_LENS_FROM_INTENTS:
       if (_externalURL.is_empty()) {
         return YES;
       }

@@ -433,6 +433,9 @@ class InspectorCSSAgent::ModifyRuleAction final
     if (auto* try_rule = DynamicTo<CSSTryRule>(rule)) {
       return style_sheet_->BuildObjectForStyle(try_rule->style());
     }
+    if (auto* property_rule = DynamicTo<CSSPropertyRule>(rule)) {
+      return style_sheet_->BuildObjectForStyle(property_rule->Style());
+    }
     return nullptr;
   }
 
@@ -3161,7 +3164,7 @@ void InspectorCSSAgent::SetCoverageEnabled(bool enabled) {
 }
 
 void InspectorCSSAgent::WillChangeStyleElement(Element* element) {
-  resource_container_->EraseStyleElementContent(DOMNodeIds::IdForNode(element));
+  resource_container_->EraseStyleElementContent(element->GetDomNodeId());
 }
 
 protocol::Response InspectorCSSAgent::startRuleUsageTracking() {

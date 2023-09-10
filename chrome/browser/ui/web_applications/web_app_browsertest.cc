@@ -244,8 +244,9 @@ class WebAppBrowserTest : public WebAppControllerBrowserTest {
     web_app_info->user_display_mode = open_as_window
                                           ? mojom::UserDisplayMode::kStandalone
                                           : mojom::UserDisplayMode::kBrowser;
-    if (display_override_mode)
+    if (display_override_mode) {
       web_app_info->display_override.push_back(*display_override_mode);
+    }
 
     AppId app_id = InstallWebApp(std::move(web_app_info));
     Browser* app_browser = LaunchWebAppBrowser(app_id);
@@ -290,7 +291,7 @@ class WebAppBrowserTest_Tabbed : public WebAppBrowserTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_{
-      features::kDesktopPWAsTabStrip};
+      blink::features::kDesktopPWAsTabStrip};
 };
 
 using WebAppBrowserTest_DetailedInstallDialog = WebAppBrowserTest;
@@ -1087,7 +1088,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, InstallInstallableSite) {
             web_app::mojom::UserDisplayMode::kStandalone);
 
   // Installed PWAs should have install time set.
-  EXPECT_TRUE(provider->registrar_unsafe().GetAppInstallTime(app_id) >=
+  EXPECT_TRUE(provider->registrar_unsafe().GetAppFirstInstallTime(app_id) >=
               before_install_time);
 
   EXPECT_EQ(1, user_action_tester.GetActionCount("InstallWebAppFromMenu"));
@@ -1125,7 +1126,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserCrOSEventsTest,
             web_app::mojom::UserDisplayMode::kStandalone);
 
   // Installed PWAs should have install time set.
-  EXPECT_TRUE(provider->registrar_unsafe().GetAppInstallTime(app_id) >=
+  EXPECT_TRUE(provider->registrar_unsafe().GetAppFirstInstallTime(app_id) >=
               before_install_time);
 
   const std::vector<metrics::structured::Event>& events =
@@ -2157,13 +2158,6 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_Tabbed, TabbedDisplayOverride) {
   EXPECT_EQ(DisplayMode::kTabbed, app_display_mode_override[0]);
   EXPECT_EQ(true,
             provider->registrar_unsafe().IsTabbedWindowModeEnabled(app_id));
-}
-
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, RemoveStatusBar) {
-  NavigateToURLAndWait(browser(), GetInstallableAppURL());
-  const AppId app_id = test::InstallPwaForCurrentUrl(browser());
-  Browser* const app_browser = LaunchWebAppBrowser(app_id);
-  EXPECT_EQ(nullptr, app_browser->GetStatusBubbleForTesting());
 }
 
 class WebAppBrowserTest_NoDestroyProfile : public WebAppBrowserTest {

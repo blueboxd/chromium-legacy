@@ -19,6 +19,19 @@ inline constexpr char kBlockAll3pcToggleEnabled[] =
 inline constexpr char kTrackingProtectionLevel[] =
     "tracking_protection.tracking_protection_level";
 
+// Unsynced boolean that indicates whether 3PCD tracking protection (prefs + UI)
+// are enabled on the current device.
+inline constexpr char kTrackingProtection3pcdEnabled[] =
+    "tracking_protection.tracking_protection_3pcd_enabled";
+
+// Whether to send the DNT header.
+inline constexpr char kEnableDoNotTrack[] = "enable_do_not_track";
+
+// Unsynced boolean that indicates what status the profile is at with regards to
+// tracking protections (3PCD Onboarding Notice).
+inline constexpr char kTrackingProtectionOnboardingStatus[] =
+    "tracking_protection.tracking_protection_onboarding_status";
+
 }  // namespace prefs
 
 namespace privacy_sandbox::tracking_protection {
@@ -29,6 +42,14 @@ enum class TrackingProtectionLevel {
   kStandard = 0,
   kCustom = 1,
   kMaxValue = kCustom,
+};
+
+// Different tracking protection onboarding statuses stored in the pref above.
+enum class TrackingProtectionOnboardingStatus {
+  kIneligible = 0,
+  kEligible = 1,
+  kOnboarded = 2,
+  kMaxValue = kOnboarded,
 };
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry);

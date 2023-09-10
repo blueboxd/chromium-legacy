@@ -43,6 +43,12 @@ chromium-metrics-reviews@google.com.
       summary="Recorded for PermissionsInfobar."/>
   <variant name="InfobarTypeSaveCard"
       summary="Recorded for Save Card Infobar."/>
+  <variant name="InfobarTypeSyncError"
+      summary="Recorded for Sync Error Infobar."/>
+  <variant name="InfobarTypeTabPickup"
+      summary="Recorded for TabPickup Infobar."/>
+  <variant name="InfobarTypeTailoredSecurityService"
+      summary="Recorded for Tailored Security Service Infobar."/>
   <variant name="InfobarTypeTranslate"
       summary="Recorded for Translate Infobar."/>
 </variants>
@@ -594,7 +600,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.SystemNotification.Permission.Change"
-    enum="BooleanEnabled" expires_after="2023-11-01">
+    enum="BooleanEnabled" expires_after="2024-03-03">
   <owner>salg@google.com</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>
@@ -605,7 +611,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.SystemNotification.Permission.OSPromptResult"
-    enum="BooleanEnabled" expires_after="2023-12-31">
+    enum="BooleanEnabled" expires_after="2024-03-03">
   <owner>salg@google.com</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>
@@ -615,7 +621,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.SystemNotification.Permission.RationaleResult"
-    enum="NotificationRationaleResult" expires_after="2023-12-31">
+    enum="NotificationRationaleResult" expires_after="2024-03-03">
   <owner>salg@google.com</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>
@@ -625,7 +631,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.SystemNotification.Permission.StartupRequestCount"
-    units="attempts" expires_after="2023-12-31">
+    units="attempts" expires_after="2024-03-03">
   <owner>salg@google.com</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>
@@ -1161,38 +1167,6 @@ chromium-metrics-reviews@google.com.
     Counts how many times the explicit &quot;X&quot;-to-close button is clicked
     per impression in the reading list. Recorded when the &quot;X&quot;-to-close
     button from the reading list sign-in promo is clicked.
-  </summary>
-</histogram>
-
-<histogram name="MobileSignInPromo.SettingsManager.ImpressionsTilDismiss"
-    units="impressions" expires_after="2024-04-01">
-  <owner>jlebel@chromium.org</owner>
-  <owner>chrome-signin-team@google.com</owner>
-  <summary>
-    Counts how many times the signin promo is implicitly dismissed (by closing
-    the settings view) per impression.
-  </summary>
-</histogram>
-
-<histogram name="MobileSignInPromo.SettingsManager.ImpressionsTilSigninButtons"
-    units="impressions" expires_after="2024-04-01">
-  <owner>jlebel@chromium.org</owner>
-  <owner>chrome-signin-team@google.com</owner>
-  <summary>
-    Counts how many times one of the &quot;sign in&quot; buttons (any of the
-    signed-out &quot;Sign in to Chrome&quot; button, the &quot;Continue as
-    |name|&quot; button, or the &quot;Not |email|?&quot; button) is clicked per
-    impression.
-  </summary>
-</histogram>
-
-<histogram name="MobileSignInPromo.SettingsManager.ImpressionsTilXButton"
-    units="impressions" expires_after="2024-04-01">
-  <owner>jlebel@chromium.org</owner>
-  <owner>chrome-signin-team@google.com</owner>
-  <summary>
-    Counts how many times the explicit &quot;X&quot;-to-close button is clicked
-    per impression.
   </summary>
 </histogram>
 

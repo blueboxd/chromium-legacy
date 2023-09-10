@@ -631,11 +631,21 @@ IN_PROC_BROWSER_TEST_F(SettingsPerformancePageDiscardExceptionImprovementsTest,
           "runMochaSuite('TabDiscardExceptionList')");
 }
 
-using SettingsPersonalizationOptionsTest = SettingsBrowserTest;
+class SettingsPersonalizationOptionsTest : public SettingsBrowserTest {
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_{
+      features::kPageContentOptIn};
+};
 
 IN_PROC_BROWSER_TEST_F(SettingsPersonalizationOptionsTest, AllBuilds) {
   RunTest("settings/personalization_options_test.js",
           "runMochaSuite('AllBuilds')");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsPersonalizationOptionsTest,
+                       PageContentSettingOff) {
+  RunTest("settings/personalization_options_test.js",
+          "runMochaSuite('PageContentSettingOff')");
 }
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -706,6 +716,11 @@ IN_PROC_BROWSER_TEST_F(SettingsPrivacyGuideTest,
                        SearchSuggestionsCardNavigations) {
   RunTest("settings/privacy_guide_page_test.js",
           "runMochaSuite('SearchSuggestionsCardNavigations')");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsPrivacyGuideTest, PreloadCardNavigations) {
+  RunTest("settings/privacy_guide_page_test.js",
+          "runMochaSuite('PreloadCardNavigations')");
 }
 
 IN_PROC_BROWSER_TEST_F(SettingsPrivacyGuideTest, PrivacyGuideDialog) {
@@ -998,8 +1013,13 @@ IN_PROC_BROWSER_TEST_F(SettingsSafetyHubTest, SafetyHubEntryPoint) {
   RunTest("settings/safety_hub_entry_point_test.js", "mocha.run()");
 }
 
-IN_PROC_BROWSER_TEST_F(SettingsSafetyHubTest, All) {
+IN_PROC_BROWSER_TEST_F(SettingsSafetyHubTest, UnusedSitePermissionsModule) {
   RunTest("settings/safety_hub_unused_site_permissions_module_test.js",
+          "mocha.run()");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsSafetyHubTest, NotificationPermissionsModule) {
+  RunTest("settings/safety_hub_notification_permissions_module_test.js",
           "mocha.run()");
 }
 

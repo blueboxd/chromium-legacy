@@ -278,6 +278,7 @@
 <translation id="3264582393905923483">Konteksti</translation>
 <translation id="3272909651715601089"><ph name="PATH" /> ei avautunut</translation>
 <translation id="3280431534455935878">Valmistellaan</translation>
+<translation id="3280719573299097127">Käytät maksullista yhteyttä. Tiedostojen synkronointi on keskeytetty.</translation>
 <translation id="3280987981688031357">Vinyylilevy</translation>
 <translation id="3290356915286466215">Suojaamaton</translation>
 <translation id="3291218047831493686">Yhdistä tähän verkkoon vaihtaaksesi SIM-lukituksen asetuksia</translation>
@@ -632,6 +633,7 @@
 <translation id="5838451609423551646">Kaikki kohteet poistettiin valinnasta.</translation>
 <translation id="5838825566232597749">Yhdysvallat, kansainvälinen Workman</translation>
 <translation id="5845721951356578987">Sairaanhoitaja</translation>
+<translation id="5858478190805449225">Virransäästötila päällä. Yritä uudelleen, kun virransäästötila on laitettu pois päältä.</translation>
 <translation id="5860491529813859533">Ota käyttöön</translation>
 <translation id="5861477046012235702">Pelaaja</translation>
 <translation id="5864471791310927901">DHCP-haku epäonnistui</translation>
@@ -898,7 +900,6 @@
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7920501309908018401">Omassa Drivessa olevat tiedostot synkronoituvat Chromebookiin automaattisesti, joten voit käyttää niitä ilman internetyhteyttä.</translation>
 <translation id="7925247922861151263">AAA-testi epäonnistui</translation>
-<translation id="7925686952655276919">Älä käytä mobiiliyhteyttä synkronointiin</translation>
 <translation id="7928710562641958568">Poista laite</translation>
 <translation id="7933875256234974853">Valmistellaan Drive-tiedostojen synkronointia…</translation>
 <translation id="7943385054491506837">USA, Colemak</translation>
@@ -921,6 +922,7 @@
 <translation id="8087576439476816834">Lataa, <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">Jaettu minulle</translation>
 <translation id="8116072619078571545">Jäävesi</translation>
+<translation id="8120392982188717723">Salli synkronointi maksullisissa verkoissa</translation>
 <translation id="8124093710070495550">Synkronointiongelma</translation>
 <translation id="8128733386027980860">englanti (Yhdistynyt kuningaskunta), Dvorak-näppäimistö</translation>
 <translation id="8137331602592933310"><ph name="FILENAME" /> on jaettu sinulle. Et voi poistaa sitä, koska et ole tiedoston omistaja.</translation>

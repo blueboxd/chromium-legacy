@@ -8,10 +8,12 @@
 #include "chrome/browser/signin/bound_session_credentials/bound_session_registration_fetcher.h"
 
 #include <memory>
+#include <string>
 
 #include "base/functional/callback.h"
-#include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
+#include "base/types/expected.h"
 #include "chrome/browser/signin/bound_session_credentials/bound_session_cookie_refresh_service.h"
 #include "chrome/browser/signin/bound_session_credentials/bound_session_registration_fetcher_param.h"
 #include "chrome/browser/signin/bound_session_credentials/registration_token_helper.h"
@@ -32,10 +34,24 @@ class UnexportableKeyService;
 class BoundSessionRegistrationFetcherImpl
     : public BoundSessionRegistrationFetcher {
  public:
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  // Public for testing.
+  enum class RegistrationError {
+    kNone = 0,
+    kGenerateRegistrationTokenFailed = 1,
+    kNetworkError = 2,
+    kServerError = 3,
+    kParseJsonFailed = 4,
+    kRequiredFieldMissing = 5,
+    kInvalidSessionParams = 6,
+    kMaxValue = kInvalidSessionParams
+  };
+
   explicit BoundSessionRegistrationFetcherImpl(
       BoundSessionRegistrationFetcherParam registration_params,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-      unexportable_keys::UnexportableKeyService* key_service);
+      unexportable_keys::UnexportableKeyService& key_service);
 
   BoundSessionRegistrationFetcherImpl(
       BoundSessionRegistrationFetcherImpl&& other) = delete;
@@ -58,8 +74,12 @@ class BoundSessionRegistrationFetcherImpl
 
   void StartFetchingRegistration(const std::string& registration_token);
 
+  void RunCallbackAndRecordMetrics(
+      base::expected<bound_session_credentials::BoundSessionParams,
+                     RegistrationError> params_or_error);
+
   BoundSessionRegistrationFetcherParam registration_params_;
-  const raw_ptr<unexportable_keys::UnexportableKeyService> key_service_;
+  const raw_ref<unexportable_keys::UnexportableKeyService> key_service_;
   std::string wrapped_key_str_;
 
   // Non-null after a fetch has started.

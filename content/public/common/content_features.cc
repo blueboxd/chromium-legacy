@@ -276,12 +276,6 @@ BASE_FEATURE(kDesktopCaptureChangeSource,
              "DesktopCaptureChangeSource",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Adds a tab strip to PWA windows.
-// TODO(crbug.com/897314): Enable this feature.
-BASE_FEATURE(kDesktopPWAsTabStrip,
-             "DesktopPWAsTabStrip",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enable the device posture API.
 // Tracking bug for enabling device posture API: https://crbug.com/1066842.
 BASE_FEATURE(kDevicePosture,
@@ -599,20 +593,15 @@ BASE_FEATURE(kInstalledAppProvider,
 // isolated web apps via the isolated-app:// scheme, and other advanced isolated
 // app functionality. See https://github.com/reillyeon/isolated-web-apps for a
 // general overview.
-// Please don't use this feature flag directly to guard the IWA code. Use
-// IsolatedWebAppsPolicy::AreIsolatedWebAppsEnabled() in the browser process
+// This also enables support for IWA Controlled Frame, providing the Controlled
+// Frame tag to IWA apps. See
+// https://github.com/chasephillips/controlled-frame/blob/main/EXPLAINER.md for
+// more info. Please don't use this feature flag directly to guard the IWA code.
+// Use IsolatedWebAppsPolicy::AreIsolatedWebAppsEnabled() in the browser process
 // or check kEnableIsolatedWebAppsInRenderer command line flag in the renderer
 // process.
 BASE_FEATURE(kIsolatedWebApps,
              "IsolatedWebApps",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enable support for IWA Controlled Frame. This gates allowing IWAs to provide
-// a functional Controlled Frame tag to IWA apps.
-// See https://github.com/chasephillips/controlled-frame/blob/main/EXPLAINER.md
-// for more info.
-BASE_FEATURE(kIwaControlledFrame,
-             "IwaControlledFrame",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables process isolation of fenced content (content inside fenced frames)
@@ -649,6 +638,12 @@ BASE_FEATURE(kLazyFrameLoading,
 BASE_FEATURE(kLazyInitializeMediaControls,
              "LazyInitializeMediaControls",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Using top-level document URL when create an enterprise report for legacy
+// technologies usage
+BASE_FEATURE(kLegacyTechReportTopLevelUrl,
+             "LegacyTechReportTopLevelUrl",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Configures whether Blink on Windows 8.0 and below should use out of process
 // API font fallback calls to retrieve a fallback font family name as opposed to

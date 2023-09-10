@@ -1217,6 +1217,10 @@
         },
       },
       'linux-chromeos-rel': {
+        # Only retry the individual failed tests instead of rerunning entire
+        # shards.
+        # crbug.com/1473501
+        'retry_only_failed_tests': True,
         'swarming': {
           'shards': 60,
           'dimensions': {
@@ -1272,11 +1276,6 @@
         'args': [
           '--coverage-continuous-mode=1',
         ],
-      },
-      'mac-cr23-rel': {
-        'swarming': {
-          'shards': 20,
-        },
       },
       'mac-osxbeta-rel': {
         'swarming': {
@@ -1644,10 +1643,22 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_o.chrome_public_unit_test_apk.filter',
         ],
       },
+      'android-pie-arm64-rel': {
+        'swarming': {
+          # TODO(crbug.com/1462745): Temporarily increase the shard to 3 for the network issue.
+          'shards': 3,
+        },
+      },
     },
   },
   'chrome_public_wpt': {
     'modifications': {
+      'android-chrome-pie-x86-wpt-android-specific': {
+        'args': [
+          '--test-list',
+          '../../third_party/blink/web_tests/TestLists/Default.txt'
+        ]
+      },
       'android-chrome-pie-x86-wpt-fyi-rel': {
         'args': [
           '--use-upstream-wpt',
@@ -2348,51 +2359,12 @@
       'Android FYI Release (Pixel 2)',
     ],
   },
-  'cr23_browser_tests': {
+  'cr23_pixel_browser_tests': {
     'modifications': {
-      'linux-cr23-rel': {
-        'ci_only': None,
-        'experiment_percentage': None,
-      },
-      'mac-cr23-rel': {
-        'ci_only': None,
-        'experiment_percentage': None,
-      },
-      'win-cr23-rel': {
-        'ci_only': None,
-        'experiment_percentage': None,
-      },
-    }
-  },
-  'cr23_interactive_ui_tests': {
-    'modifications': {
-      'linux-cr23-rel': {
-        'ci_only': None,
-        'experiment_percentage': None,
-      },
-      'mac-cr23-rel': {
-        'ci_only': None,
-        'experiment_percentage': None,
-      },
-      'win-cr23-rel': {
-        'ci_only': None,
-        'experiment_percentage': None,
-      },
-    },
-  },
-  'cr23_views_unittests': {
-    'modifications': {
-      'linux-cr23-rel': {
-        'ci_only': None,
-        'experiment_percentage': None,
-      },
-      'mac-cr23-rel': {
-        'ci_only': None,
-        'experiment_percentage': None,
-      },
-      'win-cr23-rel': {
-        'ci_only': None,
-        'experiment_percentage': None,
+      'win-rel-cft': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/win.win-rel-cft.cr23_pixel_browser_tests.filter',
+        ],
       },
     },
   },
@@ -2849,9 +2821,6 @@
     },
   },
   'gl_tests_validating': {
-   'remove_from': [
-      'Android FYI Release (Nexus 5X)',
-    ],
     'modifications': {
       'Android FYI Release (Samsung A13)': {
         'args': [
@@ -4218,6 +4187,12 @@
   },
   'system_webview_wpt': {
     'modifications': {
+      'android-chrome-pie-x86-wpt-android-specific': {
+        'args': [
+          '--test-list',
+          '../../third_party/blink/web_tests/TestLists/Default.txt'
+        ]
+      },
       'android-webview-pie-x86-wpt-fyi-rel': {
         'args': [
           '--use-upstream-wpt',
@@ -4878,7 +4853,7 @@
             # which is used by Dawn Mac x64 Release (Intel).
             'cpu': 'x86-64',
             'gpu': '8086:3e9b',
-            'os': 'Mac-13.3.1',
+            'os': 'Mac-13.3.1|Mac-13.5',
             'display_attached': '1',
           },
         },
@@ -4948,7 +4923,7 @@
             # which is used by Dawn Mac x64 Release (Intel).
             'cpu': 'x86-64',
             'gpu': '8086:3e9b',
-            'os': 'Mac-13.3.1',
+            'os': 'Mac-13.3.1|Mac-13.5',
             'display_attached': '1',
           },
         },

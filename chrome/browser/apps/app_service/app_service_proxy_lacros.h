@@ -105,15 +105,22 @@ class AppServiceProxyLacros : public KeyedService,
   apps::WebsiteMetricsServiceLacros* WebsiteMetricsService();
 
   // apps::IconLoader overrides.
-  absl::optional<IconKey> GetIconKey(const std::string& app_id) override;
+  absl::optional<IconKey> GetIconKey(const std::string& id) override;
   std::unique_ptr<Releaser> LoadIconFromIconKey(
-      AppType app_type,
-      const std::string& app_id,
+      const std::string& id,
       const IconKey& icon_key,
       IconType icon_type,
       int32_t size_hint_in_dip,
       bool allow_placeholder_icon,
       apps::LoadIconCallback callback) override;
+
+  std::unique_ptr<Releaser> LoadIconFromIconKey(AppType app_type,
+                                                const std::string& app_id,
+                                                const IconKey& icon_key,
+                                                IconType icon_type,
+                                                int32_t size_hint_in_dip,
+                                                bool allow_placeholder_icon,
+                                                LoadIconCallback callback);
 
   // Launches the app for the given |app_id|. |event_flags| provides additional
   // context about the action which launches the app (e.g. a middle click
@@ -284,26 +291,25 @@ class AppServiceProxyLacros : public KeyedService,
   //           |                                         |  |       or
   //           +-----------------------------------------+  +=c=> Fake
   //
-  // The inner_icon_loader_ field (of type InnerIconLoader) is the "Inner"
-  // component: the one that ultimately talks to the Mojo service.
+  // The app_inner_icon_loader_ field (of type AppInnerIconLoader) is the
+  // "Inner" component: the one that ultimately talks to the Mojo service.
   //
-  // The outer_icon_loader_ field (of type IconCache) is the "Outer" component:
-  // the entry point for calls into the AppServiceProxyLacros.
+  // The app_outer_icon_loader_ field (of type IconCache) is the "Outer"
+  // component: the entry point for calls into the AppServiceProxyLacros.
   //
   // Note that even if the ASP provides some icon caching, upstream UI clients
   // may want to introduce further icon caching. See the commentary where
   // IconCache::GarbageCollectionPolicy is defined.
   //
   // IPC coalescing would be one of the "MoreDecorators".
-  class InnerIconLoader : public apps::IconLoader {
+  class AppInnerIconLoader : public apps::IconLoader {
    public:
-    explicit InnerIconLoader(AppServiceProxyLacros* host);
+    explicit AppInnerIconLoader(AppServiceProxyLacros* host);
 
     // apps::IconLoader overrides.
-    absl::optional<IconKey> GetIconKey(const std::string& app_id) override;
+    absl::optional<IconKey> GetIconKey(const std::string& id) override;
     std::unique_ptr<IconLoader::Releaser> LoadIconFromIconKey(
-        AppType app_type,
-        const std::string& app_id,
+        const std::string& id,
         const IconKey& icon_key,
         IconType icon_type,
         int32_t size_hint_in_dip,
@@ -348,9 +354,9 @@ class AppServiceProxyLacros : public KeyedService,
   // inner. Fields are listed from inner to outer, the opposite of call order,
   // as each one depends on the previous one, and in the constructor,
   // initialization happens in field order.
-  InnerIconLoader inner_icon_loader_;
-  IconCoalescer icon_coalescer_;
-  IconCache outer_icon_loader_;
+  AppInnerIconLoader app_inner_icon_loader_;
+  IconCoalescer app_icon_coalescer_;
+  IconCache app_outer_icon_loader_;
 
   apps::PreferredAppsList preferred_apps_list_;
 

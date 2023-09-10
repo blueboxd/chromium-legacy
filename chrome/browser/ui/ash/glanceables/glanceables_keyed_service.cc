@@ -105,8 +105,7 @@ void GlanceablesKeyedService::RegisterClients() {
       &GlanceablesKeyedService::CreateRequestSenderForClient,
       base::Unretained(this));
   classroom_client_ = std::make_unique<GlanceablesClassroomClientImpl>(
-      profile_, base::DefaultClock::GetInstance(),
-      create_request_sender_callback);
+      base::DefaultClock::GetInstance(), create_request_sender_callback);
   tasks_client_ = std::make_unique<GlanceablesTasksClientImpl>(
       create_request_sender_callback);
 
@@ -138,6 +137,7 @@ void GlanceablesKeyedService::UpdateRegistration() {
   CHECK(prefs);
 
   if (!AreGlanceablesEnabled()) {
+    Shell::Get()->glanceables_v2_controller()->ClearUserStatePrefs(prefs);
     ClearClients();
     return;
   }

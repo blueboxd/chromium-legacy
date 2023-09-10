@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/scroll/scroll_customization.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/custom_spaces.h"
@@ -195,6 +196,10 @@ class CORE_EXPORT Node : public EventTarget {
 #endif
 
   ~Node() override;
+
+  // Returns the existing DOMNodeID for the node if it has already been
+  // assigned, otherwise, assigns a new DOMNodeID and return that.
+  DOMNodeId GetDomNodeId();
 
   // DOM methods & attributes for Node
 

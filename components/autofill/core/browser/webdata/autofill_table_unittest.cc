@@ -972,10 +972,6 @@ TEST_P(AutofillTableProfileTest, AutofillProfile) {
 
   home_profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_COUNTRY, u"DE",
                                                 VerificationStatus::kObserved);
-
-  home_profile.SetRawInfoWithVerificationStatus(
-      ADDRESS_HOME_DEPENDENT_STREET_NAME, u"", VerificationStatus::kObserved);
-
   home_profile.SetRawInfoWithVerificationStatus(
       ADDRESS_HOME_HOUSE_NUMBER, u"House Number",
       VerificationStatus::kUserVerified);
@@ -986,8 +982,6 @@ TEST_P(AutofillTableProfileTest, AutofillProfile) {
                                                 VerificationStatus::kParsed);
   home_profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_FLOOR, u"2",
                                                 VerificationStatus::kParsed);
-  home_profile.SetRawInfoWithVerificationStatus(
-      ADDRESS_HOME_PREMISE_NAME, u"Premise", VerificationStatus::kUserVerified);
   ASSERT_EQ(home_profile.GetRawInfo(ADDRESS_HOME_STREET_NAME), u"Street Name");
   home_profile.SetRawInfoWithVerificationStatus(
       ADDRESS_HOME_LANDMARK, u"Landmark", VerificationStatus::kObserved);
@@ -3170,18 +3164,6 @@ INSTANTIATE_TEST_SUITE_P(AutofillTableTest,
                          AutofillTableTestPerModelType,
                          testing::Values(syncer::AUTOFILL,
                                          syncer::AUTOFILL_PROFILE));
-
-TEST_F(AutofillTableTest, InsertUpiId) {
-  EXPECT_TRUE(table_->InsertUpiId("name@indianbank"));
-
-  sql::Statement s_inspect(db_->GetSQLConnection()->GetUniqueStatement(
-      "SELECT vpa FROM payments_upi_vpa"));
-
-  ASSERT_TRUE(s_inspect.is_valid());
-  ASSERT_TRUE(s_inspect.Step());
-  EXPECT_GE(s_inspect.ColumnString(0), "name@indianbank");
-  EXPECT_FALSE(s_inspect.Step());
-}
 
 TEST_F(AutofillTableTest, SetAndGetCreditCardOfferData) {
   // Set Offer ID.

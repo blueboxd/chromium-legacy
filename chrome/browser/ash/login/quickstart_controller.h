@@ -6,14 +6,24 @@
 #define CHROME_BROWSER_ASH_LOGIN_QUICKSTART_CONTROLLER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/target_device_connection_broker.h"
 #include "chrome/browser/ash/login/oobe_quick_start/target_device_bootstrap_controller.h"
+#include "chrome/browser/ash/login/oobe_screen.h"
+#include "chrome/browser/ui/webui/ash/login/oobe_ui.h"
 
 namespace ash {
 
 // Main orchestrator of the QuickStart flow in OOBE
-class QuickStartController {
+class QuickStartController : public OobeUI::Observer {
  public:
+  // QuickStart flow entry point locations.
+  enum class EntryPoint {
+    WELCOME_SCREEN,
+    NETWORK_SCREEN,
+    GAIA_SCREEN,
+  };
+
   using EntryPointButtonVisibilityCallback = base::OnceCallback<void(bool)>;
 
   QuickStartController();
@@ -21,7 +31,7 @@ class QuickStartController {
   QuickStartController(const QuickStartController&) = delete;
   QuickStartController& operator=(const QuickStartController&) = delete;
 
-  ~QuickStartController();
+  ~QuickStartController() override;
 
   // Enable QuickStart even when the feature isn't enabled. This is only called
   // when enabling via the keyboard shortcut Ctrl+Alt+Q on the Welcome screen.
@@ -29,9 +39,15 @@ class QuickStartController {
 
   // Whether QuickStart is supported. Used for determining whether the entry
   // point buttons are shown.
-  void IsSupported(EntryPointButtonVisibilityCallback callback);
+  void DetermineEntryPointVisibility(
+      EntryPointButtonVisibilityCallback callback);
+
+  // Exit point to be used when the flow is cancelled.
+  EntryPoint GetExitPoint();
 
  private:
+  void InitTargetDeviceBootstrapController();
+
   // TODO(b:298609218) Improve the way the QuickStartScreen accesses this.
   friend class QuickStartScreen;
   quick_start::TargetDeviceBootstrapController* bootstrap_controller() {
@@ -41,6 +57,14 @@ class QuickStartController {
   void OnGetQuickStartFeatureSupportStatus(
       EntryPointButtonVisibilityCallback callback,
       quick_start::TargetDeviceConnectionBroker::FeatureSupportStatus status);
+
+  // OobeUI::Observer:
+  void OnCurrentScreenChanged(OobeScreenId previous_screen,
+                              OobeScreenId current_screen) override;
+  void OnDestroyingOobeUI() override;
+
+  // Activates the OobeUI::Observer
+  void StartObservingScreenTransitions();
 
   // Whether QuickStart is supported in this system. Can only be determined
   // by explicitly probing TargetDeviceBootstrapController.
@@ -52,6 +76,13 @@ class QuickStartController {
   base::WeakPtr<quick_start::TargetDeviceBootstrapController>
       bootstrap_controller_;
 
+  // Source of truth of OOBE's current state via OobeUI::Observer
+  absl::optional<OobeScreenId> current_screen_, previous_screen_;
+
+  // Bookkeeping where the quick start flow started.
+  absl::optional<EntryPoint> entry_point_;
+
+  base::ScopedObservation<OobeUI, OobeUI::Observer> observation_{this};
   base::WeakPtrFactory<QuickStartController> weak_ptr_factory_{this};
 };
 

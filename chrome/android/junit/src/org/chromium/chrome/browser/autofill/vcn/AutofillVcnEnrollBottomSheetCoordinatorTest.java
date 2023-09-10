@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 import static org.robolectric.Robolectric.buildActivity;
 
 import android.app.Activity;
@@ -24,15 +25,18 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.FeatureList;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.components.autofill.payments.LegalMessageLine;
+import org.chromium.chrome.browser.layouts.LayoutStateProvider;
+import org.chromium.chrome.browser.layouts.LayoutType;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerFactory;
 import org.chromium.components.browser_ui.bottomsheet.ManagedBottomSheetController;
 import org.chromium.ui.base.WindowAndroid;
-
-import java.util.LinkedList;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /** Unit test for {@link AutofillVcnEnrollBottomSheetCoordinator}. */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -43,6 +47,10 @@ public final class AutofillVcnEnrollBottomSheetCoordinatorTest {
 
     @Mock
     private ManagedBottomSheetController mBottomSheetController;
+    @Mock
+    private LayoutStateProvider mLayoutStateProvider;
+    @Mock
+    private ObservableSupplier<TabModelSelector> mTabModelSelectorSupplier;
 
     private WindowAndroid mWindow;
     private AutofillVcnEnrollBottomSheetCoordinator mCoordinator;
@@ -54,16 +62,23 @@ public final class AutofillVcnEnrollBottomSheetCoordinatorTest {
                 ChromeFeatureList.AUTOFILL_ENABLE_NEW_CARD_ART_AND_NETWORK_IMAGES, false);
         FeatureList.setTestValues(testValues);
 
+        when(mLayoutStateProvider.isLayoutVisible(LayoutType.BROWSING)).thenReturn(true);
+
         Activity activity = buildActivity(Activity.class).create().get();
+        activity.setTheme(R.style.Theme_BrowserUI_DayNight);
         mWindow = new WindowAndroid(activity);
         BottomSheetControllerFactory.attach(mWindow, mBottomSheetController);
         mCoordinator = new AutofillVcnEnrollBottomSheetCoordinator(mWindow.getContext().get(),
-                "Message text", "Description text. Learn more", "Learn more",
-                "Card container accessibility description", /*issuerIcon=*/null, "Card **** 1234",
-                "Virtual card", /*googleLegalMessages=*/new LinkedList<LegalMessageLine>(),
-                /*issuerLegalMessages=*/new LinkedList<LegalMessageLine>(), "Accept Button Text",
-                "Cancel Button Text", /*onAccept=*/() -> {}, /*onCancel=*/() -> {},
-                /*onDismiss=*/() -> {});
+                new PropertyModel.Builder(AutofillVcnEnrollBottomSheetProperties.ALL_KEYS),
+                mLayoutStateProvider, mTabModelSelectorSupplier,
+                new AutofillVcnEnrollBottomSheetCoordinator.Delegate() {
+                    @Override
+                    public void onAccept() {}
+                    @Override
+                    public void onCancel() {}
+                    @Override
+                    public void onDismiss() {}
+                });
     }
 
     @After
@@ -77,8 +92,18 @@ public final class AutofillVcnEnrollBottomSheetCoordinatorTest {
         mCoordinator.requestShowContent(mWindow);
 
         verify(mBottomSheetController)
-                .requestShowContent(any(AutofillVcnEnrollBottomSheetMediator.class),
+                .requestShowContent(any(AutofillVcnEnrollBottomSheetContent.class),
                         /*animate=*/eq(true));
+    }
+
+    @Test
+    public void testCannotShowWhenNotInBrowsingLayoutType() {
+        // E.g., when in tab overview layout type.
+        when(mLayoutStateProvider.isLayoutVisible(LayoutType.BROWSING)).thenReturn(false);
+
+        mCoordinator.requestShowContent(mWindow);
+
+        verifyNoInteractions(mBottomSheetController);
     }
 
     @Test
@@ -87,7 +112,7 @@ public final class AutofillVcnEnrollBottomSheetCoordinatorTest {
         mCoordinator.hide();
 
         verify(mBottomSheetController)
-                .hideContent(any(AutofillVcnEnrollBottomSheetMediator.class),
+                .hideContent(any(AutofillVcnEnrollBottomSheetContent.class),
                         /*animate=*/eq(true),
                         eq(BottomSheetController.StateChangeReason.INTERACTION_COMPLETE));
     }

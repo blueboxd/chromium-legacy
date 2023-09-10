@@ -190,7 +190,9 @@ class ASH_EXPORT AppListControllerImpl
   bool HasValidProfile() const override;
   bool ShouldHideContinueSection() const override;
   void SetHideContinueSection(bool hide) override;
-  void CommitTemporarySortOrder() override;
+  bool IsCategoryEnabled(AppListSearchControlCategory category) override;
+  void SetCategoryEnabled(AppListSearchControlCategory category,
+                          bool enabled) override;
 
   void GetAppLaunchedMetricParams(
       AppLaunchedMetricParams* metric_params) override;

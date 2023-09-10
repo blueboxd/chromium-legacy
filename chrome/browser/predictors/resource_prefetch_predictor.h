@@ -200,6 +200,11 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
   // frequent one comes first). If there is no data, it returns an empty vector.
   std::vector<std::string> PredictLcpElementLocators(const GURL& url) const;
 
+  // Returns LCP influencer scripts from past loads for a given `url`.
+  // The returned script urls are ordered by descending frequency (the most
+  // frequent one comes first). If there is no data, it returns an empty vector.
+  std::vector<GURL> PredictLcpInfluencerScripts(const GURL& url) const;
+
   // Called by the collector after a page has finished loading resources and
   // assembled a PageRequestSummary.
   virtual void RecordPageRequestSummary(
@@ -208,7 +213,8 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
   // Record LCP element locators after a page has finished loading and LCP has
   // been determined.
   void LearnLcpp(const std::string& host,
-                 const std::string& lcp_element_locator);
+                 const std::string& lcp_element_locator,
+                 const std::vector<GURL>& lcp_influencer_scripts);
 
   // Deletes all URLs from the predictor database and caches.
   void DeleteAllUrls();
@@ -325,6 +331,19 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
   void set_mock_tables(scoped_refptr<ResourcePrefetchPredictorTables> tables) {
     tables_ = tables;
   }
+
+  // LCPP histogram recording functions.
+  bool RecordLcpElementLocatorHistogram(LcppData& data,
+                                        const std::string& host,
+                                        const std::string& lcp_element_locator);
+  bool RecordLcpInfluencerScriptUrlsHistogram(
+      LcppData& data,
+      const std::string& host,
+      const std::vector<GURL>& lcp_influencer_scripts);
+  bool RecordSingleLcpInfluencerScriptUrlHistogram(
+      LcppData& data,
+      const std::string& host,
+      const std::string& lcpp_script);
 
   const raw_ptr<Profile, DanglingUntriaged> profile_;
   raw_ptr<TestObserver> observer_;

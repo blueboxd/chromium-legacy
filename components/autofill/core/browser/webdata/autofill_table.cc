@@ -108,7 +108,6 @@ constexpr std::string_view kSubpremise = "subpremise";
 constexpr std::string_view kZipCode = "zip_code";
 // kCountryCode = "country_code"
 // kSortingCode = "sorting_code"
-constexpr std::string_view kPremiseName = "premise_name";
 constexpr std::string_view kApartmentNumber = "apartment_number";
 constexpr std::string_view kFloor = "floor";
 constexpr std::string_view kStreetAddressStatus = "street_address_status";
@@ -117,7 +116,6 @@ constexpr std::string_view kDependentStreetNameStatus =
     "dependent_street_name_status";
 constexpr std::string_view kHouseNumberStatus = "house_number_status";
 constexpr std::string_view kSubpremiseStatus = "subpremise_status";
-constexpr std::string_view kPremiseNameStatus = "premise_name_status";
 constexpr std::string_view kDependentLocalityStatus =
     "dependent_locality_status";
 constexpr std::string_view kCityStatus = "city_status";
@@ -268,7 +266,6 @@ constexpr std::string_view kPaymentsCustomerDataTable =
 constexpr std::string_view kCustomerId = "customer_id";
 
 constexpr std::string_view kPaymentsUpiVpaTable = "payments_upi_vpa";
-constexpr std::string_view kVpa = "vpa";
 
 constexpr std::string_view kOfferDataTable = "offer_data";
 constexpr std::string_view kOfferId = "offer_id";
@@ -811,14 +808,10 @@ bool AddAutofillProfileAddressesToProfile(sql::Database* db,
                     kStreetAddressStatus,
                     kStreetName,
                     kStreetNameStatus,
-                    kDependentStreetName,
-                    kDependentStreetNameStatus,
                     kHouseNumber,
                     kHouseNumberStatus,
                     kSubpremise,
                     kSubpremiseStatus,
-                    kPremiseName,
-                    kPremiseNameStatus,
                     kDependentLocality,
                     kDependentLocalityStatus,
                     kCity,
@@ -870,8 +863,7 @@ bool AddAutofillProfileAddressesToProfile(sql::Database* db,
       int index = 1;
       for (ServerFieldType type :
            {ADDRESS_HOME_STREET_ADDRESS, ADDRESS_HOME_STREET_NAME,
-            ADDRESS_HOME_DEPENDENT_STREET_NAME, ADDRESS_HOME_HOUSE_NUMBER,
-            ADDRESS_HOME_SUBPREMISE, ADDRESS_HOME_PREMISE_NAME,
+            ADDRESS_HOME_HOUSE_NUMBER, ADDRESS_HOME_SUBPREMISE,
             ADDRESS_HOME_DEPENDENT_LOCALITY, ADDRESS_HOME_CITY,
             ADDRESS_HOME_STATE, ADDRESS_HOME_ZIP, ADDRESS_HOME_SORTING_CODE,
             ADDRESS_HOME_COUNTRY, ADDRESS_HOME_APT_NUM, ADDRESS_HOME_FLOOR}) {
@@ -1140,11 +1132,9 @@ AutofillTable::GetStoredTypesForAutofillProfile() {
       NAME_FULL_WITH_HONORIFIC_PREFIX,
       ADDRESS_HOME_STREET_ADDRESS,
       ADDRESS_HOME_STREET_NAME,
-      ADDRESS_HOME_DEPENDENT_STREET_NAME,
-      ADDRESS_HOME_STREET_AND_DEPENDENT_STREET_NAME,
+      ADDRESS_HOME_STREET_LOCATION,
       ADDRESS_HOME_HOUSE_NUMBER,
       ADDRESS_HOME_SUBPREMISE,
-      ADDRESS_HOME_PREMISE_NAME,
       ADDRESS_HOME_DEPENDENT_LOCALITY,
       ADDRESS_HOME_CITY,
       ADDRESS_HOME_STATE,
@@ -1176,7 +1166,6 @@ bool AutofillTable::CreateTablesIfNecessary() {
          InitServerCardMetadataTable() && InitServerAddressesTable() &&
          InitServerAddressMetadataTable() && InitAutofillSyncMetadataTable() &&
          InitModelTypeStateTable() && InitPaymentsCustomerDataTable() &&
-         InitPaymentsUPIVPATable() &&
          InitServerCreditCardCloudTokenDataTable() && InitOfferDataTable() &&
          InitOfferEligibleInstrumentTable() && InitOfferMerchantDomainTable() &&
          InitProfileMetadataTable(AutofillProfile::Source::kAccount) &&
@@ -1295,6 +1284,9 @@ bool AutofillTable::MigrateToVersion(int version,
     case 117:
       *update_compatible_version = false;
       return MigrateToVersion117AddProfileObservationColumn();
+    case 118:
+      *update_compatible_version = true;
+      return MigrateToVersion118RemovePaymentsUpiVpaTable();
   }
   return true;
 }
@@ -1714,7 +1706,16 @@ std::unique_ptr<AutofillProfile> AutofillTable::GetAutofillProfile(
   // As `SelectByGuid()` already calls `s.Step()`, do-while is used here.
   do {
     ServerFieldType type = ToSafeServerFieldType(s.ColumnInt(0), UNKNOWN_TYPE);
-    DCHECK(type != UNKNOWN_TYPE);
+    if (type == UNKNOWN_TYPE) {
+      // This is possible in two cases:
+      // - The database was tampered with by external means.
+      // - The type corresponding to `s.ColumnInt(0)` was deprecated. In this
+      //   case, due to the structure of
+      //   `GetProfileTypeTokensTable(profile_source)`, it is not necessary to
+      //   add database migration logic or drop a column. Instead, during the
+      //   next update, the data will be dropped.
+      continue;
+    }
     profile->SetRawInfoWithVerificationStatusInt(type, s.ColumnString16(1),
                                                  s.ColumnInt(2));
     profile->token_quality().LoadSerializedObservationsForStoredType(
@@ -2880,21 +2881,6 @@ bool AutofillTable::RemoveAllVirtualCardUsageData() {
   return Delete(db_, kVirtualCardUsageDataTable);
 }
 
-bool AutofillTable::InsertUpiId(const std::string& upi_id) {
-  sql::Transaction transaction(db_);
-  if (!transaction.Begin())
-    return false;
-
-  sql::Statement insert_upi_id_statement;
-  InsertBuilder(db_, insert_upi_id_statement, kPaymentsUpiVpaTable, {kVpa});
-  insert_upi_id_statement.BindString(0, upi_id);
-  insert_upi_id_statement.Run();
-
-  transaction.Commit();
-
-  return db_->GetLastChangeCount() > 0;
-}
-
 bool AutofillTable::ClearAllServerData() {
   sql::Transaction transaction(db_);
   if (!transaction.Begin())
@@ -3551,6 +3537,14 @@ bool AutofillTable::MigrateToVersion117AddProfileObservationColumn() {
          transaction.Commit();
 }
 
+bool AutofillTable::MigrateToVersion118RemovePaymentsUpiVpaTable() {
+  sql::Transaction transaction(db_);
+  return transaction.Begin() &&
+         (!db_->DoesTableExist(kPaymentsUpiVpaTable) ||
+          DropTable(db_, kPaymentsUpiVpaTable)) &&
+         transaction.Commit();
+}
+
 bool AutofillTable::AddFormFieldValuesTime(
     const std::vector<FormFieldData>& elements,
     std::vector<AutofillChange>* changes,
@@ -3889,13 +3883,13 @@ bool AutofillTable::InitLegacyProfileAddressesTable() {
        {kDependentStreetName, "VARCHAR"},
        {kHouseNumber, "VARCHAR"},
        {kSubpremise, "VARCHAR"},
-       {kPremiseName, "VARCHAR"},
+       {"premise_name", "VARCHAR"},
        {kStreetAddressStatus, "INTEGER DEFAULT 0"},
        {kStreetNameStatus, "INTEGER DEFAULT 0"},
        {kDependentStreetNameStatus, "INTEGER DEFAULT 0"},
        {kHouseNumberStatus, "INTEGER DEFAULT 0"},
        {kSubpremiseStatus, "INTEGER DEFAULT 0"},
-       {kPremiseNameStatus, "INTEGER DEFAULT 0"},
+       {"premise_name_status", "INTEGER DEFAULT 0"},
        {kDependentLocality, "VARCHAR"},
        {kCity, "VARCHAR"},
        {kState, "VARCHAR"},
@@ -4010,10 +4004,6 @@ bool AutofillTable::InitModelTypeStateTable() {
 bool AutofillTable::InitPaymentsCustomerDataTable() {
   return CreateTableIfNotExists(db_, kPaymentsCustomerDataTable,
                                 {{kCustomerId, "VARCHAR"}});
-}
-
-bool AutofillTable::InitPaymentsUPIVPATable() {
-  return CreateTableIfNotExists(db_, kPaymentsUpiVpaTable, {{kVpa, "VARCHAR"}});
 }
 
 bool AutofillTable::InitServerCreditCardCloudTokenDataTable() {

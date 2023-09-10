@@ -27,7 +27,7 @@ import java.util.function.Consumer;
 /** Implements the content for the autofill save card bottom sheet. */
 /*package*/ class AutofillSaveCardBottomSheetContent implements BottomSheetContent {
     private final View mView;
-    private final Delegate mDelegate;
+    private Delegate mDelegate;
 
     /** User actions delegated by this bottom sheet. */
     /*package*/ interface Delegate {
@@ -43,12 +43,10 @@ import java.util.function.Consumer;
      * Creates the BottomSheetContent and inflates the view given a delegate responding to actions.
      *
      * @param context The activity context of the window.
-     * @param delegate User actions delegated to this object.
      */
-    /*package*/ AutofillSaveCardBottomSheetContent(Context context, Delegate delegate) {
+    /*package*/ AutofillSaveCardBottomSheetContent(Context context) {
         mView = LayoutInflater.from(context).inflate(
                 R.layout.autofill_save_card_bottom_sheet, /*root=*/null);
-        mDelegate = delegate;
         setButtonDelegateAction(R.id.autofill_save_card_confirm_button, Delegate::didClickConfirm);
         setButtonDelegateAction(R.id.autofill_save_card_cancel_button, Delegate::didClickCancel);
         setLinkMovementMethod(R.id.legal_message);
@@ -71,18 +69,32 @@ import java.util.function.Consumer;
     }
 
     /**
+     * Sets the delegate listening for actions the user performs on this bottom sheet.
+     *
+     * @param delegate An implementation of {@link Delegate}.
+     */
+    public void setDelegate(Delegate delegate) {
+        mDelegate = delegate;
+    }
+
+    /**
      * Set the Icons and text from the given UiInfo.
      *
      * @param uiInfo Contains the UI resources to be applied to this bottom sheet content's view.
      */
     /*package*/ void setUiInfo(AutofillSaveCardUiInfo uiInfo) {
-        // TODO(crbug.com/1454271): Implement local save card (isForUpload = true).
-        setLogoIconId(uiInfo.getLogoIcon());
+        if (uiInfo.isForUpload()) {
+            setLogoIconId(uiInfo.getLogoIcon());
+        } else {
+            setLogoIconId(0);
+        }
         mView.<ImageView>findViewById(R.id.autofill_save_card_credit_card_icon)
                 .setImageResource(uiInfo.getCardDetail().issuerIconDrawableId);
         setTextViewText(R.id.autofill_save_card_credit_card_label, uiInfo.getCardDetail().label);
         setTextViewText(
                 R.id.autofill_save_card_credit_card_sublabel, uiInfo.getCardDetail().subLabel);
+        mView.findViewById(R.id.autofill_credit_card_chip)
+                .setContentDescription(uiInfo.getCardDescription());
         setLegalMessage(uiInfo.getLegalMessageLines());
         setTextViewText(R.id.autofill_save_card_title_text, uiInfo.getTitleText());
         mView.<Button>findViewById(R.id.autofill_save_card_confirm_button)
@@ -105,6 +117,11 @@ import java.util.function.Consumer;
     private void setTextViewText(@IdRes int resourceId, CharSequence text) {
         TextView textView = mView.findViewById(resourceId);
         textView.setText(text);
+        if (text == null || text.length() == 0) {
+            textView.setVisibility(View.GONE);
+        } else {
+            textView.setVisibility(View.VISIBLE);
+        }
     }
 
     private void setLegalMessage(List<LegalMessageLine> legalMessageLines) {
@@ -112,13 +129,20 @@ import java.util.function.Consumer;
                 AutofillUiUtils.getSpannableStringForLegalMessageLines(mView.getContext(),
                         legalMessageLines,
                         /*underlineLinks=*/true,
-                        /*onClickCallback=*/mDelegate::didClickLegalMessageUrl));
+                        /*onClickCallback=*/(url) -> mDelegate.didClickLegalMessageUrl(url)));
     }
 
     // BottomSheetContent implementation follows:
     @Override
     public View getContentView() {
         return mView;
+    }
+
+    @Override
+    public boolean hasCustomLifecycle() {
+        // This bottom sheet should stay open during page navigation. The
+        // AutofillSaveCardBottomSheetBridge is responsible for hiding this bottom sheet.
+        return true;
     }
 
     @Nullable
@@ -170,25 +194,22 @@ import java.util.function.Consumer;
 
     @Override
     public int getSheetContentDescriptionStringId() {
-        // TODO(crbug.com/1454271): Implement save card bottom sheet.
-        return android.R.string.ok;
+        return R.string.autofill_save_card_prompt_bottom_sheet_content_description;
     }
 
     @Override
     public int getSheetHalfHeightAccessibilityStringId() {
-        // TODO(crbug.com/1454271): Implement save card bottom sheet.
-        return android.R.string.ok;
+        assert false : "This method will not be called.";
+        return 0;
     }
 
     @Override
     public int getSheetFullHeightAccessibilityStringId() {
-        // TODO(crbug.com/1454271): Implement save card bottom sheet.
-        return android.R.string.ok;
+        return R.string.autofill_save_card_prompt_bottom_sheet_full_height;
     }
 
     @Override
     public int getSheetClosedAccessibilityStringId() {
-        // TODO(crbug.com/1454271): Implement save card bottom sheet.
-        return android.R.string.ok;
+        return R.string.autofill_save_card_prompt_bottom_sheet_closed;
     }
 }

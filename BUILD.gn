@@ -840,6 +840,10 @@ group("gn_all") {
       deps += [ "//components/cronet:cronet_tests" ]
     }
   }
+
+  if (is_chrome_for_testing) {
+    deps += [ "//chrome/browser/chrome_for_testing:chrome_for_testing" ]
+  }
 }
 
 # All Rust targets. This is provided for convenience while developing Rust to
@@ -1360,6 +1364,7 @@ if (use_blink && !is_cronet_build) {
       "//third_party/blink/web_tests/overflow/",
       "//third_party/blink/web_tests/paint/",
       "//third_party/blink/web_tests/payments/",
+      "//third_party/blink/web_tests/performance_timeline/",
       "//third_party/blink/web_tests/permissionclient/",
       "//third_party/blink/web_tests/plugins/",
       "//third_party/blink/web_tests/pointer-lock/",

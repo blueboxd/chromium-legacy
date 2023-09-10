@@ -312,6 +312,7 @@
 <translation id="2669454659051515572">इस डिवाइस का इस्तेमाल करने वाले लोग, गुप्त मोड में डाउनलोड की गई फ़ाइलें देख सकते हैं</translation>
 <translation id="2702516483241149200">नया: इस टेक्स्ट तक स्क्रोल करने वाला लिंक शेयर करें</translation>
 <translation id="2708051474374549906">Google को भेजे जाने वाले आपके ब्राउज़िंग डेटा के हिसाब से, नुकसान पहुंचाने वाली साइटों, डाउनलोड, और एक्सटेंशन से रीयल-टाइम में सुरक्षा मिलती है</translation>
+<translation id="2708226184420201102"><ph name="PRODUCT_NAME" /> ब्राउज़र में खोलें</translation>
 <translation id="271033894570825754">नया</translation>
 <translation id="2711073837061989559">ट्रायल</translation>
 <translation id="2718352093833049315">केवल वाई-फ़ाई पर</translation>
@@ -340,6 +341,7 @@
 <translation id="2870560284913253234">साइट</translation>
 <translation id="2871733351037274014">पेजों को पहले से लोड करना</translation>
 <translation id="2876136027428473467"><ph name="CHILD_NAME" /> ने आपसे इस वेबसाइट का ऐक्सेस देने का अनुरोध किया है:</translation>
+<translation id="2876628302275096482"><ph name="BEGIN_LINK" />Chrome आपके डेटा को निजी कैसे रखता है<ph name="END_LINK" />, इसके बारे में ज़्यादा जानें</translation>
 <translation id="2886836735871983413">वेब को ब्राउज़ करने पर, यहां साइटों की एक सूची दिखेगी</translation>
 <translation id="2888126860611144412">Chrome के बारे में</translation>
 <translation id="2891154217021530873">पेज को लोड करना रोकें</translation>
@@ -787,6 +789,7 @@
 <translation id="5054455334322721892">हो सकता है कि आपके साइन इन होने पर, <ph name="BEGIN_LINK1" />अन्य तरह की गतिविधियां<ph name="END_LINK1" /> आपके Google खाते में सेव हो जाएं. उन्हें किसी भी समय मिटाया जा सकता है.</translation>
 <translation id="506254248375231072">कोई टैब नहीं है</translation>
 <translation id="5062960805900435602">इस बारे में जानकारी कि पासवर्ड मर्ज करने की सुविधा बंद है</translation>
+<translation id="5081960376148623587">चुनें कि पेजों को पहले से लोड करना है या नहीं</translation>
 <translation id="5091199029769593641">जल्द ही, कोई भी नया टैब खोलते ही आपको <ph name="SITE_NAME" /> से जुड़ी जानकारी दिखेगी. आप जिन साइटों को फ़ॉलो करते हैं वे आपके Google खाते में सेव हो जाती हैं. आप उन्हें डिस्कवर की सेटिंग में मैनेज कर सकते हैं.</translation>
 <translation id="5091249083535528968">इस्तेमाल के बारे में ज़्यादा डेटा</translation>
 <translation id="509429900233858213">कोई गड़बड़ी हुई.</translation>
@@ -1095,7 +1098,7 @@
 <translation id="6659594942844771486">ब्राउज़र टैब</translation>
 <translation id="6662119761881114773">फ़िलहाल, इस डिवाइस पर सेव किए गए पासवर्ड, सभी Chrome चैनलों पर इस्तेमाल नहीं किए जा सकते. Chrome 121 के बाद, आपके डिवाइस पर Chrome और <ph name="CHROME_CHANNEL" /> के लिए सेव किए गए पासवर्ड मर्ज कर दिए जाएंगे और इनका इस्तेमाल दोनों ऐप्लिकेशन में किया जा सकेगा.</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> में खोलें</translation>
-<translation id="6671495933530132209">चित्र की कॉपी बनाएं</translation>
+<translation id="6671495933530132209">इमेज की कॉपी बनाएं</translation>
 <translation id="6672917148207387131"><ph name="DOMAIN" /> जोड़ें</translation>
 <translation id="6674571176963658787">इसे चालू करने के लिए, अपना लंबा पासवर्ड डालें</translation>
 <translation id="6676840375528380067">इस डिवाइस से अपना Chrome डेटा हटाएं?</translation>
@@ -1241,6 +1244,7 @@
 <translation id="7431991332293347422">यह कंट्रोल करें कि खोज वगैरह को मनमुताबिक बनाने के लिए, आपके ब्राउज़िंग इतिहास का इस्तेमाल कैसे किया जाए</translation>
 <translation id="7435356471928173109">आपके एडमिन ने ये सुविधा बंद की हुई है</translation>
 <translation id="7437998757836447326">Chrome से साइन आउट करें</translation>
+<translation id="7450926666485653189">यह सुविधा, आपके आईपी पता को छिपाने वाले निजी सर्वर के ज़रिए, Google को यूआरएल का अस्पष्ट हिस्सा भेजती है</translation>
 <translation id="7453467225369441013">आपको ज़्यादातर साइटों से साइन आउट कर देता है. हालांकि, Google खाते से साइन आउट नहीं किया जाता.</translation>
 <translation id="7453810262525006706">छोटा करके साइड व्यू में दिखाएं</translation>
 <translation id="7454641608352164238">जगह काफ़ी नहीं है</translation>
@@ -1470,6 +1474,7 @@
 <translation id="8497242791509864205">क्रम से लगाने वाले विकल्प खोलें</translation>
 <translation id="8497480609928300907">निजता गाइड के बारे में जानकारी</translation>
 <translation id="8497726226069778601">यहां देखने के लिए…अभी तक कुछ भी नहीं है</translation>
+<translation id="8501423924927196358">पेज की अहम जानकारी लोड होने का इंडिकेटर</translation>
 <translation id="8503559462189395349">Chrome पासवर्ड</translation>
 <translation id="8503813439785031346">उपयोगकर्ता नाम</translation>
 <translation id="8505766168025405649">डाउनलोड की स्थिति जानने के लिए सूचना देखें</translation>

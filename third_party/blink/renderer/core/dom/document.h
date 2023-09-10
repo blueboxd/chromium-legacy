@@ -693,6 +693,15 @@ class CORE_EXPORT Document : public ContainerNode,
            StyleAndLayoutTreeUpdate::kNone;
   }
 
+  // See `UpdateStyleAndLayoutTreeForThisDocument` for an explanation of the
+  // "ForThisDocument" suffix. This function does not take into account
+  // dirtiness of parent frames: they are assumed to be clean. If it isn't
+  // possible to guarantee clean parent frames, use `NeedsLayoutTreeUpdate`.
+  bool NeedsLayoutTreeUpdateForThisDocument() const {
+    return CalculateStyleAndLayoutTreeUpdateForThisDocument() !=
+           StyleAndLayoutTreeUpdate::kNone;
+  }
+
   // Whether we need layout tree update for this node or not, without
   // considering nodes in display locked subtrees.
   bool NeedsLayoutTreeUpdateForNode(const Node&) const;
@@ -931,7 +940,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool BeforePrintingOrPrinting() const {
     return printing_ == kPrinting || printing_ == kBeforePrinting;
   }
-  bool FinishingOrIsPrinting() {
+  bool FinishingOrIsPrinting() const {
     return printing_ == kPrinting || printing_ == kFinishingPrinting;
   }
   void SetPrinting(PrintingState);
@@ -1917,6 +1926,9 @@ class CORE_EXPORT Document : public ContainerNode,
   void RenderBlockingResourceUnblocked();
 
   bool RenderingHasBegun() const { return rendering_has_begun_; }
+  bool RenderingHadBegunForLastStyleUpdate() const {
+    return rendering_had_begun_for_last_style_update_;
+  }
 
   void IncrementLazyAdsFrameCount();
   void IncrementLazyEmbedsFrameCount();
@@ -2075,17 +2087,11 @@ class CORE_EXPORT Document : public ContainerNode,
   bool ShouldScheduleLayoutTreeUpdate() const;
   void ScheduleLayoutTreeUpdate();
 
-  // See UpdateStyleAndLayoutTreeForThisDocument for an explanation of
-  // the "ForThisDocument" suffix.
-  //
-  // These functions do not take into account dirtiness of parent frames:
-  // they are assumed to be clean. If it isn't possible to guarantee
-  // clean parent frames, use Needs[Full]LayoutTreeUpdate() instead.
-  bool NeedsLayoutTreeUpdateForThisDocument() const {
-    return CalculateStyleAndLayoutTreeUpdateForThisDocument() !=
-           StyleAndLayoutTreeUpdate::kNone;
-  }
-
+  // See `UpdateStyleAndLayoutTreeForThisDocument` for an explanation of the
+  // "ForThisDocument" suffix. This function does not take into account
+  // dirtiness of parent frames: they are assumed to be clean. If it isn't
+  // possible to guarantee clean parent frames, use
+  // `CalculateStyleAndLayoutTreeUpdate`.
   StyleAndLayoutTreeUpdate CalculateStyleAndLayoutTreeUpdateForThisDocument()
       const;
   StyleAndLayoutTreeUpdate CalculateStyleAndLayoutTreeUpdateForParentFrame()
@@ -2667,6 +2673,13 @@ class CORE_EXPORT Document : public ContainerNode,
   bool supports_reduced_motion_ = false;
 
   Member<RenderBlockingResourceManager> render_blocking_resource_manager_;
+
+  // Record if the previous UpdateStyleAndLayoutTreeForThisDocument() happened
+  // while RenderingHasBegun() returned true.
+  // UpdateStyleAndLayoutTreeForThisDocument() can happen while render-blocking.
+  // For instance a forced update from devtools queries. If rendering_had_begun
+  // is false we should not
+  bool rendering_had_begun_for_last_style_update_ = false;
 
   bool rendering_has_begun_ = false;
 

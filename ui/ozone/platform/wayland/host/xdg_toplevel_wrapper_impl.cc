@@ -185,9 +185,11 @@ void XDGToplevelWrapperImpl::SetCanFullscreen(bool can_fullscreen) {
   }
 }
 
-void XDGToplevelWrapperImpl::SetFullscreen() {
+void XDGToplevelWrapperImpl::SetFullscreen(WaylandOutput* wayland_output) {
   DCHECK(xdg_toplevel_);
-  xdg_toplevel_set_fullscreen(xdg_toplevel_.get(), nullptr);
+  xdg_toplevel_set_fullscreen(
+      xdg_toplevel_.get(),
+      wayland_output ? wayland_output->get_output() : nullptr);
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -631,9 +633,17 @@ void XDGToplevelWrapperImpl::SetRestoreInfoWithWindowIdSource(
   }
 }
 
-void XDGToplevelWrapperImpl::SetFloat() {
-  if (aura_toplevel_ && zaura_toplevel_get_version(aura_toplevel_.get()) >=
-                            ZAURA_TOPLEVEL_SET_FLOAT_SINCE_VERSION) {
+void XDGToplevelWrapperImpl::SetFloatToLocation(
+    WaylandFloatStartLocation float_start_location) {
+  if (!aura_toplevel_) {
+    return;
+  }
+
+  uint32_t version = zaura_toplevel_get_version(aura_toplevel_.get());
+  if (version >= ZAURA_TOPLEVEL_SET_FLOAT_TO_LOCATION_SINCE_VERSION) {
+    uint32_t value = *reinterpret_cast<uint32_t*>(&float_start_location);
+    zaura_toplevel_set_float_to_location(aura_toplevel_.get(), value);
+  } else if (version >= ZAURA_TOPLEVEL_SET_FLOAT_SINCE_VERSION) {
     zaura_toplevel_set_float(aura_toplevel_.get());
   }
 }

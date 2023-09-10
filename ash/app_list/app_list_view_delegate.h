@@ -196,8 +196,12 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // Used by productivity launcher only.
   virtual void SetHideContinueSection(bool hide) = 0;
 
-  // Commits the app list item positions under the temporary sort order.
-  virtual void CommitTemporarySortOrder() = 0;
+  // Returns whether the search category `category` is enabled.
+  virtual bool IsCategoryEnabled(AppListSearchControlCategory category) = 0;
+
+  // Sets the preference of displaying `category` to users to `enabled`.
+  virtual void SetCategoryEnabled(AppListSearchControlCategory category,
+                                  bool enabled) = 0;
 };
 
 }  // namespace ash

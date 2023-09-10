@@ -5,10 +5,12 @@
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome_page_handler.h"
 
 #include "base/containers/contains.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/manta/manta_service_factory.h"
+#include "chrome/browser/manta/proto/manta.pb.h"
 #include "chrome/browser/manta/snapper_provider.h"
 #include "chrome/browser/new_tab_page/modules/new_tab_page_modules.h"
 #include "chrome/browser/new_tab_page/new_tab_page_util.h"
@@ -26,7 +28,6 @@
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome_section.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/endpoint_fetcher/endpoint_fetcher.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/search/ntp_features.h"
@@ -223,19 +224,49 @@ void CustomizeChromePageHandler::RemoveBackgroundImage() {
 }
 
 void CustomizeChromePageHandler::WallpaperSearchCallback(
-    std::unique_ptr<EndpointResponse> response) {
-  return;
+    SearchWallpaperCallback callback,
+    std::unique_ptr<manta::proto::Response> response) {
+  if (!response || response->output_data_size() < 1) {
+    std::move(callback).Run(false);
+    return;
+  }
+  if (ntp_custom_background_service_) {
+    ntp_custom_background_service_->SelectLocalBackgroundImage(
+        response->output_data(0).image().serialized_bytes());
+  }
+  std::move(callback).Run(true);
 }
 
-void CustomizeChromePageHandler::GetWallpaperSearchBackground() {
+void CustomizeChromePageHandler::SearchWallpaper(
+    const std::string& query,
+    SearchWallpaperCallback callback) {
   if (base::FeatureList::IsEnabled(
           ntp_features::kCustomizeChromeWallpaperSearch) &&
       base::FeatureList::IsEnabled(features::kMantaService)) {
-    const std::string json = R"({"data": ""})";
+    manta::proto::Request request;
+    request.set_feature_name(manta::proto::FeatureName::IMAGE_TEST);
+    manta::proto::RequestConfig& request_config =
+        *request.mutable_request_config();
+    request_config.set_num_outputs(1);
+    auto resolution_param = base::GetFieldTrialParamValueByFeature(
+        ntp_features::kCustomizeChromeWallpaperSearch,
+        ntp_features::kCustomizeChromeWallpaperSearchResolutionParam);
+    if (resolution_param == "64") {
+      request_config.set_image_resolution(
+          manta::proto::ImageResolution::RESOLUTION_64);
+    } else if (resolution_param == "256") {
+      request_config.set_image_resolution(
+          manta::proto::ImageResolution::RESOLUTION_256);
+    } else if (resolution_param == "1024") {
+      request_config.set_image_resolution(
+          manta::proto::ImageResolution::RESOLUTION_1024);
+    }
+    manta::proto::InputData& input_data = *request.add_input_data();
+    input_data.set_text(query);
     snapper_provider_->Call(
-        json,
+        request,
         base::BindOnce(&CustomizeChromePageHandler::WallpaperSearchCallback,
-                       weak_ptr_factory_.GetWeakPtr()));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 }
 

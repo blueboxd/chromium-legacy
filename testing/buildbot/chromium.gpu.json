@@ -363,6 +363,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
+        "name": "angle_unittests",
         "swarming": {
           "containment_type": "AUTO",
           "dimensions": {
@@ -413,6 +414,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_unittests",
         "precommit_args": [
           "--gerrit-issue=${patch_issue}",
           "--gerrit-patchset=${patch_set}",
@@ -780,6 +782,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
+        "name": "angle_unittests",
         "swarming": {
           "containment_type": "AUTO",
           "dimensions": {
@@ -830,6 +833,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_unittests",
         "precommit_args": [
           "--gerrit-issue=${patch_issue}",
           "--gerrit-patchset=${patch_set}",
@@ -1194,13 +1198,14 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
+        "name": "angle_unittests",
         "swarming": {
           "containment_type": "AUTO",
           "dimensions": {
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1"
+            "os": "Mac-13.3.1|Mac-13.5"
           },
           "hard_timeout": 1800,
           "io_timeout": 1800,
@@ -1226,7 +1231,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1"
+            "os": "Mac-13.3.1|Mac-13.5"
           },
           "hard_timeout": 1800,
           "io_timeout": 1800,
@@ -1244,6 +1249,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_unittests",
         "precommit_args": [
           "--gerrit-issue=${patch_issue}",
           "--gerrit-patchset=${patch_set}",
@@ -1255,7 +1261,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1"
+            "os": "Mac-13.3.1|Mac-13.5"
           },
           "hard_timeout": 1800,
           "io_timeout": 1800,
@@ -1293,7 +1299,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1"
+            "os": "Mac-13.3.1|Mac-13.5"
           },
           "hard_timeout": 1800,
           "idempotent": false,
@@ -1337,7 +1343,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1"
+            "os": "Mac-13.3.1|Mac-13.5"
           },
           "hard_timeout": 1800,
           "idempotent": false,
@@ -1372,7 +1378,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1"
+            "os": "Mac-13.3.1|Mac-13.5"
           },
           "hard_timeout": 1800,
           "idempotent": false,
@@ -1407,7 +1413,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1"
+            "os": "Mac-13.3.1|Mac-13.5"
           },
           "hard_timeout": 1800,
           "idempotent": false,
@@ -1446,7 +1452,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1"
+            "os": "Mac-13.3.1|Mac-13.5"
           },
           "hard_timeout": 1800,
           "idempotent": false,
@@ -1491,7 +1497,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1"
+            "os": "Mac-13.3.1|Mac-13.5"
           },
           "hard_timeout": 1800,
           "idempotent": false,
@@ -1527,7 +1533,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1"
+            "os": "Mac-13.3.1|Mac-13.5"
           },
           "hard_timeout": 1800,
           "idempotent": false,
@@ -1563,7 +1569,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1"
+            "os": "Mac-13.3.1|Mac-13.5"
           },
           "hard_timeout": 1800,
           "idempotent": false,
@@ -1601,7 +1607,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1"
+            "os": "Mac-13.3.1|Mac-13.5"
           },
           "hard_timeout": 1800,
           "idempotent": false,
@@ -1618,13 +1624,14 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
+        "name": "angle_unittests",
         "swarming": {
           "containment_type": "AUTO",
           "dimensions": {
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1"
+            "os": "Mac-13.3.1|Mac-13.5"
           },
           "hard_timeout": 1800,
           "io_timeout": 1800,
@@ -1633,6 +1640,61 @@
         "test": "angle_unittests",
         "test_id_prefix": "ninja://third_party/angle/src/tests:angle_unittests/",
         "use_isolated_scripts_api": true
+      },
+      {
+        "args": [
+          "--use-cmd-decoder=passthrough",
+          "--use-gl=angle",
+          "--use-gpu-in-tests"
+        ],
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "gl_tests_passthrough",
+        "swarming": {
+          "containment_type": "AUTO",
+          "dimensions": {
+            "cpu": "x86-64",
+            "display_attached": "1",
+            "gpu": "8086:3e9b",
+            "os": "Mac-13.3.1|Mac-13.5"
+          },
+          "hard_timeout": 1800,
+          "io_timeout": 1800,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
+        },
+        "test": "gl_tests",
+        "test_id_prefix": "ninja://gpu:gl_tests/"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--git-revision=${got_revision}"
+        ],
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "gl_unittests",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
+        "swarming": {
+          "containment_type": "AUTO",
+          "dimensions": {
+            "cpu": "x86-64",
+            "display_attached": "1",
+            "gpu": "8086:3e9b",
+            "os": "Mac-13.3.1|Mac-13.5"
+          },
+          "hard_timeout": 1800,
+          "io_timeout": 1800,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "gl_unittests",
+        "test_id_prefix": "ninja://ui/gl:gl_unittests/"
       },
       {
         "args": [
@@ -1651,7 +1713,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1"
+            "os": "Mac-13.3.1|Mac-13.5"
           },
           "hard_timeout": 1800,
           "io_timeout": 1800,
@@ -1659,60 +1721,6 @@
         },
         "test": "browser_tests",
         "test_id_prefix": "ninja://chrome/test:browser_tests/"
-      },
-      {
-        "args": [
-          "--use-cmd-decoder=passthrough",
-          "--use-gl=angle",
-          "--use-gpu-in-tests"
-        ],
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "gl_tests_passthrough",
-        "swarming": {
-          "containment_type": "AUTO",
-          "dimensions": {
-            "cpu": "x86-64",
-            "display_attached": "1",
-            "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1"
-          },
-          "hard_timeout": 1800,
-          "io_timeout": 1800,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
-        },
-        "test": "gl_tests",
-        "test_id_prefix": "ninja://gpu:gl_tests/"
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests",
-          "--git-revision=${got_revision}"
-        ],
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "precommit_args": [
-          "--gerrit-issue=${patch_issue}",
-          "--gerrit-patchset=${patch_set}",
-          "--buildbucket-id=${buildbucket_build_id}"
-        ],
-        "swarming": {
-          "containment_type": "AUTO",
-          "dimensions": {
-            "cpu": "x86-64",
-            "display_attached": "1",
-            "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1"
-          },
-          "hard_timeout": 1800,
-          "io_timeout": 1800,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "gl_unittests",
-        "test_id_prefix": "ninja://ui/gl:gl_unittests/"
       }
     ],
     "isolated_scripts": [
@@ -1743,7 +1751,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1"
+            "os": "Mac-13.3.1|Mac-13.5"
           },
           "hard_timeout": 1800,
           "idempotent": false,
@@ -1787,7 +1795,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1"
+            "os": "Mac-13.3.1|Mac-13.5"
           },
           "hard_timeout": 1800,
           "idempotent": false,
@@ -1822,7 +1830,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1"
+            "os": "Mac-13.3.1|Mac-13.5"
           },
           "hard_timeout": 1800,
           "idempotent": false,
@@ -1857,7 +1865,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1"
+            "os": "Mac-13.3.1|Mac-13.5"
           },
           "hard_timeout": 1800,
           "idempotent": false,
@@ -1896,7 +1904,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1"
+            "os": "Mac-13.3.1|Mac-13.5"
           },
           "hard_timeout": 1800,
           "idempotent": false,
@@ -1941,7 +1949,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1"
+            "os": "Mac-13.3.1|Mac-13.5"
           },
           "hard_timeout": 1800,
           "idempotent": false,
@@ -1977,7 +1985,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1"
+            "os": "Mac-13.3.1|Mac-13.5"
           },
           "hard_timeout": 1800,
           "idempotent": false,
@@ -2013,7 +2021,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1"
+            "os": "Mac-13.3.1|Mac-13.5"
           },
           "hard_timeout": 1800,
           "idempotent": false,
@@ -2051,7 +2059,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1"
+            "os": "Mac-13.3.1|Mac-13.5"
           },
           "hard_timeout": 1800,
           "idempotent": false,
@@ -2068,6 +2076,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
+        "name": "angle_unittests",
         "swarming": {
           "containment_type": "AUTO",
           "dimensions": {
@@ -2075,7 +2084,7 @@
             "display_attached": "1",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.2.1|Mac-13.5",
             "pool": "chromium.tests.gpu"
           },
           "hard_timeout": 1800,
@@ -2103,7 +2112,7 @@
             "display_attached": "1",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.2.1|Mac-13.5",
             "pool": "chromium.tests.gpu"
           },
           "hard_timeout": 1800,
@@ -2122,6 +2131,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_unittests",
         "precommit_args": [
           "--gerrit-issue=${patch_issue}",
           "--gerrit-patchset=${patch_set}",
@@ -2134,7 +2144,7 @@
             "display_attached": "1",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.2.1|Mac-13.5",
             "pool": "chromium.tests.gpu"
           },
           "hard_timeout": 1800,
@@ -2174,7 +2184,7 @@
             "display_attached": "1",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.2.1|Mac-13.5",
             "pool": "chromium.tests.gpu"
           },
           "hard_timeout": 1800,
@@ -2220,7 +2230,7 @@
             "display_attached": "1",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.2.1|Mac-13.5",
             "pool": "chromium.tests.gpu"
           },
           "hard_timeout": 1800,
@@ -2257,7 +2267,7 @@
             "display_attached": "1",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.2.1|Mac-13.5",
             "pool": "chromium.tests.gpu"
           },
           "hard_timeout": 1800,
@@ -2294,7 +2304,7 @@
             "display_attached": "1",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.2.1|Mac-13.5",
             "pool": "chromium.tests.gpu"
           },
           "hard_timeout": 1800,
@@ -2335,7 +2345,7 @@
             "display_attached": "1",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.2.1|Mac-13.5",
             "pool": "chromium.tests.gpu"
           },
           "hard_timeout": 1800,
@@ -2382,7 +2392,7 @@
             "display_attached": "1",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.2.1|Mac-13.5",
             "pool": "chromium.tests.gpu"
           },
           "hard_timeout": 1800,
@@ -2420,7 +2430,7 @@
             "display_attached": "1",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.2.1|Mac-13.5",
             "pool": "chromium.tests.gpu"
           },
           "hard_timeout": 1800,
@@ -2458,7 +2468,7 @@
             "display_attached": "1",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.2.1|Mac-13.5",
             "pool": "chromium.tests.gpu"
           },
           "hard_timeout": 1800,
@@ -2498,7 +2508,7 @@
             "display_attached": "1",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.2.1|Mac-13.5",
             "pool": "chromium.tests.gpu"
           },
           "hard_timeout": 1800,
@@ -2516,6 +2526,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
+        "name": "angle_unittests",
         "swarming": {
           "containment_type": "AUTO",
           "dimensions": {
@@ -2523,7 +2534,7 @@
             "display_attached": "1",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.2.1|Mac-13.5",
             "pool": "chromium.tests.gpu"
           },
           "hard_timeout": 1800,
@@ -2533,6 +2544,65 @@
         "test": "angle_unittests",
         "test_id_prefix": "ninja://third_party/angle/src/tests:angle_unittests/",
         "use_isolated_scripts_api": true
+      },
+      {
+        "args": [
+          "--use-cmd-decoder=passthrough",
+          "--use-gl=angle",
+          "--use-gpu-in-tests"
+        ],
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "gl_tests_passthrough",
+        "swarming": {
+          "containment_type": "AUTO",
+          "dimensions": {
+            "cpu": "x86-64",
+            "display_attached": "1",
+            "gpu": "1002:67ef",
+            "hidpi": "1",
+            "os": "Mac-13.2.1|Mac-13.5",
+            "pool": "chromium.tests.gpu"
+          },
+          "hard_timeout": 1800,
+          "io_timeout": 1800,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
+        },
+        "test": "gl_tests",
+        "test_id_prefix": "ninja://gpu:gl_tests/"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--git-revision=${got_revision}"
+        ],
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "gl_unittests",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
+        "swarming": {
+          "containment_type": "AUTO",
+          "dimensions": {
+            "cpu": "x86-64",
+            "display_attached": "1",
+            "gpu": "1002:67ef",
+            "hidpi": "1",
+            "os": "Mac-13.2.1|Mac-13.5",
+            "pool": "chromium.tests.gpu"
+          },
+          "hard_timeout": 1800,
+          "io_timeout": 1800,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "gl_unittests",
+        "test_id_prefix": "ninja://ui/gl:gl_unittests/"
       },
       {
         "args": [
@@ -2552,7 +2622,7 @@
             "display_attached": "1",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.2.1|Mac-13.5",
             "pool": "chromium.tests.gpu"
           },
           "hard_timeout": 1800,
@@ -2561,64 +2631,6 @@
         },
         "test": "browser_tests",
         "test_id_prefix": "ninja://chrome/test:browser_tests/"
-      },
-      {
-        "args": [
-          "--use-cmd-decoder=passthrough",
-          "--use-gl=angle",
-          "--use-gpu-in-tests"
-        ],
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "gl_tests_passthrough",
-        "swarming": {
-          "containment_type": "AUTO",
-          "dimensions": {
-            "cpu": "x86-64",
-            "display_attached": "1",
-            "gpu": "1002:67ef",
-            "hidpi": "1",
-            "os": "Mac-13.2.1",
-            "pool": "chromium.tests.gpu"
-          },
-          "hard_timeout": 1800,
-          "io_timeout": 1800,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
-        },
-        "test": "gl_tests",
-        "test_id_prefix": "ninja://gpu:gl_tests/"
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests",
-          "--git-revision=${got_revision}"
-        ],
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "precommit_args": [
-          "--gerrit-issue=${patch_issue}",
-          "--gerrit-patchset=${patch_set}",
-          "--buildbucket-id=${buildbucket_build_id}"
-        ],
-        "swarming": {
-          "containment_type": "AUTO",
-          "dimensions": {
-            "cpu": "x86-64",
-            "display_attached": "1",
-            "gpu": "1002:67ef",
-            "hidpi": "1",
-            "os": "Mac-13.2.1",
-            "pool": "chromium.tests.gpu"
-          },
-          "hard_timeout": 1800,
-          "io_timeout": 1800,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "gl_unittests",
-        "test_id_prefix": "ninja://ui/gl:gl_unittests/"
       }
     ],
     "isolated_scripts": [
@@ -2650,7 +2662,7 @@
             "display_attached": "1",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.2.1|Mac-13.5",
             "pool": "chromium.tests.gpu"
           },
           "hard_timeout": 1800,
@@ -2696,7 +2708,7 @@
             "display_attached": "1",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.2.1|Mac-13.5",
             "pool": "chromium.tests.gpu"
           },
           "hard_timeout": 1800,
@@ -2733,7 +2745,7 @@
             "display_attached": "1",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.2.1|Mac-13.5",
             "pool": "chromium.tests.gpu"
           },
           "hard_timeout": 1800,
@@ -2770,7 +2782,7 @@
             "display_attached": "1",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.2.1|Mac-13.5",
             "pool": "chromium.tests.gpu"
           },
           "hard_timeout": 1800,
@@ -2811,7 +2823,7 @@
             "display_attached": "1",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.2.1|Mac-13.5",
             "pool": "chromium.tests.gpu"
           },
           "hard_timeout": 1800,
@@ -2858,7 +2870,7 @@
             "display_attached": "1",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.2.1|Mac-13.5",
             "pool": "chromium.tests.gpu"
           },
           "hard_timeout": 1800,
@@ -2896,7 +2908,7 @@
             "display_attached": "1",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.2.1|Mac-13.5",
             "pool": "chromium.tests.gpu"
           },
           "hard_timeout": 1800,
@@ -2934,7 +2946,7 @@
             "display_attached": "1",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.2.1|Mac-13.5",
             "pool": "chromium.tests.gpu"
           },
           "hard_timeout": 1800,
@@ -2974,7 +2986,7 @@
             "display_attached": "1",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.2.1|Mac-13.5",
             "pool": "chromium.tests.gpu"
           },
           "hard_timeout": 1800,
@@ -2992,6 +3004,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
+        "name": "angle_unittests",
         "swarming": {
           "containment_type": "AUTO",
           "dimensions": {
@@ -3007,32 +3020,6 @@
         "test": "angle_unittests",
         "test_id_prefix": "ninja://third_party/angle/src/tests:angle_unittests/",
         "use_isolated_scripts_api": true
-      },
-      {
-        "args": [
-          "--enable-gpu",
-          "--test-launcher-bot-mode",
-          "--test-launcher-jobs=1",
-          "--gtest_filter=TabCaptureApiPixelTest.EndToEnd*"
-        ],
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "tab_capture_end2end_tests",
-        "swarming": {
-          "containment_type": "AUTO",
-          "dimensions": {
-            "display_attached": "1",
-            "gpu": "10de:2184-27.21.14.5638",
-            "os": "Windows-10-18363",
-            "pool": "chromium.tests.gpu"
-          },
-          "hard_timeout": 1800,
-          "io_timeout": 1800,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "browser_tests",
-        "test_id_prefix": "ninja://chrome/test:browser_tests/"
       },
       {
         "args": [
@@ -3068,6 +3055,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_unittests",
         "precommit_args": [
           "--gerrit-issue=${patch_issue}",
           "--gerrit-patchset=${patch_set}",
@@ -3087,6 +3075,32 @@
         },
         "test": "gl_unittests",
         "test_id_prefix": "ninja://ui/gl:gl_unittests/"
+      },
+      {
+        "args": [
+          "--enable-gpu",
+          "--test-launcher-bot-mode",
+          "--test-launcher-jobs=1",
+          "--gtest_filter=TabCaptureApiPixelTest.EndToEnd*"
+        ],
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "tab_capture_end2end_tests",
+        "swarming": {
+          "containment_type": "AUTO",
+          "dimensions": {
+            "display_attached": "1",
+            "gpu": "10de:2184-27.21.14.5638",
+            "os": "Windows-10-18363",
+            "pool": "chromium.tests.gpu"
+          },
+          "hard_timeout": 1800,
+          "io_timeout": 1800,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "browser_tests",
+        "test_id_prefix": "ninja://chrome/test:browser_tests/"
       },
       {
         "args": [
@@ -3465,6 +3479,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
+        "name": "angle_unittests",
         "swarming": {
           "containment_type": "AUTO",
           "dimensions": {
@@ -3480,32 +3495,6 @@
         "test": "angle_unittests",
         "test_id_prefix": "ninja://third_party/angle/src/tests:angle_unittests/",
         "use_isolated_scripts_api": true
-      },
-      {
-        "args": [
-          "--enable-gpu",
-          "--test-launcher-bot-mode",
-          "--test-launcher-jobs=1",
-          "--gtest_filter=TabCaptureApiPixelTest.EndToEnd*"
-        ],
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "tab_capture_end2end_tests",
-        "swarming": {
-          "containment_type": "AUTO",
-          "dimensions": {
-            "display_attached": "1",
-            "gpu": "10de:2184-27.21.14.5638",
-            "os": "Windows-10-18363",
-            "pool": "chromium.tests.gpu"
-          },
-          "hard_timeout": 1800,
-          "io_timeout": 1800,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "browser_tests",
-        "test_id_prefix": "ninja://chrome/test:browser_tests/"
       },
       {
         "args": [
@@ -3541,6 +3530,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_unittests",
         "precommit_args": [
           "--gerrit-issue=${patch_issue}",
           "--gerrit-patchset=${patch_set}",
@@ -3560,6 +3550,32 @@
         },
         "test": "gl_unittests",
         "test_id_prefix": "ninja://ui/gl:gl_unittests/"
+      },
+      {
+        "args": [
+          "--enable-gpu",
+          "--test-launcher-bot-mode",
+          "--test-launcher-jobs=1",
+          "--gtest_filter=TabCaptureApiPixelTest.EndToEnd*"
+        ],
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "tab_capture_end2end_tests",
+        "swarming": {
+          "containment_type": "AUTO",
+          "dimensions": {
+            "display_attached": "1",
+            "gpu": "10de:2184-27.21.14.5638",
+            "os": "Windows-10-18363",
+            "pool": "chromium.tests.gpu"
+          },
+          "hard_timeout": 1800,
+          "io_timeout": 1800,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "browser_tests",
+        "test_id_prefix": "ninja://chrome/test:browser_tests/"
       },
       {
         "args": [

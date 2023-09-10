@@ -78,7 +78,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_util.h"
 #include "url/gurl.h"
-#include "wallpaper_metrics_manager.h"
 
 using color_utils::ColorProfile;
 
@@ -1007,6 +1006,9 @@ void WallpaperControllerImpl::SetPolicyWallpaper(
                              CreateSolidColorWallpaper(kDefaultWallpaperColor));
     return;
   }
+
+  // Invalidate weak ptrs to cancel prior requests to set wallpaper.
+  set_wallpaper_weak_factory_.InvalidateWeakPtrs();
   image_util::DecodeImageData(
       base::BindOnce(&WallpaperControllerImpl::OnPolicyWallpaperDecoded,
                      weak_factory_.GetWeakPtr(), account_id, user_type,
@@ -1581,21 +1583,10 @@ void WallpaperControllerImpl::OnCheckpointChanged(
     if (!features::IsWallpaperRefreshRevampEnabled()) {
       return;
     }
-    // Checks whether daily wallpaper should be refreshed by evaluating whether
-    // 23 hours (roughly a day) have elapsed since `info.date`.
-    if (info.type == WallpaperType::kDaily ||
-        info.type == WallpaperType::kDailyGooglePhotos) {
-      // When `features::IsWallpaperFastRefreshEnabled()` is enabled, the
-      // wallpaper may swap quickly back to back due to how ScheduledFeature
-      // stabilizes its schedule state.
-      bool should_fetch_wallpaper =
-          features::IsWallpaperFastRefreshEnabled()
-              ? true
-              : info.date + base::Hours(23) <= base::Time::Now();
-      if (should_fetch_wallpaper) {
-        UpdateDailyRefreshWallpaper();
-      }
-    } else if (info.type == WallpaperType::kOnceGooglePhotos) {
+    if (daily_refresh_scheduler_->ShouldRefreshWallpaper(info)) {
+      UpdateDailyRefreshWallpaper();
+    }
+    if (info.type == WallpaperType::kOnceGooglePhotos) {
       CheckGooglePhotosStaleness(account_id, info);
     }
     return;

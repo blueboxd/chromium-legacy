@@ -111,6 +111,7 @@ absl::optional<DlpFileDestination> GetFileDestinationForApp(
     case apps::AppType::kPluginVm:
       return DlpFileDestination(data_controls::Component::kPluginVm);
     case apps::AppType::kWeb:
+    case apps::AppType::kSystemWeb:
       // Expecting `PublisherId()` to return an URL. For web apps this should be
       // the start URL.
       return DlpFileDestination(GURL(app_update.PublisherId()));
@@ -121,7 +122,6 @@ absl::optional<DlpFileDestination> GetFileDestinationForApp(
     case apps::AppType::kRemote:
     case apps::AppType::kBorealis:
     case apps::AppType::kBruschetta:
-    case apps::AppType::kSystemWeb:
       return absl::nullopt;
   }
   return absl::nullopt;
@@ -741,7 +741,6 @@ void DlpFilesControllerAsh::IsFilesTransferRestricted(
     switch (level) {
       case DlpRulesManager::Level::kBlock: {
         files_levels.emplace_back(file, ::dlp::RestrictionLevel::LEVEL_BLOCK);
-        DlpHistogramEnumeration(dlp::kFileActionBlockedUMA, files_action);
         break;
       }
       case DlpRulesManager::Level::kNotSet:
@@ -757,7 +756,6 @@ void DlpFilesControllerAsh::IsFilesTransferRestricted(
         warned_files.push_back(file);
         warned_source_patterns.emplace_back(source_pattern);
         warned_rules_metadata.emplace_back(rule_metadata);
-        DlpHistogramEnumeration(dlp::kFileActionWarnedUMA, files_action);
         break;
       }
     }
@@ -862,13 +860,9 @@ bool DlpFilesControllerAsh::IsDlpPolicyMatched(const FileDaemonInfo& file) {
   switch (level) {
     case policy::DlpRulesManager::Level::kBlock:
       restricted = true;
-      DlpHistogramEnumeration(dlp::kFileActionBlockedUMA,
-                              dlp::FileAction::kUnknown);
       break;
     case policy::DlpRulesManager::Level::kWarn:
-      DlpHistogramEnumeration(dlp::kFileActionWarnedUMA,
-                              dlp::FileAction::kUnknown);
-      // TODO(crbug.com/1172959): Implement Warning mode for Files restriction
+      // TODO(b/298950702): Show warning if applicable.
       break;
     default:
       break;
@@ -993,6 +987,7 @@ void DlpFilesControllerAsh::OnDlpWarnDialogReply(
     const absl::optional<std::string>& dst_pattern,
     dlp::FileAction files_action,
     IsFilesTransferRestrictedCallback callback,
+    absl::optional<std::u16string> user_justification,
     bool should_proceed) {
   DCHECK(warned_files.size() == warned_src_patterns.size());
   DCHECK(warned_files.size() == warned_rules_metadata.size());

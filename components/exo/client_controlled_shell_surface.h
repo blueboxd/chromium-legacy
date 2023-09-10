@@ -99,8 +99,11 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   // Called when the client was restored.
   void SetRestored();
 
-  // Called when the client changed the fullscreen state.
-  void SetFullscreen(bool fullscreen);
+  // Called when the client changed the fullscreen state. When `fullscreen` is
+  // true, `display_id` indicates the id of the display where the surface should
+  // be shown, otherwise it is ignored. When `display::kInvalidDisplayId` is
+  // specified, the current display may be used.
+  void SetFullscreen(bool fullscreen, int64_t display_id);
 
   // Returns true if this shell surface is currently being dragged.
   bool IsDragging();
@@ -181,7 +184,8 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   void SetSnapSecondary(float snap_ratio) override;
   void SetPip() override;
   void UnsetPip() override;
-  void SetFloat() override;
+  void SetFloatToLocation(
+      chromeos::FloatStartLocation float_start_location) override;
 
   // Overridden from views::WidgetDelegate:
   bool CanMaximize() const override;
@@ -238,6 +242,9 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
  protected:
   // Overridden from ShellSurfaceBase:
   float GetScale() const override;
+
+  // Overridden from SurfaceTreeHost:
+  float GetScaleFactor() const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ClientControlledShellSurfaceTest,

@@ -11,9 +11,11 @@
 #include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
+#include "chrome/browser/ui/views/autofill/popup/popup_view_utils.h"
 #include "content/public/common/input/native_web_keyboard_event.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/view.h"
 
 namespace content {
@@ -62,7 +64,8 @@ class PopupRowView : public views::View {
     virtual ~SelectionDelegate() = default;
 
     virtual absl::optional<CellIndex> GetSelectedCell() const = 0;
-    virtual void SetSelectedCell(absl::optional<CellIndex> cell_index) = 0;
+    virtual void SetSelectedCell(absl::optional<CellIndex> cell_index,
+                                 PopupCellSelectionSource source) = 0;
   };
 
   METADATA_HEADER(PopupRowView);
@@ -82,6 +85,12 @@ class PopupRowView : public views::View {
   absl::optional<CellType> GetSelectedCell() const { return selected_cell_; }
   void SetSelectedCell(absl::optional<CellType> cell);
 
+  // Sets the highlighted state on the cell of specified type.
+  void SetCellPermanentlyHighlighted(CellType cell, bool highlighted);
+
+  // Returns the cell's bounds, the cell of the requested type must be present.
+  gfx::RectF GetCellBounds(CellType cell) const;
+
   // Attempts to process a key press `event`. Returns true if it did (and the
   // parent no longer needs to handle it).
   bool HandleKeyPressEvent(const content::NativeWebKeyboardEvent& event);
@@ -92,18 +101,19 @@ class PopupRowView : public views::View {
   PopupCellView* GetControlView() { return control_view_.get(); }
 
  private:
-  // Selects the next/previous cell, if there is one. Otherwise leaves the
-  // current selection. Does not wrap.
-  void SelectNextCell();
-  void SelectPreviousCell();
+  // Returns the cell view or `nullptr` if it was not created.
+  const PopupCellView* GetCellView(CellType type) const;
+  PopupCellView* GetCellView(CellType type);
 
   AccessibilitySelectionDelegate& GetA11ySelectionDelegate() {
     return a11y_selection_delegate_.get();
   }
 
   // The delegate used for accessibility announcements (implemented by the
-  // parent).
+  // parent view).
   const raw_ref<AccessibilitySelectionDelegate> a11y_selection_delegate_;
+  // The delegate used for selection control (implemented by the parent view).
+  const raw_ref<SelectionDelegate> selection_delegate_;
   // The controller for the parent view.
   const base::WeakPtr<AutofillPopupController> controller_;
   // The strategy from which the actual view content of this row is created.

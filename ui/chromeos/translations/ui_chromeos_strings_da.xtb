@@ -278,6 +278,7 @@
 <translation id="3264582393905923483">Kontekst</translation>
 <translation id="3272909651715601089">"<ph name="PATH" />" kunne ikke åbnes</translation>
 <translation id="3280431534455935878">Forbereder</translation>
+<translation id="3280719573299097127">Du er på et forbrugsbaseret netværk. Filsynkronisering er sat på pause.</translation>
 <translation id="3280987981688031357">Vinylplade</translation>
 <translation id="3290356915286466215">Ikke beskyttet</translation>
 <translation id="3291218047831493686">Opret forbindelse til dette netværk for at skifte indstillingen for SIM-lås</translation>
@@ -632,6 +633,7 @@
 <translation id="5838451609423551646">Markeringen af alle elementer blev fjernet.</translation>
 <translation id="5838825566232597749">Internationalt amerikansk Workman</translation>
 <translation id="5845721951356578987">Sygeplejerske</translation>
+<translation id="5858478190805449225">Batterisparefunktion er aktiveret. Prøv igen, når Batterisparefunktion er deaktiveret.</translation>
 <translation id="5860491529813859533">Aktivér</translation>
 <translation id="5861477046012235702">Gamer</translation>
 <translation id="5864471791310927901">DHCP-opslag mislykkedes</translation>
@@ -898,7 +900,6 @@
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7920501309908018401">Dine filer i Mit drev synkroniseres automatisk med din Chromebook, så du kan få adgang til dem uden en internetforbindelse.</translation>
 <translation id="7925247922861151263">AAA-kontrol mislykkedes</translation>
-<translation id="7925686952655276919">Brug ikke mobildata til synkronisering</translation>
 <translation id="7928710562641958568">Skub enheden ud</translation>
 <translation id="7933875256234974853">Forbereder synkronisering af Drev-filer...</translation>
 <translation id="7943385054491506837">Amerikansk (Colemak)</translation>
@@ -921,6 +922,7 @@
 <translation id="8087576439476816834">Download, <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">Delt med mig</translation>
 <translation id="8116072619078571545">Isvand</translation>
+<translation id="8120392982188717723">Tillad synkronisering på forbrugsafregnede netværk</translation>
 <translation id="8124093710070495550">Synkroniseringsproblem</translation>
 <translation id="8128733386027980860">Engelsk (Storbritannien) med Dvorak-tastatur</translation>
 <translation id="8137331602592933310">"<ph name="FILENAME" />" er blevet delt med dig. Du kan ikke slette filen, fordi du ikke ejer den.</translation>

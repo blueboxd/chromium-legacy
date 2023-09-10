@@ -10,7 +10,6 @@
 
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
-#include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_cell_view.h"
@@ -23,7 +22,6 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
-#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/insets_outsets_base.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/metadata/type_conversion.h"
@@ -74,6 +72,7 @@ PopupRowView::PopupRowView(
     base::WeakPtr<AutofillPopupController> controller,
     std::unique_ptr<PopupRowStrategy> strategy)
     : a11y_selection_delegate_(a11y_selection_delegate),
+      selection_delegate_(selection_delegate),
       controller_(controller),
       strategy_(std::move(strategy)) {
   CHECK(strategy_);
@@ -88,13 +87,15 @@ PopupRowView::PopupRowView(
   layout->set_inside_border_insets(gfx::Insets::VH(0, kHorizontalPadding));
 
   auto add_exit_enter_callbacks = [&](CellType type, PopupCellView& cell) {
-    cell.SetOnExitedCallback(base::BindRepeating(
-        &SelectionDelegate::SetSelectedCell,
-        base::Unretained(&selection_delegate), absl::nullopt));
+    cell.SetOnExitedCallback(
+        base::BindRepeating(&SelectionDelegate::SetSelectedCell,
+                            base::Unretained(&selection_delegate),
+                            absl::nullopt, PopupCellSelectionSource::kMouse));
     cell.SetOnEnteredCallback(base::BindRepeating(
         &SelectionDelegate::SetSelectedCell,
         base::Unretained(&selection_delegate),
-        PopupViewViews::CellIndex{strategy_->GetLineNumber(), type}));
+        PopupViewViews::CellIndex{strategy_->GetLineNumber(), type},
+        PopupCellSelectionSource::kMouse));
   };
 
   content_view_ = AddChildView(strategy_->CreateContent());
@@ -116,33 +117,37 @@ void PopupRowView::SetSelectedCell(absl::optional<CellType> cell) {
     return;
   }
 
-  auto view_from_type =
-      [this](absl::optional<CellType> type) -> PopupCellView* {
-    if (!type) {
-      return nullptr;
-    }
-    switch (*type) {
-      case CellType::kContent:
-        return content_view_.get();
-      case CellType::kControl:
-        return control_view_.get();
-    }
-  };
-
-  if (PopupCellView* old_view = view_from_type(selected_cell_)) {
+  PopupCellView* old_view =
+      selected_cell_ ? GetCellView(*selected_cell_) : nullptr;
+  if (old_view) {
     old_view->SetSelected(false);
   }
-  selected_cell_ = cell;
 
-  if (PopupCellView* new_view = view_from_type(selected_cell_)) {
+  PopupCellView* new_view = cell ? GetCellView(*cell) : nullptr;
+  if (new_view) {
     new_view->SetSelected(true);
     GetA11ySelectionDelegate().NotifyAXSelection(*new_view);
     NotifyAccessibilityEvent(ax::mojom::Event::kSelectedChildrenChanged, true);
+    selected_cell_ = cell;
   } else {
     // Set the selected cell to none in case an invalid choice was made (e.g.
-    // selecting a control cell when none exists).
+    // selecting a control cell when none exists) or the cell was reset
+    // explicitly with `absl::nullopt`.
     selected_cell_ = absl::nullopt;
   }
+}
+
+void PopupRowView::SetCellPermanentlyHighlighted(CellType type,
+                                                 bool highlighted) {
+  if (PopupCellView* view = GetCellView(type)) {
+    view->SetPermanentlyHighlighted(highlighted);
+  }
+}
+
+gfx::RectF PopupRowView::GetCellBounds(CellType cell) const {
+  const PopupCellView* view = GetCellView(cell);
+  // The view is expected to be present.
+  return gfx::RectF(view->GetBoundsInScreen());
 }
 
 bool PopupRowView::HandleKeyPressEvent(
@@ -157,42 +162,20 @@ bool PopupRowView::HandleKeyPressEvent(
       content_view_->HandleKeyPressEvent(event)) {
     return true;
   }
-  switch (event.windows_key_code) {
-    case ui::VKEY_LEFT:
-      // `base::i18n::IsRTL` is used here instead of the controller's method
-      // because the controller's `IsRTL` depends on the language of the focused
-      // field and not the overall UI language. However, the layout of the popup
-      // is determined by the overall UI language.
-      if (base::i18n::IsRTL()) {
-        SelectNextCell();
-      } else {
-        SelectPreviousCell();
-      }
-      return true;
-    case ui::VKEY_RIGHT:
-      if (base::i18n::IsRTL()) {
-        SelectPreviousCell();
-      } else {
-        SelectNextCell();
-      }
-      return true;
-    default:
-      return false;
+  return false;
+}
+
+const PopupCellView* PopupRowView::GetCellView(CellType type) const {
+  switch (type) {
+    case CellType::kContent:
+      return content_view_.get();
+    case CellType::kControl:
+      return control_view_.get();
   }
 }
 
-void PopupRowView::SelectNextCell() {
-  CHECK(GetSelectedCell());
-  if (*GetSelectedCell() == CellType::kContent && GetControlView()) {
-    SetSelectedCell(CellType::kControl);
-  }
-}
-
-void PopupRowView::SelectPreviousCell() {
-  CHECK(GetSelectedCell());
-  if (*GetSelectedCell() == CellType::kControl) {
-    SetSelectedCell(CellType::kContent);
-  }
+PopupCellView* PopupRowView::GetCellView(CellType type) {
+  return const_cast<PopupCellView*>(std::as_const(*this).GetCellView(type));
 }
 
 BEGIN_METADATA(PopupRowView, views::View)

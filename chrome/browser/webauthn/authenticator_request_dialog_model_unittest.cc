@@ -722,6 +722,14 @@ TEST_F(AuthenticatorRequestDialogModelTest, Mechanisms) {
        {pqr("a")},
        {p("a"), add},
        mss},
+      // Even if the phone is from sync.
+      {L,
+       ga,
+       {usb, internal, cable},
+       {empty_al},
+       {psync("a")},
+       {p("a"), add},
+       mss},
       // Or a recognized platform credential.
       {L,
        ga,
@@ -1303,8 +1311,10 @@ TEST_F(AuthenticatorRequestDialogModelTest, Mechanisms) {
       RunTest(test, windows_has_hybrid);
     }
   }
-  base::test::ScopedFeatureList scoped_feature_list{
-      device::kWebAuthnNewPasskeyUI};
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {device::kWebAuthnNewPasskeyUI, device::kWebAuthnListSyncedPasskeys},
+      /*disabled_features=*/{});
   for (const auto& test : kListSyncedPasskeysTests) {
     RunTest(test, /*windows_has_hybrid=*/false);
   }
@@ -1377,6 +1387,53 @@ TEST_F(AuthenticatorRequestDialogModelTest, WinCancel) {
       EXPECT_FALSE(model.OnWinUserCancelled());
     }
   }
+}
+
+// Simulate the user cancelling the Windows native UI after it was automatically
+// dispatched to because a matching credential for Windows Hello was found for
+// an allow-list request.
+// Regression test for crbug.com/1479142.
+TEST_F(AuthenticatorRequestDialogModelTest, WinCancel_AfterMatchingLocalCred) {
+  base::test::ScopedFeatureList scoped_feature_list{
+      device::kWebAuthnNewPasskeyUI};
+
+  device::FakeWinWebAuthnApi fake_win_webauthn_api;
+  device::WinWebAuthnApi::ScopedOverride win_webauthn_api_override(
+      &fake_win_webauthn_api);
+
+  fake_win_webauthn_api.set_version(4);
+
+  AuthenticatorRequestDialogModel::TransportAvailabilityInfo tai;
+  tai.request_type = device::FidoRequestType::kGetAssertion;
+  tai.has_win_native_api_authenticator = true;
+  tai.has_empty_allow_list = false;
+  tai.available_transports.insert(device::FidoTransportProtocol::kHybrid);
+  tai.is_ble_powered = true;
+  tai.recognized_credentials = {kWinCred1};
+  tai.has_platform_authenticator_credential = device::FidoRequestHandlerBase::
+      RecognizedCredential::kHasRecognizedCredential;
+
+  AuthenticatorRequestDialogModel model(main_rfh());
+  model.saved_authenticators().AddAuthenticator(
+      AuthenticatorReference("ID", AuthenticatorTransport::kInternal,
+                             device::AuthenticatorType::kWinNative));
+  model.set_cable_transport_info(absl::nullopt, {}, base::DoNothing(),
+                                 "fido:/1234");
+  model.StartFlow(std::move(tai),
+                  /*is_conditional_mediation=*/false);
+
+  // The Windows native UI should have been triggered.
+  EXPECT_EQ(model.current_step(), Step::kNotStarted);
+
+  // Canceling the Windows native UI should be handled.
+  EXPECT_TRUE(model.OnWinUserCancelled());
+
+  // The mechanism selection sheet should now be showing.
+  EXPECT_EQ(model.current_step(), Step::kMechanismSelection);
+
+  // Canceling the Windows UI ends the request because the user must have
+  // selected the Windows option first.
+  EXPECT_FALSE(model.OnWinUserCancelled());
 }
 
 TEST_F(AuthenticatorRequestDialogModelTest, WinNoPlatformAuthenticator) {
@@ -2430,9 +2487,15 @@ TEST_F(MultiplePlatformAuthenticatorsTest,
 #endif
 
 class ListPasskeysFromSyncTest : public AuthenticatorRequestDialogModelTest {
+ public:
+  ListPasskeysFromSyncTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {device::kWebAuthnNewPasskeyUI, device::kWebAuthnListSyncedPasskeys},
+        /*disabled_features=*/{});
+  }
+
  private:
-  base::test::ScopedFeatureList scoped_feature_list_{
-      device::kWebAuthnNewPasskeyUI};
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(ListPasskeysFromSyncTest, ListGPMPasskeysInConditionalUI) {

@@ -55,6 +55,7 @@ BASE_DECLARE_FEATURE(kIPHReadingListDiscoveryFeature);
 BASE_DECLARE_FEATURE(kIPHReadingListEntryPointFeature);
 BASE_DECLARE_FEATURE(kIPHReadingListInSidePanelFeature);
 BASE_DECLARE_FEATURE(kIPHReadingModeSidePanelFeature);
+BASE_DECLARE_FEATURE(kIPHShoppingCollectionFeature);
 BASE_DECLARE_FEATURE(kIPHSideSearchAutoTriggeringFeature);
 BASE_DECLARE_FEATURE(kIPHSideSearchFeature);
 BASE_DECLARE_FEATURE(kIPHSideSearchPageActionLabelFeature);
@@ -215,6 +216,7 @@ BASE_DECLARE_FEATURE(kIPHAutofillExternalAccountProfileSuggestionFeature);
 BASE_DECLARE_FEATURE(kIPHAutofillVirtualCardCVCSuggestionFeature);
 BASE_DECLARE_FEATURE(kIPHAutofillVirtualCardSuggestionFeature);
 BASE_DECLARE_FEATURE(kIPHCookieControlsFeature);
+BASE_DECLARE_FEATURE(kIPH3pcdUserBypassFeature);
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) ||
         // BUILDFLAG(IS_FUCHSIA)

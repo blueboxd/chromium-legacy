@@ -44,7 +44,7 @@ export const EntryType = {
  *   entry: (Entry|FilesAppEntry),
  *   icon: (!string|!chrome.fileManagerPrivate.IconSet),
  *   label: string,
- *   volumeType: (VolumeManagerCommon.VolumeType|null),
+ *   volumeId: (VolumeId|null),
  *   rootType: (VolumeManagerCommon.RootType|null),
  *   metadata: !MetadataItem,
  *   isDirectory: boolean,
@@ -384,11 +384,24 @@ export let VolumeMap;
 export let Device;
 
 /**
+ * This carries the state related to the underlying Drive connection status.
+ * This differs from the device connection state as the Drive can also be in a
+ * effectively paused state when on a metered network.
+ *
+ * @typedef {{
+ *   connectionType: (chrome.fileManagerPrivate.DeviceConnectionState),
+ *   offlineReason: (chrome.fileManagerPrivate.DriveOfflineReason|undefined),
+ * }}
+ */
+export let Drive;
+
+/**
  * Files app's state.
  * @typedef {{
  *   allEntries: !Object<!FileKey, !FileData>,
  *   currentDirectory: (CurrentDirectory|undefined),
  *   device: !Device,
+ *   drive: !Drive,
  *   search: (!SearchData|undefined),
  *   navigation: !NavigationTree,
  *   volumes: !Object<!VolumeId, !Volume>,

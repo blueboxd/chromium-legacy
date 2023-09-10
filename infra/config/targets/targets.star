@@ -164,6 +164,11 @@ targets.generated_script(
     label = "//base:base_junit_tests",
 )
 
+targets.compile_target(
+    name = "base_nocompile_tests",
+    label = "//base:base_nocompile_tests",
+)
+
 targets.script(
     name = "base_perftests",
     label = "//base:base_perftests",
@@ -198,9 +203,19 @@ targets.console_test_launcher(
     label = "//third_party/blink/renderer/platform/heap:blink_heap_unittests",
 )
 
+targets.compile_target(
+    name = "blink_platform_nocompile_tests",
+    label = "//third_party/blink/renderer/platform:blink_platform_nocompile_tests",
+)
+
 targets.console_test_launcher(
     name = "blink_platform_unittests",
     label = "//third_party/blink/renderer/platform:blink_platform_unittests",
+)
+
+targets.compile_target(
+    name = "blink_probes_nocompile_tests",
+    label = "//third_party/blink/renderer/core/probe:blink_probes_nocompile_tests",
 )
 
 targets.generated_script(
@@ -775,7 +790,7 @@ targets.generated_script(
     label = "//content/public/android:content_junit_tests",
 )
 
-targets.console_test_launcher(
+targets.compile_target(
     name = "content_nocompile_tests",
     label = "//content/test:content_nocompile_tests",
 )
@@ -1421,6 +1436,11 @@ targets.console_test_launcher(
 )
 
 targets.generated_script(
+    name = "model_validation_tests",
+    label = "//components/optimization_guide/internal/testing:model_validation_tests",
+)
+
+targets.generated_script(
     name = "module_installer_junit_tests",
     label = "//components/module_installer/android:module_installer_junit_tests",
 )
@@ -1563,6 +1583,11 @@ targets.windowed_test_launcher(
 targets.console_test_launcher(
     name = "openscreen_unittests",
     label = "//chrome/browser/media/router:openscreen_unittests",
+)
+
+targets.console_test_launcher(
+    name = "optimization_guide_unittests",
+    label = "//components/optimization_guide/internal:optimization_guide_unittests",
 )
 
 targets.console_test_launcher(

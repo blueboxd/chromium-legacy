@@ -96,7 +96,7 @@
 #include "services/network/http_auth_cache_copier.h"
 #include "services/network/http_server_properties_pref_delegate.h"
 #include "services/network/ignore_errors_cert_verifier.h"
-#include "services/network/ip_protection_auth_token_cache_impl.h"
+#include "services/network/ip_protection_config_cache_impl.h"
 #include "services/network/is_browser_initiated.h"
 #include "services/network/net_log_exporter.h"
 #include "services/network/network_service.h"
@@ -108,6 +108,7 @@
 #include "services/network/proxy_lookup_request.h"
 #include "services/network/proxy_resolving_socket_factory_mojo.h"
 #include "services/network/public/cpp/cert_verifier/mojo_cert_verifier.h"
+#include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -531,7 +532,7 @@ NetworkContext::NetworkContext(
       // sandboxed network service on Android.
       shared_dictionary_manager_ = SharedDictionaryManager::CreateOnDisk(
           params_->file_paths->shared_dictionary_directory->path().Append(
-              FILE_PATH_LITERAL("db")),
+              kSharedDictionaryDbDirName),
           params_->file_paths->shared_dictionary_directory->path().Append(
               FILE_PATH_LITERAL("cache")),
           params_->shared_dictionary_cache_max_size,
@@ -677,6 +678,15 @@ NetworkContext::~NetworkContext() {
 #if BUILDFLAG(IS_ANDROID)
     if (params_ && params_->file_paths) {
       base::FilePath path_to_invalidate;
+      // Even though shared_dictionary_directory is a TransferableDirectory, it
+      // only needs to be mounted/unmounted on fuchsia, so we only need to worry
+      // about invalidating the path of stored by the SandboxedVfs.
+      if (params_->file_paths->shared_dictionary_directory) {
+        path_to_invalidate =
+            params_->file_paths->shared_dictionary_directory->path().Append(
+                kSharedDictionaryDbDirName);
+        network_service_->InvalidateNetworkContextPath(path_to_invalidate);
+      }
       if (GetFullDataFilePath(params_->file_paths,
                               &network::mojom::NetworkContextFilePaths::
                                   trust_token_database_name,
@@ -794,7 +804,9 @@ void NetworkContext::CreateURLLoaderFactory(
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client) {
   url_loader_factories_.emplace(std::make_unique<cors::CorsURLLoaderFactory>(
       this, std::move(params), std::move(resource_scheduler_client),
-      std::move(receiver), &cors_origin_access_list_));
+      std::move(receiver), &cors_origin_access_list_,
+      network_service_ ? network_service_->network_service_resource_block_list()
+                       : nullptr));
 }
 
 void NetworkContext::CreateURLLoaderFactoryForCertNetFetcher(
@@ -2026,28 +2038,28 @@ void NetworkContext::VerifyCertificateForTesting(
       request, net::NetLogWithSource());
 }
 
-void NetworkContext::VerifyIpProtectionAuthTokenGetterForTesting(
-    VerifyIpProtectionAuthTokenGetterForTestingCallback callback) {
+void NetworkContext::VerifyIpProtectionConfigGetterForTesting(
+    VerifyIpProtectionConfigGetterForTestingCallback callback) {
   // This method assumes that the proxy delegate and auth token cache have been
   // initialized.
   CHECK(proxy_delegate_);
 
-  auto* auth_token_cache_impl = static_cast<IpProtectionAuthTokenCacheImpl*>(
-      proxy_delegate_->GetAuthTokenCacheForTesting());  // IN-TEST
-  CHECK(auth_token_cache_impl);
+  auto* ipp_config_cache_impl = static_cast<IpProtectionConfigCacheImpl*>(
+      proxy_delegate_->GetIpProtectionConfigCacheForTesting());  // IN-TEST
+  CHECK(ipp_config_cache_impl);
 
-  auth_token_cache_impl->FillCacheForTesting(base::BindOnce(  // IN-TEST
-      &NetworkContext::OnIpProtectionAuthTokenAvailableForTesting,
+  ipp_config_cache_impl->FillCacheForTesting(base::BindOnce(  // IN-TEST
+      &NetworkContext::OnIpProtectionConfigAvailableForTesting,
       weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void NetworkContext::OnIpProtectionAuthTokenAvailableForTesting(
-    VerifyIpProtectionAuthTokenGetterForTestingCallback callback) {
-  auto* auth_token_cache =
-      proxy_delegate_->GetAuthTokenCacheForTesting();  // IN-TEST
+void NetworkContext::OnIpProtectionConfigAvailableForTesting(
+    VerifyIpProtectionConfigGetterForTestingCallback callback) {
+  auto* ipp_config_cache =
+      proxy_delegate_->GetIpProtectionConfigCacheForTesting();  // IN-TEST
 
   absl::optional<network::mojom::BlindSignedAuthTokenPtr> result =
-      auth_token_cache->GetAuthToken();
+      ipp_config_cache->GetAuthToken();
   CHECK(result.has_value());
   std::move(callback).Run(std::move(result).value());
 }
@@ -2708,6 +2720,10 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
   builder.set_check_cleartext_permitted(params_->check_clear_text_permitted);
 #endif  // BUILDFLAG(IS_ANDROID)
 
+  if (params_->cookie_deprecation_label.has_value()) {
+    builder.set_cookie_deprecation_label(*params_->cookie_deprecation_label);
+  }
+
   if (on_url_request_context_builder_configured) {
     std::move(on_url_request_context_builder_configured).Run(&builder);
   }
@@ -2793,10 +2809,10 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
     proxy_delegate_->SetProxyResolutionService(
         result.url_request_context->proxy_resolution_service());
 
-    if (params_->ip_protection_auth_token_getter) {
-      proxy_delegate_->SetIpProtectionAuthTokenCache(
-          std::make_unique<IpProtectionAuthTokenCacheImpl>(
-              std::move(params_->ip_protection_auth_token_getter)));
+    if (params_->ip_protection_config_getter) {
+      proxy_delegate_->SetIpProtectionConfigCache(
+          std::make_unique<IpProtectionConfigCacheImpl>(
+              std::move(params_->ip_protection_config_getter)));
     }
   }
 

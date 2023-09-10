@@ -27,6 +27,7 @@
 #include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/apps/app_service/publishers/app_publisher.h"
 #include "chrome/browser/ash/arc/fileapi/arc_documents_provider_util.h"
+#include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/file_manager/file_manager_browsertest_base.h"
 #include "chrome/browser/ash/file_manager/file_manager_test_util.h"
@@ -63,15 +64,14 @@
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "components/drive/file_errors.h"
 #include "components/services/app_service/public/cpp/app_types.h"
-#include "components/services/app_service/public/cpp/intent_util.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -88,11 +88,15 @@
 #include "third_party/blink/public/common/features.h"
 #include "ui/message_center/public/cpp/notification.h"
 
-using web_app::kMediaAppId;
-
-namespace file_manager {
-namespace file_tasks {
+namespace file_manager::file_tasks {
 namespace {
+
+using blink::features::kFileHandlingAPI;
+using drive::DriveIntegrationService;
+using drive::util::ConnectionStatus;
+using drive::util::SetDriveConnectionStatusForTesting;
+using network::TestNetworkConnectionTracker;
+using web_app::kMediaAppId;
 
 const char* blockedUrl = "https://blocked.com";
 
@@ -243,8 +247,7 @@ class FileTasksBrowserTest : public TestProfileTypeMixin<InProcessBrowserTest> {
   }
 
  private:
-  base::test::ScopedFeatureList feature_list_{
-      blink::features::kFileHandlingAPI};
+  base::test::ScopedFeatureList feature_list_{kFileHandlingAPI};
 };
 
 }  // namespace
@@ -888,6 +891,73 @@ IN_PROC_BROWSER_TEST_F(NonManagedAccountWithEnterpriseFlag,
       chromeos::IsEligibleAndEnabledUploadOfficeToCloud(browser()->profile()));
 }
 
+class NonManagedAccountWithEnterpriseFlagAndPrefs
+    : public NonManagedAccountWithEnterpriseFlag,
+      public testing::WithParamInterface<
+          std::tuple<base::StringPiece, base::StringPiece>> {
+ public:
+  void SetUpOnMainThread() override {
+    TestAccountBrowserTest::SetUpOnMainThread();
+    app_service_test_.SetUp(browser()->profile());
+  }
+
+ private:
+  apps::AppServiceTest app_service_test_;
+};
+
+// Tests that GoogleWorkspace and Microsoft365 tasks are only present in the
+// list of file tasks if the corresponding prefs allow it.
+IN_PROC_BROWSER_TEST_P(NonManagedAccountWithEnterpriseFlagAndPrefs,
+                       GoogleWorkspaceAndMicrosoft365Tasks) {
+  auto* profile = browser()->profile();
+
+  auto [google_workspace_cloud_upload, microsoft_office_cloud_upload] =
+      GetParam();
+  profile->GetPrefs()->SetString(prefs::kGoogleWorkspaceCloudUpload,
+                                 google_workspace_cloud_upload);
+  profile->GetPrefs()->SetString(prefs::kMicrosoftOfficeCloudUpload,
+                                 microsoft_office_cloud_upload);
+
+  for (const auto& extension_group :
+       {WordGroupExtensions(), ExcelGroupExtensions(),
+        PowerPointGroupExtensions()}) {
+    for (const auto& extension : extension_group) {
+      base::FilePath test_file_path =
+          web_app::CreateTestFileWithExtension(extension);
+
+      std::vector<FullTaskDescriptor> tasks =
+          file_manager::test::GetTasksForFile(profile, test_file_path);
+
+      const size_t google_workspace_task_count = base::ranges::count_if(
+          tasks, &IsWebDriveOfficeTask, &FullTaskDescriptor::task_descriptor);
+      EXPECT_EQ(
+          google_workspace_task_count,
+          chromeos::cloud_upload::IsGoogleWorkspaceCloudUploadAllowed(profile)
+              ? 1U
+              : 0U);
+
+      const size_t microsoft_office_task_count = base::ranges::count_if(
+          tasks, &IsOpenInOfficeTask, &FullTaskDescriptor::task_descriptor);
+      EXPECT_EQ(
+          microsoft_office_task_count,
+          chromeos::cloud_upload::IsMicrosoftOfficeCloudUploadAllowed(profile)
+              ? 1U
+              : 0U);
+    }
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    /**/,
+    NonManagedAccountWithEnterpriseFlagAndPrefs,
+    testing::Combine(
+        testing::Values(chromeos::cloud_upload::kCloudUploadPolicyDisallowed,
+                        chromeos::cloud_upload::kCloudUploadPolicyAllowed,
+                        chromeos::cloud_upload::kCloudUploadPolicyAutomated),
+        testing::Values(chromeos::cloud_upload::kCloudUploadPolicyDisallowed,
+                        chromeos::cloud_upload::kCloudUploadPolicyAllowed,
+                        chromeos::cloud_upload::kCloudUploadPolicyAutomated)));
+
 // Test that the office PWA file handler is hidden from the available file
 // handlers when opening an office file and the |kUploadOfficeToCloud| flag is
 // enabled.
@@ -1041,16 +1111,9 @@ class DriveTest : public TestAccountBrowserTest {
         chromeos::features::kUploadOfficeToCloud);
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     drive_mount_point_ = temp_dir_.GetPath();
-    test_file_name_ = "text.docx";
     // Path of test file relative to the DriveFs mount point.
     relative_test_file_path = base::FilePath("/").AppendASCII(test_file_name_);
-
-    network_connection_tracker_ =
-        network::TestNetworkConnectionTracker::CreateInstance();
   }
-
-  DriveTest(const DriveTest&) = delete;
-  DriveTest& operator=(const DriveTest&) = delete;
 
   void SetUpInProcessBrowserTestFixture() override {
     // Setup drive integration service.
@@ -1066,16 +1129,14 @@ class DriveTest : public TestAccountBrowserTest {
     storage::ExternalMountPoints::GetSystemInstance()->RevokeAllFileSystems();
   }
 
-  drive::DriveIntegrationService* CreateDriveIntegrationService(
-      Profile* profile) {
+  DriveIntegrationService* CreateDriveIntegrationService(Profile* profile) {
     base::ScopedAllowBlockingForTesting allow_blocking;
     fake_drivefs_helpers_[profile] =
         std::make_unique<test::FakeSimpleDriveFsHelper>(profile,
                                                         drive_mount_point_);
-    auto* integration_service = new drive::DriveIntegrationService(
+    return new DriveIntegrationService(
         profile, "", drive_mount_point_,
         fake_drivefs_helpers_[profile]->CreateFakeDriveFsListenerFactory());
-    return integration_service;
   }
 
   Profile* profile() { return browser()->profile(); }
@@ -1087,14 +1148,6 @@ class DriveTest : public TestAccountBrowserTest {
   base::FilePath observed_absolute_drive_path() {
     return base::FilePath(
         (drive_mount_point_.value() + relative_test_file_path.value()));
-  }
-
-  void SetNetwork(network::mojom::ConnectionType connection_type) {
-    content::SetNetworkConnectionTrackerForTesting(nullptr);
-    content::SetNetworkConnectionTrackerForTesting(
-        network_connection_tracker_.get());
-    network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
-        connection_type);
   }
 
   // Complete the set up of the fake DriveFs with a test file added.
@@ -1122,7 +1175,7 @@ class DriveTest : public TestAccountBrowserTest {
         file_manager::util::GetFileManagerFileSystemContext(profile()),
         observed_absolute_drive_path());
 
-    SetNetwork(network::mojom::ConnectionType::CONNECTION_NONE);
+    SetDriveConnectionStatusForTesting(ConnectionStatus::kNoNetwork);
   }
 
  protected:
@@ -1133,10 +1186,8 @@ class DriveTest : public TestAccountBrowserTest {
  private:
   base::ScopedTempDir temp_dir_;
   base::FilePath drive_mount_point_;
-  std::string test_file_name_;
+  const std::string test_file_name_ = "text.docx";
   base::FilePath relative_test_file_path;
-  std::unique_ptr<network::TestNetworkConnectionTracker>
-      network_connection_tracker_;
   base::test::ScopedFeatureList feature_list_;
 
   drive::DriveIntegrationServiceFactory::FactoryCallback
@@ -1151,7 +1202,7 @@ class DriveTest : public TestAccountBrowserTest {
 // Test to check that the test file fails to open when the system is offline but
 // is successfully opened with a "try-again" dialog choice after the
 // systems comes online.
-IN_PROC_BROWSER_TEST_F(DriveTest, DISABLED_OfficeFallbackTryAgain) {
+IN_PROC_BROWSER_TEST_F(DriveTest, OfficeFallbackTryAgain) {
   // Add test file to fake DriveFs.
   SetUpTest();
 
@@ -1179,7 +1230,7 @@ IN_PROC_BROWSER_TEST_F(DriveTest, DISABLED_OfficeFallbackTryAgain) {
   navigation_observer_dialog.Wait();
   ASSERT_TRUE(navigation_observer_dialog.last_navigation_succeeded());
 
-  SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
+  SetDriveConnectionStatusForTesting(ConnectionStatus::kConnected);
 
   // Start watching for the opening of `expected_web_drive_office_url`. The
   // query parameter is concatenated to the URL as office files opened from
@@ -1232,7 +1283,7 @@ IN_PROC_BROWSER_TEST_F(DriveTest, FileInDriveOpensSetUpDialog) {
   // Add test file to fake DriveFs.
   SetUpTest();
 
-  SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
+  SetDriveConnectionStatusForTesting(ConnectionStatus::kConnected);
 
   // Create a Web Drive Office task to open the file from DriveFs. The file is
   // in the correct location for this task.
@@ -1263,7 +1314,7 @@ IN_PROC_BROWSER_TEST_F(DriveTest, FileNotInDriveOpensSetUpDialog) {
   // Set up DriveFs.
   SetUpTest();
 
-  SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
+  SetDriveConnectionStatusForTesting(ConnectionStatus::kConnected);
 
   // Create a Web Drive Office task to open the file from DriveFs. The file is
   // not in the correct location for this task and would have to be moved to
@@ -1366,18 +1417,11 @@ class OneDriveTest : public TestAccountBrowserTest,
   OneDriveTest() : TestAccountBrowserTest(kNonManaged) {
     feature_list_.InitAndEnableFeature(
         chromeos::features::kUploadOfficeToCloud);
-    test_file_name_ = "text.docx";
     // Relative path for a file on ODFS and Android OneDrive.
     relative_test_path_ = base::FilePath(test_file_name_);
     // The path in ODFS is the relative path with "/" prefixed.
     test_path_within_odfs_ = base::FilePath("/").Append(relative_test_path_);
-
-    network_connection_tracker_ =
-        network::TestNetworkConnectionTracker::CreateInstance();
   }
-
-  OneDriveTest(const OneDriveTest&) = delete;
-  OneDriveTest& operator=(const OneDriveTest&) = delete;
 
   void TearDown() override {
     TestAccountBrowserTest::TearDown();
@@ -1410,7 +1454,7 @@ class OneDriveTest : public TestAccountBrowserTest,
 
     web_app_publisher_ = std::make_unique<FakeWebAppPublisher>(profile());
 
-    SetNetwork(network::mojom::ConnectionType::CONNECTION_NONE);
+    SetNetworkConnected(false);
   }
 
   Profile* profile() { return browser()->profile(); }
@@ -1447,12 +1491,15 @@ class OneDriveTest : public TestAccountBrowserTest,
         "pivots%2F" + user_email);
   }
 
-  void SetNetwork(network::mojom::ConnectionType connection_type) {
+  void SetNetworkConnected(const bool connected) {
     content::SetNetworkConnectionTrackerForTesting(nullptr);
-    content::SetNetworkConnectionTrackerForTesting(
-        network_connection_tracker_.get());
-    network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
-        connection_type);
+    content::SetNetworkConnectionTrackerForTesting(connection_tracker_.get());
+    using enum network::mojom::ConnectionType;
+    connection_tracker_->SetConnectionType(connected ? CONNECTION_WIFI
+                                                     : CONNECTION_NONE);
+    SetDriveConnectionStatusForTesting(connected
+                                           ? ConnectionStatus::kConnected
+                                           : ConnectionStatus::kNoNetwork);
   }
 
   // Record the notification message shown.
@@ -1480,9 +1527,9 @@ class OneDriveTest : public TestAccountBrowserTest,
 
  private:
   base::test::ScopedFeatureList feature_list_;
-  std::unique_ptr<network::TestNetworkConnectionTracker>
-      network_connection_tracker_;
-  std::string test_file_name_;
+  const std::unique_ptr<TestNetworkConnectionTracker> connection_tracker_ =
+      TestNetworkConnectionTracker::CreateInstance();
+  const std::string test_file_name_ = "text.docx";
 };
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -1521,7 +1568,7 @@ IN_PROC_BROWSER_TEST_F(OneDriveTest, OfficeFallbackTryAgain) {
 
   CHECK_EQ(0u, web_app_publisher_->GetLaunches().size());
 
-  SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
+  SetNetworkConnected(true);
 
   // Run dialog callback, simulate user choosing to "try-again". Will succeed
   // because system is online, and the file doesn't need to be moved.
@@ -1570,7 +1617,7 @@ IN_PROC_BROWSER_TEST_F(OneDriveTest, OfficeFallbackCancel) {
 
   ASSERT_EQ(0u, web_app_publisher_->GetLaunches().size());
 
-  SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
+  SetNetworkConnected(true);
 
   // Run dialog callback, simulate user choosing to "cancel". The file will not
   // open.
@@ -1840,7 +1887,7 @@ IN_PROC_BROWSER_TEST_F(OneDriveTest, FileInOneDriveOpensSetUpDialog) {
   // Creates a fake ODFS with a test file.
   SetUpTest();
 
-  SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
+  SetNetworkConnected(true);
 
   // Create an Open in Office task to open the file from ODFS. The file is in
   // the correct location for this task.
@@ -1866,7 +1913,7 @@ IN_PROC_BROWSER_TEST_F(OneDriveTest, FileInOneDriveOpensSetUpDialog) {
 // will be run when an Open in Office task tries to open an office file not
 // already in ODFS.
 IN_PROC_BROWSER_TEST_F(OneDriveTest, FileNotInOneDriveOpensSetUpDialog) {
-  SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
+  SetNetworkConnected(true);
 
   // Create an Open in Office task to open the file from ODFS. The file is not
   // in the correct location for this task and would have to be moved to ODFS.
@@ -1883,11 +1930,8 @@ IN_PROC_BROWSER_TEST_F(OneDriveTest, FileNotInOneDriveOpensSetUpDialog) {
   gfx::NativeWindow modal_parent = LaunchFilesAppAndWait();
 
   // Triggers setup flow.
-  ExecuteFileTask(
-      profile(), open_in_office_task, file_urls, modal_parent,
-      base::BindOnce(
-          [](extensions::api::file_manager_private::TaskResult result,
-             std::string error_message) {}));
+  ExecuteFileTask(profile(), open_in_office_task, file_urls, modal_parent,
+                  base::DoNothing());
 
   // Wait for setup flow dialog to open.
   navigation_observer_dialog.Wait();
@@ -1899,5 +1943,4 @@ INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_ALL_PROFILE_TYPES_P(
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_ALL_PROFILE_TYPES_P(
     FileTasksPolicyBrowserTest);
 
-}  // namespace file_tasks
-}  // namespace file_manager
+}  // namespace file_manager::file_tasks

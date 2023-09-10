@@ -295,6 +295,9 @@ after discussions on the right group.
       <annotation id="iwa_update_discovery_update_manifest"/>
       <annotation id="iwa_update_discovery_web_bundle"/>
       <annotation id="almanac_launcher_app"/>
+      <annotation id="ip_protection_service_get_proxy_config"/>
+      <annotation id="chrome_commerce_parcels_status"/>
+      <annotation id="plus_address_creation"/>
     </sender>
   </group>
   <group name="Admin Features" hidden="true">
@@ -311,9 +314,7 @@ after discussions on the right group.
     </sender>
   </group>
   <group name="Apps and Content" hidden="true">
-    <sender name="Chrome Cleanup">
-      <annotation id="chrome_cleaner"/>
-    </sender>
+    <sender name="Chrome Cleanup"/>
     <sender name="Extension and App Management">
       <annotation id="chrome_apps_socket_api"/>
       <annotation id="extension_blacklist"/>
@@ -392,10 +393,8 @@ after discussions on the right group.
       <annotation id="fedcm_account_profile_image_fetcher"/>
       <annotation id="gaia_auth_check_connection_info"/>
       <annotation id="gaia_auth_exchange_device_id"/>
-      <annotation id="gaia_auth_fetch_for_uber"/>
       <annotation id="gaia_auth_list_accounts"/>
       <annotation id="gaia_auth_log_out"/>
-      <annotation id="gaia_auth_merge_sessions"/>
       <annotation id="gaia_auth_revoke_token"/>
       <annotation id="gaia_auth_rotate_bound_cookies"/>
       <annotation id="gaia_auth_multilogin"/>

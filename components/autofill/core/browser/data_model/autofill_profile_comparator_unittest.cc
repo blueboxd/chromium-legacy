@@ -314,21 +314,10 @@ class AutofillProfileComparatorTest : public testing::Test {
                     AutofillType(autofill::ADDRESS_HOME_STREET_NAME), kLocale),
                 actual.GetInfo(AutofillType(autofill::ADDRESS_HOME_STREET_NAME),
                                kLocale));
-      EXPECT_EQ(expected.GetInfo(
-                    AutofillType(autofill::ADDRESS_HOME_DEPENDENT_STREET_NAME),
-                    kLocale),
-                actual.GetInfo(
-                    AutofillType(autofill::ADDRESS_HOME_DEPENDENT_STREET_NAME),
-                    kLocale));
       EXPECT_EQ(
           expected.GetInfo(AutofillType(autofill::ADDRESS_HOME_HOUSE_NUMBER),
                            kLocale),
           actual.GetInfo(AutofillType(autofill::ADDRESS_HOME_HOUSE_NUMBER),
-                         kLocale));
-      EXPECT_EQ(
-          expected.GetInfo(AutofillType(autofill::ADDRESS_HOME_PREMISE_NAME),
-                           kLocale),
-          actual.GetInfo(AutofillType(autofill::ADDRESS_HOME_PREMISE_NAME),
                          kLocale));
       EXPECT_EQ(expected.GetInfo(
                     AutofillType(autofill::ADDRESS_HOME_SUBPREMISE), kLocale),
@@ -1061,9 +1050,7 @@ TEST_F(AutofillProfileComparatorTest, MergeAddressesMostUniqueTokens) {
       "1 Some Street", "Unit 3", "Carver", "CA - California", "90210", "US");
 
   p1.SetRawInfo(autofill::ADDRESS_HOME_STREET_NAME, u"Some Street");
-  p1.SetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_STREET_NAME, u"");
   p1.SetRawInfo(autofill::ADDRESS_HOME_HOUSE_NUMBER, u"");
-  p1.SetRawInfo(autofill::ADDRESS_HOME_PREMISE_NAME, u"");
   p1.SetRawInfo(autofill::ADDRESS_HOME_SUBPREMISE, u"Unit 3");
 
   AutofillProfile p2 = CreateProfileWithAddress(
@@ -1071,10 +1058,7 @@ TEST_F(AutofillProfileComparatorTest, MergeAddressesMostUniqueTokens) {
 
   p2.set_use_date(p1.use_date() + base::Minutes(1));
   p2.SetRawInfo(autofill::ADDRESS_HOME_STREET_NAME, u"Some Other Street");
-  p2.SetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_STREET_NAME,
-                u"DependentStreetName2");
   p2.SetRawInfo(autofill::ADDRESS_HOME_HOUSE_NUMBER, u"HouseNumber2");
-  p2.SetRawInfo(autofill::ADDRESS_HOME_PREMISE_NAME, u"PremiseName2");
   p2.SetRawInfo(autofill::ADDRESS_HOME_SUBPREMISE, u"Subpremise2");
 
   Address expected;
@@ -1094,20 +1078,14 @@ TEST_F(AutofillProfileComparatorTest, MergeAddressesWithStructure) {
       "6543 CH BACON", "APP 3", "MONTRÉAL", "QUÉBEC", "HHH999", "ca");
 
   p1.SetRawInfo(autofill::ADDRESS_HOME_STREET_NAME, u"StreetName");
-  p1.SetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_STREET_NAME,
-                u"DependentStreetName");
   p1.SetRawInfo(autofill::ADDRESS_HOME_HOUSE_NUMBER, u"HouseNumber");
-  p1.SetRawInfo(autofill::ADDRESS_HOME_PREMISE_NAME, u"PremiseName");
   p1.SetRawInfo(autofill::ADDRESS_HOME_SUBPREMISE, u"Subpremise");
 
   AutofillProfile p2 = CreateProfileWithAddress(
       "6543, Bacon Rd", "", "Montreal", "QC", "hhh 999", "CA");
   p2.set_use_date(p1.use_date() + base::Minutes(1));
   p2.SetRawInfo(autofill::ADDRESS_HOME_STREET_NAME, u"StreetName2");
-  p2.SetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_STREET_NAME,
-                u"DependentStreetName2");
   p2.SetRawInfo(autofill::ADDRESS_HOME_HOUSE_NUMBER, u"HouseNumber2");
-  p2.SetRawInfo(autofill::ADDRESS_HOME_PREMISE_NAME, u"PremiseName2");
   p2.SetRawInfo(autofill::ADDRESS_HOME_SUBPREMISE, u"Subpremise2");
 
   Address expected;
@@ -1127,19 +1105,13 @@ TEST_F(AutofillProfileComparatorTest, MergeAddressesWithRewrite) {
       "6543 CH BACON", "APP 3", "MONTRÉAL", "QUÉBEC", "HHH999", "ca");
 
   p1.SetRawInfo(autofill::ADDRESS_HOME_STREET_NAME, u"StreetName");
-  p1.SetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_STREET_NAME,
-                u"DependentStreetName");
   p1.SetRawInfo(autofill::ADDRESS_HOME_HOUSE_NUMBER, u"HouseNumber");
-  p1.SetRawInfo(autofill::ADDRESS_HOME_PREMISE_NAME, u"PremiseName");
   p1.SetRawInfo(autofill::ADDRESS_HOME_SUBPREMISE, u"Subpremise");
 
   AutofillProfile p2 = CreateProfileWithAddress(
       "6543, Bacon Rd", "", "Montreal", "QC", "hhh 999", "CA");
   p2.SetRawInfo(autofill::ADDRESS_HOME_STREET_NAME, u"StreetName2");
-  p2.SetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_STREET_NAME,
-                u"DependentStreetName2");
   p2.SetRawInfo(autofill::ADDRESS_HOME_HOUSE_NUMBER, u"HouseNumber2");
-  p2.SetRawInfo(autofill::ADDRESS_HOME_PREMISE_NAME, u"PremiseName2");
   p2.SetRawInfo(autofill::ADDRESS_HOME_SUBPREMISE, u"Subpremise2");
 
   p2.set_use_date(p1.use_date() + base::Minutes(1));
@@ -1267,8 +1239,8 @@ TEST_F(AutofillProfileComparatorTest,
   // Test for most settings visible types that a change is correctly recognized.
   for (ServerFieldType changed_type :
        {NAME_FULL, ADDRESS_HOME_STREET_ADDRESS, ADDRESS_HOME_CITY,
-        ADDRESS_HOME_ZIP, ADDRESS_HOME_LANDMARK, ADDRESS_HOME_BETWEEN_STREETS,
-        ADDRESS_HOME_ADMIN_LEVEL2, EMAIL_ADDRESS, PHONE_HOME_WHOLE_NUMBER}) {
+        ADDRESS_HOME_ZIP, ADDRESS_HOME_ADMIN_LEVEL2, EMAIL_ADDRESS,
+        PHONE_HOME_WHOLE_NUMBER}) {
     // Make a fresh copy and test that the function returns false.
     AutofillProfile new_profile = existing_profile;
     EXPECT_FALSE(

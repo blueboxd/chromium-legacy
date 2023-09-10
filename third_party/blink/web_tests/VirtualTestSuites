@@ -271,10 +271,7 @@
               "media/stable",
               "webexposed",
               "compositing/filters",
-              "external/wpt/performance-timeline/tentative/with-filter-options-originA.html",
-              "external/wpt/css/css-color/parsing/color-invalid-relative-color.html",
-              "external/wpt/css/css-color/parsing/color-valid-relative-color.html",
-              "external/wpt/css/css-color/parsing/color-computed-relative-color.html"
+              "external/wpt/performance-timeline/tentative/with-filter-options-originA.html"
             ],
     "exclusive_tests": ["media/stable"],
     "args": ["--stable-release-mode",
@@ -911,6 +908,7 @@
       "external/wpt/css/css-highlight-api/highlight-pseudo-computed.html",
       "external/wpt/css/css-text/parsing/text-autospace-computed.html",
       "external/wpt/css/css-text/parsing/text-autospace-valid.html",
+      "external/wpt/css/css-text/text-autospace/",
       "external/wpt/css/css-text/text-spacing-trim/",
       "external/wpt/web-animations/animation-model/animation-types/accumulation-per-property-002.html",
       "external/wpt/web-animations/animation-model/animation-types/addition-per-property-002.html",
@@ -941,9 +939,13 @@
     "owners": ["andruud@chromium.org", "futhark@chromium.org"],
     "platforms": ["Linux"],
     "bases": [
-      "wpt_internal/css/css-nesting/ident"
+      "wpt_internal/css/css-nesting/ident",
+      "inspector-protocol/css"
     ],
-    "exclusive_tests": "ALL",
+    "exclusive_tests": [
+      "wpt_internal/css/css-nesting/ident",
+      "inspector-protocol/css/css-nested-ident-styles.js"
+      ],
     "args": ["--enable-blink-features=CSSNestingIdent",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
     "expires": "Dec 1, 2023"
@@ -2513,6 +2515,17 @@
     "owners": ["dizhangg@chromium.org"],
     "expires": "Dec 21, 2023"
   },
+  {
+    "prefix": "cookie-deprecation-label",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/cookie-deprecation-label"
+    ],
+    "exclusive_tests": "ALL",
+    "args": ["--enable-features=CookieDeprecationFacilitatedTestingLabels:label/label_test",
+             "--disable-threaded-compositing", "--disable-threaded-animation"],
+    "expires": "Dec 31, 2023"
+  },
   "Suite fot tests that should run with single threaded compositing",
   "(As opposed to threaded compositing, which is the default for web tests)",
   "It uses the field `skip_base_tests` to indicate tests that should not run",
@@ -2612,7 +2625,6 @@
       "compositing/squashing/squash-above-fixed-1.html",
       "compositing/squashing/squash-above-fixed-3.html",
       "compositing/transform-gained-3d.html",
-      "compositing/transitions/transform-on-large-layer.html",
       "compositing/video/video-reflection.html",
       "compositing/webgl/webgl-copy-image.html",
       "css1/pseudo/pseudo_elements_in_selectors.html",
@@ -4166,20 +4178,6 @@
       "storage/indexeddb/dont-wedge.html",
       "storage/indexeddb/index-cursor.html",
       "storage/indexeddb/lazy-index-population.html",
-      "storage/websql/change-version.html",
-      "storage/websql/database-lock-after-reload.html",
-      "storage/websql/executesql-accepts-only-one-statement.html",
-      "storage/websql/null-callbacks.html",
-      "storage/websql/null-characters.html",
-      "storage/websql/open-database-creation-callback.html",
-      "storage/websql/open-database-over-quota.html",
-      "storage/websql/open-database-set-empty-version.html",
-      "storage/websql/open-database-utf8-name.html",
-      "storage/websql/read-transactions-running-concurrently.html",
-      "storage/websql/sql-error-codes.html",
-      "storage/websql/statement-error-callback.html",
-      "storage/websql/success-callback.html",
-      "storage/websql/transaction-error-callback.html",
       "svg/W3C-SVG-1.1/animate-elem-30-t.svg",
       "svg/W3C-SVG-1.1/animate-elem-33-t.svg",
       "svg/W3C-SVG-1.1/animate-elem-40-t.svg",

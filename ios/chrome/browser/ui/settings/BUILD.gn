@@ -135,6 +135,7 @@ source_set("settings") {
     "//ios/chrome/browser/shared/coordinator/scene:scene_state_header",
     "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/shared/model/browser_state",
+    "//ios/chrome/browser/shared/model/prefs",
     "//ios/chrome/browser/shared/model/prefs:pref_names",
     "//ios/chrome/browser/shared/model/url:constants",
     "//ios/chrome/browser/shared/model/utils",
@@ -240,8 +241,6 @@ source_set("test_support") {
     "passphrase_table_view_controller_test.mm",
     "personal_data_manager_finished_profile_tasks_waiter.cc",
     "personal_data_manager_finished_profile_tasks_waiter.h",
-    "signin_settings_app_interface.h",
-    "signin_settings_app_interface.mm",
   ]
   deps = [
     ":settings",
@@ -373,8 +372,6 @@ source_set("eg_app_support+eg2") {
   sources = [
     "settings_app_interface.h",
     "settings_app_interface.mm",
-    "signin_settings_app_interface.h",
-    "signin_settings_app_interface.mm",
     "supervised_user_settings_app_interface.h",
     "supervised_user_settings_app_interface.mm",
   ]
@@ -406,8 +403,6 @@ source_set("eg_test_support+eg2") {
   sources = [
     "settings_app_interface.h",
     "settings_app_interface_stub.mm",
-    "signin_settings_app_interface.h",
-    "signin_settings_app_interface_stub.mm",
     "supervised_user_settings_app_interface.h",
     "supervised_user_settings_app_interface_stub.mm",
   ]
@@ -426,8 +421,7 @@ source_set("eg2_tests") {
     "search_engine_settings_egtest.mm",
     "settings_accessibility_egtest.mm",
     "settings_egtest.mm",
-    "signin_settings_with_legacy_promo_egtest.mm",
-    "signin_settings_without_legacy_promo_egtest.mm",
+    "signin_settings_egtest.mm",
   ]
   deps = [
     ":eg_test_support+eg2",
@@ -438,6 +432,7 @@ source_set("eg2_tests") {
     "//components/strings",
     "//components/supervised_user/core/browser",
     "//components/supervised_user/core/common",
+    "//components/sync/base",
     "//components/sync/base:features",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/policy:eg_test_support+eg2",
@@ -451,6 +446,7 @@ source_set("eg2_tests") {
     "//ios/chrome/browser/ui/authentication/signin:constants",
     "//ios/chrome/browser/ui/settings:constants",
     "//ios/chrome/browser/ui/settings/elements:constants",
+    "//ios/chrome/common/ui/promo_style:constants",
     "//ios/chrome/common/ui/table_view:cells_constants",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",

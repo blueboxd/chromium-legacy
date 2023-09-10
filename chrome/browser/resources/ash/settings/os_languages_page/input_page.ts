@@ -14,6 +14,7 @@ import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import './add_input_methods_dialog.js';
 import './add_spellcheck_languages_dialog.js';
 import './os_edit_dictionary_page.js';
@@ -139,6 +140,8 @@ export class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
           return loadTimeData.getBoolean('onDeviceGrammarCheckEnabled');
         },
       },
+
+      languagePacksInSettingsEnabled_: Boolean,
     };
   }
 
@@ -170,6 +173,8 @@ export class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
   private onDeviceGrammarCheckEnabled_: boolean;
   private languageSettingsJapaneseEnabled_: boolean;
   private shouldShowLanguagePacksNotice_: boolean;
+  private languagePacksInSettingsEnabled_ =
+      loadTimeData.getBoolean('languagePacksInSettingsEnabled');
 
   // Computed properties.
   private spellCheckLanguages_: SpellCheckLanguageState[]|undefined;
@@ -610,6 +615,11 @@ export class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
     if (this.showNextImeShortcutReminder_) {
       this.setPrefValue('ash.shortcut_reminders.next_ime_dismissed', true);
     }
+  }
+
+  private shouldShowSpinner_(_item:
+                                 chrome.languageSettingsPrivate.InputMethod) {
+    return this.languagePacksInSettingsEnabled_;
   }
 }
 

@@ -84,6 +84,12 @@ BASE_FEATURE(kAutofillConsiderPhoneNumberSeparatorsValidLabels,
              "AutofillConsiderPhoneNumberSeparatorsValidLabels",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Crowdsourcing already prefers PHONE_HOME_CITY_AND_NUMBER over
+// PHONE_HOME_WHOLE_NUMBER. With this feature, local heuristics do the same.
+BASE_FEATURE(kAutofillDefaultToCityAndNumber,
+             "AutofillDefaultToCityAndNumber",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // FormStructure::RetrieveFromCache used to preserve an AutofillField's
 // is_autofilled from the cache of previously parsed forms. This makes little
 // sense because the renderer sends us the autofill state and has the most
@@ -314,6 +320,13 @@ BASE_FEATURE(kAutofillFeedback,
              "AutofillFeedback",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Makes AutofillProfile::IsSubsetOfForFieldSet stop ignoring street address
+// types during comparison, and instead compares them using address rewriter
+// normalization.
+BASE_FEATURE(kAutofillUseAddressRewriterInProfileSubsetComparison,
+             "AutofillUseAddressRewriterInProfileSubsetComparison",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables using the newer i18n address model, overriding the legacy one.
 // This includes:
 // - Using newer i18n address format strings.
@@ -470,7 +483,7 @@ BASE_FEATURE(kAutofillPageLanguageDetection,
 // TODO(crbug.com/1309848) Remove once launched.
 BASE_FEATURE(kAutofillParseAsync,
              "AutofillParseAsync",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, local heuristics fall back to interpreting the fields' name as an
 // autocomplete type.
@@ -500,7 +513,7 @@ BASE_FEATURE(kAutofillPassRendererFormsToPasswordManager,
 // verify that a user's cursor has been outside the cell before accepting it)
 // are disabled.
 BASE_FEATURE(kAutofillPopupDisablePaintChecks,
-             "kutofillPopupDisablePaintChecks",
+             "AutofillPopupDisablePaintChecks",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether the autofill popup is hidden when the context menu is open.
@@ -531,11 +544,6 @@ BASE_FEATURE(kAutofillRemoveInaccessibleProfileValuesOnStartup,
 // TODO(crbug.com/1413205): Cleanup when launched.
 BASE_FEATURE(kAutofillRequireNameForProfileImport,
              "AutofillRequireNameForProfileImport",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Controls whether UPI/VPA values will be saved and filled into payment forms.
-BASE_FEATURE(kAutofillSaveAndFillVPA,
-             "AutofillSaveAndFillVPA",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls non-default Autofill API predictions. See crbug.com/1331322.
@@ -601,13 +609,6 @@ BASE_FEATURE(kAutofillTestFormWithDevtools,
 // not met.
 BASE_FEATURE(kAutofillSilentProfileUpdateForInsufficientImport,
              "AutofillSilentProfileUpdateForInsufficientImport",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Controls whether inferred label is considered for comparing in
-// FormFieldData.SimilarFieldAs.
-// TODO(crbug.com/1211834): The experiment seems dead; remove?
-BASE_FEATURE(kAutofillSkipComparingInferredLabels,
-             "AutofillSkipComparingInferredLabels",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether Autofill should search prefixes of all words/tokens when

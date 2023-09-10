@@ -22,6 +22,7 @@
 #include "chrome/browser/ash/scalable_iph/customizable_test_env_browser_test_base.h"
 #include "chrome/browser/ash/scalable_iph/scalable_iph_browser_test_base.h"
 #include "chrome/browser/scalable_iph/scalable_iph_factory.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -634,6 +635,14 @@ IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTest, AppListShown) {
   app_list_controller->ShowAppList(ash::AppListShowSource::kSearchKey);
 }
 
+IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTest, OpenPersonalizationApp) {
+  EXPECT_CALL(*mock_tracker(),
+              NotifyEvent(scalable_iph::kEventNameOpenPersonalizationApp));
+
+  ash::LaunchSystemWebAppAsync(browser()->profile(),
+                               ash::SystemWebAppType::PERSONALIZATION);
+}
+
 // Logging feature is on by default in `ScalableIphBrowserTest`.
 IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTest, Log) {
   constexpr char kTestFileNamePattern[] = "*scalable_iph_browsertest.cc*";
@@ -653,13 +662,13 @@ IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTest, Log) {
     return true;
   });
 
-  SCALABLE_IPH_LOG(scalable_iph->logger()) << kTestLogMessage;
+  SCALABLE_IPH_LOG(scalable_iph->GetLogger()) << kTestLogMessage;
 
   logging::SetLogMessageHandler(nullptr);
 
-  EXPECT_TRUE(base::MatchPattern(scalable_iph->logger()->GenerateLog(),
+  EXPECT_TRUE(base::MatchPattern(scalable_iph->GetLogger()->GenerateLog(),
                                  kTestLogMessagePattern));
-  EXPECT_TRUE(base::MatchPattern(scalable_iph->logger()->GenerateLog(),
+  EXPECT_TRUE(base::MatchPattern(scalable_iph->GetLogger()->GenerateLog(),
                                  kTestFileNamePattern));
 
   std::string log_output = base::JoinString(*captured_logs, "");
@@ -693,11 +702,11 @@ IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestDebugOff, NoLog) {
     return true;
   });
 
-  SCALABLE_IPH_LOG(scalable_iph->logger()) << kTestLogMessage;
+  SCALABLE_IPH_LOG(scalable_iph->GetLogger()) << kTestLogMessage;
 
   logging::SetLogMessageHandler(nullptr);
 
-  EXPECT_TRUE(scalable_iph->logger()->IsLogEmptyForTesting());
+  EXPECT_TRUE(scalable_iph->GetLogger()->IsLogEmptyForTesting());
 
   std::string log_output = base::JoinString(*captured_logs, "");
   EXPECT_FALSE(base::MatchPattern(log_output, kTestLogMessagePattern));

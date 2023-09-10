@@ -2501,7 +2501,9 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, FillLocalCreditCard) {
 
 // Test that we do not fill formless non-checkout forms when we enable the
 // formless form restrictions.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, NoAutocomplete) {
+//
+// TODO(crbug.com/1478563): Deflake this test everywhere.
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, DISABLED_NoAutocomplete) {
   CreateTestProfile();
   GURL url =
       embedded_test_server()->GetURL("/autofill/formless_no_autocomplete.html");
@@ -2531,7 +2533,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, NoAutocomplete) {
 // version of the the test in that at least one of the fields has an
 // autocomplete attribute, so autofill will always be aware of the existence
 // of the form.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, SomeAutocomplete) {
+// TODO(crbug.com/1478122): Flaky.
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, DISABLED_SomeAutocomplete) {
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL(
       "/autofill/formless_some_autocomplete.html");
@@ -2558,7 +2561,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, SomeAutocomplete) {
 
 // Test that we do not fill formless non-checkout forms when we enable the
 // formless form restrictions.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, AllAutocomplete) {
+// TODO(crbug.com/1478122): Flaky.
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, DISABLED_AllAutocomplete) {
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL(
       "/autofill/formless_all_autocomplete.html");
@@ -2722,7 +2726,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveFencedFrameTest,
           ->DriverForFrame(cross_frame_host);
   ASSERT_TRUE(cross_driver);
   // Let |test_delegate()| also observe autofill events in the iframe.
-  test_delegate()->Observe(*cross_driver->autofill_manager());
+  test_delegate()->Observe(cross_driver->GetAutofillManager());
 
   ASSERT_TRUE(AutofillFlow(GetElementById("NAME_FIRST"), this,
                            {.execution_target = cross_frame_host}));
@@ -2749,7 +2753,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveFencedFrameTest,
           ->DriverForFrame(cross_frame_host);
   ASSERT_TRUE(cross_driver);
   // Let |test_delegate()| also observe autofill events in the iframe.
-  test_delegate()->Observe(*cross_driver->autofill_manager());
+  test_delegate()->Observe(cross_driver->GetAutofillManager());
 
   auto Wait = [this]() { DoNothingAndWait(base::Seconds(2)); };
   ASSERT_TRUE(AutofillFlow(GetElementById("CREDIT_CARD_NUMBER"), this,
@@ -2785,7 +2789,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveFencedFrameTest,
           ->DriverForFrame(cross_frame_host);
   ASSERT_TRUE(cross_driver);
   // Let |test_delegate()| also observe autofill events in the iframe.
-  test_delegate()->Observe(*cross_driver->autofill_manager());
+  test_delegate()->Observe(cross_driver->GetAutofillManager());
 
   // Open the Autofill popup but do not accept the suggestion yet. Deleting the
   // subframe should close the popup.

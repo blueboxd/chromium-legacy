@@ -141,7 +141,7 @@ bool IsUsernameAmendable(const WebInputElement& username_element,
                          bool is_password_field_selected) {
   return !username_element.IsNull() && IsElementEditable(username_element) &&
          (!is_password_field_selected || username_element.IsAutofilled() ||
-          username_element.Value().IsEmpty());
+          username_element.IsPreviewed() || username_element.Value().IsEmpty());
 }
 
 // Log `message` if `logger` is not null.
@@ -796,7 +796,8 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
 
   // Exclude 1-symbol inputs, as they are unlikely to be usernames and likely
   // to be characters/digits of OTPs.
-  if (element_value.size() == 1) {
+  // Exclude too large inputs, as they are usually not usernames.
+  if (element_value.size() == 1 || element_value.size() > 100) {
     return;
   }
 
@@ -1549,8 +1550,9 @@ void PasswordAutofillAgent::InformNoSavedCredentials(
       continue;
     // Don't clear the actual value of fields that the user has edited manually
     // (which changes the autofill state back to kNotFilled).
-    if (element.GetAutofillState() == WebAutofillState::kAutofilled)
+    if (element.IsAutofilled()) {
       element.SetValue(blink::WebString());
+    }
     element.SetSuggestedValue(blink::WebString());
   }
   all_autofilled_elements_.clear();
@@ -2198,7 +2200,7 @@ void PasswordAutofillAgent::NotifyPasswordManagerAboutClearedForm(
   FormData form_data;
   if (WebFormElementToFormData(cleared_form, WebFormControlElement(),
                                field_data_manager_.get(), extract_mask,
-                               &form_data, nullptr)) {
+                               &form_data, /*field=*/nullptr)) {
     GetPasswordManagerDriver().PasswordFormCleared(form_data);
   }
 }

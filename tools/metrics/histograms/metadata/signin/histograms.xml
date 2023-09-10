@@ -375,6 +375,19 @@ prefs when the profile is loaded.  -->
   </summary>
 </histogram>
 
+<histogram
+    name="Signin.BoundSessionCredentials.CookieRotationGenerateAssertionDuration"
+    units="ms" expires_after="2024-01-14">
+  <owner>alexilin@chromium.org</owner>
+  <owner>msalama@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Records how long the generation of assertion for the cookie rotation request
+    in a bound session has taken. Recorded every time a server-challenge is
+    required to rotate bound cookies.
+  </summary>
+</histogram>
+
 <histogram name="Signin.BoundSessionCredentials.CookieRotationResult"
     enum="BoundSessionCredentialsCookieRotationResult"
     expires_after="2024-01-14">
@@ -399,6 +412,20 @@ prefs when the profile is loaded.  -->
     Records for how long a request was delayed due to a missing bound cookie.
     Recorded every time a request was deferred by the bound session credentials
     throttle, right before the request is resumed or canceled.
+  </summary>
+</histogram>
+
+<histogram name="Signin.BoundSessionCredentials.SessionRegistrationResult"
+    enum="BoundSessionCredentialsSessionRegistrationResult"
+    expires_after="2024-01-14">
+  <owner>alexilin@chromium.org</owner>
+  <owner>msalama@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Records the result of the bound session registration request. Recorded every
+    time Chrome attempts to register a bound session after an invitation from
+    the server via an HTTP header. This will not be recorded if Chrome couldn't
+    parse the server invitation or just decided to ignore it.
   </summary>
 </histogram>
 
@@ -846,7 +873,7 @@ the browser and content area. -->
 </histogram>
 
 <histogram name="Signin.ListFamilyMembersRequest.Latency" units="ms"
-    expires_after="2023-12-31">
+    expires_after="2024-03-03">
   <owner>tju@google.com</owner>
   <owner>chrome-kids-eng@google.com</owner>
   <summary>Tracks the latency of calls to the Kids Management API.</summary>
@@ -863,7 +890,7 @@ the browser and content area. -->
 </histogram>
 
 <histogram name="Signin.ListFamilyMembersRequest.Status"
-    enum="SupervisedUserProtoFetcherStatus" expires_after="2023-12-31">
+    enum="SupervisedUserProtoFetcherStatus" expires_after="2024-03-03">
   <owner>tju@google.com</owner>
   <owner>chrome-kids-eng@google.com</owner>
   <summary>The status of the fetch to the Kids Management API.</summary>
@@ -1576,34 +1603,6 @@ name="TransactionalReauthEntryPoint" -->
   <owner>droger@chromium.org</owner>
   <summary>
     Records user actions performed in the reauthentication dialog/tab.
-  </summary>
-</histogram>
-
-<histogram name="Signin.UberTokenFailure" enum="GoogleServiceAuthError"
-    expires_after="never">
-<!-- expires-never: Uber tokens are required to add accounts to the Gaia
-cookies so we need to log failures for these operations for as long as Chrome
-adds accounts to the Gaia cookies. -->
-
-  <owner>msarda@chromium.org</owner>
-  <owner>droger@chromium.org</owner>
-  <summary>
-    Reason of failure to acquiring an ubertoken based on an already-minted
-    access token. Available on all OSes.
-  </summary>
-</histogram>
-
-<histogram name="Signin.UberTokenRetry" enum="GoogleServiceAuthError"
-    expires_after="never">
-<!-- expires-never: Uber tokens are required to add accounts to the Gaia
-cookies so we need to log retry resutls for these operations for as long as
-Chrome adds accounts to the Gaia cookies. -->
-
-  <owner>msarda@chromium.org</owner>
-  <owner>droger@chromium.org</owner>
-  <summary>
-    Retry reason of failure to acquire an ubertoken based on an already-minted
-    access token. Available on all OSes.
   </summary>
 </histogram>
 

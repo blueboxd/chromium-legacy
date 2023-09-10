@@ -4,7 +4,10 @@
 
 package org.chromium.android_webview;
 
+import android.os.Build;
+
 import org.chromium.android_webview.common.Lifetime;
+import org.chromium.android_webview.metrics.TrackExitReasonsOfInterest;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
@@ -46,17 +49,13 @@ public class AwContentsLifecycleNotifier {
     }
 
     private boolean mHasWebViewInstances;
-    private @AppState int mAppState = AppState.DESTROYED;
+    private volatile @AppState int mAppState = AppState.DESTROYED;
 
-    private AwContentsLifecycleNotifier() {}
     private final ObserverList<Observer> mLifecycleObservers = new ObserverList<Observer>();
+    private AwContentsLifecycleNotifier() {}
 
-    public void addObserverWithInstance(Observer observer) {
+    public void addObserver(Observer observer) {
         mLifecycleObservers.addObserver(observer);
-    }
-
-    public static void addObserver(Observer observer) {
-        getInstance().addObserverWithInstance(observer);
     }
 
     public void removeObserver(Observer observer) {
@@ -67,6 +66,7 @@ public class AwContentsLifecycleNotifier {
         return mHasWebViewInstances;
     }
 
+    // Calls to this are thread safe
     public @AppState int getAppState() {
         return mAppState;
     }
@@ -98,5 +98,16 @@ public class AwContentsLifecycleNotifier {
     private void onAppStateChanged(@AppState int appState) {
         ThreadUtils.assertOnUiThread();
         mAppState = appState;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            TrackExitReasonsOfInterest.writeLastWebViewState();
+        }
+    }
+
+    @CalledByNative
+    public static void initialize() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            TrackExitReasonsOfInterest.init(AwContentsLifecycleNotifier.getInstance()::getAppState);
+        }
     }
 }

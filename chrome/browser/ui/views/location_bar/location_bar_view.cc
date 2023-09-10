@@ -142,6 +142,7 @@
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/style/typography.h"
+#include "ui/views/style/typography_provider.h"
 #include "ui/views/view.h"
 #include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
@@ -222,18 +223,19 @@ void LocationBarView::Init() {
 
   CreateChip();
 
-  const gfx::FontList& font_list = views::style::GetFont(
+  const auto& typography_provider = views::TypographyProvider::Get();
+  const gfx::FontList& font_list = typography_provider.GetFont(
       CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
 
   const gfx::FontList& omnibox_chip_font_list =
       OmniboxFieldTrial::IsChromeRefreshIconsEnabled()
-          ? views::style::GetFont(CONTEXT_OMNIBOX_PRIMARY,
-                                  views::style::STYLE_BODY_4_EMPHASIS)
+          ? typography_provider.GetFont(CONTEXT_OMNIBOX_PRIMARY,
+                                        views::style::STYLE_BODY_4_EMPHASIS)
           : font_list;
   const gfx::FontList& page_action_font_list =
       OmniboxFieldTrial::IsChromeRefreshIconsEnabled()
-          ? views::style::GetFont(CONTEXT_OMNIBOX_PRIMARY,
-                                  views::style::STYLE_BODY_3_EMPHASIS)
+          ? typography_provider.GetFont(CONTEXT_OMNIBOX_PRIMARY,
+                                        views::style::STYLE_BODY_3_EMPHASIS)
           : font_list;
 
   auto location_icon_view =
@@ -417,14 +419,16 @@ std::unique_ptr<views::Background> LocationBarView::CreateRoundRectBackground(
     SkColor background_color,
     SkColor stroke_color,
     SkBlendMode blend_mode,
-    bool antialias) const {
+    bool antialias,
+    bool should_border_scale) const {
   const int radius = GetBorderRadius();
   auto painter =
       stroke_color == SK_ColorTRANSPARENT
           ? views::Painter::CreateSolidRoundRectPainter(
                 background_color, radius, gfx::Insets(), blend_mode, antialias)
           : views::Painter::CreateRoundRectWith1PxBorderPainter(
-                background_color, stroke_color, radius, blend_mode, antialias);
+                background_color, stroke_color, radius, blend_mode, antialias,
+                should_border_scale);
   std::unique_ptr<views::Background> background =
       CreateBackgroundFromPainter(std::move(painter));
   background->SetNativeControlColor(background_color);
@@ -640,7 +644,7 @@ void LocationBarView::Layout() {
     text_left = 8;
     icon_indent = 7;
     text_indent = 6;
-    icon_keyword_indent = 3;
+    icon_keyword_indent = 9;
     text_keyword_indent = -9;
   } else if (OmniboxFieldTrial::IsChromeRefreshIconsEnabled()) {
     icon_left = 5;
@@ -1170,7 +1174,9 @@ void LocationBarView::RefreshBackground() {
   if (is_popup_mode_) {
     SetBackground(views::CreateSolidBackground(background_color));
   } else {
-    SetBackground(CreateRoundRectBackground(background_color, border_color));
+    SetBackground(CreateRoundRectBackground(
+        background_color, border_color, /*blend_mode=*/SkBlendMode::kSrcOver,
+        /*antialias=*/true, /*should_border_scale=*/true));
   }
 
   // Keep the views::Textfield in sync. It needs an opaque background to
@@ -1503,7 +1509,7 @@ void LocationBarView::FocusAndSelectAll() {
 }
 
 void LocationBarView::OnTouchUiChanged() {
-  const gfx::FontList& font_list = views::style::GetFont(
+  const gfx::FontList& font_list = views::TypographyProvider::Get().GetFont(
       CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
   location_icon_view_->SetFontList(font_list);
   omnibox_view_->SetFontList(font_list);

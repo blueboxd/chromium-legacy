@@ -53,7 +53,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="BackForwardCache.AllSites.EvictedAfterDocumentRestoredReason"
     enum="BackForwardCacheEvictedAfterDocumentRestoredReason"
-    expires_after="2023-12-31">
+    expires_after="2024-03-03">
   <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -68,7 +68,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BackForwardCache.AllSites.HistoryNavigationOutcome"
-    enum="BackForwardCacheHistoryNavigationOutcome" expires_after="2023-12-31">
+    enum="BackForwardCacheHistoryNavigationOutcome" expires_after="2024-03-03">
   <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -82,7 +82,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="BackForwardCache.AllSites.HistoryNavigationOutcome.BlocklistedFeature"
-    enum="WebSchedulerTrackedFeature" expires_after="2023-12-31">
+    enum="WebSchedulerTrackedFeature" expires_after="2024-03-03">
   <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -99,7 +99,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="BackForwardCache.AllSites.HistoryNavigationOutcome.BrowsingInstanceNotSwappedReason"
     enum="BackForwardCacheBrowsingInstanceNotSwappedReason"
-    expires_after="2023-12-31">
+    expires_after="2024-03-03">
   <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -136,7 +136,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="BackForwardCache.AllSites.HistoryNavigationOutcome.NotRestoredReason"
-    enum="BackForwardCacheNotRestoredReason" expires_after="2023-12-31">
+    enum="BackForwardCacheNotRestoredReason" expires_after="2024-03-03">
   <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -166,7 +166,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="BackForwardCache.EvictedAfterDocumentRestoredReason"
     enum="BackForwardCacheEvictedAfterDocumentRestoredReason"
-    expires_after="2023-12-31">
+    expires_after="2024-03-03">
   <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -182,7 +182,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BackForwardCache.Eviction.Renderer"
-    enum="BackForwardCacheRendererEvictionReason" expires_after="2023-12-31">
+    enum="BackForwardCacheRendererEvictionReason" expires_after="2024-03-03">
   <owner>rakina@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -192,7 +192,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BackForwardCache.Eviction.TimeUntilProcessKilled" units="ms"
-    expires_after="2023-12-31">
+    expires_after="2024-03-03">
   <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -203,7 +203,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="BackForwardCache.Experimental.UnexpectedIPCMessagePostedToCachedFrame.MethodHash"
-    enum="MojoInterfaceName" expires_after="2023-12-31">
+    enum="MojoInterfaceName" expires_after="2024-03-03">
   <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -234,7 +234,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BackForwardCache.HistoryNavigationOutcome"
-    enum="BackForwardCacheHistoryNavigationOutcome" expires_after="2023-12-31">
+    enum="BackForwardCacheHistoryNavigationOutcome" expires_after="2024-03-03">
   <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -248,7 +248,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BackForwardCache.HistoryNavigationOutcome.BlocklistedFeature"
-    enum="WebSchedulerTrackedFeature" expires_after="2023-12-31">
+    enum="WebSchedulerTrackedFeature" expires_after="2024-03-03">
   <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -266,7 +266,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="BackForwardCache.HistoryNavigationOutcome.BrowsingInstanceNotSwappedReason"
     enum="BackForwardCacheBrowsingInstanceNotSwappedReason"
-    expires_after="2023-12-31">
+    expires_after="2024-03-03">
   <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -284,7 +284,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="BackForwardCache.HistoryNavigationOutcome.DisabledForRenderFrameHostReason2"
     enum="BackForwardCacheDisabledForRenderFrameHostReason2"
-    expires_after="2023-12-31">
+    expires_after="2024-03-03">
   <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -303,7 +303,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="BackForwardCache.HistoryNavigationOutcome.DisallowActivationReason"
-    enum="InactiveFrameDisallowActivationReason" expires_after="2023-12-31">
+    enum="InactiveFrameDisallowActivationReason" expires_after="2024-03-03">
   <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -341,7 +341,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BackForwardCache.HistoryNavigationOutcome.NotRestoredReason"
-    enum="BackForwardCacheNotRestoredReason" expires_after="2023-12-31">
+    enum="BackForwardCacheNotRestoredReason" expires_after="2024-03-03">
   <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -522,36 +522,6 @@ chromium-metrics-reviews@google.com.
     enum="NavigationWasServedFromCache" expires_after="M85">
   <owner>clamy@chromium.org</owner>
   <summary>Whether the back-forward navigation was served from cache.</summary>
-</histogram>
-
-<histogram name="Navigation.BlobUrl" enum="Boolean" expires_after="2023-12-17">
-  <owner>jkokatsu@google.com</owner>
-  <owner>chrome-security-owp-team@google.com</owner>
-  <summary>
-    Record if navigation has occured to Blob URL, to better understand the usage
-    of Blob URL in active document (i.e. both main frame and iframes). This
-    record is taken in Navigator::DidNavigate.
-  </summary>
-</histogram>
-
-<histogram name="Navigation.BlobUrl.MainFrame" enum="Boolean"
-    expires_after="2023-10-15">
-  <owner>jkokatsu@google.com</owner>
-  <owner>chrome-security-owp-team@google.com</owner>
-  <summary>
-    Record if navigation has occured to Blob URL in main frame or iframe, to
-    better understand the usage of Blob URL in active document.
-  </summary>
-</histogram>
-
-<histogram name="Navigation.BlobUrl.Sandboxed" enum="Boolean"
-    expires_after="2023-10-15">
-  <owner>jkokatsu@google.com</owner>
-  <owner>chrome-security-owp-team@google.com</owner>
-  <summary>
-    Record if navigation has occured to opaque Blob URL, to better understand
-    the usage of Blob URL in active document.
-  </summary>
 </histogram>
 
 <histogram name="Navigation.BrowserMappedUrnUuidInIframeOrFencedFrame"
@@ -1778,7 +1748,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Prerender.Experimental.CrossOriginRedirectionProtocolChange{PrerenderTriggerType}"
     enum="PrerenderCrossOriginRedirectionProtocolChange"
-    expires_after="2023-09-03">
+    expires_after="2023-12-03">
   <owner>lingqi@chromium.org</owner>
   <owner>nhiroki@chromium.org</owner>
   <owner>src/content/browser/preloading/prerender/OWNERS</owner>
@@ -1873,7 +1843,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Prerender.Experimental.PrerenderCrossOriginRedirectionMismatch{PrerenderTriggerType}"
-    enum="PrerenderCrossOriginRedirectionMismatch" expires_after="2023-09-03">
+    enum="PrerenderCrossOriginRedirectionMismatch" expires_after="2023-12-03">
   <owner>lingqi@chromium.org</owner>
   <owner>nhiroki@chromium.org</owner>
   <owner>src/content/browser/preloading/prerender/OWNERS</owner>
@@ -1925,7 +1895,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Prerender.Experimental.ReceivedPrerendersPerPrimaryPageChangedCount{PrerenderTriggerType}{EagernessCategory}"
-    units="count" expires_after="2023-11-03">
+    units="count" expires_after="2024-03-03">
   <owner>taiyo@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>

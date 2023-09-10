@@ -118,6 +118,7 @@
 <translation id="3008272652534848354">Réinitialiser les autorisations</translation>
 <translation id="301521992641321250">Bloquée automatiquement</translation>
 <translation id="3069226013421428034">Autorisez la connexion tierce pour un site spécifique.</translation>
+<translation id="3082992102194421695">{COUNT,plural, =1{Expire demain}one{Expire dans # jour}other{Expire dans # jours}}</translation>
 <translation id="310297983047869047">Diapositive précédente</translation>
 <translation id="3109724472072898302">Réduit</translation>
 <translation id="3114012059975132928">Lecteur vidéo</translation>
@@ -281,7 +282,6 @@
 <translation id="5975083100439434680">Zoom arrière</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Contrôler l'accès de ce site à votre appareil</translation>
-<translation id="6018815681665454784">Effacer et réinitialiser ?</translation>
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="6042308850641462728">Plus</translation>
 <translation id="6064125863973209585">Téléchargements terminés</translation>
@@ -301,13 +301,11 @@
 <translation id="6295158916970320988">Tous les sites</translation>
 <translation id="6320088164292336938">Vibreur</translation>
 <translation id="6367753977865761591">Bloquez la connexion tierce pour un site spécifique.</translation>
-<translation id="6388207532828177975">Effacer et réinitialiser</translation>
 <translation id="6398765197997659313">Quitter le mode plein écran</translation>
 <translation id="640163077447496506">Expire aujourd'hui</translation>
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Empêcher les sites d'utiliser vos données et votre appareil de réalité virtuelle</translation>
 <translation id="6447842834002726250">Cookies</translation>
-<translation id="6467852467360539617">Effacer les données et réinitialiser les autorisations</translation>
 <translation id="6500423977866688905">Demander l'affichage sur mobile lorsque la fenêtre est étroite</translation>
 <translation id="6527303717912515753">Partager</translation>
 <translation id="652937045869844725">Essayez d'autoriser les cookies tiers. Vous bénéficierez d'une protection réduite, mais les fonctionnalités du site seront plus susceptibles de fonctionner.</translation>
@@ -338,7 +336,7 @@
 <translation id="6992289844737586249">Demander avant d'autoriser des sites à utiliser mon micro (recommandé)</translation>
 <translation id="7000754031042624318">Désactivée dans les paramètres Android</translation>
 <translation id="7016516562562142042">Autorisé pour le moteur de recherche actuel</translation>
-<translation id="702275896380648118">Ce site détermine ce que vous aimez, puis suggère des annonces à d'autres sites. Il obtient aussi vos thèmes publicitaires via Chrome pour vous présenter des annonces plus pertinentes.</translation>
+<translation id="702275896380648118">Ce site détermine ce que vous aimez, puis suggère des annonces à d'autres sites. Il obtient aussi vos thèmes publicitaires par l'intermédiaire de Chrome pour vous montrer des annonces plus pertinentes.</translation>
 <translation id="7053983685419859001">Bloquer</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 élément sélectionné}one{# élément sélectionné}other{# éléments sélectionnés}}</translation>
 <translation id="7087918508125750058">Nombre d'éléments sélectionnés : <ph name="ITEM_COUNT" />. Options disponibles dans la partie supérieure de l'écran</translation>
@@ -380,17 +378,15 @@
 <translation id="7846076177841592234">Annuler la sélection</translation>
 <translation id="7882806643839505685">Autorisez le son pour un site spécifique.</translation>
 <translation id="789180354981963912">Bloquer les cookies tiers en mode navigation privée :</translation>
-<translation id="7895868624847501462">Cette action effacera toutes les données locales, y compris les cookies, et réinitialisera toutes les autorisations pour <ph name="DOMAIN" /> et tous les sites qui en dépendent</translation>
 <translation id="7940722705963108451">M'envoyer un rappel</translation>
 <translation id="7974024493641668069">{COUNT,plural, =1{<ph name="FPS_MEMBERS_COUNT" /> site du groupe de sites de <ph name="FPS_OWNER" /> qui peuvent voir votre activité dans le groupe}one{<ph name="FPS_MEMBERS_COUNT" /> site du groupe de sites de <ph name="FPS_OWNER" /> qui peuvent voir votre activité dans le groupe}other{<ph name="FPS_MEMBERS_COUNT" /> sites du groupe de sites de <ph name="FPS_OWNER" /> qui peuvent voir votre activité dans le groupe}}</translation>
 <translation id="7986741934819883144">Sélectionner un contact</translation>
-<translation id="7999064672810608036">Voulez-vous vraiment effacer toutes les données locales, y compris les cookies, et réinitialiser toutes les autorisations pour ce site Web ?</translation>
 <translation id="8007176423574883786">Désactivée pour cet appareil</translation>
 <translation id="802154636333426148">Échec du téléchargement</translation>
 <translation id="8042586301629853791">Trier par :</translation>
 <translation id="8067883171444229417">Lire la vidéo</translation>
 <translation id="8068648041423924542">Impossible de sélectionner le certificat</translation>
-<translation id="8077120325605624147">Tous les sites que vous consultez peuvent vous présenter des annonces</translation>
+<translation id="8077120325605624147">Tous les sites que vous consultez peuvent vous montrer des annonces</translation>
 <translation id="8087000398470557479">Ce contenu est issu de <ph name="DOMAIN_NAME" />. Il est diffusé par Google.</translation>
 <translation id="8088603949666785339">Plus d'options dans <ph name="BANNER_TITLE" /></translation>
 <translation id="8116925261070264013">Son coupé</translation>
@@ -408,7 +404,6 @@
 <translation id="8284326494547611709">Sous-titres</translation>
 <translation id="8300705686683892304">Gérés par l'application</translation>
 <translation id="8324158725704657629">Ne plus me demander</translation>
-<translation id="8338445138528827481">Cette action effacera toutes les données locales, y compris les cookies, et réinitialisera toutes les autorisations pour <ph name="ORIGIN" /></translation>
 <translation id="8362795839483915693">Vous pouvez faire un zoom avant ou arrière sur les sites que vous consultez</translation>
 <translation id="8372893542064058268">Autorisez la synchronisation en arrière-plan pour un site spécifique.</translation>
 <translation id="8376384591331888629">Y compris les cookies tiers de ce site</translation>
@@ -429,7 +424,7 @@
 <translation id="851751545965956758">Interdire à tous les sites de se connecter à des appareils</translation>
 <translation id="8525306231823319788">Plein écran</translation>
 <translation id="8528440122773422556">L'ensemble des données et cookies stockés par tous les sites dépendant de <ph name="ORIGIN" /> ou par l'application associée sur votre écran d'accueil seront effacés</translation>
-<translation id="8541410041357371550">Ce site obtient vos thèmes d'annonces auprès de Chrome pour vous présenter des annonces plus pertinentes</translation>
+<translation id="8541410041357371550">Ce site obtient vos thèmes d'annonces par l'intermédiaire de Chrome pour vous montrer des annonces plus pertinentes</translation>
 <translation id="8564613706851221529">{COUNT,plural, =1{Cookies autorisés pour <ph name="FPS_MEMBERS_COUNT" /> site <ph name="FPS_OWNER" />}one{Cookies autorisés pour <ph name="FPS_MEMBERS_COUNT" /> site <ph name="FPS_OWNER" />}other{Cookies autorisés pour <ph name="FPS_MEMBERS_COUNT" /> sites <ph name="FPS_OWNER" />}}</translation>
 <translation id="857943718398505171">Autorisé (recommandé)</translation>
 <translation id="8609465669617005112">Monter</translation>
@@ -450,7 +445,7 @@
 <translation id="8816026460808729765">Bloque l'accès aux capteurs pour certains sites</translation>
 <translation id="8823559166155093873">Bloquer les cookies</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="8889294078294184559">À mesure que vous naviguez, les sites peuvent vérifier à partir des données de Chrome et d'un site auquel vous avez accédé précédemment que vous êtes probablement une personne réelle</translation>
+<translation id="8889294078294184559">Lorsque vous continuez à naviguer, les sites peuvent vérifier avec Chrome et avec un site que vous avez déjà visité si vous êtes une personne réelle</translation>
 <translation id="8899807382908246773">Annonces intrusives</translation>
 <translation id="8903921497873541725">Zoom avant</translation>
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>

@@ -1958,7 +1958,7 @@ PaintLayerScrollableArea::GetSnapPositionAndSetTarget(
   CompositorElementId active_element_id = CompositorElementId();
   if (auto* active_element = GetDocument()->ActiveElement()) {
     active_element_id =
-        CompositorElementIdFromDOMNodeId(DOMNodeIds::IdForNode(active_element));
+        CompositorElementIdFromDOMNodeId(active_element->GetDomNodeId());
   }
 
   absl::optional<gfx::PointF> snap_point;
@@ -2031,21 +2031,21 @@ void PaintLayerScrollableArea::PositionOverflowControls() {
   }
 
   if (scroll_corner_) {
-    LayoutRect rect(ScrollCornerRect());
-    scroll_corner_->SetOverriddenFrameRect(rect);
+    PhysicalRect rect(ScrollCornerRect());
+    scroll_corner_->SetOverriddenSize(rect.size);
     // TODO(crbug.com/1020913): This should be part of PaintPropertyTreeBuilder
     // when we support subpixel layout of overflow controls.
     scroll_corner_->GetMutableForPainting().FirstFragment().SetPaintOffset(
-        PhysicalOffset(rect.Location()));
+        rect.offset);
   }
 
   if (resizer_) {
-    LayoutRect rect(ResizerCornerRect(kResizerForPointer));
-    resizer_->SetOverriddenFrameRect(rect);
+    PhysicalRect rect(ResizerCornerRect(kResizerForPointer));
+    resizer_->SetOverriddenSize(rect.size);
     // TODO(crbug.com/1020913): This should be part of PaintPropertyTreeBuilder
     // when we support subpixel layout of overflow controls.
     resizer_->GetMutableForPainting().FirstFragment().SetPaintOffset(
-        PhysicalOffset(rect.Location()));
+        rect.offset);
   }
 }
 
@@ -2097,14 +2097,14 @@ bool PaintLayerScrollableArea::HitTestOverflowControls(
 
   if (HasVerticalScrollbar() &&
       VerticalScrollbar()->ShouldParticipateInHitTesting()) {
-    LayoutRect v_bar_rect(VerticalScrollbarStart(),
-                          GetLayoutBox()->BorderTop().ToInt(),
-                          VerticalScrollbar()->ScrollbarThickness(),
-                          visible_rect.height() -
-                              (HasHorizontalScrollbar()
-                                   ? HorizontalScrollbar()->ScrollbarThickness()
-                                   : resize_control_size));
-    if (v_bar_rect.Contains(LayoutPoint(local_point))) {
+    gfx::Rect v_bar_rect(VerticalScrollbarStart(),
+                         GetLayoutBox()->BorderTop().ToInt(),
+                         VerticalScrollbar()->ScrollbarThickness(),
+                         visible_rect.height() -
+                             (HasHorizontalScrollbar()
+                                  ? HorizontalScrollbar()->ScrollbarThickness()
+                                  : resize_control_size));
+    if (v_bar_rect.Contains(local_point)) {
       result.SetScrollbar(VerticalScrollbar());
       return true;
     }
@@ -2115,7 +2115,7 @@ bool PaintLayerScrollableArea::HitTestOverflowControls(
       HorizontalScrollbar()->ShouldParticipateInHitTesting()) {
     // TODO(crbug.com/638981): Are the conversions to int intentional?
     int h_scrollbar_thickness = HorizontalScrollbar()->ScrollbarThickness();
-    LayoutRect h_bar_rect(
+    gfx::Rect h_bar_rect(
         HorizontalScrollbarStart(),
         GetLayoutBox()->BorderTop().ToInt() + visible_rect.height() -
             h_scrollbar_thickness,
@@ -2123,7 +2123,7 @@ bool PaintLayerScrollableArea::HitTestOverflowControls(
                                     ? VerticalScrollbar()->ScrollbarThickness()
                                     : resize_control_size),
         h_scrollbar_thickness);
-    if (h_bar_rect.Contains(LayoutPoint(local_point))) {
+    if (h_bar_rect.Contains(local_point)) {
       result.SetScrollbar(HorizontalScrollbar());
       return true;
     }

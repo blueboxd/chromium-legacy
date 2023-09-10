@@ -17,6 +17,7 @@ if (is_ios) {
 if (is_android) {
   import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")
+  import("//third_party/jni_zero/jni_zero.gni")
 }
 
 # Several targets want to include this header file, and some of them are
@@ -55,6 +56,17 @@ component("gfx_skia") {
     "//skia",
   ]
   defines = [ "GFX_SKIA_IMPLEMENTATION" ]
+}
+
+if (is_win) {
+  config("gfx_win_linker_flags") {
+    # This is in a separate config so the flags can be applied to dependents.
+    # ldflags in GN aren't automatically inherited.
+    ldflags = [
+      # Linking with OneCore.lib causes the following dlls to load.
+      "/DELAYLOAD:api-ms-win-core-handle-l1-1-0.dll",
+    ]
+  }
 }
 
 component("gfx") {
@@ -387,7 +399,10 @@ component("gfx") {
       "setupapi.lib",
       "dwmapi.lib",
       "dwrite.lib",
+      "onecore.lib",
     ]
+
+    all_dependent_configs = [ ":gfx_win_linker_flags" ]
     public_deps += [ "//components/crash/core/common" ]
   } else {
     sources -= [

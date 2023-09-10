@@ -35,6 +35,30 @@ targets.variant(
 )
 
 targets.variant(
+    name = "SINGLE_GROUP_PER_STUDY_PREFER_EXISTING_BEHAVIOR_WEBVIEW_COMMANDLINE",
+    identifier = "Single Group Per Study Prefer Existing Behavior Field Trial Config",
+    args = [
+        "--webview-variations-test-seed-path=../../third_party/chromium-variations/single_group_per_study_prefer_existing_behavior/seed.json",
+        "--webview-command-line-arg=--accept-empty-variations-seed-signature",
+        "--webview-command-line-arg=--webview-verbose-logging",
+        "--webview-command-line-arg=--disable-field-trial-config",
+        "--webview-command-line-arg=--fake-variations-channel=stable",
+    ],
+)
+
+targets.variant(
+    name = "SINGLE_GROUP_PER_STUDY_PREFER_NEW_BEHAVIOR_WEBVIEW_COMMANDLINE",
+    identifier = "Single Group Per Study Prefer New Behavior Field Trial Config",
+    args = [
+        "--webview-variations-test-seed-path=../../third_party/chromium-variations/single_group_per_study_prefer_new_behavior/seed.json",
+        "--webview-command-line-arg=--accept-empty-variations-seed-signature",
+        "--webview-command-line-arg=--webview-verbose-logging",
+        "--webview-command-line-arg=--disable-field-trial-config",
+        "--webview-command-line-arg=--fake-variations-channel=stable",
+    ],
+)
+
+targets.variant(
     name = "IPHONE_7_15_4_1",
     identifier = "iPhone 7 15.4.1",
     swarming = targets.swarming(
@@ -455,6 +479,10 @@ targets.variant(
         "--board=eve",
         "--flash",
     ],
+    # TODO: crbug.com/1479528 - We have limited eve ChromeOS capacity in
+    # swarming, switch the try builders to use skylab or add additional ChromeOS
+    # capacity if we want to test eve on the CQ
+    ci_only = True,
     swarming = targets.swarming(
         dimensions = {
             "os": "ChromeOS",
@@ -477,5 +505,64 @@ targets.variant(
     identifier = "10de:2184",
     mixins = [
         "win10_nvidia_gtx_1660_stable",
+    ],
+)
+
+targets.variant(
+    name = "MODEL_VALIDATION_TRUNK",
+    identifier = "MODEL_VALIDATION_TRUNK",
+    linux_args = [
+        "--chromedriver",
+        "chromedriver",
+        "--binary",
+        "chrome",
+    ],
+    mac_args = [
+        "--chromedriver",
+        "chromedriver",
+        "--binary",
+        "Chromium.app/Contents/MacOS/Chromium",
+    ],
+    win64_args = [
+        "--chromedriver",
+        "chromedriver.exe",
+        "--binary",
+        "Chrome.exe",
+    ],
+)
+
+targets.variant(
+    name = "MODEL_VALIDATION_STABLE",
+    identifier = "MODEL_VALIDATION_STABLE",
+    args = [
+        "--channel",
+        "stable",
+    ],
+)
+
+targets.variant(
+    name = "MODEL_VALIDATION_BETA",
+    identifier = "MODEL_VALIDATION_BETA",
+    args = [
+        "--channel",
+        "beta",
+    ],
+)
+
+targets.variant(
+    name = "MODEL_VALIDATION_DEV",
+    identifier = "MODEL_VALIDATION_DEV",
+    args = [
+        "--channel",
+        "dev",
+    ],
+)
+
+targets.variant(
+    name = "MODEL_VALIDATION_CANARY",
+    identifier = "MODEL_VALIDATION_CANARY",
+    args = [
+        "--channel",
+        "canary",
     ],
 )

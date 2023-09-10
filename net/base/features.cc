@@ -367,16 +367,21 @@ const base::FeatureParam<std::string> kIpPrivacyProxyServer{
 
 const base::FeatureParam<std::string> kIpPrivacyTokenServer{
     &kEnableIpProtectionProxy, /*name=*/"IpPrivacyTokenServer",
-    /*default_value=*/"https://autopush-phosphor-pa.sandbox.googleapis.com"};
+    /*default_value=*/"https://phosphor-pa.googleapis.com"};
 
 const base::FeatureParam<std::string> kIpPrivacyTokenServerGetInitialDataPath{
     &kEnableIpProtectionProxy,
     /*name=*/"IpPrivacyTokenServerGetInitialDataPath",
-    /*default_value=*/"/v1/getInitialData"};
+    /*default_value=*/"/v1/ipblinding/getInitialData"};
 
 const base::FeatureParam<std::string> kIpPrivacyTokenServerGetTokensPath{
     &kEnableIpProtectionProxy, /*name=*/"IpPrivacyTokenServerGetTokensPath",
-    /*default_value=*/"/v1/authWithHeaderCreds"};
+    /*default_value=*/"/v1/ipblinding/auth"};
+
+const base::FeatureParam<std::string> kIpPrivacyTokenServerGetProxyConfigPath{
+    &kEnableIpProtectionProxy,
+    /*name=*/"IpPrivacyTokenServerGetProxyConfigPath",
+    /*default_value=*/"/v1/ipblinding/getProxyConfig"};
 
 const base::FeatureParam<int> kIpPrivacyAuthTokenCacheBatchSize{
     &kEnableIpProtectionProxy, /*name=*/"IpPrivacyAuthTokenCacheBatchSize",
@@ -403,7 +408,7 @@ const base::FeatureParam<bool> kIpPrivacyDirectOnly{
 // NetworkChangeNotifier::AreNetworkHandlesSupported).
 #if BUILDFLAG(IS_ANDROID)
 inline constexpr auto kMigrateSessionsOnNetworkChangeV2Default =
-    base::FEATURE_ENABLED_BY_DEFAULT;
+    base::FEATURE_DISABLED_BY_DEFAULT;
 #else   // !BUILDFLAG(IS_ANDROID)
 inline constexpr auto kMigrateSessionsOnNetworkChangeV2Default =
     base::FEATURE_DISABLED_BY_DEFAULT;
@@ -438,12 +443,6 @@ BASE_FEATURE(kForceThirdPartyCookieBlocking,
              "ForceThirdPartyCookieBlockingEnabled",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If the HTTP Cache Transaction write lock should be acquired async with
-// sending the HTTP request.
-BASE_FEATURE(kAsyncCacheLock,
-             "AsyncCacheLock",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kEnableEarlyHintsOnHttp11,
              "EnableEarlyHintsOnHttp11",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -466,6 +465,10 @@ BASE_FEATURE(kDigestAuthEnableSecureAlgorithms,
 // TODO(crbug.com/1468277): Default enable when UI work is complete.
 BASE_FEATURE(kThirdPartyPartitionedStorageAllowedByDefault,
              "ThirdPartyPartitionedStorageAllowedByDefault",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCookieDeprecationFacilitatedTestingLabels,
+             "CookieDeprecationFacilitatedTestingLabels",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace net::features

@@ -12,6 +12,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
 #include "chrome/browser/ash/file_manager/io_task_controller.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/chromeos/policy/dlp/dialogs/policy_dialog_base.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_confidential_file.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_files_utils.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_histogram_helper.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -234,6 +236,7 @@ TEST_F(FilesPolicyNotificationManagerTest, AddTrashTask) {
 // regardless of the action and files.
 TEST_F(FilesPolicyNotificationManagerTest, NotificationIdsAreUnique) {
   NotificationDisplayServiceTester display_service_tester(profile_.get());
+  const auto histogram_tester = base::HistogramTester();
 
   std::string notification_id_1 = "dlp_files_0";
   std::string notification_id_2 = "dlp_files_1";
@@ -266,6 +269,15 @@ TEST_F(FilesPolicyNotificationManagerTest, NotificationIdsAreUnique) {
   EXPECT_TRUE(display_service_tester.GetNotification(notification_id_1));
   EXPECT_TRUE(display_service_tester.GetNotification(notification_id_2));
   EXPECT_TRUE(display_service_tester.GetNotification(notification_id_3));
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(GetDlpHistogramPrefix() +
+                                     std::string(dlp::kFileActionBlockedUMA)),
+      base::BucketsAre(base::Bucket(dlp::FileAction::kUpload, 2),
+                       base::Bucket(dlp::FileAction::kOpen, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(GetDlpHistogramPrefix() +
+                                             dlp::kFilesBlockedCountUMA),
+              testing::ElementsAre(base::Bucket(2, 1), base::Bucket(3, 2)));
 }
 
 class FPNMIOTaskTest : public FilesPolicyNotificationManagerTest {
@@ -292,22 +304,23 @@ class FPNMIOTaskTest : public FilesPolicyNotificationManagerTest {
   // FPNM::ShowConnectorsWarning(), both of which store all the info about the
   // task to later show notifications/dialogs.
   void AddWarnedFiles(Policy policy,
-                      OnDlpRestrictionCheckedCallback cb,
+                      OnDlpRestrictionCheckedWithJustificationCallback cb,
                       file_manager::io_task::IOTaskId task_id,
                       std::vector<base::FilePath> warned_files,
                       dlp::FileAction action) {
     switch (policy) {
       case Policy::kDlp:
         fpnm_->ShowDlpWarning(std::move(cb), task_id, std::move(warned_files),
-                              DlpFileDestination(), dlp::FileAction::kCopy);
+                              DlpFileDestination(), action);
         break;
       case Policy::kEnterpriseConnectors:
         fpnm_->ShowConnectorsWarning(std::move(cb), task_id,
-                                     std::move(warned_files),
-                                     dlp::FileAction::kCopy);
+                                     std::move(warned_files), action);
         break;
     }
   }
+
+  const base::HistogramTester histogram_tester_;
 };
 
 // Tests that calling FPNM::ShowBlockedNotifications() correctly shows block
@@ -327,6 +340,14 @@ TEST_F(FPNMIOTaskTest, ShowBlockedNotifications_ShowsWhenHasBlockedFiles) {
   fpnm_->ShowBlockedNotifications();
   auto notification = display_service_tester.GetNotification(notification_id);
   ASSERT_TRUE(notification.has_value());
+
+  EXPECT_THAT(
+      histogram_tester_.GetAllSamples(GetDlpHistogramPrefix() +
+                                      std::string(dlp::kFileActionBlockedUMA)),
+      base::BucketsAre(base::Bucket(dlp::FileAction::kCopy, 1)));
+  EXPECT_THAT(histogram_tester_.GetAllSamples(GetDlpHistogramPrefix() +
+                                              dlp::kFilesBlockedCountUMA),
+              testing::ElementsAre(base::Bucket(2, 1)));
 }
 
 // Tests that calling FPNM::ShowBlockedNotifications() doesn't show any
@@ -345,6 +366,12 @@ TEST_F(FPNMIOTaskTest, ShowBlockedNotifications_IgnoresWarnedFiles) {
 
   fpnm_->ShowBlockedNotifications();
   EXPECT_FALSE(display_service_tester.GetNotification(notification_id));
+
+  VerifyFilesWarningUMAs(
+      histogram_tester_,
+      /*action_warned_buckets=*/{base::Bucket(dlp::FileAction::kCopy, 1)},
+      /*warning_count_buckets=*/{base::Bucket(2, 1)},
+      /*action_timedout_buckets=*/{});
 }
 
 // Tests that calling FPNM::OnErrorItemDismissed() removes all stored info when
@@ -358,6 +385,14 @@ TEST_F(FPNMIOTaskTest, OnErrorItemDismissedClearsInfoForTrackedTask) {
                   dlp::FileAction::kCopy);
   fpnm_->OnErrorItemDismissed(task_id);
   EXPECT_FALSE(fpnm_->HasIOTask(task_id));
+
+  EXPECT_THAT(
+      histogram_tester_.GetAllSamples(GetDlpHistogramPrefix() +
+                                      std::string(dlp::kFileActionBlockedUMA)),
+      base::BucketsAre(base::Bucket(dlp::FileAction::kCopy, 1)));
+  EXPECT_THAT(histogram_tester_.GetAllSamples(GetDlpHistogramPrefix() +
+                                              dlp::kFilesBlockedCountUMA),
+              testing::ElementsAre(base::Bucket(2, 1)));
 }
 
 // Tests that calling FPNM::OnErrorItemDismissed() for a non-tracked task
@@ -420,7 +455,7 @@ TEST_P(FilesPolicyNotificationManagerDlpAndConnectorsTest,
                       pause_params))))
       .Times(::testing::AtLeast(1));
 
-  base::MockCallback<OnDlpRestrictionCheckedCallback> mock_cb;
+  base::MockCallback<OnDlpRestrictionCheckedWithJustificationCallback> mock_cb;
 
   AddWarnedFiles(GetPolicy(), mock_cb.Get(), task_id,
                  std::vector<base::FilePath>{src_file_path},
@@ -440,7 +475,9 @@ TEST_P(FilesPolicyNotificationManagerDlpAndConnectorsTest,
                           /*blocked_files=*/1)))))
       .Times(::testing::AtLeast(1));
 
-  EXPECT_CALL(mock_cb, Run(/*should_proceed=*/false));
+  EXPECT_CALL(mock_cb,
+              Run(/*user_justification=*/absl::optional<std::u16string>(),
+                  /*should_proceed=*/false));
   io_task_controller_->CompleteWithError(
       task_id,
       file_manager::io_task::PolicyError(
@@ -449,6 +486,14 @@ TEST_P(FilesPolicyNotificationManagerDlpAndConnectorsTest,
   base::RunLoop().RunUntilIdle();
   io_task_controller_->RemoveObserver(&observer);
   EXPECT_FALSE(fpnm_->HasWarningTimerForTesting(task_id));
+
+  if (GetPolicy() == Policy::kDlp) {
+    VerifyFilesWarningUMAs(
+        histogram_tester_,
+        /*action_warned_buckets=*/{base::Bucket(dlp::FileAction::kCopy, 1)},
+        /*warning_count_buckets=*/{base::Bucket(1, 1)},
+        /*action_timedout_buckets=*/{});
+  }
 }
 
 // ShowDlpBlockedFiles/AddConnectorsBlockedFiles updates IO task info.
@@ -501,6 +546,16 @@ TEST_P(FilesPolicyNotificationManagerDlpAndConnectorsTest,
       {DlpConfidentialFile(src_file_path), GetPolicy()}};
   EXPECT_EQ(fpnm_->GetIOTaskBlockedFilesForTesting(task_id),
             expected_blocked_files);
+
+  if (GetPolicy() == Policy::kDlp) {
+    EXPECT_THAT(
+        histogram_tester_.GetAllSamples(
+            GetDlpHistogramPrefix() + std::string(dlp::kFileActionBlockedUMA)),
+        base::BucketsAre(base::Bucket(dlp::FileAction::kCopy, 1)));
+    EXPECT_THAT(histogram_tester_.GetAllSamples(GetDlpHistogramPrefix() +
+                                                dlp::kFilesBlockedCountUMA),
+                testing::ElementsAre(base::Bucket(1, 1)));
+  }
 }
 
 // Tests that cancelling a paused IO task will run the warning callback.
@@ -536,7 +591,8 @@ TEST_P(FilesPolicyNotificationManagerDlpAndConnectorsTest, WarningCancelled) {
                 Field(&file_manager::io_task::ProgressStatus::pause_params,
                       pause_params))))
       .Times(::testing::AtLeast(1));
-  testing::StrictMock<base::MockCallback<OnDlpRestrictionCheckedCallback>>
+  testing::StrictMock<
+      base::MockCallback<OnDlpRestrictionCheckedWithJustificationCallback>>
       mock_cb;
   AddWarnedFiles(GetPolicy(), mock_cb.Get(), task_id,
                  std::vector<base::FilePath>{src_file_path},
@@ -553,12 +609,23 @@ TEST_P(FilesPolicyNotificationManagerDlpAndConnectorsTest, WarningCancelled) {
                       file_manager::io_task::State::kCancelled))));
   // Warning callback is run with should_proceed set to false when the task is
   // cancelled.
-  EXPECT_CALL(mock_cb, Run(/*should_proceed=*/false)).Times(1);
+  EXPECT_CALL(mock_cb,
+              Run(/*user_justification=*/absl::optional<std::u16string>(),
+                  /*should_proceed=*/false))
+      .Times(1);
   io_task_controller_->Cancel(task_id);
 
   base::RunLoop().RunUntilIdle();
   io_task_controller_->RemoveObserver(&observer);
   EXPECT_FALSE(fpnm_->HasWarningTimerForTesting(task_id));
+
+  if (GetPolicy() == Policy::kDlp) {
+    VerifyFilesWarningUMAs(
+        histogram_tester_,
+        /*action_warned_buckets=*/{base::Bucket(dlp::FileAction::kCopy, 1)},
+        /*warning_count_buckets=*/{base::Bucket(1, 1)},
+        /*action_timedout_buckets=*/{});
+  }
 }
 
 // Tests that resuming a paused IO task will run the warning callback.
@@ -595,7 +662,8 @@ TEST_P(FilesPolicyNotificationManagerDlpAndConnectorsTest, WarningResumed) {
                       pause_params))))
       .Times(::testing::AtLeast(1));
 
-  testing::StrictMock<base::MockCallback<OnDlpRestrictionCheckedCallback>>
+  testing::StrictMock<
+      base::MockCallback<OnDlpRestrictionCheckedWithJustificationCallback>>
       mock_cb;
 
   AddWarnedFiles(GetPolicy(), mock_cb.Get(), task_id,
@@ -606,9 +674,20 @@ TEST_P(FilesPolicyNotificationManagerDlpAndConnectorsTest, WarningResumed) {
 
   // Warning callback is run with should_proceed set to true when the task is
   // resumed.
-  EXPECT_CALL(mock_cb, Run(/*should_proceed=*/true)).Times(1);
+  EXPECT_CALL(mock_cb,
+              Run(/*user_justification=*/absl::optional<std::u16string>(),
+                  /*should_proceed=*/true))
+      .Times(1);
   fpnm_->OnIOTaskResumed(task_id);
   EXPECT_FALSE(fpnm_->HasWarningTimerForTesting(task_id));
+
+  if (GetPolicy() == Policy::kDlp) {
+    VerifyFilesWarningUMAs(
+        histogram_tester_,
+        /*action_warned_buckets=*/{base::Bucket(dlp::FileAction::kCopy, 1)},
+        /*warning_count_buckets=*/{base::Bucket(1, 1)},
+        /*action_timedout_buckets=*/{});
+  }
 }
 
 // Tests that blocking files from non-tracked IO task will add it to FPNM.
@@ -635,6 +714,16 @@ TEST_P(FilesPolicyNotificationManagerDlpAndConnectorsTest,
       {DlpConfidentialFile(src_file_path), GetPolicy()}};
   EXPECT_EQ(fpnm_->GetIOTaskBlockedFilesForTesting(task_id),
             expected_blocked_files);
+
+  if (GetPolicy() == Policy::kDlp) {
+    EXPECT_THAT(
+        histogram_tester_.GetAllSamples(
+            GetDlpHistogramPrefix() + std::string(dlp::kFileActionBlockedUMA)),
+        base::BucketsAre(base::Bucket(dlp::FileAction::kCopy, 1)));
+    EXPECT_THAT(histogram_tester_.GetAllSamples(GetDlpHistogramPrefix() +
+                                                dlp::kFilesBlockedCountUMA),
+                testing::ElementsAre(base::Bucket(1, 1)));
+  }
 }
 
 // Tests that warning files from non-tracked IO task will add it to FPNM.
@@ -676,7 +765,8 @@ TEST_P(FilesPolicyNotificationManagerDlpAndConnectorsTest,
                       pause_params))))
       .Times(::testing::AtLeast(1));
 
-  testing::StrictMock<base::MockCallback<OnDlpRestrictionCheckedCallback>>
+  testing::StrictMock<
+      base::MockCallback<OnDlpRestrictionCheckedWithJustificationCallback>>
       mock_cb;
   fpnm_ = std::make_unique<FilesPolicyNotificationManager>(profile_);
   ASSERT_FALSE(fpnm_->HasIOTask(task_id));
@@ -687,6 +777,14 @@ TEST_P(FilesPolicyNotificationManagerDlpAndConnectorsTest,
 
   EXPECT_TRUE(fpnm_->HasIOTask(task_id));
   EXPECT_TRUE(fpnm_->HasWarningTimerForTesting(task_id));
+
+  if (GetPolicy() == Policy::kDlp) {
+    VerifyFilesWarningUMAs(
+        histogram_tester_,
+        /*action_warned_buckets=*/{base::Bucket(dlp::FileAction::kCopy, 1)},
+        /*warning_count_buckets=*/{base::Bucket(1, 1)},
+        /*action_timedout_buckets=*/{});
+  }
 }
 
 class FPNMPausedStatusNotification
@@ -738,6 +836,13 @@ TEST_P(FPNMPausedStatusNotification, PausedShowsWarningNotification_Single) {
             l10n_util::GetStringUTF16(IDS_POLICY_DLP_WARN_CANCEL_BUTTON));
   EXPECT_EQ(notification->buttons()[1].title, GetWarningOkButton(action));
   EXPECT_TRUE(notification->never_timeout());
+
+  if (policy == Policy::kDlp) {
+    VerifyFilesWarningUMAs(histogram_tester_,
+                           /*action_warned_buckets=*/{base::Bucket(action, 1)},
+                           /*warning_count_buckets=*/{base::Bucket(1, 1)},
+                           /*action_timedout_buckets=*/{});
+  }
 }
 
 TEST_P(FPNMPausedStatusNotification, PausedShowsWarningNotification_Multi) {
@@ -747,13 +852,12 @@ TEST_P(FPNMPausedStatusNotification, PausedShowsWarningNotification_Multi) {
   EXPECT_FALSE(display_service_tester.GetNotification(notification_id));
 
   file_manager::io_task::IOTaskId task_id = 1;
-  bool is_copy = type == file_manager::io_task::OperationType::kCopy;
+  bool is_copy = (type == file_manager::io_task::OperationType::kCopy);
   ASSERT_FALSE(AddCopyOrMoveIOTask(task_id, is_copy).empty());
   EXPECT_TRUE(fpnm_->HasIOTask(task_id));
 
   AddWarnedFiles(policy, base::DoNothing(), task_id,
-                 {base::FilePath(kFile1), base::FilePath(kFile2)},
-                 is_copy ? dlp::FileAction::kCopy : dlp::FileAction::kMove);
+                 {base::FilePath(kFile1), base::FilePath(kFile2)}, action);
 
   EXPECT_TRUE(fpnm_->HasWarningTimerForTesting(task_id));
 
@@ -792,6 +896,13 @@ TEST_P(FPNMPausedStatusNotification, PausedShowsWarningNotification_Multi) {
   EXPECT_TRUE(notification->never_timeout());
 
   EXPECT_TRUE(fpnm_->HasWarningTimerForTesting(task_id));
+
+  if (policy == Policy::kDlp) {
+    VerifyFilesWarningUMAs(histogram_tester_,
+                           /*action_warned_buckets=*/{base::Bucket(action, 1)},
+                           /*warning_count_buckets=*/{base::Bucket(2, 1)},
+                           /*action_timedout_buckets=*/{});
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -858,6 +969,17 @@ TEST_P(FPNMErrorStatusNotification, ErrorShowsBlockNotification_Single) {
   EXPECT_EQ(notification->buttons()[1].title,
             l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   EXPECT_TRUE(notification->never_timeout());
+
+  if (policy == file_manager::io_task::PolicyErrorType::kDlp) {
+    EXPECT_THAT(
+        histogram_tester_.GetAllSamples(
+            GetDlpHistogramPrefix() + std::string(dlp::kFileActionBlockedUMA)),
+        base::BucketsAre(base::Bucket(
+            is_copy ? dlp::FileAction::kCopy : dlp::FileAction::kMove, 1)));
+    EXPECT_THAT(histogram_tester_.GetAllSamples(GetDlpHistogramPrefix() +
+                                                dlp::kFilesBlockedCountUMA),
+                testing::ElementsAre(base::Bucket(1, 1)));
+  }
 }
 
 TEST_P(FPNMErrorStatusNotification, ErrorShowsBlockNotification_Multi) {
@@ -905,6 +1027,17 @@ TEST_P(FPNMErrorStatusNotification, ErrorShowsBlockNotification_Multi) {
   EXPECT_EQ(notification->buttons()[1].title,
             l10n_util::GetStringUTF16(IDS_POLICY_DLP_FILES_REVIEW_BUTTON));
   EXPECT_TRUE(notification->never_timeout());
+
+  if (policy == file_manager::io_task::PolicyErrorType::kDlp) {
+    EXPECT_THAT(
+        histogram_tester_.GetAllSamples(
+            GetDlpHistogramPrefix() + std::string(dlp::kFileActionBlockedUMA)),
+        base::BucketsAre(base::Bucket(
+            is_copy ? dlp::FileAction::kCopy : dlp::FileAction::kMove, 1)));
+    EXPECT_THAT(histogram_tester_.GetAllSamples(GetDlpHistogramPrefix() +
+                                                dlp::kFilesBlockedCountUMA),
+                testing::ElementsAre(base::Bucket(2, 1)));
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -994,7 +1127,10 @@ INSTANTIATE_TEST_SUITE_P(
 class FPNMShowBlockTest
     : public FilesPolicyNotificationManagerTest,
       public ::testing::WithParamInterface<std::tuple<dlp::FileAction, int>> {
+ protected:
   void SetUp() override { FilesPolicyNotificationManagerTest::SetUp(); }
+
+  const base::HistogramTester histogram_tester_;
 };
 
 TEST_P(FPNMShowBlockTest, ShowDlpBlockNotification_Single) {
@@ -1020,6 +1156,14 @@ TEST_P(FPNMShowBlockTest, ShowDlpBlockNotification_Single) {
             l10n_util::GetStringUTF16(IDS_POLICY_DLP_FILES_DISMISS_BUTTON));
   EXPECT_EQ(notification->buttons()[1].title,
             l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+
+  EXPECT_THAT(
+      histogram_tester_.GetAllSamples(GetDlpHistogramPrefix() +
+                                      std::string(dlp::kFileActionBlockedUMA)),
+      base::BucketsAre(base::Bucket(action, 1)));
+  EXPECT_THAT(histogram_tester_.GetAllSamples(GetDlpHistogramPrefix() +
+                                              dlp::kFilesBlockedCountUMA),
+              testing::ElementsAre(base::Bucket(1, 1)));
 }
 
 TEST_P(FPNMShowBlockTest, ShowDlpBlockNotification_Multi) {
@@ -1044,6 +1188,14 @@ TEST_P(FPNMShowBlockTest, ShowDlpBlockNotification_Multi) {
             l10n_util::GetStringUTF16(IDS_POLICY_DLP_FILES_DISMISS_BUTTON));
   EXPECT_EQ(notification->buttons()[1].title,
             l10n_util::GetStringUTF16(IDS_POLICY_DLP_FILES_REVIEW_BUTTON));
+
+  EXPECT_THAT(
+      histogram_tester_.GetAllSamples(GetDlpHistogramPrefix() +
+                                      std::string(dlp::kFileActionBlockedUMA)),
+      base::BucketsAre(base::Bucket(action, 1)));
+  EXPECT_THAT(histogram_tester_.GetAllSamples(GetDlpHistogramPrefix() +
+                                              dlp::kFilesBlockedCountUMA),
+              testing::ElementsAre(base::Bucket(3, 1)));
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -1068,7 +1220,10 @@ INSTANTIATE_TEST_SUITE_P(
 class FPNMShowWarningTest
     : public FilesPolicyNotificationManagerTest,
       public ::testing::WithParamInterface<dlp::FileAction> {
+ protected:
   void SetUp() override { FilesPolicyNotificationManagerTest::SetUp(); }
+
+  const base::HistogramTester histogram_tester_;
 };
 
 TEST_P(FPNMShowWarningTest, ShowDlpWarningNotification_Single) {
@@ -1077,7 +1232,8 @@ TEST_P(FPNMShowWarningTest, ShowDlpWarningNotification_Single) {
 
   EXPECT_FALSE(display_service_tester.GetNotification(kNotificationId));
   auto src_file_path = base::FilePath(kFile1);
-  testing::StrictMock<base::MockCallback<OnDlpRestrictionCheckedCallback>>
+  testing::StrictMock<
+      base::MockCallback<OnDlpRestrictionCheckedWithJustificationCallback>>
       mock_cb;
   fpnm_->ShowDlpWarning(
       mock_cb.Get(), /*task_id=*/absl::nullopt, {src_file_path},
@@ -1099,8 +1255,16 @@ TEST_P(FPNMShowWarningTest, ShowDlpWarningNotification_Single) {
 
   // Warning callback is run with should_proceed set to false when the warning
   // times out.
-  EXPECT_CALL(mock_cb, Run(/*should_proceed=*/false)).Times(1);
+  EXPECT_CALL(mock_cb,
+              Run(/*user_justification=*/absl::optional<std::u16string>(),
+                  /*should_proceed=*/false))
+      .Times(1);
   task_environment_.FastForwardBy(base::Minutes(5));
+
+  VerifyFilesWarningUMAs(histogram_tester_,
+                         /*action_warned_buckets=*/{base::Bucket(action, 1)},
+                         /*warning_count_buckets=*/{base::Bucket(1, 1)},
+                         /*action_timedout_buckets=*/{});
 }
 
 TEST_P(FPNMShowWarningTest, ShowDlpWarningNotification_Multi) {
@@ -1109,7 +1273,8 @@ TEST_P(FPNMShowWarningTest, ShowDlpWarningNotification_Multi) {
   NotificationDisplayServiceTester display_service_tester(profile_.get());
 
   EXPECT_FALSE(display_service_tester.GetNotification(kNotificationId));
-  testing::StrictMock<base::MockCallback<OnDlpRestrictionCheckedCallback>>
+  testing::StrictMock<
+      base::MockCallback<OnDlpRestrictionCheckedWithJustificationCallback>>
       mock_cb;
   fpnm_->ShowDlpWarning(mock_cb.Get(), /*task_id=*/absl::nullopt,
                         {base::FilePath(kFile1), base::FilePath(kFile2)},
@@ -1133,8 +1298,16 @@ TEST_P(FPNMShowWarningTest, ShowDlpWarningNotification_Multi) {
 
   // Warning callback is run with should_proceed set to false when the warning
   // times out.
-  EXPECT_CALL(mock_cb, Run(/*should_proceed=*/false)).Times(1);
+  EXPECT_CALL(mock_cb,
+              Run(/*user_justification=*/absl::optional<std::u16string>(),
+                  /*should_proceed=*/false))
+      .Times(1);
   task_environment_.FastForwardBy(base::Minutes(5));
+
+  VerifyFilesWarningUMAs(histogram_tester_,
+                         /*action_warned_buckets=*/{base::Bucket(action, 1)},
+                         /*warning_count_buckets=*/{base::Bucket(2, 1)},
+                         /*action_timedout_buckets=*/{});
 }
 
 INSTANTIATE_TEST_SUITE_P(PolicyFilesNotify,

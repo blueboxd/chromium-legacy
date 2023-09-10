@@ -25,6 +25,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_action.h"
+#include "extensions/browser/state_store_test_observer.h"
 #include "extensions/test/result_catcher.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/models/menu_model.h"
@@ -112,8 +113,11 @@ INSTANTIATE_TEST_SUITE_P(ServiceWorker,
                          ::testing::Values(ContextType::kServiceWorker));
 
 IN_PROC_BROWSER_TEST_P(ExtensionContextMenuApiCountTest, PRE_Count) {
+  StateStoreTestObserver observer(profile());
   // This part of the test creates the menu items for the extension.
   ASSERT_TRUE(RunExtensionTest("context_menus/count")) << message_;
+  // Wait for the context menu to be stored.
+  observer.WaitForExtensionAndKey(last_loaded_extension_id(), "context_menus");
 }
 
 IN_PROC_BROWSER_TEST_P(ExtensionContextMenuApiCountTest, Count) {

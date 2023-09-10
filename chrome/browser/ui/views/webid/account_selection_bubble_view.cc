@@ -41,6 +41,7 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/box_layout_view.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
@@ -607,7 +608,7 @@ void AccountSelectionBubbleView::ShowFailureDialog(
                           base::Unretained(observer_)),
       l10n_util::GetStringUTF16(IDS_IDP_SIGNIN_STATUS_MISMATCH_DIALOG_CONTINUE),
       this, idp_metadata);
-  signin_to_idp_button_ = row->AddChildView(std::move(button));
+  row->AddChildView(std::move(button));
   AddChildView(std::move(row));
 
   SizeToContents();
@@ -660,7 +661,34 @@ void AccountSelectionBubbleView::ShowErrorDialog(
   // Add space between the summary and the description.
   summary->SetBorder(
       views::CreateEmptyBorder(gfx::Insets::TLBR(0, 0, kVerticalSpacing, 0)));
+
   AddChildView(std::move(row));
+
+  // Add row for buttons.
+  auto button_row = std::make_unique<views::BoxLayoutView>();
+  button_row->SetMainAxisAlignment(views::BoxLayout::MainAxisAlignment::kEnd);
+  button_row->SetInsideBorderInsets(
+      gfx::Insets::TLBR(0, 0, 0, kLeftRightPadding));
+  constexpr int kButtonRowChildSpacing = 7;
+  button_row->SetBetweenChildSpacing(kButtonRowChildSpacing);
+
+  // Add more details button.
+  if (error && !error->url.is_empty()) {
+    auto more_details_button = std::make_unique<views::MdTextButton>(
+        base::BindRepeating(&Observer::OnMoreDetailsButtonClicked,
+                            base::Unretained(observer_), error->url),
+        l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_DIALOG_MORE_DETAILS_BUTTON));
+    button_row->AddChildView(std::move(more_details_button));
+  }
+
+  // Add got it button.
+  auto got_it_button = std::make_unique<views::MdTextButton>(
+      base::BindRepeating(&Observer::OnGotItButtonClicked,
+                          base::Unretained(observer_)),
+      l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_DIALOG_GOT_IT_BUTTON));
+  button_row->AddChildView(std::move(got_it_button));
+
+  AddChildView(std::move(button_row));
 
   SizeToContents();
   PreferredSizeChanged();
@@ -1042,6 +1070,10 @@ void AccountSelectionBubbleView::ConfigureIdpBrandImageView(
 }
 
 void AccountSelectionBubbleView::RemoveNonHeaderChildViews() {
+  // Make sure not to keep dangling pointers around first.
+  continue_button_ = nullptr;
+  auto_reauthn_checkbox_ = nullptr;
+
   const std::vector<views::View*> child_views = children();
   for (views::View* child_view : child_views) {
     if (child_view != header_view_) {
@@ -1049,8 +1081,6 @@ void AccountSelectionBubbleView::RemoveNonHeaderChildViews() {
       delete child_view;
     }
   }
-
-  continue_button_ = nullptr;
 }
 
 BEGIN_METADATA(AccountSelectionBubbleView, views::BubbleDialogDelegateView)

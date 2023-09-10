@@ -87,6 +87,7 @@ import './os_apps_page/app_management_page/plugin_vm_page/plugin_vm_detail_view.
 import './os_apps_page/app_management_page/pwa_detail_view.js';
 import './os_apps_page/app_management_page/sub_apps_item.js';
 import './os_bluetooth_page/os_bluetooth_change_device_name_dialog.js';
+import './os_bluetooth_page/os_bluetooth_devices_subpage.js';
 import './os_bluetooth_page/os_paired_bluetooth_list.js';
 import './os_bluetooth_page/os_paired_bluetooth_list_item.js';
 import './os_files_page/google_drive_subpage.js';
@@ -151,6 +152,7 @@ export {SettingsGuestOsSharedPathsElement} from './guest_os/guest_os_shared_path
 export {SettingsGuestOsSharedUsbDevicesElement} from './guest_os/guest_os_shared_usb_devices.js';
 export {EsimInstallErrorDialogElement} from './internet_page/esim_install_error_dialog.js';
 export {SettingsHotspotSubpageElement} from './internet_page/hotspot_subpage.js';
+export {SettingsInternetSubpageMenuElement} from './internet_page/internet_subpage_menu.js';
 export {NetworkAlwaysOnVpnElement} from './internet_page/network_always_on_vpn.js';
 export {NetworkDeviceInfoDialogElement} from './internet_page/network_device_info_dialog.js';
 export {NetworkProxySectionElement} from './internet_page/network_proxy_section.js';
@@ -203,6 +205,7 @@ export {AppManagementResizeLockItemElement} from './os_apps_page/app_management_
 export {AppManagementSubAppsItemElement} from './os_apps_page/app_management_page/sub_apps_item.js';
 export {AppNotificationsSubpage} from './os_apps_page/app_notifications_page/app_notifications_subpage.js';
 export {SettingsBluetoothChangeDeviceNameDialogElement} from './os_bluetooth_page/os_bluetooth_change_device_name_dialog.js';
+export {SettingsBluetoothDevicesSubpageElement} from './os_bluetooth_page/os_bluetooth_devices_subpage.js';
 export {SettingsBluetoothSavedDevicesSubpageElement} from './os_bluetooth_page/os_bluetooth_saved_devices_subpage.js';
 export {SettingsPairedBluetoothListElement} from './os_bluetooth_page/os_paired_bluetooth_list.js';
 export {SettingsPairedBluetoothListItemElement} from './os_bluetooth_page/os_paired_bluetooth_list_item.js';

@@ -447,15 +447,6 @@ AutofillField* GetBestPossibleCVCFieldForUpload(
   return HeuristicallyFindCVCFieldForUpload(form_structure);
 }
 
-// Some autofill types are detected based on values and not based on form
-// features. We may decide that it's an autofill form after submission.
-bool ContainsAutofillableValue(const FormStructure& form) {
-  return base::ranges::any_of(form, [](const auto& field) {
-    return base::Contains(field->possible_types(), UPI_VPA) ||
-           IsUPIVirtualPaymentAddress(field->value);
-  });
-}
-
 const char* SubmissionSourceToString(SubmissionSource source) {
   switch (source) {
     case SubmissionSource::NONE:
@@ -874,8 +865,7 @@ void BrowserAutofillManager::OnFormSubmittedImpl(const FormData& form,
 
   // Update Personal Data with the form's submitted data.
   // Also triggers offering local/upload credit card save, if applicable.
-  if (submitted_form->IsAutofillable() ||
-      ContainsAutofillableValue(*submitted_form)) {
+  if (submitted_form->IsAutofillable()) {
     FormDataImporter* form_data_importer = client().GetFormDataImporter();
     form_data_importer->ImportAndProcessFormData(*submitted_form,
                                                  IsAutofillProfileEnabled(),
@@ -1403,8 +1393,9 @@ void BrowserAutofillManager::UndoAutofill(
         operation.GetAutofillValue(field.global_id());
   }
 
-  driver().UndoAutofill(action_persistence, form, operation.GetOrigin(),
-                        operation.GetFieldTypeMap());
+  driver().ApplyAutofillAction(mojom::AutofillActionType::kUndo,
+                               action_persistence, form, operation.GetOrigin(),
+                               operation.GetFieldTypeMap());
   // Do not clear history on previews as it might be used for future previews or
   // for the filling.
   if (action_persistence == mojom::AutofillActionPersistence::kFill) {
@@ -2571,8 +2562,9 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
         return std::make_pair(field->global_id(),
                               field->Type().GetStorableType());
       });
-  std::vector<FieldGlobalId> safe_fields = driver().FillOrPreviewForm(
-      action_persistence, result, field.origin, field_types);
+  std::vector<FieldGlobalId> safe_fields = driver().ApplyAutofillAction(
+      mojom::AutofillActionType::kFill, action_persistence, result,
+      field.origin, field_types);
   client().DidFillOrPreviewForm(action_persistence,
                                 trigger_details.trigger_source, is_refill);
 

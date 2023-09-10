@@ -423,6 +423,32 @@ void ServiceWorkerContextWrapper::OnControlleeNavigationCommitted(
                                              render_frame_host_id);
 }
 
+void ServiceWorkerContextWrapper::OnWindowOpened(const GURL& script_url,
+                                                 const GURL& url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  for (auto& observer : observer_list_) {
+    observer.OnWindowOpened(script_url, url);
+  }
+}
+
+void ServiceWorkerContextWrapper::OnClientNavigated(const GURL& script_url,
+                                                    const GURL& url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  for (auto& observer : observer_list_) {
+    observer.OnClientNavigated(script_url, url);
+  }
+}
+
+void ServiceWorkerContextWrapper::OnStarting(int64_t version_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  for (auto& observer : observer_list_) {
+    observer.OnVersionStartingRunning(version_id);
+  }
+}
+
 void ServiceWorkerContextWrapper::OnStarted(
     int64_t version_id,
     const GURL& scope,
@@ -443,6 +469,14 @@ void ServiceWorkerContextWrapper::OnStarted(
   const auto& running_info = insertion_result.first->second;
   for (auto& observer : observer_list_)
     observer.OnVersionStartedRunning(version_id, running_info);
+}
+
+void ServiceWorkerContextWrapper::OnStopping(int64_t version_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  for (auto& observer : observer_list_) {
+    observer.OnVersionStoppingRunning(version_id);
+  }
 }
 
 void ServiceWorkerContextWrapper::OnStopped(int64_t version_id) {

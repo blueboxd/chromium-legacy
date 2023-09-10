@@ -88,7 +88,6 @@
 #import "ios/chrome/browser/screen_time/screen_time_buildflags.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
-#import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/tabs/inactive_tabs/features.h"
 #import "ios/chrome/browser/tabs/tab_pickup/features.h"
 #import "ios/chrome/browser/text_selection/text_selection_util.h"
@@ -373,13 +372,14 @@ const FeatureEntry::FeatureParam
         {kMagicStackMostVisitedModuleParam, "true"},
         {kReducedSpaceParam, "-80"},
         {kHideIrrelevantModulesParam, "true"}};
-const FeatureEntry::FeatureParam kMagicStackPushedDown[] = {
+const FeatureEntry::FeatureParam kMagicStackReducedNTPTopSpace[] = {
     {kMagicStackMostVisitedModuleParam, "false"},
-    {kReducedSpaceParam, "-30"}};
-const FeatureEntry::FeatureParam kMagicStackPushedDownHidIrrelevantModules[] = {
-    {kMagicStackMostVisitedModuleParam, "false"},
-    {kReducedSpaceParam, "-30"},
-    {kHideIrrelevantModulesParam, "true"}};
+    {kReducedSpaceParam, "20"}};
+const FeatureEntry::FeatureParam
+    kMagicStackReducedNTPTopSpaceHidIrrelevantModules[] = {
+        {kMagicStackMostVisitedModuleParam, "false"},
+        {kReducedSpaceParam, "20"},
+        {kHideIrrelevantModulesParam, "true"}};
 
 const FeatureEntry::FeatureVariation kMagicStackVariations[]{
     {"Most Visited Tiles in Magic Stack", kMagicStackMostVisitedModule,
@@ -387,11 +387,11 @@ const FeatureEntry::FeatureVariation kMagicStackVariations[]{
     {"Most Visited Tiles in Magic Stack and hide irrelevant modules",
      kMagicStackMostVisitedModuleHideIrrelevantModules,
      std::size(kMagicStackMostVisitedModuleHideIrrelevantModules), nullptr},
-    {"Magic Stack with more NTP Top Space", kMagicStackPushedDown,
-     std::size(kMagicStackPushedDown), nullptr},
-    {"Magic Stack with more NTP Top Space and hide irrelevant modules",
-     kMagicStackPushedDownHidIrrelevantModules,
-     std::size(kMagicStackPushedDownHidIrrelevantModules), nullptr},
+    {"Magic Stack with less NTP Top Space", kMagicStackReducedNTPTopSpace,
+     std::size(kMagicStackReducedNTPTopSpace), nullptr},
+    {"Magic Stack with less NTP Top Space and hide irrelevant modules",
+     kMagicStackReducedNTPTopSpaceHidIrrelevantModules,
+     std::size(kMagicStackReducedNTPTopSpaceHidIrrelevantModules), nullptr},
 };
 
 const FeatureEntry::FeatureParam kEnableDefaultModel[] = {
@@ -729,6 +729,7 @@ const FeatureEntry::Choice kReplaceSyncPromosWithSignInPromosChoices[] = {
      "FeedBottomSyncStringRemoval,"
      "SyncEnableContactInfoDataTypeInTransportMode,"
      "SyncEnableContactInfoDataTypeForCustomPassphraseUsers,"
+     "SyncEnableBatchUploadLocalData,"
      "EnablePreferencesAccountStorage"},
 };
 
@@ -1030,9 +1031,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSynthesizedRestoreSessionName,
      flag_descriptions::kSynthesizedRestoreSessionDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kSynthesizedRestoreSession)},
-    {"enable-fullscreen-api", flag_descriptions::kEnableFullscreenAPIName,
-     flag_descriptions::kEnableFullscreenAPIDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(web::features::kEnableFullscreenAPI)},
     {"enable-tailored-security-integration",
      flag_descriptions::kTailoredSecurityIntegrationName,
      flag_descriptions::kTailoredSecurityIntegrationDescription,
@@ -1129,10 +1127,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSmartSortingPriceTrackingDestinationDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kSmartSortingPriceTrackingDestination)},
-    {"new-overflow-menu-share-chrome-action",
-     flag_descriptions::kNewOverflowMenuShareChromeActionName,
-     flag_descriptions::kNewOverflowMenuShareChromeActionDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kNewOverflowMenuShareChromeAction)},
     {"autofill-enable-ranking-formula-address-profiles",
      flag_descriptions::kAutofillEnableRankingFormulaAddressProfilesName,
      flag_descriptions::kAutofillEnableRankingFormulaAddressProfilesDescription,
@@ -1323,9 +1317,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"tab-grid-new-transitions", flag_descriptions::kTabGridNewTransitionsName,
      flag_descriptions::kTabGridNewTransitionsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kTabGridNewTransitions)},
-    {"enable-pinned-tabs", flag_descriptions::kEnablePinnedTabsName,
-     flag_descriptions::kEnablePinnedTabsDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kEnablePinnedTabs)},
     {"credential-provider-extension-promo",
      flag_descriptions::kCredentialProviderExtensionPromoName,
      flag_descriptions::kCredentialProviderExtensionPromoDescription,
@@ -1418,6 +1409,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          safe_browsing::kFriendlierSafeBrowsingSettingsStandardProtection)},
+    {"enable-red-interstitial-facelift",
+     flag_descriptions::kEnableRedInterstitialFaceliftName,
+     flag_descriptions::kEnableRedInterstitialFaceliftDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(safe_browsing::kRedInterstitialFacelift)},
     {"show-inactive-tabs-count", flag_descriptions::kShowInactiveTabsCountName,
      flag_descriptions::kShowInactiveTabsCountDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kShowInactiveTabsCount)},
@@ -1704,11 +1700,19 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kInactiveTabsMoveLimitName,
      flag_descriptions::kInactiveTabsMoveLimitDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kInactiveTabsMoveLimit)},
-    {"sync-enable-batch-upload-local-data",
-     flag_descriptions::kSyncEnableBatchUploadLocalDataName,
-     flag_descriptions::kSyncEnableBatchUploadLocalDataDescription,
+    {"autofill-enable-merchant-domain-in-unmask-card-request",
+     flag_descriptions::kAutofillEnableMerchantDomainInUnmaskCardRequestName,
+     flag_descriptions::
+         kAutofillEnableMerchantDomainInUnmaskCardRequestDescription,
      flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(syncer::kSyncEnableBatchUploadLocalData)},
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableMerchantDomainInUnmaskCardRequest)},
+    {"autofill-update-chrome-settings-link-to-gpay-web",
+     flag_descriptions::kAutofillUpdateChromeSettingsLinkToGPayWebName,
+     flag_descriptions::kAutofillUpdateChromeSettingsLinkToGPayWebDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillUpdateChromeSettingsLinkToGPayWeb)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

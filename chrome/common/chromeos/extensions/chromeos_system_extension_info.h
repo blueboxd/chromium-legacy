@@ -22,6 +22,11 @@ extern const char kTelemetryExtensionIwaIdOverrideForTesting[];
 
 }  // namespace switches
 
+// An extension for development. It is only enabled when specific feature flags
+// are enabled.
+inline constexpr char kChromeOSSystemExtensionDevExtensionId[] =
+    "jmalcmbicpnakfkncbgbcmlmgpfkhdca";
+
 // Information related to a ChromeOS system extension.
 struct ChromeOSSystemExtensionInfo {
   ChromeOSSystemExtensionInfo(
@@ -46,6 +51,12 @@ bool IsChromeOSSystemExtension(const std::string& id);
 // Get the information of a ChromeOS system extension by id.
 const ChromeOSSystemExtensionInfo& GetChromeOSExtensionInfoById(
     const std::string& id);
+
+// Check if `manufacturer` provides any chromeos system extension.
+bool IsChromeOSSystemExtensionProvider(const std::string& manufacturer);
+
+// Returns if dev extension is enable.
+bool IsChromeOSSystemExtensionDevExtensionEnabled();
 
 // Exported for testing.
 // A helper class to restore the allowlist after tests. This should be created

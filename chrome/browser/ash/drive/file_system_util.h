@@ -64,6 +64,9 @@ enum class ConnectionStatus {
 
 std::ostream& operator<<(std::ostream& out, ConnectionStatus status);
 
+// Sets the Drive connection status for testing purposes.
+void SetDriveConnectionStatusForTesting(ConnectionStatus status);
+
 // Returns the Drive connection status for the |profile|.
 ConnectionStatus GetDriveConnectionStatus(Profile* profile);
 

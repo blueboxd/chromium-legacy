@@ -242,16 +242,11 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kConsumeCodeCacheOffThread);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kContentCaptureConstantStreaming);
 
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kConversionMeasurement);
-
 // Enable the correction testing for float extension for webgl version 1.
 // This is simply a killswitch in case we need to restore original behavior.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCorrectFloatExtensionTestForWebGL);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCreateImageBitmapOrientationNone);
-
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
-    kCrossOriginAccessOnDetachedWindowDoesNotThrow);
 
 // If enabled, DOMContentLoaded will be fired after all async scripts are
 // executed.
@@ -315,8 +310,6 @@ extern const base::FeatureParam<base::TimeDelta> kHttpRttThreshold;
 BLINK_COMMON_EXPORT
 extern const base::FeatureParam<double> kCostReductionOfMultiplexedRequests;
 
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDesktopPWAsTabStripCustomizations);
-
 // Enables input IPC to directly target the renderer's compositor thread without
 // hopping through the IO thread first.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDirectCompositorThreadIpc);
@@ -361,12 +354,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kEarlyExitOnNoopClassOrStyleChange);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kEditingNG);
 
-// Enables the Web Machine Learning Neural Network Service to access hardware
-// acceleration out of renderer process. Explainer:
-// https://github.com/webmachinelearning/webnn/blob/main/explainer.md
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
-    kEnableMachineLearningNeuralNetworkService);
-
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kEnablePenetratingImageSelection);
 
 // Enables establishing the GPU channel asnchronously when requesting a new
@@ -379,6 +366,8 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDeprecateUnloadByUserAndOrigin);
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kDeprecateUnloadPercent;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int> kDeprecateUnloadBucket;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
+    kDeprecateUnloadAllowlist;
 
 // This feature (EventTimingReportAllEarlyEntriesOnPaintedPresentation) is
 // having an effect only when EventTimingMatchPresentationIndex is turned on.
@@ -570,6 +559,14 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<LcppImageLoadPriority>
 // If enabled, script execution is observed to determine script dependencies of
 // the LCP element.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLCPScriptObserver);
+
+// The maximum URL count for LCPP.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kLCPScriptObserverMaxUrlCountPerOrigin;
+
+// The maximum URL length allowed for LCPP.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kLCPScriptObserverMaxUrlLength;
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLCPVideoFirstFrame);
 
@@ -1254,8 +1251,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 
 // Combine WebRTC Network and Worker threads. More info at crbug.com/1373439.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcCombinedNetworkAndWorkerThread);
-// Make RTCVideoEncoder::Encode() asynchronous.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcEncoderAsyncEncode);
 // If enabled, expose non-standard stats in the WebRTC getStats API.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcExposeNonStandardStats);
 #if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
@@ -1327,9 +1322,15 @@ IsThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesEnabled();
 
 BLINK_COMMON_EXPORT bool ParkableStringsUseSnappy();
 
-// Checks both of kKeepAliveInBrowserMigration and kFetchLaterAPI, and returns
-// true if any of them is true.
-BLINK_COMMON_EXPORT bool IsKeepAliveInBrowserMigrationEnabled();
+// Returns true if the in-browser KeepAliveURLLoaderService should be enabled by
+// verifying either kKeepAliveInBrowserMigration or kFetchLaterAPI is true.
+// Note that as the service is shared by two different features, code path
+// specific to one of them should not rely on this function.
+BLINK_COMMON_EXPORT bool IsKeepAliveURLLoaderServiceEnabled();
+
+// Kill-switch for removing Authorization header upon cross origin redirects.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kRemoveAuthroizationOnCrossOriginRedirect);
 
 }  // namespace features
 }  // namespace blink

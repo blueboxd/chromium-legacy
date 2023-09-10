@@ -162,6 +162,7 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kAudioFocusLossSuspendMediaSession);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kAudioRendererAlgorithmParameters);
 MEDIA_EXPORT extern const base::FeatureParam<base::TimeDelta>
     kAudioRendererAlgorithmStartingCapacityForEncrypted;
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kAutoPictureInPictureForVideoPlayback);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kAutoplayIgnoreWebAudio);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kAutoplayDisableSettings);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kBresenhamCadence);
@@ -271,6 +272,7 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kOpenscreenVideoBitrateFactorInFrameDrops);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseWritePixelsYUV);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseMultiPlaneFormatForHardwareVideo);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseMultiPlaneFormatForSoftwareVideo);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kRasterInterfaceInVideoResourceUpdater);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMultiPlaneSoftwareVideoSharedImages);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMultiPlaneVideoCaptureSharedImages);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kOverlayFullscreenVideo);
@@ -457,6 +459,8 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kFuchsiaMediacodecVideoEncoder);
 #endif  // BUILDFLAG(IS_FUCHSIA)
 
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kVideoDecodeBatching);
+
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseWindowBoundsForPip);
 
 // Based on a |command_line| and the current platform, returns the effective
 // autoplay policy. In other words, it will take into account the default policy

@@ -744,22 +744,38 @@ TEST(AutofillProfileTest, IsSubsetOfForFieldSet_DifferentLastNames) {
       profile2.IsSubsetOfForFieldSet(comparator, profile1, {NAME_LAST}));
 }
 
-TEST(AutofillProfileTest,
-     IsSubsetOfForFieldSet_DifferentStreetAddressesIgnored) {
+TEST(AutofillProfileTest, IsSubsetOfForFieldSet_DifferentStreetAddresses) {
   AutofillProfile profile1;
-  test::SetProfileInfo(&profile1, "Genevieve", "", "Fox", "", "", "274 Main St",
-                       "", "", "", "", "US", "");
+  profile1.SetRawInfo(ADDRESS_HOME_COUNTRY, u"US");
+  profile1.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS, u"274 Main St");
 
   AutofillProfile profile2;
-  test::SetProfileInfo(&profile2, "Genevieve", "", "Fox", "", "",
-                       "274 Main Street", "", "", "", "", "US", "");
+  profile2.SetRawInfo(ADDRESS_HOME_COUNTRY, u"US");
+  profile2.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS, u"275 Main Street");
 
   const AutofillProfileComparator comparator("en-US");
-
-  EXPECT_TRUE(profile1.IsSubsetOfForFieldSet(
-      comparator, profile2, {NAME_FULL, ADDRESS_HOME_STREET_ADDRESS}));
-  EXPECT_TRUE(profile2.IsSubsetOfForFieldSet(
-      comparator, profile1, {NAME_FULL, ADDRESS_HOME_STREET_ADDRESS}));
+  {
+    // The two profiles have different streets, since the default behavior is to
+    // ignore streets, they are considered equal.
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndDisableFeature(
+        features::kAutofillUseAddressRewriterInProfileSubsetComparison);
+    EXPECT_TRUE(profile1.IsSubsetOfForFieldSet(comparator, profile2,
+                                               {ADDRESS_HOME_STREET_ADDRESS}));
+    EXPECT_TRUE(profile2.IsSubsetOfForFieldSet(comparator, profile1,
+                                               {ADDRESS_HOME_STREET_ADDRESS}));
+  }
+  {
+    // When we start considering streets in subset comparison, the two profiles
+    // won't be considered equal anymore, since the differences in street
+    // addresses are more than just formatting differences.
+    base::test::ScopedFeatureList scoped_feature_list(
+        features::kAutofillUseAddressRewriterInProfileSubsetComparison);
+    EXPECT_FALSE(profile1.IsSubsetOfForFieldSet(comparator, profile2,
+                                                {ADDRESS_HOME_STREET_ADDRESS}));
+    EXPECT_FALSE(profile2.IsSubsetOfForFieldSet(comparator, profile1,
+                                                {ADDRESS_HOME_STREET_ADDRESS}));
+  }
 }
 
 TEST(AutofillProfileTest, IsSubsetOfForFieldSet_DifferentNonStreetAddresses) {
@@ -1265,8 +1281,6 @@ TEST(AutofillProfileTest, Compare_StructuredTypes) {
       ADDRESS_HOME_BETWEEN_STREETS,
       ADDRESS_HOME_HOUSE_NUMBER,
       ADDRESS_HOME_STREET_NAME,
-      ADDRESS_HOME_DEPENDENT_STREET_NAME,
-      ADDRESS_HOME_PREMISE_NAME,
       ADDRESS_HOME_SUBPREMISE,
   };
 
@@ -1740,23 +1754,22 @@ TEST(AutofillProfileTest, GetNonEmptyRawTypes) {
                        "johnwayne@me.xyz", nullptr, "123 Zoo St.", nullptr,
                        "Hollywood", "CA", "91601", "US", "14155678910");
 
-  std::vector<ServerFieldType> expected_raw_types{
-      NAME_FIRST,
-      NAME_LAST,
-      NAME_FULL,
-      EMAIL_ADDRESS,
-      PHONE_HOME_WHOLE_NUMBER,
-      ADDRESS_HOME_ADDRESS,
-      ADDRESS_HOME_LINE1,
-      ADDRESS_HOME_CITY,
-      ADDRESS_HOME_STATE,
-      ADDRESS_HOME_ZIP,
-      ADDRESS_HOME_COUNTRY,
-      ADDRESS_HOME_STREET_ADDRESS,
-      ADDRESS_HOME_STREET_NAME,
-      ADDRESS_HOME_STREET_AND_DEPENDENT_STREET_NAME,
-      ADDRESS_HOME_HOUSE_NUMBER,
-      NAME_LAST_SECOND};
+  std::vector<ServerFieldType> expected_raw_types{NAME_FIRST,
+                                                  NAME_LAST,
+                                                  NAME_FULL,
+                                                  EMAIL_ADDRESS,
+                                                  PHONE_HOME_WHOLE_NUMBER,
+                                                  ADDRESS_HOME_ADDRESS,
+                                                  ADDRESS_HOME_LINE1,
+                                                  ADDRESS_HOME_CITY,
+                                                  ADDRESS_HOME_STATE,
+                                                  ADDRESS_HOME_ZIP,
+                                                  ADDRESS_HOME_COUNTRY,
+                                                  ADDRESS_HOME_STREET_ADDRESS,
+                                                  ADDRESS_HOME_STREET_NAME,
+                                                  ADDRESS_HOME_STREET_LOCATION,
+                                                  ADDRESS_HOME_HOUSE_NUMBER,
+                                                  NAME_LAST_SECOND};
 
   ServerFieldTypeSet non_empty_raw_types;
   profile.GetNonEmptyRawTypes(&non_empty_raw_types);

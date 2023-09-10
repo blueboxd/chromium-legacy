@@ -680,7 +680,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
       state.visible_frame_element_id =
           object_.GetFrame()->GetVisibleToHitTesting()
               ? CompositorElementIdFromUniqueObjectId(
-                    DOMNodeIds::IdForNode(&object_.GetDocument()),
+                    object_.GetDocument().GetDomNodeId(),
                     CompositorElementIdNamespace::kDOMNodeId)
               : cc::ElementId();
     }
@@ -2706,9 +2706,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateOutOfFlowContext() {
   if (!object_.IsBoxModelObject() && !properties_)
     return;
 
-  if (object_.IsLayoutBlock())
-    context_.paint_offset_for_float = context_.current.paint_offset;
-
   if (object_.CanContainAbsolutePositionObjects())
     context_.absolute_position = context_.current;
 
@@ -2805,11 +2802,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateClipIsolationNode() {
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
-  if (!pre_paint_info_) {
-    if (object_.IsFloating() && !object_.IsInLayoutNGInlineFormattingContext())
-      context_.current.paint_offset = context_.paint_offset_for_float;
-  }
-
   if (object_.IsBoxModelObject()) {
     const auto& box_model_object = To<LayoutBoxModelObject>(object_);
     switch (box_model_object.StyleRef().GetPosition()) {
@@ -2998,10 +2990,10 @@ static bool IsLayoutShiftRoot(const LayoutObject& object,
       return true;
     }
   }
-  if (auto* sticky_translation = properties->StickyTranslation())
+  if (properties->StickyTranslation()) {
     return true;
-  if (auto* anchor_position_scroll_translation =
-          properties->AnchorPositionScrollTranslation()) {
+  }
+  if (properties->AnchorPositionScrollTranslation()) {
     return true;
   }
   if (properties->OverflowClip())

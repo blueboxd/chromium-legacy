@@ -7,7 +7,9 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/observer_list.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/common/service_worker/service_worker_router_evaluator.h"
+#include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
 
 namespace content {
 
@@ -16,6 +18,7 @@ ControllerServiceWorkerConnector::ControllerServiceWorkerConnector(
         remote_container_host,
     mojo::PendingRemote<blink::mojom::ControllerServiceWorker>
         remote_controller,
+    mojo::PendingRemote<blink::mojom::CacheStorage> remote_cache_storage,
     const std::string& client_id,
     blink::mojom::ServiceWorkerFetchHandlerBypassOption
         fetch_handler_bypass_option,
@@ -32,6 +35,9 @@ ControllerServiceWorkerConnector::ControllerServiceWorkerConnector(
     router_evaluator_ =
         absl::make_unique<content::ServiceWorkerRouterEvaluator>(*router_rules);
     CHECK(router_evaluator_->IsValid());
+    if (remote_cache_storage) {
+      cache_storage_.Bind(std::move(remote_cache_storage));
+    }
   }
   SetControllerServiceWorker(std::move(remote_controller));
 }
@@ -138,6 +144,27 @@ void ControllerServiceWorkerConnector::DidGetRunningStatus(
     blink::EmbeddedWorkerStatus running_status) {
   running_status_ = running_status;
   get_service_worker_status_inflight_ = false;
+}
+
+void ControllerServiceWorkerConnector::CallCacheStorageMatch(
+    absl::optional<std::string> cache_name,
+    blink::mojom::FetchAPIRequestPtr request,
+    blink::mojom::CacheStorage::MatchCallback callback) {
+  if (!cache_storage_ || !cache_storage_.is_bound()) {
+    std::move(callback).Run(blink::mojom::MatchResult::NewStatus(
+        blink::mojom::CacheStorageError::kErrorStorage));
+    return;
+  }
+  int64_t trace_id = blink::cache_storage::CreateTraceId();
+  auto options = blink::mojom::MultiCacheQueryOptions::New();
+  options->query_options = blink::mojom::CacheQueryOptions::New();
+  if (cache_name) {
+    options->cache_name = base::UTF8ToUTF16(*cache_name);
+  }
+  cache_storage_->Match(std::move(request), std::move(options),
+                        /*in_related_fetch_event=*/false,
+                        /*in_range_fetch_event=*/false, trace_id,
+                        std::move(callback));
 }
 
 ControllerServiceWorkerConnector::~ControllerServiceWorkerConnector() = default;

@@ -14,7 +14,11 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+
+constexpr char kSafetyHubTimestampResultKey[] = "timestamp";
 
 // Base class for Safety Hub services. The background and UI tasks of the
 // derived classes will be executed periodically, according to the time delta
@@ -29,16 +33,37 @@ class SafetyHubService : public KeyedService,
   // thread task should be included as well.
   class Result {
    public:
-    explicit Result(base::TimeTicks timestamp = base::TimeTicks::Now());
-
     Result(const Result&) = default;
     Result& operator=(const Result&) = delete;
     virtual ~Result() = default;
 
-    base::TimeTicks timestamp() const;
+    virtual base::Value::Dict ToDictValue() = 0;
+
+    // Determines whether the current result meets the bar for showing a
+    // notification to the user in the Chrome menu.
+    virtual bool IsTriggerForMenuNotification() = 0;
+
+    // Determines whether the previous result is sufficiently different that for
+    // the current result a new notification should be shown. This indication is
+    // just based on the comparison of the two results, and thus irrelevant to
+    // how frequently a menu notification has already been shown.
+    virtual bool WarrantsNewMenuNotification(const Result& previousResult) = 0;
+
+    template <typename T>
+    static std::unique_ptr<T> FromDictValue(const base::Value::Dict& dict) {
+      return std::make_unique<T>(dict);
+    }
+
+    base::Time timestamp() const;
+
+   protected:
+    explicit Result(base::Time timestamp = base::Time::Now());
+    explicit Result(const base::Value::Dict& dict);
+
+    base::Value::Dict BaseToDictValue();
 
    private:
-    base::TimeTicks timestamp_;
+    base::Time timestamp_;
   };
 
   class Observer : public base::CheckedObserver {
@@ -67,6 +92,9 @@ class SafetyHubService : public KeyedService,
   // Indicates whether the update process is currently running.
   bool IsUpdateRunning();
 
+  // Returns the latest result that is available in memory.
+  absl::optional<SafetyHubService::Result*> GetCachedResult();
+
   // KeyedService implementation.
   void Shutdown() override;
 
@@ -76,6 +104,9 @@ class SafetyHubService : public KeyedService,
   void StartRepeatedUpdates();
 
   // SafetyHubService overrides.
+
+  // Initializes the latest result such that it is available in memory.
+  virtual void InitializeLatestResult() = 0;
 
   // The value returned by this function determines the interval of how often
   // the Update function will be called.
@@ -97,6 +128,9 @@ class SafetyHubService : public KeyedService,
       std::unique_ptr<Result> result) = 0;
 
   virtual base::WeakPtr<SafetyHubService> GetAsWeakRef() = 0;
+
+  // The latest available result, which is initialized at the start.
+  std::unique_ptr<Result> latest_result_ = nullptr;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SafetyHubServiceTest, ManageObservers);

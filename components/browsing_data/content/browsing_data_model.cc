@@ -16,6 +16,7 @@
 #include "base/functional/callback.h"
 #include "base/functional/overloaded.h"
 #include "base/memory/weak_ptr.h"
+#include "components/attribution_reporting/features.h"
 #include "components/browsing_data/content/browsing_data_quota_helper.h"
 #include "components/browsing_data/content/shared_worker_info.h"
 #include "components/browsing_data/core/features.h"
@@ -25,6 +26,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/private_aggregation_data_model.h"
+#include "content/public/browser/session_storage_usage_info.h"
 #include "content/public/browser/shared_worker_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_partition_config.h"
@@ -111,13 +113,20 @@ GetDataOwner::GetOwningOriginOrHost<blink::StorageKey>(
     case BrowsingDataModel::StorageType::kQuotaStorage:
     case BrowsingDataModel::StorageType::kSharedStorage:
     case BrowsingDataModel::StorageType::kLocalStorage:
-    case BrowsingDataModel::StorageType::kSessionStorage:
       return GetOwnerBasedOnScheme(data_key.origin());
     default:
       NOTREACHED() << "Unexpected StorageType: "
                    << static_cast<int>(storage_type_);
       return "";
   }
+}
+
+template <>
+BrowsingDataModel::DataOwner
+GetDataOwner::GetOwningOriginOrHost<content::SessionStorageUsageInfo>(
+    const content::SessionStorageUsageInfo& session_storage_usage_info) const {
+  DCHECK_EQ(BrowsingDataModel::StorageType::kSessionStorage, storage_type_);
+  return GetOwnerBasedOnScheme(session_storage_usage_info.storage_key.origin());
 }
 
 template <>
@@ -272,6 +281,16 @@ void StorageRemoverHelper::Visitor::operator()<blink::StorageKey>(
   if (types.Has(BrowsingDataModel::StorageType::kLocalStorage)) {
     helper->storage_partition_->GetDOMStorageContext()->DeleteLocalStorage(
         storage_key, helper->GetCompleteCallback());
+  }
+}
+
+template <>
+void StorageRemoverHelper::Visitor::operator()<
+    content::SessionStorageUsageInfo>(
+    const content::SessionStorageUsageInfo& session_storage_usage_info) {
+  if (types.Has(BrowsingDataModel::StorageType::kSessionStorage)) {
+    helper->storage_partition_->GetDOMStorageContext()->DeleteSessionStorage(
+        session_storage_usage_info, helper->GetCompleteCallback());
   }
 }
 
@@ -558,7 +577,9 @@ BrowsingDataModel::Iterator::operator*() const {
 }
 
 BrowsingDataModel::Iterator& BrowsingDataModel::Iterator::operator++() {
-  inner_iterator_++;
+  if (inner_iterator_ != outer_iterator_->second.end()) {
+    inner_iterator_++;
+  }
   if (inner_iterator_ == outer_iterator_->second.end()) {
     outer_iterator_++;
     if (outer_iterator_ != outer_end_iterator_)
@@ -742,8 +763,8 @@ void BrowsingDataModel::PopulateFromDisk(base::OnceClosure finished_callback) {
       network::features::kCompressionDictionaryTransportBackend);
   bool is_interest_group_enabled =
       base::FeatureList::IsEnabled(blink::features::kAdInterestGroupAPI);
-  bool is_attribution_reporting_enabled =
-      base::FeatureList::IsEnabled(blink::features::kConversionMeasurement);
+  bool is_attribution_reporting_enabled = base::FeatureList::IsEnabled(
+      attribution_reporting::features::kConversionMeasurement);
   bool is_private_aggregation_enabled =
       base::FeatureList::IsEnabled(blink::features::kPrivateAggregationApi);
   bool is_migrate_storage_to_bdm_enabled = base::FeatureList::IsEnabled(

@@ -49,9 +49,11 @@ class CONTENT_EXPORT FileSystemAccessFileHandleImpl
   void RequestPermission(bool writable,
                          RequestPermissionCallback callback) override;
   void AsBlob(AsBlobCallback callback) override;
-  void CreateFileWriter(bool keep_existing_data,
-                        bool auto_close,
-                        CreateFileWriterCallback callback) override;
+  void CreateFileWriter(
+      bool keep_existing_data,
+      bool auto_close,
+      blink::mojom::FileSystemAccessWritableFileStreamLockMode mode,
+      CreateFileWriterCallback callback) override;
   void Move(mojo::PendingRemote<blink::mojom::FileSystemAccessTransferToken>
                 destination_directory,
             const std::string& new_entry_name,
@@ -93,13 +95,17 @@ class CONTENT_EXPORT FileSystemAccessFileHandleImpl
                              base::File::Error result,
                              const base::File::Info& info);
 
-  void CreateFileWriterImpl(bool keep_existing_data,
-                            bool auto_close,
-                            CreateFileWriterCallback callback);
-  void DidVerifyHasWritePermissions(bool keep_existing_data,
-                                    bool auto_close,
-                                    CreateFileWriterCallback callback,
-                                    bool can_write);
+  void CreateFileWriterImpl(
+      bool keep_existing_data,
+      bool auto_close,
+      blink::mojom::FileSystemAccessWritableFileStreamLockMode mode,
+      CreateFileWriterCallback callback);
+  void DidVerifyHasWritePermissions(
+      bool keep_existing_data,
+      bool auto_close,
+      blink::mojom::FileSystemAccessWritableFileStreamLockMode mode,
+      CreateFileWriterCallback callback,
+      bool can_write);
   // Find an unused swap file. We cannot use a swap file which is locked or
   // which already exists on disk.
   void StartCreateSwapFile(
@@ -184,18 +190,6 @@ class CONTENT_EXPORT FileSystemAccessFileHandleImpl
   absl::optional<base::File::Error> swap_file_clone_result_for_testing_ =
       absl::nullopt;
 #endif  // BUILDFLAG(IS_MAC)
-
-  // The shared lock type for SyncAccessHandle's `readonly` mode.
-  FileSystemAccessLockManager::LockType sah_read_only_lock_type_ =
-      manager()->CreateSharedLockType();
-
-  // The shared lock type for SyncAccessHandle's `readwrite-unsafe` mode.
-  FileSystemAccessLockManager::LockType sah_readwrite_unsafe_lock_type_ =
-      manager()->CreateSharedLockType();
-
-  // The shared lock type for WritableFileStream's default `siloed` mode.
-  FileSystemAccessLockManager::LockType wfs_siloed_lock_type_ =
-      manager()->CreateSharedLockType();
 
   base::WeakPtr<FileSystemAccessHandleBase> AsWeakPtr() override;
 

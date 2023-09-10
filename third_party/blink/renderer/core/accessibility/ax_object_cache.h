@@ -54,7 +54,6 @@ class HTMLOptionElement;
 class HTMLTableElement;
 class HTMLFrameOwnerElement;
 class HTMLSelectElement;
-class LayoutBlockFlow;
 class LocalFrameView;
 class NGAbstractInlineTextBox;
 struct PhysicalRect;
@@ -104,7 +103,7 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   virtual void Remove(AccessibleNode*) = 0;
   virtual void Remove(LayoutObject*) = 0;
   virtual void Remove(Node*) = 0;
-  virtual void RemoveSubtreeWhenSafe(Node*) = 0;
+  virtual void RemoveSubtreeWhenSafe(Node*, bool remove_root = true) = 0;
   virtual void RemovePopup(Document*) = 0;
   virtual void Remove(NGAbstractInlineTextBox*) = 0;
 
@@ -117,8 +116,6 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   // Called by a node when text or a text equivalent (e.g. alt) attribute is
   // changed.
   virtual void TextChanged(const LayoutObject*) = 0;
-  // Called when the NGOffsetMapping is invalidated for the given object.
-  virtual void TextOffsetsChanged(const LayoutBlockFlow*) = 0;
   virtual void DocumentTitleChanged() = 0;
   // Called when a node is connected to the document.
   virtual void NodeIsConnected(Node*) = 0;

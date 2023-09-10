@@ -239,6 +239,7 @@ bool IsValidRole(ax::mojom::blink::Role role) {
     case ax::mojom::blink::Role::kPane:
     case ax::mojom::blink::Role::kPdfActionableHighlight:
     case ax::mojom::blink::Role::kPdfRoot:
+    case ax::mojom::blink::Role::kPreDeprecated:
     case ax::mojom::blink::Role::kTableHeaderContainer:
     case ax::mojom::blink::Role::kTitleBar:
     case ax::mojom::blink::Role::kUnknown:
@@ -607,10 +608,10 @@ void AXObject::SetHasDirtyDescendants(bool dirty) const {
 }
 
 void AXObject::SetAncestorsHaveDirtyDescendants() const {
-  DCHECK(!IsDetached());
-  DCHECK(!AXObjectCache().HasBeenDisposed());
-  DCHECK(!AXObjectCache().IsFrozen());
-  DCHECK(!AXObjectCache().UpdatingTree());
+  CHECK(!IsDetached());
+  CHECK(!AXObjectCache().HasBeenDisposed());
+  CHECK(!AXObjectCache().IsFrozen());
+  CHECK(!AXObjectCache().UpdatingTree());
 
   if (!RuntimeEnabledFeatures::AccessibilityEagerAXTreeUpdateEnabled()) {
     return;
@@ -696,6 +697,7 @@ void AXObject::Init(AXObject* parent) {
                    << "\n* Parent = " << parent_->ToString(true, true)
                    << "\n* Equal to passed-in parent? " << (parent == parent_);
   DCHECK(!is_initializing_);
+  CHECK(!AXObjectCache().IsFrozen());
   base::AutoReset<bool> reentrancy_protector(&is_initializing_, true);
 #endif  // DCHECK_IS_ON()
   // The role must be determined immediately.
@@ -3045,6 +3047,7 @@ bool AXObject::IsVisited() const {
 }
 
 bool AXObject::AccessibilityIsIgnored() const {
+  CHECK(CanAccessCachedValues());
   UpdateCachedAttributeValuesIfNeeded();
 #if defined(AX_FAIL_FAST_BUILD)
   if (!cached_is_ignored_ && IsDetached()) {
@@ -3062,6 +3065,8 @@ bool AXObject::AccessibilityIsIgnored() const {
 }
 
 bool AXObject::AccessibilityIsIgnoredButIncludedInTree() const {
+  CHECK(CanAccessCachedValues());
+
   UpdateCachedAttributeValuesIfNeeded();
   return cached_is_ignored_but_included_in_tree_;
 }
@@ -3069,7 +3074,14 @@ bool AXObject::AccessibilityIsIgnoredButIncludedInTree() const {
 // AccessibilityIsIncludedInTree should be true for all nodes that should be
 // included in the tree, even if they are ignored
 bool AXObject::AccessibilityIsIncludedInTree() const {
+  CHECK(CanAccessCachedValues());
+
   return !AccessibilityIsIgnored() || AccessibilityIsIgnoredButIncludedInTree();
+}
+
+bool AXObject::CanAccessCachedValues() const {
+  return IsDetached() || !NeedsToUpdateCachedValues() ||
+         !AXObjectCache().IsFrozen();
 }
 
 void AXObject::InvalidateCachedValues() {
@@ -3155,7 +3167,9 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
   if (cached_is_inert_ != is_inert ||
       cached_is_aria_hidden_ != is_aria_hidden) {
     // Update children if not already dirty (e.g. during Init() time.
-    SetNeedsToUpdateChildren();
+    if (CanHaveChildren()) {
+      SetNeedsToUpdateChildren();
+    }
     cached_is_inert_ = is_inert;
     cached_is_aria_hidden_ = is_aria_hidden;
   }
@@ -3328,6 +3342,8 @@ bool AXObject::ShouldIgnoreForHiddenOrInert(
 // In practice, it does not matter because nodes in display:none subtrees are
 // marked ignored either way.
 bool AXObject::IsInert() const {
+  CHECK(CanAccessCachedValues());
+
   UpdateCachedAttributeValuesIfNeeded();
   return cached_is_inert_;
 }
@@ -3429,6 +3445,8 @@ bool AXObject::ComputeIsInert(IgnoredReasons* ignored_reasons) const {
 }
 
 bool AXObject::IsAriaHidden() const {
+  CHECK(CanAccessCachedValues());
+
   UpdateCachedAttributeValuesIfNeeded();
   return cached_is_aria_hidden_;
 }
@@ -3482,21 +3500,27 @@ bool AXObject::IsModal() const {
 
 bool AXObject::IsBlockedByAriaModalDialog(
     IgnoredReasons* ignored_reasons) const {
-  AXObject* active_aria_modal_dialog =
+  Element* active_aria_modal_dialog =
       AXObjectCache().GetActiveAriaModalDialog();
 
   // On platforms that don't require manual pruning of the accessibility tree,
   // the active aria modal dialog should never be set, so has no effect.
-  if (!active_aria_modal_dialog)
+  if (!active_aria_modal_dialog) {
     return false;
+  }
 
-  if (this == active_aria_modal_dialog ||
-      IsDescendantOf(*active_aria_modal_dialog))
+  if (!GetNode() || GetNode()->IsPseudoElement()) {
+    return ParentObject()->IsBlockedByAriaModalDialog();
+  }
+
+  if (FlatTreeTraversal::Contains(*active_aria_modal_dialog, *GetNode())) {
     return false;
+  }
 
   if (ignored_reasons) {
     ignored_reasons->push_back(
-        IgnoredReason(kAXAriaModalDialog, active_aria_modal_dialog));
+        IgnoredReason(kAXAriaModalDialog,
+                      AXObjectCache().GetOrCreate(active_aria_modal_dialog)));
   }
   return true;
 }
@@ -3621,6 +3645,8 @@ bool AXObject::DispatchEventToAOMEventListeners(Event& event) {
 }
 
 bool AXObject::IsDescendantOfDisabledNode() const {
+  CHECK(CanAccessCachedValues());
+
   UpdateCachedAttributeValuesIfNeeded();
   return cached_is_descendant_of_disabled_node_;
 }
@@ -4054,6 +4080,8 @@ bool AXObject::IsFocusableStyleUsingBestAvailableState() const {
 }
 
 bool AXObject::CanSetFocusAttribute() const {
+  CHECK(CanAccessCachedValues());
+
   UpdateCachedAttributeValuesIfNeeded();
   return cached_can_set_focus_attribute_;
 }
@@ -4392,6 +4420,8 @@ bool AXObject::ComputeIsHiddenViaStyle(const ComputedStyle* style) const {
 }
 
 bool AXObject::IsHiddenViaStyle() const {
+  CHECK(CanAccessCachedValues());
+
   UpdateCachedAttributeValuesIfNeeded();
   return cached_is_hidden_via_style_;
 }
@@ -5162,6 +5192,8 @@ bool AXObject::IsRichlyEditable() const {
 }
 
 AXObject* AXObject::LiveRegionRoot() const {
+  CHECK(CanAccessCachedValues());
+
   UpdateCachedAttributeValuesIfNeeded();
   return cached_live_region_root_;
 }
@@ -5178,12 +5210,16 @@ bool AXObject::LiveRegionAtomic() const {
 }
 
 const AtomicString& AXObject::ContainerLiveRegionStatus() const {
+  CHECK(CanAccessCachedValues());
+
   UpdateCachedAttributeValuesIfNeeded();
   return cached_live_region_root_ ? cached_live_region_root_->LiveRegionStatus()
                                   : g_null_atom;
 }
 
 const AtomicString& AXObject::ContainerLiveRegionRelevant() const {
+  CHECK(CanAccessCachedValues());
+
   UpdateCachedAttributeValuesIfNeeded();
   return cached_live_region_root_
              ? cached_live_region_root_->LiveRegionRelevant()
@@ -5191,12 +5227,16 @@ const AtomicString& AXObject::ContainerLiveRegionRelevant() const {
 }
 
 bool AXObject::ContainerLiveRegionAtomic() const {
+  CHECK(CanAccessCachedValues());
+
   UpdateCachedAttributeValuesIfNeeded();
   return cached_live_region_root_ &&
          cached_live_region_root_->LiveRegionAtomic();
 }
 
 bool AXObject::ContainerLiveRegionBusy() const {
+  CHECK(CanAccessCachedValues());
+
   UpdateCachedAttributeValuesIfNeeded();
   return cached_live_region_root_ &&
          cached_live_region_root_->AOMPropertyOrARIAAttributeIsTrue(
@@ -5341,17 +5381,6 @@ AXObject* AXObject::DeepestLastChildIncludingIgnored() const {
     deepest_child = deepest_child->LastChildIncludingIgnored();
 
   return deepest_child;
-}
-
-bool AXObject::IsAncestorOf(const AXObject& descendant) const {
-  return descendant.IsDescendantOf(*this);
-}
-
-bool AXObject::IsDescendantOf(const AXObject& ancestor) const {
-  const AXObject* parent = ParentObject();
-  while (parent && parent != &ancestor)
-    parent = parent->ParentObject();
-  return !!parent;
 }
 
 AXObject* AXObject::NextSiblingIncludingIgnored() const {
@@ -5711,6 +5740,7 @@ void AXObject::UpdateChildrenIfNecessary() {
   }
 #endif
 
+  CHECK(!cached_values_need_update_ || !AXObjectCache().IsFrozen());
   UpdateCachedAttributeValuesIfNeeded();
 
   AddChildren();
@@ -5721,14 +5751,14 @@ bool AXObject::NeedsToUpdateChildren() const {
 }
 
 void AXObject::SetNeedsToUpdateChildren() const {
-  DCHECK(!IsDetached()) << "Cannot update children on a detached node: "
-                        << ToString(true, true);
-  DCHECK(!AXObjectCache().IsFrozen());
-  DCHECK(!AXObjectCache().HasBeenDisposed());
+  CHECK(!IsDetached()) << "Cannot update children on a detached node: "
+                       << ToString(true, true);
+  CHECK(!AXObjectCache().IsFrozen());
+  CHECK(!AXObjectCache().HasBeenDisposed());
   if (children_dirty_) {
     return;
   }
-  DCHECK(!AXObjectCache().UpdatingTree());
+  CHECK(!AXObjectCache().UpdatingTree());
   children_dirty_ = true;
   ClearChildren();
   SetAncestorsHaveDirtyDescendants();
@@ -5908,17 +5938,6 @@ void AXObject::ChildrenChangedWithCleanLayout() {
                         << ToString(true, true);
 
   AXObjectCache().MarkAXObjectDirtyWithCleanLayout(this);
-
-  // Special case: when the children of a layout inline are changed, it can
-  // cause whitespace redundancy in the parent object to change as well.
-  if (IsA<LayoutInline>(GetLayoutObject())) {
-    if (AXObject* ax_parent = CachedParentObject()) {
-      if (LayoutBlockFlow* layout_block_flow =
-              DynamicTo<LayoutBlockFlow>(ax_parent->GetLayoutObject())) {
-        ax_parent->ChildrenChangedWithCleanLayout();
-      }
-    }
-  }
 }
 
 Node* AXObject::GetNode() const {
@@ -6342,7 +6361,7 @@ const AXObject* AXObject::TableParent() const {
 int AXObject::GetDOMNodeId() const {
   Node* node = GetNode();
   if (node)
-    return DOMNodeIds::IdForNode(node);
+    return node->GetDomNodeId();
   return 0;
 }
 
@@ -6482,6 +6501,7 @@ gfx::RectF AXObject::LocalBoundingBoxRectForAccessibility() {
   if (!GetLayoutObject())
     return gfx::RectF();
   DCHECK(GetLayoutObject()->IsText());
+  CHECK(!cached_values_need_update_ || !AXObjectCache().IsFrozen());
   UpdateCachedAttributeValuesIfNeeded();
   return cached_local_bounding_box_rect_for_accessibility_;
 }
@@ -6525,8 +6545,7 @@ bool AXObject::PerformAction(const ui::AXActionData& action_data) {
   // UpdateStyleAndLayoutTreeForNode() is also necessary.
   document->UpdateStyleAndLayoutTreeForNode(
       node, DocumentUpdateReason::kAccessibility);
-  document->View()->UpdateAllLifecyclePhasesExceptPaint(
-      DocumentUpdateReason::kAccessibility);
+  cache.UpdateAXForAllDocuments();
 
   // Updating style and layout for the node can cause it to gain layout,
   // detaching an AXNodeObject to make room for an AXLayoutObject.
@@ -7025,6 +7044,7 @@ bool AXObject::HasARIAOwns(Element* element) {
                                    html_names::kAriaOwnsAttr);
 }
 
+// static
 ax::mojom::blink::Role AXObject::AriaRoleStringToRoleEnum(const String& value) {
   DCHECK(!value.empty());
 
@@ -7279,7 +7299,6 @@ bool AXObject::SupportsNameFromContents(bool recursive) const {
     case ax::mojom::blink::Role::kMark:
     case ax::mojom::blink::Role::kNone:
     case ax::mojom::blink::Role::kParagraph:
-    case ax::mojom::blink::Role::kPre:
     case ax::mojom::blink::Role::kRegion:
     case ax::mojom::blink::Role::kRuby:
     case ax::mojom::blink::Role::kSection:
@@ -7363,13 +7382,13 @@ bool AXObject::SupportsNameFromContents(bool recursive) const {
     case ax::mojom::blink::Role::kPane:
     case ax::mojom::blink::Role::kPdfActionableHighlight:
     case ax::mojom::blink::Role::kPdfRoot:
+    case ax::mojom::blink::Role::kPreDeprecated:
     case ax::mojom::blink::Role::kTableHeaderContainer:
     case ax::mojom::blink::Role::kTitleBar:
     case ax::mojom::blink::Role::kUnknown:
     case ax::mojom::blink::Role::kWebView:
     case ax::mojom::blink::Role::kWindow:
-      NOTREACHED() << "Role shouldn't occur in Blink: " << ToString(true, true);
-      break;
+      NOTREACHED_NORETURN() << "Role shouldn't occur in Blink: " << ToString(true, true);
   }
 
   return result;
@@ -7495,13 +7514,14 @@ const AXObject* AXObject::LowestCommonAncestor(const AXObject& first,
 
 void AXObject::PreSerializationConsistencyCheck() {
 #if defined(AX_FAIL_FAST_BUILD)
-  DCHECK(!IsDetached()) << "Do not serialize detached nodes: "
-                        << ToString(true, true);
-  DCHECK(AccessibilityIsIncludedInTree())
+  CHECK(!IsDetached()) << "Do not serialize detached nodes: "
+                       << ToString(true, true);
+  CHECK(CanAccessCachedValues());
+  CHECK(AccessibilityIsIncludedInTree())
       << "Do not serialize unincluded nodes: " << ToString(true, true);
-  SANITIZER_CHECK(!IsDetached());
+  CHECK(!IsDetached());
   // Extra checks that only occur during serialization.
-  SANITIZER_CHECK_EQ(IsAriaHidden(), !!FindAncestorWithAriaHidden(this))
+  CHECK_EQ(IsAriaHidden(), !!FindAncestorWithAriaHidden(this))
       << "IsAriaHidden() doesn't match existence of an aria-hidden ancestor: "
       << ToString(true);
 #endif
@@ -7553,6 +7573,10 @@ String AXObject::ToString(bool verbose, bool cached_values_only) const {
 
     if (cached_values_need_update_) {
       string_builder = string_builder + " needsToUpdateCachedValues";
+      if (!CanAccessCachedValues()) {
+        cached_values_only = true;
+        string_builder = string_builder + "/disallowed";
+      }
     }
 
     // Add properties of interest that often contribute to errors:

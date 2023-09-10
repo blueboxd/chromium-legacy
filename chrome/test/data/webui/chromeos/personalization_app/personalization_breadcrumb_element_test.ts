@@ -5,7 +5,6 @@
 /** @fileoverview Test suite for wallpaper-breadcrumb component.  */
 
 import 'chrome://personalization/strings.m.js';
-import 'chrome://webui-test/mojo_webui_test_support.js';
 
 import {GooglePhotosAlbum, Paths, PersonalizationBreadcrumbElement, PersonalizationRouterElement, TopicSource} from 'chrome://personalization/js/personalization_app.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
@@ -410,4 +409,18 @@ suite('PersonalizationBreadcrumbElementTest', function() {
         assertEquals(Paths.AMBIENT, path);
         assertDeepEquals({}, queryParams);
       });
+
+  test('show breadcrumbs for SeaPen', async () => {
+    breadcrumbElement = initElement(PersonalizationBreadcrumbElement, {
+      'path': Paths.SEA_PEN_COLLECTION,
+    });
+
+    const breadcrumbContainer =
+        breadcrumbElement.shadowRoot!.getElementById('selector');
+    assertTrue(!!breadcrumbContainer && !breadcrumbContainer.hidden);
+    assertBreadcrumbs(breadcrumbContainer, [
+      breadcrumbElement.i18n('wallpaperLabel'),
+      'Sea Pen',
+    ]);
+  });
 });

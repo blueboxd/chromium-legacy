@@ -83,6 +83,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
+#import "ios/chrome/browser/ui/content_suggestions/safety_check/safety_check_prefs.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/voice/voice_search_prefs_registration.h"
 #import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
@@ -140,6 +141,12 @@ const char kUnifiedConsentMigrationState[] = "unified_consent.migration_state";
 // Deprecated 07/2023.
 const char kNewTabPageFieldTrialPref[] = "new_tab_page.trial_version";
 
+// Deprecated 09/2023.
+const char kObsoleteIosSettingsPromoAlreadySeen[] =
+    "ios.settings.promo_already_seen";
+const char kObsoleteIosSettingsSigninPromoDisplayedCount[] =
+    "ios.settings.signin_promo_displayed_count";
+
 }  // namespace
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
@@ -156,6 +163,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   sessions::SessionIdGenerator::RegisterPrefs(registry);
   set_up_list_prefs::RegisterPrefs(registry);
   tab_resumption_prefs::RegisterPrefs(registry);
+  safety_check_prefs::RegisterPrefs(registry);
   update_client::RegisterPrefs(registry);
   variations::VariationsService::RegisterPrefs(registry);
   component_updater::RegisterComponentUpdateServicePrefs(registry);
@@ -293,6 +301,11 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   // in the Home Surface since a tab resumption freshness signal.
   registry->RegisterIntegerPref(
       prefs::kIosMagicStackSegmentationTabResumptionImpressionsSinceFreshness,
+      -1);
+  // Pref used to store the number of impressions of the parcel tracking module
+  // in the Home Surface since a parcel tracking freshness signal.
+  registry->RegisterIntegerPref(
+      prefs::kIosMagicStackSegmentationParcelTrackingImpressionsSinceFreshness,
       -1);
 
   // Preferences related to the new Safety Check Manager.
@@ -497,6 +510,10 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
   registry->RegisterBooleanPref(prefs::kIosParcelTrackingOptInPromptDisplayed,
                                 false);
+
+  registry->RegisterBooleanPref(kObsoleteIosSettingsPromoAlreadySeen, false);
+  registry->RegisterIntegerPref(kObsoleteIosSettingsSigninPromoDisplayedCount,
+                                0);
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -585,6 +602,10 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
   invalidation::InvalidatorRegistrarWithMemory::ClearDeprecatedPrefs(prefs);
   invalidation::PerUserTopicSubscriptionManager::ClearDeprecatedPrefs(prefs);
   invalidation::FCMInvalidationService::ClearDeprecatedPrefs(prefs);
+
+  // Added 09/2023.
+  prefs->ClearPref(kObsoleteIosSettingsPromoAlreadySeen);
+  prefs->ClearPref(kObsoleteIosSettingsSigninPromoDisplayedCount);
 }
 
 void MigrateObsoleteUserDefault(void) {

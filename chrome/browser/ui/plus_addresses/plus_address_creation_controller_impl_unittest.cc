@@ -9,6 +9,7 @@
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
+#include "build/build_config.h"
 #include "chrome/browser/plus_addresses/plus_address_service_factory.h"
 #include "chrome/browser/ui/plus_addresses/plus_address_creation_controller.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -17,6 +18,7 @@
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/web_contents_tester.h"
+#include "services/network/test/test_shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace plus_addresses {
@@ -41,13 +43,14 @@ class PlusAddressCreationControllerImplEnabledTest
   std::unique_ptr<KeyedService> PlusAddressServiceTestFactory(
       content::BrowserContext* context) {
     return std::make_unique<PlusAddressService>(
-        identity_test_env_.identity_manager());
+        identity_test_env_.identity_manager(), nullptr);
   }
   base::test::ScopedFeatureList features_{kFeature};
   signin::IdentityTestEnvironment identity_test_env_;
 };
 
-TEST_F(PlusAddressCreationControllerImplEnabledTest, DirectCallback) {
+// TODO(crbug.com/1479967): test is flaky across platforms.
+TEST_F(PlusAddressCreationControllerImplEnabledTest, DISABLED_DirectCallback) {
   std::unique_ptr<content::WebContents> web_contents =
       ChromeRenderViewHostTestHarness::CreateTestWebContents();
 
@@ -68,22 +71,12 @@ class PlusAddressCreationControllerImplDisabledTest
  public:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    identity_test_env_.MakeAccountAvailable("plus@plus.plus",
-                                            {signin::ConsentLevel::kSignin});
     PlusAddressServiceFactory::GetInstance()->SetTestingFactory(
         browser_context(),
         base::BindRepeating(
             [](content::BrowserContext* profile)
                 -> std::unique_ptr<KeyedService> { return nullptr; }));
   }
-
- protected:
-  std::unique_ptr<KeyedService> PlusAddressServiceTestFactory(
-      content::BrowserContext* context) {
-    return std::make_unique<PlusAddressService>(
-        identity_test_env_.identity_manager());
-  }
-  signin::IdentityTestEnvironment identity_test_env_;
 };
 
 TEST_F(PlusAddressCreationControllerImplDisabledTest, NullService) {

@@ -5,11 +5,14 @@
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//chrome/browser/buildflags.gni")
+import("//third_party/jni_zero/jni_zero.gni")
 
 android_library("java") {
   sources = [
     "java/src/org/chromium/chrome/browser/search_engines/DefaultSearchEngineDialogHelper.java",
     "java/src/org/chromium/chrome/browser/search_engines/DefaultSearchEnginePromoDialog.java",
+    "java/src/org/chromium/chrome/browser/search_engines/DseNewTabUrlManager.java",
+    "java/src/org/chromium/chrome/browser/search_engines/DseNewTabUrlManagerUtils.java",
     "java/src/org/chromium/chrome/browser/search_engines/SearchEngineChoiceMetrics.java",
     "java/src/org/chromium/chrome/browser/search_engines/SearchEngineChoiceNotification.java",
     "java/src/org/chromium/chrome/browser/search_engines/SearchEnginePromoState.java",
@@ -43,6 +46,7 @@ android_library("java") {
     "//components/browser_ui/util/android:java",
     "//components/browser_ui/widget/android:java",
     "//components/content_settings/android:content_settings_enums_java",
+    "//components/embedder_support/android:util_java",
     "//components/location/android:location_java",
     "//components/search_engines/android:java",
     "//components/version_info/android:version_constants_java",
@@ -51,6 +55,7 @@ android_library("java") {
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_fragment_fragment_java",
     "//ui/android:ui_full_java",
+    "//url:gurl_java",
   ]
 
   resources_package = "org.chromium.chrome.browser.search_engines"

@@ -8,7 +8,13 @@
 #include "ash/ash_export.h"
 #include "base/time/time.h"
 
+namespace base {
+class TimeDelta;
+}  // namespace base
+
 namespace ash {
+
+enum class StudentAssignmentsListType;
 
 enum class TasksLaunchSource {
   kHeaderButton = 0,
@@ -26,6 +32,31 @@ void RecordTasksLaunchSource(TasksLaunchSource source);
 void RecordAddTaskButtonShown();
 
 void RecordLoginToShowTime(base::TimeDelta login_to_show_time);
+
+void RecordTotalShowTime(base::TimeDelta total_show_time);
+
+void RecordClassromInitialLoadTime(bool first_occurrence,
+                                   base::TimeDelta load_time);
+
+void RecordClassroomChangeLoadTime(bool success, base::TimeDelta load_time);
+
+void RecordTasksInitialLoadTime(bool first_occurrence,
+                                base::TimeDelta load_time);
+
+void RecordTasksChangeLoadTime(base::TimeDelta load_time);
+
+void RecordTasksListChangeCount(int change_count);
+
+// Record the length of time that the `list_type` was shown.
+void RecordStudentAssignmentListShowTime(StudentAssignmentsListType list_type,
+                                         base::TimeDelta time_shown,
+                                         bool default_list);
+
+// Record the number of times that the student assignment list changed.
+void RecordStudentSelectedListChangeCount(int change_count);
+
+// Record that the `list_type` was selected.
+void RecordStudentAssignmentListSelected(StudentAssignmentsListType list_type);
 
 }  // namespace ash
 

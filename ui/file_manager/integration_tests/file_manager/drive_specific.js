@@ -438,6 +438,7 @@ testcase.drivePinHosted = async () => {
 
 /**
  * Tests pinning a file to a mobile network.
+ * TODO(b/296960734): Fix this test once the notification has been fixed.
  */
 testcase.drivePinFileMobileNetwork = async () => {
   const appId = await setupAndWaitUntilReady(RootPath.DRIVE);
@@ -486,7 +487,7 @@ testcase.drivePinFileMobileNetwork = async () => {
   await repeatUntil(async () => {
     const preferences =
         await remoteCall.callRemoteTestUtil('getPreferences', null, []);
-    return preferences.cellularDisabled ?
+    return !preferences.driveSyncEnabledOnMeteredNetwork ?
         pending(caller, 'Drive sync is still disabled.') :
         null;
   });
@@ -928,6 +929,22 @@ testcase.driveEncryptionBadge = async () => {
       ['display', 'visibility']);
   chrome.test.assertNe('none', encrypted.styles.display);
   chrome.test.assertEq('visible', encrypted.styles.visibility);
+
+  // Check: the badge is included in accessibility labels.
+  const row = await remoteCall.waitForElementStyles(
+      appId, '#file-list [file-name="test-encrypted.txt"]',
+      ['aria-labelledby', 'display', 'visibility']);
+  const ariaLabelledBy = row.attributes['aria-labelledby'];
+  const encryptedBadgeId = ariaLabelledBy.split(/ +/).filter(
+      (id) => id.indexOf('encrypted') != -1)[0];
+  chrome.test.assertTrue(
+      encryptedBadgeId !== undefined,
+      'no encrypted label found in aria for the encrypted file');
+  const encryptedBadgeElements = await remoteCall.callRemoteTestUtil(
+      'deepQueryAllElements', appId, [`#${encryptedBadgeId}`, []]);
+  chrome.test.assertEq(
+      1, encryptedBadgeElements.length,
+      'no referenced encrypted label element found');
 
   // Check: non-encrypted file doesn't have a badge.
   const plain = await remoteCall.callRemoteTestUtil(

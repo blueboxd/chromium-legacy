@@ -28,7 +28,8 @@ import("//tools/typescript/ts_library.gni")
 import("//v8/gni/v8.gni")
 
 if (is_android) {
-  import("//build/config/android/rules.gni")  # For generate_jni().
+  import("//build/config/android/rules.gni")
+  import("//third_party/jni_zero/jni_zero.gni")
 }
 
 if (is_ios) {
@@ -88,10 +89,13 @@ static_library("test_support") {
     "../browser/browsing_data/browsing_data_test_utils.h",
     "../browser/browsing_topics/test_util.cc",
     "../browser/browsing_topics/test_util.h",
+    "../browser/cookie_deprecation_label/cookie_deprecation_label_test_utils.h",
     "../browser/file_system_access/mock_file_system_access_permission_context.cc",
     "../browser/file_system_access/mock_file_system_access_permission_context.h",
     "../browser/file_system_access/mock_file_system_access_permission_grant.cc",
     "../browser/file_system_access/mock_file_system_access_permission_grant.h",
+    "../browser/first_party_sets/test/scoped_mock_first_party_sets_handler.cc",
+    "../browser/first_party_sets/test/scoped_mock_first_party_sets_handler.h",
     "../browser/font_access/font_access_test_utils.cc",
     "../browser/font_access/font_access_test_utils.h",
     "../browser/interest_group/additional_bids_test_util.cc",
@@ -1329,6 +1333,7 @@ test("content_browsertests") {
     "../browser/compute_pressure/compute_pressure_origin_trial_browsertest.cc",
     "../browser/content_index/content_index_browsertest.cc",
     "../browser/content_security_policy_browsertest.cc",
+    "../browser/cookie_deprecation_label/cookie_deprecation_label_browsertest.cc",
     "../browser/cross_origin_opener_policy_browsertest.cc",
     "../browser/cross_site_transfer_browsertest.cc",
     "../browser/data_decoder_browsertest.cc",
@@ -1360,6 +1365,7 @@ test("content_browsertests") {
     "../browser/file_system/fileapi_browsertest.cc",
     "../browser/file_system_access/file_system_access_capacity_allocation_host_impl_browsertest.cc",
     "../browser/find_request_manager_browsertest.cc",
+    "../browser/first_party_sets/test/first_party_sets_initialization_browsertest.cc",
     "../browser/font_access/font_access_manager_browsertest.cc",
     "../browser/font_unique_name_lookup/font_unique_name_browsertest.cc",
     "../browser/form_controls_browsertest.cc",
@@ -1622,7 +1628,13 @@ test("content_browsertests") {
   }
 
   if (is_android) {
-    sources += [ "../browser/gpu/gpu_background_kill_android_browsertest.cc" ]
+    sources += [
+      "../browser/gpu/gpu_background_kill_android_browsertest.cc",
+
+      # TODO(https://crbug.com/1442929): move out of Android once we can capture
+      # for other platforms.
+      "../browser/renderer_host/navigation_transitions/navigation_entry_screenshot_browsertest.cc",
+    ]
   }
 
   if (enable_reporting) {
@@ -1750,6 +1762,7 @@ test("content_browsertests") {
     "//third_party/mesa_headers",
     "//third_party/re2",
     "//third_party/zlib",
+    "//third_party/zlib/google:compression_utils",
     "//ui/accessibility:ax_base",
     "//ui/accessibility:ax_enums_mojo",
     "//ui/accessibility:test_support",
@@ -1834,9 +1847,6 @@ test("content_browsertests") {
       "//ppapi/tests/test_page.css",
       "//ppapi/tests/test_url_loader_data/",
     ]
-    if (is_mac) {
-      data += [ "$root_out_dir/ppapi_tests.plugin/" ]
-    }
   }
 
   if (enable_screen_capture) {
@@ -2331,6 +2341,7 @@ test("content_unittests") {
     "../browser/compute_pressure/compute_pressure_unittest.cc",
     "../browser/content_index/content_index_database_unittest.cc",
     "../browser/content_index/content_index_service_impl_unittest.cc",
+    "../browser/cookie_deprecation_label/cookie_deprecation_label_manager_unittest.cc",
     "../browser/cookie_store/cookie_store_manager_unittest.cc",
     "../browser/devtools/devtools_background_services_context_impl_unittest.cc",
     "../browser/devtools/devtools_http_handler_unittest.cc",
@@ -2662,7 +2673,8 @@ test("content_unittests") {
     "../browser/tracing/background_startup_tracing_observer_unittest.cc",
     "../browser/tracing/background_tracing_config_unittest.cc",
     "../browser/tracing/background_tracing_manager_unittest.cc",
-    "../browser/tracing/trace_report_database_unittest.cc",
+    "../browser/tracing/trace_report/trace_report_database_unittest.cc",
+    "../browser/tracing/trace_report/trace_report_handler_unittest.cc",
     "../browser/tracing/tracing_scenario_unittest.cc",
     "../browser/usb/web_usb_service_impl_unittest.cc",
     "../browser/web_contents/aura/gesture_nav_simple_unittest.cc",
@@ -2908,6 +2920,7 @@ test("content_unittests") {
     "//content/browser/download:proto",
     "//content/browser/notifications:notification_proto",
     "//content/browser/private_aggregation/proto:private_aggregation_budgets_proto",
+    "//content/browser/tracing/trace_report:mojo_bindings",
     "//content/child:for_content_tests",
     "//content/common:buildflags",
     "//content/common:for_content_tests",

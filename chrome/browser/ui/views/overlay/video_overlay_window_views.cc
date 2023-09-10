@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -14,6 +15,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -32,6 +34,7 @@
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/picture_in_picture_window_controller.h"
 #include "content/public/browser/web_contents.h"
+#include "media/base/media_switches.h"
 #include "media/base/video_util.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -325,7 +328,10 @@ VideoOverlayWindowViews::VideoOverlayWindowViews(
           VideoOverlayWindowViews::kControlHideDelayAfterMove,
           base::BindRepeating(
               &VideoOverlayWindowViews::ReEnableControlsAfterMove,
-              base::Unretained(this))) {
+              base::Unretained(this))),
+      get_overlay_view_cb_(base::BindRepeating(
+          &PictureInPictureWindowManager::GetOverlayView,
+          base::Unretained(PictureInPictureWindowManager::GetInstance()))) {
   display::Screen::GetScreen()->AddObserver(this);
 }
 
@@ -342,7 +348,7 @@ gfx::Rect VideoOverlayWindowViews::CalculateAndUpdateWindowBounds() {
 
   UpdateMaxSize(work_area);
 
-  const gfx::Rect bounds = native_widget() ? GetRestoredBounds() : gfx::Rect();
+  const gfx::Rect bounds = GetBounds();
 
   gfx::Size window_size = bounds.size();
   if (!has_been_shown_)
@@ -449,8 +455,8 @@ void VideoOverlayWindowViews::OnNativeWidgetMove() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Update the positioning of some icons when the window is moved.
   WindowQuadrant quadrant =
-      GetCurrentWindowQuadrant(GetRestoredBounds(), GetController());
-  close_controls_view_->SetPosition(GetRestoredBounds().size(), quadrant);
+      GetCurrentWindowQuadrant(GetBounds(), GetController());
+  close_controls_view_->SetPosition(GetBounds().size(), quadrant);
   UpdateResizeHandleBounds(quadrant);
 #endif
 }
@@ -597,8 +603,9 @@ void VideoOverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
     return;
   }
 
+  // If the overlay view is shown, then the other controls are always hidden.
   GetControlsContainerView()->SetVisible(
-      force_controls_visible_.value_or(is_visible));
+      !IsOverlayViewShown() && force_controls_visible_.value_or(is_visible));
 }
 
 void VideoOverlayWindowViews::UpdateControlsBounds() {
@@ -672,18 +679,25 @@ void VideoOverlayWindowViews::UpdateMaxSize(const gfx::Rect& work_area) {
   // native_widget() is required for OnSizeConstraintsChanged.
   OnSizeConstraintsChanged();
 
-  if (GetRestoredBounds().width() <= max_size_.width() &&
-      GetRestoredBounds().height() <= max_size_.height()) {
+  if (GetBounds().width() <= max_size_.width() &&
+      GetBounds().height() <= max_size_.height()) {
     return;
   }
 
-  gfx::Size clamped_size = GetRestoredBounds().size();
+  gfx::Size clamped_size = GetBounds().size();
   clamped_size.SetToMin(max_size_);
   SetSize(clamped_size);
 }
 
 bool VideoOverlayWindowViews::ControlsHitTestContainsPoint(
     const gfx::Point& point) {
+  if (IsOverlayViewShown()) {
+    // Let the overlay view consume this event if it wants to.  If not, then
+    // ignore any of our controls as well.  This will still permit dragging the
+    // window by any parts that aren't consumed by the overlay view.
+    return overlay_view_->GetEventHandlerForPoint(point);
+  }
+
   if (!AreControlsVisible())
     return false;
   if (GetBackToTabControlsBounds().Contains(point) ||
@@ -1005,6 +1019,10 @@ void VideoOverlayWindowViews::UpdateLayerBoundsWithLetterboxing(
   if (video_view_->layer()->has_external_content())
     video_view_->layer()->SetSurfaceSize(video_bounds.size());
 
+  if (IsOverlayViewShown()) {
+    overlay_view_->SetBoundsRect(gfx::Rect(GetBounds().size()));
+  }
+
   // Notify the controller that the bounds have changed.
   controller_->UpdateLayerBounds();
 }
@@ -1210,6 +1228,23 @@ void VideoOverlayWindowViews::ShowInactive() {
                        chromeos::kPipRoundedCornerRadius);
 #endif
 
+  // If there is an existing overlay view, remove it now.
+  if (overlay_view_) {
+    // Remove and delete the outgoing view.  Note the trailing `T` on the method
+    // name -- this removes `overlay_view_` and returns a unique_ptr to it which
+    // we then discard.  Without the `T`, it returns nothing and frees nothing.
+    GetContentsView()->RemoveChildViewT(overlay_view_);
+    overlay_view_ = nullptr;
+  }
+
+  // Re-add it if needed.
+  if (auto overlay_view = get_overlay_view_cb_.Run()) {
+    overlay_view_ = GetContentsView()->AddChildView(std::move(overlay_view));
+    // Also update the bounds, since that's already happened for everything
+    // else, potentially, during widget resize.
+    overlay_view_->SetBoundsRect(gfx::Rect(GetBounds().size()));
+  }
+
   // If this is not the first time the window is shown, this will be a no-op.
   has_been_shown_ = true;
 }
@@ -1224,7 +1259,13 @@ bool VideoOverlayWindowViews::IsVisible() const {
 }
 
 gfx::Rect VideoOverlayWindowViews::GetBounds() {
-  return views::Widget::GetRestoredBounds();
+  if (!native_widget()) {
+    return gfx::Rect();
+  }
+
+  return base::FeatureList::IsEnabled(media::kUseWindowBoundsForPip)
+             ? GetWindowBoundsInScreen()
+             : GetRestoredBounds();
 }
 
 void VideoOverlayWindowViews::UpdateNaturalSize(const gfx::Size& natural_size) {
@@ -1555,4 +1596,8 @@ void VideoOverlayWindowViews::MaybeUnregisterFrameSinkHierarchy() {
     GetCompositor()->RemoveChildFrameSink(*GetCurrentFrameSinkId());
     has_registered_frame_sink_hierarchy_ = false;
   }
+}
+
+bool VideoOverlayWindowViews::IsOverlayViewShown() const {
+  return overlay_view_ && overlay_view_->GetVisible();
 }

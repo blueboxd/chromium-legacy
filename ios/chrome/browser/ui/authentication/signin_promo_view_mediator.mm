@@ -52,17 +52,19 @@ constexpr int kTopOfFeedSessionTimeInterval = 60 * 30;
 // Returns true if the sign-in promo is supported for `access_point`.
 bool IsSupportedAccessPoint(signin_metrics::AccessPoint access_point) {
   switch (access_point) {
-    case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS:
     case signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER:
     case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
-    case signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER:
     case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO:
+    case signin_metrics::AccessPoint::ACCESS_POINT_READING_LIST:
+      return true;
+    case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS:
+    // TODO(crbug.com/1478824): Pass ACCESS_POINT_TAB_SWITCHER and not recent
+    // tabs in the tab switcher promo.
+    case signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_POST_DEVICE_RESTORE_SIGNIN_PROMO:
     case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_CARD_MENU_PROMO:
     case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_BOTTOM_PROMO:
-    case signin_metrics::AccessPoint::ACCESS_POINT_READING_LIST:
-      return true;
     case signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE:
     case signin_metrics::AccessPoint::ACCESS_POINT_NTP_LINK:
     case signin_metrics::AccessPoint::ACCESS_POINT_MENU:
@@ -122,11 +124,6 @@ void RecordImpressionsTilSigninButtonsHistogramForAccessPoint(
           "MobileSignInPromo.BookmarkManager.ImpressionsTilSigninButtons",
           displayed_count);
       break;
-    case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS:
-      base::UmaHistogramCounts100(
-          "MobileSignInPromo.SettingsManager.ImpressionsTilSigninButtons",
-          displayed_count);
-      break;
     case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO:
       base::UmaHistogramCounts100(
           "MobileSignInPromo.NTPFeedTop.ImpressionsTilSigninButtons",
@@ -139,6 +136,7 @@ void RecordImpressionsTilSigninButtonsHistogramForAccessPoint(
       break;
     case signin_metrics::AccessPoint::
         ACCESS_POINT_ENTERPRISE_SIGNOUT_COORDINATOR:
+    case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS:
     case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
     case signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER:
     case signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE:
@@ -204,11 +202,6 @@ void RecordImpressionsTilDismissHistogramForAccessPoint(
           "MobileSignInPromo.BookmarkManager.ImpressionsTilDismiss",
           displayed_count);
       break;
-    case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS:
-      base::UmaHistogramCounts100(
-          "MobileSignInPromo.SettingsManager.ImpressionsTilDismiss",
-          displayed_count);
-      break;
     case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO:
       base::UmaHistogramCounts100(
           "MobileSignInPromo.NTPFeedTop.ImpressionsTilDismiss",
@@ -221,6 +214,7 @@ void RecordImpressionsTilDismissHistogramForAccessPoint(
       break;
     case signin_metrics::AccessPoint::
         ACCESS_POINT_ENTERPRISE_SIGNOUT_COORDINATOR:
+    case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS:
     case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
     case signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER:
     case signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE:
@@ -286,11 +280,6 @@ void RecordImpressionsTilXButtonHistogramForAccessPoint(
           "MobileSignInPromo.BookmarkManager.ImpressionsTilXButton",
           displayed_count);
       break;
-    case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS:
-      base::UmaHistogramCounts100(
-          "MobileSignInPromo.SettingsManager.ImpressionsTilXButton",
-          displayed_count);
-      break;
     case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO:
       base::UmaHistogramCounts100(
           "MobileSignInPromo.NTPFeedTop.ImpressionsTilXButton",
@@ -303,6 +292,7 @@ void RecordImpressionsTilXButtonHistogramForAccessPoint(
       break;
     case signin_metrics::AccessPoint::
         ACCESS_POINT_ENTERPRISE_SIGNOUT_COORDINATOR:
+    case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS:
     case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
     case signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER:
     case signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE:
@@ -363,12 +353,11 @@ const char* DisplayedCountPreferenceKey(
   switch (access_point) {
     case signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER:
       return prefs::kIosBookmarkSigninPromoDisplayedCount;
-    case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS:
-      return prefs::kIosSettingsSigninPromoDisplayedCount;
     case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO:
       return prefs::kIosNtpFeedTopSigninPromoDisplayedCount;
     case signin_metrics::AccessPoint::ACCESS_POINT_READING_LIST:
       return prefs::kIosReadingListSigninPromoDisplayedCount;
+    case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS:
     case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
     case signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER:
     case signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE:
@@ -429,12 +418,11 @@ const char* AlreadySeenSigninViewPreferenceKey(
   switch (access_point) {
     case signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER:
       return prefs::kIosBookmarkPromoAlreadySeen;
-    case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS:
-      return prefs::kIosSettingsPromoAlreadySeen;
     case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO:
       return prefs::kIosNtpFeedTopPromoAlreadySeen;
     case signin_metrics::AccessPoint::ACCESS_POINT_READING_LIST:
       return prefs::kIosReadingListPromoAlreadySeen;
+    case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS:
     case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
     case signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER:
     case signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE:
@@ -546,10 +534,6 @@ const char* AlreadySeenSigninViewPreferenceKey(
   // Bookmarks
   registry->RegisterBooleanPref(prefs::kIosBookmarkPromoAlreadySeen, false);
   registry->RegisterIntegerPref(prefs::kIosBookmarkSigninPromoDisplayedCount,
-                                0);
-  // Settings
-  registry->RegisterBooleanPref(prefs::kIosSettingsPromoAlreadySeen, false);
-  registry->RegisterIntegerPref(prefs::kIosSettingsSigninPromoDisplayedCount,
                                 0);
   // NTP Feed
   registry->RegisterBooleanPref(prefs::kIosNtpFeedTopPromoAlreadySeen, false);
@@ -923,23 +907,13 @@ const char* AlreadySeenSigninViewPreferenceKey(
           [weakConsumer signinDidFinish];
         }
       };
-  if ([self.consumer respondsToSelector:@selector
-                     (signinPromoViewMediator:shouldOpenSigninWithIdentity
-                                                :promoAction:completion:)]) {
-    CHECK(!base::FeatureList::IsEnabled(kHideSettingsSyncPromo));
-    [self.consumer signinPromoViewMediator:self
-              shouldOpenSigninWithIdentity:identity
-                               promoAction:promoAction
-                                completion:completion];
-  } else {
-    ShowSigninCommand* command =
-        [[ShowSigninCommand alloc] initWithOperation:operation
-                                            identity:identity
-                                         accessPoint:self.accessPoint
-                                         promoAction:promoAction
-                                            callback:completion];
-    [self.presenter showSignin:command];
-  }
+  ShowSigninCommand* command =
+      [[ShowSigninCommand alloc] initWithOperation:operation
+                                          identity:identity
+                                       accessPoint:self.accessPoint
+                                       promoAction:promoAction
+                                          callback:completion];
+  [self.presenter showSignin:command];
 }
 
 // Changes the promo view state, and records the metrics.

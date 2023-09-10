@@ -31,6 +31,7 @@
 #include "components/supervised_user/core/common/features.h"
 #include "components/supervised_user/core/common/pref_names.h"
 #include "components/supervised_user/core/common/supervised_user_constants.h"
+#include "components/supervised_user/test_support/supervised_user_url_filter_test_utils.h"
 #include "components/sync/test/mock_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -45,11 +46,6 @@ const char kExampleUrl0[] = "http://www.example0.com";
 const char kExampleUrl1[] = "http://www.example1.com/123";
 
 }  // namespace
-
-class FilterDelegateImpl : public SupervisedUserURLFilter::Delegate {
- public:
-  std::string GetCountryCode() override { return std::string(); }
-};
 
 class SupervisedUserServiceTestBase : public ::testing::Test {
  public:
@@ -73,8 +69,8 @@ class SupervisedUserServiceTestBase : public ::testing::Test {
         syncable_pref_service_, settings_service_, sync_service_,
         /*check_webstore_url_callback=*/
         base::BindRepeating([](const GURL& url) { return false; }),
-        std::make_unique<FilterDelegateImpl>(),
-        /*can_show_first_time_interstitial_banner=*/false);
+        std::make_unique<FakeURLFilterDelegate>(),
+        /*can_show_first_time_interstitial_banner=*/true);
 
     service_->Init();
   }
@@ -249,6 +245,54 @@ TEST_F(SupervisedUserServiceTest,
   EXPECT_FALSE(service_->IsCookieDeletionDisabled(GURL("https://example.com")));
   EXPECT_FALSE(service_->IsCookieDeletionDisabled(GURL("http://youtube.com")));
   EXPECT_FALSE(service_->IsCookieDeletionDisabled(GURL("https://youtube.com")));
+}
+
+TEST_F(SupervisedUserServiceTest, InterstitialBannerState) {
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_IOS)
+  {
+    // If disabled kFilterWebsitesForSupervisedUsersOnDesktopAndIOS
+    // the state remains unchanged.
+    EXPECT_TRUE(service_->GetUpdatedBannerState(
+                    FirstTimeInterstitialBannerState::kUnknown) ==
+                FirstTimeInterstitialBannerState::kUnknown);
+    EXPECT_TRUE(service_->GetUpdatedBannerState(
+                    FirstTimeInterstitialBannerState::kNeedToShow) ==
+                FirstTimeInterstitialBannerState::kNeedToShow);
+    EXPECT_TRUE(service_->GetUpdatedBannerState(
+                    FirstTimeInterstitialBannerState::kSetupComplete) ==
+                FirstTimeInterstitialBannerState::kSetupComplete);
+  }
+  {
+    // If enabled kFilterWebsitesForSupervisedUsersOnDesktopAndIOS
+    // the state may be updated.
+    base::test::ScopedFeatureList features{
+        kFilterWebsitesForSupervisedUsersOnDesktopAndIOS};
+
+    EXPECT_TRUE(service_->GetUpdatedBannerState(
+                    FirstTimeInterstitialBannerState::kUnknown) ==
+                FirstTimeInterstitialBannerState::kNeedToShow);
+    EXPECT_TRUE(service_->GetUpdatedBannerState(
+                    FirstTimeInterstitialBannerState::kNeedToShow) ==
+                FirstTimeInterstitialBannerState::kNeedToShow);
+    EXPECT_TRUE(service_->GetUpdatedBannerState(
+                    FirstTimeInterstitialBannerState::kSetupComplete) ==
+                FirstTimeInterstitialBannerState::kSetupComplete);
+  }
+#else
+  {
+    // On other platforms, the state is marked complete.
+    EXPECT_TRUE(service_->GetUpdatedBannerState(
+                    FirstTimeInterstitialBannerState::kUnknown) ==
+                FirstTimeInterstitialBannerState::kSetupComplete);
+    EXPECT_TRUE(service_->GetUpdatedBannerState(
+                    FirstTimeInterstitialBannerState::kNeedToShow) ==
+                FirstTimeInterstitialBannerState::kSetupComplete);
+    EXPECT_TRUE(service_->GetUpdatedBannerState(
+                    FirstTimeInterstitialBannerState::kSetupComplete) ==
+                FirstTimeInterstitialBannerState::kSetupComplete);
+  }
+#endif
 }
 
 class SupervisedUserServiceTestUnsupervised

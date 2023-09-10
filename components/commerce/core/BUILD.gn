@@ -120,6 +120,11 @@ proto_library("commerce_subscription_db_content_proto") {
   sources = [ "proto/commerce_subscription_db_content.proto" ]
 }
 
+proto_library("discounts_db_content_proto") {
+  proto_in_dir = "//"
+  sources = [ "proto/discounts_db_content.proto" ]
+}
+
 source_set("commerce_heuristics_data") {
   sources = [
     "commerce_heuristics_data.cc",
@@ -183,6 +188,8 @@ static_library("shopping_service") {
   sources = [
     "bookmark_update_manager.cc",
     "bookmark_update_manager.h",
+    "discounts_storage.cc",
+    "discounts_storage.h",
     "metrics/scheduled_metrics_manager.cc",
     "metrics/scheduled_metrics_manager.h",
     "price_tracking_utils.cc",
@@ -200,12 +207,14 @@ static_library("shopping_service") {
   deps = [
     ":account_checker",
     ":commerce_subscription_db_content_proto",
+    ":discounts_db_content_proto",
     ":feature_list",
     ":metrics",
     ":pref_names",
     ":proto",
     "//base",
     "//components/bookmarks/browser",
+    "//components/commerce/core/parcel:parcel",
     "//components/keyed_service/core",
     "//components/leveldb_proto",
     "//components/optimization_guide/core",
@@ -302,6 +311,7 @@ source_set("shopping_service_unit_tests") {
     ":metrics",
     ":pref_names",
     ":shopping_service_test_support",
+    "parcel:unit_tests",
     "subscriptions:test_support",
     "webui:unit_tests",
     "//components/search",

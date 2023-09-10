@@ -15,11 +15,11 @@ import {CurrentDirectory, EntryType, FileData, State, Volume, VolumeMap} from '.
 import {VolumeInfo} from '../../externs/volume_info.js';
 import {constants} from '../../foreground/js/constants.js';
 import {MetadataItem} from '../../foreground/js/metadata/metadata_item.js';
-import {ActionsProducerGen} from '../../lib/actions_producer.js';
+import type {ActionsProducerGen} from '../../lib/actions_producer.js';
 import {Slice} from '../../lib/base_store.js';
 import {hasDlpDisabledFiles} from '../ducks/current_directory.js';
 import {driveRootEntryListKey, getVolumeTypesNestedInMyFiles, makeRemovableParentKey, myFilesEntryListKey, recentRootKey, removableGroupKey} from '../ducks/volumes.js';
-import {FileKey} from '../file_key.js';
+import type {FileKey} from '../file_key.js';
 import {getEntry, getFileData, getStore} from '../store.js';
 
 /**
@@ -236,6 +236,7 @@ export function convertEntryToFileData(entry: Entry|FilesAppEntry): FileData {
   const volumeType = 'volumeType' in entry && entry.volumeType ?
       entry.volumeType as VolumeManagerCommon.VolumeType :
       (volumeInfo?.volumeType || null);
+  const volumeId = volumeInfo?.volumeId || null;
   const icon = getEntryIcon(entry, locationInfo, volumeType);
 
   /**
@@ -256,7 +257,7 @@ export function convertEntryToFileData(entry: Entry|FilesAppEntry): FileData {
     type: getEntryType(entry),
     isDirectory: entry.isDirectory,
     label,
-    volumeType,
+    volumeId,
     rootType: locationInfo?.rootType ?? null,
     metadata,
     expanded: false,

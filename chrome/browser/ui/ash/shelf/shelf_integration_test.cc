@@ -46,7 +46,7 @@ IN_PROC_BROWSER_TEST_F(ShelfIntegrationTest, OpenCloseSwitchApps) {
   ui::ScopedAnimationDurationScaleMode zero_duration(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
-  InstallSystemApps();  // For help app.
+  InstallSystemApps();  // For files app.
 
   // Get the primary display's shelf view.
   Shelf* shelf = Shell::GetPrimaryRootWindowController()->shelf();
@@ -55,19 +55,17 @@ IN_PROC_BROWSER_TEST_F(ShelfIntegrationTest, OpenCloseSwitchApps) {
   ASSERT_TRUE(shelf_view);
   ShelfViewTestAPI test_api(shelf_view);
 
-  // The shelf starts with the browser, Files, and Discover app pinned.
-  ASSERT_EQ(test_api.GetButtonCount(), 3u);
+  // The shelf starts with at least the browser and Files apps pinned. Some
+  // builds also have the Discover app, but not all.
+  ASSERT_GE(test_api.GetButtonCount(), 2u);
   auto* shelf_model = ShelfModel::Get();
   ASSERT_TRUE(shelf_model->IsAppPinned(app_constants::kChromeAppId));
   ASSERT_TRUE(shelf_model->IsAppPinned(file_manager::kFileManagerSwaAppId));
-  ASSERT_TRUE(shelf_model->IsAppPinned(web_app::kHelpAppId));
 
-  // Use the chrome button and the help app buttons because they use simpler
-  // web pages than the files app.
   ShelfAppButton* chrome_button = test_api.GetButton(0);
   ASSERT_TRUE(chrome_button);
-  ShelfAppButton* help_app_button = test_api.GetButton(2);
-  ASSERT_TRUE(help_app_button);
+  ShelfAppButton* files_app_button = test_api.GetButton(1);
+  ASSERT_TRUE(files_app_button);
 
   aura::Env* env = aura::Env::GetInstance();
   ASSERT_TRUE(env);
@@ -77,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(ShelfIntegrationTest, OpenCloseSwitchApps) {
   DEFINE_LOCAL_STATE_IDENTIFIER_VALUE(AuraWindowTitleObserver,
                                       kBrowserTitleObserver);
   DEFINE_LOCAL_STATE_IDENTIFIER_VALUE(AuraWindowTitleObserver,
-                                      kHelpAppTitleObserver);
+                                      kFilesAppTitleObserver);
 
   RunTestSequence(
       Log("Clicking the chrome shelf button"),
@@ -90,16 +88,16 @@ IN_PROC_BROWSER_TEST_F(ShelfIntegrationTest, OpenCloseSwitchApps) {
       Log("Waiting for Chrome window to open"),
       WaitForState(kBrowserTitleObserver, true),
 
-      Log("Clicking the help app shelf button"),
-      ObserveState(kHelpAppTitleObserver,
-                   std::make_unique<AuraWindowTitleObserver>(env, u"Explore")),
-      MoveMouseTo(help_app_button->GetBoundsInScreen().CenterPoint()),
+      Log("Clicking the files app shelf button"),
+      ObserveState(kFilesAppTitleObserver,
+                   std::make_unique<AuraWindowTitleObserver>(env, u"Files")),
+      MoveMouseTo(files_app_button->GetBoundsInScreen().CenterPoint()),
       ClickMouse(),
 
-      Log("Waiting for help app window to open"),
-      WaitForState(kHelpAppTitleObserver, true),
+      Log("Waiting for files app window to open"),
+      WaitForState(kFilesAppTitleObserver, true),
 
-      // Wait for help app to move to foreground.
+      // Wait for files app to move to foreground.
       FlushEvents(),
 
       Log("Clicking the chrome shelf button again"),
@@ -115,17 +113,17 @@ IN_PROC_BROWSER_TEST_F(ShelfIntegrationTest, OpenCloseSwitchApps) {
         return browser_window == active_window;
       }),
 
-      Log("Clicking the help app shelf button again"),
-      MoveMouseTo(help_app_button->GetBoundsInScreen().CenterPoint()),
+      Log("Clicking the files app shelf button again"),
+      MoveMouseTo(files_app_button->GetBoundsInScreen().CenterPoint()),
       ClickMouse(),
 
-      Log("Verifying the help app window is activated"), Check([&]() {
-        aura::Window* help_window =
-            aura::test::FindWindowWithTitle(env, u"Explore");
-        CHECK(help_window);
+      Log("Verifying the files app window is activated"), Check([&]() {
+        aura::Window* files_window =
+            aura::test::FindWindowWithTitle(env, u"Files");
+        CHECK(files_window);
         aura::Window* active_window = window_util::GetActiveWindow();
         CHECK(active_window);
-        return help_window == active_window;
+        return files_window == active_window;
       }),
 
       Log("Closing Chrome via right-click menu"),
@@ -137,14 +135,13 @@ IN_PROC_BROWSER_TEST_F(ShelfIntegrationTest, OpenCloseSwitchApps) {
         return !aura::test::FindWindowWithTitle(env, kBrowserWindowTitle);
       }),
 
-      Log("Closing help app via right-click menu"),
-      MoveMouseTo(help_app_button->GetBoundsInScreen().CenterPoint()),
+      Log("Closing files app via right-click menu"),
+      MoveMouseTo(files_app_button->GetBoundsInScreen().CenterPoint()),
       ClickMouse(ui_controls::RIGHT), SelectMenuItem(kShelfCloseMenuItem),
       FlushEvents(),
 
-      Log("Verifying the help app window is gone"), Check([&]() {
-        return !aura::test::FindWindowWithTitle(env, u"Explore");
-      }),
+      Log("Verifying the files app window is gone"),
+      Check([&]() { return !aura::test::FindWindowWithTitle(env, u"Files"); }),
 
       Log("Test completed"));
 }

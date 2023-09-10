@@ -278,6 +278,7 @@
 <translation id="3264582393905923483">Məzmun</translation>
 <translation id="3272909651715601089">"<ph name="PATH" />" açılmadı</translation>
 <translation id="3280431534455935878">Hazırlanır</translation>
+<translation id="3280719573299097127">Sayğaclı şəbəkədəsiniz. Fayl sinxronizasiyası durdurulub.</translation>
 <translation id="3280987981688031357">Vinil yazısı</translation>
 <translation id="3290356915286466215">Güvənsiz</translation>
 <translation id="3291218047831493686">SIM kilidi ayarını dəyişdirmək üçün bu şəbəkəyə qoşulun</translation>
@@ -631,6 +632,7 @@
 <translation id="5838451609423551646">Bütün daxiletmələr seçimdən silindi.</translation>
 <translation id="5838825566232597749">ABŞ Beynəlxalq İşçisi</translation>
 <translation id="5845721951356578987">Tibb bacısı</translation>
+<translation id="5858478190805449225">Enerjiyə qənaət rejimi aktivdir. Enerjiyə qənaət rejimi deaktiv olduqda yenidən cəhd edin.</translation>
 <translation id="5860491529813859533">Aktiv edin</translation>
 <translation id="5861477046012235702">Oyunçu</translation>
 <translation id="5864471791310927901">DHCP axtarış uğursuz oldu</translation>
@@ -895,7 +897,6 @@
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7920501309908018401">Mənim diskim bölməsindəki fayllar avtomatik Chromebook-a sinxronlaşdırılacaq ki, internet bağlantısı olmadan onlara daxil ola biləsiniz.</translation>
 <translation id="7925247922861151263">AAA yoxlanışı uğursuz oldu</translation>
-<translation id="7925686952655276919">Sinxronizasiya üçün mobil data istifadə etməyin</translation>
 <translation id="7928710562641958568">Cihazı çıxarın</translation>
 <translation id="7933875256234974853">Disk fayllarının sinxronlaşdırılması hazırlanır...</translation>
 <translation id="7943385054491506837">US Colemak</translation>
@@ -918,6 +919,7 @@
 <translation id="8087576439476816834">Endirin: <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">Mənimlə Paylaşılan</translation>
 <translation id="8116072619078571545">Buzlu su</translation>
+<translation id="8120392982188717723">Sayğaclı şəbəkələrdə sinxronlaşdırmaya icazə verin</translation>
 <translation id="8124093710070495550">Sinxronlaşdırma problemi</translation>
 <translation id="8128733386027980860">Dvorak klaviaturası ilə İngilis dili (BK)</translation>
 <translation id="8137331602592933310">"<ph name="FILENAME" />" Sizinlə paylaşılıb. Onun sahibi olmadığınız üçün onu silə bilməzsiniz.</translation>

@@ -312,6 +312,8 @@ DEFINE_VARIATION_PARAM(kIPHReadingListInSidePanelFeature,
                        "IPH_ReadingListInSidePanel");
 DEFINE_VARIATION_PARAM(kIPHReadingModeSidePanelFeature,
                        "IPH_ReadingModeSidePanel");
+DEFINE_VARIATION_PARAM(kIPHShoppingCollectionFeature,
+                       "IPH_ShoppingCollectionFeature");
 DEFINE_VARIATION_PARAM(kIPHSideSearchAutoTriggeringFeature,
                        "IPH_SideSearchAutoTriggering");
 DEFINE_VARIATION_PARAM(kIPHSideSearchFeature, "IPH_SideSearch");
@@ -341,6 +343,7 @@ DEFINE_VARIATION_PARAM(kIPHAutofillVirtualCardCVCSuggestionFeature,
 DEFINE_VARIATION_PARAM(kIPHAutofillVirtualCardSuggestionFeature,
                        "IPH_AutofillVirtualCardSuggestion");
 DEFINE_VARIATION_PARAM(kIPHCookieControlsFeature, "IPH_CookieControls");
+DEFINE_VARIATION_PARAM(kIPH3pcdUserBypassFeature, "IPH_3pcdUserBypass");
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) ||
         // BUILDFLAG(IS_FUCHSIA)
@@ -570,6 +573,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHReadingListEntryPointFeature),
         VARIATION_ENTRY(kIPHReadingListInSidePanelFeature),
         VARIATION_ENTRY(kIPHReadingModeSidePanelFeature),
+        VARIATION_ENTRY(kIPHShoppingCollectionFeature),
         VARIATION_ENTRY(kIPHSideSearchAutoTriggeringFeature),
         VARIATION_ENTRY(kIPHSideSearchFeature),
         VARIATION_ENTRY(kIPHSideSearchPageActionLabelFeature),

@@ -977,6 +977,18 @@ class CONTENT_EXPORT ContentBrowserClient {
       const url::Origin& top_frame_origin,
       const url::Origin& reporting_origin);
 
+  // Returns whether cookie deprecation label should be allowed for the
+  // profile.
+  virtual bool IsCookieDeprecationLabelAllowed(
+      content::BrowserContext* browser_context);
+
+  // Returns whether cookie deprecation label should be allowed for the
+  // profile in a given context.
+  virtual bool IsCookieDeprecationLabelAllowedForContext(
+      content::BrowserContext* browser_context,
+      const url::Origin& top_frame_origin,
+      const url::Origin& context_origin);
+
 #if BUILDFLAG(IS_CHROMEOS)
   // Notification that a trust anchor was used by the given user.
   virtual void OnTrustAnchorUsed(BrowserContext* browser_context) {}
@@ -1817,8 +1829,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // |site_for_cookies| is empty, no domains are first-party).
   // |top_frame_origin| held by |isolation_info| represents the domain for
   // top-level frame, and can be used to look up preferences that are dependent
-  // on that. |party_context| hold by |isolation_info| is for the purposes of
-  // SameParty cookies inclusion calculation.
+  // on that.
   //
   // |*receiver| is always valid upon entry.
   //
@@ -2388,7 +2399,7 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   enum class PrivateNetworkRequestPolicyOverride {
     kForceAllow,
-    kForcePreflightBlock,
+    kBlockInsteadOfWarn,
     kDefault,
   };
 

@@ -1532,8 +1532,9 @@ void OverviewSession::Move(bool reverse) {
 }
 
 bool OverviewSession::ProcessForScrolling(const ui::KeyEvent& event) {
-  if (!ShouldUseTabletModeGridLayout())
+  if (!Shell::Get()->IsInTabletMode()) {
     return false;
+  }
 
   // TODO(sammiequon): This only works for tablet mode at the moment, so using
   // the primary display works. If this feature is adapted for multi display
@@ -1642,11 +1643,17 @@ void OverviewSession::UpdateFrameThrottling() {
   if (!grid_list_.empty()) {
     windows_to_throttle.reserve(grid_list_.size() * grid_list_[0]->size() * 2);
     for (auto& grid : grid_list_) {
-      for (auto& item : grid->window_list())
+      if (grid->dragged_window()) {
+        windows_to_throttle.push_back(grid->dragged_window());
+      }
+
+      for (auto& item : grid->window_list()) {
         windows_to_throttle.push_back(item->GetWindow());
+      }
     }
   }
   Shell::Get()->frame_throttling_controller()->StartThrottling(
       windows_to_throttle);
 }
+
 }  // namespace ash

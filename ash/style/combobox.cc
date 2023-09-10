@@ -42,6 +42,7 @@
 #include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/mouse_constants.h"
 #include "ui/views/view_class_properties.h"
+#include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -70,7 +71,8 @@ constexpr gfx::Insets kMenuBorderInsets = gfx::Insets::TLBR(16, 0, 12, 0);
 constexpr gfx::Insets kMenuItemInnerPadding = gfx::Insets::VH(8, 16);
 constexpr int kArrowIconSize = 20;
 constexpr int kCheckmarkLabelSpacing = 16;
-constexpr int kMinMenuWidth = 256;
+constexpr int kMaxMenuWidth = 168;
+constexpr int kMaxMenuHeight = 172;
 constexpr gfx::Vector2d kMenuOffset(0, 8);
 constexpr int kMenuShadowElevation = 12;
 
@@ -111,7 +113,7 @@ class ComboboxMenuOption : public RadioButton {
 class ComboboxMenuOptionGroup : public RadioButtonGroup {
  public:
   ComboboxMenuOptionGroup()
-      : RadioButtonGroup(kMinMenuWidth,
+      : RadioButtonGroup(kMaxMenuWidth,
                          kMenuBorderInsets,
                          0,
                          RadioButton::IconDirection::kLeading,
@@ -182,7 +184,7 @@ class Combobox::ComboboxMenuView : public views::View {
 
   void SelectItem(int index) { menu_item_group_->SelectButtonAtIndex(index); }
 
-  const OptionButtonBase* GetSelectedItemView() const {
+  OptionButtonBase* GetSelectedItemView() const {
     auto selected_views = menu_item_group_->GetSelectedButtons();
     if (selected_views.empty()) {
       return nullptr;
@@ -201,8 +203,29 @@ class Combobox::ComboboxMenuView : public views::View {
           combobox_->model_->GetDropDownTextAt(i));
       item->SetLabelStyle(TypographyToken::kCrosButton2);
       item->SetLabelColorId(kMenuTextColorId);
-      item->SetSelected(combobox_->selected_index_.value() == i);
+      item->SetSelected(combobox_->selected_index_.value_or(-1) == i);
     }
+    GetSelectedItemView()->ScrollViewToVisible();
+  }
+
+  void ScrollToSelectedView() {
+    if (GetSelectedItemView()) {
+      GetSelectedItemView()->ScrollViewToVisible();
+    }
+  }
+
+  views::View* MenuItemAtIndex(int index) const {
+    if (index >= 0 &&
+        index < static_cast<int>(menu_item_group_->children().size())) {
+      return menu_item_group_->children()[index];
+    }
+    return nullptr;
+  }
+
+  gfx::Size CalculatePreferredSize() const override {
+    gfx::Size size = views::View::CalculatePreferredSize();
+    size.SetToMin(gfx::Size(kMaxMenuWidth, kMaxMenuHeight));
+    return size;
   }
 
  private:
@@ -251,24 +274,38 @@ class Combobox::ComboboxEventHandler : public ui::EventHandler {
 
  private:
   void OnLocatedEvent(ui::LocatedEvent* event) {
-    // If there is a mouse, scroll or touch event happening outside the combobox
-    // and drop down menu, the drop down menu should be closed.
-    if (event->type() != ui::ET_MOUSE_PRESSED &&
-        event->type() != ui::ET_TOUCH_PRESSED &&
-        event->type() != ui::ET_MOUSEWHEEL) {
-      return;
-    }
-
+    // Close drop down menu if certain mouse or touch events happening outside
+    // combobox or menu area.
     if (!combobox_->IsMenuRunning()) {
       return;
     }
 
+    // Get event location in screen.
     gfx::Point event_location = event->location();
     aura::Window* event_target = static_cast<aura::Window*>(event->target());
     wm::ConvertPointToScreen(event_target, &event_location);
-    if (!combobox_->menu_->GetWindowBoundsInScreen().Contains(event_location) &&
-        !combobox_->GetBoundsInScreen().Contains(event_location)) {
-      combobox_->CloseDropDownMenu();
+
+    const bool event_in_combobox =
+        combobox_->GetBoundsInScreen().Contains(event_location);
+    const bool event_in_menu =
+        combobox_->menu_->GetWindowBoundsInScreen().Contains(event_location);
+    switch (event->type()) {
+      case ui::ET_MOUSEWHEEL:
+        // Close menu if scrolling outside menu.
+        if (!event_in_menu) {
+          combobox_->CloseDropDownMenu();
+        }
+        break;
+      case ui::ET_MOUSE_PRESSED:
+      case ui::ET_TOUCH_PRESSED:
+        // Close menu if pressing outside menu and combobox.
+        if (!event_in_menu && !event_in_combobox) {
+          event->StopPropagation();
+          combobox_->CloseDropDownMenu();
+        }
+        break;
+      default:
+        break;
     }
   }
 
@@ -374,6 +411,24 @@ bool Combobox::SelectValue(const std::u16string& value) {
 
 bool Combobox::IsMenuRunning() const {
   return !!menu_;
+}
+
+gfx::Size Combobox::GetMenuViewSize() const {
+  if (!menu_) {
+    return gfx::Size();
+  }
+  return menu_view_->size();
+}
+
+views::View* Combobox::MenuItemAtIndex(int index) const {
+  if (!menu_) {
+    return nullptr;
+  }
+  return menu_view_->MenuItemAtIndex(index);
+}
+
+views::View* Combobox::MenuView() const {
+  return menu_view_;
 }
 
 void Combobox::SetCallback(PressedCallback callback) {
@@ -533,6 +588,7 @@ void Combobox::ShowDropDownMenu() {
   menu_ = std::make_unique<views::Widget>(std::move(params));
   menu_->SetContentsView(std::move(menu_view));
   menu_->Show();
+  menu_view_->ScrollToSelectedView();
 
   SetBackground(views::CreateThemedRoundedRectBackground(
       kComboboxActiveColorId, kComboboxRoundedCorners,

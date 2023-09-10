@@ -590,7 +590,8 @@ ContentDistributionType ComputedStyle::ResolvedAlignContentDistribution(
 }
 
 bool ComputedStyle::operator==(const ComputedStyle& o) const {
-  return InheritedEqual(o) && NonInheritedEqual(o);
+  return InheritedEqual(o) && NonInheritedEqual(o) &&
+         InheritedVariablesEqual(o);
 }
 
 const ComputedStyle* ComputedStyle::GetCachedPseudoElementStyle(
@@ -1513,9 +1514,9 @@ PointAndTangent ComputedStyle::CalculatePointAndTangentOnRay(
     // Specifically, the path’s length is reduced by half the width
     // or half the height of the element’s border box,
     // whichever is larger, and floored at zero.
-    const float largest_side =
-        std::max(box->BorderBoxRect().Width().ToFloat(),
-                 box->BorderBoxRect().Height().ToFloat());
+    const PhysicalRect border_box_rect = box->PhysicalBorderBoxRect();
+    const float largest_side = std::max(border_box_rect.Width().ToFloat(),
+                                        border_box_rect.Height().ToFloat());
     ray_length -= largest_side / 2;
     ray_length = std::max(ray_length, 0.f);
   }
@@ -1619,8 +1620,7 @@ void ComputedStyle::ApplyMotionPathTransform(float origin_x,
         break;
       }
     }
-  } else if (const auto* coord_box_operation =
-                 DynamicTo<CoordBoxOffsetPathOperation>(offset_path)) {
+  } else if (IsA<CoordBoxOffsetPathOperation>(offset_path)) {
     if (box && box->ContainingBlock()) {
       scoped_refptr<BasicShapeInset> inset = BasicShapeInset::Create();
       inset->SetTop(Length::Fixed(0));
@@ -2811,6 +2811,19 @@ ComputedStyleBuilder::MutableNonInheritedVariables() {
     variables = std::make_unique<StyleNonInheritedVariables>();
   }
   return *variables;
+}
+
+void ComputedStyleBuilder::CopyInheritedVariablesFrom(
+    const ComputedStyle* style) {
+  MutableInheritedVariablesInternal() = style->InheritedVariablesInternal();
+}
+
+void ComputedStyleBuilder::CopyNonInheritedVariablesFrom(
+    const ComputedStyle* style) {
+  if (style->NonInheritedVariablesInternal()) {
+    MutableNonInheritedVariablesInternal() =
+        style->NonInheritedVariablesInternal()->Clone();
+  }
 }
 
 STATIC_ASSERT_ENUM(cc::OverscrollBehavior::Type::kAuto,

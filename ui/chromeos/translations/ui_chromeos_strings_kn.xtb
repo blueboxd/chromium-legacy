@@ -278,6 +278,7 @@
 <translation id="3264582393905923483">ಸಂದರ್ಭ</translation>
 <translation id="3272909651715601089">"<ph name="PATH" />" ತೆರೆಯಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
 <translation id="3280431534455935878">ತಯಾರಿ ನಡೆಸಲಾಗುತ್ತಿದೆ</translation>
+<translation id="3280719573299097127">ನೀವು ಮಾಪನ ಮಾಡಲಾದ ನೆಟ್‌ವರ್ಕ್‌ನಲ್ಲಿರುವಿರಿ. ಫೈಲ್ ಸಿಂಕ್ ಮಾಡುವಿಕೆಯನ್ನು ವಿರಾಮಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="3280987981688031357">ವಿನೈಲ್ ರೆಕಾರ್ಡ್</translation>
 <translation id="3290356915286466215">ಅಸುರಕ್ಷಿತ</translation>
 <translation id="3291218047831493686">ಸಿಮ್ ಲಾಕ್ ಸೆಟ್ಟಿಂಗ್ ಅನ್ನು ಬದಲಾಯಿಸಲು ಈ ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಕನೆಕ್ಟ್ ಮಾಡಿ</translation>
@@ -632,6 +633,7 @@
 <translation id="5838451609423551646">ಆಯ್ಕೆಯಿಂದ ಎಲ್ಲಾ ನಮೂದುಗಳನ್ನು ತೆಗೆದುಹಾಕಲಾಗಿದೆ.</translation>
 <translation id="5838825566232597749">US ವರ್ಕ್‌ಮ್ಯಾನ್ ಇಂಟರ್‌ನ್ಯಾಶನಲ್</translation>
 <translation id="5845721951356578987">ನರ್ಸ್</translation>
+<translation id="5858478190805449225">ಬ್ಯಾಟರಿ ಸೇವರ್ ಮೋಡ್ ಆನ್ ಆಗಿದೆ. ಬ್ಯಾಟರಿ ಸೇವರ್ ಮೋಡ್ ಆಫ್ ಆಗಿರುವಾಗ ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="5860491529813859533">ಆನ್ ಮಾಡಿ</translation>
 <translation id="5861477046012235702">ಗೇಮರ್</translation>
 <translation id="5864471791310927901">DHCP ಲುಕಪ್ ವಿಫಲವಾಗಿದೆ</translation>
@@ -898,7 +900,6 @@
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7920501309908018401">ನನ್ನ ಡ್ರೈವ್‌ನಲ್ಲಿರುವ ನಿಮ್ಮ ಫೈಲ್‌ಗಳು ನಿಮ್ಮ Chromebook ಗೆ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಸಿಂಕ್ ಆಗುತ್ತವೆ ಇದರಿಂದ ನೀವು ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವಿಲ್ಲದೆಯೇ ಅವುಗಳನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಬಹುದು.</translation>
 <translation id="7925247922861151263">AAA ಪರಿಶೀಲನೆ ವಿಫಲವಾಗಿದೆ</translation>
-<translation id="7925686952655276919">ಸಿಂಕ್ ಮಾಡುವುದಕ್ಕಾಗಿ ಮೊಬೈಲ್ ಡೇಟಾವನ್ನು ಬಳಸಬೇಡಿ</translation>
 <translation id="7928710562641958568">ಸಾಧನ ತೆಗೆದುಹಾಕು</translation>
 <translation id="7933875256234974853">Drive ಫೈಲ್‌ಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಲು ಸಿದ್ಧಗೊಳಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="7943385054491506837">US ಕೋಲ್‌ಮ್ಯಾಕ್</translation>
@@ -921,6 +922,7 @@
 <translation id="8087576439476816834"><ph name="PROFILE_NAME" /> ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ</translation>
 <translation id="8106045200081704138">ನನ್ನೊಂದಿಗೆ ಹಂಚಿಕೊಳ್ಳಲಾಗಿದ್ದು</translation>
 <translation id="8116072619078571545">ಮಂಜುಗಡ್ಡೆ ನೀರು</translation>
+<translation id="8120392982188717723">ಮಾಪನ ಮಾಡಲಾದ ನೆಟ್‌ವರ್ಕ್‌ಗಳಲ್ಲಿ ಸಿಂಕ್ ಮಾಡಲು ಅನುಮತಿಸಿ</translation>
 <translation id="8124093710070495550">ಸಿಂಕ್ ಸಮಸ್ಯೆ</translation>
 <translation id="8128733386027980860">ಡ್ವೊರಾಕ್ ಕೀಬೋರ್ಡ್‌ನಲ್ಲಿ ಇಂಗ್ಲಿಷ್ (ಯುಕೆ)</translation>
 <translation id="8137331602592933310">"<ph name="FILENAME" />" ಅನ್ನು ನಿಮ್ಮೊಂದಿಗೆ ಹಂಚಿಕೊಳ್ಳಲಾಗಿದೆ. ನೀವು ಅದನ್ನು ಹೊಂದಿಲ್ಲದಿರುವ ಕಾರಣ ನಿಮಗೆ ಅದನ್ನು ಅಳಿಸಲಾಗುವುದಿಲ್ಲ.</translation>

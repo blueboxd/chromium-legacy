@@ -17,6 +17,7 @@
 #include "chrome/browser/fast_checkout/fast_checkout_trigger_validator_impl.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/content/browser/content_autofill_client.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/ui/fast_checkout_enums.h"
@@ -157,11 +158,10 @@ void FastCheckoutClientImpl::OnContentAutofillDriverFactoryDestroyed(
 void FastCheckoutClientImpl::OnContentAutofillDriverCreated(
     autofill::ContentAutofillDriverFactory& factory,
     autofill::ContentAutofillDriver& driver) {
-  auto* manager =
-      static_cast<autofill::BrowserAutofillManager*>(driver.autofill_manager());
-  manager->set_fast_checkout_delegate(
-      std::make_unique<FastCheckoutDelegateImpl>(
-          &autofill_client_->GetWebContents(), this, manager));
+  auto& manager = static_cast<autofill::BrowserAutofillManager&>(
+      driver.GetAutofillManager());
+  manager.set_fast_checkout_delegate(std::make_unique<FastCheckoutDelegateImpl>(
+      &autofill_client_->GetWebContents(), this, &manager));
 }
 
 bool FastCheckoutClientImpl::TryToStart(

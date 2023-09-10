@@ -58,6 +58,7 @@ Només els usuaris que sàpiguen la teva frase de contrasenya poden llegir les d
 <translation id="124678866338384709">Tanca la pestanya actual</translation>
 <translation id="1246905108078336582">Vols suprimir el suggeriment del porta-retalls?</translation>
 <translation id="1258753120186372309">Doodle de Google: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1263063910731171689">Ara veuràs contingut de <ph name="SITE_NAME" /> i sobre aquest canal a Seguint. Els llocs web i les cerques que segueixes es desen al teu Compte de Google. Pots gestionar el contingut que segueixes en qualsevol moment a la configuració.</translation>
 <translation id="1263231323834454256">Llista de lectura</translation>
 <translation id="1266864766717917324">No s'ha pogut compartir <ph name="CONTENT_TYPE" />.</translation>
 <translation id="1269129608791067105">Trobaràs l'historial aquí</translation>
@@ -136,6 +137,7 @@ Quan suprimeixes l'historial de navegació (sigui per complet o un lloc web espe
 <translation id="1671236975893690980">Baixada pendent…</translation>
 <translation id="1672586136351118594">No m'ho tornis a mostrar</translation>
 <translation id="1680919990519905526">Compra la imatge amb Google Lens <ph name="BEGIN_NEW" />Novetat<ph name="END_NEW" /></translation>
+<translation id="1687482373098770139">Aviat veuràs contingut de <ph name="SITE_NAME" /> i sobre aquest canal a Seguint. Els llocs web i les cerques que segueixes es desen al teu Compte de Google. Pots gestionar el contingut que segueixes en qualsevol moment a la configuració.</translation>
 <translation id="1702543251015153180">Vols canviar la configuració del tema fosc?</translation>
 <translation id="1702907158640575240">Navegador gestionat</translation>
 <translation id="1710099199314114079">Tanca les pestanyes o canvia d'una a una altra</translation>
@@ -310,8 +312,10 @@ Els testimonis d'estat privat milloren la privadesa al web i no poden utilitzar-
 <translation id="265156376773362237">Precàrrega estàndard</translation>
 <translation id="2656405586795711023">Aplicacions web</translation>
 <translation id="2669454659051515572">Qualsevol persona que utilitzi aquest dispositiu pot veure els fitxers baixats</translation>
+<translation id="2673169232805572412">Si un lloc web prova de robar-te la contrasenya o si baixes un fitxer maliciós, és possible que Chrome n'enviï a Google els URL, inclosos fragments de contingut de les pàgines</translation>
 <translation id="2702516483241149200">Nou: comparteix un enllaç que es desplaça fins a aquest text</translation>
 <translation id="2708051474374549906">Protecció proactiva en temps real contra baixades, extensions i llocs web perillosos basada en les teves dades de navegació enviades a Google</translation>
+<translation id="2708226184420201102">Obre al navegador <ph name="PRODUCT_NAME" /></translation>
 <translation id="271033894570825754">Nou</translation>
 <translation id="2711073837061989559">Proves</translation>
 <translation id="2718352093833049315">Només amb Wi-Fi</translation>
@@ -340,6 +344,7 @@ Els testimonis d'estat privat milloren la privadesa al web i no poden utilitzar-
 <translation id="2870560284913253234">Lloc web</translation>
 <translation id="2871733351037274014">Precàrrega de pàgines</translation>
 <translation id="2876136027428473467"><ph name="CHILD_NAME" /> vol que aprovis aquest lloc web:</translation>
+<translation id="2876628302275096482">Més informació sobre <ph name="BEGIN_LINK" />com Chrome manté la privadesa de les teves dades<ph name="END_LINK" /></translation>
 <translation id="2886836735871983413">Aquí es mostrarà una llista de llocs web a mesura que naveguis pel web</translation>
 <translation id="2888126860611144412">Sobre Chrome</translation>
 <translation id="2891154217021530873">Atura la càrrega de la pàgina</translation>
@@ -787,6 +792,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5054455334322721892">És possible que es desin <ph name="BEGIN_LINK1" />altres tipus d'activitats<ph name="END_LINK1" /> al teu Compte de Google quan tinguis la sessió iniciada. Les pots suprimir en qualsevol moment.</translation>
 <translation id="506254248375231072">No hi ha cap pestanya</translation>
 <translation id="5062960805900435602">L'actualització sobre la combinació de contrasenyes s'ha tancat</translation>
+<translation id="5081960376148623587">Tria si vols precarregar les pàgines</translation>
 <translation id="5091199029769593641">Aviat, quan obris una pestanya nova, veuràs històries de: <ph name="SITE_NAME" />. Els llocs web que segueixes es desen al teu Compte de Google. Pots gestionar-los a la configuració de Discover.</translation>
 <translation id="5091249083535528968">Dades d'ús ampliades</translation>
 <translation id="509429900233858213">S'ha produït un error.</translation>
@@ -1241,6 +1247,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7431991332293347422">Controla com s'utilitza l'historial de navegació per personalitzar la Cerca i més</translation>
 <translation id="7435356471928173109">Desactivada per l'administrador</translation>
 <translation id="7437998757836447326">Tanca la sessió de Chrome</translation>
+<translation id="7450926666485653189">Envia a Google una part ofuscada de l'URL mitjançant un servidor de privadesa que amaga la teva adreça IP</translation>
 <translation id="7453467225369441013">Et tanca la sessió de la majoria de llocs web, però no la del Compte de Google.</translation>
 <translation id="7453810262525006706">Replega a la visualització lateral</translation>
 <translation id="7454641608352164238">No hi ha prou espai</translation>
@@ -1470,6 +1477,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8497242791509864205">Obre les opcions d'ordenació</translation>
 <translation id="8497480609928300907">Explicació de la guia de privadesa</translation>
 <translation id="8497726226069778601">Aquí encara no hi ha contingut per mostrar</translation>
+<translation id="8501423924927196358">Indicador de càrrega d'estadístiques de la pàgina</translation>
 <translation id="8503559462189395349">Contrasenyes de Chrome</translation>
 <translation id="8503813439785031346">Nom d'usuari</translation>
 <translation id="8505766168025405649">Consulta la notificació de l'estat de la baixada</translation>

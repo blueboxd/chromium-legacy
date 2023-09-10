@@ -64,8 +64,10 @@ source_set("agents") {
     "//ios/chrome/browser/web:tab_helper_delegates",
     "//ios/components/security_interstitials:security_interstitials",
     "//ios/web/common:features",
+    "//ios/web/common:user_agent",
     "//ios/web/public",
     "//ios/web/public/js_messaging:js_messaging",
+    "//ios/web/public/session",
   ]
   frameworks = [ "Foundation.framework" ]
 }
@@ -78,8 +80,6 @@ source_set("unit_tests") {
     "web_state_dependency_installation_observer_unittest.mm",
     "web_state_dependency_installer_bridge_unittest.mm",
     "web_state_list_favicon_driver_observer_unittest.mm",
-    "web_state_list_removing_indexes_unittest.mm",
-    "web_state_list_serialization_unittest.mm",
   ]
   deps = [
     ":agents",
@@ -98,6 +98,9 @@ source_set("unit_tests") {
     "//ios/web/public/navigation:referrer",
     "//ios/web/public/session",
     "//ios/web/public/test",
+    "//ios/web/public/test/fakes",
     "//testing/gtest",
+    "//ui/gfx",
+    "//url",
   ]
 }

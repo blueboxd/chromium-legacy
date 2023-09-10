@@ -553,6 +553,16 @@ public class TabSwitcherCoordinator
     }
 
     @Override
+    public int getTabSwitcherTabListModelSize() {
+        return mTabListCoordinator.getTabListModelSize();
+    }
+
+    @Override
+    public void setTabSwitcherRecyclerViewPosition(RecyclerViewPosition recyclerViewPosition) {
+        mTabListCoordinator.setRecyclerViewPosition(recyclerViewPosition);
+    }
+
+    @Override
     public int getTabListTopOffset() {
         return mTabListCoordinator.getTabListTopOffset();
     }
@@ -568,6 +578,11 @@ public class TabSwitcherCoordinator
         // should listen for |requestFocusOnCurrentTab| signal implicitly and apply changes. This
         // would require refactoring TabSwitcher.TabListDelegate and its implementation.
         mMediator.requestAccessibilityFocusOnCurrentTab();
+    }
+
+    @Override
+    public void prepareTabGridView() {
+        mTabListCoordinator.prepareTabGridView();
     }
 
     @Override

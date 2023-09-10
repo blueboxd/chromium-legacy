@@ -421,11 +421,13 @@ void ClientControlledShellSurface::SetRestored() {
   pending_window_state_ = chromeos::WindowStateType::kNormal;
 }
 
-void ClientControlledShellSurface::SetFullscreen(bool fullscreen) {
+void ClientControlledShellSurface::SetFullscreen(bool fullscreen,
+                                                 int64_t display_id) {
   TRACE_EVENT1("exo", "ClientControlledShellSurface::SetFullscreen",
                "fullscreen", fullscreen);
   pending_window_state_ = fullscreen ? chromeos::WindowStateType::kFullscreen
                                      : chromeos::WindowStateType::kNormal;
+  // TODO(crbug/1478300): `display_id` might need to be used here somewhere.
 }
 
 void ClientControlledShellSurface::SetPinned(chromeos::WindowPinType type) {
@@ -752,8 +754,9 @@ void ClientControlledShellSurface::UnsetPip() {
   SetRestored();
 }
 
-void ClientControlledShellSurface::SetFloat() {
-  TRACE_EVENT0("exo", "ClientControlledShellSurface::SetFloat");
+void ClientControlledShellSurface::SetFloatToLocation(
+    chromeos::FloatStartLocation float_start_location) {
+  TRACE_EVENT0("exo", "ClientControlledShellSurface::SetFloatToLocation");
   pending_window_state_ = chromeos::WindowStateType::kFloated;
 }
 
@@ -1090,7 +1093,14 @@ void ClientControlledShellSurface::InitializeWindowState(
 }
 
 float ClientControlledShellSurface::GetScale() const {
-  return GetScaleFactor();
+  return !use_default_scale_cancellation_
+             ? ShellSurfaceBase::GetScaleFactor()
+             : ::exo::GetDefaultDeviceScaleFactor();
+}
+
+float ClientControlledShellSurface::GetScaleFactor() const {
+  // TODO(andreaorru): consolidate Scale and ScaleFactor.
+  return GetScale();
 }
 
 absl::optional<gfx::Rect> ClientControlledShellSurface::GetWidgetBounds()

@@ -3300,16 +3300,24 @@ are declared in tools/grit/grit_rule.gni.
         desc="Prompt for the user to enter the file's password">
         File password
       </message>
-      <message name="IDS_DOWNLOAD_BUBBLE_PASSWORD_PROMPT_ACCESSIBLE_ALERT"
-        desc="Accessible alert text for screen readers when users focus on the password textfield">
-        File password
-      </message>
       <message name="IDS_DOWNLOAD_BUBBLE_PASSWORD_PROMPT_EMPTY"
         desc="Prompt for the user when the password entered is empty">
         Enter the file's password
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_PASSWORD_PROMPT_INVALID"
         desc="Prompt for the user when the password entered is incorrect">
+        Incorrect password. Try again.
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_PASSWORD_PROMPT_ACCESSIBLE_ALERT"
+        desc="Accessible alert text for screen readers when users focus on the password textfield with no subtext">
+        File password
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_PASSWORD_PROMPT_ACCESSIBLE_ALERT_EMPTY"
+        desc="Accessible alert text for screen readers when users focus on the password textfield with subtext indicating empty password">
+        Enter the file's password
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_PASSWORD_PROMPT_ACCESSIBLE_ALERT_INVALID"
+        desc="Accessible alert text for screen readers when users focus on the password textfield with subtext indicating invalid password">
         Incorrect password. Try again.
       </message>
 
@@ -3946,6 +3954,15 @@ are declared in tools/grit/grit_rule.gni.
       </message>
       <message name="IDS_COOKIE_CONTROLS_PROMO_SEE_HOW_BUTTON_TEXT" desc="Text on the button that opens the cookie controls bubble on the in-product-help bubble shown for the cookie controls bubble. Encourages users to see how to temporarily enable third-party cookies.">
         See how
+      </message>
+      <message name="IDS_3PCD_USER_BYPASS_PROMO_TITLE" desc="Title of the in-product-help bubble shown for the user bypass feature. Explains that third-party cookies are blocked on the current site." translateable="false">
+        Third-party cookies are blocked
+      </message>
+      <message name="IDS_3PCD_USER_BYPASS_PROMO_TEXT" desc="Text on the in-product-help bubble shown for the user bypass feature. Explains that if a site is broken, enabling third-party cookies for the site might fix it." translateable="false">
+        If a site you visit isn't working as expected, try temporarily allowing third-party cookies for that site. That will mean less protection but site features are more likely to work as expected.
+      </message>
+      <message name="IDS_3PCD_USER_BYPASS_PROMO_SCREENREADER" desc="Text announced with the in-product-help bubble shown for the user bypass feature. Explains how to temporarily enable third-party cookies." translateable="false">
+        To enable third-party cookies for this site, select third-party cookie blocking in the search and address bar.
       </message>
 
       <!-- Win certificate selector dialog strings.  -->
@@ -6789,12 +6806,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_UPDATE_PASSWORD_DIFFERENT_DOMAINS_TITLE" desc="The title of the update password bubble when the submitted form origin isn't equal to saved credentials origin.">
         Update password for <ph name="ORIGIN">$1<ex>example.com</ex></ph>?
       </message>
-      <message name="IDS_SAVE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_GOOGLE_ACCOUNT" desc="The description of save password message when the user is signed in.">
-        Save it in your Google Account, <ph name="ACCOUNT">$1<ex>user@gmail.com</ex></ph>
-      </message>
-      <message name="IDS_UPDATE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_GOOGLE_ACCOUNT" desc="The description of update password message when the signed-in user updates the password.">
-        Update it in your Google Account, <ph name="ACCOUNT">$1<ex>user@gmail.com</ex></ph>
-      </message>
       <message name="IDS_SAVE_PASSWORD_FOOTER" desc="The footer text of the bubble that offers user to save a password to Chrome.">
         Passwords are saved in your Google Account so you can use them on any device
       </message>
@@ -6868,11 +6879,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Manage passwords
         </message>
       </if>
-      <if expr="is_android">
-        <message name="IDS_SETTINGS_PASSWORDS_ANDROID_APP" desc="Label for the app a password is for when displaying a credential and the real app display name could not be obtained.">
-          App (<ph name="ANDROID_PACKAGE_NAME">$1<ex>com.netflix.mediaclient</ex></ph>)
-        </message>
-      </if>
+      <message name="IDS_SETTINGS_PASSWORDS_ANDROID_APP" desc="Label for the app a password is for when displaying a credential and the real app display name could not be obtained.">
+        App (<ph name="ANDROID_PACKAGE_NAME">$1<ex>com.netflix.mediaclient</ex></ph>)
+      </message>
       <message name="IDS_SHARED_PASSWORDS_NOTIFICATION_GOT_IT_BUTTON" desc="The button text on the shared passwords notification bubble to inform the user that one of the stored passwords for this website has been received via the password sharing feature.">
         Got it
       </message>
@@ -9525,10 +9534,7 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         <message name ="IDS_PASSWORD_MANAGER_ACCESSORY_USE_DEVICE_PASSKEY" desc="The text of the link in the password sheet that will use a different device’s passkey. This string also exists for desktop password manager and translations should match. See IDS_PASSWORD_MANAGER_USE_DEVICE_PASSKEY in components/password_manager_strings.grdp.">
           Use a passkey on a different device
         </message>
-        <message name="IDS_PASSWORD_GENERATION_DIALOG_DESCRIPTION" desc="Text for password generation dialog, explaining that the password will be saved in Google Account.">
-          Password will be saved in your Google Account, <ph name="ACCOUNT">$1<ex>user@gmail.com</ex></ph>. You won’t have to remember it.
-        </message>
-        <message name="IDS_PASSWORD_GENERATION_DIALOG_DESCRIPTION_UPM_BRANDED" desc="Text for password generation dialog, explaining that the password will be saved in Google Account. Unified Password Manager branded variant.">
+        <message name="IDS_PASSWORD_GENERATION_DIALOG_DESCRIPTION_BRANDED" desc="Text for password generation dialog, explaining that the password will be saved in Google Account. Unified Password Manager branded variant.">
           You won’t need to remember this password. It will be saved to Google Password Manager for <ph name="ACCOUNT">$1<ex>user@gmail.com</ex></ph>.
         </message>
         <message name="IDS_CONFIRM_USERNAME_DIALOG_TITLE" desc="The title of the confirm username dialog." formatter_data="android_java">
@@ -9825,55 +9831,6 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
       </if>
       <message name="IDS_REPORT_AN_ISSUE" desc="Text of the button which allows the user to report an issue with Chrome.">
         Report an issue
-      </message>
-
-      <!-- Chrome Cleanup prompt and web UI -->
-      <if expr="is_win">
-        <message name="IDS_CHROME_CLEANUP_PROMPT_DETAILS_BUTTON_LABEL" desc="The button in the Chrome Cleanup dialog that lets users see more details, such as what files will be deleted from their computer. Chrome browser shows the dialog when unwanted software, like ad injectors or software that changes the user's settings without their knowledge, is found on the user's computer. Noun; verb 'See' is omitted.">
-          Details
-        </message>
-        <message name="IDS_CHROME_CLEANUP_PROMPT_REMOVE_BUTTON_LABEL" desc="A button in the Chrome Cleanup dialog. When clicked, Chrome will begin to remove unwanted software and restore browser settings to default values. Appears next to a 'Cancel' button and a 'Details' button that opens a page that shows which unwanted software will be deleted. 'Remove' is imperative.">
-          Remove
-        </message>
-        <message name="IDS_CHROME_CLEANUP_PROMPT_TITLE" desc="Title of the Chrome Cleanup dialog. Chrome browser shows the dialog when unwanted software, like ad injectors or software that changes the user's settings without their knowledge, is found on the user's computer. Appears above a description of what the cleanup dialog does, along with a 'Remove', 'Cancel', and 'Details' button. 'Remove' is imperative, asking the user, do you want Chrome to remove harmful software?">
-          Remove harmful software?
-        </message>
-        <message name="IDS_CHROME_CLEANUP_REBOOT_PROMPT_TITLE" desc="Title of the Chrome Cleanup reboot prompt dialog. Chrome browser shows the dialog when the user runs the Chrome Cleanup tool and computer restart is required to finish the cleanup. User must take additional action to finish the cleanup. 'Restart' is imperative.">
-          To finish removing harmful software, restart your computer
-        </message>
-        <message name="IDS_CHROME_CLEANUP_REBOOT_PROMPT_RESTART_BUTTON_LABEL" desc="A button in the Chrome Cleanup reboot prompt dialog. Clicking this button causes the user's computer to turn off (shut down) and turn back on again. Imperative.">
-          Restart computer
-        </message>
-        <message name="IDS_CHROME_CLEANUP_LOGS_PERMISSION" desc="A checkbox label, appearing on the Chrome Cleanup modal dialog, asking the user for permission to send details about the cleanup operation to Google.">
-          Report details to Google
-        </message>
-      </if>
-
-      <!-- Settings reset prompt dialog messages -->
-      <message name="IDS_SETTINGS_RESET_PROMPT_TITLE_SEARCH_ENGINE" desc="The title for the settings reset dialog when the user's search engine setting has been modified. The dialog will ask users if they want to restore their modified setting to its original default value.">
-        Restore default search engine?
-      </message>
-      <message name="IDS_SETTINGS_RESET_PROMPT_TITLE_STARTUP_PAGE" desc="The title for the settings reset dialog when the user's startup page setting has been modified. The dialog will ask users if they want to restore their modified setting to its original default value.">
-        Restore default startup page?
-      </message>
-      <message name="IDS_SETTINGS_RESET_PROMPT_TITLE_HOMEPAGE" desc="The title for the settings reset dialog when the user's homepage setting has been modified by. The dialog will ask users if they want to restore their modified setting to its original default value.">
-        Restore default homepage?
-      </message>
-      <message name="IDS_SETTINGS_RESET_PROMPT_ACCEPT_BUTTON_LABEL" desc="The settings reset dialog asks users if they want to restore a Chrome setting that has been modified by an unwanted software or extension to its original default value. This text is displayed on the main button in the dialog that, when clicked, will restore the setting.">
-        Restore
-      </message>
-
-      <message name="IDS_SETTINGS_RESET_PROMPT_EXPLANATION_FOR_SEARCH_ENGINE_NO_EXTENSIONS" desc="This text is shown in the settings reset dialog to inform the user that their search engine has been modified, for example by unwanted software or extension, to something that they might not want. The value of the setting that is shown in the text is the possibly unwanted setting that will be reset to its original default if the user clicks the Restore button.">
-        Your search engine was changed to <ph name="URL">$1<ex>www.some-domain.com</ex></ph>.
-      </message>
-      <message name="IDS_SETTINGS_RESET_PROMPT_EXPLANATION_FOR_STARTUP_PAGE_SINGLE_NO_EXTENSIONS" desc="This text is shown in the settings reset dialog to inform the user that their startup page setting has been modified, for example by unwanted software or extension, to something that they might not want. The value of the setting that is shown in the text is the possibly unwanted setting that will be reset to its original default value if the user clicks the Restore button.">
-        Your startup page was changed to <ph name="URL">$1<ex>www.some-domain.com</ex></ph>.
-      </message>
-      <message name="IDS_SETTINGS_RESET_PROMPT_EXPLANATION_FOR_STARTUP_PAGE_MULTIPLE_NO_EXTENSIONS" desc="This text is shown in the settings reset dialog to inform the user that their startup page setting has been modified, for example by unwanted software or extension, to something that they might not want. The value of the setting that is shown in the text is the possibly unwanted setting that will be reset to its original default if the user clicks the Restore button.">
-        Your startup pages were changed to include <ph name="URL">$1<ex>www.some-domain.com</ex></ph>.
-      </message>
-      <message name="IDS_SETTINGS_RESET_PROMPT_EXPLANATION_FOR_HOMEPAGE_NO_EXTENSIONS" desc="This text is shown in the settings reset dialog to inform the user that their homepage setting has been modified, for example by unwanted software or extension, to something that they might not want. The value of the setting that is shown in the text is the possibly unwanted setting that will be reset to its original default value if the user clicks the Restore button.">
-        Your homepage was changed to <ph name="URL">$1<ex>www.some-domain.com</ex></ph>.
       </message>
 
       <!-- Upgrade bubble messages -->
@@ -15640,10 +15597,16 @@ Please help our engineers fix this problem. Tell us what happened right before y
       You can use your <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$1<ex>idp.example</ex></ph> account on this site. To continue, sign in to <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$1<ex>idp.example</ex></ph>.
     </message>
     <message name="IDS_SIGNIN_GENERIC_ERROR_DIALOG_SUMMARY" desc="Summary of generic error upon user failing to sign in with an account from an identity provider." translateable="false">
-      Cannot continue with <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$1<ex>idp.example</ex></ph>.
+      Can't continue with <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$1<ex>idp.example</ex></ph>
     </message>
     <message name="IDS_SIGNIN_GENERIC_ERROR_DIALOG_DESCRIPTION" desc="Description of generic error upon user failing to sign in with an account from an identity provider." translateable="false">
-      Something went wrong.
+      Something went wrong
+    </message>
+    <message name="IDS_SIGNIN_ERROR_DIALOG_GOT_IT_BUTTON" desc="The button text on the error dialog for the user to acknowledge that an error has occurred in their attempt to sign in with an account from an identity provider." translateable="false">
+      Got it
+    </message>
+    <message name="IDS_SIGNIN_ERROR_DIALOG_MORE_DETAILS_BUTTON" desc="The button text on the error dialog for the user to get more details about an error that has occurred in their attempt to sign in with an account from an identity provider." translateable="false">
+      More details
     </message>
     <message name="IDS_MULTI_IDP_ACCOUNT_SELECTION_SHEET_TITLE_EXPLICIT" desc="Header for sign in sheet when there are multiple identity providers. Sheet is shown to prompt user for sign in consent." translateable="false">
       Sign in to <ph name="SITE_ETLD_PLUS_ONE">$1<ex>rp.example</ex></ph>

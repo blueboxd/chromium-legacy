@@ -10,4 +10,12 @@ namespace switches {
 // testing.
 const char kExtraSearchQueryParams[] = "extra-search-query-params";
 
+// Override the country used for search engine choice region checks.
+// Intended for testing. Expects 2-letter country codes.
+const char kSearchEngineChoiceCountry[] = "search-engine-choice-country";
+
+// Disable the search engine choice screen for testing / autmation.
+const char kDisableSearchEngineChoiceScreen[] =
+    "disable-search-engine-choice-screen";
+
 }  // namespace switches

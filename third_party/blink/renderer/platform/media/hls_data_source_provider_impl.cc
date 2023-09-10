@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,6 +87,11 @@ class HlsDataSourceImpl final : public media::HlsDataSource {
 
   base::StringPiece GetMimeType() const override {
     return mb_data_source_->GetMimeType();
+  }
+
+  void Stop() override {
+    mb_data_source_->Abort();
+    mb_data_source_->Stop();
   }
 
  private:

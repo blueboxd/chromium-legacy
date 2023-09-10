@@ -326,6 +326,9 @@
 #include "chrome/browser/ui/webui/ash/parent_access/parent_access_ui.h"
 #include "chrome/browser/ui/webui/ash/parent_access/parent_access_ui.mojom.h"
 #include "chrome/browser/ui/webui/ash/set_time_ui.h"
+#include "chrome/browser/ui/webui/ash/settings/pages/apps/mojom/app_notification_handler.mojom.h"
+#include "chrome/browser/ui/webui/ash/settings/pages/files/mojom/google_drive_handler.mojom.h"
+#include "chrome/browser/ui/webui/ash/settings/pages/files/mojom/one_drive_handler.mojom.h"
 #include "chrome/browser/ui/webui/ash/settings/search/mojom/search.mojom.h"
 #include "chrome/browser/ui/webui/ash/settings/search/mojom/user_action_recorder.mojom.h"
 #include "chrome/browser/ui/webui/ash/smb_shares/smb_credentials_dialog.h"
@@ -335,10 +338,7 @@
 #include "chrome/browser/ui/webui/feedback/feedback_ui.h"
 #include "chrome/browser/ui/webui/nearby_share/nearby_share.mojom.h"
 #include "chrome/browser/ui/webui/nearby_share/nearby_share_dialog_ui.h"
-#include "chrome/browser/ui/webui/settings/ash/files_page/mojom/google_drive_handler.mojom.h"
-#include "chrome/browser/ui/webui/settings/ash/files_page/mojom/one_drive_handler.mojom.h"
 #include "chrome/browser/ui/webui/settings/ash/input_device_settings/input_device_settings_provider.mojom.h"
-#include "chrome/browser/ui/webui/settings/ash/os_apps_page/mojom/app_notification_handler.mojom.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_ui.h"
 #include "chromeos/ash/components/audio/public/mojom/cros_audio_config.mojom.h"
 #include "chromeos/ash/components/local_search_service/public/mojom/index.mojom.h"
@@ -385,6 +385,8 @@
 #include "ash/webui/sample_system_web_app_ui/mojom/sample_system_web_app_ui.mojom.h"
 #include "ash/webui/sample_system_web_app_ui/sample_system_web_app_ui.h"
 #include "ash/webui/sample_system_web_app_ui/sample_system_web_app_untrusted_ui.h"
+#include "chrome/browser/ui/webui/ash/status_area_internals/mojom/status_area_internals.mojom.h"
+#include "chrome/browser/ui/webui/ash/status_area_internals/status_area_internals_ui.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SPEECH_SERVICE)
@@ -1342,7 +1344,7 @@ void PopulateChromeWebUIFrameBinders(
       ash::multidevice_setup::MultiDeviceSetupDialogUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
-      parent_access_ui::mojom::ParentAccessUIHandler, ash::ParentAccessUI>(map);
+      parent_access_ui::mojom::ParentAccessUiHandler, ash::ParentAccessUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       ash::multidevice_setup::mojom::PrivilegedHostDeviceSetter, ash::OobeUI>(
@@ -1631,6 +1633,9 @@ void PopulateChromeWebUIFrameInterfaceBrokers(
   registry.ForWebUI<ash::SampleSystemWebAppUI>()
       .Add<ash::mojom::sample_swa::PageHandlerFactory>()
       .Add<color_change_listener::mojom::PageHandler>();
+
+  registry.ForWebUI<ash::StatusAreaInternalsUI>()
+      .Add<ash::mojom::status_area_internals::PageHandler>();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OFFICIAL_BUILD)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

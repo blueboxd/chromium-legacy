@@ -22,7 +22,7 @@ try_.defaults.set(
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
-    siso_configs = ["remote_all"],
+    siso_configs = ["builder"],
     siso_enable_cloud_profiler = True,
     siso_enable_cloud_trace = True,
     siso_project = siso.project.DEFAULT_UNTRUSTED,
@@ -85,6 +85,9 @@ try_.compilator_builder(
     name = "android-12-x64-rel-compilator",
     branch_selector = branches.selector.ANDROID_BRANCHES,
     main_list_view = "try",
+    # TODO: b/297443583 - Enable remote typescript on production.
+    siso_configs = ["builder", "local_typescript"],
+    siso_enabled = True,
 )
 
 try_.orchestrator_builder(
@@ -227,14 +230,14 @@ try_.builder(
         "$build/binary_size": {
             "analyze_targets": [
                 "//chrome/android:monochrome_public_minimal_apks",
-                "//chrome/android:trichrome_minimal_apks",
+                "//chrome/android:trichrome_32_minimal_apks",
                 "//chrome/android:validate_expectations",
                 "//tools/binary_size:binary_size_trybot_py",
             ],
             "compile_targets": [
                 "monochrome_public_minimal_apks",
                 "monochrome_static_initializers",
-                "trichrome_minimal_apks",
+                "trichrome_32_minimal_apks",
                 "validate_expectations",
             ],
         },
@@ -404,6 +407,24 @@ try_.builder(
 )
 
 try_.builder(
+    name = "android-cronet-x86-dbg-lolipop",
+    mirrors = [
+        "ci/android-cronet-x86-dbg",
+        "ci/android-cronet-x86-dbg-lollipop-tests",
+    ],
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+)
+
+try_.builder(
+    name = "android-cronet-x86-dbg-marshmallow",
+    mirrors = [
+        "ci/android-cronet-x86-dbg",
+        "ci/android-cronet-x86-dbg-marshmallow-tests",
+    ],
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+)
+
+try_.builder(
     name = "android-deterministic-dbg",
     executable = "recipe:swarming/deterministic_build",
     execution_timeout = 6 * time.hour,
@@ -541,6 +562,19 @@ try_.builder(
             "third_party/gvr-android-sdk/.+",
             "third_party/arcore-android-sdk/.+",
             "third_party/arcore-android-sdk-client/.+",
+            # Diectories that have caused breakages in the past due to the
+            # TensorFlowLite roll.
+            "third_party/eigen3/.+",
+            "third_party/farmhash/.+",
+            "third_party/fft2d/.+",
+            "third_party/flatbuffers/.+",
+            "third_party/fp16/.+",
+            "third_party/fxdiv/.+",
+            "third_party/gemmlowp/.+",
+            "third_party/pthreadpool/.+",
+            "third_party/ruy/.+",
+            "third_party/tflite/.+",
+            "third_party/xnnpack/.+",
         ],
     ),
 )
@@ -724,7 +758,20 @@ try_.builder(
             "sandbox/linux/seccomp-bpf-helpers/.+",
             "sandbox/linux/system_headers/.+",
             "sandbox/linux/tests/.+",
+            # Diectories that have caused breakages in the past due to the
+            # TensorFlowLite roll.
+            "third_party/eigen3/.+",
+            "third_party/farmhash/.+",
+            "third_party/fft2d/.+",
+            "third_party/flatbuffers/.+",
+            "third_party/fp16/.+",
+            "third_party/fxdiv/.+",
+            "third_party/gemmlowp/.+",
             "third_party/gvr-android-sdk/.+",
+            "third_party/pthreadpool/.+",
+            "third_party/ruy/.+",
+            "third_party/tflite/.+",
+            "third_party/xnnpack/.+",
         ],
     ),
 )

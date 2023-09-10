@@ -164,6 +164,7 @@ public abstract class ChromeFeatureList {
     public static final String BACK_GESTURE_REFACTOR_ACTIVITY =
             "BackGestureRefactorActivityAndroid";
     public static final String BASELINE_GM3_SURFACE_COLORS = "BaselineGM3SurfaceColors";
+    public static final String BLOCK_INTENTS_WHILE_LOCKED = "BlockIntentsWhileLocked";
     public static final String BOOKMARKS_REFRESH = "BookmarksRefresh";
     public static final String CACHE_DEPRECATED_SYSTEM_LOCATION_SETTING =
             "CacheDeprecatedSystemLocationSetting";
@@ -291,6 +292,7 @@ public abstract class ChromeFeatureList {
             "GridTabSwitcherLandscapeAspectRatioPhones";
     public static final String HASH_PREFIX_REAL_TIME_LOOKUPS =
             "SafeBrowsingHashPrefixRealTimeLookups";
+    public static final String HIDE_TAB_ON_TAB_SWITCHER = "HideTabOnTabSwitcher";
     public static final String HISTORY_JOURNEYS = "Journeys";
     public static final String IDENTITY_STATUS_CONSISTENCY = "IdentityStatusConsistency";
     public static final String IMPROVED_INCOGNITO_SCREENSHOT = "ImprovedIncognitoScreenshot";
@@ -373,6 +375,7 @@ public abstract class ChromeFeatureList {
     public static final String PRECONNECT_ON_TAB_CREATION = "PreconnectOnTabCreation";
     public static final String PRIVACY_GUIDE = "PrivacyGuideAndroid";
     public static final String PRIVACY_GUIDE_ANDROID_3 = "PrivacyGuideAndroid3";
+    public static final String PRIVACY_GUIDE_PRELOAD_ANDROID = "PrivacyGuidePreloadAndroid";
     public static final String PRIVACY_GUIDE_POST_MVP = "PrivacyGuideAndroidPostMVP";
     public static final String PRIVACY_SANDBOX_FPS_UI = "PrivacySandboxFirstPartySetsUI";
     public static final String PRIVACY_SANDBOX_SETTINGS_3 = "PrivacySandboxSettings3";
@@ -474,10 +477,6 @@ public abstract class ChromeFeatureList {
     public static final String TRANSLATE_MESSAGE_UI = "TranslateMessageUI";
     public static final String TRANSLATE_TFLITE = "TFLiteLanguageDetectionEnabled";
     public static final String TRUSTED_WEB_ACTIVITY_POST_MESSAGE = "TrustedWebActivityPostMessage";
-    public static final String UNIFIED_PASSWORD_MANAGER_ANDROID =
-            "UnifiedPasswordManagerAndroid_LAUNCHED";
-    public static final String UNIFIED_PASSWORD_MANAGER_ANDROID_BRANDING =
-            "UnifiedPasswordManagerAndroidBranding";
     public static final String UNIFIED_PASSWORD_MANAGER_LOCAL_PWD_MIGRATION_WARNING =
             "UnifiedPasswordManagerLocalPasswordsMigrationWarning";
     public static final String USE_CHIME_ANDROID_SDK = "UseChimeAndroidSdk";
@@ -517,6 +516,8 @@ public abstract class ChromeFeatureList {
             new CachedFlag(BACK_GESTURE_REFACTOR, false);
     public static final CachedFlag sBaselineGm3SurfaceColors =
             new CachedFlag(BASELINE_GM3_SURFACE_COLORS, true);
+    public static final CachedFlag sBlockIntentsWhileLocked =
+            new CachedFlag(BLOCK_INTENTS_WHILE_LOCKED, false);
     public static final CachedFlag sCctAutoTranslate = new CachedFlag(CCT_AUTO_TRANSLATE, true);
     public static final CachedFlag sCctBottomBarSwipeUpGesture =
             new CachedFlag(CCT_BOTTOM_BAR_SWIPE_UP_GESTURE, true);
@@ -568,16 +569,20 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sInstanceSwitcher = new CachedFlag(INSTANCE_SWITCHER, true);
     public static final CachedFlag sInstantStart = new CachedFlag(INSTANT_START, false);
     public static final CachedFlag sInterestFeedV2 = new CachedFlag(INTEREST_FEED_V2, true);
+    public static final CachedFlag sHideTabOnTabSwitcher =
+            new CachedFlag(HIDE_TAB_ON_TAB_SWITCHER, false);
     public static final CachedFlag sNewTabSearchEngineUrlAndroid =
             new CachedFlag(NEW_TAB_SEARCH_ENGINE_URL_ANDROID, false);
     public static final CachedFlag sPrivacyGuideAndroid3 =
             new CachedFlag(PRIVACY_GUIDE_ANDROID_3, false);
+    public static final CachedFlag sPrivacyGuidePreloadAndroid =
+            new CachedFlag(PRIVACY_GUIDE_PRELOAD_ANDROID, false);
     public static final CachedFlag sPrivacyGuidePostMVP =
             new CachedFlag(PRIVACY_GUIDE_POST_MVP, false);
     public static final CachedFlag sOmniboxMatchToolbarAndStatusBarColor =
             new CachedFlag(OMNIBOX_MATCH_TOOLBAR_AND_STATUS_BAR_COLOR, false);
     public static final CachedFlag sOmniboxModernizeVisualUpdate =
-            new CachedFlag(OMNIBOX_MODERNIZE_VISUAL_UPDATE, false);
+            new CachedFlag(OMNIBOX_MODERNIZE_VISUAL_UPDATE, true);
     public static final CachedFlag sOptimizationGuidePushNotifications =
             new CachedFlag(OPTIMIZATION_GUIDE_PUSH_NOTIFICATIONS, false);
     public static final CachedFlag sPaintPreviewDemo = new CachedFlag(PAINT_PREVIEW_DEMO, false);
@@ -630,6 +635,7 @@ public abstract class ChromeFeatureList {
         sBackGestureRefactorActivityAndroid,
         sBackGestureRefactorAndroid,
         sBaselineGm3SurfaceColors,
+        sBlockIntentsWhileLocked,
         sCctAutoTranslate,
         sCctBottomBarSwipeUpGesture,
         sCctBrandTransparencyMemoryImprovement,
@@ -659,8 +665,10 @@ public abstract class ChromeFeatureList {
         sInstanceSwitcher,
         sInstantStart,
         sInterestFeedV2,
+        sHideTabOnTabSwitcher,
         sNewTabSearchEngineUrlAndroid,
         sPrivacyGuideAndroid3,
+        sPrivacyGuidePreloadAndroid,
         sPrivacyGuidePostMVP,
         sOmniboxMatchToolbarAndStatusBarColor,
         sOmniboxModernizeVisualUpdate,

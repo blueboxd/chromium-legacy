@@ -18,7 +18,17 @@ import re
 import textwrap
 import typing
 import urllib.parse
-from typing import Dict, Hashable, List, Optional, Set, Tuple, Type, Union
+from typing import (
+    Dict,
+    FrozenSet,
+    Hashable,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    Type,
+    Union,
+)
 
 from blinkpy.common import path_finder
 from blinkpy.common.host import Host
@@ -29,11 +39,12 @@ from blinkpy.w3c import wpt_metadata
 from blinkpy.w3c.common import is_basename_skipped
 from blinkpy.w3c.wpt_manifest import WPTManifest
 from blinkpy.web_tests.port.base import Port
+from blinkpy.web_tests.port.factory import add_common_wpt_options
 
 path_finder.bootstrap_wpt_imports()
 from tools.lint import lint as wptlint
 from tools.lint import rules
-from wptrunner import manifestupdate, metadata, wptmanifest
+from wptrunner import manifestupdate, metadata, wptmanifest, wpttest
 from wptrunner.manifestexpected import fuzzy_prop
 from wptrunner.wptmanifest import node as wptnode
 from wptrunner.wptmanifest.backends import conditional, static
@@ -155,22 +166,6 @@ class MetadataBadValue(MetadataRule):
     Check that the value satisfies any required formats:
     https://web-platform-tests.org/tools/wptrunner/docs/expectation.html#web-platform-tests-metadata
     """
-    subtest_statuses = {
-        'PASS',
-        'FAIL',
-        'PRECONDITION_FAILED',
-        'TIMEOUT',
-        'NOTRUN',
-    }
-    common_test_statuses = {
-        'PRECONDITION_FAILED',
-        'TIMEOUT',
-        'CRASH',
-        'ERROR',
-    }
-    harness_statuses = common_test_statuses | {'OK'}
-    # Statuses for tests without subtests.
-    test_statuses = common_test_statuses | {'PASS', 'FAIL'}
     implementation_statuses = {'implementing', 'not-implementing', 'default'}
 
 
@@ -286,6 +281,9 @@ class LintWPT(Command):
         self._tool = tool
         self._fs = self._tool.filesystem
         self._default_port = self._tool.port_factory.get()
+        # Ensure that `self._default_port`, which is shared among child
+        # processes, never updates the manifest, as doing so could race.
+        self._default_port.set_option_default('manifest_update', False)
         self._default_port.set_option_default(
             'test_types', typing.get_args(wpt_metadata.TestType))
         self._finder = path_finder.PathFinder(self._fs)
@@ -294,7 +292,10 @@ class LintWPT(Command):
 
     def parse_args(self, args: List[str]) -> Tuple[optparse.Values, List[str]]:
         # TODO(crbug.com/1431070): Migrate `blink_tool.py` to stdlib's
-        # `argparse`. `optparse` is deprecated.
+        # `argparse`. `optparse` is deprecated. Also, consider making our own
+        # command subparser [1] instead of using the `wpt lint` one.
+        #
+        # [1]: https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser.add_subparsers
         parser = command_line.ArgumentParser(description=self.long_help,
                                              parents=[wptlint.create_parser()],
                                              conflict_handler='resolve')
@@ -307,6 +308,7 @@ class LintWPT(Command):
                             help=argparse.SUPPRESS)
         parser.add_argument('--github-checks-text-file',
                             help=argparse.SUPPRESS)
+        add_common_wpt_options(parser)
         parameters = parser.parse_args(args)
         if not parameters.repo_root:
             parameters.repo_root = self._finder.path_from_wpt_tests()
@@ -314,6 +316,9 @@ class LintWPT(Command):
 
     def execute(self, options: optparse.Values, _args: List[str],
                 _tool: Host) -> Optional[int]:
+        if options.manifest_update:
+            for path in Port.WPT_DIRS:
+                WPTManifest.ensure_manifest(self._default_port, path)
         # Pipe `wpt lint`'s logs into `blink_tool.py`'s formatter.
         wptlint.logger = _log
         # Repurpose the `json` format to collect all lint errors, including
@@ -737,14 +742,15 @@ class MetadataLinter(static.Compiler):
                 break
 
     @property
-    def allowed_statuses(self) -> Set[str]:
+    def allowed_statuses(self) -> FrozenSet[str]:
+        test_cls = wpttest.manifest_test_cls[self.test_type]
         section_type = self.context['section_type']
         if section_type is SectionType.SUBTEST:
-            return MetadataBadValue.subtest_statuses
-        assert section_type is SectionType.TEST
-        if wpt_metadata.can_have_subtests(self.test_type):
-            return MetadataBadValue.harness_statuses
-        return MetadataBadValue.test_statuses
+            result_cls = test_cls.subtest_result_cls
+            assert result_cls, f'{self.test_type!r} test cannot have subtests'
+        else:
+            result_cls = test_cls.result_cls
+        return frozenset(result_cls.statuses)
 
 
 def _format_condition(condition: Condition) -> str:

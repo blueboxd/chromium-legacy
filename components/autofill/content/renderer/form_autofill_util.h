@@ -35,6 +35,7 @@ class WebFormElement;
 class WebInputElement;
 class WebLocalFrame;
 class WebNode;
+class WebString;
 }  // namespace blink
 
 namespace content {
@@ -73,22 +74,6 @@ enum ExtractMask {
                                  // kMaxListSize and each option has as far as
                                  // kMaxDataLength.
 };
-
-// Autofill supports assigning <label for=x> tags to inputs if x its id/name,
-// or the id/name of a shadow host element containing the input.
-// This enum is used to track how often each case occurs in practice.
-enum class AssignedLabelSource {
-  kId = 0,
-  kName = 1,
-  kShadowHostId = 2,
-  kShadowHostName = 3,
-  kMaxValue = kShadowHostName,
-};
-// This temporary histogram is emitted inline, because browser files like
-// AutofillMetrics cannot be included here.
-// TODO(crbug.com/1339277): Remove.
-inline constexpr char kAssignedLabelSourceHistogram[] =
-    "Autofill.LabelInference.AssignedLabelSource";
 
 // Indicates if an iframe |element| is considered actually visible to the user.
 //
@@ -303,6 +288,12 @@ GetUnownedAutofillableFormFieldElements(const blink::WebDocument& document);
 std::vector<blink::WebElement> GetUnownedIframeElements(
     const blink::WebDocument& document);
 
+// Returns a list of elements whose id matches one of the ids found in
+// `id_list`.
+std::vector<blink::WebElement> GetWebElementsFromIdList(
+    const blink::WebDocument& document,
+    const blink::WebString& id_list);
+
 // Returns false iff the extraction fails because the number of fields exceeds
 // |kMaxExtractableFields|, or |field| and |element| are not nullptr but
 // |element| is not among |control_elements|.
@@ -409,6 +400,8 @@ bool InferLabelForElementForTesting(const blink::WebFormControlElement& element,
 blink::WebFormElement FindFormByUniqueRendererId(
     const blink::WebDocument& doc,
     FormRendererId form_renderer_id);
+
+std::string GetAutocompleteAttribute(const blink::WebElement& element);
 
 // Returns the form control element by unique renderer id. It searches the
 // |form_to_be_searched| if specified, otherwise the whole document. Returns the

@@ -34,7 +34,7 @@ class XDGToplevelWrapperImpl : public ShellToplevelWrapper {
   void SetMaximized() override;
   void UnSetMaximized() override;
   void SetCanFullscreen(bool can_fullscreen) override;
-  void SetFullscreen() override;
+  void SetFullscreen(WaylandOutput* wayland_output) override;
   void UnSetFullscreen() override;
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   void SetUseImmersiveMode(bool immersive) override;
@@ -62,7 +62,8 @@ class XDGToplevelWrapperImpl : public ShellToplevelWrapper {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   void EnableScreenCoordinates() override;
 #endif
-  void SetFloat() override;
+  void SetFloatToLocation(
+      WaylandFloatStartLocation float_start_location) override;
   void UnSetFloat() override;
   void SetZOrder(ZOrderLevel z_order) override;
   bool SupportsActivation() override;

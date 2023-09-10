@@ -21,7 +21,6 @@
 #include "ash/ambient/ui/ambient_view_delegate.h"
 #include "ash/ash_export.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
-#include "ash/constants/ambient_theme.h"
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/screen_backlight_observer.h"
 #include "ash/public/cpp/session/session_observer.h"
@@ -213,6 +212,10 @@ class ASH_EXPORT AmbientController
   FRIEND_TEST_ALL_PREFIXES(AmbientControllerTest, BindsObserversWhenAmbientOn);
 
   AmbientPhotoController* ambient_photo_controller() {
+    if (ambient_ui_launcher_) {
+      return ambient_ui_launcher_->GetAmbientPhotoController();
+    }
+    // TODO(pzliu): Remove when migration to UI Launcher is complete.
     return ambient_photo_controller_.get();
   }
 

@@ -177,6 +177,7 @@ extern const char kNtpHistoryClustersModuleCategoriesBoostlistParam[];
 // History Clusters Service to return.
 extern const char kNtpHistoryClustersModuleMaxClustersParam[];
 extern const char kNtpRealboxWidthBehaviorParam[];
+extern const char kCustomizeChromeWallpaperSearchResolutionParam[];
 
 // Returns the timeout after which the load of a module should be aborted.
 base::TimeDelta GetModulesLoadTimeout();
@@ -184,6 +185,11 @@ base::TimeDelta GetModulesLoadTimeout();
 // Returns the maximum number of columns to show on the redesigned modules UI
 // experience.
 int GetModulesMaxColumnCount();
+
+// Returns the maximum number of instances to render for a given module when the
+// module has loaded with other modules. A sentinel value of -1 implies there is
+// no limit.
+int GetMultipleLoadedModulesMaxModuleInstanceCount();
 
 // Returns a list of module IDs ordered by how they should appear on the NTP.
 std::vector<std::string> GetModulesOrder();

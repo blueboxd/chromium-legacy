@@ -137,6 +137,8 @@ import org.chromium.chrome.browser.quick_delete.QuickDeleteMetricsDelegate;
 import org.chromium.chrome.browser.read_later.ReadingListBackPressHandler;
 import org.chromium.chrome.browser.read_later.ReadingListUtils;
 import org.chromium.chrome.browser.reengagement.ReengagementNotificationController;
+import org.chromium.chrome.browser.search_engines.DseNewTabUrlManager;
+import org.chromium.chrome.browser.search_engines.DseNewTabUrlManagerUtils;
 import org.chromium.chrome.browser.search_engines.SearchEngineChoiceNotification;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.share.ShareHelper;
@@ -328,16 +330,13 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
      */
     private @Nullable AuxiliarySearchController mAuxiliarySearchController;
 
-    // This is the cached value of mIntentHandler#shouldIgnoreIntent and shouldn't be read directly.
+    // This is the cached value of IntentHandler#shouldIgnoreIntent and shouldn't be read directly.
     // Use #shouldIgnoreIntent instead.
     private Boolean mShouldIgnoreIntent;
 
     // Supplier for a dependency to inform about the type of intent used to launch Chrome.
     private OneshotSupplierImpl<ToolbarIntentMetadata> mIntentMetadataOneshotSupplier =
             new OneshotSupplierImpl<>();
-
-    // Time at which an intent was received and handled.
-    private long mIntentHandlingTimeMs;
 
     /**
      * Whether the StartSurface is shown when Chrome is launched.
@@ -385,6 +384,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
     // The URL of the last active Tab read from the Tab metadata file during cold startup.
     private String mLastActiveTabUrl;
+
+    private DseNewTabUrlManager mDseNewTabUrlManager;
 
     private final IncognitoTabHost mIncognitoTabHost = new IncognitoTabHost() {
         @Override
@@ -904,7 +905,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 return;
             }
 
-            mIntentHandlingTimeMs = SystemClock.uptimeMillis();
             super.onNewIntent(intent);
 
             boolean shouldShowRegularOverviewMode = IntentUtils.safeGetBooleanExtra(
@@ -1290,7 +1290,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             boolean isMainIntentFromLauncher = false;
             if (getSavedInstanceState() == null && intent != null) {
                 if (!shouldIgnoreIntent()) {
-                    isIntentWithEffect = mIntentHandler.onNewIntent(intent);
+                    isIntentWithEffect = IntentHandler.onNewIntent(
+                            intent, mIntentHandlerDelegate, mIntentHandlingTimeMs);
                 }
 
                 if (IntentUtils.isMainIntentFromLauncher(intent)) {
@@ -1640,11 +1641,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         }
 
         @Override
-        public long getIntentHandlingTimeMs() {
-            return mIntentHandlingTimeMs;
-        }
-
-        @Override
         public void processWebSearchIntent(String query) {
             assert false;
         }
@@ -1680,6 +1676,10 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         IncognitoTabHostRegistry.getInstance().register(mIncognitoTabHost);
 
         mStartupPaintPreviewHelperSupplier.attach(getWindowAndroid().getUnownedUserDataHost());
+
+        if (DseNewTabUrlManagerUtils.isNewTabSearchEngineUrlAndroidEnabled()) {
+            mDseNewTabUrlManager = new DseNewTabUrlManager(mTabModelProfileSupplier);
+        }
     }
 
     @Override
@@ -1803,8 +1803,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
     private boolean shouldIgnoreIntent() {
         if (mShouldIgnoreIntent == null) {
-            // We call this only once because mIntentHandler#shouldIgnoreIntent has side effects.
-            mShouldIgnoreIntent = mIntentHandler.shouldIgnoreIntent(getIntent());
+            // We call this only once because IntentHandler#shouldIgnoreIntent can be slow.
+            mShouldIgnoreIntent = IntentHandler.shouldIgnoreIntent(getIntent());
         }
         return mShouldIgnoreIntent;
     }
@@ -1994,10 +1994,11 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         return Pair.create(
                 new ChromeTabCreator(this, getWindowAndroid(), this::getTabDelegateFactory, false,
                         overviewNTPCreator, AsyncTabParamsManagerSingleton.getInstance(),
-                        getTabModelSelectorSupplier(), getCompositorViewHolderSupplier()),
+                        getTabModelSelectorSupplier(), getCompositorViewHolderSupplier(),
+                        mDseNewTabUrlManager),
                 new ChromeTabCreator(this, getWindowAndroid(), this::getTabDelegateFactory, true,
                         overviewNTPCreator, AsyncTabParamsManagerSingleton.getInstance(),
-                        getTabModelSelectorSupplier(), getCompositorViewHolderSupplier()));
+                        getTabModelSelectorSupplier(), getCompositorViewHolderSupplier(), null));
     }
 
     @Override

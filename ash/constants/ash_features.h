@@ -8,6 +8,7 @@
 #include "base/component_export.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/time/time.h"
 
 namespace ash::features {
 
@@ -115,6 +116,9 @@ COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kCaptureModeDemoTools);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kCaptureModeTour);
 COMPONENT_EXPORT(ASH_CONSTANTS)
 BASE_DECLARE_FEATURE(kCellularBypassESimInstallationConnectivityCheck);
+COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kCellularCarrierLock);
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::FeatureParam<int> kCellularCarrierLockLastConfig;
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kCellularUseSecondEuicc);
 COMPONENT_EXPORT(ASH_CONSTANTS)
 BASE_DECLARE_FEATURE(kCheckPasswordsAgainstCryptohomeHelper);
@@ -295,6 +299,8 @@ extern const base::FeatureParam<std::string> kFastPairPwaCompanionInstallUri;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::FeatureParam<std::string> kFastPairPwaCompanionAppId;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::FeatureParam<std::string> kFastPairPwaCompanionPlayStoreUri;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::FeatureParam<double>
     kFastPairDeviceLostNotificationTimeoutMinutes;
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kFastPairLowPower);
@@ -323,6 +329,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kFederatedService);
 COMPONENT_EXPORT(ASH_CONSTANTS)
 BASE_DECLARE_FEATURE(kFederatedServiceScheduleTasks);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kFederatedStringsService);
+COMPONENT_EXPORT(ASH_CONSTANTS)
+BASE_DECLARE_FEATURE(kFederatedStringsServiceScheduleTasks);
 COMPONENT_EXPORT(ASH_CONSTANTS)
 BASE_DECLARE_FEATURE(kFederatedTimezoneCodePhh);
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -362,11 +370,17 @@ BASE_DECLARE_FEATURE(kEcheLauncherIconsInMoreAppsButton);
 COMPONENT_EXPORT(ASH_CONSTANTS)
 BASE_DECLARE_FEATURE(kEcheNetworkConnectionState);
 COMPONENT_EXPORT(ASH_CONSTANTS)
+BASE_DECLARE_FEATURE(kEcheShorterScanningDutyCycle);
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::FeatureParam<base::TimeDelta>
     kEcheBackgroundConnectionAttemptThrottleTimeout;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::FeatureParam<base::TimeDelta>
     kEcheConnectionStatusResetTimeout;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::FeatureParam<base::TimeDelta> kEcheScanningCycleOnTime;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::FeatureParam<base::TimeDelta> kEcheScanningCycleOffTime;
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kFocusMode);
 COMPONENT_EXPORT(ASH_CONSTANTS)
 BASE_DECLARE_FEATURE(kForceEnableServerSideSpeechRecognitionForDev);
@@ -386,6 +400,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 BASE_DECLARE_FEATURE(kGlanceablesV2TrustedTesters);
 COMPONENT_EXPORT(ASH_CONSTANTS)
 BASE_DECLARE_FEATURE(kGlanceablesV2ClassroomTeacherView);
+COMPONENT_EXPORT(ASH_CONSTANTS)
+BASE_DECLARE_FEATURE(kGlanceablesV2ErrorMessage);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kGaiaReauthEndpoint);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kGameDashboard);
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -534,7 +550,6 @@ BASE_DECLARE_FEATURE(kOnDeviceSpeechRecognition);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kOnlyShowNewShortcutsApp);
 COMPONENT_EXPORT(ASH_CONSTANTS)
 BASE_DECLARE_FEATURE(kSearchCustomizableShortcutsInLauncher);
-COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kSearchInShortcutsApp);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kOrcaDogfood);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kFeatureManagementOrca);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kOsFeedback);
@@ -568,8 +583,6 @@ BASE_DECLARE_FEATURE(kOsSettingsTestChromeRefresh);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kOsSyncConsentRevamp);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kOverviewButton);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kOverviewDeskNavigation);
-COMPONENT_EXPORT(ASH_CONSTANTS)
-BASE_DECLARE_FEATURE(kOverviewScrollLayoutForClamshell);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kParentAccessJelly);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kPasspointARCSupport);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kPasspointSettings);
@@ -672,6 +685,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kScanningAppJelly);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kScreenSaverDuration);
 COMPONENT_EXPORT(ASH_CONSTANTS)
 BASE_DECLARE_FEATURE(kSeamlessRefreshRateSwitching);
+COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kSeaPen);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kSeparateNetworkIcons);
 COMPONENT_EXPORT(ASH_CONSTANTS)
 BASE_DECLARE_FEATURE(kSessionManagerLongKillTimeout);
@@ -691,8 +705,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 BASE_DECLARE_FEATURE(kShimlessRMAComplianceCheck);
 COMPONENT_EXPORT(ASH_CONSTANTS)
 BASE_DECLARE_FEATURE(kShimlessRMADiagnosticPage);
-COMPONENT_EXPORT(ASH_CONSTANTS)
-BASE_DECLARE_FEATURE(kShimlessRMADisableDarkMode);
 COMPONENT_EXPORT(ASH_CONSTANTS)
 BASE_DECLARE_FEATURE(kShimlessRMA3pDiagnostics);
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -857,6 +869,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCalendarJellyEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCaptivePortalErrorPageEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCaptureModeAudioMixingEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCaptureModeTourEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCellularCarrierLockEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsCheckPasswordsAgainstCryptohomeHelperEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsClipboardHistoryFooterEnabled();
@@ -918,6 +931,12 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsFastPairDevicesBluetoothSettingsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFederatedServiceEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFederatedServiceScheduleTasksEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFederatedStringsServiceEnabled();
+
+// TODO revisit structure of feature flags w.r.t. gating task scheduling.
+COMPONENT_EXPORT(ASH_CONSTANTS)
+bool IsFederatedStringsServiceScheduleTasksEnabled();
+
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFileManagerFuseBoxDebugEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFilesConflictDialogEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFilesSearchV2Enabled();
@@ -932,6 +951,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsEcheLauncherListViewEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsEcheLauncherIconsInMoreAppsButtonEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsEcheNetworkConnectionStateEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS)
+bool IsEcheShorterScanningDutyCycleEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFullscreenAfterUnlockAllowed();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFullscreenAlertBubbleEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsBlockFwupdClientEnabled();
@@ -945,6 +966,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool AreGlanceablesV2Enabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool AreGlanceablesV2EnabledForTrustedTesters();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsGlanceablesV2ClassroomTeacherViewEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS)
+bool IsGlanceablesV2ErrorMessageEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsHibernateEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsHideArcMediaNotificationsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsHideShelfControlsInTabletModeEnabled();
@@ -1035,8 +1058,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOsSettingsRevampWayfindingEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOsSettingsTestChromeRefresh();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOsSyncConsentRevampEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOverviewDeskNavigationEnabled();
-COMPONENT_EXPORT(ASH_CONSTANTS)
-bool IsOverviewScrollLayoutForClamshellEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsParentAccessJellyEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPasswordlessGaiaEnabledForConsumers();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPasswordSelectionEnabledInOobe();
@@ -1094,6 +1115,7 @@ bool IsSamlNotificationOnPasswordChangeSuccessEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsScalableIphEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsScalableIphDebugEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsScreenSaverDurationEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSeaPenEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSeparateNetworkIconsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsSettingsAppNotificationSettingsEnabled();
@@ -1106,7 +1128,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShimlessRMAComplianceCheckEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShimlessRMADiagnosticPageEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSimLockPolicyEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShimlessRMAOsUpdateEnabled();
-COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShimlessRMADarkModeDisabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShimlessRMA3pDiagnosticsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShimlessRMA3pDiagnosticsDevModeEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSmartReaderEnabled();

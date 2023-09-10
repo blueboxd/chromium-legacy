@@ -77,7 +77,9 @@ class SurfaceTreeHost : public SurfaceDelegate,
   Surface* root_surface() { return root_surface_; }
   const Surface* root_surface() const { return root_surface_; }
 
-  const gfx::Point& root_surface_origin() const { return root_surface_origin_; }
+  const gfx::Point& root_surface_origin_pixel() const {
+    return root_surface_origin_pixel_;
+  }
 
   LayerTreeFrameSinkHolder* layer_tree_frame_sink_holder() {
     return layer_tree_frame_sink_holder_.get();
@@ -121,7 +123,8 @@ class SurfaceTreeHost : public SurfaceDelegate,
   void UnsetCanGoBack() override {}
   void SetPip() override {}
   void UnsetPip() override {}
-  void SetFloat() override {}
+  void SetFloatToLocation(
+      chromeos::FloatStartLocation float_start_location) override {}
   void SetAspectRatio(const gfx::SizeF& aspect_ratio) override {}
   void MoveToDesk(int desk_index) override {}
   void SetVisibleOnAllWorkspaces() override {}
@@ -243,9 +246,12 @@ class SurfaceTreeHost : public SurfaceDelegate,
 
   // Position of root surface relative to topmost, leftmost sub-surface. The
   // host window should be translated by the negation of this vector.
-  gfx::Point root_surface_origin_;
+  // The coordinates is Pixel.
+  gfx::Point root_surface_origin_pixel_;
 
+  // The coordinates is DP.
   std::unique_ptr<aura::Window> host_window_;
+
   std::unique_ptr<LayerTreeFrameSinkHolder> layer_tree_frame_sink_holder_;
   LayerTreeFrameSinkHolderFactory frame_sink_holder_factory_;
 

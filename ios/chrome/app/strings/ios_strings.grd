@@ -623,6 +623,62 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_BRING_ANDROID_TABS_REVIEW_TABLE_TITLE" desc="Title of the table that shows a list of recently active tabs from Android for the Android switcher to review and open. [iOS only]">
         Tabs from Android
       </message>
+      <message name="IDS_IOS_BULK_UPLOAD_BOOKMARK_SUBTITLE" desc="The text appears as a note in a confirmation dialog where the user can choose to save some data to their Google Account. When data is saved to the Google Account, it's backed up safely and is available on any device where they're signed in to Chrome. This line give the number of sites with local bookmarks and two examples of such sites.">
+        {count, plural,
+          =1 {{website_1}}
+          =2 {{website_1}, {website_2}}
+          =3 {{website_1}, {website_2}, and 1 more}
+          other {{website_1}, {website_2}, and {more_count} more}}
+      </message>
+      <message name="IDS_IOS_BULK_UPLOAD_BOOKMARK_TITLE" desc="The text appears as a note in a confirmation dialog where the user can choose to save some data to their Google Account. When data is saved to the Google Account, it's backed up safely and is available on any device where they're signed in to Chrome. This switch label explains how many  bookmarks are saved locally.">
+        {count, plural,
+          =1 {{count} Bookmark}
+          other {{count} Bookmarks}}
+      </message>
+      <message name="IDS_IOS_BULK_UPLOAD_BUTTON_TITLE" desc="The text is the primary button in a confirmation dialog where the user can choose to save some data to their Google Account. When data is saved to the Google Account, it's backed up safely and is available on any device where they're signed in to Chrome.">
+        Save in Account
+      </message>
+      <message name="IDS_IOS_BULK_UPLOAD_PASSWORD_AUTHENTIFY_MESSAGE" desc="After the user selected to bulk upload passwords, the iPhone request the user to identify, and this message explains what will occurs if they identify.">
+        Save passwords in account
+      </message>
+      <message name="IDS_IOS_BULK_UPLOAD_PASSWORD_AND_OTHER_TYPE_AUTHENTIFY_MESSAGE" desc="After the user selected to bulk upload passwords and one other type of items, the iPhone request the user to identify, and this message explains what will occurs if they identify.">
+        Save passwords and other items in account
+      </message>
+      <message name="IDS_IOS_BULK_UPLOAD_PASSWORD_SUBTITLE" desc="The text appears as a note in a confirmation dialog where the user can choose to save some data to their Google Account. When data is saved to the Google Account, it's backed up safely and is available on any device where they're signed in to Chrome. This line give the number of sites with local passwords and two examples of such sites.">
+        {count, plural,
+          =1 {For {website_1}}
+          =2 {For {website_1}, {website_2}}
+          =3 {For {website_1}, {website_2}, and 1 more}
+          other {For {website_1}, {website_2}, and {more_count} more}}
+      </message>
+      <message name="IDS_IOS_BULK_UPLOAD_PASSWORD_TITLE" desc="The text appears as a note in a confirmation dialog where the user can choose to save some data to their Google Account. When data is saved to the Google Account, it's backed up safely and is available on any device where they're signed in to Chrome. This switch label explains how many passwords are saved locally.">
+        {count, plural,
+          =1 {{count} Password}
+          other {{count} Passwords}}
+      </message>
+      <message name="IDS_IOS_BULK_UPLOAD_ON_THIS_DEVICE_SETTINGS_HEADER" desc="The text appears as a note in a confirmation dialog where the user can choose to save some data to their Google Account. When data is saved to the Google Account, it's backed up safely and is available on any device where they're signed in to Chrome. This note explains where the user can go to view and manage individual items. like individual bookmarks or passwords.">
+        You can also view and manage these items in your bookmarks, Reading List, or password manager.
+      </message>
+      <message name="IDS_IOS_BULK_UPLOAD_READING_LIST_SUBTITLE" desc="The text appears as a note in a confirmation dialog where the user can choose to save some data to their Google Account. When data is saved to the Google Account, it's backed up safely and is available on any device where they're signed in to Chrome. This line give the number of sites with local reading list pages and two examples of such sites.">
+        {count, plural,
+          =1 {{website_1}}
+          =2 {{website_1}, {website_2}}
+          =3 {{website_1}, {website_2}, and 1 more}
+          other {{website_1}, {website_2}, and {more_count} more}}
+      </message>
+      <message name="IDS_IOS_BULK_UPLOAD_READING_LIST_TITLE" desc="The text appears as a note in a confirmation dialog where the user can choose to save some data to their Google Account. When data is saved to the Google Account, it's backed up safely and is available on any device where they're signed in to Chrome. This switch label explains how many local reading list pages are saved locally.">
+        {count, plural,
+          =1 {{count} page on your Reading List}
+          other {{count} pages on your Reading List}}
+      </message>
+      <message name="IDS_IOS_BULK_UPLOAD_SNACKBAR_MESSAGE" desc="The message appears in a small confirmation bubble with limited space after the user chose to save some data to their Google Account. [iOS] only">
+        {count, plural,
+          =1 {Item saved in your Google Account, {email}}
+          other {Items saved in your Google Account, {email}}}
+      </message>
+      <message name="IDS_IOS_BULK_UPLOAD_ON_THIS_DEVICE_TITLE" desc="The text appears as the title of a confirmation dialog where the user can choose to save some data to their Google Account. When data is saved to the Google Account, it's backed up safely and is available on any device where they're signed in to Chrome.">
+        On This Device
+      </message>
       <message name="IDS_IOS_CALENDARS_USAGE_DESCRIPTION" desc="Specifies the reason for accessing the user's calendar while the app is in use [Length: unlimited] [iOS only].">
           This will be used to create events in your Apple Calendar from Chrome and Google Lens.
       </message>
@@ -2898,6 +2954,45 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_PASSWORD_SETTINGS_ADD_PASSWORD_MANUALLY_TITLE" desc="Title of the view that allow user to enter the details for a new password credential to add it to the list the passwords. [iOS only]">
         Add Password
       </message>
+      <message name="IDS_IOS_PASSWORD_SETTINGS_BULK_UPLOAD_PASSWORDS_ALERT_BUTTON" desc="Alert accept button in settings > password confirming the user wants to save all their local passwords to their account. [iOS Only]">
+        Save in Account
+      </message>
+      <message name="IDS_IOS_PASSWORD_SETTINGS_BULK_UPLOAD_PASSWORDS_ALERT_CANCEL" desc="Alert cancel button in settings > password cancelling when user is offered to move passwords to account. [iOS Only]">
+        Cancel
+      </message>
+      <message name="IDS_IOS_PASSWORD_SETTINGS_BULK_UPLOAD_PASSWORDS_ALERT_DESCRIPTION" desc="Alert description in settings > password confirming to the user that they can save all their local passwords to their account. [iOS Only]">
+        {COUNT, plural,
+        =1 {You can save your password for {DOMAIN_ONE} in your Google Account, {EMAIL}}
+        =2 {You can save your passwords for {DOMAIN_ONE} and {DOMAIN_TWO} in your Google Account, {EMAIL}}
+        =3 {You can save your passwords for {DOMAIN_ONE}, {DOMAIN_TWO}, and {OTHER_DOMAINS_COUNT} other in your Google Account, {EMAIL}}
+        other {You can save your passwords for {DOMAIN_ONE}, {DOMAIN_TWO}, and {OTHER_DOMAINS_COUNT} others in your Google Account, {EMAIL}}}
+      </message>
+      <message name="IDS_IOS_PASSWORD_SETTINGS_BULK_UPLOAD_PASSWORDS_ALERT_TITLE" desc="Alert title in settings > password, confirming all local passwords will be saved to the user's account. [iOS Only]">
+        {COUNT, plural,
+        =1 {Save {COUNT} Password in Your Google Account}
+        other {Save {COUNT} Passwords in Your Google Account}}
+      </message>
+      <message name="IDS_IOS_PASSWORD_SETTINGS_BULK_UPLOAD_PASSWORDS_SECTION_BUTTON" desc="Section button in settings > password allowing the user to save all their local passwords to their account. [iOS Only]">
+        {COUNT, plural,
+        =1 {Save Password in Account}
+        other {Save Passwords in Account}}
+      </message>
+      <message name="IDS_IOS_PASSWORD_SETTINGS_BULK_UPLOAD_PASSWORDS_SECTION_DESCRIPTION" desc="Section description in settings > password explaining to the user that they can save all their local passwords to their account to use them on other devices. [iOS Only]">
+        {COUNT, plural,
+        =1 {{COUNT} password is saved only to this device. To use it on your other devices, save it in your Google Account, {EMAIL}.}
+        other {{COUNT} passwords are saved only to this device. To use them on your other devices, save them in your Google Account, {EMAIL}.}}
+      </message>
+      <message name="IDS_IOS_PASSWORD_SETTINGS_BULK_UPLOAD_PASSWORDS_SECTION_TITLE" desc="Section title in settings > password, about saving all local passwords to the user's account. [iOS Only]">
+        Use Passwords on All Your Devices
+      </message>
+      <message name="IDS_IOS_PASSWORD_SETTINGS_BULK_UPLOAD_PASSWORDS_SNACKBAR_MESSAGE" desc="Snackbar message in settings > password, about local passwords having been saved into the user's account. [iOS Only]">
+        {COUNT, plural,
+        =1 {Password saved in your Google Account, {EMAIL}}
+        other {Passwords saved in your Google Account, {EMAIL}}}
+      </message>
+      <message name="IDS_IOS_PASSWORD_SETTINGS_BULK_UPLOAD_PASSWORDS_SET_UP_SCREENLOCK_CONTENT" desc="Message informing the user that in order to save local passwords to their account, a screen lock needs to be set up on the device. This is shown as an alert message after the user tries to save local passwords to their account. [Length: about two lines] [iOS only]">
+        To save passwords in your account, you must first set a passcode on your device.
+      </message>
       <message name="IDS_IOS_LOCAL_PASSWORD_ACCESSIBILITY_LABEL" desc="Screenreader label when a password is saved only locally and not backed up to any account.">
         Password saved only on this device
       </message>
@@ -4194,11 +4289,6 @@ Try to use a unique password for every site.
 
 To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>clear the Chrome data in your account<ph name="END_LINK">END_LINK</ph>.
       </message>
-      <message name="IDS_IOS_SYNC_ENCRYPTION_PASSPHRASE_INFO" desc="The information text for encrypting sync using a passphrase, shown on the passphrase screen [iOS only]">
-        Passphrase encryption doesn’t include payment methods and addresses from Google Pay.
-
-Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>clear the Chrome data in your account<ph name="END_LINK">END_LINK</ph>.
-      </message>
       <message name="IDS_IOS_NEW_SYNC_ENCRYPTION_PASSPHRASE_INFO" desc="The information text for encrypting sync using a passphrase, shown on the passphrase screen [iOS only]">
         Payment methods and addresses from Google Pay won’t be encrypted. Browsing history from Chrome won’t sync.
 
@@ -4419,6 +4509,10 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       <message name="IDS_IOS_TAB_RESUMPTION_CONTEXT_MENU_TITLE" desc="Title for the long-press context menu of the module that presents the last opened tab, on the new tab page.">
           This card shows your last used open tab across all your synced devices within the last 24 hours.
       </message>
+      <message name="IDS_IOS_TAB_RESUMPTION_TAB_TITLE_PLACEHOLDER" desc="Label displayed when the last opened tab title is empty. This module presents the last open tab, on the new tab page.">
+        Your Last Open Tab
+      </message>
+
       <message name="IDS_IOS_TAB_RESUMPTION_TITLE" desc="Title for the module that presents the last opened tab, on the new tab page.">
         Continue Browsing
       </message>
@@ -4686,6 +4780,54 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       <message name="IDS_IOS_OVERFLOW_MENU_EDIT_SECTION_HIDDEN_TITLE" desc="The title for the overflow menu edit section showing hidden destinations" meaning="[In Title case] [iOS only] [Length: Unlimited]">
         Hidden
       </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_BOOKMARK" desc="The title for the context menu item to hide Add to Bookmarks. This should match the title of the Add to Bookmarks action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Add to Bookmarks
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_CLEAR_BROWSING_DATA" desc="The title for the context menu item to hide Clear Browsing Data. This should match the title of the Clear Browsing Data action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Clear Browsing Data
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_DESKTOP_SITE" desc="The title for the context menu item to hide Request Desktop Site. This should match the title of the Request Desktop Site action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Request Desktop Site
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_FIND_IN_PAGE" desc="The title for the context menu item to hide Find in Page. This should match the title of the Find in Page action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Find in Page
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_FOLLOW" desc="The title for the context menu item to hide Follow. This should match the title of the Follow action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Follow
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_READING_LIST" desc="The title for the context menu item to hide Add to Reading List. This should match the title of the Add to Reading List action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Add to Reading List
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_TEXT_ZOOM" desc="The title for the context menu item to hide Zoom Text. This should match the title of the Zoom Text action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Zoom Text
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_TRANSLATE" desc="The title for the context menu item to hide Translate. This should match the title of the Translate action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Translate
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_DESTINATION_BOOKMARKS" desc="The title for the context menu item to hide Bookmarks. This should match the title of the Bookmarks destination in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Bookmarks
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_DESTINATION_DOWNLOADS" desc="The title for the context menu item to hide Downloads. This should match the title of the Downloads destination in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Downloads
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_DESTINATION_HISTORY" desc="The title for the context menu item to hide History. This should match the title of the History destination in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide History
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_DESTINATION_READING_LIST" desc="The title for the context menu item to hide Reading List. This should match the title of the Reading List destination in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Reading List
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_DESTINATION_RECENT_TABS" desc="The title for the context menu item to hide Recent Tabs. This should match the title of the Recent Tabs destination in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Recent Tabs
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_DESTINATION_PASSWORDS" desc="The title for the context menu item to hide Passwords. This should match the title of the Passwords destination in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Password Manager
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_DESTINATION_PRICE_NOTIFICATIONS" desc="The title for the context menu item to hide Price Tracking. This should match the title of the Price Tracking destination in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Track Price
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_DESTINATION_WHATS_NEW" desc="The title for the context menu item to hide What's New. This should match the title of the What's New destination in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide What's New
+      </message>
       <message name="IDS_IOS_OVERFLOW_MENU_SORT_TITLE" desc="The title of the overflow menu option where the menu will be auto-sorted by frequency." meaning="[iOS only] [Length: Unlimited]">
         Smart Sort Menu Bar
       </message>
@@ -4874,9 +5016,6 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       </message>
       <message name="IDS_IOS_SIGNIN_PROMO_RECENT_TABS_WITH_UNITY" desc="Text to inform the user that they can sign in and sync to get tabs shared between devices. [iOS only]">
         To get your tabs from your other devices, turn on sync.
-      </message>
-      <message name="IDS_IOS_SIGNIN_PROMO_SETTINGS_WITH_UNITY" desc="Text to inform the user that they can sign in and sync to get tabs shared between devices. [iOS only]">
-        To sync and personalize across devices, turn on sync.
       </message>
       <message name="IDS_IOS_SIGNIN_SNACKBAR_SIGNED_IN_AS" desc="This confirmation message is intended to help users understand that they have signed in to Chrome with their Google Account. The confirmation message appears at the bottom of the Bookmarks page after users choose an account to sign in to. The tone should be informative. [iOS only]">
         Signed in as <ph name="USER_EMAIL">$1<ex>johndoe@gmail.com</ex></ph>
@@ -5156,6 +5295,12 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       <message name="IDS_IOS_UNO_UPGRADE_PROMO_SIGNIN_SUBTITLE" desc="This string is on a sign-in page, shown several weeks after the user has installed Chrome. It explains the overarching user benefit of signing in (access to bookmarks, passwords, history, settings, etc.). We want users to understand why signing in is beneficial, and click 'Continue as name' to sign in to their Google Account. The tone should be informative and lightweight.">
         Get your bookmarks, passwords, and more on all your devices.
       </message>
+      <message name="IDS_IOS_SAFETY_CHECK_CONTEXT_MENU_TITLE" desc="Title for the long-press context menu of the module that presents the Safety Check.">
+          This card shows any privacy or security issues that Safety Check automatically detects for you.
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_CONTEXT_MENU_DESCRIPTION" desc="Descripiton for the long-press context menu of the module that presents the Safety Check.">
+        Hide "Safety Check"
+      </message>
       <message name="IDS_IOS_SAFETY_CHECK_TITLE_ALL_SAFE" desc="Tag label title displayed for the Safety Check module in the Magic Stack when there are no Safety Check issue found. [iOS only]">
         Your Browser Looks Good
       </message>
@@ -5230,6 +5375,36 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       </message>
       <message name="IDS_IOS_SAFETY_CHECK_LAST_COMPLETED_CHECK" desc="Subtitle for Safety Check (Magic Stack) module which shows the timestamp of the last check." meaning="Time when the Safety Check was last run.">
         Last run <ph name="TIME">$1<ex>10 minutes ago</ex></ph>
+      </message>
+      <message name="IDS_IOS_SAVE_TO_PHOTOS_THIS_FILE_COULD_NOT_BE_UPLOADED_TITLE" desc="Title of an alert that is presented if the user's attempt to upload an image to Google Photos fails. [iOS only]">
+        This File Could Not Be Uploaded
+      </message>
+      <message name="IDS_IOS_SAVE_TO_PHOTOS_THIS_FILE_COULD_NOT_BE_UPLOADED_MESSAGE" desc="Message of an alert that is presented if the user's attempt to upload an image to Google Photos fails. [iOS only]">
+        <ph name="FILENAME">$1<ex>image.jpeg</ex></ph> (<ph name="FILESIZE">$2<ex>4 MB</ex></ph>) could not be uploaded
+      </message>
+      <message name="IDS_IOS_SAVE_TO_PHOTOS_THIS_FILE_COULD_NOT_BE_UPLOADED_TRY_AGAIN" desc="Button in an alert that is presented if the user's attempt to upload an image to Google Photos fails. The button lets the user try to upload the image again. [iOS only]">
+        Try Again
+      </message>
+      <message name="IDS_IOS_SAVE_TO_PHOTOS_SNACKBAR_SAVING_IMAGE_MESSAGE" desc="Message of snackbar that is shown when the user started saving an image to Google Photos. [iOS only]">
+        Saving image in Google Photos for <ph name="USER_EMAIL">$1<ex>peter.parker@gmail.com</ex></ph>...
+      </message>
+      <message name="IDS_IOS_SAVE_TO_PHOTOS_SNACKBAR_IMAGE_SAVED_MESSAGE" desc="Message of snackbar that is shown when the image selected by the user to be saved in Google Photos has been saved successfully. [iOS only]">
+        Image saved in Google Photos for <ph name="USER_EMAIL">$1<ex>peter.parker@gmail.com</ex></ph>
+      </message>
+      <message name="IDS_IOS_SAVE_TO_PHOTOS_SNACKBAR_IMAGE_SAVED_OPEN_BUTTON" desc="Label of snackbar button that is shown when the image selected by the user to be saved in Google Photos has been saved successfully. The button opens the saved image i.e. it either shows the Google Photos app in the App Store if it is not installed, or opens the image in the Google Photos app. [iOS only]">
+        Open
+      </message>
+      <message name="IDS_IOS_SAVE_TO_PHOTOS_ACCOUNT_PICKER_TITLE" desc="Dialog title to invite the user to pick an account to save an image to Google Photos. [iOS only]">
+        Save in Google Photos
+      </message>
+      <message name="IDS_IOS_SAVE_TO_PHOTOS_ACCOUNT_PICKER_BODY" desc="Text when a user attempts to save an image to Google Photos, then is presented with the account picker dialog to select which account they want to use to save the image. [iOS only]">
+        Select the account you want to use to save <ph name="FILENAME">$1<ex>image.jpeg</ex></ph> - <ph name="FILESIZE">$2<ex>4 MB</ex></ph>
+      </message>
+      <message name="IDS_IOS_SAVE_TO_PHOTOS_ACCOUNT_PICKER_ASK_EVERY_TIME" desc="Switch label to let the user choose whether they want to pick an account every time. [iOS only]">
+        Ask which account to use every time
+      </message>
+      <message name="IDS_IOS_SAVE_TO_PHOTOS_ACCOUNT_PICKER_SUBMIT" desc="Dialog primary button label to validate the account picked to save an image to Google Photos. [iOS only]" meaning="This button saves the image to the user's Google Photos library i.e. this means 'Save' as in 'Save in Google Photos'.">
+        Save
       </message>
     </messages>
   </release>

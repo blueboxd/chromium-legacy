@@ -32,6 +32,10 @@ BASE_FEATURE(kSupportsUserDataFlatHashMap,
              "SupportsUserDataFlatHashMap",
              FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kUseRustJsonParser,
+             "UseRustJsonParser",
+             FEATURE_DISABLED_BY_DEFAULT);
+
 #if BUILDFLAG(IS_ANDROID)
 // Force to enable LowEndDeviceMode partially on Android mid-range devices.
 // Such devices aren't considered low-end, but we'd like experiment with
@@ -44,14 +48,7 @@ BASE_FEATURE(kSupportsUserDataFlatHashMap,
 // population to collect data.
 BASE_FEATURE(kPartialLowEndModeOnMidRangeDevices,
              "PartialLowEndModeOnMidRangeDevices",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// A parameter to exclude or not exclude LowEndBackgroundCleanup from
-// PartialLowModeOnMidRangeDevices. This is used to see how
-// LowEndBackGroundCleanup affects total count of memory.gpu.privatefootprints.
-const FeatureParam<bool> kPartialLowEndModeExcludeLowEndBackgroundCleanup{
-    &kPartialLowEndModeOnMidRangeDevices, "exculde-low-end-background-cleanup",
-    false};
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #endif  // BUILDFLAG(IS_ANDROID)
 

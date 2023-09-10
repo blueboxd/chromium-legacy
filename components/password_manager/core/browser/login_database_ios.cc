@@ -15,6 +15,7 @@
 #include "base/apple/scoped_cftyperef.h"
 #include "base/base64.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/os_crypt/sync/os_crypt.h"
@@ -150,9 +151,8 @@ void DeleteEncryptedPasswordFromKeychain(
   CFDictionarySetValue(query, kSecAttrAccount, item_ref);
 
   OSStatus status = SecItemDelete(query);
-  if (status != errSecSuccess && status != errSecItemNotFound) {
-    NOTREACHED() << "Unable to remove password from keychain: " << status;
-  }
+  base::UmaHistogramSparse("PasswordManager.LoginDatabase.DeleteFromKeychain",
+                           static_cast<int>(status));
 
   // Delete the temporary passwords directory, since there might be leftover
   // temporary files used for password export that contain the password being
@@ -161,20 +161,6 @@ void DeleteEncryptedPasswordFromKeychain(
   // that the file is still needed by the consumer app, the export operation
   // will fail.
   password_manager::DeletePasswordsDirectory();
-}
-
-void LoginDatabase::DeleteKeychainItemByPrimaryId(int id) {
-  CHECK(!keychain_identifier_statement_by_id_.empty());
-  sql::Statement s(db_.GetCachedStatement(
-      SQL_FROM_HERE, keychain_identifier_statement_by_id_.c_str()));
-
-  s.BindInt(0, id);
-
-  std::string keychain_identifier;
-  if (s.Step()) {
-    s.ColumnBlobAsString(0, &keychain_identifier);
-  }
-  DeleteEncryptedPasswordFromKeychain(keychain_identifier);
 }
 
 }  // namespace password_manager

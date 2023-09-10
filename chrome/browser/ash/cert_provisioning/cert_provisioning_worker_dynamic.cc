@@ -253,8 +253,8 @@ CertProvisioningWorkerDynamic::GetLastBackendServerError() const {
   return last_backend_server_error_;
 }
 
-const std::string& CertProvisioningWorkerDynamic::GetFailureMessage() const {
-  return failure_message_;
+std::string CertProvisioningWorkerDynamic::GetFailureMessage() const {
+  return failure_message_ui_.value_or(failure_message_);
 }
 
 void CertProvisioningWorkerDynamic::Stop(CertProvisioningWorkerState state) {
@@ -784,7 +784,12 @@ void CertProvisioningWorkerDynamic::ImportCert() {
       chromeos::platform_keys::GetSubjectPublicKeyInfoBlob(cert);
   if (public_key_from_cert != public_key_) {
     failure_message_ =
-        "Downloaded certificate does not match the expected key pair";
+        "Downloaded certificate does not match the expected key pair.";
+    failure_message_ui_ = base::StrCat(
+        {"Downloaded certificate does not match the expected key pair. ",
+         "Expected: ", base::Base64Encode(public_key_), " ",
+         "Public key from cert: ", base::Base64Encode(public_key_from_cert),
+         "\n", "Cert: ", pem_encoded_certificate_});
     FINAL_STATE_EXPECTED(
         UpdateState(FROM_HERE, CertProvisioningWorkerState::kFailed));
     return;
@@ -871,7 +876,11 @@ void CertProvisioningWorkerDynamic::ProcessResponseErrors(
     return;
   }
 
-  if (backend_error.error() == em::CertProvBackendError::INCONSISTENT_DATA) {
+  if (backend_error.error() == em::CertProvBackendError::INCONSISTENT_DATA ||
+      backend_error.error() == em::CertProvBackendError::PROFILE_NOT_FOUND) {
+    // Report both INCONSISTENT_DATA and PROFILE_NOT_FOUND as
+    // kInconsistentDataError because both mean that the locally-cached policy
+    // does not match the server's database.
     LOG(ERROR) << "Server response contains error: " << backend_error.error()
                << " for profile ID: " << cert_profile_.profile_id
                << " in state: "

@@ -134,6 +134,7 @@
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
+#include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
@@ -340,6 +341,10 @@ Node::Node(TreeScope* tree_scope, ConstructionType type)
 
 Node::~Node() {
   InstanceCounters::DecrementCounter(InstanceCounters::kNodeCounter);
+}
+
+DOMNodeId Node::GetDomNodeId() {
+  return DOMNodeIds::IdForNode(this);
 }
 
 NodeRareData& Node::CreateRareData() {

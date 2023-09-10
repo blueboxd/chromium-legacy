@@ -830,12 +830,12 @@ fast/peerconnection/RTCPeerConnection-lifetime.html
 fast/reflections/inline-crash.html
 fast/replaced/no-focus-ring-object.html
 fast/ruby/nested-ruby.html
+fast/ruby/ruby-column-break.html
+fast/ruby/ruby-columns-spans.html
+fast/ruby/ruby-columns.html
 fast/ruby/ruby-empty-rt.html
 fast/ruby/ruby-inline-table.html
 fast/ruby/ruby-length.html
-fast/ruby/ruby-run-break.html
-fast/ruby/ruby-runs-spans.html
-fast/ruby/ruby-runs.html
 fast/ruby/ruby-simple-rp.html
 fast/ruby/ruby-simple.html
 fast/ruby/ruby-text-before-after-content.html
@@ -1140,9 +1140,6 @@ scrollbars/overlay-scrollbars-within-overflow-scroll.html
 scrollbars/resize-scales-with-dpi-150.html
 storage/indexeddb/empty-blob-file.html
 storage/indexeddb/intversion-revert-on-abort.html
-storage/websql/database-lock-after-reload.html
-storage/websql/open-database-set-empty-version.html
-storage/websql/sql-error-codes.html
 svg/W3C-SVG-1.1-SE/color-prop-05-t.svg
 svg/W3C-SVG-1.1-SE/coords-dom-01-f.svg
 svg/W3C-SVG-1.1-SE/coords-dom-02-f.svg

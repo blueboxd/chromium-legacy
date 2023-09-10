@@ -2,6 +2,8 @@
 
 import pytest
 
+from webdriver.error import InvalidArgumentException
+
 from tests.support.asserts import assert_error
 from . import perform_actions
 
@@ -770,6 +772,30 @@ def test_wheel_action_scroll_origin_invalid_value(session, value):
     assert_error(response, "invalid argument")
 
 
+def test_wheel_action_scroll_origin_pointer_not_supported(session):
+    # Pointer origin isn't currently supported for wheel input source
+    # See: https://github.com/w3c/webdriver/issues/1758
+
+    actions = [
+        {
+            "type": "wheel",
+            "id": "foo",
+            "actions": [
+                {
+                    "type": "scroll",
+                    "x": 0,
+                    "y": 0,
+                    "deltaX": 0,
+                    "deltaY": 0,
+                    "origin": "pointer",
+                }
+            ],
+        }
+    ]
+    response = perform_actions(session, actions)
+    assert_error(response, "invalid argument")
+
+
 @pytest.mark.parametrize(
     "value",
     [
@@ -821,3 +847,16 @@ def test_wheel_action_scroll_origin_element_invalid_value(session):
     ]
     response = perform_actions(session, actions)
     assert_error(response, "no such element")
+
+
+@pytest.mark.parametrize("missing", ["x", "y", "deltaX", "deltaY"])
+def test_wheel_action_scroll_missing_property(
+    session, test_actions_scroll_page, wheel_chain, missing
+):
+    target = session.find.css("#scrollable", all=False)
+
+    actions = wheel_chain.scroll(0, 0, 5, 10, origin=target)
+    del actions._actions[-1][missing]
+
+    with pytest.raises(InvalidArgumentException):
+        actions.perform()

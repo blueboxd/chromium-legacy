@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/views/download/bubble/download_bubble_security_view.h"
 
 #include "base/containers/fixed_flat_map.h"
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
@@ -37,6 +39,8 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_view.h"
+#include "ui/views/style/typography.h"
+#include "ui/views/style/typography_provider.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -68,12 +72,13 @@ enum class DownloadBubbleSubpageAction {
 const char kSubpageActionHistogram[] = "Download.Bubble.SubpageAction";
 
 bool ShouldReturnToPrimaryDialog(download::DownloadDangerType danger_type) {
-  // The only non-terminal danger type where the security subpage view shows is
-  // `DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING`. We should then return to the row
-  // view when the deep scan completes and is in a state that doesn't have a
-  // security subpage. Specificaly, that's both safe and failed deep scans, but
-  // not scans that find malware.
-  return danger_type == download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE ||
+  return danger_type == download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED ||
+         // The only non-terminal danger type where the security subpage view
+         // shows is `DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING`. We should then
+         // return to the row view when the deep scan completes and is in a
+         // state that doesn't have a security subpage. Specifically, that's
+         // both safe and failed deep scans, but not scans that find malware.
+         danger_type == download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE ||
          danger_type == download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_FAILED;
 }
 
@@ -149,7 +154,8 @@ class ParagraphsView : public views::View {
   }
 
   int GetLineHeight() {
-    return views::style::GetLineHeight(text_context_, default_text_style_);
+    return views::TypographyProvider::Get().GetLineHeight(text_context_,
+                                                          default_text_style_);
   }
 
   void SetAfterParagraph(int spacing) {
@@ -765,19 +771,20 @@ void DownloadBubbleSecurityView::OnDownloadUpdated(
   if (is_different_download || danger_type_changed) {
     warning_time_ = base::Time::Now();
     ui_info_ = DownloadItemModel(download).GetBubbleUIInfo(is_bubble_v2_);
+    download::DownloadDangerType old_danger_type = danger_type_;
     danger_type_ = download->GetDangerType();
-    // If this represents a "terminal" state of a deep scan, we return to the
-    // primary dialog. Note that we want this behavior even if
-    // `is_different_download` is true, e.g. user clicks on a different download
-    // via entry point external to the download bubble (e.g. notification on
-    // Lacros).
+    // If this represents a "terminal" state of a deep scan, or if the user
+    // validated the download, we return to the primary dialog. Note that we
+    // want this behavior even if `is_different_download` is true, e.g. user
+    // clicks on a different download via entry point external to the download
+    // bubble (e.g. notification on Lacros).
     if (ShouldReturnToPrimaryDialog(danger_type_)) {
       navigation_handler_->OpenPrimaryDialog();
       // No need to update views here because we're resetting and returning to
       // the primary dialog anyway.
       return;
     }
-    UpdateViews();
+    UpdateViews(old_danger_type);
   }
 }
 
@@ -793,9 +800,18 @@ void DownloadBubbleSecurityView::SetUIInfoForTesting(
   UpdateViews();
 }
 
-void DownloadBubbleSecurityView::UpdateViews() {
+void DownloadBubbleSecurityView::UpdateViews(
+    download::DownloadDangerType old_danger_type) {
   CHECK(IsInitialized());
-  CHECK(ui_info_.HasSubpage());
+  // TODO(crbug.com/1478390): This should become a CHECK eventually.
+  if (!ui_info_.HasSubpage()) {
+    SCOPED_CRASH_KEY_NUMBER("DownloadBubble", "bad_update_from_type",
+                            old_danger_type);
+    SCOPED_CRASH_KEY_NUMBER("DownloadBubble", "bad_update_to_type",
+                            danger_type_);
+    base::debug::DumpWithoutCrashing(FROM_HERE);
+    return;
+  }
   // Our multiline labels need to know the width of the bubble in order to size
   // themselves appropriately (see `GetMinimumLabelWidth`). This means that we
   // must reset fields that increase the width of the bubble before update. This

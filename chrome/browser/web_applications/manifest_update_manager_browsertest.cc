@@ -665,8 +665,8 @@ class ManifestUpdateManagerBrowserTest : public WebAppControllerBrowserTest {
     // suppress OS hooks.
     GetProvider().sync_bridge_unsafe().SetAppIsLocallyInstalledForTesting(
         web_app->app_id(), true);
-    GetProvider().sync_bridge_unsafe().SetAppInstallTime(web_app->app_id(),
-                                                         base::Time::Now());
+    GetProvider().sync_bridge_unsafe().SetAppFirstInstallTime(
+        web_app->app_id(), base::Time::Now());
   }
 
   void SetTimeOverride(base::Time time_override) {
@@ -4874,7 +4874,7 @@ class ManifestUpdateManagerBrowserTest_TabStrip
   ManifestUpdateManagerBrowserTest_TabStrip() {
     feature_list_.InitWithFeatures(
         {blink::features::kDesktopPWAsTabStripCustomizations,
-         features::kDesktopPWAsTabStrip},
+         blink::features::kDesktopPWAsTabStrip},
         /*disabled_features=*/{});
   }
   base::test::ScopedFeatureList feature_list_;

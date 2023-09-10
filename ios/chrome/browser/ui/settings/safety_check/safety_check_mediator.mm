@@ -31,7 +31,9 @@
 #import "ios/chrome/browser/passwords/password_checkup_utils.h"
 #import "ios/chrome/browser/passwords/password_store_observer_bridge.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_backed_boolean.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/model/utils/observable_boolean.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_item.h"
@@ -45,8 +47,6 @@
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_navigation_commands.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_utils.h"
-#import "ios/chrome/browser/ui/settings/utils/observable_boolean.h"
-#import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/upgrade/upgrade_constants.h"
 #import "ios/chrome/browser/upgrade/upgrade_recommended_details.h"
 #import "ios/chrome/browser/upgrade/upgrade_utils.h"
@@ -182,12 +182,13 @@ void ResetSettingsCheckItem(SettingsCheckItem* item) {
 
 @synthesize passwordCheckManager = _passwordCheckManager;
 
-- (instancetype)initWithUserPrefService:(PrefService*)userPrefService
-                   passwordCheckManager:
-                       (scoped_refptr<IOSChromePasswordCheckManager>)
-                           passwordCheckManager
-                            authService:(AuthenticationService*)authService
-                            syncService:(syncer::SyncService*)syncService {
+- (instancetype)
+    initWithUserPrefService:(PrefService*)userPrefService
+       passwordCheckManager:
+           (scoped_refptr<IOSChromePasswordCheckManager>)passwordCheckManager
+                authService:(AuthenticationService*)authService
+                syncService:(syncer::SyncService*)syncService
+                   referrer:(password_manager::PasswordCheckReferrer)referrer {
   self = [super init];
   if (self) {
     DCHECK(userPrefService);
@@ -218,8 +219,13 @@ void ResetSettingsCheckItem(SettingsCheckItem* item) {
 
     _headerItem =
         [[TableViewLinkHeaderFooterItem alloc] initWithType:HeaderItem];
+
     _headerItem.text =
-        l10n_util::GetNSString(IDS_IOS_SETTINGS_SAFETY_CHECK_PAGE_HEADER);
+        referrer ==
+                password_manager::PasswordCheckReferrer::kSafetyCheckMagicStack
+            ? l10n_util::GetNSString(
+                  IDS_IOS_SETTINGS_SAFETY_CHECK_MAGIC_STACK_PAGE_HEADER)
+            : l10n_util::GetNSString(IDS_IOS_SETTINGS_SAFETY_CHECK_PAGE_HEADER);
 
     _updateCheckRowState = UpdateCheckRowStateDefault;
     _updateCheckItem = [[SettingsCheckItem alloc] initWithType:UpdateItemType];

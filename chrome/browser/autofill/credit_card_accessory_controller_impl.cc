@@ -246,6 +246,12 @@ void CreditCardAccessoryControllerImpl::OnFillingTriggered(
       UnwrapCardOrVirtualCard(*card_iter), AsWeakPtr());
 }
 
+void CreditCardAccessoryControllerImpl::OnPasskeySelected(
+    const std::vector<uint8_t>& passkey_id) {
+  NOTIMPLEMENTED()
+      << "Passkey support not available in credit card controller.";
+}
+
 void CreditCardAccessoryControllerImpl::OnOptionSelected(
     AccessoryAction selected_action) {
   if (selected_action == AccessoryAction::MANAGE_CREDIT_CARDS) {
@@ -460,7 +466,7 @@ AutofillManager* CreditCardAccessoryControllerImpl::GetManager() const {
     return af_manager_for_testing_;
   ContentAutofillDriver* driver = ContentAutofillDriver::GetForRenderFrameHost(
       GetWebContents().GetFocusedFrame());
-  return driver ? driver->autofill_manager() : nullptr;
+  return driver ? &driver->GetAutofillManager() : nullptr;
 }
 
 content::WebContents& CreditCardAccessoryControllerImpl::GetWebContents()

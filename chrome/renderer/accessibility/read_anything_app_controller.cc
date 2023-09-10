@@ -25,7 +25,7 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -35,6 +35,7 @@
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_selection.h"
 #include "ui/accessibility/ax_serializable_tree.h"
+#include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/accessibility/ax_tree_update.h"
@@ -346,7 +347,8 @@ gin::WrapperInfo ReadAnythingAppController::kWrapperInfo = {
 // static
 ReadAnythingAppController* ReadAnythingAppController::Install(
     content::RenderFrame* render_frame) {
-  v8::Isolate* isolate = blink::MainThreadIsolate();
+  v8::Isolate* isolate =
+      render_frame->GetWebFrame()->GetAgentGroupScheduler()->Isolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context =
       render_frame->GetWebFrame()->MainWorldScriptContext();
@@ -625,7 +627,7 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
       .SetProperty("isWebUIToolbarVisible",
                    &ReadAnythingAppController::IsWebUIToolbarEnabled)
       .SetProperty("isReadAloudEnabled",
-                   &ReadAnythingAppController::isReadAloudEnabled)
+                   &ReadAnythingAppController::IsReadAloudEnabled)
       .SetProperty("isSelectable", &ReadAnythingAppController::IsSelectable)
       .SetMethod("getChildren", &ReadAnythingAppController::GetChildren)
       .SetMethod("getTextDirection",
@@ -672,7 +674,9 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
       .SetMethod("setContentForTesting",
                  &ReadAnythingAppController::SetContentForTesting)
       .SetMethod("setThemeForTesting",
-                 &ReadAnythingAppController::SetThemeForTesting);
+                 &ReadAnythingAppController::SetThemeForTesting)
+      .SetMethod("getNextSentence",
+                 &ReadAnythingAppController::GetNextSentence);
 }
 
 ui::AXNodeID ReadAnythingAppController::RootId() const {
@@ -882,7 +886,7 @@ bool ReadAnythingAppController::IsWebUIToolbarEnabled() const {
   return features::IsReadAnythingWebUIToolbarEnabled();
 }
 
-bool ReadAnythingAppController::isReadAloudEnabled() const {
+bool ReadAnythingAppController::IsReadAloudEnabled() const {
   return features::IsReadAnythingReadAloudEnabled();
 }
 
@@ -1068,6 +1072,41 @@ void ReadAnythingAppController::OnCollapseSelection() const {
   page_handler_->OnCollapseSelection();
 }
 
+int ReadAnythingAppController::GetNextSentence(const std::u16string& text,
+                                               int maxTextLength) {
+  // TODO(crbug.com/1474951): Investigate using getting text from the model,
+  // rather than passing it through typescript.
+  // TODO(crbug.com/1474941): Investigate providing correct line breaks
+  // or alternatively making adjustments to ax_text_utils to return boundaries
+  // that minimize choppiness.
+  std::vector<int> offsets;
+  const std::u16string shorterString = text.substr(0, maxTextLength);
+  size_t sentence_ends_short = ui::FindAccessibleTextBoundary(
+      shorterString, offsets, ax::mojom::TextBoundary::kSentenceStart, 0,
+      ax::mojom::MoveDirection::kForward,
+      ax::mojom::TextAffinity::kDefaultValue);
+  size_t sentence_ends_long = ui::FindAccessibleTextBoundary(
+      text, offsets, ax::mojom::TextBoundary::kSentenceStart, 0,
+      ax::mojom::MoveDirection::kForward,
+      ax::mojom::TextAffinity::kDefaultValue);
+
+  // Compare the index result for the sentence of maximum text length and of
+  // the longer text string. If the two values are the same, the index is
+  // correct. If they are different, the maximum text length may have
+  // incorrectly spliced a word (e.g. returned "this is a sen" instead of
+  // "this is a" or "this is a sentence"), so if this is the case, we'll want
+  // to use the last word boundary instead.
+  if (sentence_ends_short == sentence_ends_long) {
+    return sentence_ends_short;
+  }
+
+  size_t word_ends = ui::FindAccessibleTextBoundary(
+      shorterString, offsets, ax::mojom::TextBoundary::kWordStart,
+      shorterString.length() - 1, ax::mojom::MoveDirection::kBackward,
+      ax::mojom::TextAffinity::kDefaultValue);
+  return word_ends;
+}
+
 // TODO(crbug.com/1266555): Change line_spacing and letter_spacing types from
 // int to their corresponding enums.
 void ReadAnythingAppController::SetThemeForTesting(const std::string& font_name,
@@ -1088,7 +1127,8 @@ void ReadAnythingAppController::SetThemeForTesting(const std::string& font_name,
 void ReadAnythingAppController::SetContentForTesting(
     v8::Local<v8::Value> v8_snapshot_lite,
     std::vector<ui::AXNodeID> content_node_ids) {
-  v8::Isolate* isolate = blink::MainThreadIsolate();
+  v8::Isolate* isolate =
+      render_frame_->GetWebFrame()->GetAgentGroupScheduler()->Isolate();
   ui::AXTreeUpdate snapshot =
       GetSnapshotFromV8SnapshotLite(isolate, v8_snapshot_lite);
   ui::AXEvent selectionEvent;

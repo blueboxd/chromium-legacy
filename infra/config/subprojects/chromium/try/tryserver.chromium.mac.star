@@ -166,6 +166,13 @@ try_.builder(
 )
 
 try_.builder(
+    name = "mac11-arm64-wpt-content-shell-fyi-rel",
+    mirrors = [
+        "ci/mac11-arm64-wpt-content-shell-fyi-rel",
+    ],
+)
+
+try_.builder(
     name = "mac11-wpt-content-shell-fyi-rel",
     mirrors = [
         "ci/mac11-wpt-content-shell-fyi-rel",
@@ -487,6 +494,7 @@ ios_builder(
 ios_builder(
     name = "ios-simulator-inverse-fieldtrials-fyi",
     mirrors = builder_config.copy_from("try/ios-simulator"),
+    cpu = cpu.ARM64,
 )
 
 ios_builder(
@@ -521,6 +529,7 @@ ios_builder(
         "ci/ios16-beta-simulator",
     ],
     os = os.MAC_13,
+    cpu = cpu.ARM64,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -608,10 +617,4 @@ try_.gpu.optional_tests_builder(
             cq.location_filter(exclude = True, path_regexp = ".*\\.md"),
         ],
     ),
-)
-
-try_.builder(
-    name = "mac-cr23-rel",
-    mirrors = ["ci/mac-cr23-rel"],
-    os = os.MAC_DEFAULT,
 )

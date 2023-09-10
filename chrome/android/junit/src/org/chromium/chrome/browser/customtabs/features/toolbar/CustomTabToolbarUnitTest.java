@@ -62,6 +62,7 @@ import org.chromium.chrome.browser.customtabs.features.partialcustomtab.SimpleHa
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar.CustomTabLocationBar;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
+import org.chromium.chrome.browser.omnibox.status.PageInfoIPHController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.LocationBarModel;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
@@ -74,6 +75,7 @@ import org.chromium.chrome.browser.toolbar.top.ToolbarTablet.OfflineDownloader;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.components.content_settings.CookieControlsBreakageConfidenceLevel;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.base.TestActivity;
 import org.chromium.url.GURL;
@@ -127,6 +129,7 @@ public class CustomTabToolbarUnitTest {
     Callback<Integer> mContainerVisibilityChangeObserver;
     @Mock
     View mParentView;
+    private @Mock PageInfoIPHController mPageInfoIPHController;
 
     private Activity mActivity;
     private CustomTabToolbar mToolbar;
@@ -162,6 +165,7 @@ public class CustomTabToolbarUnitTest {
         mUrlBar = mToolbar.findViewById(R.id.url_bar);
         mTitleBar = mToolbar.findViewById(R.id.title_bar);
         mLocationBar.setAnimDelegateForTesting(mAnimationDelegate);
+        mLocationBar.setIPHControllerForTesting(mPageInfoIPHController);
     }
 
     @After
@@ -262,7 +266,7 @@ public class CustomTabToolbarUnitTest {
         when(mToolbarDataProvider.getTab()).thenReturn(mTab);
         when(mTab.getUserDataHost()).thenReturn(new UserDataHost());
         when(mTab.getUrl()).thenReturn(JUnitTestGURLs.RED_1);
-        UrlBarData urlBarData = UrlBarData.forUrl(JUnitTestGURLs.RED_1.getSpec());
+        UrlBarData urlBarData = UrlBarData.forUrl(JUnitTestGURLs.RED_1);
         when(mLocationBarModel.getUrlBarData()).thenReturn(urlBarData);
         mLocationBar.onUrlChanged();
         result = mToolbar.isReadyForTextureCapture();
@@ -401,6 +405,24 @@ public class CustomTabToolbarUnitTest {
         verify(mContainerVisibilityChangeObserver, never()).onResult(any());
     }
 
+    @Test
+    public void testCookieControlsIcon_animateOnPageStoppedLoadingWithHighBreakageConfidence() {
+        verify(mAnimationDelegate, never()).updateSecurityButton(anyInt(), anyBoolean());
+
+        mLocationBar.onBreakageConfidenceLevelChanged(CookieControlsBreakageConfidenceLevel.HIGH);
+        verify(mAnimationDelegate, never()).updateSecurityButton(anyInt(), anyBoolean());
+        verify(mPageInfoIPHController, never()).showCookieControlsIPH(anyInt(), anyInt());
+
+        mLocationBar.onPageLoadStopped();
+        verify(mAnimationDelegate, times(1)).updateSecurityButton(R.drawable.ic_eye_crossed, true);
+        verify(mPageInfoIPHController, times(1)).showCookieControlsIPH(anyInt(), anyInt());
+
+        mLocationBar.onBreakageConfidenceLevelChanged(CookieControlsBreakageConfidenceLevel.LOW);
+        mLocationBar.onPageLoadStopped();
+        verify(mAnimationDelegate, times(1)).updateSecurityButton(R.drawable.ic_eye_crossed, true);
+        verify(mPageInfoIPHController, times(1)).showCookieControlsIPH(anyInt(), anyInt());
+    }
+
     private void assertUrlAndTitleVisible(boolean titleVisible, boolean urlVisible) {
         int expectedTitleVisibility = titleVisible ? View.VISIBLE : View.GONE;
         int expectedUrlVisibility = urlVisible ? View.VISIBLE : View.GONE;
@@ -436,13 +458,13 @@ public class CustomTabToolbarUnitTest {
     }
 
     private void setUpForAboutBlank() {
-        UrlBarData urlBarData = UrlBarData.forUrl(JUnitTestGURLs.ABOUT_BLANK.getSpec());
+        UrlBarData urlBarData = UrlBarData.forUrl(JUnitTestGURLs.ABOUT_BLANK);
         when(mLocationBarModel.getUrlBarData()).thenReturn(urlBarData);
         when(mTab.getUrl()).thenReturn(JUnitTestGURLs.ABOUT_BLANK);
     }
 
     private void setUpForUrl(GURL url) {
         Mockito.doReturn(url).when(mTab).getUrl();
-        Mockito.doReturn(UrlBarData.forUrl(url.getSpec())).when(mLocationBarModel).getUrlBarData();
+        Mockito.doReturn(UrlBarData.forUrl(url)).when(mLocationBarModel).getUrlBarData();
     }
 }

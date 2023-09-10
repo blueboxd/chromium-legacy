@@ -85,7 +85,6 @@ const char kTestRawEmail[] = "User.Name@gmail.com";
 const char kTestAccountPassword[] = "fake-password";
 const char kTestAccountServices[] = "[]";
 const char kTestAuthCode[] = "fake-auth-code";
-const char kTestGaiaUberToken[] = "fake-uber-token";
 const char kTestAuthLoginAccessToken[] = "fake-access-token";
 const char kTestRefreshToken[] = "fake-refresh-token";
 const char kTestAuthSIDCookie[] = "fake-auth-SID-cookie";
@@ -280,19 +279,18 @@ class OAuth2Test : public OobeBaseTest {
   }
 
   void SetupGaiaServerForNewAccount(bool is_under_advanced_protection) {
-    FakeGaia::MergeSessionParams params;
+    FakeGaia::Configuration params;
     params.auth_sid_cookie = kTestAuthSIDCookie;
     params.auth_lsid_cookie = kTestAuthLSIDCookie;
     params.auth_code = kTestAuthCode;
     params.refresh_token = kTestRefreshToken;
     params.access_token = kTestAuthLoginAccessToken;
-    params.gaia_uber_token = kTestGaiaUberToken;
     params.session_sid_cookie = kTestSessionSIDCookie;
     params.session_lsid_cookie = kTestSessionLSIDCookie;
     params.id_token = is_under_advanced_protection
                           ? kTestIdTokenAdvancedProtectionEnabled
                           : kTestIdTokenAdvancedProtectionDisabled;
-    fake_gaia_.fake_gaia()->SetMergeSessionParams(params);
+    fake_gaia_.fake_gaia()->SetConfiguration(params);
     fake_gaia_.SetupFakeGaiaForLogin(kTestEmail, kTestGaiaId,
                                      kTestRefreshToken);
   }
@@ -307,19 +305,18 @@ class OAuth2Test : public OobeBaseTest {
   }
 
   void SetupGaiaServerForUnexpiredAccount() {
-    FakeGaia::MergeSessionParams params;
+    FakeGaia::Configuration params;
     params.email = kTestEmail;
-    fake_gaia_.fake_gaia()->SetMergeSessionParams(params);
+    fake_gaia_.fake_gaia()->SetConfiguration(params);
     fake_gaia_.SetupFakeGaiaForLogin(kTestEmail, kTestGaiaId,
                                      kTestRefreshToken);
   }
 
   void SetupGaiaServerForExpiredAccount() {
-    FakeGaia::MergeSessionParams params;
-    params.gaia_uber_token = kTestGaiaUberToken;
+    FakeGaia::Configuration params;
     params.session_sid_cookie = kTestSession2SIDCookie;
     params.session_lsid_cookie = kTestSession2LSIDCookie;
-    fake_gaia_.fake_gaia()->SetMergeSessionParams(params);
+    fake_gaia_.fake_gaia()->SetConfiguration(params);
     fake_gaia_.SetupFakeGaiaForLogin(kTestEmail, kTestGaiaId,
                                      kTestRefreshToken);
   }
@@ -671,13 +668,13 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, TerminateOnBadMergeSessionAfterOnlineAuth) {
       browser_shutdown::AddAppTerminatingCallback(signal.GetCallback());
 
   // Configure FakeGaia so that online auth succeeds but merge session fails.
-  FakeGaia::MergeSessionParams params;
+  FakeGaia::Configuration params;
   params.auth_sid_cookie = kTestAuthSIDCookie;
   params.auth_lsid_cookie = kTestAuthLSIDCookie;
   params.auth_code = kTestAuthCode;
   params.refresh_token = kTestRefreshToken;
   params.access_token = kTestAuthLoginAccessToken;
-  fake_gaia_.fake_gaia()->SetMergeSessionParams(params);
+  fake_gaia_.fake_gaia()->SetConfiguration(params);
 
   // Simulate an online sign-in.
   LoginDisplayHost::default_host()

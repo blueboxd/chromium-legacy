@@ -31,7 +31,6 @@
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
 #include "chromeos/ui/frame/frame_utils.h"
-#include "chromeos/ui/frame/multitask_menu/float_controller_base.h"
 #include "components/app_restore/app_restore_utils.h"
 #include "components/app_restore/window_properties.h"
 #include "components/exo/custom_window_state_delegate.h"
@@ -624,6 +623,12 @@ void ShellSurfaceBase::UnsetPip() {
   window->SetProperty(aura::client::kZOrderingKey, ui::ZOrderLevel::kNormal);
 }
 
+void ShellSurfaceBase::SetFloatToLocation(
+    chromeos::FloatStartLocation float_start_location) {
+  chromeos::FloatControllerBase::Get()->SetFloat(widget_->GetNativeWindow(),
+                                                 float_start_location);
+}
+
 void ShellSurfaceBase::MoveToDesk(int desk_index) {
   if (widget_) {
     ash::DesksController::Get()->SendToDeskAtIndex(widget_->GetNativeWindow(),
@@ -784,11 +789,6 @@ void ShellSurfaceBase::SetRestoreInfoWithWindowIdSource(
   restore_session_id_.emplace(restore_session_id);
   if (!restore_window_id_source.empty())
     restore_window_id_source_.emplace(restore_window_id_source);
-}
-
-void ShellSurfaceBase::SetFloat() {
-  chromeos::FloatControllerBase::Get()->SetFloat(
-      widget_->GetNativeWindow(), chromeos::FloatStartLocation::kBottomRight);
 }
 
 void ShellSurfaceBase::UnsetFloat() {
@@ -1778,13 +1778,17 @@ void ShellSurfaceBase::UpdateHostWindowOrigin() {
   gfx::Point origin = GetClientViewBounds().origin();
 
   origin += GetSurfaceOrigin().OffsetFromOrigin();
-  const gfx::Vector2dF scaled_root_origin = ScaleVector2d(
-      root_surface_origin().OffsetFromOrigin(), 1.f / GetScaleFactor());
-  origin -= ToFlooredVector2d(scaled_root_origin);
-  // Set subpixel offset to the diff between the scaled origin in float and its
-  // floored value to adjust root surface origin to be at the same position.
+  const gfx::Vector2dF root_surface_origin_dp = ScaleVector2d(
+      root_surface_origin_pixel().OffsetFromOrigin(), 1.f / GetScaleFactor());
+  origin -= ToFlooredVector2d(root_surface_origin_dp);
+  // Set subpixel offset to the diff between the dp scaled origin in float and
+  // its floored value to adjust root surface origin to be at the same position.
   host_window()->layer()->SetSubpixelPositionOffset(
-      ToFlooredVector2d(scaled_root_origin) - scaled_root_origin);
+      ToFlooredVector2d(root_surface_origin_dp) - root_surface_origin_dp);
+
+  if (origin != host_window()->bounds().origin()) {
+    AllocateLocalSurfaceId();
+  }
 
   gfx::Rect surface_bounds(origin, host_window()->bounds().size());
   if (host_window()->bounds() == surface_bounds)

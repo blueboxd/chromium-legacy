@@ -63,6 +63,8 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
   const mojom::TouchpadSettings* GetTouchpadSettings(DeviceId id) override;
   const mojom::PointingStickSettings* GetPointingStickSettings(
       DeviceId id) override;
+  const mojom::GraphicsTabletSettings* GetGraphicsTabletSettings(
+      DeviceId id) override;
   const mojom::KeyboardPolicies& GetKeyboardPolicies() override;
   const mojom::MousePolicies& GetMousePolicies() override;
   void SetKeyboardSettings(DeviceId id,
@@ -77,6 +79,12 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
       DeviceId id,
       mojom::GraphicsTabletSettingsPtr settings) override;
   void OnLoginScreenFocusedPodChanged(const AccountId& account_id) override;
+  void StartObservingButtons(DeviceId id) override;
+  void StopObservingButtons() override;
+  void OnMouseButtonPressed(DeviceId device_id,
+                            const mojom::Button& button) override;
+  void OnGraphicsTabletButtonPressed(DeviceId device_id,
+                                     const mojom::Button& button) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
 
@@ -127,6 +135,15 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
   void DispatchGraphicsTabletDisconnectedAndEraseFromList(DeviceId id);
   void DispatchGraphicsTabletSettingsChanged(DeviceId id);
 
+  void DispatchCustomizableMouseButtonPressed(const mojom::Mouse& mouse,
+                                              const mojom::Button& button);
+  void DispatchCustomizableTabletButtonPressed(
+      const mojom::GraphicsTablet& graphics_tablet,
+      const mojom::Button& button);
+  void DispatchCustomizablePenButtonPressed(
+      const mojom::GraphicsTablet& graphics_tablet,
+      const mojom::Button& button);
+
   void InitializePolicyHandler();
   void OnKeyboardPoliciesChanged();
   void OnMousePoliciesChanged();
@@ -150,7 +167,7 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
   void RefreshStoredLoginScreenPointingStickSettings();
   void RefreshStoredLoginScreenTouchpadSettings();
 
-  base::ObserverList<InputDeviceSettingsController::Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   std::unique_ptr<InputDeviceSettingsPolicyHandler> policy_handler_;
 

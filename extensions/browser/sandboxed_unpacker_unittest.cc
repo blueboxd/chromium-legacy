@@ -10,14 +10,15 @@
 
 #include "base/base64.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/json/json_reader.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/rust_buildflags.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -267,7 +268,7 @@ class SandboxedUnpackerTest : public ExtensionsTest {
 
   void ExpectInstallErrorContains(const std::string& error) {
     std::string full_error = base::UTF16ToUTF8(client_->unpack_error_message());
-    EXPECT_TRUE(full_error.find(error) != std::string::npos)
+    EXPECT_TRUE(base::Contains(full_error, error))
         << "Error message " << full_error << " does not contain " << error;
   }
 
@@ -505,16 +506,17 @@ TEST_F(SandboxedUnpackerTest, InvalidMessagesFile) {
   // Check that there is no _locales folder.
   base::FilePath install_path = GetInstallPath().Append(kLocaleFolder);
   EXPECT_FALSE(base::PathExists(install_path));
-#if BUILDFLAG(BUILD_RUST_JSON_READER)
-  EXPECT_TRUE(base::MatchPattern(
-      GetInstallErrorMessage(),
-      u"*_locales?en_US?messages.json': EOF while parsing a string at line 4*"))
-#else   // BUILDFLAG(BUILD_RUST_JSON_READER)
-  EXPECT_TRUE(base::MatchPattern(
-      GetInstallErrorMessage(),
-      u"*_locales?en_US?messages.json': Line: 4, column: 1,*"))
-#endif  // BUILDFLAG(BUILD_RUST_JSON_READER)
-      << GetInstallErrorMessage();
+  if (base::JSONReader::UsingRust()) {
+    EXPECT_TRUE(base::MatchPattern(GetInstallErrorMessage(),
+                                   u"*_locales?en_US?messages.json': EOF while "
+                                   u"parsing a string at line 4*"))
+        << GetInstallErrorMessage();
+  } else {
+    EXPECT_TRUE(base::MatchPattern(
+        GetInstallErrorMessage(),
+        u"*_locales?en_US?messages.json': Line: 4, column: 1,*"))
+        << GetInstallErrorMessage();
+  }
   ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
             GetInstallErrorType());
   EXPECT_EQ(static_cast<int>(

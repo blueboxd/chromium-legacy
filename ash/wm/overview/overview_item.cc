@@ -13,7 +13,6 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/rounded_label_widget.h"
 #include "ash/style/system_shadow.h"
-#include "ash/wm/desks/desk_bar_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/templates/saved_desk_animations.h"
 #include "ash/wm/drag_window_controller.h"
@@ -158,13 +157,16 @@ void SetWidgetBoundsAndMaybeAnimateTransform(
 
 OverviewItem::OverviewItem(aura::Window* window,
                            OverviewSession* overview_session,
-                           OverviewGrid* overview_grid)
+                           OverviewGrid* overview_grid,
+                           WindowDestructionDelegate* delegate)
     : OverviewItemBase(overview_session,
                        overview_grid,
                        window->GetRootWindow()),
       root_window_(window->GetRootWindow()),
       transform_window_(this, window),
+      window_destruction_delegate_(delegate),
       animation_disabler_(window) {
+  CHECK(window_destruction_delegate_);
   CreateItemWidget();
   window->AddObserver(this);
   WindowState::Get(window)->AddObserver(this);
@@ -1208,17 +1210,12 @@ void OverviewItem::OnWindowDestroying(aura::Window* window) {
     overview_session_->window_drag_controller()->ResetGesture();
   }
 
-  // Remove the item from the session which will remove it from the grid in
-  // addition to updating accessibility states. If the session is not available
-  // then remove it from the grid directly.
-  if (overview_session_) {
-    overview_session_->RemoveItem(this, /*item_destroying=*/true,
-                                  /*reposition=*/!animating_to_close_);
-  } else {
-    overview_grid()->RemoveItem(this, /*item_destroying=*/true,
-                                /*reposition=*/!animating_to_close_);
-  }
+  CHECK(window_destruction_delegate_);
+  window_destruction_delegate_->OnOverviewItemWindowDestroying(
+      this, /*reposition=*/!animating_to_close_);
 
+  // Trigger a11y alert about the window represented by `this` is being
+  // destroyed.
   Shell::Get()
       ->accessibility_controller()
       ->TriggerAccessibilityAlertWithMessage(l10n_util::GetStringFUTF8(

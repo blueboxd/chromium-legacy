@@ -6,6 +6,7 @@ import("//build/buildflag_header.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
 import("//build/config/freetype/freetype.gni")
+import("//build/config/rust.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/rust/rust_static_library.gni")
 import("//gpu/vulkan/features.gni")
@@ -43,9 +44,9 @@ if (use_typeface_fontations) {
     cxx_bindings = [ "//third_party/skia/src/ports/fontations/src/ffi.rs" ]
     deps = [
       ":path_bridge",
-      "//third_party/rust/font_types/v0_3:lib",
-      "//third_party/rust/read_fonts/v0_10:lib",
-      "//third_party/rust/skrifa/v0_9:lib",
+      "//third_party/rust/font_types/v0_4:lib",
+      "//third_party/rust/read_fonts/v0_11:lib",
+      "//third_party/rust/skrifa/v0_10:lib",
     ]
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [
@@ -74,6 +75,8 @@ config("skia_config") {
     "SK_DISABLE_LEGACY_IMAGE_RELEASE_PROCS",
     "SK_DISABLE_LEGACY_GL_BACKEND_SURFACE",
     "SK_DISABLE_LEGACY_INIT_DECODERS",
+    "SK_DISABLE_LEGACY_GRDIRECTCONTEXT_FLUSH",
+    "SK_DISABLE_LEGACY_GRDIRECTCONTEXT_BOOLS",
   ]
 
   include_dirs = [
@@ -459,8 +462,6 @@ component("skia") {
     deps += [
       ":bridge_rust_side",
       ":path_bridge",
-      "//third_party/rust/read_fonts/v0_10:lib",
-      "//third_party/rust/skrifa/v0_9:lib",
     ]
   }
 

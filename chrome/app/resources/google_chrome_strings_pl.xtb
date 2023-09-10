@@ -4,7 +4,6 @@
 <translation id="1001534784610492198">Archiwum instalatora jest uszkodzone lub nieprawidłowe. Pobierz Google Chrome ponownie.</translation>
 <translation id="1026101648481255140">Wznów instalację</translation>
 <translation id="102763973188675173">Dostosowywanie i kontrolowanie Google Chrome. Dostępna jest aktualizacja.</translation>
-<translation id="1051826050538111504">Masz na komputerze szkodliwe oprogramowanie. Chrome może je usunąć, przywrócić Twoje ustawienia i wyłączyć rozszerzenia, by przeglądarka znów działała normalnie.</translation>
 <translation id="1065672644894730302">Nie można odczytać ustawień. Niektóre funkcje mogą być niedostępne, a zmiany w ustawieniach nie zostaną zapisane.</translation>
 <translation id="1088300314857992706">Użytkownik <ph name="USER_EMAIL_ADDRESS" /> wcześniej używał Chrome</translation>
 <translation id="110877069173485804">Oto Twój Chrome</translation>
@@ -229,6 +228,7 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5003967926796347400">Kliknij „Menedżer haseł Google”</translation>
 <translation id="5098668839038261629">Jeśli ta opcja jest włączona, zostaniesz też wylogowany(-a) z Chrome</translation>
+<translation id="5126049312684316860">Chrome wstępnie wczytuje jeszcze więcej stron, które prawdopodobnie odwiedzisz, aby w razie potrzeby szybciej się ładowały</translation>
 <translation id="5132929315877954718">Odkryj znakomite aplikacje, gry, rozszerzenia i motywy do przeglądarki Google Chrome.</translation>
 <translation id="5139423532931106058">Dostosuj swój profil Chrome</translation>
 <translation id="5163087008893166964">Witamy w Chrome. Zostało otwarte nowe okno przeglądarki.</translation>
@@ -236,6 +236,7 @@
 <translation id="521447420733633466">Jeśli dzielisz urządzenie ze znajomymi lub rodziną, wszyscy możecie niezależnie przeglądać internet i skonfigurować Chrome po swojemu</translation>
 <translation id="5239627039202700673">Używaj Chrome, zawsze gdy klikasz linki w wiadomościach, dokumentach i w innych aplikacjach</translation>
 <translation id="5251420635869119124">Goście mogą korzystać z Chrome, nie pozostawiając żadnych danych.</translation>
+<translation id="5320351714793324716">Jeśli zezwolisz na pliki cookie, Chrome może ich używać podczas wstępnego wczytywania</translation>
 <translation id="5334309298019785904">Chrome OS nie może zsynchronizować danych, ponieważ synchronizacja jest niedostępna w Twojej domenie.</translation>
 <translation id="5334487786912937552">Aby pobierać pliki, Chrome musi mieć dostęp do pamięci</translation>
 <translation id="5337648990166757586">Opcjonalnie: pomóż ulepszyć funkcje i działanie Chrome OS, automatycznie wysyłając do Google dane diagnostyczne i dane o korzystaniu.</translation>

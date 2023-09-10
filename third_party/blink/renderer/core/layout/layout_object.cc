@@ -83,6 +83,7 @@
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inl.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
+#include "third_party/blink/renderer/core/layout/layout_ruby_column.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -91,7 +92,6 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_fieldset.h"
-#include "third_party/blink/renderer/core/layout/ng/layout_ng_ruby_run.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inline_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
@@ -2091,7 +2091,7 @@ String LayoutObject::DebugName() const {
 
 DOMNodeId LayoutObject::OwnerNodeId() const {
   NOT_DESTROYED();
-  return GetNode() ? DOMNodeIds::IdForNode(GetNode()) : kInvalidDOMNodeId;
+  return GetNode() ? GetNode()->GetDomNodeId() : kInvalidDOMNodeId;
 }
 
 void LayoutObject::InvalidateDisplayItemClients(
@@ -2806,6 +2806,13 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
     if (diff.TransformChanged()) {
       if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
         cache->LocationChanged(this);
+    }
+
+    if (style_->ContentVisibility() != new_style.ContentVisibility()) {
+      CHECK(GetNode());
+      if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
+        cache->RemoveSubtreeWhenSafe(GetNode(), /* remove_root */ false);
+      }
     }
 
     if (visibility_changed || style_->IsInert() != new_style.IsInert()) {

@@ -47,7 +47,7 @@
 <div id="container" class="settings-box">
   <div id="buttonLabelContainer">
     <div id="buttonLabel"
-        aria-hidden="true">[[buttonRemapping_.name]]</div>
+        aria-hidden="true">[[buttonRemappingName_]]</div>
   </div>
   <div class="edit-icon-container">
     <cr-icon-button class="edit-button"
@@ -56,7 +56,8 @@
     </cr-icon-button>
   </div>
   <div id="dropdownContainer" class="text-field-container">
-    <select id="remappingActionDropdown" class="md-select">
+    <select id="remappingActionDropdown" class="md-select"
+        on-change="onSelectChange_">
       <option id="noRemappingOption" value="[[noRemappingOptionValue_]]">
         $i18n{noRemappingOptionLabel}
       </option>

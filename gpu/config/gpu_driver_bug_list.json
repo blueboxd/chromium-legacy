@@ -1389,11 +1389,12 @@
     },
     {
       "id": 177,
-      "description": "glGetFragData{Location|Index} works incorrectly on Max",
-      "cr_bugs": [638340],
+      "description": "glGetFragData{Location|Index} works incorrectly on Mac OpenGL drivers",
+      "cr_bugs": [638340, 1473838],
       "os": {
         "type": "macosx"
       },
+      "gl_renderer": "ANGLE.*OpenGL.*",
       "features": [
         "get_frag_data_info_bug"
       ]
@@ -4243,7 +4244,7 @@
       "os": {
         "type": "win"
       },
-      "vendor_id": "0x5143",
+      "vendor_id": "0x4d4f4351",
       "features": [
         "limit_d3d11_video_decoder_to_11_0"
       ]

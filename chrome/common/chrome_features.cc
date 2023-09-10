@@ -227,6 +227,12 @@ BASE_FEATURE(kDMServerOAuthForChildUser,
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
+// Enables migration of apps that are loaded erroneously but installed
+// correctly by policy in the web app system.
+BASE_FEATURE(kMigrateErrorLoadedPolicyApps,
+             "MigrateErrorLoadedPolicyApps",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Whether to allow installed-by-default web apps to be installed or not.
 BASE_FEATURE(kPreinstalledWebAppInstallation,
              "DefaultWebAppInstallation",
@@ -396,11 +402,6 @@ BASE_FEATURE(kEarlyLibraryLoad,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
-// Enable the restricted web APIs for high-trusted apps.
-BASE_FEATURE(kEnableRestrictedWebApis,
-             "EnableRestrictedWebApis",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 #if !BUILDFLAG(IS_ANDROID)
 // Enable WebHID on extension service workers.
 BASE_FEATURE(kEnableWebHidOnExtensionServiceWorker,
@@ -475,6 +476,12 @@ BASE_FEATURE(kPrivacyGuidePreload,
 #if BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kPrivacyGuideAndroid3,
              "PrivacyGuideAndroid3",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
+#if BUILDFLAG(IS_ANDROID)
+BASE_FEATURE(kPrivacyGuidePreloadAndroid,
+             "PrivacyGuidePreloadAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
@@ -803,6 +810,10 @@ BASE_FEATURE(kIsolatedWebAppDevMode,
 BASE_FEATURE(kKioskEnableAppService,
              "KioskEnableAppService",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kKioskEnableSystemWebApps,
+             "KioskEnableSystemWebApps",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 // When enabled, allows other features to use the k-Anonymity Service.
@@ -974,11 +985,16 @@ BASE_FEATURE(kOobeMarketingDoubleOptInCountriesSupported,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_ANDROID)
-// Enables or disabled the OOM intervention.
+// Enables or disables the OOM intervention.
 BASE_FEATURE(kOomIntervention,
              "OomIntervention",
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
+
+// Enables or disables the page content opt-in and setting.
+BASE_FEATURE(kPageContentOptIn,
+             "PageContentOptIn",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables usage of Parent Access Code in the login flow for reauth and add

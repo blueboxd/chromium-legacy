@@ -22,30 +22,42 @@
 #   include_dirs = [ ... ]
 # }
 #
+# The tests are invoked by building the target named in the nocompile_test()
+# macro, for example:
+#
+# ninja -C out/Default my_module_nc_unittests
+#
 # The .nc files are C++ files that contain code we wish to assert will not
-# compile.  Each individual test case in the file should be put in its own
-# #ifdef section.  The expected output should be appended with a C++-style
-# comment that has a python list of regular expressions.  This will likely
-# be greater than 80-characters. Giving a solid expected output test is
-# important so that random compile failures do not cause the test to pass.
+# compile. Each individual test case in the file should be put in its own
+# #if defined(...) section specifying an unique preprocessor symbol beginning
+# with NCTEST which names the test. The set of tests in a file is automatically
+# determined by scanning the file for these #if blocks and no other explicit
+# definition of the symbol is required to register a test.
+#
+# The expected complier error message should be appended with a C++-style
+# comment that has a python list of regular expressions. This will likely be
+# greater than 80-characters. Giving a solid expected output test is important
+# so that random compile failures do not cause the test to pass.
 #
 # Example .nc file:
 #
-#   #if defined(TEST_NEEDS_SEMICOLON)  // [r"expected ',' or ';' at end of input"]
+#   #if defined(NCTEST_NEEDS_SEMICOLON)  // [r"expected ',' or ';' at end of input"]
 #
 #   int a = 1
 #
-#   #elif defined(TEST_NEEDS_CAST)  // [r"invalid conversion from 'void*' to 'char*'"]
+#   #elif defined(NCTEST_NEEDS_CAST)  // [r"invalid conversion from 'void*' to 'char*'"]
 #
 #   void* a = NULL;
 #   char* b = a;
 #
 #   #endif
 #
-# If we needed disable TEST_NEEDS_SEMICOLON, then change the define to:
+# If we need to disable NCTEST_NEEDS_SEMICOLON, then change the #if to:
 #
-#   DISABLE_TEST_NEEDS_SEMICOLON
-#   TEST_NEEDS_CAST
+#   #if defined(DISABLED_NCTEST_NEEDS_SEMICOLON)
+#   ...
+#   #elif defined(NCTEST_NEEDS_CAST)
+#   ...
 #
 # The lines above are parsed by a regexp so avoid getting creative with the
 # formatting or ifdef logic; it will likely just not work.
@@ -67,10 +79,13 @@ if (is_mac) {
   import("//build/config/mac/mac_sdk.gni")
 }
 
+if (is_win) {
+  import("//build/toolchain/win/win_toolchain_data.gni")
+}
+
 declare_args() {
-  # TODO(crbug.com/1442625): Enable for Windows.
-  enable_nocompile_tests = (is_linux || is_chromeos || is_apple) && is_clang &&
-                           host_cpu == target_cpu
+  enable_nocompile_tests = (is_linux || is_chromeos || is_apple || is_win) &&
+                           is_clang && host_cpu == target_cpu
 }
 
 if (enable_nocompile_tests) {
@@ -97,12 +112,30 @@ if (enable_nocompile_tests) {
           nulldevice = "nul"
         } else {
           cxx = "clang-cl"
-          nulldevice = "/dev/null"
+
+          # Unfortunately, clang-cl always wants to suffix the output file name
+          # with ".obj", and /dev/null.obj is not a valid file. As a bit of a
+          # hack, simply use the path to the generated .cc file, knowing:
+          # - that clang-cl will append ".obj" to the filename, so it will never
+          #   clash.
+          # - except when the nocompile test unexpectedly passes, the output
+          #   file will never actually be written.
+          nulldevice = rebased_result_path
         }
       } else {
         cxx = "clang++"
       }
-      args = [
+
+      depfile = "${result_path}.d"
+
+      args = []
+      if (is_win) {
+        args += [
+          "--depfile",
+          rebased_result_path + ".d",
+        ]
+      }
+      args += [
         rebase_path("$clang_base_path/bin/$cxx", root_build_dir),
         "4",  # number of compilers to invoke in parallel.
         "{{source}}",
@@ -120,22 +153,32 @@ if (enable_nocompile_tests) {
         "-Wno-implicit-int-float-conversion",
       ]
       if (is_win) {
+        # On Windows we fall back to using system headers from a sysroot from
+        # depot_tools. This is negotiated by python scripts and the result is
+        # available in //build/toolchain/win/win_toolchain_data.gni. From there
+        # we get the `include_flags_imsvc` which point to the system headers.
+        if (host_cpu == "x86") {
+          win_toolchain_data = win_toolchain_data_x86
+        } else if (host_cpu == "x64") {
+          win_toolchain_data = win_toolchain_data_x64
+        } else if (host_cpu == "arm64") {
+          win_toolchain_data = win_toolchain_data_arm64
+        } else {
+          error("Unsupported host_cpu, add it to win_toolchain_data.gni")
+        }
+        args += [ "${win_toolchain_data.include_flags_imsvc}" ]
+
         args += [
           "/W4",
           "-Wno-unused-parameter",
           "-I" + rebase_path("$libcxx_prefix/include", root_build_dir),
           "/std:c++20",
-
-          # TODO(crbug.com/1442625): Uncomment this, then filter and process the
-          # output appropriately to track dependencies.
-          # "/showIncludes:user"
-
+          "/showIncludes",
           "/Fo" + nulldevice,
           "/c",
           "/Tp",
         ]
       } else {
-        depfile = "${result_path}.d"
         args += [
           "-Wall",
           "-nostdinc++",
@@ -171,15 +214,12 @@ if (enable_nocompile_tests) {
       }
 
       if (sysroot != "") {
+        assert(!is_win)
         sysroot_path = rebase_path(sysroot, root_build_dir)
-        if (is_win) {
-          args += [ "/winsysroot" + sysroot_path ]
-        } else {
-          args += [
-            "--sysroot",
-            sysroot_path,
-          ]
-        }
+        args += [
+          "--sysroot",
+          sysroot_path,
+        ]
       }
 
       if (!is_nacl) {

@@ -9,12 +9,13 @@
 #include "chrome/browser/extensions/pref_mapping.h"
 #include "chrome/browser/extensions/pref_transformer_interface.h"
 #include "chrome/browser/prefetch/pref_names.h"
-#include "chrome/browser/prefetch/prefetch_prefs.h"
+#include "chrome/browser/preloading/preloading_prefs.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/embedder_support/pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/privacy_sandbox/privacy_sandbox_prefs.h"
+#include "components/privacy_sandbox/tracking_protection_prefs.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/spellcheck/browser/pref_names.h"
@@ -75,8 +76,6 @@ const PrefMappingEntry kMappings[] = {
     {"spellingServiceEnabled", spellcheck::prefs::kSpellCheckUseSpellingService,
      APIPermissionID::kPrivacy, APIPermissionID::kPrivacy},
     {"thirdPartyCookiesAllowed", prefs::kCookieControlsMode,
-     APIPermissionID::kPrivacy, APIPermissionID::kPrivacy},
-    {"privacySandboxEnabled", prefs::kPrivacySandboxApisEnabled,
      APIPermissionID::kPrivacy, APIPermissionID::kPrivacy},
     {"topicsEnabled", prefs::kPrivacySandboxM1TopicsEnabled,
      APIPermissionID::kPrivacy, APIPermissionID::kPrivacy},

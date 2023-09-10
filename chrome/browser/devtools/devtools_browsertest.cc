@@ -1718,7 +1718,13 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest, TestConsoleContextNames) {
   RunTest("testConsoleContextNames", kPageWithContentScript);
 }
 
-IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest, CantInspectNewTabPage) {
+// TODO(https://crbug.com/1479768): Flaky on Linux Tests.
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_CantInspectNewTabPage DISABLED_CantInspectNewTabPage
+#else
+#define MAYBE_CantInspectNewTabPage CantInspectNewTabPage
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest, MAYBE_CantInspectNewTabPage) {
   LoadExtension("can_inspect_url");
   RunTest("waitForTestResultsAsMessage",
           base::StrCat({kArbitraryPage, "#chrome://newtab/"}));
@@ -2172,12 +2178,11 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, MAYBE_TestDispatchKeyEventShowsAutoFill) {
   autofill::ContentAutofillDriver* autofill_driver =
       autofill::ContentAutofillDriverFactory::FromWebContents(GetInspectedTab())
           ->DriverForFrame(GetInspectedTab()->GetPrimaryMainFrame());
-  auto* autofill_manager = static_cast<autofill::BrowserAutofillManager*>(
-      autofill_driver->autofill_manager());
-  ASSERT_TRUE(autofill_manager);
+  auto& autofill_manager = static_cast<autofill::BrowserAutofillManager&>(
+      autofill_driver->GetAutofillManager());
   BrowserAutofillManagerTestDelegateDevtoolsImpl autofill_test_delegate(
       GetInspectedTab());
-  autofill_test_delegate.Observe(*autofill_manager);
+  autofill_test_delegate.Observe(autofill_manager);
 
   RunTestFunction(window_, "testDispatchKeyEventShowsAutoFill");
   CloseDevToolsWindow();
@@ -2828,15 +2833,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest,
   DevToolsWindowTesting::CloseDevToolsWindowSync(window);
 }
 
-// TODO(crbug.com/1471349): The bug is flaky on chromeos (mostly dbg).
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
-#define MAYBE_TestRawHeadersWithRedirectAndHSTS \
-  DISABLED_TestRawHeadersWithRedirectAndHSTS
-#else
-#define MAYBE_TestRawHeadersWithRedirectAndHSTS \
-  TestRawHeadersWithRedirectAndHSTS
-#endif
-IN_PROC_BROWSER_TEST_F(DevToolsTest, MAYBE_TestRawHeadersWithRedirectAndHSTS) {
+IN_PROC_BROWSER_TEST_F(DevToolsTest, TestRawHeadersWithRedirectAndHSTS) {
   net::EmbeddedTestServer https_test_server(
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_test_server.SetSSLConfig(

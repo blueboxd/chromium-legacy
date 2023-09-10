@@ -5,7 +5,7 @@
 import {isRTL} from 'chrome://resources/ash/common/util.js';
 
 import {css, customElement, html, query, state, XfBase} from './xf_base.js';
-import {TreeItemCollapsedEvent, XfTreeItem} from './xf_tree_item.js';
+import {type TreeItemCollapsedEvent, XfTreeItem} from './xf_tree_item.js';
 import {isTreeItem} from './xf_tree_util.js';
 
 /**
@@ -229,7 +229,7 @@ export class XfTree extends XfBase {
     let itemToFocus: XfTreeItem|null|undefined = null;
     switch (e.key) {
       case 'Enter':
-      case 'Space':
+      case ' ':
         this.selectItem_(this.focusedItem_);
         break;
       case 'ArrowUp':

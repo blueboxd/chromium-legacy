@@ -2268,6 +2268,8 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
   UpdateStyle();
   GetStyleResolver().ClearResizedForViewportUnits();
 
+  rendering_had_begun_for_last_style_update_ = RenderingHasBegun();
+
   GetLayoutView()->ClearHitTestCache();
 
   DCHECK(!document_animations_->NeedsAnimationTimingUpdate());
@@ -2719,10 +2721,11 @@ void Document::AttachCompositorTimeline(cc::AnimationTimeline* timeline) const {
 }
 
 void Document::ClearFocusedElementIfNeeded() {
-  if (!clear_focused_element_timer_.IsActive() && focused_element_ &&
-      !focused_element_->IsFocusable()) {
-    clear_focused_element_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
+  if (clear_focused_element_timer_.IsActive() || !focused_element_ ||
+      focused_element_->IsFocusable()) {
+    return;
   }
+  clear_focused_element_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void Document::ClearFocusedElementTimerFired(TimerBase*) {
@@ -3894,6 +3897,7 @@ void Document::Abort() {
 
 void Document::CheckCompleted() {
   if (CheckCompletedInternal()) {
+    CHECK(GetFrame());
     GetFrame()->Loader().DidFinishNavigation(
         FrameLoader::NavigationFinishState::kSuccess);
   }
@@ -3970,6 +3974,11 @@ bool Document::CheckCompletedInternal() {
   } else if (loading_for_print_) {
     loading_for_print_ = false;
     GetFrame()->Client()->DispatchDidFinishLoadForPrinting();
+    // Refresh the page when the print preview pops up.
+    // DispatchDidFinishLoadForPrinting could detach this frame
+    if (!GetFrame()) {
+      return false;
+    }
   }
 
   if (auto* view = View()) {

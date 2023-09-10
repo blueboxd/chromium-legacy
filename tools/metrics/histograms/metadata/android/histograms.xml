@@ -539,7 +539,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BackPress.Interval" units="ms"
-    expires_after="2023-12-31">
+    expires_after="2024-03-03">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/chrome/browser/back_press/android/OWNERS</owner>
   <summary>
@@ -1576,6 +1576,30 @@ chromium-metrics-reviews@google.com.
     Recorded when all downloadable fonts are retrieved. {ActivityType}
   </summary>
   <token key="ActivityType" variants="ActivityType"/>
+</histogram>
+
+<histogram base="true"
+    name="Android.GridTabSwitcher.Animation.FirstFrameLatency" units="ms"
+    expires_after="2024-07-25">
+  <owner>ckitagawa@chromium.org</owner>
+  <owner>clank-isochron-team@google.com</owner>
+  <summary>
+    This histogram records the time taken between the tab and tab switcher
+    layout. Timing starts when the layout transition begins and ends on the
+    first frame. This is recorded each time the layout transition animation
+    occurs.
+  </summary>
+</histogram>
+
+<histogram base="true" name="Android.GridTabSwitcher.Animation.TotalDuration"
+    units="ms" expires_after="2024-07-25">
+  <owner>ckitagawa@chromium.org</owner>
+  <owner>clank-isochron-team@google.com</owner>
+  <summary>
+    This histogram records the time taken between the tab and tab switcher
+    layout. Timing starts when the layout transition begins and ends on the last
+    frame. This is recorded each time the layout transition animation occurs.
+  </summary>
 </histogram>
 
 <histogram name="Android.GridTabSwitcher.ThumbnailFetchingResult"
@@ -4004,7 +4028,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabStrip.DelayTempStripRemovalTimedOut"
-    enum="BooleanTimedOut" expires_after="2023-12-31">
+    enum="BooleanTimedOut" expires_after="2024-03-03">
   <owner>nemco@google.com</owner>
   <owner>skavuluru@google.com</owner>
   <owner>twellington@chromium.org</owner>
@@ -4103,7 +4127,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabStrip.TimeToBufferSwapAfterInitializeTabState"
-    units="ms" expires_after="2023-12-31">
+    units="ms" expires_after="2024-03-03">
   <owner>nemco@google.com</owner>
   <owner>skavuluru@google.com</owner>
   <owner>twellington@chromium.org</owner>
@@ -4118,7 +4142,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabStrip.TimeToInitializeTabStateAfterBufferSwap"
-    units="ms" expires_after="2023-12-31">
+    units="ms" expires_after="2024-03-03">
   <owner>nemco@google.com</owner>
   <owner>skavuluru@google.com</owner>
   <owner>twellington@chromium.org</owner>
@@ -4176,6 +4200,19 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records the time taken to create TabListCoordinator, which inflates the
     RecyclerView for the grid tab switcher, and bind views.
+  </summary>
+</histogram>
+
+<histogram name="Android.TabSwitcher.TabHidden" units="boolean"
+    expires_after="2023-12-24">
+  <owner>ckitagawa@chromium.org</owner>
+  <owner>clank-isochron-team@google.com</owner>
+  <summary>
+    This histogram records whether the foreground tab was hidden after the tab
+    switcher was shown. This operation is recorded when the foreground tab is
+    attempted to be hidden after its use in animation and thumbnail capture is
+    finished. A value of true indicates the tab was hidden and a value of false
+    indicates the operation was cancelled.
   </summary>
 </histogram>
 
@@ -4944,6 +4981,80 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.WebView.HistoricalApplicationExitInfo.Counts"
+    enum="AndroidProcessExitReason" expires_after="2024-01-06">
+  <owner>avvall@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Enumerates over the historical list of ApplicationExitInfo and their exit
+    reasons for an application. Records the latest exit reason for the embedding
+    application.
+  </summary>
+</histogram>
+
+<histogram
+    name="Android.WebView.HistoricalApplicationExitInfo.Counts.BACKGROUND"
+    enum="AndroidProcessExitReason" expires_after="2024-01-06">
+  <owner>avvall@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Enumerates over the historical list of ApplicationExitInfo and their exit
+    reasons for an application. Records the latest exit reason for the embedding
+    application, specifically when WebView's last recorded state before exiting
+    was the background state.
+  </summary>
+</histogram>
+
+<histogram
+    name="Android.WebView.HistoricalApplicationExitInfo.Counts.DESTROYED"
+    enum="AndroidProcessExitReason" expires_after="2024-01-06">
+  <owner>avvall@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Enumerates over the historical list of ApplicationExitInfo and their exit
+    reasons for an application. Records the latest exit reason for the embedding
+    application, specifically when WebView's last recorded state before exiting
+    was the destroyed state.
+  </summary>
+</histogram>
+
+<histogram
+    name="Android.WebView.HistoricalApplicationExitInfo.Counts.FOREGROUND"
+    enum="AndroidProcessExitReason" expires_after="2024-01-06">
+  <owner>avvall@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Enumerates over the historical list of ApplicationExitInfo and their exit
+    reasons for an application. Records the latest exit reason for the embedding
+    application, specifically when WebView's last recorded state before exiting
+    was the foreground state.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.HistoricalApplicationExitInfo.Counts.UNKNOWN"
+    enum="AndroidProcessExitReason" expires_after="2024-01-06">
+  <owner>avvall@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Enumerates over the historical list of ApplicationExitInfo and their exit
+    reasons for an application. Records the latest exit reason for the embedding
+    application, specifically when WebView's last recorded state before exiting
+    was the detached state.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.HistoricalApplicationExitInfo.Delta"
+    units="ms" expires_after="2024-01-06">
+  <owner>avvall@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Tracks the deltas (in ms) between the current time of recording and the last
+    time of recording historical application exit info data. Only recorded if
+    the last time at recording was non-zero and there was some exit reason
+    recorded.
+  </summary>
+</histogram>
+
 <histogram name="Android.WebView.InputStreamTime" units="ms"
     expires_after="2023-12-04">
   <owner>jam@chromium.org</owner>
@@ -5117,7 +5228,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.NonEmbeddedMetrics.HistogramRecordAge"
-    units="minutes" expires_after="2023-12-31">
+    units="minutes" expires_after="2024-03-03">
   <owner>hazems@chromium.org</owner>
   <owner>ntfschr@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -5131,7 +5242,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.NonEmbeddedMetrics.NumHistograms"
-    units="histograms" expires_after="2023-12-31">
+    units="histograms" expires_after="2024-03-03">
   <owner>ntfschr@chromium.org</owner>
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -5461,6 +5572,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.WebView.SafeMode.ReceivedFix" enum="BooleanEnabled"
+    expires_after="2024-07-28">
+  <owner>avvall@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records whether or not the WebView nonembedded service receives a SafeMode
+    fix configuration. This is recorded once for each SafeMode config the
+    WebView receives. This only ever logs true since WebView won't need to log
+    anything when safemode is not activated. This is only relevant for the app
+    recovery activation pathway.
+  </summary>
+</histogram>
+
 <histogram name="Android.WebView.SafeMode.SafeModeEnabled"
     enum="BooleanEnabled" expires_after="2024-01-28">
   <owner>ntfschr@chromium.org</owner>
@@ -5539,7 +5663,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.Startup.CreationTime.Stage1.FactoryInit"
-    units="ms" expires_after="2023-12-31">
+    units="ms" expires_after="2024-03-03">
   <owner>torne@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -5561,7 +5685,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.Startup.CreationTime.Stage2.ProviderInit.Warm"
-    units="ms" expires_after="2023-12-31">
+    units="ms" expires_after="2024-03-03">
   <owner>torne@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>

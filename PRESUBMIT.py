@@ -1656,6 +1656,22 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       ),
     ),
     BanRule(
+      pattern = r'/#include "base/allocator/.*/raw_'
+                r'(ptr|ptr_cast|ptr_exclusion|ref).h"',
+      explanation = (
+        'Please include the corresponding facade headers:',
+        '- #include "base/memory/raw_ptr.h"',
+        '- #include "base/memory/raw_ptr_cast.h"',
+        '- #include "base/memory/raw_ptr_exclusion.h"',
+        '- #include "base/memory/raw_ref.h"',
+      ),
+      treat_as_error = True,
+      excluded_paths = (
+        '^base/',
+        '^tools/',
+      ),
+    ),
+    BanRule(
       pattern = r'ContentSettingsType::COOKIES',
       explanation = (
         'Do not use ContentSettingsType::COOKIES to check whether cookies are '
@@ -1818,7 +1834,6 @@ _GENERIC_PYDEPS_FILES = [
     'third_party/blink/renderer/bindings/scripts/validate_web_idl.pydeps',
     'third_party/blink/tools/blinkpy/web_tests/merge_results.pydeps',
     'third_party/blink/tools/merge_web_test_results.pydeps',
-    'third_party/jni_zero/jni_zero.pydeps',
     'tools/binary_size/sizes.pydeps',
     'tools/binary_size/supersize.pydeps',
     'tools/perf/process_perf_results.pydeps',
@@ -6735,6 +6750,27 @@ def CheckRawPtrUsage(input_api, output_api):
                         path=f.LocalPath(), line=line_num)))
     return errors
 
+def CheckAdvancedMemorySafetyChecksUsage(input_api, output_api):
+    """Checks that ADVANCED_MEMORY_SAFETY_CHECKS() macro is neither added nor
+    removed as it is managed by the memory safety team internally.
+    Do not add / remove it manually."""
+    paths = set([])
+    # The regex below matches "ADVANCED_MEMORY_SAFETY_CHECKS(" following a word
+    # boundary, but not in a C++ comment.
+    macro_matcher = input_api.re.compile(
+        r'^((?!//).)*\bADVANCED_MEMORY_SAFETY_CHECKS\(', input_api.re.MULTILINE)
+    for f in input_api.AffectedFiles():
+        if not _IsCPlusPlusFile(input_api, f.LocalPath()):
+            continue
+        if macro_matcher.search(f.GenerateScmDiff()):
+            paths.add(f.LocalPath())
+    if not paths:
+        return []
+    return [output_api.PresubmitPromptWarning(
+              'ADVANCED_MEMORY_SAFETY_CHECKS() macro is managed by ' \
+              'the memory safety team (chrome-memory-safety@). ' \
+              'Please contact us to add/delete the uses of the macro.',
+              paths)]
 
 def CheckPythonShebang(input_api, output_api):
     """Checks that python scripts use #!/usr/bin/env instead of hardcoding a
@@ -6818,10 +6854,11 @@ def CheckBatchAnnotation(input_api, output_api):
         results.append(
             output_api.PresubmitPromptWarning(
                 """
-Instrumentation tests should use either @Batch or @DoNotBatch. Use
-@Batch(Batch.PER_CLASS) in most cases. Use @Batch(Batch.UNIT_TESTS) when tests
-have no side-effects. If the tests are not safe to run in batch, please use
-@DoNotBatch with reasons.
+A change was made to an on-device test that has neither been annotated with
+@Batch nor @DoNotBatch. If this is a new test, please add the annotation. If
+this is an existing test, please consider adding it if you are sufficiently
+familiar with the test (but do so as a separate change).
+
 See https://source.chromium.org/chromium/chromium/src/+/main:docs/testing/batching_instrumentation_tests.md
 """, missing_annotation_errors))
     if extra_annotation_errors:

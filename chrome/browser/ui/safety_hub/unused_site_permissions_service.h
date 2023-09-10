@@ -26,6 +26,12 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
+constexpr char kUnusedSitePermissionsResultKey[] = "permissions";
+constexpr char kUnusedSitePermissionsResultPermissionTypesKey[] =
+    "permissionTypes";
+constexpr char kUnusedSitePermissionsResultOriginKey[] = "origin";
+constexpr char kUnusedSitePermissionsResultExpirationKey[] = "expiration";
+
 namespace url {
 class Origin;
 }
@@ -67,6 +73,8 @@ class UnusedSitePermissionsService : public SafetyHubService,
    public:
     UnusedSitePermissionsResult();
 
+    explicit UnusedSitePermissionsResult(const base::Value::Dict& dict);
+
     UnusedSitePermissionsResult(const UnusedSitePermissionsResult&) = delete;
     UnusedSitePermissionsResult& operator=(const UnusedSitePermissionsResult&) =
         delete;
@@ -89,6 +97,15 @@ class UnusedSitePermissionsService : public SafetyHubService,
     }
 
     std::list<RevokedPermission> GetRevokedPermissions();
+
+    std::set<ContentSettingsPattern> GetRevokedOrigins() const;
+
+    // SafetyHubService::Result implementation
+    base::Value::Dict ToDictValue() override;
+
+    bool IsTriggerForMenuNotification() override;
+
+    bool WarrantsNewMenuNotification(const Result& previousResult) override;
 
    private:
     std::list<RevokedPermission> revoked_permissions_;
@@ -171,6 +188,8 @@ class UnusedSitePermissionsService : public SafetyHubService,
       base::Clock* clock,
       const scoped_refptr<HostContentSettingsMap> hcsm);
 
+  // SafetyHubService implementation
+
   // Returns a weak pointer to the service.
   base::WeakPtr<SafetyHubService> GetAsWeakRef() override;
 
@@ -204,6 +223,8 @@ class UnusedSitePermissionsService : public SafetyHubService,
       const ContentSettingsPattern& secondary_pattern);
 
   // SafetyHubService implementation
+
+  void InitializeLatestResult() override;
 
   // Returns the interval at which the repeated updates will be run.
   base::TimeDelta GetRepeatedUpdateInterval() override;

@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Discount} from 'chrome://new-tab-page/discount.mojom-webui.js';
 import {Cluster, InteractionState, URLVisit} from 'chrome://new-tab-page/history_cluster_types.mojom-webui.js';
 import {LayoutType} from 'chrome://new-tab-page/history_clusters_layout_type.mojom-webui.js';
 import {PageHandlerRemote} from 'chrome://new-tab-page/history_clusters_v2.mojom-webui.js';
-import {DismissModuleInstanceEvent, HistoryClustersProxyImplV2, historyClustersV2Descriptor, HistoryClustersV2ModuleElement} from 'chrome://new-tab-page/lazy_load.js';
+import {DismissModuleInstanceEvent, HistoryClustersProxyImplV2, historyClustersV2Descriptor, HistoryClustersV2ModuleElement, VisitTileModuleElement} from 'chrome://new-tab-page/lazy_load.js';
 import {$$} from 'chrome://new-tab-page/new_tab_page.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
+import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 import {assertDeepEquals, assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {fakeMetricsPrivate, MetricsTracker} from 'chrome://webui-test/metrics_test_support.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import {TestMock} from 'chrome://webui-test/test_mock.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
@@ -46,8 +49,18 @@ function removeHrefAndClick(element: HTMLElement) {
   element.click();
 }
 
+function checkInfoDialogContent(
+    moduleElement: HistoryClustersV2ModuleElement, id: string) {
+  const expectedInfo =
+      loadTimeData.getString(id).replaceAll('\n', '').replaceAll('<br>', '');
+  const actualInfo =
+      moduleElement.$.infoDialogRender.get().textContent!.replaceAll('\n', '');
+  assertEquals(expectedInfo, actualInfo);
+}
+
 suite('NewTabPageModulesHistoryClustersV2ModuleTest', () => {
   let handler: TestMock<PageHandlerRemote>;
+  let metrics: MetricsTracker;
 
   setup(() => {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
@@ -55,11 +68,16 @@ suite('NewTabPageModulesHistoryClustersV2ModuleTest', () => {
         PageHandlerRemote,
         mock => HistoryClustersProxyImplV2.setInstance(
             new HistoryClustersProxyImplV2(mock)));
+    metrics = fakeMetricsPrivate();
   });
 
-  async function initializeModule(clusters: Cluster[]):
+  async function initializeModule(
+      clusters: Cluster[],
+      discounts: Map<Url, Discount[]> = new Map<Url, Discount[]>()):
       Promise<HistoryClustersV2ModuleElement[]> {
     handler.setResultFor('getClusters', Promise.resolve({clusters}));
+    handler.setResultFor(
+        'getDiscountsForCluster', Promise.resolve({discounts}));
     const moduleElements = await historyClustersV2Descriptor.initialize(0) as
         HistoryClustersV2ModuleElement[];
     if (moduleElements) {
@@ -108,9 +126,9 @@ suite('NewTabPageModulesHistoryClustersV2ModuleTest', () => {
 
     test('Header element populated with correct data', async () => {
       // Arrange.
-      const sampleClusterLabel = '"Sample Journey"';
+      const clusterLabel = 'Sample Journey';
       const moduleElements = await initializeModule(
-          [createSampleCluster(2, {label: sampleClusterLabel})]);
+          [createSampleCluster(2, {label: `"${clusterLabel}"`})]);
       const moduleElement = moduleElements[0];
 
       // Assert.
@@ -119,8 +137,31 @@ suite('NewTabPageModulesHistoryClustersV2ModuleTest', () => {
       assertTrue(!!headerElement);
       const label = $$(headerElement, '#label');
       assertTrue(!!label);
-      assertModuleHeaderTitle(label as HTMLElement, `${sampleClusterLabel}`);
+      assertModuleHeaderTitle(label as HTMLElement, `${clusterLabel}`);
       assertTrue(!!$$(headerElement, 'ntp-module-header-v2'));
+    });
+
+    test('Header element has expected action menu items', async () => {
+      const moduleElements = await initializeModule(
+          [createSampleCluster(2, {label: '"Sample Journey"'})]);
+      const moduleElement = moduleElements[0];
+      assertTrue(!!moduleElement);
+
+      const headerTileElement = $$(moduleElement, 'history-clusters-header-v2');
+      assertTrue(!!headerTileElement);
+      const moduleHeaderElement = $$(headerTileElement, 'ntp-module-header-v2');
+      assertTrue(!!moduleHeaderElement);
+      const actionMenu = $$(moduleHeaderElement, 'cr-action-menu');
+      assertTrue(!!actionMenu);
+
+      const actionMenuItems =
+          [...actionMenu.querySelectorAll('button.dropdown-item')];
+      assertEquals(6, actionMenuItems.length);
+      ['done', 'dismiss', 'disable', 'show-all', 'info', 'customize-module']
+          .forEach((action, index) => {
+            assertEquals(
+                action, actionMenuItems[index]!.getAttribute('data-action'));
+          });
     });
 
     test('Header info button click opens info dialog', async () => {
@@ -137,8 +178,7 @@ suite('NewTabPageModulesHistoryClustersV2ModuleTest', () => {
     });
 
     test(
-        'Search suggestion header contains chip that is not hidden',
-        async () => {
+        'Search suggestion header contains chip', async () => {
           // Arrange.
           loadTimeData.overrideValues({
             historyClustersSuggestionChipHeaderEnabled: true,
@@ -146,18 +186,13 @@ suite('NewTabPageModulesHistoryClustersV2ModuleTest', () => {
           const moduleElements = await initializeModule(
               [createSampleCluster(2, {label: '"Sample Journey"'})]);
           const moduleElement = moduleElements[0];
-
-          // Act.
           assertTrue(!!moduleElement);
-          const headerElement = $$(moduleElement, 'history-clusters-header-v2');
-          assertTrue(!!headerElement);
-          const label = $$(headerElement, '#label');
-          assertTrue(!!label);
-          const suggestionChip = $$(headerElement, '#suggestion-chip');
-          assertTrue(!!suggestionChip);
 
           // Assert.
-          assertEquals((label as HTMLElement).hidden, true);
+          const headerElement = $$(moduleElement, 'history-clusters-header-v2');
+          assertTrue(!!headerElement);
+          const suggestionChip = $$(headerElement, '#suggestion-chip');
+          assertTrue(!!suggestionChip);
           assertEquals((suggestionChip as HTMLElement).hidden, false);
         });
 
@@ -267,11 +302,14 @@ suite('NewTabPageModulesHistoryClustersV2ModuleTest', () => {
           [createSampleCluster(2, {label: sampleClusterLabel})]);
       const moduleElement = moduleElements[0];
       assertTrue(!!moduleElement);
-      const headerElement = $$(moduleElement, 'history-clusters-header-v2');
+      const headerElement =
+          $$<HTMLElement>(moduleElement, 'history-clusters-header-v2');
       assertTrue(!!headerElement);
+      const buttonElement = $$<HTMLElement>(headerElement, 'button');
+      assertTrue(!!buttonElement);
 
       const waitForUsageEvent = eventToPromise('usage', moduleElement);
-      headerElement.click();
+      buttonElement.click();
 
       assertEquals(
           sampleClusterLabel.substring(1, sampleClusterLabel.length - 1),
@@ -299,6 +337,31 @@ suite('NewTabPageModulesHistoryClustersV2ModuleTest', () => {
           await waitForUsageEvent;
         });
 
+    [['Visit', 'ntp-history-clusters-visit-tile'],
+     ['Suggest', 'ntp-history-clusters-suggest-tile-v2']]
+        .forEach(([type, tileTagName]) => {
+          test(`Tile click metrics for ${type}`, async () => {
+            const sampleClusterLabel = '"Sample Journey"';
+            const moduleElements = await initializeModule(
+                [createSampleCluster(2, {label: sampleClusterLabel})]);
+            const moduleElement = moduleElements[0];
+            assertTrue(!!moduleElement);
+            const tileElement = $$<HTMLElement>(moduleElement, tileTagName!);
+            assertTrue(!!tileElement);
+
+            const waitForUsageEvent = eventToPromise('usage', moduleElement);
+            tileElement.click();
+
+            assertEquals(BigInt(111), handler.getArgs('recordClick')[0]);
+            assertEquals(
+                1,
+                metrics.count(`NewTabPage.HistoryClusters.Layout${
+                    LayoutType.kImages}.${type}Tile.ClickIndex`));
+
+            await waitForUsageEvent;
+          });
+        });
+
     [...Array(3).keys()].forEach(numRelatedSearches => {
       test('Module shows correct amount of related searches', async () => {
         // Arrange.
@@ -313,7 +376,114 @@ suite('NewTabPageModulesHistoryClustersV2ModuleTest', () => {
             $$(moduleElement, '#related-searches') as HTMLElement;
         assertTrue(!!relatedSearchesElement);
         assertEquals((numRelatedSearches < 2), relatedSearchesElement.hidden);
+        checkInfoDialogContent(moduleElement, 'modulesJourneysInfo');
       });
+    });
+  });
+
+  suite('Discounts', () => {
+    test('Discount is not initialized when feature is disabled', async () => {
+      loadTimeData.overrideValues({
+        historyClustersModuleDiscountsEnabled: false,
+      });
+
+      const instanceCount = 3;
+      const moduleElements =
+          await initializeModule(createSampleClusters(instanceCount));
+      assertEquals(instanceCount, moduleElements.length);
+
+      assertEquals(0, handler.getCallCount('getDiscountsForCluster'));
+      for (const moduleElement of moduleElements) {
+        assertTrue(!!moduleElement);
+        await waitAfterNextRender(moduleElement);
+        for (const discount of moduleElement.discounts) {
+          assertEquals('', discount);
+        }
+      }
+    });
+
+    test('Discount initialization', async () => {
+      loadTimeData.overrideValues({
+        historyClustersModuleDiscountsEnabled: true,
+      });
+
+      const instanceCount = 2;
+      const visitCount = 3;
+      const clusters = createSampleClusters(instanceCount);
+      assertEquals(clusters.length, instanceCount);
+      assertEquals(clusters[0]!.visits.length, visitCount);
+      assertEquals(clusters[1]!.visits.length, visitCount);
+      // Update clusters visit URLs so that they are different. Skip the first
+      // visit since it is the SRP.
+      clusters[0]!.visits[1]!.normalizedUrl = {url: 'https://www.foo.com/1'};
+      clusters[0]!.visits[2]!.normalizedUrl = {url: 'https://www.foo.com/2'};
+      clusters[1]!.visits[1]!.normalizedUrl = {url: 'https://www.foo.com/3'};
+      clusters[1]!.visits[2]!.normalizedUrl = {url: 'https://www.foo.com/4'};
+
+      const discoutMap = new Map<Url, Discount[]>();
+      discoutMap.set(clusters[0]!.visits[1]!.normalizedUrl, [{
+                       valueInText: '15% off',
+                       annotatedVisitUrl: {url: 'https://www.annotated.com/1'},
+                     }]);
+      discoutMap.set(clusters[1]!.visits[2]!.normalizedUrl, [{
+                       valueInText: '$10 off',
+                       annotatedVisitUrl: {url: 'https://www.annotated.com/2'},
+                     }]);
+
+      const moduleElements = await initializeModule(clusters, discoutMap);
+      assertEquals(
+          instanceCount, handler.getCallCount('getDiscountsForCluster'));
+      for (const moduleElement of moduleElements) {
+        assertTrue(!!moduleElement);
+        await waitAfterNextRender(moduleElement);
+        assertEquals(moduleElement.discounts.length, visitCount);
+      }
+
+      // Assert Module One.
+      const expectedDiscountsModuleOne = ['', '15% off', ''];
+      let visitTiles: VisitTileModuleElement[] =
+          Array.from(moduleElements[0]!.shadowRoot!.querySelectorAll(
+              'ntp-history-clusters-visit-tile'));
+      assertEquals(visitTiles.length, visitCount - 1);
+      for (let i = 0; i < moduleElements[0]!.discounts.length; i++) {
+        assertEquals(
+            expectedDiscountsModuleOne[i], moduleElements[0]!.discounts[i]);
+        // Skip the first one which is SRP.
+        if (i !== 0) {
+          assertEquals(
+              expectedDiscountsModuleOne[i], visitTiles[i - 1]!.discount);
+        }
+      }
+      assertEquals(
+          'https://www.annotated.com/1',
+          visitTiles[0]!.visit.normalizedUrl.url);
+      assertEquals(
+          'https://www.foo.com/2', visitTiles[1]!.visit.normalizedUrl.url);
+
+      // Assert Module Two.
+      const expectedDiscountsModuleTwo = ['', '', '$10 off'];
+      visitTiles = Array.from(moduleElements[1]!.shadowRoot!.querySelectorAll(
+          'ntp-history-clusters-visit-tile'));
+      assertEquals(visitTiles.length, visitCount - 1);
+      for (let i = 0; i < moduleElements[1]!.discounts.length; i++) {
+        assertEquals(
+            expectedDiscountsModuleTwo[i], moduleElements[1]!.discounts[i]);
+        // Skip the first one which is SRP.
+        if (i !== 0) {
+          assertEquals(
+              expectedDiscountsModuleTwo[i], visitTiles[i - 1]!.discount);
+        }
+      }
+      assertEquals(
+          'https://www.foo.com/3', visitTiles[0]!.visit.normalizedUrl.url);
+      assertEquals(
+          'https://www.annotated.com/2',
+          visitTiles[1]!.visit.normalizedUrl.url);
+
+      // Assert info dialog.
+      for (const moduleElement of moduleElements) {
+        checkInfoDialogContent(moduleElement, 'modulesHistoryWithDiscountInfo');
+      }
     });
   });
 });

@@ -95,6 +95,7 @@
 #include "chrome/browser/tracing/trace_event_system_stats_monitor.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
+#include "chrome/browser/ui/actions/chrome_actions.h"
 #include "chrome/browser/ui/color/chrome_color_mixers.h"
 #include "chrome/browser/ui/javascript_dialogs/chrome_javascript_app_modal_dialog_view_factory.h"
 #include "chrome/browser/ui/profiles/profile_error_dialog.h"
@@ -197,6 +198,7 @@
 #include "third_party/blink/public/common/origin_trials/origin_trials_settings_provider.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/common/switches.h"
+#include "ui/actions/actions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/color/color_provider_manager.h"
@@ -297,6 +299,7 @@
 #include "chrome/browser/headless/headless_mode_metrics.h"  // nogncheck
 #include "chrome/browser/headless/headless_mode_util.h"     // nogncheck
 #include "components/headless/select_file_dialog/headless_select_file_dialog.h"
+#include "ui/gfx/switches.h"
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
@@ -800,6 +803,8 @@ void ChromeBrowserMainParts::ToolkitInitialized() {
   // be added before we add chrome mixers.
   ui::ColorProviderManager::Get().AppendColorProviderInitializer(
       base::BindRepeating(AddChromeColorMixers));
+  auto& manager = actions::ActionManager::Get();
+  manager.AppendActionItemInitializer(base::BindRepeating(InitializeActions));
 }
 
 void ChromeBrowserMainParts::PreCreateMainMessageLoop() {
@@ -2075,8 +2080,18 @@ bool ChromeBrowserMainParts::ProcessSingletonNotificationCallback(
   // starts running. So, an additional check needs to happen when it starts.
   // But regardless of any future check, there is no reason to post the task
   // now if we know we're already shutting down.
-  if (!g_browser_process || g_browser_process->IsShuttingDown())
+  if (!g_browser_process || g_browser_process->IsShuttingDown()) {
     return false;
+  }
+
+  // Drop the request if headless mode is in effect or the request is from
+  // a headless Chrome process.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+  if (headless::IsHeadlessMode() ||
+      command_line.HasSwitch(switches::kHeadless)) {
+    return false;
+  }
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
   // In order to handle this request on Windows, there is platform specific
   // code in browser_finder.cc that requires making outbound COM calls to

@@ -35,6 +35,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_util.h"
+#include "ash/webui/personalization_app/mojom/personalization_app.mojom-shared.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
@@ -259,7 +260,8 @@ void AmbientAshTestBase::SetAmbientModeManagedScreensaverEnabled(bool enabled) {
       std::make_unique<base::Value>(enabled));
 }
 
-void AmbientAshTestBase::SetAmbientTheme(AmbientTheme theme) {
+void AmbientAshTestBase::SetAmbientTheme(
+    personalization_app::mojom::AmbientTheme theme) {
   SetAmbientUiSettings(AmbientUiSettings(theme));
 }
 
@@ -609,7 +611,14 @@ AmbientController* AmbientAshTestBase::ambient_controller() {
   return Shell::Get()->ambient_controller();
 }
 
+AmbientUiLauncher* AmbientAshTestBase::ambient_ui_launcher() {
+  return ambient_controller()->ambient_ui_launcher();
+}
+
 AmbientPhotoController* AmbientAshTestBase::photo_controller() {
+  if (ambient_ui_launcher()) {
+    return ambient_ui_launcher()->GetAmbientPhotoController();
+  }
   return ambient_controller()->ambient_photo_controller();
 }
 
@@ -618,8 +627,7 @@ AmbientManagedPhotoController* AmbientAshTestBase::managed_photo_controller() {
     return nullptr;
   }
   AmbientManagedSlideshowUiLauncher* ui_launcher =
-      static_cast<AmbientManagedSlideshowUiLauncher*>(
-          ambient_controller()->ambient_ui_launcher());
+      static_cast<AmbientManagedSlideshowUiLauncher*>(ambient_ui_launcher());
   return &ui_launcher->photo_controller_;
 }
 

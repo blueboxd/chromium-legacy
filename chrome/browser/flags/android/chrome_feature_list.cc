@@ -118,6 +118,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kElasticOverscroll,
     &features::kPrivacyGuideAndroid,
     &features::kPrivacyGuideAndroid3,
+    &features::kPrivacyGuidePreloadAndroid,
     &features::kPrivacyGuideAndroidPostMVP,
     &features::kPushMessagingDisallowSenderIDs,
     &features::kPwaUpdateDialogForIcon,
@@ -180,6 +181,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kBackGestureRefactorAndroid,
     &kBackgroundThreadPool,
     &kBaselineGM3SurfaceColors,
+    &kBlockIntentsWhileLocked,
     &kCacheActivityTaskID,
     &kCastDeviceFilter,
     &kClearOmniboxFocusAfterNavigation,
@@ -246,6 +248,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kFocusOmniboxInIncognitoTabIntents,
     &kFoldableJankFix,
     &kGridTabSwitcherLandscapeAspectRatioPhones,
+    &kHideTabOnTabSwitcher,
     &kImprovedIncognitoScreenshot,
     &kIncognitoReauthenticationForAndroid,
     &kIncognitoScreenshot,
@@ -370,8 +373,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &password_manager::features::kPasskeyManagementUsingAccountSettingsAndroid,
     &password_manager::features::kPasswordEditDialogWithDetails,
     &password_manager::features::kRecoverFromNeverSaveAndroid,
-    &password_manager::features::kUnifiedPasswordManagerAndroid,
-    &password_manager::features::kUnifiedPasswordManagerAndroidBranding,
     &password_manager::features::
         kUnifiedPasswordManagerLocalPasswordsMigrationWarning,
     &permissions::features::kBlockMidiByDefault,
@@ -448,7 +449,7 @@ BASE_FEATURE(kAddToHomescreenIPH,
 
 BASE_FEATURE(kAdvancedPeripheralsSupport,
              "AdvancedPeripheralsSupport",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAdvancedPeripheralsSupportTabStrip,
              "AdvancedPeripheralsSupportTabStrip",
@@ -505,6 +506,10 @@ BASE_FEATURE(kBackgroundThreadPool,
 BASE_FEATURE(kBaselineGM3SurfaceColors,
              "BaselineGM3SurfaceColors",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kBlockIntentsWhileLocked,
+             "BlockIntentsWhileLocked",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCacheActivityTaskID,
              "CacheActivityTaskID",
@@ -773,6 +778,10 @@ BASE_FEATURE(kFoldableJankFix,
 
 BASE_FEATURE(kGridTabSwitcherLandscapeAspectRatioPhones,
              "GridTabSwitcherLandscapeAspectRatioPhones",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kHideTabOnTabSwitcher,
+             "HideTabOnTabSwitcher",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Only affects devices on API version >= 33.
@@ -1102,7 +1111,7 @@ BASE_FEATURE(kStartSurfaceOnTablet,
 
 BASE_FEATURE(kStartSurfaceSpareTab,
              "StartSurfaceSpareTab",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kStartSurfaceReturnTime,
              "StartSurfaceReturnTime",

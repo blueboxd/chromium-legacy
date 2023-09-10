@@ -2,6 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+source_set("prefs") {
+  sources = [
+    "pref_backed_boolean.h",
+    "pref_backed_boolean.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/prefs",
+    "//ios/chrome/browser/shared/model/utils",
+    "//ui/base",
+  ]
+}
+
 source_set("pref_names") {
   sources = [
     "pref_names.cc",
@@ -84,6 +97,7 @@ source_set("browser_prefs") {
     "//ios/chrome/browser/ui/bookmarks:constants",
     "//ios/chrome/browser/ui/bookmarks:core",
     "//ios/chrome/browser/ui/content_suggestions",
+    "//ios/chrome/browser/ui/content_suggestions/safety_check",
     "//ios/chrome/browser/ui/first_run:field_trial",
     "//ios/chrome/browser/ui/incognito_reauth:incognito_reauth_scene_agent",
     "//ios/chrome/browser/ui/ntp:field_trial",
@@ -93,5 +107,19 @@ source_set("browser_prefs") {
     "//ios/chrome/browser/web/font_size",
     "//ios/web/common:features",
     "//ui/base",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "pref_backed_boolean_unittest.mm" ]
+  deps = [
+    ":prefs",
+    "//base",
+    "//components/prefs",
+    "//components/prefs:test_support",
+    "//ios/chrome/browser/shared/model/utils:test_support",
+    "//ios/web/public/test",
+    "//testing/gtest",
   ]
 }

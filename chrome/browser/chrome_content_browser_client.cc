@@ -105,7 +105,6 @@
 #include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/policy/policy_util.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/prefetch/prefetch_prefs.h"
 #include "chrome/browser/preloading/navigation_ablation_throttle.h"
 #include "chrome/browser/preloading/prefetch/no_state_prefetch/chrome_no_state_prefetch_contents_delegate.h"
 #include "chrome/browser/preloading/prefetch/no_state_prefetch/chrome_speculation_host_delegate.h"
@@ -115,6 +114,7 @@
 #include "chrome/browser/preloading/prefetch/search_prefetch/field_trial_settings.h"
 #include "chrome/browser/preloading/prefetch/search_prefetch/search_prefetch_url_loader.h"
 #include "chrome/browser/preloading/prefetch/search_prefetch/search_prefetch_url_loader_interceptor.h"
+#include "chrome/browser/preloading/preloading_prefs.h"
 #include "chrome/browser/preloading/prerender/prerender_web_contents_delegate.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
 #include "chrome/browser/private_network_access/chrome_private_network_device_delegate.h"
@@ -309,7 +309,6 @@
 #include "content/public/browser/tts_controller.h"
 #include "content/public/browser/tts_platform.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
-#include "content/public/browser/user_level_memory_pressure_signal_features.h"
 #include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/browser/weak_document_ptr.h"
 #include "content/public/browser/web_contents.h"
@@ -323,7 +322,6 @@
 #include "content/public/common/window_container_type.mojom-shared.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
-#include "extensions/common/constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/google_api_keys.h"
 #include "gpu/config/gpu_switches.h"
@@ -425,7 +423,9 @@
 #include "chrome/browser/ash/system_extensions/system_extensions_profile_utils.h"
 #include "chrome/browser/ash/system_extensions/system_extensions_provider.h"
 #include "chrome/browser/ash/url_handler.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_settings_navigation_throttle.h"
 #include "chrome/browser/speech/tts_chromeos.h"
+#include "chrome/browser/speech/tts_controller_delegate_impl.h"
 #include "chrome/browser/ui/ash/chrome_browser_main_extra_parts_ash.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -437,10 +437,14 @@
 #include "components/user_manager/user_manager.h"
 #include "services/service_manager/public/mojom/interface_provider_spec.mojom.h"
 #include "storage/browser/file_system/external_mount_points.h"
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
 #elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/chrome_browser_main_linux.h"
+#include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views_linux.h"
 #elif BUILDFLAG(IS_ANDROID)
 #include "base/android/application_status_listener.h"
+#include "base/android/build_info.h"
 #include "base/feature_list.h"
 #include "chrome/android/features/dev_ui/buildflags.h"
 #include "chrome/browser/android/customtabs/client_data_header_web_contents_observer.h"
@@ -478,6 +482,8 @@
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "base/debug/leak_annotations.h"
+#include "chrome/browser/apps/intent_helper/chromeos_disabled_apps_throttle.h"
+#include "chrome/browser/apps/link_capturing/chromeos_link_capturing_delegate.h"
 #include "chrome/browser/chromeos/enterprise/incognito_navigation_throttle.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_scoped_file_access_delegate.h"
 #include "chrome/browser/chromeos/quickoffice/quickoffice_prefs.h"
@@ -485,6 +491,7 @@
 #include "chrome/browser/file_system_access/cloud_identifier/cloud_identifier_util_cros.h"
 #include "chrome/browser/policy/networking/policy_cert_service.h"
 #include "chrome/browser/policy/networking/policy_cert_service_factory.h"
+#include "chrome/browser/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/smart_card/chromeos_smart_card_delegate.h"
 #include "chrome/common/chromeos/extensions/chromeos_system_extension_info.h"
 #include "chromeos/components/kiosk/kiosk_utils.h"
@@ -493,6 +500,7 @@
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/apps/link_capturing/link_capturing_navigation_throttle.h"
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/direct_sockets/chrome_direct_sockets_delegate.h"
@@ -542,6 +550,8 @@
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
 #include "components/crash/content/browser/crash_handler_host_linux.h"
+#else
+#include "chrome/browser/apps/link_capturing/web_app_link_capturing_delegate.h"
 #endif
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
@@ -556,17 +566,6 @@
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) ||
         // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if !BUILDFLAG(IS_ANDROID)
-#include "chrome/browser/apps/link_capturing/link_capturing_navigation_throttle.h"
-#if BUILDFLAG(IS_CHROMEOS)
-#include "chrome/browser/apps/intent_helper/chromeos_disabled_apps_throttle.h"
-#include "chrome/browser/apps/link_capturing/chromeos_link_capturing_delegate.h"
-#include "chrome/browser/policy/system_features_disable_list_policy_handler.h"
-#else
-#include "chrome/browser/apps/link_capturing/web_app_link_capturing_delegate.h"
-#endif  // BUILDFLAG(IS_CHROMEOS)
-#endif  // !BUILDFLAG(IS_ANDROID)
-
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/side_search/side_search_side_contents_helper.h"
 #include "chrome/browser/ui/side_search/side_search_utils.h"
@@ -576,12 +575,6 @@
 #if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
 #include "chrome/browser/ui/lens/lens_side_panel_navigation_helper.h"
 #include "components/lens/lens_features.h"
-#endif
-
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views_linux.h"
 #endif
 
 #if BUILDFLAG(IS_LINUX)
@@ -624,6 +617,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/process_map.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -646,11 +640,6 @@
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_google_auth_navigation_throttle.h"
 #endif
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/app_mode/kiosk_settings_navigation_throttle.h"
-#include "chrome/browser/speech/tts_controller_delegate_impl.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
 #include "chrome/browser/media/cast_remoting_connector.h"
@@ -788,6 +777,10 @@ BASE_FEATURE(kNetworkServiceCodeIntegrity,
 BASE_FEATURE(kAllowGaiaOriginIsolationOnAndroid,
              "AllowGaiaOriginIsolationOnAndroid",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kPrivateNetworkAccessRestrictionsForAutomotive,
+             "PrivateNetworkAccessRestrictionsForAutomotive",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_ANDROID)
 
 // A small ChromeBrowserMainExtraParts that invokes a callback when threads are
@@ -1674,7 +1667,7 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
       true);
 
   registry->RegisterBooleanPref(
-      policy::policy_prefs::kForcePermissionPolicyUnloadDefaultEnabled, true);
+      policy::policy_prefs::kForcePermissionPolicyUnloadDefaultEnabled, false);
 
 #if BUILDFLAG(IS_CHROMEOS)
   registry->RegisterListPref(prefs::kMandatoryExtensionsForIncognitoNavigation);
@@ -2752,11 +2745,8 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         command_line->AppendSwitch(blink::switches::kDataUrlInSvgUseEnabled);
       }
 
-      // The policy is "enabled" to follow policy naming convention but the
-      // switch is "disable" because we want the default to have no switch since
-      // this is the default case.
-      if (!prefs->GetBoolean(policy::policy_prefs::
-                                 kForcePermissionPolicyUnloadDefaultEnabled)) {
+      if (prefs->GetBoolean(policy::policy_prefs::
+                                kForcePermissionPolicyUnloadDefaultEnabled)) {
         command_line->AppendSwitch(
             blink::switches::kForcePermissionPolicyUnloadDefaultEnabled);
       }
@@ -2872,36 +2862,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
     MaybeAppendBlinkSettingsSwitchForFieldTrial(browser_command_line,
                                                 command_line);
-
-#if BUILDFLAG(IS_ANDROID)
-    // If the platform is Android, force the distillability service on.
-    command_line->AppendSwitch(switches::kEnableDistillabilityService);
-
-    // The browser process only decides to enable or disable
-    // UserLevelMemoryPressureSignalGenerator feature. Renderer processes
-    // follow the decision. If the browser process enables the feature, renderer
-    // processes will provide private memory footprint for the browser process
-    // and will generate memory pressure signals when the browser process
-    // requests. So the decision will be provided for renderer processes
-    // via commandline flag.
-    std::ostringstream user_level_memory_pressure_params;
-    if (features::IsUserLevelMemoryPressureSignalEnabledOn4GbDevices()) {
-      user_level_memory_pressure_params
-          << features::InertIntervalFor4GbDevices().InSeconds() << "s,"
-          << features::MinUserMemoryPressureIntervalOn4GbDevices().InSeconds()
-          << "s";
-    } else if (features::IsUserLevelMemoryPressureSignalEnabledOn6GbDevices()) {
-      user_level_memory_pressure_params
-          << features::InertIntervalFor6GbDevices().InSeconds() << "s,"
-          << features::MinUserMemoryPressureIntervalOn6GbDevices().InSeconds()
-          << "s";
-    }
-    if (user_level_memory_pressure_params.tellp() > 0) {
-      command_line->AppendSwitchASCII(
-          switches::kUserLevelMemoryPressureSignalParams,
-          user_level_memory_pressure_params.str());
-    }
-#endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(ENABLE_NACL)
     AppendDisableNaclSwitchIfNecessary(command_line);
@@ -3544,6 +3504,29 @@ bool ChromeContentBrowserClient::IsPrivateAggregationAllowed(
       top_frame_origin, reporting_origin);
 }
 
+bool ChromeContentBrowserClient::IsCookieDeprecationLabelAllowed(
+    content::BrowserContext* browser_context) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+
+  auto* privacy_sandbox_settings =
+      PrivacySandboxSettingsFactory::GetForProfile(profile);
+  DCHECK(privacy_sandbox_settings);
+  return privacy_sandbox_settings->IsCookieDeprecationLabelAllowed();
+}
+
+bool ChromeContentBrowserClient::IsCookieDeprecationLabelAllowedForContext(
+    content::BrowserContext* browser_context,
+    const url::Origin& top_frame_origin,
+    const url::Origin& context_origin) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+
+  auto* privacy_sandbox_settings =
+      PrivacySandboxSettingsFactory::GetForProfile(profile);
+  DCHECK(privacy_sandbox_settings);
+  return privacy_sandbox_settings->IsCookieDeprecationLabelAllowedForContext(
+      top_frame_origin, context_origin);
+}
+
 #if BUILDFLAG(IS_CHROMEOS)
 void ChromeContentBrowserClient::OnTrustAnchorUsed(
     content::BrowserContext* browser_context) {
@@ -4121,6 +4104,8 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 #if BUILDFLAG(IS_ANDROID)
   web_prefs->font_scale_factor = static_cast<float>(
       prefs->GetDouble(browser_ui::prefs::kWebKitFontScaleFactor));
+  web_prefs->text_size_contrast_factor =
+      prefs->GetInteger(prefs::kAccessibilityTextSizeContrastFactor);
   web_prefs->force_enable_zoom =
       prefs->GetBoolean(browser_ui::prefs::kWebKitForceEnableZoom);
   web_prefs->font_weight_adjustment =
@@ -7523,6 +7508,15 @@ ChromeContentBrowserClient::ShouldOverridePrivateNetworkRequestPolicy(
           PrivateNetworkRequestPolicyOverride::kForceAllow;
     }
   }
+
+#if BUILDFLAG(IS_ANDROID)
+  if (base::FeatureList::IsEnabled(
+          kPrivateNetworkAccessRestrictionsForAutomotive) &&
+      base::android::BuildInfo::GetInstance()->is_automotive()) {
+    return content::ContentBrowserClient::PrivateNetworkRequestPolicyOverride::
+        kBlockInsteadOfWarn;
+  }
+#endif
 
   return content::ContentBrowserClient::PrivateNetworkRequestPolicyOverride::
       kDefault;

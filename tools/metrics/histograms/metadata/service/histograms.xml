@@ -1484,7 +1484,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.StartWorker.Timeout.StartPurpose"
-    enum="ServiceWorkerMetrics.EventType" expires_after="2023-12-31">
+    enum="ServiceWorkerMetrics.EventType" expires_after="2024-03-03">
   <owner>chikamune@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -1496,7 +1496,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.StartWorker.TimeoutPhase"
-    enum="EmbeddedWorkerStartingPhase" expires_after="2023-12-31">
+    enum="EmbeddedWorkerStartingPhase" expires_after="2024-03-03">
   <owner>chikamune@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -1504,6 +1504,22 @@ chromium-metrics-reviews@google.com.
 
     This histogram was expired between approximately Feb through Sep 2021.
   </summary>
+</histogram>
+
+<histogram name="ServiceWorker.StaticRouter.{Resource}.CacheStorageError"
+    enum="CacheStorageErrorType" expires_after="2024-03-01">
+  <owner>yyanagisawa@chromium.org</owner>
+  <owner>chrome-worker@google.com</owner>
+  <summary>
+    Records the cache storage error when the cache source is set by a rule for
+    the ServiceWorker static routing API and the cache storage match call
+    returns a status instead of a result. This metric is recorded for
+    {Resource}.
+  </summary>
+  <token key="Resource">
+    <variant name="MainResource" summary="main resource"/>
+    <variant name="Subresource" summary="subresource"/>
+  </token>
 </histogram>
 
 <histogram name="ServiceWorker.Storage.DeleteAndStartOverResult"

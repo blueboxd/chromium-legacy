@@ -1186,6 +1186,29 @@ bool ShouldNotifySubresourceResponseStarted(blink::RendererPreferences pref) {
   return pref.send_subresource_notification;
 }
 
+class WebURLLoaderThrottleProviderForFrameImpl
+    : public blink::WebURLLoaderThrottleProviderForFrame {
+ public:
+  explicit WebURLLoaderThrottleProviderForFrameImpl(int routing_id)
+      : routing_id_(routing_id) {}
+  ~WebURLLoaderThrottleProviderForFrameImpl() override = default;
+
+  WebVector<std::unique_ptr<blink::URLLoaderThrottle>> CreateThrottles(
+      const WebURLRequest& request) override {
+    RenderThreadImpl* render_thread = RenderThreadImpl::current();
+    // The RenderThreadImpl or its URLLoaderThrottleProvider member may not be
+    // valid in some tests.
+    if (!render_thread || !render_thread->url_loader_throttle_provider()) {
+      return {};
+    }
+    return render_thread->url_loader_throttle_provider()->CreateThrottles(
+        routing_id_, request);
+  }
+
+ private:
+  const int routing_id_;
+};
+
 }  // namespace
 
 RenderFrameImpl::AssertNavigationCommits::AssertNavigationCommits(
@@ -4311,16 +4334,6 @@ void RenderFrameImpl::WillSendRequestInternal(
   request.SetDownloadToNetworkCacheOnly(is_for_no_state_prefetch &&
                                         !for_outermost_main_frame);
 
-  // The RenderThreadImpl or its URLLoaderThrottleProvider member may not be
-  // valid in some tests.
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  if (!for_redirect && render_thread &&
-      render_thread->url_loader_throttle_provider()) {
-    url_request_extra_data->set_url_loader_throttles(
-        render_thread->url_loader_throttle_provider()->CreateThrottles(
-            routing_id_, request));
-  }
-
   request.SetHasUserGesture(frame_->HasTransientUserActivation());
 
   if (!GetWebView()->GetRendererPreferences().enable_referrers) {
@@ -5340,6 +5353,16 @@ void RenderFrameImpl::BeginNavigation(
       // when first creating the iframe with an unset/about:blank URL, which
       // means the origin should inherit from the parent.
       WebLocalFrame* parent = static_cast<WebLocalFrame*>(frame_->Parent());
+      SCOPED_CRASH_KEY_STRING256(
+          "sync_about_blank", "parent_origin",
+          url::Origin(parent->GetDocument().GetSecurityOrigin())
+              .GetDebugString());
+      SCOPED_CRASH_KEY_STRING256(
+          "sync_about_blank", "request_origin",
+          url::Origin(info->url_request.RequestorOrigin()).GetDebugString());
+      SCOPED_CRASH_KEY_STRING256(
+          "sync_about_blank", "current_origin",
+          url::Origin(frame_->GetSecurityOrigin()).GetDebugString());
       CHECK(parent);
       CHECK(parent->GetDocument().GetSecurityOrigin().IsSameOriginWith(
           info->url_request.RequestorOrigin()));
@@ -6065,6 +6088,12 @@ RenderFrameImpl::GetURLLoaderFactory() {
     return nullptr;
   }
   return GetLoaderFactoryBundle();
+}
+
+std::unique_ptr<blink::WebURLLoaderThrottleProviderForFrame>
+RenderFrameImpl::CreateWebURLLoaderThrottleProviderForFrame() {
+  return std::make_unique<WebURLLoaderThrottleProviderForFrameImpl>(
+      routing_id_);
 }
 
 void RenderFrameImpl::OnStopLoading() {

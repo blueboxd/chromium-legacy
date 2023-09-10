@@ -1390,13 +1390,23 @@ void NearbySharingServiceImpl::OnLockStateChanged(bool locked) {
       << __func__ << ": Screen lock state changed. (" << locked << ")";
   is_screen_locked_ = locked;
 
-  // Set visibility to 'Your Devices' if the screen is locked.
-  if (features::IsSelfShareEnabled()) {
+  // Set visibility to 'Your Devices' if the screen is locked and visibility is
+  // not Hidden.
+  nearby_share::mojom::Visibility current_visibility =
+      settings_.GetVisibility();
+  if (features::IsSelfShareEnabled() &&
+      current_visibility != nearby_share::mojom::Visibility::kNoOne) {
     if (locked) {
-      user_visibility_ = settings_.GetVisibility();
+      // Store old visibility setting.
+      user_visibility_ = current_visibility;
+      user_allowed_contacts_ = contact_manager_->GetAllowedContacts();
+
+      // Set visibility to Your Devices.
       settings_.SetVisibility(nearby_share::mojom::Visibility::kYourDevices);
+      contact_manager_->SetAllowedContacts(std::set<std::string>());
     } else {
       settings_.SetVisibility(user_visibility_);
+      contact_manager_->SetAllowedContacts(user_allowed_contacts_);
     }
   }
 

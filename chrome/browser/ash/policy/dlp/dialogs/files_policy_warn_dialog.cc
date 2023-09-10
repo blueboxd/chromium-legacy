@@ -7,12 +7,14 @@
 #include <string>
 
 #include "base/functional/callback_helpers.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/ash/policy/dlp/dialogs/files_policy_dialog.h"
 #include "chrome/browser/ash/policy/dlp/files_policy_string_util.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_file_destination.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_files_controller.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_files_utils.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_histogram_helper.h"
 #include "chrome/browser/enterprise/data_controls/component.h"
 #include "chrome/common/chrome_features.h"
 #include "components/strings/grit/components_strings.h"
@@ -76,7 +78,7 @@ const std::u16string GetDestination(DlpFileDestination destination) {
 }  // namespace
 
 FilesPolicyWarnDialog::FilesPolicyWarnDialog(
-    OnDlpRestrictionCheckedCallback callback,
+    OnDlpRestrictionCheckedWithJustificationCallback callback,
     const std::vector<DlpConfidentialFile>& files,
     dlp::FileAction action,
     gfx::NativeWindow modal_parent,
@@ -84,12 +86,20 @@ FilesPolicyWarnDialog::FilesPolicyWarnDialog(
     : FilesPolicyDialog(files.size(), action, modal_parent),
       files_(files),
       destination_(destination) {
-  SetOnDlpRestrictionCheckedCallback(std::move(callback));
+  auto split = base::SplitOnceCallback(std::move(callback));
+  SetAcceptCallback(base::BindOnce(&FilesPolicyWarnDialog::ProceedWarning,
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   std::move(split.first)));
+  SetCancelCallback(base::BindOnce(&FilesPolicyWarnDialog::CancelWarning,
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   std::move(split.second)));
   SetButtonLabel(ui::DIALOG_BUTTON_OK, GetOkButton());
   SetButtonLabel(ui::DialogButton::DIALOG_BUTTON_CANCEL, GetCancelButton());
 
   AddGeneralInformation();
   MaybeAddConfidentialRows();
+
+  DlpHistogramEnumeration(dlp::kFileActionWarnReviewedUMA, action);
 }
 
 FilesPolicyWarnDialog::~FilesPolicyWarnDialog() = default;
@@ -216,6 +226,18 @@ std::u16string FilesPolicyWarnDialog::GetMessage() {
       l10n_util::GetPluralStringFUTF16(message_id, file_count_),
       destination_str,
       /*offset=*/nullptr);
+}
+
+void FilesPolicyWarnDialog::ProceedWarning(
+    OnDlpRestrictionCheckedWithJustificationCallback callback) {
+  std::move(callback).Run(/*user_justification=*/absl::nullopt,
+                          /*should_proceed=*/true);
+}
+
+void FilesPolicyWarnDialog::CancelWarning(
+    OnDlpRestrictionCheckedWithJustificationCallback callback) {
+  std::move(callback).Run(/*user_justification=*/absl::nullopt,
+                          /*should_proceed=*/false);
 }
 
 BEGIN_METADATA(FilesPolicyWarnDialog, FilesPolicyDialog)

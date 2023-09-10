@@ -1226,6 +1226,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Power.BatterySaver.UserBrightenedSec" units="seconds"
+    expires_after="2024-02-28">
+  <owner>cwd@google.com</owner>
+  <owner>chromeos-bsm@google.com</owner>
+  <summary>
+    ChromeOS time from Battery Saver activation that it took the user to
+    increase the backlight brightness above what Battery Saver set.
+  </summary>
+</histogram>
+
 <histogram name="Power.BitfixChunks" units="units" expires_after="M77">
   <owner>dianders@chromium.org</owner>
   <summary>
@@ -2163,7 +2173,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Power.SuspendDelay" units="seconds" expires_after="2023-12-31">
+<histogram name="Power.SuspendDelay" units="seconds" expires_after="2024-03-03">
   <owner>niwa@chromium.org</owner>
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>

@@ -4,6 +4,7 @@
 <translation id="1006017844123154345">Ouvrir en ligne</translation>
 <translation id="1036348656032585052">Désactiver</translation>
 <translation id="1044891598689252897">Les sites fonctionneront normalement</translation>
+<translation id="1073417869336441572">Aidez-nous à améliorer Chrome en nous indiquant pourquoi vous avez autorisé les témoins tiers. <ph name="BEGIN_LINK" />Envoyer des commentaires<ph name="END_LINK" /></translation>
 <translation id="1124090076051167250">Cette action effacera <ph name="DATASIZE" /> de données et de témoins qu'ont stockés des sites ou des applications sur votre écran d'accueil.</translation>
 <translation id="1178581264944972037">Interrompre</translation>
 <translation id="1181037720776840403">Supprimer</translation>
@@ -139,6 +140,7 @@
 <translation id="3386292677130313581">Demander avant d'autoriser des sites à connaître votre emplacement (recommandé)</translation>
 <translation id="3403537308306431953"><ph name="ZOOM_LEVEL" /> %%</translation>
 <translation id="344449859752187052">Témoins tiers bloqués</translation>
+<translation id="3465378418721443318">{DAYS,plural, =1{Chrome bloquera à nouveau les témoins demain}one{# jour jusqu'à ce que Chrome bloque à nouveau les témoins}other{# jours jusqu'à ce que Chrome bloque à nouveau les témoins}}</translation>
 <translation id="3521663503435878242">Sites associés à <ph name="DOMAIN" /></translation>
 <translation id="3538390592868664640">Empêcher les sites de créer une carte 3D de votre environnement et de faire le suivi de la position de l'appareil photo</translation>
 <translation id="3544058026430919413">Une entreprise peut définir un groupe de sites qui peuvent utiliser des témoins pour partager votre activité dans le groupe. Ce paramètre est désactivé en mode de navigation privée.</translation>
@@ -161,6 +163,7 @@
 <translation id="381841723434055211">Numéros de téléphone</translation>
 <translation id="3826050100957962900">Connexion tierce</translation>
 <translation id="3835233591525155343">Votre utilisation de l'appareil</translation>
+<translation id="3843916486309149084">Chrome bloquera à nouveau les témoins aujourd'hui</translation>
 <translation id="385051799172605136">Retour</translation>
 <translation id="3859306556332390985">Rechercher vers l'avant</translation>
 <translation id="3895926599014793903">Forcer l'activation du zoom</translation>
@@ -278,7 +281,6 @@
 <translation id="5975083100439434680">Zoom arrière</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> : <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Gérez l'accès de ce site à votre appareil</translation>
-<translation id="6018815681665454784">Effacer et réinitialiser?</translation>
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="6042308850641462728">Plus</translation>
 <translation id="6064125863973209585">Téléchargements terminés</translation>
@@ -298,12 +300,11 @@
 <translation id="6295158916970320988">Tous les sites</translation>
 <translation id="6320088164292336938">Vibrer</translation>
 <translation id="6367753977865761591">Bloquez la connexion de tiers pour un site particulier.</translation>
-<translation id="6388207532828177975">Effacer et réinitialiser</translation>
 <translation id="6398765197997659313">Quitter le mode plein écran</translation>
+<translation id="640163077447496506">Expire aujourd'hui</translation>
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Empêcher les sites d'utiliser vos appareils et vos données de réalité virtuelle</translation>
 <translation id="6447842834002726250">Témoins</translation>
-<translation id="6467852467360539617">Effacer les données et réinitialiser les autorisations</translation>
 <translation id="6500423977866688905">Lorsque la fenêtre est étroite, demander l'affichage sur appareil mobile</translation>
 <translation id="6527303717912515753">Partager</translation>
 <translation id="652937045869844725">Essayez d'autoriser les témoins tiers, ce qui signifie moins de protection, mais les fonctionnalités du site sont plus susceptibles de fonctionner</translation>
@@ -376,11 +377,9 @@
 <translation id="7846076177841592234">Annuler la sélection</translation>
 <translation id="7882806643839505685">Autorisez le son sur un site précis.</translation>
 <translation id="789180354981963912">Bloquer les témoins tiers en navigation privée :</translation>
-<translation id="7895868624847501462">Cette action effacera toutes les données locales, y compris les témoins, et réinitialisera toutes les autorisations pour <ph name="DOMAIN" /> et tous les sites qui y sont subordonnés</translation>
 <translation id="7940722705963108451">Me le rappeler</translation>
 <translation id="7974024493641668069">{COUNT,plural, =1{<ph name="FPS_MEMBERS_COUNT" /> site du groupe de sites de <ph name="FPS_OWNER" /> peut voir votre activité dans le groupe}one{<ph name="FPS_MEMBERS_COUNT" /> site du groupe de sites de <ph name="FPS_OWNER" /> peut voir votre activité dans le groupe}other{<ph name="FPS_MEMBERS_COUNT" /> sites du groupe de sites de <ph name="FPS_OWNER" /> peut voir votre activité dans le groupe}}</translation>
 <translation id="7986741934819883144">Sélectionner un contact</translation>
-<translation id="7999064672810608036">Voulez-vous vraiment effacer toutes les données locales de ce site Web, y compris les témoins, et réinitialiser toutes les autorisations pour ce site Web?</translation>
 <translation id="8007176423574883786">Désactivé pour cet appareil</translation>
 <translation id="802154636333426148">Échec du téléchargement</translation>
 <translation id="8042586301629853791">Trier par :</translation>
@@ -394,6 +393,7 @@
 <translation id="8131740175452115882">Confirmer</translation>
 <translation id="8154912474061769055">Des fonctionnalités de nombreux sites pourraient ne pas fonctionner</translation>
 <translation id="8168435359814927499">Contenu</translation>
+<translation id="8186479265534291036">Le site ne fonctionne pas? Témoins tiers bloqués</translation>
 <translation id="8197286292360124385">Autorisation <ph name="PERMISSION_1" /> accordée</translation>
 <translation id="8200772114523450471">Reprendre</translation>
 <translation id="8206354486702514201">Votre administrateur impose la valeur associée à ce paramètre.</translation>
@@ -403,7 +403,6 @@
 <translation id="8284326494547611709">Sous-titres</translation>
 <translation id="8300705686683892304">Gérés par une application</translation>
 <translation id="8324158725704657629">Ne plus me demander</translation>
-<translation id="8338445138528827481">Cette action effacera toutes les données locales, y compris les témoins, et réinitialisera toutes les autorisations pour <ph name="ORIGIN" /></translation>
 <translation id="8362795839483915693">Vous pouvez zoomer ou dézoomer sur les sites que vous visitez</translation>
 <translation id="8372893542064058268">Autorisez la synchronisation en arrière-plan pour un site en particulier.</translation>
 <translation id="8376384591331888629">Y compris les témoins tiers sur ce site</translation>

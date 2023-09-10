@@ -78,13 +78,10 @@ enum class PingId {
 // new feature tutorials to avoid spamming the user.
 enum class TutorialId {
   kMinValue,
-  kCaptureModeTourPrototype1 = kMinValue,
-  kCaptureModeTourPrototype2,
-  kHoldingSpaceTourPrototype1,
-  kHoldingSpaceTourPrototype2,
-  kTest,
-  kWelcomeTourPrototype1,
-  kMaxValue = kWelcomeTourPrototype1,
+  kTest1 = kMinValue,
+  kTest2,
+  kWelcomeTour,
+  kMaxValue = kWelcomeTour,
 };
 
 }  // namespace ash

@@ -54,6 +54,17 @@ enum FieldPropertiesFlags : uint32_t {
   kAutofilled = kAutofilledOnUserTrigger | kAutofilledOnPageLoad,
 };
 
+// Autofill supports assigning <label for=x> tags to inputs if x is id/name,
+// or the id/name of a shadow host element containing the input.
+// This enum is used to track how often each case occurs in practice.
+enum class AssignedLabelSource {
+  kId = 0,
+  kName = 1,
+  kShadowHostId = 2,
+  kShadowHostName = 3,
+  kMaxValue = kShadowHostName,
+};
+
 // FieldPropertiesMask is used to contain combinations of FieldPropertiesFlags
 // values.
 using FieldPropertiesMask = std::underlying_type_t<FieldPropertiesFlags>;
@@ -184,7 +195,7 @@ struct FormFieldData {
 
   // An identifier of the renderer form that contained this field.
   // This may be different from the browser form that contains this field in the
-  // case of a frame-transcending form. See ContentAutofillRouter and
+  // case of a frame-transcending form. See AutofillDriverRouter and
   // internal::FormForest for details on the distinction between renderer and
   // browser forms.
   FormGlobalId renderer_form_id() const { return {host_frame, host_form_id}; }
@@ -193,20 +204,7 @@ struct FormFieldData {
   // FormFieldData::DeepEqual() instead.
   // Returns true if both fields are identical, ignoring value- and
   // parsing related members.
-  // See also SimilarFieldAs(), DynamicallySameFieldAs().
   bool SameFieldAs(const FormFieldData& field) const;
-
-  // TODO(crbug/1211834): This function is deprecated.
-  // Returns true if both fields are identical, ignoring members that
-  // are typically changed dynamically.
-  // Strictly weaker than SameFieldAs().
-  bool SimilarFieldAs(const FormFieldData& field) const;
-
-  // TODO(crbug/1211834): This function is deprecated.
-  // Returns true if both forms are equivalent from the POV of dynamic refills.
-  // Strictly weaker than SameFieldAs(): replaces equality of |is_focusable| and
-  // |role| with equality of IsVisible().
-  bool DynamicallySameFieldAs(const FormFieldData& field) const;
 
   // Returns true for all of textfield-looking types: text, password,
   // search, email, url, and number. It must work the same way as Blink function
@@ -241,9 +239,8 @@ struct FormFieldData {
   bool HadFocus() const;
   bool WasPasswordAutofilled() const;
 
-  // NOTE: update SameFieldAs()            if needed when adding new a member.
-  // NOTE: update SimilarFieldAs()         if needed when adding new a member.
-  // NOTE: update DynamicallySameFieldAs() if needed when adding new a member.
+  // NOTE: Update `SameFieldAs()` and `FormFieldDataAndroid::SimilarFieldAs()`
+  // if needed when adding new a member.
 
   // The name by which autofill knows this field. This is generally either the
   // name attribute or the id_attribute value, which-ever is non-empty with
@@ -281,7 +278,7 @@ struct FormFieldData {
 
   // The signature of the field's renderer form, that is, the signature of the
   // FormData that contained this field when it was received by the
-  // AutofillDriver (see ContentAutofillRouter and internal::FormForest
+  // AutofillDriver (see AutofillDriverRouter and internal::FormForest
   // for details on the distinction between renderer and browser forms).
   // Currently, the value is only set in ContentAutofillDriver; it's null on iOS
   // and in the Password Manager.

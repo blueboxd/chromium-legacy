@@ -406,7 +406,7 @@ BASE_FEATURE(kCameraPrivacySwitchNotifications,
 // Controls whether the capture mode advanced audio settings are enabled.
 BASE_FEATURE(kCaptureModeAudioMixing,
              "CaptureModeAudioMixing",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether the capture mode demo tools feature is enabled for Capture
 // Mode.
@@ -424,6 +424,16 @@ BASE_FEATURE(kCaptureModeTour,
 BASE_FEATURE(kCellularBypassESimInstallationConnectivityCheck,
              "CellularBypassESimInstallationConnectivityCheck",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, the Cellular Carrier Lock manager will start on every boot to
+// check state of lock configuration and setup the modem if needed.
+// This flag will be removed before launch (http://launch/4211912).
+BASE_FEATURE(kCellularCarrierLock,
+             "CellularCarrierLock",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+constexpr base::FeatureParam<int> kCellularCarrierLockLastConfig{
+    &kCellularCarrierLock, "LastConfigDateDelta", -2};
 
 // If enabled, use second the Euicc that is exposed by Hermes in Cellular Setup
 // and Settings.
@@ -1020,11 +1030,19 @@ BASE_FEATURE(kFastPairPwaCompanion,
 // The URI for the Fast Pair web companion.
 const base::FeatureParam<std::string> kFastPairPwaCompanionInstallUri{
     &kFastPairPwaCompanion, "pwa-companion-install-uri",
-    /*default*/ "https://www.google.com"};
+    /*default*/ ""};
 
-// The app ID for the installed Fast Pair web companion.
+// (optional) The app ID for the installed Fast Pair web companion.
+// e.g. ncmjhecbjeaamljdfahankockkkdmedg
 const base::FeatureParam<std::string> kFastPairPwaCompanionAppId{
     &kFastPairPwaCompanion, "pwa-companion-app-id",
+    /*default*/ ""};
+
+// (optional) The Play Store link to download the Fast Pair web companion.
+// e.g.
+// https://play.google.com/store/apps/details?id=com.google.android.apps.photos
+const base::FeatureParam<std::string> kFastPairPwaCompanionPlayStoreUri{
+    &kFastPairPwaCompanion, "pwa-companion-play-store-uri",
     /*default*/ ""};
 
 // Sets Fast Pair scanning to low power mode.
@@ -1114,6 +1132,11 @@ BASE_FEATURE(kFederatedServiceScheduleTasks,
 // Enables the federated strings service.
 BASE_FEATURE(kFederatedStringsService,
              "FederatedStringsService",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the federated strings service to schedule tasks.
+BASE_FEATURE(kFederatedStringsServiceScheduleTasks,
+             "FederatedStringsServiceScheduleTasks",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kFederatedTimezoneCodePhh,
@@ -1279,6 +1302,11 @@ BASE_FEATURE(kGlanceablesV2TrustedTesters,
 // Enables glanceables on time management surface for classroom teachers.
 BASE_FEATURE(kGlanceablesV2ClassroomTeacherView,
              "GlanceablesV2ClassroomTeacherView",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables showing error messages for glanceables bubbles.
+BASE_FEATURE(kGlanceablesV2ErrorMessage,
+             "GlanceablesV2ErrorMessage",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the Gaia reauth endpoint for all online reauth flows on login screen.
@@ -1486,7 +1514,7 @@ BASE_FEATURE(kImeSystemEmojiPickerExtension,
 // Enable or disable system emoji picker GIF support
 BASE_FEATURE(kImeSystemEmojiPickerGIFSupport,
              "SystemEmojiPickerGIFSupport",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable or disable system emoji picker jelly support
 BASE_FEATURE(kImeSystemEmojiPickerJellySupport,
@@ -1734,6 +1762,18 @@ const base::FeatureParam<base::TimeDelta> kEcheConnectionStatusResetTimeout{
     &kEcheNetworkConnectionState, "EcheConnectionStatusResetTimeout",
     base::Minutes(10)};
 
+BASE_FEATURE(kEcheShorterScanningDutyCycle,
+             "EcheShorterScanningDutyCycle",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+const base::FeatureParam<base::TimeDelta> kEcheScanningCycleOnTime{
+    &kEcheShorterScanningDutyCycle, "EcheScanningCycleOnTime",
+    base::Seconds(30)};
+
+const base::FeatureParam<base::TimeDelta> kEcheScanningCycleOffTime{
+    &kEcheShorterScanningDutyCycle, "EcheScanningCycleOffTime",
+    base::Seconds(30)};
+
 // Enables multi-zone rgb keyboard customization.
 BASE_FEATURE(kMultiZoneRgbKeyboard,
              "MultiZoneRgbKeyboard",
@@ -1884,10 +1924,6 @@ BASE_FEATURE(kSearchCustomizableShortcutsInLauncher,
              "SearchCustomizableShortcutsInLauncher",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kSearchInShortcutsApp,
-             "SearchInShortcutsApp",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables or disables the feedback tool new UX on ChromeOS.
 // This tool under development will be rolled out via Finch.
 // Enabling this flag will use the new feedback tool instead of the current
@@ -1942,13 +1978,6 @@ BASE_FEATURE(kOverviewButton,
 BASE_FEATURE(kOverviewDeskNavigation,
              "OverviewDeskNavigation",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables a new layout for overview mode in clamshell, preventing the overview
-// mode display from getting too cluttered. Similar to current overview mode
-// layout in tablet mode.
-BASE_FEATURE(kOverviewScrollLayoutForClamshell,
-             "OverviewScrollLayoutForClamshell",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables Jelly colors and components to appear in the Parent Access Widget
 // if jelly-colors is also enabled.
@@ -2267,6 +2296,9 @@ BASE_FEATURE(kScreenSaverDuration,
              "ScreenSaverDuration",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables sea pen feature in the personalization app.
+BASE_FEATURE(kSeaPen, "SeaPen", base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables the system tray to show more information in larger screen.
 BASE_FEATURE(kSeamlessRefreshRateSwitching,
              "SeamlessRefreshRateSwitching",
@@ -2333,11 +2365,6 @@ BASE_FEATURE(kShelfPalmRejectionSwipeOffset,
 BASE_FEATURE(kShimlessRMAOsUpdate,
              "ShimlessRMAOsUpdate",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables or disables the dark mode in the shimless RMA flow.
-BASE_FEATURE(kShimlessRMADisableDarkMode,
-             "ShimlessRMADisableDarkMode",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables or disables the diagnostic page in the Shimless RMA flow.
 BASE_FEATURE(kShimlessRMADiagnosticPage,
@@ -2827,7 +2854,7 @@ const base::FeatureParam<int> kDeviceForceScheduledRebootMaxDelay{
 // Enables settings to be split per device.
 BASE_FEATURE(kInputDeviceSettingsSplit,
              "InputDeviceSettingsSplit",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables bug fix for dead keys on the Terminal app.
 // When enabled, dead keys correctly emit the 'Dead' event on key down for the
@@ -3045,6 +3072,10 @@ bool IsCaptivePortalErrorPageEnabled() {
 
 bool IsCaptureModeTourEnabled() {
   return base::FeatureList::IsEnabled(kCaptureModeTour);
+}
+
+bool IsCellularCarrierLockEnabled() {
+  return base::FeatureList::IsEnabled(kCellularCarrierLock);
 }
 
 bool IsCheckPasswordsAgainstCryptohomeHelperEnabled() {
@@ -3271,6 +3302,16 @@ bool IsFederatedServiceScheduleTasksEnabled() {
          base::FeatureList::IsEnabled(kFederatedServiceScheduleTasks);
 }
 
+bool IsFederatedStringsServiceEnabled() {
+  return base::FeatureList::IsEnabled(kFederatedService) &&
+         base::FeatureList::IsEnabled(kFederatedStringsService);
+}
+
+bool IsFederatedStringsServiceScheduleTasksEnabled() {
+  return IsFederatedStringsServiceEnabled() &&
+         base::FeatureList::IsEnabled(kFederatedStringsServiceScheduleTasks);
+}
+
 bool IsFileManagerFuseBoxDebugEnabled() {
   return base::FeatureList::IsEnabled(kFuseBoxDebug);
 }
@@ -3350,6 +3391,10 @@ bool AreGlanceablesV2EnabledForTrustedTesters() {
 
 bool IsGlanceablesV2ClassroomTeacherViewEnabled() {
   return base::FeatureList::IsEnabled(kGlanceablesV2ClassroomTeacherView);
+}
+
+bool IsGlanceablesV2ErrorMessageEnabled() {
+  return base::FeatureList::IsEnabled(kGlanceablesV2ErrorMessage);
 }
 
 bool IsHibernateEnabled() {
@@ -3592,6 +3637,10 @@ bool IsEcheNetworkConnectionStateEnabled() {
          base::FeatureList::IsEnabled(kEcheSWA);
 }
 
+bool IsEcheShorterScanningDutyCycleEnabled() {
+  return base::FeatureList::IsEnabled(kEcheShorterScanningDutyCycle);
+}
+
 bool IsNearbyKeepAliveFixEnabled() {
   return base::FeatureList::IsEnabled(kNearbyKeepAliveFix);
 }
@@ -3729,11 +3778,6 @@ bool IsOsSyncConsentRevampEnabled() {
 
 bool IsOverviewDeskNavigationEnabled() {
   return base::FeatureList::IsEnabled(kOverviewDeskNavigation);
-}
-
-bool IsOverviewScrollLayoutForClamshellEnabled() {
-  return base::FeatureList::IsEnabled(kOverviewScrollLayoutForClamshell) &&
-         chromeos::features::IsJellyEnabled();
 }
 
 bool IsPasspointARCSupportEnabled() {
@@ -3913,6 +3957,10 @@ bool IsScalableIphDebugEnabled() {
          base::FeatureList::IsEnabled(kScalableIphDebug);
 }
 
+bool IsSeaPenEnabled() {
+  return base::FeatureList::IsEnabled(kSeaPen);
+}
+
 bool IsSeparateNetworkIconsEnabled() {
   return base::FeatureList::IsEnabled(kSeparateNetworkIcons);
 }
@@ -3939,10 +3987,6 @@ bool IsShelfStackedHotseatEnabled() {
 
 bool IsShimlessRMAOsUpdateEnabled() {
   return base::FeatureList::IsEnabled(kShimlessRMAOsUpdate);
-}
-
-bool IsShimlessRMADarkModeDisabled() {
-  return base::FeatureList::IsEnabled(kShimlessRMADisableDarkMode);
 }
 
 bool IsShimlessRMADiagnosticPageEnabled() {

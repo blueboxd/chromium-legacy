@@ -10,8 +10,8 @@
 
 import {util} from '../common/js/util.js';
 import {State} from '../externs/ts/state.js';
-import {getStore, Store} from '../state/store.js';
-import {CloudPanelSettingsClickEvent, CloudPanelType, XfCloudPanel} from '../widgets/xf_cloud_panel.js';
+import {getStore, type Store} from '../state/store.js';
+import {type CloudPanelSettingsClickEvent, CloudPanelType, XfCloudPanel} from '../widgets/xf_cloud_panel.js';
 
 export type BulkPinProgress = chrome.fileManagerPrivate.BulkPinProgress;
 export const BulkPinStage = chrome.fileManagerPrivate.BulkPinStage;
@@ -39,6 +39,13 @@ export class CloudPanelContainer {
    * changed or not.
    */
   private bulkPinningPreference_: boolean|undefined = false;
+
+  /**
+   * If true, drive syncing is paused due to both being on a network reporting
+   * as metered and also having the preference of syncing disabled on metered
+   * networks.
+   */
+  private isOnMetered_: boolean = false;
 
   /**
    * Keeps track of the number of updates.
@@ -75,6 +82,9 @@ export class CloudPanelContainer {
       return;
     }
 
+    const isOnMetered = state.drive?.connectionType ===
+        chrome.fileManagerPrivate.DriveConnectionStateType.METERED;
+
     // Check if any of the required state has changed between store changes.
     if ((this.progress_ &&
          (this.progress_.stage === bulkPinProgress.stage &&
@@ -83,11 +93,13 @@ export class CloudPanelContainer {
           this.progress_.bytesToPin === bulkPinProgress.bytesToPin &&
           this.progress_.remainingSeconds ===
               bulkPinProgress.remainingSeconds)) &&
-        this.bulkPinningPreference_ === bulkPinPref) {
+        this.bulkPinningPreference_ === bulkPinPref &&
+        this.isOnMetered_ === isOnMetered) {
       return;
     }
     this.progress_ = bulkPinProgress;
     this.bulkPinningPreference_ = bulkPinPref;
+    this.isOnMetered_ = isOnMetered;
 
     // If the bulk pinning cloud panel can't be shown, make sure to close any
     // open variants of it. This ensures if the panel is open when the
@@ -95,6 +107,12 @@ export class CloudPanelContainer {
     if (!util.canBulkPinningCloudPanelShow(
             bulkPinProgress.stage, bulkPinPref)) {
       this.panel_.close();
+      return;
+    }
+
+    // When on a metered network, drive syncing is paused.
+    if (this.isOnMetered_) {
+      this.updatePanelType_(CloudPanelType.METERED_NETWORK);
       return;
     }
 

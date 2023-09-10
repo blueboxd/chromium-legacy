@@ -47,7 +47,6 @@
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
 #include "chrome/browser/ui/webui/extensions/extension_basic_info.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
@@ -64,6 +63,7 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_features.h"
@@ -137,8 +137,6 @@ const char kPackagedAppKey[] = "packagedApp";
 const int kWebAppIconLargeNonDefault = 128;
 const int kWebAppIconSmallNonDefault = 16;
 
-// These Run on OS Login mode strings need to be in sync with
-// chrome/browser/resources/ntp4/apps_page.js:RUN_ON_OS_LOGIN_MODE enum.
 const char kRunOnOsLoginModeNotRun[] = "run_on_os_login_mode_not_run";
 const char kRunOnOsLoginModeWindowed[] = "run_on_os_login_mode_windowed";
 
@@ -200,9 +198,6 @@ AppLauncherHandler::~AppLauncherHandler() {
 
 base::Value::Dict AppLauncherHandler::CreateWebAppInfo(
     const web_app::AppId& app_id) {
-  // The items which are to be in the returned Value::Dict are also described in
-  // chrome/browser/resources/ntp4/page_list_view.js in @typedef for AppInfo.
-  // Please update it whenever you add or remove any keys here.
   base::Value::Dict dict;
 
   // Communicate the kiosk flag so the apps page can disable showing the
@@ -307,9 +302,6 @@ base::Value::Dict AppLauncherHandler::CreateWebAppInfo(
 
 base::Value::Dict AppLauncherHandler::CreateExtensionInfo(
     const Extension* extension) {
-  // The items which are to be written into the returned dict are also
-  // described in chrome/browser/resources/ntp4/page_list_view.js in @typedef
-  // for AppInfo. Please update it whenever you add or remove any keys here.
   base::Value::Dict dict;
 
   // Communicate the kiosk flag so the apps page can disable showing the
@@ -568,7 +560,7 @@ void AppLauncherHandler::OnWebAppInstalled(const web_app::AppId& app_id) {
                                          CreateWebAppInfo(app_id), highlight);
 }
 
-void AppLauncherHandler::OnWebAppInstallTimeChanged(
+void AppLauncherHandler::OnWebAppFirstInstallTimeChanged(
     const web_app::AppId& app_id,
     const base::Time& time) {
   // Use the appAdded to update the app icon's color to no longer be
@@ -1025,11 +1017,9 @@ void AppLauncherHandler::HandleUninstallApp(const base::Value::List& args) {
 
       Browser* browser =
           chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
-      web_app::WebAppUiManagerImpl::Get(web_app_provider_)
-          ->PresentUserUninstallDialog(
-              extension_id_prompting_,
-              webapps::WebappUninstallSource::kAppsPage, browser->window(),
-              std::move(uninstall_success_callback));
+      web_app_provider_->ui_manager().PresentUserUninstallDialog(
+          extension_id_prompting_, webapps::WebappUninstallSource::kAppsPage,
+          browser->window(), std::move(uninstall_success_callback));
     }
     return;
   }

@@ -29,10 +29,6 @@
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 
-#if BUILDFLAG(IS_MAC)
-#include "base/mac/mac_util.h"
-#endif
-
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/dlp/test/mock_dlp_content_manager.h"
 #endif  // BUILDFLAG(IS_CHROMEOS)
@@ -248,15 +244,13 @@ TEST_F(DisplayMediaAccessHandlerTest, PermissionGiven) {
   ProcessRequest(content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
                                          content::DesktopMediaID::kFakeId),
                  &result, devices, false /* request_audio */);
-// TODO(https://crbug.com/1266425): Fix screen-capture tests on MacOS
+// TODO(https://crbug.com/1266425): Fix screen-capture tests on macOS.
 #if BUILDFLAG(IS_MAC)
-  // Starting from macOS 10.15, screen capture requires system permissions
-  // that are disabled by default.
-  if (base::mac::IsAtLeastOS10_15()) {
-    EXPECT_EQ(blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED,
-              result);
-    return;
-  }
+  // On macOS, screen capture requires system permissions that are disabled by
+  // default.
+  EXPECT_EQ(blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED,
+            result);
+  return;
 #endif
 
   EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, result);
@@ -292,15 +286,13 @@ TEST_F(DisplayMediaAccessHandlerTest, PermissionGivenToRequestWithAudio) {
                                         content::DesktopMediaID::kFakeId,
                                         true /* audio_share */);
   ProcessRequest(fake_media_id, &result, devices, true /* request_audio */);
-// TODO(https://crbug.com/1266425): Fix screen-capture tests on MacOS
+// TODO(https://crbug.com/1266425): Fix screen-capture tests on macOS.
 #if BUILDFLAG(IS_MAC)
-  // Starting from macOS 10.15, screen capture requires system permissions
-  // that are disabled by default.
-  if (base::mac::IsAtLeastOS10_15()) {
-    EXPECT_EQ(blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED,
-              result);
-    return;
-  }
+  // On macOS, screen capture requires system permissions that are disabled by
+  // default.
+  EXPECT_EQ(blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED,
+            result);
+  return;
 #endif
   EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, result);
   EXPECT_EQ(2u, blink::CountDevices(devices));
@@ -625,7 +617,7 @@ TEST_F(DisplayMediaAccessHandlerTest, MultipleRequests) {
   wait_loop[0].Run();
   EXPECT_TRUE(test_flags_[0].picker_created);
   EXPECT_TRUE(test_flags_[0].picker_deleted);
-// TODO(https://crbug.com/1266425): Fix screen-capture tests on MacOS
+// TODO(https://crbug.com/1266425): Fix screen-capture tests on macOS.
 #if BUILDFLAG(IS_MAC)
   // On macOS, screen capture requires system permissions that are disabled by
   // default.
@@ -731,7 +723,7 @@ TEST_F(DisplayMediaAccessHandlerTest, ChangeSourceWithPendingPickerRequest) {
   wait_loop[0].Run();
   EXPECT_TRUE(test_flags_[0].picker_created);
   EXPECT_TRUE(test_flags_[0].picker_deleted);
-// TODO(https://crbug.com/1266425): Fix screen-capture tests on MacOS
+// TODO(https://crbug.com/1266425): Fix screen-capture tests on macOS.
 #if BUILDFLAG(IS_MAC)
   // On macOS, screen capture requires system permissions that are disabled by
   // default.
@@ -766,7 +758,7 @@ TEST_F(DisplayMediaAccessHandlerTest,
   profile->GetPrefs()->SetBoolean(prefs::kScreenCaptureAllowed, false);
 
   wait_loop[0].Run();
-// TODO(https://crbug.com/1266425): Fix screen-capture tests on MacOS
+// TODO(https://crbug.com/1266425): Fix screen-capture tests on macOS.
 #if BUILDFLAG(IS_MAC)
   // On macOS, screen capture requires system permissions that are disabled by
   // default.
@@ -802,7 +794,7 @@ TEST_F(DisplayMediaAccessHandlerTest,
   wait_loop[0].Run();
   EXPECT_TRUE(test_flags_[0].picker_created);
   EXPECT_TRUE(test_flags_[0].picker_deleted);
-// TODO(https://crbug.com/1266425): Fix screen-capture tests on MacOS
+// TODO(https://crbug.com/1266425): Fix screen-capture tests on macOS.
 #if BUILDFLAG(IS_MAC)
   // On macOS, screen capture requires system permissions that are disabled by
   // default.

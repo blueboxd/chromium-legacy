@@ -121,7 +121,6 @@ class MacNotificationServiceUNTest : public testing::Test {
         }]]);
   }
 
-  API_AVAILABLE(macos(10.14))
   FakeUNNotification* CreateNotification(const std::string& notification_id,
                                          const std::string& profile_id,
                                          bool incognito,
@@ -158,7 +157,6 @@ class MacNotificationServiceUNTest : public testing::Test {
     return notification;
   }
 
-  API_AVAILABLE(macos(10.14))
   std::vector<FakeUNNotification*> SetupNotifications() {
     std::vector<FakeUNNotification*> notifications = {
         CreateNotification("notificationId", "profileId", /*incognito=*/false),
@@ -201,7 +199,6 @@ class MacNotificationServiceUNTest : public testing::Test {
                                          std::move(profile));
   }
 
-  API_AVAILABLE(macos(10.14))
   void DisplayNotificationSync(const std::string& notification_id,
                                const std::string& profile_id,
                                bool incognito,
@@ -252,7 +249,6 @@ class MacNotificationServiceUNTest : public testing::Test {
   // metrics logged during construction of the service. Tests can optionally
   // pass in an |on_create| callback to do further checks before the service is
   // destroyed.
-  API_AVAILABLE(macos(10.14))
   void CreateAndDestroyService(
       UNNotificationRequestPermissionResult result,
       NSArray<UNNotification*>* notifications = nil,
@@ -309,9 +305,7 @@ class MacNotificationServiceUNTest : public testing::Test {
       &mock_handler_};
   mojo::Remote<mojom::MacNotificationService> service_remote_;
   id mock_notification_center_ = nil;
-  API_AVAILABLE(macos(10.14))
   id<UNUserNotificationCenterDelegate> notification_center_delegate_ = nullptr;
-  API_AVAILABLE(macos(10.14))
   std::unique_ptr<MacNotificationServiceUN> service_;
   unsigned int category_count_ = 0u;
 };
@@ -341,17 +335,16 @@ TEST_F(MacNotificationServiceUNTest, DisplayNotification) {
            withCompletionHandler:[OCMArg any]])
       .andDo(invokeClosure(run_loop.QuitClosure()));
 
-    // Create and display a new notification.
-    auto notification = CreateMojoNotification("notificationId", "profileId",
-                                               /*incognito=*/true);
-    service_remote_->DisplayNotification(std::move(notification));
+  // Create and display a new notification.
+  auto notification = CreateMojoNotification("notificationId", "profileId",
+                                             /*incognito=*/true);
+  service_remote_->DisplayNotification(std::move(notification));
 
   run_loop.Run();
   EXPECT_OCMOCK_VERIFY(mock_notification_center_);
 
-    // Expect a new notification category for this notification.
-    EXPECT_EQ(1u, category_count_);
-  }
+  // Expect a new notification category for this notification.
+  EXPECT_EQ(1u, category_count_);
 }
 
 TEST_F(MacNotificationServiceUNTest, RedisplayNotification) {
@@ -471,40 +464,34 @@ TEST_F(MacNotificationServiceUNTest, RedisplayNotification) {
 }
 
 TEST_F(MacNotificationServiceUNTest, GetDisplayedNotificationsForProfile) {
-  if (@available(macOS 10.14, *)) {
-    auto notifications = SetupNotifications();
-    base::RunLoop run_loop;
-    auto profile =
-        mojom::ProfileIdentifier::New("profileId", /*incognito=*/true);
-    auto displayed = GetDisplayedNotificationsSync(std::move(profile));
-    ASSERT_EQ(2u, displayed.size());
+  auto notifications = SetupNotifications();
+  base::RunLoop run_loop;
+  auto profile = mojom::ProfileIdentifier::New("profileId", /*incognito=*/true);
+  auto displayed = GetDisplayedNotificationsSync(std::move(profile));
+  ASSERT_EQ(2u, displayed.size());
 
-    std::set<std::string> notification_ids;
-    for (const auto& notification : displayed) {
-      ASSERT_TRUE(notification->profile);
-      EXPECT_EQ("profileId", notification->profile->id);
-      EXPECT_TRUE(notification->profile->incognito);
-      notification_ids.insert(notification->id);
-    }
-
-    ASSERT_EQ(2u, notification_ids.size());
-    EXPECT_EQ(1u, notification_ids.count("notificationId"));
-    EXPECT_EQ(1u, notification_ids.count("notificationId2"));
+  std::set<std::string> notification_ids;
+  for (const auto& notification : displayed) {
+    ASSERT_TRUE(notification->profile);
+    EXPECT_EQ("profileId", notification->profile->id);
+    EXPECT_TRUE(notification->profile->incognito);
+    notification_ids.insert(notification->id);
   }
+
+  ASSERT_EQ(2u, notification_ids.size());
+  EXPECT_EQ(1u, notification_ids.count("notificationId"));
+  EXPECT_EQ(1u, notification_ids.count("notificationId2"));
 }
 
 TEST_F(MacNotificationServiceUNTest, GetAllDisplayedNotifications) {
-  if (@available(macOS 10.14, *)) {
-    auto notifications = SetupNotifications();
-    auto displayed = GetDisplayedNotificationsSync(/*profile=*/nullptr);
-    EXPECT_EQ(notifications.size(), displayed.size());
-  }
+  auto notifications = SetupNotifications();
+  auto displayed = GetDisplayedNotificationsSync(/*profile=*/nullptr);
+  EXPECT_EQ(notifications.size(), displayed.size());
 }
 
 TEST_F(MacNotificationServiceUNTest, CloseNotification) {
-  if (@available(macOS 10.14, *)) {
-    DisplayNotificationSync("notificationId", "profileId", /*incognito=*/true);
-    EXPECT_EQ(1u, category_count_);
+  DisplayNotificationSync("notificationId", "profileId", /*incognito=*/true);
+  EXPECT_EQ(1u, category_count_);
 
   base::RunLoop run_loop;
 
@@ -513,55 +500,51 @@ TEST_F(MacNotificationServiceUNTest, CloseNotification) {
                 removeDeliveredNotificationsWithIdentifiers:@[ identifier ]])
       .andDo(invokeClosure(run_loop.QuitClosure()));
 
-    auto profile_identifier =
-        mojom::ProfileIdentifier::New("profileId", /*incognito=*/true);
-    auto notification_identifier = mojom::NotificationIdentifier::New(
-        "notificationId", std::move(profile_identifier));
-    service_remote_->CloseNotification(std::move(notification_identifier));
+  auto profile_identifier =
+      mojom::ProfileIdentifier::New("profileId", /*incognito=*/true);
+  auto notification_identifier = mojom::NotificationIdentifier::New(
+      "notificationId", std::move(profile_identifier));
+  service_remote_->CloseNotification(std::move(notification_identifier));
 
   run_loop.Run();
   EXPECT_OCMOCK_VERIFY(mock_notification_center_);
 
-    // Expect closing the notification to remove the category as well.
-    EXPECT_EQ(0u, category_count_);
-  }
+  // Expect closing the notification to remove the category as well.
+  EXPECT_EQ(0u, category_count_);
 }
 
 TEST_F(MacNotificationServiceUNTest, SynchronizesNotifications) {
-  if (@available(macOS 10.14, *)) {
-    // Setup 4 notifications that are being returned by system APIs too.
-    auto notifications = SetupNotifications();
-    ASSERT_EQ(4u, GetDisplayedNotificationsSync(/*profile=*/nullptr).size());
+  // Setup 4 notifications that are being returned by system APIs too.
+  auto notifications = SetupNotifications();
+  ASSERT_EQ(4u, GetDisplayedNotificationsSync(/*profile=*/nullptr).size());
 
-    // Display a notification which won't be reflected in the system APIs.
-    DisplayNotificationSync("notificationId3", "profileId", /*incognito=*/true);
-    ASSERT_EQ(4u, GetDisplayedNotificationsSync(/*profile=*/nullptr).size());
+  // Display a notification which won't be reflected in the system APIs.
+  DisplayNotificationSync("notificationId3", "profileId", /*incognito=*/true);
+  ASSERT_EQ(4u, GetDisplayedNotificationsSync(/*profile=*/nullptr).size());
 
-    // Wait until the notification synchronization timer kicks in and expect it
-    // to detect the missing notification.
-    base::RunLoop run_loop;
-    base::Time start_time = base::Time::Now();
-    EXPECT_CALL(mock_handler_, OnNotificationAction)
-        .WillOnce([&](mojom::NotificationActionInfoPtr action_info) {
-          EXPECT_EQ(NotificationOperation::kClose, action_info->operation);
-          EXPECT_EQ(kNotificationInvalidButtonIndex, action_info->button_index);
-          EXPECT_EQ("notificationId3", action_info->meta->id->id);
-          EXPECT_EQ("profileId", action_info->meta->id->profile->id);
-          EXPECT_EQ(MacNotificationServiceUN::kSynchronizationInterval,
-                    base::Time::Now() - start_time);
-          run_loop.Quit();
-        });
-    run_loop.Run();
-    testing::Mock::VerifyAndClearExpectations(&mock_handler_);
-  }
+  // Wait until the notification synchronization timer kicks in and expect it
+  // to detect the missing notification.
+  base::RunLoop run_loop;
+  base::Time start_time = base::Time::Now();
+  EXPECT_CALL(mock_handler_, OnNotificationAction)
+      .WillOnce([&](mojom::NotificationActionInfoPtr action_info) {
+        EXPECT_EQ(NotificationOperation::kClose, action_info->operation);
+        EXPECT_EQ(kNotificationInvalidButtonIndex, action_info->button_index);
+        EXPECT_EQ("notificationId3", action_info->meta->id->id);
+        EXPECT_EQ("profileId", action_info->meta->id->profile->id);
+        EXPECT_EQ(MacNotificationServiceUN::kSynchronizationInterval,
+                  base::Time::Now() - start_time);
+        run_loop.Quit();
+      });
+  run_loop.Run();
+  testing::Mock::VerifyAndClearExpectations(&mock_handler_);
 }
 
 TEST_F(MacNotificationServiceUNTest, CloseProfileNotifications) {
-  if (@available(macOS 10.14, *)) {
-    auto notifications = SetupNotifications();
-    // Even though we created 3 notifications, all of them share the same
-    // category as they have the same actions.
-    EXPECT_EQ(1u, category_count_);
+  auto notifications = SetupNotifications();
+  // Even though we created 3 notifications, all of them share the same
+  // category as they have the same actions.
+  EXPECT_EQ(1u, category_count_);
 
   base::RunLoop run_loop;
 
@@ -573,10 +556,9 @@ TEST_F(MacNotificationServiceUNTest, CloseProfileNotifications) {
                 removeDeliveredNotificationsWithIdentifiers:identifiers])
       .andDo(invokeClosure(run_loop.QuitClosure()));
 
-    auto profile_identifier =
-        mojom::ProfileIdentifier::New("profileId", /*incognito=*/true);
-    service_remote_->CloseNotificationsForProfile(
-        std::move(profile_identifier));
+  auto profile_identifier =
+      mojom::ProfileIdentifier::New("profileId", /*incognito=*/true);
+  service_remote_->CloseNotificationsForProfile(std::move(profile_identifier));
 
   run_loop.Run();
   EXPECT_OCMOCK_VERIFY(mock_notification_center_);
@@ -598,100 +580,93 @@ TEST_F(MacNotificationServiceUNTest, CloseAllNotifications) {
 }
 
 TEST_F(MacNotificationServiceUNTest, LogsMetricsForAlerts) {
-  if (@available(macOS 10.14, *)) {
-    base::HistogramTester histogram_tester;
-    id mainBundleMock =
-        [OCMockObject partialMockForObject:base::apple::MainBundle()];
+  base::HistogramTester histogram_tester;
+  id mainBundleMock =
+      [OCMockObject partialMockForObject:base::apple::MainBundle()];
 
   // Mock the alert style to "alert" and verify we log the correct metrics.
   OCMStub([mainBundleMock infoDictionary]).andReturn(@{
     @"NSUserNotificationAlertStyle" : @"alert"
   });
 
-    for (auto result :
-         {UNNotificationRequestPermissionResult::kRequestFailed,
-          UNNotificationRequestPermissionResult::kPermissionDenied,
-          UNNotificationRequestPermissionResult::kPermissionGranted}) {
-      CreateAndDestroyService(result);
-      histogram_tester.ExpectBucketCount(
-          "Notifications.Permissions.UNNotification.Alert.PermissionRequest",
-          /*sample=*/result, /*expected_count=*/1);
-    }
-
-    [mainBundleMock stopMocking];
+  for (auto result :
+       {UNNotificationRequestPermissionResult::kRequestFailed,
+        UNNotificationRequestPermissionResult::kPermissionDenied,
+        UNNotificationRequestPermissionResult::kPermissionGranted}) {
+    CreateAndDestroyService(result);
+    histogram_tester.ExpectBucketCount(
+        "Notifications.Permissions.UNNotification.Alert.PermissionRequest",
+        /*sample=*/result, /*expected_count=*/1);
   }
+
+  [mainBundleMock stopMocking];
 }
 
 TEST_F(MacNotificationServiceUNTest, LogsMetricsForBanners) {
-  if (@available(macOS 10.14, *)) {
-    base::HistogramTester histogram_tester;
-    id mainBundleMock =
-        [OCMockObject partialMockForObject:base::apple::MainBundle()];
+  base::HistogramTester histogram_tester;
+  id mainBundleMock =
+      [OCMockObject partialMockForObject:base::apple::MainBundle()];
 
   // Mock the alert style to "banner" and verify we log the correct metrics.
   OCMStub([mainBundleMock infoDictionary]).andReturn(@{
     @"NSUserNotificationAlertStyle" : @"banner"
   });
 
-    for (auto result :
-         {UNNotificationRequestPermissionResult::kRequestFailed,
-          UNNotificationRequestPermissionResult::kPermissionDenied,
-          UNNotificationRequestPermissionResult::kPermissionGranted}) {
-      CreateAndDestroyService(result);
-      histogram_tester.ExpectBucketCount(
-          "Notifications.Permissions.UNNotification.Banner.PermissionRequest",
-          /*sample=*/result, /*expected_count=*/1);
-    }
-
-    [mainBundleMock stopMocking];
+  for (auto result :
+       {UNNotificationRequestPermissionResult::kRequestFailed,
+        UNNotificationRequestPermissionResult::kPermissionDenied,
+        UNNotificationRequestPermissionResult::kPermissionGranted}) {
+    CreateAndDestroyService(result);
+    histogram_tester.ExpectBucketCount(
+        "Notifications.Permissions.UNNotification.Banner.PermissionRequest",
+        /*sample=*/result, /*expected_count=*/1);
   }
+
+  [mainBundleMock stopMocking];
 }
 
 TEST_F(MacNotificationServiceUNTest, InitializeDeliveredNotifications) {
-  if (@available(macOS 10.14, *)) {
-    // Create an existing notification with a category that exist before
-    // creating a new service.
-    UNNotificationCategory* category_ns =
-        NotificationCategoryManager::CreateCategory(
-            {{{u"Action", /*reply=*/absl::nullopt}}, /*settings_button=*/true});
-    std::string category_id = base::SysNSStringToUTF8(category_ns.identifier);
-    FakeUNNotification* notification =
-        CreateNotification("notificationId", "profileId",
-                           /*incognito=*/false, /*display=*/false, category_id);
-    auto notification_ns = static_cast<UNNotification*>(notification);
+  // Create an existing notification with a category that exist before
+  // creating a new service.
+  UNNotificationCategory* category_ns =
+      NotificationCategoryManager::CreateCategory(
+          {{{u"Action", /*reply=*/absl::nullopt}}, /*settings_button=*/true});
+  std::string category_id = base::SysNSStringToUTF8(category_ns.identifier);
+  FakeUNNotification* notification =
+      CreateNotification("notificationId", "profileId",
+                         /*incognito=*/false, /*display=*/false, category_id);
+  auto notification_ns = static_cast<UNNotification*>(notification);
 
-    // Expect the service to initialize internal state based on the existing
-    // notifications and categories.
-    CreateAndDestroyService(
-        UNNotificationRequestPermissionResult::kPermissionGranted,
-        @[ notification_ns ], @[ category_ns ],
-        base::BindOnce([](MacNotificationServiceUN* service) {
-          auto notifications =
-              GetDisplayedNotificationsSync(service, /*profile=*/nullptr);
-          ASSERT_EQ(1u, notifications.size());
-          EXPECT_EQ("notificationId", notifications[0]->id);
-        }));
-  }
+  // Expect the service to initialize internal state based on the existing
+  // notifications and categories.
+  CreateAndDestroyService(
+      UNNotificationRequestPermissionResult::kPermissionGranted,
+      @[ notification_ns ], @[ category_ns ],
+      base::BindOnce([](MacNotificationServiceUN* service) {
+        auto notifications =
+            GetDisplayedNotificationsSync(service, /*profile=*/nullptr);
+        ASSERT_EQ(1u, notifications.size());
+        EXPECT_EQ("notificationId", notifications[0]->id);
+      }));
 }
 
 TEST_F(MacNotificationServiceUNTest, OnNotificationAction) {
-  if (@available(macOS 10.14, *)) {
-    // We can't use TEST_P and INSTANTIATE_TEST_SUITE_P as we can't access
-    // UNNotificationDefaultActionIdentifier etc. outside an @available block.
-    NotificationActionParams kNotificationActionParams[] = {
-        {UNNotificationDismissActionIdentifier, NotificationOperation::kClose,
-         kNotificationInvalidButtonIndex, /*reply=*/absl::nullopt},
-        {UNNotificationDefaultActionIdentifier, NotificationOperation::kClick,
-         kNotificationInvalidButtonIndex, /*reply=*/absl::nullopt},
-        {kNotificationButtonOne, NotificationOperation::kClick,
-         /*button_index=*/0, /*reply=*/absl::nullopt},
-        {kNotificationButtonTwo, NotificationOperation::kClick,
-         /*button_index=*/1, /*reply=*/absl::nullopt},
-        {kNotificationSettingsButtonTag, NotificationOperation::kSettings,
-         kNotificationInvalidButtonIndex, /*reply=*/absl::nullopt},
-        {kNotificationButtonOne, NotificationOperation::kClick,
-         /*button_index=*/0, u"reply"},
-    };
+  // We can't use TEST_P and INSTANTIATE_TEST_SUITE_P as we can't access
+  // UNNotificationDefaultActionIdentifier etc. outside an @available block.
+  NotificationActionParams kNotificationActionParams[] = {
+      {UNNotificationDismissActionIdentifier, NotificationOperation::kClose,
+       kNotificationInvalidButtonIndex, /*reply=*/absl::nullopt},
+      {UNNotificationDefaultActionIdentifier, NotificationOperation::kClick,
+       kNotificationInvalidButtonIndex, /*reply=*/absl::nullopt},
+      {kNotificationButtonOne, NotificationOperation::kClick,
+       /*button_index=*/0, /*reply=*/absl::nullopt},
+      {kNotificationButtonTwo, NotificationOperation::kClick,
+       /*button_index=*/1, /*reply=*/absl::nullopt},
+      {kNotificationSettingsButtonTag, NotificationOperation::kSettings,
+       kNotificationInvalidButtonIndex, /*reply=*/absl::nullopt},
+      {kNotificationButtonOne, NotificationOperation::kClick,
+       /*button_index=*/0, u"reply"},
+  };
 
   int i = 0;
   for (const auto& params : kNotificationActionParams) {
@@ -712,9 +687,9 @@ TEST_F(MacNotificationServiceUNTest, OnNotificationAction) {
           run_loop.Quit();
         });
 
-      // Simulate a notification action and wait until we acknowledge it.
-      base::RunLoop inner_run_loop;
-      base::RepeatingClosure inner_quit_closure = inner_run_loop.QuitClosure();
+    // Simulate a notification action and wait until we acknowledge it.
+    base::RunLoop inner_run_loop;
+    base::RepeatingClosure inner_quit_closure = inner_run_loop.QuitClosure();
 
     id response = [OCMockObject
         mockForClass:params.reply ? [UNTextInputNotificationResponse class]
@@ -726,6 +701,15 @@ TEST_F(MacNotificationServiceUNTest, OnNotificationAction) {
       OCMStub([response userText])
           .andReturn(base::SysUTF16ToNSString(*params.reply));
     }
+
+    [notification_center_delegate_
+                userNotificationCenter:mock_notification_center_
+        didReceiveNotificationResponse:response
+                 withCompletionHandler:^() {
+                   inner_quit_closure.Run();
+                 }];
+    inner_run_loop.Run();
+    run_loop.Run();
   }
 }
 

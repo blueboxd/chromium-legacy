@@ -210,17 +210,18 @@ auto RunAudio(mojo::PendingReceiver<audio::mojom::AudioService> receiver) {
   // browser process.
   task_category_policy category;
   category.role = TASK_FOREGROUND_APPLICATION;
-  kern_return_t result = task_policy_set(
-      mach_task_self(), TASK_CATEGORY_POLICY,
-      reinterpret_cast<task_policy_t>(&category), TASK_CATEGORY_POLICY_COUNT);
+  if (__builtin_available(macOS 10.9, *)) {
+    kern_return_t result = task_policy_set(
+        mach_task_self(), TASK_CATEGORY_POLICY,
+        reinterpret_cast<task_policy_t>(&category), TASK_CATEGORY_POLICY_COUNT);
 
-  MACH_LOG_IF(ERROR, result != KERN_SUCCESS, result)
-      << "task_policy_set TASK_CATEGORY_POLICY";
+    MACH_LOG_IF(ERROR, result != KERN_SUCCESS, result)
+        << "task_policy_set TASK_CATEGORY_POLICY";
 
-  if(result!=KERN_SUCCESS)
-    LOG(ERROR) << "task_policy_set(TASK_CATEGORY_POLICY) failed for pid:" << getpid() << " role:TASK_FOREGROUND_APPLICATION";
+    if (result != KERN_SUCCESS)
+      LOG(ERROR) << "task_policy_set(TASK_CATEGORY_POLICY) failed for pid:"
+                 << getpid() << " role:TASK_FOREGROUND_APPLICATION";
 
-  if(__builtin_available(macOS 10.9, *)) {
     task_qos_policy qos;
     qos.task_latency_qos_tier = LATENCY_QOS_TIER_0;
     qos.task_throughput_qos_tier = THROUGHPUT_QOS_TIER_0;

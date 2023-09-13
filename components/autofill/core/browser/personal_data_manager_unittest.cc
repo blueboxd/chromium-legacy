@@ -208,7 +208,7 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
     PersonalDataProfileTaskWaiter waiter(*personal_data_);
     EXPECT_CALL(waiter.mock_observer(), OnPersonalDataChanged());
     personal_data_->AddCreditCard(credit_card2);
-    waiter.Wait();
+    std::move(waiter).Wait();
     ASSERT_EQ(3U, personal_data_->GetCreditCards().size());
   }
 
@@ -227,7 +227,7 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
       PersonalDataProfileTaskWaiter waiter(*personal_data_);
       EXPECT_CALL(waiter.mock_observer(), OnPersonalDataChanged());
       personal_data_->AddFullServerCreditCard(masked_server_card);
-      waiter.Wait();
+      std::move(waiter).Wait();
     }
     ASSERT_EQ(1U, personal_data_->GetCreditCards().size());
 
@@ -255,7 +255,7 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
       PersonalDataProfileTaskWaiter waiter(*personal_data_);
       EXPECT_CALL(waiter.mock_observer(), OnPersonalDataChanged());
       personal_data_->AddCreditCard(local_card);
-      waiter.Wait();
+      std::move(waiter).Wait();
     }
     EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
   }
@@ -297,21 +297,21 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
     PersonalDataProfileTaskWaiter waiter(*personal_data_);
     EXPECT_CALL(waiter.mock_observer(), OnPersonalDataChanged());
     personal_data_->AddProfile(profile);
-    waiter.Wait();
+    std::move(waiter).Wait();
   }
 
   void UpdateProfileOnPersonalDataManager(const AutofillProfile& profile) {
     PersonalDataProfileTaskWaiter waiter(*personal_data_);
     EXPECT_CALL(waiter.mock_observer(), OnPersonalDataChanged());
     personal_data_->UpdateProfile(profile);
-    waiter.Wait();
+    std::move(waiter).Wait();
   }
 
   void RemoveByGUIDFromPersonalDataManager(const std::string& guid) {
     PersonalDataProfileTaskWaiter waiter(*personal_data_);
     EXPECT_CALL(waiter.mock_observer(), OnPersonalDataChanged());
     personal_data_->RemoveByGUID(guid);
-    waiter.Wait();
+    std::move(waiter).Wait();
   }
 
   void SetServerCards(const std::vector<CreditCard>& server_cards) {
@@ -399,21 +399,21 @@ class PersonalDataManagerMockTest : public PersonalDataManagerTestBase,
     PersonalDataProfileTaskWaiter waiter(*personal_data_);
     EXPECT_CALL(waiter.mock_observer(), OnPersonalDataChanged());
     personal_data_->AddProfile(profile);
-    waiter.Wait();
+    std::move(waiter).Wait();
   }
 
   void UpdateProfileOnPersonalDataManager(const AutofillProfile& profile) {
     PersonalDataProfileTaskWaiter waiter(*personal_data_);
     EXPECT_CALL(waiter.mock_observer(), OnPersonalDataChanged());
     personal_data_->UpdateProfile(profile);
-    waiter.Wait();
+    std::move(waiter).Wait();
   }
 
   void RemoveByGUIDFromPersonalDataManager(const std::string& guid) {
     PersonalDataProfileTaskWaiter waiter(*personal_data_);
     EXPECT_CALL(waiter.mock_observer(), OnPersonalDataChanged());
     personal_data_->RemoveByGUID(guid);
-    waiter.Wait();
+    std::move(waiter).Wait();
   }
 
   void AddOfferDataForTest(AutofillOfferData offer_data) {
@@ -956,7 +956,7 @@ TEST_F(
   EXPECT_FALSE(personal_data_->ShouldShowPaymentMethodsMandatoryReauthPromo());
   histogram_tester.ExpectUniqueSample(
       "Autofill.PaymentMethods.MandatoryReauth.CheckoutFlow."
-      "ReauthOfferOptInDecision",
+      "ReauthOfferOptInDecision2",
       autofill_metrics::MandatoryReauthOfferOptInDecision::
           kBlockedByStrikeDatabase,
       1);
@@ -977,7 +977,7 @@ TEST_F(PersonalDataManagerTest,
   EXPECT_FALSE(personal_data_->ShouldShowPaymentMethodsMandatoryReauthPromo());
   histogram_tester.ExpectUniqueSample(
       "Autofill.PaymentMethods.MandatoryReauth.CheckoutFlow."
-      "ReauthOfferOptInDecision",
+      "ReauthOfferOptInDecision2",
       autofill_metrics::MandatoryReauthOfferOptInDecision::kAlreadyOptedIn, 1);
 }
 
@@ -996,7 +996,7 @@ TEST_F(PersonalDataManagerTest,
   EXPECT_FALSE(personal_data_->ShouldShowPaymentMethodsMandatoryReauthPromo());
   histogram_tester.ExpectUniqueSample(
       "Autofill.PaymentMethods.MandatoryReauth.CheckoutFlow."
-      "ReauthOfferOptInDecision",
+      "ReauthOfferOptInDecision2",
       autofill_metrics::MandatoryReauthOfferOptInDecision::kAlreadyOptedOut, 1);
 }
 
@@ -3457,7 +3457,7 @@ TEST_F(PersonalDataManagerTest, RecordUseOf) {
     PersonalDataProfileTaskWaiter waiter(*personal_data_);
     EXPECT_CALL(waiter.mock_observer(), OnPersonalDataChanged());
     personal_data_->RecordUseOf(&profile);
-    waiter.Wait();
+    std::move(waiter).Wait();
   }
 
   added_profile = personal_data_->GetProfileByGUID(profile.guid());
@@ -3472,7 +3472,7 @@ TEST_F(PersonalDataManagerTest, RecordUseOf) {
     PersonalDataProfileTaskWaiter waiter(*personal_data_);
     EXPECT_CALL(waiter.mock_observer(), OnPersonalDataChanged());
     personal_data_->RecordUseOf(&credit_card);
-    waiter.Wait();
+    std::move(waiter).Wait();
   }
 
   added_profile = personal_data_->GetProfileByGUID(profile.guid());
@@ -3560,6 +3560,21 @@ TEST_F(PersonalDataManagerTest, DeleteLocalCreditCards) {
     EXPECT_NE(expectedToRemain.end(),
               expectedToRemain.find(card->GetRawInfo(CREDIT_CARD_NAME_FULL)));
   }
+}
+
+TEST_F(PersonalDataManagerTest, DeleteAllLocalCreditCards) {
+  SetUpReferenceLocalCreditCards();
+
+  // Expect 3 local credit cards.
+  EXPECT_EQ(3U, personal_data_->GetLocalCreditCards().size());
+
+  personal_data_->DeleteAllLocalCreditCards();
+
+  // Wait for the data to be refreshed.
+  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
+
+  // Expect the local credit cards to have been deleted.
+  EXPECT_EQ(0U, personal_data_->GetLocalCreditCards().size());
 }
 
 // Tests that Wallet addresses do NOT get converted if they're stored in
@@ -4131,7 +4146,7 @@ TEST_F(PersonalDataManagerTest,
   // Expect an update and a deletion.
   EXPECT_CALL(update_waiter.mock_observer(), OnPersonalDataChanged()).Times(2);
   personal_data_->UpdateProfile(updated_more_recently_used_profile);
-  update_waiter.Wait();
+  std::move(update_waiter).Wait();
 
   // Verify that less recently used profile was removed.
   ASSERT_EQ(personal_data_->GetProfiles().size(), 1U);

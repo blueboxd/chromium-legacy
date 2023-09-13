@@ -20,12 +20,12 @@
 #include "base/uuid.h"
 #include "base/values.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/commerce/core/bookmark_update_manager.h"
 #include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/discounts_storage.h"
 #include "components/commerce/core/metrics/metrics_utils.h"
 #include "components/commerce/core/metrics/scheduled_metrics_manager.h"
+#include "components/commerce/core/parcel_manager.h"
 #include "components/commerce/core/pref_names.h"
 #include "components/commerce/core/price_tracking_utils.h"
 #include "components/commerce/core/proto/commerce_subscription_db_content.pb.h"
@@ -54,6 +54,7 @@
 #include "components/session_proto_db/session_proto_storage.h"
 #include "components/sync/service/sync_service.h"
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
+#include "net/base/url_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/url_constants.h"
@@ -120,7 +121,9 @@ ShoppingService::ShoppingService(
         subscription_proto_db,
     power_bookmarks::PowerBookmarkService* power_bookmark_service,
     SessionProtoStorage<discounts_db::DiscountsContentProto>*
-        discounts_proto_db)
+        discounts_proto_db,
+    SessionProtoStorage<parcel_tracking_db::ParcelTrackingContent>*
+        parcel_tracking_proto_db)
     : country_on_startup_(country_on_startup),
       locale_on_startup_(locale_on_startup),
       opt_guide_(opt_guide),
@@ -169,11 +172,18 @@ ShoppingService::ShoppingService(
         pref_service, identity_manager, sync_service, url_loader_factory));
   }
 
-  if (IsProductInfoApiEnabled() && identity_manager && account_checker_ &&
-      subscription_proto_db) {
-    subscriptions_manager_ = std::make_unique<SubscriptionsManager>(
-        identity_manager, url_loader_factory, subscription_proto_db,
-        account_checker_.get());
+  if (identity_manager && account_checker_) {
+    if (IsProductInfoApiEnabled() && subscription_proto_db) {
+      subscriptions_manager_ = std::make_unique<SubscriptionsManager>(
+          identity_manager, url_loader_factory, subscription_proto_db,
+          account_checker_.get());
+    }
+
+    if (parcel_tracking_proto_db) {
+      parcel_manager_ = std::make_unique<ParcelManager>(
+          identity_manager, url_loader_factory, parcel_tracking_proto_db,
+          account_checker_.get());
+    }
   }
 
   if (bookmark_model_) {
@@ -266,7 +276,14 @@ void ShoppingService::ScheduleProductInfoJavascript(WebWrapper* web) {
     return;
   }
 
-  auto it = product_info_cache_.find(web->GetLastCommittedURL().spec());
+  // Skip execution on local host URLs to avoid failing unrelated tests due to
+  // the injection of the script.
+  const GURL url = web->GetLastCommittedURL();
+  if (!url.SchemeIsHTTPOrHTTPS() || net::IsLocalhost(url)) {
+    return;
+  }
+
+  auto it = product_info_cache_.find(url.spec());
 
   if (it == product_info_cache_.end() || !it->second->needs_javascript_run) {
     return;
@@ -541,7 +558,7 @@ void ShoppingService::GetUpdatedProductInfoForBookmarks(
   std::unordered_map<std::string, base::Uuid> url_to_uuid_map;
   for (const base::Uuid& uuid : bookmark_uuids) {
     const bookmarks::BookmarkNode* bookmark =
-        bookmarks::GetBookmarkNodeByUuid(bookmark_model_, uuid);
+        bookmark_model_->GetNodeByUuid(uuid);
 
     std::unique_ptr<power_bookmarks::PowerBookmarkMeta> meta =
         power_bookmarks::GetNodePowerBookmarkMeta(bookmark_model_, bookmark);
@@ -688,7 +705,7 @@ bool ShoppingService::IsDiscountEligibleToShowOnNavigation() {
                                     country_on_startup_, locale_on_startup_)) {
     return false;
   }
-  return account_checker_ && account_checker_->IsSignedIn() &&
+  return account_checker_ && account_checker_->IsOptedIntoSync() &&
          account_checker_->IsAnonymizedUrlDataCollectionEnabled();
 }
 
@@ -718,8 +735,7 @@ void ShoppingService::HandleOptGuideProductInfoResponse(
     std::move(callback).Run(url, absl::nullopt);
 
     // If doing local PDP detection, we might still want to run this.
-    if (base::FeatureList::IsEnabled(kCommerceLocalPDPDetection) &&
-        url.SchemeIsHTTPOrHTTPS()) {
+    if (base::FeatureList::IsEnabled(kCommerceLocalPDPDetection)) {
       UpdateProductInfoCache(url, true, nullptr);
       if (web) {
         ScheduleProductInfoJavascript(web);
@@ -1362,7 +1378,7 @@ bool ShoppingService::IsShoppingListEligible(AccountChecker* account_checker,
 
   // Make sure the user allows subscriptions to be made and that we can fetch
   // store data.
-  if (!account_checker || !account_checker->IsSignedIn() ||
+  if (!account_checker || !account_checker->IsOptedIntoSync() ||
       !account_checker->IsSyncingBookmarks() ||
       !account_checker->IsAnonymizedUrlDataCollectionEnabled() ||
       blocked_by_waa || account_checker->IsSubjectToParentalControls()) {

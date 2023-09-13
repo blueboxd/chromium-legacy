@@ -211,7 +211,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.AdaptiveToolbarButton.Clicked"
-    enum="AdaptiveToolbarButtonVariant" expires_after="2024-01-07">
+    enum="AdaptiveToolbarButtonVariant" expires_after="2024-03-10">
   <owner>bttk@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -221,7 +221,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.AdaptiveToolbarButton.SessionVariant"
-    enum="AdaptiveToolbarButtonVariant" expires_after="2024-01-07">
+    enum="AdaptiveToolbarButtonVariant" expires_after="2024-03-10">
   <owner>bttk@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -530,7 +530,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BackPress.Intercept" enum="BackPressConsumer"
-    expires_after="2024-01-07">
+    expires_after="2024-03-10">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/chrome/browser/back_press/android/OWNERS</owner>
   <summary>
@@ -549,7 +549,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BackPress.MinimizeAppAndCloseTab"
-    enum="MinimizeAppAndCloseTabType" expires_after="2024-01-07">
+    enum="MinimizeAppAndCloseTabType" expires_after="2024-03-10">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/chrome/browser/back_press/android/OWNERS</owner>
   <summary>
@@ -559,7 +559,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BackPress.SecondaryActivity" enum="SecondaryActivity"
-    expires_after="2024-01-07">
+    expires_after="2024-03-10">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/chrome/browser/back_press/android/OWNERS</owner>
   <summary>
@@ -755,6 +755,16 @@ chromium-metrics-reviews@google.com.
     The contact properties requested by the website (names, emails, telephone
     numbers). Measured once when the Contacts Picker dialog is dismissed. Note:
     This metric was not logged in June 2023.
+  </summary>
+</histogram>
+
+<histogram name="Android.ContactsPicker.PropertiesUserRejected"
+    enum="ContactsPickerProperties" expires_after="2024-06-01">
+  <owner>finnur@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The contact properties requested by the website but rejected by the user.
+    Measured once when the Contacts Picker dialog is dismissed.
   </summary>
 </histogram>
 
@@ -1576,6 +1586,29 @@ chromium-metrics-reviews@google.com.
     Recorded when all downloadable fonts are retrieved. {ActivityType}
   </summary>
   <token key="ActivityType" variants="ActivityType"/>
+</histogram>
+
+<histogram name="Android.FrameTimelineJank.WebScroll.FrameJankStatus"
+    enum="FrameJankStatus" expires_after="2024-04-30">
+  <owner>kartarsingh@chromium.org</owner>
+  <owner>woa-performance@google.com</owner>
+  <summary>
+    Note: This metric doesn't capture web contents scrolling quality on chrome,
+    it is only emitted on Webview. For scroll jank metrics in chrome please
+    check Event.ScrollJank.DelayedFramesPercentage* and
+    Event.ScrollJank.MissedVsyncs* histograms.
+
+    This metric measures jankiness of frames during scrolls according to the
+    Android's FrameMetrics API. Samples are recorded into the Janky bucket for
+    frames for which their total duration exceeded the given deadline and into
+    the NonJanky bucket for all other frames. This metric is recorded at the
+    same time as Android.Jank.FrameDuration histogram.
+
+    Known caveats of this metric: 1) During a staggered scroll where finger
+    could be stationary for some time, any janks during the period when finger
+    was stationary would still be marked as scroll janks even when we wouldn't
+    have been producing frames during that time.
+  </summary>
 </histogram>
 
 <histogram base="true"
@@ -3687,7 +3720,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.SelectFileDialogContentSelected"
-    enum="SelectFileDialogContent" expires_after="2024-01-07">
+    enum="SelectFileDialogContent" expires_after="2024-03-10">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -3699,7 +3732,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.SelectFileDialogImgCount" units="images"
-    expires_after="2024-01-07">
+    expires_after="2024-03-10">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -3711,7 +3744,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.SelectFileDialogScope" enum="SelectFileDialogScope"
-    expires_after="2024-01-07">
+    expires_after="2024-03-10">
   <owner>peter@chromium.org</owner>
   <owner>finnur@chromium.org</owner>
   <summary>
@@ -5121,7 +5154,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.Metrics.PackagesAllowList.ParseStatus"
-    enum="AppPackageNameAllowlistParseStatus" expires_after="2023-10-23">
+    enum="AppPackageNameAllowlistParseStatus" expires_after="2024-04-01">
   <owner>avvall@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -5148,7 +5181,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.WebView.Metrics.PackagesAllowList.ResultReceivingDelay"
-    units="ms" expires_after="2023-10-23">
+    units="ms" expires_after="2024-04-01">
   <owner>avvall@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -5161,7 +5194,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.Metrics.PackagesAllowList.ThrottleStatus"
-    enum="Boolean" expires_after="2023-10-23">
+    enum="Boolean" expires_after="2024-04-01">
   <owner>avvall@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -5171,7 +5204,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.Metrics.PackagesAllowList.TimeToExpire"
-    units="hours" expires_after="2023-10-23">
+    units="hours" expires_after="2024-04-01">
   <owner>avvall@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -5733,6 +5766,30 @@ chromium-metrics-reviews@google.com.
     <variant name="MetricsBridgeService"/>
     <variant name="VariationsSeedServer"/>
   </token>
+</histogram>
+
+<histogram name="Android.WebView.SupervisedUser.UrlCheckResult"
+    enum="AndroidWebViewSupervisedUserUrlCheckResult"
+    expires_after="2024-08-28">
+  <owner>jdeabreu@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records whether a given URL is allowed to be loaded by the current device
+    user. This is based on a combination of a call to GMS Core, which checks if
+    the url is allowed, and the setting
+    AwFeatures.WEBVIEW_SUPERVISED_USER_SITE_BLOCK, which determines if we
+    actually block urls or only log the results.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.SupervisedUser.UrlCheckTime" units="ms"
+    expires_after="2024-08-28">
+  <owner>jdeabreu@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records the time taken to return from the call to GMS Core that checks if a
+    given URL is allowed to be loaded by the current device user.
+  </summary>
 </histogram>
 
 <histogram name="Android.WebView.SupportLibrary.ClientIsCompat"

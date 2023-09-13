@@ -260,7 +260,6 @@ public abstract class ChromeFeatureList {
             "UseDownloadOfflineContentProvider";
     public static final String DRAG_DROP_INTO_OMNIBOX = "DragDropIntoOmnibox";
     public static final String DRAW_EDGE_TO_EDGE = "DrawEdgeToEdge";
-    public static final String EARLY_LIBRARY_LOAD = "EarlyLibraryLoad";
     public static final String EXPERIMENTS_FOR_AGSA = "ExperimentsForAgsa";
     public static final String EXPLORE_SITES = "ExploreSites";
     public static final String EMPTY_STATES = "EmptyStates";
@@ -448,6 +447,8 @@ public abstract class ChromeFeatureList {
     public static final String START_SURFACE_ON_TABLET = "StartSurfaceOnTablet";
     public static final String START_SURFACE_REFACTOR = "StartSurfaceRefactor";
     public static final String START_SURFACE_RETURN_TIME = "StartSurfaceReturnTime";
+    public static final String ACCOUNT_REAUTHENTICATION_RECENT_TIME_WINDOW =
+            "AccountReauthenticationRecentTimeWindow";
     public static final String START_SURFACE_WITH_ACCESSIBILITY = "StartSurfaceWithAccessibility";
     public static final String START_SURFACE_SPARE_TAB = "StartSurfaceSpareTab";
     public static final String STORE_HOURS = "StoreHoursAndroid";
@@ -456,7 +457,6 @@ public abstract class ChromeFeatureList {
     public static final String SURFACE_POLISH = "SurfacePolish";
     public static final String SYNC_ANDROID_LIMIT_NTP_PROMO_IMPRESSIONS =
             "SyncAndroidLimitNTPPromoImpressions";
-    public static final String SYNC_ENABLE_HISTORY_DATA_TYPE = "SyncEnableHistoryDataType";
     public static final String SYNC_ENABLE_CONTACT_INFO_DATA_TYPE_IN_TRANSPORT_MODE =
             "SyncEnableContactInfoDataTypeInTransportMode";
     public static final String TAB_DRAG_DROP_ANDROID = "TabDragDropAndroid";
@@ -536,7 +536,7 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sCctResizableForThirdParties =
             new CachedFlag(CCT_RESIZABLE_FOR_THIRD_PARTIES, true);
     public static final CachedFlag sCctResizableSideSheet =
-            new CachedFlag(CCT_RESIZABLE_SIDE_SHEET, false);
+            new CachedFlag(CCT_RESIZABLE_SIDE_SHEET, true);
     public static final CachedFlag sCctResizableSideSheetForThirdParties =
             new CachedFlag(CCT_RESIZABLE_SIDE_SHEET_FOR_THIRD_PARTIES, false);
     public static final CachedFlag sCctToolbarCustomizations =
@@ -552,7 +552,6 @@ public abstract class ChromeFeatureList {
             new CachedFlag(DELAY_TEMP_STRIP_REMOVAL, true);
     public static final CachedFlag sDragDropIntoOmnibox =
             new CachedFlag(DRAG_DROP_INTO_OMNIBOX, false);
-    public static final CachedFlag sEarlyLibraryLoad = new CachedFlag(EARLY_LIBRARY_LOAD, true);
     public static final CachedFlag sEmptyStates = new CachedFlag(EMPTY_STATES, true);
     public static final CachedFlag sExperimentsForAgsa = new CachedFlag(EXPERIMENTS_FOR_AGSA, true);
     public static final CachedFlag sFeedLoadingPlaceholder =
@@ -603,6 +602,8 @@ public abstract class ChromeFeatureList {
             new CachedFlag(START_SURFACE_REFACTOR, false);
     public static final CachedFlag sStartSurfaceReturnTime =
             new CachedFlag(START_SURFACE_RETURN_TIME, false);
+    public static final CachedFlag sAccountReauthenticationRecentTimeWindow =
+            new CachedFlag(ACCOUNT_REAUTHENTICATION_RECENT_TIME_WINDOW, true);
     public static final CachedFlag sStartSurfaceWithAccessibility =
             new CachedFlag(START_SURFACE_WITH_ACCESSIBILITY, false);
     public static final CachedFlag sStoreHoursAndroid = new CachedFlag(STORE_HOURS, false);
@@ -654,7 +655,6 @@ public abstract class ChromeFeatureList {
         sCommandLineOnNonRooted,
         sDelayTempStripRemoval,
         sDragDropIntoOmnibox,
-        sEarlyLibraryLoad,
         sEmptyStates,
         sFeedLoadingPlaceholder,
         sFriendlierSafeBrowsingSettingsEnhancedProtection,
@@ -684,6 +684,7 @@ public abstract class ChromeFeatureList {
         sStartSurfaceOnTablet,
         sStartSurfaceRefactor,
         sStartSurfaceReturnTime,
+        sAccountReauthenticationRecentTimeWindow,
         sStartSurfaceWithAccessibility,
         sStoreHoursAndroid,
         sSurfacePolish,

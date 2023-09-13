@@ -39,6 +39,12 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAdAuctionReportingWithMacroApi);
 
+// Controls the capturing of the Ad-Auction-Signals header, and the maximum
+// allowed Ad-Auction-Signals header value.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAdAuctionSignals);
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kAdAuctionSignalsMaxSizeBytes;
+
 // Runtime flag that changes default Permissions Policy for features
 // join-ad-interest-group and run-ad-auction to a more restricted EnableForSelf.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
@@ -101,6 +107,9 @@ BASE_DECLARE_FEATURE(kAutofillDetectRemovedFormControls);
 
 BLINK_COMMON_EXPORT
 BASE_DECLARE_FEATURE(kAutofillSendUnidentifiedKeyAfterFill);
+
+BLINK_COMMON_EXPORT
+BASE_DECLARE_FEATURE(kAutofillUseDomNodeIdForRendererId);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAutomaticLazyFrameLoadingToAds);
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
@@ -383,6 +392,8 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<double>
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kExtendScriptResourceLifetime);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFencedFrames);
+
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFencedFramesM119Features);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFileHandlingIcons);
 
@@ -799,6 +810,10 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
     kPrivateAggregationApiEnabledInProtectedAudience;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
     kPrivateAggregationApiProtectedAudienceExtensionsEnabled;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kPrivateAggregationApiDebugModeEnabledAtAll;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kPrivateAggregationApiDebugModeSettingsCheckEnabled;
 
 // If set, HTMLDocumentParser processes data immediately rather than after a
 // delay. This is further controlled by the feature params starting with the

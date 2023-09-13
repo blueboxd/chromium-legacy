@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.flags;
 
 import androidx.annotation.AnyThread;
 
-import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 import java.util.List;
@@ -37,8 +36,10 @@ public class CachedFeatureFlags {
     /**
      * Sets the feature flags to use in JUnit and instrumentation tests.
      *
-     * Do not call this from tests; use @EnableFeatures/@DisableFeatures annotations instead.
+     * @deprecated Do not call this from tests; use @EnableFeatures/@DisableFeatures annotations
+     * instead.
      */
+    @Deprecated
     public static void setFeaturesForTesting(Map<String, Boolean> features) {
         assert features != null;
 
@@ -63,23 +64,6 @@ public class CachedFeatureFlags {
         for (CachedFieldTrialParameter parameter : parameters) {
             parameter.cacheToDisk();
         }
-    }
-
-    // TODO(crbug.com/1442347): Switch downstream usages to call ChromeCachedFlags and inline this.
-    public static void cacheMinimalBrowserFlagsTimeFromNativeTime() {
-        SharedPreferencesManager.getInstance().writeLong(
-                ChromePreferenceKeys.FLAGS_LAST_CACHED_MINIMAL_BROWSER_FLAGS_TIME_MILLIS,
-                System.currentTimeMillis());
-    }
-
-    /**
-     * Returns the time (in millis) the minimal browser flags were cached.
-     *
-     * TODO(crbug.com/1442347): Switch downstream usages to call ChromeCachedFlags and inline this.
-     */
-    public static long getLastCachedMinimalBrowserFlagsTimeMillis() {
-        return SharedPreferencesManager.getInstance().readLong(
-                ChromePreferenceKeys.FLAGS_LAST_CACHED_MINIMAL_BROWSER_FLAGS_TIME_MILLIS, 0);
     }
 
     /**

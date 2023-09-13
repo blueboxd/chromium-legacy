@@ -27,7 +27,7 @@
 #include "chrome/browser/ui/views/profiles/profile_picker_signed_in_flow_controller.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_web_contents_host.h"
 #include "chrome/common/webui_url_constants.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "google_apis/gaia/core_account_id.h"
@@ -238,7 +238,7 @@ class ProfileCreationSignedInFlowController
                   std::u16string name_for_signed_in_profile) {
     TRACE_EVENT1("browser", "ProfileCreationSignedInFlowController::FinishFlow",
                  "profile_path", profile()->GetPath().AsUTF8Unsafe());
-    DCHECK(!name_for_signed_in_profile.empty());
+    CHECK(!name_for_signed_in_profile.empty());
     DCHECK(callback.value());
     DCHECK(finish_flow_callback_);
 

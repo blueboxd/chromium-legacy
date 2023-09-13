@@ -24,6 +24,7 @@
 <translation id="1993104285338243655">Zu 1:1-Wiedergabe gewechselt</translation>
 <translation id="2031987842108996681">Rotkanal</translation>
 <translation id="2060505056492490888">Das Punktzeichen "<ph name="DOT" />" steht in "<ph name="INVALIDDOMAIN" />" an einer falschen Stelle.</translation>
+<translation id="2068711044993563745">Der Mindestwert (<ph name="MINIMUM" />) muss kleiner als der Höchstwert (<ph name="MAXIMUM" />) sein.</translation>
 <translation id="2148716181193084225">Heute</translation>
 <translation id="2226276347425096477">Kürze diesen Text auf max. <ph name="MAX_CHARACTERS" /> Zeichen. Zurzeit verwendest du <ph name="CURRENT_LENGTH" /> Zeichen.</translation>
 <translation id="2247351761944213033">Woche <ph name="WEEKNUMBER" />, <ph name="YEAR" /></translation>
@@ -44,6 +45,7 @@
 <translation id="2761667185364618470">Klicke dieses Kästchen an, wenn du fortfahren möchtest.</translation>
 <translation id="2908441821576996758">Gib eine durch Kommas getrennte Liste der E-Mail-Adressen ein.</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
+<translation id="3053226512517284904">Menü für Audiobeschreibungen anzeigen</translation>
 <translation id="3075154866155599887">Gib einen gültigen Wert ein. Das Feld ist nicht vollständig oder enthält ein ungültiges Datum.</translation>
 <translation id="310520048233152454">Gib eine URL ein.</translation>
 <translation id="3220661731597678625">aktueller Schritt</translation>

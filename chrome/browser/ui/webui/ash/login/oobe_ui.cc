@@ -307,10 +307,6 @@ void CreateAndAddOobeUIDataSource(Profile* profile,
                      features::IsOobeJellyModalEnabled());
   // TODO (b/269117729) Cleanup OobeSimon
   source->AddBoolean("isOobeSimonEnabled", features::IsOobeSimonEnabled());
-  source->AddBoolean(
-      "isChromeVoxHintImprovementsEnabled",
-      ::features::
-          IsExperimentalAccessibilityChromeVoxOobeDialogImprovementsEnabled());
   source->AddBoolean("isOobeAssistantEnabled",
                      !features::IsOobeSkipAssistantEnabled());
   source->AddBoolean("isOobeGaiaInfoScreenEnabled",
@@ -326,7 +322,7 @@ void CreateAndAddOobeUIDataSource(Profile* profile,
                      features::IsOobeTouchpadScrollEnabled());
 
   source->AddBoolean("isDrivePinningEnabled",
-                     drive::util::IsOobeDrivePinningEnabled(profile));
+                     drive::util::IsOobeDrivePinningAvailable(profile));
 
   // Whether the timings in oobe_trace.js will be output to the console.
   source->AddBoolean(
@@ -558,7 +554,7 @@ void OobeUI::ConfigureOobeDisplay() {
   AddScreenHandler(std::make_unique<AddChildScreenHandler>());
 
   Profile* const profile = Profile::FromWebUI(web_ui());
-  if (drive::util::IsOobeDrivePinningEnabled(profile)) {
+  if (drive::util::IsOobeDrivePinningAvailable(profile)) {
     AddScreenHandler(std::make_unique<DrivePinningScreenHandler>());
   }
 

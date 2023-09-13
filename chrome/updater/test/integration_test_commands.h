@@ -42,8 +42,10 @@ class IntegrationTestCommands
   virtual void ExpectInstalled() const = 0;
   virtual void ExpectCandidateUninstalled() const = 0;
   virtual void Install() const = 0;
-  virtual void InstallUpdaterAndApp(const std::string& app_id,
-                                    const bool is_silent_install) const = 0;
+  virtual void InstallUpdaterAndApp(
+      const std::string& app_id,
+      const bool is_silent_install,
+      const std::string& child_window_text_to_find) const = 0;
   virtual void SetActive(const std::string& app_id) const = 0;
   virtual void ExpectActive(const std::string& app_id) const = 0;
   virtual void ExpectNotActive(const std::string& app_id) const = 0;
@@ -153,6 +155,7 @@ class IntegrationTestCommands
                                  bool is_silent_install) = 0;
   virtual void RunOfflineInstallOsNotSupported(bool is_legacy_install,
                                                bool is_silent_install) = 0;
+  virtual void DMPushEnrollmentToken(const std::string& enrollment_token) = 0;
   virtual void DMDeregisterDevice() = 0;
   virtual void DMCleanup() = 0;
 

@@ -2389,6 +2389,35 @@ const FeatureEntry::FeatureVariation kStartSurfaceReturnTimeVariations[] = {
     {"60 minute", kStartSurfaceReturnTime_60Minute,
      std::size(kStartSurfaceReturnTime_60Minute), nullptr},
 };
+
+const FeatureEntry::FeatureParam
+    kAccountReauthenticationRecentTimeWindow_0Minutes[] = {
+        {"account_reauthentication_recent_time_window_minutes", "0"},
+};
+const FeatureEntry::FeatureParam
+    kAccountReauthenticationRecentTimeWindow_1Minutes[] = {
+        {"account_reauthentication_recent_time_window_minutes", "1"},
+};
+const FeatureEntry::FeatureParam
+    kAccountReauthenticationRecentTimeWindow_5Minutes[] = {
+        {"account_reauthentication_recent_time_window_minutes", "5"},
+};
+const FeatureEntry::FeatureParam
+    kAccountReauthenticationRecentTimeWindow_10Minutes[] = {
+        {"account_reauthentication_recent_time_window_minutes", "10"},
+};
+const FeatureEntry::FeatureVariation
+    kAccountReauthenticationRecentTimeWindowVariations[] = {
+        {"0 minutes", kAccountReauthenticationRecentTimeWindow_0Minutes,
+         std::size(kAccountReauthenticationRecentTimeWindow_0Minutes), nullptr},
+        {"1 minutes", kAccountReauthenticationRecentTimeWindow_1Minutes,
+         std::size(kAccountReauthenticationRecentTimeWindow_1Minutes), nullptr},
+        {"5 minutes", kAccountReauthenticationRecentTimeWindow_5Minutes,
+         std::size(kAccountReauthenticationRecentTimeWindow_5Minutes), nullptr},
+        {"10 minutes", kAccountReauthenticationRecentTimeWindow_10Minutes,
+         std::size(kAccountReauthenticationRecentTimeWindow_10Minutes),
+         nullptr},
+};
 #endif  // BUILDFLAG(IS_ANDROID)
 #if BUILDFLAG(IS_ANDROID)
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface[] = {
@@ -3753,6 +3782,7 @@ const FeatureEntry::Choice kCastMirroringTargetPlayoutDelayChoices[] = {
      switches::kCastMirroringTargetPlayoutDelay, "300"},
     {flag_descriptions::kCastMirroringTargetPlayoutDelay350ms,
      switches::kCastMirroringTargetPlayoutDelay, "350"}};
+
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -3810,6 +3840,16 @@ const FeatureEntry::FeatureVariation kPasswordGenerationExperimentVariations[] =
          std::size(kPasswordGenerationChunkPassword), nullptr},
 };
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+const FeatureEntry::FeatureParam kEnableBoundSessionCredentialsWithDice[] = {
+    {"dice-support", "enabled"}};
+
+const FeatureEntry::FeatureVariation
+    kEnableBoundSessionCredentialsVariations[] = {
+        {"including DICE profiles", kEnableBoundSessionCredentialsWithDice,
+         std::size(kEnableBoundSessionCredentialsWithDice), nullptr}};
+#endif  // BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
@@ -4152,10 +4192,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCaptureModeAudioMixingName,
      flag_descriptions::kCaptureModeAudioMixingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kCaptureModeAudioMixing)},
-    {"ash-capture-mode-demo-tools",
-     flag_descriptions::kCaptureModeDemoToolsName,
-     flag_descriptions::kCaptureModeDemoToolsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kCaptureModeDemoTools)},
     {"ash-capture-mode-gif-recording",
      flag_descriptions::kCaptureModeGifRecordingName,
      flag_descriptions::kCaptureModeGifRecordingDescription, kOsCrOS,
@@ -5180,6 +5216,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"query-tiles-country-code", flag_descriptions::kQueryTilesCountryCode,
      flag_descriptions::kQueryTilesCountryCodeDescription, kOsAndroid,
      MULTI_VALUE_TYPE(kQueryTilesCountryChoices)},
+    {"query-tiles-disable-country-override",
+     flag_descriptions::kQueryTilesDisableCountryOverrideName,
+     flag_descriptions::kQueryTilesDisableCountryOverrideDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         query_tiles::features::kQueryTilesDisableCountryOverride)},
     {"query-tiles-instant-fetch",
      flag_descriptions::kQueryTilesInstantFetchName,
      flag_descriptions::kQueryTilesInstantFetchDescription, kOsAndroid,
@@ -5510,6 +5552,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kImeUsEnglishModelUpdateName,
      flag_descriptions::kImeUsEnglishModelUpdateDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kImeUsEnglishModelUpdate)},
+    {"enable-cros-japanese-os-settings",
+     flag_descriptions::kJapaneseOSSettingsName,
+     flag_descriptions::kJapaneseOSSettingsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kJapaneseOSSettings)},
     {"enable-cros-multilingual-typing",
      flag_descriptions::kMultilingualTypingName,
      flag_descriptions::kMultilingualTypingDescription, kOsCrOS,
@@ -5526,14 +5572,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVirtualKeyboardRoundCornersName,
      flag_descriptions::kVirtualKeyboardRoundCornersDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kVirtualKeyboardRoundCorners)},
-    {"enable-experimental-accessibility-chromevox-oobe-dialog-improvements",
-     flag_descriptions::
-         kExperimentalAccessibilityChromeVoxOobeDialogImprovementsName,
-     flag_descriptions::
-         kExperimentalAccessibilityChromeVoxOobeDialogImprovementsDescription,
-     kOsCrOS,
-     FEATURE_VALUE_TYPE(
-         features::kExperimentalAccessibilityChromeVoxOobeDialogImprovements)},
     {"enable-experimental-accessibility-dictation-context-checking",
      flag_descriptions::kExperimentalAccessibilityDictationContextCheckingName,
      flag_descriptions::
@@ -7113,6 +7151,14 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kStartSurfaceReturnTime,
                                     kStartSurfaceReturnTimeVariations,
                                     "StartSurfaceReturnTime")},
+    {"account-reauthentication-recent-time-window",
+     flag_descriptions::kAccountReauthenticationRecentTimeWindowName,
+     flag_descriptions::kAccountReauthenticationRecentTimeWindowDescription,
+     kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         chrome::android::kAccountReauthenticationRecentTimeWindow,
+         kAccountReauthenticationRecentTimeWindowVariations,
+         "AccountReauthenticationRecentTimeWindow")},
 
     {"tab-drag-drop", flag_descriptions::kTabDragDropName,
      flag_descriptions::kTabDragDropDescription, kOsAndroid,
@@ -7617,10 +7663,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-edge-detection", flag_descriptions::kEnableEdgeDetectionName,
      flag_descriptions::kEnableEdgeDetectionDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ui::kEnableEdgeDetection)},
-
-    {"enable-os-feedback", flag_descriptions::kEnableOsFeedbackName,
-     flag_descriptions::kEnableOsFeedbackDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kOsFeedback)},
 
     {"fast-pair", flag_descriptions::kFastPairName,
      flag_descriptions::kFastPairDescription, kOsCrOS,
@@ -8234,6 +8276,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPreloadingOnPerformancePageDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kPerformanceSettingsPreloadingSubpage)},
 
+    {"tracking-protection-3pcd", flag_descriptions::kTrackingProtection3pcdName,
+     flag_descriptions::kTrackingProtection3pcdDescription,
+     kOsDesktop | kOsAndroid,
+     FEATURE_VALUE_TYPE(content_settings::features::kTrackingProtection3pcd)},
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {kClipboardHistoryLongpressInternalName,
      flag_descriptions::kClipboardHistoryLongpressName,
@@ -8279,10 +8326,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kShimlessRMAComplianceCheckName,
      flag_descriptions::kShimlessRMAComplianceCheckDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kShimlessRMAComplianceCheck)},
-    {"shimless-rma-diagnostic-page",
-     flag_descriptions::kShimlessRMADiagnosticPageName,
-     flag_descriptions::kShimlessRMADiagnosticPageDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kShimlessRMADiagnosticPage)},
     {"shortcut-customization-jelly",
      flag_descriptions::kShortcutCustomizationJellyName,
      flag_descriptions::kShortcutCustomizationJellyDescription, kOsCrOS,
@@ -9194,6 +9237,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPrivacyGuide3Description, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kPrivacyGuide3)},
 
+    {"privacy-guide-preload", flag_descriptions::kPrivacyGuidePreloadName,
+     flag_descriptions::kPrivacyGuidePreloadDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kPrivacyGuidePreload)},
+
     {"tab-search-fuzzy-search", flag_descriptions::kTabSearchFuzzySearchName,
      flag_descriptions::kTabSearchFuzzySearchDescription, kOsDesktop,
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kTabSearchFuzzySearch,
@@ -9723,6 +9770,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPasswordEditDialogWithDetailsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(
          password_manager::features::kPasswordEditDialogWithDetails)},
+
+    {"pwa-restore-ui", flag_descriptions::kPwaRestoreUiName,
+     flag_descriptions::kPwaRestoreUiDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(ui::kPwaRestoreUi)},
 #endif  // BUILDFLAG(IS_ANDROID)
     {"autofill-enable-ranking-formula-address-profiles",
      flag_descriptions::kAutofillEnableRankingFormulaAddressProfilesName,
@@ -10137,13 +10188,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid | kOsLinux | kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(net::features::kChromeRootStoreUsed)},
 #endif  // BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
-
-#if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
-    {"cert-dual-verification-enabled",
-     flag_descriptions::kCertDualVerificationEnabledName,
-     flag_descriptions::kCertDualVerificationEnabledDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(net::features::kCertDualVerificationTrialFeature)},
-#endif  // BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
 
 #if BUILDFLAG(IS_ANDROID)
     {"policy-logs-page-android", flag_descriptions::kPolicyLogsPageAndroidName,
@@ -10979,6 +11023,29 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableRuntimeCountersTelemetryName,
      flag_descriptions::kEnableRuntimeCountersTelemetryDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(reporting::kEnableRuntimeCountersTelemetry)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"ipp-first-setup-for-usb-printers",
+     flag_descriptions::kIppFirstSetupForUsbPrintersName,
+     flag_descriptions::kIppFirstSetupForUsbPrintersDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kIppFirstSetupForUsbPrinters)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+    {"enable-bound-session-credentials",
+     flag_descriptions::kEnableBoundSessionCredentialsName,
+     flag_descriptions::kEnableBoundSessionCredentialsDescription,
+     kOsMac | kOsWin | kOsLinux,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(switches::kEnableBoundSessionCredentials,
+                                    kEnableBoundSessionCredentialsVariations,
+                                    "EnableBoundSessionCredentials")},
+#endif  // BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"cros-soul", flag_descriptions::kCrosSoulName,
+     flag_descriptions::kCrosSoulDescription, kOsCrOS,
+     PLATFORM_FEATURE_NAME_TYPE("CrOSLateBootCrOSSOUL")},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

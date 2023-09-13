@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_UI_POPUP_MENU_OVERFLOW_MENU_OVERFLOW_MENU_METRICS_H_
 #define IOS_CHROME_BROWSER_UI_POPUP_MENU_OVERFLOW_MENU_OVERFLOW_MENU_METRICS_H_
 
+#import "base/containers/enum_set.h"
+
 namespace overflow_menu {
 enum class Destination;
 enum class ActionType;
@@ -40,6 +42,7 @@ enum class IOSOverflowMenuReorderingReason {
 // Enum for many histograms, corresponding to enums.xml's
 // IOSOverflowMenuDestination.
 // Entries should not be renumbered and numeric values should never be reused.
+// LINT.IfChange(destination)
 enum class IOSOverflowMenuDestination {
   kBookmarks = 0,
   kHistory = 1,
@@ -54,6 +57,7 @@ enum class IOSOverflowMenuDestination {
   kPriceNotifications = 10,
   kMaxValue = kPriceNotifications,
 };
+// LINT.ThenChange(overflow_menu_constants.h:destination)
 
 // Returns the correct destination histogram enum value for the given
 // `destination`.
@@ -63,6 +67,7 @@ IOSOverflowMenuDestination HistogramDestinationFromDestination(
 // Enum for many histograms, corresponding to enums.xml's
 // IOSOverflowMenuAction.
 // Entries should not be renumbered and numeric values should never be reused.
+// LINT.IfChange(actionType)
 enum class IOSOverflowMenuAction {
   kReload = 0,
   kNewTab = 1,
@@ -82,9 +87,55 @@ enum class IOSOverflowMenuAction {
   kEditActions = 15,
   kMaxValue = kEditActions,
 };
+// LINT.ThenChange(overflow_menu_constants.h:actionType)
 
 // Returns the correct action histogram enum value for the given `action_type`.
 IOSOverflowMenuAction HistogramActionFromActionType(
     overflow_menu::ActionType action_type);
+
+// Field indexes for bitmask storing these values in a histogram.
+// These values are saved to logs, so entries should not be renumbered and
+// numeric values should never be reused. Also, the total number of items should
+// not go above 64.
+enum class DestinationsCustomizationEventFields {
+  kSmartSortingTurnedOff = 0,
+  kMinValue = kSmartSortingTurnedOff,
+  kSmartSortingTurnedOn = 1,
+  kSmartSortingIsOn = 2,
+  kDestinationWasRemoved = 3,
+  kDestinationWasAdded = 4,
+  kDestinationWasReordered = 5,
+  kMaxValue = kDestinationWasReordered,
+};
+
+// Stats to log for a single destination customization event.
+using DestinationsCustomizationEvent =
+    base::EnumSet<DestinationsCustomizationEventFields,
+                  DestinationsCustomizationEventFields::kMinValue,
+                  DestinationsCustomizationEventFields::kMaxValue>;
+
+// Records the logging event for a given destination customization event.
+void RecordDestinationsCustomizationEvent(DestinationsCustomizationEvent event);
+
+// Field indexes for bitmask storing these values in a histogram.
+// These values are saved to logs, so entries should not be renumbered and
+// numeric values should never be reused. Also, the total number of items should
+// not go above 64.
+enum class ActionsCustomizationEventFields {
+  kActionWasRemoved = 0,
+  kMinValue = kActionWasRemoved,
+  kActionWasAdded = 1,
+  kActionWasReordered = 2,
+  kMaxValue = kActionWasReordered,
+};
+
+// Stats to log for a single action customization event.
+using ActionsCustomizationEvent =
+    base::EnumSet<ActionsCustomizationEventFields,
+                  ActionsCustomizationEventFields::kMinValue,
+                  ActionsCustomizationEventFields::kMaxValue>;
+
+// Records the logging event for a given action customization event.
+void RecordActionsCustomizationEvent(ActionsCustomizationEvent event);
 
 #endif  // IOS_CHROME_BROWSER_UI_POPUP_MENU_OVERFLOW_MENU_OVERFLOW_MENU_METRICS_H_

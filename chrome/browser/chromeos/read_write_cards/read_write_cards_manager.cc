@@ -5,7 +5,11 @@
 #include "chrome/browser/chromeos/read_write_cards/read_write_cards_manager.h"
 
 #include <memory>
+#include <string>
 
+#include "base/command_line.h"
+#include "base/hash/sha1.h"
+#include "base/strings/string_piece.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/quick_answers/quick_answers_controller_impl.h"
 #include "chrome/browser/ui/views/editor_menu/editor_menu_controller_impl.h"
@@ -15,8 +19,30 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/context_menu_params.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/mojom/context_menu/context_menu.mojom-shared.h"
 
 namespace chromeos {
+
+namespace {
+
+constexpr base::StringPiece kOrcaKey = "orca-key";
+constexpr char kOrcaKeyHash[] =
+    "\x7a\xf3\xa1\x57\x28\x48\xc4\x14\x27\x13\x53\x5a\x09\xf3\x0e\xfc\xee\xa6"
+    "\xbb\xa4";
+
+void CheckOrcaKey() {
+  const std::string& debug_key_hash = base::SHA1HashString(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          /*ash::switches::kOrcaKey=*/kOrcaKey));
+  // See go/orca-key for the key.
+  // Commandline looks like:
+  //  out/Default/chrome --user-data-dir=/tmp/auuf123 --orca-key="INSERT KEY
+  //  HERE" --enable-features=Orca
+  CHECK_EQ(debug_key_hash, kOrcaKeyHash)
+      << "Provided debug key does not match with the expected one.";
+}
+
+}  // namespace
 
 ReadWriteCardsManager::ReadWriteCardsManager()
     : quick_answers_controller_(
@@ -40,15 +66,23 @@ void ReadWriteCardsManager::Shutdown() {
 }
 
 ReadWriteCardController* ReadWriteCardsManager::GetController(
-    const content::ContextMenuParams& params,
-    bool is_password_field) {
-  // Currently only return QuickAnswersControllerImpl.
-  if (!QuickAnswersState::Get()->is_eligible()) {
+    const content::ContextMenuParams& params) {
+  // Skip password input field.
+  const bool is_password_field =
+      params.input_field_type ==
+      blink::mojom::ContextMenuDataInputFieldType::kPassword;
+  if (is_password_field) {
     return nullptr;
   }
 
-  // Skip password input field.
-  if (is_password_field) {
+  if (chromeos::features::IsOrcaEnabled()) {
+    if (params.is_editable) {
+      CheckOrcaKey();
+      return editor_menu_controller_.get();
+    }
+  }
+
+  if (!QuickAnswersState::Get()->is_eligible()) {
     return nullptr;
   }
 

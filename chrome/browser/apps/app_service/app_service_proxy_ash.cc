@@ -47,6 +47,7 @@
 #include "components/grit/components_resources.h"
 #include "components/services/app_service/public/cpp/app_capability_access_cache_wrapper.h"
 #include "components/services/app_service/public/cpp/app_registry_cache_wrapper.h"
+#include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/cpp/preferred_apps_impl.h"
 #include "components/services/app_service/public/cpp/preferred_apps_list.h"
 #include "components/services/app_service/public/cpp/shortcut/shortcut_registry_cache.h"
@@ -106,6 +107,11 @@ bool AppServiceProxyAsh::IsValidProfile() {
 void AppServiceProxyAsh::Initialize() {
   if (!IsValidProfile()) {
     return;
+  }
+
+  if (base::FeatureList::IsEnabled(kAppServiceStorage)) {
+    app_storage_ = std::make_unique<apps::AppStorage>(profile_->GetPath(),
+                                                      app_registry_cache_);
   }
 
   const user_manager::User* user =
@@ -489,6 +495,11 @@ std::unique_ptr<IconLoader::Releaser> AppServiceProxyAsh::LoadShortcutIcon(
     return nullptr;
   }
   auto icon_key = shortcut_outer_icon_loader_.GetIconKey(shortcut_id.value());
+  if (!icon_key.has_value()) {
+    std::move(callback).Run(std::make_unique<IconValue>());
+    return nullptr;
+  }
+
   return shortcut_outer_icon_loader_.LoadIconFromIconKey(
       shortcut_id.value(), icon_key.value(), icon_type, size_hint_in_dip,
       allow_placeholder_icon, std::move(callback));
@@ -532,8 +543,19 @@ absl::optional<IconKey> AppServiceProxyAsh::ShortcutInnerIconLoader::GetIconKey(
   if (overriding_icon_loader_for_testing_) {
     return overriding_icon_loader_for_testing_->GetIconKey(id);
   }
-  // TODO(crbug.com/1412708): Get icon key from shortcut struct.
-  return absl::make_optional<IconKey>(0, 0, 0);
+
+  if (!host_->ShortcutRegistryCache()->HasShortcut(ShortcutId(id))) {
+    return absl::nullopt;
+  }
+
+  const absl::optional<IconKey>& icon_key =
+      host_->ShortcutRegistryCache()->GetShortcut(ShortcutId(id))->icon_key;
+
+  if (icon_key.has_value()) {
+    return std::move(*icon_key->Clone());
+  }
+
+  return absl::nullopt;
 }
 
 std::unique_ptr<IconLoader::Releaser>

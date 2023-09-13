@@ -43,7 +43,7 @@ using VideoCaptureDeliverFrameInternalCallback = WTF::CrossThreadFunction<void(
 
 // This alias mimics the definition of VideoCaptureNotifyFrameDroppedCB.
 using VideoCaptureNotifyFrameDroppedInternalCallback =
-    WTF::CrossThreadFunction<void()>;
+    WTF::CrossThreadFunction<void(media::VideoCaptureFrameDropReason)>;
 
 // Mimics blink::EncodedVideoFrameCB
 using EncodedVideoFrameInternalCallback =
@@ -130,13 +130,15 @@ class MediaStreamVideoTrack::FrameDeliverer
       std::vector<scoped_refptr<media::VideoFrame>> scaled_video_frames,
       base::TimeTicks estimated_capture_time);
 
-  void AsyncGetDeliverableVideoFramesCount(
-      WTF::CrossThreadOnceFunction<void(size_t)>
-          deliverable_video_frames_callback);
+  // Can be called from any task runner (is atomic).
+  size_t deliverable_frames() const { return deliverable_frames_; }
+  size_t discarded_frames() const { return discarded_frames_; }
+  size_t dropped_frames() const { return dropped_frames_; }
 
   // Triggers all registered dropped frame callbacks. Must be called on the
   // video task runner.
-  void NotifyFrameDroppedOnVideoTaskRunner();
+  void NotifyFrameDroppedOnVideoTaskRunner(
+      media::VideoCaptureFrameDropReason reason);
 
   // Triggers all encoded callbacks with |frame| and |estimated_capture_time|.
   // Must be called on the video task runner.
@@ -215,10 +217,12 @@ class MediaStreamVideoTrack::FrameDeliverer
   Vector<VideoIdCallbacks> callbacks_;
   HashMap<VideoSinkId, EncodedVideoFrameInternalCallback> encoded_callbacks_;
 
-  // Frame counter for deliverable frames, only incremented when the track is
-  // enabled (even though a disabled track delivers black frames). Only touched
-  // on the `video_task_runner_`.
-  size_t deliverable_frames_ = 0;
+  // Frame counters for the MediaStreamTrack Statistics API. The counters are
+  // only incremented when the track is enabled (even though a disabled track
+  // delivers black frames).
+  std::atomic<size_t> deliverable_frames_ = 0;
+  std::atomic<size_t> discarded_frames_ = 0;
+  std::atomic<size_t> dropped_frames_ = 0;
 
   // Callbacks that will be invoked a single time when a crop-version
   // is observed that is at least equal to the key.
@@ -272,8 +276,9 @@ void MediaStreamVideoTrack::FrameDeliverer::AddCallbackOnVideoTaskRunner(
     VideoSinkId id,
     VideoCaptureDeliverFrameInternalCallback callback) {
   DCHECK(video_task_runner_->RunsTasksInCurrentSequence());
-  callbacks_.push_back(VideoIdCallbacks{id, std::move(callback),
-                                        CrossThreadBindRepeating([] {})});
+  callbacks_.push_back(VideoIdCallbacks{
+      id, std::move(callback),
+      CrossThreadBindRepeating([](media::VideoCaptureFrameDropReason) {})});
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::SetNotifyFrameDroppedCallback(
@@ -477,13 +482,16 @@ void MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnVideoTaskRunner(
 
   // TODO(crbug.com/1369085): Understand why we sometimes see old crop versions.
   if (frame->metadata().crop_version != crop_version_) {
+    NotifyFrameDroppedOnVideoTaskRunner(
+        media::VideoCaptureFrameDropReason::kCropVersionNotCurrent);
     // TODO(crbug.com/964947): A weak ptr instance of MediaStreamVideoTrack is
     // passed to FrameDeliverer in order to avoid the re-binding the instance of
     // a WTF::CrossThreadFunction.
     PostCrossThreadTask(
         *main_render_task_runner_, FROM_HERE,
         CrossThreadBindOnce(
-            &MediaStreamVideoTrack::OnFrameDropped, media_stream_video_track_,
+            &MediaStreamVideoTrack::NotifySourceFrameDropped,
+            media_stream_video_track_,
             media::VideoCaptureFrameDropReason::kCropVersionNotCurrent));
     return;
   }
@@ -491,13 +499,16 @@ void MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnVideoTaskRunner(
   if (!enabled_ && emit_frame_drop_events_) {
     emit_frame_drop_events_ = false;
 
+    // No need to NotifyFrameDroppedOnVideoTaskRunner() because the track is
+    // not enabled.
     // TODO(crbug.com/964947): A weak ptr instance of MediaStreamVideoTrack is
     // passed to FrameDeliverer in order to avoid the re-binding the instance of
     // a WTF::CrossThreadFunction.
     PostCrossThreadTask(
         *main_render_task_runner_, FROM_HERE,
         CrossThreadBindOnce(
-            &MediaStreamVideoTrack::OnFrameDropped, media_stream_video_track_,
+            &MediaStreamVideoTrack::NotifySourceFrameDropped,
+            media_stream_video_track_,
             media::VideoCaptureFrameDropReason::
                 kVideoTrackFrameDelivererNotEnabledReplacingWithBlackFrame));
   }
@@ -528,31 +539,22 @@ void MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnVideoTaskRunner(
   }
 }
 
-void MediaStreamVideoTrack::FrameDeliverer::AsyncGetDeliverableVideoFramesCount(
-    WTF::CrossThreadOnceFunction<void(size_t)>
-        deliverable_video_frames_callback) {
-  if (!video_task_runner_->RunsTasksInCurrentSequence()) {
-    PostCrossThreadTask(
-        *video_task_runner_, FROM_HERE,
-        CrossThreadBindOnce(
-            &FrameDeliverer::AsyncGetDeliverableVideoFramesCount,
-            WrapRefCounted(this),
-            std::move(deliverable_video_frames_callback)));
-    return;
-  }
-  DCHECK(video_task_runner_->RunsTasksInCurrentSequence());
-  PostCrossThreadTask(
-      *main_render_task_runner_, FROM_HERE,
-      CrossThreadBindOnce(std::move(deliverable_video_frames_callback),
-                          deliverable_frames_));
-}
-
-void MediaStreamVideoTrack::FrameDeliverer::
-    NotifyFrameDroppedOnVideoTaskRunner() {
+void MediaStreamVideoTrack::FrameDeliverer::NotifyFrameDroppedOnVideoTaskRunner(
+    media::VideoCaptureFrameDropReason reason) {
   DCHECK(video_task_runner_->RunsTasksInCurrentSequence());
   DVLOG(1) << __func__;
-  for (const auto& entry : callbacks_)
-    entry.notify_frame_dropped.Run();
+  if (enabled_) {
+    if (reason == media::VideoCaptureFrameDropReason::
+                      kResolutionAdapterFrameRateIsHigherThanRequested) {
+      ++discarded_frames_;
+    } else {
+      ++dropped_frames_;
+    }
+  }
+  // Notify sinks that care about frame drops, i.e. WebRTC.
+  for (const auto& entry : callbacks_) {
+    entry.notify_frame_dropped.Run(reason);
+  }
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::
@@ -835,6 +837,14 @@ bool MediaStreamVideoTrack::UsingAlpha() {
          only_sinks_with_alpha_depending_on_other_sinks;
 }
 
+base::RepeatingCallback<void(media::VideoCaptureFrameDropReason)>
+MediaStreamVideoTrack::NotifyFrameDroppedOnVideoTaskRunnerCallbackForTesting() {
+  return ConvertToBaseRepeatingCallback(
+      CrossThreadBindRepeating(&MediaStreamVideoTrack::FrameDeliverer::
+                                   NotifyFrameDroppedOnVideoTaskRunner,
+                               frame_deliverer_));
+}
+
 void MediaStreamVideoTrack::SetSinkNotifyFrameDroppedCallback(
     WebMediaStreamSink* sink,
     const VideoCaptureNotifyFrameDroppedCB& callback) {
@@ -985,14 +995,14 @@ void MediaStreamVideoTrack::GetSettings(
   }
 }
 
-void MediaStreamVideoTrack::AsyncGetDeliverableVideoFramesCount(
-    base::OnceCallback<void(size_t)> deliverable_video_frames_callback) {
+MediaStreamTrackPlatform::VideoFrameStats
+MediaStreamVideoTrack::GetVideoFrameStats() const {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
-  // WTF bindings complain if we don't convert this to a CrossThreadBindOnce,
-  // but note that `deliverable_video_frames_callback` is only called on
-  // `main_render_thread_checker_`. This is effectively a PostTaskAndReply.
-  frame_deliverer_->AsyncGetDeliverableVideoFramesCount(
-      CrossThreadBindOnce(std::move(deliverable_video_frames_callback)));
+  MediaStreamTrackPlatform::VideoFrameStats stats;
+  stats.deliverable_frames = frame_deliverer_->deliverable_frames();
+  stats.discarded_frames = frame_deliverer_->discarded_frames();
+  stats.dropped_frames = frame_deliverer_->dropped_frames();
+  return stats;
 }
 
 MediaStreamTrackPlatform::CaptureHandle
@@ -1086,7 +1096,7 @@ media::VideoCaptureFormat MediaStreamVideoTrack::GetComputedSourceFormat() {
   return computed_source_format_;
 }
 
-void MediaStreamVideoTrack::OnFrameDropped(
+void MediaStreamVideoTrack::NotifySourceFrameDropped(
     media::VideoCaptureFrameDropReason reason) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   if (!source_)

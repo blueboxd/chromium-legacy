@@ -7,6 +7,7 @@ module ash.mojom;
 import "ash/public/mojom/accelerator_actions.mojom";
 import "ash/public/mojom/accelerator_keys.mojom";
 import "mojo/public/mojom/base/time.mojom";
+import "ui/events/ash/mojom/extended_fkeys_modifier.mojom";
 import "ui/events/ash/mojom/modifier_key.mojom";
 import "ui/events/ash/mojom/simulate_right_click_modifier.mojom";
 import "ui/events/ash/mojom/six_pack_shortcut_modifier.mojom";
@@ -87,6 +88,12 @@ struct KeyboardSettings {
   bool top_row_are_fkeys;
   bool suppress_meta_fkey_rewrites;
   SixPackKeyInfo? six_pack_key_remappings;
+  // Modifier key used to remap key events to the F11 key for ChromeOS
+  // keyboards.
+  ui.mojom.ExtendedFkeysModifier? f11;
+  // Modifier key used to remap key events to the F12 key for ChromeOS
+  // keyboards.
+  ui.mojom.ExtendedFkeysModifier? f12;
 };
 
 // Contains all information needed to display, apply, and update mouse
@@ -209,15 +216,17 @@ struct Stylus {
 // Contains all information needed to display, apply, and update graphics
 // tablet settings.
 struct GraphicsTablet {
-  // Key used to lookup device settings in prefs in the format
-  // "vendor_id:product_id" where the ids are 16-bit hex in lowercase.
-  // Example: 5022:18d1.
-  string device_key;
+  // User visible name for the graphics tablet seen within the Settings SWA.
+  string name;
   // Unique identifier for the graphics tablet which is assigned by ozone when
   // it is connected and is reassigned when disconnected and reconnected to the
   // system. These ids can be rarely reused for multiple devices if the original
   // device holding the id had been disconnected.
   uint32 id;
+  // Key used to lookup device settings in prefs in the format
+  // "vendor_id:product_id" where the ids are 16-bit hex in lowercase.
+  // Example: 5022:18d1.
+  string device_key;
   GraphicsTabletSettings settings;
 };
 
@@ -238,10 +247,12 @@ struct ButtonRemapping {
   RemappingAction? remapping_action;
 };
 
-// Represents the remapping action which can be either a key event or action.
+// Represents the remapping action which can be either a key event or action
+// or hardcoded action.
 union RemappingAction {
   ash.mojom.AcceleratorAction action;
   KeyEvent key_event;
+  HardCodedAction hardcoded_action;
 };
 
 // Represents the key event the button remaps to.
@@ -268,4 +279,10 @@ enum CustomizableButton {
   kBack = 4,
   kExtra = 5,
   kSide = 6,
+};
+
+// Contains the valid set of hardcoded actions.
+enum HardCodedAction {
+  kCopy = 0,
+  kPaste = 1,
 };

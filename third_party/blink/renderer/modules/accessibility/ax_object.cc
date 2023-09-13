@@ -772,6 +772,11 @@ void AXObject::Init(AXObject* parent) {
 }
 
 void AXObject::Detach() {
+#if DCHECK_IS_ON()
+  DCHECK(!is_updating_cached_values_)
+      << "Don't detach in the middle of updating cached values: "
+      << ToString(true, true);
+#endif
   // Prevents LastKnown*() methods from returning the wrong values.
   cached_is_ignored_ = true;
   cached_is_ignored_but_included_in_tree_ = false;
@@ -908,7 +913,14 @@ void AXObject::RepairMissingParent() const {
   DCHECK(IsMissingParent());
   DCHECK(!AXObjectCache().HasBeenDisposed());
 
-  SetParent(ComputeParent());
+  AXObject* new_parent = ComputeParent();
+  if (!new_parent) {
+    // If no parent is possible, this is no longer part of the tree.
+    AXObjectCache().RemoveSubtreeWhenSafe(GetNode(), /* remove_root */ true);
+    return;
+  }
+
+  SetParent(new_parent);
 
   SANITIZER_CHECK(!parent_ ||
                   parent_->RoleValue() != ax::mojom::blink::Role::kIframe ||
@@ -1523,17 +1535,6 @@ void AXObject::PopulateAXRelativeBounds(ui::AXRelativeBounds& bounds,
 
   if (!container_transform.IsIdentity())
     bounds.transform = std::make_unique<gfx::Transform>(container_transform);
-}
-
-void AXObject::MarkAllImageAXObjectsDirty() {
-  if (RoleValue() == ax::mojom::blink::Role::kImage) {
-    AXObjectCache().MarkAXObjectDirtyWithCleanLayoutAndEvent(
-        this, ax::mojom::blink::EventFrom::kNone,
-        ax::mojom::Action::kAnnotatePageImages);
-  }
-
-  for (auto& child : UnignoredChildren())
-    child->MarkAllImageAXObjectsDirty();
 }
 
 void AXObject::SerializeActionAttributes(ui::AXNodeData* node_data) {
@@ -3138,8 +3139,9 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
       << GetDocument()->Lifecycle().ToString();
 #endif  // DCHECK_IS_ON()
 
-  if (IsMissingParent())
+  if (IsMissingParent()) {
     RepairMissingParent();
+  }
 
   // Mock objects are created by, owned and dependent on their parents.
   // If the mock object's values change, recompute the parent's as well.
@@ -5787,8 +5789,9 @@ bool AXObject::ShouldDestroyWhenDetachingFromParent() const {
     return true;
   }
 
+  // Image map children are entirely dependent on the parent image.
   if (CachedParentObject() &&
-      CachedParentObject()->RoleValue() == ax::mojom::blink::Role::kImage) {
+      IsA<HTMLImageElement>(CachedParentObject()->GetNode())) {
     return true;
   }
 

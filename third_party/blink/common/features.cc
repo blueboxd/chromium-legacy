@@ -39,6 +39,14 @@ BASE_FEATURE(kAdAuctionReportingWithMacroApi,
              "AdAuctionReportingWithMacroApi",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Controls the capturing of the Ad-Auction-Signals header, and the maximum
+// allowed Ad-Auction-Signals header value.
+BASE_FEATURE(kAdAuctionSignals,
+             "AdAuctionSignals",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+const base::FeatureParam<int> kAdAuctionSignalsMaxSizeBytes{
+    &kAdAuctionSignals, "ad-auction-signals-max-size-bytes", 10000};
+
 // See https://github.com/WICG/turtledove/blob/main/FLEDGE.md
 // Changes default Permissions Policy for features join-ad-interest-group and
 // run-ad-auction to a more restricted EnableForSelf.
@@ -139,6 +147,12 @@ BASE_FEATURE(kAutofillDetectRemovedFormControls,
 // contain the "Unidentified" key.
 BASE_FEATURE(kAutofillSendUnidentifiedKeyAfterFill,
              "AutofillSendUnidentifiedKeyAfterFill",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, Autofill will start identifying web elements using DOMNodeIds
+// instead of static counters.
+BASE_FEATURE(kAutofillUseDomNodeIdForRendererId,
+             "AutofillUseDomNodeIdForRendererId",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Apply lazy-loading to ad frames which have embeds likely impacting Core Web
@@ -743,6 +757,16 @@ BASE_FEATURE(kExtendScriptResourceLifetime,
 // allows the element to be enabled by the runtime enabled feature, for origin
 // trials.
 BASE_FEATURE(kFencedFrames, "FencedFrames", base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enable the new fenced frame-related features in M119. (These are
+// conditionally dependent on other fenced frame-related feature flags being
+// enabled.)
+// * Extra format for ad size macro substitution:
+//   ${AD_WIDTH} and ${AD_HEIGHT}, on top of the previous
+//   {%AD_WIDTH%} and {%AD_HEIGHT%}.
+BASE_FEATURE(kFencedFramesM119Features,
+             "FencedFramesM119Features",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // File handling icons. https://crbug.com/1218213
 BASE_FEATURE(kFileHandlingIcons,
@@ -1373,6 +1397,23 @@ constexpr base::FeatureParam<bool>
     kPrivateAggregationApiProtectedAudienceExtensionsEnabled{
         &kPrivateAggregationApi, "fledge_extensions_enabled",
         /*default_value=*/true};
+
+// Selectively allows the debug mode to be disabled while leaving the rest of
+// the API in place. If disabled, any `enableDebugMode()` calls will essentially
+// have no effect.
+constexpr base::FeatureParam<bool> kPrivateAggregationApiDebugModeEnabledAtAll{
+    &kPrivateAggregationApi, "debug_mode_enabled_at_all",
+    /*default_value=*/true};
+
+// Controls whether third-party cookie eligibility should be queried before
+// allowing debug mode to be used by a context. If enabled, any
+// `enableDebugMode()` calls in a context that does not have third-party cookie
+// eligibility will essentially have no effect. This param has no effect if
+// `kPrivateAggregationApiDebugModeEnabledAtAll` is disabled.
+constexpr base::FeatureParam<bool>
+    kPrivateAggregationApiDebugModeSettingsCheckEnabled{
+        &kPrivateAggregationApi, "debug_mode_settings_check_enabled",
+        /*default_value=*/false};
 
 BASE_FEATURE(kProcessHtmlDataImmediately,
              "ProcessHtmlDataImmediately",
@@ -2007,7 +2048,7 @@ BASE_FEATURE(kWebRtcUseMinMaxVEADimensions,
 );
 
 // Allow access to WebSQL APIs.
-BASE_FEATURE(kWebSQLAccess, "kWebSQLAccess", base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kWebSQLAccess, "kWebSQLAccess", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables small accelerated canvases for webview (crbug.com/1004304)
 BASE_FEATURE(kWebviewAccelerateSmallCanvases,

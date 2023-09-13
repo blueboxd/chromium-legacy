@@ -101,7 +101,6 @@ buildflag_header("buildflags") {
     "INCLUDE_TRANSPORT_SECURITY_STATE_PRELOAD_LIST=$include_transport_security_state_preload_list",
     "USE_KERBEROS=$use_kerberos",
     "USE_EXTERNAL_GSSAPI=$use_external_gssapi",
-    "TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED=$trial_comparison_cert_verifier_supported",
     "CHROME_ROOT_STORE_OPTIONAL=$chrome_root_store_optional",
     "CHROME_ROOT_STORE_ONLY=$chrome_root_store_only",
     "CHROME_ROOT_STORE_SUPPORTED=$chrome_root_store_supported",
@@ -425,8 +424,6 @@ component("net") {
     "cert/test_root_certs.h",
     "cert/time_conversions.cc",
     "cert/time_conversions.h",
-    "cert/trial_comparison_cert_verifier_util.cc",
-    "cert/trial_comparison_cert_verifier_util.h",
     "cert/x509_cert_types.cc",
     "cert/x509_cert_types.h",
     "cert/x509_certificate.cc",
@@ -1489,13 +1486,6 @@ component("net") {
     ]
   }
 
-  if (trial_comparison_cert_verifier_supported) {
-    sources += [
-      "cert/trial_comparison_cert_verifier.cc",
-      "cert/trial_comparison_cert_verifier.h",
-    ]
-  }
-
   if (enable_unix_sockets) {
     sources += [
       "socket/unix_domain_client_socket_posix.cc",
@@ -2445,6 +2435,7 @@ source_set("quic_test_tools") {
 }
 
 source_set("simple_quic_tools") {
+  testonly = true
   sources = [
     "tools/quic/quic_client_message_loop_network_helper.cc",
     "tools/quic/quic_client_message_loop_network_helper.h",
@@ -2486,6 +2477,7 @@ if (!is_ios) {
     ]
   }
   executable("quic_server") {
+    testonly = true
     sources = [
       "tools/quic/quic_simple_server_backend_factory.cc",
       "tools/quic/quic_simple_server_backend_factory.h",
@@ -2502,6 +2494,7 @@ if (!is_ios) {
     ]
   }
   executable("crypto_message_printer") {
+    testonly = true
     sources = [ "tools/quic/crypto_message_printer_bin.cc" ]
     deps = [
       ":net",
@@ -3032,7 +3025,6 @@ test("net_unittests") {
     "data/quic_http_response_cache_data_with_push/",
     "data/spdy_tests/",
     "data/test.html",
-    "data/trial_comparison_cert_verifier_unittest/",
     "data/verify_certificate_chain_unittest/",
     "data/verify_name_match_unittest/",
     "data/verify_signed_data_unittest/",
@@ -3271,10 +3263,6 @@ test("net_unittests") {
       sources += [ "cert/internal/path_builder_trust_store_win_unittest.cc" ]
       libs += [ "crypt32.lib" ]
     }
-  }
-
-  if (trial_comparison_cert_verifier_supported) {
-    sources += [ "cert/trial_comparison_cert_verifier_unittest.cc" ]
   }
 
   # Include transport_security_state_generator tests.

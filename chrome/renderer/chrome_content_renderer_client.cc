@@ -43,7 +43,7 @@
 #include "chrome/common/secure_origin_allowlist.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/benchmarking_extension.h"
@@ -254,6 +254,10 @@
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)
 #include "chrome/renderer/cco/multiline_detector.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/constants/chromeos_features.h"
 #endif
 
 using autofill::AutofillAgent;
@@ -734,7 +738,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
 #else
   if (base::FeatureList::IsEnabled(commerce::kCommerceHintAndroid) &&
 #endif  // !BUILDFLAG(IS_ANDROID)
-      render_frame->IsMainFrame() && !render_frame->IsInFencedFrameTree()) {
+      render_frame->GetWebFrame()->IsOutermostMainFrame()) {
     new cart::CommerceHintAgent(render_frame);
   }
 
@@ -1658,6 +1662,16 @@ void ChromeContentRendererClient::
 #endif  // !BUILDFLAG(IS_ANDROID)
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (chromeos::features::IsBlinkExtensionEnabled()) {
+    blink::WebRuntimeFeatures::EnableBlinkExtensionChromeOS(true);
+  }
+
+  if (chromeos::features::IsBlinkExtensionDiagnosticsEnabled()) {
+    blink::WebRuntimeFeatures::EnableBlinkExtensionDiagnostics(true);
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 
 bool ChromeContentRendererClient::AllowScriptExtensionForServiceWorker(

@@ -164,6 +164,10 @@
     "META": {"sizes": {"includes": [50]}},
     "includes": [2560],
   },
+   "chrome/browser/resources/chromeos/mako/resources.grd": {
+    "META": {"sizes": {"includes": [50]}},
+    "includes": [2570],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/remote_maintenance_curtain/resources.grd": {
     "META": {"sizes": {"includes": [10]}},
     "includes": [2580],
@@ -1049,7 +1053,7 @@
     "messages": [6500],
   },
   "<(SHARED_INTERMEDIATE_DIR)/ash/webui/shimless_rma/resources/ash_shimless_rma_resources.grd": {
-    "META": {"sizes": {"includes": [54],}},
+    "META": {"sizes": {"includes": [80],}},
     "includes": [6520],
   },
   "ash/keyboard/ui/keyboard_resources.grd": {

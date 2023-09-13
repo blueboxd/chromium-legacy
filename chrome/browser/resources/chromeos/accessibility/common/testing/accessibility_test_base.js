@@ -34,11 +34,11 @@ AccessibilityTestBase = class extends testing.Test {
   addCallbackPostMethod(object, method, callback, reset = () => false) {
     const original = object[method].bind(object);
     object[method] = async (...args) => {
-      await original(...args);
-      await callback(...args);
-      if (await reset(...args)) {
+      if (reset(...args)) {
         object[method] = original;
       }
+      await original(...args);
+      await callback(...args);
     };
   }
 
@@ -51,10 +51,9 @@ AccessibilityTestBase = class extends testing.Test {
    */
   prepareToExpectMethodCall(object, method) {
     let methodCalled = false;
-    this.addCallbackPostMethod(object, method, () => {
-      methodCalled = true;
-    }, () => true);
-    return () => assertTrue(methodCalled);
+    this.addCallbackPostMethod(
+        object, method, () => methodCalled = true, () => true);
+    return () => assertTrue(methodCalled, `Expected ${method}() to be called`);
   }
 
   /**

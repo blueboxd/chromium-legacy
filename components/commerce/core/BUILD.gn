@@ -192,6 +192,8 @@ static_library("shopping_service") {
     "discounts_storage.h",
     "metrics/scheduled_metrics_manager.cc",
     "metrics/scheduled_metrics_manager.h",
+    "parcel_manager.cc",
+    "parcel_manager.h",
     "price_tracking_utils.cc",
     "price_tracking_utils.h",
     "shopping_bookmark_model_observer.cc",
@@ -210,6 +212,7 @@ static_library("shopping_service") {
     ":discounts_db_content_proto",
     ":feature_list",
     ":metrics",
+    ":parcel_tracking_db_content_proto",
     ":pref_names",
     ":proto",
     "//base",
@@ -338,6 +341,7 @@ source_set("account_checker") {
   ]
 
   deps = [
+    ":commerce_constants",
     ":feature_list",
     ":pref_names",
     "//base",
@@ -376,6 +380,7 @@ source_set("account_checker_unittests") {
   sources = [ "account_checker_unittest.cc" ]
   deps = [
     ":account_checker",
+    ":commerce_constants",
     ":feature_list",
     ":pref_names",
     "//base",

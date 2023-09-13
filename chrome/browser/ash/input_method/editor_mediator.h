@@ -29,6 +29,7 @@ namespace input_method {
 // plumbing to broker mojo connections from WebUIs and other clients, and
 // providing an overall unified interface for the backend of the project.
 class EditorMediator : public EditorInstanceImpl::Delegate,
+                       public EditorPanelManager::Delegate,
                        public EditorEventSink,
                        public ProfileObserver,
                        public TabletModeObserver {
@@ -48,6 +49,11 @@ class EditorMediator : public EditorInstanceImpl::Delegate,
   void BindEditorInstance(
       mojo::PendingReceiver<mojom::EditorInstance> pending_receiver);
 
+  // Binds a new panel manager request from a client.
+  void BindEditorPanelManager(
+      mojo::PendingReceiver<crosapi::mojom::EditorPanelManager>
+          pending_receiver);
+
   // Handles a trigger event received from the system. This event could come
   // from a number of system locations.
   void HandleTrigger();
@@ -56,7 +62,9 @@ class EditorMediator : public EditorInstanceImpl::Delegate,
   void OnFocus(int context_id) override;
   void OnBlur() override;
   void OnActivateIme(std::string_view engine_id) override;
-  void OnConsentActionReceived(ConsentAction consent_action) override;
+
+  void OnConsentActionReceived(ConsentAction consent_action);
+  void OnPromoCardActionReceived(PromoCardAction promo_card_action) override;
 
   // TabletModeObserver:
   void OnTabletModeStarting() override;

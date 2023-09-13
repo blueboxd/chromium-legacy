@@ -68,6 +68,8 @@
 #include "chrome/updater/app/server/win/updater_legacy_idl.h"
 #include "chrome/updater/test_scope.h"
 #include "chrome/updater/util/win_util.h"
+#include "chrome/updater/win/ui/l10n_util.h"
+#include "chrome/updater/win/ui/resources/updater_installer_strings.h"
 #include "chrome/updater/win/win_constants.h"
 #endif  // BUILDFLAG(IS_WIN)
 
@@ -176,8 +178,10 @@ class IntegrationTest : public ::testing::Test {
   void Install() { test_commands_->Install(); }
 
   void InstallUpdaterAndApp(const std::string& app_id,
-                            const bool is_silent_install) {
-    test_commands_->InstallUpdaterAndApp(app_id, is_silent_install);
+                            const bool is_silent_install,
+                            const std::string& child_window_text_to_find = {}) {
+    test_commands_->InstallUpdaterAndApp(app_id, is_silent_install,
+                                         child_window_text_to_find);
   }
 
   void ExpectInstalled() { test_commands_->ExpectInstalled(); }
@@ -501,6 +505,10 @@ class IntegrationTest : public ::testing::Test {
                                        bool is_silent_install) {
     test_commands_->RunOfflineInstallOsNotSupported(is_legacy_install,
                                                     is_silent_install);
+  }
+
+  void DMPushEnrollmentToken(const std::string& enrollment_token) {
+    test_commands_->DMPushEnrollmentToken(enrollment_token);
   }
 
   void DMDeregisterDevice() { test_commands_->DMDeregisterDevice(); }
@@ -922,7 +930,7 @@ TEST_F(IntegrationTest, ForceInstallApp) {
   ASSERT_NO_FATAL_FAILURE(Install());
 
   base::Value::Dict group_policies;
-  group_policies.Set("Installtest1", IsSystemInstall(GetTestScope())
+  group_policies.Set("installtest1", IsSystemInstall(GetTestScope())
                                          ? kPolicyForceInstallMachine
                                          : kPolicyForceInstallUser);
   ASSERT_NO_FATAL_FAILURE(SetGroupPolicies(group_policies));
@@ -1506,7 +1514,7 @@ TEST_F(IntegrationTestLegacyUpdate3Web, NoUpdate) {
 TEST_F(IntegrationTestLegacyUpdate3Web, DisabledPolicyManual) {
   ASSERT_TRUE(WaitForUpdaterExit());
   base::Value::Dict group_policies;
-  group_policies.Set("Updatetest1", kPolicyAutomaticUpdatesOnly);
+  group_policies.Set("updatetest1", kPolicyAutomaticUpdatesOnly);
   ASSERT_NO_FATAL_FAILURE(SetGroupPolicies(group_policies));
   ASSERT_NO_FATAL_FAILURE(ExpectLegacyUpdate3WebSucceeds(
       kAppId, AppBundleWebCreateMode::kCreateInstalledApp, STATE_ERROR,
@@ -1516,7 +1524,7 @@ TEST_F(IntegrationTestLegacyUpdate3Web, DisabledPolicyManual) {
 TEST_F(IntegrationTestLegacyUpdate3Web, DisabledPolicy) {
   ASSERT_TRUE(WaitForUpdaterExit());
   base::Value::Dict group_policies;
-  group_policies.Set("Updatetest1", kPolicyDisabled);
+  group_policies.Set("updatetest1", kPolicyDisabled);
   ASSERT_NO_FATAL_FAILURE(SetGroupPolicies(group_policies));
   ExpectLegacyUpdate3WebSucceeds(
       kAppId, AppBundleWebCreateMode::kCreateInstalledApp, STATE_ERROR,
@@ -1564,6 +1572,7 @@ TEST_F(IntegrationTestLegacyUpdate3Web, Install) {
       ExpectLegacyUpdate3WebSucceeds(kAppId, AppBundleWebCreateMode::kCreateApp,
                                      STATE_INSTALL_COMPLETE, S_OK));
 }
+#endif  // BUILDFLAG(IS_WIN)
 
 class IntegrationTestDeviceManagement : public IntegrationTest {
  public:
@@ -1586,12 +1595,6 @@ class IntegrationTestDeviceManagement : public IntegrationTest {
     IntegrationTest::TearDown();
   }
 
-  void PushEnrollmentToken(const std::string& enrollment_token) {
-    scoped_refptr<DMStorage> storage = GetDefaultDMStorage();
-    EXPECT_TRUE(storage->StoreEnrollmentToken(enrollment_token));
-    EXPECT_TRUE(storage->DeleteDMToken());
-  }
-
   std::string BuildCommandLineArgs(UpdaterScope scope,
                                    const std::string& app_id,
                                    const base::Version& to_version) {
@@ -1601,6 +1604,7 @@ class IntegrationTestDeviceManagement : public IntegrationTest {
                               to_version.GetString().c_str());
   }
 
+#if BUILDFLAG(IS_WIN)
   void InstallAppWithVersion(const std::string& app_id,
                              const base::Version& version) {
     InstallApp(app_id, version, [&]() {
@@ -1637,6 +1641,7 @@ class IntegrationTestDeviceManagement : public IntegrationTest {
                                 Wow6432(KEY_WRITE))
                   .WriteValue(L"CloudPolicyOverridesPlatformPolicy", 1));
   }
+#endif  // BUILDFLAG(IS_WIN)
 
   std::unique_ptr<ScopedServer> test_server_;
   static constexpr char kEnrollmentToken[] = "integration-enrollment-token";
@@ -1644,8 +1649,11 @@ class IntegrationTestDeviceManagement : public IntegrationTest {
   static constexpr char kAppId1[] = "test1";
   static constexpr char kAppId2[] = "test2";
   static constexpr char kAppId3[] = "test3";
-  static constexpr char kAppCRX[] = "TestApp2Setup.crx3";
+  static constexpr char kAppCRX[] = "Testapp2Setup.crx3";
 };
+
+// Tests the setup and teardown of the fixture.
+TEST_F(IntegrationTestDeviceManagement, Nothing) {}
 
 TEST_F(IntegrationTestDeviceManagement, PolicyFetchBeforeInstall) {
   OmahaSettingsClientProto omaha_settings;
@@ -1662,7 +1670,7 @@ TEST_F(IntegrationTestDeviceManagement, PolicyFetchBeforeInstall) {
       enterprise_management::ROLLBACK_TO_TARGET_VERSION_ENABLED);
   omaha_settings.mutable_application_settings()->Add(std::move(app));
 
-  PushEnrollmentToken(kEnrollmentToken);
+  DMPushEnrollmentToken(kEnrollmentToken);
 
   ExpectDeviceManagementRegistrationRequest(test_server_.get(),
                                             kEnrollmentToken, kDMToken);
@@ -1671,11 +1679,15 @@ TEST_F(IntegrationTestDeviceManagement, PolicyFetchBeforeInstall) {
   ASSERT_NO_FATAL_FAILURE(Install());
   ASSERT_NO_FATAL_FAILURE(ExpectInstalled());
 
+  scoped_refptr<DMStorage> dm_storage = GetDefaultDMStorage();
+  ASSERT_NE(dm_storage, nullptr);
   std::unique_ptr<OmahaSettingsClientProto> omaha_policy =
-      GetDefaultDMStorage()->GetOmahaPolicySettings();
+      dm_storage->GetOmahaPolicySettings();
+  ASSERT_TRUE(omaha_policy != nullptr);
   EXPECT_EQ(omaha_policy->download_preference(), "not-cacheable");
   EXPECT_EQ(omaha_policy->proxy_mode(), "system");
   EXPECT_EQ(omaha_policy->proxy_server(), "test.proxy.server");
+  ASSERT_GT(omaha_policy->application_settings_size(), 0);
   const ApplicationSettings& app_policy =
       omaha_policy->application_settings()[0];
   EXPECT_EQ(app_policy.app_guid(), kAppId1);
@@ -1687,6 +1699,7 @@ TEST_F(IntegrationTestDeviceManagement, PolicyFetchBeforeInstall) {
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
+#if BUILDFLAG(IS_WIN)
 #if !defined(COMPONENT_BUILD)
 
 TEST_F(IntegrationTestDeviceManagement, AppInstall) {
@@ -1699,7 +1712,7 @@ TEST_F(IntegrationTestDeviceManagement, AppInstall) {
   app.set_install(enterprise_management::INSTALL_ENABLED);
   omaha_settings.mutable_application_settings()->Add(std::move(app));
 
-  PushEnrollmentToken(kEnrollmentToken);
+  DMPushEnrollmentToken(kEnrollmentToken);
   ExpectDeviceManagementRegistrationRequest(test_server_.get(),
                                             kEnrollmentToken, kDMToken);
   ExpectDeviceManagementPolicyFetchRequest(test_server_.get(), kDMToken,
@@ -1746,7 +1759,7 @@ TEST_F(IntegrationTestDeviceManagement, ForceInstall) {
   app2.set_install(enterprise_management::INSTALL_ENABLED);
   omaha_settings.mutable_application_settings()->Add(std::move(app2));
 
-  PushEnrollmentToken(kEnrollmentToken);
+  DMPushEnrollmentToken(kEnrollmentToken);
   ExpectDeviceManagementRegistrationRequest(test_server_.get(),
                                             kEnrollmentToken, kDMToken);
   ExpectDeviceManagementPolicyFetchRequest(test_server_.get(), kDMToken,
@@ -1794,7 +1807,7 @@ TEST_F(IntegrationTestDeviceManagement, AppUpdateConflictPolicies) {
 
   // Cloud policy sets update default to disabled, app1 to auto-update, and
   // app2 to manual-update.
-  PushEnrollmentToken(kEnrollmentToken);
+  DMPushEnrollmentToken(kEnrollmentToken);
   ExpectDeviceManagementRegistrationRequest(test_server_.get(),
                                             kEnrollmentToken, kDMToken);
   OmahaSettingsClientProto omaha_settings;
@@ -1866,7 +1879,7 @@ TEST_F(IntegrationTestDeviceManagement, CloudPolicyOverridesPlatformPolicy) {
   ASSERT_NO_FATAL_FAILURE(SetPlatformPolicies(policies));
 
   // Overrides app1 to auto-update, app2 to manual-update with cloud policy.
-  PushEnrollmentToken(kEnrollmentToken);
+  DMPushEnrollmentToken(kEnrollmentToken);
   ExpectDeviceManagementRegistrationRequest(test_server_.get(),
                                             kEnrollmentToken, kDMToken);
   OmahaSettingsClientProto omaha_settings;
@@ -1924,7 +1937,7 @@ TEST_F(IntegrationTestDeviceManagement, RollbackToTargetVersion) {
   ASSERT_NO_FATAL_FAILURE(ExpectInstalled());
   ASSERT_NO_FATAL_FAILURE(ExpectAppInstalled(kAppId1, kAppInitialVersion));
 
-  PushEnrollmentToken(kEnrollmentToken);
+  DMPushEnrollmentToken(kEnrollmentToken);
   ExpectDeviceManagementRegistrationRequest(test_server_.get(),
                                             kEnrollmentToken, kDMToken);
   OmahaSettingsClientProto omaha_settings;
@@ -2134,6 +2147,15 @@ INSTANTIATE_TEST_SUITE_P(
          {},
          "more.com"},
 
+        // InstallerResult::kMsiError, `ERROR_SUCCESS_REBOOT_REQUIRED`.
+        {false,
+         base::StrCat({"INSTALLER_RESULT=2 INSTALLER_ERROR=",
+                       base::NumberToString(ERROR_SUCCESS_REBOOT_REQUIRED)}),
+         ERROR_SUCCESS_REBOOT_REQUIRED,
+         "The requested operation is successful. Changes will not be effective "
+         "until the system is rebooted. ",
+         {}},
+
         // Interactive install via the command line with a launch command,
         // InstallerResult::kSuccess, will run `more.com` since interactive
         // install.
@@ -2143,11 +2165,22 @@ INSTANTIATE_TEST_SUITE_P(
          0,
          {},
          "more.com"},
+
+        // InstallerResult::kMsiError, `ERROR_SUCCESS_REBOOT_REQUIRED`.
+        {true,
+         base::StrCat({"INSTALLER_RESULT=2 INSTALLER_ERROR=",
+                       base::NumberToString(ERROR_SUCCESS_REBOOT_REQUIRED)}),
+         ERROR_SUCCESS_REBOOT_REQUIRED,
+         base::WideToASCII(GetLocalizedStringF(IDS_TEXT_RESTART_COMPUTER_BASE,
+                                               L"")),
+         {}},
     }));
 
 TEST_P(IntegrationInstallerResultsTest, TestCases) {
   const base::FilePath crx_relative_path = GetInstallerPath(kMsiCrx);
-  const bool should_install_successfully = !GetParam().error_code;
+  const bool should_install_successfully =
+      !GetParam().error_code ||
+      GetParam().error_code == ERROR_SUCCESS_REBOOT_REQUIRED;
 
   if (!GetParam().interactive_install) {
     ASSERT_NO_FATAL_FAILURE(Install());
@@ -2168,8 +2201,8 @@ TEST_P(IntegrationInstallerResultsTest, TestCases) {
   ASSERT_NO_FATAL_FAILURE(ExpectUninstallPing(test_server_.get()));
 
   if (GetParam().interactive_install) {
-    ASSERT_NO_FATAL_FAILURE(
-        InstallUpdaterAndApp(kMsiAppId, /*is_silent_install=*/false));
+    ASSERT_NO_FATAL_FAILURE(InstallUpdaterAndApp(
+        kMsiAppId, /*is_silent_install=*/false, GetParam().installer_text));
     ASSERT_TRUE(WaitForUpdaterExit());
   } else {
     int64_t crx_file_size = 0;

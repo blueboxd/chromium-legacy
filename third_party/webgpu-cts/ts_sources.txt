@@ -337,6 +337,7 @@ src/webgpu/compat/api/validation/encoding/cmds/copyTextureToBuffer.spec.ts
 src/webgpu/compat/api/validation/encoding/programmable/pipeline_bind_group_compat.spec.ts
 src/webgpu/compat/api/validation/render_pipeline/fragment_state.spec.ts
 src/webgpu/compat/api/validation/render_pipeline/shader_module.spec.ts
+src/webgpu/compat/api/validation/render_pipeline/vertex_state.spec.ts
 src/webgpu/compat/api/validation/texture/createTexture.spec.ts
 src/webgpu/compat/api/validation/texture/cubeArray.spec.ts
 src/webgpu/idl/exposed.html.ts
@@ -353,6 +354,10 @@ src/webgpu/shader/execution/zero_init.spec.ts
 src/webgpu/shader/execution/expression/binary/binary.ts
 src/webgpu/shader/execution/expression/binary/af_addition.spec.ts
 src/webgpu/shader/execution/expression/binary/af_comparison.spec.ts
+src/webgpu/shader/execution/expression/binary/af_matrix_addition.spec.ts
+src/webgpu/shader/execution/expression/binary/af_matrix_subtraction.spec.ts
+src/webgpu/shader/execution/expression/binary/af_multiplication.spec.ts
+src/webgpu/shader/execution/expression/binary/af_subtraction.spec.ts
 src/webgpu/shader/execution/expression/binary/bitwise.spec.ts
 src/webgpu/shader/execution/expression/binary/bitwise_shift.spec.ts
 src/webgpu/shader/execution/expression/binary/bool_logical.spec.ts
@@ -494,6 +499,7 @@ src/webgpu/shader/execution/expression/unary/af_arithmetic.spec.ts
 src/webgpu/shader/execution/expression/unary/af_assignment.spec.ts
 src/webgpu/shader/execution/expression/unary/bool_conversion.spec.ts
 src/webgpu/shader/execution/expression/unary/bool_logical.spec.ts
+src/webgpu/shader/execution/expression/unary/f16_arithmetic.spec.ts
 src/webgpu/shader/execution/expression/unary/f32_arithmetic.spec.ts
 src/webgpu/shader/execution/expression/unary/f32_conversion.spec.ts
 src/webgpu/shader/execution/expression/unary/i32_arithmetic.spec.ts

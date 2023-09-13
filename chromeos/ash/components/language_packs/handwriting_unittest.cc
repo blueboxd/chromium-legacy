@@ -53,6 +53,47 @@ dlcservice::DlcsWithContent CreateDlcsWithContent(
   return output;
 }
 
+struct PartialDescriptor {
+  std::string engine_id;
+  absl::optional<std::string> handwriting_language;
+};
+
+// Ensures the lifetime of the fake `InputMethodDelegate` outlives the
+// `InputMethodUtil` it is used in.
+// As both `InputMethodDelegate` and `InputMethodUtil` have deleted copy
+// constructors, this cannot be copied or moved.
+class DelegateUtil {
+ public:
+  explicit DelegateUtil(base::span<const PartialDescriptor> partial_descriptors)
+      : util_(&delegate_) {
+    Init(partial_descriptors);
+  }
+
+  input_method::InputMethodUtil* util() { return &util_; }
+
+ private:
+  input_method::FakeInputMethodDelegate delegate_;
+  input_method::InputMethodUtil util_;
+
+  void Init(base::span<const PartialDescriptor> partial_descriptors) {
+    std::vector<input_method::InputMethodDescriptor> descriptors;
+    descriptors.reserve(partial_descriptors.size());
+
+    for (const PartialDescriptor& partial_descriptor : partial_descriptors) {
+      const std::string id = extension_ime_util::GetInputMethodIDByEngineID(
+          partial_descriptor.engine_id);
+      descriptors.push_back(input_method::InputMethodDescriptor(
+          id, /*name=*/"", /*indicator=*/"", /*keyboard_layout=*/"",
+          /*language_codes=*/{""},  // Must be non-empty to avoid a DCHECK.
+          /*is_login_keyboard=*/false,
+          /*options_page_url=*/{}, /*input_view_url=*/{},
+          partial_descriptor.handwriting_language));
+    }
+
+    util_.InitXkbInputMethodsForTesting(descriptors);
+  }
+};
+
 TEST_F(HandwritingTest, MapIdsToHandwritingLocalesNoInput) {
   EXPECT_THAT(
       MapIdsToHandwritingLocales(
@@ -94,47 +135,6 @@ TEST_F(HandwritingTest, MapIdsToHandwritingLocalesSomeNullopt) {
                                  base::BindRepeating(GetSecondUnderscorePart)),
       UnorderedElementsAre("en", "de"));
 }
-
-struct PartialDescriptor {
-  std::string engine_id;
-  absl::optional<std::string> handwriting_language;
-};
-
-// Ensures the lifetime of the fake `InputMethodDelegate` outlives the
-// `InputMethodUtil` it is used in.
-// As both `InputMethodDelegate` and `InputMethodUtil` have deleted copy
-// constructors, this cannot be copied or moved.
-class DelegateUtil {
- public:
-  explicit DelegateUtil(base::span<const PartialDescriptor> partial_descriptors)
-      : util_(&delegate_) {
-    Init(partial_descriptors);
-  }
-
-  input_method::InputMethodUtil* util() { return &util_; }
-
- private:
-  input_method::FakeInputMethodDelegate delegate_;
-  input_method::InputMethodUtil util_;
-
-  void Init(base::span<const PartialDescriptor> partial_descriptors) {
-    std::vector<input_method::InputMethodDescriptor> descriptors;
-    descriptors.reserve(partial_descriptors.size());
-
-    for (const PartialDescriptor& partial_descriptor : partial_descriptors) {
-      const std::string id = extension_ime_util::GetInputMethodIDByEngineID(
-          partial_descriptor.engine_id);
-      descriptors.push_back(input_method::InputMethodDescriptor(
-          id, /*name=*/"", /*indicator=*/"", /*keyboard_layout=*/"",
-          /*language_codes=*/{""},  // Must be non-empty to avoid a DCHECK.
-          /*is_login_keyboard=*/false,
-          /*options_page_url=*/{}, /*input_view_url=*/{},
-          partial_descriptor.handwriting_language));
-    }
-
-    util_.InitXkbInputMethodsForTesting(descriptors);
-  }
-};
 
 TEST_F(HandwritingTest, MapEngineIdToHandwritingLocaleNoInputMethods) {
   DelegateUtil delegate_util({});
@@ -350,31 +350,27 @@ INSTANTIATE_TEST_SUITE_P(
     });
 
 TEST_F(HandwritingTest, FilterHandwritingDlcsDefault) {
-  const base::flat_set<std::string> output =
-      FilterHandwritingDlcsWithContent(dlcservice::DlcsWithContent());
-
-  EXPECT_TRUE(output.empty());
+  EXPECT_THAT(FilterHandwritingDlcsWithContent(dlcservice::DlcsWithContent()),
+              IsEmpty());
 }
 
 TEST_F(HandwritingTest, FilterHandwritingDlcsNotHandwriting) {
-  const auto dlcs_with_content =
+  const dlcservice::DlcsWithContent dlcs_without_handwriting =
       CreateDlcsWithContent({"tts-en-us", "grammar-it"});
-  const base::flat_set<std::string> output =
-      FilterHandwritingDlcsWithContent(dlcs_with_content);
 
-  EXPECT_TRUE(output.empty());
+  EXPECT_THAT(FilterHandwritingDlcsWithContent(dlcs_without_handwriting),
+              IsEmpty());
 }
 
 TEST_F(HandwritingTest, FilterHandwritingDlcsVariousEntries) {
   // "handwriting-cy" refer to Welsh language, which is not a language that is
   // supported in Handwriting.
-  const auto dlcs_with_content =
+  const dlcservice::DlcsWithContent dlcs_with_some_handwriting =
       CreateDlcsWithContent({"handwriting-fr", "tts-en-us", "handwriting-it",
                              "grammar-it", "handwriting-cy"});
-  const base::flat_set<std::string> output =
-      FilterHandwritingDlcsWithContent(dlcs_with_content);
 
-  EXPECT_THAT(output, UnorderedElementsAre("handwriting-fr", "handwriting-it"));
+  EXPECT_THAT(FilterHandwritingDlcsWithContent(dlcs_with_some_handwriting),
+              UnorderedElementsAre("handwriting-fr", "handwriting-it"));
 }
 
 }  // namespace

@@ -93,12 +93,12 @@ class CreditCardCvcAuthenticator;
 enum class CreditCardFetchResult;
 class CreditCardOtpAuthenticator;
 class FormDataImporter;
-class FormStructure;
 class Iban;
 class IbanManager;
 class LogManager;
 class MigratableCreditCard;
 class MerchantPromoCodeManager;
+struct OfferNotificationOptions;
 class OtpUnmaskDelegate;
 enum class OtpUnmaskResult;
 class PersonalDataManager;
@@ -795,13 +795,10 @@ class AutofillClient : public RiskDataLoader {
   //                          The server is passing down full origin of the
   //                          urls. "Domain" is no longer accurate.
   // Notifies the client to update the offer notification when the `offer` is
-  // available. `notification_has_been_shown` indicates whether this
-  // notification has been shown since profile start-up.
-  // `expand_notification_icon` indicates whether the notification will
-  // automatically expand upon being shown.
+  // available. `options` carries extra configuration options for the offer
+  // notification.
   virtual void UpdateOfferNotification(const AutofillOfferData* offer,
-                                       bool notification_has_been_shown,
-                                       bool expand_notification_icon);
+                                       const OfferNotificationOptions& options);
 
   // Dismiss any visible offer notification on the current tab.
   virtual void DismissOfferNotification();
@@ -834,14 +831,6 @@ class AutofillClient : public RiskDataLoader {
 
   // Returns whether password management is enabled as per the user preferences.
   virtual bool IsPasswordManagerEnabled() = 0;
-
-  // Pass the form structures to the password manager to choose correct username
-  // and to the password generation manager to detect account creation forms.
-  //
-  // TODO(crbug.com/1466435): Do not use or rely on this function anymore.
-  virtual void PropagateAutofillPredictionsDeprecated(
-      AutofillDriver* driver,
-      const std::vector<FormStructure*>& forms) = 0;
 
   // Inform the client that the form has been filled.
   virtual void DidFillOrPreviewForm(

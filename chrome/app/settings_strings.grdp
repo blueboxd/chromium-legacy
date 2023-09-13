@@ -2030,8 +2030,8 @@
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_REVIEW_EXTENSIONS" desc="This text describes that potentially harmful extensions need to be reviewed by the user. The placeholder will be a numeral.">
     {NUM_EXTENSIONS, plural,
-     =1 {Review <ph name="BEGIN_BOLD">&lt;b&gt;</ph>1 extension<ph name="END_BOLD">&lt;/b&gt;</ph> that was taken down from the Chrome Web Store}
-     other {Review <ph name="BEGIN_BOLD">&lt;b&gt;</ph>{NUM_EXTENSIONS} extensions<ph name="END_BOLD">&lt;/b&gt;</ph> that were taken down from the Chrome Web Store}}
+     =1 {Review 1 extension that was taken down from the Chrome Web Store}
+     other {Review {NUM_EXTENSIONS} extensions that were taken down from the Chrome Web Store}}
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_PRIMARY_LABEL" desc="'Review Notification Permissions' shows the websites that send a lot of notifications. This label is the header of the module in the site settings notification page. The number represents the number of notification permissions to be reviewed.">
     {NUM_SITES, plural,
@@ -3216,6 +3216,54 @@
   <message name="IDS_SETTINGS_COOKIES_BLOCK_EXCEPTIONS" desc="Title of the list containing site exceptions always blocking them from using cookies">
     Sites that can never use cookies
   </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_LINK_ROW_LABEL" desc="Label for the 'Tracking protection' page entry point." translateable="false">
+    Tracking protection
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_LINK_ROW_SUB_LABEL" desc="Sub-label for the 'Tracking protection' page entry point." translateable="false">
+    Protection from third-party cookie tracking
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_PAGE_TITLE" translateable="false" desc="The title of a new settings page that allows users to manage settings related to tracking, for example third-party cookies. This settings page will replace the existing cookie settings page at chrome://settings/cookies.">
+    Tracking protection
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_PAGE_DESCRIPTION" translateable="false" desc="Explanatory text for the tracking protection settings page.">
+    Chrome limits the type of information sites can use to track you as you browse. You can change your settings to choose your own level of protection.
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_HEADING" translateable="false" desc="Heading for the tracking protection setting which lets users choose a level of protection.">
+    Tracking protection
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_STANDARD_RADIO_LABEL" translateable="false" desc="1 of 2 options the user has to configure tracking protection. This is for the 'standard' level of protection where Chrome manages the settings for the user.">
+    Standard
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_STANDARD_RADIO_SUB_LABEL" translateable="false" desc="A description of the benefit of choosing the 'standard' level of tracking protection.">
+    A good balance between protection and sites working as expected
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_STANDARD_BULLET_ONE" translateable="false" desc="The first bullet for the 'standard' tracking protection level. Informs users that Chrome will limit third-party cookies.">
+    Chrome automatically limits third-party cookies
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_STANDARD_BULLET_ONE_DESCRIPTION" translateable="false" desc="Description of the first bullet for the 'standard' tracking protection level. Explains what limiting third-party cookies means.">
+    Most sites can’t use third-party cookies to track you as you browse and sites can’t use third-party cookies in Incognito mode.
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_STANDARD_BULLET_TWO" translateable="false" desc="The second bullet for the 'standard' tracking protection level. Informs users that most sites should work as expected.">
+    Most sites should work as expected
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_STANDARD_BULLET_TWO_DESCRIPTION" translateable="false" desc="Description of the second bullet for the 'standard' tracking protection level. Explains that you can temporarilty allow a site to use third-party cookies if it isn't working.">
+    If a site isn’t working, you can try giving it temporary permission to use third-party cookies. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_CUSTOM_RADIO_LABEL" translateable="false" desc="2 of 2 options the user has to configure tracking protection. This is for the 'custom' level of protection where users manage individual settings.">
+    Custom
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_CUSTOM_RADIO_SUB_LABEL" translateable="false" desc="Sub-label for the 'custom' tracking protection level. Explains that 'custom' means controlling your own level of protection.">
+    Choose your own level of protection when browsing
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_THIRD_PARTY_COOKIES_TOGGLE_LABEL" translateable="false" desc="Label for a toggle that allows the user to block all third-party cookies.">
+    Block all third-party cookies
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_THIRD_PARTY_COOKIES_TOGGLE_SUB_LABEL" translateable="false" desc="Sub-label for the third-party cookie blocking toggle. Explains that features on some sites may not work.">
+    Features on some sites may not work.
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_DO_NOT_TRACK_TOGGLE_SUB_LABEL" translateable="false" desc="Sub-label for the 'do not track' toggle. Explains that sites may not respond to the 'do not track' request even when enabled.">
+    Sites use their discretion when responding to this request
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_APP_PROTOCOL_HANDLERS" desc="Label for the app protocol handlers (e.g. mailto) in site settings.">
     Apps
   </message>
@@ -3788,9 +3836,6 @@
     Uses content on sites you visit, plus browser activity and interactions, for personalization
   </message>
   <message name="IDS_SETTINGS_ENCRYPT_WITH_SYNC_PASSPHRASE_LABEL" desc="Label for the radio button which, when selected, causes synced settings to be encrypted with a user-provided password.">
-    Encrypt synced data with your own <ph name="BEGIN_LINK">&lt;a href="$1" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$1" target=&quot;_blank&quot;&gt;</ex></ph>sync passphrase<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>. This doesn't include payment methods and addresses from Google Pay.
-  </message>
-  <message name="IDS_NEW_SETTINGS_ENCRYPT_WITH_SYNC_PASSPHRASE_LABEL" desc="Label for the radio button which, when selected, causes synced settings to be encrypted with a user-provided password.">
     Encrypt synced data with your own <ph name="BEGIN_LINK">&lt;a href="$1" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$1" target=&quot;_blank&quot;&gt;</ex></ph>sync passphrase<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>. Payment methods and addresses from Google Pay won’t be encrypted. Browsing history from Chrome won’t sync.
   </message>
   <message name="IDS_SETTINGS_PASSPHRASE_EXPLANATION_TEXT" desc="Message shown when explicit passphrase is selected.">
@@ -4275,5 +4320,29 @@
   </message>
   <message name="IDS_SETTINGS_SAFETY_HUB_PASSWORD_CHECK_SUBHEADER_SOME_TIME_AGO" desc="Subtitle of the passwords card in the Safety Hub page which explains how recently passwords were checked for issues. The passwords card contains information about password issues which are detected automatically. This text is shown below a header which explains there are no issues and indicates that passwords were checked for issues some time ago.">
     Checked <ph name="NUM_DAYS_HOURS_MINUTES">$1<ex>2 days</ex></ph> ago
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_SB_ON_ENHANCED_HEADER" translateable="false" desc="Safety Hub settings page (chrome://settings/safetyHub) gives users an overview over their safety status. Safe browsing card in this page shows the current state of Safe browsing setting (chrome://settings/security). This string is the headline of the Safe Browsing card when the current state is Enhanced protection.">
+    Enhanced Safe Browsing is on
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_SB_ON_ENHANCED_SUBHEADER" translateable="false" desc="Safety Hub settings page (chrome://settings/safetyHub) gives users an overview over their safety status. Safe browsing card in this page shows the current state of Safe browsing setting (chrome://settings/security). This string is the body text of the Safe Browsing card when the current state is Enhanced protection.">
+    You have Chrome's strongest security
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_SB_ON_STANDARD_HEADER" translateable="false" desc="Safety Hub settings page (chrome://settings/safetyHub) gives users an overview over their safety status. Safe browsing card in this page shows the current state of Safe browsing setting (chrome://settings/security). This string is the headline of the Safe Browsing card when the current state is Standard protection.">
+    Safe Browsing is on
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_SB_ON_STANDARD_SUBHEADER" translateable="false" desc="Safety Hub settings page (chrome://settings/safetyHub) gives users an overview over their safety status. Safe browsing card in this page shows the current state of Safe browsing setting (chrome://settings/security). This string is the body text of the Safe Browsing card when the current state is Standard protection.">
+    You're getting standard protection
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_SB_OFF_HEADER" translateable="false" desc="Safety Hub settings page(chrome://settings/safetyHub) gives users an overview over their safety status. Safe browsing card in this page shows the current state of Safe browsing setting(chrome://settings/security). This string is the headline of the Safe Browsing card when the current state is No protection.">
+    Safe Browsing is off
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_SB_OFF_MANAGED_SUBHEADER" translateable="false" desc="Safety Hub settings page (chrome://settings/safetyHub) gives users an overview over their safety status. Safe browsing card in this page shows the current state of Safe browsing setting (chrome://settings/security). This string is the body text of the Safe Browsing card when the current state is No protection because the user's organization (e.g. employer, university, etc.) has turned it off.">
+    Your organization turned off Safe Browsing
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_SB_OFF_EXTENSION_SUBHEADER" translateable="false" desc="Safety Hub settings page (chrome://settings/safetyHub) gives users an overview over their safety status. Safe browsing card in this page shows the current state of Safe browsing setting (chrome://settings/security). This string is the body text of the Safe Browsing card when the current state is No protection because one of the extensions installed on the user's browser has turned it off.">
+    An extension turned off Safe Browsing
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_SB_OFF_USER_SUBHEADER" translateable="false" desc="Safety Hub settings page (chrome://settings/safetyHub) gives users an overview over their safety status. Safe browsing card in this page shows the current state of Safe browsing setting (chrome://settings/security). This string is the body text of the Safe Browsing card when the current state is No protection because the user has turned it off.">
+    Turn on Safe Browsing to get protection against dangerous sites
   </message>
 </grit-part>

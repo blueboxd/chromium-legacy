@@ -205,6 +205,33 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AutofillFeatures.AUTOFILL_SERVER_BEHAVIORS,
                     "When enabled, Autofill will request experimental "
                             + "predictions from the Autofill API."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_SUPPORT_FOR_BETWEEN_STREETS,
+                    "When enabled, Autofill supports between streets fields."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_SUPPORT_FOR_ADMIN_LEVEL2,
+                    "When enabled, Autofill supports admin-level2 fields."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_SUPPORT_FOR_ADDRESS_OVERFLOW,
+                    "When enabled, Autofill supports overflow fields."),
+            Flag.baseFeature(
+                    AutofillFeatures.AUTOFILL_ENABLE_SUPPORT_FOR_ADDRESS_OVERFLOW_AND_LANDMARK,
+                    "When enabled, Autofill supports overflow and landmark fields."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_SUPPORT_FOR_LANDMARK,
+                    "When enabled, Autofill supports landmark fields."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_SUPPORT_FOR_APARTMENT_NUMBERS,
+                    "When enabled, Autofill supports apartment number fields."),
+            Flag.baseFeature(
+                    AutofillFeatures
+                            .AUTOFILL_STREET_NAME_OR_HOUSE_NUMBER_PRECEDENCE_OVER_AUTOCOMPLETE,
+                    "When enabled, Autofill prioritizes local heuristics over some server "
+                            + "classifications."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_ZIP_ONLY_ADDRESS_FORMS,
+                    "When enabled, Autofill supports forms consisting of only zip code fields."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_DEFAULT_TO_CITY_AND_NUMBER,
+                    "When enabled, Autofill heuristics will prioritize filling phone numbers in "
+                            + "local format, not in international format."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_LOCAL_HEURISTICS_OVERRIDES,
+                    "When enabled, When enabled, some local heuristic predictions will take "
+                            + "precedence over the autocomplete attribute and server predictions, "
+                            + "when determining a field's overall type."),
             Flag.baseFeature(FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_VIRTUAL_CARD_FEATURE,
                     "When enabled, merchant bound virtual cards will be offered in the keyboard "
                             + "accessory."),
@@ -344,6 +371,7 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.SVG_RASTER_OPTIMIZATIONS),
             Flag.baseFeature(BlinkFeatures.COMPOSITE_BACKGROUND_ATTACHMENT_FIXED),
             Flag.baseFeature(BlinkFeatures.COMPOSITE_SCROLL_AFTER_PAINT),
+            Flag.baseFeature(BlinkFeatures.HIT_TEST_OPAQUENESS),
             Flag.baseFeature(BlinkFeatures.INTERSECTION_OPTIMIZATION),
             Flag.baseFeature(BlinkFeatures.SOLID_COLOR_LAYERS),
             Flag.baseFeature(BlinkFeatures.DELAY_OUT_OF_VIEWPORT_LAZY_IMAGES,
@@ -465,8 +493,7 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(NetworkServiceFeatures.ATTRIBUTION_REPORTING_CROSS_APP_WEB,
                     "Enable attribution reporting to cross the app/web barrier by letting "
                             + "the WebView use OS-level attribution."),
-            Flag.baseFeature(BaseFeatures.THREAD_POOL_CAP,
-                    "Reduces the thread pool cap to use less threads"),
+            Flag.baseFeature(BaseFeatures.THREAD_POOL_CAP2, "Sets a fixed thread pool cap"),
             Flag.baseFeature(BlinkFeatures.BEFOREUNLOAD_EVENT_CANCEL_BY_PREVENT_DEFAULT,
                     "Enables showing the cancel dialog by calling preventDefault() "
                             + "on beforeunload event."),
@@ -533,6 +560,14 @@ public final class ProductionSupportedFlagList {
                             + "usage < 0.001% and shows a deprecation warning."),
             Flag.baseFeature(ContentFeatures.SERVICE_WORKER_STATIC_ROUTER,
                     "Enables Service Worker static routing API."),
+            Flag.baseFeature(ContentFeatures.BACK_FORWARD_CACHE_MEDIA_SESSION_SERVICE,
+                    "Enables media session usage when bfcache is enabled"),
+            Flag.baseFeature(AwFeatures.WEBVIEW_SUPERVISED_USER_SITE_DETECTION,
+                    "Enable detection of the loading of mature sites on "
+                            + "WebViews running on supervised user accounts"),
+            Flag.baseFeature(AwFeatures.WEBVIEW_SUPERVISED_USER_SITE_BLOCK,
+                    "Enable blocking the loading of mature sites on "
+                            + "WebViews running on supervised user accounts"),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

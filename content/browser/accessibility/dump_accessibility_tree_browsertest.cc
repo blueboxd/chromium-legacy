@@ -156,13 +156,12 @@ struct DumpAccessibilityTreeTestPassToString {
   }
 };
 
-// UIA is excluded due to flakiness. See https://crbug.com/1459215.
 // TODO(https://crbug.com/1470120): We need to create a way to incrementally
 // enable and create UIA tests.
 INSTANTIATE_TEST_SUITE_P(
     All,
     DumpAccessibilityTreeTest,
-    ::testing::ValuesIn(DumpAccessibilityTestBase::TreeTestPassesExceptUIA()),
+    ::testing::ValuesIn(DumpAccessibilityTestBase::TreeTestPasses()),
     DumpAccessibilityTreeTestPassToString());
 
 INSTANTIATE_TEST_SUITE_P(
@@ -200,8 +199,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunCSSTest(FILE_PATH_LITERAL("content-visibility-auto-crash.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityCSSContentVisibilityAutoAriaHidden) {
+// TODO(https://crbug.com/1367886): Flaky on ASan builders.
+IN_PROC_BROWSER_TEST_P(
+    DumpAccessibilityTreeTest,
+    MAYBE_ASAN(AccessibilityCSSContentVisibilityAutoAriaHidden)) {
   RunCSSTest(FILE_PATH_LITERAL("content-visibility-auto-aria-hidden.html"));
 }
 
@@ -241,8 +242,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunCSSTest(FILE_PATH_LITERAL("head-style-script-display-block.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityCSSHeadStyleScriptContentVisibilityHidden) {
+// TODO(https://crbug.com/1367886): Flaky on ASan builders.
+IN_PROC_BROWSER_TEST_P(
+    DumpAccessibilityTreeTest,
+    MAYBE_ASAN(AccessibilityCSSHeadStyleScriptContentVisibilityHidden)) {
   RunCSSTest(
       FILE_PATH_LITERAL("head-style-script-content-visibility-hidden.html"));
 }
@@ -2206,7 +2209,13 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("iframe-with-region-role.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityImg) {
+// TODO(crbug.com/1475950): Test always fails on some Linux builds, not others.
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_AccessibilityImg DISABLED_AccessibilityImg
+#else
+#define MAYBE_AccessibilityImg AccessibilityImg
+#endif
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, MAYBE_AccessibilityImg) {
   RunHtmlTest(FILE_PATH_LITERAL("img.html"));
 }
 
@@ -2881,7 +2890,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("popover-collapsed.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityPopoverHint) {
+// TODO(https://crbug.com/1367886): Flaky on ASan builders.
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       MAYBE_ASAN(AccessibilityPopoverHint)) {
   RunPopoverHintTest(FILE_PATH_LITERAL("popover-hint.html"));
 }
 
@@ -3261,8 +3272,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("table-headers-row-role-dynamic.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityTableMultipleRowAndColumnHeaders) {
+// TODO(https://crbug.com/1367886): Flaky on ASan builders.
+IN_PROC_BROWSER_TEST_P(
+    DumpAccessibilityTreeTest,
+    MAYBE_ASAN(AccessibilityTableMultipleRowAndColumnHeaders)) {
   RunHtmlTest(FILE_PATH_LITERAL("table-multiple-row-and-column-headers.html"));
 }
 
@@ -3464,7 +3477,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DeleteSelectionCrash) {
 // DisplayLocking tests
 //
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DisplayLockingActivatable) {
+// TODO(https://crbug.com/1367886): Flaky on ASan builders.
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       MAYBE_ASAN(DisplayLockingActivatable)) {
   RunDisplayLockingTest(FILE_PATH_LITERAL("activatable.html"));
 }
 
@@ -3478,7 +3493,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunDisplayLockingTest(FILE_PATH_LITERAL("viewport-activation.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DisplayLockingAll) {
+// TODO(https://crbug.com/1367886): Flaky on ASan builders.
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       MAYBE_ASAN(DisplayLockingAll)) {
   RunDisplayLockingTest(FILE_PATH_LITERAL("all.html"));
 }
 

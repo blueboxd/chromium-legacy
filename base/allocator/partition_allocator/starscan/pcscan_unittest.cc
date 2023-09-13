@@ -225,7 +225,7 @@ TEST_F(PartitionAllocPCScanTest, FirstObjectInQuarantine) {
       GetFullSlotSpan(root(), kAllocationSize);
   EXPECT_FALSE(IsInQuarantine(full_slot_span.first));
 
-  root().FreeNoHooks(full_slot_span.first);
+  root().Free<FreeFlags::kNoHooks>(full_slot_span.first);
   EXPECT_TRUE(IsInQuarantine(full_slot_span.first));
 }
 
@@ -236,7 +236,7 @@ TEST_F(PartitionAllocPCScanTest, LastObjectInQuarantine) {
       GetFullSlotSpan(root(), kAllocationSize);
   EXPECT_FALSE(IsInQuarantine(full_slot_span.last));
 
-  root().FreeNoHooks(full_slot_span.last);
+  root().Free<FreeFlags::kNoHooks>(full_slot_span.last);
   EXPECT_TRUE(IsInQuarantine(full_slot_span.last));
 }
 
@@ -662,7 +662,7 @@ TEST_F(PartitionAllocPCScanTest, DontScanUnusedRawSize) {
   // Make sure to commit more memory than requested to have slack for storing
   // dangling reference outside of the raw size.
   const size_t big_size = kMaxBucketed - SystemPageSize() + 1;
-  void* ptr = root().Alloc(big_size, nullptr);
+  void* ptr = root().Alloc(big_size);
 
   uintptr_t slot_start = root().ObjectToSlotStart(ptr);
   auto* slot_span = SlotSpanMetadata::FromSlotStart(slot_start);

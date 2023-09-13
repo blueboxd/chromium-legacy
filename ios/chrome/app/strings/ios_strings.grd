@@ -2124,6 +2124,15 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_OPTIONS_TAB_PICKUP_SCREEN_FOOTER" desc="Footer for the screen setting displaying tab suggestion settings.">
         Gives you tab suggestions based on your browsing activity on your other devices using your Google account. Your devices must be signed in and synced using the same Google account.
       </message>
+      <message name="IDS_IOS_PARCEL_TRACKING_OPT_IN_PRIMARY_ACTION" desc="Text for the primary action string of the parcel tracking opt-in half-sheet screen.">
+        Always Track Detected Packages
+      </message>
+      <message name="IDS_IOS_PARCEL_TRACKING_OPT_IN_SECONDARY_ACTION" desc="Text for the secondary action string of the parcel tracking opt-in half-sheet screen.">
+        No, Thanks
+      </message>
+      <message name="IDS_IOS_PARCEL_TRACKING_OPT_IN_TERTIARY_ACTION" desc="Text for the tertiary action string of the parcel tracking opt-in half-sheet screen.">
+        Ask me Every Time
+      </message>
       <message name="IDS_IOS_PARTIAL_TRANSLATE_ACTION_TRANSLATE_FULL_PAGE" desc="The action button to translate the full page (Title Case).">
         Translate Full Page
       </message>
@@ -4460,7 +4469,7 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       </message>
       <message name="IDS_IOS_TAB_GRID_SUPERVISED_INCOGNITO_MESSAGE" desc="Message shown in the Incognito Tabs page of the tab grid when a supervised user tries to access incognito mode. [iOS only]">
         Your account is managed by your parent.
-<ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn More<ph name="END_LINK">END_LINK</ph>
+<ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
       </message>
       <message name="IDS_IOS_TAB_GRID_INCOGNITO_TABS_UNAVAILABLE_TITLE" desc="Title shown above a message in the Incognito Tabs page of the tab grid when the IncognitoModeAvailability enterprise policy is set to disabled. [iOS only]">
         Incognito Mode is Unavailable
@@ -4780,7 +4789,7 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       <message name="IDS_IOS_OVERFLOW_MENU_EDIT_SECTION_HIDDEN_TITLE" desc="The title for the overflow menu edit section showing hidden destinations" meaning="[In Title case] [iOS only] [Length: Unlimited]">
         Hidden
       </message>
-      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_BOOKMARK" desc="The title for the context menu item to hide Add to Bookmarks. This should match the title of the Add to Bookmarks action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_ADD_TO_BOOKMARKS" desc="The title for the context menu item to hide Add to Bookmarks. This should match the title of the Add to Bookmarks action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
         Hide Add to Bookmarks
       </message>
       <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_CLEAR_BROWSING_DATA" desc="The title for the context menu item to hide Clear Browsing Data. This should match the title of the Clear Browsing Data action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
@@ -4789,11 +4798,17 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_DESKTOP_SITE" desc="The title for the context menu item to hide Request Desktop Site. This should match the title of the Request Desktop Site action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
         Hide Request Desktop Site
       </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_EDIT_BOOKMARK" desc="The title for the context menu item to hide Edit Bookmarks. This should match the title of the Edit Bookmarks action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Edit Bookmark
+      </message>
       <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_FIND_IN_PAGE" desc="The title for the context menu item to hide Find in Page. This should match the title of the Find in Page action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
         Hide Find in Page
       </message>
       <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_FOLLOW" desc="The title for the context menu item to hide Follow. This should match the title of the Follow action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
-        Hide Follow
+        Hide Follow <ph name="DOMAIN_NAME">$1<ex>google.com</ex></ph>
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_MOBILE_SITE" desc="The title for the context menu item to hide Request Mobile Site. This should match the title of the Request Mobile Site action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Request Mobile Site
       </message>
       <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_READING_LIST" desc="The title for the context menu item to hide Add to Reading List. This should match the title of the Add to Reading List action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
         Hide Add to Reading List
@@ -4803,6 +4818,9 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       </message>
       <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_TRANSLATE" desc="The title for the context menu item to hide Translate. This should match the title of the Translate action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
         Hide Translate
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_UNFOLLOW" desc="The title for the context menu item to hide Unfollow. This should match the title of the Unfollow action in the menu. [iOS only]">
+        Hide Unfollow <ph name="DOMAIN_NAME">$1<ex>google.com</ex></ph>
       </message>
       <message name="IDS_IOS_OVERFLOW_MENU_HIDE_DESTINATION_BOOKMARKS" desc="The title for the context menu item to hide Bookmarks. This should match the title of the Bookmarks destination in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
         Hide Bookmarks
@@ -5405,6 +5423,15 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       </message>
       <message name="IDS_IOS_SAVE_TO_PHOTOS_ACCOUNT_PICKER_SUBMIT" desc="Dialog primary button label to validate the account picked to save an image to Google Photos. [iOS only]" meaning="This button saves the image to the user's Google Photos library i.e. this means 'Save' as in 'Save in Google Photos'.">
         Save
+      </message>
+      <message name="IDS_IOS_SETTINGS_DOWNLOADS_TITLE" desc="Title for the Downloads settings dialog [iOS only]" meaning="Title for the Downloads settings dialog [Length: 29em] [iOS only]">
+        Downloads
+      </message>
+      <message name="IDS_IOS_SETTINGS_DOWNLOADS_SAVE_TO_PHOTOS_HEADER" desc="Header of Save to Photos settings section in Downloads settings. This should be the name of the Google branded application Google Photos. [iOS only]">
+        Google Photos
+      </message>
+      <message name="IDS_IOS_SETTINGS_DOWNLOADS_ACCOUNT_SELECTION_HEADER" desc="Header of Google Photos account selection section in Downloads settings. The section contains the list of accounts on the device among which the user can choose to save images to Google Photos. [iOS only]">
+        Accounts on this Device
       </message>
     </messages>
   </release>

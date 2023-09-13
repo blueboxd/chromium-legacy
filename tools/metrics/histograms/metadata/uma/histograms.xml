@@ -186,7 +186,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="UMA.ClientIdCleared" enum="Boolean" expires_after="2023-12-24">
+<histogram name="UMA.ClientIdCleared" enum="Boolean" expires_after="2024-03-10">
   <owner>pdyson@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -824,6 +824,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="UMA.StatisticsRecorder.LockWaitTime" units="ms"
+    expires_after="2024-03-01">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>src/base/metrics/OWNERS</owner>
+  <summary>
+    Records the sum of the accumulating wait times for acquiring the lock in
+    StatisticsRecorder. This is logged with every UMA log and reset to 0 at that
+    time.
+  </summary>
+</histogram>
+
 <histogram name="UMA.StructuredMetrics.EventFileSize" units="KB"
     expires_after="2024-02-01">
   <owner>tby@chromium.org</owner>
@@ -955,7 +966,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.TruncatedEvents.UserAction" units="events"
-    expires_after="2024-03-03">
+    expires_after="2024-03-10">
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>

@@ -56,7 +56,6 @@
 #include "components/history/core/browser/keyword_search_term_util.h"
 #include "components/history/core/browser/page_usage_data.h"
 #include "components/history/core/browser/sync/history_sync_bridge.h"
-#include "components/history/core/browser/sync/typed_url_sync_bridge.h"
 #include "components/history/core/browser/url_row.h"
 #include "components/history/core/browser/url_utils.h"
 #include "components/sync/base/features.h"
@@ -180,6 +179,11 @@ constexpr int kDomainDiversityMaxBacktrackedDays = 7;
 // avoid other potential issues.
 constexpr int kDSTRoundingOffsetHours = 4;
 
+// When batch-deleting foreign visits (i.e. visits coming from other devices),
+// this specifies how many visits to delete in a single HistoryDBTask. This
+// usually happens when history sync was turned off.
+constexpr int kSyncHistoryForeignVisitsToDeletePerBatch = 100;
+
 // Merges `update` into `existing` by overwriting fields in `existing` that are
 // not the default value in `update`.
 void MergeUpdateIntoExistingModelAnnotations(
@@ -204,17 +208,13 @@ void MergeUpdateIntoExistingModelAnnotations(
   }
 }
 
-int GetForeignVisitsToDeletePerBatch() {
-  return syncer::kSyncHistoryForeignVisitsToDeletePerBatch.Get();
-}
-
 class DeleteForeignVisitsDBTask : public HistoryDBTask {
  public:
   ~DeleteForeignVisitsDBTask() override = default;
 
   bool RunOnDBThread(HistoryBackend* backend, HistoryDatabase* db) override {
     VisitID max_visit_id = db->GetDeleteForeignVisitsUntilId();
-    int max_count = GetForeignVisitsToDeletePerBatch();
+    int max_count = kSyncHistoryForeignVisitsToDeletePerBatch;
 
     VisitVector visits;
     if (!db->GetSomeForeignVisits(max_visit_id, max_count, &visits)) {
@@ -411,14 +411,6 @@ void HistoryBackend::Init(
   if (!force_fail)
     InitImpl(history_database_params);
   delegate_->DBLoaded();
-
-  typed_url_sync_bridge_ = std::make_unique<TypedURLSyncBridge>(
-      this, db_ ? db_->GetTypedURLMetadataDB() : nullptr,
-      std::make_unique<ClientTagBasedModelTypeProcessor>(
-          syncer::TYPED_URLS,
-          base::BindRepeating(&syncer::ReportUnrecoverableError,
-                              history_database_params.channel)));
-  typed_url_sync_bridge_->Init();
 
   history_sync_bridge_ = std::make_unique<HistorySyncBridge>(
       this, db_ ? db_->GetHistoryMetadataDB() : nullptr,
@@ -1541,18 +1533,13 @@ void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
   ScheduleCommit();
 }
 
-void HistoryBackend::SetTypedURLSyncBridgeForTest(
-    std::unique_ptr<TypedURLSyncBridge> bridge) {
-  typed_url_sync_bridge_ = std::move(bridge);
-}
-
 bool HistoryBackend::IsExpiredVisitTime(const base::Time& time) const {
   return time < expirer_.GetCurrentExpirationTime();
 }
 
 // static
 int HistoryBackend::GetForeignVisitsToDeletePerBatchForTest() {
-  return GetForeignVisitsToDeletePerBatch();
+  return kSyncHistoryForeignVisitsToDeletePerBatch;
 }
 
 sql::Database& HistoryBackend::GetDBForTesting() {
@@ -2015,12 +2002,6 @@ QueryURLResult HistoryBackend::QueryURL(const GURL& url, bool want_visits) {
   if (result.success && want_visits)
     db_->GetVisitsForURL(result.row.id(), &result.visits);
   return result;
-}
-
-base::WeakPtr<syncer::ModelTypeControllerDelegate>
-HistoryBackend::GetTypedURLSyncControllerDelegate() {
-  DCHECK(typed_url_sync_bridge_);
-  return typed_url_sync_bridge_->change_processor()->GetControllerDelegate();
 }
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
@@ -3555,10 +3536,8 @@ void HistoryBackend::KillHistoryDatabase() {
   if (!db_)
     return;
 
-  // Notify the sync bridges about storage error. They'll report failures to the
+  // Notify the sync bridge about storage error. It'll report failures to the
   // sync engine and stop accepting remote updates.
-  if (typed_url_sync_bridge_)
-    typed_url_sync_bridge_->OnDatabaseError();
   if (history_sync_bridge_)
     history_sync_bridge_->OnDatabaseError();
 

@@ -226,7 +226,10 @@ class CustomWindowDelegate : public aura::WindowDelegate {
   void OnCaptureLost() override {}
   void OnPaint(const ui::PaintContext& context) override {}
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
-                                  float new_device_scale_factor) override {}
+                                  float new_device_scale_factor) override {
+    surface_->OnScaleFactorChanged(old_device_scale_factor,
+                                   new_device_scale_factor);
+  }
   void OnWindowDestroying(aura::Window* window) override {}
   void OnWindowDestroyed(aura::Window* window) override { delete this; }
   void OnWindowTargetVisibilityChanged(bool visible) override {}
@@ -1497,7 +1500,8 @@ static viz::SharedQuadState* AppendOrCreateSharedQuadState(
     quad_state = render_pass->CreateAndAppendSharedQuadState();
     quad_state->SetAll(quad_to_target_transform, quad_rect, quad_rect, msk,
                        quad_clip_rect, are_contents_opaque, opacity,
-                       SkBlendMode::kSrcOver, 0);
+                       SkBlendMode::kSrcOver, /*sorting_context=*/0,
+                       /*layer_id=*/0u, /*fast_rounded_corner=*/false);
   }
   return quad_state;
 }
@@ -1676,7 +1680,9 @@ void Surface::AppendContentsToFrame(const gfx::PointF& origin,
             render_pass->CreateAndAppendSharedQuadState();
         quad_state->SetAll(quad_to_target_transform, quad_rect, quad_rect, msk,
                            quad_clip_rect, are_contents_opaque,
-                           state_.basic_state.alpha, SkBlendMode::kSrcOver, 0);
+                           state_.basic_state.alpha, SkBlendMode::kSrcOver,
+                           /*sorting_context=*/0, /*layer_id=*/0u,
+                           /*fast_rounded_corner=*/false);
         if (!state_.basic_state.crop.IsEmpty()) {
           quad_state->clip_rect = gfx::ToEnclosedRect(output_rect);
         }
@@ -1830,6 +1836,13 @@ void Surface::UpdateContentSize() {
 void Surface::SetFrameLocked(bool lock) {
   for (SurfaceObserver& observer : observers_)
     observer.OnFrameLockingChanged(this, lock);
+}
+
+void Surface::OnScaleFactorChanged(float old_scale_factor,
+                                   float new_scale_factor) {
+  for (SurfaceObserver& observer : observers_) {
+    observer.OnScaleFactorChanged(this, old_scale_factor, new_scale_factor);
+  }
 }
 
 void Surface::OnWindowOcclusionChanged(

@@ -21,6 +21,7 @@
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/preloading/prerender/devtools_prerender_attempt.h"
+#include "content/browser/preloading/prerender/prerender_features.h"
 #include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/browser/preloading/prerender/prerender_metrics.h"
 #include "content/browser/preloading/prerender/prerender_navigation_utils.h"
@@ -231,7 +232,6 @@ PreloadingEligibility ToEligibility(PrerenderFinalStatus status) {
     case PrerenderFinalStatus::kNavigationBadHttpStatus:
     case PrerenderFinalStatus::kClientCertRequested:
     case PrerenderFinalStatus::kNavigationRequestNetworkError:
-    case PrerenderFinalStatus::kMaxNumOfRunningPrerendersExceeded:
     case PrerenderFinalStatus::kCancelAllHostsForTesting:
     case PrerenderFinalStatus::kDidFailLoad:
     case PrerenderFinalStatus::kStop:
@@ -296,6 +296,9 @@ PreloadingEligibility ToEligibility(PrerenderFinalStatus status) {
       return PreloadingEligibility::kPreloadingDisabledByDevTools;
     case PrerenderFinalStatus::kSpeculationRuleRemoved:
     case PrerenderFinalStatus::kActivatedWithAuxiliaryBrowsingContexts:
+    case PrerenderFinalStatus::kMaxNumOfRunningEagerPrerendersExceeded:
+    case PrerenderFinalStatus::kMaxNumOfRunningNonEagerPrerendersExceeded:
+    case PrerenderFinalStatus::kMaxNumOfRunningEmbedderPrerendersExceeded:
       NOTREACHED_NORETURN();
   }
 
@@ -447,20 +450,6 @@ void PrerenderHostBuilder::RejectAsFailure(
 
 }  // namespace
 
-// Kill-switch controlled by the field trial. When this feature is enabled,
-// PrerenderHostRegistry doesn't query about the current memory footprint and
-// bypasses the memory limit check, while it still checks the limit on the
-// number of ongoing prerendering requests and memory pressure events to prevent
-// excessive memory usage. See https://crbug.com/1382697 for details.
-BASE_FEATURE(kPrerender2BypassMemoryLimitCheck,
-             "Prerender2BypassMemoryLimitCheck",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables to introduce the new limit and scheduler for prerender triggers.
-// See crbug.com/1464021 for more details.
-BASE_FEATURE(kPrerender2NewLimitAndScheduler,
-             "Prerender2NewLimitAndScheduler",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 const char kMaxNumOfRunningSpeculationRulesEagerPrerenders[] =
     "max_num_of_running_speculation_rules_eager_prerenders";
 const char kMaxNumOfRunningSpeculationRulesNonEagerPrerenders[] =
@@ -697,8 +686,23 @@ int PrerenderHostRegistry::CreateAndStartHost(
       // experiment groups for analysis. To prevent this we set
       // TriggeringOutcome to kFailure and look into the failure reason to
       // learn more.
-      builder.RejectAsFailure(
-          attributes, PrerenderFinalStatus::kMaxNumOfRunningPrerendersExceeded);
+      PrerenderFinalStatus final_status;
+      switch (GetPrerenderLimitGroup(attributes.trigger_type,
+                                     attributes.eagerness)) {
+        case PrerenderLimitGroup::kSpeculationRulesEager:
+          final_status =
+              PrerenderFinalStatus::kMaxNumOfRunningEagerPrerendersExceeded;
+          break;
+        case PrerenderLimitGroup::kSpeculationRulesNonEager:
+          final_status =
+              PrerenderFinalStatus::kMaxNumOfRunningNonEagerPrerendersExceeded;
+          break;
+        case PrerenderLimitGroup::kEmbedder:
+          final_status =
+              PrerenderFinalStatus::kMaxNumOfRunningEmbedderPrerendersExceeded;
+          break;
+      }
+      builder.RejectAsFailure(attributes, final_status);
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 
@@ -710,7 +714,8 @@ int PrerenderHostRegistry::CreateAndStartHost(
     prerender_host_by_frame_tree_node_id_[frame_tree_node_id] =
         std::move(prerender_host);
 
-    if (base::FeatureList::IsEnabled(kPrerender2NewLimitAndScheduler)) {
+    if (base::FeatureList::IsEnabled(
+            features::kPrerender2NewLimitAndScheduler)) {
       if (GetPrerenderLimitGroup(attributes.trigger_type,
                                  attributes.eagerness) ==
           PrerenderLimitGroup::kSpeculationRulesNonEager) {
@@ -757,7 +762,8 @@ int PrerenderHostRegistry::CreateAndStartHost(
 }
 
 int PrerenderHostRegistry::CreateAndStartHostForNewTab(
-    const PrerenderAttributes& attributes) {
+    const PrerenderAttributes& attributes,
+    PreloadingPredictor preloading_predictor) {
   CHECK(base::FeatureList::IsEnabled(blink::features::kPrerender2InNewTab));
   CHECK(IsSpeculationRuleType(attributes.trigger_type));
   std::string recorded_url =
@@ -770,7 +776,7 @@ int PrerenderHostRegistry::CreateAndStartHostForNewTab(
 
   auto handle = std::make_unique<PrerenderNewTabHandle>(
       attributes, *web_contents()->GetBrowserContext());
-  int prerender_host_id = handle->StartPrerendering();
+  int prerender_host_id = handle->StartPrerendering(preloading_predictor);
   if (prerender_host_id == RenderFrameHost::kNoFrameTreeNodeId)
     return RenderFrameHost::kNoFrameTreeNodeId;
   prerender_new_tab_handle_by_frame_tree_node_id_[prerender_host_id] =
@@ -882,6 +888,8 @@ std::set<int> PrerenderHostRegistry::CancelHosts(
       reason.ReportMetrics(prerender_host->trigger_type(),
                            prerender_host->embedder_histogram_suffix());
 
+      NotifyCancel(prerender_host->prerendering_url(), reason);
+
       // Asynchronously delete the prerender host.
       ScheduleToDeleteAbandonedHost(std::move(prerender_host), reason);
       cancelled_ids.insert(host_id);
@@ -898,6 +906,7 @@ std::set<int> PrerenderHostRegistry::CancelHosts(
 
         std::unique_ptr<PrerenderNewTabHandle> handle = std::move(iter->second);
         prerender_new_tab_handle_by_frame_tree_node_id_.erase(iter);
+        // TODO(crbug.com/1350676, crbug.com/4849669): perform NotifyCancel.
         handle->CancelPrerendering(reason);
         cancelled_ids.insert(host_id);
       }
@@ -1216,7 +1225,8 @@ void PrerenderHostRegistry::BackNavigationLikely(
   preloading_data->AddPreloadingPrediction(predictor, /*confidence=*/100,
                                            same_url_matcher);
   PreloadingAttempt* attempt = preloading_data->AddPreloadingAttempt(
-      predictor, PreloadingType::kPrerender, same_url_matcher);
+      predictor, PreloadingType::kPrerender, same_url_matcher,
+      web_contents()->GetPrimaryMainFrame()->GetPageUkmSourceId());
 
   if (back_entry->GetMainFrameDocumentSequenceNumber() ==
       controller.GetLastCommittedEntry()
@@ -1593,8 +1603,17 @@ void PrerenderHostRegistry::DeleteAbandonedHosts() {
 }
 
 void PrerenderHostRegistry::NotifyTrigger(const GURL& url) {
-  for (Observer& obs : observers_)
+  for (Observer& obs : observers_) {
     obs.OnTrigger(url);
+  }
+}
+
+void PrerenderHostRegistry::NotifyCancel(
+    const GURL& url,
+    const PrerenderCancellationReason& reason) {
+  for (Observer& obs : observers_) {
+    obs.OnCancel(url, reason);
+  }
 }
 
 PrerenderTriggerType PrerenderHostRegistry::GetPrerenderTriggerType(
@@ -1617,8 +1636,6 @@ PrerenderHostRegistry::PrerenderLimitGroup
 PrerenderHostRegistry::GetPrerenderLimitGroup(
     PrerenderTriggerType trigger_type,
     absl::optional<blink::mojom::SpeculationEagerness> eagerness) {
-  CHECK(base::FeatureList::IsEnabled(kPrerender2NewLimitAndScheduler));
-
   switch (trigger_type) {
     case PrerenderTriggerType::kSpeculationRule:
     case PrerenderTriggerType::kSpeculationRuleFromIsolatedWorld:
@@ -1653,7 +1670,8 @@ int PrerenderHostRegistry::GetHostCountByTriggerType(
 
 int PrerenderHostRegistry::GetHostCountByLimitGroup(
     PrerenderLimitGroup limit_group) {
-  CHECK(base::FeatureList::IsEnabled(kPrerender2NewLimitAndScheduler));
+  CHECK(
+      base::FeatureList::IsEnabled(features::kPrerender2NewLimitAndScheduler));
   int host_count = 0;
   for (const auto& [_, host] : prerender_host_by_frame_tree_node_id_) {
     if (GetPrerenderLimitGroup(host->trigger_type(), host->eagerness()) ==
@@ -1669,25 +1687,25 @@ bool PrerenderHostRegistry::IsAllowedToStartPrerenderingForTrigger(
     absl::optional<blink::mojom::SpeculationEagerness> eagerness) {
   PrerenderLimitGroup limit_group;
   int host_count;
-  if (base::FeatureList::IsEnabled(kPrerender2NewLimitAndScheduler)) {
+  if (base::FeatureList::IsEnabled(features::kPrerender2NewLimitAndScheduler)) {
     limit_group = GetPrerenderLimitGroup(trigger_type, eagerness);
     host_count = GetHostCountByLimitGroup(limit_group);
   } else {
     host_count = GetHostCountByTriggerType(trigger_type);
   }
 
-  if (base::FeatureList::IsEnabled(kPrerender2NewLimitAndScheduler)) {
+  if (base::FeatureList::IsEnabled(features::kPrerender2NewLimitAndScheduler)) {
     // Apply the limit of maximum number of running prerenders per
     // PrerenderLimitGroup.
     switch (limit_group) {
       case PrerenderLimitGroup::kSpeculationRulesEager:
         return host_count < base::GetFieldTrialParamByFeatureAsInt(
-                                kPrerender2NewLimitAndScheduler,
+                                features::kPrerender2NewLimitAndScheduler,
                                 kMaxNumOfRunningSpeculationRulesEagerPrerenders,
                                 10);
       case PrerenderLimitGroup::kSpeculationRulesNonEager: {
         int limit_non_eager = base::GetFieldTrialParamByFeatureAsInt(
-            kPrerender2NewLimitAndScheduler,
+            features::kPrerender2NewLimitAndScheduler,
             kMaxNumOfRunningSpeculationRulesNonEagerPrerenders, 2);
 
         // When the limit on non-eager speculation rules is reached, cancel the
@@ -1703,9 +1721,9 @@ bool PrerenderHostRegistry::IsAllowedToStartPrerenderingForTrigger(
           } while (!prerender_host_by_frame_tree_node_id_.contains(
               oldest_prerender_host_id));
 
-          CHECK(CancelHost(
-              oldest_prerender_host_id,
-              PrerenderFinalStatus::kMaxNumOfRunningPrerendersExceeded));
+          CHECK(CancelHost(oldest_prerender_host_id,
+                           PrerenderFinalStatus::
+                               kMaxNumOfRunningNonEagerPrerendersExceeded));
 
           CHECK_LT(GetHostCountByLimitGroup(limit_group), limit_non_eager);
         }
@@ -1714,7 +1732,7 @@ bool PrerenderHostRegistry::IsAllowedToStartPrerenderingForTrigger(
       }
       case PrerenderLimitGroup::kEmbedder:
         return host_count < base::GetFieldTrialParamByFeatureAsInt(
-                                kPrerender2NewLimitAndScheduler,
+                                features::kPrerender2NewLimitAndScheduler,
                                 kMaxNumOfRunningEmbedderPrerenders, 2);
     }
   }
@@ -1742,7 +1760,8 @@ void PrerenderHostRegistry::DestroyWhenUsingExcessiveMemory(
     return;
   }
 
-  if (base::FeatureList::IsEnabled(kPrerender2BypassMemoryLimitCheck)) {
+  if (base::FeatureList::IsEnabled(
+          features::kPrerender2BypassMemoryLimitCheck)) {
     return;
   }
 

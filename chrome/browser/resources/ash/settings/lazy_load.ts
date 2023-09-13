@@ -147,6 +147,7 @@ export {CustomizeButtonsSubsectionElement} from './device_page/customize_buttons
 export {SettingsCustomizeMouseButtonsSubpageElement} from './device_page/customize_mouse_buttons_subpage.js';
 export {SettingsCustomizePenButtonsSubpageElement} from './device_page/customize_pen_buttons_subpage.js';
 export {SettingsCustomizeTabletButtonsSubpageElement} from './device_page/customize_tablet_buttons_subpage.js';
+export {SettingsPowerElement} from './device_page/power.js';
 export {CROSTINI_TYPE, GuestOsBrowserProxy, GuestOsBrowserProxyImpl, GuestOsSharedUsbDevice, PLUGIN_VM_TYPE} from './guest_os/guest_os_browser_proxy.js';
 export {SettingsGuestOsSharedPathsElement} from './guest_os/guest_os_shared_paths.js';
 export {SettingsGuestOsSharedUsbDevicesElement} from './guest_os/guest_os_shared_usb_devices.js';
@@ -210,6 +211,7 @@ export {SettingsBluetoothSavedDevicesSubpageElement} from './os_bluetooth_page/o
 export {SettingsPairedBluetoothListElement} from './os_bluetooth_page/os_paired_bluetooth_list.js';
 export {SettingsPairedBluetoothListItemElement} from './os_bluetooth_page/os_paired_bluetooth_list_item.js';
 export {SettingsSavedDevicesListElement} from './os_bluetooth_page/os_saved_devices_list.js';
+export {FilesSettingsCardElement} from './os_files_page/files_settings_card.js';
 export {SettingsGoogleDriveSubpageElement} from './os_files_page/google_drive_subpage.js';
 export {SettingsOfficePageElement} from './os_files_page/office_page.js';
 export {OneDriveConnectionState, SettingsOneDriveSubpageElement} from './os_files_page/one_drive_subpage.js';
@@ -230,6 +232,7 @@ export {OsSettingsClearPersonalizedDataDialogElement} from './os_languages_page/
 export {OsSettingsLanguagesPageV2Element} from './os_languages_page/os_languages_page_v2.js';
 export {OsSettingsSmartInputsPageElement} from './os_languages_page/smart_inputs_page.js';
 export {Account, AccountManagerBrowserProxy, AccountManagerBrowserProxyImpl} from './os_people_page/account_manager_browser_proxy.js';
+export {SettingsAccountManagerSubpageElement} from './os_people_page/account_manager_subpage.js';
 export {SettingsUsersAddUserDialogElement} from './os_people_page/add_user_dialog.js';
 export {FingerprintBrowserProxy, FingerprintBrowserProxyImpl, FingerprintInfo, FingerprintResultType} from './os_people_page/fingerprint_browser_proxy.js';
 export {SettingsFingerprintListSubpageElement} from './os_people_page/fingerprint_list_subpage.js';

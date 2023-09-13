@@ -572,7 +572,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void DefaultEventHandler(Event&) override;
 
   virtual bool HasLegalLinkAttribute(const QualifiedName&) const;
-  virtual const QualifiedName& SubResourceAttributeName() const;
 
   // Only called by the parser immediately after element construction.
   void ParserSetAttributes(const Vector<Attribute, kAttributePrealloc>&);
@@ -1570,6 +1569,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   bool ShouldUpdateLastRememberedBlockSize() const;
   bool ShouldUpdateLastRememberedInlineSize() const;
+
+  bool IsStyleAttributeChangeAllowed(const AtomicString& style_string);
 
   enum class HighlightRecalc {
     // No highlight recalc is needed.

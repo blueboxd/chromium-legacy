@@ -13,7 +13,8 @@
 #             android-sm-a235m
 #         chromeos-board-amd64-generic chromeos-board-kevin chromeos-board-eve
 #             chromeos-board-jacuzzi chromeos-board-octopus
-#         fuchsia-board-astro fuchsia-board-sherlock fuchsia-board-qemu-x64 ]
+#         fuchsia-board-astro fuchsia-board-nelson fuchsia-board-sherlock
+#             fuchsia-board-qemu-x64 ]
 # Platform
 # tags: [ desktop
 #         mobile ]
@@ -230,6 +231,7 @@ crbug.com/1473838 [ linux intel passthrough display-server-wayland ] WebglExtens
 [ fuchsia web-engine-shell ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
 [ fuchsia web-engine-shell passthrough ] WebglExtension_WEBGL_polygon_mode [ Skip ]
 [ fuchsia web-engine-shell passthrough ] WebglExtension_EXT_depth_clamp [ Skip ]
+[ fuchsia web-engine-shell passthrough angle-vulkan ] WebglExtension_EXT_blend_func_extended [ Skip ]
 
 # Disabling as they cannot pass with protected memory.
 crbug.com/1417006 [ fuchsia web-engine-shell ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ Skip ]
@@ -305,8 +307,7 @@ crbug.com/1145858 [ fuchsia ] conformance/extensions/ext-disjoint-timer-query.ht
 [ fuchsia ] deqp/data/gles2/shaders/preprocessor.html [ Skip ]
 
 # Causes the render process to hang
-crbug.com/1280692 [ fuchsia fuchsia-board-astro ] conformance/context/context-creation-and-destruction.html [ Skip ]
-crbug.com/1280692 [ fuchsia fuchsia-board-sherlock ] conformance/context/context-creation-and-destruction.html [ Skip ]
+crbug.com/1280692 [ fuchsia web-engine-shell ] conformance/context/context-creation-and-destruction.html [ Skip ]
 
 # Linux Intel
 # Can occasionally kill machines. Appears to be tied to kernel version, so can
@@ -368,6 +369,7 @@ crbug.com/1473838 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] 
 crbug.com/1473838 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] WebglExtension_EXT_depth_clamp [ Skip ]
 crbug.com/1473838 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] WebglExtension_EXT_polygon_offset_clamp [ Skip ]
 crbug.com/1473838 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough angle-opengles ] WebglExtension_KHR_parallel_shader_compile [ Skip ]
+crbug.com/1473838 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough angle-opengles ] WebglExtension_EXT_blend_func_extended [ Skip ]
 
 ###############################
 # Permanent Slow Expectations #
@@ -508,7 +510,6 @@ crbug.com/1230781 [ mac amd-0x67ef angle-opengl ] conformance/canvas/to-data-url
 # crbug.com/735483 [ mac amd release ] conformance/rendering/texture-switch-performance.html [ Failure ]
 
 crbug.com/1435021 [ mac amd-0x67ef angle-metal ] conformance/textures/misc/texture-active-bind.html [ Failure ]
-crbug.com/1435021 [ mac amd-0x67ef angle-metal ] conformance/textures/misc/texture-active-bind-2.html [ RetryOnFailure ]
 crbug.com/1435021 [ mac amd-0x67ef angle-metal ] conformance/canvas/draw-webgl-to-canvas-test.html [ Failure ]
 
 ## Mac Intel ##
@@ -678,6 +679,7 @@ crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi arm angle-open
 crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance/glsl/bugs/constant-precision-qualifier.html [ Failure ]
 crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance/limits/gl-max-texture-dimensions.html [ Failure ]
 crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance/misc/shader-precision-format.html [ Failure ]
+crbug.com/1481267 [ chromeos lacros-chrome chromeos-board-octopus passthrough ] conformance/textures/misc/texture-size-limit.html [ Failure ]
 
 ###########################
 # Lacros/Wayland failures #

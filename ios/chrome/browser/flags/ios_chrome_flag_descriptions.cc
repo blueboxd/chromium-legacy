@@ -204,6 +204,10 @@ const char kBottomOmniboxSteadyStateName[] = "Bottom Omnibox (Steady)";
 const char kBottomOmniboxSteadyStateDescription[] =
     "Move the omnibox to the bottom in steady state";
 
+const char kSpotlightDonateNewIntentsName[] = "Donate New Spotlight Intents";
+const char kSpotlightDonateNewIntentsDescription[] =
+    "Donates relevant intents to Siri when corresponding features are used";
+
 const char kBreakpadNoDelayInitialUploadName[] =
     "Remove delay on initial crash upload";
 const char kBreakpadNoDelayInitialUploadDescription[] =
@@ -228,11 +232,6 @@ extern const char kAppleCalendarExperienceKitDescription[] =
 const char kContentPushNotificationsName[] = "Content Push Notifications";
 const char kContentPushNotificationsDescription[] =
     "Enables the content push notifications.";
-
-extern const char kEmailName[] = "Email experience enable";
-extern const char kEmailDescription[] =
-    "When enabled, one tapping or long pressing on an email address will "
-    "trigger the email experience.";
 
 extern const char kPhoneNumberName[] = "Phone number experience enable";
 extern const char kPhoneNumberDescription[] =
@@ -1061,9 +1060,10 @@ const char kTFLiteLanguageDetectionIgnoreDescription[] =
     "Computes the TFLite language detection but ignore the result and uses the "
     "CLD3 detection instead.";
 
-const char kThemeColorInToolbarName[] = "Use page's theme color";
-const char kThemeColorInToolbarDescription[] =
-    "When enabled, the omnibox background color is the page's theme color";
+const char kThemeColorInTopToolbarName[] = "Top toolbar use page's theme color";
+const char kThemeColorInTopToolbarDescription[] =
+    "When enabled with bottom omnibox, the top toolbar background color is the "
+    "page's theme color";
 
 const char kIOSLensUseDirectUploadName[] =
     "Use direct upload for Lens searches";

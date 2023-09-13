@@ -98,11 +98,12 @@ export class RemoteCall {
       }
       window.currentStep = new Promise(resolve => {
         finishCurrentStep = () => {
+          console.groupEnd();
           window.currentStep = null;
           resolve();
         };
       });
-      console.info('Executing: ' + func + ' on ' + appId + ' with args: ');
+      console.group('Executing: ' + func + ' on ' + appId + ' with args: ');
       console.info(args);
       if (window.autostep !== true) {
         await new Promise((onFulfilled) => {
@@ -765,77 +766,6 @@ export class RemoteCallFilesApp extends RemoteCall {
             caller, 'Expected path is %s got %s', expectedPath, path);
       }
     });
-  }
-
-  /**
-   * Expands tree item.
-   * @param {string} appId App window Id.
-   * @param {string} query Query to the <tree-item> element.
-   */
-  async expandTreeItemInDirectoryTree(appId, query) {
-    await this.waitForElement(appId, query);
-    const elements = await this.callRemoteTestUtil(
-        'queryAllElements', appId, [`${query}[expanded]`]);
-    // If it's already expanded just set the focus on directory tree.
-    if (elements.length > 0) {
-      return this.callRemoteTestUtil('focus', appId, ['#directory-tree']);
-    }
-
-    // We must wait until <tree-item> has attribute [has-children=true]
-    // otherwise it won't expand. We must also to account for the case
-    // :not([expanded]) to ensure it has NOT been expanded by some async
-    // operation since the [expanded] checks above.
-    const expandIcon =
-        query + ':not([expanded]) > .tree-row[has-children=true] .expand-icon';
-    await this.waitAndClickElement(appId, expandIcon);
-    // Wait for the expansion to finish.
-    await this.waitForElement(appId, query + '[expanded]');
-    // Force the focus on directory tree.
-    await this.callRemoteTestUtil('focus', appId, ['#directory-tree']);
-  }
-
-  /**
-   * Expands directory tree for specified path.
-   */
-  expandDirectoryTreeFor(appId, path, volumeType = 'downloads') {
-    return this.expandDirectoryTreeForInternal_(
-        appId, path.split('/'), 0, volumeType);
-  }
-
-  /**
-   * Internal function for expanding directory tree for specified path.
-   */
-  async expandDirectoryTreeForInternal_(appId, components, index, volumeType) {
-    if (index >= components.length - 1) {
-      return;
-    }
-
-    // First time we should expand the root/volume first.
-    if (index === 0) {
-      await this.expandVolumeInDirectoryTree(appId, volumeType);
-      return this.expandDirectoryTreeForInternal_(
-          appId, components, index + 1, volumeType);
-    }
-    const path = '/' + components.slice(1, index + 1).join('/');
-    await this.expandTreeItemInDirectoryTree(
-        appId, `[full-path-for-testing="${path}"]`);
-    await this.expandDirectoryTreeForInternal_(
-        appId, components, index + 1, volumeType);
-  }
-
-  /**
-   * Expands download volume in directory tree.
-   */
-  expandDownloadVolumeInDirectoryTree(appId) {
-    return this.expandVolumeInDirectoryTree(appId, 'downloads');
-  }
-
-  /**
-   * Expands download volume in directory tree.
-   */
-  expandVolumeInDirectoryTree(appId, volumeType) {
-    return this.expandTreeItemInDirectoryTree(
-        appId, `[volume-type-for-testing="${volumeType}"]`);
   }
 
   /**

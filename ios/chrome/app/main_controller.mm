@@ -59,9 +59,9 @@
 #import "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/app/variations_app_state_agent.h"
 #import "ios/chrome/browser/accessibility/model/window_accessibility_change_notifier_app_agent.h"
-#import "ios/chrome/browser/browsing_data/browsing_data_remover.h"
-#import "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
-#import "ios/chrome/browser/browsing_data/sessions_storage_util.h"
+#import "ios/chrome/browser/browsing_data/model/browsing_data_remover.h"
+#import "ios/chrome/browser/browsing_data/model/browsing_data_remover_factory.h"
+#import "ios/chrome/browser/browsing_data/model/sessions_storage_util.h"
 #import "ios/chrome/browser/crash_report/crash_helper.h"
 #import "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #import "ios/chrome/browser/crash_report/crash_loop_detection_util.h"
@@ -107,6 +107,7 @@
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/signin/authentication_service_delegate.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
@@ -508,6 +509,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                                         browserState)
               authenticationService:AuthenticationServiceFactory::
                                         GetForBrowserState(browserState)
+                    identityManager:IdentityManagerFactory::GetForBrowserState(
+                                        browserState)
                          localState:GetApplicationContext()->GetLocalState()]];
 }
 

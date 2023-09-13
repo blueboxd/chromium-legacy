@@ -77,6 +77,7 @@
 #include "chromeos/crosapi/mojom/download_status_updater.mojom.h"
 #include "chromeos/crosapi/mojom/drive_integration_service.mojom.h"
 #include "chromeos/crosapi/mojom/echo_private.mojom.h"
+#include "chromeos/crosapi/mojom/editor_panel.mojom.h"
 #include "chromeos/crosapi/mojom/embedded_accessibility_helper.mojom.h"
 #include "chromeos/crosapi/mojom/emoji_picker.mojom.h"
 #include "chromeos/crosapi/mojom/extension_info_private.mojom.h"
@@ -130,6 +131,7 @@
 #include "chromeos/crosapi/mojom/telemetry_event_service.mojom.h"
 #include "chromeos/crosapi/mojom/test_controller.mojom.h"
 #include "chromeos/crosapi/mojom/timezone.mojom.h"
+#include "chromeos/crosapi/mojom/trusted_vault.mojom.h"
 #include "chromeos/crosapi/mojom/tts.mojom.h"
 #include "chromeos/crosapi/mojom/url_handler.mojom.h"
 #include "chromeos/crosapi/mojom/video_capture.mojom.h"
@@ -294,7 +296,7 @@ constexpr InterfaceVersionEntry MakeInterfaceVersionEntry() {
   return {T::Uuid_, T::Version_};
 }
 
-static_assert(crosapi::mojom::Crosapi::Version_ == 116,
+static_assert(crosapi::mojom::Crosapi::Version_ == 119,
               "If you add a new crosapi, please add it to "
               "kInterfaceVersionEntries below.");
 
@@ -339,6 +341,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::DownloadStatusUpdater>(),
     MakeInterfaceVersionEntry<crosapi::mojom::DriveIntegrationService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::EchoPrivate>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::EditorPanelManager>(),
     MakeInterfaceVersionEntry<crosapi::mojom::EmojiPicker>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ExtensionInfoPrivate>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Feedback>(),
@@ -400,6 +403,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::TaskManager>(),
     MakeInterfaceVersionEntry<crosapi::mojom::TestController>(),
     MakeInterfaceVersionEntry<crosapi::mojom::TimeZoneService>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::TrustedVaultBackend>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Tts>(),
     MakeInterfaceVersionEntry<crosapi::mojom::UrlHandler>(),
     MakeInterfaceVersionEntry<crosapi::mojom::VideoCaptureDeviceFactory>(),
@@ -659,8 +663,8 @@ void InjectBrowserInitParams(
 
   params->is_pdf_ocr_enabled = ::features::IsPdfOcrEnabled();
 
-  params->is_drivefs_bulk_pinning_enabled =
-      drive::util::IsDriveFsBulkPinningEnabled();
+  params->is_drivefs_bulk_pinning_available =
+      drive::util::IsDriveFsBulkPinningAvailable();
 
   params->is_sys_ui_downloads_integration_v2_enabled =
       ash::features::IsSysUiDownloadsIntegrationV2Enabled();

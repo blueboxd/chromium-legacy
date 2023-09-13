@@ -85,6 +85,8 @@ constexpr char kSixPackKeyHome[] = "home";
 constexpr char kSixPackKeyEnd[] = "end";
 constexpr char kSixPackKeyDelete[] = "delete";
 constexpr char kSixPackKeyInsert[] = "insert";
+constexpr char kKeyboardSettingF11[] = "f11";
+constexpr char kKeyboardSettingF12[] = "f12";
 
 // Mouse settings dictionary keys.
 constexpr char kMouseSettingSwapRight[] = "swap_right";
@@ -123,6 +125,7 @@ constexpr char kButtonRemappingKeyEvent[] = "key_event";
 constexpr char kButtonRemappingDomCode[] = "dom_code";
 constexpr char kButtonRemappingDomKey[] = "dom_key";
 constexpr char kButtonRemappingModifiers[] = "modifiers";
+constexpr char kButtonRemappingHardCodedAction[] = "hardcoded_action";
 
 }  // namespace ash::prefs
 

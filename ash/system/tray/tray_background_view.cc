@@ -277,18 +277,17 @@ TrayBackgroundView::TrayBackgroundView(
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetInstallFocusRingOnFocus(true);
 
-  views::FocusRing::Get(this)->SetPathGenerator(
-      std::make_unique<HighlightPathGenerator>(this,
-                                               kTrayBackgroundFocusPadding));
-  views::FocusRing::Get(this)->SetColorId(ui::kColorAshFocusRing);
+  views::FocusRing* focus_ring = views::FocusRing::Get(this);
+  focus_ring->SetOutsetFocusRingDisabled(true);
+  focus_ring->SetPathGenerator(std::make_unique<HighlightPathGenerator>(
+      this, kTrayBackgroundFocusPadding));
+  focus_ring->SetColorId(ui::kColorAshFocusRing);
   SetFocusPainter(nullptr);
 
   views::HighlightPathGenerator::Install(
       this, std::make_unique<HighlightPathGenerator>(this));
 
   AddChildView(tray_container_.get());
-
-  tray_event_filter_ = std::make_unique<TrayEventFilter>();
 
   // Use layer color to provide background color. Note that children views
   // need to have their own layers to be visible.

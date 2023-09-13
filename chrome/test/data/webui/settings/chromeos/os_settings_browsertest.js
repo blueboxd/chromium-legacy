@@ -307,13 +307,25 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    {enabled: ['ash::features::kInputDeviceSettingsSplit']},
  ],
  [
-   'DevicePageFKeyRow', 'device_page/fkey_row_test.js', {
+   'DevicePageFKeyRow',
+   'device_page/fkey_row_test.js',
+   {
      enabled: [
        'ash::features::kInputDeviceSettingsSplit',
        'ash::features::kAltClickAndSixPackCustomization',
        'features::kSupportF11AndF12KeyShortcuts',
-     ]
-   }
+     ],
+   },
+ ],
+ [
+   'DevicePagePower',
+   'device_page/power_test.js',
+   {disabled: ['ash::features::kOsSettingsRevampWayfinding']},
+ ],
+ [
+   'DevicePagePowerRevamp',
+   'device_page/power_test.js',
+   {enabled: ['ash::features::kOsSettingsRevampWayfinding']},
  ],
  ['EsimRemoveProfileDialog', 'esim_remove_profile_dialog_test.js'],
  ['GuestOsSharedPaths', 'guest_os/guest_os_shared_paths_test.js'],
@@ -685,6 +697,11 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    'os_bluetooth_page/os_paired_bluetooth_list_item_test.js'
  ],
  ['OsFilesPage', 'os_files_page/os_files_page_test.js'],
+ [
+   'OsFilesPageFilesSettingsCard',
+   'os_files_page/files_settings_card_test.js',
+   {disabled: ['ash::features::kOsSettingsRevampWayfinding']},
+ ],
  ['OsFilesPageGoogleDrivePage', 'os_files_page/google_drive_page_test.js'],
  ['OsFilesPageOneDrivePage', 'os_files_page/one_drive_page_test.js'],
  ['OsFilesPageOfficePage', 'os_files_page/office_page_test.js'],
@@ -862,13 +879,13 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    'parental_controls_page/parental_controls_page_test.js'
  ],
  [
-   'PeoplePageAccountManagerSubpage',
-   'people_page_account_manager_subpage_test.js',
+   'OsPeoplePageAccountManagerSubpage',
+   'os_people_page/account_manager_subpage_test.js',
    {disabled: ['ash::features::kLacrosOnly']},
  ],
  [
-   'PeoplePageAccountManagerSubpageWithArcAccountRestrictionsEnabled',
-   'people_page_account_manager_subpage_test.js',
+   'OsPeoplePageAccountManagerSubpageWithArcAccountRestrictionsEnabled',
+   'os_people_page/account_manager_subpage_test.js',
    {
      enabled: [
        'ash::features::kLacrosOnly',
@@ -896,6 +913,11 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  [
    'SystemPreferencesPageDateTimeSettingsCard',
    'date_time_page/date_time_settings_card_test.js',
+   {enabled: ['ash::features::kOsSettingsRevampWayfinding']},
+ ],
+ [
+   'SystemPreferencesPageFilesSettingsCard',
+   'os_files_page/files_settings_card_test.js',
    {enabled: ['ash::features::kOsSettingsRevampWayfinding']},
  ],
  [

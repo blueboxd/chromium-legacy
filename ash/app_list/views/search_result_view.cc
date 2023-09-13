@@ -61,7 +61,6 @@ constexpr int kBadgeIconShadowWidth = 1;
 constexpr int kPreferredWidth = 640;
 constexpr int kMultilineLabelWidth = 544;
 constexpr int kDefaultViewHeight = 40;
-constexpr int kDefaultAnswerCardViewHeight = 80;
 constexpr int kKeyboardShortcutViewHeight = 64;
 constexpr int kPreferredIconViewWidth = 56;
 constexpr int kTextTrailPadding = 16;
@@ -70,10 +69,6 @@ constexpr int kDefaultActionButtonRightMargin = 12;
 // Text line height in the search result.
 constexpr int kPrimaryTextHeight = 20;
 constexpr int kAnswerCardDetailsLineHeight = 18;
-
-constexpr int kAnswerCardCardBackgroundCornerRadius = 12;
-constexpr int kAnswerCardFocusBarHorizontalOffset = 12;
-constexpr int kAnswerCardFocusBarVerticalOffset = 24;
 
 // Corner radius for downloaded image icons.
 constexpr int kImageIconCornerRadius = 4;
@@ -102,8 +97,15 @@ constexpr int kElidableLabelOrderStart = 2;
 constexpr int kSearchRatingStarPadding = 4;
 constexpr int kSearchRatingStarSize = 16;
 constexpr int kKeyboardShortcutTopMargin = 6;
-constexpr int kAnswerCardBorderMargin = 12;
+constexpr int kAnswerCardBorderMargin = 16;
 constexpr gfx::Insets kAnswerCardBorder(kAnswerCardBorderMargin);
+constexpr int kDefaultAnswerCardViewHeight = 56 + 2 * kAnswerCardBorderMargin;
+
+constexpr int kAnswerCardCardBackgroundCornerRadius = 12;
+constexpr int kAnswerCardFocusBarHorizontalOffset = kAnswerCardBorderMargin;
+constexpr int kAnswerCardFocusBarVerticalOffset =
+    kAnswerCardCardBackgroundCornerRadius + kAnswerCardBorderMargin;
+
 // The superscript container has a 3px top margin to shift the text up so the
 // it lines up with the text in `big_title_main_text_container_`.
 constexpr auto kBigTitleSuperscriptBorder =
@@ -341,9 +343,11 @@ views::ProgressBar* SetupChildProgressBarView(
 }
 
 SearchResultInlineIconView* SetupChildInlineIconView(
-    views::FlexLayoutView* parent) {
+    views::FlexLayoutView* parent,
+    bool alterante_icon_and_text_styling) {
   SearchResultInlineIconView* inline_icon_view =
-      parent->AddChildView(std::make_unique<SearchResultInlineIconView>());
+      parent->AddChildView(std::make_unique<SearchResultInlineIconView>(
+          alterante_icon_and_text_styling));
   inline_icon_view->SetCanProcessEventsWithinSubtree(false);
   inline_icon_view->GetViewAccessibility().OverrideIsIgnored(true);
   inline_icon_view->SetVisible(false);
@@ -850,6 +854,11 @@ SearchResultView::SetupContainerViewForTextVector(
               should_show_result_text_separator_label_ ||
               (!span.GetText().empty());
         }
+        // Text labels for keyboard shortcuts have additional left/right
+        // padding.
+        if (label_type == LabelType::kKeyboardShortcut) {
+          label->SetProperty(views::kMarginsKey, gfx::Insets::TLBR(0, 6, 0, 6));
+        }
         label->SetText(span.GetText());
         label->SetVisible(true);
         if (!elidable) {
@@ -880,13 +889,14 @@ SearchResultView::SetupContainerViewForTextVector(
       } break;
       case SearchResultTextItemType::kIconifiedText: {
         SearchResultInlineIconView* iconified_text_view =
-            SetupChildInlineIconView(parent);
+            SetupChildInlineIconView(parent,
+                                     span.GetAlternateIconAndTextStyling());
         iconified_text_view->SetText(span.GetText());
         iconified_text_view->SetVisible(true);
       } break;
       case SearchResultTextItemType::kIconCode: {
-        SearchResultInlineIconView* icon_view =
-            SetupChildInlineIconView(parent);
+        SearchResultInlineIconView* icon_view = SetupChildInlineIconView(
+            parent, span.GetAlternateIconAndTextStyling());
         icon_view->SetIcon(*span.GetIconFromCode());
         icon_view->SetVisible(true);
       } break;

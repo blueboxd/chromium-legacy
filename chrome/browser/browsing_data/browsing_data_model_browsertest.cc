@@ -63,6 +63,11 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+#if BUILDFLAG(IS_WIN)
+#include "base/base_paths_win.h"
+#include "base/test/scoped_path_override.h"
+#endif  // BUILDFLAG(IS_WIN)
+
 using base::test::FeatureRef;
 using base::test::FeatureRefAndParams;
 
@@ -354,6 +359,11 @@ class BrowsingDataModelBrowserTest
   network::test::TrustTokenRequestHandler request_handler_;
 
  private:
+#if BUILDFLAG(IS_WIN)
+  // This is used to prevent creating shortcuts in the start menu dir.
+  base::ScopedPathOverride override_start_dir_{base::DIR_START_MENU};
+#endif  // BUILDFLAG(IS_WIN)
+
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
 };
@@ -1079,7 +1089,7 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
-                       PartitionedLocalStorageRemoved) {
+                       LocalStorageRemovedBasedOnPartition) {
   // Build BDM from disk.
   std::unique_ptr<BrowsingDataModel> browsing_data_model =
       BuildBrowsingDataModel();
@@ -1194,6 +1204,26 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
          test_entry_storage_size[0].Get(),
          /*cookie_count=*/0}},
        {kTestHost,
+        storage_key_c,
+        {{BrowsingDataModel::StorageType::kLocalStorage},
+         test_entry_storage_size[2].Get(),
+         /*cookie_count=*/0}}});
+
+  // Remove {a on a}
+  {
+    base::RunLoop run_loop;
+    browsing_data_model->RemoveUnpartitionedBrowsingData(
+        kTestHost, run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  // Rebuild from disk.
+  browsing_data_model = BuildBrowsingDataModel();
+
+  // Validate entries {{a on c}}.
+  ValidateBrowsingDataEntries(
+      browsing_data_model.get(),
+      {{kTestHost,
         storage_key_c,
         {{BrowsingDataModel::StorageType::kLocalStorage},
          test_entry_storage_size[2].Get(),

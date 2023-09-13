@@ -7,6 +7,7 @@
 <translation id="1333745675627230582">Chrome Dinozavr Oyununu oynayın</translation>
 <translation id="1352919863522755794">Google Parol Meneceri parollarınızı yoxlaya bilmədi. İnternet bağlantınızı yoxlayın.</translation>
 <translation id="1407843355326180937">Əlfəcinləri və s. bütün cihazlarda əldə etmək üçün bu sayta və Chrome-a daxil olun.</translation>
+<translation id="1436059927646026729">Chrome-da son tabı açın</translation>
 <translation id="1462727070346936664">Chrome'dan maksimum yararlanmaq üçün daxil olun.</translation>
 <translation id="1479202195792305274">Google Hesabınız ilə daxil olduqda Chrome parollarınızı yoxlaya bilər.</translation>
 <translation id="1491435845014430217">"Chrome-u bağladıqda anonim tabları kilidləyin" seçimini aktiv edin.</translation>
@@ -130,7 +131,6 @@ Nəzərə alın ki:
 <translation id="6063091872902370735">Chrome girişinə icazə verin</translation>
 <translation id="6110625574506755980">Bəzi Chrome funksiyaları daha əlçatan olmayacaq.</translation>
 <translation id="6181930887571472871">Chrome'a keçin</translation>
-<translation id="6228768456496298352">Chrome istiqamət və yerli məlumat təqdim etmək üçün Google Xəritə vasitəsilə ünvanları aşkarlayır.</translation>
 <translation id="6238746320622508509">Chrome'un Anonim tabları kilidləməsinə icazə verin.</translation>
 <translation id="6247557882553405851">Google Parol Meneceri</translation>
 <translation id="6412673304250309937">URL'ləri Chrome'da saxlanılan təhlükəli saytların siyahısı ilə yoxlayır. Sayt parolunuzu oğurlamağa çalışdıqda və ya zərərli fayl endirdiyinizdə Chrome səhifə məzmunundan kiçik nümunələr də daxil olmaqla, URL'ləri Təhlükəsiz Baxışa göndərə bilər.</translation>
@@ -175,6 +175,7 @@ Yalnız parol ifadəsini bilən şəxs şifrələnmiş datanı oxuya bilər. Goo
 <translation id="7855730255114109580">Google Chrome güncəldir</translation>
 <translation id="7897703007638178753">Son Chrome tablarına baxın</translation>
 <translation id="7925119591961387184">"Chrome" seçin.</translation>
+<translation id="7933491483529363150">Chrome-da son tabı açın.</translation>
 <translation id="8022947259858476807">Defolt olaraq keçidləri açmaq, vidcetlərdən axtarış etmək və digər tətbiqlərdə parolları avtomatik doldurmaq üçün Chrome istifadə edin</translation>
 <translation id="804638182476029347">Chrome bildirişlərinə qiymətin düşməsi ilə bağlı xəbərdarlıq almaq icazəsi verin</translation>
 <translation id="81358522153858150">Chrome indi idarə olunan hesabınız üçün istifadəçi siyasətlərini dəstəkləyir</translation>

@@ -1043,6 +1043,8 @@ static_library("browser") {
     "page_load_metrics/observers/portal_page_load_metrics_observer.h",
     "page_load_metrics/observers/prefetch_page_load_metrics_observer.cc",
     "page_load_metrics/observers/prefetch_page_load_metrics_observer.h",
+    "page_load_metrics/observers/preview_page_load_metrics_observer.cc",
+    "page_load_metrics/observers/preview_page_load_metrics_observer.h",
     "page_load_metrics/observers/protocol_page_load_metrics_observer.cc",
     "page_load_metrics/observers/protocol_page_load_metrics_observer.h",
     "page_load_metrics/observers/scheme_page_load_metrics_observer.cc",
@@ -1173,6 +1175,8 @@ static_library("browser") {
     "permissions/quiet_notification_permission_ui_config.h",
     "permissions/quiet_notification_permission_ui_state.cc",
     "permissions/quiet_notification_permission_ui_state.h",
+    "picture_in_picture/picture_in_picture_bounds_cache.cc",
+    "picture_in_picture/picture_in_picture_bounds_cache.h",
     "picture_in_picture/picture_in_picture_window_manager.cc",
     "picture_in_picture/picture_in_picture_window_manager.h",
     "platform_util.h",
@@ -1793,6 +1797,13 @@ static_library("browser") {
     "tab_contents/web_contents_collection.h",
     "task_manager/web_contents_tags.cc",
     "task_manager/web_contents_tags.h",
+    "tpcd/experiment/eligibility_service.cc",
+    "tpcd/experiment/eligibility_service.h",
+    "tpcd/experiment/eligibility_service_factory.cc",
+    "tpcd/experiment/eligibility_service_factory.h",
+    "tpcd/experiment/tpcd_experiment_features.cc",
+    "tpcd/experiment/tpcd_experiment_features.h",
+    "tpcd/experiment/tpcd_utils.h",
     "tpcd/heuristics/opener_heuristic_metrics.cc",
     "tpcd/heuristics/opener_heuristic_metrics.h",
     "tpcd/heuristics/opener_heuristic_tab_helper.cc",
@@ -1899,6 +1910,10 @@ static_library("browser") {
       "picture_in_picture/auto_pip_setting_overlay_view.h",
       "picture_in_picture/auto_pip_setting_view.cc",
       "picture_in_picture/auto_pip_setting_view.h",
+      "preloading/preview/preview_manager.cc",
+      "preloading/preview/preview_manager.h",
+      "preloading/preview/preview_tab.cc",
+      "preloading/preview/preview_tab.h",
       "user_education/browser_tutorial_service.cc",
       "user_education/browser_tutorial_service.h",
       "user_education/user_education_configuration_provider.cc",
@@ -2120,6 +2135,7 @@ static_library("browser") {
     "//components/commerce/core:commerce_heuristics_data",
     "//components/commerce/core:commerce_subscription_db_content_proto",
     "//components/commerce/core:feature_list",
+    "//components/commerce/core:parcel_tracking_db_content_proto",
     "//components/commerce/core:persisted_state_db_content_proto",
     "//components/commerce/core:pref_names",
     "//components/commerce/core:shopping_service",
@@ -2947,6 +2963,8 @@ static_library("browser") {
       "android/usage_stats/usage_stats_database.h",
       "android/warmup_manager.cc",
       "android/web_contents_factory.cc",
+      "android/webapk/webapk_database_factory.cc",
+      "android/webapk/webapk_database_factory.h",
       "android/webapk/webapk_install_coordinator_bridge.cc",
       "android/webapk/webapk_install_coordinator_bridge.h",
       "android/webapk/webapk_install_service.cc",
@@ -3582,7 +3600,6 @@ static_library("browser") {
       "apps/intent_helper/apps_navigation_types.h",
       "apps/intent_helper/intent_picker_auto_display_prefs.cc",
       "apps/intent_helper/intent_picker_auto_display_prefs.h",
-      "apps/intent_helper/intent_picker_constants.cc",
       "apps/intent_helper/intent_picker_constants.h",
       "apps/intent_helper/intent_picker_features.cc",
       "apps/intent_helper/intent_picker_features.h",
@@ -5636,6 +5653,7 @@ static_library("browser") {
       "//chromeos/crosapi/mojom",
       "//chromeos/dbus/dlp:dlp",
       "//chromeos/lacros",
+      "//chromeos/lacros:lacros_paths",
       "//chromeos/lacros/dbus",
       "//chromeos/startup",
       "//chromeos/startup:constants",
@@ -6822,12 +6840,12 @@ static_library("browser") {
       "//components/printing/browser",
       "//components/printing/browser/headless",
       "//components/printing/browser/print_to_pdf",
-      "//components/printing/common:mojo_interfaces",
       "//components/services/print_compositor/public/cpp",
       "//components/services/print_compositor/public/mojom",
       "//printing",
       "//printing/backend",
     ]
+    public_deps += [ "//components/printing/common:mojo_interfaces" ]
 
     if (is_win) {
       sources += [
@@ -7822,13 +7840,6 @@ static_library("browser") {
       sources += [ "net/nss_service_linux.cc" ]
     }
     configs += [ "//build/config/linux/nss" ]
-  }
-
-  if (trial_comparison_cert_verifier_supported) {
-    sources += [
-      "net/trial_comparison_cert_verifier_controller.cc",
-      "net/trial_comparison_cert_verifier_controller.h",
-    ]
   }
 
   if (use_udev) {

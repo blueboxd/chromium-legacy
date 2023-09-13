@@ -254,6 +254,15 @@ GetLoginMatchType GetMatchType(const password_manager::PasswordForm& form) {
     return GetLoginMatchType::kPSL;
   }
 
+  if (static_cast<int>(form.match_type.value() &
+                       PasswordForm::MatchType::kGrouped) &&
+      base::FeatureList::IsEnabled(
+          password_manager::features::kFillingAcrossGroupedSites)) {
+    // TODO(crbug.com/1432264): Update after proper handling of grouped matches
+    // is implemented.
+    return GetLoginMatchType::kAffiliated;
+  }
+
   NOTREACHED_NORETURN();
 }
 
@@ -400,17 +409,13 @@ PasswordForm MakeNormalizedBlocklistedForm(
 bool ShouldBiometricAuthenticationForFillingToggleBeVisible(
     const PrefService* local_state) {
   return local_state->GetBoolean(
-             password_manager::prefs::kHadBiometricsAvailable) &&
-         base::FeatureList::IsEnabled(
-             password_manager::features::kBiometricAuthenticationForFilling);
+      password_manager::prefs::kHadBiometricsAvailable);
 }
 
 bool ShouldShowBiometricAuthenticationBeforeFillingPromo(
     password_manager::PasswordManagerClient* client) {
   return client && client->GetDeviceAuthenticator() &&
          client->GetDeviceAuthenticator()->CanAuthenticateWithBiometrics() &&
-         base::FeatureList::IsEnabled(
-             password_manager::features::kBiometricAuthenticationForFilling) &&
          !client->GetPrefs()->GetBoolean(
              password_manager::prefs::kBiometricAuthenticationBeforeFilling);
 }

@@ -374,7 +374,7 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // is visible, the widget will be hidden.
   void UpdateNoWindowsWidget(bool no_items,
                              bool animate,
-                             bool is_continous_enter);
+                             bool is_continuous_enter);
 
   // Refreshes the bounds of `no_windows_widget_`, animating if `animate` is
   // true.
@@ -567,10 +567,11 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
 
   // Updates the number of unsupported windows of saved desk. This includes
   // `num_incognito_windows_` and `num_unsupported_windows` as of now. When
-  // `window` is being added to the grid, `increment` is true, and false
-  // otherwise.
-  void UpdateNumSavedDeskUnsupportedWindows(aura::Window* window,
-                                            bool increment);
+  // the overview item that represents the `windows` is being added to `this`,
+  // `increment` is true, and false if being removed.
+  void UpdateNumSavedDeskUnsupportedWindows(
+      const std::vector<aura::Window*>& windows,
+      bool increment);
 
   // Returns the height of `desks_bar_view_`.
   int GetDesksBarHeight() const;
@@ -665,7 +666,7 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // continuous scroll starts, store the calculated rects here. For each scroll
   // update, use this list to prevent unnecessary recalculations. For a scroll
   // end, clear the list.
-  // TODO(https://b/295063288): Cache target transforms instead, it will be more
+  // TODO(http://b/295063288): Cache target transforms instead, it will be more
   // precise and performant.
   std::vector<gfx::RectF> cached_rects_;
 

@@ -196,7 +196,7 @@ export class SettingsPerDeviceKeyboardRemapKeysElement extends
           return {
             key: 'f11KeyPref',
             type: chrome.settingsPrivate.PrefType.NUMBER,
-            value: ExtendedFkeysModifier.DISABLED,
+            value: ExtendedFkeysModifier.kDisabled,
           };
         },
       },
@@ -207,7 +207,7 @@ export class SettingsPerDeviceKeyboardRemapKeysElement extends
           return {
             key: 'f12KeyPref',
             type: chrome.settingsPrivate.PrefType.NUMBER,
-            value: ExtendedFkeysModifier.DISABLED,
+            value: ExtendedFkeysModifier.kDisabled,
           };
         },
       },
@@ -395,6 +395,12 @@ export class SettingsPerDeviceKeyboardRemapKeysElement extends
     if (this.isAltClickAndSixPackCustomizationEnabled) {
       this.setSixPackKeyRemappings();
     }
+
+    if (this.shouldShowFkeys()) {
+      this.set('f11KeyPref.value', searchedKeyboard.settings?.f11);
+      this.set('f12KeyPref.value', searchedKeyboard.settings?.f12);
+    }
+
     this.isInitialized = true;
   }
 
@@ -487,6 +493,14 @@ export class SettingsPerDeviceKeyboardRemapKeysElement extends
       this.keyboard.settings = {
         ...this.keyboard.settings,
         sixPackKeyRemappings: this.getSixPackKeyRemappings(),
+      };
+    }
+
+    if (this.shouldShowFkeys()) {
+      this.keyboard.settings = {
+        ...this.keyboard.settings,
+        f11: this.f11KeyPref.value,
+        f12: this.f12KeyPref.value,
       };
     }
 

@@ -87,13 +87,12 @@ class MetaBuildWrapper:
     self.args = argparse.Namespace()
     self.configs = {}
     self.public_artifact_builders = None
+    self.gn_args_locations_files = []
     self.builder_groups = {}
     self.mixins = {}
     self.isolate_exe = 'isolate.exe' if self.platform.startswith(
         'win') else 'isolate'
     self.use_luci_auth = False
-    self.rts_out_dir = self.PathJoin('gen', 'rts')
-    self.banned_from_rts = set()
 
   def PostArgsInit(self):
     self.use_luci_auth = getattr(self.args, 'luci_auth', False)
@@ -104,16 +103,6 @@ class MetaBuildWrapper:
     if 'expectations_dir' in self.args and self.args.expectations_dir is None:
       self.args.expectations_dir = os.path.join(
           os.path.dirname(self.args.config_file), 'mb_config_expectations')
-
-    banned_from_rts_map = json.loads(
-        self.ReadFile(
-            self.PathJoin(self.chromium_src_dir, 'tools', 'mb',
-                          'rts_banned_suites.json')))
-    self.banned_from_rts.update(banned_from_rts_map.get('*', set()))
-
-    if getattr(self.args, 'builder', None):
-      self.banned_from_rts.update(
-          banned_from_rts_map.get(self.args.builder, set()))
 
   def Main(self, args):
     self.ParseArgs(args)
@@ -175,15 +164,6 @@ class MetaBuildWrapper:
                         help='Sets GN arg android_default_version_code')
       subp.add_argument('--android-version-name',
                         help='Sets GN arg android_default_version_name')
-      subp.add_argument('--rts',
-                        default=None,
-                        help='which regression test selection model to use'
-                        ' For more info about RTS, please see'
-                        ' //docs/testing/regression-test-selection.md')
-      subp.add_argument('--use-rts',
-                        action='store_true',
-                        default=False,
-                        help='Deprecated argument for enabling RTS')
 
       # TODO(crbug.com/1060857): Remove this once swarming task templates
       # support command prefixes.
@@ -282,10 +262,6 @@ class MetaBuildWrapper:
                            'newline.')
     subp.add_argument('--json-output',
                       help='Write errors to json.output')
-    subp.add_argument('--rts-target-change-recall',
-                      type=float,
-                      help='how much safety is needed when selecting tests. '
-                      '0.0 is the lowest and 1.0 is the highest')
     subp.add_argument('path',
                       help='path to generate build into')
     subp.set_defaults(func=self.CmdGen)
@@ -467,41 +443,7 @@ class MetaBuildWrapper:
       self.WriteFile(expectation_file, json_s)
     return 0
 
-  def RtsSelect(self):
-    if self.args.rts == 'rts-ml-chromium':
-      model_dir = self.PathJoin(self.chromium_src_dir, 'testing', 'rts',
-                                self.args.rts, self._CipdPlatform())
-      exe = self.PathJoin(model_dir, self.args.rts)
-    else:
-      model_dir = self.PathJoin(self.chromium_src_dir, 'testing', 'rts',
-                                self._CipdPlatform())
-      exe = self.PathJoin(model_dir, self.args.rts)
-
-    if self.platform == 'win32':
-      exe += '.exe'
-
-    args = [
-        exe,
-        'select',
-        '-gen-inverse',
-        '-model-dir', model_dir, \
-        '-out', self.PathJoin(self.ToAbsPath(self.args.path), self.rts_out_dir),
-        '-checkout', self.chromium_src_dir,
-    ]
-    if self.args.rts_target_change_recall:
-      if (self.args.rts_target_change_recall < 0
-          or self.args.rts_target_change_recall > 1):
-        self.WriteFailureAndRaise(
-            'rts-target-change-recall must be between (0 and 1]', None)
-      args += ['-target-change-recall', str(self.args.rts_target_change_recall)]
-
-    ret, _, err = self.Run(args, force_verbose=True)
-    if ret != 0:
-      self.WriteFailureAndRaise(err, None)
-
   def CmdGen(self):
-    if self.args.rts:
-      self.RtsSelect()
     vals = self.Lookup()
     return self.RunGNGen(vals)
 
@@ -930,6 +872,10 @@ class MetaBuildWrapper:
 
     args_contents = ReplaceImports(args_contents)
     args_dict = gn_helpers.FromGNArgs(args_contents)
+    return self._convert_args_dict_to_args_string(args_dict)
+
+  def _convert_args_dict_to_args_string(self, args_dict):
+    """Format a dict of GN args into a single string."""
     for k, v in args_dict.items():
       if isinstance(v, str):
         # Re-add the quotes around strings so they show up as they would in the
@@ -953,6 +899,11 @@ class MetaBuildWrapper:
       if not vals:
         raise e
       return vals
+
+    # "config" would be a dict if the GN args are loaded from a
+    # starlark-generated file.
+    if isinstance(config, dict):
+      return config
 
     # TODO(crbug.com/912681) Some iOS bots have a definition, with ios_error
     # as an indicator that it's incorrect. We utilize this to check the
@@ -1006,6 +957,7 @@ class MetaBuildWrapper:
 
     self.configs = contents['configs']
     self.mixins = contents['mixins']
+    self.gn_args_locations_files = contents.get('gn_args_locations_files', [])
     self.builder_groups = contents.get('builder_groups')
     self.public_artifact_builders = contents.get('public_artifact_builders')
 
@@ -1042,6 +994,27 @@ class MetaBuildWrapper:
     if not self.args.builder_group or not self.args.builder:
       raise MBErr('Must specify either -c/--config or '
                   '(--builder-group and -b/--builder)')
+
+    # Try finding gn-args.json generated by starlark definition.
+    for gn_args_locations_file in self.gn_args_locations_files:
+      locations_file_abs_path = os.path.join(
+          os.path.dirname(self.args.config_file),
+          os.path.normpath(gn_args_locations_file))
+      gn_args_locations = json.loads(self.ReadFile(locations_file_abs_path))
+      gn_args_file = gn_args_locations.get(self.args.builder_group,
+                                           {}).get(self.args.builder, None)
+      if gn_args_file:
+        gn_args_dict = json.loads(
+            self.ReadFile(
+                os.path.join(os.path.dirname(locations_file_abs_path),
+                             os.path.normpath(gn_args_file))))
+        return {
+            'args_file':
+            gn_args_dict.get('args_file', ''),
+            'gn_args':
+            self._convert_args_dict_to_args_string(
+                gn_args_dict.get('gn_args', {})) or ''
+        }
 
     if not self.args.builder_group in self.builder_groups:
       raise MBErr('Builder group name "%s" not found in "%s"' %
@@ -1284,7 +1257,11 @@ class MetaBuildWrapper:
       command, extra_files = self.GetSwarmingCommand(target, vals)
       runtime_deps = self.ReadFile(path_to_use).splitlines()
       runtime_deps = self._DedupDependencies(runtime_deps)
-      if 'is_skylab=true' in vals['gn_args']:
+      # TODO(crbug.com/1481305): Lacros gtest may need files from folders
+      # filtered out here. Eventually, we should move the filter to builder
+      # specific config. Before that, leave the filter only for Ash.
+      if ('is_skylab=true' in vals['gn_args']
+          and not 'chromeos_is_browser_only=true' in vals['gn_args']):
         runtime_deps = self._FilterOutUnneededSkylabDeps(runtime_deps)
 
       canonical_target = target.replace(':','_').replace('/','_')
@@ -1293,20 +1270,6 @@ class MetaBuildWrapper:
       if ret != 0:
         return ret
     return 0
-
-  def AddFilterFileArg(self, target, build_dir, command, inverted=False):
-    filter_file = ('%s_inverted' % target if inverted else target) + '.filter'
-    filter_file_path = self.PathJoin(self.rts_out_dir, filter_file)
-    abs_filter_file_path = self.ToAbsPath(build_dir, filter_file_path)
-
-    filter_exists = self.Exists(abs_filter_file_path)
-    if filter_exists:
-      filtered_command = command.copy()
-      filtered_command.append('--test-launcher-filter-file=%s' %
-                              filter_file_path)
-      self.Print('added RTS filter file to command: %s' % filter_file)
-      return filtered_command
-    return None
 
   def PossibleRuntimeDepsPaths(self, vals, ninja_targets, isolate_map):
     """Returns a map of targets to possible .runtime_deps paths.
@@ -1512,25 +1475,6 @@ class MetaBuildWrapper:
             'files': files,
         }
     }
-    # For more info about RTS, please see
-    # //docs/testing/regression-test-selection.md
-    if self.args.rts:
-      if target in self.banned_from_rts:
-        self.Print('%s is banned for RTS on this builder' % target)
-      else:
-        rts_command = self.AddFilterFileArg(target,
-                                            build_dir,
-                                            command,
-                                            inverted=False)
-        if rts_command:
-          isolate['variables']['rts_command'] = rts_command
-
-        inverted_command = self.AddFilterFileArg(target,
-                                                 build_dir,
-                                                 command,
-                                                 inverted=True)
-        if inverted_command:
-          isolate['variables']['inverted_command'] = inverted_command
 
     self.WriteFile(isolate_path, json.dumps(isolate, sort_keys=True) + '\n')
 
@@ -1604,9 +1548,6 @@ class MetaBuildWrapper:
     android_version_name = self.args.android_version_name
     if android_version_name:
       gn_args += ' android_default_version_name="%s"' % android_version_name
-
-    if self.args.rts:
-      gn_args += ' use_rts=true'
 
     args_gn_lines = []
     parsed_gn_args = {}

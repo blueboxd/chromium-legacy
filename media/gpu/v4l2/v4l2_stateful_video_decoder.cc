@@ -14,6 +14,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
@@ -421,6 +422,13 @@ void V4L2StatefulVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   DVLOGF(3) << buffer->AsHumanReadableString(/*verbose=*/false);
 
   if (buffer->end_of_stream()) {
+    if (!event_task_runner_) {
+      // Receiving Flush before any "normal" Decode() calls. This is a bit of a
+      // contrived situation but possible, nonetheless ,and also a test case.
+      std::move(decode_cb).Run(DecoderStatus::Codes::kOk);
+      return;
+    }
+
     if (h264_frame_reassembler_ && h264_frame_reassembler_->HasFragments()) {
       decoder_buffer_and_callbacks_.emplace(
           h264_frame_reassembler_->AssembleAndFlushFragments(),
@@ -442,13 +450,6 @@ void V4L2StatefulVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 
     if (!OUTPUT_queue_->SendStopCommand()) {
       std::move(decode_cb).Run(DecoderStatus::Codes::kFailed);
-      return;
-    }
-
-    if (!event_task_runner_) {
-      // Receiving Flush before any "normal" Decode() calls. This is a bit of a
-      // contrived situation but possible, nonetheless ,and also a test case.
-      std::move(decode_cb).Run(DecoderStatus::Codes::kOk);
       return;
     }
 
@@ -535,6 +536,8 @@ void V4L2StatefulVideoDecoder::Reset(base::OnceClosure closure) {
   if (CAPTURE_queue_ && !CAPTURE_queue_->Streamon()) {
     LOG(ERROR) << "Failed to start (VIDIOC_STREAMON) |CAPTURE_queue_|.";
   }
+
+  encoding_timestamps_.clear();
 
   if (flush_cb_) {
     std::move(flush_cb_).Run(DecoderStatus::Codes::kAborted);
@@ -845,6 +848,16 @@ void V4L2StatefulVideoDecoder::TryAndDequeueCAPTUREQueueBuffers() {
        success && dequeued_buffer;
        std::tie(success, dequeued_buffer) = CAPTURE_queue_->DequeueBuffer()) {
     PrintOutQueueStatesForVLOG(FROM_HERE);
+
+    const int64_t flat_timespec =
+        TimeValToTimeDelta(dequeued_buffer->GetTimeStamp()).InMilliseconds();
+    if (base::Contains(encoding_timestamps_, flat_timespec)) {
+      UMA_HISTOGRAM_TIMES(
+          "Media.PlatformVideoDecoding.Decode",
+          base::TimeTicks::Now() - encoding_timestamps_[flat_timespec]);
+      encoding_timestamps_.erase(flat_timespec);
+    }
+
     // A buffer marked "last" indicates the end of a flush. Note that, according
     // to spec, this buffer may or may not have zero |bytesused|.
     // https://www.kernel.org/doc/html/v5.15/userspace-api/media/v4l/dev-decoder.html#drain
@@ -1038,6 +1051,9 @@ bool V4L2StatefulVideoDecoder::TryAndEnqueueOUTPUTQueueBuffers() {
     VLOGF(4) << "Enqueuing " << media_buffer->data_size() << " bytes.";
     v4l2_buffer->SetTimeStamp(TimeDeltaToTimeVal(media_buffer->timestamp()));
 
+    const int64_t flat_timespec = media_buffer->timestamp().InMilliseconds();
+    encoding_timestamps_[flat_timespec] = base::TimeTicks::Now();
+
     if (!std::move(*v4l2_buffer).QueueMMap()) {
       LOG(ERROR) << "Error while queuing input |media_buffer|!";
       std::move(media_decode_cb)
@@ -1073,6 +1089,11 @@ H264FrameReassembler::Process(scoped_refptr<DecoderBuffer> buffer,
     std::move(decode_cb).Run(DecoderStatus::Codes::kFailed);
     return absl::nullopt;
   }
+
+  // It's possible that |buffer| contains more than one full frame
+  // (e.g. main/CAPCM1_Sand_E.h264, main/CAPCMNL1_Sand_E.h264 and a few
+  // others). This code now doesn't support it (|buffer| is either a full frame
+  // or is a fragment of a full frame). TODO(mcasas): support this case.
 
   const auto is_new_frame = *result;
   if (!is_new_frame) {
@@ -1148,8 +1169,10 @@ absl::optional<bool> H264FrameReassembler::DoesBufferMarkANewH264Frame(
         H264SliceHeader curr_slice_header;
         result = h264_parser_.ParseSliceHeader(nalu, &curr_slice_header);
         if (result != H264Parser::kOk) {
-          LOG(ERROR) << "Could not parse NALU header.";
-          return absl::nullopt;
+          // In this function we just want to find frame boundaries, so return
+          // but don't mark an error.
+          LOG(WARNING) << "Could not parse NALU header.";
+          return true;
         }
         const bool is_new_frame =
             previous_slice_header_ &&

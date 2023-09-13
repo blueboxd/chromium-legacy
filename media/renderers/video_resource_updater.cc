@@ -698,7 +698,8 @@ void VideoResourceUpdater::AppendQuads(
       render_pass->CreateAndAppendSharedQuadState();
   shared_quad_state->SetAll(
       transform, quad_rect, visible_quad_rect, mask_filter_info, clip_rect,
-      contents_opaque, draw_opacity, SkBlendMode::kSrcOver, sorting_context_id);
+      contents_opaque, draw_opacity, SkBlendMode::kSrcOver, sorting_context_id,
+      /*layer_id=*/0u, /*fast_rounded_corner=*/false);
 
   bool needs_blending = !contents_opaque;
 
@@ -1075,27 +1076,6 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
             SynchronizationType::kGpuCommandsCompleted;
       }
       transfer_resource.ycbcr_info = video_frame->ycbcr_info();
-
-#if BUILDFLAG(ENABLE_VULKAN)
-      // Ensure that `ycbcr_info` is provided when necessary.
-      // TODO(crbug.com/1399429): Avoid duplicating this logic.
-      if (transfer_resource.format.IsLegacyMultiplanar() &&
-          !transfer_resource.ycbcr_info) {
-        VkSamplerYcbcrModelConversion ycbcr_conversion =
-            (resource_color_space.GetMatrixID() ==
-             gfx::ColorSpace::MatrixID::BT709)
-                ? VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709
-                : VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601;
-
-        transfer_resource.ycbcr_info = gpu::VulkanYCbCrInfo(
-            viz::SharedImageFormatRestrictedSinglePlaneUtils::ToVkFormat(
-                transfer_resource.format),
-            /*external_format=*/0, ycbcr_conversion,
-            VK_SAMPLER_YCBCR_RANGE_ITU_NARROW, VK_CHROMA_LOCATION_COSITED_EVEN,
-            VK_CHROMA_LOCATION_COSITED_EVEN,
-            /*format_features=*/0);
-      }
-#endif
 
 #if BUILDFLAG(IS_ANDROID)
       transfer_resource.is_backed_by_surface_texture =

@@ -7857,7 +7857,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         From your Google Drive
       </message>
       <message name="IDS_NTP_MODULES_DRIVE_TITLE_V2" desc="Title shown in the header of the drive module and various other UIs in NTP Launchpad 2.0.">
-        From Your Drive
+        From your Drive
       </message>
       <message name="IDS_NTP_MODULES_DRIVE_INFO" desc="Text shown in the body of the info dialog of the drive module.">
         You’re seeing suggested files to help you easily get back to your most recent activity in Google Drive.
@@ -8775,6 +8775,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TOOLTIP_TAB_SEARCH" desc="The tooltip for the Tab Search bubble.">
         Search tabs
       </message>
+      <message name="IDS_TOOLTIP_TAB_ORGANIZE" desc="The tooltip for the Tab Organization button." translateable="false">
+        Organize tabs
+      </message>
 
       <!-- Strings for intent picker -->
       <if expr="not is_android">
@@ -8959,6 +8962,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ACCNAME_TAB_SEARCH" desc="The accessible name for the Tab Search bubble.">
         Search tabs
+      </message>
+      <message name="IDS_ACCNAME_TAB_ORGANIZE" desc="The accessible name for the Tab Organization button." translateable="false">
+        Organize tabs
       </message>
       <message name="IDS_ACCNAME_TAB_SCROLL_LEADING" desc="The accessible name for the TabStrip leading scroll button.">
         Scroll towards the first tab
@@ -10227,6 +10233,12 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
       <message name="IDS_TAB_SEARCH_COLLAPSE_RECENTLY_CLOSED" desc="The tooltip for the RECENTLY CLOSED button when it's expanded">
         Collapse recently closed
       </message>
+      <message name="IDS_TAB_SEARCH_TAB_NAME" desc="The tab title for tab search in the tab search bubble">
+        All Tabs
+      </message>
+      <message name="IDS_TAB_ORGANIZATION_TAB_NAME" desc="The tab title for tab organization in the tab search bubble" translateable="false">
+        Organize Tabs
+      </message>
 
       <!-- Strings for Window Titles in Menus -->
       <if expr="not use_titlecase">
@@ -11299,6 +11311,12 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         </message>
         <message name="IDS_MANAGED_BY_PARENT_WITH_HYPERLINK" desc="Message to supervised end users, with a link for more info.">
           Your <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>browser is managed<ph name="END_LINK">&lt;/a&gt;</ph> by your parent
+        </message>
+        <message name="IDS_BROWSER_MANAGED_AND_PROFILE_MANAGED_BY_TOOLTIP" desc="Text displayed in a tooltip to inform that the browser is managed by BROWSER_DOMAIN and the profile by PROFILE_DOMAIN.">
+          Browser managed by an organization, profile managed by <ph name="PROFILE_DOMAIN">$1<ex>bar.com</ex></ph>
+        </message>
+        <message name="IDS_BROWSER_AND_PROFILE_DIFFERENT_MANAGED_BY_TOOLTIP" desc="Text displayed in a tooltip to inform that the browser is managed by BROWSER_DOMAIN and the profile by PROFILE_DOMAIN.">
+         Browser managed by <ph name="BROWSER_DOMAIN">$1<ex>foo.com</ex></ph>, profile managed by <ph name="PROFILE_DOMAIN">$2<ex>bar.com</ex></ph>
         </message>
       </if>
 
@@ -15602,11 +15620,47 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_SIGNIN_GENERIC_ERROR_DIALOG_DESCRIPTION" desc="Description of generic error upon user failing to sign in with an account from an identity provider." translateable="false">
       Something went wrong
     </message>
+    <message name="IDS_SIGNIN_UNAUTHORIZED_CLIENT_ERROR_DIALOG_SUMMARY" desc="Summary of unauthorized client error upon user failing to sign in with an account from an identity provider." translateable="false">
+      <ph name="SITE_ETLD_PLUS_ONE">$1<ex>rp.example</ex></ph> can't continue using <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$2<ex>idp.example</ex></ph>
+    </message>
+    <message name="IDS_SIGNIN_UNAUTHORIZED_CLIENT_ERROR_DIALOG_DESCRIPTION" desc="Description of unauthorized client error upon user failing to sign in with an account from an identity provider." translateable="false">
+      This option is unavailable right now.
+    </message>
+    <message name="IDS_SIGNIN_INVALID_REQUEST_ERROR_DIALOG_SUMMARY" desc="Summary of invalid request error upon user failing to sign in with an account from an identity provider." translateable="false">
+      <ph name="SITE_ETLD_PLUS_ONE">$1<ex>rp.example</ex></ph> can't continue using <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$2<ex>idp.example</ex></ph>
+    </message>
+    <message name="IDS_SIGNIN_INVALID_REQUEST_ERROR_DIALOG_DESCRIPTION" desc="Description of invalid request error upon user failing to sign in with an account from an identity provider." translateable="false">
+      This option is unavailable right now.
+    </message>
+    <message name="IDS_SIGNIN_ACCESS_DENIED_ERROR_DIALOG_SUMMARY" desc="Summary of access denied error upon user failing to sign in with an account from an identity provider." translateable="false">
+      Check that you chose the right account
+    </message>
+    <message name="IDS_SIGNIN_ACCESS_DENIED_ERROR_DIALOG_DESCRIPTION" desc="Description of access denied error upon user failing to sign in with an account from an identity provider." translateable="false">
+      Check if the selected account is supported.
+    </message>
+    <message name="IDS_SIGNIN_SERVER_ERROR_DIALOG_SUMMARY" desc="Summary of server error upon user failing to sign in with an account from an identity provider." translateable="false">
+      Check your internet connection
+    </message>
+    <message name="IDS_SIGNIN_SERVER_ERROR_DIALOG_DESCRIPTION" desc="Description of server error upon user failing to sign in with an account from an identity provider." translateable="false">
+      If you're online but this issue keeps happening, you can try other ways to continue on <ph name="SITE_ETLD_PLUS_ONE">$1<ex>rp.example</ex></ph>.
+    </message>
+    <message name="IDS_SIGNIN_TEMPORARILY_UNAVAILABLE_ERROR_DIALOG_SUMMARY" desc="Summary of temporarily unavailable error upon user failing to sign in with an account from an identity provider." translateable="false">
+      Try again later
+    </message>
+    <message name="IDS_SIGNIN_TEMPORARILY_UNAVAILABLE_ERROR_DIALOG_DESCRIPTION" desc="Description of temporarily unavailable error upon user failing to sign in with an account from an identity provider." translateable="false">
+      <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$1<ex>idp.example</ex></ph> isn't available right now.
+    </message>
     <message name="IDS_SIGNIN_ERROR_DIALOG_GOT_IT_BUTTON" desc="The button text on the error dialog for the user to acknowledge that an error has occurred in their attempt to sign in with an account from an identity provider." translateable="false">
       Got it
     </message>
     <message name="IDS_SIGNIN_ERROR_DIALOG_MORE_DETAILS_BUTTON" desc="The button text on the error dialog for the user to get more details about an error that has occurred in their attempt to sign in with an account from an identity provider." translateable="false">
       More details
+    </message>
+    <message name="IDS_SIGNIN_ERROR_DIALOG_MORE_DETAILS_PROMPT" desc="Prompt user to click on the more details button to get more details about an error that has occurred in their attempt to sign in with an account from an identity provider." translateable="false">
+      If this issue keeps happening, choose "More details" below to get more information from <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$1<ex>idp.example</ex></ph>.
+    </message>
+    <message name="IDS_SIGNIN_ERROR_DIALOG_TRY_OTHER_WAYS_PROMPT" desc="Prompt user to try other ways of signing in after an error has occurred in their attempt to sign in with an account from an identity provider." translateable="false">
+      If this issue keeps happening, you can try other ways to continue on <ph name="SITE_ETLD_PLUS_ONE">$1<ex>rp.example</ex></ph>.
     </message>
     <message name="IDS_MULTI_IDP_ACCOUNT_SELECTION_SHEET_TITLE_EXPLICIT" desc="Header for sign in sheet when there are multiple identity providers. Sheet is shown to prompt user for sign in consent." translateable="false">
       Sign in to <ph name="SITE_ETLD_PLUS_ONE">$1<ex>rp.example</ex></ph>
@@ -15939,10 +15993,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
     <!-- Search Engine Choice strings -->
     <if expr="enable_search_engine_choice">
-      <message name="IDS_SEARCH_ENGINE_CHOICE_PAGE_TITLE" desc="The title for the Search Engine Choice page."
-        translateable="false">
-        Lorem ipsum dolor sit amet
-      </message>
       <message name="IDS_SEARCH_ENGINE_CHOICE_PAGE_SUBTITLE" desc="The subtitle for the Search Engine Choice page."
         translateable="false">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut

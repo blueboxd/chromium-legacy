@@ -32,6 +32,8 @@
 #include "android_webview/browser/network_service/aw_url_loader_throttle.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_navigation_throttle.h"
 #include "android_webview/browser/safe_browsing/aw_url_checker_delegate_impl.h"
+#include "android_webview/browser/supervised_user/aw_supervised_user_throttle.h"
+#include "android_webview/browser/supervised_user/aw_supervised_user_url_classifier.h"
 #include "android_webview/browser/tracing/aw_tracing_delegate.h"
 #include "android_webview/common/aw_content_client.h"
 #include "android_webview/common/aw_descriptors.h"
@@ -126,6 +128,7 @@
 
 using content::BrowserThread;
 using content::WebContents;
+using safe_browsing::hash_realtime_utils::HashRealTimeSelection;
 
 namespace android_webview {
 namespace {
@@ -626,6 +629,11 @@ AwContentBrowserClient::CreateURLLoaderThrottles(
     int frame_tree_node_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  // Set lookup mechanism based on feature flag
+  HashRealTimeSelection hash_real_time_selection =
+      (base::FeatureList::IsEnabled(safe_browsing::kHashPrefixRealTimeLookups))
+          ? HashRealTimeSelection::kDatabaseManager
+          : HashRealTimeSelection::kNone;
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>> result;
   result.push_back(safe_browsing::BrowserURLLoaderThrottle::Create(
       base::BindOnce(
@@ -641,7 +649,7 @@ AwContentBrowserClient::CreateURLLoaderThrottles(
       /* hash_realtime_service */ nullptr,
       /* ping_manager */ nullptr,
       /* hash_realtime_selection */
-      safe_browsing::hash_realtime_utils::HashRealTimeSelection::kNone));
+      hash_real_time_selection));
 
   if (request.destination == network::mojom::RequestDestination::kDocument) {
     const bool is_load_url =
@@ -658,6 +666,17 @@ AwContentBrowserClient::CreateURLLoaderThrottles(
     }
   }
 
+  if ((request.destination == network::mojom::RequestDestination::kDocument ||
+       request.destination == network::mojom::RequestDestination::kIframe) &&
+      request.url.SchemeIsHTTPOrHTTPS()) {
+    AwSupervisedUserUrlClassifier* urlClassifier =
+        AwSupervisedUserUrlClassifier::GetInstance();
+    if (urlClassifier->ShouldCreateThrottle()) {
+      result.push_back(
+          std::make_unique<AwSupervisedUserThrottle>(urlClassifier));
+    }
+  }
+
   return result;
 }
 
@@ -668,6 +687,11 @@ AwContentBrowserClient::CreateURLLoaderThrottlesForKeepAlive(
     const base::RepeatingCallback<content::WebContents*()>& wc_getter,
     int frame_tree_node_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // Set lookup mechanism based on feature flag
+  HashRealTimeSelection hash_real_time_selection =
+      (base::FeatureList::IsEnabled(safe_browsing::kHashPrefixRealTimeLookups))
+          ? HashRealTimeSelection::kDatabaseManager
+          : HashRealTimeSelection::kNone;
 
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>> result;
 
@@ -685,7 +709,7 @@ AwContentBrowserClient::CreateURLLoaderThrottlesForKeepAlive(
       /* hash_realtime_service */ nullptr,
       /* ping_manager */ nullptr,
       /* hash_realtime_selection */
-      safe_browsing::hash_realtime_utils::HashRealTimeSelection::kNone));
+      hash_real_time_selection));
 
   return result;
 }

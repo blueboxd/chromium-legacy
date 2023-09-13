@@ -231,7 +231,7 @@ void BrowserNonClientFrameViewMac::LayoutWebAppWindowTitle(
 }
 
 int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
-  if (!browser_view()->GetTabStripVisible()) {
+  if (!browser_view()->ShouldDrawTabStrip()) {
     return 0;
   }
 

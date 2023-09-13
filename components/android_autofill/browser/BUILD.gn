@@ -92,6 +92,9 @@ static_library("android") {
     "android_autofill_bridge_factory.h",
     "autofill_provider_android.cc",
     "autofill_provider_android.h",
+    "autofill_provider_android_bridge.h",
+    "autofill_provider_android_bridge_impl.cc",
+    "autofill_provider_android_bridge_impl.h",
     "form_data_android.cc",
     "form_data_android.h",
     "form_data_android_bridge.h",
@@ -133,6 +136,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "autofill_provider_unittest.cc",
+    "form_data_android_unittest.cc",
     "form_event_logger_weblayer_android_unittest.cc",
     "form_field_data_android_unittest.cc",
   ]

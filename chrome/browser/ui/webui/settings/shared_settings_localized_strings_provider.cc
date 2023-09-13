@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/google/core/common/google_util.h"
 #include "components/live_caption/caption_util.h"
@@ -236,9 +236,7 @@ void AddSharedSyncPageStrings(content::WebUIDataSource* html_source) {
   html_source->AddString(
       "encryptWithSyncPassphraseLabel",
       l10n_util::GetStringFUTF8(
-          base::FeatureList::IsEnabled(syncer::kSyncEnableHistoryDataType)
-              ? IDS_NEW_SETTINGS_ENCRYPT_WITH_SYNC_PASSPHRASE_LABEL
-              : IDS_SETTINGS_ENCRYPT_WITH_SYNC_PASSPHRASE_LABEL,
+          IDS_SETTINGS_ENCRYPT_WITH_SYNC_PASSPHRASE_LABEL,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
           GetHelpUrlWithBoard(chrome::kSyncEncryptionHelpURL)));
 #else

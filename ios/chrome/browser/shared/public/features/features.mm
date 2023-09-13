@@ -214,6 +214,10 @@ BASE_FEATURE(kSpotlightReadingListSource,
              "SpotlightReadingListSource",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kSpotlightDonateNewIntents,
+             "SpotlightDonateNewIntents",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kConsistencyNewAccountInterface,
              "ConsistencyNewAccountInterface",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -260,8 +264,8 @@ BASE_FEATURE(kFullScreenPromoOnOmniboxCopyPaste,
              "FullScreenPromoOnOmniboxCopyPaste",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kThemeColorInToolbar,
-             "ThemeColorInToolbar",
+BASE_FEATURE(kThemeColorInTopToolbar,
+             "ThemeColorInTopToolbar",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kTabGridRefactoring,

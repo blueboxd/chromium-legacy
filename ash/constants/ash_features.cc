@@ -135,7 +135,7 @@ BASE_FEATURE(kAmbientModeThrottleAnimation,
 // Controls whether the logic for managed screensaver is enabled or not.
 BASE_FEATURE(kAmbientModeManagedScreensaver,
              "ChromeOSAmbientModeManagedScreensaver",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kApnRevamp, "ApnRevamp", base::FEATURE_DISABLED_BY_DEFAULT);
 
@@ -406,12 +406,6 @@ BASE_FEATURE(kCameraPrivacySwitchNotifications,
 // Controls whether the capture mode advanced audio settings are enabled.
 BASE_FEATURE(kCaptureModeAudioMixing,
              "CaptureModeAudioMixing",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Controls whether the capture mode demo tools feature is enabled for Capture
-// Mode.
-BASE_FEATURE(kCaptureModeDemoTools,
-             "CaptureModeDemoTools",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the tour that walks new users through the Capture Mode feature.
@@ -1314,7 +1308,7 @@ BASE_FEATURE(kGlanceablesV2ErrorMessage,
 // potential recovery flows, regardless of the flag value.
 BASE_FEATURE(kGaiaReauthEndpoint,
              "GaiaReauthEndpoint",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the Game Dashboard.
 BASE_FEATURE(kGameDashboard,
@@ -1578,9 +1572,20 @@ BASE_FEATURE(kInternalServerSideSpeechRecognitionByFinch,
 // Enables sending `client-info` values to IPP printers on ChromeOS.
 BASE_FEATURE(kIppClientInfo, "IppClientInfo", base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables new experimental IPP-first setup path for USB printers on ChromeOS.
+// Used in finch experiment.
+BASE_FEATURE(kIppFirstSetupForUsbPrinters,
+             "IppFirstSetupForUsbPrinters",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables correct handling of the function key row in Japanese.
 BASE_FEATURE(kJapaneseFunctionRow,
              "JapaneseFunctionRow",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables OS Settings page for japanese.
+BASE_FEATURE(kJapaneseOSSettings,
+             "JapaneseOSSettings",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether the "Remember password" button in the Kerberos "Add account"
@@ -1593,6 +1598,11 @@ BASE_FEATURE(kKerberosRememberPasswordByDefault,
 BASE_FEATURE(kKioskEnableImeButton,
              "KioskEnableImeButton",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables System Web Apps for the Kiosk session.
+BASE_FEATURE(kKioskEnableSystemWebApps,
+             "KioskEnableSystemWebApps",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables to use lacros-chrome as the only web browser on ChromeOS.
 // This may not be allowed depending on user types and/or policies.
@@ -1923,12 +1933,6 @@ BASE_FEATURE(kOnlyShowNewShortcutsApp,
 BASE_FEATURE(kSearchCustomizableShortcutsInLauncher,
              "SearchCustomizableShortcutsInLauncher",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables or disables the feedback tool new UX on ChromeOS.
-// This tool under development will be rolled out via Finch.
-// Enabling this flag will use the new feedback tool instead of the current
-// tool on CrOS.
-BASE_FEATURE(kOsFeedback, "OsFeedback", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, a new App Notifications subpage will appear in CrOS Apps section.
 BASE_FEATURE(kOsSettingsAppNotificationsPage,
@@ -2366,11 +2370,6 @@ BASE_FEATURE(kShimlessRMAOsUpdate,
              "ShimlessRMAOsUpdate",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables or disables the diagnostic page in the Shimless RMA flow.
-BASE_FEATURE(kShimlessRMADiagnosticPage,
-             "ShimlessRMADiagnosticPage",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables or disables device compliance check in the Shimless RMA flow.
 BASE_FEATURE(kShimlessRMAComplianceCheck,
              "ShimlessRMAComplianceCheck",
@@ -2413,6 +2412,11 @@ BASE_FEATURE(kShowLiveCaptionInVideoConferenceTray,
 // Shows the Play Store icon in Demo Mode.
 BASE_FEATURE(kShowPlayInDemoMode,
              "ShowPlayInDemoMode",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Suppresses the first end of life warning shown 180 days before the AUE date.
+BASE_FEATURE(kSuppressFirstEolWarning,
+             "SuppressFirstEolWarning",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Allow the system to suspend to disk via hibernate.
@@ -2877,13 +2881,9 @@ BASE_FEATURE(kPerUserMetrics,
 // Allows Files App to find and execute tasks using App Service for ARC apps.
 BASE_FEATURE(kArcFileTasksUseAppService,
              "ArcFileTasksUseAppService",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 ////////////////////////////////////////////////////////////////////////////////
-
-bool AreCaptureModeDemoToolsEnabled() {
-  return base::FeatureList::IsEnabled(kCaptureModeDemoTools);
-}
 
 bool AreContextualNudgesEnabled() {
   if (!IsHideShelfControlsInTabletModeEnabled()) {
@@ -3987,10 +3987,6 @@ bool IsShelfStackedHotseatEnabled() {
 
 bool IsShimlessRMAOsUpdateEnabled() {
   return base::FeatureList::IsEnabled(kShimlessRMAOsUpdate);
-}
-
-bool IsShimlessRMADiagnosticPageEnabled() {
-  return base::FeatureList::IsEnabled(kShimlessRMADiagnosticPage);
 }
 
 bool IsShimlessRMAComplianceCheckEnabled() {

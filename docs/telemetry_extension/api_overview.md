@@ -125,25 +125,10 @@ and **events**.
 | length_seconds | number | Length of time to run the routine for |
 | file_size_mb | number | test file size, in mega bytes, to test with DiskRead routine. Maximum file size is 10 GB |
 
-### GetRoutineUpdateRequest
-| Property Name | Type | Description |
------------- | ------- | ----------- |
-| id | number | Id of the routine you want to query |
-| command | RoutineCommandType | What kind of updated should be performed |
-
 ### RunPowerButtonRequest
 | Property Name | Type | Description |
 ------------ | ------- | ----------- |
 | timeout_seconds | number | A timeout for the routine |
-
-### GetRoutineUpdateResponse
-| Property Name | Type | Description |
------------- | ------- | ----------- |
-| progress_percent | number | Current progress of the routine |
-| output | string | Optional debug output |
-| status | RoutineStatus | Current routine status |
-| status_message | string | Optional routine status message |
-| user_message | UserMessageType | Returned for routines that require user action (e.g. unplug power cable) |
 
 ### RunNvmeWearLevelRequest
 | Property Name | Type | Description |
@@ -160,41 +145,68 @@ and **events**.
 ------------ | ------- | ----------- |
 | percentage_used_threshold | number | an optional threshold number in percentage, range [0, 255] inclusive, that the routine examines `percentage_used` against. If not specified, the routine will default to the max allowed value (255). |
 
+### RunRoutineResponse
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| id | number | Id of the routine routine created |
+| status | RoutineStatus | Current routine status  |
+
+### GetRoutineUpdateRequest
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| id | number | Id of the routine you want to query |
+| command | RoutineCommandType | What kind of updated should be performed |
+
+### GetRoutineUpdateResponse
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| progress_percent | number | Current progress of the routine |
+| output | string | Optional debug output |
+| status | RoutineStatus | Current routine status |
+| status_message | string | Optional routine status message |
+| user_message | UserMessageType | Returned for routines that require user action (e.g. unplug power cable) |
+
+### GetAvailableRoutinesResponse
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| routines | Array<RoutineType\> | Available routine types |
+
+
 ## Functions
 
 | Function Name | Definition | Permission needed to access | Released in `dpsl` version |
 ------------ | ------------- | ------------- | ------------- |
-| getAvailableRoutines | () => Promise<List<RoutineType\>\> | `os.diagnostics` | M96 |
-| getRoutineUpdate | (params: GetRoutineUpdateRequest) => Promise<GetRoutineUpdateResponse>\> | `os.diagnostics` | M96 |
-| runAcPowerRoutine | (params: RunAcPowerRoutineRequest) => Promise<Routine\> | `os.diagnostics` | M105 |
-| runAudioDriverRoutine | () => Promise<Routine\> | `os.diagnostics` | M117 |
-| runBatteryCapacityRoutine | () => Promise<Routine\> | `os.diagnostics` | M96 |
-| runBatteryHealthRoutine | () => Promise<Routine\> | `os.diagnostics` | M96 |
-| runBatteryDischargeRoutine | (params: RunBatteryDischargeRoutineRequest) => Promise<Routine\> | `os.diagnostics` | M96 |
-| runBatteryChargeRoutine | (params: RunBatteryChargeRoutineRequest) => Promise<Routine\> | `os.diagnostics` | M96 |
-| runBluetoothDiscoveryRoutine | () => Promise<Routine\> | `os.diagnostics` | M118 |
-| runBluetoothPairingRoutine | () => Promise<Routine\> | `os.diagnostics` | M118 |
-| runBluetoothPowerRoutine | () => Promise<Routine\> | `os.diagnostics` | M117 |
-| runBluetoothScanningRoutine | () => Promise<Routine\> | `os.diagnostics` | M118 |
-| runCpuCacheRoutine | (params: RunCpuRoutineRequest) => Promise<Routine\> | `os.diagnostics` | M96 |
-| runCpuFloatingPointAccuracyRoutine | (params: RunCpuRoutineRequest) => Promise<Routine\> | `os.diagnostics` | M99 |
-| runCpuPrimeSearchRoutine | (params: RunCpuRoutineRequest) => Promise<Routine\> | `os.diagnostics` | M99 |
-| runCpuStressRoutine | (params: RunCpuRoutineRequest) => Promise<Routine\> | `os.diagnostics` | M96 |
-| runDiskReadRoutine | (params: RunDiskReadRequest) => Promise<Routine\> | `os.diagnostics` | M102 |
-| runDnsResolutionRoutine | () => Promise<Routine\> | `os.diagnostics` | M108 |
-| runDnsResolverPresentRoutine | () => Promise<Routine\> | `os.diagnostics` | M108 |
-| runEmmcLifetimeRoutine | () => Promise<Routine\> | `os.diagnostics` | M110 |
-| runFingerprintAliveRoutine | () => Promise<Routine\> | `os.diagnostics` | M110 |
-| runGatewayCanBePingedRoutine | () => Promise<Routine\> | `os.diagnostics` | M108 |
-| runLanConnectivityRoutine | () => Promise<Routine\> | `os.diagnostics` | M102 |
-| runMemoryRoutine | () => Promise<Routine\> | `os.diagnostics` | M96 |
-| runNvmeSelfTestRoutine | (params: RunNvmeSelfTestRequest) => Promise<Routine\> | `os.diagnostics` | M110 |
-| runNvmeWearLevelRoutine | (params: RunNvmeWearLevelRequest) => Promise<Routine\> | `os.diagnostics` | M102 |
-| runPowerButtonRoutine | (params: RunPowerButtonRequest) => Promise<Routine\> | `os.diagnostics` | M117 |
-| runSensitiveSensorRoutine | () => Promise<Routine\> | `os.diagnostics` | M110 |
-| runSignalStrengthRoutine | () => Promise<Routine\> | `os.diagnostics` | M108 |
-| runSmartctlCheckRoutine | (params: RunSmartctlCheckRequest?) => Promise<Routine\> | `os.diagnostics` | initial release: M102, new parameter added: M110. The parameter is only available if "smartctl_check_with_percentage_used" is returned from `GetAvailableRoutines` |
-| runUfsLifetimeRoutine | () => Promise<Routine\> | `os.diagnostics` | M117 |
+| getAvailableRoutines | () => Promise<GetAvailableRoutinesResponse\> | `os.diagnostics` | M96 |
+| getRoutineUpdate | (params: GetRoutineUpdateRequest) => Promise<GetRoutineUpdateResponse\> | `os.diagnostics` | M96 |
+| runAcPowerRoutine | (params: RunAcPowerRoutineRequest) => Promise<RunRoutineResponse\> | `os.diagnostics` | M105 |
+| runAudioDriverRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M117 |
+| runBatteryCapacityRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M96 |
+| runBatteryHealthRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M96 |
+| runBatteryDischargeRoutine | (params: RunBatteryDischargeRoutineRequest) => Promise<RunRoutineResponse\> | `os.diagnostics` | M96 |
+| runBatteryChargeRoutine | (params: RunBatteryChargeRoutineRequest) => Promise<RunRoutineResponse\> | `os.diagnostics` | M96 |
+| runBluetoothDiscoveryRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M118 |
+| runBluetoothPairingRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M118 |
+| runBluetoothPowerRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M117 |
+| runBluetoothScanningRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M118 |
+| runCpuCacheRoutine | (params: RunCpuRoutineRequest) => Promise<RunRoutineResponse\> | `os.diagnostics` | M96 |
+| runCpuFloatingPointAccuracyRoutine | (params: RunCpuRoutineRequest) => Promise<RunRoutineResponse\> | `os.diagnostics` | M99 |
+| runCpuPrimeSearchRoutine | (params: RunCpuRoutineRequest) => Promise<RunRoutineResponse\> | `os.diagnostics` | M99 |
+| runCpuStressRoutine | (params: RunCpuRoutineRequest) => Promise<RunRoutineResponse\> | `os.diagnostics` | M96 |
+| runDiskReadRoutine | (params: RunDiskReadRequest) => Promise<RunRoutineResponse\> | `os.diagnostics` | M102 |
+| runDnsResolutionRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M108 |
+| runDnsResolverPresentRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M108 |
+| runEmmcLifetimeRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M110 |
+| runFingerprintAliveRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M110 |
+| runGatewayCanBePingedRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M108 |
+| runLanConnectivityRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M102 |
+| runMemoryRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M96 |
+| runNvmeSelfTestRoutine | (params: RunNvmeSelfTestRequest) => Promise<RunRoutineResponse\> | `os.diagnostics` | M110 |
+| runNvmeWearLevelRoutine | (params: RunNvmeWearLevelRequest) => Promise<RunRoutineResponse\> | `os.diagnostics` | M102 |
+| runPowerButtonRoutine | (params: RunPowerButtonRequest) => Promise<RunRoutineResponse\> | `os.diagnostics` | M117 |
+| runSensitiveSensorRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M110 |
+| runSignalStrengthRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M108 |
+| runSmartctlCheckRoutine | (params: RunSmartctlCheckRequest?) => Promise<RunRoutineResponse\> | `os.diagnostics` | initial release: M102, new parameter added: M110. The parameter is only available if "smartctl_check_with_percentage_used" is returned from `GetAvailableRoutines` |
+| runUfsLifetimeRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M117 |
 
 # Events
 
@@ -535,8 +547,8 @@ and **events**.
 | inputMute | boolean | Is the active input device mute or not |
 | underruns | number | Number of underruns |
 | severeUnderruns | number | Number of severe underruns |
-| outputNodes | Array<AudioOutputNodeInfo> | Output nodes |
-| inputNodes | Array<AudioInputNodeInfo> | Input nodes |
+| outputNodes | Array<AudioOutputNodeInfo\> | Output nodes |
+| inputNodes | Array<AudioInputNodeInfo\> | Input nodes |
 
 ### BatteryInfo
 | Property Name | Type | Description |
@@ -556,12 +568,17 @@ and **events**.
 | voltageMinDesign | number | Desired minimum output voltage |
 | voltageNow | number | Battery's voltage (V) |
 
-### BlockDeviceInfo
+### NonRemovableBlockDeviceInfo
 | Property Name | Type | Description |
 ------------ | ------- | ----------- |
 | name | string | The name of the block device. |
 | type | string | The type of the block device, (e.g. "MMC", "NVMe" or "ATA"). |
 | size | number | The device size in bytes. |
+
+### NonRemovableBlockDeviceInfoResponse
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| deviceInfos | Array<NonRemovableBlockDeviceInfo\> | The list of block devices. |
 
 ### Enum CpuArchitectureEnum
 | Property Name |
@@ -574,13 +591,13 @@ and **events**.
 ### PhysicalCpuInfo
 | Property Name | Type | Description |
 ------------ | ------- | ----------- |
-| logicalCpus | Array<LogicalCpuInfo> | Logical CPUs corresponding to this physical CPU |
+| logicalCpus | Array<LogicalCpuInfo\> | Logical CPUs corresponding to this physical CPU |
 | modelName | string | The CPU model name |
 
 ### LogicalCpuInfo
 | Property Name | Type | Description |
 ------------ | ------- | ----------- |
-| cStates | Array<CpuCStateInfo> | Information about the logical CPU's time in various C-states |
+| cStates | Array<CpuCStateInfo\> | Information about the logical CPU's time in various C-states |
 | idleTimeMs | number | Idle time since last boot, in milliseconds |
 | maxClockSpeedKhz | number | The max CPU clock speed in kilohertz |
 | scalingCurrentFrequencyKhz | number | Current frequency the CPU is running at |
@@ -853,7 +870,7 @@ Source:
 | getBatteryInfo | () => Promise<BatteryInfo\> | `os.telemetry`, `os.telemetry.serial_number` for serial number field | M102 |
 | getStatefulPartitionInfo | () => Promise<StatefulPartitionInfo\> | `os.telemetry` | M105 |
 | getOsVersionInfo | () => Promise<OsVersionInfo\> | `os.telemetry` | M105 |
-| getNonRemovableBlockDevicesInfo | () => Promise<BlockDeviceInfo\> | `os.telemetry` | M108 |
+| getNonRemovableBlockDevicesInfo | () => Promise<NonRemovableBlockDeviceInfoResponse\> | `os.telemetry` | M108 |
 | getInternetConnectivityInfo | () => Promise<InternetConnectivityInfo\> | `os.telemetry`, `os.telemetry.network_info` for MAC address field | M108 - Mac address in M111 |
 | getTpmInfo | () => Promise<TpmInfo\> | `os.telemetry` | M108 |
 | getAudioInfo | () => Promise<AudioInfo\> | `os.telemetry` | M111 |

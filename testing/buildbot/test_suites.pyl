@@ -33,7 +33,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'D9ziv4Z61qHwterMTFEoPeCZzFNyUfMnWAlYuxEKlM8C',
+              'revision': 'akIIr4yAFQwo3j5WYo2PQvy6z8XI51UiwiikPYzI4tUC',
             }
           ]
         },
@@ -2267,7 +2267,6 @@
       'boringssl_crypto_tests': {},
       'boringssl_ssl_tests': {},
       'capture_unittests': {},
-      'color_unittests': {},
       'components_browsertests': {
         'args': [
           '--test-arg=--disable-gpu',
@@ -2342,6 +2341,7 @@
         ],
       },
       'ui_touch_selection_unittests': {},
+      'ui_unittests': {},
       'url_unittests': {},
       'wm_unittests': {},
       'wtf_unittests': {},
@@ -4048,7 +4048,6 @@
       'capture_unittests': {},
       'cast_unittests': {},
       'cc_unittests': {},
-      'color_unittests': {},
       'components_browsertests': {},
       'components_unittests': {},
       'content_browsertests': {
@@ -4099,6 +4098,7 @@
         ],
       },
       'ui_touch_selection_unittests': {},
+      'ui_unittests': {},
       'url_unittests': {},
       'viz_unittests': {},
       'wtf_unittests': {},
@@ -4165,7 +4165,7 @@
       'ios_chrome_bookmarks_eg2tests_module': {},
       'ios_chrome_settings_eg2tests_module': {
         'swarming': {
-          'shards': 4,
+          'shards': 6,
         },
       },
       'ios_chrome_signin_eg2tests_module': {
@@ -4613,7 +4613,10 @@
         },
       },
       'webdriver_tests_suite': {
-        'isolate_name': 'webdriver_wpt_tests',
+        'args': [
+          '--test-type=wdspec',
+        ],
+        'isolate_name': 'chrome_wpt_tests',
         'merge': {
           'args': [
             '--verbose',
@@ -4624,7 +4627,7 @@
           'has_native_resultdb_integration',
         ],
         'swarming': {
-          'shards': 4,
+          'shards': 2,
         },
       },
     },
@@ -4818,7 +4821,6 @@
       },
       'chrome_app_unittests': {},
       'chromedriver_unittests': {},
-      'color_unittests': {},
       'extensions_browsertests': {},
       'extensions_unittests': {},
       'filesystem_service_unittests': {},  # https://crbug.com/862712
@@ -4841,6 +4843,7 @@
           'shards': 3,
         },
       },
+      'ui_unittests': {},
       'views_unittests': {},
     },
 
@@ -4855,7 +4858,6 @@
       },
       'chrome_app_unittests': {},
       'chromedriver_unittests': {},
-      'color_unittests': {},
       'extensions_browsertests': {},
       'extensions_unittests': {},
       'filesystem_service_unittests': {},  # https://crbug.com/862712
@@ -4876,6 +4878,7 @@
           'shards': 3,
         },
       },
+      'ui_unittests': {},
       'views_unittests': {},
     },
 
@@ -5654,7 +5657,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'D9ziv4Z61qHwterMTFEoPeCZzFNyUfMnWAlYuxEKlM8C',
+              'revision': 'akIIr4yAFQwo3j5WYo2PQvy6z8XI51UiwiikPYzI4tUC',
             }
           ]
         },
@@ -5691,7 +5694,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'D9ziv4Z61qHwterMTFEoPeCZzFNyUfMnWAlYuxEKlM8C',
+              'revision': 'akIIr4yAFQwo3j5WYo2PQvy6z8XI51UiwiikPYzI4tUC',
             }
           ]
         },
@@ -5709,7 +5712,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'D9ziv4Z61qHwterMTFEoPeCZzFNyUfMnWAlYuxEKlM8C',
+              'revision': 'akIIr4yAFQwo3j5WYo2PQvy6z8XI51UiwiikPYzI4tUC',
             }
           ]
         },
@@ -5725,7 +5728,7 @@
             {
               'cipd_package': 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'D9ziv4Z61qHwterMTFEoPeCZzFNyUfMnWAlYuxEKlM8C',
+              'revision': 'akIIr4yAFQwo3j5WYo2PQvy6z8XI51UiwiikPYzI4tUC',
             }
           ]
         },
@@ -5743,7 +5746,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'D9ziv4Z61qHwterMTFEoPeCZzFNyUfMnWAlYuxEKlM8C',
+              'revision': 'akIIr4yAFQwo3j5WYo2PQvy6z8XI51UiwiikPYzI4tUC',
             }
           ]
         },
@@ -5758,7 +5761,7 @@
             {
               'cipd_package': 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'D9ziv4Z61qHwterMTFEoPeCZzFNyUfMnWAlYuxEKlM8C',
+              'revision': 'akIIr4yAFQwo3j5WYo2PQvy6z8XI51UiwiikPYzI4tUC',
             }
           ]
         },
@@ -5875,7 +5878,7 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'isolate_name': 'chrome_wpt',
+        'isolate_name': 'chrome_wpt_tests',
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 15,
@@ -5978,7 +5981,7 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'isolate_name': 'chrome_wpt',
+        'isolate_name': 'chrome_wpt_tests',
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 1,
@@ -6002,7 +6005,7 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'isolate_name': 'chrome_wpt',
+        'isolate_name': 'chrome_wpt_tests',
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 1,
@@ -7167,6 +7170,7 @@
       },
       'system_webview_shell_instrumentation_tests': {
         'variants': [
+          'DISABLE_FIELD_TRIAL_CONFIG_WEBVIEW_COMMANDLINE',
           'SINGLE_GROUP_PER_STUDY_PREFER_EXISTING_BEHAVIOR_WEBVIEW_COMMANDLINE',
           'SINGLE_GROUP_PER_STUDY_PREFER_NEW_BEHAVIOR_WEBVIEW_COMMANDLINE',
         ],
@@ -8086,15 +8090,23 @@
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
           'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
       'gpu_mediapipe_passthrough_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
           'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
       'gpu_gl_passthrough_ganesh_telemetry_tests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+        ],
+      },
+      'gpu_metal_passthrough_graphite_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
           'MAC_RETINA_AMD_GPU_STABLE',
@@ -8104,6 +8116,7 @@
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
           'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
       'gpu_webgl2_conformance_metal_passthrough_telemetry_tests': {
@@ -8131,48 +8144,38 @@
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
           'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
       'gpu_fyi_mac_specific_gtests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
           'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
       'gpu_gles2_conform_gtests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
           'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
     },
 
-    'model_validation_tests_linux': {
+    'model_validation_tests_full': {
       'model_validation_tests': {
         'variants': [
-          'MODEL_VALIDATION_TRUNK',
-          'MODEL_VALIDATION_STABLE',
-          'MODEL_VALIDATION_BETA',
-          'MODEL_VALIDATION_DEV',
-        ],
-      },
-    },
-    'model_validation_tests_mac': {
-      'model_validation_tests': {
-        'variants': [
-          # TODO(mgeorgaklis): Add versioned variants when supported on mac x86.
+          'MODEL_VALIDATION_BASE',
           'MODEL_VALIDATION_TRUNK',
         ],
       },
     },
-    'model_validation_tests_win': {
+
+    'model_validation_tests_trunk': {
       'model_validation_tests': {
         'variants': [
           'MODEL_VALIDATION_TRUNK',
-          'MODEL_VALIDATION_STABLE',
-          'MODEL_VALIDATION_BETA',
-          'MODEL_VALIDATION_DEV',
-          'MODEL_VALIDATION_CANARY',
         ],
       },
     },

@@ -1029,7 +1029,10 @@ static_library("browsertest_support") {
   ]
 
   if (is_android) {
-    deps += [ "//content/public/app" ]
+    deps += [
+      "//content/public/app",
+      "//ui/android:android",
+    ]
   } else {
     deps += [ "//content/public/browser" ]
   }
@@ -2344,6 +2347,7 @@ test("content_unittests") {
     "../browser/cookie_deprecation_label/cookie_deprecation_label_manager_unittest.cc",
     "../browser/cookie_store/cookie_store_manager_unittest.cc",
     "../browser/devtools/devtools_background_services_context_impl_unittest.cc",
+    "../browser/devtools/devtools_frontend_host_impl_unittest.cc",
     "../browser/devtools/devtools_http_handler_unittest.cc",
     "../browser/devtools/devtools_video_consumer_unittest.cc",
     "../browser/devtools/protocol/tracing_handler_unittest.cc",
@@ -2372,7 +2376,7 @@ test("content_unittests") {
     "../browser/first_party_sets/database/first_party_sets_database_unittest.cc",
     "../browser/first_party_sets/first_party_set_parser_unittest.cc",
     "../browser/first_party_sets/first_party_sets_handler_database_helper_unittest.cc",
-    "../browser/first_party_sets/first_party_sets_handler_impl_unittest.cc",
+    "../browser/first_party_sets/first_party_sets_handler_impl_instance_unittest.cc",
     "../browser/first_party_sets/first_party_sets_loader_unittest.cc",
     "../browser/first_party_sets/local_set_declaration_unittest.cc",
     "../browser/font_access/font_access_manager_unittest.cc",

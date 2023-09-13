@@ -257,6 +257,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
      */
     private boolean mIsShowingStartSurfaceTabSwitcher;
     private NtpSearchBoxDrawable mNtpSearchBoxBackground;
+    private int mHomeSurfaceToolbarBackgroundColor;
 
     /**
      * Used to specify the visual state of the toolbar.
@@ -316,6 +317,8 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         mBackgroundHeightIncreaseWhenFocus =
                 OmniboxResourceProvider.getToolbarOnFocusHeightIncrease(context);
         mIsSurfacePolishEnabled = ChromeFeatureList.sSurfacePolish.isEnabled();
+        mHomeSurfaceToolbarBackgroundColor = ChromeColors.getSurfaceColor(
+                getContext(), R.dimen.home_surface_background_color_elevation);
     }
 
     @Override
@@ -814,7 +817,9 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
                 // yet. Use the default background color, which will match what the NTP eventually
                 // draws itself.
                 if (!getToolbarDataProvider().getNewTabPageDelegate().hasCompletedFirstLayout()) {
-                    return ChromeColors.getDefaultThemeColor(getContext(), false);
+                    return mIsSurfacePolishEnabled
+                            ? mHomeSurfaceToolbarBackgroundColor
+                            : ChromeColors.getDefaultThemeColor(getContext(), false);
                 }
 
                 // During transition we cannot rely on the background to be opaque yet, so keep full
@@ -827,8 +832,10 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
                 // toolbar color so that the NTP content is not visible beneath the toolbar. In
                 // between the transition, we set a translucent default toolbar color based on
                 // the expansion progress of the toolbar.
-                return androidx.core.graphics.ColorUtils.setAlphaComponent(
-                        ChromeColors.getDefaultThemeColor(getContext(), false), alpha);
+                return androidx.core.graphics.ColorUtils.setAlphaComponent(mIsSurfacePolishEnabled
+                                ? mHomeSurfaceToolbarBackgroundColor
+                                : ChromeColors.getDefaultThemeColor(getContext(), false),
+                        alpha);
             case VisualState.NORMAL:
                 return ChromeColors.getDefaultThemeColor(getContext(), false);
             case VisualState.INCOGNITO:
@@ -837,6 +844,9 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
                 if (mShouldShowModernizeVisualUpdate
                         && mLocationBar.getPhoneCoordinator().hasFocus()) {
                     return getToolbarDefaultColor();
+                }
+                if (mIsSurfacePolishEnabled && mIsShowingStartSurfaceHomepage) {
+                    return mHomeSurfaceToolbarBackgroundColor;
                 }
                 return getToolbarDataProvider().getPrimaryColor();
             default:
@@ -1107,7 +1117,9 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
             // In NTP, toolbar and locationbar need to transite color only when the omnibox is
             // focused. When the fake omnibox is scrolled, the color should not change.
             if (((mShouldShowModernizeVisualUpdate && mLocationBar.getPhoneCoordinator().hasFocus())
-                        || !isLocationBarShownInNTP)
+                        || (mIsSurfacePolishEnabled ? (
+                                    !isLocationBarShownInNTP && !mIsShowingStartSurfaceHomepage)
+                                                    : !isLocationBarShownInNTP))
                     && mTabSwitcherState == STATIC_TAB) {
                 int defaultColor = getToolbarDefaultColor();
                 int defaultLocationBarColor =
@@ -1825,6 +1837,13 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
 
     @Override
     public void setTabSwitcherMode(boolean inTabSwitcherMode) {
+        // On entering the tab switcher, set the focusability of the url bar to be false. This will
+        // occur at the start of the enter event, and will later be reset to true upon finishing the
+        // exit event only in #onStartSurfaceStateChanged.
+        if (inTabSwitcherMode) {
+            mLocationBar.setUrlBarFocusable(false);
+        }
+
         // This method is only used for grid tab switcher with the start surface disabled. When
         // start surface is enabled, omnibox state is updated in onStartSurfaceStateChanged(), which
         // is always called before setTabSwitcherMode(), so skip here.
@@ -1855,8 +1874,6 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         // The width of location bar depends on mTabSwitcherState so layout request is needed. See
         // crbug.com/974745.
         ViewUtils.requestLayout(this, "ToolbarPhone.setTabSwitcherMode");
-
-        mLocationBar.setUrlBarFocusable(false);
 
         finishAnimations();
 
@@ -1941,8 +1958,11 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         updateShadowVisibility();
         updateTabSwitcherButtonRipple();
         // Url bar should be focusable. This will be set in UrlBar#onDraw but there's a delay which
-        // may cause focus to fail, so set here too.
-        mLocationBar.setUrlBarFocusable(true);
+        // may cause focus to fail, so set here too. Only set to true if the GTS is NOT showing,
+        // such as during the exit tab switcher event.
+        if (!isShowingStartSurfaceTabSwitcher) {
+            mLocationBar.setUrlBarFocusable(true);
+        }
 
         // Toolbar should be expanded when it's shown on the start surface homepage.
         float startSurfaceScrollFraction =

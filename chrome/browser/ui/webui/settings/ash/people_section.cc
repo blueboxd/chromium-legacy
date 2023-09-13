@@ -38,8 +38,8 @@
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/grit/browser_resources.h"
-#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/account_manager/account_manager_factory.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
@@ -303,6 +303,10 @@ void AddLockScreenPageStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_PEOPLE_RECOVERY_DISABLE_DIALOG_MESSAGE},
       {"recoveryNotSupportedMessage",
        IDS_SETTINGS_PEOPLE_RECOVERY_NOT_SUPPORTED_MESSAGE},
+      {"setLocalPasswordDialogTitle",
+       IDS_OS_SETTINGS_PEOPLE_SET_LOCAL_PASSWORD_DIALOG_TITLE},
+      {"setLocalPasswordDialogInternalError",
+       IDS_OS_SETTINGS_PEOPLE_SET_LOCAL_PASSWORD_DIALOG_INTERNAL_ERROR},
       {"setLocalPasswordPlaceholder",
        IDS_AUTH_SETUP_SET_LOCAL_PASSWORD_PLACEHOLDER},
       {"setLocalPasswordConfirmPlaceholder",

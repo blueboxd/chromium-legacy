@@ -7,7 +7,19 @@ load("//lib/targets.star", "targets")
 targets.variant(
     name = "DISABLE_FIELD_TRIAL_CONFIG",
     identifier = "Disable Field Trial Config",
-    args = ["--disable-field-trial-config"],
+    args = [
+        "--disable-field-trial-config",
+        "--webview-verbose-logging",
+    ],
+)
+
+targets.variant(
+    name = "DISABLE_FIELD_TRIAL_CONFIG_WEBVIEW_COMMANDLINE",
+    identifier = "Disable Field Trial Config",
+    args = [
+        "--webview-command-line-arg=--disable-field-trial-config",
+        "--webview-command-line-arg=--webview-verbose-logging",
+    ],
 )
 
 targets.variant(
@@ -115,6 +127,14 @@ targets.variant(
     identifier = "1002:67ef",
     mixins = [
         "mac_retina_amd_gpu_stable",
+    ],
+)
+
+targets.variant(
+    name = "MAC_RETINA_NVIDIA_GPU_STABLE",
+    identifier = "10de:0fe9",
+    mixins = [
+        "mac_retina_nvidia_gpu_stable",
     ],
 )
 
@@ -508,6 +528,12 @@ targets.variant(
     ],
 )
 
+# Model validation tests with no args as they are passed in from Google3.
+targets.variant(
+    name = "MODEL_VALIDATION_BASE",
+    identifier = "MODEL_VALIDATION_BASE",
+)
+
 targets.variant(
     name = "MODEL_VALIDATION_TRUNK",
     identifier = "MODEL_VALIDATION_TRUNK",
@@ -528,41 +554,5 @@ targets.variant(
         "chromedriver.exe",
         "--binary",
         "Chrome.exe",
-    ],
-)
-
-targets.variant(
-    name = "MODEL_VALIDATION_STABLE",
-    identifier = "MODEL_VALIDATION_STABLE",
-    args = [
-        "--channel",
-        "stable",
-    ],
-)
-
-targets.variant(
-    name = "MODEL_VALIDATION_BETA",
-    identifier = "MODEL_VALIDATION_BETA",
-    args = [
-        "--channel",
-        "beta",
-    ],
-)
-
-targets.variant(
-    name = "MODEL_VALIDATION_DEV",
-    identifier = "MODEL_VALIDATION_DEV",
-    args = [
-        "--channel",
-        "dev",
-    ],
-)
-
-targets.variant(
-    name = "MODEL_VALIDATION_CANARY",
-    identifier = "MODEL_VALIDATION_CANARY",
-    args = [
-        "--channel",
-        "canary",
     ],
 )

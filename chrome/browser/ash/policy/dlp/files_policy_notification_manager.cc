@@ -25,6 +25,7 @@
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/policy/dlp/dialogs/files_policy_dialog.h"
 #include "chrome/browser/ash/policy/dlp/files_policy_string_util.h"
+#include "chrome/browser/ash/policy/dlp/files_policy_warn_settings.h"
 #include "chrome/browser/chromeos/policy/dlp/dialogs/policy_dialog_base.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_confidential_file.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_file_destination.h"
@@ -332,9 +333,10 @@ void FilesPolicyNotificationManager::ShowConnectorsWarning(
     OnDlpRestrictionCheckedWithJustificationCallback callback,
     file_manager::io_task::IOTaskId task_id,
     std::vector<base::FilePath> warning_files,
-    dlp::FileAction action) {
+    dlp::FileAction action,
+    FilesPolicyWarnSettings warn_settings) {
   PauseIOTask(task_id, std::move(callback), std::move(warning_files), action,
-              Policy::kEnterpriseConnectors);
+              Policy::kEnterpriseConnectors, std::move(warn_settings));
 }
 
 void FilesPolicyNotificationManager::ShowFilesPolicyNotification(
@@ -531,6 +533,7 @@ void FilesPolicyNotificationManager::HandleDlpErrorNotificationClick(
 
       if (files.size() == 1) {
         // Learn more.
+        // TODO(b/291896216): Open page based on policy.
         dlp::OpenLearnMore();
       } else {
         // Review.
@@ -562,10 +565,12 @@ FilesPolicyNotificationManager::WarningInfo::WarningInfo(
     std::vector<base::FilePath> files_paths,
     Policy warning_reason,
     OnDlpRestrictionCheckedWithJustificationCallback warning_callback,
-    OnDlpRestrictionCheckedWithJustificationCallback dialog_callback)
+    OnDlpRestrictionCheckedWithJustificationCallback dialog_callback,
+    FilesPolicyWarnSettings warn_settings)
     : warning_reason(warning_reason),
       warning_callback(std::move(warning_callback)),
-      dialog_callback(std::move(dialog_callback)) {
+      dialog_callback(std::move(dialog_callback)),
+      warn_settings(std::move(warn_settings)) {
   for (const auto& file_path : files_paths) {
     files.emplace_back(file_path);
   }
@@ -586,6 +591,7 @@ FilesPolicyNotificationManager::WarningInfo::WarningInfo(WarningInfo&& other) {
   warning_reason = other.warning_reason;
   warning_callback = std::move(other.warning_callback);
   dialog_callback = std::move(other.dialog_callback);
+  warn_settings = std::move(other.warn_settings);
 }
 
 FilesPolicyNotificationManager::WarningInfo::~WarningInfo() = default;
@@ -788,6 +794,7 @@ void FilesPolicyNotificationManager::HandleFilesPolicyErrorNotificationClick(
     case NotificationButton::OK:
       if (io_tasks_.at(task_id).blocked_files().size() == 1) {
         // Single file - open help page.
+        // TODO(b/291896216): Open page based on policy.
         dlp::OpenLearnMore();
         // Only delete if we don't need to show the dialog.
         OnErrorItemDismissed(task_id);
@@ -853,10 +860,12 @@ void FilesPolicyNotificationManager::ShowFilesPolicyDialog(
       if (!info.GetWarningInfo() || info.widget()) {
         return;
       }
-      CHECK(!info.GetWarningInfo()->warning_callback.is_null());
+      WarningInfo* warning_info = info.GetWarningInfo();
+      CHECK(!warning_info->warning_callback.is_null());
       info.AddWidget(FilesPolicyDialog::CreateWarnDialog(
-          std::move(info.GetWarningInfo()->dialog_callback),
-          info.GetWarningInfo()->files, info.action(), modal_parent));
+          std::move(warning_info->dialog_callback), warning_info->files,
+          info.action(), modal_parent, /*destination=*/absl::nullopt,
+          std::move(warning_info->warn_settings)));
       return;
   }
 }
@@ -1023,6 +1032,7 @@ void FilesPolicyNotificationManager::OnLearnMoreButtonClicked(
     return;
   }
 
+  // TODO(b/291896216): Open page based on policy.
   dlp::OpenLearnMore();
 
   Dismiss(context_, notification_id);
@@ -1197,8 +1207,7 @@ void FilesPolicyNotificationManager::ShowDlpWarningNotification(
         std::move(callback),
         std::vector<DlpConfidentialFile>{warning_files.begin(),
                                          warning_files.end()},
-        action,
-        /*modal_parent=*/nullptr, destination);
+        action, /*modal_parent=*/nullptr, destination);
   }
 }
 
@@ -1207,7 +1216,8 @@ void FilesPolicyNotificationManager::PauseIOTask(
     OnDlpRestrictionCheckedWithJustificationCallback callback,
     std::vector<base::FilePath> warning_files,
     dlp::FileAction action,
-    Policy warning_reason) {
+    Policy warning_reason,
+    FilesPolicyWarnSettings warn_settings) {
   auto* io_task_controller = GetIOTaskController(context_);
   if (!io_task_controller) {
     // Proceed because the IO task can't be paused.
@@ -1227,7 +1237,8 @@ void FilesPolicyNotificationManager::PauseIOTask(
       {std::move(warning_files), warning_reason, std::move(callback),
        base::BindOnce(
            &FilesPolicyNotificationManager::OnIOTaskWarningDialogClicked,
-           weak_factory_.GetWeakPtr(), task_id, warning_reason)});
+           weak_factory_.GetWeakPtr(), task_id, warning_reason),
+       std::move(warn_settings)});
 
   file_manager::io_task::PauseParams pause_params;
   pause_params.policy_params = file_manager::io_task::PolicyPauseParams(

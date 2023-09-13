@@ -42,9 +42,9 @@
 #import "ios/chrome/app/chrome_overlay_window.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
 #import "ios/chrome/app/tests_hook.h"
-#import "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
-#import "ios/chrome/browser/browsing_data/browsing_data_remover.h"
-#import "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#import "ios/chrome/browser/browsing_data/model/browsing_data_remove_mask.h"
+#import "ios/chrome/browser/browsing_data/model/browsing_data_remover.h"
+#import "ios/chrome/browser/browsing_data/model/browsing_data_remover_factory.h"
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_browser_agent.h"
 #import "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #import "ios/chrome/browser/crash_report/crash_loop_detection_util.h"
@@ -158,7 +158,7 @@
 #import "ios/chrome/browser/web/page_placeholder_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/session_metrics.h"
 #import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
-#import "ios/chrome/browser/window_activities/window_activity_helpers.h"
+#import "ios/chrome/browser/window_activities/model/window_activity_helpers.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/signin/choice_api.h"
@@ -2565,6 +2565,10 @@ void InjectNTP(Browser* browser) {
       return ^{
         [weakSelf openLatestTab];
       };
+    case OPEN_CLEAR_BROWSING_DATA_DIALOG:
+      return ^{
+        [weakSelf openClearBrowsingDataDialog];
+      };
     default:
       return nil;
   }
@@ -2678,6 +2682,17 @@ void InjectNTP(Browser* browser) {
       HandlerForProtocol(self.currentInterface.browser->GetCommandDispatcher(),
                          ApplicationCommands);
   [applicationCommandsHandler showCreditCardSettings];
+}
+
+- (void)openClearBrowsingDataDialog {
+  if (!self.currentInterface.browser) {
+    return;
+  }
+
+  id<ApplicationCommands> applicationCommandsHandler =
+      HandlerForProtocol(self.currentInterface.browser->GetCommandDispatcher(),
+                         ApplicationCommands);
+  [applicationCommandsHandler showClearBrowsingDataSettings];
 }
 
 - (void)openLatestTab {

@@ -312,6 +312,7 @@ Zasebni žetoni stanja izboljšujejo zaupanje v spletu in jih ni mogoče uporabi
 <translation id="265156376773362237">Standardno vnaprejšnje nalaganje</translation>
 <translation id="2656405586795711023">Spletni programi</translation>
 <translation id="2669454659051515572">Prenesene datoteke lahko vidijo vsi, ki uporabljajo to napravo.</translation>
+<translation id="2673169232805572412">Če vam spletno mesto poskusi ukrasti geslo ali ko prenašate škodljivo datoteko, lahko Chrome Googlu pošlje URL-je, vključno z delčki vsebine strani</translation>
 <translation id="2702516483241149200">Novo: Delite povezavo, ki se pomakne do tega besedila.</translation>
 <translation id="2708051474374549906">Proaktivna sprotna zaščita pred nevarnimi spletnimi mesti, prenosi in razširitvami, ki temelji na podatkih brskanja, poslanih Googlu</translation>
 <translation id="2708226184420201102">Odpiranje v brskalniku <ph name="PRODUCT_NAME" /></translation>
@@ -337,6 +338,7 @@ Zasebni žetoni stanja izboljšujejo zaupanje v spletu in jih ni mogoče uporabi
 <translation id="2840810876587895427">{TAB_COUNT,plural, =1{Zaprt bo <ph name="TAB_COUNT_ONE" /> anonimni zavihek.}one{Zaprt bo <ph name="TAB_COUNT_MANY" /> anonimni zavihek.}two{Zaprta bosta <ph name="TAB_COUNT_MANY" /> anonimna zavihka.}few{Zaprti bodo <ph name="TAB_COUNT_MANY" /> anonimni zavihki.}other{Zaprtih bo <ph name="TAB_COUNT_MANY" /> anonimnih zavihkov.}}</translation>
 <translation id="2841216154655874070">{NUM_DAYS,plural, =1{Preverjeno pred 1 dnevom}one{Preverjeno pred # dnevom}two{Preverjeno pred # dnevoma}few{Preverjeno pred # dnevi}other{Preverjeno pred # dnevi}}</translation>
 <translation id="2842985007712546952">Nadrejena mapa</translation>
+<translation id="2853415089995957805">Chrome vnaprej naloži strani, ki jih boste verjetno obiskali, da se ob obisku naložijo še hitreje</translation>
 <translation id="2856503607207334158">Prijava ni uspela</translation>
 <translation id="2860954141821109167">V tej napravi mora biti omogočena aplikacija Telefon</translation>
 <translation id="2861923151411510142">Nekatere Chromove funkcije ne bodo več na voljo.</translation>
@@ -554,7 +556,6 @@ Zasebni žetoni stanja izboljšujejo zaupanje v spletu in jih ni mogoče uporabi
 <translation id="3958287878205277013">Če želite izbrisati anonimno zgodovino brskanja iz naprave, zaprite vse anonimne zavihke.</translation>
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome bo naložil stran, ko bo pripravljen}one{Chrome bo naložil strani, ko bo pripravljen}two{Chrome bo naložil strani, ko bo pripravljen}few{Chrome bo naložil strani, ko bo pripravljen}other{Chrome bo naložil strani, ko bo pripravljen}}</translation>
 <translation id="3962119236270174787">Standardna zaščita proti spletnim mestom, prenosom in razširitvam, za katere vemo, da so nevarni.</translation>
-<translation id="3963007978381181125">Šifriranje gesla ne vključuje plačilnih sredstev in naslovov iz Googla Pay. Vaše šifrirane podatke lahko bere samo oseba z vašim geslom. Geslo ni poslano Googlu in ni shranjeno v Googlu. Če ga pozabite ali želite spremeniti to nastavitev, boste morali sinhronizacijo ponastaviti. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="3969142555815019568">Chrome ne more preveriti vaših gesel</translation>
 <translation id="3969863827134279083">Premik gor</translation>
 <translation id="397105322502079400">Izračunavanje …</translation>
@@ -582,6 +583,7 @@ Zasebni žetoni stanja izboljšujejo zaupanje v spletu in jih ni mogoče uporabi
 <translation id="4084712963632273211">Vsebino objavil <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />prikazuje jo Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="409109920254068737">Ta tablični računalnik lahko uporabite za prijavo v napravi, v kateri je prikazana ta koda QR.</translation>
 <translation id="4095146165863963773">Izbris podatkov aplikacije?</translation>
+<translation id="4095425503313512126">Brskanje in iskanje sta hitrejša</translation>
 <translation id="4096227151372679484">Postopek shranjevanja zaznamka, odprt pri polovični višini</translation>
 <translation id="4101475238162928417">S sinhronizacijo si zagotovite gesla, zaznamke in drugo v drugih napravah.</translation>
 <translation id="4106587138345390261">Chrome raziskuje nove funkcije, ki spletnim mestom omogočajo, da zagotavljajo isto izkušnjo pri brskanju, pri tem pa uporabljajo manj vaših podatkov.</translation>
@@ -832,6 +834,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5308380583665731573">Povezovanje</translation>
 <translation id="5317780077021120954">Shrani</translation>
 <translation id="5319359161174645648">Google priporoča Chrome</translation>
+<translation id="5320351714793324716">Če omogočite piškotke, jih bo Chrome morda uporabil za vnaprejšnje nalaganje</translation>
 <translation id="5321849971085220133">Chrome išče nove načine za zmanjšanje sledenja in zagotavljanje, da boste med brskanjem še varnejši. Chrome prav tako <ph name="BEGIN_LINK" />oceni vaša zanimanja<ph name="END_LINK" /> in omogoča, da jih upravljate. Nato lahko spletna mesta, ki jih obiščete, od Chroma zahtevajo vaša zanimanja, da vam prikažejo oglase.</translation>
 <translation id="5326921373682845375">Ker so vnaprej naložene strani šifrirane, spletno mesto s povezavo do teh strani pa je Googlovo spletno mesto, Googlovi strežniki ne prejmejo nobenega novega podatka ob zasebnem vnaprejšnjem nalaganju teh strani.</translation>
 <translation id="5329858041417644019">Vaš brskalnik ni upravljan</translation>

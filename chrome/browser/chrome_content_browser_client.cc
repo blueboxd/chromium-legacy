@@ -114,6 +114,7 @@
 #include "chrome/browser/preloading/prefetch/search_prefetch/field_trial_settings.h"
 #include "chrome/browser/preloading/prefetch/search_prefetch/search_prefetch_url_loader.h"
 #include "chrome/browser/preloading/prefetch/search_prefetch/search_prefetch_url_loader_interceptor.h"
+#include "chrome/browser/preloading/preloading_features.h"
 #include "chrome/browser/preloading/preloading_prefs.h"
 #include "chrome/browser/preloading/prerender/prerender_web_contents_delegate.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
@@ -3504,6 +3505,19 @@ bool ChromeContentBrowserClient::IsPrivateAggregationAllowed(
       top_frame_origin, reporting_origin);
 }
 
+bool ChromeContentBrowserClient::IsPrivateAggregationDebugModeAllowed(
+    content::BrowserContext* browser_context,
+    const url::Origin& top_frame_origin,
+    const url::Origin& reporting_origin) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  auto* privacy_sandbox_settings =
+      PrivacySandboxSettingsFactory::GetForProfile(profile);
+  DCHECK(privacy_sandbox_settings);
+
+  return privacy_sandbox_settings->IsPrivateAggregationDebugModeAllowed(
+      top_frame_origin, reporting_origin);
+}
+
 bool ChromeContentBrowserClient::IsCookieDeprecationLabelAllowed(
     content::BrowserContext* browser_context) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
@@ -6820,6 +6834,20 @@ bool ChromeContentBrowserClient::HandleWebUI(
         UMA_HISTOGRAM_BOOLEAN("Settings.PrivacySandbox.DeprecatedRedirect",
                               false);
       }
+    }
+  }
+  if (base::FeatureList::IsEnabled(
+          features::kPerformanceSettingsPreloadingSubpage)) {
+    // Redirect from the preloading sub-page to the performance page.
+    if (url->SchemeIs(content::kChromeUIScheme) &&
+        url->host() == chrome::kChromeUISettingsHost &&
+        url->path() == chrome::kPreloadingSubPagePath) {
+      GURL::Replacements replacements;
+      replacements.SetPathStr(chrome::kPerformanceSubPagePath);
+      *url = url->ReplaceComponents(replacements);
+      UMA_HISTOGRAM_BOOLEAN("Settings.Preloading.DeprecatedRedirect", true);
+    } else if (url->path() == chrome::kPerformanceSubPagePath) {
+      UMA_HISTOGRAM_BOOLEAN("Settings.Preloading.DeprecatedRedirect", false);
     }
   }
 #endif

@@ -22,7 +22,6 @@ this.ShimlessRmaBrowserTest = class extends PolymerTest {
     return {
       enabled: [
         'ash::features::kShimlessRMAOsUpdate',
-        'ash::features::kShimlessRMADiagnosticPage',
       ],
     };
   }
@@ -37,7 +36,6 @@ const tests = [
   ['AllInputsDisabledTest', 'all_inputs_disabled_test.js'],
   ['HardwareErrorPageTest', 'hardware_error_page_test.js'],
   ['CriticalErrorPageTest', 'critical_error_page_test.js'],
-  ['DiagnosticPageTest', 'diagnostic_page_test.js'],
   ['FakeShimlessRmaServiceTestSuite', 'fake_shimless_rma_service_test.js'],
   [
     'OnboardingChooseDestinationPageTest',
@@ -87,6 +85,7 @@ const tests = [
   ],
   ['ReimagingProvisioningPageTest', 'reimaging_provisioning_page_test.js'],
   ['RepairComponentChipTest', 'repair_component_chip_test.js'],
+  ['Shimless3pDiagTest', 'shimless_3p_diag_test.js'],
   ['ShimlessRMAAppTest', 'shimless_rma_app_test.js'],
   ['WrapupFinalizePageTest', 'wrapup_finalize_page_test.js'],
   ['WrapupRepairCompletePageTest', 'wrapup_repair_complete_page_test.js'],

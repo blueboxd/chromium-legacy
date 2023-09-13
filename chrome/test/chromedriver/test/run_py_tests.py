@@ -11,13 +11,13 @@
 # TODO (crbug.com/857239): Remove above comment when adb version
 # is updated in Devil.
 
+import argparse
 import base64
 import codecs
 import http.client
 import imghdr
 import json
 import math
-import optparse
 import os
 import re
 import shutil
@@ -561,7 +561,7 @@ class ChromeDriverTestWithCustomCapability(ChromeDriverBaseTestWithWebServer):
     # Block DNS resolution for all hosts so that the navigation results
     # in a DNS lookup error.
     driver = self.CreateDriver(
-        chrome_switches=['--host-resolver-rules=MAP * ~NOTFOUND'])
+        chrome_switches=['--host-resolver-rules=MAP * ^NOTFOUND'])
     self.assertRaises(chromedriver.ChromeDriverException,
                       driver.Load, 'http://invalid/')
     self.assertEqual('http://invalid/', driver.GetCurrentUrl())
@@ -6745,9 +6745,30 @@ class VendorSpecificTest(ChromeDriverBaseTestWithWebServer):
 class FedCmSpecificTest(ChromeDriverBaseTestWithWebServer):
 
   def setUp(self):
+    global _VENDOR_ID
+    self._vendor_id = _VENDOR_ID
+
     port = self._https_server._server.server_port
     self._url_prefix = (self._https_server.GetUrl("localhost") +
         "/chromedriver/fedcm")
+    self._default_accounts = """
+{
+  "id": "1234",
+  "given_name": "John",
+  "name": "John Doe",
+  "email": "john_doe@idp.example",
+  "picture": "https://idp.example/profile/123",
+  "approved_clients": ["123", "456", "789"]
+}, {
+  "id": "5678",
+  "given_name": "Aisha",
+  "name": "Aisha Ahmad",
+  "email": "aisha@idp.example",
+  "picture": "https://idp.example/profile/567",
+  "approved_clients": []
+}
+    """
+    self._accounts = self._default_accounts
 
     def respondWithWellKnownFile(request):
       return {'Content-Type': 'application/json'}, bytes("""
@@ -6755,8 +6776,22 @@ class FedCmSpecificTest(ChromeDriverBaseTestWithWebServer):
         "provider_urls": ["%s/fedcm.json"]
       }
       """ % self._url_prefix, 'utf-8')
+
+    def respondWithSignedInHeader(request):
+      return {'IdP-Signin-Status': 'action=signin'}, b"Header sent"
+
+    def respondWithAccountList(request):
+      return {'Content-Type': 'application/json'}, bytes("""
+        {"accounts": [
+          %s
+        ]}""" % self._accounts, 'utf-8')
+
     self._https_server.SetCallbackForPath('/.well-known/web-identity',
                                           respondWithWellKnownFile)
+    self._https_server.SetCallbackForPath('/chromedriver/fedcm/mark-signed-in',
+                                          respondWithSignedInHeader)
+    self._https_server.SetCallbackForPath('/chromedriver/fedcm/accounts.json',
+                                          respondWithAccountList)
 
     script_content = bytes("""
       <script>
@@ -6768,7 +6803,8 @@ class FedCmSpecificTest(ChromeDriverBaseTestWithWebServer):
               configURL: '%s/fedcm.json',
               clientId: '123',
             }]
-          }
+          },
+          mediation: 'required'
         });
       }
       async function getResult() {
@@ -6782,10 +6818,11 @@ class FedCmSpecificTest(ChromeDriverBaseTestWithWebServer):
       """ % self._url_prefix, 'utf-8')
     self._https_server.SetDataForPath('/fedcm.html', script_content)
 
+    self.chrome_switches = ['host-resolver-rules=MAP *:443 127.0.0.1:%s' % port,
+            'enable-experimental-web-platform-features']
     self._driver = self.CreateDriver(
         accept_insecure_certs=True,
-        chrome_switches=['host-resolver-rules=MAP *:443 127.0.0.1:%s' % port,
-            'enable-experimental-web-platform-features'])
+        chrome_switches=self.chrome_switches)
 
   def FedCmDialogCondition(self):
     try:
@@ -6829,6 +6866,43 @@ class FedCmSpecificTest(ChromeDriverBaseTestWithWebServer):
     token = self._driver.ExecuteScript('return getResult()')
     self.assertEqual('Error: NetworkError: Error retrieving a token.', token)
 
+  def testConfirmIdpSignin(self):
+    self._driver = self.CreateDriver(
+        accept_insecure_certs=True,
+        chrome_switches=self.chrome_switches +
+            ["--enable-features=FedCmIdpSigninStatusEnabled"])
+
+    self._accounts = ""
+
+    self._driver.Load(self._url_prefix + "/mark-signed-in")
+
+    self._driver.Load(self._https_server.GetUrl() + "/fedcm.html")
+
+    self._driver.SetDelayEnabled(False)
+    self._driver.ResetCooldown()
+
+    self.assertRaises(chromedriver.NoSuchAlert, self._driver.GetAccounts)
+    self._driver.ExecuteScript("callFedCm()")
+    self.assertTrue(self.WaitForCondition(self.FedCmDialogCondition))
+
+    accounts = self._driver.GetAccounts()
+    self.assertEqual("ConfirmIdpSignin", self._driver.GetDialogType())
+    self.assertEqual(0, len(accounts))
+
+    self._accounts = self._default_accounts
+
+    self._driver.ConfirmIdpSignin(self._vendor_id)
+
+    self.assertTrue(self.WaitForCondition(self.FedCmDialogCondition))
+    accounts = self._driver.GetAccounts()
+    self.assertEqual("AccountChooser", self._driver.GetDialogType())
+    self.assertEqual(2, len(accounts))
+
+    self._driver.SelectAccount(0)
+    self.assertRaises(chromedriver.NoSuchAlert, self._driver.GetAccounts)
+    token = self._driver.ExecuteScript("return getResult()")
+    self.assertEqual("token", token)
+
 # 'Z' in the beginning is to make test executed in the end of suite.
 class ZChromeStartRetryCountTest(unittest.TestCase):
 
@@ -6839,42 +6913,40 @@ class ZChromeStartRetryCountTest(unittest.TestCase):
                       ', \n'.join(chromedriver.ChromeDriver.retried_tests))
 
 if __name__ == '__main__':
-  parser = optparse.OptionParser()
-  parser.add_option(
-      '', '--chromedriver',
-      help='Path to chromedriver server (REQUIRED!)')
-  parser.add_option(
-      '', '--log-path',
-      help='Output verbose server logs to this file')
-  parser.add_option(
-      '', '--replayable',
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--chromedriver',
+                      help='Path to chromedriver server (REQUIRED!)')
+  parser.add_argument('--log-path',
+                      help='Output verbose server logs to this file')
+  parser.add_argument(
+      '--replayable',
       help="Don't truncate long strings in the log so that the log can be "
-          "replayed.")
-  parser.add_option(
-      '', '--chrome', help='Path to a build of the chrome binary')
-  parser.add_option(
-      '', '--filter', type='string', default='',
+      "replayed.")
+  parser.add_argument('--chrome', help='Path to a build of the chrome binary')
+  parser.add_argument(
+      '--filter',
+      default='',
       help='Filter for specifying what tests to run, \"*\" will run all,'
       'including tests excluded by default. E.g., *testRunMethod')
-  parser.add_option(
-      '', '--android-package',
-      help=('Android package key. Possible values: ' +
-            str(list(_ANDROID_NEGATIVE_FILTER.keys()))))
+  parser.add_argument('--android-package',
+                      help=('Android package key. Possible values: ' +
+                            str(list(_ANDROID_NEGATIVE_FILTER.keys()))))
 
-  parser.add_option(
-      '', '--isolated-script-test-output',
-      help='JSON output file used by swarming')
-  parser.add_option(
-      '', '--test-type',
+  parser.add_argument('--isolated-script-test-output',
+                      help='JSON output file used by swarming')
+  parser.add_argument(
+      '--test-type',
       help='Select type of tests to run. Possible value: integration')
-  parser.add_option(
-      '', '--vendor',
+  parser.add_argument(
+      '--vendor',
       help='Vendor id for vendor specific tests. Defaults to "goog"')
-  parser.add_option(
-      '', '--disable-build-check', action='store_true', default=False,
+  parser.add_argument(
+      '--disable-build-check',
+      action='store_true',
+      default=False,
       help='Allow ChromeDriver to run with an incompatible Chrome version')
 
-  options, args = parser.parse_args()
+  options = parser.parse_args()
 
   if options.chromedriver is None:
     parser.error('--chromedriver is required.\n' +

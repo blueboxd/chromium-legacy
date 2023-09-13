@@ -516,7 +516,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.ATK-APIs" enum="AccessibilityATKAPIEnum"
-    expires_after="2023-11-30">
+    expires_after="2024-03-10">
   <owner>jdiggs@chromium.org</owner>
   <owner>jkim@igalia.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
@@ -554,6 +554,16 @@ chromium-metrics-reviews@google.com.
     The number of user input events that were received within one time window,
     without any accompanying accessibility API usage, that triggered
     accessibility to be auto-disabled.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.Bundle" enum="AccessibilityModeBundleEnum"
+    expires_after="2024-02-01">
+  <owner>kevers@chromium.org</owner>
+  <owner>chrome-a11y-core@chromium.org</owner>
+  <summary>
+    Tracks when combinations of mode flags are set. Records when the mode flag
+    changes and aligns with one of the common (named) flag bundles.
   </summary>
 </histogram>
 
@@ -2230,7 +2240,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.ScreenAI.VisualAnnotator.NodesCount"
-    units="count" expires_after="2023-11-30">
+    units="count" expires_after="2024-03-10">
   <owner>kyungjunlee@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -2449,7 +2459,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DomDistiller.ReaderShownForPageLoad" enum="Boolean"
-    expires_after="2024-01-07">
+    expires_after="2024-03-10">
   <owner>mdjones@chromium.org</owner>
   <summary>
     Records if the panel became visible at any point after a page was navigated.

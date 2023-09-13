@@ -70,8 +70,8 @@
 #import "components/translate/core/common/translate_util.h"
 #import "components/variations/service/google_groups_updater_service.h"
 #import "ios/chrome/app/background_mode_buildflags.h"
-#import "ios/chrome/browser/bring_android_tabs/features.h"
-#import "ios/chrome/browser/browsing_data/browsing_data_features.h"
+#import "ios/chrome/browser/bring_android_tabs/model/features.h"
+#import "ios/chrome/browser/browsing_data/model/browsing_data_features.h"
 #import "ios/chrome/browser/crash_report/features.h"
 #import "ios/chrome/browser/credential_provider_promo/features.h"
 #import "ios/chrome/browser/default_browser/utils.h"
@@ -1354,9 +1354,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillSuggestServerCardInsteadOfLocalCard)},
-    {"intents-on-email", flag_descriptions::kEmailName,
-     flag_descriptions::kEmailDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(web::features::kEnableEmails)},
     {"ios-password-checkup", flag_descriptions::kIOSPasswordCheckupName,
      flag_descriptions::kIOSPasswordCheckupDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(password_manager::features::kIOSPasswordCheckup)},
@@ -1621,14 +1618,15 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSpotlightOpenTabsSourceName,
      flag_descriptions::kSpotlightOpenTabsSourceDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kSpotlightOpenTabsSource)},
+    {"spotlight-donate-new-intents",
+     flag_descriptions::kSpotlightDonateNewIntentsName,
+     flag_descriptions::kSpotlightDonateNewIntentsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kSpotlightDonateNewIntents)},
     {"replace-sync-promos-with-sign-in-promos",
      flag_descriptions::kReplaceSyncPromosWithSignInPromosName,
      flag_descriptions::kReplaceSyncPromosWithSignInPromosDescription,
      flags_ui::kOsIos,
      MULTI_VALUE_TYPE(kReplaceSyncPromosWithSignInPromosChoices)},
-    {"toolbar-theme-color", flag_descriptions::kThemeColorInToolbarName,
-     flag_descriptions::kThemeColorInToolbarDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kThemeColorInToolbar)},
     {"tab-grid-refactoring", flag_descriptions::kTabGridRefactoringName,
      flag_descriptions::kTabGridRefactoringDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kTabGridRefactoring)},
@@ -1713,6 +1711,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUpdateChromeSettingsLinkToGPayWeb)},
+    {"top-toolbar-theme-color", flag_descriptions::kThemeColorInTopToolbarName,
+     flag_descriptions::kThemeColorInTopToolbarDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kThemeColorInTopToolbar)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
@@ -1867,6 +1868,14 @@ NSMutableDictionary* CreateExperimentalTestingPolicies() {
     [testing_policies addEntriesFromDictionary:@{password_manager_key : @NO}];
     [allowed_experimental_policies addObject:password_manager_key];
   }
+
+  if ([defaults boolForKey:@"EnableUserPolicyMerge"]) {
+    NSString* user_policy_merge_key =
+        base::SysUTF8ToNSString(policy::key::kCloudUserPolicyMerge);
+    [testing_policies addEntriesFromDictionary:@{user_policy_merge_key : @YES}];
+    [allowed_experimental_policies addObject:user_policy_merge_key];
+  }
+
   if ([defaults boolForKey:@"AddManagedBookmarks"]) {
     NSString* managed_bookmarks_key =
         base::SysUTF8ToNSString(policy::key::kManagedBookmarks);

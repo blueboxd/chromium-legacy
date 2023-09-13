@@ -36,6 +36,7 @@
 #import "ios/chrome/browser/find_in_page/util.h"
 #import "ios/chrome/browser/follow/follow_browser_agent.h"
 #import "ios/chrome/browser/follow/followed_web_site.h"
+#import "ios/chrome/browser/intents/intents_donation_helper.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder_browser_agent.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ntp/new_tab_page_state.h"
@@ -70,6 +71,7 @@
 #import "ios/chrome/browser/shared/public/commands/mini_map_commands.h"
 #import "ios/chrome/browser/shared/public/commands/new_tab_page_commands.h"
 #import "ios/chrome/browser/shared/public/commands/page_info_commands.h"
+#import "ios/chrome/browser/shared/public/commands/parcel_tracking_opt_in_commands.h"
 #import "ios/chrome/browser/shared/public/commands/password_breach_commands.h"
 #import "ios/chrome/browser/shared/public/commands/password_protection_commands.h"
 #import "ios/chrome/browser/shared/public/commands/password_suggestion_commands.h"
@@ -150,6 +152,7 @@
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/page_info/page_info_coordinator.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
+#import "ios/chrome/browser/ui/parcel_tracking/parcel_tracking_opt_in_coordinator.h"
 #import "ios/chrome/browser/ui/passwords/account_storage_notice/passwords_account_storage_notice_coordinator.h"
 #import "ios/chrome/browser/ui/passwords/bottom_sheet/password_suggestion_bottom_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/passwords/bottom_sheet/password_suggestion_bottom_sheet_coordinator_delegate.h"
@@ -274,7 +277,8 @@ enum class ToolbarKind {
     ToolbarAccessoryCoordinatorDelegate,
     URLLoadingDelegate,
     WebContentCommands,
-    WebNavigationNTPDelegate>
+    WebNavigationNTPDelegate,
+    ParcelTrackingOptInCommands>
 
 // Whether the coordinator is started.
 @property(nonatomic, assign, getter=isStarted) BOOL started;
@@ -373,6 +377,10 @@ enum class ToolbarKind {
 
 // Coordinator for Page Info UI.
 @property(nonatomic, strong) ChromeCoordinator* pageInfoCoordinator;
+
+// Coordinator for parcel tracking opt-in UI presentation.
+@property(nonatomic, strong)
+    ParcelTrackingOptInCoordinator* parcelTrackingOptInCoordinator;
 
 // Coordinator for the PassKit UI presentation.
 @property(nonatomic, strong) PassKitCoordinator* passKitCoordinator;
@@ -612,6 +620,8 @@ enum class ToolbarKind {
 
 - (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion
                            dismissOmnibox:(BOOL)dismissOmnibox {
+  [self stopSaveToPhotos];
+
   [self.passKitCoordinator stop];
 
   [self.printCoordinator dismissAnimated:YES];
@@ -805,6 +815,7 @@ enum class ToolbarKind {
     @protocol(WebContentCommands),
     @protocol(DefaultBrowserPromoCommands),
     @protocol(MiniMapCommands),
+    @protocol(ParcelTrackingOptInCommands),
   ];
 
   for (Protocol* protocol in protocols) {
@@ -1363,6 +1374,9 @@ enum class ToolbarKind {
 
   [self.saveToPhotosCoordinator stop];
   self.saveToPhotosCoordinator = nil;
+
+  [self.parcelTrackingOptInCoordinator stop];
+  self.parcelTrackingOptInCoordinator = nil;
 }
 
 // Starts independent mediators owned by this coordinator.
@@ -1560,6 +1574,7 @@ enum class ToolbarKind {
 }
 
 - (void)showBookmarksManager {
+  [IntentDonationHelper donateIntent:DonatedIntentType::kOpenBookmarks];
   [_bookmarksCoordinator presentBookmarks];
 }
 
@@ -1586,6 +1601,8 @@ enum class ToolbarKind {
 }
 
 - (void)showRecentTabs {
+  [IntentDonationHelper donateIntent:DonatedIntentType::kOpenRecentTabs];
+
   // TODO(crbug.com/825431): If BVC's clearPresentedState is ever called (such
   // as in tearDown after a failed egtest), then this coordinator is left in a
   // started state even though its corresponding VC is no longer on screen.
@@ -2281,6 +2298,27 @@ enum class ToolbarKind {
 
   if (FollowBrowserAgent::FromBrowser(self.browser)) {
     FollowBrowserAgent::FromBrowser(self.browser)->ClearUIProviders();
+  }
+}
+
+#pragma mark - ParcelTrackingOptInCommands
+
+- (void)showParcelTrackingOptInPromptWithParcels:
+            (NSArray<CustomTextCheckingResult*>*)parcels
+                                     forWebState:(web::WebState*)webState {
+  [self dismissParcelTrackingOptInPrompt];
+  self.parcelTrackingOptInCoordinator = [[ParcelTrackingOptInCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser
+                        webState:webState
+                         parcels:parcels];
+  [self.parcelTrackingOptInCoordinator start];
+}
+
+- (void)dismissParcelTrackingOptInPrompt {
+  if (self.parcelTrackingOptInCoordinator) {
+    [self.parcelTrackingOptInCoordinator stop];
+    self.parcelTrackingOptInCoordinator = nil;
   }
 }
 

@@ -295,21 +295,6 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "color_unittests",
-        "swarming": {
-          "dimensions": {
-            "cpu": "x86-64",
-            "os": "Mac-10.15"
-          },
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "color_unittests",
-        "test_id_prefix": "ninja://ui/color:color_unittests/"
-      },
-      {
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
         "name": "components_browsertests",
         "swarming": {
           "dimensions": {
@@ -1095,6 +1080,21 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "ui_unittests",
+        "swarming": {
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-10.15"
+          },
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "ui_unittests",
+        "test_id_prefix": "ninja://ui/tests:ui_unittests/"
+      },
+      {
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "unit_tests",
         "swarming": {
           "dimensions": {
@@ -1793,22 +1793,6 @@
         },
         "test": "chromedriver_unittests",
         "test_id_prefix": "ninja://chrome/test/chromedriver:chromedriver_unittests/"
-      },
-      {
-        "isolate_profile_data": true,
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "color_unittests",
-        "swarming": {
-          "dimensions": {
-            "cpu": "x86-64",
-            "os": "Mac-11|Mac-10.16"
-          },
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "color_unittests",
-        "test_id_prefix": "ninja://ui/color:color_unittests/"
       },
       {
         "isolate_profile_data": true,
@@ -2652,6 +2636,22 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "ui_unittests",
+        "swarming": {
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-11|Mac-10.16"
+          },
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "ui_unittests",
+        "test_id_prefix": "ninja://ui/tests:ui_unittests/"
+      },
+      {
+        "isolate_profile_data": true,
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "unit_tests",
         "swarming": {
           "dimensions": {
@@ -3397,22 +3397,6 @@
         },
         "test": "chromedriver_unittests",
         "test_id_prefix": "ninja://chrome/test/chromedriver:chromedriver_unittests/"
-      },
-      {
-        "isolate_profile_data": true,
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "color_unittests",
-        "swarming": {
-          "dimensions": {
-            "cpu": "x86-64",
-            "os": "Mac-12"
-          },
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "color_unittests",
-        "test_id_prefix": "ninja://ui/color:color_unittests/"
       },
       {
         "isolate_profile_data": true,
@@ -4257,6 +4241,22 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "ui_unittests",
+        "swarming": {
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12"
+          },
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "ui_unittests",
+        "test_id_prefix": "ninja://ui/tests:ui_unittests/"
+      },
+      {
+        "isolate_profile_data": true,
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "unit_tests",
         "swarming": {
           "dimensions": {
@@ -5008,22 +5008,6 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "color_unittests",
-        "swarming": {
-          "dimensions": {
-            "cpu": "x86-64",
-            "os": "Mac-13"
-          },
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "color_unittests",
-        "test_id_prefix": "ninja://ui/color:color_unittests/"
-      },
-      {
-        "isolate_profile_data": true,
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
         "name": "components_browsertests",
         "swarming": {
           "dimensions": {
@@ -5057,6 +5041,7 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "content_browsertests",
+        "retry_only_failed_tests": true,
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
@@ -5910,6 +5895,22 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "ui_unittests",
+        "swarming": {
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-13"
+          },
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "ui_unittests",
+        "test_id_prefix": "ninja://ui/tests:ui_unittests/"
+      },
+      {
+        "isolate_profile_data": true,
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
         "name": "unit_tests",
         "swarming": {
           "dimensions": {
@@ -6682,21 +6683,6 @@
         },
         "test": "chromedriver_unittests",
         "test_id_prefix": "ninja://chrome/test/chromedriver:chromedriver_unittests/"
-      },
-      {
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "color_unittests",
-        "swarming": {
-          "dimensions": {
-            "cpu": "x86-64",
-            "os": "Mac-13"
-          },
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "color_unittests",
-        "test_id_prefix": "ninja://ui/color:color_unittests/"
       },
       {
         "merge": {
@@ -7513,6 +7499,21 @@
         },
         "test": "ui_touch_selection_unittests",
         "test_id_prefix": "ninja://ui/touch_selection:ui_touch_selection_unittests/"
+      },
+      {
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "ui_unittests",
+        "swarming": {
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-13"
+          },
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "ui_unittests",
+        "test_id_prefix": "ninja://ui/tests:ui_unittests/"
       },
       {
         "merge": {
@@ -18636,7 +18637,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
+          "shards": 6
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/",
         "variant_id": "iPad Pro (12.9-inch) (6th generation) 16.4"
@@ -18688,7 +18689,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
+          "shards": 6
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/",
         "variant_id": "iPad Pro (12.9-inch) (6th generation) 17.0"
@@ -18740,7 +18741,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
+          "shards": 6
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/",
         "variant_id": "iPhone 13 15.5"
@@ -23446,21 +23447,6 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "color_unittests",
-        "swarming": {
-          "dimensions": {
-            "cpu": "arm64",
-            "os": "Mac-11"
-          },
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "color_unittests",
-        "test_id_prefix": "ninja://ui/color:color_unittests/"
-      },
-      {
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
         "name": "components_browsertests",
         "swarming": {
           "dimensions": {
@@ -24241,6 +24227,21 @@
         },
         "test": "ui_touch_selection_unittests",
         "test_id_prefix": "ninja://ui/touch_selection:ui_touch_selection_unittests/"
+      },
+      {
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "ui_unittests",
+        "swarming": {
+          "dimensions": {
+            "cpu": "arm64",
+            "os": "Mac-11"
+          },
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "ui_unittests",
+        "test_id_prefix": "ninja://ui/tests:ui_unittests/"
       },
       {
         "merge": {
@@ -24913,22 +24914,6 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "color_unittests",
-        "swarming": {
-          "dimensions": {
-            "cpu": "arm64",
-            "os": "Mac-12"
-          },
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "color_unittests",
-        "test_id_prefix": "ninja://ui/color:color_unittests/"
-      },
-      {
-        "ci_only": true,
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
         "name": "components_browsertests",
         "swarming": {
           "dimensions": {
@@ -25758,6 +25743,22 @@
         },
         "test": "ui_touch_selection_unittests",
         "test_id_prefix": "ninja://ui/touch_selection:ui_touch_selection_unittests/"
+      },
+      {
+        "ci_only": true,
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "ui_unittests",
+        "swarming": {
+          "dimensions": {
+            "cpu": "arm64",
+            "os": "Mac-12"
+          },
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "ui_unittests",
+        "test_id_prefix": "ninja://ui/tests:ui_unittests/"
       },
       {
         "ci_only": true,
@@ -26446,22 +26447,6 @@
         },
         "test": "chromedriver_unittests",
         "test_id_prefix": "ninja://chrome/test/chromedriver:chromedriver_unittests/"
-      },
-      {
-        "ci_only": true,
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "color_unittests",
-        "swarming": {
-          "dimensions": {
-            "cpu": "arm64",
-            "os": "Mac-13"
-          },
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "color_unittests",
-        "test_id_prefix": "ninja://ui/color:color_unittests/"
       },
       {
         "ci_only": true,
@@ -27297,6 +27282,22 @@
         },
         "test": "ui_touch_selection_unittests",
         "test_id_prefix": "ninja://ui/touch_selection:ui_touch_selection_unittests/"
+      },
+      {
+        "ci_only": true,
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "ui_unittests",
+        "swarming": {
+          "dimensions": {
+            "cpu": "arm64",
+            "os": "Mac-13"
+          },
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "ui_unittests",
+        "test_id_prefix": "ninja://ui/tests:ui_unittests/"
       },
       {
         "ci_only": true,

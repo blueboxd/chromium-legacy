@@ -369,6 +369,9 @@ class CORE_EXPORT StyleRuleProperty : public StyleRuleBase {
   const CSSValue* Inherits() const;
   const CSSValue* GetInitialValue() const;
 
+  bool SetNameText(const ExecutionContext* execution_context,
+                   const String& name_text);
+
   void SetCascadeLayer(const CascadeLayer* layer) { layer_ = layer; }
   const CascadeLayer* GetCascadeLayer() const { return layer_; }
 
@@ -391,8 +394,8 @@ class CORE_EXPORT StyleRuleGroup : public StyleRuleBase {
   }
   HeapVector<Member<StyleRuleBase>>& ChildRules() { return child_rules_; }
 
-  void WrapperInsertRule(unsigned, StyleRuleBase*);
-  void WrapperRemoveRule(unsigned);
+  void WrapperInsertRule(CSSStyleSheet*, unsigned, StyleRuleBase*);
+  void WrapperRemoveRule(CSSStyleSheet*, unsigned);
 
   void TraceAfterDispatch(blink::Visitor*) const;
 

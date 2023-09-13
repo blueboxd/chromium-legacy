@@ -56,7 +56,6 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/ime_util_chromeos.h"
-#include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -322,6 +321,23 @@ void WindowState::SetDelegate(std::unique_ptr<WindowStateDelegate> delegate) {
   DCHECK((!delegate_.get() && !!delegate.get()) ||
          (!!delegate_.get() && !delegate.get()));
   delegate_ = std::move(delegate);
+}
+
+void WindowState::CreatePersistentWindowInfo(
+    bool was_landscape_before_rotation,
+    const gfx::Rect& restore_bounds_in_parent,
+    bool for_display_removal) {
+  if (for_display_removal) {
+    CHECK(!persistent_window_info_of_display_removal_);
+    persistent_window_info_of_display_removal_ =
+        std::make_unique<PersistentWindowInfo>(
+            window_, was_landscape_before_rotation, restore_bounds_in_parent);
+    return;
+  }
+  CHECK(!persistent_window_info_of_screen_rotation_);
+  persistent_window_info_of_screen_rotation_ =
+      std::make_unique<PersistentWindowInfo>(
+          window_, was_landscape_before_rotation, restore_bounds_in_parent);
 }
 
 WindowStateType WindowState::GetStateType() const {
@@ -835,9 +851,6 @@ WindowState::WindowState(aura::Window* window)
       current_state_(
           new DefaultState(chromeos::ToWindowStateType(GetShowState()))) {
   window_->AddObserver(this);
-}
-
-void WindowState::Init() {
   UpdateWindowPropertiesFromStateType();
   OnPrePipStateChange(WindowStateType::kDefault);
 }
@@ -909,16 +922,6 @@ void WindowState::UpdateWindowPropertiesFromStateType() {
   if (GetStateType() != window_->GetProperty(chromeos::kWindowStateTypeKey)) {
     base::AutoReset<bool> resetter(&ignore_property_change_, true);
     window_->SetProperty(chromeos::kWindowStateTypeKey, GetStateType());
-
-    // During `Shell` deletion, we can be here after the shadow controller has
-    // been destroyed
-    auto* shadow_controller = Shell::Get()->shadow_controller();
-    if (shadow_controller && shadow_controller->GetShadowForWindow(window_)) {
-      // We change shadow radius based on WindowStateType. Shadow controller
-      // does not react to ash's extended window state. Therefore we need to
-      // manually call `UpdateShadowForWindow()`.
-      shadow_controller->UpdateShadowForWindow(window_);
-    }
   }
 
   if (window_->GetProperty(ash::kWindowManagerManagesOpacityKey)) {
@@ -1232,11 +1235,6 @@ WindowState* WindowState::Get(aura::Window* window) {
   state = new WindowState(window);
   window->SetProperty(kWindowStateKey, state);
 
-  // Initialize the window state after setting it as a window property.
-  // Otherwise, as part of window state initialization we end of calling
-  // `WindowState::Get()` and will end up creating window state again
-  // recursively.
-  state->Init();
   return state;
 }
 
@@ -1356,8 +1354,11 @@ void WindowState::OnWindowParentChanged(aura::Window* window,
 void WindowState::OnWindowVisibilityChanged(aura::Window* window,
                                             bool visible) {
   // If this window is a PiP and its SnapFraction is null.
+  // Note that, at this point, ARC PiP may not be ready as visibility can be
+  // updated when it transitions from minimized to PiP. In this case, snap
+  // fraction is updated in `ClientControlledShellSurface::OnPostWidgetCommit`.
   if (window == window_ && visible && IsPip() &&
-      !PipPositioner::HasSnapFraction(this)) {
+      !PipPositioner::HasSnapFraction(this) && !IsArcWindow(window)) {
     PipPositioner::SaveSnapFraction(this, window_->GetBoundsInScreen());
   }
   // From here, we are only interested if the parent visibility changes, i.e.

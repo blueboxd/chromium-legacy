@@ -4,7 +4,7 @@
 <dict>
   <key>headers</key>
   <array>
-    <string>ios/chrome/grit/ios_chromium_strings.h</string>
+    <string>ios/chrome/grit/ios_branded_strings.h</string>
     <string>ios/chrome/grit/ios_strings.h</string>
   </array>
   <key>outputs</key>
@@ -65,6 +65,30 @@
       <string>Intents.strings</string>
       <key>strings</key>
       <array>
+        <dict>
+          <key>output</key>
+          <string>QI9R4N</string>
+          <key>input</key>
+          <string>IDS_IOS_INTENTS_CLEAR_BROWSING_DATA_TITLE</string>
+        </dict>
+        <dict>
+          <key>output</key>
+          <string>6yFN6Z</string>
+          <key>input</key>
+          <string>IDS_IOS_INTENTS_CLEAR_BROWSING_DATA_TITLE</string>
+        </dict>
+        <dict>
+          <key>output</key>
+          <string>lfVwmu</string>
+          <key>input</key>
+          <string>IDS_IOS_INTENTS_CLEAR_BROWSING_DATA_DESCRIPTION</string>
+        </dict>
+        <dict>
+          <key>output</key>
+          <string>G5abvV</string>
+          <key>input</key>
+          <string>IDS_IOS_INTENTS_CLEAR_BROWSING_DATA_DESCRIPTION</string>
+        </dict>
         <dict>
           <key>output</key>
           <string>O7udUr</string>

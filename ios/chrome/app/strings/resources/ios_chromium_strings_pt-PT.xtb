@@ -25,7 +25,6 @@
 <translation id="1847960401032164406">Maps no Chromium</translation>
 <translation id="186734497270163706">Toque em "Chromium" e, de seguida, em "App de navegador predefinida".</translation>
 <translation id="1867772173333403444">4. Selecione o Chromium</translation>
-<translation id="1940441310478179027">O Chromium deteta moradas através do Google Maps para lhe dar direções e informações locais.</translation>
 <translation id="2006345422933397527">O Chromium não conseguiu verificar se existem atualizações. Experimente verificar a sua ligação à Internet.</translation>
 <translation id="2042889939382983733">Veja o histórico do Chromium</translation>
 <translation id="2052320862053429062">O Chromium verifica periodicamente se as suas palavras-passe fazem parte das listas publicadas online. Ao fazê-lo, as suas palavras-passe e nomes de utilizador estão encriptados, pelo que não podem ser lidos por ninguém, incluindo a Google.</translation>
@@ -70,6 +69,7 @@
 <translation id="3784369638459513223">Abre um novo separador anónimo do Chromium.</translation>
 <translation id="3805899903892079518">O Chromium não tem acesso aos seus vídeos ou fotos. Ative o acesso nas Definições do iOS &gt; Privacidade &gt; Fotos.</translation>
 <translation id="3827545470516145620">Vai obter a proteção de segurança padrão neste dispositivo</translation>
+<translation id="3833326979834193417">O Chromium executa automaticamente a verificação de segurança todos os dias para lhe oferecer proteção contra violações de dados, Websites inseguros e muito mais. Pode encontrar mais informações sobre a verificação de segurança nas Definições.</translation>
 <translation id="3886689467633467988">Inicie sessão neste site e no Chromium para obter os seus marcadores e muito mais em todos os seus dispositivos.</translation>
 <translation id="394413318816989199">A encriptação da frase de acesso não inclui métodos de pagamento nem moradas
 
@@ -85,6 +85,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />limpe os dados do Chromiu
 <translation id="4555020257205549924">Se esta funcionalidade estiver ativada, o Chromium oferecer-se-á para traduzir páginas escritas noutros idiomas com o Google Tradutor. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="4576283463017113841">Abre a página Definição dos métodos de pagamento no Chromium.</translation>
 <translation id="4585809515399340748">Agora, pode utilizar o Chromium sempre que tocar em links de mensagens, documentos e outras apps.</translation>
+<translation id="459080529287102949">Pesquise imagens no Chromium</translation>
 <translation id="4633738821577273991">Obtenha também a Navegação segura melhorada para este perfil do Chromium</translation>
 <translation id="4654936625574199632">Para ajudar a melhorar a app, o Chromium envia relatórios de utilização e falhas para a Google. <ph name="BEGIN_LINK" />Faça a gestão<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Ative o leitor do Chromium</translation>
@@ -153,6 +154,7 @@ Só alguém com a sua frase de acesso pode ler os dados encriptados. A Google n�
 <translation id="7045244423563602563">Personalize o Chromium</translation>
 <translation id="7055269218854630176">A sua organização, <ph name="DOMAIN" />, gere a conta na qual está a iniciar sessão e a forma como o Chromium pode ser usado. O seu administrador pode configurar ou restringir determinadas funcionalidades.</translation>
 <translation id="7099326575020694068">O Chromium não pode utilizar a câmara no modo Vista dividida</translation>
+<translation id="7163483974919055112">Pesquise imagens no Chromium.</translation>
 <translation id="7165402419892018581">Escolha o Chromium para o preenchimento automático</translation>
 <translation id="7175400662502680481">A sua palavra-passe foi exposta numa violação de dados. O Gestor de palavras-passe recomenda que a altere agora.</translation>
 <translation id="7192111075364461693">As notificações do Chromium estão atualmente desativadas nas Definições do dispositivo.</translation>

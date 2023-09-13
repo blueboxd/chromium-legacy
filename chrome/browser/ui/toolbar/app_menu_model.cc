@@ -71,7 +71,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
@@ -1696,6 +1696,10 @@ void AppMenuModel::Build() {
                           chrome::GetManagedUiIcon(browser_->profile()),
                           ui::kColorMenuIcon, kDefaultIconSize));
     }
+
+    SetAccessibleNameAt(
+        GetIndexOfCommandId(IDC_SHOW_MANAGEMENT_PAGE).value(),
+        chrome::GetManagedUiMenuItemTooltip(browser_->profile()));
   }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 

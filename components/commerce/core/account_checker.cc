@@ -5,6 +5,7 @@
 #include "components/commerce/core/account_checker.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
+#include "components/commerce/core/commerce_constants.h"
 #include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/pref_names.h"
 #include "components/endpoint_fetcher/endpoint_fetcher.h"
@@ -30,12 +31,6 @@ const char kPreferencesKey[] = "preferences";
 
 namespace commerce {
 
-const char kOAuthScope[] = "https://www.googleapis.com/auth/chromememex";
-const char kOAuthName[] = "chromememex_svc";
-const char kGetHttpMethod[] = "GET";
-const char kPostHttpMethod[] = "POST";
-const char kContentType[] = "application/json; charset=UTF-8";
-const char kEmptyPostData[] = "";
 const char kNotificationsPrefUrl[] =
     "https://memex-pa.googleapis.com/v1/notifications/preferences";
 
@@ -67,7 +62,7 @@ AccountChecker::AccountChecker(
 
 AccountChecker::~AccountChecker() = default;
 
-bool AccountChecker::IsSignedIn() {
+bool AccountChecker::IsOptedIntoSync() {
   // TODO(crbug.com/1463438): ConsentLevel::kSync is deprecated and should be
   //     removed. See ConsentLevel::kSync documentation for details.
   return identity_manager_ &&
@@ -117,7 +112,7 @@ void AccountChecker::OnPrimaryAccountChanged(
 
 void AccountChecker::FetchWaaStatus() {
   // For now we need to update users' consent status on web and app activity.
-  if (!IsSignedIn()) {
+  if (!IsOptedIntoSync()) {
     return;
   }
   // TODO(crbug.com/1311754): These parameters (url, oauth_scope, etc.) are
@@ -191,7 +186,7 @@ void AccountChecker::OnFetchWaaJsonParsed(
 }
 
 void AccountChecker::FetchPriceEmailPref() {
-  if (!IsSignedIn()) {
+  if (!IsOptedIntoSync()) {
     return;
   }
 
@@ -278,7 +273,7 @@ void AccountChecker::OnPriceEmailPrefChanged() {
     return;
   }
 
-  if (!IsSignedIn() || !pref_service_) {
+  if (!IsOptedIntoSync() || !pref_service_) {
     return;
   }
 

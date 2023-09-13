@@ -188,7 +188,7 @@ export class DirectoryTreePageObject {
    * @return {!Promise<void>}
    */
   async expandTreeItemByLabel(label, allowEmpty) {
-    this.expandTreeItem(this.selectors_.itemByLabel(label), allowEmpty);
+    await this.expandTreeItem_(this.selectors_.itemByLabel(label), allowEmpty);
   }
 
   /**
@@ -214,7 +214,7 @@ export class DirectoryTreePageObject {
           'queryAllElements', this.appId_,
           [this.selectors_.attachModifier(query, {expanded: true})]);
       if (elements.length === 0) {
-        await this.expandTreeItem(query);
+        await this.expandTreeItem_(query);
       }
     }
 
@@ -314,6 +314,22 @@ export class DirectoryTreePageObject {
   }
 
   /**
+   * Returns the labels for all visible tree items.
+   *
+   * @return {!Promise<!Array<string>>}
+   */
+  async getVisibleItemLabels() {
+    const rootItems = await this.remoteCall_.callRemoteTestUtil(
+        'queryAllElements', this.appId_,
+        [`${this.selectors_.root} > ${this.selectors_.item}`]);
+    const expandedChildItems = await this.remoteCall_.callRemoteTestUtil(
+        'queryAllElements', this.appId_,
+        [this.selectors_.childItems(this.selectors_.expandedItems())]);
+    return [...rootItems, ...expandedChildItems].map(
+        item => this.getItemLabel(item));
+  }
+
+  /**
    * Wait for the tree item by its type.
    *
    * @param {string} type Type of the tree item.
@@ -338,6 +354,21 @@ export class DirectoryTreePageObject {
   }
 
   /**
+   * Wait for the child tree item under a specified parent item by their label.
+   *
+   * @param {string} parentLabel Label of the parent item.
+   * @param {string} childLabel Label of the child item.
+   * @return {!Promise<!ElementObject>}
+   */
+  async waitForChildItemByLabel(parentLabel, childLabel) {
+    return this.remoteCall_.waitForElement(
+        this.appId_,
+        this.selectors_.childItem(
+            this.selectors_.itemByLabel(parentLabel),
+            this.selectors_.itemItselfByLabel(childLabel)));
+  }
+
+  /**
    * Select the tree item by its label.
    *
    * @param {string} label Label of the tree item.
@@ -355,7 +386,10 @@ export class DirectoryTreePageObject {
    * @return {!Promise<void>}
    */
   async selectItemByType(type) {
-    this.selectItem_(
+    if (this.selectors_.isInsideDrive(type)) {
+      await this.expandTreeItemByLabel('Google Drive');
+    }
+    await this.selectItem_(
         this.selectors_.itemByType(type, /* isPlaceholder= */ false));
   }
 
@@ -366,7 +400,7 @@ export class DirectoryTreePageObject {
    * @return {!Promise<void>}
    */
   async selectPlaceholderItem(type) {
-    this.selectItem_(
+    await this.selectItem_(
         this.selectors_.itemByType(type, /* isPlaceholder= */ true));
   }
 
@@ -383,15 +417,15 @@ export class DirectoryTreePageObject {
 
   /**
    * Expands a single tree item by clicking on its expand icon.
-   * TODO: this "selector" version should be private in future.
    *
+   * @private
    * @param {string} itemSelector Selector to the tree item that should be
    *     expanded.
    * @param {boolean=} allowEmpty Allow expanding tree item without
    *     any children.
    * @return {!Promise<void>}
    */
-  async expandTreeItem(itemSelector, allowEmpty) {
+  async expandTreeItem_(itemSelector, allowEmpty) {
     await this.remoteCall_.waitForElement(this.appId_, itemSelector);
     const elements = await this.remoteCall_.callRemoteTestUtil(
         'queryAllElements', this.appId_,
@@ -470,6 +504,15 @@ class DirectoryTreeSelectors_ {
   }
 
   /**
+   * The tree item selector.
+   *
+   * @return {string}
+   */
+  get item() {
+    return this.useNewTree ? 'xf-tree-item' : '.tree-item';
+  }
+
+  /**
    * Get tree item by the label of the item.
    *
    * @param {string} label
@@ -496,14 +539,37 @@ class DirectoryTreeSelectors_ {
   }
 
   /**
-   * Get all the child items of the specific item.
+   * Get all expanded tree items.
    *
-   * @param {string} itemSelector
    * @return {string}
    */
-  childItems(itemSelector) {
-    return `${itemSelector} > ${
-        this.useNewTree ? 'xf-tree-item' : '.tree-children > .tree-item'}`;
+  expandedItems() {
+    return `${this.root} ${this.attachModifier(this.item, {expanded: true})}`;
+  }
+
+  /**
+   * Get all the child items of the specific item.
+   *
+   * @param {string} parentSelector
+   * @return {string}
+   */
+  childItems(parentSelector) {
+    return this.useNewTree ?
+        `${parentSelector} > ${this.item}` :
+        `${parentSelector} > .tree-children > ${this.item}`;
+  }
+
+  /**
+   * Get the child item under a specific parent item.
+   *
+   * @param {string} parentSelector The parent item selector.
+   * @param {string} childSelector The child item selector.
+   * @return {string}
+   */
+  childItem(parentSelector, childSelector) {
+    return this.useNewTree ?
+        `${parentSelector} ${childSelector}` :
+        `${parentSelector} .tree-children ${childSelector}`;
   }
 
   /**
@@ -515,8 +581,8 @@ class DirectoryTreeSelectors_ {
    */
   childItemsWithNestedChildren(itemSelector) {
     const nestedItemSelector = this.useNewTree ?
-        'xf-tree-item:has(xf-tree-item)' :
-        '.tree-children > .tree-item > .tree-row';
+        `${this.item}:has(${this.item})` :
+        `.tree-children > ${this.item} > .tree-row`;
     return this.attachModifier(
         `${itemSelector} > ${nestedItemSelector}`, {hasChildren: true});
   }
@@ -529,9 +595,9 @@ class DirectoryTreeSelectors_ {
    */
   itemItselfByType(type, isPlaceholder) {
     if (this.useNewTree) {
-      return isPlaceholder ? `xf-tree-item[data-navigation-key^="${
+      return isPlaceholder ? `${this.item}[data-navigation-key^="${
                                  FAKE_ENTRY_PATH_PREFIX}"][icon="${type}"]` :
-                             `xf-tree-item[data-navigation-key^="${
+                             `${this.item}[data-navigation-key^="${
                                  REAL_ENTRY_PATH_PREFIX}"][icon="${type}"]`;
     }
     return isPlaceholder ? `[root-type-icon="${type}"]` :
@@ -544,10 +610,19 @@ class DirectoryTreeSelectors_ {
    * @return {string}
    */
   itemItselfByLabel(label) {
-    return this.useNewTree ? `xf-tree-item[label="${label}"]` :
-                             `.tree-item[entry-label="${label}"]`;
+    return this.useNewTree ? `${this.item}[label="${label}"]` :
+                             `${this.item}[entry-label="${label}"]`;
   }
 
+  /**
+   *
+   * @param {string} type The volume type of the tree item.
+   * @return {boolean}
+   */
+  isInsideDrive(type) {
+    return type == 'drive_recent' || type == 'drive_shared_with_me' ||
+        type == 'drive_offline' || type == 'shared_drive' || type == 'computer';
+  }
 
   /**
    * Return the recipient element of the keyboard event.

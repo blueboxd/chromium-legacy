@@ -28,7 +28,7 @@
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/policy/core/browser/signin/profile_separation_policies.h"
 #include "components/prefs/pref_service.h"
@@ -71,7 +71,8 @@ std::string GetManagedAccountTitleWithEmail(
   absl::optional<std::string> account_manager =
       chrome::GetAccountManagerIdentity(profile);
 
-  if (!signin_util::IsProfileSeparationEnforcedByProfile(profile)) {
+  if (!signin_util::IsProfileSeparationEnforcedByProfile(
+          profile, base::UTF16ToUTF8(email))) {
     // The profile is managed but does not enforce profile separation. The
     // intercepted account requires it.
     if (account_manager && !account_manager->empty()) {

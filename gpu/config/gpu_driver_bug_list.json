@@ -1388,18 +1388,6 @@
       ]
     },
     {
-      "id": 177,
-      "description": "glGetFragData{Location|Index} works incorrectly on Mac OpenGL drivers",
-      "cr_bugs": [638340, 1473838],
-      "os": {
-        "type": "macosx"
-      },
-      "gl_renderer": "ANGLE.*OpenGL.*",
-      "features": [
-        "get_frag_data_info_bug"
-      ]
-    },
-    {
       "id": 179,
       "description": "glResumeTransformFeedback works incorrectly on Intel GPUs",
       "cr_bugs": [638514],
@@ -3299,7 +3287,6 @@
         "icelake",
         "tigerlake",
         "rocketlake",
-        "dg1",
         "alderlake",
         "alchemist",
         "raptorlake",
@@ -4209,25 +4196,6 @@
       "features": [
         "disable_accelerated_h264_decode",
         "disable_accelerated_h264_encode",
-        "disable_accelerated_vp9_decode",
-        "disable_accelerated_vp9_encode",
-        "disable_accelerated_vp9_profile2_decode"
-      ]
-    },
-    {
-      "id": 416,
-      "cr_bugs": [1465960],
-      "description": "Disable video acceleration on Jasper Lake Intel ChromeOS devices",
-      "os": {
-        "type": "chromeos"
-      },
-      "intel_gpu_series": [
-        "jasperlake"
-      ],
-      "features": [
-        "disable_accelerated_h264_decode",
-        "disable_accelerated_h264_encode",
-        "disable_accelerated_vp8_decode",
         "disable_accelerated_vp9_decode",
         "disable_accelerated_vp9_encode",
         "disable_accelerated_vp9_profile2_decode"

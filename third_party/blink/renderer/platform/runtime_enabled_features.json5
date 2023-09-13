@@ -473,12 +473,10 @@
     },
     {
       name: "BlinkExtensionChromeOS",
+      browser_process_read_write_access: true,
       base_feature: "none",
-    },
-    {
-      name: "BlinkExtensionChromeOSDiagnostics",
-      depends_on: ["BlinkExtensionChromeOS"],
-      base_feature: "none",
+      // TODO(b/294479032): Remove when access control is implemented.
+      public: true,
     },
     {
       name: "BlinkExtensionChromeOSHID",
@@ -494,6 +492,13 @@
       name: "BlinkExtensionChromeOSWindowManagement",
       depends_on: ["BlinkExtensionChromeOS"],
       base_feature: "none",
+    },
+    {
+      name: "BlinkExtensionDiagnostics",
+      depends_on: ["BlinkExtensionChromeOS"],
+      base_feature: "none",
+      // TODO(b/294479032): Remove when access control is implemented.
+      public: true,
     },
     {
       name: "BlinkLifecycleScriptForbidden",
@@ -637,7 +642,7 @@
     {
       // https://drafts.fxtf.org/css-masking/#typedef-geometry-box
       name: "ClipPathGeometryBox",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CloseWatcher",
@@ -1267,7 +1272,7 @@
     {
       name: "Database",
       public: true,
-      status: "stable",
+      status: "test",
       base_feature: "none",
       origin_trial_feature_name: "WebSQL",
     },
@@ -2003,6 +2008,7 @@
     },
     {
       name: "HitTestOpaqueness",
+      status: "experimental",
       implied_by: ["HitTestTransparency"],
     },
     {
@@ -2178,7 +2184,7 @@
     {
       // crbug.com/1353190
       name: "LayoutNGNoCopyBack",
-      depends_on: ["LayoutNGNoLocation", "ScrollableAreaNoSnapping"],
+      depends_on: ["LayoutNGNoLocation"],
       status: "stable",
     },
     {
@@ -3250,10 +3256,6 @@
       status: "stable",
     },
     {
-      name: "ScrollableAreaNoSnapping",
-      status: "stable",
-    },
-    {
       name: "ScrollbarColor",
       status: "experimental",
     },
@@ -3623,10 +3625,6 @@
     },
     {
       name: "SvgCrossOriginAttribute",
-      status: "stable",
-    },
-    {
-      name: "SvgMapLocalToAncestorFix",
       status: "stable",
     },
     {

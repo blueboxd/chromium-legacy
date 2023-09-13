@@ -415,7 +415,8 @@ void Install(UpdaterScope scope) {
 
 void InstallUpdaterAndApp(UpdaterScope scope,
                           const std::string& app_id,
-                          const bool is_silent_install) {
+                          const bool is_silent_install,
+                          const std::string& child_window_text_to_find) {
   const base::FilePath path = GetSetupExecutablePath();
   ASSERT_FALSE(path.empty());
   base::CommandLine command_line(path);
@@ -426,9 +427,18 @@ void InstallUpdaterAndApp(UpdaterScope scope,
     command_line.AppendSwitch(kSilentSwitch);
   }
 
-  int exit_code = -1;
-  Run(scope, command_line, &exit_code);
-  ASSERT_EQ(exit_code, 0);
+  if (child_window_text_to_find.empty()) {
+    int exit_code = -1;
+    Run(scope, command_line, &exit_code);
+    ASSERT_EQ(exit_code, 0);
+  } else {
+#if BUILDFLAG(IS_WIN)
+    Run(scope, command_line, nullptr);
+    CloseInstallCompleteDialog(base::ASCIIToWide(child_window_text_to_find));
+#else
+    NOTREACHED();
+#endif
+  }
 }
 
 void PrintLog(UpdaterScope scope) {
@@ -892,6 +902,14 @@ void Run(UpdaterScope scope, base::CommandLine command_line, int* exit_code) {
   VPLOG_IF(0, !process.IsValid());
   ASSERT_TRUE(process.IsValid());
 
+  if (!exit_code) {
+#if BUILDFLAG(IS_WIN)
+    ::WaitForInputIdle(process.Handle(),
+                       TestTimeouts::tiny_timeout().InMilliseconds() * 50);
+#endif
+    return;
+  }
+
   // macOS requires a larger timeout value for --install.
   bool succeeded = process.WaitForExitWithTimeout(
       2 * TestTimeouts::action_max_timeout(), exit_code);
@@ -1207,6 +1225,13 @@ void RunOfflineInstallOsNotSupported(UpdaterScope scope,
   NOTREACHED();
 }
 #endif  // IS_WIN
+
+void DMPushEnrollmentToken(const std::string& enrollment_token) {
+  scoped_refptr<DMStorage> storage = GetDefaultDMStorage();
+  ASSERT_NE(storage, nullptr);
+  EXPECT_TRUE(storage->StoreEnrollmentToken(enrollment_token));
+  EXPECT_TRUE(storage->DeleteDMToken());
+}
 
 void DMDeregisterDevice(UpdaterScope scope) {
   if (!IsSystemInstall(GetTestScope())) {

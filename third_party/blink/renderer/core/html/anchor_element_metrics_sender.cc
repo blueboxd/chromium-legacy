@@ -65,7 +65,9 @@ bool AnchorElementMetricsSender::HasAnchorElementMetricsSender(
       base::FeatureList::IsEnabled(features::kNavigationPredictor);
   const KURL& url = document.BaseURL();
   return is_feature_enabled && document.IsInOutermostMainFrame() &&
-         url.IsValid() && url.ProtocolIs("https");
+         url.IsValid() && url.ProtocolIsInHTTPFamily() &&
+         document.GetExecutionContext() &&
+         document.GetExecutionContext()->IsSecureContext();
 }
 
 void AnchorElementMetricsSender::

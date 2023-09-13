@@ -13,7 +13,8 @@
 #             android-sm-a235m
 #         chromeos-board-amd64-generic chromeos-board-kevin chromeos-board-eve
 #             chromeos-board-jacuzzi chromeos-board-octopus
-#         fuchsia-board-astro fuchsia-board-sherlock fuchsia-board-qemu-x64 ]
+#         fuchsia-board-astro fuchsia-board-nelson fuchsia-board-sherlock
+#             fuchsia-board-qemu-x64 ]
 # Platform
 # tags: [ desktop
 #         mobile ]
@@ -331,6 +332,7 @@ crbug.com/1473838 [ chromeos lacros-chrome chromeos-board-octopus passthrough ] 
 crbug.com/1473838 [ chromeos lacros-chrome chromeos-board-octopus passthrough ] WebglExtension_EXT_texture_mirror_clamp_to_edge [ Skip ]
 crbug.com/1473838 [ chromeos lacros-chrome chromeos-board-octopus passthrough ] WebglExtension_WEBGL_polygon_mode [ Skip ]
 crbug.com/1473838 [ chromeos lacros-chrome chromeos-board-octopus passthrough angle-opengles ] WebglExtension_WEBGL_render_shared_exponent [ Skip ]
+crbug.com/1481267 [ chromeos lacros-chrome chromeos-board-octopus passthrough ] WebglExtension_NV_shader_noperspective_interpolation [ Skip ]
 
 crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
@@ -353,6 +355,7 @@ crbug.com/1473838 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough an
 crbug.com/1473838 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] WebglExtension_NV_shader_noperspective_interpolation [ Skip ]
 crbug.com/1473838 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] WebglExtension_WEBGL_polygon_mode [ Skip ]
 crbug.com/1473838 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough angle-opengles ] WebglExtension_WEBGL_render_shared_exponent [ Skip ]
+crbug.com/1473838 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] WebglExtension_EXT_blend_func_extended [ Skip ]
 
 ###############################
 # Permanent Slow Expectations #
@@ -711,7 +714,6 @@ crbug.com/1081978 [ linux intel angle-opengl passthrough ] conformance2/textures
 
 ## Linux NVIDIA ##
 
-crbug.com/1453988 [ linux nvidia angle-opengl passthrough ] conformance/textures/misc/texparameter-test.html [ RetryOnFailure ]
 crbug.com/1115314 [ linux nvidia-0x2184 angle-opengl passthrough ] deqp/functional/gles3/fbocompleteness.html [ Failure ]
 
 ## Linux AMD RX 5500 XT ##
@@ -828,6 +830,7 @@ crbug.com/angleproject/7904 [ chromeos chromeos-board-amd64-generic passthrough 
 crbug.com/1473838 [ chromeos chromeos-board-amd64-generic passthrough ] conformance2/extensions/ext-render-snorm.html [ Failure ]
 crbug.com/1473838 [ chromeos chromeos-board-amd64-generic passthrough ] conformance2/extensions/oes-shader-multisample-interpolation.html [ Failure ]
 crbug.com/1473838 [ chromeos chromeos-board-amd64-generic passthrough ] conformance2/extensions/webgl-stencil-texturing.html [ Failure ]
+crbug.com/angleproject/8315 [ chromeos chromeos-board-amd64-generic passthrough ] WebglExtension_EXT_render_snorm [ Failure ]
 
 #####################
 # Lacros failures #

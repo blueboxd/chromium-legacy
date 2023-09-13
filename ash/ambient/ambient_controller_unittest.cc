@@ -10,7 +10,6 @@
 
 #include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/ambient_managed_photo_controller.h"
-#include "ash/ambient/ambient_slideshow_ui_launcher.h"
 #include "ash/ambient/ambient_ui_settings.h"
 #include "ash/ambient/managed/screensaver_images_policy_handler.h"
 #include "ash/ambient/metrics/ambient_metrics.h"
@@ -21,6 +20,7 @@
 #include "ash/ambient/ui/ambient_view_ids.h"
 #include "ash/ambient/ui/photo_view.h"
 #include "ash/ambient/util/ambient_util.h"
+#include "ash/ambient/util/time_of_day_utils.h"
 #include "ash/assistant/assistant_interaction_controller_impl.h"
 #include "ash/constants/ambient_video.h"
 #include "ash/constants/ash_features.h"
@@ -30,7 +30,6 @@
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
-#include "ash/public/cpp/personalization_app/time_of_day_paths.h"
 #include "ash/public/cpp/test/in_process_image_decoder.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -180,12 +179,13 @@ class AmbientControllerTest : public AmbientAshTestBase {
 
   bool AreSessionSpecificObserversBound() {
     auto* ctrl = ambient_controller();
-    auto* ui_launcher =
-        static_cast<AmbientSlideshowUiLauncher*>(ambient_ui_launcher());
 
     bool ui_model_bound = ctrl->ambient_ui_model_observer_.IsObserving();
-    bool backend_model_bound =
-        ui_launcher || ctrl->ambient_backend_model_observer_.IsObserving();
+    // Ideally, we should check whether
+    // |ambient_ui_launcher()->backend_observer_.IsObserving()|. Check
+    // |ambient_ui_launcher()| instead because
+    // |ambient_controller->ambient_ui_launcher_| is not initialized in test.
+    bool backend_model_bound = ambient_ui_launcher();
     bool power_manager_bound =
         ctrl->power_manager_client_observer_.IsObserving();
     bool fingerprint_bound = ctrl->fingerprint_observer_receiver_.is_bound();
@@ -1750,7 +1750,6 @@ TEST_F(AmbientControllerForManagedScreensaverTest,
 
 TEST_F(AmbientControllerForManagedScreensaverTest,
        DisablingManagedAmbientModeFallsbackToUserAmbientModeIfEnabled) {
-  SetAmbientTheme(AmbientTheme::kSlideshow);
   SetAmbientModeEnabled(true);
   SetAmbientModeManagedScreensaverEnabled(true);
   managed_policy_handler()->SetImagesForTesting(image_file_paths_);
@@ -1759,7 +1758,7 @@ TEST_F(AmbientControllerForManagedScreensaverTest,
   EXPECT_TRUE(
       GetContainerView()->GetViewByID(AmbientViewID::kAmbientPhotoView));
   SetAmbientModeManagedScreensaverEnabled(false);
-  DisableBackupCacheDownloads();
+  SetAmbientTheme(AmbientTheme::kSlideshow);
   UnlockScreen();
 
   LockScreen();
@@ -2120,14 +2119,11 @@ TEST_F(AmbientControllerTest, RendersCorrectViewForVideo) {
   ASSERT_TRUE(web_view);
   EXPECT_TRUE(web_view->current_url().SchemeIsFile());
   EXPECT_EQ(web_view->current_url().path(),
-            personalization_app::GetTimeOfDaySrcDir()
-                .Append(personalization_app::kAmbientVideoHtml)
-                .value());
+            GetTimeOfDaySrcDir().Append(kAmbientVideoHtml).value());
   std::string video_file_requested;
   ASSERT_TRUE(net::GetValueForKeyInQuery(web_view->current_url(), "video_file",
                                          &video_file_requested));
-  EXPECT_EQ(video_file_requested,
-            personalization_app::kTimeOfDayNewMexicoVideo);
+  EXPECT_EQ(video_file_requested, kTimeOfDayNewMexicoVideo);
 
   UnlockScreen();
   SetAmbientTheme(AmbientTheme::kSlideshow);
@@ -2154,12 +2150,10 @@ TEST_F(AmbientControllerTest, RendersCorrectViewForVideo) {
   ASSERT_TRUE(web_view);
   EXPECT_TRUE(web_view->current_url().SchemeIsFile());
   EXPECT_EQ(web_view->current_url().path(),
-            personalization_app::GetTimeOfDaySrcDir()
-                .Append(personalization_app::kAmbientVideoHtml)
-                .value());
+            GetTimeOfDaySrcDir().Append(kAmbientVideoHtml).value());
   ASSERT_TRUE(net::GetValueForKeyInQuery(web_view->current_url(), "video_file",
                                          &video_file_requested));
-  EXPECT_EQ(video_file_requested, personalization_app::kTimeOfDayCloudsVideo);
+  EXPECT_EQ(video_file_requested, kTimeOfDayCloudsVideo);
 }
 
 class AmbientControllerDurationTest : public AmbientAshTestBase {
@@ -2193,24 +2187,6 @@ TEST_F(AmbientControllerDurationTest, SetScreenSaverDuration) {
 
   SetScreenSaverDuration(0);
   EXPECT_EQ(0, GetScreenSaverDuration());
-}
-
-TEST_F(AmbientControllerDurationTest, DoNotAcquireWakeLockOnBattery) {
-  // Simulate User logged in.
-  ClearLogin();
-  SimulateUserLogin(kUser1);
-
-  // Set screen saver duration to forever.
-  SetAmbientModeEnabled(true);
-  SetScreenSaverDuration(0);
-  EXPECT_EQ(0, GetScreenSaverDuration());
-
-  LockScreen();
-  FastForwardByLockScreenInactivityTimeout();
-  FastForwardTiny();
-
-  EXPECT_EQ(0, GetNumOfActiveWakeLocks(
-                   device::mojom::WakeLockType::kPreventDisplaySleep));
 }
 
 TEST_F(AmbientControllerDurationTest, AcquireWakeLockAfterScreenSaverStarts) {
@@ -2316,6 +2292,69 @@ TEST_F(AmbientControllerDurationTest, HoldWakeLockIfDurationIsSetToForever) {
   FastForwardByDurationInMinutes(kLongTimeInMinutes);
   EXPECT_TRUE(ambient_controller()->ShouldShowAmbientUi());
   EXPECT_EQ(1, GetNumOfActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventDisplaySleep));
+}
+
+TEST_F(AmbientControllerDurationTest, DoNotAcquireWakeLockOnBatteryMode) {
+  ClearLogin();
+  SimulateUserLogin(kUser1);
+
+  // Set power to battery mode.
+  SetPowerStateDischarging();
+
+  SetAmbientModeEnabled(true);
+  SetScreenSaverDuration(0);
+  EXPECT_EQ(0, GetScreenSaverDuration());
+
+  LockScreen();
+  FastForwardByLockScreenInactivityTimeout();
+  FastForwardTiny();
+
+  EXPECT_EQ(0, GetNumOfActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventDisplaySleep));
+}
+
+TEST_F(AmbientControllerDurationTest, AcquireWakeLockWhileOnAcMode) {
+  ClearLogin();
+  SimulateUserLogin(kUser1);
+
+  // Set power to AC mode, charging.
+  SetPowerStateCharging();
+
+  SetAmbientModeEnabled(true);
+  SetScreenSaverDuration(0);
+  EXPECT_EQ(0, GetScreenSaverDuration());
+
+  LockScreen();
+  FastForwardByLockScreenInactivityTimeout();
+  FastForwardTiny();
+
+  EXPECT_EQ(1, GetNumOfActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventDisplaySleep));
+}
+
+TEST_F(AmbientControllerDurationTest, ReleaseWakeLockWhenUnplugged) {
+  ClearLogin();
+  SimulateUserLogin(kUser1);
+
+  // Set power to AC mode. Verify that wake lock is acquired.
+  SetPowerStateCharging();
+
+  SetAmbientModeEnabled(true);
+  SetScreenSaverDuration(0);
+  EXPECT_EQ(0, GetScreenSaverDuration());
+
+  LockScreen();
+  FastForwardByLockScreenInactivityTimeout();
+  FastForwardTiny();
+
+  EXPECT_EQ(1, GetNumOfActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventDisplaySleep));
+
+  // Set power to battery mode. Verify that wake lock is released.
+  SetPowerStateDischarging();
+  FastForwardTiny();
+  EXPECT_EQ(0, GetNumOfActiveWakeLocks(
                    device::mojom::WakeLockType::kPreventDisplaySleep));
 }
 

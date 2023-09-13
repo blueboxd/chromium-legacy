@@ -192,6 +192,8 @@ chromium-metrics-reviews@google.com.
   <variant name="IPH_IncognitoWindow" summary="incognito window"/>
   <variant name="IPH_InstanceSwitcher" summary="instance switcher"/>
   <variant name="IPH_IntentChip" summary="opening a webpage in an app"/>
+  <variant name="IPH_iOSChoiceScreenFeature"
+      summary="showing the Choice screen on iOS"/>
   <variant name="IPH_iOSDefaultBrowserBadgeEligibility"
       summary="default browser badge promo eligibility tracking"/>
   <variant name="IPH_iOSDefaultBrowserOverflowMenuBadge"
@@ -449,7 +451,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="InProductHelp.Config.ParsingEvent" enum="ConfigParsingEvent"
-    expires_after="2024-01-07">
+    expires_after="2024-03-10">
   <owner>nyquist@chromium.org</owner>
   <summary>
     Records if in-product help configuration is parsed correctly, and the
@@ -622,6 +624,14 @@ chromium-metrics-reviews@google.com.
     false value correlates to a failure to start the tutorial.
   </summary>
   <token key="TutorialID" variants="TutorialID"/>
+</histogram>
+
+<histogram name="UserEducation.MessageAction.{IPHFeature}" enum="MessageAction"
+    expires_after="2024-09-01">
+  <owner>mickeyburks@chromium.org</owner>
+  <owner>frizzle-team@google.com</owner>
+  <summary>Records what action was taken to close the In-Product Help.</summary>
+  <token key="IPHFeature" variants="IPHFeature"/>
 </histogram>
 
 </histograms>

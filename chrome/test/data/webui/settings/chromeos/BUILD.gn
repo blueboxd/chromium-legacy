@@ -53,7 +53,6 @@ build_webui_tests("build") {
     "os_about_page_tests.js",
     "os_page_availability_test.ts",
     "os_settings_main_test.js",
-    "people_page_account_manager_subpage_test.js",
     "personalization_page_with_personalization_hub_test.js",
     "search_engine_test.js",
     "test_about_page_browser_proxy_chromeos.js",
@@ -107,6 +106,7 @@ build_webui_tests("build") {
     "device_page/per_device_pointing_stick_test.ts",
     "device_page/per_device_touchpad_subsection_test.ts",
     "device_page/per_device_touchpad_test.ts",
+    "device_page/power_test.ts",
     "device_page/test_device_page_browser_proxy.ts",
 
     "guest_os/guest_os_shared_paths_test.ts",
@@ -214,12 +214,14 @@ build_webui_tests("build") {
     "os_bluetooth_page/os_saved_devices_list_test.ts",
     "os_bluetooth_page/test_os_bluetooth_subpage_browser_proxy.ts",
 
+    "os_files_page/files_settings_card_test.ts",
     "os_files_page/google_drive_page_test.ts",
     "os_files_page/office_page_test.ts",
     "os_files_page/one_drive_page_test.ts",
+    "os_files_page/one_drive_test_browser_proxy.ts",
     "os_files_page/os_files_page_test.ts",
     "os_files_page/smb_shares_page_test.ts",
-    "os_files_page/one_drive_test_browser_proxy.ts",
+    "os_files_page/test_smb_browser_proxy.ts",
 
     "os_languages_page/input_method_options_page_test.ts",
     "os_languages_page/input_page_test.ts",
@@ -229,6 +231,7 @@ build_webui_tests("build") {
     "os_languages_page/os_languages_page_v2_test.ts",
     "os_languages_page/smart_inputs_page_test.ts",
 
+    "os_people_page/account_manager_subpage_test.ts",
     "os_people_page/add_user_dialog_test.ts",
     "os_people_page/fingerprint_list_subpage_test.ts",
     "os_people_page/os_people_page_test.ts",
@@ -241,6 +244,7 @@ build_webui_tests("build") {
     "os_people_page/test_account_manager_browser_proxy.ts",
     "os_people_page/test_fingerprint_browser_proxy.ts",
     "os_people_page/test_os_sync_browser_proxy.ts",
+    "os_people_page/test_parental_controls_browser_proxy.ts",
 
     "os_printing_page/cups_print_server_test.ts",
     "os_printing_page/cups_printer_dialog_test.ts",
@@ -311,6 +315,7 @@ build_webui_tests("build") {
     "//chrome/browser/resources/ash/settings:build_ts",
     "//chrome/test/data/webui/chromeos:build_ts",
     "//chrome/test/data/webui/cr_components/chromeos:build_ts",
+    "//chrome/test/data/webui/nearby_share:build_ts",
     "//third_party/polymer/v3_0:library",
     "//ui/webui/resources/cr_components/app_management:build_ts",
     "//ui/webui/resources/cr_elements:build_ts",
@@ -334,6 +339,9 @@ build_webui_tests("build") {
         rebase_path(
             "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/tsc/*",
             target_gen_dir),
+    "chrome://webui-test/nearby_share/*|" +
+        rebase_path("$root_gen_dir/chrome/test/data/webui/nearby_share/tsc/*",
+                    target_gen_dir),
   ]
 
   ts_definitions = ts_definition_files

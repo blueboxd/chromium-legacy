@@ -70,7 +70,6 @@
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/print_job_manager.h"
-#include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -90,7 +89,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/breadcrumbs/core/application_breadcrumbs_logger.h"
 #include "components/breadcrumbs/core/breadcrumb_persistent_storage_util.h"
@@ -152,12 +151,10 @@
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_stats_mac.h"
 #endif
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ui/message_center/message_center.h"
-#endif
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "components/soda/soda_installer_impl_chromeos.h"
+#else
+#include "ui/message_center/message_center.h"
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -203,6 +200,10 @@
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "content/public/browser/plugin_service.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#include "chrome/browser/printing/print_preview_dialog_controller.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
@@ -258,6 +259,7 @@ BrowserProcessImpl::BrowserProcessImpl(StartupData* startup_data)
       local_state_(
           startup_data->chrome_feature_list_creator()->TakePrefService()),
       platform_part_(std::make_unique<BrowserProcessPlatformPart>()) {
+  CHECK(!g_browser_process);
   g_browser_process = this;
 
   // Initialize the SessionIdGenerator instance, providing a PrefService to

@@ -21,7 +21,6 @@
 #include "content/browser/preloading/prefetch/prefetch_params.h"
 #include "content/browser/preloading/prefetch/prefetch_probe_result.h"
 #include "content/browser/preloading/prefetch/prefetch_service.h"
-#include "content/browser/preloading/prefetch/prefetch_streaming_url_loader.h"
 #include "content/browser/preloading/prefetch/prefetch_test_utils.h"
 #include "content/browser/preloading/prefetch/prefetch_type.h"
 #include "content/browser/preloading/prefetch/prefetch_url_loader_helper.h"
@@ -1019,9 +1018,24 @@ TEST_F(PrefetchURLLoaderInterceptorTest,
           /*prefetch_document_manager=*/nullptr);
   prefetch_container->SimulateAttemptAtInterceptorForTest();
 
-  MakeServableStreamingURLLoaderForTest(prefetch_container.get(),
-                                        network::mojom::URLResponseHead::New(),
-                                        "test body");
+  auto pending_request =
+      MakeManuallyServableStreamingURLLoaderForTest(prefetch_container.get());
+
+  {
+    mojo::ScopedDataPipeConsumerHandle consumer_handle;
+    mojo::ScopedDataPipeProducerHandle producer_handle;
+    std::string content = "test body";
+    CHECK_EQ(
+        mojo::CreateDataPipe(content.size(), producer_handle, consumer_handle),
+        MOJO_RESULT_OK);
+    uint32_t bytes_written = content.size();
+    CHECK_EQ(MOJO_RESULT_OK,
+             producer_handle->WriteData(content.data(), &bytes_written,
+                                        MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
+    pending_request.client->OnReceiveResponse(
+        network::mojom::URLResponseHead::New(), std::move(consumer_handle),
+        absl::nullopt);
+  }
 
   // Simulate the cookie copy process starting, but not finishing until after
   // |MaybeCreateLoader| is called.
@@ -1055,7 +1069,8 @@ TEST_F(PrefetchURLLoaderInterceptorTest,
   task_environment()->FastForwardBy(base::Milliseconds(20));
 
   // Simulate the prefetch becoming not servable anymore.
-  prefetch_container->ResetAllStreamingURLLoaders();
+  pending_request.client->OnComplete(
+      network::URLLoaderCompletionStatus(net::ERR_FAILED));
   task_environment()->RunUntilIdle();
 
   reader.OnIsolatedCookieCopyComplete();

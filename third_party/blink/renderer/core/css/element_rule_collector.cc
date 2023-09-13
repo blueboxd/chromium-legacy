@@ -1165,7 +1165,7 @@ void ElementRuleCollector::DidMatchRule(
             selector.TagQName().Prefix() == g_star_atom;
       }
 
-      if (!universal) {
+      if (!universal || container_query != nullptr) {
         result_.SetHasNonUniversalHighlightPseudoStyles();
       }
 
@@ -1182,8 +1182,8 @@ void ElementRuleCollector::DidMatchRule(
       result_.SetFirstLineDependsOnSizeContainerQueries();
     }
   } else {
-    matched_rules_.push_back(
-        MatchedRule(rule_data, layer_order, proximity, style_sheet_index));
+    matched_rules_.emplace_back(rule_data, layer_order, proximity,
+                                style_sheet_index);
   }
 }
 

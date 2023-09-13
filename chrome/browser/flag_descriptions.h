@@ -14,6 +14,7 @@
 #include "chrome/common/buildflags.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/paint_preview/buildflags/buildflags.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "components/supervised_user/core/common/buildflags.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
@@ -106,9 +107,6 @@ extern const char kBackgroundResourceFetchDescription[];
 
 extern const char kBrokerFileOperationsOnDiskCacheInNetworkServiceName[];
 extern const char kBrokerFileOperationsOnDiskCacheInNetworkServiceDescription[];
-
-extern const char kCertDualVerificationEnabledName[];
-extern const char kCertDualVerificationEnabledDescription[];
 
 extern const char kCOLRV1FontsDescription[];
 
@@ -1063,6 +1061,9 @@ extern const char kTabAudioMutingDescription[];
 extern const char kCrasSplitAlsaUsbInternalName[];
 extern const char kCrasSplitAlsaUsbInternalDescription[];
 
+extern const char kPwaRestoreUiName[];
+extern const char kPwaRestoreUiDescription[];
+
 extern const char kRestoreTabsOnFREName[];
 extern const char kRestoreTabsOnFREDescription[];
 
@@ -1134,6 +1135,9 @@ extern const char kInstantHotspotRebrandDescription[];
 
 extern const char kIndexedDBCompressValuesWithSnappy[];
 extern const char kIndexedDBCompressValuesWithSnappyDescription[];
+
+extern const char kJapaneseOSSettingsName[];
+extern const char kJapaneseOSSettingsDescription[];
 
 extern const char kJavascriptHarmonyName[];
 extern const char kJavascriptHarmonyDescription[];
@@ -1636,6 +1640,9 @@ extern const char kPrivacyGuideAndroidDescription[];
 extern const char kPrivacyGuide3Name[];
 extern const char kPrivacyGuide3Description[];
 
+extern const char kPrivacyGuidePreloadName[];
+extern const char kPrivacyGuidePreloadDescription[];
+
 extern const char kPrivacySandboxAdsAPIsOverrideName[];
 extern const char kPrivacySandboxAdsAPIsOverrideDescription[];
 
@@ -1960,6 +1967,9 @@ extern const char kPrivateStateTokensDescription[];
 extern const char kTailoredSecurityRetryForSyncUsersName[];
 extern const char kTailoredSecurityRetryForSyncUsersDescription[];
 
+extern const char kTrackingProtection3pcdName[];
+extern const char kTrackingProtection3pcdDescription[];
+
 extern const char kUnifiedPasswordManagerAndroidName[];
 extern const char kUnifiedPasswordManagerAndroidDescription[];
 
@@ -2252,6 +2262,13 @@ extern const char kCCTRealTimeEngagementSignalsAlternativeImplDescription[];
 extern const char kCCTTextFragmentLookupApiEnabledName[];
 extern const char kCCTTextFragmentLookupApiEnabledDescription[];
 
+extern const char kAccountReauthenticationRecentTimeWindowName[];
+extern const char kAccountReauthenticationRecentTimeWindowDescription[];
+extern const char kAccountReauthenticationRecentTimeWindowDefault[];
+extern const char kAccountReauthenticationRecentTimeWindow0mins[];
+extern const char kAccountReauthenticationRecentTimeWindow1mins[];
+extern const char kAccountReauthenticationRecentTimeWindow5mins[];
+
 extern const char kChimeAlwaysShowNotificationDescription[];
 extern const char kChimeAlwaysShowNotificationName[];
 
@@ -2447,6 +2464,8 @@ extern const char kQueryTilesEnableQueryEditingName[];
 extern const char kQueryTilesEnableQueryEditingDescription[];
 extern const char kQueryTilesEnableTrendingName[];
 extern const char kQueryTilesEnableTrendingDescription[];
+extern const char kQueryTilesDisableCountryOverrideName[];
+extern const char kQueryTilesDisableCountryOverrideDescription[];
 extern const char kQueryTilesCountryCode[];
 extern const char kQueryTilesCountryCodeDescription[];
 extern const char kQueryTilesCountryCodeUS[];
@@ -3242,9 +3261,6 @@ extern const char kCalendarJellyDescription[];
 extern const char kCaptureModeAudioMixingName[];
 extern const char kCaptureModeAudioMixingDescription[];
 
-extern const char kCaptureModeDemoToolsName[];
-extern const char kCaptureModeDemoToolsDescription[];
-
 extern const char kCaptureModeGifRecordingName[];
 extern const char kCaptureModeGifRecordingDescription[];
 
@@ -3253,6 +3269,9 @@ extern const char kCrosBatterySaverAlwaysOnDescription[];
 
 extern const char kCrosBatterySaverName[];
 extern const char kCrosBatterySaverDescription[];
+
+extern const char kCrosSoulName[];
+extern const char kCrosSoulDescription[];
 
 extern const char kCrosWebAppShortcutUiUpdateName[];
 extern const char kCrosWebAppShortcutUiUpdateDescription[];
@@ -3476,9 +3495,6 @@ extern const char kEnableNeuralStylusPalmRejectionDescription[];
 extern const char kEnableEdgeDetectionName[];
 extern const char kEnableEdgeDetectionDescription[];
 
-extern const char kEnableOsFeedbackName[];
-extern const char kEnableOsFeedbackDescription[];
-
 extern const char kEnableNewShortcutMappingName[];
 extern const char kEnableNewShortcutMappingDescription[];
 
@@ -3589,11 +3605,6 @@ extern const char kExoOrdinalMotionDescription[];
 
 extern const char kExoSurroundingTextOffsetName[];
 extern const char kExoSurroundingTextOffsetDescription[];
-
-extern const char
-    kExperimentalAccessibilityChromeVoxOobeDialogImprovementsName[];
-extern const char
-    kExperimentalAccessibilityChromeVoxOobeDialogImprovementsDescription[];
 
 extern const char kExperimentalAccessibilityDictationContextCheckingName[];
 extern const char
@@ -3719,6 +3730,9 @@ extern const char kImeFstDecoderParamsUpdateDescription[];
 
 extern const char kImeTrayHideVoiceButtonName[];
 extern const char kImeTrayHideVoiceButtonDescription[];
+
+extern const char kIppFirstSetupForUsbPrintersName[];
+extern const char kIppFirstSetupForUsbPrintersDescription[];
 
 extern const char kLacrosProfileMigrationForceOffName[];
 extern const char kLacrosProfileMigrationForceOffDescription[];
@@ -3910,9 +3924,6 @@ extern const char kShimlessRMAComplianceCheckDescription[];
 
 extern const char kShimlessRMAOsUpdateName[];
 extern const char kShimlessRMAOsUpdateDescription[];
-
-extern const char kShimlessRMADiagnosticPageName[];
-extern const char kShimlessRMADiagnosticPageDescription[];
 
 extern const char kShortcutCustomizationJellyName[];
 extern const char kShortcutCustomizationJellyDescription[];
@@ -4416,6 +4427,11 @@ extern const char kEnableBuiltinHlsDescription[];
 extern const char kProfilesReorderingName[];
 extern const char kProfilesReorderingDescription[];
 #endif
+
+#if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+extern const char kEnableBoundSessionCredentialsName[];
+extern const char kEnableBoundSessionCredentialsDescription[];
+#endif  // BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
 
 // ============================================================================
 // Don't just add flags to the end, put them in the right section in

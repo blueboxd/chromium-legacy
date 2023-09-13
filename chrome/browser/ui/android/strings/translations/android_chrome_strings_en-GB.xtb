@@ -222,6 +222,7 @@ When you delete your browsing history – all or for a specific site – you als
 <translation id="2189903024544168260">Interest removed</translation>
 <translation id="2194856509914051091">Things to consider</translation>
 <translation id="2200113223741723867">Manage usage data sharing</translation>
+<translation id="221494669172414749">Opening Chrome without a profile lock will remove your saved passwords and payment methods from the car. Using a profile lock keeps this data secure.</translation>
 <translation id="2218567645332692482">Upgrade navigations to HTTPS and warn you before loading sites that don’t support it</translation>
 <translation id="2227444325776770048">Continue as <ph name="USER_FULL_NAME" /></translation>
 <translation id="2230777942707397948">Empty window</translation>
@@ -338,6 +339,7 @@ Private state tokens improve privacy on the web and can’t be used to find out 
 <translation id="2840810876587895427">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> incognito tab will be closed}other{<ph name="TAB_COUNT_MANY" /> incognito tabs will be closed}}</translation>
 <translation id="2841216154655874070">{NUM_DAYS,plural, =1{Checked 1 day ago}other{Checked # days ago}}</translation>
 <translation id="2842985007712546952">Parent folder</translation>
+<translation id="2853415089995957805">Chrome preloads pages you're likely to visit, so that they load more quickly when you visit them</translation>
 <translation id="2856503607207334158">Sign-in failed</translation>
 <translation id="2860954141821109167">Make sure that a phone app is enabled on this device</translation>
 <translation id="2861923151411510142">Some Chrome features won\u2019t be available anymore</translation>
@@ -555,7 +557,6 @@ Private state tokens improve privacy on the web and can’t be used to find out 
 <translation id="3958287878205277013">To clear Incognito browsing history from your device, close all Incognito tabs.</translation>
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome will load your page when ready}other{Chrome will load your pages when ready}}</translation>
 <translation id="3962119236270174787">Standard protection against websites, downloads and extensions that are known to be dangerous</translation>
-<translation id="3963007978381181125">Passphrase encryption doesn’t include payment methods and addresses from Google Pay. Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting, you'll need to reset sync. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="3969142555815019568">Chrome can’t check your passwords</translation>
 <translation id="3969863827134279083">Move Up</translation>
 <translation id="397105322502079400">Calculating...</translation>
@@ -583,6 +584,7 @@ Private state tokens improve privacy on the web and can’t be used to find out 
 <translation id="4084712963632273211">From <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />delivered by Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="409109920254068737">You can use this tablet to sign in on the device that’s displaying this QR code.</translation>
 <translation id="4095146165863963773">Delete app data?</translation>
+<translation id="4095425503313512126">Browsing and searching is faster</translation>
 <translation id="4096227151372679484">Bookmark save flow opened at half height</translation>
 <translation id="4101475238162928417">Sync to get your passwords, bookmarks and more on your other devices</translation>
 <translation id="4106587138345390261">Chrome is exploring new features that allow sites to deliver the same browsing experience using less of your info</translation>
@@ -833,6 +835,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5308380583665731573">Connect</translation>
 <translation id="5317780077021120954">Save</translation>
 <translation id="5319359161174645648">Google recommends Chrome</translation>
+<translation id="5320351714793324716">If you allow cookies, Chrome may use them when preloading.</translation>
 <translation id="5321849971085220133">Chrome is finding new ways to reduce tracking and keep you even safer as you browse. Chrome also <ph name="BEGIN_LINK" />estimates your interests<ph name="END_LINK" /> and enables you to manage them. Then, sites that you visit can ask Chrome for your interests to show you ads.</translation>
 <translation id="5326921373682845375">Because the preloaded pages are encrypted, and the site linking to the pages is a Google site, Google servers don’t receive new information when privately preloading these pages.</translation>
 <translation id="5329858041417644019">Your browser is not managed</translation>
@@ -1011,6 +1014,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6295158916970320988">All sites</translation>
 <translation id="6303969859164067831">Sign out and turn off sync</translation>
 <translation id="6312687380483398334">Web apps (quiet)</translation>
+<translation id="6315386555979018699">Delete and continue</translation>
 <translation id="6316139424528454185">Android version is unsupported</translation>
 <translation id="6324916366299863871">Edit shortcut</translation>
 <translation id="6324977638108296054">Can’t create link to highlight</translation>
@@ -1573,6 +1577,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8998289560386111590">Not available on your device</translation>
 <translation id="8998729206196772491">You are signing in with an account managed by <ph name="MANAGED_DOMAIN" /> and giving its administrator control over your Chrome data. Your data will become permanently tied to this account. Signing out of Chrome will delete your data from this device, but it will remain stored in your Google Account.</translation>
 <translation id="9012585441087414258">Protects against sites, downloads and extensions that are known to be dangerous. If a page does something suspicious, URLs and bits of page content are sent to Google Safe Browsing.</translation>
+<translation id="9019199799064251516">Continue without a car profile lock?</translation>
 <translation id="9022774213089566801">Frequently visited</translation>
 <translation id="9022871169049522985">Sites and advertisers can measure the performance of their ads</translation>
 <translation id="9035378196785279980">Move to\u2026</translation>
@@ -1635,5 +1640,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="983192555821071799">Close all tabs</translation>
 <translation id="987264212798334818">General</translation>
 <translation id="992745192656291733"><ph name="TAB_COUNT" /> tabs</translation>
+<translation id="993520549480398880">Also clear bookmarks, history and more from this car</translation>
 <translation id="996149300115483134">Feed card menu is closed</translation>
 </translationbundle>

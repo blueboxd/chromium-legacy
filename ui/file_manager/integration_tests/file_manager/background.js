@@ -152,8 +152,8 @@ export async function pollForChosenEntry(caller) {
  *
  * @param {chrome.fileSystem.AcceptsOption} dialogParams Dialog parameters to be
  *     passed to openEntryChoosingWindow() function.
- * @param {string} volumeName Volume name passed to the selectVolume remote
- *     function.
+ * @param {string} volumeType Volume icon type passed to the directory page
+ *     object's selectItemByType function.
  * @param {!Array<!TestEntryInfo>} expectedSet Expected set of the entries.
  * @param {function(string):Promise} closeDialog Function to close the
  *     dialog.
@@ -164,7 +164,7 @@ export async function pollForChosenEntry(caller) {
  *     dialog.
  */
 export async function openAndWaitForClosingDialog(
-    dialogParams, volumeName, expectedSet, closeDialog, useBrowserOpen = false,
+    dialogParams, volumeType, expectedSet, closeDialog, useBrowserOpen = false,
     debug = false) {
   const caller = getCaller();
   let resultPromise;
@@ -178,9 +178,8 @@ export async function openAndWaitForClosingDialog(
   const appId = await remoteCall.waitForWindow(debug);
   await remoteCall.waitForElement(appId, '#file-list');
   await remoteCall.waitFor('isFileManagerLoaded', appId, true);
-  chrome.test.assertTrue(
-      await remoteCall.callRemoteTestUtil('selectVolume', appId, [volumeName]),
-      'selectVolume failed');
+  const directoryTree = await DirectoryTreePageObject.create(appId, remoteCall);
+  await directoryTree.selectItemByType(volumeType);
   await remoteCall.waitForFiles(
       appId, TestEntryInfo.getExpectedRows(expectedSet));
   await closeDialog(appId);
@@ -371,49 +370,6 @@ export async function createShortcut(appId, directoryName) {
 
   const directoryTree = await DirectoryTreePageObject.create(appId, remoteCall);
   await directoryTree.waitForItemByLabel(directoryName);
-}
-
-/**
- * Expands a single tree item by clicking on its expand icon.
- *
- * @param {string} appId Files app windowId.
- * @param {string} treeItem Query to the tree item that should be expanded.
- * @return {Promise} Promise fulfilled on success.
- */
-export async function expandTreeItem(appId, treeItem) {
-  const directoryTree = await DirectoryTreePageObject.create(appId, remoteCall);
-  await directoryTree.expandTreeItem(treeItem);
-}
-
-/**
- * Uses directory tree to expand each directory in the breadcrumbs path.
- *
- * @param {string} appId Files app windowId.
- * @param {string} breadcrumbsPath Path based in the entry labels like:
- *    /My files/Downloads/photos
- * @return {!Promise<string>} Promise fulfilled on success with the selector
- *    query of the last directory expanded.
- */
-export async function recursiveExpand(appId, breadcrumbsPath) {
-  const directoryTree = await DirectoryTreePageObject.create(appId, remoteCall);
-  return directoryTree.recursiveExpand(breadcrumbsPath);
-}
-
-/**
- * Focus the directory tree and navigates using mouse clicks.
- *
- * @param {!string} appId
- * @param {!string} breadcrumbsPath Path based on the entry labels like:
- *     /My files/Downloads/photos to item that should navigate to.
- * @param {string=} shortcutToPath For shortcuts it navigates to a different
- *   breadcrumbs path, like /My Drive/ShortcutName.
- *   @return {!Promise<string>} the final selector used to click on the desired
- * tree item.
- */
-export async function navigateWithDirectoryTree(
-    appId, breadcrumbsPath, shortcutToPath) {
-  const directoryTree = await DirectoryTreePageObject.create(appId, remoteCall);
-  return directoryTree.navigateToPath(breadcrumbsPath, shortcutToPath);
 }
 
 /**

@@ -339,15 +339,14 @@ ScopedFPDFDocument PDFiumPrint::CreatePrintPdf(
     return nullptr;
   }
 
-  gfx::Size int_paper_size =
-      ToFlooredSize(CSSPixelsToPoints(print_params.paper_size_in_css_pixels));
+  gfx::Size int_paper_size = ToFlooredSize(
+      CSSPixelsToPoints(print_params.default_page_description.size));
   gfx::Rect int_printable_area = ToEnclosedRect(
       CSSPixelsToPoints(print_params.printable_area_in_css_pixels));
 
-  float scale_factor = print_params.scale_factor / 100.0f;
-  FitContentsToPrintableAreaIfRequired(output_doc.get(), scale_factor,
-                                       print_params.print_scaling_option,
-                                       int_paper_size, int_printable_area);
+  FitContentsToPrintableAreaIfRequired(
+      output_doc.get(), print_params.scale_factor,
+      print_params.print_scaling_option, int_paper_size, int_printable_area);
   if (!FlattenPrintData(output_doc.get()))
     return nullptr;
 

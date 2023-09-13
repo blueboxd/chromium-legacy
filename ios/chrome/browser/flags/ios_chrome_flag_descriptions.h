@@ -173,6 +173,10 @@ extern const char kBottomOmniboxDefaultSettingDescription[];
 extern const char kBottomOmniboxSteadyStateName[];
 extern const char kBottomOmniboxSteadyStateDescription[];
 
+// Title and description for the flag that enables donation of new intents.
+extern const char kSpotlightDonateNewIntentsName[];
+extern const char kSpotlightDonateNewIntentsDescription[];
+
 // Title and description for the flag to control if initial uploading of crash
 // reports is delayed.
 extern const char kBreakpadNoDelayInitialUploadName[];
@@ -192,10 +196,6 @@ extern const char kContentPushNotificationsDescription[];
 // events.
 extern const char kAppleCalendarExperienceKitName[];
 extern const char kAppleCalendarExperienceKitDescription[];
-
-// Title and description for the flag to enable emails detection and processing
-extern const char kEmailName[];
-extern const char kEmailDescription[];
 
 // Title and description for the flag to enable phone numbers detection and
 // processing.
@@ -923,9 +923,9 @@ extern const char kTFLiteLanguageDetectionIgnoreName[];
 extern const char kTFLiteLanguageDetectionIgnoreDescription[];
 
 // Title and description for the flag to use the page's theme color in the
-// toolbar.
-extern const char kThemeColorInToolbarName[];
-extern const char kThemeColorInToolbarDescription[];
+// top toolbar.
+extern const char kThemeColorInTopToolbarName[];
+extern const char kThemeColorInTopToolbarDescription[];
 
 // Title and description for the flag to enable using Lens to search using
 // the device camera from the home screen widget.

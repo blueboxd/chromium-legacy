@@ -24,6 +24,7 @@ Mga bagay na dapat isaalang-alang:
 
   • Kung isi-sync mo ang iyong history sa Google Account mo, posibleng kasama rin sa mga sukatan ang impormasyon tungkol sa mga URL na binibisita mo.<ph name="END_INDENT" /></translation>
 <translation id="1554731936187952550">Nasa iyo ang pinakamaigting na seguridad ng Chrome laban sa mga mapaminsalang website</translation>
+<translation id="1657395063736185342">Maghanap ng Mga Visual sa Chrome</translation>
 <translation id="1675955119303651351">Hindi pa nase-save sa Google Account mo ang ilan sa iyong data sa Chrome.
         Subukang maghintay nang ilang minuto bago mag-sign out. Kung magsa-sign out ka ngayon, made-delete ang data na ito.</translation>
 <translation id="1682483655351012182">I-sync ang Iyong Data sa Chrome</translation>
@@ -131,7 +132,6 @@ Mga bagay na dapat isaalang-alang:
 <translation id="6063091872902370735">Payagan ang Pag-sign In sa Chrome</translation>
 <translation id="6110625574506755980">Hindi na magiging available ang ilang feature ng Chrome.</translation>
 <translation id="6181930887571472871">Lumipat sa Chrome</translation>
-<translation id="6228768456496298352">Nagde-detect ang Chrome ng mga address gamit ang Google Maps para mabigyan ka ng mga direksyon at lokal na impormasyon.</translation>
 <translation id="6238746320622508509">Payagan ang Chrome na i-lock ang iyong mga tab na Incognito.</translation>
 <translation id="6247557882553405851">Google Password Manager</translation>
 <translation id="6412673304250309937">Sinusuri ang mga URL sa pamamagitan ng listahan ng mga hindi ligtas na site na naka-store sa Chrome. Kung susubukan ng site na nakawin ang iyong password, o kapag nag-download ka ng mapaminsalang file, posible ring magpadala ang Chrome sa Ligtas na Pag-browse ng mga URL, kabilang ang ilang content ng page</translation>
@@ -150,6 +150,7 @@ Ang taong may passphrase mo lang ang makakapagbasa sa iyong naka-encrypt na data
 <translation id="6916015246697034114">Maghanap Gamit ang Boses sa Chrome</translation>
 <translation id="6964931465519938134">Magagamit mo na ngayon ang Chrome sa tuwing magta-tap ka sa mga link sa mga mensahe, dokumento, at iba pang app.</translation>
 <translation id="6975725306479268850">Piliin ang Chrome para sa AutoFill</translation>
+<translation id="7004159181872656283">Maghanap ng Mga Visual sa Chrome.</translation>
 <translation id="7056826488869329999">Magbubukas at Magpapatakbo ng Pag-check sa Kaligtasan sa Chrome.</translation>
 <translation id="7059914902409643750">Gawing Iyo ang Chrome</translation>
 <translation id="7124339256045485976">Panatilihing up to date ang Chrome</translation>
@@ -157,6 +158,7 @@ Ang taong may passphrase mo lang ang makakapagbasa sa iyong naka-encrypt na data
 <translation id="7165736900384873061">Simulan ang paggamit ng QR scanner ng Google Chrome</translation>
 <translation id="7173660919484573146">Gumagamit ang Chrome ng Face ID para tiyakin ang awtorisadong pag-access sa iyong mga password.</translation>
 <translation id="7187993566681480880">Pinapanatili kang ligtas sa Chrome at puwedeng gamitin para paigtingin ang iyong seguridad sa iba pang Google app kapag naka-sign in ka.</translation>
+<translation id="7200524487407690471">Awtomatikong pinapatakbo ng Chrome ang Pag-check sa Kaligtasan araw-araw para panatilihin kang ligtas laban sa mga paglabag sa data, hindi ligtas na website, at higit pa. Makakakita ka ng higit pa tungkol sa Pag-check sa Kaligtasan sa Mga Setting.</translation>
 <translation id="72119412072970160">Puwede mong gamitin ang mga password na na-save mo sa Google Password Manager sa iba pang app sa iyong iPad.</translation>
 <translation id="7254380941803999489">Itakda ang Chrome Bilang Default na Browser</translation>
 <translation id="7261678641327190792">Hindi masuri ng Chrome ang iyong mga password</translation>

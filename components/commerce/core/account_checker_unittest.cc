@@ -12,6 +12,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/commerce/core/account_checker.h"
+#include "components/commerce/core/commerce_constants.h"
 #include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/pref_names.h"
 #include "components/endpoint_fetcher/mock_endpoint_fetcher.h"
@@ -89,7 +90,7 @@ class AccountCheckerTest : public testing::Test {
     account_checker_ = std::make_unique<SpyAccountChecker>(
         &pref_service_, identity_test_env_.identity_manager(),
         sync_service_.get(), std::move(test_url_loader_factory));
-    ASSERT_EQ(false, account_checker_->IsSignedIn());
+    ASSERT_EQ(false, account_checker_->IsOptedIntoSync());
 
     ON_CALL(*account_checker_, CreateEndpointFetcher).WillByDefault([this]() {
       return std::move(fetcher_);
@@ -139,7 +140,7 @@ TEST_F(AccountCheckerTest, TestFetchWaaStatusOnAccountChanged) {
                                                  signin::ConsentLevel::kSync);
   pref_service_.user_prefs_store()->WaitForValue(
       kWebAndAppActivityEnabledForShopping, base::Value(false));
-  ASSERT_EQ(true, account_checker_->IsSignedIn());
+  ASSERT_EQ(true, account_checker_->IsOptedIntoSync());
   ASSERT_EQ(false, account_checker_->IsWebAndAppActivityEnabled());
 }
 

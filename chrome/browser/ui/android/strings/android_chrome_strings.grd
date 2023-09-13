@@ -350,6 +350,15 @@ CHAR_LIMIT guidelines:
       <message name="IDS_PRELOAD_PAGES_PRIVACY_GUIDE_SUMMARY" desc="Title for a section in Settings that controls pages preloading and informs the user about the data shared by this feature.">
         Choose whether to preload pages
       </message>
+      <message name="IDS_PRELOAD_PAGES_STANDARD_PRIVACY_GUIDE_BULLET_ONE" desc="First bullet point under the Preload Pages standard preloading mode. Informs the user about what the standard preloading setting does.">
+        Browsing and searching is faster
+      </message>
+      <message name="IDS_PRELOAD_PAGES_STANDARD_PRIVACY_GUIDE_BULLET_TWO" desc="Second bullet point under the Preload Pages standard preloading mode. Informs the user about what the standard preloading setting does.">
+        Chrome preloads pages you're likely to visit, so that they load more quickly when you visit them
+      </message>
+      <message name="IDS_PRELOAD_PAGES_STANDARD_PRIVACY_GUIDE_BULLET_THREE" desc="Third bullet point under the Preload Pages standard preloading mode. Informs the user about what the standard preloading setting does.">
+        If you allow cookies, Chrome may use them when preloading
+      </message>
       <message name="IDS_PRELOAD_PAGES_TITLE" desc="Title for a section in Settings that controls pages preloading and informs the user about the data shared by this feature.">
         Preload pages
       </message>
@@ -472,6 +481,17 @@ CHAR_LIMIT guidelines:
 
       <message name="IDS_SEARCH_ENGINE_CHOICE_PROMPT" desc="Prompt asking users whether they want to change the search engine">
         You can choose your search engine
+      </message>
+
+      <!-- Search engine choice screen. TODO(b/280753530): replace with final versions -->
+      <message name="IDS_SEARCH_ENGINE_CHOICE_SCREEN_TITLE" desc="" translateable="false">
+        *Title*
+      </message>
+      <message name="IDS_SEARCH_ENGINE_CHOICE_SCREEN_SUBTITLE" desc="" translateable="false">
+        *Subtitle*
+      </message>
+      <message name="IDS_SEARCH_ENGINE_CHOICE_SCREEN_PRIMARY_ACTION" desc="" translateable="false">
+        *Primary Action*
       </message>
 
       <!-- Autofill and Payments preferences -->
@@ -1638,6 +1658,15 @@ Your Google account may have other forms of browsing history like searches and a
         Depending on your settings, Chrome may also send cookies and your current URL
       </message>
 
+      <!-- Tracking protection -->
+      <!-- TODO(b/295926938): Update the strings once finalized. -->
+      <message name="IDS_TRACKING_PROTECTION_TITLE" desc="" translateable="false">
+        Tracking protection
+      </message>
+      <message name="IDS_TRACKING_PROTECTION_SUMMARY" desc="" translateable="false">
+        Protection from trackers (third-party cookies, IP tracking, invasive scripts, and more)
+      </message>
+
       <!-- Safety check -->
       <message name="IDS_PREFS_SAFETY_CHECK" desc="Title of the Safety check element in settings, allowing the user to check multiple areas of browser safety. [CHAR_LIMIT=32]">
         Safety check
@@ -2313,9 +2342,6 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_SIGN_IN_GOOGLE_ACCOUNT" desc="Title of sign in account selection dialog. [CHAR_LIMIT=32]">
         Google Account
-      </message>
-      <message name="IDS_SYNC_CUSTOM_PASSPHRASE" desc="Prompt user to create a custom sync password.">
-        Passphrase encryption doesn’t include payment methods and addresses from Google Pay. Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting you'll need to reset sync. <ph name="BEGIN_LINK">&lt;learnmore&gt;</ph>Learn more<ph name="END_LINK">&lt;/learnmore&gt;</ph>
       </message>
       <message name="IDS_NEW_SYNC_CUSTOM_PASSPHRASE" desc="Prompt user to create a custom sync password.">
         Payment methods and addresses from Google Pay won’t be encrypted. Browsing history from Chrome won’t sync.

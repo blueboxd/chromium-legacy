@@ -270,9 +270,9 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
      IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_SERIAL_NUMBER_LABEL},
     {"confirmDeviceInfoRegionLabel",
      IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_REGION_LABEL},
-    {"confirmDeviceInfoWhiteLabelLabel",
+    {"confirmDeviceInfoCustomLabelLabel",
      IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_WHITE_LABEL_LABEL},
-    {"confirmDeviceInfoEmptyWhiteLabelLabel",
+    {"confirmDeviceInfoEmptyCustomLabelLabel",
      IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_EMPTY_WHITE_LABEL_LABEL},
     {"confirmDeviceInfoDramPartNumberLabel",
      IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_DRAM_PART_NUMBER_LABEL},
@@ -423,8 +423,6 @@ void AddFeatureFlags(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "osUpdateEnabled",
       base::FeatureList::IsEnabled(features::kShimlessRMAOsUpdate));
-  html_source->AddBoolean("diagnosticPageEnabled",
-                          features::IsShimlessRMADiagnosticPageEnabled());
   html_source->AddBoolean("complianceCheckEnabled",
                           features::IsShimlessRMAComplianceCheckEnabled());
   html_source->AddBoolean("3pDiagnosticsEnabled",

@@ -119,7 +119,7 @@ class DriveIntegrationServiceObserver : public base::CheckedObserver {
 class DriveIntegrationService : public KeyedService,
                                 public drivefs::DriveFsHost::MountObserver,
                                 drivefs::pinning::PinManager::Observer,
-                                ash::NetworkStateHandlerObserver {
+                                ash::NetworkStateHandler::Observer {
  public:
   using DriveFsMojoListenerFactory = base::RepeatingCallback<
       std::unique_ptr<drivefs::DriveFsBootstrapListener>()>;
@@ -467,7 +467,7 @@ class DriveIntegrationService : public KeyedService,
   void OnDrivePrefChanged();
   void OnMirroringPrefChanged();
 
-  // NetworkStateHandlerObserver implementation.
+  // NetworkStateHandler::Observer implementation.
   void PortalStateChanged(const ash::NetworkState*,
                           ash::NetworkState::PortalState portal_state) override;
   void DefaultNetworkChanged(const ash::NetworkState*) override;
@@ -500,10 +500,6 @@ class DriveIntegrationService : public KeyedService,
 
   std::unique_ptr<DriveFsHolder> drivefs_holder_;
 
-  base::ScopedObservation<ash::NetworkStateHandler,
-                          ash::NetworkStateHandlerObserver>
-      network_state_handler_{this};
-
   std::unique_ptr<PinManager> pin_manager_;
 
   int drivefs_total_failures_count_ = 0;
@@ -518,6 +514,10 @@ class DriveIntegrationService : public KeyedService,
   int64_t last_offline_storage_size_result_;
 
   PrefChangeRegistrar registrar_;
+
+  base::ScopedObservation<ash::NetworkStateHandler,
+                          ash::NetworkStateHandler::Observer>
+      network_state_handler_{this};
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

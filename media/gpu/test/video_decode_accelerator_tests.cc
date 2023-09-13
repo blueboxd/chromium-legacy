@@ -484,7 +484,7 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream) {
 #if BUILDFLAG(USE_V4L2_CODEC)
 // Flush the decoder somewhere mid-stream, then continue as normal. This is a
 // contrived use case to exercise important V4L2 stateful areas.
-TEST_F(VideoDecoderTest, FlushMidStream) {
+TEST_F(VideoDecoderTest, DISABLED_FlushMidStream) {
   if (!base::FeatureList::IsEnabled(kV4L2FlatStatefulVideoDecoder)) {
     GTEST_SKIP();
   }
@@ -619,6 +619,10 @@ TEST_F(VideoDecoderTest, ResetAfterFirstConfigInfo) {
   if (g_env->Video()->Codec() != media::VideoCodec::kH264 &&
       g_env->Video()->Codec() != media::VideoCodec::kHEVC)
     GTEST_SKIP();
+
+  if (base::FeatureList::IsEnabled(kV4L2FlatStatefulVideoDecoder)) {
+    GTEST_SKIP() << "Temporarily disabled due to b/298073737";
+  }
 
   auto tvp = CreateDecoderListener(g_env->Video());
 

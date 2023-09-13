@@ -48,7 +48,18 @@
               role-description="$i18n{subpageArrowRoleDescription}">
           </cr-link-row>
         </template>
-        <template is="dom-if" if="[[isPrivacySandboxSettings4_]]">
+        <template is="dom-if" if="[[is3pcdRedesignEnabled_]]">
+          <cr-link-row id="trackingProtectionLinkRow"
+              start-icon="settings:visibility-off"
+              class="hr" label="$i18n{trackingProtectionLinkRowLabel}"
+              sub-label="$i18n{trackingProtectionLinkRowSubLabel}"
+              on-click="onCookiesClick_"
+              role-description="$i18n{subpageArrowRoleDescription}">
+          </cr-link-row>
+        </template>
+        <template is="dom-if"
+          if="[[isPrivacySandboxSettings4CookiesPageEnabled_(
+            isPrivacySandboxSettings4_, is3pcdRedesignEnabled_)]]">
           <cr-link-row id="thirdPartyCookiesLinkRow"
               start-icon="settings:cookie"
               class="hr" label="$i18n{thirdPartyCookiesLinkRowLabel}"
@@ -58,7 +69,9 @@
               role-description="$i18n{subpageArrowRoleDescription}">
           </cr-link-row>
         </template>
-        <template is="dom-if" if="[[!isPrivacySandboxSettings4_]]">
+        <template is="dom-if"
+          if="[[isPrivacySandboxSettings3CookiesPageEnabled_(
+            isPrivacySandboxSettings4_, is3pcdRedesignEnabled_)]]">
           <cr-link-row id="cookiesLinkRow" start-icon="settings:cookie"
               class="hr" label="$i18n{cookiePageTitle}"
               sub-label="[[cookieSettingDescription_]]"
@@ -298,7 +311,24 @@
           </category-setting-exceptions>
         </settings-subpage>
       </template>
-      <template is="dom-if" if="[[isPrivacySandboxSettings4_]]">
+      <template is="dom-if" if="[[is3pcdRedesignEnabled_]]">
+        <template is="dom-if" route-path="/cookies">
+          <settings-subpage id="cookies"
+              page-title="$i18n{trackingProtectionPageTitle}"
+              learn-more-url="$i18n{cookiesSettingsHelpCenterURL}"
+              search-label="$i18n{siteSettingsAllSitesSearch}"
+              search-term="{{searchFilter_}}"
+              associated-control="[[$$('#trackingProtectionLinkRow')]]">
+            <settings-cookies-page prefs="{{prefs}}"
+                focus-config="[[focusConfig_]]"
+                search-term="[[searchFilter_]]">
+            </settings-cookies-page>
+          </settings-subpage>
+        </template>
+      </template>
+      <template is="dom-if"
+        if="[[isPrivacySandboxSettings4CookiesPageEnabled_(
+          isPrivacySandboxSettings4_, is3pcdRedesignEnabled_)]]">
         <template is="dom-if" route-path="/cookies">
           <settings-subpage id="cookies"
               page-title="$i18n{thirdPartyCookiesPageTitle}"
@@ -313,7 +343,9 @@
           </settings-subpage>
         </template>
       </template>
-      <template is="dom-if" if="[[!isPrivacySandboxSettings4_]]">
+      <template is="dom-if"
+        if="[[isPrivacySandboxSettings3CookiesPageEnabled_(
+          isPrivacySandboxSettings4_, is3pcdRedesignEnabled_)]]">
         <template is="dom-if" route-path="/cookies">
           <settings-subpage id="cookies" page-title="$i18n{cookiePageTitle}"
               learn-more-url="$i18n{cookiesSettingsHelpCenterURL}"

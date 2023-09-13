@@ -93,9 +93,12 @@ enum class ProfileSignout {
   // (eg. using history sync promo in recent tabs), but declined history sync
   // eventually.
   kUserDeclinedHistorySyncAfterDedicatedSignIn = 27,
+  // If the device lock is removed from an Android automotive device, the
+  // current account is automatically signed out.
+  kDeviceLockRemovedOnAutomotive = 28,
 
   // Keep this as the last enum.
-  kMaxValue = kUserDeclinedHistorySyncAfterDedicatedSignIn
+  kMaxValue = kDeviceLockRemovedOnAutomotive
 };
 
 // Enum values used for use with "AutoLogin.Reverse" histograms.
@@ -199,6 +202,8 @@ enum class AccessPoint : int {
   ACCESS_POINT_SET_UP_LIST = 51,
   // Access point for the local password migration warning on Android.
   ACCESS_POINT_PASSWORD_MIGRATION_WARNING_ANDROID = 52,
+  // Access point for the Save to Photos feature on iOS.
+  ACCESS_POINT_SAVE_TO_PHOTOS_IOS = 53,
 
   // Add values above this line with a corresponding label to the
   // "SigninAccessPoint" enum in tools/metrics/histograms/enums.xml

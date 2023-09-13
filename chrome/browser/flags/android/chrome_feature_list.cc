@@ -108,7 +108,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &download::features::kSmartSuggestionForLargeDownloads,
     &download::features::kUseDownloadOfflineContentProvider,
     &features::kPWAsDefaultOfflinePage,
-    &features::kEarlyLibraryLoad,
     &features::kGenericSensorExtraClasses,
     &features::kBackForwardCache,
     &features::kBackForwardTransitions,
@@ -330,6 +329,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kStartSurfaceAndroid,
     &kStartSurfaceOnTablet,
     &kStartSurfaceReturnTime,
+    &kAccountReauthenticationRecentTimeWindow,
     &kStartSurfaceRefactor,
     &kStartSurfaceSpareTab,
     &kStartSurfaceDisabledFeedImprovement,
@@ -401,7 +401,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &switches::kTangibleSync,
     &syncer::kSyncAndroidLimitNTPPromoImpressions,
     &syncer::kSyncEnableContactInfoDataTypeInTransportMode,
-    &syncer::kSyncEnableHistoryDataType,
     &subresource_filter::kSafeBrowsingSubresourceFilter,
     &thumbnail::kThumbnailCacheRefactor,
     &webapps::features::kInstallableAmbientBadgeInfoBar,
@@ -630,7 +629,7 @@ BASE_FEATURE(kCCTResizableForThirdParties,
 
 BASE_FEATURE(kCCTResizableSideSheet,
              "CCTResizableSideSheet",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCCTResizableSideSheetForThirdParties,
              "CCTResizableSideSheetForThirdParties",
@@ -1116,6 +1115,10 @@ BASE_FEATURE(kStartSurfaceSpareTab,
 BASE_FEATURE(kStartSurfaceReturnTime,
              "StartSurfaceReturnTime",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kAccountReauthenticationRecentTimeWindow,
+             "AccountReauthenticationRecentTimeWindow",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kStartSurfaceRefactor,
              "StartSurfaceRefactor",

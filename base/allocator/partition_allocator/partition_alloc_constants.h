@@ -16,11 +16,14 @@
 #include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
-#include "base/allocator/partition_allocator/tagging.h"
 #include "build/build_config.h"
 
 #if BUILDFLAG(IS_APPLE) && defined(ARCH_CPU_64_BITS)
 #include <mach/vm_page_size.h>
+#endif
+
+#if PA_CONFIG(HAS_MEMORY_TAGGING)
+#include "base/allocator/partition_allocator/tagging.h"
 #endif
 
 namespace partition_alloc {
@@ -53,8 +56,10 @@ struct AllocFlags {
 struct FreeFlags {
   // See AllocFlags::kNoMemoryToolOverride.
   static constexpr unsigned int kNoMemoryToolOverride = 1 << 0;
+  // Don't allow any hooks (override or observers).
+  static constexpr unsigned int kNoHooks = 1 << 1;  // Internal.
 
-  static constexpr unsigned int kLastFlag = kNoMemoryToolOverride;
+  static constexpr unsigned int kLastFlag = kNoHooks;
 };
 
 namespace internal {

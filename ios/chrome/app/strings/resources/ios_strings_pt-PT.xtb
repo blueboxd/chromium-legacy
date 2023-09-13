@@ -156,6 +156,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />limpe os dados do Chrome 
 <translation id="1830634592642484976">Esta morada está atualmente guardada no Chrome. Para a usar nos produtos da rede Google, guarde-a na sua Conta Google <ph name="USER_EMAIL" />.</translation>
 <translation id="1832848789136765277">Para se certificar de que pode sempre aceder aos seus dados de sincronização, valide a sua identidade</translation>
 <translation id="1836891464494477513">{count,plural, =1{Marcador guardado na sua Conta Google {email}}other{Marcadores guardados na sua Conta Google {email}}}</translation>
+<translation id="183878838231635348">Este cartão mostra os problemas de privacidade ou segurança detetados automaticamente pela verificação de segurança.</translation>
 <translation id="1847795903283049083">Também pode ver e gerir estes itens nos marcadores, na Lista de leitura ou no Gestor de Palavras-passe.</translation>
 <translation id="1870148520156231997">Mostrar palavra-passe</translation>
 <translation id="1872096359983322073">Lanterna</translation>
@@ -265,6 +266,7 @@ Os sites não podem utilizar cookies para ver a sua atividade de navegação em 
 <translation id="2523363575747517183">Este Website está a tentar repetidamente abrir outra aplicação.</translation>
 <translation id="2529021024822217800">Abrir todos</translation>
 <translation id="2536991091671391962">Pode usar palavras-passe guardadas em qualquer dispositivo. São guardadas no Gestor de Palavras-passe da Google de <ph name="EMAIL" />.</translation>
+<translation id="2542268842667970959">Oculte a opção "Verificação de segurança"</translation>
 <translation id="2547458583188611426">A sincronização não está a funcionar. Para iniciar a sincronização, introduza a sua frase de acesso.</translation>
 <translation id="2551153019974022505">Erro de conta</translation>
 <translation id="2556092377360758201">Sem proteção (não recomendado)</translation>
@@ -556,6 +558,7 @@ Se aplicável, consulte as instruções do motor de pesquisa para eliminar o his
 <translation id="4121993058175073134">P/enviar dados exp. da Int., config. a conta de email na ap. Definiç.</translation>
 <translation id="4124987746317609294">Intervalo de tempo</translation>
 <translation id="4133265950310064865">Proteção melhorada</translation>
+<translation id="4147897805161313378">Google Fotos</translation>
 <translation id="4148023517926189160">Este Website quer transferir um ficheiro e adicioná-lo ao seu calendário.</translation>
 <translation id="4152011295694446843">Os seus marcadores serão apresentados aqui</translation>
 <translation id="4168651806173792090"><ph name="NETWORK_NAME" /> terminado em <ph name="LAST_FOUR_DIGITS" />.</translation>
@@ -692,6 +695,7 @@ Se aplicável, consulte as instruções do motor de pesquisa para eliminar o his
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="488785315393301722">Mostrar Detalhes</translation>
 <translation id="4894963374040315706">Isto permite-lhe pesquisar com a sua voz</translation>
+<translation id="489903206070130262">O seu último separador aberto</translation>
 <translation id="4901778704868714008">Guardar…</translation>
 <translation id="4904877109095351937">Marcar como lidas</translation>
 <translation id="4908869848243824489">Discover da Google</translation>

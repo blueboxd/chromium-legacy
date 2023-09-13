@@ -139,7 +139,8 @@ void Install(UpdaterScope scope);
 // Installs the updater and an app via the command line.
 void InstallUpdaterAndApp(UpdaterScope scope,
                           const std::string& app_id,
-                          const bool is_silent_install);
+                          const bool is_silent_install,
+                          const std::string& child_window_text_to_find);
 
 // Expects that the updater is installed on the system and the specified
 // version is active.
@@ -207,7 +208,9 @@ void DeleteUpdaterDirectory(UpdaterScope scope);
 void DeleteActiveUpdaterExecutable(UpdaterScope scope);
 
 // Runs the command and waits for it to exit or time out.
-void Run(UpdaterScope scope, base::CommandLine command_line, int* exit_code);
+void Run(UpdaterScope scope,
+         base::CommandLine command_line,
+         int* exit_code = nullptr);
 
 // Returns the path of the Updater executable.
 absl::optional<base::FilePath> GetInstalledExecutablePath(UpdaterScope scope);
@@ -340,9 +343,15 @@ void CallServiceUpdate(UpdaterScope updater_scope,
                        bool same_version_update_allowed);
 
 void SetupFakeLegacyUpdater(UpdaterScope scope);
+
 #if BUILDFLAG(IS_WIN)
 void RunFakeLegacyUpdater(UpdaterScope scope);
+
+// Dismiss the installation completion dialog, then wait for the process
+// exit.
+void CloseInstallCompleteDialog(const std::wstring& child_window_text_to_find);
 #endif  // BUILDFLAG(IS_WIN)
+
 void ExpectLegacyUpdaterMigrated(UpdaterScope scope);
 
 void RunRecoveryComponent(UpdaterScope scope,
@@ -369,7 +378,13 @@ void RunOfflineInstallOsNotSupported(UpdaterScope scope,
 
 base::CommandLine MakeElevated(base::CommandLine command_line);
 
+// Stores a device management enrollment token and deletes any existing
+// stored device management token (for the already-enrolled state).
+// Requires root permissions.
+void DMPushEnrollmentToken(const std::string& enrollment_token);
+
 void DMDeregisterDevice(UpdaterScope scope);
+
 void DMCleanup(UpdaterScope scope);
 
 void ExpectDeviceManagementRegistrationRequest(

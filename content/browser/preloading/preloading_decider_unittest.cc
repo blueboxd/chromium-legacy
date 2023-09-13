@@ -14,6 +14,7 @@
 #include "content/browser/preloading/prefetcher.h"
 #include "content/browser/preloading/preloading_data_impl.h"
 #include "content/browser/preloading/prerenderer.h"
+#include "content/common/features.h"
 #include "content/public/browser/anchor_element_preconnect_delegate.h"
 #include "content/public/common/content_client.h"
 #include "content/public/test/mock_navigation_handle.h"
@@ -62,7 +63,8 @@ class TestPrefetchService : public PrefetchService {
     PreloadingDecider::GetForCurrentDocument(
         RenderFrameHost::FromID(
             prefetch_container->GetReferringRenderFrameHostId()))
-        ->OnPrefetchEvicted(prefetch_container->GetURL());
+        ->OnPreloadDiscarded({prefetch_container->GetURL(),
+                              blink::mojom::SpeculationAction::kPrefetch});
   }
 
   std::vector<base::WeakPtr<PrefetchContainer>> prefetches_;
@@ -88,6 +90,9 @@ class MockPrerenderer : public Prerenderer {
   bool ShouldWaitForPrerenderResult(const GURL& url) override {
     return prerenders_.find(url) != prerenders_.end();
   }
+
+  void SetPrerenderCancellationCallback(
+      PrerenderCancellationCallback callback) override {}
 
   std::set<GURL> prerenders_;
 };

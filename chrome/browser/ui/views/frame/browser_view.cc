@@ -41,6 +41,7 @@
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
+#include "chrome/browser/headless/headless_mode_util.h"
 #include "chrome/browser/native_window_notification_source.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -178,7 +179,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "chromeos/ui/wm/features.h"
@@ -637,8 +638,8 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
       const BrowserViewLayoutDelegateImpl&) = delete;
   ~BrowserViewLayoutDelegateImpl() override = default;
 
-  bool IsTabStripVisible() const override {
-    return browser_view_->GetTabStripVisible();
+  bool ShouldDrawTabStrip() const override {
+    return browser_view_->ShouldDrawTabStrip();
   }
 
   bool GetBorderlessModeEnabled() const override {
@@ -868,24 +869,27 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
 
   SetProperty(views::kElementIdentifierKey, kBrowserViewElementId);
 
-  // Create user education resources.
-  UserEducationService* const user_education_service =
-      UserEducationServiceFactory::GetForBrowserContext(GetProfile());
-  if (user_education_service) {
-    RegisterChromeHelpBubbleFactories(
-        user_education_service->help_bubble_factory_registry());
-    MaybeRegisterChromeFeaturePromos(
-        user_education_service->feature_promo_registry());
-    MaybeRegisterChromeTutorials(user_education_service->tutorial_registry());
-    feature_promo_snooze_service_ =
-        std::make_unique<BrowserFeaturePromoSnoozeService>(GetProfile());
-    feature_promo_controller_ = std::make_unique<BrowserFeaturePromoController>(
-        this,
-        feature_engagement::TrackerFactory::GetForBrowserContext(GetProfile()),
-        &user_education_service->feature_promo_registry(),
-        &user_education_service->help_bubble_factory_registry(),
-        feature_promo_snooze_service_.get(),
-        &user_education_service->tutorial_service());
+  // Create user education resources unless headless mode is in effect.
+  if (!headless::IsHeadlessMode()) {
+    if (UserEducationService* const user_education_service =
+            UserEducationServiceFactory::GetForBrowserContext(GetProfile())) {
+      RegisterChromeHelpBubbleFactories(
+          user_education_service->help_bubble_factory_registry());
+      MaybeRegisterChromeFeaturePromos(
+          user_education_service->feature_promo_registry());
+      MaybeRegisterChromeTutorials(user_education_service->tutorial_registry());
+      feature_promo_snooze_service_ =
+          std::make_unique<BrowserFeaturePromoSnoozeService>(GetProfile());
+      feature_promo_controller_ =
+          std::make_unique<BrowserFeaturePromoController>(
+              this,
+              feature_engagement::TrackerFactory::GetForBrowserContext(
+                  GetProfile()),
+              &user_education_service->feature_promo_registry(),
+              &user_education_service->help_bubble_factory_registry(),
+              feature_promo_snooze_service_.get(),
+              &user_education_service->tutorial_service());
+    }
   }
 
   browser_->tab_strip_model()->AddObserver(this);
@@ -1138,7 +1142,7 @@ int BrowserView::GetTabStripHeight() const {
   // We want to return tabstrip_->height(), but we might be called in the midst
   // of layout, when that hasn't yet been updated to reflect the current state.
   // So return what the tabstrip height _ought_ to be right now.
-  return GetTabStripVisible() ? tabstrip_->GetPreferredSize().height() : 0;
+  return ShouldDrawTabStrip() ? tabstrip_->GetPreferredSize().height() : 0;
 }
 
 gfx::Size BrowserView::GetWebAppFrameToolbarPreferredSize() const {
@@ -1167,12 +1171,26 @@ bool BrowserView::UsesImmersiveFullscreenTabbedMode() const {
 TabSearchBubbleHost* BrowserView::GetTabSearchBubbleHost() {
   if (auto* tab_search_host = frame_->GetFrameView()->GetTabSearchBubbleHost())
     return tab_search_host;
-  auto* tab_search_button = tab_strip_region_view_->tab_search_button();
+  auto* const tab_search_button =
+      tab_strip_region_view_->tab_search_container()->tab_search_button();
   return tab_search_button ? tab_search_button->tab_search_bubble_host()
                            : nullptr;
 }
 
 bool BrowserView::GetTabStripVisible() const {
+  if (!ShouldDrawTabStrip()) {
+    return false;
+  }
+
+  // In non-fullscreen the tabstrip should always be visible.
+  if (!immersive_mode_controller_->IsEnabled()) {
+    return true;
+  }
+
+  return immersive_mode_controller_->IsRevealed();
+}
+
+bool BrowserView::ShouldDrawTabStrip() const {
   // Return false if this window does not normally display a tabstrip or if the
   // tabstrip is currently hidden, e.g. because we're in fullscreen.
   if (!browser_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP))
@@ -2524,6 +2542,10 @@ bool BrowserView::IsBookmarkBarVisible() const {
     return false;
   if (immersive_mode_controller_->ShouldHideTopViews())
     return false;
+  if (immersive_mode_controller_->IsEnabled() &&
+      !immersive_mode_controller_->IsRevealed()) {
+    return false;
+  }
   return true;
 }
 

@@ -382,6 +382,18 @@ void ChromeAppListModelUpdater::LoadAppIcon(const std::string& id) {
   item->LoadIcon();
 }
 
+void ChromeAppListModelUpdater::UpdateProgress(const std::string& id,
+                                               float progress) {
+  TRACE_EVENT0("ui", "ChromeAppListModelUpdater::UpdateProgress");
+  ChromeAppListItem* item = FindItem(id);
+  if (!item) {
+    return;
+  }
+  std::unique_ptr<ash::AppListItemMetadata> data = item->CloneMetadata();
+  data->progress = progress;
+  model_.SetItemMetadata(id, std::move(data));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Methods only used by ChromeAppListItem that talk to ash directly.
 
@@ -431,6 +443,22 @@ void ChromeAppListModelUpdater::SetItemIconAndColor(
   // order.
   if (color_change)
     OnAppListItemUpdated(item);
+}
+
+void ChromeAppListModelUpdater::SetItemBadgeIcon(
+    const std::string& id,
+    const gfx::ImageSkia& badge_icon) {
+  TRACE_EVENT0("ui", "ChromeAppListModelUpdater::SetItemBadgeIcon");
+  if (badge_icon.isNull()) {
+    return;
+  }
+  ash::AppListItem* item = model_.FindItem(id);
+  if (!item) {
+    return;
+  }
+  std::unique_ptr<ash::AppListItemMetadata> data = item->CloneMetadata();
+  data->badge_icon = badge_icon;
+  model_.SetItemMetadata(id, std::move(data));
 }
 
 void ChromeAppListModelUpdater::SetItemName(const std::string& id,

@@ -10,7 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/device_reauth/mac/authenticator_mac.h"
 #include "chrome/browser/password_manager/password_manager_util_mac.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "components/device_reauth/device_authenticator.h"
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/reauth_purpose.h"
@@ -20,16 +20,19 @@
 #include "ui/base/l10n/l10n_util.h"
 
 DeviceAuthenticatorMac::DeviceAuthenticatorMac(
-    std::unique_ptr<AuthenticatorMacInterface> authenticator)
-    : authenticator_(std::move(authenticator)) {}
+    std::unique_ptr<AuthenticatorMacInterface> authenticator,
+    DeviceAuthenticatorProxy* proxy)
+    : ChromeDeviceAuthenticatorCommon(proxy),
+      authenticator_(std::move(authenticator)) {}
 
 DeviceAuthenticatorMac::~DeviceAuthenticatorMac() = default;
 
 // static
 scoped_refptr<DeviceAuthenticatorMac> DeviceAuthenticatorMac::CreateForTesting(
-    std::unique_ptr<AuthenticatorMacInterface> authenticator) {
+    std::unique_ptr<AuthenticatorMacInterface> authenticator,
+    DeviceAuthenticatorProxy* proxy) {
   return base::WrapRefCounted(
-      new DeviceAuthenticatorMac(std::move(authenticator)));
+      new DeviceAuthenticatorMac(std::move(authenticator), proxy));
 }
 
 bool DeviceAuthenticatorMac::CanAuthenticateWithBiometrics() {
@@ -93,9 +96,7 @@ void DeviceAuthenticatorMac::AuthenticateWithMessage(
   // Always use CanAuthenticateWithBiometrics() before invoking the biometrics
   // API, and if it fails use password_manager_util_mac::AuthenticateUser()
   // instead, until crbug.com/1358442 is fixed.
-  if (!CanAuthenticateWithBiometrics() ||
-      !base::FeatureList::IsEnabled(
-          password_manager::features::kBiometricAuthenticationInSettings)) {
+  if (!CanAuthenticateWithBiometrics()) {
     OnAuthenticationCompleted(authenticator_->AuthenticateUserWithNonBiometrics(
         l10n_util::GetStringFUTF16(IDS_PASSWORDS_AUTHENTICATION_PROMPT_PREFIX,
                                    message)));

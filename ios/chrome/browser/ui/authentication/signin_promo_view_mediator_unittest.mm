@@ -40,7 +40,7 @@
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
-#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/web/public/test/web_task_environment.h"
@@ -154,7 +154,7 @@ class SigninPromoViewMediatorTest : public PlatformTest {
   // Tests the mediator with a new created configurator when no accounts are on
   // the device.
   void TestSigninPromoWithNoAccounts(SigninPromoViewStyle style) {
-    EXPECT_EQ(nil, mediator_.identity);
+    EXPECT_EQ(nil, mediator_.displayedIdentity);
     CheckNoAccountsConfigurator([mediator_ createConfigurator], style);
   }
 
@@ -231,7 +231,7 @@ class SigninPromoViewMediatorTest : public PlatformTest {
   // Expects the signin promo view to be configured when accounts are on the
   // device.
   void ExpectSigninWithAccountConfiguration(SigninPromoViewStyle style) {
-    EXPECT_EQ(identity_, mediator_.identity);
+    EXPECT_EQ(identity_, mediator_.displayedIdentity);
     OCMExpect(
         [signin_promo_view_ setMode:SigninPromoViewModeSigninWithAccount]);
     switch (style) {
@@ -578,7 +578,7 @@ TEST_F(SigninPromoViewMediatorTest, SigninPromoWhileSignedIn) {
   CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
   ExpectConfiguratorNotification(NO /* identity changed */);
   [mediator_ signinPromoViewIsVisible];
-  EXPECT_EQ(identity_, mediator_.identity);
+  EXPECT_EQ(identity_, mediator_.displayedIdentity);
   fake_system_identity_manager()->WaitForServiceCallbacksToComplete();
   CheckSyncPromoWithAccountConfigurator(configurator_,
                                         SigninPromoViewStyleStandard);

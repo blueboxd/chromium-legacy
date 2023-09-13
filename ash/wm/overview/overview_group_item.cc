@@ -18,6 +18,17 @@
 
 namespace ash {
 
+namespace {
+
+// Insets values for the individual overview items hosted by the overview group
+// item.
+constexpr gfx::InsetsF kLeftItemBoundsInsets =
+    gfx::InsetsF::TLBR(/*top=*/2, /*left=*/2, /*bottom=*/2, /*right=*/1);
+constexpr gfx::InsetsF kRightItemBoundsInsets =
+    gfx::InsetsF::TLBR(/*top=*/2, /*left=*/1, /*bottom=*/2, /*right=*/2);
+
+}  // namespace
+
 OverviewGroupItem::OverviewGroupItem(const Windows& windows,
                                      OverviewSession* overview_session,
                                      OverviewGrid* overview_grid)
@@ -39,14 +50,15 @@ OverviewGroupItem::OverviewGroupItem(const Windows& windows,
 OverviewGroupItem::~OverviewGroupItem() = default;
 
 aura::Window* OverviewGroupItem::GetWindow() {
-  CHECK_GE(overview_items_.size(), 1u);
+  // TODO(michelefan): `GetWindow()` will be replaced by `GetWindows()` in a
+  // follow-up cl.
   CHECK_LE(overview_items_.size(), 2u);
-  return overview_items_[0]->GetWindow();
+  return overview_items_.empty() ? nullptr : overview_items_[0]->GetWindow();
 }
 
 std::vector<aura::Window*> OverviewGroupItem::GetWindows() {
   std::vector<aura::Window*> windows;
-  for (auto& item : overview_items_) {
+  for (const auto& item : overview_items_) {
     windows.push_back(item->GetWindow());
   }
 
@@ -54,7 +66,7 @@ std::vector<aura::Window*> OverviewGroupItem::GetWindows() {
 }
 
 bool OverviewGroupItem::Contains(const aura::Window* target) const {
-  for (auto& item : overview_items_) {
+  for (const auto& item : overview_items_) {
     if (item->Contains(target)) {
       return true;
     }
@@ -64,7 +76,7 @@ bool OverviewGroupItem::Contains(const aura::Window* target) const {
 }
 
 OverviewItem* OverviewGroupItem::GetLeafItemForWindow(aura::Window* window) {
-  for (auto& item : overview_items_) {
+  for (const auto& item : overview_items_) {
     if (item->GetWindow() == window) {
       return item.get();
     }
@@ -76,7 +88,29 @@ OverviewItem* OverviewGroupItem::GetLeafItemForWindow(aura::Window* window) {
 void OverviewGroupItem::RestoreWindow(bool reset_transform, bool animate) {}
 
 void OverviewGroupItem::SetBounds(const gfx::RectF& target_bounds,
-                                  OverviewAnimationType animation_type) {}
+                                  OverviewAnimationType animation_type) {
+  const int size = overview_items_.size();
+  if (size == 1) {
+    return overview_items_[0]->SetBounds(target_bounds, animation_type);
+  }
+
+  CHECK_EQ(size, 2);
+  item_widget_->SetBounds(gfx::ToRoundedRect(target_bounds));
+  // TODO(michelefan): Set bounds differently based on the screen orientation.
+  // TODO(michelefan): Calculate the actual snap ratio based on the window
+  // bounds and apply it on the individual items hosted by `this`.
+  auto sub_bounds1 = gfx::RectF(
+      target_bounds.origin(),
+      gfx::SizeF(target_bounds.width() / 2.f, target_bounds.height()));
+  sub_bounds1.Inset(kLeftItemBoundsInsets);
+  overview_items_[0]->SetBounds(sub_bounds1, animation_type);
+
+  auto sub_bounds2 = gfx::RectF(
+      gfx::PointF(target_bounds.top_center()),
+      gfx::SizeF(target_bounds.width() / 2.f, target_bounds.height()));
+  sub_bounds2.Inset(kRightItemBoundsInsets);
+  overview_items_[1]->SetBounds(sub_bounds2, animation_type);
+}
 
 gfx::RectF OverviewGroupItem::GetTargetBoundsInScreen() const {
   gfx::RectF target_bounds;
@@ -139,7 +173,11 @@ float OverviewGroupItem::GetOpacity() const {
 
 void OverviewGroupItem::PrepareForOverview() {}
 
-void OverviewGroupItem::OnStartingAnimationComplete() {}
+void OverviewGroupItem::OnStartingAnimationComplete() {
+  for (auto& item : overview_items_) {
+    item->OnStartingAnimationComplete();
+  }
+}
 
 void OverviewGroupItem::HideForSavedDeskLibrary(bool animate) {}
 
@@ -205,10 +243,18 @@ gfx::Point OverviewGroupItem::GetMagnifierFocusPointInScreen() const {
 void OverviewGroupItem::OnOverviewItemWindowDestroying(
     OverviewItem* overview_item,
     bool reposition) {
-  base::EraseIf(overview_items_, base::MatchesUniquePtr(overview_item));
+  // We use 2-step removal to ensure that the `overview_item` gets removed from
+  // the vector before been destroyed so that all the overview items in
+  // `overview_items_` are valid.
+  auto iter = base::ranges::find_if(overview_items_,
+                                    base::MatchesUniquePtr(overview_item));
+  auto to_be_removed = std::move(*iter);
+  overview_items_.erase(iter);
+  to_be_removed.reset();
 
-  // TODO(b/297960394): Remove `this` from the `overview_grid_` when
-  // `overview_items_` becomes empty.
+  if (overview_items_.empty()) {
+    overview_grid_->RemoveItem(this, /*item_destroying=*/true, reposition);
+  }
 }
 
 void OverviewGroupItem::CreateItemWidget() {

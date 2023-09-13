@@ -181,6 +181,9 @@ BASE_DECLARE_FEATURE(kSpotlightOpenTabsSource);
 // Enables indexing Reading List items in Spotlight.
 BASE_DECLARE_FEATURE(kSpotlightReadingListSource);
 
+// Enables intent donation for new intent types.
+BASE_DECLARE_FEATURE(kSpotlightDonateNewIntents);
+
 // Feature to enable sign-in only flow without device level account.
 BASE_DECLARE_FEATURE(kConsistencyNewAccountInterface);
 
@@ -220,8 +223,8 @@ BASE_DECLARE_FEATURE(kDefaultBrowserTriggerCriteriaExperiment);
 // event.
 BASE_DECLARE_FEATURE(kFullScreenPromoOnOmniboxCopyPaste);
 
-// Feature flag to try using the page theme color in the toolbar
-BASE_DECLARE_FEATURE(kThemeColorInToolbar);
+// Feature flag to try using the page theme color in the top toolbar
+BASE_DECLARE_FEATURE(kThemeColorInTopToolbar);
 
 // Feature flag enabling tab grid refactoring.
 BASE_DECLARE_FEATURE(kTabGridRefactoring);

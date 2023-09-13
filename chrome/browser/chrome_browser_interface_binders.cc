@@ -925,7 +925,7 @@ void PopulateChromeFrameBinders(
         base::BindRepeating(&apps::DigitalGoodsFactoryStub::Bind));
   }
 
-  if (chromeos::features::IsCrosDiagnosticsApiEnabled()) {
+  if (chromeos::features::IsBlinkExtensionDiagnosticsEnabled()) {
     map->Add<blink::mojom::CrosDiagnostics>(
         base::BindRepeating(&CrosDiagnosticsImpl::Create));
   }
@@ -1453,14 +1453,11 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<
       ash::common::mojom::AccessibilityFeatures, ash::ScanningUI>(map);
 
-  if (base::FeatureList::IsEnabled(ash::features::kOsFeedback)) {
-    RegisterWebUIControllerInterfaceBinder<
-        ash::os_feedback_ui::mojom::HelpContentProvider, ash::OSFeedbackUI>(
-        map);
-    RegisterWebUIControllerInterfaceBinder<
-        ash::os_feedback_ui::mojom::FeedbackServiceProvider, ash::OSFeedbackUI>(
-        map);
-  }
+  RegisterWebUIControllerInterfaceBinder<
+      ash::os_feedback_ui::mojom::HelpContentProvider, ash::OSFeedbackUI>(map);
+  RegisterWebUIControllerInterfaceBinder<
+      ash::os_feedback_ui::mojom::FeedbackServiceProvider, ash::OSFeedbackUI>(
+      map);
 
   RegisterWebUIControllerInterfaceBinder<
       ash::shimless_rma::mojom::ShimlessRmaService, ash::ShimlessRMADialogUI>(
@@ -1547,7 +1544,7 @@ void PopulateChromeWebUIFrameBinders(
         ash::settings::OSSettingsUI>(map);
   }
 
-  if (drive::util::IsDriveFsBulkPinningEnabled(profile) ||
+  if (drive::util::IsDriveFsBulkPinningAvailable(profile) ||
       base::FeatureList::IsEnabled(
           ash::features::kFilesGoogleDriveSettingsPage)) {
     RegisterWebUIControllerInterfaceBinder<

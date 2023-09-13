@@ -312,6 +312,7 @@ Privéstatustokens verbeteren de privacy op het web en kunnen niet worden gebrui
 <translation id="265156376773362237">Standaard vooraf laden</translation>
 <translation id="2656405586795711023">Web-apps</translation>
 <translation id="2669454659051515572">Iedereen die dit apparaat gebruikt, kan gedownloade bestanden zien</translation>
+<translation id="2673169232805572412">Als een site je wachtwoord probeert te stelen of als je een schadelijk bestand downloadt, kan Chrome URL's, inclusief delen van de paginacontent, naar Google sturen</translation>
 <translation id="2702516483241149200">Nieuw: deel een link die rechtstreeks naar deze tekst scrollt</translation>
 <translation id="2708051474374549906">Realtime, proactieve bescherming tegen gevaarlijke sites, downloads en extensies op basis van je browsegegevens die naar Google worden gestuurd</translation>
 <translation id="2708226184420201102">Openen in <ph name="PRODUCT_NAME" />-browser</translation>
@@ -337,6 +338,7 @@ Privéstatustokens verbeteren de privacy op het web en kunnen niet worden gebrui
 <translation id="2840810876587895427">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> incognitotabblad wordt gesloten}other{<ph name="TAB_COUNT_MANY" /> incognitotabbladen worden gesloten}}</translation>
 <translation id="2841216154655874070">{NUM_DAYS,plural, =1{1 dag geleden gecheckt}other{# dagen geleden gecheckt}}</translation>
 <translation id="2842985007712546952">Bovenliggende map</translation>
+<translation id="2853415089995957805">Chrome laadt vooraf de pagina's die je waarschijnlijk gaat bezoeken, zodat de pagina's sneller laden als je ze bezoekt</translation>
 <translation id="2856503607207334158">Inloggen mislukt</translation>
 <translation id="2860954141821109167">Zorg ervoor dat een telefoon-app aanstaat op dit apparaat</translation>
 <translation id="2861923151411510142">Sommige Chrome-functies zijn niet meer beschikbaar</translation>
@@ -554,7 +556,6 @@ Privéstatustokens verbeteren de privacy op het web en kunnen niet worden gebrui
 <translation id="3958287878205277013">Sluit alle incognitotabbladen om de incognito-browsegeschiedenis op je apparaat te wissen</translation>
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome laadt de pagina wanneer deze klaar is}other{Chrome laadt de pagina's wanneer deze klaar zijn}}</translation>
 <translation id="3962119236270174787">Standaardbeveiliging tegen websites, downloads en extensies die als gevaarlijk zijn bestempeld</translation>
-<translation id="3963007978381181125">Wachtwoordzinversleuteling is niet van toepassing op betaalmethoden en adressen van Google Pay. Alleen iemand met je wachtwoordzin kan je versleutelde gegevens lezen. De wachtwoordzin wordt niet verzonden naar of opgeslagen door Google. Als je je wachtwoordzin vergeet of deze instelling wilt wijzigen, moet je de synchronisatie resetten. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="3969142555815019568">Chrome kan je wachtwoorden niet checken</translation>
 <translation id="3969863827134279083">Naar boven</translation>
 <translation id="397105322502079400">Berekenen...</translation>
@@ -582,6 +583,7 @@ Privéstatustokens verbeteren de privacy op het web en kunnen niet worden gebrui
 <translation id="4084712963632273211">Van <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />geleverd door Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="409109920254068737">Je kunt deze tablet gebruiken om in te loggen op het apparaat waarop deze QR-code wordt getoond.</translation>
 <translation id="4095146165863963773">App-gegevens verwijderen?</translation>
+<translation id="4095425503313512126">Browsen en zoeken gaan sneller</translation>
 <translation id="4096227151372679484">Proces voor bookmark opslaan is op halve hoogte geopend</translation>
 <translation id="4101475238162928417">Voer een synchronisatie uit om onder meer de wachtwoorden en bookmarks van je andere apparaten op te halen</translation>
 <translation id="4106587138345390261">Chrome bevat nieuwe experimentele functies waarmee sites dezelfde browsefunctionaliteit kunnen leveren terwijl er minder van je gegevens worden gebruikt</translation>
@@ -832,6 +834,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5308380583665731573">Verbinding maken</translation>
 <translation id="5317780077021120954">Opslaan</translation>
 <translation id="5319359161174645648">Google beveelt Chrome aan</translation>
+<translation id="5320351714793324716">Als je cookies toestaat, kan Chrome deze gebruiken voor vooraf laden.</translation>
 <translation id="5321849971085220133">Chrome zoekt nieuwe manieren om tracking te verminderen en je nog beter te beschermen terwijl je browst. Chrome <ph name="BEGIN_LINK" />schat je interesses<ph name="END_LINK" /> en biedt je mogelijkheden om ze te beheren. Daarna kunnen sites die je bezoekt Chrome om je interesses vragen, zodat ze je relevante advertenties kunnen laten zien.</translation>
 <translation id="5326921373682845375">Omdat de vooraf geladen pagina's versleuteld zijn en de site die naar de pagina's linkt een Google-site is, krijgen Google-servers geen nieuwe informatie als deze pagina's privé vooraf worden geladen.</translation>
 <translation id="5329858041417644019">Je browser wordt niet beheerd.</translation>

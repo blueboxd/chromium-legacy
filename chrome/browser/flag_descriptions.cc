@@ -132,12 +132,6 @@ const char kBrokerFileOperationsOnDiskCacheInNetworkServiceDescription[] =
     "Broker file operations on disk cache running in the Network Service. This "
     "is no-op when the Network Service is running in the browser process.";
 
-const char kCertDualVerificationEnabledName[] = "Cert Dual Verification";
-const char kCertDualVerificationEnabledDescription[] =
-    "Runs both platform Cert Verifer and Chrome Cert Verifier, reporting "
-    "any differences to Chrome if Safe Browsing Extended Reporting is "
-    "enabled.";
-
 const char kClickToCallName[] = "Click-To-Call";
 const char kClickToCallDescription[] = "Enable the click-to-call feature.";
 
@@ -1900,6 +1894,10 @@ const char kCrasSplitAlsaUsbInternalDescription[] =
     "When enable, CRAS will create different iodev with USB and internal "
     "device.";
 
+const char kPwaRestoreUiName[] = "Enable the PWA Restore UI";
+const char kPwaRestoreUiDescription[] =
+    "When enabled, the PWA Restore UI can be shown";
+
 const char kRestoreTabsOnFREName[] = "Restore tabs on FRE";
 const char kRestoreTabsOnFREDescription[] =
     "Enable promo sheet to indicate tabs from synced devices can be restored";
@@ -2020,6 +2018,10 @@ const char kInstantHotspotRebrandName[] = "Instant Hotspot Improvements";
 
 const char kInstantHotspotRebrandDescription[] =
     "Enables Instant Hotspot rebrand/feature improvements.";
+
+const char kJapaneseOSSettingsName[] = "Japanese OS Settings Page";
+const char kJapaneseOSSettingsDescription[] =
+    "Enable OS Settings Page for Japanese input methods";
 
 const char kJavascriptHarmonyName[] = "Experimental JavaScript";
 const char kJavascriptHarmonyDescription[] =
@@ -2866,6 +2868,11 @@ const char kPrivacyGuide3Name[] = "Privacy Guide V3";
 const char kPrivacyGuide3Description[] =
     "Enables updates to the Privacy Guide flow.";
 
+const char kPrivacyGuidePreloadName[] = "Privacy Guide Preload";
+const char kPrivacyGuidePreloadDescription[] =
+    "Adds the preload card to the privacy guide 3 flow. "
+    "This requires #privacy-guide-3 to also be enabled.";
+
 const char kPrivacySandboxAdsAPIsOverrideName[] = "Privacy Sandbox Ads APIs";
 const char kPrivacySandboxAdsAPIsOverrideDescription[] =
     "Enables Privacy Sandbox APIs: Attribution Reporting, Fledge, Topics, "
@@ -3403,6 +3410,11 @@ const char kUseNAT64ForIPv4LiteralDescription[] =
     "Enables IPv4 to IPv6 address translation for IPv4 literals when chrome is "
     "on an IPv6 only network";
 
+const char kTrackingProtection3pcdName[] = "Tracking Protection for 3PCD";
+const char kTrackingProtection3pcdDescription[] =
+    "Enables the tracking protection UI + prefs that will be used for the 3PCD "
+    "1%. ";
+
 const char kUserBypassUIName[] = "User Bypass UI";
 const char kUserBypassUIDescription[] = "Enables the User Bypass UI. ";
 
@@ -3871,6 +3883,17 @@ const char kCCTTextFragmentLookupApiEnabledName[] =
 const char kCCTTextFragmentLookupApiEnabledDescription[] =
     "Enable CCT API to lookup text fragments";
 
+const char kAccountReauthenticationRecentTimeWindowName[] =
+    "Account Reauthentication Recent Time Window";
+const char kAccountReauthenticationRecentTimeWindowDescription[] =
+    "Changes the time window after a successful account authentication during "
+    "which reauthentication challenges are not needed.";
+const char kAccountReauthenticationRecentTimeWindowDefault[] =
+    "10 mins (default)";
+const char kAccountReauthenticationRecentTimeWindow0mins[] = "0 mins";
+const char kAccountReauthenticationRecentTimeWindow1mins[] = "1 mins";
+const char kAccountReauthenticationRecentTimeWindow5mins[] = "5 mins";
+
 const char kChimeAlwaysShowNotificationDescription[] =
     "A debug flag to always show Chime notification after receiving a payload.";
 const char kChimeAlwaysShowNotificationName[] =
@@ -4149,6 +4172,11 @@ const char kQueryTilesEnableTrendingName[] =
     "Query Tiles - Enable trending queries";
 const char kQueryTilesEnableTrendingDescription[] =
     "Allow tiles of trending queries to show up in front of curated tiles";
+const char kQueryTilesDisableCountryOverrideName[] =
+    "Disable tre default country list for query tiles.";
+const char kQueryTilesDisableCountryOverrideDescription[] =
+    "Disable the default country list for query tiles. It is still "
+    "possible to show query tiles through server experiments.";
 const char kQueryTilesCountryCode[] = "Country code for getting tiles";
 const char kQueryTilesCountryCodeDescription[] =
     "When query tiles are enabled, this value determines tiles for which "
@@ -5616,12 +5644,6 @@ const char kCaptureModeAudioMixingDescription[] =
     "separately, or mix them together in a single stream in the screen capture "
     "tool.";
 
-const char kCaptureModeDemoToolsName[] =
-    "Enable demo tools feature in screen capture";
-const char kCaptureModeDemoToolsDescription[] =
-    "Enables the ability to show clicks and keys during video recordings to "
-    "enhance demo experience.";
-
 const char kCaptureModeGifRecordingName[] =
     "Enable GIF recording in screen capture";
 const char kCaptureModeGifRecordingDescription[] =
@@ -5643,6 +5665,9 @@ const char kCrosBatterySaverAlwaysOnName[] =
 const char kCrosBatterySaverAlwaysOnDescription[] =
     "Turns on ChomeOS Battery Saver all the time, even when charging or fully "
     "charged. Used for testing ChromeOS Battery Saver Mode.";
+
+const char kCrosSoulName[] = "CrOS SOUL";
+const char kCrosSoulDescription[] = "Enable the CrOS SOUL feature.";
 
 const char kCrosBatterySaverName[] =
     "Enable ChromeOS Battery Saver Mode Support";
@@ -6041,11 +6066,6 @@ const char kEnableNeuralStylusPalmRejectionDescription[] =
     "Experimental: Enable Neural Palm detection. Not compatible with all "
     "devices.";
 
-const char kEnableOsFeedbackName[] = "Enable updated Feedback Tool App";
-const char kEnableOsFeedbackDescription[] =
-    "Enable the feedback tool with new UX design that helps users mitigate "
-    "the issues while writing feedback and makes the UI easier to use.";
-
 const char kEnableNewShortcutMappingName[] = "Enable New Shortcut Mapping";
 const char kEnableNewShortcutMappingDescription[] =
     "Enables experimental new shortcut mapping";
@@ -6240,13 +6260,6 @@ const char kExoSurroundingTextOffsetName[] =
 const char kExoSurroundingTextOffsetDescription[] =
     "On wayland protocol, surrounding text may be trimmed. Enabling this "
     "supports the cases.";
-
-const char kExperimentalAccessibilityChromeVoxOobeDialogImprovementsName[] =
-    "Experimental accessibility ChromeVox OOBE dialog improvements.";
-
-const char
-    kExperimentalAccessibilityChromeVoxOobeDialogImprovementsDescription[] =
-        "Enables experimental UI improvements for the ChromeVox OOBE dialog.";
 
 const char kExperimentalAccessibilityDictationContextCheckingName[] =
     "Experimental accessibility dictation using context checking.";
@@ -6457,6 +6470,12 @@ const char kImeTrayHideVoiceButtonName[] =
     "Hides redudant voice button in IME tray";
 const char kImeTrayHideVoiceButtonDescription[] =
     "Hides voice button in IME tray when mic icon is shown in the shelf";
+
+const char kIppFirstSetupForUsbPrintersName[] =
+    "Try to setup USB printers with IPP first";
+const char kIppFirstSetupForUsbPrintersDescription[] =
+    "When enabled, ChromeOS attempts to setup USB printers via IPP Everywhere "
+    "first, then falls back to PPD-based setup.";
 
 const char kVirtualKeyboardNewHeaderName[] =
     "Enable new header for virtual keyboard";
@@ -6802,12 +6821,6 @@ const char kShelfAutoHideSeparationDescription[] =
 const char kShimlessRMAOsUpdateName[] = "Enable OS updates in shimless RMA";
 const char kShimlessRMAOsUpdateDescription[] =
     "Turns on OS updating in Shimless RMA";
-
-const char kShimlessRMADiagnosticPageName[] =
-    "Enable diagnostic page in Shimless RMA";
-const char kShimlessRMADiagnosticPageDescription[] =
-    "Enable the diagnostic page in Shimless RMA for showing detailed device "
-    "information";
 
 const char kShimlessRMAComplianceCheckName[] =
     "Enable compliance check in Shimless RMA";
@@ -7625,6 +7638,15 @@ const char kProfilesReorderingDescription[] =
     "dropping the Profile Tiles. The order is saved when changed and "
     "persisted.";
 #endif
+
+#if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+const char kEnableBoundSessionCredentialsName[] =
+    "Device Bound Session Credentials";
+const char kEnableBoundSessionCredentialsDescription[] =
+    "Enables Google session credentials binding to cryptographic keys that are "
+    "practically impossible to extract from the user device. This will mostly "
+    "prevent the usage of bound credentials outside of the user device.";
+#endif  // BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
 
 // ============================================================================
 // Don't just add flags to the end, put them in the right section in

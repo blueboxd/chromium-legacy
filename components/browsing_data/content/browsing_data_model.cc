@@ -694,19 +694,8 @@ void BrowsingDataModel::RemovePartitionedBrowsingData(
 
   DataKeyEntries affected_data_key_entries;
 
-  for (const auto& entry : browsing_data_entries_[data_owner]) {
-    // Only blink::StorageKeys data keys can represent partitioned storage.
-    // TODO(crbug/1455899): If this list of data keys starts to grow, consider
-    // revisiting an implementation of a visitor pattern here.
-    auto* storage_key = absl::get_if<blink::StorageKey>(&entry.first);
-    if (!storage_key) {
-      continue;
-    }
-
-    if (storage_key->top_level_site() == top_level_site) {
-      affected_data_key_entries.insert(entry);
-    }
-  }
+  GetAffectedDataKeyEntriesForRemovePartitionedBrowsingData(
+      data_owner, top_level_site, affected_data_key_entries);
 
   auto helper = std::make_unique<StorageRemoverHelper>(
       storage_partition_, quota_helper_, delegate_.get());
@@ -720,6 +709,43 @@ void BrowsingDataModel::RemovePartitionedBrowsingData(
   auto& data_owner_entries = browsing_data_entries_[data_owner];
   for (auto& entry : affected_data_key_entries) {
     data_owner_entries.erase(entry.first);
+  }
+  if (data_owner_entries.empty()) {
+    browsing_data_entries_.erase(data_owner);
+  }
+}
+
+void BrowsingDataModel::RemoveUnpartitionedBrowsingData(
+    const DataOwner& data_owner,
+    base::OnceClosure completed) {
+  DataKeyEntries affected_data_key_entries;
+
+  for (const auto& entry : browsing_data_entries_[data_owner]) {
+    // TODO(crbug/1455899): Consider other data keys that can be partitioned,
+    // probably making use of a visitor pattern.
+    auto* storage_key = absl::get_if<blink::StorageKey>(&entry.first);
+    if (!storage_key) {
+      affected_data_key_entries.insert(entry);
+      continue;
+    }
+
+    if (storage_key->IsFirstPartyContext()) {
+      affected_data_key_entries.insert(entry);
+      continue;
+    }
+  }
+
+  auto helper = std::make_unique<StorageRemoverHelper>(
+      storage_partition_, quota_helper_, delegate_.get());
+  RemoveBrowsingDataEntries(affected_data_key_entries, std::move(helper),
+                            std::move(completed));
+
+  auto& data_owner_entries = browsing_data_entries_[data_owner];
+  for (auto& entry : affected_data_key_entries) {
+    data_owner_entries.erase(entry.first);
+  }
+  if (data_owner_entries.empty()) {
+    browsing_data_entries_.erase(data_owner);
   }
 }
 
@@ -833,5 +859,24 @@ BrowsingDataModel::BrowsingDataModel(
     : storage_partition_(storage_partition), delegate_(std::move(delegate)) {
   if (storage_partition_) {
     quota_helper_ = BrowsingDataQuotaHelper::Create(storage_partition_);
+  }
+}
+
+void BrowsingDataModel::
+    GetAffectedDataKeyEntriesForRemovePartitionedBrowsingData(
+        const DataOwner& data_owner,
+        const net::SchemefulSite& top_level_site,
+        DataKeyEntries& affected_data_key_entries) {
+  for (const auto& entry : browsing_data_entries_[data_owner]) {
+    // TODO(crbug/1455899): Consider other data keys that can be partitioned,
+    // probably making use of a visitor pattern.
+    auto* storage_key = absl::get_if<blink::StorageKey>(&entry.first);
+    if (!storage_key) {
+      continue;
+    }
+
+    if (storage_key->top_level_site() == top_level_site) {
+      affected_data_key_entries.insert(entry);
+    }
   }
 }

@@ -1028,7 +1028,13 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
         '<chrono> is banned. Use base/time instead.',
       ),
       True,
-      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+      [
+          # Not an error in third_party folders:
+          _THIRD_PARTY_EXCEPT_BLINK,
+          # PartitionAlloc's starscan, doesn't depend on base/. It can't use
+          # base::ConditionalVariable::TimedWait(..).
+          "base/allocator/partition_allocator/starscan/pcscan_internal.cc",
+      ]
     ),
     BanRule(
       r'/#include <exception>',
@@ -1648,6 +1654,17 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       pattern = r'base:raw_ref<',
       explanation = (
         'Do not use base::raw_ref, use raw_ref.',
+      ),
+      treat_as_error = True,
+      excluded_paths = (
+        '^base/',
+        '^tools/',
+      ),
+    ),
+    BanRule(
+      pattern = r'/raw_ptr<[^;}]*\w{};',
+      explanation = (
+        'Do not use {} for raw_ptr initialization, use = nullptr instead.',
       ),
       treat_as_error = True,
       excluded_paths = (
@@ -6717,7 +6734,7 @@ def _IsRendererOnlyCppFile(input_api, affected_file):
         return False
 
     # Any code under a "renderer" subdirectory is assumed to be Renderer-only.
-    if "/renderer/" in path:
+    if "/renderer/" in path and not "/image-decoders/" in path:
         return True
 
     # Blink's public/web API is only used/included by Renderer-only code.  Note

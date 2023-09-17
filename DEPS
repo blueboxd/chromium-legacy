@@ -310,7 +310,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'src_internal_revision': '94eb1850f71b23dcd9381450289a4f629b2738de',
+  'src_internal_revision': '572fbbc083ea33c28f0b6e21c3544c8538ba042b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
@@ -318,11 +318,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '374ca7a87c62a2b7367da819068ae012ea5272e1',
+  'v8_revision': '71aa74fabc861a8169d43ec19c47cdc71c7edec9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '90a3029d0521a1185a1b7454261ef9a5083a830f',
+  'angle_revision': 'be854a0aa2c5ca2a3c00d1ba1df4101dfb434556',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -837,7 +837,7 @@ deps = {
 
   'src/clank': {
     'url': Var('chrome_git') + '/clank/internal/apps.git' + '@' +
-    '89b9098c870dda804bd659d38566b3c164da47c3',
+    '9397540a958d50a527bbfe353a59130c548ec6c2',
     'condition': 'checkout_android and checkout_src_internal',
   },
 
@@ -1613,7 +1613,7 @@ deps = {
     Var('chromium_git') + '/webm/libwebm.git' + '@' + 'e4fbea0c9751ae8aa86629b197a28d8276a2b0da',
 
   'src/third_party/libwebp/src':
-    Var('chromium_git') + '/webm/libwebp.git' + '@' +  'fd7bb21c0cb56e8a82e9bfa376164b842f433f3b',
+    Var('chromium_git') + '/webm/libwebp.git' + '@' +  '2af26267cdfcb63a88e5c74a85927a12d6ca1d76',
 
   'src/third_party/libyuv':
     Var('chromium_git') + '/libyuv/libyuv.git' + '@' + '04821d1e7d60845525e8db55c7bcd41ef5be9406',
@@ -3994,7 +3994,7 @@ deps = {
   # Dependencies from src_internal
   'src/chromeos/assistant/internal': {
       'url': Var('chrome_git') + '/chrome/assistant.git' + '@' +
-        'e485ec76511b34c0d11974a0f7c24ed8821d9380',
+        '1d2332ecbdac7767e38ce38d787098706b8ec4f9',
       'condition': 'checkout_src_internal and checkout_chromeos',
     },
 

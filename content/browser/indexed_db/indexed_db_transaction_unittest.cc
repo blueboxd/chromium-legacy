@@ -85,16 +85,17 @@ class IndexedDBTransactionTest : public testing::Test {
 
     bucket_context_ = std::make_unique<IndexedDBBucketContext>(
         storage::BucketInfo(), false, base::DefaultClock::GetInstance(),
-        &IndexedDBClassFactory::Get()->transactional_leveldb_factory(),
         std::make_unique<PartitionedLockManager>(), std::move(delegate),
         std::make_unique<IndexedDBFakeBackingStore>(), quota_manager_->proxy(),
-        base::DoNothing());
+        /*io_task_runner=*/base::SequencedTaskRunner::GetCurrentDefault(),
+        /*blob_storage_context=*/mojo::NullRemote(),
+        /*file_system_access_context=*/mojo::NullRemote(), base::DoNothing());
 
     // DB is created here instead of the constructor to workaround a
     // "peculiarity of C++". More info at
     // https://github.com/google/googletest/blob/main/docs/faq.md#my-compiler-complains-that-a-constructor-or-destructor-cannot-return-a-value-whats-going-on
-    db_ = IndexedDBClassFactory::Get()->CreateIndexedDBDatabase(
-        u"db", *bucket_context_, IndexedDBDatabase::Identifier());
+    db_ = std::make_unique<IndexedDBDatabase>(u"db", *bucket_context_,
+                                              IndexedDBDatabase::Identifier());
   }
 
   TasksAvailableCallback CreateRunTasksCallback() {
@@ -142,8 +143,8 @@ class IndexedDBTransactionTest : public testing::Test {
     mojo::PendingAssociatedRemote<storage::mojom::IndexedDBClientStateChecker>
         remote;
     auto connection = std::make_unique<IndexedDBConnection>(
-        *bucket_context_, IndexedDBClassFactory::Get(), db_->AsWeakPtr(),
-        base::DoNothing(), base::DoNothing(),
+        *bucket_context_, db_->AsWeakPtr(), base::DoNothing(),
+        base::DoNothing(),
         base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>(),
         base::MakeRefCounted<IndexedDBClientStateCheckerWrapper>(
             std::move(remote)));

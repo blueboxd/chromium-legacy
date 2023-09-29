@@ -57,6 +57,8 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/service_worker_host.h"
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
+#include "content/browser/tracing/trace_report/trace_report.mojom.h"
+#include "content/browser/tracing/trace_report/trace_report_internals_ui.h"
 #include "content/browser/wake_lock/wake_lock_service_impl.h"
 #include "content/browser/web_contents/file_chooser_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -152,6 +154,7 @@
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 #include "third_party/blink/public/mojom/notifications/notification_service.mojom.h"
+#include "third_party/blink/public/mojom/origin_trial_state/origin_trial_state_host.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_credential.mojom.h"
 #include "third_party/blink/public/mojom/peerconnection/peer_connection_tracker.mojom.h"
@@ -163,7 +166,6 @@
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom.h"
 #include "third_party/blink/public/mojom/quota/quota_manager_host.mojom.h"
-#include "third_party/blink/public/mojom/runtime_feature_state/runtime_feature_state_controller.mojom.h"
 #include "third_party/blink/public/mojom/sms/webotp_service.mojom.h"
 #include "third_party/blink/public/mojom/speculation_rules/speculation_rules.mojom.h"
 #include "third_party/blink/public/mojom/speech/speech_recognizer.mojom.h"
@@ -1143,7 +1145,7 @@ void PopulateBinderMapWithContext(
         &EmptyBinderForFrame<blink::mojom::EnvironmentIntegrityService>));
   }
   if (base::FeatureList::IsEnabled(
-          net::features::kCookieDeprecationFacilitatedTestingLabels)) {
+          features::kCookieDeprecationFacilitatedTesting)) {
     map->Add<blink::mojom::CookieDeprecationLabelDocumentService>(
         base::BindRepeating(
             &CookieDeprecationLabelDocumentService::CreateMojoService));
@@ -1207,6 +1209,9 @@ void PopulateBinderMapWithContext(
                                          ProcessInternalsUI>(map);
   RegisterWebUIControllerInterfaceBinder<storage::mojom::QuotaInternalsHandler,
                                          QuotaInternalsUI>(map);
+  RegisterWebUIControllerInterfaceBinder<
+      trace_report::mojom::TraceReportHandlerFactory, TraceReportInternalsUI>(
+      map);
 #if BUILDFLAG(ENABLE_VR)
   RegisterWebUIControllerInterfaceBinder<webxr::mojom::WebXrInternalsHandler,
                                          WebXrInternalsUI>(map);
@@ -1247,8 +1252,8 @@ void PopulateBinderMapWithContext(
       base::BindRepeating(&FuchsiaMediaCdmProviderImpl::Bind));
 #endif
 
-  map->Add<blink::mojom::RuntimeFeatureStateController>(
-      base::BindRepeating(&RuntimeFeatureStateControllerImpl::Create));
+  map->Add<blink::mojom::OriginTrialStateHost>(
+      base::BindRepeating(&OriginTrialStateHostImpl::Create));
 }
 
 void PopulateBinderMap(RenderFrameHostImpl* host, mojo::BinderMap* map) {

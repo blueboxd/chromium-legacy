@@ -174,14 +174,17 @@ scheduler::TaskAttributionIdType DOMScheduler::taskId(
     ScriptState* script_state) {
   ThreadScheduler* scheduler = ThreadScheduler::Current();
   DCHECK(scheduler);
-  DCHECK(scheduler->GetTaskAttributionTracker());
-  absl::optional<scheduler::TaskAttributionId> task_id =
-      scheduler->GetTaskAttributionTracker()->RunningTaskAttributionId(
-          script_state);
-  // task_id cannot be unset here, as a task has presumably already ran in order
+  auto* tracker = scheduler->GetTaskAttributionTracker();
+  if (!tracker) {
+    // Can happen when a feature flag disables TaskAttribution.
+    return 0;
+  }
+  scheduler::TaskAttributionInfo* task =
+      scheduler->GetTaskAttributionTracker()->RunningTask(script_state);
+  // task cannot be nullptr here, as a task has presumably already ran in order
   // for this API call to be called.
-  DCHECK(task_id);
-  return task_id.value().value();
+  DCHECK(task);
+  return task->Id().value();
 }
 
 AtomicString DOMScheduler::isAncestor(
@@ -191,9 +194,11 @@ AtomicString DOMScheduler::isAncestor(
       scheduler::TaskAttributionTracker::AncestorStatus::kNotAncestor;
   ThreadScheduler* scheduler = ThreadScheduler::Current();
   DCHECK(scheduler);
-  scheduler::TaskAttributionTracker* tracker =
-      scheduler->GetTaskAttributionTracker();
-  DCHECK(tracker);
+  auto* tracker = scheduler->GetTaskAttributionTracker();
+  if (!tracker) {
+    // Can happen when a feature flag disables TaskAttribution.
+    return AtomicString("unknown");
+  }
   status =
       tracker->IsAncestor(script_state, scheduler::TaskAttributionId(parentId));
   switch (status) {

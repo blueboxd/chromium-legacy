@@ -62,11 +62,11 @@
 #import "ios/chrome/browser/browsing_data/model/browsing_data_remover.h"
 #import "ios/chrome/browser/browsing_data/model/browsing_data_remover_factory.h"
 #import "ios/chrome/browser/browsing_data/model/sessions_storage_util.h"
-#import "ios/chrome/browser/crash_report/crash_helper.h"
-#import "ios/chrome/browser/crash_report/crash_keys_helper.h"
-#import "ios/chrome/browser/crash_report/crash_loop_detection_util.h"
-#import "ios/chrome/browser/crash_report/crash_report_helper.h"
-#import "ios/chrome/browser/credential_provider/credential_provider_buildflags.h"
+#import "ios/chrome/browser/crash_report/model/crash_helper.h"
+#import "ios/chrome/browser/crash_report/model/crash_keys_helper.h"
+#import "ios/chrome/browser/crash_report/model/crash_loop_detection_util.h"
+#import "ios/chrome/browser/crash_report/model/crash_report_helper.h"
+#import "ios/chrome/browser/credential_provider/model/credential_provider_buildflags.h"
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/download/download_directory_util.h"
 #import "ios/chrome/browser/external_files/external_file_remover_factory.h"
@@ -109,7 +109,7 @@
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
-#import "ios/chrome/browser/snapshots/snapshot_cache.h"
+#import "ios/chrome/browser/snapshots/snapshot_storage.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/ui/appearance/appearance_customization.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
@@ -137,9 +137,9 @@
 
 #if BUILDFLAG(IOS_CREDENTIAL_PROVIDER_ENABLED)
 #import "ios/chrome/app/credential_provider_migrator_app_agent.h"
-#import "ios/chrome/browser/credential_provider/credential_provider_service_factory.h"
-#import "ios/chrome/browser/credential_provider/credential_provider_support.h"
-#import "ios/chrome/browser/credential_provider/credential_provider_util.h"
+#import "ios/chrome/browser/credential_provider/model/credential_provider_service_factory.h"
+#import "ios/chrome/browser/credential_provider/model/credential_provider_support.h"
+#import "ios/chrome/browser/credential_provider/model/credential_provider_util.h"
 #endif
 
 #if BUILDFLAG(IOS_ENABLE_SANDBOX_DUMP)

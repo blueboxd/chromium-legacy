@@ -7,11 +7,11 @@ import {ConsoleTestRunner} from 'console_test_runner';
 import {SourcesTestRunner} from 'sources_test_runner';
 
 import * as SDK from 'devtools/core/sdk/sdk.js';
+import * as UIModule from 'devtools/ui/legacy/legacy.js';
 
 (async function() {
   TestRunner.addResult(`Tests saving objects to temporary variables while paused.\n`);
   await TestRunner.loadLegacyModule('console');
-  await TestRunner.loadLegacyModule('sources');
   await TestRunner.showPanel('sources');
   await TestRunner.evaluateInPagePromise(`
       var thisObj;
@@ -74,11 +74,11 @@ import * as SDK from 'devtools/core/sdk/sdk.js';
 
     function didEvaluate(result) {
       TestRunner.assertTrue(!result.exceptionDetails, 'FAIL: was thrown. Expression: ' + expression);
-      SDK.consoleModel.saveToTempVariable(UI.context.flavor(SDK.RuntimeModel.ExecutionContext), result.object);
+      SDK.consoleModel.saveToTempVariable(UIModule.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext), result.object);
       ConsoleTestRunner.waitUntilNthMessageReceived(2, evaluateNext);
     }
 
-    UI.context.flavor(SDK.RuntimeModel.ExecutionContext)
+    UIModule.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext)
         .evaluate({expression: expression, objectGroup: 'console'})
         .then(didEvaluate);
   }

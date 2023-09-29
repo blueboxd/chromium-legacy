@@ -42,6 +42,7 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.compat.ApiHelperForO;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.metrics.TimingMetric;
 import org.chromium.build.BuildConfig;
 import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -132,6 +133,11 @@ public abstract class UrlBar extends AutocompleteEditText {
     // Remove once the kAndroidVisibleUrlTruncation experiment is complete.
     private boolean mIsTextTruncated;
     private boolean mDidJustTruncate;
+
+    // TODO (https://crbug.com/1480708) Speculating that something is wrong with the url that was
+    // passed to the previous call to scrollToTLD. Remove after crash is fixed.
+    Editable mScrollToTLDPrevUrl;
+    int mScrollToTLDPrevEndIndex;
 
     @ScrollType
     private int mScrollType;
@@ -751,21 +757,67 @@ public abstract class UrlBar extends AutocompleteEditText {
         scrollTo((int) scrollPos, getScrollY());
     }
 
-    // TODO(crbug.com/1465967): remove after getting enough data to diagnose
-    // failed assert
-    private String getWrongIndexErrorMessage(int incorrectIndex) {
-        Editable url = getText();
-        int measuredWidth = getVisibleMeasuredViewportWidth();
-        int urlTextLength = url.length();
-        int finalVisibleCharIndexSlow = getLayout().getOffsetForHorizontal(0, measuredWidth);
-        String errorMessage = "scrollToTLD bad index. old final visible index: "
-                + String.valueOf(finalVisibleCharIndexSlow) + " incorrect index: "
-                + String.valueOf(incorrectIndex) + " viewport: " + String.valueOf(measuredWidth)
-                + " prefix: " + url.subSequence(0, Math.max(mOriginEndIndex - 4, 0))
-                + " suffix: " + url.subSequence(mOriginEndIndex, urlTextLength)
-                + " url length: " + String.valueOf(urlTextLength) + " incorrect index horizontal: "
-                + getLayout().getPrimaryHorizontal(Math.min(incorrectIndex + 1, urlTextLength));
-        return errorMessage;
+    /**
+     * The visible hint contains the visible portion of the text in the url bar. It is used to
+     * reduce toolbar captures. For example, in the case of same document navigations, some prefix
+     * of the text will remain unchanged. If the url bar can't display more characters than this
+     * prefix, then the visible hint will remain the same, and we might not have to do another
+     * capture.
+     *
+     * @return A prefix of getText(), up to and including the last visible character.
+     */
+    private CharSequence calculateVisibleHint() {
+        try (TimingMetric t = TimingMetric.shortUptime("Omnibox.CalculateVisibleHint.Duration")) {
+            Editable url = getText();
+            int measuredWidth = getVisibleMeasuredViewportWidth();
+            int urlTextLength = url.length();
+
+            Layout textLayout = getLayout();
+
+            int finalVisibleCharIndex;
+            if (sScrollToTLDOptimizationsFlag.isEnabled()) {
+                // getOffsetForHorizontal is very slow. getOffsetForAdvance is much faster.
+                finalVisibleCharIndex = textLayout.getPaint().getOffsetForAdvance(
+                        url, 0, urlTextLength, 0, urlTextLength, false, measuredWidth);
+            } else {
+                finalVisibleCharIndex = textLayout.getOffsetForHorizontal(0, measuredWidth);
+            }
+
+            RecordHistogram.recordCount1000Histogram(
+                    "Omnibox.NumberOfVisibleCharacters", finalVisibleCharIndex);
+
+            int finalVisibleCharIndexExclusive = Math.min(finalVisibleCharIndex + 1, urlTextLength);
+            boolean visibleUrlContainsRtl =
+                    containsRtl(url.subSequence(0, finalVisibleCharIndexExclusive));
+            if (visibleUrlContainsRtl) {
+                // getOffsetForAdvance does not calculate the correct index if there is RTL
+                // text before finalVisibleCharIndex, so clear the visible text hint. If RTL
+                // or Bi-Di URLs become more prevalant, update this to correctly calculate
+                // the hint.
+                return null;
+            } else {
+                if (BuildConfig.ENABLE_ASSERTS) {
+                    float horizontal =
+                            textLayout.getPrimaryHorizontal(finalVisibleCharIndexExclusive);
+                    float width = (float) measuredWidth;
+
+                    assert MathUtils.areFloatsEqual(horizontal, width)
+                            || horizontal > width
+                        : "finalVisibleCharIndex is too small: "
+                          + String.valueOf(finalVisibleCharIndexExclusive)
+                          + ". If discovered locally please update crbug.com/1465967 with the url.";
+                }
+
+                // To avoid issues where a small portion of the character following
+                // finalVisibleCharIndex is visible on screen, be more conservative and
+                // extend the visual hint by an additional character. In testing,
+                // getOffsetForHorizontal returns the last fully visible character on
+                // screen. By extending the offset by an additional character, the risk is
+                // of having visual artifacts from the subsequence character on screen is
+                // mitigated.
+                return url.subSequence(0, finalVisibleCharIndexExclusive);
+            }
+        }
     }
 
     /**
@@ -780,10 +832,28 @@ public abstract class UrlBar extends AutocompleteEditText {
         assert getLayout().getLineCount() == 1;
         final int originEndIndex = Math.min(mOriginEndIndex, urlTextLength);
         if (mOriginEndIndex > urlTextLength) {
+            String errorMessage = "Attempting to scroll past the end of the URL.";
+            if (mScrollToTLDPrevUrl != null) {
+                boolean hadBlobScheme = mScrollToTLDPrevUrl.toString().startsWith("blob");
+                int prevLength = mScrollToTLDPrevUrl.length();
+                errorMessage += " Previous url was blob: " + String.valueOf(hadBlobScheme)
+                        + " previous url length: " + String.valueOf(prevLength)
+                        + " prev end index: " + String.valueOf(mScrollToTLDPrevEndIndex);
+            } else {
+                boolean isBlobScheme = url.toString().startsWith("blob");
+                errorMessage += " First time. Url is blob: " + String.valueOf(isBlobScheme);
+            }
+
+            errorMessage += " url length: " + String.valueOf(urlTextLength)
+                    + " mOriginEndIndex: " + String.valueOf(mOriginEndIndex);
+
             // If discovered locally, please update crbug.com/859219 with the steps to reproduce.
-            assert false : "Attempting to scroll past the end of the URL: " + url + ", end index: "
-                           + mOriginEndIndex;
+            assert false : errorMessage;
         }
+
+        mScrollToTLDPrevUrl = url;
+        mScrollToTLDPrevEndIndex = mOriginEndIndex;
+
         float endPointX = textLayout.getPrimaryHorizontal(originEndIndex);
         // Compare the position offset of the last character and the character prior to determine
         // the LTR-ness of the final component of the URL.
@@ -822,44 +892,8 @@ public abstract class UrlBar extends AutocompleteEditText {
                     // padding.
                     mVisibleTextPrefixHint = null;
                 } else {
-                    int finalVisibleCharIndex;
-                    if (sScrollToTLDOptimizationsFlag.isEnabled()) {
-                        // getOffsetForHorizontal is very slow. getOffsetForAdvance is much faster.
-                        finalVisibleCharIndex = textLayout.getPaint().getOffsetForAdvance(
-                                url, 0, urlTextLength, 0, urlTextLength, false, measuredWidth);
-                    } else {
-                        finalVisibleCharIndex = textLayout.getOffsetForHorizontal(0, measuredWidth);
-                    }
-
-                    int finalVisibleCharIndexExclusive =
-                            Math.min(finalVisibleCharIndex + 1, urlTextLength);
-                    boolean visibleUrlContainsRtl =
-                            containsRtl(url.subSequence(0, finalVisibleCharIndexExclusive));
-                    if (visibleUrlContainsRtl) {
-                        // getOffsetForAdvance does not calculate the correct index if there is RTL
-                        // text before finalVisibleCharIndex, so clear the visible text hint. If RTL
-                        // or Bi-Di URLs become more prevalant, update this to correctly calculate
-                        // the hint.
-                        mVisibleTextPrefixHint = null;
-                    } else {
-                        if (BuildConfig.ENABLE_ASSERTS) {
-                            float horizontal =
-                                    textLayout.getPrimaryHorizontal(finalVisibleCharIndexExclusive);
-                            float width = (float) measuredWidth;
-
-                            assert MathUtils.areFloatsEqual(horizontal, width)
-                                    || horizontal > width
-                                : getWrongIndexErrorMessage(finalVisibleCharIndex);
-                        }
-
-                        // To avoid issues where a small portion of the character following
-                        // finalVisibleCharIndex is visible on screen, be more conservative and
-                        // extend the visual hint by an additional character. In testing,
-                        // getOffsetForHorizontal returns the last fully visible character on
-                        // screen. By extending the offset by an additional character, the risk is
-                        // of having visual artifacts from the subsequence character on screen is
-                        // mitigated.
-                        mVisibleTextPrefixHint = url.subSequence(0, finalVisibleCharIndexExclusive);
+                    if (OmniboxFeatures.shouldCalculateVisibleHint(getContext())) {
+                        mVisibleTextPrefixHint = calculateVisibleHint();
                     }
                 }
             }
@@ -941,6 +975,9 @@ public abstract class UrlBar extends AutocompleteEditText {
     public void setText(CharSequence text, BufferType type) {
         if (DEBUG) Log.i(TAG, "setText -- text: %s", text);
         super.setText(text, type);
+
+        RecordHistogram.recordCount1000Histogram("Omnibox.SetText.TextLength", text.length());
+
         fixupTextDirection();
 
         if (mVisibleTextPrefixHint != null
@@ -959,8 +996,8 @@ public abstract class UrlBar extends AutocompleteEditText {
                 RecordHistogram.recordBooleanHistogram(
                         "Omnibox.setText.TruncatedTooMuch", truncatedTooMuch);
                 assert !truncatedTooMuch
-                    : "If discovered locally, please update crbug.com/1476013: "
-                      + getWrongIndexErrorMessage(textLength - 1);
+                    : "Url was truncated too much. If discovered locally, please update "
+                      + "crbug.com/1476013 with steps to reproduce.";
             }
 
             mIsTextTruncated = mDidJustTruncate;

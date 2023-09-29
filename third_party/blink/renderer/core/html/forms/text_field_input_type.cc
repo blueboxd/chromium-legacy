@@ -47,7 +47,7 @@
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/keywords.h"
-#include "third_party/blink/renderer/core/layout/ng/layout_ng_text_control_single_line.h"
+#include "third_party/blink/renderer/core/layout/forms/layout_text_control_single_line.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -302,7 +302,7 @@ void TextFieldInputType::AdjustStyle(ComputedStyleBuilder& builder) {
 
 LayoutObject* TextFieldInputType::CreateLayoutObject(
     const ComputedStyle&) const {
-  return MakeGarbageCollected<LayoutNGTextControlSingleLine>(&GetElement());
+  return MakeGarbageCollected<LayoutTextControlSingleLine>(&GetElement());
 }
 
 ControlPart TextFieldInputType::AutoAppearance() const {
@@ -534,8 +534,8 @@ void TextFieldInputType::UpdatePlaceholderText(bool is_suggested_value) {
   if (!SupportsPlaceholder())
     return;
   HTMLElement* placeholder = GetElement().PlaceholderElement();
-  String placeholder_text = GetElement().GetPlaceholderValue();
-  if (placeholder_text.empty()) {
+  if (!is_suggested_value &&
+      !GetElement().FastHasAttribute(html_names::kPlaceholderAttr)) {
     if (placeholder)
       placeholder->remove(ASSERT_NO_EXCEPTION);
     return;
@@ -565,7 +565,7 @@ void TextFieldInputType::UpdatePlaceholderText(bool is_suggested_value) {
   } else {
     placeholder->RemoveInlineStyleProperty(CSSPropertyID::kUserSelect);
   }
-  placeholder->setTextContent(placeholder_text);
+  placeholder->setTextContent(GetElement().GetPlaceholderValue());
 }
 
 void TextFieldInputType::AppendToFormData(FormData& form_data) const {

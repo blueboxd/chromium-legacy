@@ -154,31 +154,31 @@ ADDITIONAL_PATHS = (
 SPECIAL_CASES = {
     os.path.join('native_client'): {
         "Name": "native client",
-        "URL": "http://code.google.com/p/nativeclient",
+        "URL": "https://code.google.com/p/nativeclient",
         "Shipped": "yes",
         "License": "BSD",
     },
     os.path.join('testing', 'gmock'): {
         "Name": "gmock",
-        "URL": "http://code.google.com/p/googlemock",
+        "URL": "https://github.com/google/googlemock",
         "Shipped": "no",
         "License": "BSD",
     },
     os.path.join('testing', 'gtest'): {
         "Name": "gtest",
-        "URL": "http://code.google.com/p/googletest",
+        "URL": "https://github.com/google/googletest",
         "Shipped": "no",
         "License": "BSD",
     },
     os.path.join('third_party', 'angle'): {
         "Name": "Almost Native Graphics Layer Engine",
-        "URL": "http://code.google.com/p/angleproject/",
+        "URL": "https://chromium.googlesource.com/angle/angle/",
         "Shipped": "yes",
         "License": "BSD",
     },
     os.path.join('third_party', 'cros_system_api'): {
         "Name": "Chromium OS system API",
-        "URL": "http://www.chromium.org/chromium-os",
+        "URL": "https://www.chromium.org/chromium-os",
         "Shipped": "yes",
         "License": "BSD",
         # Absolute path here is resolved as relative to the source root.
@@ -194,7 +194,7 @@ SPECIAL_CASES = {
     },
     os.path.join('third_party', 'lss'): {
         "Name": "linux-syscall-support",
-        "URL": "http://code.google.com/p/linux-syscall-support/",
+        "URL": "https://chromium.googlesource.com/linux-syscall-support/",
         "Shipped": "yes",
         "License": "BSD",
         "License File": ["//third_party/lss/LICENSE"],
@@ -232,18 +232,18 @@ SPECIAL_CASES = {
     },
     os.path.join('third_party', 'pdfium'): {
         "Name": "PDFium",
-        "URL": "http://code.google.com/p/pdfium/",
+        "URL": "https://pdfium.googlesource.com/pdfium/",
         "Shipped": "yes",
         "License": "BSD",
     },
     os.path.join('third_party', 'ppapi'): {
         "Name": "ppapi",
-        "URL": "http://code.google.com/p/ppapi/",
+        "URL": "https://code.google.com/p/ppapi/",
         "Shipped": "yes",
     },
     os.path.join('third_party', 'scons-2.0.1'): {
         "Name": "scons-2.0.1",
-        "URL": "http://www.scons.org",
+        "URL": "https://www.scons.org/",
         "Shipped": "no",
         "License": "MIT",
     },
@@ -292,7 +292,7 @@ SPECIAL_CASES = {
     },
     os.path.join('third_party', 'v8-i18n'): {
         "Name": "Internationalization Library for v8",
-        "URL": "http://code.google.com/p/v8-i18n/",
+        "URL": "https://code.google.com/p/v8-i18n/",
         "Shipped": "yes",
         "License": "Apache 2.0",
     },
@@ -302,7 +302,7 @@ SPECIAL_CASES = {
         # since the fork.  about:credits needs to mention the code before
         # the fork.
         "Name": "WebKit",
-        "URL": "http://webkit.org/",
+        "URL": "https://webkit.org/",
         "Shipped": "yes",
         "License": "BSD and LGPL v2 and LGPL v2.1",
         # Absolute path here is resolved as relative to the source root.
@@ -310,25 +310,25 @@ SPECIAL_CASES = {
     },
     os.path.join('third_party', 'webpagereplay'): {
         "Name": "webpagereplay",
-        "URL": "http://code.google.com/p/web-page-replay",
+        "URL": "https://github.com/chromium/web-page-replay",
         "Shipped": "no",
         "License": "Apache 2.0",
     },
     os.path.join('tools', 'gyp'): {
         "Name": "gyp",
-        "URL": "http://code.google.com/p/gyp",
+        "URL": "https://gyp.gsrc.io/",
         "Shipped": "no",
         "License": "BSD",
     },
     os.path.join('v8'): {
         "Name": "V8 JavaScript Engine",
-        "URL": "http://code.google.com/p/v8",
+        "URL": "https://v8.dev/",
         "Shipped": "yes",
         "License": "BSD",
     },
     os.path.join('v8', 'strongtalk'): {
         "Name": "Strongtalk",
-        "URL": "http://www.strongtalk.org/",
+        "URL": "https://www.strongtalk.org/",
         "Shipped": "yes",
         "License": "BSD",
         # Absolute path here is resolved as relative to the source root.
@@ -336,7 +336,7 @@ SPECIAL_CASES = {
     },
     os.path.join('v8', 'fdlibm'): {
         "Name": "fdlibm",
-        "URL": "http://www.netlib.org/fdlibm/",
+        "URL": "https://www.netlib.org/fdlibm/",
         "Shipped": "yes",
         "License": "Freely Distributable",
         # Absolute path here is resolved as relative to the source root.
@@ -386,7 +386,7 @@ SPECIAL_CASES = {
     },
     os.path.join('third_party', 'dawn', 'third_party', 'khronos'): {
         "Name": "khronos_platform",
-        "URL": "http://www.khronos.org/registry/egl",
+        "URL": "https://registry.khronos.org/EGL/",
         "Shipped": "yes",
         "License": "Apache 2.0",
         "License File": ["//third_party/dawn/third_party/khronos/LICENSE"],
@@ -394,7 +394,7 @@ SPECIAL_CASES = {
     # Dependencies of Selenium Atoms
     os.path.join('third_party', 'selenium-atoms', 'sizzle'): {
         "Name": "Sizzle",
-        "URL": "http://sizzlejs.com/",
+        "URL": "https://sizzlejs.com/",
         "Shipped": "yes",
         "License": "MIT, BSD and GPL v2",
         "License File": ["//third_party/selenium-atoms/LICENSE.sizzle"],
@@ -433,6 +433,12 @@ MANDATORY_FIELDS = {
     "License",  # Software license.
     "License File",  # Relative paths to license texts.
     "Shipped",  # Whether the package is in the shipped product.
+}
+
+# Field aliases (key is the alias, value is the field to map to).
+# Note: if both fields are provided, the alias field value will be used.
+ALIAS_FIELDS = {
+    "Shipped in Chromium": "Shipped",
 }
 
 # The metadata fields that can have multiple values.
@@ -559,7 +565,8 @@ def ParseMetadataFile(filepath: str,
     InvalidMetadata - if the metadata in the file has duplicate fields
                       for a dependency.
   """
-  known_fields = list(MANDATORY_FIELDS) + optional_fields
+  known_fields = (list(MANDATORY_FIELDS) + list(ALIAS_FIELDS.keys()) +
+                  optional_fields)
   field_lookup = {name.lower(): name for name in known_fields}
 
   dependencies = []
@@ -632,6 +639,12 @@ def ProcessMetadata(metadata: Dict[str, Any],
   dep_name = metadata.get("Name")
   if dep_name:
     dep_ref = f"{readme_path}>>{dep_name}"
+
+  # Set field values for fields with aliases.
+  for alias, field in ALIAS_FIELDS.items():
+    if alias in metadata:
+      metadata[field] = metadata[alias]
+      metadata.pop(alias)
 
   # Set the default "License File" value.
   if metadata.get("License File") is None:
@@ -989,6 +1002,7 @@ def ScanThirdPartyDirs(root=None):
 
 def GenerateCredits(file_template_file,
                     entry_template_file,
+                    reciprocal_template_file,
                     output_file,
                     target_os,
                     gn_out_dir,
@@ -1045,12 +1059,19 @@ def GenerateCredits(file_template_file,
                                        'about_ui', 'resources',
                                        'about_credits_entry.tmpl')
 
+  # Used to add a link at the top of credits for Chromium code to
+  # satisfy the requirements for reciprocal license types.
+  if not reciprocal_template_file:
+    reciprocal_template_file = os.path.join(_REPOSITORY_ROOT, 'components',
+                                            'about_ui', 'resources',
+                                            'about_credits_reciprocal.tmpl')
+
   entry_template = codecs.open(entry_template_file, encoding='utf-8').read()
   entries = []
   # Start from Chromium's LICENSE file
   chromium_license_metadata = {
       'Name': 'The Chromium Project',
-      'URL': 'http://www.chromium.org',
+      'URL': 'https://www.chromium.org',
       'Shipped': 'yes',
       'License File': [os.path.join(_REPOSITORY_ROOT, 'LICENSE')],
   }
@@ -1067,7 +1088,7 @@ def GenerateCredits(file_template_file,
       if not directory_metadata:
         continue
     except LicenseError:
-      # TODO(phajdan.jr): Convert to fatal error (http://crbug.com/39240).
+      # TODO(phajdan.jr): Convert to fatal error (https://crbug.com/39240).
       continue
 
     for dep_metadata in directory_metadata:
@@ -1097,10 +1118,21 @@ def GenerateCredits(file_template_file,
     entry['content'] = entry['content'].replace('{{id}}', str(entry_id))
 
   entries_contents = '\n'.join([entry['content'] for entry in entries])
+
+  reciprocal_template = codecs.open(reciprocal_template_file,
+                                    encoding='utf-8').read()
+  reciprocal_contents = EvaluateTemplate(reciprocal_template, {
+      'opensource_project': 'Chromium',
+      'opensource_link': 'https://source.chromium.org/chromium'
+  },
+                                         escape=False)
+
   file_template = codecs.open(file_template_file, encoding='utf-8').read()
   template_contents = "<!-- Generated by licenses.py; do not edit. -->"
-  template_contents += EvaluateTemplate(file_template,
-                                        {'entries': entries_contents},
+  template_contents += EvaluateTemplate(file_template, {
+      'entries': entries_contents,
+      'reciprocal-license-statement': reciprocal_contents
+  },
                                         escape=False)
 
   if output_file:
@@ -1176,7 +1208,7 @@ def GenerateLicenseFile(args: argparse.Namespace):
       if directory_metadata:
         metadatas[d] = directory_metadata
     except LicenseError as lic_exp:
-      # TODO(phajdan.jr): Convert to fatal error (http://crbug.com/39240).
+      # TODO(phajdan.jr): Convert to fatal error (https://crbug.com/39240).
       print(f"Error: {lic_exp}")
       continue
 
@@ -1231,8 +1263,8 @@ def GenerateLicenseFileCsv(
   # Start with Chromium's LICENSE file
   csv_writer.writerow([
       "Chromium",
-      "https://chromium.googlesource.com/chromium/src.git/+/refs/heads/main/LICENSE",
-      "Chromium"
+      "https://source.chromium.org/chromium/chromium/src/+/main:LICENSE",
+      "BSD 3-Clause"
   ] + static_data)
 
   # Add necessary third_party.
@@ -1252,9 +1284,8 @@ def GenerateLicenseFileCsv(
         # which is included. We can achieve this by combining a static
         # Chromium googlesource URL with the relative path to the license
         # file from the top level Chromium src directory.
-        lic_url = (
-            "https://chromium.googlesource.com/chromium/src.git/+/refs/heads/main/"
-            + os.path.relpath(lic, repo_root))
+        lic_url = ("https://source.chromium.org/chromium/chromium/src/+/main:" +
+                   os.path.relpath(lic, repo_root))
 
         # Since these are URLs and not paths, replace any Windows path `\`
         # separators with a `/`
@@ -1349,6 +1380,10 @@ def main():
                       help='Template HTML to use for the license page.')
   parser.add_argument('--entry-template',
                       help='Template HTML to use for each license.')
+  parser.add_argument('--reciprocal-template',
+                      help=('Template HTML to use for adding a link to an open '
+                            'source code repository to satisfy reciprocal '
+                            'license requirements. eg Chromium.'))
   parser.add_argument(
       '--extra-third-party-dirs',
       help='Gn list of additional third_party dirs to look through.')
@@ -1398,10 +1433,10 @@ def main():
     if not ScanThirdPartyDirs():
       return 1
   elif args.command == 'credits':
-    if not GenerateCredits(args.file_template, args.entry_template,
-                           args.output_file, args.target_os, args.gn_out_dir,
-                           args.gn_target, args.extra_third_party_dirs,
-                           args.depfile, args.enable_warnings):
+    if not GenerateCredits(
+        args.file_template, args.entry_template, args.reciprocal_template,
+        args.output_file, args.target_os, args.gn_out_dir, args.gn_target,
+        args.extra_third_party_dirs, args.depfile, args.enable_warnings):
       return 1
   elif args.command == 'license_file':
     try:

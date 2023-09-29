@@ -41,7 +41,9 @@
 #include "mojo/public/cpp/bindings/clone_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/ash/keyboard_capability.h"
+#include "ui/events/ash/mojom/extended_fkeys_modifier.mojom-shared.h"
 #include "ui/events/ash/mojom/simulate_right_click_modifier.mojom-shared.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/device_data_manager_test_api.h"
@@ -64,6 +66,16 @@ const ui::KeyboardDevice kSampleKeyboardInternal(5,
                                                  0x1111,
                                                  0x1111,
                                                  0);
+
+const ui::KeyboardDevice kSampleKeyboardInternal2(4,
+                                                  ui::INPUT_DEVICE_INTERNAL,
+                                                  "kSampleKeyboardInternal2",
+                                                  "",
+                                                  base::FilePath("path4"),
+                                                  0x1111,
+                                                  0x1111,
+                                                  0);
+
 const ui::KeyboardDevice kSampleKeyboardBluetooth(10,
                                                   ui::INPUT_DEVICE_BLUETOOTH,
                                                   "kSampleKeyboardBluetooth");
@@ -135,6 +147,7 @@ const AccountId account_id_3 =
 
 constexpr char kKbdTopRowPropertyName[] = "CROS_KEYBOARD_TOP_ROW_LAYOUT";
 constexpr char kKbdTopRowLayout1Tag[] = "1";
+constexpr char kKbdTopRowLayout2Tag[] = "2";
 
 class FakeDeviceManager {
  public:
@@ -339,9 +352,11 @@ class InputDeviceSettingsControllerTest : public NoSessionAshTestBase {
   void SetUp() override {
     task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
 
-    scoped_feature_list_.InitWithFeatures({features::kPeripheralCustomization,
-                                           features::kInputDeviceSettingsSplit},
-                                          {});
+    scoped_feature_list_.InitWithFeatures(
+        {features::kPeripheralCustomization,
+         features::kInputDeviceSettingsSplit,
+         ::features::kSupportF11AndF12KeyShortcuts},
+        {});
     NoSessionAshTestBase::SetUp();
     Shell::Get()->event_rewriter_controller()->Initialize(nullptr, nullptr);
     fake_keyboard_manager_ = std::make_unique<FakeDeviceManager>();
@@ -702,6 +717,25 @@ TEST_F(InputDeviceSettingsControllerTest, KeyboardSettingsAreValid) {
   EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_updated(), 0u);
 }
 
+TEST_F(InputDeviceSettingsControllerTest, FkeySettingsAreValid) {
+  ui::KeyboardCapability::KeyboardInfo keyboard_info;
+  keyboard_info.device_type =
+      ui::KeyboardCapability::DeviceType::kDeviceExternalGenericKeyboard;
+  Shell::Get()->keyboard_capability()->SetKeyboardInfoForTesting(
+      kSampleKeyboardUsb, std::move(keyboard_info));
+  fake_keyboard_manager_->AddFakeKeyboard(kSampleKeyboardUsb,
+                                          kKbdTopRowLayout1Tag);
+
+  const mojom::KeyboardSettingsPtr usb_kb_settings =
+      mojom::KeyboardSettings::New();
+  usb_kb_settings->f11 = ui::mojom::ExtendedFkeysModifier::kAlt;
+  usb_kb_settings->f12 = ui::mojom::ExtendedFkeysModifier::kAlt;
+  controller_->SetKeyboardSettings((DeviceId)kSampleKeyboardUsb.id,
+                                   usb_kb_settings.Clone());
+  EXPECT_EQ(observer_->num_keyboards_settings_updated(), 0u);
+  EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_updated(), 0u);
+}
+
 TEST_F(InputDeviceSettingsControllerTest, GraphicsTabletSettingsAreValid) {
   fake_keyboard_manager_->AddFakeGraphicsTablet(kSampleGraphicsTablet);
   EXPECT_EQ(observer_->num_graphics_tablets_connected(), 1u);
@@ -717,7 +751,7 @@ TEST_F(InputDeviceSettingsControllerTest, GraphicsTabletSettingsAreValid) {
       /*button=*/
       button->Clone(),
       /*remapping_action=*/
-      mojom::RemappingAction::NewAction(
+      mojom::RemappingAction::NewAcceleratorAction(
           ash::AcceleratorAction::kBrightnessDown));
   std::vector<mojom::ButtonRemappingPtr> tablet_button_remappings;
   std::vector<mojom::ButtonRemappingPtr> pen_button_remappings;
@@ -855,7 +889,7 @@ TEST_F(InputDeviceSettingsControllerTest, RecordSetMouseSettingsValidMetric) {
       /*button=*/
       mojom::Button::NewCustomizableButton(mojom::CustomizableButton::kBack),
       /*remapping_action=*/
-      mojom::RemappingAction::NewAction(
+      mojom::RemappingAction::NewAcceleratorAction(
           ash::AcceleratorAction::kBrightnessDown));
   std::vector<mojom::ButtonRemappingPtr> button_remappings;
   button_remappings.push_back(button_remapping.Clone());
@@ -1193,6 +1227,68 @@ TEST_F(InputDeviceSettingsControllerTest, GetSettingsDuplicateIds) {
             controller_->GetMouseSettings(mouse2.id));
   EXPECT_EQ(controller_->GetGraphicsTabletSettings(graphics_tablet1.id),
             controller_->GetGraphicsTabletSettings(graphics_tablet2.id));
+}
+TEST_F(InputDeviceSettingsControllerTest,
+       KeyboardReceivesCorrectTopRowActionKeys) {
+  // `kKbdTopRowLayout1Tag` maps to the original Chrome OS Layout:
+  // Browser Back, Browser Forward, Refresh, Full Screen, Overview,
+  // Brightness Down, Brightness Up, Mute, Volume Down, Volume Up.
+  fake_keyboard_manager_->AddFakeKeyboard(kSampleKeyboardInternal,
+                                          kKbdTopRowLayout1Tag);
+  EXPECT_EQ(observer_->num_keyboards_connected(), 1u);
+  auto keyboards = controller_->GetConnectedKeyboards();
+  EXPECT_EQ(keyboards.size(), 1u);
+  auto keyboard = mojo::Clone(keyboards[0]);
+  EXPECT_EQ(keyboard->top_row_action_keys.size(), 10u);
+  EXPECT_EQ(keyboard->top_row_action_keys[0], mojom::TopRowActionKey::kBack);
+  EXPECT_EQ(keyboard->top_row_action_keys[1], mojom::TopRowActionKey::kForward);
+  EXPECT_EQ(keyboard->top_row_action_keys[2], mojom::TopRowActionKey::kRefresh);
+  EXPECT_EQ(keyboard->top_row_action_keys[3],
+            mojom::TopRowActionKey::kFullscreen);
+  EXPECT_EQ(keyboard->top_row_action_keys[4],
+            mojom::TopRowActionKey::kOverview);
+  EXPECT_EQ(keyboard->top_row_action_keys[5],
+            mojom::TopRowActionKey::kScreenBrightnessDown);
+  EXPECT_EQ(keyboard->top_row_action_keys[6],
+            mojom::TopRowActionKey::kScreenBrightnessUp);
+  EXPECT_EQ(keyboard->top_row_action_keys[7],
+            mojom::TopRowActionKey::kVolumeMute);
+  EXPECT_EQ(keyboard->top_row_action_keys[8],
+            mojom::TopRowActionKey::kVolumeDown);
+  EXPECT_EQ(keyboard->top_row_action_keys[9],
+            mojom::TopRowActionKey::kVolumeUp);
+
+  fake_keyboard_manager_->RemoveAllDevices();
+
+  // `kKbdTopRowLayout2Tag` represents the 2017 keyboard layout:
+  // Browser Forward is gone and Play/Pause key is added between
+  // Brightness Up and Mute.
+  fake_keyboard_manager_->AddFakeKeyboard(kSampleKeyboardInternal2,
+                                          kKbdTopRowLayout2Tag);
+  EXPECT_EQ(observer_->num_keyboards_connected(), 1u);
+  keyboards = controller_->GetConnectedKeyboards();
+  EXPECT_EQ(keyboards.size(), 1u);
+  keyboard = mojo::Clone(keyboards[0]);
+  EXPECT_EQ(keyboard->top_row_action_keys.size(), 10u);
+
+  EXPECT_EQ(keyboard->top_row_action_keys[0], mojom::TopRowActionKey::kBack);
+  EXPECT_EQ(keyboard->top_row_action_keys[1], mojom::TopRowActionKey::kRefresh);
+  EXPECT_EQ(keyboard->top_row_action_keys[2],
+            mojom::TopRowActionKey::kFullscreen);
+  EXPECT_EQ(keyboard->top_row_action_keys[3],
+            mojom::TopRowActionKey::kOverview);
+  EXPECT_EQ(keyboard->top_row_action_keys[4],
+            mojom::TopRowActionKey::kScreenBrightnessDown);
+  EXPECT_EQ(keyboard->top_row_action_keys[5],
+            mojom::TopRowActionKey::kScreenBrightnessUp);
+  EXPECT_EQ(keyboard->top_row_action_keys[6],
+            mojom::TopRowActionKey::kPlayPause);
+  EXPECT_EQ(keyboard->top_row_action_keys[7],
+            mojom::TopRowActionKey::kVolumeMute);
+  EXPECT_EQ(keyboard->top_row_action_keys[8],
+            mojom::TopRowActionKey::kVolumeDown);
+  EXPECT_EQ(keyboard->top_row_action_keys[9],
+            mojom::TopRowActionKey::kVolumeUp);
 }
 
 }  // namespace ash

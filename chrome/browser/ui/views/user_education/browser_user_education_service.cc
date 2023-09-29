@@ -55,6 +55,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/color/color_id.h"
 #include "ui/views/interaction/element_tracker_views.h"
+#include "ui/views/vector_icons.h"
 #include "ui/views/view.h"
 #include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
@@ -442,10 +443,11 @@ void MaybeRegisterChromeFeaturePromos(
       kToolbarSidePanelButtonElementId, IDS_POWER_BOOKMARKS_SIDE_PANEL_PROMO));
 
   // kIPHCompanionSidePanelFeature:
-  registry.RegisterFeature(FeaturePromoSpecification::CreateForSnoozePromo(
+  registry.RegisterFeature(FeaturePromoSpecification::CreateForToastPromo(
       feature_engagement::kIPHCompanionSidePanelFeature,
-      kSidePanelCompanionToolbarButtonElementId,
-      IDS_SIDE_PANEL_COMPANION_PROMO));
+      kSidePanelCompanionToolbarButtonElementId, IDS_SIDE_PANEL_COMPANION_PROMO,
+      IDS_SIDE_PANEL_COMPANION_PROMO_SCREEN_READER,
+      FeaturePromoSpecification::AcceleratorInfo()));
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   // kIPHSwitchProfileFeature:
@@ -530,6 +532,30 @@ void MaybeRegisterChromeFeaturePromos(
   registry.RegisterFeature(FeaturePromoSpecification::CreateForLegacyPromo(
       &feature_engagement::kIPHTabSearchFeature, kTabSearchButtonElementId,
       IDS_TAB_SEARCH_PROMO));
+
+  // Tracking Protection Onboarding IPH
+  registry.RegisterFeature(std::move(
+      FeaturePromoSpecification::CreateForCustomAction(
+          feature_engagement::kIPHTrackingProtectionOnboardingFeature,
+          kLocationIconElementId,
+          IDS_TRACKING_PROTECTION_ONBOARDING_NOTICE_BODY,
+          IDS_TRACKING_PROTECTION_ONBOARDING_NOTICE_SETTINGS_BUTTON_LABEL,
+          base::BindRepeating(
+              [](ui::ElementContext ctx,
+                 user_education::FeaturePromoHandle promo_handle) {
+                auto* browser = chrome::FindBrowserWithUiElementContext(ctx);
+                if (!browser) {
+                  return;
+                }
+                chrome::ShowSettingsSubPage(browser,
+                                            chrome::kCookieSettingsSubPage);
+              }))
+          .SetBubbleTitleText(IDS_TRACKING_PROTECTION_ONBOARDING_NOTICE_TITLE)
+          .SetPromoSubtype(
+              FeaturePromoSpecification::PromoSubtype::kLegalNotice)
+          .SetBubbleArrow(HelpBubbleArrow::kTopLeft)
+          .SetBubbleIcon(&views::kEyeCrossedIcon)
+          .SetCustomActionIsDefault(false)));
 
   // kIPHWebUITabStripFeature:
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)

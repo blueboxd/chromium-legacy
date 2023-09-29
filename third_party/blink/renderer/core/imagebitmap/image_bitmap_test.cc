@@ -85,7 +85,7 @@ class ImageBitmapTest : public testing::Test {
             blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
 
     test_context_provider_ = viz::TestContextProvider::Create();
-    InitializeSharedGpuContext(test_context_provider_.get());
+    InitializeSharedGpuContextGLES2(test_context_provider_.get());
   }
 
   void TearDown() override {
@@ -262,8 +262,8 @@ TEST_F(ImageBitmapTest, AvoidGPUReadback) {
       CanvasResourceProvider::ShouldInitialize::kNo, context_provider_wrapper,
       RasterMode::kGPU, /*shared_image_usage_flags=*/0u);
 
-  scoped_refptr<StaticBitmapImage> bitmap = resource_provider->Snapshot(
-      CanvasResourceProvider::FlushReason::kTesting);
+  scoped_refptr<StaticBitmapImage> bitmap =
+      resource_provider->Snapshot(FlushReason::kTesting);
   ASSERT_TRUE(bitmap->IsTextureBacked());
 
   auto* image_bitmap = MakeGarbageCollected<ImageBitmap>(bitmap);
@@ -329,8 +329,8 @@ TEST_F(ImageBitmapTest, AvoidGPUReadback) {
 // ImageBitmap from that does not crash. crbug.com/780358
 TEST_F(ImageBitmapTest,
        MAYBE_CreateImageBitmapFromTooBigImageDataDoesNotCrash) {
-  ImageData* image_data =
-      ImageData::CreateForTest(gfx::Size(v8::TypedArray::kMaxLength / 16, 1));
+  constexpr int kWidth = 1 << 28;  // 256M pixels width, resulting in 1GB data.
+  ImageData* image_data = ImageData::CreateForTest(gfx::Size(kWidth, 1));
   DCHECK(image_data);
   ImageBitmapOptions* options = ImageBitmapOptions::Create();
   options->setColorSpaceConversion("default");

@@ -11,6 +11,7 @@
 #include "components/android_autofill/browser/android_autofill_bridge_factory.h"
 #include "components/android_autofill/browser/mock_form_field_data_android_bridge.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
@@ -42,7 +43,7 @@ FormFieldData CreateTestField() {
   f.name = u"SomeName";
   f.name_attribute = f.name;
   f.id_attribute = u"some_id";
-  f.form_control_type = "text";
+  f.form_control_type = StringToFormControlType("text");
   f.check_status = FormFieldData::CheckStatus::kChecked;
   return f;
 }
@@ -79,6 +80,35 @@ TEST(FormFieldDataAndroidTest, OnFormFieldDidChange) {
   EXPECT_EQ(field.value, kSampleValue);
 }
 
+// Tests that updating the field visibility calls the Java bridge and also
+// updates the underlying `FormFieldData` object.
+TEST(FormFieldDataAndroidTest, OnFormFieldVisibilityDidChange) {
+  MockFormFieldDataAndroidBridge* bridge = nullptr;
+  EnableTestingFactoryAndSaveLastBridge(&bridge);
+
+  FormFieldData field;
+  field.is_focusable = false;
+  field.role = FormFieldData::RoleAttribute::kOther;
+  EXPECT_FALSE(field.IsFocusable());
+
+  FormFieldDataAndroid field_android(&field);
+  FormFieldData field_copy = field;
+  ASSERT_TRUE(bridge);
+
+  // A field with `is_focusable=true` and a non-presentation role is focusable
+  // in Autofill terms and therefore visible in Android Autofill terms.
+  EXPECT_CALL(*bridge, UpdateVisible(true));
+  field_copy.is_focusable = true;
+  field_android.OnFormFieldVisibilityDidChange(field_copy);
+  EXPECT_TRUE(FormFieldData::DeepEqual(field, field_copy));
+
+  // A field with a presentation role is not focusable in Autofill terms.
+  EXPECT_CALL(*bridge, UpdateVisible(false));
+  field_copy.role = FormFieldData::RoleAttribute::kPresentation;
+  field_android.OnFormFieldVisibilityDidChange(field_copy);
+  EXPECT_TRUE(FormFieldData::DeepEqual(field, field_copy));
+}
+
 // Tests that field similarity checks include name, name_attribute, id_attribute
 // and form control type.
 TEST(FormFieldDataAndroidTest, SimilarFieldsAs) {
@@ -106,7 +136,12 @@ TEST(FormFieldDataAndroidTest, SimilarFieldsAs) {
 
   // If form control types differ, they are not similar.
   f2 = f1;
-  f2.form_control_type = "password";
+  f2.form_control_type = StringToFormControlType("password");
+  EXPECT_FALSE(af.SimilarFieldAs(f2));
+
+  // If global ids differ, they are not similar.
+  f2 = f1;
+  f2.unique_renderer_id = FieldRendererId(f1.unique_renderer_id.value() + 1);
   EXPECT_FALSE(af.SimilarFieldAs(f2));
 }
 

@@ -7,7 +7,7 @@ import 'chrome://settings/lazy_load.js';
 
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {SettingsPersonalizationOptionsElement} from 'chrome://settings/lazy_load.js';
-import {CrLinkRowElement, CrSettingsPrefs, loadTimeData, PrivacyPageVisibility, PrivacyPageBrowserProxyImpl, SettingsPrefsElement, StatusAction, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
+import {CrLinkRowElement, CrSettingsPrefs, loadTimeData, PrivacyPageVisibility, PrivacyPageBrowserProxyImpl, Router, routes, SettingsPrefsElement, StatusAction, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {isChildVisible, isVisible} from 'chrome://webui-test/test_util.js';
 // <if expr="not is_chromeos">
@@ -291,6 +291,10 @@ suite('AllBuilds', function() {
     testElement.set('prefs.page_content_collection.enabled.value', false);
     assertEquals(
         loadTimeData.getString('pageContentLinkRowSublabelOff'), row.subLabel);
+
+    // A click on the row navigates to the page content page.
+    pageContentRow.click();
+    assertEquals(routes.PAGE_CONTENT, Router.getInstance().getCurrentRoute());
   });
 });
 
@@ -348,6 +352,7 @@ suite('OfficialBuild', function() {
       profile: {password_manager_leak_detection: {value: true}},
       safebrowsing:
           {enabled: {value: true}, scout_reporting_enabled: {value: true}},
+      page_content_collection: {enabled: {value: true}},
       spellcheck: {dictionaries: {value: ['en-US']}},
     };
     flush();
@@ -359,6 +364,7 @@ suite('OfficialBuild', function() {
       profile: {password_manager_leak_detection: {value: true}},
       safebrowsing:
           {enabled: {value: true}, scout_reporting_enabled: {value: true}},
+      page_content_collection: {enabled: {value: true}},
       spellcheck: {dictionaries: {value: []}},
     };
     flush();
@@ -369,6 +375,7 @@ suite('OfficialBuild', function() {
       profile: {password_manager_leak_detection: {value: true}},
       safebrowsing:
           {enabled: {value: true}, scout_reporting_enabled: {value: true}},
+      page_content_collection: {enabled: {value: true}},
       browser: {enable_spellchecking: {value: false}},
       spellcheck: {
         dictionaries: {value: ['en-US']},
@@ -388,6 +395,7 @@ suite('OfficialBuild', function() {
       profile: {password_manager_leak_detection: {value: true}},
       safebrowsing:
           {enabled: {value: true}, scout_reporting_enabled: {value: true}},
+      page_content_collection: {enabled: {value: true}},
       spellcheck: {dictionaries: {value: ['en-US']}},
     };
     flush();
@@ -399,6 +407,7 @@ suite('OfficialBuild', function() {
       profile: {password_manager_leak_detection: {value: true}},
       safebrowsing:
           {enabled: {value: true}, scout_reporting_enabled: {value: true}},
+      page_content_collection: {enabled: {value: true}},
       spellcheck: {dictionaries: {value: []}},
     };
     flush();

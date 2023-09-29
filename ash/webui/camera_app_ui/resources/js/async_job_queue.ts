@@ -18,10 +18,31 @@ import {Awaitable} from './type.js';
  */
 type AsyncJobQueueMode = 'drop'|'enqueue'|'keepLatest';
 
+/**
+ * Internal structure used in `AsyncJobQueue` for queued jobs.
+ */
 interface PendingJob {
   job: () => Awaitable<void>;
   resolve: () => void;
   reject: (error: unknown) => void;
+}
+
+/**
+ * Returned by `AsyncJobQueue.push` containing `result` of the queued job.
+ */
+export interface AsyncJobInfo {
+  /**
+   * The result of the job. Resolved when the job is finished, cleared or
+   * dropped, and rejected if the job is run but throws an error.
+   * TODO(pihsun): returns different state for cleared or dropped case if
+   * there's use for it.
+   * TODO(pihsun): really returns the return value of the job from this if
+   * there's use case for it. For now all places that use AsyncJobQueue and
+   * need result use AsyncJobWithResultQueue, which doesn't support clearing and
+   * mode other than 'enqueue', but has a simpler typing because the return
+   * value always exist.
+   */
+  result: Promise<void>;
 }
 
 /**
@@ -80,26 +101,32 @@ export class AsyncJobQueue {
   /**
    * Pushes the given job into queue.
    *
-   * @return Resolved when the job is finished, cleared or dropped.
+   * Most of the caller don't wait for the job to complete, relies on the queue
+   * itself for async operation sequencing and relies on unhandled promise
+   * rejection for error handling. So the job result is not directly returned
+   * as a promise to avoid triggering @typescript-eslint/no-floating-promises.
+   *
+   * @return Return The job info containing the `result` of the job.
    */
-  push(job: () => Awaitable<void>): Promise<void> {
+  push(job: () => Awaitable<void>): AsyncJobInfo {
     if (this.runningPromise === null) {
       const result = Promise.resolve(job());
       this.runningPromise =
           result.catch(() => {/* ignore error from previous job */})
               .then(() => this.handlePendingJobs());
-      return result;
+      return {result};
     }
 
     if (this.mode === 'drop') {
-      return Promise.resolve();
+      return {result: Promise.resolve()};
     }
     if (this.mode === 'keepLatest') {
       this.clearInternal();
     }
-    return new Promise((resolve, reject) => {
+    const result = new Promise<void>((resolve, reject) => {
       this.pendingJobs.push({job, resolve, reject});
     });
+    return {result};
   }
 
   /**
@@ -137,13 +164,9 @@ export class AsyncJobQueue {
  */
 export function queuedAsyncCallback<T extends unknown[]>(
     mode: AsyncJobQueueMode,
-    callback: (...args: T) => Promise<void>): (...args: T) => void {
+    callback: (...args: T) => Promise<void>): (...args: T) => AsyncJobInfo {
   const queue = new AsyncJobQueue(mode);
-  return (...args) => {
-    // The callback are queued inside the async queue and not awaited.
-    // Error will be logged by unhandled promise rejection.
-    void queue.push(() => callback(...args));
-  };
+  return (...args) => queue.push(() => callback(...args));
 }
 
 /**

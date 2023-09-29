@@ -266,10 +266,8 @@ absl::optional<ParcelStatus> Deserialize(const base::Value& value) {
 void OnInvalidParcelIdentifierError(
     ParcelsServerProxy::GetParcelStatusCallback callback) {
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback),
-                     ParcelStatusRequestStatus::kInvalidParcelIdentifiers,
-                     std::make_unique<std::vector<ParcelStatus>>()));
+      FROM_HERE, base::BindOnce(std::move(callback), false,
+                                std::make_unique<std::vector<ParcelStatus>>()));
 }
 
 }  // namespace
@@ -286,12 +284,12 @@ void ParcelsServerProxy::GetParcelStatus(
     const std::vector<ParcelIdentifier>& parcel_identifiers,
     GetParcelStatusCallback callback) {
   CHECK_GT(parcel_identifiers.size(), 0u);
-
   base::Value::List parcel_list = Serialize(parcel_identifiers);
   if (parcel_list.empty()) {
     OnInvalidParcelIdentifierError(std::move(callback));
     return;
   }
+
   base::Value::Dict request_json;
   request_json.Set(kParcelIdsKey, std::move(parcel_list));
   SendJsonRequestToServer(
@@ -352,7 +350,7 @@ void ParcelsServerProxy::ProcessGetParcelStatusResponse(
     GetParcelStatusCallback callback,
     std::unique_ptr<EndpointResponse> response) {
   if (response->http_status_code != net::HTTP_OK || response->error_type) {
-    std::move(callback).Run(ParcelStatusRequestStatus::kServerError,
+    std::move(callback).Run(false,
                             std::make_unique<std::vector<ParcelStatus>>());
     return;
   }
@@ -374,13 +372,11 @@ void ParcelsServerProxy::OnGetParcelStatusJsonParsed(
           parcel_status->push_back(*status);
         }
       }
-      std::move(callback).Run(ParcelStatusRequestStatus::kSuccess,
-                              std::move(parcel_status));
+      std::move(callback).Run(true, std::move(parcel_status));
       return;
     }
   }
-  std::move(callback).Run(ParcelStatusRequestStatus::kServerReponseParsingError,
-                          std::make_unique<std::vector<ParcelStatus>>());
+  std::move(callback).Run(false, std::make_unique<std::vector<ParcelStatus>>());
 }
 
 void ParcelsServerProxy::OnStopTrackingResponse(
@@ -388,9 +384,9 @@ void ParcelsServerProxy::OnStopTrackingResponse(
     std::unique_ptr<EndpointFetcher> endpoint_fetcher,
     std::unique_ptr<EndpointResponse> response) {
   if (response->http_status_code != net::HTTP_OK || response->error_type) {
-    std::move(callback).Run(ParcelStatusRequestStatus::kServerError);
+    std::move(callback).Run(false);
   } else {
-    std::move(callback).Run(ParcelStatusRequestStatus::kSuccess);
+    std::move(callback).Run(true);
   }
 }
 
@@ -410,7 +406,6 @@ void ParcelsServerProxy::SendJsonRequestToServer(
   base::JSONWriter::Write(request_json, &post_data);
   auto fetcher = CreateEndpointFetcher(GURL(server_url), kPostHttpMethod,
                                        post_data, network_traffic_annotation);
-
   auto* const fetcher_ptr = fetcher.get();
   fetcher_ptr->Fetch(base::BindOnce(&ParcelsServerProxy::OnServerResponse,
                                     weak_ptr_factory_.GetWeakPtr(),

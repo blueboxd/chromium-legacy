@@ -64,8 +64,6 @@
 #include "third_party/zlib/google/zip.h"
 #include "url/origin.h"
 
-using storage::DatabaseUtil;
-
 namespace content {
 
 namespace {
@@ -74,10 +72,6 @@ static MockBrowserTestIndexedDBClassFactory* GetTestClassFactory() {
   static ::base::LazyInstance<MockBrowserTestIndexedDBClassFactory>::Leaky
       s_factory = LAZY_INSTANCE_INITIALIZER;
   return s_factory.Pointer();
-}
-
-static IndexedDBClassFactory* GetTestIDBClassFactory() {
-  return GetTestClassFactory();
 }
 
 bool IsAllowedPath(const std::vector<base::FilePath>& allowed_paths,
@@ -127,7 +121,8 @@ IndexedDBContextImpl::IndexedDBContextImpl(
                      base::TaskPriority::USER_VISIBLE,
                      // BLOCK_SHUTDOWN to support clearing session-only storage.
                      base::TaskShutdownBehavior::BLOCK_SHUTDOWN}))),
-      dispatcher_host_(this, std::move(io_task_runner)),
+      io_task_runner_(std::move(io_task_runner)),
+      dispatcher_host_(this),
       base_data_path_(base_data_path.empty() ? base::FilePath()
                                              : base_data_path),
       force_keep_session_state_(false),
@@ -807,6 +802,7 @@ void IndexedDBContextImpl::CompactBackingStoreForTesting(
 
 void IndexedDBContextImpl::BindMockFailureSingletonForTesting(
     mojo::PendingReceiver<storage::mojom::MockFailureInjector> receiver) {
+  IndexedDBTransaction::DisableInactivityTimeoutForTesting();  // IN-TEST
   // Lazily instantiate the GetTestClassFactory.
   if (!mock_failure_injector_.has_value())
     mock_failure_injector_.emplace(GetTestClassFactory());
@@ -814,12 +810,11 @@ void IndexedDBContextImpl::BindMockFailureSingletonForTesting(
   // TODO(enne): this should really not be a static setter.
   CHECK(!mock_failure_injector_->is_bound());
   GetTestClassFactory()->Reset();
-  IndexedDBClassFactory::SetIndexedDBClassFactoryGetter(GetTestIDBClassFactory);
+  IndexedDBClassFactory::Get()
+      ->SetTransactionalLevelDBFactoryForTesting(  // IN-TEST
+          GetTestClassFactory());
 
   mock_failure_injector_->Bind(std::move(receiver));
-  mock_failure_injector_->set_disconnect_handler(base::BindOnce([]() {
-    IndexedDBClassFactory::SetIndexedDBClassFactoryGetter(nullptr);
-  }));
 }
 
 void IndexedDBContextImpl::GetDatabaseKeysForTesting(
@@ -830,8 +825,7 @@ void IndexedDBContextImpl::GetDatabaseKeysForTesting(
 IndexedDBFactory* IndexedDBContextImpl::GetIDBFactory() {
   DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
   if (!indexeddb_factory_.get()) {
-    indexeddb_factory_ = std::make_unique<IndexedDBFactory>(
-        this, IndexedDBClassFactory::Get(), clock_);
+    indexeddb_factory_ = std::make_unique<IndexedDBFactory>(this, clock_);
   }
   return indexeddb_factory_.get();
 }

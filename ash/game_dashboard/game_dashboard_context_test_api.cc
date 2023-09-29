@@ -7,9 +7,11 @@
 #include <string>
 
 #include "ash/capture_mode/capture_mode_test_util.h"
+#include "ash/game_dashboard/game_dashboard_button.h"
 #include "ash/game_dashboard/game_dashboard_context.h"
 #include "ash/game_dashboard/game_dashboard_main_menu_view.h"
 #include "ash/game_dashboard/game_dashboard_toolbar_view.h"
+#include "ash/game_dashboard/game_dashboard_widget.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/style/icon_button.h"
 #include "ash/style/pill_button.h"
@@ -19,6 +21,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view_utils.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 
@@ -45,11 +48,15 @@ GameDashboardWidget* GameDashboardContextTestApi::GetGameDashboardButtonWidget()
   return context_->game_dashboard_button_widget();
 }
 
-PillButton* GameDashboardContextTestApi::GetGameDashboardButton() const {
-  auto* game_dashboard_button_widget = GetGameDashboardButtonWidget();
-  CHECK(game_dashboard_button_widget);
-  return views::AsViewClass<PillButton>(
-      game_dashboard_button_widget->GetContentsView());
+GameDashboardButton* GameDashboardContextTestApi::GetGameDashboardButton()
+    const {
+  return context_->game_dashboard_button_;
+}
+
+views::Label* GameDashboardContextTestApi::GetGameDashboardButtonTitle() const {
+  auto* game_dashboard_button = GetGameDashboardButton();
+  CHECK(game_dashboard_button);
+  return game_dashboard_button->title_view_;
 }
 
 views::Widget* GameDashboardContextTestApi::GetMainMenuWidget() {
@@ -57,7 +64,7 @@ views::Widget* GameDashboardContextTestApi::GetMainMenuWidget() {
 }
 
 GameDashboardMainMenuView* GameDashboardContextTestApi::GetMainMenuView() {
-  return context_->main_menu_view_;
+  return context_->main_menu_view();
 }
 
 FeatureTile* GameDashboardContextTestApi::GetMainMenuGameControlsTile() {
@@ -128,6 +135,9 @@ void GameDashboardContextTestApi::OpenTheMainMenu() {
   auto* game_dashboard_button = GetGameDashboardButton();
   ASSERT_TRUE(game_dashboard_button);
   ClickOnView(game_dashboard_button, event_generator_);
+  // Pause to ensure any other open main menu views have had time to auto-close
+  // and notify the `GameDashboardContext` that it's been destroyed.
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(GetMainMenuView());
   ASSERT_TRUE(GetMainMenuWidget());
 }
@@ -138,6 +148,9 @@ void GameDashboardContextTestApi::CloseTheMainMenu() {
   auto* game_dashboard_button = GetGameDashboardButton();
   ASSERT_TRUE(game_dashboard_button);
   ClickOnView(game_dashboard_button, event_generator_);
+  // Pause to ensure the main menu view has had time to auto-close itself and
+  // notify the `GameDashboardContext` that it's been destroyed.
+  base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(GetMainMenuView());
   ASSERT_FALSE(GetMainMenuWidget());
 }
@@ -199,6 +212,13 @@ void GameDashboardContextTestApi::OpenTheToolbar() {
   ClickOnView(main_menu_toolbar_tile, event_generator_);
   ASSERT_TRUE(GetToolbarView());
   ASSERT_TRUE(GetToolbarWidget());
+}
+
+void GameDashboardContextTestApi::SetFocusOnToolbar() {
+  GameDashboardWidget* toolbar_widget = GetToolbarWidget();
+  ASSERT_TRUE(toolbar_widget)
+      << "The toolbar view must be opened before trying to place focus on it.";
+  toolbar_widget->Activate();
 }
 
 void GameDashboardContextTestApi::CloseTheToolbar() {

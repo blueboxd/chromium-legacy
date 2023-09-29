@@ -10,6 +10,7 @@
 #include "ash/public/cpp/night_light_controller.h"
 #include "base/values.h"
 #include "chrome/browser/ash/system/pointer_device_observer.h"
+#include "chrome/browser/ui/webui/ash/settings/pages/printing/printing_section.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_section.h"
 #include "chrome/browser/ui/webui/settings/ash/power_section.h"
 #include "chrome/browser/ui/webui/settings/ash/storage_section.h"
@@ -38,6 +39,7 @@ class DeviceSection : public OsSettingsSection,
  public:
   DeviceSection(Profile* profile,
                 SearchTagRegistry* search_tag_registry,
+                CupsPrintersManager* printers_manager,
                 PrefService* pref_service);
   ~DeviceSection() override;
 
@@ -65,7 +67,7 @@ class DeviceSection : public OsSettingsSection,
   // NightLightController::Observer:
   void OnNightLightEnabledChanged(bool enabled) override;
 
-  // mojom::CrosDisplayConfigObserver
+  // mojom::CrosDisplayConfigObserver:
   void OnDisplayConfigChanged() override;
 
   void UpdateStylusSearchTags();
@@ -86,8 +88,9 @@ class DeviceSection : public OsSettingsSection,
   system::PointerDeviceObserver pointer_device_observer_;
   mojo::Remote<crosapi::mojom::CrosDisplayConfigController>
       cros_display_config_;
-  PowerSection power_subsection_;
-  StorageSection storage_subsection_;
+  absl::optional<PowerSection> power_subsection_;
+  absl::optional<PrintingSection> printing_subsection_;
+  absl::optional<StorageSection> storage_subsection_;
   mojo::AssociatedReceiver<crosapi::mojom::CrosDisplayConfigObserver>
       cros_display_config_observer_receiver_{this};
 };

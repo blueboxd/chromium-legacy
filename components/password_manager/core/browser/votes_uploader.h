@@ -44,7 +44,7 @@ struct SingleUsernameVoteData {
       const std::u16string& username_value,
       const FormPredictions& form_predictions,
       const std::vector<const PasswordForm*>& stored_credentials,
-      bool password_form_had_username_field);
+      bool password_form_had_matching_username);
   SingleUsernameVoteData(const SingleUsernameVoteData&);
   SingleUsernameVoteData& operator=(const SingleUsernameVoteData&);
   SingleUsernameVoteData(SingleUsernameVoteData&& other);
@@ -70,7 +70,10 @@ struct SingleUsernameVoteData {
 
   // True if the password form has username field whose value matches username
   // value in the single username form.
-  bool password_form_had_username_field;
+  // TODO: crbug.com/1468297 - `password_form_had_matching_username` in
+  // `VotesUploader` is used for UMA metrics. The variable can be removed once
+  // the metrics are not needed anymore.
+  bool password_form_had_matching_username;
 };
 
 // This class manages vote uploads for password forms.

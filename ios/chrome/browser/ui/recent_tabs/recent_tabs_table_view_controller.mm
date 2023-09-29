@@ -70,8 +70,8 @@
 #import "ios/chrome/browser/synced_sessions/distant_session.h"
 #import "ios/chrome/browser/synced_sessions/distant_tab.h"
 #import "ios/chrome/browser/synced_sessions/synced_sessions.h"
-#import "ios/chrome/browser/tabs_search/tabs_search_service.h"
-#import "ios/chrome/browser/tabs_search/tabs_search_service_factory.h"
+#import "ios/chrome/browser/tabs_search/model/tabs_search_service.h"
+#import "ios/chrome/browser/tabs_search/model/tabs_search_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_signin_promo_item.h"
@@ -188,7 +188,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
 @property(nonatomic, strong) TableViewURLDragDropHandler* dragDropHandler;
 @end
 
-@implementation RecentTabsTableViewController : ChromeTableViewController
+@implementation RecentTabsTableViewController
 
 #pragma mark - Public Interface
 
@@ -1894,7 +1894,9 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   // correct screen to handle the error (ex. passphrase screen).
   HistorySyncSkipReason skipReason = [HistorySyncCoordinator
       getHistorySyncOptInSkipReason:self.syncService
-              authenticationService:authenticationService];
+              authenticationService:authenticationService
+                        prefService:_browserState->GetPrefs()
+              isHistorySyncOptional:NO];
   return skipReason == HistorySyncSkipReason::kNone;
 }
 

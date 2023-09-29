@@ -25,7 +25,7 @@
 #include "components/commerce/core/discounts_storage.h"
 #include "components/commerce/core/metrics/metrics_utils.h"
 #include "components/commerce/core/metrics/scheduled_metrics_manager.h"
-#include "components/commerce/core/parcel_manager.h"
+#include "components/commerce/core/parcel/parcels_manager.h"
 #include "components/commerce/core/pref_names.h"
 #include "components/commerce/core/price_tracking_utils.h"
 #include "components/commerce/core/proto/commerce_subscription_db_content.pb.h"
@@ -52,6 +52,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/search/ntp_features.h"
 #include "components/session_proto_db/session_proto_storage.h"
+#include "components/sync/base/features.h"
 #include "components/sync/service/sync_service.h"
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
 #include "net/base/url_util.h"
@@ -107,10 +108,26 @@ DiscountInfo::DiscountInfo(const DiscountInfo&) = default;
 DiscountInfo& DiscountInfo::operator=(const DiscountInfo&) = default;
 DiscountInfo::~DiscountInfo() = default;
 
+ParcelTrackingStatus::ParcelTrackingStatus() = default;
+ParcelTrackingStatus::ParcelTrackingStatus(const ParcelTrackingStatus&) =
+    default;
+ParcelTrackingStatus& ParcelTrackingStatus::operator=(
+    const ParcelTrackingStatus&) = default;
+ParcelTrackingStatus::~ParcelTrackingStatus() = default;
+ParcelTrackingStatus::ParcelTrackingStatus(const ParcelStatus& parcel_status) {
+  carrier = parcel_status.parcel_identifier().carrier();
+  tracking_id = parcel_status.parcel_identifier().tracking_id();
+  state = parcel_status.parcel_state();
+  tracking_url = GURL(parcel_status.tracking_url());
+  estimated_delivery_time = base::Time::FromDeltaSinceWindowsEpoch(
+      base::Microseconds(parcel_status.estimated_delivery_time_usec()));
+}
+
 ShoppingService::ShoppingService(
     const std::string& country_on_startup,
     const std::string& locale_on_startup,
-    bookmarks::BookmarkModel* bookmark_model,
+    bookmarks::BookmarkModel* local_or_syncable_bookmark_model,
+    bookmarks::BookmarkModel* account_bookmark_model,
     optimization_guide::OptimizationGuideDecider* opt_guide,
     PrefService* pref_service,
     signin::IdentityManager* identity_manager,
@@ -123,18 +140,23 @@ ShoppingService::ShoppingService(
     SessionProtoStorage<discounts_db::DiscountsContentProto>*
         discounts_proto_db,
     SessionProtoStorage<parcel_tracking_db::ParcelTrackingContent>*
-        parcel_tracking_proto_db)
+        parcel_tracking_proto_db,
+    history::HistoryService* history_service)
     : country_on_startup_(country_on_startup),
       locale_on_startup_(locale_on_startup),
       opt_guide_(opt_guide),
       pref_service_(pref_service),
       sync_service_(sync_service),
-      bookmark_model_(bookmark_model),
+      local_or_syncable_bookmark_model_(local_or_syncable_bookmark_model),
+      account_bookmark_model_(account_bookmark_model),
+      bookmark_model_used_for_sync_(nullptr),
       power_bookmark_service_(power_bookmark_service),
       bookmark_consent_throttle_(
           unified_consent::UrlKeyedDataCollectionConsentHelper::
               NewPersonalizedBookmarksDataCollectionConsentHelper(
-                  sync_service)),
+                  sync_service,
+                  /*require_sync_feature_enabled=*/!base::FeatureList::
+                      IsEnabled(syncer::kReplaceSyncPromosWithSignInPromos))),
       weak_ptr_factory_(this) {
   // Register for the types of information we're allowed to receive from
   // optimization guide.
@@ -180,16 +202,25 @@ ShoppingService::ShoppingService(
     }
 
     if (parcel_tracking_proto_db) {
-      parcel_manager_ = std::make_unique<ParcelManager>(
+      parcels_manager_ = std::make_unique<ParcelsManager>(
           identity_manager, url_loader_factory, parcel_tracking_proto_db,
           account_checker_.get());
     }
   }
 
-  if (bookmark_model_) {
+  if (local_or_syncable_bookmark_model_) {
+    if (base::FeatureList::IsEnabled(
+            syncer::kReplaceSyncPromosWithSignInPromos) &&
+        account_bookmark_model_) {
+      // Account bookmarks is supported, we should observe SyncService to update
+      // the model that is used for sync based on the opt-in state.
+      sync_service_observation_.Observe(sync_service_);
+    }
+    bookmark_model_used_for_sync_ = CalculateBookmarkModelUsedForSync();
+
     shopping_bookmark_observer_ =
         std::make_unique<ShoppingBookmarkModelObserver>(
-            bookmark_model, this, subscriptions_manager_.get());
+            GetBookmarkModelUsedForSync(), this, subscriptions_manager_.get());
 
     if (power_bookmark_service_ && IsProductInfoApiEnabled()) {
       shopping_power_bookmark_data_provider_ =
@@ -199,16 +230,18 @@ ShoppingService::ShoppingService(
   }
 
   bookmark_update_manager_ = std::make_unique<BookmarkUpdateManager>(
-      this, bookmark_model_, pref_service_);
+      this, GetBookmarkModelUsedForSync(), pref_service_);
 
   // In testing, the objects required for metrics may be null.
-  if (pref_service_ && bookmark_model_ && subscriptions_manager_) {
+  if (pref_service_ && GetBookmarkModelUsedForSync() &&
+      subscriptions_manager_) {
     scheduled_metrics_manager_ =
         std::make_unique<metrics::ScheduledMetricsManager>(pref_service_, this);
   }
 
-  if (IsDiscountInfoApiEnabled() && discounts_proto_db) {
-    discounts_storage_ = std::make_unique<DiscountsStorage>(discounts_proto_db);
+  if (IsDiscountInfoApiEnabled() && discounts_proto_db && history_service) {
+    discounts_storage_ =
+        std::make_unique<DiscountsStorage>(discounts_proto_db, history_service);
   }
 }
 
@@ -558,10 +591,11 @@ void ShoppingService::GetUpdatedProductInfoForBookmarks(
   std::unordered_map<std::string, base::Uuid> url_to_uuid_map;
   for (const base::Uuid& uuid : bookmark_uuids) {
     const bookmarks::BookmarkNode* bookmark =
-        bookmark_model_->GetNodeByUuid(uuid);
+        GetBookmarkModelUsedForSync()->GetNodeByUuid(uuid);
 
     std::unique_ptr<power_bookmarks::PowerBookmarkMeta> meta =
-        power_bookmarks::GetNodePowerBookmarkMeta(bookmark_model_, bookmark);
+        power_bookmarks::GetNodePowerBookmarkMeta(GetBookmarkModelUsedForSync(),
+                                                  bookmark);
 
     if (!meta || !meta->has_shopping_specifics())
       continue;
@@ -587,16 +621,66 @@ size_t ShoppingService::GetMaxProductBookmarkUpdatesPerBatch() {
       MaxUrlsForOptimizationGuideServiceHintsFetch();
 }
 
+bookmarks::BookmarkModel* ShoppingService::GetBookmarkModelUsedForSync() {
+  return bookmark_model_used_for_sync_;
+}
+
+void ShoppingService::UpdateBookmarkModelUsedForSync() {
+  bookmarks::BookmarkModel* model_to_use_for_sync =
+      CalculateBookmarkModelUsedForSync();
+  if (bookmark_model_used_for_sync_ == model_to_use_for_sync) {
+    return;
+  }
+
+  // These objects are safe to recreate.
+  bookmark_update_manager_.reset();
+  shopping_bookmark_observer_.reset();
+
+  bookmark_model_used_for_sync_ = model_to_use_for_sync;
+
+  if (local_or_syncable_bookmark_model_) {
+    shopping_bookmark_observer_ =
+        std::make_unique<ShoppingBookmarkModelObserver>(
+            GetBookmarkModelUsedForSync(), this, subscriptions_manager_.get());
+  }
+  bookmark_update_manager_ = std::make_unique<BookmarkUpdateManager>(
+      this, GetBookmarkModelUsedForSync(), pref_service_);
+
+  if (subscriptions_manager_) {
+    subscriptions_manager_->WipeStorageAndSyncSubscriptions();
+  }
+}
+
+bookmarks::BookmarkModel* ShoppingService::CalculateBookmarkModelUsedForSync() {
+  if (!base::FeatureList::IsEnabled(
+          syncer::kReplaceSyncPromosWithSignInPromos) ||
+      !account_bookmark_model_) {
+    // Feature flag isn't enabled or account storage isn't available - use
+    // local-or-syncable instead.
+    return local_or_syncable_bookmark_model_;
+  }
+  if (sync_service_->HasSyncConsent()) {
+    // The user is in the legacy sync state - use local-or-syncable storage.
+    return local_or_syncable_bookmark_model_;
+  }
+  // In all other cases, account bookmark model should be used. This avoids
+  // changing the bookmark model back-and-forth when the user signs in or out.
+  return account_bookmark_model_;
+}
+
+void ShoppingService::OnStateChanged(syncer::SyncService* sync) {
+  UpdateBookmarkModelUsedForSync();
+}
+
 void ShoppingService::GetAllPriceTrackedBookmarks(
     base::OnceCallback<void(std::vector<const bookmarks::BookmarkNode*>)>
         callback) {
-  commerce::GetAllPriceTrackedBookmarks(this, bookmark_model_,
-                                        std::move(callback));
+  commerce::GetAllPriceTrackedBookmarks(this, std::move(callback));
 }
 
 std::vector<const bookmarks::BookmarkNode*>
 ShoppingService::GetAllShoppingBookmarks() {
-  return commerce::GetAllShoppingBookmarks(bookmark_model_);
+  return commerce::GetAllShoppingBookmarks(GetBookmarkModelUsedForSync());
 }
 
 void ShoppingService::GetMerchantInfoForUrl(const GURL& url,
@@ -705,7 +789,7 @@ bool ShoppingService::IsDiscountEligibleToShowOnNavigation() {
                                     country_on_startup_, locale_on_startup_)) {
     return false;
   }
-  return account_checker_ && account_checker_->IsOptedIntoSync() &&
+  return account_checker_ && account_checker_->IsSignedIn() &&
          account_checker_->IsAnonymizedUrlDataCollectionEnabled();
 }
 
@@ -1244,13 +1328,25 @@ void ShoppingService::OnGetAllDiscountsFromOptGuide(
     DiscountInfoCallback callback,
     const std::vector<DiscountsPair>& results) {
   DiscountsMap map;
+  std::vector<std::string> urls_to_check_in_db;
   for (auto res : results) {
     if (res.second.size() > 0) {
       map.insert(res);
+    } else {
+      urls_to_check_in_db.push_back(res.first.spec());
     }
   }
-  // TODO(b:289243652): Check local db.
-  std::move(callback).Run(std::move(map));
+  if (discounts_storage_) {
+    discounts_storage_->HandleServerDiscounts(
+        urls_to_check_in_db, std::move(map), std::move(callback));
+  } else {
+    std::move(callback).Run(std::move(map));
+  }
+}
+
+void ShoppingService::SetDiscountsStorageForTesting(
+    std::unique_ptr<DiscountsStorage> storage) {
+  discounts_storage_ = std::move(storage);
 }
 
 void ShoppingService::Subscribe(
@@ -1378,7 +1474,7 @@ bool ShoppingService::IsShoppingListEligible(AccountChecker* account_checker,
 
   // Make sure the user allows subscriptions to be made and that we can fetch
   // store data.
-  if (!account_checker || !account_checker->IsOptedIntoSync() ||
+  if (!account_checker || !account_checker->IsSignedIn() ||
       !account_checker->IsSyncingBookmarks() ||
       !account_checker->IsAnonymizedUrlDataCollectionEnabled() ||
       blocked_by_waa || account_checker->IsSubjectToParentalControls()) {
@@ -1403,12 +1499,61 @@ void ShoppingService::IsClusterIdTrackedByUser(
   subscriptions_manager_->IsSubscribed(std::move(sub), std::move(callback));
 }
 
+void ShoppingService::StartTrackingParcels(
+    const std::vector<std::pair<ParcelIdentifier::Carrier, std::string>>&
+        parcel_identifiers,
+    const std::string& source_page_domain,
+    GetParcelStatusCallback callback) {
+  if (parcels_manager_) {
+    parcels_manager_->StartTrackingParcels(
+        parcel_identifiers, source_page_domain, std::move(callback));
+  } else {
+    std::move(callback).Run(
+        false, std::make_unique<std::vector<ParcelTrackingStatus>>());
+  }
+}
+
+void ShoppingService::GetAllParcelStatuses(GetParcelStatusCallback callback) {
+  if (parcels_manager_) {
+    parcels_manager_->GetAllParcelStatuses(std::move(callback));
+  } else {
+    std::move(callback).Run(
+        false, std::make_unique<std::vector<ParcelTrackingStatus>>());
+  }
+}
+
+void ShoppingService::StopTrackingParcel(
+    const std::string& tracking_id,
+    base::OnceCallback<void(bool)> callback) {
+  if (parcels_manager_) {
+    parcels_manager_->StopTrackingParcel(tracking_id, std::move(callback));
+  } else {
+    std::move(callback).Run(false);
+  }
+}
+
+// Called to stop tracking all parcels.
+void ShoppingService::StopTrackingAllParcels(
+    base::OnceCallback<void(bool)> callback) {
+  if (parcels_manager_) {
+    parcels_manager_->StopTrackingAllParcels(std::move(callback));
+  } else {
+    std::move(callback).Run(false);
+  }
+}
+
 base::WeakPtr<ShoppingService> ShoppingService::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
 void ShoppingService::Shutdown() {
   DETACH_FROM_SEQUENCE(sequence_checker_);
+
+  // SyncService requires all observer to unregister themselves before its
+  // shutdown is called, which can be done either in OnSyncShutdown() or
+  // for a KeyedService in their Shutdown() method. Opt for this option as
+  // ShoppingService is a KeyedService.
+  sync_service_observation_.Reset();
 }
 
 ShoppingService::~ShoppingService() = default;

@@ -36,7 +36,8 @@ waterfalls, and which test suites they run. By design, this file can only refer
 (by name) to test suites that are defined in test_suites.pyl.
 * [test_suites.pyl](./test_suites.pyl) -- describes the test suites that are
 referred to by waterfalls.pyl. A test suite describes groups of tests that are
-run on one or more bots.
+run on one or more bots. This file is actually generated from starlark
+definitions (see [below](#starlark-inputs)).
 * [mixins.pyl](./mixins.pyl) -- describes reusable bits of configuration that
 can be used to modify the expansion of tests from waterfalls.pyl into the
 generated test specs. This file is actually generated from starlark definitions
@@ -71,6 +72,16 @@ produce the pyl files that the generator consumes and
 [sync-pyl-files.py](../../infra/config/scripts/sync-pyl-files.py) to update the
 pyl files in this directory.
 
+* [basic_suites.star](../../infra/config/targets/basic_suites.star) -- Contains
+the basic suite definitions that produce the basic_suites entries in
+test_suites.pyl.
+* [compound_suites.star](../../infra/config/targets/compound_suites.star) --
+Contains the compound suite definitions that produce the compound_suites entries
+in test_suites.pyl.
+* [matrix_compound_suites.star](
+  ../../infra/config/targets/matrix_compound_suites.star) -- Contains the matrix
+  compound suite definitions that produce the matrix_compound_suites entries in
+  test_suites.pyl.
 * [mixins.star](../../infra/config/targets/mixins.star) -- contains the test
   suite mixins that produce mixins.pyl.
 * [variants.star](../../infra/config/targets/variants.star) -- contains the
@@ -185,7 +196,7 @@ If a bot in [waterfalls.pyl](./waterfalls.pyl) refers to the test suite
 
 The test's name is usually both the build target as well as how the test appears
 in the steps that the bot runs. However, this can be overridden using dictionary
-arguments like `test` and `isolate_name`; see below.
+arguments like `test`; see below.
 
 The dictionary following the test's name can contain multiple entries that
 affect how the test runs. Generally speaking, these are copied verbatim into the
@@ -223,16 +234,11 @@ generated JSON file. Commonly used arguments include:
   (This feature was added mainly to match the original handwritten JSON files,
   and further use is discouraged. Ideally it should be removed.)
 
-Arguments specific to GTest-based tests:
+Arguments specific to GTest-based and isolated script tests:
 
 * `test`: the target to build and run, if different from the test's name. This
   allows the same test to be run multiple times on the same bot with different
   command line arguments or Swarming dimensions, for example.
-
-Arguments specific to isolated script tests:
-
-* `isolate_name`: the target to build and run, if different than the test's
-  name.
 
 There are other arguments specific to other test types (script tests, JUnit
 tests); consult the generator script and test_suites.pyl for more details and

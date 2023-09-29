@@ -771,20 +771,13 @@ const PrefetchResponseReader* PrefetchContainer::GetNonRedirectResponseReader()
 }
 
 PrefetchRequestHandler PrefetchContainer::Reader::CreateRequestHandler() {
-  return GetPrefetchContainer()->CreateRequestHandlerInternal(*this);
-}
-
-PrefetchRequestHandler PrefetchContainer::CreateRequestHandlerInternal(
-    Reader& reader) {
-  DCHECK_EQ(reader.GetPrefetchContainer(), this);
-
   // Create a `PrefetchRequestHandler` from the current `SinglePrefetch` (==
   // `reader`) and its corresponding `PrefetchStreamingURLLoader`.
-  auto handler = reader.GetCurrentSinglePrefetchToServe()
+  auto handler = GetCurrentSinglePrefetchToServe()
                      .response_reader_->CreateRequestHandler();
 
   // Advance the current `SinglePrefetch` position.
-  reader.AdvanceCurrentURLToServe();
+  AdvanceCurrentURLToServe();
 
   return handler;
 }
@@ -846,8 +839,10 @@ base::OnceClosure PrefetchContainer::ReleaseOnReceivedHeadCallback() {
 void PrefetchContainer::OnPrefetchComplete() {
   UMA_HISTOGRAM_COUNTS_100("PrefetchProxy.Prefetch.RedirectChainSize",
                            redirect_chain_.size());
-
+  DVLOG(1) << *this << "::OnPrefetchComplete";
   if (!GetNonRedirectResponseReader()) {
+    DVLOG(1) << *this << "::OnPrefetchComplete:"
+             << "no non redirect response reader";
     return;
   }
 
@@ -860,6 +855,8 @@ void PrefetchContainer::OnPrefetchComplete() {
 void PrefetchContainer::UpdatePrefetchRequestMetrics(
     const absl::optional<network::URLLoaderCompletionStatus>& completion_status,
     const network::mojom::URLResponseHead* head) {
+  DVLOG(1) << *this << "::UpdatePrefetchRequestMetrics:"
+           << "head = " << head;
   if (completion_status) {
     prefetch_response_sizes_ = {
         .encoded_data_length = completion_status->encoded_data_length,
@@ -898,6 +895,9 @@ PrefetchContainer::ServableState PrefetchContainer::GetServableState(
     return ServableState::kServable;
   }
 
+  DVLOG(1) << *this << "(GetServableState)"
+           << "(streaming_loader=" << streaming_loader_.get() << ")"
+           << "(redirect_chain.empty=" << redirect_chain_.empty() << ")";
   // Can only block until head if the request has been started using a
   // streaming URL loader and head/failure/redirect hasn't been received yet.
   if (streaming_loader_ && !redirect_chain_.empty() &&
@@ -911,7 +911,7 @@ PrefetchContainer::ServableState PrefetchContainer::GetServableState(
 
 bool PrefetchContainer::Reader::DoesCurrentURLToServeMatch(
     const GURL& url) const {
-  DCHECK(index_redirect_chain_to_serve_ >= 1);
+  CHECK(index_redirect_chain_to_serve_ >= 1);
   return GetCurrentSinglePrefetchToServe().url_ == url;
 }
 
@@ -928,17 +928,17 @@ PrefetchContainer::GetPreviousSinglePrefetchToPrefetch() const {
 }
 
 bool PrefetchContainer::Reader::IsEnd() const {
-  DCHECK(index_redirect_chain_to_serve_ <=
-         prefetch_container_->redirect_chain_.size());
+  CHECK(index_redirect_chain_to_serve_ <=
+        prefetch_container_->redirect_chain_.size());
   return index_redirect_chain_to_serve_ >=
          prefetch_container_->redirect_chain_.size();
 }
 
 const PrefetchContainer::SinglePrefetch&
 PrefetchContainer::Reader::GetCurrentSinglePrefetchToServe() const {
-  DCHECK(index_redirect_chain_to_serve_ >= 0 &&
-         index_redirect_chain_to_serve_ <
-             prefetch_container_->redirect_chain_.size());
+  CHECK(index_redirect_chain_to_serve_ >= 0 &&
+        index_redirect_chain_to_serve_ <
+            prefetch_container_->redirect_chain_.size());
   return *prefetch_container_->redirect_chain_[index_redirect_chain_to_serve_];
 }
 
@@ -959,6 +959,9 @@ void PrefetchContainer::SetServingPageMetrics(
 }
 
 void PrefetchContainer::UpdateServingPageMetrics() {
+  DVLOG(1) << *this << "::UpdateServingPageMetrics:"
+           << "serving_page_metrics_container_ = "
+           << serving_page_metrics_container_.get();
   if (!serving_page_metrics_container_) {
     return;
   }
@@ -981,6 +984,12 @@ void PrefetchContainer::SimulateAttemptAtInterceptorForTest() {
   SetPrefetchStatus(PrefetchStatus::kPrefetchSuccessful);
 }
 
+// TODO(crbug.com/1462206): We might be waiting on PrefetchContainer's head
+// from multiple navigations.
+// E.g. We might wait from one navigation but not use the prefetch, and
+// then we can use the prefetch in a separate navigation without waiting
+// for the head. We need to keep track of blocked_until_head_start_time_ per
+// each navigation for this PrefetchContainer.
 void PrefetchContainer::OnGetPrefetchToServe(bool blocked_until_head) {
   // OnGetPrefetchToServe is called before we start waiting for head, and
   // when the prefetch is used from `prefetches_ready_to_serve_`.
@@ -1035,7 +1044,7 @@ bool PrefetchContainer::IsIsolatedNetworkContextRequiredForPreviousRedirectHop()
 base::WeakPtr<PrefetchResponseReader>
 PrefetchContainer::GetResponseReaderForCurrentPrefetch() {
   const SinglePrefetch& this_prefetch = GetCurrentSinglePrefetchToPrefetch();
-  DCHECK(this_prefetch.response_reader_);
+  CHECK(this_prefetch.response_reader_);
   return this_prefetch.response_reader_->GetWeakPtr();
 }
 
@@ -1167,6 +1176,19 @@ std::ostream& operator<<(std::ostream& ostream,
                  << ", URL=" << prefetch_container.GetURL() << "]";
 }
 
+CONTENT_EXPORT std::ostream& operator<<(
+    std::ostream& ostream,
+    PrefetchContainer::ServableState servable_state) {
+  switch (servable_state) {
+    case PrefetchContainer::ServableState::kNotServable:
+      return ostream << "NotServable";
+    case PrefetchContainer::ServableState::kServable:
+      return ostream << "Servable";
+    case PrefetchContainer::ServableState::kShouldBlockUntilHeadReceived:
+      return ostream << "ShouldBlockUntilHeadReceived";
+  }
+}
+
 PrefetchContainer::SinglePrefetch::SinglePrefetch(
     const GURL& url,
     const net::SchemefulSite& referring_site)
@@ -1176,7 +1198,7 @@ PrefetchContainer::SinglePrefetch::SinglePrefetch(
       response_reader_(base::MakeRefCounted<PrefetchResponseReader>()) {}
 
 PrefetchContainer::SinglePrefetch::~SinglePrefetch() {
-  DCHECK(response_reader_);
+  CHECK(response_reader_);
   base::SequencedTaskRunner::GetCurrentDefault()->ReleaseSoon(
       FROM_HERE, std::move(response_reader_));
 }

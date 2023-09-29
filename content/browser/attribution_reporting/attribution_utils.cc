@@ -5,7 +5,6 @@
 #include "content/browser/attribution_reporting/attribution_utils.h"
 
 #include "base/check.h"
-#include "base/check_op.h"
 #include "base/json/json_writer.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -15,21 +14,14 @@ namespace content {
 
 namespace {
 
-constexpr base::TimeDelta kWindowDeadlineOffset = base::Hours(1);
 constexpr base::TimeDelta kWindowTinyOffset = base::Milliseconds(1);
 
 }  // namespace
 
-base::TimeDelta ExpiryDeadline(base::Time source_time,
-                               base::Time event_report_window_time) {
-  DCHECK_GT(event_report_window_time, source_time);
-  return event_report_window_time - source_time;
-}
-
 base::Time LastTriggerTimeForReportTime(base::Time report_time) {
   // kWindowTinyOffset is needed as the window is not selected right at
-  // report_time - kWindowDeadlineOffset.
-  return report_time - kWindowDeadlineOffset - kWindowTinyOffset;
+  // report_time.
+  return report_time - kWindowTinyOffset;
 }
 
 std::string SerializeAttributionJson(base::ValueView body, bool pretty_print) {

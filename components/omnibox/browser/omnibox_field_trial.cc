@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -162,8 +163,8 @@ std::string GetValueForRuleInContextFromVariationParams(
 }
 
 OmniboxFieldTrial::MLConfig& GetMLConfigInternal() {
-  static OmniboxFieldTrial::MLConfig s_config;
-  return s_config;
+  static base::NoDestructor<OmniboxFieldTrial::MLConfig> s_config;
+  return *s_config;
 }
 
 bool IsKoreanLocale(const std::string& locale) {
@@ -840,18 +841,6 @@ const char OmniboxFieldTrial::kOnDeviceHeadModelLocaleConstraint[] =
 int OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs = 100;
 
 namespace OmniboxFieldTrial {
-
-// Autocomplete stability.
-
-const base::FeatureParam<bool>
-    kAutocompleteStabilityUpdateResultDebounceFromLastRun(
-        &omnibox::kUpdateResultDebounce,
-        "AutocompleteStabilityUpdateResultDebounceFromLastRun",
-        false);
-const base::FeatureParam<int> kAutocompleteStabilityUpdateResultDebounceDelay(
-    &omnibox::kUpdateResultDebounce,
-    "AutocompleteStabilityUpdateResultDebounceDelay",
-    200);
 
 // Local history zero-prefix (aka zero-suggest) and prefix suggestions:
 

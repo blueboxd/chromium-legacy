@@ -156,6 +156,7 @@ export {SettingsImportDataDialogElement} from './people_page/import_data_dialog.
 export {SettingsManageProfileElement} from './people_page/manage_profile.js';
 export {ManageProfileBrowserProxy, ManageProfileBrowserProxyImpl, ProfileShortcutStatus} from './people_page/manage_profile_browser_proxy.js';
 // </if>
+export {SettingsPageContentPageElement} from './people_page/page_content_page.js';
 export {SettingsSyncControlsElement} from './people_page/sync_controls.js';
 export {SettingsSyncEncryptionOptionsElement} from './people_page/sync_encryption_options.js';
 export {SettingsSyncPageElement} from './people_page/sync_page.js';
@@ -211,7 +212,7 @@ export {AllSitesElement} from './site_settings/all_sites.js';
 export {CategorySettingExceptionsElement} from './site_settings/category_setting_exceptions.js';
 export {ChooserExceptionListElement} from './site_settings/chooser_exception_list.js';
 export {ChooserExceptionListEntryElement} from './site_settings/chooser_exception_list_entry.js';
-export {ChooserType, ContentSetting, ContentSettingsTypes, CookieControlsMode, CookiesExceptionType, NotificationSetting, SITE_EXCEPTION_WILDCARD, SiteSettingSource, SortMethod} from './site_settings/constants.js';
+export {ChooserType, ContentSetting, ContentSettingsTypes, CookieControlsMode, CookiesExceptionType, SettingsState, SITE_EXCEPTION_WILDCARD, SiteSettingSource, SortMethod} from './site_settings/constants.js';
 export {SettingsEditExceptionDialogElement} from './site_settings/edit_exception_dialog.js';
 export {FileSystemSiteEntryElement} from './site_settings/file_system_site_entry.js';
 export {FileSystemSiteEntryItemElement} from './site_settings/file_system_site_entry_item.js';

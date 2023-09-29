@@ -21,6 +21,8 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
@@ -47,6 +49,7 @@ namespace {
 class RoundedCornerBubbleDialogDelegateView
     : public views::BubbleDialogDelegateView {
  public:
+  METADATA_HEADER(RoundedCornerBubbleDialogDelegateView);
   explicit RoundedCornerBubbleDialogDelegateView(int corner_radius)
       : corner_radius_(corner_radius) {}
 
@@ -66,6 +69,10 @@ class RoundedCornerBubbleDialogDelegateView
   base::WeakPtrFactory<RoundedCornerBubbleDialogDelegateView> weak_factory_{
       this};
 };
+
+BEGIN_METADATA(RoundedCornerBubbleDialogDelegateView,
+               views::BubbleDialogDelegateView)
+END_METADATA
 
 }  // namespace
 
@@ -326,7 +333,7 @@ ResizeToggleMenu::MakeBubbleDelegateView(
 
   if (chromeos::features::IsJellyEnabled()) {
     delegate_view->SetBorder(std::make_unique<views::HighlightBorder>(
-        kCornerRadius, views::HighlightBorder::Type::kHighlightBorder1));
+        kCornerRadius, views::HighlightBorder::Type::kHighlightBorderNoShadow));
 
     // Add empty view for background blur.
     views::View* background_view = nullptr;

@@ -247,7 +247,7 @@ PreloadingEligibility ToEligibility(PrerenderFinalStatus status) {
       NOTREACHED_NORETURN();
     case PrerenderFinalStatus::kDataSaverEnabled:
       return PreloadingEligibility::kDataSaverEnabled;
-    case PrerenderFinalStatus::kHasEffectiveUrl:
+    case PrerenderFinalStatus::kTriggerUrlHasEffectiveUrl:
       return PreloadingEligibility::kHasEffectiveUrl;
     case PrerenderFinalStatus::kActivatedBeforeStarted:
     case PrerenderFinalStatus::kInactivePageRestriction:
@@ -300,6 +300,10 @@ PreloadingEligibility ToEligibility(PrerenderFinalStatus status) {
     case PrerenderFinalStatus::kMaxNumOfRunningNonEagerPrerendersExceeded:
     case PrerenderFinalStatus::kMaxNumOfRunningEmbedderPrerendersExceeded:
       NOTREACHED_NORETURN();
+    case PrerenderFinalStatus::kPrerenderingUrlHasEffectiveUrl:
+    case PrerenderFinalStatus::kRedirectedPrerenderingUrlHasEffectiveUrl:
+    case PrerenderFinalStatus::kActivationUrlHasEffectiveUrl:
+      return PreloadingEligibility::kHasEffectiveUrl;
   }
 
   NOTREACHED_NORETURN();
@@ -623,11 +627,17 @@ int PrerenderHostRegistry::CreateAndStartHost(
     }
 
     // Disallow all pages that have an effective URL like hosted apps and NTP.
-    if (SiteInstanceImpl::HasEffectiveURL(
-            prerender_web_contents.GetBrowserContext(),
-            prerender_web_contents.GetURL())) {
-      builder.RejectAsNotEligible(attributes,
-                                  PrerenderFinalStatus::kHasEffectiveUrl);
+    auto* browser_context = prerender_web_contents.GetBrowserContext();
+    if (SiteInstanceImpl::HasEffectiveURL(browser_context,
+                                          initiator_web_contents.GetURL())) {
+      builder.RejectAsNotEligible(
+          attributes, PrerenderFinalStatus::kTriggerUrlHasEffectiveUrl);
+      return RenderFrameHost::kNoFrameTreeNodeId;
+    }
+    if (SiteInstanceImpl::HasEffectiveURL(browser_context,
+                                          attributes.prerendering_url)) {
+      builder.RejectAsNotEligible(
+          attributes, PrerenderFinalStatus::kPrerenderingUrlHasEffectiveUrl);
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 
@@ -888,7 +898,7 @@ std::set<int> PrerenderHostRegistry::CancelHosts(
       reason.ReportMetrics(prerender_host->trigger_type(),
                            prerender_host->embedder_histogram_suffix());
 
-      NotifyCancel(prerender_host->prerendering_url(), reason);
+      NotifyCancel(prerender_host->frame_tree_node_id(), reason);
 
       // Asynchronously delete the prerender host.
       ScheduleToDeleteAbandonedHost(std::move(prerender_host), reason);
@@ -1504,6 +1514,15 @@ int PrerenderHostRegistry::FindHostToActivateInternal(
   if (!host)
     return RenderFrameHost::kNoFrameTreeNodeId;
 
+  // Disallow activation when the navigation URL has an effective URL like
+  // hosted apps and NTP.
+  if (SiteInstanceImpl::HasEffectiveURL(web_contents()->GetBrowserContext(),
+                                        navigation_request.GetURL())) {
+    CancelHost(host->frame_tree_node_id(),
+               PrerenderFinalStatus::kActivationUrlHasEffectiveUrl);
+    return RenderFrameHost::kNoFrameTreeNodeId;
+  }
+
   // Disallow activation when other auxiliary browsing contexts (e.g., pop-up
   // windows) exist in the same browsing context group. This is because these
   // browsing contexts should be able to script each other, but prerendered
@@ -1609,10 +1628,10 @@ void PrerenderHostRegistry::NotifyTrigger(const GURL& url) {
 }
 
 void PrerenderHostRegistry::NotifyCancel(
-    const GURL& url,
+    int host_frame_tree_node_id,
     const PrerenderCancellationReason& reason) {
   for (Observer& obs : observers_) {
-    obs.OnCancel(url, reason);
+    obs.OnCancel(host_frame_tree_node_id, reason);
   }
 }
 

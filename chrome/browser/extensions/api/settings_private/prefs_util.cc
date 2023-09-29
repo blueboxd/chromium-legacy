@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/content_settings/generated_cookie_prefs.h"
 #include "chrome/browser/content_settings/generated_notification_pref.h"
+#include "chrome/browser/content_settings/generated_permission_prompting_behavior_pref.h"
 #include "chrome/browser/extensions/api/settings_private/generated_prefs.h"
 #include "chrome/browser/extensions/api/settings_private/generated_prefs_factory.h"
 #include "chrome/browser/extensions/settings_api_helpers.h"
@@ -353,7 +354,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_allowlist)[::content_settings::kCookieSessionOnly] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_allowlist)[::prefs::kPrivacySandboxFirstPartySetsEnabled] =
+  (*s_allowlist)[::prefs::kPrivacySandboxRelatedWebsiteSetsEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[::prefs::kBlockAll3pcToggleEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
@@ -454,6 +455,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
 
   // Site Settings prefs.
   (*s_allowlist)[::content_settings::kGeneratedNotificationPref] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_allowlist)[::content_settings::kGeneratedGeolocationPref] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_allowlist)[::prefs::kPluginsAlwaysOpenPdfExternally] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
@@ -694,6 +697,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[ash::prefs::kAccessibilitySelectToSpeakWordHighlight] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[ash::prefs::kAccessibilityFaceTrackingEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Text to Speech.
   (*s_allowlist)[::prefs::kTextToSpeechLangToVoiceName] =
@@ -733,6 +738,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
 
   // App Notifications
   (*s_allowlist)[::ash::prefs::kAppNotificationBadgingEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+
+  // App - Enable Isolated Web Apps
+  (*s_allowlist)[::ash::prefs::kIsolatedWebAppsEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Ambient Mode.

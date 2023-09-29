@@ -325,8 +325,10 @@ void DrawingBuffer::SetIsInHiddenPage(bool hidden) {
   if (is_hidden_ == hidden)
     return;
   is_hidden_ = hidden;
-  if (is_hidden_)
+  if (is_hidden_) {
     recycled_color_buffer_queue_.clear();
+    recycled_bitmaps_.clear();
+  }
 
   // Make sure to interrupt pixel local storage.
   ScopedStateRestorer scoped_state_restorer(this);
@@ -517,7 +519,8 @@ bool DrawingBuffer::FinishPrepareTransferableResourceSoftware(
       static_cast<uint8_t*>(registered.bitmap->memory()));
 
   *out_resource = viz::TransferableResource::MakeSoftware(
-      registered.bitmap->id(), size_, viz::SinglePlaneFormat::kRGBA_8888);
+      registered.bitmap->id(), size_, viz::SinglePlaneFormat::kRGBA_8888,
+      viz::TransferableResource::ResourceSource::kDrawingBuffer);
   out_resource->color_space = back_color_buffer_->color_space;
 
   // This holds a ref on the DrawingBuffer that will keep it alive until the
@@ -617,7 +620,8 @@ bool DrawingBuffer::FinishPrepareTransferableResourceGpu(
         color_buffer_for_mailbox->texture_target,
         color_buffer_for_mailbox->produce_sync_token, size_,
         color_buffer_for_mailbox->format,
-        color_buffer_for_mailbox->is_overlay_candidate);
+        color_buffer_for_mailbox->is_overlay_candidate,
+        viz::TransferableResource::ResourceSource::kDrawingBuffer);
     out_resource->color_space = color_buffer_for_mailbox->color_space;
     // This holds a ref on the DrawingBuffer that will keep it alive until the
     // mailbox is released (and while the release callback is running).
@@ -784,6 +788,8 @@ scoped_refptr<CanvasResource> DrawingBuffer::ExportLowLatencyCanvasResource(
   resource.format = color_buffer->format;
   resource.is_overlay_candidate = color_buffer->is_overlay_candidate;
   resource.color_space = color_buffer->color_space;
+  resource.resource_source =
+      viz::TransferableResource::ResourceSource::kDrawingBuffer;
 
   return ExternalCanvasResource::Create(
       resource, viz::ReleaseCallback(), context_provider_->GetWeakPtr(),
@@ -1254,9 +1260,18 @@ bool DrawingBuffer::ReallocateDefaultFramebuffer(const gfx::Size& size,
     // TexStorage is not core in GLES2 (webgl1) and enabling (or emulating) it
     // universally can cause issues with BGRA formats.
     // See: crbug.com/1443160#c38
-    if (!texture_storage_enabled_ &&
+    bool use_tex_image =
+        !texture_storage_enabled_ &&
         base::FeatureList::IsEnabled(
-            features::kUseImageInsteadOfStorageForStagingBuffer)) {
+            features::kUseImageInsteadOfStorageForStagingBuffer);
+    if (webgl_version_ == kWebGL1 && requested_format_ == GL_SRGB8_ALPHA8) {
+      // On GLES2:
+      //   * SRGB_ALPHA_EXT is not a valid internal format for TexStorage2DEXT.
+      //   * SRGB8_ALPHA8 is not a renderable texture internal format.
+      // Just use TexImage2D instead of TexStorage2DEXT.
+      use_tex_image = true;
+    }
+    if (use_tex_image) {
       switch (requested_format_) {
         case GL_RGB8:
           internal_format = color_buffer_format_.HasAlpha() ? GL_RGBA : GL_RGB;

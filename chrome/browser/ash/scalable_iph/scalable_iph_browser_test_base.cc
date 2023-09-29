@@ -87,6 +87,38 @@ void ScalableIphBrowserTestBase::SetUpOnMainThread() {
   // is not available before it.
   CustomizableTestEnvBrowserTestBase::SetUpOnMainThread();
 
+  // If user session type is `kRegularWithOobe`, Chrome enters post login OOBE
+  // screens after a login. It means that there won't be `ScalableIph` as
+  // `ScalableIph` starts after post login OOBE screens. We have to wait the
+  // initialization of `ScalableIph` before setting up mocks.
+  if (test_environment().user_session_type() ==
+      CustomizableTestEnvBrowserTestBase::UserSessionType::kRegularWithOobe) {
+    return;
+  }
+
+  // If ScalableIph feature is off, do not set up mock as ScalableIph is not
+  // available.
+  if (!enable_scalable_iph_) {
+    return;
+  }
+
+  SetUpMocks();
+}
+
+void ScalableIphBrowserTestBase::TearDownOnMainThread() {
+  // We are going to release references to mock objects below. Verify the
+  // expectations in advance to have a predictable behavior.
+  testing::Mock::VerifyAndClearExpectations(mock_tracker_);
+  mock_tracker_ = nullptr;
+  testing::Mock::VerifyAndClearExpectations(mock_delegate_);
+  mock_delegate_ = nullptr;
+
+  InProcessBrowserTest::TearDownOnMainThread();
+}
+
+void ScalableIphBrowserTestBase::SetUpMocks() {
+  CHECK(!mock_delegate_) << "Mocks have already been set up.";
+
   // Do not access profile via `browser()` as a browser might not be created if
   // session type is WithOobe.
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -136,29 +168,22 @@ void ScalableIphBrowserTestBase::SetUpOnMainThread() {
   CHECK(mock_delegate_);
 }
 
-void ScalableIphBrowserTestBase::TearDownOnMainThread() {
-  // We are going to release references to mock objects below. Verify the
-  // expectations in advance to have a predictable behavior.
-  testing::Mock::VerifyAndClearExpectations(mock_tracker_);
-  mock_tracker_ = nullptr;
-  testing::Mock::VerifyAndClearExpectations(mock_delegate_);
-  mock_delegate_ = nullptr;
-
-  InProcessBrowserTest::TearDownOnMainThread();
-}
-
 void ScalableIphBrowserTestBase::InitializeScopedFeatureList() {
   base::FieldTrialParams params;
   AppendVersionNumber(params);
   AppendFakeUiParamsNotification(params);
   base::test::FeatureRefAndParams test_config(kScalableIphTest, params);
 
-  base::test::FeatureRefAndParams scalable_iph_feature(
-      ash::features::kScalableIph, {});
-
-  std::vector<base::test::FeatureRefAndParams> enabled_features(
-      {scalable_iph_feature, test_config});
+  std::vector<base::test::FeatureRefAndParams> enabled_features({test_config});
   std::vector<base::test::FeatureRef> disabled_features;
+
+  if (enable_scalable_iph_) {
+    enabled_features.push_back(
+        base::test::FeatureRefAndParams(ash::features::kScalableIph, {}));
+  } else {
+    disabled_features.push_back(
+        base::test::FeatureRef(ash::features::kScalableIph));
+  }
 
   if (enable_scalable_iph_debug_) {
     enabled_features.push_back(
@@ -265,6 +290,9 @@ bool ScalableIphBrowserTestBase::IsMockDelegateCreatedFor(Profile* profile) {
 
 void ScalableIphBrowserTestBase::EnableTestIphFeatures(
     const std::vector<const base::Feature*> test_iph_features) {
+  CHECK(mock_delegate_)
+      << "To enable a test iph feature, mocks have to be set up.";
+
   const base::flat_set<const base::Feature*> test_iph_features_set(
       test_iph_features.begin(), test_iph_features.end());
   ON_CALL(*mock_tracker(), ShouldTriggerHelpUI)

@@ -30,31 +30,6 @@ class SimpleURLLoader;
 
 namespace optimization_guide {
 
-// Status of a request to fetch hints.
-// This enum must remain synchronized with the enum
-// |OptimizationGuideHintsFetcherRequestStatus| in
-// tools/metrics/histograms/enums.xml.
-enum class HintsFetcherRequestStatus {
-  // No fetch status known. Used in testing.
-  kUnknown,
-  // Fetch request was sent and a response received.
-  kSuccess,
-  // Fetch request was sent but no response received.
-  kResponseError,
-  // DEPRECATED: Fetch request not sent because of offline network status.
-  kDeprecatedNetworkOffline,
-  // Fetch request not sent because fetcher was busy with another request.
-  kFetcherBusy,
-  // Fetch request not sent because the host and URL lists were empty.
-  kNoHostsOrURLsToFetch,
-  // Fetch request not sent because no supported optimization types were
-  // provided.
-  kNoSupportedOptimizationTypes,
-
-  // Insert new values before this line.
-  kMaxValue = kNoSupportedOptimizationTypes
-};
-
 // Callback to inform the caller that the remote hints have been fetched and
 // to pass back the fetched hints response from the remote Optimization Guide
 // Service.
@@ -97,7 +72,7 @@ class HintsFetcher {
           optimization_types,
       optimization_guide::proto::RequestContext request_context,
       const std::string& locale,
-      absl::optional<std::string> access_token,
+      const std::string& access_token,
       bool skip_cache,
       HintsFetchedCallback hints_fetched_callback);
 

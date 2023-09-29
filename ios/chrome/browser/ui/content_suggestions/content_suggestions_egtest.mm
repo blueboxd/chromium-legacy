@@ -31,6 +31,7 @@
 #import "ios/chrome/common/ui/confirmation_alert/constants.h"
 #import "ios/chrome/common/ui/promo_style/constants.h"
 #import "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -157,25 +158,27 @@ void TapMoreButtonIfVisible() {
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
   config.features_enabled.push_back(kEnableFeedAblation);
-  config.features_enabled.push_back(kIOSSetUpList);
   if ([self isRunningTest:@selector
-            (testSetUpListDismissItemsWithSyncToSigninDisabled)] ||
+            (DISABLE_testSetUpListDismissItemsWithSyncToSigninDisabled)] ||
       [self isRunningTest:@selector
-            (testSetUpListSigninWithSyncToSigninDisabled)] ||
+            (DISABLE_testSetUpListSigninWithSyncToSigninDisabled)] ||
       [self isRunningTest:@selector
-            (testSetUpListSigninSwipeToDismissWithSyncToSigninDisabled)]) {
+            (DISABLE_testSetUpListSigninSwipeToDismissWithSyncToSigninDisabled
+                )]) {
     config.features_disabled.push_back(
         syncer::kReplaceSyncPromosWithSignInPromos);
   }
   if ([self isRunningTest:@selector
-            (testSetUpListDismissItemsWithSyncToSigninEnabled)] ||
+            (DISABLE_testSetUpListDismissItemsWithSyncToSigninEnabled)] ||
       [self isRunningTest:@selector
-            (testSetUpListSigninWithSyncToSigninEnabled)]) {
+            (DISABLE_testSetUpListSigninWithSyncToSigninEnabled)]) {
     config.features_enabled.push_back(
         syncer::kReplaceSyncPromosWithSignInPromos);
     config.features_enabled.push_back(kConsistencyNewAccountInterface);
   }
-  if ([self isRunningTest:@selector(testMagicStackSetUpListCompleteAllItems)]) {
+  if ([self isRunningTest:@selector
+            (DISABLE_testMagicStackSetUpListCompleteAllItems)] ||
+      [self isRunningTest:@selector(testMagicStackEditButton)]) {
     config.features_enabled.push_back(kMagicStack);
   } else {
     config.features_disabled.push_back(kMagicStack);
@@ -341,7 +344,8 @@ void TapMoreButtonIfVisible() {
 
 // Tests that the SetUpList can be expanded and unexpanded by touching the
 // "expand" button at the bottom of the list.
-- (void)testSetUpListExpands {
+// TODO(crbug.com/1487190) Reenable flaky tests.
+- (void)DISABLE_testSetUpListExpands {
   [self prepareToTestSetUpList];
 
   id<GREYMatcher> signinItem = grey_accessibilityID(set_up_list::kSignInItemID);
@@ -373,7 +377,8 @@ void TapMoreButtonIfVisible() {
 // Tests that each item opens the appropriate UI flow and that dismissing that
 // UI marks the item complete. Also tests that the "All Set" view appears when
 // all items are complete.
-- (void)testSetUpListDismissItemsWithSyncToSigninDisabled {
+// TODO(crbug.com/1487190) Reenable flaky tests.
+- (void)DISABLE_testSetUpListDismissItemsWithSyncToSigninDisabled {
   [self prepareToTestSetUpList];
 
   // Tap the signin item.
@@ -439,7 +444,8 @@ void TapMoreButtonIfVisible() {
 // Tests that each item opens the appropriate UI flow and that dismissing that
 // UI marks the item complete. Also tests that the "All Set" view appears when
 // all items are complete.
-- (void)testSetUpListDismissItemsWithSyncToSigninEnabled {
+// TODO(crbug.com/1487190) Reenable flaky tests.
+- (void)DISABLE_testSetUpListDismissItemsWithSyncToSigninEnabled {
   [self prepareToTestSetUpList];
 
   // Tap the signin item.
@@ -505,7 +511,8 @@ void TapMoreButtonIfVisible() {
 
 // Tests that the signin UI flow works and that the signin item is marked
 // complete when signin is completed.
-- (void)testSetUpListSigninWithSyncToSigninDisabled {
+// TODO(crbug.com/1487190) Reenable flaky tests.
+- (void)DISABLE_testSetUpListSigninWithSyncToSigninDisabled {
   [self prepareToTestSetUpList];
   [SigninEarlGrey addFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
 
@@ -536,7 +543,8 @@ void TapMoreButtonIfVisible() {
 
 // Tests that the signin UI flow works and that the signin item is marked
 // complete when signin is completed.
-- (void)testSetUpListSigninWithSyncToSigninEnabled {
+// TODO(crbug.com/1487190) Reenable flaky tests.
+- (void)DISABLE_testSetUpListSigninWithSyncToSigninEnabled {
   [self prepareToTestSetUpList];
   [SigninEarlGrey addFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
 
@@ -557,7 +565,8 @@ void TapMoreButtonIfVisible() {
 // Note that if SyncToSignin is enabled, then the signin screen is replaced
 // by a bottom sheet which can't be dismissed by swiping, so this test
 // doesn't apply.
-- (void)testSetUpListSigninSwipeToDismissWithSyncToSigninDisabled {
+// TODO(crbug.com/1487190) Reenable flaky tests.
+- (void)DISABLE_testSetUpListSigninSwipeToDismissWithSyncToSigninDisabled {
   [self prepareToTestSetUpList];
   [SigninEarlGrey addFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
 
@@ -596,7 +605,8 @@ void TapMoreButtonIfVisible() {
   [[EarlGrey selectElementWithMatcher:syncView] assertWithMatcher:grey_nil()];
 }
 
-- (void)testMagicStackSetUpListCompleteAllItems {
+// TODO(crbug.com/1487190) Reenable flaky tests.
+- (void)DISABLE_testMagicStackSetUpListCompleteAllItems {
   [self prepareToTestSetUpListInMagicStack];
 
   // Tap the signin item.
@@ -672,6 +682,54 @@ void TapMoreButtonIfVisible() {
   GREYAssert(
       base::test::ios::WaitUntilConditionOrTimeout(base::Seconds(2), condition),
       @"Timeout waiting for the All Set Module to show expired.");
+}
+
+// Tests the edit button in the Magic Stack. Opens the edit half sheet, disables
+// Set Up List, returns to the Magic Stack and ensures Set Up List is not in the
+// Magic Stack anymore.
+- (void)testMagicStackEditButton {
+  [self prepareToTestSetUpListInMagicStack];
+
+  // Swipe all the way over to the end of the Magic Stack.
+  [[[EarlGrey selectElementWithMatcher:
+                  grey_allOf(grey_accessibilityID(
+                                 kMagicStackEditButtonAccessibilityIdentifier),
+                             grey_sufficientlyVisible(), nil)]
+         usingSearchAction:grey_swipeFastInDirection(kGREYDirectionLeft)
+      onElementWithMatcher:grey_accessibilityID(
+                               kMagicStackScrollViewAccessibilityIdentifier)]
+      performAction:grey_tap()];
+
+  // Verify edit half sheet is visible.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(l10n_util::GetNSString(
+                                   IDS_IOS_MAGIC_STACK_EDIT_MODAL_TITLE))]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  id<GREYMatcher> setUpToggle = grey_allOf(
+      grey_accessibilityID(l10n_util::GetNSString(IDS_IOS_SET_UP_LIST_TITLE)),
+      grey_sufficientlyVisible(), nil);
+  // Assert Set Up List toggle is on, and then turn if off.
+  [[EarlGrey selectElementWithMatcher:setUpToggle]
+      performAction:chrome_test_util::TurnTableViewSwitchOn(NO)];
+
+  // Dismiss
+  [[EarlGrey selectElementWithMatcher:
+                 grey_accessibilityID(
+                     kMagicStackEditHalfSheetDoneButtonAccessibilityIdentifier)]
+      performAction:grey_tap()];
+
+  // Swipe back to first module
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kMagicStackScrollViewAccessibilityIdentifier)]
+      performAction:grey_swipeFastInDirection(kGREYDirectionRight)];
+
+  // Assert Set Up List is not there. If it is, it is always the first module.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(l10n_util::GetNSString(
+                                   IDS_IOS_SET_UP_LIST_TITLE))]
+      assertWithMatcher:grey_nil()];
 }
 
 #pragma mark - Test utils

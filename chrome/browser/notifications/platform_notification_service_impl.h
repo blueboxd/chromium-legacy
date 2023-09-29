@@ -17,10 +17,10 @@
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_trigger_scheduler.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/common/buildflags.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/webapps/common/web_app_id.h"
 #include "content/public/browser/platform_notification_service.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -71,6 +71,9 @@ class PlatformNotificationServiceImpl
   void CloseNotification(const std::string& notification_id) override;
   void ClosePersistentNotification(const std::string& notification_id) override;
   void GetDisplayedNotifications(
+      DisplayedNotificationsCallback callback) override;
+  void GetDisplayedNotificationsForOrigin(
+      const GURL& origin,
       DisplayedNotificationsCallback callback) override;
   void ScheduleTrigger(base::Time timestamp) override;
   base::Time ReadNextTriggerTimestamp() override;
@@ -139,7 +142,7 @@ class PlatformNotificationServiceImpl
 
   // Finds the AppId associated with |web_app_hint_url| when this is part of
   // an installed experience, and the notification can be attributed as such.
-  absl::optional<web_app::AppId> FindWebAppId(
+  absl::optional<webapps::AppId> FindWebAppId(
       const GURL& web_app_hint_url) const;
 
   // Finds the icon and title associated with |web_app_id| when this

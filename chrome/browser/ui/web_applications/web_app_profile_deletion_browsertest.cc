@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/containers/flat_set.h"
 #include "base/functional/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -20,10 +21,16 @@
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
-#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_contents/web_app_data_retriever.h"
+#include "chrome/browser/web_applications/web_contents/web_app_icon_downloader.h"
+#include "chrome/browser/web_applications/web_contents/web_app_url_loader.h"
+#include "chrome/test/base/profile_destruction_waiter.h"
+#include "components/webapps/browser/installable/installable_logging.h"
+#include "components/webapps/common/web_app_id.h"
 #include "content/public/test/browser_test.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -53,7 +60,7 @@ class WebAppProfileDeletionBrowserTest : public WebAppControllerBrowserTest {
             ProfileMetrics::DELETE_PROFILE_USER_MANAGER);
   }
 
-  web_app::AppId InstallAppToProfile(Profile* profile, const GURL& start_url) {
+  webapps::AppId InstallAppToProfile(Profile* profile, const GURL& start_url) {
     auto web_app_info = std::make_unique<WebAppInstallInfo>();
     web_app_info->start_url = start_url;
     web_app_info->scope = start_url.GetWithoutFilename();
@@ -61,6 +68,28 @@ class WebAppProfileDeletionBrowserTest : public WebAppControllerBrowserTest {
         web_app::mojom::UserDisplayMode::kStandalone;
     web_app_info->title = u"A Web App";
     return web_app::test::InstallWebApp(profile, std::move(web_app_info));
+  }
+
+  std::unique_ptr<content::WebContents>
+  CreateWebContentsScheduledForDeletion() {
+    ProfileManager* profile_manager = g_browser_process->profile_manager();
+    base::FilePath profile_path_to_delete =
+        profile_manager->GenerateNextProfileDirectoryPath();
+    Profile& profile_to_delete = profiles::testing::CreateProfileSync(
+        profile_manager, profile_path_to_delete);
+
+    std::unique_ptr<content::WebContents> deleting_web_contents =
+        content::WebContents::Create(
+            content::WebContents::CreateParams(&profile_to_delete));
+    EXPECT_NE(deleting_web_contents, nullptr);
+
+    ProfileDestructionWaiter destruction_waiter(&profile_to_delete);
+    profile_manager->GetDeleteProfileHelper().MaybeScheduleProfileForDeletion(
+        profile_to_delete.GetPath(), base::DoNothing(),
+        ProfileMetrics::DELETE_PROFILE_SETTINGS);
+    destruction_waiter.Wait();
+
+    return deleting_web_contents;
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -117,12 +146,12 @@ class NoOpWebAppPublisherDelegate : public WebAppPublisherHelper::Delegate {
 IN_PROC_BROWSER_TEST_F(WebAppProfileDeletionBrowserTest,
                        MAYBE_AppRegistrarNotifiesProfileDeletion) {
   GURL app_url(GetInstallableAppURL());
-  const AppId app_id = InstallPWA(app_url);
+  const webapps::AppId app_id = InstallPWA(app_url);
 
   base::RunLoop run_loop;
   WebAppTestRegistryObserverAdapter observer(&registrar());
-  observer.SetWebAppProfileWillBeDeletedDelegate(
-      base::BindLambdaForTesting([&](const AppId& app_to_be_uninstalled) {
+  observer.SetWebAppProfileWillBeDeletedDelegate(base::BindLambdaForTesting(
+      [&](const webapps::AppId& app_to_be_uninstalled) {
         EXPECT_EQ(app_to_be_uninstalled, app_id);
         EXPECT_TRUE(registrar().IsInstalled(app_id));
         EXPECT_TRUE(registrar().GetAppById(app_id));
@@ -164,12 +193,13 @@ IN_PROC_BROWSER_TEST_F(WebAppProfileDeletionBrowserTest, OsIntegrationRemoved) {
       profile_manager, profile_path_to_delete);
 #endif
   Browser::Create(Browser::CreateParams(&profile_to_delete, true));
-  const AppId app_id = InstallAppToProfile(&profile_to_delete, app_url);
+  const webapps::AppId app_id =
+      InstallAppToProfile(&profile_to_delete, app_url);
   auto* provider = WebAppProvider::GetForTest(&profile_to_delete);
   auto* web_app = provider->registrar_unsafe().GetAppById(app_id);
   ASSERT_TRUE(web_app);
 
-  base::test::TestFuture<const AppId&> app_id_future;
+  base::test::TestFuture<const webapps::AppId&> app_id_future;
   provider->os_integration_manager().SetForceUnregisterCalledForTesting(
       app_id_future.GetRepeatingCallback());
 
@@ -201,12 +231,13 @@ IN_PROC_BROWSER_TEST_F(WebAppProfileDeletionBrowserTest_WebAppPublisher,
       profile_manager, profile_path_to_delete);
 #endif
   Browser::Create(Browser::CreateParams(&profile_to_delete, true));
-  const AppId app_id = InstallAppToProfile(&profile_to_delete, app_url);
+  const webapps::AppId app_id =
+      InstallAppToProfile(&profile_to_delete, app_url);
   auto* provider = WebAppProvider::GetForTest(&profile_to_delete);
   auto* web_app = provider->registrar_unsafe().GetAppById(app_id);
   ASSERT_TRUE(web_app);
 
-  base::test::TestFuture<const AppId&> app_id_future;
+  base::test::TestFuture<const webapps::AppId&> app_id_future;
   provider->os_integration_manager().SetForceUnregisterCalledForTesting(
       app_id_future.GetRepeatingCallback());
 
@@ -227,5 +258,122 @@ IN_PROC_BROWSER_TEST_F(WebAppProfileDeletionBrowserTest_WebAppPublisher,
   ASSERT_TRUE(app_id_future.Wait());
   EXPECT_EQ(app_id_future.Get(), app_id);
 }
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+// TODO(crbug.com/1487301): Figure out a way having this test be run on ChromeOS
+// Ash, i.e. properly trigger a browser context shutdown.
+
+using WebAppProfileDeletionTest_WebContentsGracefulShutdown =
+    WebAppProfileDeletionBrowserTest;
+
+IN_PROC_BROWSER_TEST_F(WebAppProfileDeletionTest_WebContentsGracefulShutdown,
+                       UrlLoading) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebAppUrlLoader loader;
+
+  std::unique_ptr<content::WebContents> deleting_web_contents =
+      CreateWebContentsScheduledForDeletion();
+
+  base::test::TestFuture<WebAppUrlLoaderResult> loader_result;
+  loader.LoadUrl(embedded_test_server()->GetURL("/title1.html"),
+                 deleting_web_contents.get(),
+                 WebAppUrlLoader::UrlComparison::kExact,
+                 loader_result.GetCallback());
+  EXPECT_TRUE(loader_result.Wait());
+
+  EXPECT_EQ(loader_result.Get<WebAppUrlLoaderResult>(),
+            WebAppUrlLoaderResult::kFailedWebContentsDestroyed);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppProfileDeletionTest_WebContentsGracefulShutdown,
+                       IconDownloading) {
+  WebAppIconDownloader icon_downloader;
+
+  std::unique_ptr<content::WebContents> deleting_web_contents =
+      CreateWebContentsScheduledForDeletion();
+
+  base::test::TestFuture<IconsDownloadedResult, IconsMap,
+                         DownloadedIconsHttpResults>
+      icon_download_future;
+  base::flat_set<GURL> icon_urls;
+  icon_urls.emplace("https://www.example.com/favicon.ico");
+  icon_downloader.Start(deleting_web_contents.get(), icon_urls,
+                        icon_download_future.GetCallback(),
+                        IconDownloaderOptions());
+  EXPECT_TRUE(icon_download_future.Wait());
+
+  EXPECT_EQ(icon_download_future.Get<IconsDownloadedResult>(),
+            IconsDownloadedResult::kPrimaryPageChanged);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppProfileDeletionTest_WebContentsGracefulShutdown,
+                       DataRetrieverWebAppInfoFetching) {
+  WebAppDataRetriever data_retriever;
+
+  std::unique_ptr<content::WebContents> deleting_web_contents =
+      CreateWebContentsScheduledForDeletion();
+
+  base::test::TestFuture<std::unique_ptr<WebAppInstallInfo>>
+      install_info_fetcher;
+  data_retriever.GetWebAppInstallInfo(deleting_web_contents.get(),
+                                      install_info_fetcher.GetCallback());
+  EXPECT_TRUE(install_info_fetcher.Wait());
+
+  EXPECT_EQ(install_info_fetcher.Get<std::unique_ptr<WebAppInstallInfo>>(),
+            nullptr);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppProfileDeletionTest_WebContentsGracefulShutdown,
+                       DataRetrieverInstallabilityFetch) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebAppDataRetriever data_retriever;
+
+  std::unique_ptr<content::WebContents> deleting_web_contents =
+      CreateWebContentsScheduledForDeletion();
+
+  base::test::TestFuture<blink::mojom::ManifestPtr, const GURL&, bool,
+                         webapps::InstallableStatusCode>
+      installability_future;
+  data_retriever.CheckInstallabilityAndRetrieveManifest(
+      deleting_web_contents.get(), /*bypass_service_worker_check=*/true,
+      installability_future.GetCallback());
+  EXPECT_TRUE(installability_future.Wait());
+
+  EXPECT_EQ(installability_future.Get<webapps::InstallableStatusCode>(),
+            webapps::InstallableStatusCode::RENDERER_CANCELLED);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppProfileDeletionTest_WebContentsGracefulShutdown,
+                       DataRetrieverIconFetch) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebAppDataRetriever data_retriever;
+
+  std::unique_ptr<content::WebContents> deleting_web_contents =
+      CreateWebContentsScheduledForDeletion();
+
+  base::test::TestFuture<blink::mojom::ManifestPtr, const GURL&, bool,
+                         webapps::InstallableStatusCode>
+      installability_future;
+  data_retriever.CheckInstallabilityAndRetrieveManifest(
+      deleting_web_contents.get(), /*bypass_service_worker_check=*/true,
+      installability_future.GetCallback());
+  EXPECT_TRUE(installability_future.Wait());
+
+  base::test::TestFuture<IconsDownloadedResult, IconsMap,
+                         DownloadedIconsHttpResults>
+      icon_download_future;
+  base::flat_set<GURL> icon_urls;
+  icon_urls.emplace("https://www.example.com/favicon.ico");
+  data_retriever.GetIcons(deleting_web_contents.get(), icon_urls,
+                          /*skip_page_favicons=*/false,
+                          /*fail_all_if_any_fail=*/false,
+                          icon_download_future.GetCallback());
+  EXPECT_TRUE(icon_download_future.Wait());
+
+  EXPECT_EQ(icon_download_future.Get<IconsDownloadedResult>(),
+            IconsDownloadedResult::kPrimaryPageChanged);
+}
+
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace web_app

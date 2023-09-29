@@ -12,6 +12,7 @@
 #include "base/barrier_closure.h"
 #include "base/base64.h"
 #include "base/build_time.h"
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/dcheck_is_on.h"
@@ -108,15 +109,12 @@
 #include "services/network/proxy_lookup_request.h"
 #include "services/network/proxy_resolving_socket_factory_mojo.h"
 #include "services/network/public/cpp/cert_verifier/mojo_cert_verifier.h"
-#include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/parsed_headers.h"
 #include "services/network/public/cpp/simple_host_resolver.h"
-#include "services/network/public/cpp/thread_delegate.h"
 #include "services/network/public/mojom/clear_data_filter.mojom.h"
-#include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/reporting_service.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom-forward.h"
@@ -532,7 +530,7 @@ NetworkContext::NetworkContext(
       // sandboxed network service on Android.
       shared_dictionary_manager_ = SharedDictionaryManager::CreateOnDisk(
           params_->file_paths->shared_dictionary_directory->path().Append(
-              kSharedDictionaryDbDirName),
+              FILE_PATH_LITERAL("db")),
           params_->file_paths->shared_dictionary_directory->path().Append(
               FILE_PATH_LITERAL("cache")),
           params_->shared_dictionary_cache_max_size,
@@ -678,15 +676,6 @@ NetworkContext::~NetworkContext() {
 #if BUILDFLAG(IS_ANDROID)
     if (params_ && params_->file_paths) {
       base::FilePath path_to_invalidate;
-      // Even though shared_dictionary_directory is a TransferableDirectory, it
-      // only needs to be mounted/unmounted on fuchsia, so we only need to worry
-      // about invalidating the path of stored by the SandboxedVfs.
-      if (params_->file_paths->shared_dictionary_directory) {
-        path_to_invalidate =
-            params_->file_paths->shared_dictionary_directory->path().Append(
-                kSharedDictionaryDbDirName);
-        network_service_->InvalidateNetworkContextPath(path_to_invalidate);
-      }
       if (GetFullDataFilePath(params_->file_paths,
                               &network::mojom::NetworkContextFilePaths::
                                   trust_token_database_name,
@@ -914,9 +903,7 @@ void NetworkContext::OnComputedFirstPartySetMetadata(
 
   auto callback = base::BindOnce(&NetworkContext::OnRCMDisconnect,
                                  base::Unretained(this), ptr.get());
-  ptr->InstallReceiver(std::move(receiver),
-                       ThreadDelegate::GetHighPriorityTaskRunner(),
-                       std::move(callback));
+  ptr->InstallReceiver(std::move(receiver), std::move(callback));
   restricted_cookie_managers_.insert(std::move(ptr));
 }
 
@@ -1504,9 +1491,9 @@ void NetworkContext::SetCTPolicy(mojom::CTPolicyPtr ct_policy) {
   if (!require_ct_delegate_)
     return;
 
-  require_ct_delegate_->UpdateCTPolicies(
-      ct_policy->required_hosts, ct_policy->excluded_hosts,
-      ct_policy->excluded_spkis, ct_policy->excluded_legacy_spkis);
+  require_ct_delegate_->UpdateCTPolicies(ct_policy->excluded_hosts,
+                                         ct_policy->excluded_spkis,
+                                         ct_policy->excluded_legacy_spkis);
 }
 
 int NetworkContext::CheckCTComplianceForSignedExchange(
@@ -2045,23 +2032,89 @@ void NetworkContext::VerifyIpProtectionConfigGetterForTesting(
   CHECK(proxy_delegate_);
 
   auto* ipp_config_cache_impl = static_cast<IpProtectionConfigCacheImpl*>(
-      proxy_delegate_->GetIpProtectionConfigCacheForTesting());  // IN-TEST
+      proxy_delegate_->GetIpProtectionConfigCache());
   CHECK(ipp_config_cache_impl);
 
-  ipp_config_cache_impl->FillCacheForTesting(base::BindOnce(  // IN-TEST
-      &NetworkContext::OnIpProtectionConfigAvailableForTesting,
-      weak_factory_.GetWeakPtr(), std::move(callback)));
+  // If active cache management is enabled (the default), disable it and do a
+  // one-time reset of the state. Since the browser process will be driving this
+  // test, this makes it easier to reason about the state of
+  // `ipp_config_cache_impl` (for instance, if the browser process sends less
+  // than the requested number of tokens, the network service won't immediately
+  // request more).
+  if (ipp_config_cache_impl->IsCacheManagementEnabledForTesting()) {
+    ipp_config_cache_impl->DisableCacheManagementForTesting(  // IN-TEST
+        base::BindOnce(
+            [](base::WeakPtr<NetworkContext> weak_ptr,
+               VerifyIpProtectionConfigGetterForTestingCallback callback) {
+              // If this callback is called then `ipp_config_cache_impl` is
+              // still alive, which means that this `NetworkContext` is alive as
+              // well.
+              CHECK(weak_ptr);
+              auto* ipp_config_cache_impl =
+                  static_cast<IpProtectionConfigCacheImpl*>(
+                      weak_ptr->proxy_delegate_->GetIpProtectionConfigCache());
+              ipp_config_cache_impl->InvalidateTryAgainAfterTime();
+              while (ipp_config_cache_impl->IsAuthTokenAvailable()) {
+                ipp_config_cache_impl->GetAuthToken();
+              }
+              // Call `PostTask()` instead of invoking the Verify method again
+              // directly so that if `DisableCacheManagementForTesting()` needed
+              // to wait for a `TryGetAuthTokens()` call to finish, then we
+              // ensure that the stored callback has been cleared before the
+              // Verify method tries to call `TryGetAuthTokens()` again.
+              base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+                  FROM_HERE,
+                  base::BindOnce(
+                      &NetworkContext::VerifyIpProtectionConfigGetterForTesting,
+                      weak_ptr, std::move(callback)));
+            },
+            weak_factory_.GetWeakPtr(), std::move(callback)));
+    return;
+  }
+
+  // If there is a cooldown in effect, then don't send any tokens and instead
+  // send back the try again after time.
+  // TODO(awillia): This will actually be used in a follow-up CL.
+  base::Time try_auth_tokens_after =
+      ipp_config_cache_impl
+          ->try_get_auth_tokens_after_for_testing();  // IN-TEST
+  if (!try_auth_tokens_after.is_null()) {
+    std::move(callback).Run(nullptr, try_auth_tokens_after);
+    return;
+  }
+
+  ipp_config_cache_impl->SetOnTryGetAuthTokensCompletedForTesting(  // IN-TEST
+      base::BindOnce(&NetworkContext::OnIpProtectionConfigAvailableForTesting,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+  ipp_config_cache_impl->CallTryGetAuthTokensForTesting();  // IN-TEST
 }
 
 void NetworkContext::OnIpProtectionConfigAvailableForTesting(
     VerifyIpProtectionConfigGetterForTestingCallback callback) {
-  auto* ipp_config_cache =
-      proxy_delegate_->GetIpProtectionConfigCacheForTesting();  // IN-TEST
+  auto* ipp_config_cache_impl = static_cast<IpProtectionConfigCacheImpl*>(
+      proxy_delegate_->GetIpProtectionConfigCache());
 
   absl::optional<network::mojom::BlindSignedAuthTokenPtr> result =
-      ipp_config_cache->GetAuthToken();
-  CHECK(result.has_value());
-  std::move(callback).Run(std::move(result).value());
+      ipp_config_cache_impl->GetAuthToken();
+  if (result.has_value()) {
+    std::move(callback).Run(std::move(result).value(), absl::nullopt);
+    return;
+  }
+  base::Time try_auth_tokens_after =
+      ipp_config_cache_impl
+          ->try_get_auth_tokens_after_for_testing();  // IN-TEST
+  std::move(callback).Run(nullptr, try_auth_tokens_after);
+}
+
+void NetworkContext::InvalidateIpProtectionConfigCacheTryAgainAfterTime() {
+  if (!proxy_delegate_) {
+    return;
+  }
+  auto* ipp_config_cache = proxy_delegate_->GetIpProtectionConfigCache();
+  if (!ipp_config_cache) {
+    return;
+  }
+  ipp_config_cache->InvalidateTryAgainAfterTime();
 }
 
 void NetworkContext::PreconnectSockets(
@@ -3119,6 +3172,12 @@ void NetworkContext::FlushCachedClientCertIfNeeded(
     http_session->ssl_client_context()->ClearClientCertificateIfNeeded(
         host, certificate);
   }
+}
+
+void NetworkContext::SetCookieDeprecationLabel(
+    const absl::optional<std::string>& label) {
+  CHECK(url_request_context_);
+  url_request_context_->set_cookie_deprecation_label(label);
 }
 
 }  // namespace network

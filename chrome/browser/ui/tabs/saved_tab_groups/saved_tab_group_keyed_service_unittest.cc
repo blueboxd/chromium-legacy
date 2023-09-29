@@ -8,6 +8,7 @@
 
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_model_listener.h"
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_utils.h"
+#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_web_contents_listener.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -490,9 +491,18 @@ TEST_F(SavedTabGroupKeyedServiceUnitTest,
       tab_strip_model->group_model()->GetTabGroup(tab_group_id);
   ASSERT_TRUE(tab_group);
 
-  // Verify the tabs of the groups are the same and have the same order.
+  // Verify the number of tabs in the TabGroup and SavedTabGroup are the same.
   const gfx::Range& tab_range = tab_group->ListTabs();
   ASSERT_EQ(tab_range.length(), retrieved_saved_group->saved_tabs().size());
+
+  // Remove the first tab from the saved group.
+  service()->model()->RemoveTabFromGroupFromSync(
+      guid, retrieved_saved_group->saved_tabs().at(0).saved_tab_guid());
+
+  // Verify the number of tabs in the TabGroup and SavedTabGroup are the same.
+  const gfx::Range& modified_tab_range = tab_group->ListTabs();
+  ASSERT_EQ(modified_tab_range.length(),
+            retrieved_saved_group->saved_tabs().size());
 
   // TODO(crbug/1450319): Compare tabs and ensure they are in the same order and
   // contain the same data.
@@ -521,6 +531,12 @@ TEST_F(SavedTabGroupKeyedServiceUnitTest,
       SavedTabGroupTab(GURL("https://www.google.com"), u"Google", guid,
                        /*position=*/0)};
 
+  // Populate the savedTabGroupModel with some test data, To test the added
+  // savedTabGroupModel.
+  auto added_group_tab =
+      SavedTabGroupTab(GURL("https://www.youtube.com"), u"Youtube", guid,
+                       /*position=*/0);
+
   SavedTabGroup saved_group(u"Group", tab_groups::TabGroupColorId::kGrey,
                             std::move(group_tabs), absl::nullopt, guid);
   service()->model()->Add(saved_group);
@@ -541,9 +557,17 @@ TEST_F(SavedTabGroupKeyedServiceUnitTest,
       tab_strip_model->group_model()->GetTabGroup(tab_group_id);
   ASSERT_TRUE(tab_group);
 
-  // Verify the tabs of the groups are the same and have the same order.
+  // Verify the number of tabs in the TabGroup and SavedTabGroup are the same.
   const gfx::Range& tab_range = tab_group->ListTabs();
   ASSERT_EQ(tab_range.length(), retrieved_saved_group->saved_tabs().size());
+
+  // Add the group tab in the saved group.
+  service()->model()->AddTabToGroupFromSync(guid, added_group_tab);
+
+  // Verify the number of tabs in the TabGroup and SavedTabGroup are the same.
+  const gfx::Range& modified_tab_range = tab_group->ListTabs();
+  ASSERT_EQ(modified_tab_range.length(),
+            retrieved_saved_group->saved_tabs().size());
 
   // TODO(crbug/1450319): Compare tabs and ensure they are in the same order and
   // contain the same data.
@@ -599,6 +623,68 @@ TEST_F(SavedTabGroupKeyedServiceUnitTest,
 
   // The local tab should have navigated too.
   EXPECT_EQ(tabstrip->GetWebContentsAt(0)->GetURL(), url);
+}
+
+TEST_F(SavedTabGroupKeyedServiceUnitTest, SimulateLocalThenSyncTabNavigations) {
+  Browser* const browser = AddBrowser();
+  TabStripModel* const tabstrip = browser->tab_strip_model();
+
+  // Create a saved tab group with one tab.
+  ASSERT_EQ(0, tabstrip->count());
+  AddTabToBrowser(browser, 0);
+  ASSERT_EQ(1, tabstrip->count());
+
+  const tab_groups::TabGroupId group_id = tabstrip->AddToNewGroup({0});
+  service()->SaveGroup(group_id);
+
+  const GURL url_1 = GURL("https://www.example.com");
+  const GURL url_2 = GURL("https://www.example2.com");
+
+  // Manually navigate the webcontents of the saved tab locally.
+  tabstrip->GetWebContentsAt(0)->GetController().LoadURLWithParams(
+      content::NavigationController::LoadURLParams(url_1));
+  EXPECT_EQ(tabstrip->GetWebContentsAt(0)->GetURL(), url_1);
+
+  // Simulate a sync navigation on the same tab.
+  service()
+      ->listener()
+      ->GetLocalTabGroupListenerMapForTesting()
+      .at(group_id)
+      .GetWebContentsTokenMapForTesting()
+      .at(tabstrip->GetWebContentsAt(0))
+      .NavigateToUrl(url_2);
+  EXPECT_EQ(tabstrip->GetWebContentsAt(0)->GetURL(), url_2);
+}
+
+TEST_F(SavedTabGroupKeyedServiceUnitTest, SimulateSyncThenLocalTabNavigations) {
+  Browser* const browser = AddBrowser();
+  TabStripModel* const tabstrip = browser->tab_strip_model();
+
+  // Create a saved tab group with one tab.
+  ASSERT_EQ(0, tabstrip->count());
+  AddTabToBrowser(browser, 0);
+  ASSERT_EQ(1, tabstrip->count());
+
+  const tab_groups::TabGroupId group_id = tabstrip->AddToNewGroup({0});
+  service()->SaveGroup(group_id);
+
+  const GURL url_1 = GURL("https://www.example.com");
+  const GURL url_2 = GURL("https://www.example2.com");
+
+  // Simulate a sync navigation on the same tab.
+  service()
+      ->listener()
+      ->GetLocalTabGroupListenerMapForTesting()
+      .at(group_id)
+      .GetWebContentsTokenMapForTesting()
+      .at(tabstrip->GetWebContentsAt(0))
+      .NavigateToUrl(url_2);
+  EXPECT_EQ(tabstrip->GetWebContentsAt(0)->GetURL(), url_2);
+
+  // Manually navigate the webcontents of the saved tab locally.
+  tabstrip->GetWebContentsAt(0)->GetController().LoadURLWithParams(
+      content::NavigationController::LoadURLParams(url_1));
+  EXPECT_EQ(tabstrip->GetWebContentsAt(0)->GetURL(), url_1);
 }
 
 TEST_F(SavedTabGroupKeyedServiceUnitTest, RemoveTabFromSyncRemovesLocalTab) {

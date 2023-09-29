@@ -8,6 +8,7 @@
 #include "content/browser/tracing/background_tracing_manager_impl.h"
 #include "content/browser/tracing/trace_report/trace_report_database.h"
 #include "content/browser/tracing/trace_report/trace_upload_list.h"
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -36,7 +37,7 @@ TraceReportHandler::TraceReportHandler(
 
 TraceReportHandler::~TraceReportHandler() = default;
 
-void TraceReportHandler::DeleteSingleTrace(const base::Uuid& uuid,
+void TraceReportHandler::DeleteSingleTrace(const base::Token& uuid,
                                            DeleteSingleTraceCallback callback) {
   trace_upload_list_->DeleteSingleTrace(uuid, std::move(callback));
 }
@@ -46,14 +47,25 @@ void TraceReportHandler::DeleteAllTraces(DeleteAllTracesCallback callback) {
 }
 
 void TraceReportHandler::UserUploadSingleTrace(
-    const base::Uuid& uuid,
+    const base::Token& uuid,
     UserUploadSingleTraceCallback callback) {
   trace_upload_list_->UserUploadSingleTrace(uuid, std::move(callback));
 }
 
-void TraceReportHandler::DownloadTrace(const base::Uuid& uuid,
+void TraceReportHandler::DownloadTrace(const base::Token& uuid,
                                        DownloadTraceCallback callback) {
-  trace_upload_list_->DownloadTrace(uuid, std::move(callback));
+  trace_upload_list_->DownloadTrace(
+      uuid, base::BindOnce(
+                [](DownloadTraceCallback callback,
+                   absl::optional<base::span<const char>> trace) {
+                  if (trace) {
+                    std::move(callback).Run(
+                        mojo_base::BigBuffer(base::as_bytes(*trace)));
+                  } else {
+                    std::move(callback).Run(absl::nullopt);
+                  }
+                },
+                std::move(callback)));
 }
 
 void TraceReportHandler::GetAllTraceReports(

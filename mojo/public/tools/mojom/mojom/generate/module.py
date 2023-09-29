@@ -423,6 +423,7 @@ ATTRIBUTE_UUID = 'Uuid'
 ATTRIBUTE_SERVICE_SANDBOX = 'ServiceSandbox'
 ATTRIBUTE_REQUIRE_CONTEXT = 'RequireContext'
 ATTRIBUTE_ALLOWED_CONTEXT = 'AllowedContext'
+ATTRIBUTE_RUNTIME_FEATURE = 'RuntimeFeature'
 
 
 class NamedValue:
@@ -562,6 +563,38 @@ def _IsFieldBackwardCompatible(new_field, old_field, checker):
     return False
 
   return checker.IsBackwardCompatible(new_field.kind, old_field.kind)
+
+
+class Feature(ReferenceKind):
+  """A runtime enabled feature defined from mojom.
+
+  Attributes:
+    mojom_name: {str} The name of the feature type as defined in mojom.
+    name: {str} The stylized name. (Note: not the "name" used by FeatureList.)
+    constants: {List[Constant]} The constants defined in the feature scope.
+    attributes: {dict} Additional information about the feature.
+  """
+
+  Kind.AddSharedProperty('mojom_name')
+  Kind.AddSharedProperty('name')
+  Kind.AddSharedProperty('constants')
+  Kind.AddSharedProperty('attributes')
+
+  def __init__(self, mojom_name=None, module=None, attributes=None):
+    if mojom_name is not None:
+      spec = 'x:' + mojom_name
+    else:
+      spec = None
+    ReferenceKind.__init__(self, spec, False, module)
+    self.mojom_name = mojom_name
+    self.name = None
+    self.constants = []
+    self.attributes = attributes
+
+  def Stylize(self, stylizer):
+    self.name = stylizer.StylizeFeature(self.mojom_name)
+    for constant in self.constants:
+      constant.Stylize(stylizer)
 
 
 class Struct(ReferenceKind):
@@ -1222,6 +1255,18 @@ class Method:
     return self.attributes.get(ATTRIBUTE_ALLOWED_CONTEXT) \
         if self.attributes else None
 
+  @property
+  def runtime_feature(self):
+    if not self.attributes:
+      return None
+    runtime_feature = self.attributes.get(ATTRIBUTE_RUNTIME_FEATURE, None)
+    if runtime_feature is None:
+      return None
+    if not isinstance(runtime_feature, Feature):
+      raise Exception("RuntimeFeature attribute on %s must be a feature." %
+                      self.name)
+    return runtime_feature
+
   def _tuple(self):
     return (self.mojom_name, self.ordinal, self.parameters,
             self.response_parameters, self.attributes)
@@ -1366,6 +1411,18 @@ class Interface(ReferenceKind):
       raise Exception("ServiceSandbox attribute on %s must be an enum value." %
                       self.module.name)
     return service_sandbox
+
+  @property
+  def runtime_feature(self):
+    if not self.attributes:
+      return None
+    runtime_feature = self.attributes.get(ATTRIBUTE_RUNTIME_FEATURE, None)
+    if runtime_feature is None:
+      return None
+    if not isinstance(runtime_feature, Feature):
+      raise Exception("RuntimeFeature attribute on %s must be a feature." %
+                      self.name)
+    return runtime_feature
 
   @property
   def require_context(self):
@@ -1586,6 +1643,7 @@ class Module:
     self.unions = []
     self.interfaces = []
     self.enums = []
+    self.features = []
     self.constants = []
     self.kinds = OrderedDict()
     self.attributes = attributes
@@ -1598,12 +1656,13 @@ class Module:
     return self.Repr()
 
   def __eq__(self, rhs):
-    return (isinstance(rhs, Module) and
-            (self.path, self.attributes, self.mojom_namespace, self.imports,
-             self.constants, self.enums, self.structs, self.unions,
-             self.interfaces) == (rhs.path, rhs.attributes, rhs.mojom_namespace,
-                                  rhs.imports, rhs.constants, rhs.enums,
-                                  rhs.structs, rhs.unions, rhs.interfaces))
+    return (isinstance(rhs, Module)
+            and (self.path, self.attributes, self.mojom_namespace, self.imports,
+                 self.constants, self.enums, self.structs, self.unions,
+                 self.interfaces, self.features)
+            == (rhs.path, rhs.attributes, rhs.mojom_namespace, rhs.imports,
+                rhs.constants, rhs.enums, rhs.structs, rhs.unions,
+                rhs.interfaces, rhs.features))
 
   def __hash__(self):
     return id(self)
@@ -1619,7 +1678,8 @@ class Module:
             'attributes': False,
             'structs': False,
             'interfaces': False,
-            'unions': False
+            'unions': False,
+            'features': False,
         })
 
   def GetNamespacePrefix(self):
@@ -1640,6 +1700,11 @@ class Module:
     self.unions.append(union)
     return union
 
+  def AddFeature(self, mojom_name, attributes=None):
+    feature = Feature(mojom_name, self, attributes)
+    self.features.append(feature)
+    return feature
+
   def Stylize(self, stylizer):
     self.namespace = stylizer.StylizeModule(self.mojom_namespace)
     for struct in self.structs:
@@ -1652,6 +1717,8 @@ class Module:
       enum.Stylize(stylizer)
     for constant in self.constants:
       constant.Stylize(stylizer)
+    for feature in self.features:
+      feature.Stylize(stylizer)
 
     for imported_module in self.imports:
       imported_module.Stylize(stylizer)
@@ -1733,6 +1800,10 @@ def IsUnionKind(kind):
 
 def IsArrayKind(kind):
   return isinstance(kind, Array)
+
+
+def IsFeatureKind(kind):
+  return isinstance(kind, Feature)
 
 
 def IsInterfaceKind(kind):

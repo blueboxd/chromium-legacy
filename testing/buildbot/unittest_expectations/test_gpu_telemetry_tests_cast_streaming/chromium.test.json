@@ -13,12 +13,10 @@
           "--stable-jobs",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
-        "isolate_name": "telemetry_gpu_integration_test_fuchsia",
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "foo_tests",
-        "should_retry_with_patch": false,
         "swarming": {
           "dimensions": {
             "kvm": "1",
@@ -26,6 +24,7 @@
           },
           "idempotent": false
         },
+        "test": "telemetry_gpu_integration_test_fuchsia",
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test_fuchsia/"
       }
     ]

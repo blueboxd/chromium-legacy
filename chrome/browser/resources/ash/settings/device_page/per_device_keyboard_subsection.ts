@@ -43,7 +43,7 @@ const SettingsPerDeviceKeyboardSubsectionElementBase =
 
 export class SettingsPerDeviceKeyboardSubsectionElement extends
     SettingsPerDeviceKeyboardSubsectionElementBase {
-  static get is(): string {
+  static get is() {
     return 'settings-per-device-keyboard-subsection';
   }
 
@@ -164,10 +164,15 @@ export class SettingsPerDeviceKeyboardSubsectionElement extends
     this.isInitialized = true;
   }
 
-  private onPoliciesChanged() {
+  private onPoliciesChanged(): void {
     this.topRowAreFunctionKeysPref = {
       ...this.topRowAreFunctionKeysPref,
       ...getPrefPolicyFields(this.keyboardPolicies.topRowAreFkeysPolicy),
+    };
+    this.blockMetaFunctionKeyRewritesPref = {
+      ...this.blockMetaFunctionKeyRewritesPref,
+      ...getPrefPolicyFields(
+          this.keyboardPolicies.enableMetaFkeyRewritesPolicy),
     };
   }
 

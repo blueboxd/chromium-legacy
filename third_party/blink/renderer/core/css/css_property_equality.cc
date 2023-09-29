@@ -710,6 +710,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return base::ValuesEquivalent(a.TextShadow(), b.TextShadow());
     case CSSPropertyID::kTextSizeAdjust:
       return a.GetTextSizeAdjust() == b.GetTextSizeAdjust();
+    case CSSPropertyID::kTextSpacingTrim:
+      return a.TextSpacingTrim() == b.TextSpacingTrim();
     case CSSPropertyID::kTextTransform:
       return a.TextTransform() == b.TextTransform();
     case CSSPropertyID::kTextUnderlineOffset:
@@ -1020,6 +1022,7 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kWebkitBoxAlign:
     case CSSPropertyID::kWebkitBoxDecorationBreak:
     case CSSPropertyID::kWebkitBoxDirection:
+    case CSSPropertyID::kWebkitBoxDirectionAlternative:
     case CSSPropertyID::kWebkitBoxFlex:
     case CSSPropertyID::kWebkitBoxOrdinalGroup:
     case CSSPropertyID::kWebkitBoxOrient:

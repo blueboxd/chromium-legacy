@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "base/metrics/histogram_base.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_data.h"
@@ -57,6 +59,13 @@ void TestInvalidImage(const char* webp_file, bool parse_error_expected) {
   }
   EXPECT_EQ(kAnimationLoopOnce, decoder->RepetitionCount());
   EXPECT_TRUE(decoder->Failed());
+}
+
+void TestWebPBppHistogram(const char* image_name,
+                          const char* histogram_name = nullptr,
+                          base::HistogramBase::Sample sample = 0) {
+  TestBppHistogram(CreateWEBPDecoder, "WebP", image_name, histogram_name,
+                   sample);
 }
 
 }  // anonymous namespace
@@ -496,6 +505,99 @@ TEST(StaticWebPTests, notAnimated) {
   decoder->SetData(data.get(), true);
   EXPECT_EQ(1u, decoder->FrameCount());
   EXPECT_EQ(kAnimationNone, decoder->RepetitionCount());
+}
+
+TEST(StaticWebPTests, bppHistogramSmall) {
+  constexpr int kImageArea = 800 * 800;  // = 640000
+  constexpr int kFileSize = 19436;
+  constexpr int kSample =
+      (kFileSize * 100 * 8 + kImageArea / 2) / kImageArea;  // = 24
+  TestWebPBppHistogram("/images/resources/webp-color-profile-lossy.webp",
+                       "Blink.DecodedImage.WebPDensity.Count.0.7MP", kSample);
+}
+
+TEST(StaticWebPTests, bppHistogramSmall3x3) {
+  // The centi bpp = 68 * 100 * 8 / (3 * 3) ~= 6044, which is greater than the
+  // histogram's max value (1000), so this sample goes into the overflow bucket.
+  constexpr int kSample = 1000;
+  TestWebPBppHistogram("/images/resources/red3x3-lossy.webp",
+                       "Blink.DecodedImage.WebPDensity.Count.0.1MP", kSample);
+}
+
+TEST(StaticWebPTests, bppHistogramSmall900000) {
+  constexpr int kImageArea = 1200 * 750;  // = 900000
+  constexpr int kFileSize = 11180;
+  constexpr int kSample =
+      (kFileSize * 100 * 8 + kImageArea / 2) / kImageArea;  // = 10
+  TestWebPBppHistogram("/images/resources/peach_900000.webp",
+                       "Blink.DecodedImage.WebPDensity.Count.0.9MP", kSample);
+}
+
+TEST(StaticWebPTests, bppHistogramBig) {
+  constexpr int kImageArea = 3024 * 4032;  // = 12192768
+  constexpr int kFileSize = 87822;
+  constexpr int kSample =
+      (kFileSize * 100 * 8 + kImageArea / 2) / kImageArea;  // = 6
+  TestWebPBppHistogram("/images/resources/bee.webp",
+                       "Blink.DecodedImage.WebPDensity.Count.13MP", kSample);
+}
+
+TEST(StaticWebPTests, bppHistogramBig13000000) {
+  constexpr int kImageArea = 4000 * 3250;  // = 13000000
+  constexpr int kFileSize = 58402;
+  constexpr int kSample =
+      (kFileSize * 100 * 8 + kImageArea / 2) / kImageArea;  // = 4
+  TestWebPBppHistogram("/images/resources/peach_13000000.webp",
+                       "Blink.DecodedImage.WebPDensity.Count.13MP", kSample);
+}
+
+TEST(StaticWebPTests, bppHistogramHuge) {
+  constexpr int kImageArea = 4624 * 3472;  // = 16054528
+  constexpr int kFileSize = 66594;
+  constexpr int kSample =
+      (kFileSize * 100 * 8 + kImageArea / 2) / kImageArea;  // = 3
+  TestWebPBppHistogram("/images/resources/peach.webp",
+                       "Blink.DecodedImage.WebPDensity.Count.14+MP", kSample);
+}
+
+TEST(StaticWebPTests, bppHistogramHuge13000002) {
+  constexpr int kImageArea = 3961 * 3282;  // = 13000002
+  constexpr int kFileSize = 53968;
+  constexpr int kSample =
+      (kFileSize * 100 * 8 + kImageArea / 2) / kImageArea;  // = 3
+  TestWebPBppHistogram("/images/resources/peach_13000002.webp",
+                       "Blink.DecodedImage.WebPDensity.Count.14+MP", kSample);
+}
+
+// Although parsing of the image succeeds, decoding of the image fails, so the
+// test should not emit to any bpp histogram.
+TEST(StaticWebPTests, bppHistogramInvalid) {
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<ImageDecoder> decoder = CreateWEBPDecoder();
+  decoder->SetData(ReadFile("/images/resources/truncated.webp"), true);
+  ASSERT_TRUE(decoder->IsSizeAvailable());
+  EXPECT_FALSE(decoder->Failed());
+  EXPECT_EQ(decoder->FrameCount(), 1u);
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
+  ASSERT_TRUE(frame);
+  EXPECT_NE(ImageFrame::kFrameComplete, frame->GetStatus());
+  EXPECT_TRUE(decoder->Failed());
+  const base::HistogramTester::CountsMap empty_counts;
+  EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix(
+                  "Blink.DecodedImage.WebPDensity.Count."),
+              testing::ContainerEq(empty_counts));
+}
+
+TEST(StaticWebPTests, bppHistogramLossless) {
+  TestWebPBppHistogram("/images/resources/red3x3-lossless.webp");
+}
+
+TEST(StaticWebPTests, bppHistogramAlpha) {
+  TestWebPBppHistogram("/images/resources/webp-color-profile-lossy-alpha.webp");
+}
+
+TEST(StaticWebPTests, bppHistogramAnimated) {
+  TestWebPBppHistogram("/images/resources/webp-animated-opaque.webp");
 }
 
 }  // namespace blink

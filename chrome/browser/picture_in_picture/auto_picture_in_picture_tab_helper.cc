@@ -17,6 +17,7 @@
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/media_session_service.h"
 #include "media/base/media_switches.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace {
 
@@ -179,6 +180,12 @@ bool AutoPictureInPictureTabHelper::IsEligibleForAutoPictureInPicture() const {
 
   // The user may block autopip via a content setting.
   if (GetCurrentContentSetting() == CONTENT_SETTING_BLOCK) {
+    return false;
+  }
+
+  // Only https:// or file:// may autopip.
+  const GURL url = web_contents()->GetLastCommittedURL();
+  if (!url.SchemeIs(url::kHttpsScheme) && !url.SchemeIsFile()) {
     return false;
   }
 

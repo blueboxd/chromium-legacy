@@ -7,6 +7,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -95,6 +96,11 @@ class TestNotificationView : public NotificationViewBase {
     set_inline_settings_enabled(
         notification.rich_notification_data().settings_button_handler ==
         message_center::SettingsButtonHandler::INLINE);
+  }
+  void CreateOrUpdateSnoozeSettingsViews(
+      const Notification& notification) override {
+    set_snooze_settings_enabled(notification.notifier_id().type ==
+                                message_center::NotifierType::ARC_APPLICATION);
   }
   bool IsExpandable() const override { return true; }
   std::unique_ptr<views::LabelButton> GenerateNotificationLabelButton(
@@ -1240,4 +1246,22 @@ TEST_F(NotificationViewBaseWithNotificationGestureUpdateTest,
   EXPECT_TRUE(IsPopupRemovedAfterIdle(kDefaultNotificationId));
   EXPECT_FALSE(IsRemovedAfterIdle(kDefaultNotificationId));
 }
+
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_SlideOutByTrackpad DISABLED_SlideOutByTrackpad
+#else
+#define MAYBE_SlideOutByTrackpad SlideOutByTrackpad
+#endif
+TEST_F(NotificationViewBaseWithNotificationGestureUpdateTest,
+       MAYBE_SlideOutByTrackpad) {
+  ui::ScopedAnimationDurationScaleMode zero_duration_scope(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+
+  ui::test::EventGenerator generator(
+      GetRootWindow(notification_view()->GetWidget()));
+  generator.ScrollSequence(gfx::Point(), base::TimeDelta(), /*x_offset=*/20,
+                           /*y_offset=*/0, /*steps=*/1, /*num_fingers=*/2);
+  EXPECT_TRUE(IsPopupRemovedAfterIdle(kDefaultNotificationId));
+}
+
 }  // namespace message_center

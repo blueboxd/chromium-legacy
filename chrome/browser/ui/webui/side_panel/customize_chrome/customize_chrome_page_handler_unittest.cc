@@ -15,11 +15,14 @@
 #include "base/memory/raw_ptr_exclusion.h"
 #include "base/test/gmock_move_support.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/manta/manta_service.h"
+#include "chrome/browser/manta/manta_service_callbacks.h"
 #include "chrome/browser/manta/manta_service_factory.h"
+#include "chrome/browser/manta/manta_status.h"
 #include "chrome/browser/manta/snapper_provider.h"
 #include "chrome/browser/search/background/ntp_background_data.h"
 #include "chrome/browser/search/background/ntp_background_service_factory.h"
@@ -224,15 +227,14 @@ class MockThemeService : public ThemeService {
 
 using SnapperProviderCall =
     base::RepeatingCallback<void(const manta::proto::Request&,
-                                 manta::SnapperProvider::SnapperDoneCallback)>;
+                                 manta::MantaProtoResponseCallback)>;
 
 class TestSnapperProvider : public manta::SnapperProvider {
  public:
   explicit TestSnapperProvider(SnapperProviderCall call)
       : manta::SnapperProvider(nullptr, nullptr), call_(call) {}
-  void Call(
-      const manta::proto::Request& request,
-      manta::SnapperProvider::SnapperDoneCallback done_callback) override {
+  void Call(const manta::proto::Request& request,
+            manta::MantaProtoResponseCallback done_callback) override {
     call_.Run(request, std::move(done_callback));
   }
 
@@ -352,6 +354,7 @@ class CustomizeChromePageHandlerTest : public testing::Test {
   MockThemeService& mock_theme_service() { return *mock_theme_service_; }
   Browser& browser() { return *browser_; }
   base::HistogramTester& histogram_tester() { return histogram_tester_; }
+  base::UserActionTester& user_action_tester() { return user_action_tester_; }
 
  protected:
   // NOTE: The initialization order of these members matters.
@@ -378,6 +381,7 @@ class CustomizeChromePageHandlerTest : public testing::Test {
   std::unique_ptr<Browser> browser_;
   std::unique_ptr<TestBrowserWindow> browser_window_;
   base::HistogramTester histogram_tester_;
+  base::UserActionTester user_action_tester_;
   std::unique_ptr<CustomizeChromePageHandler> handler_;
 };
 
@@ -651,8 +655,12 @@ TEST_F(CustomizeChromePageHandlerTest, ChooseLocalCustomBackgroundSuccess) {
               SelectLocalBackgroundImage(An<const base::FilePath&>()))
       .Times(1);
   EXPECT_CALL(mock_theme_service(), UseDefaultTheme).Times(1);
+  ASSERT_EQ(0, user_action_tester().GetActionCount(
+                   "NTPRicherPicker.Backgrounds.UploadConfirmed"));
   handler().ChooseLocalCustomBackground(callback.Get());
   EXPECT_TRUE(success);
+  EXPECT_EQ(1, user_action_tester().GetActionCount(
+                   "NTPRicherPicker.Backgrounds.UploadConfirmed"));
 }
 
 TEST_F(CustomizeChromePageHandlerTest, ChooseLocalCustomBackgroundCancel) {
@@ -663,8 +671,12 @@ TEST_F(CustomizeChromePageHandlerTest, ChooseLocalCustomBackgroundCancel) {
   ui::SelectFileDialog::SetFactory(
       std::make_unique<TestSelectFileDialogFactory>(true));
   EXPECT_CALL(callback, Run(_)).Times(1).WillOnce(SaveArg<0>(&success));
+  ASSERT_EQ(0, user_action_tester().GetActionCount(
+                   "NTPRicherPicker.Backgrounds.UploadCanceled"));
   handler().ChooseLocalCustomBackground(callback.Get());
   EXPECT_TRUE(!success);
+  EXPECT_EQ(1, user_action_tester().GetActionCount(
+                   "NTPRicherPicker.Backgrounds.UploadCanceled"));
 }
 
 TEST_F(CustomizeChromePageHandlerTest, SetBackgroundImage) {
@@ -839,7 +851,7 @@ class CustomizeChromePageHandlerWithWallpaperSearchTest
 TEST_F(CustomizeChromePageHandlerWithWallpaperSearchTest,
        SearchWallpaper_Success) {
   manta::proto::Request request;
-  manta::SnapperProvider::SnapperDoneCallback done_callback;
+  manta::MantaProtoResponseCallback done_callback;
   EXPECT_CALL(mock_snapper_provider_call_, Run(_, _))
       .Times(1)
       .WillOnce(DoAll(SaveArg<0>(&request), MoveArg<1>(&done_callback)));
@@ -861,7 +873,8 @@ TEST_F(CustomizeChromePageHandlerWithWallpaperSearchTest,
   bool success = false;
   EXPECT_CALL(callback, Run(_)).Times(1).WillOnce(SaveArg<0>(&success));
 
-  std::move(done_callback).Run(std::move(response));
+  std::move(done_callback)
+      .Run(std::move(response), {manta::MantaStatusCode::kOk, std::string()});
   EXPECT_EQ("bar", bytes);
   EXPECT_TRUE(success);
 }
@@ -869,7 +882,7 @@ TEST_F(CustomizeChromePageHandlerWithWallpaperSearchTest,
 TEST_F(CustomizeChromePageHandlerWithWallpaperSearchTest,
        SearchWallpaper_NoResponse) {
   manta::proto::Request request;
-  manta::SnapperProvider::SnapperDoneCallback done_callback;
+  manta::MantaProtoResponseCallback done_callback;
   EXPECT_CALL(mock_snapper_provider_call_, Run(_, _))
       .Times(1)
       .WillOnce(DoAll(SaveArg<0>(&request), MoveArg<1>(&done_callback)));
@@ -885,14 +898,16 @@ TEST_F(CustomizeChromePageHandlerWithWallpaperSearchTest,
   bool success = true;
   EXPECT_CALL(callback, Run(_)).Times(1).WillOnce(SaveArg<0>(&success));
 
-  std::move(done_callback).Run(nullptr);
+  std::move(done_callback)
+      .Run(nullptr,
+           {manta::MantaStatusCode::kMalformedResponse, std::string()});
   EXPECT_FALSE(success);
 }
 
 TEST_F(CustomizeChromePageHandlerWithWallpaperSearchTest,
        SearchWallpaper_NoImages) {
   manta::proto::Request request;
-  manta::SnapperProvider::SnapperDoneCallback done_callback;
+  manta::MantaProtoResponseCallback done_callback;
   EXPECT_CALL(mock_snapper_provider_call_, Run(_, _))
       .Times(1)
       .WillOnce(DoAll(SaveArg<0>(&request), MoveArg<1>(&done_callback)));
@@ -909,6 +924,7 @@ TEST_F(CustomizeChromePageHandlerWithWallpaperSearchTest,
   bool success = true;
   EXPECT_CALL(callback, Run(_)).Times(1).WillOnce(SaveArg<0>(&success));
 
-  std::move(done_callback).Run(std::move(response));
+  std::move(done_callback)
+      .Run(std::move(response), {manta::MantaStatusCode::kOk, std::string()});
   EXPECT_FALSE(success);
 }

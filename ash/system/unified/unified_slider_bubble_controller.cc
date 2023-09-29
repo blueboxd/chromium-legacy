@@ -148,6 +148,9 @@ void UnifiedSliderBubbleController::OnMouseExitedView() {
   mouse_hovered_ = false;
 }
 
+void UnifiedSliderBubbleController::HideBubble(
+    const TrayBubbleView* bubble_view) {}
+
 void UnifiedSliderBubbleController::DisplayMicrophoneMuteToast() {
   // We will not display the microphone mute toast if no microphone is connected
   // to the device, or if the video conference controls tray is visible.
@@ -370,8 +373,8 @@ void UnifiedSliderBubbleController::CreateSliderController() {
 
 void UnifiedSliderBubbleController::StartAutoCloseTimer() {
   autoclose_.Stop();
-  autoclose_.Start(FROM_HERE, base::Seconds(kTrayPopupAutoCloseDelayInSeconds),
-                   this, &UnifiedSliderBubbleController::CloseBubble);
+  autoclose_.Start(FROM_HERE, kSecondaryBubbleDuration, this,
+                   &UnifiedSliderBubbleController::CloseBubble);
 }
 
 }  // namespace ash

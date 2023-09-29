@@ -36,6 +36,12 @@ AppListControllerDelegate::Pinnable GetPinnableForAppID(
 // be hidden from shelf, as indicated by `AppUpdate::ShowInShelf()` app state.
 bool IsAppHiddenFromShelf(Profile* profile, const std::string& app_id);
 
+// Helper function to return whether the promise app with `promise_package_id`
+// should be visible in the shelf by reading the should_show field of the
+// promise app in the PromiseAppRegistryCache.
+bool IsPromiseAppReadyToShowInShelf(Profile* profile,
+                                    const std::string& promise_package_id);
+
 // Whether the pin state of the app with `app_id` is editable according to its
 // `app_type`.
 bool IsAppPinEditable(apps::AppType app_type,
@@ -68,5 +74,11 @@ apps::LaunchSource ShelfLaunchSourceToAppsLaunchSource(
 // service types respectively).
 bool BrowserAppShelfControllerShouldHandleApp(const std::string& app_id,
                                               Profile* profile);
+
+// Records an app launch from shelf event in `ScalableIph`. Note that
+// `ScalableIph` records events for a subset of app ids.
+void MaybeRecordAppLaunchForScalableIph(const std::string& app_id,
+                                        Profile* profile,
+                                        ash::ShelfLaunchSource source);
 
 #endif  // CHROME_BROWSER_UI_ASH_SHELF_CHROME_SHELF_CONTROLLER_UTIL_H_

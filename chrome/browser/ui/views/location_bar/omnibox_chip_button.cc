@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/location_bar/omnibox_chip_button.h"
-#include <cstddef>
 
+#include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
@@ -65,9 +65,7 @@ OmniboxChipButton::OmniboxChipButton(PressedCallback callback)
     label()->SetTextStyle(views::style::STYLE_BODY_4_EMPHASIS);
   }
   SetCornerRadius(GetCornerRadius());
-  constexpr auto kAnimationDuration = base::Milliseconds(350);
   animation_ = std::make_unique<gfx::SlideAnimation>(this);
-  animation_->SetSlideDuration(kAnimationDuration);
 
   UpdateIconAndColors();
 }
@@ -81,20 +79,20 @@ void OmniboxChipButton::VisibilityChanged(views::View* starting_from,
   }
 }
 
-void OmniboxChipButton::AnimateCollapse(base::TimeDelta kAnimationDuration) {
+void OmniboxChipButton::AnimateCollapse(base::TimeDelta duration) {
   base_width_ = 0;
-  animation_->SetSlideDuration(kAnimationDuration);
+  animation_->SetSlideDuration(duration);
   ForceAnimateCollapse();
 }
 
-void OmniboxChipButton::AnimateExpand(base::TimeDelta kAnimationDuration) {
+void OmniboxChipButton::AnimateExpand(base::TimeDelta duration) {
   base_width_ = 0;
-  animation_->SetSlideDuration(kAnimationDuration);
+  animation_->SetSlideDuration(duration);
   ForceAnimateExpand();
 }
 
-void OmniboxChipButton::AnimateToFit(base::TimeDelta kAnimationDuration) {
-  animation_->SetSlideDuration(kAnimationDuration);
+void OmniboxChipButton::AnimateToFit(base::TimeDelta duration) {
+  animation_->SetSlideDuration(duration);
   base_width_ = label()->width();
 
   if (label()->GetPreferredSize().width() < width()) {
@@ -108,8 +106,8 @@ void OmniboxChipButton::AnimateToFit(base::TimeDelta kAnimationDuration) {
 }
 
 void OmniboxChipButton::ResetAnimation(double value) {
-  fully_collapsed_ = value == 0.0;
   animation_->Reset(value);
+  OnAnimationValueMaybeChanged();
 }
 
 gfx::Size OmniboxChipButton::CalculatePreferredSize() const {
@@ -117,11 +115,10 @@ gfx::Size OmniboxChipButton::CalculatePreferredSize() const {
   const int collapsable_width = label()->GetPreferredSize().width() +
                                 kChipImagePadding + kExtraRightPadding;
 
-  const double animation_value =
-      force_expanded_for_testing_ ? 1.0 : animation_->GetCurrentValue();
-  const int width = base_width_ +
-                    std::round(collapsable_width * animation_value) +
-                    fixed_width;
+  const int width =
+      base_width_ +
+      base::ClampRound(collapsable_width * animation_->GetCurrentValue()) +
+      fixed_width;
   return gfx::Size(width, GetHeightForWidth(width));
 }
 
@@ -146,15 +143,14 @@ void OmniboxChipButton::AnimationEnded(const gfx::Animation* animation) {
   if (animation != animation_.get())
     return;
 
-  fully_collapsed_ = animation->GetCurrentValue() != 1.0;
+  OnAnimationValueMaybeChanged();
 
-  if (animation->GetCurrentValue() == 1.0) {
+  const double value = animation_->GetCurrentValue();
+  if (value == 1.0) {
     for (Observer& observer : observers_) {
       observer.OnExpandAnimationEnded();
     }
-  }
-
-  if (animation->GetCurrentValue() == 0.0) {
+  } else if (value == 0.0) {
     for (Observer& observer : observers_) {
       observer.OnCollapseAnimationEnded();
     }
@@ -162,8 +158,12 @@ void OmniboxChipButton::AnimationEnded(const gfx::Animation* animation) {
 }
 
 void OmniboxChipButton::AnimationProgressed(const gfx::Animation* animation) {
-  if (animation == animation_.get())
-    PreferredSizeChanged();
+  if (animation != animation_.get()) {
+    return;
+  }
+
+  OnAnimationValueMaybeChanged();
+  PreferredSizeChanged();
 }
 
 void OmniboxChipButton::SetUserDecision(
@@ -285,6 +285,10 @@ void OmniboxChipButton::ForceAnimateCollapse() {
   animation_->Hide();
 }
 
+void OmniboxChipButton::OnAnimationValueMaybeChanged() {
+  fully_collapsed_ = animation_->GetCurrentValue() == 0.0;
+}
+
 int OmniboxChipButton::GetIconSize() const {
   if (features::IsChromeRefresh2023()) {
     // Mimic the sizing for other trailing icons.
@@ -303,11 +307,6 @@ int OmniboxChipButton::GetCornerRadius() const {
     return GetLayoutConstant(LOCATION_BAR_CHILD_CORNER_RADIUS);
   }
   return GetIconSize();
-}
-
-void OmniboxChipButton::SetForceExpandedForTesting(
-    bool force_expanded_for_testing) {
-  force_expanded_for_testing_ = force_expanded_for_testing;
 }
 
 void OmniboxChipButton::SetChipIcon(const gfx::VectorIcon& icon) {

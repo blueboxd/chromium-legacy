@@ -280,7 +280,6 @@
 <translation id="3226405216343213872">স্ক্যানার খোঁজা হচ্ছে</translation>
 <translation id="3226657629376379887">লেআউট অ্যাকশন মেনু</translation>
 <translation id="3246869037381808805">১ দিনের বেশি পুরনো প্রিন্ট জব সরিয়ে দেওয়া হবে</translation>
-<translation id="3248223063252096240"><ph name="PRODUCT_NAME" /> এক্সক্লুসিভ</translation>
 <translation id="3268178239013324452">প্রিন্ট করা যায়নি - প্রিন্টারের ঢাকনা ভাল করে বন্ধ করা হয়নি</translation>
 <translation id="3275729367986477355">অবতারের ছবি</translation>
 <translation id="3283504360622356314">{0,plural, =1{ফাইলটি এডিট করুন}one{ফাইলগুলি এডিট করুন}other{ফাইলগুলি এডিট করুন}}</translation>
@@ -921,6 +920,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> বেছে নিন</translation>
 <translation id="8151185429379586178">ডেভেলপার টুল</translation>
+<translation id="8152370627892825"><ph name="DESCRIPTION" />, <ph name="ACCELERATOR_INFO" />।</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8183974620058026102">অ্যাটাচ করুন</translation>
 <translation id="8206859287963243715">সেলুলার</translation>

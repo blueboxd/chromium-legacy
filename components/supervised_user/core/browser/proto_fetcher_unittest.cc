@@ -4,6 +4,7 @@
 
 #include "components/supervised_user/core/browser/proto_fetcher.h"
 
+#include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "stddef.h"
 
 #include <memory>
@@ -54,38 +55,42 @@ using ::signin::IdentityTestEnvironment;
 
 constexpr FetcherConfig kTestGetConfig{
     .service_path = "/superviser/user:get",
-    // TODO(b/284523446): Refer to GaiaConstants rather than literal.
-    .oauth2_scope =
-        "https://www.googleapis.com/auth/kid.permission",  // Real scope
-                                                           // required.
     .method = FetcherConfig::Method::kGet,
     .histogram_basename = "SupervisedUser.Request",
     .traffic_annotation =
         annotations::ClassifyUrlTag,  // traffic annotation is meaningless for
                                       // this tests since there's no real
                                       // traffic.
+    .access_token_config{
+        .mode = signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate,
+        // TODO(b/284523446): Refer to GaiaConstants rather than literal.
+        .oauth2_scope =
+            "https://www.googleapis.com/auth/kid.permission",  // Real scope
+                                                               // required.
+
+    },
 };
 
 constexpr FetcherConfig kTestPostConfig{
     .service_path = "/superviser/user:post",
-    // TODO(b/284523446): Refer to GaiaConstants rather than literal.
-    .oauth2_scope =
-        "https://www.googleapis.com/auth/kid.permission",  // Real scope
-                                                           // required.
     .method = FetcherConfig::Method::kPost,
     .histogram_basename = "SupervisedUser.Request",
     .traffic_annotation =
         annotations::ClassifyUrlTag,  // traffic annotation is meaningless for
                                       // this tests since there's no real
                                       // traffic.
+    .access_token_config{
+        .mode = signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate,
+        // TODO(b/284523446): Refer to GaiaConstants rather than literal.
+        .oauth2_scope =
+            "https://www.googleapis.com/auth/kid.permission",  // Real scope
+                                                               // required.
+
+    },
 };
 
 constexpr FetcherConfig kTestRetryConfig{
     .service_path = "/superviser/user:retry",
-    // TODO(b/284523446): Refer to GaiaConstants rather than literal.
-    .oauth2_scope =
-        "https://www.googleapis.com/auth/kid.permission",  // Real scope
-                                                           // required.
     .method = FetcherConfig::Method::kGet,
     .histogram_basename = "SupervisedUser.Request",
     .traffic_annotation =
@@ -99,6 +104,14 @@ constexpr FetcherConfig kTestRetryConfig{
             .maximum_backoff_ms = 1,
             .always_use_initial_delay = false,
         },
+    .access_token_config{
+        .mode = signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate,
+        // TODO(b/284523446): Refer to GaiaConstants rather than literal.
+        .oauth2_scope =
+            "https://www.googleapis.com/auth/kid.permission",  // Real scope
+                                                               // required.
+
+    },
 };
 
 // Receiver is an artificial consumer of the fetch process. Typically, calling
@@ -181,7 +194,7 @@ class ProtoFetcherTest : public ::testing::TestWithParam<FetcherConfig> {
     test_url_loader_factory_.SimulateResponseForPendingRequest(
         GetUrlOfPendingRequest(index).spec(), /*content=*/"", error);
   }
-  void SimulateResponseForPendingRequestWithPersistentError(size_t index) {
+  void SimulateMalformedResponseForPendingRequest(size_t index) {
     test_url_loader_factory_.SimulateResponseForPendingRequest(
         GetUrlOfPendingRequest(index).spec(), "malformed-response");
   }
@@ -394,17 +407,17 @@ TEST_P(ProtoFetcherTest, RecordsMetrics) {
   histogram_tester.ExpectTotalCount(
       base::StrCat({GetConfig().histogram_basename, ".Latency"}),
       /*expected_count(grew by)*/ 1);
+  histogram_tester.ExpectTotalCount(
+      base::StrCat({GetConfig().histogram_basename, ".NoError.Latency"}),
+      /*expected_count(grew by)*/ 1);
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples(
           base::StrCat({GetConfig().histogram_basename, ".Status"})),
-      base::BucketsInclude(base::Bucket(ProtoFetcherStatus::State::OK, 1)));
-
-  // Tests that no enum above ::OK was emitted:
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  base::StrCat({GetConfig().histogram_basename, ".Status"})),
-              base::BucketsInclude(base::Bucket(
-                  ProtoFetcherStatus::State::GOOGLE_SERVICE_AUTH_ERROR, 0)));
+      base::BucketsInclude(
+          base::Bucket(ProtoFetcherStatus::State::OK, /*count=*/1),
+          base::Bucket(ProtoFetcherStatus::State::GOOGLE_SERVICE_AUTH_ERROR,
+                       /*count=*/0)));
 }
 
 // When retrying is configured, the fetch process is re-launched until a
@@ -447,6 +460,42 @@ TEST_P(ProtoFetcherTest, RetryingFetcherTerminatesOnOkStatusAndRecordsMetrics) {
   EXPECT_THAT(histogram_tester.GetAllSamples(base::StrCat(
                   {GetConfig().histogram_basename, ".RetryCount"})),
               base::BucketsInclude(base::Bucket(3, 1)));
+
+  // The actual latency of mocked fetch is variable, so only expect that some
+  // value was recorded.
+  histogram_tester.ExpectTotalCount(
+      base::StrCat({GetConfig().histogram_basename, ".OverallLatency"}),
+      /*expected_count(grew by)*/ 1);
+
+  EXPECT_THAT(histogram_tester.GetAllSamples(base::StrCat(
+                  {GetConfig().histogram_basename, ".OverallStatus"})),
+              base::BucketsInclude(
+                  base::Bucket(ProtoFetcherStatus::State::OK, /*count=*/1)));
+
+  // Individual status and latencies were also recorded because the compound
+  // fetcher consists of an individual fetchers. Note that the count of
+  // individual metrics grew by the number related to number of responses used.
+
+  // The actual latency of mocked fetch is variable, so only expect that some
+  // value was recorded.
+  histogram_tester.ExpectTotalCount(
+      base::StrCat({GetConfig().histogram_basename, ".Latency"}),
+      /*expected_count(grew by)*/ 3);
+  histogram_tester.ExpectTotalCount(
+      base::StrCat({GetConfig().histogram_basename, ".NoError.Latency"}),
+      /*expected_count(grew by)*/ 1);
+  histogram_tester.ExpectTotalCount(
+      base::StrCat(
+          {GetConfig().histogram_basename, ".HttpStatusOrNetError.Latency"}),
+      /*expected_count(grew by)*/ 2);
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          base::StrCat({GetConfig().histogram_basename, ".Status"})),
+      base::BucketsInclude(
+          base::Bucket(ProtoFetcherStatus::State::OK, /*count=*/1),
+          base::Bucket(ProtoFetcherStatus::State::HTTP_STATUS_OR_NET_ERROR,
+                       /*count=*/2)));
 }
 
 // When retrying is configured, the fetch process is re-launched until a
@@ -474,7 +523,7 @@ TEST_P(ProtoFetcherTest,
 
   // Then persistent error.
   ASSERT_EQ(test_url_loader_factory_.NumPending(), 1);
-  SimulateResponseForPendingRequestWithPersistentError(0);
+  SimulateMalformedResponseForPendingRequest(0);
   FastForward();
 
   ASSERT_EQ(test_url_loader_factory_.NumPending(), 0);
@@ -486,6 +535,43 @@ TEST_P(ProtoFetcherTest,
   EXPECT_THAT(histogram_tester.GetAllSamples(base::StrCat(
                   {GetConfig().histogram_basename, ".RetryCount"})),
               base::BucketsInclude(base::Bucket(2, 1)));
+
+  // The actual latency of mocked fetch is variable, so only expect that some
+  // value was recorded.
+  histogram_tester.ExpectTotalCount(
+      base::StrCat({GetConfig().histogram_basename, ".OverallLatency"}),
+      /*expected_count(grew by)*/ 1);
+
+  EXPECT_THAT(histogram_tester.GetAllSamples(base::StrCat(
+                  {GetConfig().histogram_basename, ".OverallStatus"})),
+              base::BucketsInclude(base::Bucket(
+                  ProtoFetcherStatus::State::INVALID_RESPONSE, 1)));
+
+  // Individual status and latencies were also recorded because the compound
+  // fetcher consists of an individual fetchers. Note that the count of
+  // individual metrics grew by the number related to number of responses used.
+
+  // The actual latency of mocked fetch is variable, so only expect that some
+  // value was recorded.
+  histogram_tester.ExpectTotalCount(
+      base::StrCat({GetConfig().histogram_basename, ".Latency"}),
+      /*expected_count(grew by)*/ 2);
+  histogram_tester.ExpectTotalCount(
+      base::StrCat({GetConfig().histogram_basename, ".ParseError.Latency"}),
+      /*expected_count(grew by)*/ 1);
+  histogram_tester.ExpectTotalCount(
+      base::StrCat(
+          {GetConfig().histogram_basename, ".HttpStatusOrNetError.Latency"}),
+      /*expected_count(grew by)*/ 1);
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          base::StrCat({GetConfig().histogram_basename, ".Status"})),
+      base::BucketsInclude(
+          base::Bucket(ProtoFetcherStatus::State::INVALID_RESPONSE,
+                       /*count=*/1),
+          base::Bucket(ProtoFetcherStatus::State::HTTP_STATUS_OR_NET_ERROR,
+                       /*count=*/1)));
 }
 
 // When retrying is configured, the fetch process is re-launched until a
@@ -504,6 +590,8 @@ TEST_P(ProtoFetcherTest, RetryingFetcherContinuesOnTransientError) {
   std::unique_ptr<Receiver> receiver = MakeReceiver();
   std::unique_ptr<Fetcher> fetcher = MakeFetcher(*receiver.get());
 
+  base::HistogramTester histogram_tester;
+
   // Only transient errors.
   ASSERT_EQ(test_url_loader_factory_.NumPending(), 1);
   SimulateResponseForPendingRequestWithTransientError(0);
@@ -516,6 +604,31 @@ TEST_P(ProtoFetcherTest, RetryingFetcherContinuesOnTransientError) {
   // Request is still pending, because the system keeps retrying.
   EXPECT_EQ(test_url_loader_factory_.NumPending(), 1);
   EXPECT_FALSE(receiver->HasResultOrError());
+
+  // No final status was recorded as the fetcher is still pending.
+  histogram_tester.ExpectTotalCount(
+      base::StrCat({GetConfig().histogram_basename, ".OverallStatus"}),
+      /*expected_count(grew by)*/ 0);
+
+  // Individual status and latencies were also recorded because the compound
+  // fetcher consists of an individual fetchers. Note that the count of
+  // individual metrics grew by the number related to number of responses used.
+
+  // The actual latency of mocked fetch is variable, so only expect that some
+  // value was recorded.
+  histogram_tester.ExpectTotalCount(
+      base::StrCat({GetConfig().histogram_basename, ".Latency"}),
+      /*expected_count(grew by)*/ 2);
+  histogram_tester.ExpectTotalCount(
+      base::StrCat(
+          {GetConfig().histogram_basename, ".HttpStatusOrNetError.Latency"}),
+      /*expected_count(grew by)*/ 2);
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          base::StrCat({GetConfig().histogram_basename, ".Status"})),
+      base::BucketsInclude(base::Bucket(
+          ProtoFetcherStatus::State::HTTP_STATUS_OR_NET_ERROR, /*count=*/2)));
 }
 
 // Instead of /0, /1... print human-readable description of the test: status of

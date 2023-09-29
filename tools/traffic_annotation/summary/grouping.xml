@@ -28,7 +28,6 @@ after discussions on the right group.
       <annotation id="minidump_uploader_android"/>
       <annotation id="oma_download_handler_android"/>
       <annotation id="partner_bookmarks_reader_get_favicon"/>
-      <annotation id="permission_request_creator"/>
       <annotation id="rlz"/>
       <annotation id="webapk_create"/>
       <annotation id="webapk_create_for_service"/>
@@ -38,7 +37,6 @@ after discussions on the right group.
     <sender name="Feed Library">
       <annotation id="interest_feedv2_send"/>
       <annotation id="interest_feedv2_image_send"/>
-      <annotation id="interest_feedv2_resource_send"/>
     </sender>
     <sender name="Phone as a Security Key">
       <annotation id="cablev2_websocket_from_client"/>
@@ -99,11 +97,11 @@ after discussions on the right group.
       <annotation id="printing_oauth2_token_exchange_request"/>
       <annotation id="printing_server_printers_query"/>
     </sender>
-    <sender name="Device Activity">
-      <annotation id="device_activity_client_health_check"/>
-      <annotation id="device_activity_client_check_membership"/>
-      <annotation id="device_activity_client_check_in"/>
+    <sender name="Report using PSM">
+      <annotation id="report_check_membership"/>
+      <annotation id="report_check_in"/>
     </sender>
+    <sender name="Device Activity"/>
     <sender name="Enhanced Network TTS">
       <annotation id="enhanced_network_tts"/>
     </sender>
@@ -293,7 +291,6 @@ after discussions on the right group.
       <annotation id="iwa_update_discovery_web_bundle"/>
       <annotation id="almanac_launcher_app"/>
       <annotation id="ip_protection_service_get_proxy_config"/>
-      <annotation id="plus_address_creation"/>
     </sender>
   </group>
   <group name="Admin Features" hidden="true">
@@ -573,6 +570,14 @@ after discussions on the right group.
     </sender>
     <sender name="Whats New">
       <annotation id="whats_new_handler"/>
+    </sender>
+  </group>
+  <group name="PlusAddresses" hidden="true">
+    <sender name="PlusAddresses">
+      <annotation id="plus_address_creation"/>
+      <annotation id="get_all_plus_addresses"/>
+      <annotation id="plus_address_reservation"/>
+      <annotation id="plus_address_confirmation"/>
     </sender>
   </group>
 </groups>

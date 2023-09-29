@@ -10,17 +10,25 @@ import '/shared/settings/controls/settings_dropdown_menu.js';
 import '../os_settings_icons.html.js';
 
 import {DropdownMenuOptionList} from '/shared/settings/controls/settings_dropdown_menu.js';
+import {strictQuery} from 'chrome://resources/ash/common/typescript_utils/strict_query.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {cast} from '../assert_extras.js';
+import {ButtonPressObserverReceiver} from '../mojom-webui/input_device_settings_provider.mojom-webui.js';
 
 import {getTemplate} from './customize_button_row.html.js';
-import {ActionChoice, ButtonRemapping, KeyEvent} from './input_device_settings_types.js';
+import {setDataTransferOriginIndex} from './drag_and_drop_manager.js';
+import {FakeInputDeviceSettingsProvider} from './fake_input_device_settings_provider.js';
+import {getInputDeviceSettingsProvider} from './input_device_mojo_interface_provider.js';
+import {ActionChoice, Button, ButtonRemapping, InputDeviceSettingsProviderInterface, KeyEvent, RemappingAction} from './input_device_settings_types.js';
+import {buttonsAreEqual} from './input_device_settings_utils.js';
 
 const NO_REMAPPING_OPTION_LABEL = 'none';
 const KEY_COMBINATION_OPTION_LABEL = 'key combination';
+const OPEN_DIALOG_OPTION_LABEL = 'open key combination dialog';
+const ACCELERATOR_ACTION_PREFIX = 'acceleratorAction';
+const STATICS_SHORTCUT_ACTION_PREFIX = 'staticShortcutAction';
 
 /**
  * Bit mask of modifiers.
@@ -50,6 +58,12 @@ function concateKeyString(firstStr: string, secondStr: string): string {
   return firstStr.length === 0 ? secondStr : firstStr.concat(` + ${secondStr}`);
 }
 
+export interface CustomizeButtonRowElement {
+  $: {
+    remappingActionDropdown: HTMLSelectElement,
+  };
+}
+
 /**
  * Converts a keyEvent to a string representing all the modifiers and the vkey.
  */
@@ -66,7 +80,6 @@ function getKeyCombinationLabel(keyEvent: KeyEvent): string {
   return combinationLabel;
 }
 
-
 /**
  * @fileoverview
  * 'keyboard-remap-key-row' contains a key with icon label and dropdown menu to
@@ -74,6 +87,8 @@ function getKeyCombinationLabel(keyEvent: KeyEvent): string {
  */
 
 export type ShowRenamingDialogEvent = CustomEvent<{buttonIndex: number}>;
+export type ShowKeyCustomizationDialogEvent =
+    CustomEvent<{buttonIndex: number}>;
 
 const CustomizeButtonRowElementBase = I18nMixin(PolymerElement);
 
@@ -147,6 +162,12 @@ export class CustomizeButtonRowElement extends CustomizeButtonRowElementBase {
         readOnly: true,
       },
 
+      openDialogOptionValue_: {
+        type: String,
+        value: OPEN_DIALOG_OPTION_LABEL,
+        readOnly: true,
+      },
+
       /**
        * Name of the remapping.
        */
@@ -155,6 +176,26 @@ export class CustomizeButtonRowElement extends CustomizeButtonRowElementBase {
         value: '',
         computed:
             'getButtonRemappingName_(buttonRemappingList.*, remappingIndex)',
+      },
+
+      /**
+       * True if this element is being dragged by its handle.
+       * This property is used to apply custom styling to the element when it's
+       * being dragged.
+       */
+      isBeingDragged_: {
+        type: Boolean,
+        reflectToAttribute: true,
+      },
+
+      /**
+       * Reference to the HTML element that was last pressed
+       * on. This property is used to determine if a drag event was started
+       * from this element's drag handle or elsewhere on the element..
+       */
+      lastMouseDownTarget_: {
+        type: Object,
+        value: null,
       },
     };
   }
@@ -169,14 +210,60 @@ export class CustomizeButtonRowElement extends CustomizeButtonRowElementBase {
   buttonRemappingList: ButtonRemapping[];
   remappingIndex: number;
   actionList: ActionChoice[];
+  private buttonPressObserverReceiver: ButtonPressObserverReceiver;
   private buttonRemapping_: ButtonRemapping;
   private buttonMapTargets_: DropdownMenuOptionList;
   private fakePref_: chrome.settingsPrivate.PrefObject;
   private noRemappingOptionValue_: string;
   private keyCombinationOptionValue_: string;
+  private openDialogOptionValue_: string;
   private keyCombinationLabel_: string;
   private buttonRemappingName_: string;
   private isInitialized_: boolean;
+  private prevChoice_: string;
+  private inputDeviceSettingsProvider_: InputDeviceSettingsProviderInterface =
+      getInputDeviceSettingsProvider();
+  private isBeingDragged_: boolean;
+  private lastMouseDownTarget_: HTMLElement|null;
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    this.observeButtonPresses();
+  }
+
+  private observeButtonPresses(): void {
+    if (this.inputDeviceSettingsProvider_ instanceof
+        FakeInputDeviceSettingsProvider) {
+      this.inputDeviceSettingsProvider_.observeButtonPresses(this);
+      return;
+    }
+
+    this.buttonPressObserverReceiver = new ButtonPressObserverReceiver(this);
+
+    this.inputDeviceSettingsProvider_.observeButtonPresses(
+        this.buttonPressObserverReceiver.$.bindNewPipeAndPassRemote());
+  }
+
+  /**
+   * Initialize dropdown menu.
+   */
+  private initializeDropdown_(
+      originalAction: string, dropdown: HTMLSelectElement): void {
+    // Initialize fakePref with originalAction.
+    this.set('fakePref_.value', originalAction);
+
+    // Initialize dropdown menu selection to match the
+    // originalAction.
+    const option = this.buttonMapTargets_.find((dropdownItem) => {
+      return dropdownItem.value === originalAction;
+    });
+
+    microTask.run(() => {
+      dropdown.value =
+          option === undefined ? NO_REMAPPING_OPTION_LABEL : originalAction;
+      this.prevChoice_ = dropdown.value;
+    });
+  }
 
   /**
    * Populate dropdown menu choices.
@@ -189,10 +276,24 @@ export class CustomizeButtonRowElement extends CustomizeButtonRowElementBase {
     // TODO(yyhyyh@): Get buttonMapTargets_ from provider in customization
     // pages, and pass it as a value instead of creating fake data here.
     for (const actionChoice of this.actionList) {
-      this.buttonMapTargets_.push({
-        value: actionChoice.actionId.toString(),
-        name: actionChoice.name,
-      });
+      const acceleratorAction = actionChoice.actionType.acceleratorAction;
+      const staticShortcutAction = actionChoice.actionType.staticShortcutAction;
+      if (acceleratorAction !== undefined) {
+        // Prepend an acceleratorAction prefix to distinguish it from the
+        // StaticShortcutAction enum.
+        this.buttonMapTargets_.push({
+          value: ACCELERATOR_ACTION_PREFIX + acceleratorAction.toString(),
+          name: actionChoice.name,
+        });
+      } else if (staticShortcutAction !== undefined) {
+        // Prepend a staticShortcutAction prefix to distinguish it from the
+        // AcceleratorAction enum.
+        this.buttonMapTargets_.push({
+          value:
+              STATICS_SHORTCUT_ACTION_PREFIX + staticShortcutAction.toString(),
+          name: actionChoice.name,
+        });
+      }
     }
   }
 
@@ -200,33 +301,26 @@ export class CustomizeButtonRowElement extends CustomizeButtonRowElementBase {
    * Populate the button remapping action according to the existing settings.
    */
   private setUpRemappingActions_(): void {
-    const dropdown = cast(
-        this.shadowRoot!.querySelector('#remappingActionDropdown'),
-        HTMLSelectElement);
+    const dropdown = this.$.remappingActionDropdown;
 
     // Set the dropdown option label to default 'Key combination'.
     this.keyCombinationLabel_ = this.i18n('keyCombinationOptionLabel');
 
-    // For accelerator actions, the remappingAction.action value is number.
-    const action = this.buttonRemapping_.remappingAction?.action;
+    // For accelerator actions, the remappingAction.acceleratorAction value is
+    // number.
+    const acceleratorAction =
+        this.buttonRemapping_.remappingAction?.acceleratorAction;
     const keyEvent = this.buttonRemapping_.remappingAction?.keyEvent;
-    if (action !== undefined && !isNaN(action)) {
-      const originalAction =
-          this.buttonRemapping_.remappingAction!.action!.toString();
-
-
-      // Initialize fakePref with the tablet settings mapping.
-      this.set('fakePref_.value', originalAction);
-
-      // Initialize dropdown menu selection to match the tablet settings.
-      const option = this.buttonMapTargets_.find((dropdownItem) => {
-        return dropdownItem.value === originalAction;
-      });
-
-      microTask.run(() => {
-        dropdown.value =
-            option === undefined ? NO_REMAPPING_OPTION_LABEL : originalAction;
-      });
+    // For static shortcut actions, the remappingAction.staticShortcutAction
+    // value is number.
+    const staticShortcutAction =
+        this.buttonRemapping_.remappingAction?.staticShortcutAction;
+    if (acceleratorAction !== undefined && !isNaN(acceleratorAction)) {
+      // Prepend an acceleratorAction prefix to distinguish it from the
+      // staticShortcutAction enum.
+      const originalAcceleratorAction =
+          ACCELERATOR_ACTION_PREFIX + acceleratorAction.toString();
+      this.initializeDropdown_(originalAcceleratorAction, dropdown);
     } else if (keyEvent) {
       this.set('fakePref_.value', KEY_COMBINATION_OPTION_LABEL);
       this.keyCombinationLabel_ = getKeyCombinationLabel(keyEvent) ??
@@ -234,11 +328,20 @@ export class CustomizeButtonRowElement extends CustomizeButtonRowElementBase {
 
       microTask.run(() => {
         dropdown.value = KEY_COMBINATION_OPTION_LABEL;
+        this.prevChoice_ = dropdown.value;
       });
+    } else if (
+        staticShortcutAction !== undefined && !isNaN(staticShortcutAction)) {
+      // Prepend a staticShortcutAction prefix to distinguish it from
+      // the acceleratorAction enum.
+      const originalStaticShortcutAction =
+          STATICS_SHORTCUT_ACTION_PREFIX + staticShortcutAction.toString();
+      this.initializeDropdown_(originalStaticShortcutAction, dropdown);
     } else {
       this.set('fakePref_.value', NO_REMAPPING_OPTION_LABEL);
       microTask.run(() => {
         dropdown.value = NO_REMAPPING_OPTION_LABEL;
+        this.prevChoice_ = dropdown.value;
       });
     }
   }
@@ -275,11 +378,26 @@ export class CustomizeButtonRowElement extends CustomizeButtonRowElementBase {
       return updatedRemapping;
     }
     // Otherwise the button is remapped to a remappingAction.
+    let remappingAction: RemappingAction|undefined = undefined;
+    if (this.fakePref_.value.startsWith(ACCELERATOR_ACTION_PREFIX)) {
+      // Remove the acceleratorAction prefix to get the real enum value.
+      this.fakePref_.value =
+          this.fakePref_.value.slice(ACCELERATOR_ACTION_PREFIX.length);
+      remappingAction = {
+        acceleratorAction: Number(this.fakePref_.value),
+      };
+    }
+    if (this.fakePref_.value.startsWith(STATICS_SHORTCUT_ACTION_PREFIX)) {
+      // Remove the staticShortcutAction prefix to get the real enum value.
+      this.fakePref_.value =
+          this.fakePref_.value.slice(STATICS_SHORTCUT_ACTION_PREFIX.length);
+      remappingAction = {
+        staticShortcutAction: Number(this.fakePref_.value),
+      };
+    }
     const updatedRemapping: ButtonRemapping = {
       ...this.buttonRemapping_,
-      remappingAction: {
-        action: Number(this.fakePref_.value),
-      },
+      remappingAction,
     };
     return updatedRemapping;
   }
@@ -302,13 +420,19 @@ export class CustomizeButtonRowElement extends CustomizeButtonRowElementBase {
   }
 
   private onSelectChange_(): void {
-    const select = cast(
-        this.shadowRoot!.querySelector('#remappingActionDropdown'),
-        HTMLSelectElement);
-    if (select.value === KEY_COMBINATION_OPTION_LABEL) {
-      // TODO(yyhyyh@): Pops up key combination dialog.
+    const select = this.$.remappingActionDropdown;
+    if (select.value === OPEN_DIALOG_OPTION_LABEL) {
+      this.dispatchEvent(new CustomEvent('show-key-combination-dialog', {
+        bubbles: true,
+        composed: true,
+        detail: {buttonIndex: this.remappingIndex},
+      }));
+      microTask.run(() => {
+        select.value = this.prevChoice_;
+      });
     } else if (select!.value !== this.fakePref_.value) {
       this.set('fakePref_.value', select!.value);
+      this.prevChoice_ = select.value;
     }
   }
 
@@ -332,6 +456,80 @@ export class CustomizeButtonRowElement extends CustomizeButtonRowElementBase {
       return this.buttonRemappingList[this.remappingIndex].name;
     }
     return '';
+  }
+
+  onButtonPressed(button: Button): void {
+    if (buttonsAreEqual(button, this.buttonRemapping_.button)) {
+      this.$.remappingActionDropdown!.focus();
+    }
+  }
+
+  private onContainerMouseDown_(event: Event): void {
+    this.lastMouseDownTarget_ = event.target as HTMLElement;
+  }
+
+  private onDragStart_(event: DragEvent): void {
+    const dragHandle =
+        strictQuery('.move-button', this.shadowRoot, HTMLElement);
+    // Check if the drag event started from the drag handle.
+    if (!dragHandle.contains(this.lastMouseDownTarget_)) {
+      // Drag didn't start from the handle, so don't allow the drag.
+      event.preventDefault();
+      return;
+    }
+
+    this.isBeingDragged_ = true;
+
+    // Create the grey rectangle used as the drag image.
+    // It's necessary to create a canvas element this way, so that we have
+    // full control over the rendering of the drag image.
+    const canvas = document.createElement('canvas');
+
+    document.body.append(canvas);
+    // We won't need the canvas after this function finishes, so
+    // remove it from the DOM.
+    setTimeout(() => canvas.remove(), 100);
+
+    canvas.width = this.offsetWidth;
+    canvas.height = this.offsetHeight;
+
+    // Position the canvas offscreen.
+    canvas.style.position = 'absolute';
+    canvas.style.top = '-200px';
+
+    // Using the canvas context, draw the grey rectangle that will be displayed
+    // while the user is dragging.
+    const context = canvas.getContext('2d');
+    if (context) {
+      // Using getComputedStyle and getPropertyValue is the only
+      // way to use CSS variables with canvas painting.
+      context.fillStyle = getComputedStyle(canvas).getPropertyValue(
+          '--cros-sys-ripple_neutral_on_subtle');
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.strokeStyle = getComputedStyle(canvas).getPropertyValue(
+          '--cros-sys-highlight_shape');
+      context.lineWidth = 1;
+      context.strokeRect(0, 0, canvas.width, canvas.height);
+    }
+
+    if (event.dataTransfer) {
+      event.dataTransfer.setDragImage(canvas, event.offsetX, event.offsetY);
+      // dropEffect and effectAllowed affect the cursor that's
+      // displayed during the drag.
+      event.dataTransfer.dropEffect = 'move';
+      event.dataTransfer.effectAllowed = 'move';
+      // Set data on the event that allows the drop receiver to determine
+      // the index of this row.
+      setDataTransferOriginIndex(event, this.remappingIndex);
+    }
+  }
+
+  private onDragEnd_(): void {
+    this.isBeingDragged_ = false;
+  }
+
+  private isDropdownDisabled_(): boolean {
+    return this.isBeingDragged_;
   }
 }
 

@@ -45,20 +45,17 @@
       ],
       "mirroring_builder_group_and_names": [
         {
-          "builder": "linux_chromium_archive_rel_ng",
+          "builder": "linux-clobber-rel",
           "group": "tryserver.chromium.linux"
         },
         {
-          "builder": "linux_chromium_clobber_rel_ng",
+          "builder": "linux_chromium_archive_rel_ng",
           "group": "tryserver.chromium.linux"
         }
       ]
     }
   },
   "$build/reclient": {
-    "bootstrap_env": {
-      "RBE_clang_depscan_archive": "true"
-    },
     "instance": "rbe-chromium-trusted",
     "jobs": 250,
     "metrics_project": "chromium-reclient-metrics",

@@ -198,14 +198,16 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
   // callbacks if |track| was not present in the adapter.
   VideoTrackCallbacks RemoveAndGetCallbacks(const MediaStreamVideoTrack* track);
 
+  // The source has provided us with a frame.
   void DeliverFrame(
       scoped_refptr<media::VideoFrame> frame,
       std::vector<scoped_refptr<media::VideoFrame>> scaled_video_frames,
       const base::TimeTicks& estimated_capture_time,
       bool is_device_rotated);
-
-  // Deliver an indication that a frame was dropped.
-  void DoNotifyFrameDropped(media::VideoCaptureFrameDropReason reason);
+  // This method is called when a frame is dropped, whether dropped by the
+  // source (via VideoTrackAdapter::OnFrameDroppedOnVideoTaskRunner) or
+  // internally (in DeliverFrame).
+  void OnFrameDropped(media::VideoCaptureFrameDropReason reason);
 
   void DeliverEncodedVideoFrame(scoped_refptr<EncodedVideoFrame> frame,
                                 base::TimeTicks estimated_capture_time);
@@ -367,7 +369,7 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
 
   if (!video_frame) {
     DLOG(ERROR) << "Incoming frame is not valid.";
-    DoNotifyFrameDropped(
+    OnFrameDropped(
         media::VideoCaptureFrameDropReason::kResolutionAdapterFrameIsNotValid);
     return;
   }
@@ -382,7 +384,7 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
 
   auto frame_drop_reason = media::VideoCaptureFrameDropReason::kNone;
   if (MaybeDropFrame(*video_frame, frame_rate, &frame_drop_reason)) {
-    DoNotifyFrameDropped(frame_drop_reason);
+    OnFrameDropped(frame_drop_reason);
     return;
   }
 
@@ -443,9 +445,8 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
     delivered_video_frame = media::VideoFrame::WrapVideoFrame(
         video_frame, video_frame->format(), region_in_frame, desired_size);
     if (!delivered_video_frame) {
-      DoNotifyFrameDropped(
-          media::VideoCaptureFrameDropReason::
-              kResolutionAdapterWrappingFrameForCroppingFailed);
+      OnFrameDropped(media::VideoCaptureFrameDropReason::
+                         kResolutionAdapterWrappingFrameForCroppingFailed);
       return;
     }
 
@@ -493,7 +494,7 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DoDeliverFrame(
     const base::TimeTicks& estimated_capture_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(video_sequence_checker_);
   if (callbacks_.empty()) {
-    DoNotifyFrameDropped(
+    OnFrameDropped(
         media::VideoCaptureFrameDropReason::kResolutionAdapterHasNoCallbacks);
   }
   for (const auto& callback : callbacks_) {
@@ -503,16 +504,9 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DoDeliverFrame(
   }
 }
 
-void VideoTrackAdapter::VideoFrameResolutionAdapter::DoNotifyFrameDropped(
+void VideoTrackAdapter::VideoFrameResolutionAdapter::OnFrameDropped(
     media::VideoCaptureFrameDropReason reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(video_sequence_checker_);
-  // Notify the MediaStreamVideoSource, mostly for UMA purposes. In the case
-  // that a source has multiple track adapters it's possible that the same frame
-  // is reported as dropped multiple times (at most once per adapter).
-  PostCrossThreadTask(
-      *renderer_task_runner_, FROM_HERE,
-      CrossThreadBindOnce(&MediaStreamVideoSource::OnFrameDropped,
-                          media_stream_video_source_, reason));
   // Notify callbacks, such as
   // MediaStreamVideoTrack::FrameDeliverer::NotifyFrameDroppedOnVideoTaskRunner.
   for (const auto& callback : callbacks_) {
@@ -889,14 +883,6 @@ void VideoTrackAdapter::DeliverFrameOnVideoTaskRunner(
       video_frame->natural_size().height() == source_frame_size_->width()) {
     is_device_rotated = true;
   }
-  if (adapters_.empty()) {
-    PostCrossThreadTask(
-        *renderer_task_runner_, FROM_HERE,
-        CrossThreadBindOnce(&MediaStreamVideoSource::OnFrameDropped,
-                            media_stream_video_source_,
-                            media::VideoCaptureFrameDropReason::
-                                kVideoTrackAdapterHasNoResolutionAdapters));
-  }
   for (const auto& adapter : adapters_) {
     adapter->DeliverFrame(video_frame, scaled_video_frames,
                           estimated_capture_time, is_device_rotated);
@@ -911,6 +897,15 @@ void VideoTrackAdapter::DeliverEncodedVideoFrameOnVideoTaskRunner(
                "VideoTrackAdapter::DeliverEncodedVideoFrameOnVideoTaskRunner");
   for (const auto& adapter : adapters_)
     adapter->DeliverEncodedVideoFrame(frame, estimated_capture_time);
+}
+
+void VideoTrackAdapter::OnFrameDroppedOnVideoTaskRunner(
+    media::VideoCaptureFrameDropReason reason) {
+  DCHECK(video_task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT0("media", "VideoTrackAdapter::OnFrameDroppedOnVideoTaskRunner");
+  for (const auto& adapter : adapters_) {
+    adapter->OnFrameDropped(reason);
+  }
 }
 
 void VideoTrackAdapter::NewCropVersionOnVideoTaskRunner(uint32_t crop_version) {

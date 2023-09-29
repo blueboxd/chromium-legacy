@@ -16,7 +16,6 @@ import org.chromium.base.ResettersForTesting;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -81,14 +80,14 @@ public class TabAttributeCache {
             @Override
             public void onRootIdChanged(Tab tab, int newRootId) {
                 if (tab.isIncognito()) return;
-                assert newRootId == CriticalPersistedTabData.from(tab).getRootId();
+                assert newRootId == tab.getRootId();
                 cacheRootId(tab.getId(), newRootId);
             }
 
             @Override
             public void onTimestampChanged(Tab tab, long timestampMillis) {
                 if (tab.isIncognito()) return;
-                assert timestampMillis == CriticalPersistedTabData.from(tab).getTimestampMillis();
+                assert timestampMillis == tab.getTimestampMillis();
                 cacheTimestampMillis(tab.getId(), timestampMillis);
             }
 
@@ -133,9 +132,8 @@ public class TabAttributeCache {
                     int id = tab.getId();
                     editor.putString(getUrlKey(id), tab.getUrl().serialize());
                     editor.putString(getTitleKey(id), tab.getTitle());
-                    CriticalPersistedTabData tabData = CriticalPersistedTabData.from(tab);
-                    editor.putInt(getRootIdKey(id), tabData.getRootId());
-                    editor.putLong(getTimestampMillisKey(id), tabData.getTimestampMillis());
+                    editor.putInt(getRootIdKey(id), tab.getRootId());
+                    editor.putLong(getTimestampMillisKey(id), tab.getTimestampMillis());
                 }
                 editor.apply();
                 Tab currentTab = mTabModelSelector.getCurrentTab();
@@ -243,8 +241,7 @@ public class TabAttributeCache {
      * @return The timestamp
      */
     public static long getTimestampMillis(int id) {
-        return getSharedPreferences().getLong(
-                getTimestampMillisKey(id), CriticalPersistedTabData.INVALID_TIMESTAMP);
+        return getSharedPreferences().getLong(getTimestampMillisKey(id), Tab.INVALID_TIMESTAMP);
     }
 
     private static void cacheTimestampMillis(int id, long timestampMillis) {

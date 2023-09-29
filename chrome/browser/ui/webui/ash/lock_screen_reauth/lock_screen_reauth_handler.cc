@@ -8,6 +8,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "base/check_op.h"
+#include "base/functional/bind.h"
 #include "base/notreached.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/login/saml/in_session_password_sync_manager.h"
@@ -20,10 +21,12 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/webui/ash/lock_screen_reauth/lock_screen_reauth_dialogs.h"
 #include "chrome/browser/ui/webui/ash/login/check_passwords_against_cryptohome_helper.h"
+#include "chrome/browser/ui/webui/ash/login/online_login_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chromeos/ash/components/login/auth/challenge_response/cert_utils.h"
+#include "chromeos/ash/components/login/auth/public/challenge_response_key.h"
 #include "chromeos/ash/components/login/auth/public/cryptohome_key_constants.h"
 #include "chromeos/version/version_loader.h"
 #include "components/account_id/account_id.h"
@@ -273,44 +276,63 @@ void LockScreenReauthHandler::HandleCompleteAuthentication(
   DCHECK(!email.empty());
   DCHECK(!gaia_id.empty());
 
-  OnlineLoginHelper::CompleteLoginCallback complete_login_callback =
-      base::BindOnce(&LockScreenReauthHandler::CheckCredentials,
-                     weak_factory_.GetWeakPtr());
-
-  if (password.empty()) {
-    CHECK_NE(scraped_saml_passwords.size(), 1u);
-    complete_login_callback = base::BindOnce(
-        &LockScreenReauthHandler::SamlConfirmPassword,
-        weak_factory_.GetWeakPtr(), std::move(scraped_saml_passwords));
+  // Retrieve ChallengeResponseKey from client certificates.
+  absl::optional<ChallengeResponseKey> challenge_response_key;
+  if (using_saml && extension_provided_client_cert_usage_observer_ &&
+      extension_provided_client_cert_usage_observer_->ClientCertsWereUsed()) {
+    auto challenge_response_key_or_error = login::ExtractClientCertificates(
+        *extension_provided_client_cert_usage_observer_);
+    if (!challenge_response_key_or_error.has_value()) {
+      NOTREACHED();
+      return;
+    }
+    challenge_response_key = challenge_response_key_or_error.value();
   }
 
+  // Build UserContext
+  user_context_ = std::make_unique<UserContext>();
+  login::BuildUserContextForGaiaSignIn(
+      login::GetUsertypeFromServicesString(services),
+      AccountId::FromUserEmailGaiaId(gaia::CanonicalizeEmail(email), gaia_id),
+      using_saml, false /* using_saml_api */, password,
+      SamlPasswordAttributes::FromJs(password_attributes),
+      /*sync_trusted_vault_keys=*/absl::nullopt, challenge_response_key,
+      user_context_.get());
+
+  // Create GaiaCookiesRetriever
   login::SigninPartitionManager* signin_partition_manager =
       login::SigninPartitionManager::Factory::GetForBrowserContext(
           Profile::FromWebUI(web_ui()));
-
-  online_login_helper_ = std::make_unique<OnlineLoginHelper>(
+  gaia_cookie_retriever_ = std::make_unique<GaiaCookieRetriever>(
       signin_partition_name_, signin_partition_manager,
       base::BindOnce(&LockScreenReauthHandler::OnCookieWaitTimeout,
-                     weak_factory_.GetWeakPtr()),
-      std::move(complete_login_callback));
+                     weak_factory_.GetWeakPtr()));
 
-  user_context_ = std::make_unique<UserContext>();
-  if (!login::BuildUserContextForGaiaSignIn(
-          login::GetUsertypeFromServicesString(services),
-          AccountId::FromUserEmailGaiaId(gaia::CanonicalizeEmail(email),
-                                         gaia_id),
-          using_saml, false /* using_saml_api */, password,
-          SamlPasswordAttributes::FromJs(password_attributes),
-          /*sync_trusted_vault_keys=*/absl::nullopt,
-          *extension_provided_client_cert_usage_observer_, user_context_.get(),
-          nullptr)) {
-    user_context_.reset();
-    NOTREACHED();
-    return;
+  // Create the callback that will be invoked once cookies are received.
+  const bool needs_saml_confirm_password = password.empty();
+  GaiaCookieRetriever::OnCookieRetrievedCallback finish_auth_callback =
+      base::BindOnce(&LockScreenReauthHandler::FinishAuthentication,
+                     weak_factory_.GetWeakPtr(), needs_saml_confirm_password,
+                     std::move(scraped_saml_passwords),
+                     std::move(user_context_));
+
+  // Request cookies and proceed with authentication.
+  gaia_cookie_retriever_->RetrieveCookies(std::move(finish_auth_callback));
+}
+
+void LockScreenReauthHandler::FinishAuthentication(
+    bool needs_saml_confirm_password,
+    ::login::StringList scraped_saml_passwords,
+    std::unique_ptr<UserContext> user_context,
+    login::GaiaCookiesData gaia_cookies) {
+  gaia_cookies.TransferCookiesToUserContext(*user_context);
+
+  if (needs_saml_confirm_password) {
+    CHECK_NE(scraped_saml_passwords.size(), 1u);
+    SamlConfirmPassword(scraped_saml_passwords, std::move(user_context));
+  } else {
+    CheckCredentials(std::move(user_context));
   }
-
-  online_login_helper_->SetUserContext(std::move(user_context_));
-  online_login_helper_->RequestCookiesAndCompleteAuthentication();
 }
 
 void LockScreenReauthHandler::OnCookieWaitTimeout() {

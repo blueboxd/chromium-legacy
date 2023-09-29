@@ -46,6 +46,7 @@
 #include "base/rand_util.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
+#include "base/types/cxx23_to_underlying.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "components/vector_icons/vector_icons.h"
@@ -196,6 +197,40 @@ std::u16string GetCategoryName(SearchResult* search_result) {
   }
 }
 
+std::u16string GetCategoryMenuItemTooltip(
+    AppListSearchControlCategory category) {
+  int tooltip_id = -1;
+  switch (category) {
+    case AppListSearchControlCategory::kApps:
+      tooltip_id = IDS_ASH_SEARCH_CATEGORY_FILTER_MENU_APPS_TOOLTIP;
+      break;
+    case AppListSearchControlCategory::kAppShortcuts:
+      tooltip_id = IDS_ASH_SEARCH_CATEGORY_FILTER_MENU_APP_SHORTCUTS_TOOLTIP;
+      break;
+    case AppListSearchControlCategory::kFiles:
+      tooltip_id = IDS_ASH_SEARCH_CATEGORY_FILTER_MENU_FILES_TOOLTIP;
+      break;
+    case AppListSearchControlCategory::kGames:
+      tooltip_id = IDS_ASH_SEARCH_CATEGORY_FILTER_MENU_GAMES_TOOLTIP;
+      break;
+    case AppListSearchControlCategory::kHelp:
+      tooltip_id = IDS_ASH_SEARCH_CATEGORY_FILTER_MENU_HELP_TOOLTIP;
+      break;
+    case AppListSearchControlCategory::kImages:
+      tooltip_id = IDS_ASH_SEARCH_CATEGORY_FILTER_MENU_IMAGES_TOOLTIP;
+      break;
+    case AppListSearchControlCategory::kPlayStore:
+      tooltip_id = IDS_ASH_SEARCH_CATEGORY_FILTER_MENU_PLAYSTORE_TOOLTIP;
+      break;
+    case AppListSearchControlCategory::kWeb:
+      tooltip_id = IDS_ASH_SEARCH_CATEGORY_FILTER_MENU_WEBSITES_TOOLTIP;
+      break;
+    case AppListSearchControlCategory::kCannotToggle:
+      NOTREACHED_NORETURN();
+  }
+  return l10n_util::GetStringUTF16(tooltip_id);
+}
+
 // Returns the check box icon that is shown on the category filter menu item.
 ui::ImageModel GetCheckboxImage(bool checked) {
   return ui::ImageModel::FromVectorIcon(
@@ -233,7 +268,8 @@ class FilterMenuAdapter : public views::MenuModelAdapter {
                     base::RepeatingClosure on_menu_closed,
                     AppListViewDelegate* view_delegate)
       : views::MenuModelAdapter(menu_model, std::move(on_menu_closed)),
-        view_delegate_(view_delegate) {}
+        view_delegate_(view_delegate),
+        model_(menu_model) {}
 
   FilterMenuAdapter(const FilterMenuAdapter&) = delete;
   FilterMenuAdapter& operator=(const FilterMenuAdapter&) = delete;
@@ -245,6 +281,14 @@ class FilterMenuAdapter : public views::MenuModelAdapter {
                                               const ui::Event& e) override {
     // Keep the menu open if the user toggles the checkboxes in the menu.
     return true;
+  }
+  std::u16string GetTooltipText(int id,
+                                const gfx::Point& screen_loc) const override {
+    if (id == ui::MenuModel::kTitleId) {
+      return std::u16string();
+    }
+    return GetCategoryMenuItemTooltip(
+        static_cast<AppListSearchControlCategory>(id));
   }
   void ExecuteCommand(int id) override { ExecuteCommand(id, 0); }
   void ExecuteCommand(int id, int mouse_event_flags) override {
@@ -295,7 +339,10 @@ class FilterMenuAdapter : public views::MenuModelAdapter {
   // `category` button. This should only be called when the menu is opened.
   views::MenuItemView* GetFilterMenuItemByCategory(
       AppListSearchControlCategory category) {
-    return GetFilterMenuItemByIdx(GetMenuIndexByCategory(category));
+    absl::optional<size_t> index =
+        model_->GetIndexOfCommandId(base::to_underlying(category));
+    CHECK(index.has_value());
+    return GetFilterMenuItemByIdx(index.value());
   }
 
  private:
@@ -306,18 +353,11 @@ class FilterMenuAdapter : public views::MenuModelAdapter {
     return filter_menu_root_->GetSubmenu()->GetMenuItemAt(index);
   }
 
-  // Returns the index of the MenuItemView that can toggle `category` in the
-  // category filter menu.
-  int GetMenuIndexByCategory(AppListSearchControlCategory category) const {
-    // The index aligns to the corresponding command id value.
-    // TODO(crbug.com/1352636): Update this when not all categories are listed.
-    return static_cast<int>(category);
-  }
-
   const raw_ptr<AppListViewDelegate> view_delegate_;
 
   std::unique_ptr<views::MenuRunner> filter_menu_runner_;
   raw_ptr<views::MenuItemView> filter_menu_root_;
+  raw_ptr<ui::SimpleMenuModel> model_;
 };
 
 class SearchBoxView::FocusRingLayer : public ui::LayerOwner, ui::LayerDelegate {
@@ -397,12 +437,12 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
                                          cros_tokens::kCrosSysOnSurfaceVariant);
   }
 
-  if (features::IsProductivityLauncherImageSearchEnabled()) {
+  if (features::IsLauncherSearchControlEnabled()) {
     views::ImageButton* filter_button = CreateFilterButton(base::BindRepeating(
         &SearchBoxView::ShowFilterMenu, weak_ptr_factory_.GetWeakPtr()));
     filter_button->SetFlipCanvasOnPaintForRTLUI(false);
-    // TODO(crbug.com/1352636): Replace this with the l10n string.
-    std::u16string filter_button_label(u"Toggle search result categories");
+    std::u16string filter_button_label(
+        l10n_util::GetStringUTF16(IDS_ASH_SEARCH_BOX_FILTER_BUTTON_TOOLTIP));
     filter_button->SetAccessibleName(filter_button_label);
     filter_button->SetTooltipText(filter_button_label);
   }
@@ -717,22 +757,10 @@ void SearchBoxView::OpenSearchBoxIphUrl() {
   view_delegate_->OpenSearchBoxIphUrl();
 }
 
-ui::SimpleMenuModel* SearchBoxView::BuildFilterMenuModel() {
-  filter_menu_model_ = std::make_unique<ui::SimpleMenuModel>(nullptr);
-  // TODO(crbug.com/1352636): Use l10n string when the text is finalized.
-  filter_menu_model_->AddTitle(u"Search categories");
-  for (auto category : kCategories) {
-    filter_menu_model_->AddItemWithIcon(
-        static_cast<int>(category.first),
-        l10n_util::GetStringUTF16(category.second),
-        GetCheckboxImage(view_delegate_->IsCategoryEnabled(category.first)));
-  }
-  return filter_menu_model_.get();
-}
-
 void SearchBoxView::ShowFilterMenu() {
+  ui::SimpleMenuModel* model = BuildFilterMenuModel();
   filter_menu_adapter_ = std::make_unique<FilterMenuAdapter>(
-      BuildFilterMenuModel(),
+      model,
       base::BindRepeating(&SearchBoxView::OnFilterMenuClosed,
                           weak_ptr_factory_.GetWeakPtr()),
       view_delegate_);
@@ -798,77 +826,44 @@ void SearchBoxView::OnKeyEvent(ui::KeyEvent* evt) {
     return;
   }
 
-  // A function that will move the focus back to search box and find a search
-  // result to select.
-  auto move_focus_to_result_selection = [&]() {
-    search_box()->RequestFocus();
-    if (delegate_->CanSelectSearchResults() &&
-        result_selection_controller_->MoveSelection(*evt) ==
-            ResultSelectionController::MoveResult::kResultChanged) {
-      UpdateSearchBoxForSelectedResult(
-          result_selection_controller_->selected_result()->result());
-    }
-  };
+  const bool focus_on_close_button = close_button()->HasFocus();
+  const bool focus_on_filter_button =
+      filter_button() && filter_button()->HasFocus();
 
-  // Handle keyboard navigation keys when the close button or the filter button
-  // is focused. If the focus on the button is going to move to the search box
-  // text field, ensure result selection gets updated according to the
-  // navigation key. The result selection is the reason navigation is handled
-  // here instead of the focus manager - intended result selection depends on
-  // the key event that triggered the focus change.
-  if (close_button()->HasFocus()) {
-    switch (evt->key_code()) {
-      case ui::VKEY_TAB:
-        if (evt->IsShiftDown() && filter_button()) {
-          filter_button()->RequestFocus();
-        } else {
-          move_focus_to_result_selection();
-        }
-        break;
-      case ui::VKEY_UP:
-      case ui::VKEY_LEFT:
-        if (filter_button()) {
-          filter_button()->RequestFocus();
-        } else {
-          move_focus_to_result_selection();
-        }
-        break;
-      case ui::VKEY_DOWN:
-      case ui::VKEY_RIGHT:
-        move_focus_to_result_selection();
-        break;
-      default:
-        NOTREACHED_NORETURN();
-    }
+  // Redirect the event handling if the focus is not on the buttons.
+  if (!focus_on_close_button && !focus_on_filter_button) {
+    delegate_->OnSearchBoxKeyEvent(evt);
+    return;
+  }
+
+  View* button_focused =
+      focus_on_close_button ? close_button() : filter_button();
+  bool moving_forward =
+      (evt->key_code() == ui::VKEY_TAB && !evt->IsShiftDown()) ||
+      evt->key_code() == ui::VKEY_DOWN || evt->key_code() == ui::VKEY_RIGHT;
+
+  View* next_view = GetFocusManager()->GetNextFocusableView(
+      button_focused, GetWidget(), /*reverse=*/!moving_forward,
+      /*dont_loop=*/true);
+
+  // Let FocusManager handles the focus change to its next focusable view if
+  // there is one, and let search result selection handle the focus if the
+  // next focusable view is the search box textfield.
+  if (next_view && next_view != search_box()) {
+    next_view->RequestFocus();
     evt->SetHandled();
     return;
   }
 
-  if (filter_button() && filter_button()->HasFocus()) {
-    switch (evt->key_code()) {
-      case ui::VKEY_TAB:
-        if (evt->IsShiftDown()) {
-          move_focus_to_result_selection();
-        } else {
-          close_button()->RequestFocus();
-        }
-        break;
-      case ui::VKEY_DOWN:
-      case ui::VKEY_RIGHT:
-        close_button()->RequestFocus();
-        break;
-      case ui::VKEY_UP:
-      case ui::VKEY_LEFT:
-        move_focus_to_result_selection();
-        break;
-      default:
-        NOTREACHED_NORETURN();
-    }
-    evt->SetHandled();
-    return;
+  // Check if the `delegate_` can handle the event if the focus is moving to
+  // result selection.
+  if (focus_on_filter_button ||
+      !delegate_->HandleFocusMoveAboveSearchResults(*evt)) {
+    EnterSearchResultSelection(*evt);
   }
 
-  delegate_->OnSearchBoxKeyEvent(evt);
+  // All events focusing on the buttons should be handled now.
+  evt->SetHandled();
 }
 
 void SearchBoxView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -1302,6 +1297,21 @@ void SearchBoxView::UpdateQuery(const std::u16string& new_query) {
   ContentsChanged(search_box(), new_query);
 }
 
+void SearchBoxView::EnterSearchResultSelection(const ui::KeyEvent& event) {
+  // If the focus on the button is going to move to the search box text field,
+  // ensure result selection gets updated according to the navigation key. The
+  // result selection is the reason navigation is handled by the search box
+  // instead of the focus manager - intended result selection depends on the key
+  // event that triggered the focus change.
+  search_box()->RequestFocus();
+  if (delegate_->CanSelectSearchResults() &&
+      result_selection_controller_->MoveSelection(event) ==
+          ResultSelectionController::MoveResult::kResultChanged) {
+    UpdateSearchBoxForSelectedResult(
+        result_selection_controller_->selected_result()->result());
+  }
+}
+
 void SearchBoxView::ClearSearchAndDeactivateSearchBox() {
   if (!is_search_box_active())
     return;
@@ -1451,8 +1461,13 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
         ClearAutocompleteText();
       result_selection_controller_->ClearSelection();
 
-      DCHECK(close_button()->GetVisible());
-      close_button()->RequestFocus();
+      // Check if the `delegate_` can handle the event if the focus is moving
+      // out from the result selection.
+      if (!delegate_->HandleFocusMoveAboveSearchResults(key_event)) {
+        DCHECK(close_button()->GetVisible());
+        close_button()->RequestFocus();
+      }
+
       SetA11yActiveDescendant(absl::nullopt);
       break;
     case ResultSelectionController::MoveResult::kSelectionCycleAfterLastResult:
@@ -1513,30 +1528,19 @@ void SearchBoxView::UpdateSearchBoxForSelectedResult(
     return;
   }
 
-  if (features::IsAutocompleteExtendedSuggestionsEnabled()) {
-    ClearAutocompleteText();
+  ClearAutocompleteText();
 
-    const std::u16string& details = selected_result->details();
-    const std::u16string& search_text = selected_result->title();
+  const std::u16string& details = selected_result->details();
+  const std::u16string& search_text = selected_result->title();
 
-    // Don't set autocomplete text if it's the same as user typed text.
-    if (current_query_ == details || current_query_ == search_text)
-      return;
+  // Don't set autocomplete text if it's the same as user typed text.
+  if (current_query_ == details || current_query_ == search_text) {
+    return;
+  }
 
-    if (!ProcessPrefixMatchAutocomplete(selected_result, current_query_)) {
-      MaybeSetAutocompleteGhostText(selected_result->title(),
-                                    GetCategoryName(selected_result));
-    }
-  } else {
-    if (selected_result->result_type() == AppListSearchResultType::kOmnibox &&
-        !selected_result->is_omnibox_search() &&
-        !selected_result->details().empty()) {
-      // For url (non-search) results, use details to ensure that the url is
-      // displayed.
-      search_box()->SetText(selected_result->details());
-    } else {
-      search_box()->SetText(selected_result->title());
-    }
+  if (!ProcessPrefixMatchAutocomplete(selected_result, current_query_)) {
+    MaybeSetAutocompleteGhostText(selected_result->title(),
+                                  GetCategoryName(selected_result));
   }
 }
 
@@ -1621,6 +1625,32 @@ void SearchBoxView::ResetHighlightRange() {
   const uint32_t text_length = search_box()->GetText().length();
   highlight_range_.set_start(text_length);
   highlight_range_.set_end(text_length);
+}
+
+ui::SimpleMenuModel* SearchBoxView::BuildFilterMenuModel() {
+  filter_menu_model_ = std::make_unique<ui::SimpleMenuModel>(nullptr);
+  filter_menu_model_->AddTitle(
+      l10n_util::GetStringUTF16(IDS_ASH_SEARCH_CATEGORY_FILTER_MENU_TITLE));
+  std::vector<AppListSearchControlCategory> available_categories =
+      GetToggleableCategories();
+
+  for (auto category : available_categories) {
+    if (category == AppListSearchControlCategory::kCannotToggle) {
+      continue;
+    }
+
+    filter_menu_model_->AddItemWithIcon(
+        static_cast<int>(category),
+        l10n_util::GetStringUTF16(kCategories.at(category)),
+        GetCheckboxImage(view_delegate_->IsCategoryEnabled(category)));
+  }
+
+  return filter_menu_model_.get();
+}
+
+std::vector<AppListSearchControlCategory>
+SearchBoxView::GetToggleableCategories() {
+  return view_delegate_->GetToggleableCategories();
 }
 
 }  // namespace ash

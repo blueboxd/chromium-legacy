@@ -48,6 +48,10 @@
         {
           "builder": "ios-simulator-inverse-fieldtrials-fyi",
           "group": "tryserver.chromium.mac"
+        },
+        {
+          "builder": "ios-simulator-siso",
+          "group": "tryserver.chromium.mac"
         }
       ]
     }
@@ -71,5 +75,5 @@
     "chromium",
     "ios"
   ],
-  "xcode_build_version": "15a5229m"
+  "xcode_build_version": "15a240d"
 }

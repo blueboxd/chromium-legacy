@@ -380,6 +380,10 @@ IN_PROC_BROWSER_TEST_F(SettingsTest, Slider) {
   RunTest("settings/settings_slider_test.js", "mocha.run()");
 }
 
+IN_PROC_BROWSER_TEST_F(SettingsTest, SpeedPage) {
+  RunTest("settings/speed_page_test.js", "mocha.run()");
+}
+
 IN_PROC_BROWSER_TEST_F(SettingsTest, StartupUrlsPage) {
   RunTest("settings/startup_urls_page_test.js", "mocha.run()");
 }
@@ -449,8 +453,19 @@ IN_PROC_BROWSER_TEST_F(SettingsAllSitesTest, DisableFirstPartySets) {
 }
 
 class SettingsBasicPageTest : public SettingsBrowserTest {
+ protected:
+  SettingsBasicPageTest() {
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {
+            {features::kSafetyHub, {}},
+            {features::kPerformanceSettingsPreloadingSubpage,
+             {{"use_v2_preloading_subpage", "true"}}},
+        },
+        {});
+  }
+
  private:
-  base::test::ScopedFeatureList scoped_feature_list_{features::kSafetyHub};
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // TODO(crbug.com/1298753): Flaky on all platforms.
@@ -566,6 +581,11 @@ IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest,
           "runMochaSuite('PreloadingSubpageMovedToPerformanceSettings')");
 }
 
+IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest, Settings3pcdOptions) {
+  RunTest("settings/cookies_page_test.js",
+          "runMochaSuite('Settings3pcdOptions')");
+}
+
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 using SettingsLanguagePageTest = SettingsBrowserTest;
 
@@ -665,9 +685,24 @@ IN_PROC_BROWSER_TEST_F(SettingsPrivacyGuideTest, PrivacyGuidePage) {
           "runMochaSuite('PrivacyGuidePage')");
 }
 
+IN_PROC_BROWSER_TEST_F(SettingsPrivacyGuideTest, SettingsFlowLength) {
+  RunTest("settings/privacy_guide_page_test.js",
+          "runMochaSuite('SettingsFlowLength')");
+}
+
 IN_PROC_BROWSER_TEST_F(SettingsPrivacyGuideTest, PrivacyGuidePagePG3Off) {
   RunTest("settings/privacy_guide_page_test.js",
           "runMochaSuite('PrivacyGuidePagePG3Off')");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsPrivacyGuideTest, 3PCDDisablesCookiesCard) {
+  RunTest("settings/privacy_guide_page_test.js",
+          "runMochaSuite('3PCDDisablesCookiesCard')");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsPrivacyGuideTest, SettingsFlowLengthPG3Off) {
+  RunTest("settings/privacy_guide_page_test.js",
+          "runMochaSuite('SettingsFlowLengthPG3Off')");
 }
 
 IN_PROC_BROWSER_TEST_F(SettingsPrivacyGuideTest, MsbbCardNavigations) {
@@ -828,7 +863,8 @@ class SettingsPrivacyPageTest : public SettingsBrowserTest {
   SettingsPrivacyPageTest() {
     scoped_feature_list1_.InitWithFeatures(
         {privacy_sandbox::kPrivacySandboxSettings4,
-         permissions::features::kPermissionStorageAccessAPI},
+         permissions::features::kPermissionStorageAccessAPI,
+         features::kSafetyCheckNotificationPermissions, features::kSafetyHub},
         {});
     scoped_feature_list2_.InitAndEnableFeatureWithParameters(
         features::kFedCm, {
@@ -870,6 +906,18 @@ IN_PROC_BROWSER_TEST_F(SettingsPrivacyPageTest, PrivacyGuideRow) {
 IN_PROC_BROWSER_TEST_F(SettingsPrivacyPageTest, NotificationPermissionReview) {
   RunTest("settings/privacy_page_test.js",
           "runMochaSuite('NotificationPermissionReview')");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsPrivacyPageTest,
+                       NotificationPermissionReviewSafetyHubDisabled) {
+  RunTest("settings/privacy_page_test.js",
+          "runMochaSuite('NotificationPermissionReviewSafetyHubDisabled')");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsPrivacyPageTest,
+                       NotificationPermissionReviewDisabled) {
+  RunTest("settings/privacy_page_test.js",
+          "runMochaSuite('NotificationPermissionReviewDisabled')");
 }
 
 // TODO(crbug.com/1043665): flaky crash on Linux Tests (dbg).
@@ -1220,6 +1268,12 @@ IN_PROC_BROWSER_TEST_F(SettingsSiteSettingsPageTest,
                        MAYBE_UnusedSitePermissionsReviewDisabled) {
   RunTest("settings/site_settings_page_test.js",
           "runMochaSuite('UnusedSitePermissionsReviewDisabled')");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsSiteSettingsPageTest,
+                       UnusedSitePermissionsReviewSafetyHubDisabled) {
+  RunTest("settings/site_settings_page_test.js",
+          "runMochaSuite('UnusedSitePermissionsReviewSafetyHubDisabled')");
 }
 
 IN_PROC_BROWSER_TEST_F(SettingsSiteSettingsPageTest,

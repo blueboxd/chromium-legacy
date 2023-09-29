@@ -6,7 +6,7 @@ import {DialogType} from '../../common/js/dialog_type.js';
 import {isDriveRootEntryList, isFakeEntryInDrives, isGrandRootEntryInDrives, isVolumeEntry, sortEntries} from '../../common/js/entry_utils.js';
 import {FileType} from '../../common/js/file_type.js';
 import {EntryList, VolumeEntry} from '../../common/js/files_app_entry_types.js';
-import {metrics} from '../../common/js/metrics.js';
+import {recordInterval, recordSmallCount, startInterval} from '../../common/js/metrics.js';
 import {str, util} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {EntryLocation} from '../../externs/entry_location.js';
@@ -34,7 +34,7 @@ export {slice as allEntriesSlice};
  * Create action to scan `allEntries` and remove its stale entries.
  */
 export const clearCachedEntries =
-    slice.addReducer<void>('clear-stale-cache', clearCachedEntriesReducer);
+    slice.addReducer('clear-stale-cache', clearCachedEntriesReducer);
 
 function clearCachedEntriesReducer(state: State): State {
   const entries = state.allEntries;
@@ -226,7 +226,11 @@ function appendChildIfNotExisted(
  */
 export function convertEntryToFileData(entry: Entry|FilesAppEntry): FileData {
   const {volumeManager, metadataModel} = window.fileManager;
-  const volumeInfo = volumeManager.getVolumeInfo(entry);
+  // When this function is triggered when mounting new volumes, volumeInfo is
+  // not available in the VolumeManager yet, we need to get volumeInfo from the
+  // entry itself.
+  const volumeInfo = 'volumeInfo' in entry ? entry.volumeInfo as VolumeInfo :
+                                             volumeManager.getVolumeInfo(entry);
   const locationInfo = volumeManager.getLocationInfo(entry);
   // getEntryLabel() can accept locationInfo=null, but TS doesn't recognize the
   // type definition in closure, hence the ! here.
@@ -718,7 +722,7 @@ export async function*
 
   // Track time for reading sub directories if metric for tracking is passed.
   if (metricNameForTracking) {
-    metrics.startInterval(metricNameForTracking);
+    startInterval(metricNameForTracking);
   }
 
   // Type casting here because TS can't exclude the invalid entry types via the
@@ -744,7 +748,7 @@ export async function*
 
   // Track time for reading sub directories if metric for tracking is passed.
   if (metricNameForTracking) {
-    metrics.recordInterval(metricNameForTracking);
+    recordInterval(metricNameForTracking);
   }
 
   // Read sub directories for children when recursive is true.
@@ -810,7 +814,7 @@ async function*
     // show them when there's at least one child entries inside.
     const grandChildEntries =
         await readChildEntriesForDirectoryEntry(childEntry);
-    metrics.recordSmallCount(
+    recordSmallCount(
         metricNameMap[childEntry.fullPath]!, grandChildEntries.length);
     if (grandChildEntries.length > 0) {
       filteredChildren.push(childEntry);

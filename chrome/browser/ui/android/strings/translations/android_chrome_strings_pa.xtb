@@ -175,6 +175,7 @@
 <translation id="19288952978244135">Chrome ਨੂੰ ਮੁੜ-ਖੋਲ੍ਹੋ।</translation>
 <translation id="1933845786846280168">ਚੁਣੀ ਗਈ ਟੈਬ</translation>
 <translation id="1943432128510653496">ਪਾਸਵਰਡ ਰੱਖਿਅਤ ਕਰੋ</translation>
+<translation id="1944535645109964458">ਕੋਈ ਪਾਸਕੀ ਉਪਲਬਧ ਨਹੀਂ ਹੈ</translation>
 <translation id="1952172573699511566">ਜਦੋਂ ਸੰਭਵ ਹੋਵੇ, ਵੈੱਬਸਾਈਟਾਂ ਤੁਹਾਡੀ ਤਰਜੀਹੀ ਭਾਸ਼ਾ ਵਿੱਚ ਲਿਖਤ ਦਿਖਾਉਣਗੀਆਂ।</translation>
 <translation id="1959679933317802873">ਸਮੱਗਰੀ ਲਈ ਉਡੀਕ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ</translation>
 <translation id="1960290143419248813">Chrome ਅੱਪਡੇਟਾਂ ਹੁਣ Android ਦੇ ਇਸ ਵਰਜਨ ਲਈ ਸਮਰਥਿਤ ਨਹੀਂ ਹਨ</translation>
@@ -222,6 +223,7 @@
 <translation id="2189903024544168260">ਦਿਲਚਸਪੀ ਨੂੰ ਹਟਾਇਆ ਗਿਆ</translation>
 <translation id="2194856509914051091">ਵਿਚਾਰੇ ਜਾਣ ਵਾਲੀਆਂ ਚੀਜ਼ਾਂ</translation>
 <translation id="2200113223741723867">ਵਰਤੋਂ ਡਾਟੇ ਸੰਬੰਧੀ ਸਾਂਝੇਕਰਨ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ</translation>
+<translation id="221494669172414749">ਪ੍ਰੋਫਾਈਲ ਲਾਕ ਤੋਂ ਬਿਨਾਂ Chrome ਨੂੰ ਖੋਲ੍ਹਣ ਨਾਲ ਕਾਰ ਤੋਂ ਤੁਹਾਡੇ ਰੱਖਿਅਤ ਕੀਤੇ ਗਏ ਪਾਸਵਰਡ ਅਤੇ ਭੁਗਤਾਨ ਵਿਧੀਆਂ ਹਟ ਜਾਣਗੀਆਂ। ਪ੍ਰੋਫਾਈਲ ਲਾਕ ਵਰਤਣ ਨਾਲ ਇਹ ਡਾਟਾ ਸੁਰੱਖਿਅਤ ਰਹਿੰਦਾ ਹੈ।</translation>
 <translation id="2218567645332692482">ਨੈਵੀਗੇਸ਼ਨਾਂ ਨੂੰ HTTPS 'ਤੇ ਅੱਪਗ੍ਰੇਡ ਕਰੋ ਅਤੇ ਇੰਝ ਕਰਨ ਨਾਲ ਉਨ੍ਹਾਂ ਸਾਈਟਾਂ ਦੇ ਲੋਡ ਹੋਣ ਤੋਂ ਪਹਿਲਾਂ ਤੁਹਾਨੂੰ ਚਿਤਾਵਨੀ ਮਿਲੇਗੀ ਜੋ ਇਸਦਾ ਸਮਰਥਨ ਨਹੀਂ ਕਰਦੀਆਂ</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> ਵਜੋਂ ਜਾਰੀ ਰੱਖੋ</translation>
 <translation id="2230777942707397948">ਖਾਲੀ ਵਿੰਡੋ</translation>
@@ -262,6 +264,7 @@
 <translation id="2461822463642141190">ਮੌਜੂਦਾ</translation>
 <translation id="2472163211318554013">Chrome ਦਾ ਵੱਧ ਤੋਂ ਵੱਧ ਲਾਹਾ ਲੈਣ ਲਈ ਸਾਈਨ-ਇਨ ਕਰੋ</translation>
 <translation id="247737702124049222">ਚਿੱਤਰ ਦੇ ਵਰਣਨ ਚਾਲੂ ਹਨ</translation>
+<translation id="2479148705183875116">ਸੈਟਿੰਗਾਂ 'ਤੇ ਜਾਓ</translation>
 <translation id="2482878487686419369">ਸੂਚਨਾਵਾਂ</translation>
 <translation id="2496180316473517155">ਬ੍ਰਾਊਜ਼ਿੰਗ ਇਤਿਹਾਸ</translation>
 <translation id="2497852260688568942">ਸਿੰਕ ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਦੁਆਰਾ ਅਯੋਗ ਬਣਾਇਆ ਗਿਆ ਹੈ।</translation>
@@ -625,6 +628,7 @@
 <translation id="4257230861809842349">ਕੀ Google Password Manager ਤੋਂ ਪਾਸਵਰਡਾਂ ਨੂੰ ਮਿਟਾਉਣਾ ਹੈ?</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />ਕਿਹੜਾ ਡਾਟਾ ਵਰਤਿਆ ਜਾਂਦਾ ਹੈ:<ph name="END_BOLD" /> ਤੁਹਾਡਾ ਬ੍ਰਾਊਜ਼ਿੰਗ ਇਤਿਹਾਸ, ਇਸ ਡੀਵਾਈਸ 'ਤੇ ਉਨ੍ਹਾਂ ਸਾਈਟਾਂ ਦਾ ਰਿਕਾਰਡ ਜਿਨ੍ਹਾਂ 'ਤੇ ਤੁਸੀਂ Chrome ਦੀ ਵਰਤੋਂ ਨਾਲ ਗਏ ਹੋ।</translation>
 <translation id="4269820728363426813">ਲਿੰਕ ਪਤਾ ਕਾਪੀ ਕਰੋ</translation>
+<translation id="4277529130885813215">ਕੋਈ ਹੋਰ ਡੀਵਾਈਸ ਦੀ ਵਰਤੋਂ ਕਰੋ</translation>
 <translation id="4283102315569707115">ਕੀ ਪੂਰਵ-ਨਿਰਧਾਰਿਤ ਤੌਰ 'ਤੇ ਡੈਸਕਟਾਪ ਸਾਈਟਾਂ ਦੀ ਬੇਨਤੀ ਕਰਨੀ ਹੈ?</translation>
 <translation id="4285846616383034558">ਕੁਕੀਜ਼, ਕੈਸ਼ੇ ਅਤੇ ਹੋਰ ਸਾਈਟ ਡਾਟਾ</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Android ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਸਕ੍ਰੀਨ ਲਾਕ ਚਾਲੂ ਕਰੋ<ph name="END_LINK" /></translation>
@@ -1013,6 +1017,7 @@
 <translation id="6295158916970320988">ਸਾਰੀਆਂ ਸਾਈਟਾਂ</translation>
 <translation id="6303969859164067831">ਸਾਈਨ-ਆਊਟ ਕਰਕੇ ਸਿੰਕ ਬੰਦ ਕਰੋ</translation>
 <translation id="6312687380483398334">ਵੈੱਬ ਐਪਾਂ (ਸ਼ਾਂਤ)</translation>
+<translation id="6315386555979018699">ਮਿਟਾਓ ਅਤੇ ਜਾਰੀ ਰੱਖੋ</translation>
 <translation id="6316139424528454185">Android ਵਰਜਨ ਸਮਰਥਿਤ ਨਹੀਂ ਹੈ</translation>
 <translation id="6324916366299863871">ਸ਼ਾਰਟਕੱਟ ਦਾ ਸੰਪਾਦਨ ਕਰੋ</translation>
 <translation id="6324977638108296054">ਉਜਾਗਰ ਕੀਤੀ ਲਿਖਤ ਲਈ ਲਿੰਕ ਨਹੀਂ ਬਣਾਇਆ ਜਾ ਸਕਦਾ</translation>
@@ -1164,6 +1169,7 @@
 <translation id="6955535239952325894">ਇਹ ਸੈਟਿੰਗ ਪ੍ਰਬੰਧਿਤ ਬ੍ਰਾਊਜ਼ਰਾਂ 'ਤੇ ਬੰਦ ਹੈ</translation>
 <translation id="6963766334940102469">ਬੁੱਕਮਾਰਕ ਮਿਟਾਓ</translation>
 <translation id="696447261358045621">ਇਨਕੋਗਨਿਟੋ ਮੋਡ ਛੱਡੋ</translation>
+<translation id="6965382102122355670">ਠੀਕ</translation>
 <translation id="6971862865055170158">ਮਨਜ਼ੂਰੀ ਨਾ ਦਿਓ</translation>
 <translation id="6978717888677691380">ਤੁਹਾਡੇ ਵੱਲੋਂ ਬਲਾਕ ਕੀਤੀਆਂ ਗਈਆਂ ਸਾਈਟਾਂ</translation>
 <translation id="6979737339423435258">ਸਾਰੇ ਸਮੇਂ</translation>
@@ -1322,6 +1328,7 @@
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" /> ਤੋਂ ਸਾਂਝੀ ਕੀਤੀ ਲਿਖਤ</translation>
 <translation id="7762668264895820836">SD ਕਾਰਡ <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">ਪਤਾ ਜੋੜੋ</translation>
+<translation id="7766587497031415281">ਬ੍ਰਾਊਜ਼ਿੰਗ ਡਾਟਾ ਕਲੀਅਰ ਕਰਨ ਲਈ ਹੋਰ ਵਿਕਲਪ</translation>
 <translation id="7772032839648071052">ਪਾਸਫਰੇਜ਼ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ</translation>
 <translation id="7772375229873196092"><ph name="APP_NAME" /> ਨੂੰ ਬੰਦ ਕਰੋ</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ਅਤੇ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ਹੋਰ}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ਅਤੇ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ਹੋਰ}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ਅਤੇ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ਹੋਰ}}</translation>
@@ -1575,6 +1582,7 @@
 <translation id="8998289560386111590">ਤੁਹਾਡੇ ਡੀਵਾਈਸ 'ਤੇ ਉਪਲਬਧ ਨਹੀਂ ਹੈ</translation>
 <translation id="8998729206196772491">ਤੁਸੀਂ <ph name="MANAGED_DOMAIN" /> ਵੱਲੋਂ ਪ੍ਰਬੰਧਿਤ ਕੀਤੇ ਖਾਤੇ ਨਾਲ ਸਾਈਨ-ਇਨ ਕਰ ਰਹੇ ਹੋ ਅਤੇ ਉਸਦੇ ਪ੍ਰਸ਼ਾਸਕ ਨੂੰ ਆਪਣੇ Chrome ਡਾਟੇ ਦਾ ਕੰਟਰੋਲ ਦੇ ਰਹੇ ਹੋ। ਤੁਹਾਡਾ ਡਾਟਾ ਸਥਾਈ ਤੌਰ 'ਤੇ ਇਸ ਖਾਤੇ ਨਾਲ ਜੋੜ ਦਿੱਤਾ ਜਾਵੇਗਾ। Chrome ਤੋਂ ਸਾਈਨ-ਆਊਟ ਹੋਣ ਨਾਲ ਤੁਹਾਡਾ ਡਾਟਾ ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਮਿਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ, ਪਰ ਇਹ ਤੁਹਾਡੇ Google ਖਾਤੇ ਵਿੱਚ ਸਟੋਰ ਰਹੇਗਾ।</translation>
 <translation id="9012585441087414258">ਉਨ੍ਹਾਂ ਸਾਈਟਾਂ, ਡਾਊਨਲੋਡਾਂ ਅਤੇ ਐਕਸਟੈਂਸ਼ਨਾਂ ਤੋਂ ਸੁਰੱਖਿਅਤ ਰੱਖਦਾ ਹੈ ਜਿਨ੍ਹਾਂ ਨੂੰ ਖਤਰਨਾਕ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ। ਜੇ ਕੋਈ ਪੰਨਾ ਕੋਈ ਸ਼ੱਕੀ ਸਰਗਰਮੀ ਕਰਦਾ ਹੈ, ਤਾਂ URL ਅਤੇ ਪੰਨੇ ਦੀ ਥੋੜ੍ਹੀ ਸਮੱਗਰੀ ਨੂੰ Google ਸੁਰੱਖਿਅਤ ਬ੍ਰਾਊਜ਼ਿੰਗ ਨੂੰ ਭੇਜਿਆ ਜਾਂਦਾ ਹੈ।</translation>
+<translation id="9019199799064251516">ਕੀ ਕਾਰ ਪ੍ਰੋਫਾਈਲ ਲਾਕ ਤੋਂ ਬਿਨਾਂ ਜਾਰੀ ਰੱਖਣਾ ਹੈ?</translation>
 <translation id="9022774213089566801">ਅਕਸਰ ਦੇਖੀਆਂ ਜਾਣ ਵਾਲੀਆਂ</translation>
 <translation id="9022871169049522985">ਸਾਈਟਾਂ ਅਤੇ ਵਿਗਿਆਪਨਦਾਤਾ ਆਪਣੇ ਵਿਗਿਆਪਨਾਂ ਦੀ ਕਾਰਗੁਜ਼ਾਰੀ ਨੂੰ ਮਾਪ ਸਕਦੇ ਹਨ</translation>
 <translation id="9035378196785279980">ਇੱਥੇ ਲਿਜਾਓ\u2026</translation>
@@ -1637,5 +1645,6 @@
 <translation id="983192555821071799">ਸਾਰੀਆਂ ਟੈਬਸ ਬੰਦ ਕਰੋ</translation>
 <translation id="987264212798334818">ਸਧਾਰਨ</translation>
 <translation id="992745192656291733"><ph name="TAB_COUNT" /> ਟੈਬਾਂ</translation>
+<translation id="993520549480398880">ਇਸਦੇ ਨਾਲ ਹੀ ਇਸ ਕਾਰ ਤੋਂ ਬੁੱਕਮਾਰਕ, ਇਤਿਹਾਸ ਅਤੇ ਹੋਰ ਚੀਜ਼ਾਂ ਨੂੰ ਕਲੀਅਰ ਕਰੋ</translation>
 <translation id="996149300115483134">ਫ਼ੀਡ ਕਾਰਡ ਮੀਨੂ ਬੰਦ ਹੈ</translation>
 </translationbundle>

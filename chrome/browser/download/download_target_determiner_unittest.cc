@@ -2846,8 +2846,9 @@ class DownloadTargetDeterminerDlpTest : public DownloadTargetDeterminerTest {
 
   class MockFilesController : public policy::DlpFilesControllerAsh {
    public:
-    explicit MockFilesController(const policy::DlpRulesManager& rules_manager)
-        : DlpFilesControllerAsh(rules_manager) {}
+    explicit MockFilesController(const policy::DlpRulesManager& rules_manager,
+                                 Profile* profile)
+        : DlpFilesControllerAsh(rules_manager, profile) {}
     ~MockFilesController() override = default;
 
     MOCK_METHOD(bool,
@@ -2873,6 +2874,7 @@ class DownloadTargetDeterminerDlpTest : public DownloadTargetDeterminerTest {
   }
 
   void TearDown() override {
+    mock_files_controller_.reset();
     scoped_user_manager_.reset();
     profile_.reset();
 
@@ -2898,7 +2900,7 @@ class DownloadTargetDeterminerDlpTest : public DownloadTargetDeterminerTest {
     ON_CALL(*rules_manager_, IsFilesPolicyEnabled)
         .WillByDefault(testing::Return(true));
     mock_files_controller_ =
-        std::make_unique<MockFilesController>(*rules_manager_);
+        std::make_unique<MockFilesController>(*rules_manager_, profile_.get());
     ON_CALL(*rules_manager_, GetDlpFilesController)
         .WillByDefault(testing::Return(mock_files_controller_.get()));
   }
@@ -2911,6 +2913,34 @@ class DownloadTargetDeterminerDlpTest : public DownloadTargetDeterminerTest {
       rules_manager_ = nullptr;
   std::unique_ptr<MockFilesController> mock_files_controller_ = nullptr;
 };
+
+// Download URL might be invalid. Dlp must not crash in that case
+// (b/300605501).
+TEST_F(DownloadTargetDeterminerDlpTest, InvalidUrl) {
+  SetupRulesManager();
+
+  const DownloadTestCase kManagedPathTestCase = {
+      AUTOMATIC,
+      download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      DownloadFileType::NOT_DANGEROUS,
+      "",
+      "text/plain",
+      FILE_PATH_LITERAL(""),
+
+      FILE_PATH_LITERAL("download.txt"),
+      DownloadItem::TARGET_DISPOSITION_PROMPT,
+
+      EXPECT_CRDOWNLOAD};
+
+  SetManagedDownloadPath(test_download_dir());
+  ASSERT_TRUE(download_prefs()->IsDownloadPathManaged());
+  EXPECT_CALL(*delegate(),
+              RequestConfirmation_(
+                  _, GetPathInDownloadDir(FILE_PATH_LITERAL("download.txt")),
+                  DownloadConfirmationReason::DLP_BLOCKED, _));
+  EXPECT_CALL(*mock_files_controller_, ShouldPromptBeforeDownload).Times(0);
+  RunTestCasesWithActiveItem(&kManagedPathTestCase, 1);
+}
 
 // Even if the download path is managed, we should prompt if the download path
 // is blocked by DLP.

@@ -280,6 +280,17 @@ void ViewAXPlatformNodeDelegate::AnnounceText(const std::u16string& text) {
 #endif  // BUILDFLAG(IS_MAC)
 
 const ui::AXNodeData& ViewAXPlatformNodeDelegate::GetData() const {
+  // Clear computed node so AXNode::GetInnerText() value won't be stale.
+  if (atomic_view_ax_tree_manager_) {
+    // We can't call `GetRoot()->ClearComputedNodeData()` from here since
+    // `AtomicViewAXTreeManager::GetRoot` calls this function
+    // (`ViewAXplatformNodeDelegate::GetData`), which leads to an infinite loop.
+    //
+    // TODO(1468416): This code is temporary until the ViewsAX project is
+    // completed.
+    atomic_view_ax_tree_manager_->ClearComputedRootData();
+  }
+
   // Clear the data, then populate it.
   data_ = ui::AXNodeData();
   GetAccessibleNodeData(&data_);
@@ -305,8 +316,7 @@ const ui::AXNodeData& ViewAXPlatformNodeDelegate::GetData() const {
     data_.AddState(ax::mojom::State::kIgnored);
 
 #if BUILDFLAG(IS_WIN)
-  if (features::IsUiaProviderEnabled() &&
-      view()->GetViewAccessibility().needs_ax_tree_manager()) {
+  if (view()->GetViewAccessibility().needs_ax_tree_manager()) {
     view()->GetViewAccessibility().EnsureAtomicViewAXTreeManager();
   }
 #endif  // BUILDFLAG(IS_WIN)

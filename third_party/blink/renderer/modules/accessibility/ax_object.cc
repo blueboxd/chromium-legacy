@@ -900,11 +900,20 @@ bool AXObject::IsMissingParent() const {
     // the tree, and without a parent, for potential later reuse.
     // TODO(accessibility) This is ugly. Consider destroying validation message
     // objects between uses instead. See GetOrCreateValidationMessageObject().
-    return !IsRoot() && !IsValidationMessage();
+    bool is_missing = !IsRoot() && !IsValidationMessage();
+    CHECK(!is_missing || !AXObjectCache().IsFrozen())
+        << "Should not have missing parent in frozen tree: "
+        << ToString(true, true);
+    return is_missing;
   }
 
-  if (parent_->IsDetached())
+  if (parent_->IsDetached()) {
+    CHECK(!AXObjectCache().IsFrozen())
+        << "Should not have detached parent in frozen tree: "
+        << ToString(true, true);
+
     return true;
+  }
 
   return false;
 }
@@ -2024,15 +2033,6 @@ void AXObject::SerializeOtherScreenReaderAttributes(
     node_data->AddBoolAttribute(ax::mojom::blink::BoolAttribute::kModal,
                                 IsModal());
   }
-
-  // aria-dropeffect is deprecated in WAI-ARIA 1.1.
-  Vector<ax::mojom::blink::Dropeffect> dropeffects;
-  Dropeffects(dropeffects);
-  if (!dropeffects.empty()) {
-    for (auto&& dropeffect : dropeffects) {
-      node_data->AddDropeffect(dropeffect);
-    }
-  }
 }
 
 void AXObject::SerializeScrollAttributes(ui::AXNodeData* node_data) {
@@ -2255,12 +2255,6 @@ void AXObject::SerializeUnignoredAttributes(ui::AXNodeData* node_data,
 
   if (IsDefault())
     node_data->AddState(ax::mojom::blink::State::kDefault);
-
-  // aria-grabbed is deprecated in WAI-ARIA 1.1.
-  if (IsGrabbed() != kGrabbedStateUndefined) {
-    node_data->AddBoolAttribute(ax::mojom::blink::BoolAttribute::kGrabbed,
-                                IsGrabbed() == kGrabbedStateTrue);
-  }
 
   if (IsHovered())
     node_data->AddState(ax::mojom::blink::State::kHovered);
@@ -2987,10 +2981,6 @@ bool AXObject::IsFocused() const {
   return false;
 }
 
-AccessibilityGrabbedState AXObject::IsGrabbed() const {
-  return kGrabbedStateUndefined;
-}
-
 bool AXObject::IsHovered() const {
   return false;
 }
@@ -3511,7 +3501,7 @@ bool AXObject::IsBlockedByAriaModalDialog(
     return false;
   }
 
-  if (!GetNode() || GetNode()->IsPseudoElement()) {
+  if ((!GetNode() || GetNode()->IsPseudoElement()) && ParentObject()) {
     return ParentObject()->IsBlockedByAriaModalDialog();
   }
 
@@ -4161,22 +4151,30 @@ bool AXObject::ComputeCanSetFocusAttribute() const {
   return false;
 }
 
-// We can't use `Element::IsKeyboardFocusable()` since the downstream
-// `Element::IsFocusableStyle()` call will reset the document lifecycle.
-// TODO(crbug.com/1444450) This should be replaced with just a call to
-// element->IsKeyboardFocusable(). This function can be guarded by a
-// DocumentLifecycle::DisallowTransitionScope().
 bool AXObject::IsKeyboardFocusable() const {
-  if (!CanSetFocusAttribute())
+  auto* document = GetDocument();
+  auto* element = GetElement();
+  if (!document || !element) {
     return false;
-
-  Element* element = GetElement();
-  DCHECK(element) << "Cannot be focusable without an element: "
-                  << ToString(true, true);
-  if (element->IsScrollableContainerThatShouldBeKeyboardFocusable()) {
-    return true;
   }
-  return element->tabIndex() >= 0 || IsRootEditableElement(*element);
+  DocumentLifecycle::DisallowTransitionScope scope(document->Lifecycle());
+  if (IsA<HTMLFrameOwnerElement>(element)) {
+    // TODO(crbug.com/1444450) Frame owner elements return true for
+    // IsFocusable(), because the logic in focus_controller.cc requires them to
+    // be focusable in order to find them and navigate to their contents.
+    // However, frames are not actually focusable. Remove this special-case once
+    // frame owner elements have SupportsFocus() == false.
+    return false;
+  }
+  // content-visibility:hidden or content-visibility: auto nodes (when locked)
+  // cannot be marked as keyboard focusable, because then we'll need to do a
+  // style/layout update within the locked subtree to get scroller information.
+  // For all practical purposes, it's unlikely to matter if display-locked
+  // content is marked non-focusable, so let's just avoid the lifecycle update.
+  if (DisplayLockUtilities::IsDisplayLockedPreventingPaint(element)) {
+    return false;
+  }
+  return element->IsKeyboardFocusable();
 }
 
 bool AXObject::CanSetSelectedAttribute() const {
@@ -5610,15 +5608,22 @@ AXObject* AXObject::UnignoredPreviousInPreOrder() const {
 }
 
 AXObject* AXObject::ParentObject() const {
-  if (IsDetached())
+  if (IsDetached()) {
     return nullptr;
+  }
 
   // This can happen when an object in the middle of the tree is suddenly
   // detached, but the children still exist. One example of this is when
   // a <select size="1"> changes to <select size="2">, where the
   // Role::kMenuListPopup is detached.
-  if (IsMissingParent())
+  if (IsMissingParent()) {
     RepairMissingParent();
+    // If the parent cannot be repaired, the entire subtree rooted at this node
+    // will be detached.
+    if (IsDetached()) {
+      return nullptr;
+    }
+  }
 
   return parent_;
 }
@@ -5650,8 +5655,12 @@ Element* AXObject::GetClosestElement() const {
   if (!element) {
     for (AXObject* parent = ParentObject(); parent;
          parent = parent->ParentObject()) {
-      if (parent) {
-        return parent->GetElement();
+      // It's possible to have a parent without a node here if the parent is a
+      // pseudo element descendant. Since we're looking for the nearest element,
+      // keep going up the ancestor chain until we find a parent that has one.
+      element = parent->GetElement();
+      if (element) {
+        return element;
       }
     }
   }
@@ -5799,6 +5808,11 @@ bool AXObject::ShouldDestroyWhenDetachingFromParent() const {
 }
 
 void AXObject::DetachFromParent() {
+  if (IsDetached()) {
+    return;
+  }
+  CHECK(!AXObjectCache().IsFrozen())
+      << "Do not detach parent while tree is frozen: " << ToString(true, true);
   if (ShouldDestroyWhenDetachingFromParent()) {
     AXObjectCache().RemoveIncludedSubtree(this, /* remove_root */ true);
   }
@@ -5806,8 +5820,9 @@ void AXObject::DetachFromParent() {
 }
 
 void AXObject::ClearChildren() const {
-  DCHECK(!IsDetached());
-  DCHECK(!AXObjectCache().IsFrozen());
+  CHECK(!IsDetached());
+  CHECK(!AXObjectCache().IsFrozen())
+      << "Do not clear children while tree is frozen: " << ToString(true, true);
 
   // Detach all weak pointers from immediate children to their parents.
   // First check to make sure the child's parent wasn't already reassigned.
@@ -6540,6 +6555,9 @@ bool AXObject::PerformAction(const ui::AXActionData& action_data) {
   Node* node = GetNode();
   if (!node) {
     node = GetClosestElement();
+    if (!node) {
+      return false;
+    }
   }
 
   // In most cases, UpdateAllLifecyclePhasesExceptPaint() is enough, but if
@@ -6725,6 +6743,9 @@ bool AXObject::RequestScrollToMakeVisibleWithSubFocusAction(
   Node* node = GetNode();
   if (!node) {
     node = GetClosestElement();
+    if (!node) {
+      return false;
+    }
   }
 
   // In most cases, UpdateAllLifecyclePhasesExceptPaint() is enough, but if

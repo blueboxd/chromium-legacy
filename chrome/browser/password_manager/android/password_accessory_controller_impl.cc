@@ -139,7 +139,7 @@ ShouldShowAction ShouldShowCredManReentryAction(
 
 PasswordAccessoryControllerImpl::~PasswordAccessoryControllerImpl() {
   if (authenticator_) {
-    authenticator_->Cancel(device_reauth::DeviceAuthRequester::kFallbackSheet);
+    authenticator_->Cancel();
   }
 }
 
@@ -255,20 +255,18 @@ PasswordAccessoryControllerImpl::GetSheetData() const {
 void PasswordAccessoryControllerImpl::OnFillingTriggered(
     autofill::FieldGlobalId focused_field_id,
     const AccessorySheetField& selection) {
+  authenticator_ = password_client_->GetDeviceAuthenticator();
   if (!ShouldTriggerBiometricReauth(selection)) {
+    authenticator_.reset();
     FillSelection(selection);
     return;
   }
 
-  authenticator_ = password_client_->GetDeviceAuthenticator();
-
   // |this| cancels the authentication when it is destroyed if one is ongoing,
   // which resets the callback, so it's safe to use base::Unretained(this) here.
-  authenticator_->Authenticate(
-      device_reauth::DeviceAuthRequester::kFallbackSheet,
-      base::BindOnce(&PasswordAccessoryControllerImpl::OnReauthCompleted,
-                     base::Unretained(this), selection),
-      /*use_last_valid_auth=*/true);
+  authenticator_->AuthenticateWithMessage(
+      u"", base::BindOnce(&PasswordAccessoryControllerImpl::OnReauthCompleted,
+                          base::Unretained(this), selection));
 }
 
 void PasswordAccessoryControllerImpl::OnPasskeySelected(
@@ -463,7 +461,8 @@ void PasswordAccessoryControllerImpl::OnGenerationRequested(
 
 void PasswordAccessoryControllerImpl::UpdateCredManReentryUi(
     FocusedFieldType focused_field_type) {
-  if (!webauthn::WebAuthnCredManDelegate::IsCredManEnabled()) {
+  if (webauthn::WebAuthnCredManDelegate::CredManMode() ==
+      webauthn::WebAuthnCredManDelegate::kNotEnabled) {
     return;  // No updates required.
   }
   if (password_manager::PasswordManagerDriver* driver =
@@ -616,9 +615,7 @@ bool PasswordAccessoryControllerImpl::ShouldTriggerBiometricReauth(
     return false;
   }
 
-  scoped_refptr<device_reauth::DeviceAuthenticator> authenticator =
-      password_client_->GetDeviceAuthenticator();
-  return password_manager_util::CanUseBiometricAuth(authenticator.get(),
+  return password_manager_util::CanUseBiometricAuth(authenticator_.get(),
                                                     password_client_);
 }
 

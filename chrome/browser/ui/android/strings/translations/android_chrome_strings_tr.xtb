@@ -175,6 +175,7 @@ Belirli bir siteye ait veya tüm tarama geçmişinizi sildiğinizde bununla ili�
 <translation id="19288952978244135">Chrome'u yeniden açın.</translation>
 <translation id="1933845786846280168">Seçili Sekme</translation>
 <translation id="1943432128510653496">Şifreleri kaydet</translation>
+<translation id="1944535645109964458">Şifre anahtarı yok</translation>
 <translation id="1952172573699511566">Web siteleri, mümkün olduğunda metni tercih ettiğiniz dilde gösterir.</translation>
 <translation id="1959679933317802873">İçerik bekleniyor</translation>
 <translation id="1960290143419248813">Chrome güncellemeleri Android'in bu sürümü için artık desteklenmiyor</translation>
@@ -222,6 +223,7 @@ Belirli bir siteye ait veya tüm tarama geçmişinizi sildiğinizde bununla ili�
 <translation id="2189903024544168260">İlgi alanı kaldırıldı</translation>
 <translation id="2194856509914051091">Dikkate alınması gereken noktalar</translation>
 <translation id="2200113223741723867">Kullanım verileri paylaşımını yönetin</translation>
+<translation id="221494669172414749">Chrome'u profil kilidi olmadan açarsanız arabadaki kayıtlı şifreleriniz ve ödeme yöntemleriniz kaldırılır. Profil kilidi kullanmanız bu verilerin güvenliğini sağlar.</translation>
 <translation id="2218567645332692482">Gezinmeleri HTTPS'ye yükseltip bu uzantıyı desteklemeyen siteleri yüklemeden önce sizi uyarır</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> olarak devam edin</translation>
 <translation id="2230777942707397948">Boş pencere</translation>
@@ -262,6 +264,7 @@ Belirli bir siteye ait veya tüm tarama geçmişinizi sildiğinizde bununla ili�
 <translation id="2461822463642141190">Şu an</translation>
 <translation id="2472163211318554013">Chrome'dan en iyi şekilde yararlanmak için oturum açın</translation>
 <translation id="247737702124049222">Resim açıklamaları açık</translation>
+<translation id="2479148705183875116">Ayarlar'a git</translation>
 <translation id="2482878487686419369">Bildirimler</translation>
 <translation id="2496180316473517155">Tarama geçmişi</translation>
 <translation id="2497852260688568942">Yöneticiniz senkronizasyonu devre dışı bıraktı</translation>
@@ -625,6 +628,7 @@ Gizlilik jetonları, web'deki gizliliği artırırken kim olduğunuzu bulmak iç
 <translation id="4257230861809842349">Şifreler, Google Şifre Yöneticisi'nden silinsin mi?</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Kullanılan veriler:<ph name="END_BOLD" /> Tarama geçmişiniz ve bu cihazda Chrome'u kullanarak ziyaret ettiğiniz sitelerin kaydı.</translation>
 <translation id="4269820728363426813">Bağlantı adresini kopyala</translation>
+<translation id="4277529130885813215">Başka bir cihaz kullan</translation>
 <translation id="4283102315569707115">Varsayılan olarak masaüstü siteleri istensin mi?</translation>
 <translation id="4285846616383034558">Çerezler, önbellek ve diğer site verileri</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Android ayarlarında ekran kilidini açın<ph name="END_LINK" /></translation>
@@ -1013,6 +1017,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="6295158916970320988">Tüm siteler</translation>
 <translation id="6303969859164067831">Oturumu ve senkronizasyonu kapat</translation>
 <translation id="6312687380483398334">Web uygulamaları (sessiz)</translation>
+<translation id="6315386555979018699">Sil ve devam et</translation>
 <translation id="6316139424528454185">Android sürümü desteklenmiyor</translation>
 <translation id="6324916366299863871">Kısayolu düzenleyin</translation>
 <translation id="6324977638108296054">Seçili metne bağlantı oluşturulamıyor</translation>
@@ -1164,6 +1169,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="6955535239952325894">Bu ayar yönetilen tarayıcılarda devre dışı bırakıldı</translation>
 <translation id="6963766334940102469">Yer işaretlerini silme</translation>
 <translation id="696447261358045621">Gizli moddan çık</translation>
+<translation id="6965382102122355670">Tamam</translation>
 <translation id="6971862865055170158">Onaylama</translation>
 <translation id="6978717888677691380">Engellediğiniz siteler</translation>
 <translation id="6979737339423435258">Tüm zamanlar</translation>
@@ -1322,6 +1328,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7757787379047923882">Metin, <ph name="DEVICE_NAME" /> cihazından paylaşıldı</translation>
 <translation id="7762668264895820836">SD Kart <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Adres ekle</translation>
+<translation id="7766587497031415281">Tarama verilerini temizlemek için diğer seçenekler</translation>
 <translation id="7772032839648071052">Parolayı onayla</translation>
 <translation id="7772375229873196092"><ph name="APP_NAME" /> penceresini kapat</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ve <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ödeme yöntemi daha}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ve <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ödeme yöntemi daha}}</translation>
@@ -1575,6 +1582,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="8998289560386111590">Cihazınızda kullanılamıyor</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" /> tarafından yönetilen bir hesapla oturum açıyorsunuz ve yöneticiye tüm Chrome verileriniz üzerinde denetim olanağı veriyorsunuz. Verileriniz kalıcı olarak bu hesaba bağlanacaktır. Chrome'da oturumu kapattığınızda verileriniz bu cihazdan silinir, ancak Google Hesabınızda kalmaya devam eder.</translation>
 <translation id="9012585441087414258">Tehlikeli olduğu bilinen web siteleri, indirmeler ve uzantılara karşı koruma sağlar. Bir sayfa şüpheli işlem gerçekleştirirse URL'ler ve sayfa içeriğinin bir kısmı Google Güvenli Tarama'ya gönderilir.</translation>
+<translation id="9019199799064251516">Arabada profil kilidi olmadan devam edilsin mi?</translation>
 <translation id="9022774213089566801">Sık ziyaret edilenler</translation>
 <translation id="9022871169049522985">Siteler ve reklamverenler, reklamlarının performansını ölçebilir</translation>
 <translation id="9035378196785279980">Şuraya taşı:\u2026</translation>
@@ -1637,5 +1645,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="983192555821071799">Tüm sekmeleri kapat</translation>
 <translation id="987264212798334818">Genel</translation>
 <translation id="992745192656291733"><ph name="TAB_COUNT" /> sekme</translation>
+<translation id="993520549480398880">Bu arabadaki yer işaretleri, geçmiş ve diğer öğeleri de temizleyin</translation>
 <translation id="996149300115483134">Akış kartı menüsü kapalı</translation>
 </translationbundle>

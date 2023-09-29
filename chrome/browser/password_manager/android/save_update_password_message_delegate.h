@@ -11,10 +11,10 @@
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/password_edit_dialog/android/password_edit_dialog_bridge.h"
-#include "chrome/browser/password_manager/android/device_lock_bridge.h"
 #include "chrome/browser/password_manager/android/local_passwords_migration_warning_util.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
+#include "components/browser_ui/device_lock/android/device_lock_bridge.h"
 #include "components/messages/android/message_enums.h"
 #include "components/messages/android/message_wrapper.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
@@ -25,6 +25,10 @@
 namespace content {
 class WebContents;
 }  // namespace content
+
+namespace password_manager {
+class PasswordManagerClient;
+}  // namespace password_manager
 
 // This class provides simplified interface for ChromePasswordManagerClient to
 // display a prompt to save and update password through Messages API. The class
@@ -79,7 +83,8 @@ class SaveUpdatePasswordMessageDelegate {
   void DisplaySaveUpdatePasswordPrompt(
       content::WebContents* web_contents,
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
-      bool update_password);
+      bool update_password,
+      password_manager::PasswordManagerClient* password_manager_client);
 
   // Dismisses currently displayed message or dialog. Because the implementation
   // uses some of the dependencies (e.g. log manager) this method needs to be
@@ -104,7 +109,8 @@ class SaveUpdatePasswordMessageDelegate {
       content::WebContents* web_contents,
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
       absl::optional<AccountInfo> account_info,
-      bool update_password);
+      bool update_password,
+      password_manager::PasswordManagerClient* password_manager_client);
   void CreateMessage(bool update_password);
   void SetupCogMenu(std::unique_ptr<messages::MessageWrapper>& message,
                     bool update_password);

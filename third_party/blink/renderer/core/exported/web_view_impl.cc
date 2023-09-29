@@ -1287,7 +1287,7 @@ void WebViewImpl::ResizeViewWhileAnchored(
     gfx::Size old_size = frame_view->Size();
     UpdateICBAndResizeViewport(visible_viewport_size);
     gfx::Size new_size = frame_view->Size();
-    frame_view->MarkFixedPositionObjectsForLayout(
+    frame_view->InvalidateLayoutForViewportConstrainedObjects(
         old_size.width() != new_size.width(),
         old_size.height() != new_size.height());
   }
@@ -2541,6 +2541,14 @@ void WebViewImpl::SetPageLifecycleStateInternal(
 
   UpdateViewTransitionState(restoring_from_bfcache, storing_in_bfcache,
                             page_restore_params);
+
+  if (RuntimeEnabledFeatures::PageRevealEventEnabled()) {
+    if (restoring_from_bfcache) {
+      if (auto* main_frame = DynamicTo<LocalFrame>(GetPage()->MainFrame())) {
+        main_frame->GetDocument()->EnqueuePageRevealEvent();
+      }
+    }
+  }
 }
 
 void WebViewImpl::UpdateViewTransitionState(

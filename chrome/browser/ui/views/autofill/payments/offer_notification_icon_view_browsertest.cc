@@ -65,6 +65,7 @@ class OfferNotificationIconViewBrowserTest : public UiBrowserTest {
     if (!offer_notification_icon_view) {
       return false;
     }
+
     EXPECT_EQ(offer_notification_icon_view->GetAccessibleName(),
               l10n_util::GetStringUTF16(
                   IDS_AUTOFILL_OFFERS_REMINDER_ICON_TOOLTIP_TEXT));
@@ -84,7 +85,11 @@ class OfferNotificationIconViewBrowserTest : public UiBrowserTest {
     return true;
   }
 
-  void WaitForUserDismissal() override {}
+  void WaitForUserDismissal() override {
+    // Consider closing the browser to be dismissal. This is useful when using
+    // the test-launcher-interactive option.
+    ui_test_utils::WaitForBrowserToClose();
+  }
 
  protected:
   content::WebContents* GetWebContents() {

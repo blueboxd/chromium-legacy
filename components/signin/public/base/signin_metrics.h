@@ -97,8 +97,12 @@ enum class ProfileSignout {
   // current account is automatically signed out.
   kDeviceLockRemovedOnAutomotive = 28,
 
+  // User revoked Sync from the Settings by pressing "Turn off" in the "Sync and
+  // Google Services" page.
+  kRevokeSyncFromSettings = 29,
+
   // Keep this as the last enum.
-  kMaxValue = kDeviceLockRemovedOnAutomotive
+  kMaxValue = kRevokeSyncFromSettings
 };
 
 // Enum values used for use with "AutoLogin.Reverse" histograms.
@@ -446,8 +450,9 @@ enum class SourceForRefreshTokenOperation {
   // DEPRECATED on 09/2021 (used for force migration to DICE)
   // kAccountReconcilor_RevokeTokensNotInCookies = 18,
   kLogoutTabHelper_PrimaryPageChanged = 19,
+  kForceSigninReauthWithDifferentAccount = 20,
 
-  kMaxValue = kLogoutTabHelper_PrimaryPageChanged,
+  kMaxValue = kForceSigninReauthWithDifferentAccount,
 };
 
 // Different types of reporting. This is used as a histogram suffix.

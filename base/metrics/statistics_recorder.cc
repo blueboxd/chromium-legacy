@@ -27,7 +27,7 @@ namespace base {
 namespace {
 
 // Whether a 50/50 trial for using a R/W lock should be run.
-constexpr bool kRunRwLockTrial = false;
+constexpr bool kRunRwLockTrial = true;
 
 bool EnableBenchmarking() {
   // TODO(asvitkine): If this code ends up not being temporary, refactor it to
@@ -151,14 +151,20 @@ HistogramBase* StatisticsRecorder::RegisterOrDeleteDuplicate(
 // static
 const BucketRanges* StatisticsRecorder::RegisterOrDeleteDuplicateRanges(
     const BucketRanges* ranges) {
-  const SrAutoWriterLock auto_lock(GetLock());
-  EnsureGlobalRecorderWhileLocked();
+  const BucketRanges* registered;
+  {
+    const SrAutoWriterLock auto_lock(GetLock());
+    EnsureGlobalRecorderWhileLocked();
 
-  const BucketRanges* const registered =
-      top_->ranges_manager_.RegisterOrDeleteDuplicateRanges(ranges);
+    registered = top_->ranges_manager_.GetOrRegisterCanonicalRanges(ranges);
+  }
 
-  if (registered == ranges)
+  // Delete the duplicate ranges outside the lock to reduce contention.
+  if (registered != ranges) {
+    delete ranges;
+  } else {
     ANNOTATE_LEAKING_OBJECT_PTR(ranges);
+  }
 
   return registered;
 }
@@ -316,7 +322,7 @@ bool StatisticsRecorder::SrLock::ShouldUseSharedMutex() {
   if (kRunRwLockTrial && !EnableBenchmarking()) {
     return RandInt(0, 1) == 1;
   }
-  return false;
+  return true;
 }
 
 // static

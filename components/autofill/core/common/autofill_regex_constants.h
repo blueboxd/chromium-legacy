@@ -32,6 +32,7 @@ inline constexpr char16_t kCompanyRe[] =
     u"|شرکت"                      // fa
     u"|회사|직장"                 // ko-KR
     u"|(nama.?)?perusahaan";      // id
+inline constexpr char16_t kStreetLocationRe[] = u"calle y número";  // es-MX
 inline constexpr char16_t kStreetNameRe[] =
     u"stra(ss|ß)e"                 // de
     u"|street"                     // en
@@ -39,18 +40,19 @@ inline constexpr char16_t kStreetNameRe[] =
     u"|rua|avenida"                // pt-PT, pt-BR
     u"|((?<!do |de )endere[çc]o)"  // pt-BR
     u"|logradouro"                 // pt-BR
+    u"|dirección"                  // es-MX
     u"|calle";                     // es-MX
 inline constexpr char16_t kHouseNumberRe[] =
     u"(house.?|street.?|^)(number|no\\.?$)"    // en
     u"|(haus|^)(nummer|nr)"                    // de
     u"|^\\*?.?número(.?\\*?$| da residência)"  // pt-BR, pt-PT
-    u"|дом|номер.?дома"                        // ru
-    u"|exterior";                              // es-MX
+    u"|exterior"                               // es
+    u"|дом|номер.?дома";                       // ru
 inline constexpr char16_t kApartmentNumberRe[] =
     u"apartment"                      // en
-    u"|interior"                      // es-MX
+    u"|interior|departamento"         // es-MX
     u"|n(u|ú)mero.*app?art(a|e)ment"  // es,fr,it
-    u"|Wohnung"                       // de
+    u"|wohnung"                       // de
     u"|квартир";                      // ru
 inline constexpr char16_t kAddressLine1Re[] =
     u"^address$|address[_-]?line(one)?|address1|addr1|street"
@@ -105,7 +107,6 @@ inline constexpr char16_t kAddressLine2LabelRe[] =
     u"|주소";      // ko-KR
 inline constexpr char16_t kAddressLinesExtraRe[] =
     u"address.*line[3-9]|address[3-9]|addr[3-9]|street|line[3-9]"
-    u"|municipio"           // es
     u"|batiment|residence"  // fr-FR
     u"|indirizzo[3-9]";     // it-IT
 inline constexpr char16_t kAddressLookupRe[] = u"lookup";
@@ -154,11 +155,11 @@ inline constexpr char16_t kCityRe[] =
     u"city|town"
     u"|\\bort\\b|stadt"                                  // de-DE
     u"|suburb"                                           // en-AU
-    u"|ciudad|provincia|localidad|poblacion"             // es
+    u"|ciudad|localidad|poblacion"                       // es
     u"|ville|commune"                                    // fr-FR
     u"|localita"                                         // it-IT
     u"|市区町村"                                         // ja-JP
-    u"|cidade|município"                                 // pt-BR, pt-PT
+    u"|cidade"                                           // pt-BR
     u"|Город|Насел(е|ё)нный.?пункт"                      // ru
     u"|市"                                               // zh-CN
     u"|分區"                                             // zh-TW
@@ -195,16 +196,15 @@ inline constexpr char16_t kOverflowAndLandmarkRe[] =
 
 inline constexpr char16_t kLandmarkRe[] =
     u"landmark"
-    u"|(?:ponto|complemento).*ref[êe]r[êe]ncia"  // pt-BR, pt-PT
-    u"|punto.*referencia";                       // es
+    u"|ref[êe]r[êe]ncia";  // es-MX, pt-BR
 
 inline constexpr char16_t kBetweenStreetsRe[] =
     u"(cross|between).*street"
     u"|entre.*calle";  // es
 
 inline constexpr char16_t kAdminLevel2Re[] =
-    u"municipio"                  // pt
-    u"|municipio|delegaci[oó]n";  // es
+    u"município"                  // pt
+    u"|municipio|delegaci[oó]n";  // es-MX
 
 /////////////////////////////////////////////////////////////////////////////
 // search_field.cc
@@ -508,6 +508,27 @@ inline constexpr char16_t kFlightRe[] =
     u"|便名|航空会社";                   // ja-JP
 
 /////////////////////////////////////////////////////////////////////////////
+// iban_field.cc
+/////////////////////////////////////////////////////////////////////////////
+// Used to match the HTML name and label for International Bank Account Number
+// (IBAN).
+inline constexpr char16_t kIbanRe[] =
+    u"(\\biban(\\b|_)|international bank account number)";
+
+/////////////////////////////////////////////////////////////////////////////
+// merchant_promo_code_field.cc
+/////////////////////////////////////////////////////////////////////////////
+// "promo code", "promotion code", "promotional code" are all acceptable
+// keywords.
+inline constexpr char16_t kMerchantPromoCodeRe[] =
+    u"(promo(tion|tional)?|gift|discount|coupon)[-_. ]*code";
+
+/////////////////////////////////////////////////////////////////////////////
+// All regexes below this point are non-parsing related and thus don't have a
+// JSON based definition.
+/////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////
 // validation.cc
 /////////////////////////////////////////////////////////////////////////////
 
@@ -630,11 +651,6 @@ inline constexpr char16_t kUPIVirtualPaymentAddressRe[] =
     u"yesbankltd"
     u")$";
 
-// Used to match the HTML name and label for International Bank Account Number
-// (IBAN).
-inline constexpr char16_t kIbanRe[] =
-    u"(\\biban(\\b|_)|international bank account number)";
-
 // Used to match field value that might be an International Bank Account Number.
 // TODO(crbug.com/977377): The regex doesn't match IBANs for Saint Lucia (LC),
 // Kazakhstan (KZ) and Romania (RO). Consider replace the regex with something
@@ -662,52 +678,6 @@ inline constexpr char16_t kCreditCard4DigitExpYearPattern[] =
 //       /blah/search_all.jsp
 inline constexpr char16_t kUrlSearchActionRe[] =
     u"/search(/|((\\w*\\.\\w+)?$))";
-
-/////////////////////////////////////////////////////////////////////////////
-// form_data_parser.cc
-/////////////////////////////////////////////////////////////////////////////
-inline constexpr char16_t kSocialSecurityRe[] =
-    u"ssn|social.?security.?(num(ber)?|#)*";
-inline constexpr char16_t kOneTimePwdRe[] =
-    // "One time" is good signal that it is an OTP field.
-    u"one.?time|"
-    // The main tokens are good signals, but they are short, require word
-    // boundaries around them.
-    u"(?:\\b|_)(?:otp|otc|totp|sms|2fa|mfa)(?:\\b|_)|"
-    // Alternatively, require companion tokens before or after the main tokens.
-    u"(?:otp|otc|totp|sms|2fa|mfa).?(?:code|token|input|val|pin|login|verif|"
-    u"pass|pwd|psw|auth|field)|"
-    u"(?:verif(?:y|ication)?|email|phone|text|login|input|txt|user).?(?:otp|"
-    u"otc|totp|sms|2fa|mfa)|"
-    // Sometimes the main tokens are combined with each other.
-    u"sms.?otp|mfa.?otp|"
-    // "code" is not so strong signal as the main tokens, but in combination
-    // with "verification" and its variations it is.
-    u"verif(?:y|ication)?.?code|(?:\\b|_)vcode|"
-    // 'Second factor' and its variations are good signals.
-    u"(?:second|two|2).?factor|"
-    // A couple of custom strings that are usually OTP fields.
-    u"wfls-token|email_code";
-
-// Matches strings that consist of one repeated non alphanumeric symbol,
-// that is likely a result of website modifying the value to hide it.
-inline constexpr char16_t kHiddenValueRe[] = u"^(\\W)\\1+$";
-
-/////////////////////////////////////////////////////////////////////////////
-// merchant_promo_code_field.cc
-/////////////////////////////////////////////////////////////////////////////
-// "promo code", "promotion code", "promotional code" are all acceptable
-// keywords.
-inline constexpr char16_t kMerchantPromoCodeRe[] =
-    u"(promo(tion|tional)?|gift|discount|coupon)[-_. ]*code";
-
-/////////////////////////////////////////////////////////////////////////////
-// votes_uploader.cc
-/////////////////////////////////////////////////////////////////////////////
-inline constexpr char16_t kEmailValueRe[] =
-    u"^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$";
-inline constexpr char16_t kPhoneValueRe[] = u"^[0-9()+-]{6,25}$";
-inline constexpr char16_t kUsernameLikeValueRe[] = u"[A-Za-z0-9_\\-.]{7,30}";
 
 }  // namespace autofill
 

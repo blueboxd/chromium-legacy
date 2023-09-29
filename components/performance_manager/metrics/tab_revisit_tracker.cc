@@ -8,6 +8,7 @@
 
 #include "base/check.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/numerics/safe_conversions.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -27,7 +28,60 @@ int64_t GetLinearCappedBucket(int64_t sample, int64_t max) {
   return std::min(sample, max);
 }
 
+int64_t StateToSample(TabRevisitTracker::State state) {
+  // The UKM doesn't report discarded tabs, instead treating them as in the
+  // background.
+  if (state == TabRevisitTracker::State::kDiscarded) {
+    state = TabRevisitTracker::State::kBackground;
+  }
+  CHECK_LE(state, TabRevisitTracker::State::kClosed);
+  return static_cast<int64_t>(state);
+}
+
+void DoRecordUkm(TabRevisitTracker::StateBundle previous_state,
+                 TabRevisitTracker::StateBundle new_state,
+                 ukm::SourceId source_id) {
+  CHECK_NE(ukm::kInvalidSourceId, source_id);
+
+  ukm::builders::TabRevisitTracker_TabStateChange builder(source_id);
+
+  builder.SetPreviousState(StateToSample(previous_state.state))
+      .SetNewState(StateToSample(new_state.state))
+      .SetNumTotalRevisits(
+          GetLinearCappedBucket(new_state.num_revisits, kMaxNumRevisit))
+      .SetTimeInPreviousState(TabRevisitTracker::ExponentiallyBucketedSeconds(
+          base::TimeTicks::Now() - previous_state.last_state_change_time))
+      .SetTotalTimeActive(TabRevisitTracker::ExponentiallyBucketedSeconds(
+          new_state.total_time_active));
+
+  if (previous_state.connectedness_to_last_switch_active_tab &&
+      new_state.state == TabRevisitTracker::State::kActive) {
+    // It's possible for this score to be nullopt if the first switch to this
+    // tab isn't from another tab (for instance, on startup a tab will be made
+    // active but there will be no "previous" active tab). This is also only
+    // meaningful (thus recorded) if the tab is becoming the active tab.
+    builder.SetConnectednessToActiveTab(
+        previous_state.connectedness_to_last_switch_active_tab.value());
+  }
+
+  builder.Record(ukm::UkmRecorder::Get());
+}
+
 }  // namespace
+
+class TabRevisitTracker::UkmSourceIdReadyRecorder {
+ public:
+  UkmSourceIdReadyRecorder(StateBundle previous_state, StateBundle new_state)
+      : previous_state_(previous_state), new_state_(new_state) {}
+
+  void OnUkmSourceIdChanged(ukm::SourceId source_id) {
+    CHECK_NE(source_id, ukm::kInvalidSourceId);
+    DoRecordUkm(previous_state_, new_state_, source_id);
+  }
+
+  StateBundle previous_state_;
+  StateBundle new_state_;
+};
 
 TabRevisitTracker::TabRevisitTracker() = default;
 TabRevisitTracker::~TabRevisitTracker() = default;
@@ -60,39 +114,54 @@ void TabRevisitTracker::RecordCloseHistograms(
       /*buckets=*/200);
 }
 
-void TabRevisitTracker::RecordStateChangeUkm(
+void TabRevisitTracker::RecordStateChangeUkmAndUpdateStateBundle(
     const TabPageDecorator::TabHandle* tab_handle,
-    State new_state) {
+    StateBundle new_state_bundle) {
+  // This may return the "invalid UKM source ID" for discarded
+  // tabs, because their source ID is set on navigation, which happens later
+  // than the `PageNode`'s activation. If this is the invalid source ID, an
+  // observer is set up on the source ID property and the UKM event
+  // is reported after when it becomes available.
   ukm::builders::TabRevisitTracker_TabStateChange builder(
       tab_handle->page_node()->GetUkmSourceID());
 
-  StateBundle& bundle = tab_states_.at(tab_handle);
+  auto it = tab_states_.find(tab_handle);
+  CHECK(it != tab_states_.end());
 
-  if (new_state == State::kActive) {
-    ++bundle.num_revisits;
+  auto source_id = tab_handle->page_node()->GetUkmSourceID();
+  if (source_id == ukm::kInvalidSourceId) {
+    pending_ukm_records_.emplace(tab_handle,
+                                 std::make_unique<UkmSourceIdReadyRecorder>(
+                                     it->second, new_state_bundle));
+  } else {
+    DoRecordUkm(it->second, new_state_bundle, source_id);
   }
 
-  builder.SetPreviousState(StateToSample(bundle.state))
-      .SetNewState(StateToSample(new_state))
-      .SetNumTotalRevisits(
-          GetLinearCappedBucket(bundle.num_revisits, kMaxNumRevisit))
-      .SetTimeInPreviousState(ExponentiallyBucketedSeconds(
-          base::TimeTicks::Now() - bundle.last_state_change_time));
-
-  builder.Record(ukm::UkmRecorder::Get());
-
-  bundle.state = new_state;
-  bundle.last_state_change_time = base::TimeTicks::Now();
+  it->second = new_state_bundle;
 }
 
-int64_t TabRevisitTracker::StateToSample(TabRevisitTracker::State state) {
-  // The UKM doesn't report discarded tabs, instead treating them as in the
-  // background.
-  if (state == TabRevisitTracker::State::kDiscarded) {
-    state = TabRevisitTracker::State::kBackground;
+TabRevisitTracker::StateBundle TabRevisitTracker::CreateUpdatedStateBundle(
+    const TabPageDecorator::TabHandle* tab_handle,
+    State new_state) const {
+  StateBundle new_bundle = tab_states_.at(tab_handle);
+
+  if (new_state == State::kActive) {
+    ++new_bundle.num_revisits;
   }
-  CHECK_LE(state, TabRevisitTracker::State::kClosed);
-  return static_cast<int64_t>(state);
+
+  const base::TimeTicks now = base::TimeTicks::Now();
+
+  // Add the time spent in the last state to total_active_time and update
+  // last_active_time if the tab was active before this transition.
+  if (new_bundle.state == State::kActive) {
+    new_bundle.last_active_time = now;
+    new_bundle.total_time_active += (now - new_bundle.last_state_change_time);
+  }
+
+  new_bundle.state = new_state;
+  new_bundle.last_state_change_time = now;
+
+  return new_bundle;
 }
 
 // static
@@ -109,6 +178,13 @@ void TabRevisitTracker::OnPassedToGraph(Graph* graph) {
       graph->GetRegisteredObjectAs<TabPageDecorator>();
   CHECK(tab_page_decorator);
   tab_page_decorator->AddObserver(this);
+
+  TabConnectednessDecorator* tab_connectedness_decorator =
+      graph->GetRegisteredObjectAs<TabConnectednessDecorator>();
+  CHECK(tab_connectedness_decorator);
+  tab_connectedness_decorator->AddObserver(this);
+
+  graph->AddPageNodeObserver(this);
 }
 
 void TabRevisitTracker::OnTakenFromGraph(Graph* graph) {
@@ -117,6 +193,14 @@ void TabRevisitTracker::OnTakenFromGraph(Graph* graph) {
   if (tab_page_decorator) {
     tab_page_decorator->RemoveObserver(this);
   }
+
+  TabConnectednessDecorator* tab_connectedness_decorator =
+      graph->GetRegisteredObjectAs<TabConnectednessDecorator>();
+  if (tab_connectedness_decorator) {
+    tab_connectedness_decorator->RemoveObserver(this);
+  }
+
+  graph->RemovePageNodeObserver(this);
 }
 
 void TabRevisitTracker::OnTabAdded(TabPageDecorator::TabHandle* tab_handle) {
@@ -173,9 +257,15 @@ void TabRevisitTracker::OnBeforeTabRemoved(
     RecordCloseHistograms(tab_handle);
   }
 
-  RecordStateChangeUkm(tab_handle, State::kClosed);
+  RecordStateChangeUkmAndUpdateStateBundle(
+      tab_handle, CreateUpdatedStateBundle(tab_handle, State::kClosed));
+  // No need to update anything in the State Bundle here since the page is going
+  // away.
 
   tab_states_.erase(tab_handle);
+  // If there was a pending record for this tab that never materialized, remove
+  // it from the map.
+  pending_ukm_records_.erase(tab_handle);
 }
 
 void TabRevisitTracker::OnIsActiveTabChanged(const PageNode* page_node) {
@@ -187,16 +277,49 @@ void TabRevisitTracker::OnIsActiveTabChanged(const PageNode* page_node) {
       TabPageDecorator::FromPageNode(page_node);
   CHECK(tab_handle);
 
+  State new_state =
+      live_state_data->IsActiveTab() ? State::kActive : State::kBackground;
+  CHECK_NE(tab_states_[tab_handle].state, new_state);
+  RecordStateChangeUkmAndUpdateStateBundle(
+      tab_handle, CreateUpdatedStateBundle(tab_handle, new_state));
+
   if (live_state_data->IsActiveTab()) {
-    CHECK_NE(tab_states_[tab_handle].state, State::kActive);
-    RecordStateChangeUkm(tab_handle, State::kActive);
-    tab_states_[tab_handle].state = State::kActive;
     RecordRevisitHistograms(tab_handle);
-  } else {
-    CHECK_NE(tab_states_[tab_handle].state, State::kBackground);
-    tab_states_[tab_handle].last_active_time = base::TimeTicks::Now();
-    RecordStateChangeUkm(tab_handle, State::kBackground);
-    tab_states_[tab_handle].state = State::kBackground;
+  }
+}
+
+void TabRevisitTracker::OnBeforeTabSwitch(
+    TabPageDecorator::TabHandle* source,
+    TabPageDecorator::TabHandle* destination) {
+  // The score in the range [0, 1] is remapped to be in the range [0, 1000] to
+  // be represented as an integer in the histogram.
+  constexpr float kScaleFactor = 1000.0f;
+  // Compute the connectedness from `source` to `destination` and store it in
+  // `destination`'s StateBundle. We don't record the histograms/UKMs here,
+  // because this notification is received before the `PageLiveState` data is
+  // updated and that data needs to be up to date for some other signals to be
+  // recorded properly.
+  float connectedness = TabConnectednessDecorator::ComputeConnectednessBetween(
+      source, destination);
+
+  CHECK_GE(connectedness, 0.0f);
+  CHECK_LE(connectedness, 1.0f);
+
+  tab_states_[destination].connectedness_to_last_switch_active_tab =
+      base::ClampRound<int64_t, float>(connectedness * kScaleFactor);
+}
+
+void TabRevisitTracker::OnUkmSourceIdChanged(const PageNode* page_node) {
+  TabPageDecorator::TabHandle* tab_handle =
+      TabPageDecorator::FromPageNode(page_node);
+  if (tab_handle) {
+    auto it = pending_ukm_records_.find(tab_handle);
+    if (it != pending_ukm_records_.end()) {
+      it->second->OnUkmSourceIdChanged(page_node->GetUkmSourceID());
+
+      // Once the recorder has done its job, it can be deleted.
+      pending_ukm_records_.erase(tab_handle);
+    }
   }
 }
 

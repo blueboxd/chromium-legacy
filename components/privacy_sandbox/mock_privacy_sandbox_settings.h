@@ -31,6 +31,10 @@ class MockPrivacySandboxSettings
               SetTopicAllowed,
               (const privacy_sandbox::CanonicalTopic&, bool),
               (override));
+  MOCK_METHOD(bool,
+              IsTopicPrioritized,
+              (const privacy_sandbox::CanonicalTopic&),
+              (override));
   MOCK_METHOD(void, ClearTopicSettings, (base::Time, base::Time), (override));
   MOCK_METHOD(base::Time, TopicsDataAccessibleSince, (), (override, const));
   MOCK_METHOD(bool, IsAttributionReportingEverAllowed, (), (override, const));
@@ -86,6 +90,10 @@ class MockPrivacySandboxSettings
               IsPrivateAggregationDebugModeAllowed,
               (const url::Origin&, const url::Origin&),
               (override, const));
+  MOCK_METHOD(bool,
+              IsCookieDeprecationExperimentCurrentlyEligible,
+              (),
+              (override, const));
   MOCK_METHOD(bool, IsCookieDeprecationLabelAllowed, (), (override, const));
   MOCK_METHOD(bool,
               IsCookieDeprecationLabelAllowedForContext,
@@ -109,6 +117,7 @@ class MockPrivacySandboxSettings
               SetDelegateForTesting,
               (std::unique_ptr<Delegate>),
               (override));
+  MOCK_METHOD(bool, AreRelatedWebsiteSetsEnabled, (), (override, const));
 };
 
 }  // namespace privacy_sandbox_test_util

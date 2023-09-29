@@ -5,6 +5,9 @@
 #ifndef CHROMEOS_ASH_COMPONENTS_DBUS_USERDATAAUTH_FAKE_USERDATAAUTH_CLIENT_H_
 #define CHROMEOS_ASH_COMPONENTS_DBUS_USERDATAAUTH_FAKE_USERDATAAUTH_CLIENT_H_
 
+#include <string>
+#include <utility>
+
 #include "base/memory/raw_ptr.h"
 #include "chromeos/ash/components/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
@@ -137,8 +140,10 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
 
     bool HasPinFactor(const cryptohome::AccountIdentifier& account_id);
 
-    std::string AddSession(const cryptohome::AccountIdentifier& account_id,
-                           bool authenticated);
+    // Returns {authsession_id, broadcast_id} pair.
+    std::pair<std::string, std::string> AddSession(
+        const cryptohome::AccountIdentifier& account_id,
+        bool authenticated);
 
     // Checks that there is one active auth session and returns whether session
     // is ephemeral.
@@ -165,6 +170,7 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
     ~AuthSessionData();
     // AuthSession id.
     std::string id;
+    std::string broadcast_id;
     // Whether the `AUTH_SESSION_FLAGS_EPHEMERAL_USER` flag was passed on
     // creation.
     bool ephemeral = false;
@@ -185,6 +191,7 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
 
     // Indication that session is set to listen for FP events.
     bool is_listening_for_fingerprint_events = false;
+    base::Time lifetime;
   };
 
   FakeUserDataAuthClient();
@@ -445,6 +452,9 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
   // service wasn't available.
   std::vector<chromeos::WaitForServiceToBeAvailableCallback>
       pending_wait_for_service_to_be_available_callbacks_;
+
+  // The list of usernames of users with mounted user dirs.
+  std::set<std::string> mounted_user_dirs_;
 
   // Other stuff/miscellaneous:
 

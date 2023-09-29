@@ -175,6 +175,7 @@ När du raderar webbhistoriken, oavsett om det är all historik eller bara för 
 <translation id="19288952978244135">Öppna Chrome igen.</translation>
 <translation id="1933845786846280168">Vald flik</translation>
 <translation id="1943432128510653496">Spara lösenord</translation>
+<translation id="1944535645109964458">Inga nycklar är tillgängliga</translation>
 <translation id="1952172573699511566">När det är möjligt visas text på webbplatser på önskat språk.</translation>
 <translation id="1959679933317802873">Väntar på innehåll</translation>
 <translation id="1960290143419248813">Uppdateringar av Chrome stöds inte längre för den här versionen av Android</translation>
@@ -222,6 +223,7 @@ När du raderar webbhistoriken, oavsett om det är all historik eller bara för 
 <translation id="2189903024544168260">Intresset har tagits bort</translation>
 <translation id="2194856509914051091">Tänk på detta</translation>
 <translation id="2200113223741723867">Hantera delning av data om användning</translation>
+<translation id="221494669172414749">Om du öppnar Chrome utan ett profillås tas dina sparade lösenord och betalningsmetoder bort från bilen. Denna data skyddas om du använder ett profillås.</translation>
 <translation id="2218567645332692482">Uppgradera anslutningar till HTTPS och visa en varning innan webbplatser som saknar stöd för HTTPS läses in</translation>
 <translation id="2227444325776770048">Fortsätt som <ph name="USER_FULL_NAME" /></translation>
 <translation id="2230777942707397948">Tomt fönster</translation>
@@ -262,6 +264,7 @@ När du raderar webbhistoriken, oavsett om det är all historik eller bara för 
 <translation id="2461822463642141190">Nuvarande</translation>
 <translation id="2472163211318554013">Logga in så att du får ut mesta möjliga av Chrome</translation>
 <translation id="247737702124049222">Bildbeskrivningar har aktiverats</translation>
+<translation id="2479148705183875116">Öppna inställningarna</translation>
 <translation id="2482878487686419369">Aviseringar</translation>
 <translation id="2496180316473517155">Webbhistorik</translation>
 <translation id="2497852260688568942">Synkronisering har inaktiverats av administratören</translation>
@@ -626,6 +629,7 @@ Med förtroendetoken förbättras integriteten på webben. De kan inte användas
 <translation id="4257230861809842349">Vill du radera lösenord från Google Lösenordshantering?</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Vilken data används:<ph name="END_BOLD" /> Webbhistoriken, där webbplatser som du besökt i Chrome på den här enheten registreras.</translation>
 <translation id="4269820728363426813">Kopiera länkadress</translation>
+<translation id="4277529130885813215">Använd en annan enhet</translation>
 <translation id="4283102315569707115">Vill du begära webbplatser för dator som standard?</translation>
 <translation id="4285846616383034558">Cookies, cacheminne och annan webbplatsdata</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Aktivera skärmlåset i Android-inställningar<ph name="END_LINK" /></translation>
@@ -1014,6 +1018,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6295158916970320988">Alla webbplatser</translation>
 <translation id="6303969859164067831">Logga ut och inaktivera synkronisering</translation>
 <translation id="6312687380483398334">Webbappar (tyst)</translation>
+<translation id="6315386555979018699">Radera och fortsätt</translation>
 <translation id="6316139424528454185">Android-versionen stöds inte</translation>
 <translation id="6324916366299863871">Redigera genväg</translation>
 <translation id="6324977638108296054">Det gick inte att skapa en länk till markeringen</translation>
@@ -1165,6 +1170,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6955535239952325894">Inställningen är inaktiverad för hanterade webbläsare</translation>
 <translation id="6963766334940102469">Radera bokmärken</translation>
 <translation id="696447261358045621">Inaktivera inkognitoläge</translation>
+<translation id="6965382102122355670">OK</translation>
 <translation id="6971862865055170158">Godkänn inte</translation>
 <translation id="6978717888677691380">Webbplatser du har blockerat</translation>
 <translation id="6979737339423435258">Sedan kontot skapades</translation>
@@ -1323,6 +1329,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7757787379047923882">Texten delades från <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">SD-kort <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Lägg till adress</translation>
+<translation id="7766587497031415281">Fler alternativ för att rensa webbinformation</translation>
 <translation id="7772032839648071052">Bekräfta lösenfras</translation>
 <translation id="7772375229873196092">Stäng <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 och <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> till}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 och <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> till}}</translation>
@@ -1576,6 +1583,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8998289560386111590">Inte tillgängligt på din enhet</translation>
 <translation id="8998729206196772491">Du håller på att logga in med ett konto som hanteras av <ph name="MANAGED_DOMAIN" />, vilket ger administratören kontroll över data i Chrome. Din data kopplas permanent till det här kontot. Om du loggar ut från Chrome raderas all din data från enheten, men den lagras fortfarande i Google-kontot.</translation>
 <translation id="9012585441087414258">Skyddar mot skadliga webbplatser, nedladdningar och tillägg. Om något misstänkt händer på en sida skickas webbadresser och delar av sidinnehållet till Google Säker webbsökning.</translation>
+<translation id="9019199799064251516">Vill du fortsätta utan ett profillås i bilen?</translation>
 <translation id="9022774213089566801">Mest besökta</translation>
 <translation id="9022871169049522985">Webbplatser och annonsörer kan mäta annonsernas resultat</translation>
 <translation id="9035378196785279980">Flytta till\u2026</translation>
@@ -1638,5 +1646,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="983192555821071799">Stäng alla flikar</translation>
 <translation id="987264212798334818">Allmänt</translation>
 <translation id="992745192656291733"><ph name="TAB_COUNT" /> flikar</translation>
+<translation id="993520549480398880">Rensa även bokmärken, historik med mera från den här bilen</translation>
 <translation id="996149300115483134">Menyn med flödeskort är stängd</translation>
 </translationbundle>

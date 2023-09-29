@@ -116,6 +116,7 @@
 #if BUILDFLAG(IS_MAC)
 #include "device/fido/mac/authenticator_config.h"
 #include "device/fido/mac/credential_store.h"
+#include "device/fido/mac/icloud_keychain.h"
 #include "device/fido/mac/scoped_icloud_keychain_test_environment.h"
 #include "device/fido/mac/scoped_touch_id_test_environment.h"
 #endif
@@ -135,6 +136,7 @@ using ::testing::_;
 
 using blink::mojom::AttestationConveyancePreference;
 using blink::mojom::AuthenticationExtensionsClientInputs;
+using blink::mojom::AuthenticationExtensionsClientOutputs;
 using blink::mojom::AuthenticatorSelectionCriteria;
 using blink::mojom::AuthenticatorSelectionCriteriaPtr;
 using blink::mojom::AuthenticatorStatus;
@@ -1092,7 +1094,7 @@ TEST_F(AuthenticatorImplTest, AppIdExtension) {
 
     GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
     ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
-    EXPECT_EQ(result.response->echo_appid_extension, false);
+    EXPECT_EQ(result.response->extensions->echo_appid_extension, false);
   }
 
   {
@@ -1110,8 +1112,8 @@ TEST_F(AuthenticatorImplTest, AppIdExtension) {
 
     GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
     ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
-    EXPECT_EQ(result.response->echo_appid_extension, true);
-    EXPECT_EQ(result.response->appid_extension, false);
+    EXPECT_EQ(result.response->extensions->echo_appid_extension, true);
+    EXPECT_EQ(result.response->extensions->appid_extension, false);
   }
 
   {
@@ -1127,8 +1129,8 @@ TEST_F(AuthenticatorImplTest, AppIdExtension) {
 
     GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
     ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
-    EXPECT_EQ(result.response->echo_appid_extension, true);
-    EXPECT_EQ(result.response->appid_extension, true);
+    EXPECT_EQ(result.response->extensions->echo_appid_extension, true);
+    EXPECT_EQ(result.response->extensions->appid_extension, true);
   }
 
   {
@@ -1152,8 +1154,8 @@ TEST_F(AuthenticatorImplTest, AppIdExtension) {
 
     GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
     ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
-    EXPECT_EQ(result.response->echo_appid_extension, true);
-    EXPECT_EQ(result.response->appid_extension, true);
+    EXPECT_EQ(result.response->extensions->echo_appid_extension, true);
+    EXPECT_EQ(result.response->extensions->appid_extension, true);
   }
 }
 
@@ -4651,7 +4653,7 @@ TEST_F(AuthenticatorImplTest, CredBlob) {
 
     auto result = AuthenticatorGetAssertion(std::move(options));
     ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
-    EXPECT_EQ(result.response->get_cred_blob, cred_blob);
+    EXPECT_EQ(result.response->extensions->get_cred_blob, cred_blob);
   }
 }
 
@@ -4876,12 +4878,13 @@ TEST_F(AuthenticatorDevicePublicKeyTest, DevicePublicKeyGetAssertion) {
     GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
 
     ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
-    ASSERT_EQ(static_cast<bool>(result.response->device_public_key),
+    ASSERT_EQ(static_cast<bool>(result.response->extensions->device_public_key),
               dpk_support);
     if (dpk_support) {
+      ASSERT_FALSE(result.response->extensions->device_public_key
+                       ->authenticator_output.empty());
       ASSERT_FALSE(
-          result.response->device_public_key->authenticator_output.empty());
-      ASSERT_FALSE(result.response->device_public_key->signature.empty());
+          result.response->extensions->device_public_key->signature.empty());
     }
   }
 }
@@ -4910,7 +4913,8 @@ TEST_F(AuthenticatorDevicePublicKeyTest,
 
     if (backup_eligible) {
       ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
-      ASSERT_TRUE(static_cast<bool>(result.response->device_public_key));
+      ASSERT_TRUE(
+          static_cast<bool>(result.response->extensions->device_public_key));
     } else {
       ASSERT_EQ(result.status, AuthenticatorStatus::NOT_ALLOWED_ERROR);
     }
@@ -7702,12 +7706,12 @@ TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionLargeBlobRead) {
     GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
 
     ASSERT_EQ(AuthenticatorStatus::SUCCESS, result.status);
-    EXPECT_TRUE(result.response->echo_large_blob);
-    EXPECT_FALSE(result.response->echo_large_blob_written);
+    EXPECT_TRUE(result.response->extensions->echo_large_blob);
+    EXPECT_FALSE(result.response->extensions->echo_large_blob_written);
     if (test.did_read_large_blob) {
-      EXPECT_EQ(large_blob, *result.response->large_blob);
+      EXPECT_EQ(large_blob, *result.response->extensions->large_blob);
     } else {
-      EXPECT_FALSE(result.response->large_blob.has_value());
+      EXPECT_FALSE(result.response->extensions->large_blob.has_value());
     }
     virtual_device_factory_->mutable_state()->registrations.clear();
     virtual_device_factory_->mutable_state()->ClearLargeBlobs();
@@ -7769,10 +7773,11 @@ TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionLargeBlobWrite) {
     GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
 
     ASSERT_EQ(AuthenticatorStatus::SUCCESS, result.status);
-    EXPECT_TRUE(result.response->echo_large_blob);
-    EXPECT_FALSE(result.response->large_blob.has_value());
-    EXPECT_TRUE(result.response->echo_large_blob_written);
-    EXPECT_EQ(test.did_write_large_blob, result.response->large_blob_written);
+    EXPECT_TRUE(result.response->extensions->echo_large_blob);
+    EXPECT_FALSE(result.response->extensions->large_blob.has_value());
+    EXPECT_TRUE(result.response->extensions->echo_large_blob_written);
+    EXPECT_EQ(test.did_write_large_blob,
+              result.response->extensions->large_blob_written);
     if (test.did_write_large_blob) {
       absl::optional<device::LargeBlob> compressed_blob =
           virtual_device_factory_->mutable_state()->GetLargeBlob(
@@ -7809,9 +7814,9 @@ TEST_F(ResidentKeyAuthenticatorImplTest,
   options->extensions->large_blob_read = true;
   GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
   ASSERT_EQ(AuthenticatorStatus::SUCCESS, result.status);
-  EXPECT_TRUE(result.response->echo_large_blob);
-  EXPECT_FALSE(result.response->echo_large_blob_written);
-  ASSERT_FALSE(result.response->large_blob);
+  EXPECT_TRUE(result.response->extensions->echo_large_blob);
+  EXPECT_FALSE(result.response->extensions->echo_large_blob_written);
+  ASSERT_FALSE(result.response->extensions->large_blob);
 }
 
 TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionLargeBlobExtension) {
@@ -7838,9 +7843,9 @@ TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionLargeBlobExtension) {
     options->extensions->large_blob_read = true;
     GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
     ASSERT_EQ(AuthenticatorStatus::SUCCESS, result.status);
-    EXPECT_TRUE(result.response->echo_large_blob);
-    EXPECT_FALSE(result.response->echo_large_blob_written);
-    ASSERT_FALSE(result.response->large_blob);
+    EXPECT_TRUE(result.response->extensions->echo_large_blob);
+    EXPECT_FALSE(result.response->extensions->echo_large_blob_written);
+    ASSERT_FALSE(result.response->extensions->large_blob);
   }
 
   {
@@ -7851,9 +7856,9 @@ TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionLargeBlobExtension) {
     options->extensions->large_blob_write = large_blob;
     GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
     ASSERT_EQ(AuthenticatorStatus::SUCCESS, result.status);
-    EXPECT_TRUE(result.response->echo_large_blob);
-    EXPECT_TRUE(result.response->echo_large_blob_written);
-    EXPECT_FALSE(result.response->large_blob);
+    EXPECT_TRUE(result.response->extensions->echo_large_blob);
+    EXPECT_TRUE(result.response->extensions->echo_large_blob_written);
+    EXPECT_FALSE(result.response->extensions->large_blob);
   }
 
   {
@@ -7864,10 +7869,10 @@ TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionLargeBlobExtension) {
     options->extensions->large_blob_read = true;
     GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
     ASSERT_EQ(AuthenticatorStatus::SUCCESS, result.status);
-    EXPECT_TRUE(result.response->echo_large_blob);
-    EXPECT_FALSE(result.response->echo_large_blob_written);
-    ASSERT_TRUE(result.response->large_blob);
-    EXPECT_EQ(large_blob, *result.response->large_blob);
+    EXPECT_TRUE(result.response->extensions->echo_large_blob);
+    EXPECT_FALSE(result.response->extensions->echo_large_blob_written);
+    ASSERT_TRUE(result.response->extensions->large_blob);
+    EXPECT_EQ(large_blob, *result.response->extensions->large_blob);
   }
 
   // Corrupt the large blob data and attempt to read it back. The invalid
@@ -7883,9 +7888,9 @@ TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionLargeBlobExtension) {
     options->extensions->large_blob_read = true;
     GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
     ASSERT_EQ(AuthenticatorStatus::SUCCESS, result.status);
-    EXPECT_TRUE(result.response->echo_large_blob);
-    EXPECT_FALSE(result.response->echo_large_blob_written);
-    ASSERT_FALSE(result.response->large_blob);
+    EXPECT_TRUE(result.response->extensions->echo_large_blob);
+    EXPECT_FALSE(result.response->extensions->echo_large_blob_written);
+    ASSERT_FALSE(result.response->extensions->large_blob);
   }
 }
 
@@ -8445,9 +8450,9 @@ TEST_F(ResidentKeyAuthenticatorImplTest, PRFExtension) {
             AuthenticatorGetAssertion(std::move(options));
 
         EXPECT_EQ(result.status, AuthenticatorStatus::SUCCESS);
-        CHECK(result.response->prf_results);
-        CHECK(!result.response->prf_results->id);
-        return std::move(result.response->prf_results);
+        CHECK(result.response->extensions->prf_results);
+        CHECK(!result.response->extensions->prf_results->id);
+        return std::move(result.response->extensions->prf_results);
       };
 
       const std::vector<uint8_t> salt1(32, 1);
@@ -8636,7 +8641,7 @@ TEST_F(ResidentKeyAuthenticatorImplTest,
   GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
 
   EXPECT_EQ(result.status, AuthenticatorStatus::SUCCESS);
-  EXPECT_FALSE(result.response->prf_results);
+  EXPECT_FALSE(result.response->extensions->prf_results);
 }
 
 TEST_F(ResidentKeyAuthenticatorImplTest, ConditionalUI) {
@@ -9048,6 +9053,20 @@ class ICloudKeychainAuthenticatorImplTest : public AuthenticatorImplTest {
     explicit InspectTAIAuthenticatorRequestDelegate(Callback callback)
         : callback_(std::move(callback)) {}
 
+    void ConfigureDiscoveries(
+        const url::Origin& origin,
+        const std::string& rp_id,
+        RequestSource request_source,
+        device::FidoRequestType request_type,
+        absl::optional<device::ResidentKeyRequirement> resident_key_requirement,
+        base::span<const device::CableDiscoveryData> pairings_from_extension,
+        device::FidoDiscoveryFactory* fido_discovery_factory) override {
+      // nswindow must be set for the iCloud Keychain authenticator to be
+      // discovered.
+      fido_discovery_factory->set_nswindow(
+          device::fido::icloud_keychain::kFakeNSWindowForTesting);
+    }
+
     void OnTransportAvailabilityEnumerated(
         device::FidoRequestHandlerBase::TransportAvailabilityInfo tai)
         override {
@@ -9109,8 +9128,7 @@ class ICloudKeychainAuthenticatorImplTest : public AuthenticatorImplTest {
   InspectTAIAuthenticatorRequestDelegate::Callback tai_callback_;
 };
 
-// TODO(crbug.com/1482133): Re-enable this test
-TEST_F(ICloudKeychainAuthenticatorImplTest, DISABLED_Discovery) {
+TEST_F(ICloudKeychainAuthenticatorImplTest, Discovery) {
   if (__builtin_available(macOS 13.5, *)) {
     for (const bool feature_enabled : {false, true}) {
       SCOPED_TRACE(feature_enabled);
@@ -9318,7 +9336,7 @@ class AuthenticatorCableV2Test : public AuthenticatorImplRequestDelegateTest {
 
   void OnInvalidatedPairing(
       std::unique_ptr<device::cablev2::Pairing> disabled_pairing) {
-    pairings_.erase(std::ranges::find_if(
+    pairings_.erase(base::ranges::find_if(
         pairings_, [&disabled_pairing](const auto& pairing) {
           return device::cablev2::Pairing::EqualPublicKeys(pairing,
                                                            disabled_pairing);
@@ -9839,7 +9857,7 @@ TEST_F(AuthenticatorCableV2AuthenticatorTest, DevicePublicKeyGetAssertion) {
   const auto result = AuthenticatorGetAssertion(std::move(options));
 
   ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
-  EXPECT_TRUE(result.response->device_public_key);
+  EXPECT_TRUE(result.response->extensions->device_public_key);
 }
 
 TEST_F(AuthenticatorCableV2AuthenticatorTest, PRFMakeCredential) {
@@ -9912,11 +9930,11 @@ TEST_F(AuthenticatorCableV2AuthenticatorTest, PRFGetAssertion) {
   const auto result = AuthenticatorGetAssertion(std::move(options));
 
   ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
-  EXPECT_TRUE(result.response->echo_prf);
-  EXPECT_TRUE(result.response->prf_results);
-  EXPECT_EQ(result.response->prf_results->first, output1);
-  ASSERT_TRUE(result.response->prf_results->second.has_value());
-  EXPECT_EQ(*result.response->prf_results->second, output2);
+  EXPECT_TRUE(result.response->extensions->echo_prf);
+  EXPECT_TRUE(result.response->extensions->prf_results);
+  EXPECT_EQ(result.response->extensions->prf_results->first, output1);
+  ASSERT_TRUE(result.response->extensions->prf_results->second.has_value());
+  EXPECT_EQ(*result.response->extensions->prf_results->second, output2);
 }
 
 TEST_F(AuthenticatorCableV2AuthenticatorTest, PRFGetAssertionByCredential) {
@@ -9928,11 +9946,11 @@ TEST_F(AuthenticatorCableV2AuthenticatorTest, PRFGetAssertionByCredential) {
   const auto result = AuthenticatorGetAssertion(std::move(options));
 
   ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
-  EXPECT_TRUE(result.response->echo_prf);
-  EXPECT_TRUE(result.response->prf_results);
-  EXPECT_EQ(result.response->prf_results->first, output1);
-  ASSERT_TRUE(result.response->prf_results->second.has_value());
-  EXPECT_EQ(*result.response->prf_results->second, output2);
+  EXPECT_TRUE(result.response->extensions->echo_prf);
+  EXPECT_TRUE(result.response->extensions->prf_results);
+  EXPECT_EQ(result.response->extensions->prf_results->first, output1);
+  ASSERT_TRUE(result.response->extensions->prf_results->second.has_value());
+  EXPECT_EQ(*result.response->extensions->prf_results->second, output2);
 }
 
 // AuthenticatorImplWithRequestProxyTest tests behavior with an installed
@@ -10155,6 +10173,8 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, GetAssertion) {
       GetAssertionAuthenticatorResponse::New();
   request_proxy().config().get_assertion_response->info =
       CommonCredentialInfo::New();
+  request_proxy().config().get_assertion_response->extensions =
+      AuthenticationExtensionsClientOutputs::New();
 
   NavigateAndCommit(GURL(kTestOrigin1));
   auto request = GetTestPublicKeyCredentialRequestOptions();

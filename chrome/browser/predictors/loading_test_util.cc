@@ -105,7 +105,18 @@ void InitializeLcpInfluencerScriptUrlsBucket(LcppData& lcpp_data,
   for (auto& url : urls) {
     lcpp_data.mutable_lcpp_stat()
         ->mutable_lcp_script_url_stat()
-        ->mutable_lcp_script_url_buckets()
+        ->mutable_main_buckets()
+        ->insert({url.spec(), frequency});
+  }
+}
+
+void InitializeFontUrlsBucket(LcppData& lcpp_data,
+                              const std::vector<GURL>& urls,
+                              double frequency) {
+  for (const auto& url : urls) {
+    lcpp_data.mutable_lcpp_stat()
+        ->mutable_fetched_font_url_stat()
+        ->mutable_main_buckets()
         ->insert({url.spec(), frequency});
   }
 }
@@ -121,6 +132,12 @@ void InitializeLcpInfluencerScriptUrlsOtherBucket(LcppData& lcpp_data,
                                                   double frequency) {
   lcpp_data.mutable_lcpp_stat()
       ->mutable_lcp_script_url_stat()
+      ->set_other_bucket_frequency(frequency);
+}
+
+void InitializeFontUrlsOtherBucket(LcppData& lcpp_data, double frequency) {
+  lcpp_data.mutable_lcpp_stat()
+      ->mutable_fetched_font_url_stat()
       ->set_other_bucket_frequency(frequency);
 }
 
@@ -236,6 +253,16 @@ std::ostream& operator<<(std::ostream& os, const OriginStat& origin) {
             << origin.accessed_network() << "]";
 }
 
+std::ostream& operator<<(std::ostream& os,
+                         const LcppStringFrequencyStatData& data) {
+  for (const auto& [url, frequency] : data.main_buckets()) {
+    os << "\t\t\t\t" << url << ":" << frequency << std::endl;
+  }
+  os << "\t\t\t\t"
+     << "[<other_bucket>," << data.other_bucket_frequency() << "]" << std::endl;
+  return os;
+}
+
 std::ostream& operator<<(std::ostream& os, const LcppData& data) {
   os << "[" << data.host() << "," << data.last_visit_time() << "]" << std::endl;
   os << "\t\t"
@@ -252,14 +279,7 @@ std::ostream& operator<<(std::ostream& os, const LcppData& data) {
      << "]" << std::endl;
   os << "\t\t"
      << "lcp_script_url_stat:" << std::endl;
-  for (const auto& [url, frequency] :
-       data.lcpp_stat().lcp_script_url_stat().lcp_script_url_buckets()) {
-    os << "\t\t\t\t" << url << ":" << frequency << std::endl;
-  }
-  os << "\t\t\t\t"
-     << "[<other_bucket>,"
-     << data.lcpp_stat().lcp_script_url_stat().other_bucket_frequency() << "]"
-     << std::endl;
+  os << data.lcpp_stat().lcp_script_url_stat();
   return os;
 }
 
@@ -380,16 +400,17 @@ bool operator==(const LcpElementLocatorStat& lhs,
   return true;
 }
 
-bool operator==(const LcpScriptUrlStat& lhs, const LcpScriptUrlStat& rhs) {
-  if (lhs.lcp_script_url_buckets_size() != rhs.lcp_script_url_buckets_size() ||
+bool operator==(const LcppStringFrequencyStatData& lhs,
+                const LcppStringFrequencyStatData& rhs) {
+  if (lhs.main_buckets_size() != rhs.main_buckets_size() ||
       !AlmostEqual(lhs.other_bucket_frequency(),
                    rhs.other_bucket_frequency())) {
     return false;
   }
 
-  for (const auto& [rhs_url, rhs_frequency] : rhs.lcp_script_url_buckets()) {
-    const auto& lhs_it = lhs.lcp_script_url_buckets().find(rhs_url);
-    if (lhs_it == lhs.lcp_script_url_buckets().end() ||
+  for (const auto& [rhs_entry, rhs_frequency] : rhs.main_buckets()) {
+    const auto& lhs_it = lhs.main_buckets().find(rhs_entry);
+    if (lhs_it == lhs.main_buckets().end() ||
         !AlmostEqual(lhs_it->second, rhs_frequency)) {
       return false;
     }
@@ -400,7 +421,8 @@ bool operator==(const LcpScriptUrlStat& lhs, const LcpScriptUrlStat& rhs) {
 
 bool operator==(const LcppStat& lhs, const LcppStat& rhs) {
   return lhs.lcp_element_locator_stat() == rhs.lcp_element_locator_stat() &&
-         lhs.lcp_script_url_stat() == rhs.lcp_script_url_stat();
+         lhs.lcp_script_url_stat() == rhs.lcp_script_url_stat() &&
+         lhs.fetched_font_url_stat() == rhs.fetched_font_url_stat();
 }
 
 bool operator==(const LcppData& lhs, const LcppData& rhs) {

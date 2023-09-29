@@ -56,17 +56,6 @@ class CONTENT_EXPORT VideoCaptureController
   VideoCaptureController(const VideoCaptureController&) = delete;
   VideoCaptureController& operator=(const VideoCaptureController&) = delete;
 
-  // Warning: This value should not be changed, because doing so would change
-  // the meaning of logged UMA events for histograms Media.VideoCapture.Error
-  // and Media.VideoCapture.MaxFrameDropExceeded.
-  static constexpr int kMaxConsecutiveFrameDropForSameReasonCount = 10;
-
-  // Number of logs for dropped frames to be emitted before suppressing.
-  static constexpr int kMaxEmittedLogsForDroppedFramesBeforeSuppressing = 3;
-
-  // Suppressed logs for dropped frames will still be emitted this often.
-  static constexpr int kFrequencyForSuppressedLogs = 100;
-
   base::WeakPtr<VideoCaptureController> GetWeakPtrForIOThread();
 
   // Start video capturing and try to use the resolution specified in |params|.
@@ -134,6 +123,12 @@ class CONTENT_EXPORT VideoCaptureController
   void OnStarted() override;
   void OnStartedUsingGpuDecode() override;
   void OnStopped() override;
+
+  // Frames can be dropped early (e.g. capture process) or late (e.g. renderer
+  // process). Only if the frame drop happened early do we want to forward that
+  // signal to the renderer process for the purpose of the MediaStreamTrack
+  // Statistics API counting frame drops.
+  void OnFrameDroppedByRenderer(media::VideoCaptureFrameDropReason reason);
 
   // Implementation of VideoCaptureDeviceLauncher::Callbacks interface:
   void OnDeviceLaunched(
@@ -223,16 +218,6 @@ class CONTENT_EXPORT VideoCaptureController
         buffer_read_permission_;
   };
 
-  struct FrameDropLogState {
-    FrameDropLogState(media::VideoCaptureFrameDropReason reason =
-                          media::VideoCaptureFrameDropReason::kNone);
-
-    int drop_count = 0;
-    media::VideoCaptureFrameDropReason drop_reason =
-        media::VideoCaptureFrameDropReason::kNone;
-    bool max_log_count_exceeded = false;
-  };
-
   ~VideoCaptureController() override;
 
   // Find a client of |id| and |handler| in |clients|.
@@ -269,6 +254,8 @@ class CONTENT_EXPORT VideoCaptureController
                                    const VideoCaptureControllerID& id)>;
   void PerformForClientsWithOpenSession(EventHandlerAction action);
 
+  void OnFrameDroppedLogging(media::VideoCaptureFrameDropReason reason);
+
   void EmitLogMessage(const std::string& message, int verbose_log_level);
 
   void MaybeEmitFrameDropLogMessage(media::VideoCaptureFrameDropReason reason);
@@ -290,11 +277,6 @@ class CONTENT_EXPORT VideoCaptureController
   // Takes on only the states 'STARTING', 'STARTED' and 'ERROR'. 'ERROR' is an
   // absorbing state which stops the flow of data to clients.
   blink::VideoCaptureState state_;
-
-  FrameDropLogState frame_drop_log_state_;
-
-  // Tracks how often each frame-drop reason was encountered.
-  std::map<media::VideoCaptureFrameDropReason, int> frame_drop_log_counters_;
 
   int next_buffer_context_id_ = 0;
 

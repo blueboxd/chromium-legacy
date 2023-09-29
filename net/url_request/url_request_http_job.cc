@@ -34,7 +34,6 @@
 #include "base/types/optional_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "net/base/features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/http_user_agent_settings.h"
 #include "net/base/load_flags.h"
@@ -63,6 +62,7 @@
 #include "net/filter/zstd_source_stream.h"
 #include "net/first_party_sets/first_party_set_entry.h"
 #include "net/first_party_sets/first_party_set_metadata.h"
+#include "net/first_party_sets/first_party_sets_cache_filter.h"
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_log_util.h"
 #include "net/http/http_network_session.h"
@@ -236,7 +236,7 @@ std::unique_ptr<URLRequestJob> URLRequestHttpJob::Create(URLRequest* request) {
     // Check whether the app allows cleartext traffic to this host, and return
     // ERR_CLEARTEXT_NOT_PERMITTED if not.
     if (request->context()->check_cleartext_permitted() &&
-        !android::IsCleartextPermitted(url.host())) {
+        !android::IsCleartextPermitted(url.host_piece())) {
       return std::make_unique<URLRequestErrorJob>(request,
                                                   ERR_CLEARTEXT_NOT_PERMITTED);
     }
@@ -307,52 +307,33 @@ void URLRequestHttpJob::Start() {
           request_initiator_site().value() ==
               net::SchemefulSite(request()->url()));
 
-  bool should_add_cookie_header = ShouldAddCookieHeader();
   UMA_HISTOGRAM_BOOLEAN("Net.HttpJob.CanIncludeCookies",
-                        should_add_cookie_header);
+                        ShouldAddCookieHeader());
+
+  CookieStore* cookie_store = request()->context()->cookie_store();
+  const CookieAccessDelegate* delegate =
+      cookie_store ? cookie_store->cookie_access_delegate() : nullptr;
 
   request_->net_log().BeginEvent(NetLogEventType::FIRST_PARTY_SETS_METADATA);
 
-  if (!should_add_cookie_header) {
-    OnGotFirstPartySetMetadata(FirstPartySetMetadata());
-    return;
-  }
-
-  absl::optional<FirstPartySetMetadata> metadata =
-      cookie_util::ComputeFirstPartySetMetadataMaybeAsync(
+  absl::optional<
+      std::pair<FirstPartySetMetadata, FirstPartySetsCacheFilter::MatchInfo>>
+      maybe_metadata = cookie_util::ComputeFirstPartySetMetadataMaybeAsync(
           SchemefulSite(request()->url()), request()->isolation_info(),
-          request()->context()->cookie_store()->cookie_access_delegate(),
+          delegate,
           base::BindOnce(&URLRequestHttpJob::OnGotFirstPartySetMetadata,
                          weak_factory_.GetWeakPtr()));
 
-  if (metadata.has_value())
-    OnGotFirstPartySetMetadata(std::move(metadata.value()));
+  if (maybe_metadata.has_value()) {
+    auto [metadata, match_info] = std::move(maybe_metadata).value();
+    OnGotFirstPartySetMetadata(std::move(metadata), std::move(match_info));
+  }
 }
 
 void URLRequestHttpJob::OnGotFirstPartySetMetadata(
-    FirstPartySetMetadata first_party_set_metadata) {
-  first_party_set_metadata_ = std::move(first_party_set_metadata);
-
-  if (!request()->network_delegate()) {
-    OnGotFirstPartySetCacheFilterMatchInfo(
-        net::FirstPartySetsCacheFilter::MatchInfo());
-    return;
-  }
-  absl::optional<FirstPartySetsCacheFilter::MatchInfo> match_info =
-      request()
-          ->network_delegate()
-          ->GetFirstPartySetsCacheFilterMatchInfoMaybeAsync(
-              SchemefulSite(request()->url()),
-              base::BindOnce(
-                  &URLRequestHttpJob::OnGotFirstPartySetCacheFilterMatchInfo,
-                  weak_factory_.GetWeakPtr()));
-
-  if (match_info.has_value())
-    OnGotFirstPartySetCacheFilterMatchInfo(std::move(match_info.value()));
-}
-
-void URLRequestHttpJob::OnGotFirstPartySetCacheFilterMatchInfo(
+    FirstPartySetMetadata first_party_set_metadata,
     FirstPartySetsCacheFilter::MatchInfo match_info) {
+  first_party_set_metadata_ = std::move(first_party_set_metadata);
   request_info_.fps_cache_filter = match_info.clear_at_run_id;
   request_info_.browser_run_id = match_info.browser_run_id;
 
@@ -769,9 +750,7 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
 
       size_t n_partitioned_cookies = 0;
       bool may_set_sec_cookie_deprecation_header =
-          base::FeatureList::IsEnabled(
-              net::features::kCookieDeprecationFacilitatedTestingLabels) &&
-          request_->context()->cookie_deprecation_label().has_value();
+          !request_->context()->cookie_deprecation_label().value_or("").empty();
 
       // TODO(crbug.com/1031664): Reduce the number of times the cookie list
       // is iterated over. Get metrics for every cookie which is included.

@@ -14,6 +14,7 @@ ci.defaults.set(
     builder_group = "chromium.gpu.fyi",
     pool = ci.gpu.POOL,
     sheriff_rotations = sheriff_rotations.CHROMIUM_GPU,
+    contact_team_email = "chrome-gpu-infra@google.com",
     execution_timeout = 6 * time.hour,
     properties = {
         "perf_dashboard_machine_group": "ChromiumGPUFYI",
@@ -196,6 +197,7 @@ ci.thin_tester(
     ),
 )
 
+# TODO(crbug.com/1485734): Add a trybot for this builder when there's capacity.
 ci.thin_tester(
     name = "Android FYI Release (Samsung A13)",
     triggered_by = ["GPU FYI Android arm Builder"],
@@ -221,6 +223,7 @@ ci.thin_tester(
     ),
 )
 
+# TODO(crbug.com/1485734): Add a trybot for this builder when there's capacity.
 ci.thin_tester(
     name = "Android FYI Release (Samsung A23)",
     triggered_by = ["GPU FYI Android arm Builder"],

@@ -4,11 +4,13 @@
 
 #include "content/browser/attribution_reporting/attribution_storage_sql.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <functional>
 #include <iterator>
 #include <limits>
+#include <map>
 #include <set>
 #include <string>
 #include <tuple>
@@ -28,6 +30,7 @@
 #include "base/notreached.h"
 #include "base/numerics/checked_math.h"
 #include "base/ranges/algorithm.h"
+#include "base/ranges/functional.h"
 #include "base/time/time.h"
 #include "base/types/expected.h"
 #include "base/types/expected_macros.h"
@@ -781,6 +784,14 @@ StoreSourceResult AttributionStorageSql::StoreSource(
       base::UmaHistogramCounts10M(
           "Conversions.Storage.Sql.FileSizeSourcesPerOriginLimitReached",
           file_size);
+      absl::optional<int64_t> number_of_sources = NumberOfSources();
+      if (number_of_sources.has_value()) {
+        CHECK_GT(*number_of_sources, 0);
+        base::UmaHistogramCounts1M(
+            "Conversions.Storage.Sql.FileSizeSourcesPerOriginLimitReached."
+            "PerSource",
+            file_size * 1024 / *number_of_sources);
+      }
     }
     return StoreSourceResult(
         StorableSource::Result::kInsufficientSourceCapacity,
@@ -831,8 +842,7 @@ StoreSourceResult AttributionStorageSql::StoreSource(
 
   const attribution_reporting::SourceRegistration& reg = source.registration();
 
-  const base::Time expiry_time = delegate_->GetExpiryTime(
-      reg.expiry, source_time, common_info.source_type());
+  const base::Time expiry_time = source_time + reg.expiry;
 
   EventReportWindows event_report_windows;
   if (!reg.event_report_windows.has_value()) {
@@ -866,13 +876,10 @@ StoreSourceResult AttributionStorageSql::StoreSource(
                                   reg.aggregatable_report_window, source_time),
                               expiry_time);
 
-  int max_event_level_reports = reg.max_event_level_reports.value_or(
-      delegate_->GetDefaultAttributionsPerSource(common_info.source_type()));
-
   ASSIGN_OR_RETURN(const auto randomized_response_data,
                    delegate_->GetRandomizedResponse(
                        common_info.source_type(), event_report_windows,
-                       max_event_level_reports, source_time),
+                       reg.max_event_level_reports, source_time),
                    [](auto) {
                      return StoreSourceResult(
                          StorableSource::Result::kExceedsMaxChannelCapacity);
@@ -926,7 +933,7 @@ StoreSourceResult AttributionStorageSql::StoreSource(
   statement.BindBlob(14, SerializeAggregationKeys(reg.aggregation_keys));
   statement.BindBlob(15, SerializeFilterData(reg.filter_data));
   statement.BindBlob(16, SerializeReadOnlySourceData(
-                             event_report_windows, max_event_level_reports,
+                             event_report_windows, reg.max_event_level_reports,
                              randomized_response_data.rate()));
 
   if (!statement.Run()) {
@@ -952,9 +959,9 @@ StoreSourceResult AttributionStorageSql::StoreSource(
   const StoredSource stored_source(
       source.common_info(), reg.source_event_id, reg.destination_set,
       source_time, expiry_time, std::move(event_report_windows),
-      aggregatable_report_window_time, max_event_level_reports, reg.priority,
-      reg.filter_data, reg.debug_key, reg.aggregation_keys, attribution_logic,
-      *active_state, source_id,
+      aggregatable_report_window_time, reg.max_event_level_reports,
+      reg.priority, reg.filter_data, reg.debug_key, reg.aggregation_keys,
+      attribution_logic, *active_state, source_id,
       /*aggregatable_budget_consumed=*/0, randomized_response_data.rate());
 
   if (!rate_limit_table_.AddRateLimitForSource(&db_, stored_source)) {
@@ -984,8 +991,7 @@ StoreSourceResult AttributionStorageSql::StoreSource(
           /*initial_report_time=*/fake_report.report_time,
           delegate_->NewReportID(), /*failed_send_attempts=*/0,
           AttributionReport::EventLevelData(fake_report.trigger_data,
-                                            /*priority=*/0,
-                                            stored_source));
+                                            /*priority=*/0, stored_source));
       if (!StoreAttributionReport(fake_attribution_report)) {
         return StoreSourceResult(StorableSource::Result::kInternalError);
       }
@@ -1065,8 +1071,12 @@ AttributionStorageSql::MaybeReplaceLowerPriorityEventLevelReport(
   // Prioritization is scoped within report windows.
   // This is reasonably optimized as is because we only store a ~small number
   // of reports per source_id. Selects the report with lowest priority,
-  // and uses the greatest trigger_time to break ties. This favors sending
-  // reports for report closer to the source time.
+  // and uses the greatest rowid to break ties. This favors sending
+  // reports for report closer to the source time. report_id is used instead of
+  // trigger time because the former is strictly increasing while the latter is
+  // subject to clock adjustments. This property is only guaranteed because of
+  // the use of AUTOINCREMENT on the report_id column, which prevents reuse upon
+  // row deletion.
   sql::Statement min_priority_statement(db_.GetCachedStatement(
       SQL_FROM_HERE, attribution_queries::kMinPrioritySql));
   min_priority_statement.BindInt64(0, *source.source_id());
@@ -1074,7 +1084,6 @@ AttributionStorageSql::MaybeReplaceLowerPriorityEventLevelReport(
 
   absl::optional<AttributionReport::Id> conversion_id_with_min_priority;
   int64_t min_priority;
-  base::Time max_trigger_time;
 
   while (min_priority_statement.Step()) {
     std::string metadata;
@@ -1087,15 +1096,15 @@ AttributionStorageSql::MaybeReplaceLowerPriorityEventLevelReport(
     if (!DeserializeReportMetadata(metadata, trigger_data, priority)) {
       continue;
     }
-    base::Time trigger_time = min_priority_statement.ColumnTime(1);
+
+    AttributionReport::Id report_id(min_priority_statement.ColumnInt64(1));
 
     if (!conversion_id_with_min_priority.has_value() ||
         priority < min_priority ||
-        (priority == min_priority && trigger_time > max_trigger_time)) {
-      conversion_id_with_min_priority.emplace(
-          min_priority_statement.ColumnInt64(2));
+        (priority == min_priority &&
+         report_id > *conversion_id_with_min_priority)) {
+      conversion_id_with_min_priority = report_id;
       min_priority = priority;
-      max_trigger_time = trigger_time;
     }
   }
 
@@ -1433,7 +1442,7 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
   // clean sources.
   if (!IsSuccessResult(store_event_level_status) &&
       !IsSuccessResult(store_aggregatable_status) &&
-      store_event_level_status != EventLevelResult::kDroppedForNoise) {
+      store_event_level_status != EventLevelResult::kNeverAttributedSource) {
     if (!transaction.Commit()) {
       return assemble_report_result(EventLevelResult::kInternalError,
                                     AggregatableResult::kInternalError);
@@ -1466,7 +1475,7 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
   // |RateLimitTable::ClearDataForSourceIds()| here.
 
   // Reports which are dropped do not need to make any further changes.
-  if (store_event_level_status == EventLevelResult::kDroppedForNoise &&
+  if (store_event_level_status == EventLevelResult::kNeverAttributedSource &&
       !IsSuccessResult(store_aggregatable_status)) {
     if (!transaction.Commit()) {
       return assemble_report_result(EventLevelResult::kInternalError,
@@ -1712,7 +1721,7 @@ EventLevelResult AttributionStorageSql::MaybeStoreEventLevelReport(
   }
 
   if (!create_report) {
-    return EventLevelResult::kDroppedForNoise;
+    return EventLevelResult::kNeverAttributedSource;
   }
 
   return maybe_replace_lower_priority_report_result ==
@@ -2193,7 +2202,8 @@ void AttributionStorageSql::ClearAllDataAllTime(bool delete_rate_limit_data) {
 bool AttributionStorageSql::HasCapacityForStoringSource(
     const std::string& serialized_origin) {
   sql::Statement statement(db_.GetCachedStatement(
-      SQL_FROM_HERE, attribution_queries::kCountSourcesSql));
+      SQL_FROM_HERE,
+      attribution_queries::kCountActiveSourcesFromSourceOriginSql));
   statement.BindString(0, serialized_origin);
   if (!statement.Step()) {
     return false;
@@ -2403,8 +2413,76 @@ bool AttributionStorageSql::LazyInit(DbCreationPolicy creation_policy) {
   if (int64_t file_size = StorageFileSizeKB(path_to_database_);
       file_size > -1) {
     base::UmaHistogramCounts10M("Conversions.Storage.Sql.FileSize", file_size);
+    absl::optional<int64_t> number_of_sources = NumberOfSources();
+    if (number_of_sources.has_value() && *number_of_sources > 0) {
+      base::UmaHistogramCounts1M("Conversions.Storage.Sql.FileSize.PerSource",
+                                 file_size * 1024 / *number_of_sources);
+    }
   }
+
+  RecordSourcesPerSourceOrigin();
+
   return true;
+}
+
+absl::optional<int64_t> AttributionStorageSql::NumberOfSources() {
+  sql::Statement statement(db_.GetCachedStatement(
+      SQL_FROM_HERE, attribution_queries::kCountSourcesSql));
+  if (!statement.Step()) {
+    return absl::nullopt;
+  }
+  return statement.ColumnInt64(0);
+}
+
+void AttributionStorageSql::RecordSourcesPerSourceOrigin() {
+  static constexpr const char kGetAllSourcesOrigins[] =
+      "SELECT source_origin FROM sources";
+  sql::Statement statement(db_.GetUniqueStatement(kGetAllSourcesOrigins));
+
+  // Count number of sources per source origin.
+  std::map<std::string, int64_t> map;
+  while (statement.Step()) {
+    std::string source_origin = statement.ColumnString(0);
+    if (auto it = map.find(source_origin); it != map.end()) {
+      it->second++;
+    } else {
+      map.insert({std::move(source_origin), 1u});
+    }
+  }
+  if (!statement.Succeeded()) {
+    return;
+  }
+
+  // Get the top k counts (up to 20).
+
+  // Workaround to use `base::ranges::partial_sort_copy` with a map<std:string,
+  // int64_t> input and vector<int64_t> output. Ideally, we'd use an iterator
+  // adaptor (e.g. std::ranges::views::values) but such utility is not
+  // available.
+  struct CountOnly {
+    CountOnly() : count(0) {}
+    // NOLINTNEXTLINE(google-explicit-constructor)
+    CountOnly(const std::pair<const std::string, int64_t>& p)
+        : count(p.second) {}
+
+    int64_t count;
+  };
+
+  size_t k = map.size() < 20 ? map.size() : 20;
+  std::vector<CountOnly> top_k(/*count=*/k, /*value=*/CountOnly());
+  base::ranges::partial_sort_copy(
+      map, top_k, base::ranges::greater(),
+      &std::pair<const std::string, int64_t>::second, &CountOnly::count);
+
+  // Record sampled top counts.
+  base::UmaHistogramCounts10000("Conversions.SourcesPerSourceOrigin.1st",
+                                k >= 1 ? top_k[0].count : 0);
+  base::UmaHistogramCounts10000("Conversions.SourcesPerSourceOrigin.3rd",
+                                k >= 3 ? top_k[2].count : 0);
+  base::UmaHistogramCounts10000("Conversions.SourcesPerSourceOrigin.7th",
+                                k >= 7 ? top_k[6].count : 0);
+  base::UmaHistogramCounts10000("Conversions.SourcesPerSourceOrigin.20th",
+                                k >= 20 ? top_k[19].count : 0);
 }
 
 bool AttributionStorageSql::InitializeSchema(bool db_empty) {

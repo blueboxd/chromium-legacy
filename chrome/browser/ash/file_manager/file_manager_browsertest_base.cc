@@ -78,6 +78,7 @@
 #include "chrome/browser/ash/file_manager/file_tasks_notifier.h"
 #include "chrome/browser/ash/file_manager/file_tasks_observer.h"
 #include "chrome/browser/ash/file_manager/mount_test_util.h"
+#include "chrome/browser/ash/file_manager/office_file_tasks.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/file_system_provider/fake_extension_provider.h"
@@ -2328,12 +2329,6 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     disabled_features.push_back(features::kFileTransferEnterpriseConnectorUI);
   }
 
-  if (options.enable_search_v2) {
-    enabled_features.push_back(ash::features::kFilesSearchV2);
-  } else {
-    disabled_features.push_back(ash::features::kFilesSearchV2);
-  }
-
   if (options.enable_image_content_search) {
     enabled_features.push_back(search_features::kLauncherImageSearch);
     enabled_features.push_back(search_features::kLauncherImageSearchIca);
@@ -3923,7 +3918,8 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     std::vector<std::string> tokens = base::SplitString(
         *terms, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
     std::set<std::string> unique_terms(tokens.begin(), tokens.end());
-    app_list::ImageInfo image_info(unique_terms, file_path, base::Time::Now());
+    app_list::ImageInfo image_info(unique_terms, file_path, base::Time::Now(),
+                                   /*file_size*/ 1);
     app_list::LocalImageSearchServiceFactory::GetForBrowserContext(profile())
         ->Insert(image_info);
     return;

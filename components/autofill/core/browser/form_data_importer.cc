@@ -78,8 +78,8 @@ bool IsValidFieldTypeAndValue(const ServerFieldTypeSet types_seen,
        field_type_group != FieldTypeGroup::kPhone)) {
     LOG_AF(import_log_buffer)
         << LogMessage::kImportAddressProfileFromFormFailed
-        << "Multiple fields of type "
-        << AutofillType::ServerFieldTypeToString(field_type) << "." << CTag{};
+        << "Multiple fields of type " << FieldTypeToStringPiece(field_type)
+        << "." << CTag{};
     return false;
   }
   // Abandon the import if an email address value shows up in a field that is
@@ -88,7 +88,7 @@ bool IsValidFieldTypeAndValue(const ServerFieldTypeSet types_seen,
     LOG_AF(import_log_buffer)
         << LogMessage::kImportAddressProfileFromFormFailed
         << "Email address found in field of different type: "
-        << AutofillType::ServerFieldTypeToString(field_type) << CTag{};
+        << FieldTypeToStringPiece(field_type) << CTag{};
     return false;
   }
 
@@ -153,7 +153,8 @@ FormDataImporter::FormDataImporter(AutofillClient* client,
           std::make_unique<AddressProfileSaveManager>(client,
                                                       personal_data_manager)),
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-      iban_save_manager_(std::make_unique<IbanSaveManager>(client)),
+      iban_save_manager_(
+          std::make_unique<IbanSaveManager>(client, personal_data_manager)),
       local_card_migration_manager_(
           std::make_unique<LocalCardMigrationManager>(client,
                                                       payments_client,
@@ -431,6 +432,11 @@ bool FormDataImporter::ExtractAddressProfileFromSection(
     std::vector<FormDataImporter::AddressProfileImportCandidate>*
         address_profile_import_candidates,
     LogBuffer* import_log_buffer) {
+  // TODO(crbug.com/1464568): Design a proper import mechanism for i18n address
+  // model.
+  if (base::FeatureList::IsEnabled(features::kAutofillUseI18nAddressModel)) {
+    return false;
+  }
   // The candidate for profile import. There are many ways for the candidate to
   // be rejected (see everywhere this function returns false).
   AutofillProfile candidate_profile;
@@ -946,17 +952,6 @@ absl::optional<Iban> FormDataImporter::ExtractIban(const FormStructure& form) {
   // still be able to save new IBANs from the settings page using this pref.
   personal_data_manager_->SetAutofillHasSeenIban();
 
-  bool found_existing_local_iban = base::ranges::any_of(
-      personal_data_manager_->GetLocalIbans(), [&](const auto& iban) {
-        return iban->value() == candidate_iban.value();
-      });
-
-  if (found_existing_local_iban) {
-    return absl::nullopt;
-  }
-
-  // Only offer to save new IBAN. Users can go to the payment methods settings
-  // page to update existing IBANs if desired.
   return candidate_iban;
 }
 
@@ -993,7 +988,7 @@ FormDataImporter::ExtractCreditCardFromForm(const FormStructure& form) {
     types_seen.insert(server_field_type);
 
     // If |field| is an HTML5 month input, handle it as a special case.
-    if (base::EqualsCaseInsensitiveASCII(field->form_control_type, "month")) {
+    if (field->form_control_type == StringToFormControlType("month")) {
       DCHECK_EQ(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, server_field_type);
       result.card.SetInfoForMonthInputType(value);
       continue;
@@ -1019,6 +1014,8 @@ FormDataImporter::ExtractCreditCardFromForm(const FormStructure& form) {
 }
 
 Iban FormDataImporter::ExtractIbanFromForm(const FormStructure& form) {
+  // Creates an IBAN candidate with `kUnknown` record type as it is currently
+  // unknown if this IBAN already exists locally or on the server.
   Iban candidate_iban;
 
   for (const auto& field : form) {

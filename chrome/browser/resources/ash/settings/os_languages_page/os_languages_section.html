@@ -1,10 +1,5 @@
 <style include="settings-shared"></style>
 
-<!-- Data model. -->
-<settings-languages languages="{{languages}}" prefs="{{prefs}}"
-    language-helper="{{languageHelper}}">
-</settings-languages>
-
 <!-- Top-level settings section. -->
 <os-settings-animated-pages id="pages" section="[[section_]]">
   <div route-path="default">
@@ -28,18 +23,10 @@
 
   <!-- "Input" page. -->
   <template is="dom-if" route-path="/osLanguages/input">
-    <os-settings-subpage page-title="$i18n{inputPageTitleV2}">
+    <os-settings-subpage page-title="$i18n{inputPageTitle}">
       <os-settings-input-page language-helper="[[languageHelper]]"
           languages="[[languages]]" prefs="{{prefs}}">
       </os-settings-input-page>
-    </os-settings-subpage>
-  </template>
-
-  <!-- "Smart inputs" sub-page. -->
-  <template is="dom-if" route-path="/osLanguages/smartInputs">
-    <os-settings-subpage page-title="$i18n{smartInputsTitle}">
-      <os-settings-smart-inputs-page prefs="{{prefs}}">
-      </os-settings-smart-inputs-page>
     </os-settings-subpage>
   </template>
 

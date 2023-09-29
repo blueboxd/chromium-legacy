@@ -175,6 +175,7 @@ Kapag na-delete mo ang iyong history ng pag-browse — lahat o para sa isang par
 <translation id="19288952978244135">Muling buksan ang Chrome.</translation>
 <translation id="1933845786846280168">Napiling Tab</translation>
 <translation id="1943432128510653496">I-save ang mga password</translation>
+<translation id="1944535645109964458">Walang available na passkey</translation>
 <translation id="1952172573699511566">Magpapakita ang mga website ng text sa iyong gustong wika, kung posible.</translation>
 <translation id="1959679933317802873">Naghihintay ng content</translation>
 <translation id="1960290143419248813">Hindi na sinusuportahan ang mga update sa Chrome para sa bersyong ito ng Android.</translation>
@@ -263,6 +264,7 @@ Kapag na-delete mo ang iyong history ng pag-browse — lahat o para sa isang par
 <translation id="2461822463642141190">Kasalukuyan</translation>
 <translation id="2472163211318554013">Mag-sign in para masulit ang Chrome</translation>
 <translation id="247737702124049222">Naka-on ang mga paglalarawan ng larawan</translation>
+<translation id="2479148705183875116">Pumunta sa Mga Setting</translation>
 <translation id="2482878487686419369">Mga Abiso</translation>
 <translation id="2496180316473517155">History ng Pag-browse</translation>
 <translation id="2497852260688568942">Na-disable ng iyong administrator ang pag-sync</translation>
@@ -626,6 +628,7 @@ Pinapahusay ng mga private state token ang privacy sa web at hindi magagamit ang
 <translation id="4257230861809842349">Mag-delete ng mga password mula sa Google Password Manager?</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Anong data ang ginagamit:<ph name="END_BOLD" /> Iyong history ng pag-browse, record ng mga site na binisita mo gamit ang Chrome sa device na ito.</translation>
 <translation id="4269820728363426813">Kopyahin ang address ng link</translation>
+<translation id="4277529130885813215">Gumamit ng ibang device</translation>
 <translation id="4283102315569707115">Humiling ng mga pang-desktop na site bilang default?</translation>
 <translation id="4285846616383034558">Cookies, cache, at iba pang data ng site</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />I-on ang lock ng screen sa mga setting ng Android<ph name="END_LINK" /></translation>
@@ -1166,6 +1169,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6955535239952325894">Naka-disable ang setting na ito sa mga pinapamahalaang browser</translation>
 <translation id="6963766334940102469">Mag-delete ng mga bookmark</translation>
 <translation id="696447261358045621">Umalis sa Incognito mode?</translation>
+<translation id="6965382102122355670">OK</translation>
 <translation id="6971862865055170158">Huwag aprubahan</translation>
 <translation id="6978717888677691380">Ang mga site na na-block mo</translation>
 <translation id="6979737339423435258">Lahat ng oras</translation>
@@ -1324,6 +1328,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7757787379047923882">Ibinahagi ang text mula sa <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">SD card <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Magdagdag ng address</translation>
+<translation id="7766587497031415281">Higit pang opsyon sa pag-clear ng data mula sa pag-browse</translation>
 <translation id="7772032839648071052">Kumpirmahin ang passphrase</translation>
 <translation id="7772375229873196092">Isara ang <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 at <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> iba pa}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 at <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> iba pa}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 at <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> na iba pa}}</translation>

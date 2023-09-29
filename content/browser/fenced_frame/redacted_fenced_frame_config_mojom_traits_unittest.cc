@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <functional>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 
@@ -419,34 +420,31 @@ TEST_F(FencedFrameConfigMojomTraitsTest, ConfigMojomTraitsTest) {
   // Test `nested_configs`.
   {
     FencedFrameConfig test_nested_config(GenerateUrnUuid(), test_url);
-    // Returns a lambda that compares two ranges using the given `pred`.
-    const auto eq = [](const auto& pred) {
+    // Returns a lambda that compares two ranges using the given `proj`.
+    const auto cmp = [](const auto& proj) {
       return [&](const auto& a, const auto& b) {
-        return std::ranges::equal(a, b, pred);
+        return base::ranges::equal(a, b, {}, proj, proj);
       };
     };
 
     {
       std::vector<FencedFrameConfig> test_nested_configs = {test_nested_config};
-      const auto pred = [](const auto& a, const auto& b) {
-        return Project(a) == Project(b);
-      };
+      const auto eq = cmp([](const auto& elem) { return Project(elem); });
       TestProperty(&FencedFrameConfig::nested_configs_,
                    &RedactedFencedFrameConfig::nested_configs,
-                   test_nested_configs, eq(pred), eq(pred));
+                   test_nested_configs, eq, eq);
     }
 
     {
       GURL test_urn("urn:uuid:abcd");
       std::vector<std::pair<GURL, FencedFrameConfig>>
           test_nested_urn_config_pairs = {{test_urn, test_nested_config}};
-      const auto pred = [](const auto& a, const auto& b) {
-        return std::make_pair(a.first, Project(a.second)) ==
-               std::make_pair(b.first, Project(b.second));
-      };
+      const auto eq = cmp([](const auto& elem) {
+        return std::make_pair(elem.first, Project(elem.second));
+      });
       TestProperty(&FencedFrameProperties::nested_urn_config_pairs_,
                    &RedactedFencedFrameProperties::nested_urn_config_pairs,
-                   test_nested_urn_config_pairs, eq(pred), eq(pred));
+                   test_nested_urn_config_pairs, eq, eq);
     }
   }
 
@@ -454,26 +452,24 @@ TEST_F(FencedFrameConfigMojomTraitsTest, ConfigMojomTraitsTest) {
   {
     SharedStorageBudgetMetadata test_shared_storage_budget_metadata = {
         url::Origin::Create(test_url), 0.5, /*top_navigated=*/true};
-    auto eq_fn = [](const SharedStorageBudgetMetadata& a,
-                    const SharedStorageBudgetMetadata& b) {
-      return a.origin == b.origin && a.budget_to_charge == b.budget_to_charge &&
-             a.top_navigated == b.top_navigated;
+    const auto eq = [](const SharedStorageBudgetMetadata& a,
+                       const SharedStorageBudgetMetadata& b) {
+      return std::tie(a.origin, a.budget_to_charge, a.top_navigated) ==
+             std::tie(b.origin, b.budget_to_charge, b.top_navigated);
     };
     TestProperty(&FencedFrameConfig::shared_storage_budget_metadata_,
                  &RedactedFencedFrameConfig::shared_storage_budget_metadata,
-                 test_shared_storage_budget_metadata, eq_fn, eq_fn);
+                 test_shared_storage_budget_metadata, eq, eq);
 
-    auto pointer_value_eq_fn = [](const SharedStorageBudgetMetadata* a,
-                                  const SharedStorageBudgetMetadata& b) {
-      return a->origin == b.origin &&
-             a->budget_to_charge == b.budget_to_charge &&
-             a->top_navigated == b.top_navigated;
+    const auto ptr_eq = [&](const SharedStorageBudgetMetadata* a,
+                            const SharedStorageBudgetMetadata& b) {
+      return eq(*a, b);
     };
     TestProperty(&FencedFrameProperties::shared_storage_budget_metadata_,
                  &RedactedFencedFrameProperties::shared_storage_budget_metadata,
                  static_cast<raw_ptr<const SharedStorageBudgetMetadata>>(
                      &test_shared_storage_budget_metadata),
-                 pointer_value_eq_fn, eq_fn);
+                 ptr_eq, eq);
   }
 }
 

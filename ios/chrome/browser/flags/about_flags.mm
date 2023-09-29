@@ -72,7 +72,7 @@
 #import "ios/chrome/app/background_mode_buildflags.h"
 #import "ios/chrome/browser/bring_android_tabs/model/features.h"
 #import "ios/chrome/browser/browsing_data/model/browsing_data_features.h"
-#import "ios/chrome/browser/crash_report/features.h"
+#import "ios/chrome/browser/crash_report/model/features.h"
 #import "ios/chrome/browser/credential_provider_promo/features.h"
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/find_in_page/util.h"
@@ -90,7 +90,7 @@
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/tabs/inactive_tabs/features.h"
 #import "ios/chrome/browser/tabs/tab_pickup/features.h"
-#import "ios/chrome/browser/text_selection/text_selection_util.h"
+#import "ios/chrome/browser/text_selection/model/text_selection_util.h"
 #import "ios/chrome/browser/ui/app_store_rating/features.h"
 #import "ios/chrome/browser/ui/autofill/features.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
@@ -297,71 +297,16 @@ const FeatureEntry::FeatureVariation kFeedHeaderSettingsVariations[] = {
     {"All improvements", kFeedHeaderSettingAllImprovements,
      std::size(kFeedHeaderSettingAllImprovements), nullptr}};
 
-const FeatureEntry::FeatureParam kStartSurfaceTenSecondsShrinkLogo[] = {
-    {kStartSurfaceShrinkLogoParam, "true"},
+const FeatureEntry::FeatureParam kStartSurfaceTenSeconds[] = {
     {kReturnToStartSurfaceInactiveDurationInSeconds, "10"}};
-const FeatureEntry::FeatureParam kStartSurfaceTenSecondsHideShortcuts[] = {
-    {kStartSurfaceHideShortcutsParam, "true"},
-    {kReturnToStartSurfaceInactiveDurationInSeconds, "10"}};
-const FeatureEntry::FeatureParam kStartSurfaceTenSecondsReturnToRecentTab[] = {
-    {kStartSurfaceReturnToRecentTabParam, "true"},
-    {kReturnToStartSurfaceInactiveDurationInSeconds, "10"}};
-const FeatureEntry::FeatureParam
-    kStartSurfaceTenSecondsShrinkLogoReturnToRecentTab[] = {
-        {kStartSurfaceShrinkLogoParam, "true"},
-        {kStartSurfaceReturnToRecentTabParam, "true"},
-        {kReturnToStartSurfaceInactiveDurationInSeconds, "10"}};
-const FeatureEntry::FeatureParam
-    kStartSurfaceTenSecondsHideShortcutsReturnToRecentTab[] = {
-        {kStartSurfaceHideShortcutsParam, "true"},
-        {kStartSurfaceReturnToRecentTabParam, "true"},
-        {kReturnToStartSurfaceInactiveDurationInSeconds, "10"}};
-const FeatureEntry::FeatureParam kStartSurfaceOneHourShrinkLogo[] = {
-    {kStartSurfaceShrinkLogoParam, "true"},
+const FeatureEntry::FeatureParam kStartSurfaceOneHour[] = {
     {kReturnToStartSurfaceInactiveDurationInSeconds, "3600"}};
-const FeatureEntry::FeatureParam kStartSurfaceOneHourHideShortcuts[] = {
-    {kStartSurfaceHideShortcutsParam, "true"},
-    {kReturnToStartSurfaceInactiveDurationInSeconds, "3600"}};
-const FeatureEntry::FeatureParam kStartSurfaceOneHourReturnToRecentTab[] = {
-    {kStartSurfaceReturnToRecentTabParam, "true"},
-    {kReturnToStartSurfaceInactiveDurationInSeconds, "3600"}};
-const FeatureEntry::FeatureParam
-    kStartSurfaceOneHourShrinkLogoReturnToRecentTab[] = {
-        {kStartSurfaceShrinkLogoParam, "true"},
-        {kStartSurfaceReturnToRecentTabParam, "true"},
-        {kReturnToStartSurfaceInactiveDurationInSeconds, "3600"}};
-const FeatureEntry::FeatureParam
-    kStartSurfaceOneHourHideShortcutsReturnToRecentTab[] = {
-        {kStartSurfaceHideShortcutsParam, "true"},
-        {kStartSurfaceReturnToRecentTabParam, "true"},
-        {kReturnToStartSurfaceInactiveDurationInSeconds, "3600"}};
 
 const FeatureEntry::FeatureVariation kStartSurfaceVariations[] = {
-    {"10s:Show Return to Recent Tab tile",
-     kStartSurfaceTenSecondsReturnToRecentTab,
-     std::size(kStartSurfaceTenSecondsReturnToRecentTab), nullptr},
-    {"10s:Shrink Logo", kStartSurfaceTenSecondsShrinkLogo,
-     std::size(kStartSurfaceTenSecondsShrinkLogo), nullptr},
-    {"10s:Hide Shortcuts", kStartSurfaceTenSecondsHideShortcuts,
-     std::size(kStartSurfaceTenSecondsHideShortcuts), nullptr},
-    {"10s:Shrink Logo and show Return to Recent Tab tile",
-     kStartSurfaceTenSecondsShrinkLogoReturnToRecentTab,
-     std::size(kStartSurfaceTenSecondsShrinkLogoReturnToRecentTab), nullptr},
-    {"10s:Hide Shortcuts and show Return to Recent Tab tile",
-     kStartSurfaceTenSecondsHideShortcutsReturnToRecentTab,
-     std::size(kStartSurfaceTenSecondsHideShortcutsReturnToRecentTab), nullptr},
-    {"1h:Show Return to Recent Tab tile", kStartSurfaceOneHourReturnToRecentTab,
-     std::size(kStartSurfaceOneHourReturnToRecentTab), nullptr},
-    {"1h:Shrink Logo", kStartSurfaceOneHourShrinkLogo,
-     std::size(kStartSurfaceOneHourShrinkLogo), nullptr},
-    {"1h:Hide Shortcuts", kStartSurfaceOneHourHideShortcuts,
-     std::size(kStartSurfaceOneHourHideShortcuts), nullptr},
-    {"1h:Shrink Logo and show Return to Recent Tab tile",
-     kStartSurfaceOneHourShrinkLogoReturnToRecentTab,
-     std::size(kStartSurfaceOneHourShrinkLogoReturnToRecentTab), nullptr},
-    {"1h:Hide Shortcuts and show Return to Recent Tab tile",
-     kStartSurfaceOneHourHideShortcutsReturnToRecentTab,
-     std::size(kStartSurfaceOneHourHideShortcutsReturnToRecentTab), nullptr},
+    {"10s:Show Home Surface", kStartSurfaceTenSeconds,
+     std::size(kStartSurfaceTenSeconds), nullptr},
+    {"1h:Show Home Surface", kStartSurfaceOneHour,
+     std::size(kStartSurfaceOneHour), nullptr},
 };
 
 const FeatureEntry::FeatureParam kMagicStackMostVisitedModule[] = {
@@ -730,7 +675,10 @@ const FeatureEntry::Choice kReplaceSyncPromosWithSignInPromosChoices[] = {
      "SyncEnableContactInfoDataTypeInTransportMode,"
      "SyncEnableContactInfoDataTypeForCustomPassphraseUsers,"
      "SyncEnableBatchUploadLocalData,"
-     "EnablePreferencesAccountStorage"},
+     "EnablePreferencesAccountStorage,"
+     "SyncEnableWalletMetadataInTransportMode,"
+     "SyncEnableWalletOfferInTransportMode,"
+     "IOSPasswordSettingsBulkUploadLocalPasswords"},
 };
 
 const FeatureEntry::FeatureParam kOneTapForMapsConsentModeDefault[] = {
@@ -1027,15 +975,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNTPViewHierarchyRepairName,
      flag_descriptions::kNTPViewHierarchyRepairDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kEnableNTPViewHierarchyRepair)},
-    {"synthesized-restore-session",
-     flag_descriptions::kSynthesizedRestoreSessionName,
-     flag_descriptions::kSynthesizedRestoreSessionDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(web::features::kSynthesizedRestoreSession)},
-    {"enable-tailored-security-integration",
-     flag_descriptions::kTailoredSecurityIntegrationName,
-     flag_descriptions::kTailoredSecurityIntegrationDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(safe_browsing::kTailoredSecurityIntegration)},
     {"autofill-enable-card-product-name",
      flag_descriptions::kAutofillEnableCardProductNameName,
      flag_descriptions::kAutofillEnableCardProductNameDescription,
@@ -1151,6 +1090,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(kMagicStack,
                                     kMagicStackVariations,
                                     flag_descriptions::kMagicStackName)},
+    {"ios-large-fakebox", flag_descriptions::kIOSLargeFakeboxName,
+     flag_descriptions::kIOSLargeFakeboxDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kIOSLargeFakebox)},
     {"ios-magic-stack-segmentation-ranking",
      flag_descriptions::kSegmentationPlatformIosModuleRankerName,
      flag_descriptions::kSegmentationPlatformIosModuleRankerDescription,
@@ -1262,6 +1204,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDefaultBrowserTriggerCriteriaExperimentDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kDefaultBrowserTriggerCriteriaExperiment)},
+    {"default-browser-video-in-settings",
+     flag_descriptions::kDBVideoInSettingsName,
+     flag_descriptions::kDBVideoInSettingsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kDBVideoInSettings)},
     {"fullscreen-promo-on-omnibox-copy-paste",
      flag_descriptions::kFullScreenPromoOnOmniboxCopyPasteName,
      flag_descriptions::kFullScreenPromoOnOmniboxCopyPasteDescription,
@@ -1714,6 +1660,17 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"top-toolbar-theme-color", flag_descriptions::kThemeColorInTopToolbarName,
      flag_descriptions::kThemeColorInTopToolbarDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kThemeColorInTopToolbar)},
+    {"iph-ios-promo-manager-widget-promo",
+     flag_descriptions::kIPHiOSPromoPasswordManagerWidgetName,
+     flag_descriptions::kIPHiOSPromoPasswordManagerWidgetDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         feature_engagement::kIPHiOSPromoPasswordManagerWidgetFeature)},
+    {"autofill-enable-virtual-cards",
+     flag_descriptions::kAutofillEnableVirtualCardsName,
+     flag_descriptions::kAutofillEnableVirtualCardsDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableVirtualCards)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

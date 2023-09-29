@@ -7,16 +7,18 @@
 #include <memory>
 #include <string>
 
+#include "ash/game_dashboard/game_dashboard_button.h"
+#include "ash/game_dashboard/game_dashboard_controller.h"
 #include "ash/game_dashboard/game_dashboard_main_menu_view.h"
 #include "ash/game_dashboard/game_dashboard_toolbar_view.h"
-#include "ash/strings/grit/ash_strings.h"
-#include "ash/style/pill_button.h"
+#include "ash/game_dashboard/game_dashboard_widget.h"
+#include "base/check_op.h"
 #include "base/i18n/time_formatting.h"
-#include "base/timer/timer.h"
 #include "chromeos/ui/frame/frame_header.h"
 #include "ui/aura/window.h"
-#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/time_format.h"
 #include "ui/compositor/layer.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/transform.h"
 #include "ui/views/animation/animation_builder.h"
@@ -66,6 +68,81 @@ std::unique_ptr<GameDashboardWidget> CreateTransientChildWidget(
 
 }  // namespace
 
+// Monitors input events that occur on the `game_dashboard_button_widget_` to
+// determine whether an event should be consumed or passed onto the
+// `game_dashboard_button_widget_`.
+class GameDashboardButtonInputMonitor : public ui::EventHandler {
+ public:
+  explicit GameDashboardButtonInputMonitor(GameDashboardContext* context)
+      : context_(context) {}
+  GameDashboardButtonInputMonitor(const GameDashboardButtonInputMonitor&) =
+      delete;
+  GameDashboardButtonInputMonitor& operator=(
+      const GameDashboardButtonInputMonitor&) = delete;
+  ~GameDashboardButtonInputMonitor() override = default;
+
+  // ui::EventHandler:
+  void OnEvent(ui::Event* event) override {
+    if (ShouldConsumeEvent(event->type())) {
+      event->StopPropagation();
+      event->SetHandled();
+    }
+  }
+
+ private:
+  bool ShouldConsumeEvent(ui::EventType event_type) {
+    // Since the `main_menu_view_` closes itself whenever any touch occurs
+    // outside its bounds, it will duplicate the work of the
+    // `main_menu_button_`'s NotifyClick(). To avoid toggling the
+    // `main_menu_view_` visibility twice, determine whether this event should
+    // be consumed or passed onto the `main_menu_button_`.
+    GameDashboardMainMenuView* main_menu_view = context_->main_menu_view();
+    switch (event_type) {
+      case ui::ET_MOUSE_PRESSED:
+        ignore_next_mouse_released_gesture = main_menu_view;
+        break;
+      case ui::ET_GESTURE_TAP_DOWN:
+        ignore_next_tap_gesture_ = main_menu_view;
+        break;
+      case ui::ET_GESTURE_TAP:
+        if (ignore_next_tap_gesture_) {
+          ignore_next_tap_gesture_ = false;
+          return true;
+        }
+        break;
+      case ui::ET_MOUSE_RELEASED:
+        if (ignore_next_mouse_released_gesture) {
+          ignore_next_mouse_released_gesture = false;
+          return true;
+        }
+        break;
+      case ui::ET_GESTURE_TAP_CANCEL:
+      case ui::ET_GESTURE_END:
+      case ui::ET_GESTURE_SCROLL_END:
+        // Reset params for next `ui::ET_GESTURE_TAP_DOWN` event.
+        ignore_next_tap_gesture_ = false;
+        break;
+      default:
+        break;
+    }
+
+    return false;
+  }
+
+  // Allows this class to access `GameDashboardContext` owned functions/objects.
+  const raw_ptr<GameDashboardContext, ExperimentalAsh> context_;
+
+  // When an initial mouse/touch interaction occurs, the `main_menu_view_`
+  // is destroyed on the `ui::ET_MOUSE_PRESSED`/`ui::ET_GESTURE_TAP_DOWN`
+  // events. However, the `main_menu_button_` won't be notified about the click
+  // until the `ui::ET_MOUSE_RELEASED`/`ui::ET_GESTURE_TAP` event. To prevent
+  // the button from receiving its OnClick() event after the `main_menu_view_`
+  // has already closed itself, utilize these variables to notify that the next
+  // `ui::ET_MOUSE_RELEASED` or `ui::ET_GESTURE_TAP` event should be consumed.
+  bool ignore_next_mouse_released_gesture = false;
+  bool ignore_next_tap_gesture_ = false;
+};
+
 GameDashboardContext::GameDashboardContext(aura::Window* game_window)
     : game_window_(game_window),
       toolbar_snap_location_(ToolbarSnapLocation::kTopRight) {
@@ -74,6 +151,7 @@ GameDashboardContext::GameDashboardContext(aura::Window* game_window)
 }
 
 GameDashboardContext::~GameDashboardContext() {
+  game_dashboard_button_->RemoveObserver(this);
   if (main_menu_widget_) {
     main_menu_widget_->CloseNow();
   }
@@ -91,10 +169,7 @@ void GameDashboardContext::OnWindowBoundsChanged() {
 }
 
 void GameDashboardContext::SetGameDashboardButtonEnabled(bool enable) {
-  DCHECK(game_dashboard_button_widget_);
-  auto* contents_view = game_dashboard_button_widget_->GetContentsView();
-  DCHECK(contents_view);
-  contents_view->SetEnabled(enable);
+  game_dashboard_button_->SetEnabled(enable);
 }
 
 void GameDashboardContext::ToggleMainMenu() {
@@ -105,17 +180,22 @@ void GameDashboardContext::ToggleMainMenu() {
     main_menu_widget_ =
         base::WrapUnique(views::BubbleDialogDelegateView::CreateBubble(
             std::move(widget_delegate)));
+    main_menu_widget_->AddObserver(this);
     main_menu_widget_->Show();
+    game_dashboard_button_->SetToggled(true);
   } else {
+    DCHECK(main_menu_view_);
+    DCHECK(main_menu_widget_);
     CloseMainMenu();
   }
 }
 
 void GameDashboardContext::CloseMainMenu() {
-  DCHECK(main_menu_view_);
-  DCHECK(main_menu_widget_.get());
   main_menu_view_ = nullptr;
+  DCHECK(main_menu_widget_);
+  main_menu_widget_->RemoveObserver(this);
   main_menu_widget_.reset();
+  game_dashboard_button_->SetToggled(false);
 }
 
 bool GameDashboardContext::ToggleToolbar() {
@@ -128,7 +208,18 @@ bool GameDashboardContext::ToggleToolbar() {
     DCHECK_EQ(game_window_,
               wm::GetTransientParent(toolbar_widget_->GetNativeWindow()));
     MaybeUpdateToolbarWidgetBounds();
-    toolbar_widget_->Show();
+
+    if (main_menu_widget_) {
+      // Display the toolbar behind the main menu view.
+      toolbar_widget_->ShowInactive();
+      auto* toolbar_window = toolbar_widget_->GetNativeWindow();
+      auto* main_menu_window = main_menu_widget_->GetNativeWindow();
+      CHECK_EQ(toolbar_window->parent(), main_menu_window->parent());
+      toolbar_window->parent()->StackChildBelow(toolbar_window,
+                                                main_menu_window);
+    } else {
+      toolbar_widget_->Show();
+    }
     return true;
   }
 
@@ -155,11 +246,10 @@ bool GameDashboardContext::IsToolbarVisible() const {
 
 void GameDashboardContext::OnRecordingStarted(bool is_recording_game_window) {
   if (is_recording_game_window) {
-    // TODO(b/273641154): Update the the Game Dashboard button to the recording
-    // state.
     CHECK(!recording_timer_.IsRunning());
     DCHECK(recording_start_time_.is_null());
     DCHECK(recording_duration_.empty());
+    game_dashboard_button_->OnRecordingStarted();
     recording_start_time_ = base::Time::Now();
     OnUpdateRecordingTimer();
     recording_timer_.Start(FROM_HERE, kCountUpTimerRefreshInterval, this,
@@ -178,8 +268,7 @@ void GameDashboardContext::OnRecordingEnded() {
   recording_timer_.Stop();
   recording_start_time_ = base::Time();
   recording_duration_.clear();
-  // TODO(b/273641154): Update the the Game Dashboard button to the default
-  // state.
+  game_dashboard_button_->OnRecordingEnded();
   if (main_menu_view_) {
     main_menu_view_->OnRecordingEnded();
   }
@@ -188,15 +277,32 @@ void GameDashboardContext::OnRecordingEnded() {
   }
 }
 
+void GameDashboardContext::OnViewPreferredSizeChanged(
+    views::View* observed_view) {
+  CHECK_EQ(game_dashboard_button_, observed_view);
+  UpdateGameDashboardButtonWidgetBounds();
+}
+
+void GameDashboardContext::OnWidgetDestroying(views::Widget* widget) {
+  DCHECK(main_menu_view_);
+  DCHECK_EQ(widget, main_menu_view_->GetWidget());
+  main_menu_view_ = nullptr;
+}
+
 void GameDashboardContext::CreateAndAddGameDashboardButtonWidget() {
+  auto game_dashboard_button = std::make_unique<GameDashboardButton>(
+      base::BindRepeating(&GameDashboardContext::OnGameDashboardButtonPressed,
+                          weak_ptr_factory_.GetWeakPtr()));
+  game_dashboard_button->AddObserver(this);
+  DCHECK(!game_dashboard_button_);
+  game_dashboard_button_ = game_dashboard_button.get();
   game_dashboard_button_widget_ = CreateTransientChildWidget(
-      game_window_, "GameDashboardButton",
-      std::make_unique<PillButton>(
-          base::BindRepeating(
-              &GameDashboardContext::OnGameDashboardButtonPressed,
-              weak_ptr_factory_.GetWeakPtr()),
-          l10n_util::GetStringUTF16(
-              IDS_ASH_GAME_DASHBOARD_GAME_DASHBOARD_BUTTON_TITLE)));
+      game_window_, "GameDashboardButton", std::move(game_dashboard_button));
+  game_dashboard_button_input_monitor_ =
+      std::make_unique<GameDashboardButtonInputMonitor>(this);
+  game_dashboard_button_widget_->GetContentsView()->AddPreTargetHandler(
+      game_dashboard_button_input_monitor_.get(),
+      ui::EventTarget::Priority::kSystem);
   DCHECK_EQ(
       game_window_,
       wm::GetTransientParent(game_dashboard_button_widget_->GetNativeWindow()));
@@ -304,11 +410,8 @@ void GameDashboardContext::OnUpdateRecordingTimer() {
   if (delta < base::Hours(1)) {
     base::ReplaceFirstSubstringAfterOffset(&duration, 0, u"0:", u"");
   }
-
   recording_duration_ = duration;
-
-  // TODO(b/273641154): Update the the Game Dashboard button with the recording
-  // duration.
+  game_dashboard_button_->UpdateRecordingDuration(duration);
   if (main_menu_view_) {
     main_menu_view_->UpdateRecordingDuration(duration);
   }

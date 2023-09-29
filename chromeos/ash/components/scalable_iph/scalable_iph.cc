@@ -58,8 +58,25 @@ const base::flat_map<ScalableIph::Event, std::string>& GetEventNamesMap() {
            kEventNameAppListItemActivationYouTube},
           {ScalableIph::Event::kAppListItemActivationGoogleDocs,
            kEventNameAppListItemActivationGoogleDocs},
+          {ScalableIph::Event::kAppListItemActivationGooglePhotosWeb,
+           kEventNameAppListItemActivationGooglePhotosWeb},
           {ScalableIph::Event::kOpenPersonalizationApp,
            kEventNameOpenPersonalizationApp},
+          {ScalableIph::Event::kShelfItemActivationYouTube,
+           kEventNameShelfItemActivationYouTube},
+          {ScalableIph::Event::kShelfItemActivationGoogleDocs,
+           kEventNameShelfItemActivationGoogleDocs},
+          {ScalableIph::Event::kShelfItemActivationGooglePhotosWeb,
+           kEventNameShelfItemActivationGooglePhotosWeb},
+          {ScalableIph::Event::kShelfItemActivationGooglePhotosAndroid,
+           kEventNameShelfItemActivationGooglePhotosAndroid},
+          {ScalableIph::Event::kShelfItemActivationGooglePlay,
+           kEventNameShelfItemActivationGooglePlay},
+          {ScalableIph::Event::kAppListItemActivationGooglePlayStore,
+           kEventNameAppListItemActivationGooglePlayStore},
+          {ScalableIph::Event::kAppListItemActivationGooglePhotosAndroid,
+           kEventNameAppListItemActivationGooglePhotosAndroid},
+          {ScalableIph::Event::kPrintJobCreated, kEventNamePrintJobCreated},
       });
   return *event_names_map;
 }
@@ -133,6 +150,8 @@ const std::vector<const base::Feature*>& GetFeatureListConstant() {
           &feature_engagement::kIPHScalableIphHelpAppBasedEightFeature,
           &feature_engagement::kIPHScalableIphHelpAppBasedNineFeature,
           &feature_engagement::kIPHScalableIphHelpAppBasedTenFeature,
+          // Gaming.
+          &feature_engagement::kIPHScalableIphGamingFeature,
       });
   return *feature_list;
 }
@@ -152,6 +171,13 @@ const base::flat_map<std::string, ActionType>& GetActionTypesMap() {
           {kActionTypeOpenPhoneHub, ActionType::kOpenPhoneHub},
           {kActionTypeOpenYouTube, ActionType::kOpenYouTube},
           {kActionTypeOpenFileManager, ActionType::kOpenFileManager},
+          {kActionTypeOpenHelpAppPerks, ActionType::kOpenHelpAppPerks},
+          {kActionTypeOpenChromebookPerksWeb,
+           ActionType::kOpenChromebookPerksWeb},
+          {kActionTypeOpenChromebookPerksGfnPriority2022,
+           ActionType::kOpenChromebookPerksGfnPriority2022},
+          {kActionTypeOpenChromebookPerksMinecraft2023,
+           ActionType::kOpenChromebookPerksMinecraft2023},
       });
   return *action_types_map;
 }
@@ -176,6 +202,23 @@ constexpr auto kAppListItemActivationEventsMap =
          ScalableIph::Event::kAppListItemActivationGoogleDocs},
         {kWebAppYouTubeAppId,
          ScalableIph::Event::kAppListItemActivationYouTube},
+        {kWebAppGooglePhotosAppId,
+         ScalableIph::Event::kAppListItemActivationGooglePhotosWeb},
+        {kAndroidAppGooglePlayStoreAppId,
+         ScalableIph::Event::kAppListItemActivationGooglePlayStore},
+        {kAndroidAppGooglePhotosAppId,
+         ScalableIph::Event::kAppListItemActivationGooglePhotosAndroid},
+    });
+
+constexpr auto kShelfItemActivationEventsMap =
+    base::MakeFixedFlatMap<std::string_view, ScalableIph::Event>({
+        {kWebAppGoogleDocsAppId,
+         ScalableIph::Event::kShelfItemActivationGoogleDocs},
+        {kWebAppYouTubeAppId, ScalableIph::Event::kShelfItemActivationYouTube},
+        {kWebAppGooglePhotosAppId,
+         ScalableIph::Event::kShelfItemActivationGooglePhotosWeb},
+        {kAndroidGooglePhotosAppId,
+         ScalableIph::Event::kShelfItemActivationGooglePhotosAndroid},
     });
 
 constexpr base::TimeDelta kTimeTickEventInterval = base::Minutes(5);
@@ -261,6 +304,24 @@ std::string ParseActionEventName(const std::string& event_used_param) {
   return name_value[1];
 }
 
+ScalableIphDelegate::NotificationIcon GetNotificationIcon(
+    const std::string& icon) {
+  if (icon == kCustomNotificationIconValueRedeem) {
+    return ScalableIphDelegate::NotificationIcon::kRedeem;
+  }
+
+  return ScalableIphDelegate::NotificationIcon::kDefault;
+}
+
+ScalableIphDelegate::NotificationSummaryText GetNotificationSummaryText(
+    const std::string& summary_text) {
+  if (summary_text == kCustomNotificationSummaryTextValueNone) {
+    return ScalableIphDelegate::NotificationSummaryText::kNone;
+  }
+
+  return ScalableIphDelegate::NotificationSummaryText::kWelcomeTips;
+}
+
 std::unique_ptr<NotificationParams> ParseNotificationParams(
     Logger* logger,
     const base::Feature& feature) {
@@ -325,6 +386,35 @@ std::unique_ptr<NotificationParams> ParseNotificationParams(
   if (image_type == kCustomNotificationImageTypeValueWallpaper) {
     param->image_type = ScalableIphDelegate::NotificationImageType::kWallpaper;
   }
+
+  std::string icon = GetParamValue(feature, kCustomNotificationIconParamName);
+  if (!icon.empty()) {
+    param->icon = GetNotificationIcon(icon);
+  }
+  SCALABLE_IPH_LOG(logger) << kCustomNotificationIconParamName
+                           << " is specified as " << icon << ". " << param->icon
+                           << " is set.";
+
+  std::string summary_text =
+      GetParamValue(feature, kCustomNotificationSummaryTextParamName);
+  if (!summary_text.empty()) {
+    param->summary_text = GetNotificationSummaryText(summary_text);
+  }
+  SCALABLE_IPH_LOG(logger) << kCustomNotificationSummaryTextParamName
+                           << " is specified as " << summary_text << ". "
+                           << param->summary_text << " is set.";
+
+  std::string source =
+      GetParamValue(feature, kCustomNotificationSourceTextParamName);
+  if (!source.empty()) {
+    param->source = source;
+  } else {
+    param->source = kCustomNotificationSourceTextValueDefault;
+  }
+  SCALABLE_IPH_LOG(logger) << kCustomNotificationSourceTextParamName
+                           << " is specified as " << source << ". "
+                           << param->source << " is set.";
+
   return param;
 }
 
@@ -535,6 +625,19 @@ void ScalableIph::OnHasSavedPrintersChanged(bool has_saved_printers) {
   }
 }
 
+void ScalableIph::OnPhoneHubOnboardingEligibleChanged(
+    bool phonehub_onboarding_eligible) {
+  DCHECK_NE(phonehub_onboarding_eligible_, phonehub_onboarding_eligible);
+
+  SCALABLE_IPH_LOG(GetLogger())
+      << "Phonehub onboarding eligible state has "
+         "changed: Phone hub onboarding eligible: from: "
+      << phonehub_onboarding_eligible_
+      << " to: " << phonehub_onboarding_eligible;
+
+  phonehub_onboarding_eligible_ = phonehub_onboarding_eligible;
+}
+
 void ScalableIph::PerformActionForIphSession(ActionType action_type) {
   SCALABLE_IPH_LOG(GetLogger())
       << "Performing an action for an iph session. Action type:" << action_type;
@@ -555,6 +658,20 @@ void ScalableIph::MaybeRecordAppListItemActivation(const std::string& id) {
   // Record an event via `RecordEvent` instead of directly notifying an event to
   // `tracker_` as `RecordEvent` can do common tasks, e.g. Making sure that a
   // `tracker_` is initialized, etc.
+  RecordEvent(it->second);
+}
+
+void ScalableIph::MaybeRecordShelfItemActivationById(const std::string& id) {
+  auto* it = kShelfItemActivationEventsMap.find(id);
+  if (it == kShelfItemActivationEventsMap.end()) {
+    SCALABLE_IPH_LOG(GetLogger())
+        << "Observed a shelf item activation. But not recording a shelf item "
+           "activation as it's not listed in the map.";
+    return;
+  }
+
+  SCALABLE_IPH_LOG(GetLogger())
+      << "Recording a shelf item activation as event: " << it->second;
   RecordEvent(it->second);
 }
 
@@ -787,7 +904,8 @@ bool ScalableIph::CheckCustomConditions(const base::Feature& feature) {
   SCALABLE_IPH_LOG(GetLogger())
       << "Checking custom conditions for " << feature.name;
   return CheckNetworkConnection(feature) && CheckClientAge(feature) &&
-         CheckHasSavedPrinters(feature);
+         CheckHasSavedPrinters(feature) &&
+         CheckPhoneHubOnboardingEligible(feature);
 }
 
 bool ScalableIph::CheckNetworkConnection(const base::Feature& feature) {
@@ -887,6 +1005,39 @@ bool ScalableIph::CheckHasSavedPrinters(const base::Feature& feature) {
   return result;
 }
 
+bool ScalableIph::CheckPhoneHubOnboardingEligible(
+    const base::Feature& feature) {
+  SCALABLE_IPH_LOG(GetLogger())
+      << "Checking phone hub onboarding eligible for " << feature.name;
+
+  std::string phonehub_onboarding_eligible_value = GetParamValue(
+      feature, kCustomConditionPhoneHubOnboardingEligibleParamName);
+  if (phonehub_onboarding_eligible_value.empty()) {
+    SCALABLE_IPH_LOG(GetLogger())
+        << "No phone hub onboarding eligible condition specified.";
+    return true;
+  }
+
+  if (phonehub_onboarding_eligible_value !=
+      kCustomConditionPhoneHubOnboardingEligibleValueTrue) {
+    SCALABLE_IPH_LOG(GetLogger())
+        << "Only " << kCustomConditionPhoneHubOnboardingEligibleValueTrue
+        << " is a valid value for "
+        << kCustomConditionPhoneHubOnboardingEligibleParamName
+        << ". Provided value: " << phonehub_onboarding_eligible_value
+        << ". Condition not satisfied for a fail-safe behavior.";
+    return false;
+  }
+
+  SCALABLE_IPH_LOG(GetLogger())
+      << "Expected value is "
+      << kCustomConditionPhoneHubOnboardingEligibleValueTrue
+      << ". Current phone hub onboarding eligible value is "
+      << phonehub_onboarding_eligible_ << ". Result is "
+      << phonehub_onboarding_eligible_;
+  return phonehub_onboarding_eligible_;
+}
+
 const std::vector<const base::Feature*>& ScalableIph::GetFeatureList() const {
   if (!feature_list_for_testing_.empty()) {
     return feature_list_for_testing_;
@@ -907,8 +1058,26 @@ std::ostream& operator<<(std::ostream& out, ScalableIph::Event event) {
       return out << "AppListItemActivationYouTube";
     case ScalableIph::Event::kAppListItemActivationGoogleDocs:
       return out << "AppListItemActivationGoogleDocs";
+    case ScalableIph::Event::kAppListItemActivationGooglePhotosWeb:
+      return out << "AppListItemActivationGooglePhotosWeb";
     case ScalableIph::Event::kOpenPersonalizationApp:
       return out << "OpenPersonalizationApp";
+    case ScalableIph::Event::kShelfItemActivationGoogleDocs:
+      return out << "ShelfItemActivationGoogleDocs";
+    case ScalableIph::Event::kShelfItemActivationYouTube:
+      return out << "ShelfItemActivationYouTube";
+    case ScalableIph::Event::kShelfItemActivationGooglePhotosWeb:
+      return out << "ShelfItemActivationGooglePhotosWeb";
+    case ScalableIph::Event::kShelfItemActivationGooglePhotosAndroid:
+      return out << "ShelfItemActivationGooglePhotosAndroid";
+    case ScalableIph::Event::kShelfItemActivationGooglePlay:
+      return out << "ShelfItemActivationGooglePlay";
+    case ScalableIph::Event::kAppListItemActivationGooglePlayStore:
+      return out << "AppListItemActivationGooglePlayStore";
+    case ScalableIph::Event::kAppListItemActivationGooglePhotosAndroid:
+      return out << "AppListItemActivationGooglePhotosAndroid";
+    case ScalableIph::Event::kPrintJobCreated:
+      return out << "PrintJobCreated";
   }
 }
 

@@ -13,19 +13,21 @@
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
-#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/color/color_id.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/textfield/textfield.h"
-#include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/flex_layout_view.h"
+#include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
+#include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 
 namespace chromeos::editor_menu {
@@ -34,12 +36,7 @@ namespace {
 
 constexpr char16_t kContainerTitle[] = u"Editor Menu Textfield";
 
-constexpr int kConatinerHeightDip = 30;
-constexpr int kBackgroundRadiusDip = 8;
-constexpr gfx::Insets kContainerInsets = gfx::Insets::TLBR(0, 16, 0, 6);
-constexpr int kTextIconSpacingDip = 8;
-constexpr int kButtonSizeDip = 32;
-constexpr int kBorderThicknessDip = 1;
+constexpr gfx::Size kArrowButtonSize(32, 32);
 
 }  // namespace
 
@@ -56,8 +53,12 @@ void EditorMenuTextfieldView::AddedToWidget() {
   InitLayout();
 }
 
-int EditorMenuTextfieldView::GetHeightForWidth(int width) const {
-  return kConatinerHeightDip;
+void EditorMenuTextfieldView::Layout() {
+  View::Layout();
+
+  // Place the arrow button at the right end of the textfield.
+  arrow_button_->SetBounds(width() - kArrowButtonSize.width(), 0,
+                           kArrowButtonSize.width(), height());
 }
 
 void EditorMenuTextfieldView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -83,26 +84,17 @@ bool EditorMenuTextfieldView::HandleKeyEvent(views::Textfield* sender,
 }
 
 void EditorMenuTextfieldView::InitLayout() {
-  SetBackground(views::CreateThemedRoundedRectBackground(
-      static_cast<ui::ColorId>(cros_tokens::kCrosSysSystemBaseElevated),
-      kBackgroundRadiusDip));
-  SetBorder(views::CreateThemedRoundedRectBorder(
-      kBorderThicknessDip, kBackgroundRadiusDip, ui::kColorSysNeutralOutline));
-
-  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal, kContainerInsets,
-      kTextIconSpacingDip));
-  layout->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::kCenter);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
 
   textfield_ = AddChildView(std::make_unique<views::Textfield>());
-  textfield_->SetAccessibleName(kContainerTitle);
   textfield_->set_controller(this);
-  textfield_->SetBorder(views::NullBorder());
-  textfield_->SetBackgroundColor(SK_ColorTRANSPARENT);
   textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_TEXT);
+  textfield_->SetAccessibleName(kContainerTitle);
   textfield_->SetPlaceholderText(kContainerTitle);
-  layout->SetFlexForView(textfield_, 1, /*use_min_size=*/true);
+  textfield_->SetBackgroundColor(SK_ColorTRANSPARENT);
+  textfield_->RemoveHoverEffect();
+  textfield_->SetExtraInsets(
+      gfx::Insets::TLBR(0, 0, 0, kArrowButtonSize.width()));
 
   arrow_button_ =
       AddChildView(std::make_unique<views::ImageButton>(base::BindRepeating(
@@ -117,7 +109,7 @@ void EditorMenuTextfieldView::InitLayout() {
       views::ImageButton::HorizontalAlignment::ALIGN_CENTER);
   arrow_button_->SetImageVerticalAlignment(
       views::ImageButton::VerticalAlignment::ALIGN_MIDDLE);
-  arrow_button_->SetPreferredSize(gfx::Size(kButtonSizeDip, kButtonSizeDip));
+  arrow_button_->SetPreferredSize(kArrowButtonSize);
   arrow_button_->SetVisible(false);
   views::InkDrop::Get(arrow_button_)
       ->SetMode(views::InkDropHost::InkDropMode::ON);

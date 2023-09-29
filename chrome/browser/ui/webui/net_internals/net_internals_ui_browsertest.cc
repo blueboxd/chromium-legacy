@@ -48,8 +48,6 @@
 #include "net/dns/public/host_resolver_source.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "net/http/transport_security_state.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/embedded_test_server/request_handler_util.h"
 #include "services/network/test/test_network_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -408,27 +406,18 @@ void NetInternalsTest::MessageHandler::RgisterTestSharedDictionary(
 // NetInternalsTest
 ////////////////////////////////////////////////////////////////////////////////
 
-NetInternalsTest::NetInternalsTest()
-    : test_server_started_(false) {
-  message_handler_ = std::make_unique<MessageHandler>(this);
-}
+NetInternalsTest::NetInternalsTest() = default;
 
-NetInternalsTest::~NetInternalsTest() {
-}
+NetInternalsTest::~NetInternalsTest() = default;
 
 void NetInternalsTest::SetUpOnMainThread() {
-  WebUIBrowserTest::SetUpOnMainThread();
+  WebUIMochaBrowserTest::SetUpOnMainThread();
   host_resolver()->AddRule("*.com", "127.0.0.1");
 }
 
-content::WebUIMessageHandler* NetInternalsTest::GetMockMessageHandler() {
-  return message_handler_.get();
-}
-
-bool NetInternalsTest::StartTestServer() {
-  if (test_server_started_)
-    return true;
-  test_server_started_ = embedded_test_server()->Start();
-
-  return test_server_started_;
+void NetInternalsTest::OnWebContentsAvailable(
+    content::WebContents* web_contents) {
+  content::WebUI* web_ui_instance = web_contents->GetWebUI();
+  ASSERT_TRUE(web_ui_instance != nullptr);
+  web_ui_instance->AddMessageHandler(std::make_unique<MessageHandler>(this));
 }

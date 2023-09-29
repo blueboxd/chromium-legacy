@@ -91,8 +91,9 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
                     Features.WEB_MESSAGE_ARRAY_BUFFER,
                     Features.REQUESTED_WITH_HEADER_ALLOW_LIST,
                     Features.IMAGE_DRAG_DROP,
-                    Features.USER_AGENT_METADATA + Features.DEV_SUFFIX,
-                    Features.MULTI_PROFILE + Features.DEV_SUFFIX,
+                    Features.USER_AGENT_METADATA,
+                    Features.MULTI_PROFILE,
+                    Features.ATTRIBUTION_BEHAVIOR + Features.DEV_SUFFIX,
                     // Add new features above. New features must include `+ Features.DEV_SUFFIX`
                     // when they're initially added (this can be removed in a future CL). The final
                     // feature should have a trailing comma for cleaner diffs.
@@ -186,12 +187,16 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
             ApiCall.GET_OR_CREATE_PROFILE,
             ApiCall.GET_PROFILE,
             ApiCall.GET_ALL_PROFILE_NAMES,
-            ApiCall.DELETE_PROFILE_ASYNC,
+            ApiCall.DELETE_PROFILE,
             ApiCall.GET_PROFILE_NAME,
             ApiCall.GET_PROFILE_COOKIE_MANAGER,
             ApiCall.GET_PROFILE_WEB_STORAGE,
-            ApiCall.GET_PROFILE_GET_LOCATION_PERMISSIONS,
+            ApiCall.GET_PROFILE_GEO_LOCATION_PERMISSIONS,
             ApiCall.GET_PROFILE_SERVICE_WORKER_CONTROLLER,
+            ApiCall.SET_WEBVIEW_PROFILE,
+            ApiCall.GET_WEBVIEW_PROFILE,
+            ApiCall.SET_ATTRIBUTION_BEHAVIOR,
+            ApiCall.GET_ATTRIBUTION_BEHAVIOR,
             // Add new constants above. The final constant should have a trailing comma for cleaner
             // diffs.
             ApiCall.COUNT, // Added to suppress WrongConstant in #recordApiCall
@@ -289,15 +294,19 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
         int GET_OR_CREATE_PROFILE = 84;
         int GET_PROFILE = 85;
         int GET_ALL_PROFILE_NAMES = 86;
-        int DELETE_PROFILE_ASYNC = 87;
+        int DELETE_PROFILE = 87;
         int GET_PROFILE_NAME = 88;
         int GET_PROFILE_COOKIE_MANAGER = 89;
         int GET_PROFILE_WEB_STORAGE = 90;
-        int GET_PROFILE_GET_LOCATION_PERMISSIONS = 91;
+        int GET_PROFILE_GEO_LOCATION_PERMISSIONS = 91;
         int GET_PROFILE_SERVICE_WORKER_CONTROLLER = 92;
 
+        int SET_WEBVIEW_PROFILE = 93;
+        int GET_WEBVIEW_PROFILE = 94;
+        int SET_ATTRIBUTION_BEHAVIOR = 95;
+        int GET_ATTRIBUTION_BEHAVIOR = 96;
         // Remember to update AndroidXWebkitApiCall in enums.xml when adding new values here
-        int COUNT = 93;
+        int COUNT = 97;
     }
     // clang-format on
 
@@ -491,7 +500,7 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
             synchronized (mAwInit.getLock()) {
                 if (mProfileStore == null) {
                     mProfileStore = BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(
-                            new SupportLibProfileStore(new ProfileStore()));
+                            new SupportLibProfileStore(ProfileStore.getInstance()));
                 }
             }
             return mProfileStore;

@@ -30,12 +30,14 @@
 #include "components/page_info/page_info_ui_delegate.h"
 #include "components/permissions/permission_util.h"
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
-#include "components/strings/grit/components_chromium_strings.h"
+#include "components/privacy_sandbox/tracking_protection_settings.h"
+#include "components/strings/grit/components_branded_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
@@ -156,6 +158,8 @@ void PageInfoMainView::EnsureCookieInfo() {
   if (cookie_button_ != nullptr) {
     return;
   }
+  bool is_3pcd_enabled = ui_delegate_->IsTrackingProtection3pcdEnabled();
+
   // Get the icon.
   PageInfo::PermissionInfo info;
   info.type = ContentSettingsType::COOKIES;
@@ -170,7 +174,11 @@ void PageInfoMainView::EnsureCookieInfo() {
       site_settings_view_->AddChildView(std::make_unique<RichHoverButton>(
           base::BindRepeating(&PageInfoNavigationHandler::OpenCookiesPage,
                               base::Unretained(navigation_handler_)),
-          icon, l10n_util::GetStringUTF16(IDS_PAGE_INFO_COOKIES_HEADER),
+          icon,
+          is_3pcd_enabled
+              ? l10n_util::GetStringUTF16(
+                    IDS_PAGE_INFO_TRACKING_PROTECTION_SITE_INFO_BUTTON_NAME)
+              : l10n_util::GetStringUTF16(IDS_PAGE_INFO_COOKIES_HEADER),
           std::u16string(), tooltip, std::u16string(),
           PageInfoViewFactory::GetOpenSubpageIcon()));
   cookie_button_->SetID(
@@ -633,3 +641,6 @@ PageInfoMainView::CreateAdPersonalizationSection() {
 
   return ads_personalization_section;
 }
+
+BEGIN_METADATA(PageInfoMainView, views::View)
+END_METADATA

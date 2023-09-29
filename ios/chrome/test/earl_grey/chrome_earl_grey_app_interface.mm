@@ -35,7 +35,7 @@
 #import "components/variations/variations_ids_provider.h"
 #import "ios/chrome/app/main_controller.h"
 #import "ios/chrome/browser/autofill/personal_data_manager_factory.h"
-#import "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
+#import "ios/chrome/browser/content_settings/model/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/default_browser/utils_test_support.h"
 #import "ios/chrome/browser/first_run/first_run.h"
@@ -811,10 +811,6 @@ NSString* SerializedValue(const base::Value* value) {
       base::SysNSStringToUTF8(originator_client_item_id));
 }
 
-+ (void)addFakeSyncServerTypedURL:(NSString*)URL {
-  chrome_test_util::AddTypedURLToFakeSyncServer(base::SysNSStringToUTF8(URL));
-}
-
 + (void)addFakeSyncServerHistoryVisit:(NSURL*)URL {
   chrome_test_util::AddHistoryVisitToFakeSyncServer(net::GURLWithNSURL(URL));
 }
@@ -1123,11 +1119,6 @@ NSString* SerializedValue(const base::Value* value) {
 
 + (BOOL)isUKMEnabled {
   return base::FeatureList::IsEnabled(ukm::kUkmFeature);
-}
-
-+ (BOOL)isSynthesizedRestoreSessionEnabled {
-  return base::FeatureList::IsEnabled(
-      web::features::kSynthesizedRestoreSession);
 }
 
 + (BOOL)isTestFeatureEnabled {

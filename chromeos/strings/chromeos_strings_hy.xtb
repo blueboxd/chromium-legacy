@@ -280,7 +280,6 @@
 <translation id="3226405216343213872">Սկաներների որոնում</translation>
 <translation id="3226657629376379887">Դասավորության գործողությունների ընտրացանկ</translation>
 <translation id="3246869037381808805">Տպման առաջադրանքները, որոնք 1 օրից հին են, կհեռացվեն</translation>
-<translation id="3248223063252096240">Միայն <ph name="PRODUCT_NAME" />-ի համար</translation>
 <translation id="3268178239013324452">Չհաջողվեց տպել – Կափարիչը բաց է</translation>
 <translation id="3275729367986477355">Ավատարի պատկեր</translation>
 <translation id="3283504360622356314">{0,plural, =1{Փոփոխել ֆայլը}one{Փոփոխել ֆայլերը}other{Փոփոխել ֆայլերը}}</translation>
@@ -921,6 +920,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">Ընտրել «<ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" />» տարբերակը</translation>
 <translation id="8151185429379586178">Ծրագրավորողի գործիքներ</translation>
+<translation id="8152370627892825"><ph name="DESCRIPTION" />, <ph name="ACCELERATOR_INFO" />։</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8183974620058026102">Կցել</translation>
 <translation id="8206859287963243715">Բջջային</translation>

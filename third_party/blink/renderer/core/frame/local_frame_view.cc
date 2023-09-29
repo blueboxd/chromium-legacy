@@ -159,7 +159,6 @@
 #include "third_party/blink/renderer/core/view_transition/view_transition_request.h"
 #include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
-#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_performance.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
@@ -829,8 +828,9 @@ void LocalFrameView::PerformLayout() {
 
   gfx::Size new_size(Size());
   if (old_size != new_size) {
-    MarkFixedPositionObjectsForLayout(old_size.width() != new_size.width(),
-                                      old_size.height() != new_size.height());
+    InvalidateLayoutForViewportConstrainedObjects(
+        old_size.width() != new_size.width(),
+        old_size.height() != new_size.height());
   }
 
   if (frame_->IsMainFrame()) {
@@ -854,16 +854,15 @@ void LocalFrameView::UpdateLayout() {
   Lifecycle().EnsureStateAtMost(DocumentLifecycle::kStyleClean);
 
   absl::optional<RuntimeCallTimerScope> rcs_scope;
-  probe::UpdateLayout probe(GetFrame().GetDocument());
+  probe::UpdateLayout probe(frame_->GetDocument());
   HeapVector<LayoutObjectWithDepth> layout_roots;
 
-  ENTER_EMBEDDER_STATE(V8PerIsolateData::MainThreadIsolate(), &GetFrame(),
-                       BlinkState::LAYOUT);
+  v8::Isolate* isolate = frame_->GetPage()->GetAgentGroupScheduler().Isolate();
+  ENTER_EMBEDDER_STATE(isolate, frame_, BlinkState::LAYOUT);
   TRACE_EVENT_BEGIN0("blink,benchmark", "LocalFrameView::layout");
   if (UNLIKELY(RuntimeEnabledFeatures::BlinkRuntimeCallStatsEnabled())) {
-    rcs_scope.emplace(
-        RuntimeCallStats::From(V8PerIsolateData::MainThreadIsolate()),
-        RuntimeCallStats::CounterId::kUpdateLayout);
+    rcs_scope.emplace(RuntimeCallStats::From(isolate),
+                      RuntimeCallStats::CounterId::kUpdateLayout);
   }
   layout_roots = layout_subtree_root_list_.Ordered();
   if (layout_roots.empty())
@@ -1254,33 +1253,41 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
       frame_->GetPage()->GetBrowserControls().TotalHeight())
     layout_view->SetShouldCheckForPaintInvalidation();
 
-  if (GetFrame().GetDocument() && !IsInPerformLayout())
-    MarkFixedPositionObjectsForLayout(width_changed, height_changed);
+  if (GetFrame().GetDocument() && !IsInPerformLayout()) {
+    InvalidateLayoutForViewportConstrainedObjects(width_changed,
+                                                  height_changed);
+  }
 
   if (GetPaintTimingDetector().Visualizer())
     GetPaintTimingDetector().Visualizer()->OnViewportChanged();
 }
 
-void LocalFrameView::MarkFixedPositionObjectsForLayout(bool width_changed,
-                                                       bool height_changed) {
-  if (RuntimeEnabledFeatures::LayoutNewFixedPositionInvalidationEnabled()) {
-    auto* layout_view = GetLayoutView();
-    if (!layout_view || layout_view->NeedsLayout()) {
-      return;
-    }
-
+void LocalFrameView::InvalidateLayoutForViewportConstrainedObjects(
+    bool width_changed,
+    bool height_changed) {
+  auto* layout_view = GetLayoutView();
+  if (layout_view && !layout_view->NeedsLayout()) {
     for (const auto& fragment : layout_view->PhysicalFragments()) {
-      if (!fragment.HasOutOfFlowFragmentChild()) {
-        continue;
+      if (RuntimeEnabledFeatures::LayoutNewStickyLogicEnabled() &&
+          fragment.StickyDescendants()) {
+        layout_view->SetNeedsSimplifiedLayout();
+        break;
       }
-      for (const auto& fragment_child : fragment.Children()) {
-        if (fragment_child->IsFixedPositioned()) {
-          layout_view->SetNeedsSimplifiedLayout();
-          return;
+      if (RuntimeEnabledFeatures::LayoutNewFixedPositionInvalidationEnabled()) {
+        if (!fragment.HasOutOfFlowFragmentChild()) {
+          continue;
+        }
+        for (const auto& fragment_child : fragment.Children()) {
+          if (fragment_child->IsFixedPositioned()) {
+            layout_view->SetNeedsSimplifiedLayout();
+            return;
+          }
         }
       }
     }
+  }
 
+  if (RuntimeEnabledFeatures::LayoutNewFixedPositionInvalidationEnabled()) {
     return;
   }
 
@@ -1439,10 +1446,6 @@ bool LocalFrameView::RunPostLayoutIntersectionObserverSteps() {
                                       frame_view.NeedsLayout();
       });
 
-  if (!needs_more_lifecycle_steps) {
-    // When not re-running the lifecycle, we should not dirty style or layout.
-    CheckStyleAndLayoutClean();
-  }
   return needs_more_lifecycle_steps;
 }
 
@@ -2313,8 +2316,8 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
 
     // ScrollSnapshotClients may be associated with scrollers that never had a
     // chance to get a layout box at the time style was calculated; when this
-    // situation happens, RunScrollSnapshotClientSteps will re-snapshot all
-    // affected clients and may dirty the style for associated effect targets.
+    // situation happens, RunScrollTimelineSteps will re-snapshot all affected
+    // clients and dirty style for associated effect targets.
     //
     // https://github.com/w3c/csswg-drafts/issues/5261
     if (should_run_scroll_snapshot_client_steps) {
@@ -2323,11 +2326,6 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
       if (needs_to_repeat_lifecycle)
         continue;
     }
-
-    // Scroll animations can result in `RunStyleAndLayoutLifecyclePhases`
-    // exiting with a dirty tree, but once we have successfully made it past
-    // `RunScrollSnapshotClientSteps`, the tree should be clean.
-    CheckStyleAndLayoutClean();
 
     if (!GetLayoutView())
       return;
@@ -2365,11 +2363,10 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
         continue;
     }
 
-    DCHECK(ShouldThrottleRendering() ||
-           Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean);
-    if (ShouldThrottleRendering() || !run_more_lifecycle_phases) {
-      return;
-    }
+      DCHECK(ShouldThrottleRendering() ||
+             Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean);
+      if (ShouldThrottleRendering() || !run_more_lifecycle_phases)
+        return;
 
     // Some features may require several passes over style and layout
     // within the same lifecycle update.
@@ -2451,10 +2448,6 @@ bool LocalFrameView::RunScrollSnapshotClientSteps() {
         bool valid = frame_view.GetFrame().ValidateScrollSnapshotClients();
         re_run_lifecycles |= !valid;
       });
-  if (!re_run_lifecycles) {
-    // When not re-running the lifecycle, we should not dirty style or layout.
-    CheckStyleAndLayoutClean();
-  }
   return re_run_lifecycles;
 }
 
@@ -2485,7 +2478,7 @@ bool LocalFrameView::RunViewTransitionSteps(
 
         DCHECK_GE(document->Lifecycle().GetState(),
                   DocumentLifecycle::kPrePaintClean);
-        auto* transition = ViewTransitionUtils::GetActiveTransition(*document);
+        auto* transition = ViewTransitionUtils::GetTransition(*document);
         if (!transition)
           return;
 
@@ -2499,10 +2492,6 @@ bool LocalFrameView::RunViewTransitionSteps(
                             frame_view.NeedsLayout();
       });
 
-  if (!re_run_lifecycle) {
-    // When not re-running the lifecycle, we should not dirty style or layout.
-    CheckStyleAndLayoutClean();
-  }
   return re_run_lifecycle;
 }
 
@@ -2525,10 +2514,6 @@ bool LocalFrameView::RunResizeObserverSteps(
         bool result = frame_view.NotifyResizeObservers();
         re_run_lifecycles = re_run_lifecycles || result;
       });
-  if (!re_run_lifecycles) {
-    // When not re-running the lifecycle, we should not dirty style or layout.
-    CheckStyleAndLayoutClean();
-  }
   return re_run_lifecycles;
 }
 
@@ -2631,9 +2616,6 @@ bool LocalFrameView::RunCompositingInputsLifecyclePhase(
         DocumentLifecycle::kCompositingInputsClean);
   });
 
-  // The CompositingInputs lifecycle phase should not dirty style or layout.
-  CheckStyleAndLayoutClean();
-
   return target_state > DocumentLifecycle::kCompositingInputsClean;
 }
 
@@ -2689,9 +2671,6 @@ bool LocalFrameView::RunPrePaintLifecyclePhase(
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kPrePaintClean);
   });
-
-  // The PrePaint lifecycle phase should not dirty style or layout.
-  CheckStyleAndLayoutClean();
 
   return target_state > DocumentLifecycle::kPrePaintClean;
 }
@@ -2799,9 +2778,6 @@ void LocalFrameView::RunPaintLifecyclePhase(PaintBenchmarkMode benchmark_mode) {
 
   if (GetPage())
     GetPage()->Animator().ReportFrameAnimations(GetCompositorAnimationHost());
-
-  // The Paint lifecycle phase should not dirty style or layout.
-  CheckStyleAndLayoutClean();
 }
 
 void LocalFrameView::RunAccessibilitySteps() {
@@ -3070,28 +3046,17 @@ void LocalFrameView::PushPaintArtifactToCompositor(bool repainted) {
   }
 
   Vector<const TransformPaintPropertyNode*> scroll_translation_nodes;
-  if (base::FeatureList::IsEnabled(::features::kScrollUnification)) {
-    ForAllNonThrottledLocalFrameViews(
-        [&scroll_translation_nodes](LocalFrameView& frame_view) {
-          frame_view.GetUserScrollTranslationNodes(scroll_translation_nodes);
-        });
-  }
-
-  Vector<const TransformPaintPropertyNode*> anchor_position_scrollers;
-  if (!base::FeatureList::IsEnabled(::features::kScrollUnification)) {
-    ForAllNonThrottledLocalFrameViews(
-        [&anchor_position_scrollers](LocalFrameView& frame_view) {
-          frame_view.GetAnchorPositionScrollerIds(anchor_position_scrollers);
-        });
-  }
+  ForAllNonThrottledLocalFrameViews(
+      [&scroll_translation_nodes](LocalFrameView& frame_view) {
+        frame_view.GetUserScrollTranslationNodes(scroll_translation_nodes);
+      });
 
   WTF::Vector<std::unique_ptr<ViewTransitionRequest>> view_transition_requests;
   AppendViewTransitionRequests(view_transition_requests);
 
   paint_artifact_compositor_->Update(
       paint_controller_->GetPaintArtifactShared(), viewport_properties,
-      scroll_translation_nodes, anchor_position_scrollers,
-      std::move(view_transition_requests));
+      scroll_translation_nodes, std::move(view_transition_requests));
 
   CreatePaintTimelineEvents();
 }
@@ -3339,9 +3304,10 @@ void LocalFrameView::ForceLayoutForPagination(float maximum_shrink_factor) {
 
   const auto& first_page = To<NGPhysicalBoxFragment>(
       *layout_view->GetPhysicalFragment(0)->Children()[0]);
-  if (const AtomicString& page_name = first_page.PageName()) {
+  const AtomicString& first_page_name = first_page.PageName();
+  if (first_page_name) {
     PhysicalSize new_size =
-        layout_view->PageAreaSize(/* page_index */ 0u, page_name);
+        layout_view->PageAreaSize(/* page_index */ 0u, first_page_name);
     if (new_size != initial_containing_block_size) {
       // If the first page was named (this isn't something we can detect without
       // laying out first), and the size of the first page is different from
@@ -3392,12 +3358,12 @@ void LocalFrameView::ForceLayoutForPagination(float maximum_shrink_factor) {
     // Re-layout and apply the same scale factor to all pages. PageScaleFactor()
     // has already been set to honor any scale factor from print settings. That
     // has to be included as well.
-    //
-    // Note that we deliberately don't set a new initial containing block size
-    // here. But should we? EdgeHTML does it. Gecko doesn't. WebKit is buggy
-    // (uses the initial block based on the browser frame size).
     layout_view->SetPageScaleFactor(layout_view->PageScaleFactor() *
                                     overall_scale_factor);
+    PhysicalSize new_size =
+        layout_view->PageAreaSize(/* page_index */ 0u, first_page_name);
+    layout_view->SetInitialContainingBlockSizeForPagination(new_size);
+    frame_->GetDocument()->LayoutViewportWasResized();
     layout_view->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
         layout_invalidation_reason::kPrintingChanged);
     frame_->GetDocument()->UpdateStyleAndLayout(
@@ -4676,8 +4642,7 @@ bool LocalFrameView::HasViewTransitionThrottlingRendering() const {
   // Only nested local frames should be throttled. Pausing rendering for root
   // local frames is done by pausing frames in the compositor.
   // See ViewTransition::ScopedPauseRendering for details.
-  auto* transition =
-      ViewTransitionUtils::GetActiveTransition(*frame_->GetDocument());
+  auto* transition = ViewTransitionUtils::GetTransition(*frame_->GetDocument());
   const bool should_throttle =
       transition && transition->ShouldThrottleRendering();
   DCHECK(!should_throttle || !frame_->IsLocalRoot());
@@ -4693,15 +4658,6 @@ void LocalFrameView::UpdateRenderThrottlingStatus(bool hidden_for_throttling,
       hidden_for_throttling, subtree_throttled, display_locked, recurse);
   if (was_throttled != CanThrottleRendering())
     RenderThrottlingStatusChanged();
-}
-
-void LocalFrameView::CheckStyleAndLayoutClean() {
-  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
-    CHECK(frame_view.CheckDoesNotNeedLayout());
-    CHECK(!frame_view.GetFrame()
-               .GetDocument()
-               ->NeedsLayoutTreeUpdateForThisDocument());
-  });
 }
 
 void LocalFrameView::BeginLifecycleUpdates() {
@@ -4932,46 +4888,6 @@ void LocalFrameView::GetUserScrollTranslationNodes(
         area->GetLayoutBox()->FirstFragment().PaintProperties();
     if (paint_properties && paint_properties->Scroll()) {
       scroll_translation_nodes.push_back(paint_properties->ScrollTranslation());
-    }
-  }
-}
-
-void LocalFrameView::GetAnchorPositionScrollerIds(
-    Vector<const TransformPaintPropertyNode*>& anchor_position_scrollers) {
-  const auto* scrollable_areas = UserScrollableAreas();
-  if (!scrollable_areas) {
-    return;
-  }
-
-  // Ideally, we should collect the ids into a hash set, but defining a
-  // WTF::HashSet<cc::ElementId> requires introducing a magic deleted value to
-  // cc::ElementId. To prevent complicating the class for just one client in
-  // Blink that will soon be removed (when ScrollUnification is fully enabled,
-  // see crbug.com/1378021) and is not performance-sensitive, we choose to just
-  // use vector and binary search.
-  Vector<cc::ElementId> scroll_container_ids;
-  GetFrame().CollectAnchorPositionScrollerIds(&scroll_container_ids);
-  std::sort(scroll_container_ids.begin(), scroll_container_ids.end());
-  scroll_container_ids.erase(
-      std::unique(scroll_container_ids.begin(), scroll_container_ids.end()),
-      scroll_container_ids.end());
-
-  if (scroll_container_ids.empty()) {
-    return;
-  }
-
-  for (const auto& area : *scrollable_areas) {
-    const auto* paint_properties =
-        area->GetLayoutBox()->FirstFragment().PaintProperties();
-    if (paint_properties && paint_properties->Scroll()) {
-      cc::ElementId element_id = area->GetScrollElementId();
-      if (cc::ElementId* iter =
-              std::lower_bound(scroll_container_ids.begin(),
-                               scroll_container_ids.end(), element_id);
-          iter != scroll_container_ids.end() && *iter == element_id) {
-        anchor_position_scrollers.push_back(
-            paint_properties->ScrollTranslation());
-      }
     }
   }
 }

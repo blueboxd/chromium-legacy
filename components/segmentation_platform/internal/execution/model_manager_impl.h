@@ -83,16 +83,18 @@ class ModelManagerImpl : public ModelManager {
       proto::ModelSource model_source,
       proto::SegmentationModelMetadata metadata,
       int64_t model_version,
-      absl::optional<proto::SegmentInfo> segment_info);
+      const proto::SegmentInfo* segment_info);
 
   // Callback after storing the updated version of the SegmentInfo.
   // Responsible for invoking the SegmentationModelUpdatedCallback.
   void OnUpdatedSegmentInfoStored(proto::SegmentInfo segment_info,
+                                  absl::optional<int64_t> old_model_version,
                                   bool success);
 
   // Callback after deleting the previous version of the SegmentInfo.
   void OnSegmentInfoDeleted(SegmentId segment_id,
                             proto::ModelSource model_source,
+                            int64_t deleted_version,
                             bool success);
 
   const base::flat_set<SegmentId>& segment_ids_;

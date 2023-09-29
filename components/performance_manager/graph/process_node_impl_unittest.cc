@@ -320,9 +320,9 @@ class LenientFakeBackgroundTracingManager
               (override));
 
   // Functions we don't care about.
+  void SetReceiveCallback(ReceiveCallback receive_callback) override {}
   bool InitializeScenarios(
       const perfetto::protos::gen::ChromeFieldTracingConfig& config,
-      ReceiveCallback receive_callback,
       DataFiltering data_filtering) override {
     return true;
   }
@@ -332,24 +332,23 @@ class LenientFakeBackgroundTracingManager
       DataFiltering data_filtering) override {
     return true;
   }
-  bool SetActiveScenarioWithReceiveCallback(
-      std::unique_ptr<content::BackgroundTracingConfig> config,
-      ReceiveCallback receive_callback,
-      DataFiltering data_filtering) override {
-    return true;
-  }
 
   bool HasTraceToUpload() override { return false; }
   void GetTraceToUpload(
-      base::OnceCallback<void(std::string)> callback) override {}
+      base::OnceCallback<void(absl::optional<std::string>,
+                              absl::optional<std::string>)> callback) override {
+  }
   std::unique_ptr<content::BackgroundTracingConfig> GetBackgroundTracingConfig(
       const std::string& trial_name) override {
     return nullptr;
   }
+  void SetSystemProfileRecorder(
+      base::RepeatingCallback<std::string()> recorder) override {}
   void AbortScenarioForTesting() override {}
   void SaveTraceForTesting(std::string&& trace_data,
                            const std::string& scenario_name,
-                           const std::string& rule_name) override {}
+                           const std::string& rule_name,
+                           const base::Token& uuid) override {}
 
   void DeleteTracesInDateRange(base::Time start, base::Time end) override {}
 };

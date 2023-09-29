@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/empty_offset_mapping_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping_builder.h"
-#include "third_party/blink/renderer/core/layout/ng/svg/svg_inline_node_data.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_inline_node_data.h"
 #include "third_party/blink/renderer/platform/fonts/font_height.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -53,7 +53,7 @@ class NGInlineItemsBuilderTemplate {
       : block_flow_(block_flow),
         items_(items),
         text_chunk_offsets_(chunk_offsets),
-        is_text_combine_(block_flow_->IsLayoutNGTextCombine()) {}
+        is_text_combine_(block_flow_->IsLayoutTextCombine()) {}
   ~NGInlineItemsBuilderTemplate();
 
   LayoutBlockFlow* GetLayoutBlockFlow() const { return block_flow_; }

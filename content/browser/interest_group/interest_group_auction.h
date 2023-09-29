@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/functional/callback.h"
 #include "base/logging.h"
@@ -589,9 +590,11 @@ class CONTENT_EXPORT InterestGroupAuction
   // Returns all interest groups that bid in an auction. Expected to be called
   // after the bidding and scoring phase completes. Returns an empty set if the
   // auction failed for any reason other than the seller rejecting all bids.
-  // Bids from additional bids are not included, since they do not really have
+  // Bids from additional bids are not returned, since they do not really have
   // interest groups (and we don't want to attribute them to database IGs with
   // aliasing names).
+  //
+  // All bids (including additional bids) are also reported to the observer.
   void GetInterestGroupsThatBidAndReportBidCounts(
       blink::InterestGroupSet& interest_groups) const;
 
@@ -1080,14 +1083,11 @@ class CONTENT_EXPORT InterestGroupAuction
   }
 
   void OnDecompressedServerResponse(
-      std::unique_ptr<data_decoder::DataDecoder> decoder,
       AdAuctionRequestContext* request_context,
       base::expected<mojo_base::BigBuffer, std::string> result);
 
-  void OnParsedServerResponse(
-      std::unique_ptr<data_decoder::DataDecoder> decoder,
-      AdAuctionRequestContext* request_context,
-      data_decoder::DataDecoder::ValueOrError result);
+  void OnParsedServerResponse(AdAuctionRequestContext* request_context,
+                              data_decoder::DataDecoder::ValueOrError result);
 
   void OnLoadedWinningGroup(BiddingAndAuctionResponse response,
                             absl::optional<StorageInterestGroup> maybe_group);
@@ -1099,6 +1099,9 @@ class CONTENT_EXPORT InterestGroupAuction
   void OnDirectFromSellerSignalHeaderAdSlotResolved(
       std::unique_ptr<HeaderDirectFromSellerSignals> signals,
       std::vector<std::string> errors);
+
+  static data_decoder::DataDecoder* GetDataDecoder(
+      base::WeakPtr<InterestGroupAuction> instance);
 
   // Tracing ID associated with the Auction. A nestable
   // async "Auction" trace event lasts for the combined lifetime of `this`
@@ -1133,6 +1136,10 @@ class CONTENT_EXPORT InterestGroupAuction
 
   // If this is a component auction, the parent Auction. Null, otherwise.
   const raw_ptr<const InterestGroupAuction> parent_;
+
+  // flat_set copy of the interestGroupBuyers from the config, for efficient
+  // finds. This is only populated when encoded_signed_additional_bids_ is.
+  base::flat_set<url::Origin> interest_group_buyers_;
 
   // Base64-encoded signed additional bid entries.
   std::vector<std::string> encoded_signed_additional_bids_;
@@ -1186,9 +1193,8 @@ class CONTENT_EXPORT InterestGroupAuction
   // This includes bidders that are still attempting to generate bids ---
   // both BuyerHelpers and component auctions. BuyerHelpers may generate
   // multiple bids (or no bids). It also includes waiting for promises in
-  // configuration to resolve, and waiting for
-  // directFromSellerSignalsHeaderAdSlot to parse.
-  // TODO(morlovich): And will wait for additional_bids.
+  // configuration to resolve, waiting for directFromSellerSignalsHeaderAdSlot
+  // to parse, and waiting for additional bids to parse.
   //
   // When this reaches 0, the SellerWorklet's SendPendingSignalsRequests()
   // method should be invoked, so it can send any pending scoring signals
@@ -1289,7 +1295,16 @@ class CONTENT_EXPORT InterestGroupAuction
       const PrivateAggregationRequests& private_aggregation_requests)>
       maybe_log_private_aggregation_web_features_callback_;
 
+  // This is set to true if the actual auction ran on a B&A server and we are
+  // just handling the response.
+  bool is_server_auction_ = false;
+
+  // Saved response from the server if the actual auction ran on a B&A server.
   absl::optional<BiddingAndAuctionResponse> saved_response_;
+
+  // Time when `getInterestGroupAdAuctionData()` was called. Only for auctions
+  // running on B&A servers.
+  base::TimeTicks get_ad_auction_data_start_time_;
 
   // All errors reported by worklets thus far.
   std::vector<std::string> errors_;
@@ -1307,6 +1322,8 @@ class CONTENT_EXPORT InterestGroupAuction
   // dangling pointers.
   mojo::ReceiverSet<auction_worklet::mojom::ScoreAdClient, std::unique_ptr<Bid>>
       score_ad_receivers_;
+
+  data_decoder::DataDecoder data_decoder_;
 
   base::WeakPtrFactory<InterestGroupAuction> weak_ptr_factory_{this};
 };

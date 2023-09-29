@@ -4,8 +4,10 @@
 
 #include "ui/touch_selection/touch_selection_magnifier_aura.h"
 
+#include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
+#include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/color/color_provider_manager.h"
 #include "ui/compositor/layer.h"
@@ -25,6 +27,7 @@
 #include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skia_paint_util.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/native_theme/native_theme_observer.h"
 
 namespace ui {
 
@@ -49,21 +52,25 @@ constexpr int kMagnifierVerticalBoundsOffset = -8;
 
 constexpr int kMagnifierBorderThickness = 1;
 
-// Shadows values to draw around the zoomed contents.
-gfx::ShadowValues GetMagnifierShadowValues() {
+constexpr float kMagnifierBorderOpacity = 0.2f;
+
+// Shadows to draw around the zoomed contents.
+// TODO(b/299966070): Try to unify this with how other shadows are handled.
+gfx::ShadowValues GetMagnifierShadowValues(SkColor key_shadow_color,
+                                           SkColor ambient_shadow_color) {
   constexpr int kShadowElevation = 3;
-  constexpr int kShadowBlurCorrection = 2;
-  return {gfx::ShadowValue(gfx::Vector2d(0, kShadowElevation),
-                           kShadowBlurCorrection * kShadowElevation,
-                           SkColorSetA(SK_ColorBLACK, 0x3d)),
-          gfx::ShadowValue(gfx::Vector2d(),
-                           kShadowBlurCorrection * kShadowElevation,
-                           SkColorSetA(SK_ColorBLACK, 0x1a))};
+  constexpr int kShadowBlur = 2 * kShadowElevation;
+  return {gfx::ShadowValue(gfx::Vector2d(0, kShadowElevation), kShadowBlur,
+                           key_shadow_color),
+          gfx::ShadowValue(gfx::Vector2d(), kShadowBlur, ambient_shadow_color)};
 }
 
 // The space outside the zoom layer needed for shadows.
 gfx::Outsets GetMagnifierShadowOutsets() {
-  return gfx::ShadowValue::GetMargin(GetMagnifierShadowValues()).ToOutsets();
+  return gfx::ShadowValue::GetMargin(
+             GetMagnifierShadowValues(gfx::kPlaceholderColor,
+                                      gfx::kPlaceholderColor))
+      .ToOutsets();
 }
 
 // Bounds of the zoom layer in coordinates of its parent. These zoom layer
@@ -119,39 +126,12 @@ gfx::Point GetMagnifierSourceCenter(const gfx::Size& parent_container_size,
   return gfx::ToRoundedPoint(source_bounds.CenterPoint());
 }
 
-// Gets the background offset needed to correctly center the magnifier's zoomed
-// contents. `magnifier_layer_bounds` and `magnifier_source_center` should be in
-// coordinates of the magnifier's parent container.
-gfx::Point GetZoomLayerBackgroundOffset(
-    const gfx::Rect& magnifier_layer_bounds,
-    const gfx::Point& magnifier_source_center) {
-  // Compute the zoom layer center in coordinates of the magnifier's parent
-  // container. Note that this is not exactly the same as the center of the
-  // magnifier layer, since the magnifier layer includes non-uniform shadows
-  // that surround the zoomed contents.
-  const gfx::Point zoom_layer_center =
-      GetZoomLayerBounds().CenterPoint() +
-      magnifier_layer_bounds.OffsetFromOrigin();
-  return gfx::PointAtOffsetFromOrigin(zoom_layer_center -
-                                      magnifier_source_center);
-}
-
-// Gets the color to use for the border based on the default native theme.
-SkColor GetBorderColor() {
-  auto* native_theme = NativeTheme::GetInstanceForNativeUi();
-  return SkColorSetA(
-      ColorProviderManager::Get()
-          .GetColorProviderFor(native_theme->GetColorProviderKey(nullptr))
-          ->GetColor(ui::kColorSeparator),
-      0x23);
-}
-
 }  // namespace
 
 // Delegate for drawing the magnifier border and shadows onto the border layer.
 class TouchSelectionMagnifierAura::BorderRenderer : public LayerDelegate {
  public:
-  BorderRenderer() = default;
+  BorderRenderer() { UpdateTheme(NativeTheme::GetInstanceForNativeUi()); }
   BorderRenderer(const BorderRenderer&) = delete;
   BorderRenderer& operator=(const BorderRenderer&) = delete;
   ~BorderRenderer() override = default;
@@ -166,8 +146,8 @@ class TouchSelectionMagnifierAura::BorderRenderer : public LayerDelegate {
     cc::PaintFlags shadow_flags;
     shadow_flags.setAntiAlias(true);
     shadow_flags.setColor(SK_ColorTRANSPARENT);
-    shadow_flags.setLooper(
-        gfx::CreateShadowDrawLooper(GetMagnifierShadowValues()));
+    shadow_flags.setLooper(gfx::CreateShadowDrawLooper(
+        GetMagnifierShadowValues(key_shadow_color_, ambient_shadow_color)));
     recorder.canvas()->DrawRoundRect(zoom_layer_bounds, kMagnifierRadius,
                                      shadow_flags);
 
@@ -187,17 +167,34 @@ class TouchSelectionMagnifierAura::BorderRenderer : public LayerDelegate {
     border_flags.setAntiAlias(true);
     border_flags.setStyle(cc::PaintFlags::kStroke_Style);
     border_flags.setStrokeWidth(kMagnifierBorderThickness);
-    border_flags.setColor(GetBorderColor());
+    border_flags.setColor(border_color_);
+    border_flags.setAlphaf(kMagnifierBorderOpacity);
     recorder.canvas()->DrawRoundRect(zoom_layer_bounds, kMagnifierRadius,
                                      border_flags);
   }
 
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                   float new_device_scale_factor) override {}
+
+  void UpdateTheme(NativeTheme* theme) {
+    auto* color_provider = ColorProviderManager::Get().GetColorProviderFor(
+        theme->GetColorProviderKey(nullptr));
+    border_color_ = color_provider->GetColor(kColorSeparator);
+    key_shadow_color_ =
+        color_provider->GetColor(kColorShadowValueKeyShadowElevationThree);
+    ambient_shadow_color =
+        color_provider->GetColor(kColorShadowValueAmbientShadowElevationThree);
+  }
+
+ private:
+  SkColor border_color_ = gfx::kPlaceholderColor;
+  SkColor key_shadow_color_ = gfx::kPlaceholderColor;
+  SkColor ambient_shadow_color = gfx::kPlaceholderColor;
 };
 
 TouchSelectionMagnifierAura::TouchSelectionMagnifierAura() {
   CreateMagnifierLayer();
+  theme_observation_.Observe(NativeTheme::GetInstanceForNativeUi());
 }
 
 TouchSelectionMagnifierAura::~TouchSelectionMagnifierAura() = default;
@@ -214,37 +211,49 @@ void TouchSelectionMagnifierAura::ShowFocusBound(Layer* parent,
   }
 
   // Set up the animation for updating the magnifier bounds.
-  ui::ScopedLayerAnimationSettings settings(magnifier_layer_->GetAnimator());
+  ScopedLayerAnimationSettings settings(magnifier_layer_->GetAnimator());
   if (!magnifier_layer_->IsVisible()) {
     // Set the magnifier to appear immediately once its bounds are set.
     settings.SetTransitionDuration(base::Milliseconds(0));
     settings.SetTweenType(gfx::Tween::ZERO);
-    settings.SetPreemptionStrategy(
-        ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
+    settings.SetPreemptionStrategy(LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
   } else {
     // Set the magnifier to move smoothly from its current bounds to the updated
     // bounds.
     settings.SetTransitionDuration(kMagnifierTransitionDuration);
     settings.SetTweenType(gfx::Tween::LINEAR);
     settings.SetPreemptionStrategy(
-        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+        LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   }
 
-  // Update magnifier bounds and background offset.
   const gfx::Size magnifier_parent_size =
       magnifier_layer_->parent()->bounds().size();
   const gfx::Rect focus_rect = gfx::BoundingRect(focus_start, focus_end);
   const gfx::Rect magnifier_layer_bounds =
       GetMagnifierLayerBounds(magnifier_parent_size, focus_rect.top_center());
+  magnifier_layer_->SetBounds(magnifier_layer_bounds);
+
+  // Set the background offset to center the zoomed contents on the source
+  // center. Note that the zoom layer center here is not the same as the
+  // magnifier layer center, since the magnifier layer includes non-uniform
+  // shadows that surround the zoomed contents.
   const gfx::Point magnifier_source_center =
       GetMagnifierSourceCenter(magnifier_parent_size, focus_rect.CenterPoint());
-  zoom_layer_->SetBackgroundOffset(GetZoomLayerBackgroundOffset(
-      magnifier_layer_bounds, magnifier_source_center));
-  magnifier_layer_->SetBounds(magnifier_layer_bounds);
+  const gfx::Point zoom_layer_center =
+      zoom_layer_->bounds().CenterPoint() +
+      magnifier_layer_bounds.OffsetFromOrigin();
+  zoom_layer_->SetBackgroundOffset(gfx::PointAtOffsetFromOrigin(
+      zoom_layer_center - magnifier_source_center));
 
   if (!magnifier_layer_->IsVisible()) {
     magnifier_layer_->SetVisible(true);
   }
+}
+
+void TouchSelectionMagnifierAura::OnNativeThemeUpdated(
+    NativeTheme* observed_theme) {
+  border_renderer_->UpdateTheme(observed_theme);
+  border_layer_->SchedulePaint(gfx::Rect(border_layer_->size()));
 }
 
 gfx::Rect TouchSelectionMagnifierAura::GetZoomedContentsBoundsForTesting()

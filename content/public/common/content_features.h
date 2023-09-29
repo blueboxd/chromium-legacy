@@ -45,9 +45,13 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(
     kBrokerFileOperationsOnDiskCacheInNetworkService);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kBrowserVerifiedUserActivationMouse);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kCacheControlNoStoreEnterBackForwardCache);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kCdmStorageDatabase);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(
     kClearCrossSiteCrossBrowsingContextGroupWindowName);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kCompositeBGColorAnimation);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kCookieDeprecationFacilitatedTesting);
+CONTENT_EXPORT extern const base::FeatureParam<bool>
+    kCookieDeprecationFacilitatedTestingEnableIncognito;
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kCooperativeScheduling);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kCrashReporting);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kDevicePosture);
@@ -66,6 +70,8 @@ CONTENT_EXPORT extern const base::FeatureParam<content::DIPSTriggeringAction>
 CONTENT_EXPORT extern const base::FeatureParam<base::TimeDelta>
     kDIPSClientBounceDetectionTimeout;
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kDocumentPolicy);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(
+    kEarlyDocumentSwapForBackForwardTransitions);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kEarlyEstablishGpuChannel);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kEnableCanvas2DLayers);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(

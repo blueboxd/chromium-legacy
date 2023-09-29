@@ -22,11 +22,26 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/insets_outsets_base.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/metadata/type_conversion.h"
+#include "ui/views/view_class_properties.h"
 
 namespace autofill {
+
+namespace {
+
+// Returns the margin on the left and right of the row.
+int GetHorizontalMargin() {
+  return base::FeatureList::IsEnabled(
+             features::kAutofillShowAutocompleteDeleteButton)
+             ? ChromeLayoutProvider::Get()->GetDistanceMetric(
+                   DISTANCE_CONTENT_LIST_VERTICAL_SINGLE)
+             : 0;
+}
+
+}  // namespace
 
 // static
 std::unique_ptr<PopupRowView> PopupRowView::Create(PopupViewViews& popup_view,
@@ -76,15 +91,13 @@ PopupRowView::PopupRowView(
       controller_(controller),
       strategy_(std::move(strategy)) {
   CHECK(strategy_);
-  const int kHorizontalPadding =
-      base::FeatureList::IsEnabled(
-          features::kAutofillShowAutocompleteDeleteButton)
-          ? ChromeLayoutProvider::Get()->GetDistanceMetric(
-                DISTANCE_CONTENT_LIST_VERTICAL_SINGLE)
-          : 0;
+
+  SetProperty(views::kMarginsKey, gfx::Insets::VH(0, GetHorizontalMargin()));
+  SetBackground(
+      views::CreateThemedSolidBackground(ui::kColorDropdownBackground));
+
   views::BoxLayout* layout =
       SetLayoutManager(std::make_unique<views::BoxLayout>());
-  layout->set_inside_border_insets(gfx::Insets::VH(0, kHorizontalPadding));
 
   auto add_exit_enter_callbacks = [&](CellType type, PopupCellView& cell) {
     cell.SetOnExitedCallback(
@@ -135,6 +148,8 @@ void PopupRowView::SetSelectedCell(absl::optional<CellType> cell) {
     // explicitly with `absl::nullopt`.
     selected_cell_ = absl::nullopt;
   }
+
+  UpdateBackground();
 }
 
 void PopupRowView::SetCellPermanentlyHighlighted(CellType type,
@@ -142,12 +157,16 @@ void PopupRowView::SetCellPermanentlyHighlighted(CellType type,
   if (PopupCellView* view = GetCellView(type)) {
     view->SetPermanentlyHighlighted(highlighted);
   }
+
+  UpdateBackground();
 }
 
 gfx::RectF PopupRowView::GetCellBounds(CellType cell) const {
   const PopupCellView* view = GetCellView(cell);
   // The view is expected to be present.
-  return gfx::RectF(view->GetBoundsInScreen());
+  gfx::RectF bounds = gfx::RectF(view->GetBoundsInScreen());
+  bounds.Outset(GetHorizontalMargin());
+  return bounds;
 }
 
 bool PopupRowView::HandleKeyPressEvent(
@@ -176,6 +195,20 @@ const PopupCellView* PopupRowView::GetCellView(CellType type) const {
 
 PopupCellView* PopupRowView::GetCellView(CellType type) {
   return const_cast<PopupCellView*>(std::as_const(*this).GetCellView(type));
+}
+
+void PopupRowView::UpdateBackground() {
+  PopupCellView* control_cell = GetCellView(CellType::kControl);
+  if (!control_cell) {
+    return;
+  }
+
+  ui::ColorId kBackgroundColorId = control_cell->IsHighlighted()
+                                       ? ui::kColorDropdownBackgroundSelected
+                                       : ui::kColorDropdownBackground;
+  SetBackground(views::CreateThemedRoundedRectBackground(
+      kBackgroundColorId, ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+                              views::Emphasis::kMedium)));
 }
 
 BEGIN_METADATA(PopupRowView, views::View)

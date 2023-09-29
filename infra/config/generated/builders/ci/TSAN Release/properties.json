@@ -40,6 +40,12 @@
           "builder": "TSAN Release",
           "project": "chromium"
         }
+      ],
+      "mirroring_builder_group_and_names": [
+        {
+          "builder": "linux-tsan-rel",
+          "group": "tryserver.chromium.fuzz"
+        }
       ]
     }
   },

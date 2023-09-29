@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.privacy_guide.PrivacyGuideInteractions;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxBridge;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxReferrer;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxSettingsBaseFragment;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.safe_browsing.SafeBrowsingBridge;
 import org.chromium.chrome.browser.safe_browsing.metrics.SettingsAccessPoint;
 import org.chromium.chrome.browser.safe_browsing.settings.SafeBrowsingSettingsFragment;
@@ -86,24 +85,24 @@ public class PrivacySettings
         }
 
         Preference sandboxPreference = findPreference(PREF_PRIVACY_SANDBOX);
-        if (PrivacySandboxBridge.isPrivacySandboxRestricted()
-                && !PrivacySandboxBridge.isRestrictedNoticeEnabled()) {
-            // Hide the Privacy Sandbox if it is restricted and ad-measurement is not
-            // available to restricted users.
-            getPreferenceScreen().removePreference(sandboxPreference);
-        } else {
+        // Overwrite the click listener to pass a correct referrer to the fragment.
+        sandboxPreference.setOnPreferenceClickListener(preference -> {
+            PrivacySandboxSettingsBaseFragment.launchPrivacySandboxSettings(getContext(),
+                    new SettingsLauncherImpl(), PrivacySandboxReferrer.PRIVACY_SETTINGS);
+            return true;
+        });
+
+        if (PrivacySandboxBridge.isPrivacySandboxRestricted()) {
             if (PrivacySandboxBridge.isRestrictedNoticeEnabled()) {
                 // Update the summary to one that describes only ad measurement if ad-measurement
                 // is available to restricted users.
                 sandboxPreference.setSummary(getContext().getString(
                         R.string.settings_ad_privacy_restricted_link_row_sub_label));
+            } else {
+                // Hide the Privacy Sandbox if it is restricted and ad-measurement is not
+                // available to restricted users.
+                getPreferenceScreen().removePreference(sandboxPreference);
             }
-            // Overwrite the click listener to pass a correct referrer to the fragment.
-            sandboxPreference.setOnPreferenceClickListener(preference -> {
-                PrivacySandboxSettingsBaseFragment.launchPrivacySandboxSettings(getContext(),
-                        new SettingsLauncherImpl(), PrivacySandboxReferrer.PRIVACY_SETTINGS);
-                return true;
-            });
         }
 
         Preference privacyGuidePreference = findPreference(PREF_PRIVACY_GUIDE);
@@ -197,7 +196,7 @@ public class PrivacySettings
             settingsLauncher.launchSettingsActivity(getActivity(), GoogleServicesSettings.class);
         });
         if (IdentityServicesProvider.get()
-                        .getIdentityManager(Profile.getLastUsedRegularProfile())
+                        .getIdentityManager(getProfile())
                         .getPrimaryAccountInfo(ConsentLevel.SYNC)
                 == null) {
             // Sync is off, show the string with one link to "Google Services".
@@ -336,7 +335,8 @@ public class PrivacySettings
     }
 
     private boolean showTrackingProtectionUI() {
-        return UserPrefs.get(getProfile()).getBoolean(Pref.TRACKING_PROTECTION3PCD_ENABLED);
+        return UserPrefs.get(getProfile()).getBoolean(Pref.TRACKING_PROTECTION3PCD_ENABLED)
+                || ChromeFeatureList.isEnabled(ChromeFeatureList.TRACKING_PROTECTION_3PCD);
     }
 
     @Override

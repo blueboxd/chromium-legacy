@@ -232,7 +232,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearch.NetError" enum="NetErrorCodes"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>donnd@chromium.org</owner>
   <owner>basiaz@google.com</owner>
   <summary>
@@ -423,7 +423,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearch.SelectionExpanded"
-    enum="ContextualSearchGestureIsTap" expires_after="2024-01-14">
+    enum="ContextualSearchGestureIsTap" expires_after="2024-03-17">
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -1456,7 +1456,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.Image.Camera.Result" enum="CameraResult"
-    expires_after="2024-01-24">
+    expires_after="2024-03-24">
   <owner>juanmojica@google.com</owner>
   <owner>schechter@google.com</owner>
   <owner>stanfield@google.com</owner>
@@ -1488,6 +1488,19 @@ chromium-metrics-reviews@google.com.
     enable-lens-ping and ping-lens-sequentially are both true. If the ping was
     never received, or was an unexpected type, such as a non 204 response code,
     this event will not be logged.
+  </summary>
+</histogram>
+
+<histogram name="Search.Lens.ViewportDimensionsSent.Success" units="Boolean"
+    expires_after="2024-03-31">
+  <owner>mercerd@google.com</owner>
+  <owner>lens-chrome-eng@google.com</owner>
+  <summary>
+    When the user performs a Lens search on Desktop, records if the viewport
+    dimensions of the side panel were included in the request. A false value
+    indicates either the viewport width or height were not included in the
+    request. A true value is recorded if and only if both the `vpw` and `vph`
+    url params were added to the request with non-zero values.
   </summary>
 </histogram>
 
@@ -1669,7 +1682,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.QueryTiles.TrendingTileEvent" enum="TrendingTileEvent"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>qinmin@chromium.org</owner>
   <owner>chrome-upboarding-eng@google.com</owner>
   <summary>

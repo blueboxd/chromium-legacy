@@ -145,7 +145,8 @@ class PLATFORM_EXPORT ImageDecoder {
   USING_FAST_MALLOC(ImageDecoder);
 
  public:
-  static const wtf_size_t kNoDecodedImageByteLimit;
+  static constexpr wtf_size_t kNoDecodedImageByteLimit =
+      static_cast<wtf_size_t>(-1);
 
   enum AlphaOption { kAlphaPremultiplied, kAlphaNotPremultiplied };
   enum HighBitDepthDecodingOption {
@@ -195,6 +196,7 @@ class PLATFORM_EXPORT ImageDecoder {
       AlphaOption,
       HighBitDepthDecodingOption,
       ColorBehavior,
+      const size_t platform_max_decoded_bytes,
       const SkISize& desired_size = SkISize::MakeEmpty(),
       AnimationOption animation_option = AnimationOption::kUnspecified);
   static std::unique_ptr<ImageDecoder> Create(
@@ -203,11 +205,13 @@ class PLATFORM_EXPORT ImageDecoder {
       AlphaOption alpha_option,
       HighBitDepthDecodingOption high_bit_depth_decoding_option,
       ColorBehavior color_behavior,
+      size_t platform_max_decoded_bytes,
       const SkISize& desired_size = SkISize::MakeEmpty(),
       AnimationOption animation_option = AnimationOption::kUnspecified) {
     return Create(SegmentReader::CreateFromSharedBuffer(std::move(data)),
                   data_complete, alpha_option, high_bit_depth_decoding_option,
-                  color_behavior, desired_size, animation_option);
+                  color_behavior, platform_max_decoded_bytes, desired_size,
+                  animation_option);
   }
 
   // Similar to above, but does not allow mime sniffing. Creates explicitly
@@ -219,6 +223,7 @@ class PLATFORM_EXPORT ImageDecoder {
       AlphaOption alpha_option,
       HighBitDepthDecodingOption high_bit_depth_decoding_option,
       ColorBehavior color_behavior,
+      size_t platform_max_decoded_bytes,
       const SkISize& desired_size = SkISize::MakeEmpty(),
       AnimationOption animation_option = AnimationOption::kUnspecified);
 

@@ -10,8 +10,13 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "build/branding_buildflags.h"
+#include "build/build_config.h"
 
 namespace supervised_user {
+
+BASE_FEATURE(kKidFriendlyContentFeed,
+             "KidFriendlyContentFeed",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables local parent approvals for the blocked website on the Family Link
 // user's device.
@@ -38,10 +43,6 @@ constexpr base::FeatureParam<std::string> kLocalWebApprovalsPreferredButton{
 BASE_FEATURE(kEnableProtoApiForClassifyUrl,
              "EnableProtoApiForClassifyUrl",
              base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kEnableCreatePermissionRequestFetcher,
-             "EnableCreatePermissionRequestFetcher",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kUseBuiltInRetryingMechanismForListFamilyMembers,
              "UseBuiltInRetryingMechanismForListFamilyMembers",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -130,6 +131,10 @@ constexpr base::FeatureParam<std::string> kManagedByParentUiMoreInfoUrl{
     &kEnableManagedByParentUi, "more_info_url",
     "https://familylink.google.com/setting/resource/94"};
 
+BASE_FEATURE(kCustomWebSignInInterceptForSupervisedUsers,
+             "CustomWebSignInInterceptForSupervisedUsers",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 bool IsLocalExtensionApprovalsV2Enabled() {
   return base::FeatureList::IsEnabled(kLocalExtensionApprovalsV2);
 }
@@ -152,6 +157,10 @@ bool IsChildAccountSupervisionEnabled() {
          base::FeatureList::IsEnabled(
              supervised_user::kClearingCookiesKeepsSupervisedUsersSignedIn);
 #endif
+}
+
+bool IsKidFriendlyContentFeedAvailable() {
+  return base::FeatureList::IsEnabled(kKidFriendlyContentFeed);
 }
 
 }  // namespace supervised_user

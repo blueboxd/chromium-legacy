@@ -84,6 +84,7 @@ ci.builder(
         short_name = "bld",
     ),
     cq_mirrors_console_view = "mirrors",
+    contact_team_email = "bling-engprod@google.com",
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = reclient.jobs.DEFAULT,
 )
@@ -112,6 +113,7 @@ ci.builder(
         short_name = "bld",
     ),
     cq_mirrors_console_view = "mirrors",
+    contact_team_email = "bling-engprod@google.com",
 )
 
 ci.builder(
@@ -140,6 +142,32 @@ ci.builder(
         category = "release|arm64",
         short_name = "a64",
     ),
+    contact_team_email = "bling-engprod@google.com",
+)
+
+ci.builder(
+    name = "mac-arm64-dbg",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_arch = builder_config.target_arch.ARM,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.MAC,
+        ),
+    ),
+    os = os.MAC_DEFAULT,
+    console_view_entry = consoles.console_view_entry(
+        category = "debug|arm64",
+        short_name = "bld",
+    ),
+    contact_team_email = "bling-engprod@google.com",
 )
 
 ci.builder(
@@ -166,6 +194,7 @@ ci.builder(
         category = "release|arm64",
         short_name = "bld",
     ),
+    contact_team_email = "bling-engprod@google.com",
 )
 
 ci.builder(
@@ -218,6 +247,7 @@ ci.thin_tester(
         category = "release|arm64",
         short_name = "11",
     ),
+    contact_team_email = "bling-engprod@google.com",
 )
 
 ci.thin_tester(
@@ -272,6 +302,7 @@ ci.thin_tester(
         category = "release|arm64",
         short_name = "13",
     ),
+    contact_team_email = "bling-engprod@google.com",
 )
 
 ci.thin_tester(
@@ -299,6 +330,7 @@ ci.thin_tester(
         short_name = "15",
     ),
     cq_mirrors_console_view = "mirrors",
+    contact_team_email = "bling-engprod@google.com",
 )
 
 ci.thin_tester(
@@ -324,6 +356,7 @@ ci.thin_tester(
         category = "mac",
         short_name = "11",
     ),
+    contact_team_email = "bling-engprod@google.com",
 )
 
 ci.thin_tester(
@@ -439,10 +472,6 @@ ios_builder(
             short_name = "ctl",
         ),
     ],
-
-    # TODO(crbug/1466746): Xcode 15 is broken due a bug in the SDK.
-    # Remove below once the issue is fixed.
-    xcode = xcode.x14main,
 )
 
 ios_builder(

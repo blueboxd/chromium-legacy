@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
+#include "chrome/browser/ash/policy/dlp/dialogs/files_policy_dialog.h"
 #include "chrome/browser/ash/policy/dlp/files_policy_warn_settings.h"
 #include "chrome/browser/chromeos/policy/dlp/dialogs/policy_dialog_base.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_file_destination.h"
@@ -42,7 +43,8 @@ class MockFilesPolicyNotificationManager
               AddConnectorsBlockedFiles,
               (file_manager::io_task::IOTaskId task_id,
                std::vector<base::FilePath> blocked_files,
-               dlp::FileAction action),
+               dlp::FileAction action,
+               FilesPolicyDialog::BlockReason reason),
               (override));
 
   MOCK_METHOD(void,
@@ -70,6 +72,11 @@ class MockFilesPolicyNotificationManager
               (override));
 
   MOCK_METHOD(void,
+              ShowDialog,
+              (file_manager::io_task::IOTaskId task_id, FilesDialogType),
+              (override));
+
+  MOCK_METHOD(void,
               OnIOTaskResumed,
               (file_manager::io_task::IOTaskId task_id),
               (override));
@@ -77,6 +84,11 @@ class MockFilesPolicyNotificationManager
   MOCK_METHOD(void,
               OnErrorItemDismissed,
               (file_manager::io_task::IOTaskId task_id),
+              (override));
+
+  MOCK_METHOD(void,
+              OnIOTaskStatus,
+              (const file_manager::io_task::ProgressStatus&),
               (override));
 };
 

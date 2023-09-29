@@ -79,6 +79,9 @@ EXCLUDED_TESTS = [
     # https://github.com/rust-lang/rust/issues/94322 large output from
     # compiletests is breaking json parsing of the results.
     os.path.join('tests', 'ui', 'numeric', 'numeric-cast.rs'),
+    # https://github.com/rust-lang/rust/pull/116018
+    # disable temporarily for the clang roll
+    os.path.join('tests', 'codegen', 'simd', 'simd-wide-sum.rs'),
 ]
 EXCLUDED_TESTS_WINDOWS = [
     # https://github.com/rust-lang/rust/issues/96464
@@ -778,7 +781,7 @@ def main():
         return 0
 
     building_on_host_triple = RustTargetTriple()
-    xpy_args = ['--build', building_on_host_triple, '--color', 'never']
+    xpy_args = ['--build', building_on_host_triple]
     if args.build_mac_arm:
         building_for_host_triple = RustTargetTriple(build_mac_arm=True)
         xpy_args.extend([

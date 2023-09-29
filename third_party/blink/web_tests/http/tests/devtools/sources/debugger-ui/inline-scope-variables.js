@@ -5,9 +5,10 @@
 import {TestRunner} from 'test_runner';
 import {SourcesTestRunner} from 'sources_test_runner';
 
+import * as SourcesModule from 'devtools/panels/sources/sources.js';
+
 (async function() {
   TestRunner.addResult(`Tests that inline scope variables are rendering correctly.\n`);
-  await TestRunner.loadLegacyModule('sources');
   await TestRunner.showPanel('sources');
   await TestRunner.evaluateInPagePromise(`
       function testFunction()
@@ -28,7 +29,7 @@ import {SourcesTestRunner} from 'sources_test_runner';
   function step1() {
     TestRunner
         .addSnifferPromise(
-            Sources.DebuggerPlugin.prototype, '_renderDecorations')
+            SourcesModule.DebuggerPlugin.DebuggerPlugin.prototype, '_renderDecorations')
         .then(step2);
     SourcesTestRunner.runTestFunctionAndWaitUntilPaused();
   }

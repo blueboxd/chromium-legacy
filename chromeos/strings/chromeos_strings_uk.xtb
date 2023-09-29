@@ -280,7 +280,6 @@
 <translation id="3226405216343213872">Пошук сканерів</translation>
 <translation id="3226657629376379887">Меню дій для макета</translation>
 <translation id="3246869037381808805">Завдання друку, старіші за 1 день, буде вилучено</translation>
-<translation id="3248223063252096240">Ексклюзивно для <ph name="PRODUCT_NAME" /></translation>
 <translation id="3268178239013324452">Не надруковано – відкрито кришку принтера</translation>
 <translation id="3275729367986477355">Зображення аватара</translation>
 <translation id="3283504360622356314">{0,plural, =1{Редагувати файл}one{Редагувати файли}few{Редагувати файли}many{Редагувати файли}other{Редагувати файли}}</translation>
@@ -921,6 +920,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">Вибрати тему "<ph name="TOPIC_SOURCE" />" з описом "<ph name="TOPIC_SOURCE_DESC" />"</translation>
 <translation id="8151185429379586178">Інструменти розробника</translation>
+<translation id="8152370627892825"><ph name="DESCRIPTION" />, <ph name="ACCELERATOR_INFO" />.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8183974620058026102">Вкласти</translation>
 <translation id="8206859287963243715">Мобільний</translation>

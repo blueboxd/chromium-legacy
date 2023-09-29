@@ -164,6 +164,7 @@ void ContentAutofillDriverFactory::RenderFrameDeleted(
   for (Observer& observer : observers_) {
     observer.OnContentAutofillDriverWillBeDeleted(*this, *driver);
   }
+
   driver_map_.erase(it);
 }
 
@@ -227,6 +228,7 @@ void ContentAutofillDriverFactory::DidFinishNavigation(
       navigation_handle->IsPrerenderedPageActivation()) {
     return;
   }
+
   driver->Reset();
 }
 

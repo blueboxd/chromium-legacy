@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/constants/ash_features.h"
+#include "ash/drag_drop/drag_drop_util.h"
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/rounded_image_view.h"
 #include "ash/public/cpp/style/color_provider.h"
@@ -65,6 +66,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/shadow_util.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/message_center/message_center.h"
@@ -78,6 +80,7 @@
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/message_center/views/notification_header_view.h"
 #include "ui/message_center/views/notification_view_base.h"
+#include "ui/message_center/views/notification_view_util.h"
 #include "ui/message_center/views/proportional_image_view.h"
 #include "ui/message_center/views/relative_time_formatter.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -590,6 +593,7 @@ AshNotificationView::AshNotificationView(
                   // consider making changes to this code when the bug is fixed.
                   .SetMaximumWidth(GetExpandedMessageLabelWidth()))
           .AddChild(CreateInlineSettingsBuilder())
+          .AddChild(CreateSnoozeSettingsBuilder())
           .AddChild(CreateImageContainerBuilder().SetProperty(
               views::kMarginsKey, kImageContainerPadding));
 
@@ -910,9 +914,24 @@ absl::optional<gfx::ImageSkia> AshNotificationView::GetDragImage() {
 
   // Assume that an Ash notification has at most one large image view. Fetch the
   // image shown in the large image view.
-  return static_cast<message_center::LargeImageView*>(
-             GetViewByID(message_center::NotificationViewBase::kLargeImageView))
-      ->drawn_image();
+  const gfx::ImageSkia& original_image =
+      static_cast<message_center::LargeImageView*>(
+          GetViewByID(message_center::NotificationViewBase::kLargeImageView))
+          ->drawn_image();
+
+  // Add the background color.
+  const absl::optional<size_t> radius =
+      message_center::notification_view_util::GetLargeImageCornerRadius();
+  const gfx::ImageSkia drag_image_with_background =
+      gfx::ImageSkiaOperations::CreateImageWithRoundRectBackground(
+          gfx::SizeF{original_image.size()}, radius.value_or(0),
+          GetColorProvider()->GetColor(drag_drop::kDragImageBackgroundColor),
+          original_image);
+
+  // Add the drop shadow.
+  return gfx::ImageSkiaOperations::CreateImageWithDropShadow(
+      drag_image_with_background,
+      drag_drop::GetDragImageShadowDetails(radius).values);
 }
 
 void AshNotificationView::AttachDropData(ui::OSExchangeData* data) {
@@ -1357,6 +1376,58 @@ void AshNotificationView::CreateOrUpdateInlineSettingsViews(
       std::move(inline_settings_cancel_button));
 }
 
+void AshNotificationView::CreateOrUpdateSnoozeSettingsViews(
+    const message_center::Notification& notification) {
+  // TODO(b/298216201): Enable snooze settings after adding mojo callbacks in
+  // the snooze settings layout.
+
+  if (!snooze_settings_enabled()) {
+    return;
+  }
+
+  snooze_settings_row()->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal));
+  auto snooze_notification_1_hour_button = GenerateNotificationLabelButton(
+      base::BindRepeating(&AshNotificationView::DisableNotification,
+                          base::Unretained(this)),
+      l10n_util::GetStringUTF16(
+          IDS_ASH_NOTIFICATION_SNOOZE_SETTINGS_SNOOZE_1_HOUR_TEXT));
+  snooze_settings_row()->AddChildView(
+      std::move(snooze_notification_1_hour_button));
+
+  auto snooze_notification_15_minutes_button = GenerateNotificationLabelButton(
+      base::BindRepeating(&AshNotificationView::DisableNotification,
+                          base::Unretained(this)),
+      l10n_util::GetStringUTF16(
+          IDS_ASH_NOTIFICATION_SNOOZE_SETTINGS_SNOOZE_15_MINUTES_TEXT));
+  snooze_settings_row()->AddChildView(
+      std::move(snooze_notification_15_minutes_button));
+
+  auto snooze_notification_30_minutes_button = GenerateNotificationLabelButton(
+      base::BindRepeating(&AshNotificationView::DisableNotification,
+                          base::Unretained(this)),
+      l10n_util::GetStringUTF16(
+          IDS_ASH_NOTIFICATION_SNOOZE_SETTINGS_SNOOZE_30_MINUTES_TEXT));
+  snooze_settings_row()->AddChildView(
+      std::move(snooze_notification_30_minutes_button));
+
+  auto snooze_notification_2_hours_button = GenerateNotificationLabelButton(
+      base::BindRepeating(&AshNotificationView::DisableNotification,
+                          base::Unretained(this)),
+      l10n_util::GetStringUTF16(
+          IDS_ASH_NOTIFICATION_SNOOZE_SETTINGS_SNOOZE_2_HOURS_TEXT));
+  snooze_settings_row()->AddChildView(
+      std::move(snooze_notification_2_hours_button));
+
+  auto undo_snooze_notification_button = GenerateNotificationLabelButton(
+      base::BindRepeating(&AshNotificationView::ToggleSnoozeSettings,
+                          base::Unretained(this)),
+      l10n_util::GetStringUTF16(
+          IDS_ASH_NOTIFICATION_SNOOZE_SETTINGS_UNDO_SNOOZE_TEXT));
+  snooze_settings_row()->AddChildView(
+      std::move(undo_snooze_notification_button));
+}
+
 void AshNotificationView::CreateOrUpdateCompactTitleMessageView(
     const message_center::Notification& notification) {
   // No CompactTitleMessageView required. It is only used for progress
@@ -1544,6 +1615,21 @@ void AshNotificationView::ToggleInlineSettings(const ui::Event& event) {
     right_content()->SetVisible(!should_show_inline_settings);
   }
   expand_button_->SetVisible(!should_show_inline_settings);
+
+  PreferredSizeChanged();
+}
+
+void AshNotificationView::ToggleSnoozeSettings(const ui::Event& event) {
+  if (!snooze_settings_enabled()) {
+    return;
+  }
+
+  bool should_show_snooze_settings = !snooze_settings_row()->GetVisible();
+
+  NotificationViewBase::ToggleSnoozeSettings(event);
+
+  left_content()->SetVisible(!should_show_snooze_settings);
+  right_content()->SetVisible(!should_show_snooze_settings);
 
   PreferredSizeChanged();
 }

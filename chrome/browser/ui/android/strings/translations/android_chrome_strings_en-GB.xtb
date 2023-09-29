@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
 <translation id="1011749477052068769">Move here</translation>
+<translation id="1014147525163127655">There aren't any passkeys for <ph name="ORIGIN" /> on this device</translation>
 <translation id="1016498331642356377">Quickly search with your voice. To edit this shortcut, touch and hold.</translation>
 <translation id="1024113959924243553">Chrome Dev</translation>
 <translation id="1028699632127661925">Sending to <ph name="DEVICE_NAME" />...</translation>
@@ -175,6 +176,7 @@ When you delete your browsing history – all or for a specific site – you als
 <translation id="19288952978244135">Reopen Chrome.</translation>
 <translation id="1933845786846280168">Selected Tab</translation>
 <translation id="1943432128510653496">Save passwords</translation>
+<translation id="1944535645109964458">No passkeys available</translation>
 <translation id="1952172573699511566">Websites will show text in your preferred language, when possible.</translation>
 <translation id="1959679933317802873">Waiting for content</translation>
 <translation id="1960290143419248813">Chrome updates are no longer supported for this version of Android</translation>
@@ -263,6 +265,7 @@ When you delete your browsing history – all or for a specific site – you als
 <translation id="2461822463642141190">Current</translation>
 <translation id="2472163211318554013">Sign in to get the most out of Chrome</translation>
 <translation id="247737702124049222">Image descriptions are on</translation>
+<translation id="2479148705183875116">Go to Settings</translation>
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="2496180316473517155">Browsing history</translation>
 <translation id="2497852260688568942">Sync is disabled by your administrator</translation>
@@ -626,6 +629,7 @@ Private state tokens improve privacy on the web and can’t be used to find out 
 <translation id="4257230861809842349">Delete passwords from Google Password Manager?</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />What data is used:<ph name="END_BOLD" /> Your browsing history, a record of sites that you’ve visited using Chrome on this device.</translation>
 <translation id="4269820728363426813">Copy link address</translation>
+<translation id="4277529130885813215">Use another device</translation>
 <translation id="4283102315569707115">Request desktop sites by default?</translation>
 <translation id="4285846616383034558">Cookies, cache and other site data</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Turn on screen lock in Android settings<ph name="END_LINK" /></translation>
@@ -672,6 +676,7 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="452750746583162491">Review your synced data</translation>
 <translation id="4528638190900283934">Sign in for additional features</translation>
 <translation id="4532845899244822526">Choose folder</translation>
+<translation id="4543131175509360848">No passkeys sheet</translation>
 <translation id="4547551584605870320">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> tab}other{<ph name="TAB_COUNT_MANY" /> tabs, <ph name="TAB_COUNT_INCOGNITO" /> incognito}}</translation>
 <translation id="4554077758708533499">Connected with USB cable</translation>
 <translation id="4558311620361989323">Web page shortcuts</translation>
@@ -946,6 +951,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5869522115854928033">Saved passwords</translation>
 <translation id="587735546353481577">To follow a site, go to the site, open the Chrome menu and tap Follow.</translation>
 <translation id="5879072387416556377">Get better suggestions</translation>
+<translation id="5899667542927581604">No passkeys sheet was closed</translation>
 <translation id="5916664084637901428">On</translation>
 <translation id="5919204609460789179">Update <ph name="PRODUCT_NAME" /> to start sync</translation>
 <translation id="5938820472109305350">Add <ph name="INTEREST" /></translation>
@@ -1166,6 +1172,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6955535239952325894">This setting is disabled on managed browsers</translation>
 <translation id="6963766334940102469">Delete bookmarks</translation>
 <translation id="696447261358045621">Leave Incognito mode</translation>
+<translation id="6965382102122355670">OK</translation>
 <translation id="6971862865055170158">Don’t approve</translation>
 <translation id="6978717888677691380">Sites that you blocked</translation>
 <translation id="6979737339423435258">All time</translation>
@@ -1324,6 +1331,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7757787379047923882">Text shared from <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">SD Card <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Add address</translation>
+<translation id="7766587497031415281">More options to clear browsing data</translation>
 <translation id="7772032839648071052">Confirm passphrase</translation>
 <translation id="7772375229873196092">Close <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 and <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> more}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 and <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> more}}</translation>
@@ -1588,6 +1596,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="9063523880881406963">Turn off Request desktop site</translation>
 <translation id="9065203028668620118">Edit</translation>
 <translation id="9065383040763568503">Stored data that Chrome doesn't think is important (e.g. sites with no saved settings or that you don't visit often)</translation>
+<translation id="9067341854474068781">No passkeys sheet opened at full height</translation>
 <translation id="906781307897697745">in <ph name="PRODUCT_NAME" /></translation>
 <translation id="9069999660519089861">No unread pages</translation>
 <translation id="9070377983101773829">Start voice search</translation>

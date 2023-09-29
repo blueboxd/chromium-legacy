@@ -20,6 +20,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
+#include "chromeos/ash/components/cryptohome/constants.h"
 #include "chromeos/ash/components/dbus/cryptohome/UserDataAuth.pb.h"
 #include "chromeos/ash/components/dbus/cryptohome/rpc.pb.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
@@ -106,10 +108,6 @@ namespace {
 constexpr int kDircryptoMigrationUpdateIntervalMs = 200;
 // The number of updates the MigrateToDircrypto will send before it completes.
 constexpr uint64_t kDircryptoMigrationMaxProgress = 15;
-
-// Timeout after which an authenticated session is destroyed by the real
-// cryptohome service.
-constexpr int kSessionTimeoutSeconds = 5 * 60;
 
 // Template for auth session ID.
 constexpr char kAuthSessionIdTemplate[] = "AuthSession-%d";
@@ -576,7 +574,7 @@ bool FakeUserDataAuthClient::TestApi::HasPinFactor(
   return ContainsFakeFactor<PinFactor>(user_state.auth_factors);
 }
 
-std::string FakeUserDataAuthClient::TestApi::AddSession(
+std::pair<std::string, std::string> FakeUserDataAuthClient::TestApi::AddSession(
     const cryptohome::AccountIdentifier& account_id,
     bool authenticated) {
   CHECK(FakeUserDataAuthClient::Get()->users_.contains(account_id));
@@ -591,11 +589,12 @@ std::string FakeUserDataAuthClient::TestApi::AddSession(
       FakeUserDataAuthClient::Get()->auth_sessions_[auth_session_id];
 
   session.id = auth_session_id;
+  session.broadcast_id = "b-" + auth_session_id;
   session.ephemeral = false;
   session.account = account_id;
   session.authenticated = authenticated;
 
-  return auth_session_id;
+  return {auth_session_id, session.broadcast_id};
 }
 
 bool FakeUserDataAuthClient::TestApi::IsCurrentSessionEphemeral() {
@@ -672,7 +671,14 @@ void FakeUserDataAuthClient::IsMounted(
   ::user_data_auth::IsMountedReply reply;
   ReplyOnReturn auto_reply(&reply, std::move(callback));
 
-  reply.set_is_mounted(true);
+  bool result;
+  if (request.username().empty()) {
+    result = !mounted_user_dirs_.empty();
+  } else {
+    result =
+        mounted_user_dirs_.find(request.username()) != mounted_user_dirs_.end();
+  }
+  reply.set_is_mounted(result);
 }
 
 void FakeUserDataAuthClient::Unmount(
@@ -680,6 +686,7 @@ void FakeUserDataAuthClient::Unmount(
     UnmountCallback callback) {
   ::user_data_auth::UnmountReply reply;
   ReplyOnReturn auto_reply(&reply, std::move(callback));
+  mounted_user_dirs_.clear();
 }
 
 void FakeUserDataAuthClient::Remove(
@@ -823,6 +830,7 @@ void FakeUserDataAuthClient::StartAuthSession(
   DCHECK_EQ(auth_sessions_.count(auth_session_id), 0u);
   AuthSessionData& session = auth_sessions_[auth_session_id];
   session.id = auth_session_id;
+  session.broadcast_id = "b-" + auth_session_id;
   session.ephemeral =
       (request.flags() & ::user_data_auth::AUTH_SESSION_FLAGS_EPHEMERAL_USER) !=
       0;
@@ -830,6 +838,7 @@ void FakeUserDataAuthClient::StartAuthSession(
   session.requested_auth_session_intent = request.intent();
 
   reply.set_auth_session_id(auth_session_id);
+  reply.set_broadcast_id(session.broadcast_id);
 
   const auto user_it = users_.find(request.account_id());
   const bool user_exists = user_it != std::end(users_);
@@ -1052,6 +1061,10 @@ void FakeUserDataAuthClient::CreatePersistentUser(
   }
 
   auth_session.authenticated = true;
+  // TODO(b/301078137): once proto includes lifetime information, add it
+  // to the reply.
+  auth_session.lifetime =
+      base::Time::Now() + cryptohome::kAuthsessionInitialLifetime;
 }
 
 void FakeUserDataAuthClient::PreparePersistentVault(
@@ -1104,6 +1117,7 @@ void FakeUserDataAuthClient::PreparePersistentVault(
 
   reply.set_sanitized_username(
       GetStubSanitizedUsername(authenticated_auth_session->account));
+  mounted_user_dirs_.insert(authenticated_auth_session->account.account_id());
 }
 
 void FakeUserDataAuthClient::PrepareVaultForMigration(
@@ -1157,8 +1171,13 @@ void FakeUserDataAuthClient::ExtendAuthSession(
   ReplyOnReturn auto_reply(&reply, std::move(callback));
 
   auto error = CryptohomeErrorCode::CRYPTOHOME_ERROR_NOT_SET;
-  GetAuthenticatedAuthSession(request.auth_session_id(), &error);
+  auto* session_data =
+      GetAuthenticatedAuthSession(request.auth_session_id(), &error);
   reply.set_error(error);
+  if (session_data) {
+    auth_sessions_.find(request.auth_session_id())->second.lifetime =
+        base::Time::Now() + base::Seconds(request.extension_duration());
+  }
 }
 
 void FakeUserDataAuthClient::AddAuthFactor(
@@ -1298,8 +1317,10 @@ void FakeUserDataAuthClient::AuthenticateAuthFactor(
   session.authenticated = true;
   session.authorized_auth_session_intent.Put(
       session.requested_auth_session_intent);
+  session.lifetime =
+      base::Time::Now() + cryptohome::kAuthsessionInitialLifetime;
   reply.add_authorized_for(session.requested_auth_session_intent);
-  reply.set_seconds_left(kSessionTimeoutSeconds);
+  reply.set_seconds_left(cryptohome::kAuthsessionInitialLifetime.InSeconds());
 }
 
 void FakeUserDataAuthClient::UpdateAuthFactor(
@@ -1386,7 +1407,6 @@ void FakeUserDataAuthClient::GetAuthSessionStatus(
 
   const std::string auth_session_id = request.auth_session_id();
   auto auth_session = auth_sessions_.find(auth_session_id);
-
   // Check if the token refers to a valid AuthSession.
   if (auth_session == auth_sessions_.end()) {
     reply.set_error(CryptohomeErrorCode::CRYPTOHOME_INVALID_AUTH_SESSION_TOKEN);
@@ -1397,9 +1417,15 @@ void FakeUserDataAuthClient::GetAuthSessionStatus(
         ::user_data_auth::AUTH_SESSION_STATUS_FURTHER_FACTOR_REQUIRED);
     return;
   }
+  base::TimeDelta time_left = auth_session->second.lifetime - base::Time::Now();
+  if (time_left.is_negative()) {
+    reply.set_status(
+        ::user_data_auth::AUTH_SESSION_STATUS_INVALID_AUTH_SESSION);
+    return;
+  }
   reply.set_status(::user_data_auth::AUTH_SESSION_STATUS_AUTHENTICATED);
   // Use 5 minutes timeout - as if auth session has just started.
-  reply.set_time_left(5 * 60);
+  reply.set_time_left(time_left.InSeconds());
 }
 
 void FakeUserDataAuthClient::PrepareAuthFactor(

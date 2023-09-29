@@ -278,6 +278,7 @@ chrome.accessibilityPrivate.AccessibilityFeature = {
   DICTATION_CONTEXT_CHECKING: 'dictationContextChecking',
   CHROMEVOX_SETTINGS_MIGRATION: 'chromevoxSettingsMigration',
   GAME_FACE_INTEGRATION: 'gameFaceIntegration',
+  GOOGLE_TTS_HIGH_QUALITY_VOICES: 'googleTtsHighQualityVoices',
 };
 
 /**
@@ -344,6 +345,7 @@ chrome.accessibilityPrivate.DictationBubbleProperties;
  */
 chrome.accessibilityPrivate.ToastType = {
   DICTATION_NO_FOCUSED_TEXT_FIELD: 'dictationNoFocusedTextField',
+  DICTATION_MIC_MUTED: 'dictationMicMuted',
 };
 
 /**
@@ -542,6 +544,13 @@ chrome.accessibilityPrivate.sendSyntheticMouseEvent = function(mouseEvent) {};
  * @param {!chrome.accessibilityPrivate.SelectToSpeakState} state
  */
 chrome.accessibilityPrivate.setSelectToSpeakState = function(state) {};
+
+/**
+ * Called by the Select-to-Speak extension to request a clipboard copy in the
+ * active Lacros Google Docs tab for the copy-paste fallback.
+ * @param {string} url URL of the Google Docs tab.
+ */
+chrome.accessibilityPrivate.clipboardCopyInActiveLacrosGoogleDoc = function(url) {};
 
 /**
  * Called by the Accessibility Common extension when

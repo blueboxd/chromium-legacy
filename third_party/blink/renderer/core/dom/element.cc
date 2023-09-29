@@ -130,6 +130,7 @@
 #include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/core/events/focus_event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -176,9 +177,9 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/keywords.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
+#include "third_party/blink/renderer/core/layout/layout_text_combine.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
@@ -2670,6 +2671,8 @@ Node::InsertionNotificationRequest Element::InsertedInto(
 
   DCHECK(!HasRareData() || !GetElementRareData()->HasPseudoElements());
 
+  RecomputeDirectionFromParent();
+
   if (!insertion_point.IsInTreeScope()) {
     return kInsertionDone;
   }
@@ -2794,6 +2797,8 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
       CustomElement::EnqueueDisconnectedCallback(*this);
     }
   }
+
+  RecomputeDirectionFromParent();
 
   document.GetRootScrollerController().ElementRemoved(*this);
 
@@ -2935,6 +2940,11 @@ void Element::AttachLayoutTree(AttachContext& context) {
   if (ShadowRoot* shadow_root = GetShadowRoot()) {
     // When a shadow root exists, it does the work of attaching the children.
     shadow_root->AttachLayoutTree(children_context);
+    Node::AttachLayoutTree(context);
+    ClearChildNeedsReattachLayoutTree();
+  } else if (HTMLSlotElement* slot =
+                 ToHTMLSlotElementIfSupportsAssignmentOrNull(this)) {
+    slot->AttachLayoutTreeForSlotChildren(children_context);
     Node::AttachLayoutTree(context);
     ClearChildNeedsReattachLayoutTree();
   } else {
@@ -3193,6 +3203,10 @@ bool Element::SkipStyleRecalcForContainer(
   if (style.IsRenderedInTopLayer(*this)) {
     return false;
   }
+
+  GetDocument()
+      .GetStyleEngine()
+      .SetStyleMaybeAffectedByLayoutForAccessibility();
 
   // Store the child_change so that we can continue interleaved style layout
   // from where we left off.
@@ -3582,99 +3596,16 @@ StyleRecalcChange Element::RecalcOwnStyle(
     if (!ShouldStoreComputedStyle(*new_style)) {
       new_style = nullptr;
       NotifyAXOfAttachedSubtree();
-    } else if (!new_style->IsContentVisibilityVisible()) {
-      NotifyAXOfAttachedSubtree();
-    }
-  }
-
-  if (HighlightRecalc highlight_recalc =
-          CalculateHighlightRecalc(old_style, new_style);
-      highlight_recalc != HighlightRecalc::kNone) {
-    DCHECK(new_style);
-
-    ComputedStyleBuilder builder(*new_style);
-
-    if (highlight_recalc == HighlightRecalc::kReuse) {
-      DCHECK(old_style);
-      builder.SetHighlightData(old_style->HighlightData());
     } else {
-      DCHECK_EQ(highlight_recalc, HighlightRecalc::kFull);
-
-      const StyleHighlightData* parent_highlights =
-          parent_style ? &parent_style->HighlightData() : nullptr;
-
+      if (!new_style->IsContentVisibilityVisible()) {
+        NotifyAXOfAttachedSubtree();
+      }
       if (new_style->IsContainerForSizeContainerQueries()) {
         new_style_recalc_context.container = this;
       }
-
-      if (UsesHighlightPseudoInheritance(kPseudoIdSelection) &&
-          new_style->HasPseudoElementStyle(kPseudoIdSelection)) {
-        StyleHighlightData& highlights = builder.AccessHighlightData();
-        const ComputedStyle* highlight_parent =
-            parent_highlights ? parent_highlights->Selection() : nullptr;
-        StyleRequest style_request{kPseudoIdSelection, highlight_parent};
-        style_request.originating_element_style = new_style;
-        highlights.SetSelection(
-            StyleForPseudoElement(new_style_recalc_context, style_request));
-      }
-
-      if (UsesHighlightPseudoInheritance(kPseudoIdTargetText) &&
-          new_style->HasPseudoElementStyle(kPseudoIdTargetText)) {
-        StyleHighlightData& highlights = builder.AccessHighlightData();
-        const ComputedStyle* highlight_parent =
-            parent_highlights ? parent_highlights->TargetText() : nullptr;
-        StyleRequest style_request{kPseudoIdTargetText, highlight_parent};
-        style_request.originating_element_style = new_style;
-        highlights.SetTargetText(
-            StyleForPseudoElement(new_style_recalc_context, style_request));
-      }
-
-      if (UsesHighlightPseudoInheritance(kPseudoIdSpellingError) &&
-          new_style->HasPseudoElementStyle(kPseudoIdSpellingError)) {
-        StyleHighlightData& highlights = builder.AccessHighlightData();
-        const ComputedStyle* highlight_parent =
-            parent_highlights ? parent_highlights->SpellingError() : nullptr;
-        StyleRequest style_request{kPseudoIdSpellingError, highlight_parent};
-        style_request.originating_element_style = new_style;
-        highlights.SetSpellingError(
-            StyleForPseudoElement(new_style_recalc_context, style_request));
-      }
-
-      if (UsesHighlightPseudoInheritance(kPseudoIdGrammarError) &&
-          new_style->HasPseudoElementStyle(kPseudoIdGrammarError)) {
-        StyleHighlightData& highlights = builder.AccessHighlightData();
-        const ComputedStyle* highlight_parent =
-            parent_highlights ? parent_highlights->GrammarError() : nullptr;
-        StyleRequest style_request{kPseudoIdGrammarError, highlight_parent};
-        style_request.originating_element_style = new_style;
-        highlights.SetGrammarError(
-            StyleForPseudoElement(new_style_recalc_context, style_request));
-      }
-
-      if (UsesHighlightPseudoInheritance(kPseudoIdHighlight) &&
-          new_style->HasPseudoElementStyle(kPseudoIdHighlight)) {
-        const HashSet<AtomicString>* custom_highlight_names =
-            new_style->CustomHighlightNames();
-        if (custom_highlight_names) {
-          for (const AtomicString& custom_highlight_name :
-               *custom_highlight_names) {
-            StyleHighlightData& highlights = builder.AccessHighlightData();
-            const ComputedStyle* highlight_parent =
-                parent_highlights
-                    ? parent_highlights->CustomHighlight(custom_highlight_name)
-                    : nullptr;
-            StyleRequest style_request{kPseudoIdHighlight, highlight_parent,
-                                       custom_highlight_name};
-            style_request.originating_element_style = new_style;
-            highlights.SetCustomHighlight(
-                custom_highlight_name,
-                StyleForPseudoElement(new_style_recalc_context, style_request));
-          }
-        }
-      }
+      new_style = RecalcHighlightStyles(new_style_recalc_context, old_style,
+                                        *new_style, parent_style);
     }
-
-    new_style = builder.TakeStyle();
   }
 
   ComputedStyle::Difference diff =
@@ -3716,10 +3647,11 @@ StyleRecalcChange Element::RecalcOwnStyle(
        old_style->ContainsStyle() != new_style->ContainsStyle())) {
     StyleContainmentScopeTree& tree =
         GetDocument().GetStyleEngine().EnsureStyleContainmentScopeTree();
+    if (old_style && old_style->ContainsStyle()) {
+      tree.DestroyScopeForElement(*this);
+    }
     if (new_style && new_style->ContainsStyle()) {
       tree.CreateScopeForElement(*this);
-    } else {
-      tree.DestroyScopeForElement(*this);
     }
   }
 
@@ -3829,7 +3761,7 @@ StyleRecalcChange Element::RecalcOwnStyle(
   if (LayoutObject* layout_object = GetLayoutObject()) {
     DCHECK(new_style);
     if (UNLIKELY(layout_object->IsText()) &&
-        UNLIKELY(IsA<LayoutNGTextCombine>(layout_object->Parent()))) {
+        UNLIKELY(IsA<LayoutTextCombine>(layout_object->Parent()))) {
       // Adjust style for <br> and <wbr> in combined text.
       // See http://crbug.com/1228058
       ComputedStyleBuilder adjust_builder(*new_style);
@@ -4085,6 +4017,44 @@ void Element::NotifyIfMatchedDocumentRulesSelectorsChanged(
   }
 }
 
+TextDirection Element::ParentDirectionality() const {
+  if (!RuntimeEnabledFeatures::CSSPseudoDirEnabled()) {
+    // Do what the code that uses this used to do, until the :dir()
+    // pseudo is enabled.
+    return TextDirection::kLtr;
+  }
+
+  if (const HTMLSlotElement* slot =
+          ToHTMLSlotElementIfSupportsAssignmentOrNull(this)) {
+    return ContainingShadowRoot()->host().CachedDirectionality();
+  }
+
+  Node* parent = parentNode();
+  if (Element* parent_element = DynamicTo<Element>(parent)) {
+    return parent_element->CachedDirectionality();
+  }
+
+  if (ShadowRoot* shadow_root = DynamicTo<ShadowRoot>(parent)) {
+    return shadow_root->host().CachedDirectionality();
+  }
+
+  return TextDirection::kLtr;
+}
+
+void Element::RecomputeDirectionFromParent() {
+  // This function recomputes the inherited direction if an element inherits
+  // direction from a parent or shadow host.
+  //
+  // It should match the computation done in
+  // HTMLElement::UpdateDirectionalityAndDescendant that applies an inherited
+  // direction change to the descendants that need updating.
+  if (GetDocument().HasDirAttribute() &&
+      RuntimeEnabledFeatures::CSSPseudoDirEnabled() &&
+      HTMLElement::ElementInheritsDirectionality(this)) {
+    SetCachedDirectionality(ParentDirectionality());
+  }
+}
+
 ShadowRoot& Element::CreateAndAttachShadowRoot(ShadowRootType type) {
 #if DCHECK_IS_ON()
   NestingLevelIncrementer slot_assignment_recalc_forbidden_scope(
@@ -4262,8 +4232,9 @@ void Element::PseudoStateChanged(
 
 Element::HighlightRecalc Element::CalculateHighlightRecalc(
     const ComputedStyle* old_style,
-    const ComputedStyle* new_style) {
-  if (!new_style || !new_style->HasAnyHighlightPseudoElementStyles()) {
+    const ComputedStyle& new_style,
+    const ComputedStyle* parent_style) {
+  if (!new_style.HasAnyHighlightPseudoElementStyles()) {
     return HighlightRecalc::kNone;
   }
   // If we are a root element (our parent is a Document or ShadowRoot), we can
@@ -4273,14 +4244,14 @@ Element::HighlightRecalc Element::CalculateHighlightRecalc(
   // In that case, we only need to calculate highlight styles once, because our
   // UA styles only use type selectors and we never change them dynamically.
   if (parentNode() == ContainingTreeScope().RootNode()) {
-    if (new_style->HasNonUaHighlightPseudoStyles()) {
+    if (new_style.HasNonUaHighlightPseudoStyles()) {
       return HighlightRecalc::kFull;
     }
     if (old_style) {
       if (old_style->HasNonUaHighlightPseudoStyles()) {
         return HighlightRecalc::kFull;
       }
-      if (old_style->EffectiveZoom() != new_style->EffectiveZoom()) {
+      if (old_style->EffectiveZoom() != new_style.EffectiveZoom()) {
         return HighlightRecalc::kFull;
       }
       // Neither the new style nor the old style has any non-UA highlight rules,
@@ -4293,15 +4264,140 @@ Element::HighlightRecalc Element::CalculateHighlightRecalc(
   // If the parent matched any non-universal highlight rules, then we need
   // to recalc, in case there are universal highlight rules.
   bool parent_non_universal =
-      ParentComputedStyle() != nullptr &&
-      ParentComputedStyle()->HasNonUniversalHighlightPseudoStyles();
+      parent_style != nullptr &&
+      parent_style->HasNonUniversalHighlightPseudoStyles();
 
   // If we matched any non-universal highlight rules, then we need to recalc
   // and our children also need to recalc (see above).
-  bool self_non_universal = new_style->HasNonUniversalHighlightPseudoStyles();
+  bool self_non_universal = new_style.HasNonUniversalHighlightPseudoStyles();
 
-  return (parent_non_universal || self_non_universal) ? HighlightRecalc::kFull
-                                                      : HighlightRecalc::kNone;
+  if (parent_non_universal || self_non_universal) {
+    return HighlightRecalc::kFull;
+  }
+
+  // If the parent has any font relative units then we may need
+  // recalc to capture sizes from the originating element. But note that
+  // self will be recalculated regardless if self has its own non-universal
+  // pseudo style.
+  if (parent_style != nullptr &&
+      parent_style->HighlightPseudoElementStylesDependOnFontMetrics()) {
+    return HighlightRecalc::kFontRelative;
+  }
+
+  return HighlightRecalc::kNone;
+}
+
+bool Element::ShouldRecalcHighlightPseudoStyle(
+    HighlightRecalc highlight_recalc,
+    const ComputedStyle* highlight_parent) {
+  if (highlight_recalc == HighlightRecalc::kFull) {
+    return true;
+  }
+  DCHECK(highlight_recalc == HighlightRecalc::kFontRelative);
+  return (highlight_parent && highlight_parent->HasFontRelativeUnits());
+}
+
+void Element::RecalcCustomHighlightPseudoStyle(
+    const StyleRecalcContext& style_recalc_context,
+    HighlightRecalc highlight_recalc,
+    ComputedStyleBuilder& builder,
+    const StyleHighlightData* parent_highlights,
+    const ComputedStyle& originating_style) {
+  const HashSet<AtomicString>* highlight_names =
+      originating_style.CustomHighlightNames();
+  if (!highlight_names) {
+    return;
+  }
+
+  StyleHighlightData& highlights = builder.AccessHighlightData();
+  for (auto highlight_name : *highlight_names) {
+    const ComputedStyle* highlight_parent =
+        parent_highlights ? parent_highlights->CustomHighlight(highlight_name)
+                          : nullptr;
+    if (ShouldRecalcHighlightPseudoStyle(highlight_recalc, highlight_parent)) {
+      const ComputedStyle* highlight_style = StyleForHighlightPseudoElement(
+          style_recalc_context, highlight_parent, originating_style,
+          kPseudoIdHighlight, highlight_name);
+      if (highlight_style) {
+        highlights.SetCustomHighlight(highlight_name, highlight_style);
+      }
+    }
+  }
+}
+
+const ComputedStyle* Element::RecalcHighlightStyles(
+    const StyleRecalcContext& style_recalc_context,
+    const ComputedStyle* old_style,
+    const ComputedStyle& new_style,
+    const ComputedStyle* parent_style) {
+  HighlightRecalc highlight_recalc =
+      CalculateHighlightRecalc(old_style, new_style, parent_style);
+  if (highlight_recalc == HighlightRecalc::kNone) {
+    return &new_style;
+  }
+
+  ComputedStyleBuilder builder(new_style);
+
+  if (highlight_recalc == HighlightRecalc::kReuse) {
+    DCHECK(old_style);
+    builder.SetHighlightData(old_style->HighlightData());
+    return builder.TakeStyle();
+  }
+
+  const StyleHighlightData* parent_highlights =
+      parent_style ? &parent_style->HighlightData() : nullptr;
+
+  if (UsesHighlightPseudoInheritance(kPseudoIdSelection) &&
+      new_style.HasPseudoElementStyle(kPseudoIdSelection)) {
+    const ComputedStyle* highlight_parent =
+        parent_highlights ? parent_highlights->Selection() : nullptr;
+    if (ShouldRecalcHighlightPseudoStyle(highlight_recalc, highlight_parent)) {
+      builder.AccessHighlightData().SetSelection(
+          StyleForHighlightPseudoElement(style_recalc_context, highlight_parent,
+                                         new_style, kPseudoIdSelection));
+    }
+  }
+
+  if (UsesHighlightPseudoInheritance(kPseudoIdTargetText) &&
+      new_style.HasPseudoElementStyle(kPseudoIdTargetText)) {
+    const ComputedStyle* highlight_parent =
+        parent_highlights ? parent_highlights->TargetText() : nullptr;
+    if (ShouldRecalcHighlightPseudoStyle(highlight_recalc, highlight_parent)) {
+      builder.AccessHighlightData().SetTargetText(
+          StyleForHighlightPseudoElement(style_recalc_context, highlight_parent,
+                                         new_style, kPseudoIdTargetText));
+    }
+  }
+
+  if (UsesHighlightPseudoInheritance(kPseudoIdSpellingError) &&
+      new_style.HasPseudoElementStyle(kPseudoIdSpellingError)) {
+    const ComputedStyle* highlight_parent =
+        parent_highlights ? parent_highlights->SpellingError() : nullptr;
+    if (ShouldRecalcHighlightPseudoStyle(highlight_recalc, highlight_parent)) {
+      builder.AccessHighlightData().SetSpellingError(
+          StyleForHighlightPseudoElement(style_recalc_context, highlight_parent,
+                                         new_style, kPseudoIdSpellingError));
+    }
+  }
+
+  if (UsesHighlightPseudoInheritance(kPseudoIdGrammarError) &&
+      new_style.HasPseudoElementStyle(kPseudoIdGrammarError)) {
+    const ComputedStyle* highlight_parent =
+        parent_highlights ? parent_highlights->GrammarError() : nullptr;
+    if (ShouldRecalcHighlightPseudoStyle(highlight_recalc, highlight_parent)) {
+      builder.AccessHighlightData().SetGrammarError(
+          StyleForHighlightPseudoElement(style_recalc_context, highlight_parent,
+                                         new_style, kPseudoIdGrammarError));
+    }
+  }
+
+  if (UsesHighlightPseudoInheritance(kPseudoIdHighlight) &&
+      new_style.HasPseudoElementStyle(kPseudoIdHighlight)) {
+    RecalcCustomHighlightPseudoStyle(style_recalc_context, highlight_recalc,
+                                     builder, parent_highlights, new_style);
+  }
+
+  return builder.TakeStyle();
 }
 
 void Element::SetAnimationStyleChange(bool animation_style_change) {
@@ -5508,13 +5604,9 @@ bool Element::IsFocusable() const {
 }
 
 bool Element::SupportsFocus() const {
-  // FIXME: supportsFocus() can be called when layout is not up to date.
-  // Logic that deals with the layoutObject should be moved to
-  // layoutObjectIsFocusable().
-  // But supportsFocus must return true when the element is editable, or else
+  // SupportsFocus must return true when the element is editable, or else
   // it won't be focusable. Furthermore, supportsFocus cannot just return true
   // always or else tabIndex() will change for all HTML elements.
-  DocumentLifecycle::DisallowTransitionScope scope(GetDocument().Lifecycle());
   if (DelegatesFocus()) {
     return false;
   }
@@ -6883,8 +6975,10 @@ const ComputedStyle* Element::CachedStyleForPseudoElement(
     return cached;
   }
 
+  // When not using Highlight Pseudo Inheritance, as asserted above, the
+  // originating element style is the same as the parent style.
   const ComputedStyle* result = UncachedStyleForPseudoElement(
-      StyleRequest(pseudo_id, style, pseudo_argument));
+      StyleRequest(pseudo_id, style, style, pseudo_argument));
   if (result) {
     return style->AddCachedPseudoElementStyle(result, pseudo_id,
                                               pseudo_argument);
@@ -6966,6 +7060,17 @@ const ComputedStyle* Element::StyleForPseudoElement(
 
   return GetDocument().GetStyleResolver().ResolveStyle(
       this, style_recalc_context, request);
+}
+
+const ComputedStyle* Element::StyleForHighlightPseudoElement(
+    const StyleRecalcContext& style_recalc_context,
+    const ComputedStyle* highlight_parent,
+    const ComputedStyle& originating_style,
+    const PseudoId pseudo_id,
+    const AtomicString& pseudo_argument) {
+  StyleRequest style_request{pseudo_id, highlight_parent, &originating_style,
+                             pseudo_argument};
+  return StyleForPseudoElement(style_recalc_context, style_request);
 }
 
 bool Element::CanGeneratePseudoElement(PseudoId pseudo_id) const {
@@ -8130,11 +8235,13 @@ void Element::MapLanguageAttributeToLocale(const AtomicString& value,
 void Element::LogAddElementIfIsolatedWorldAndInDocument(
     const char element[],
     const QualifiedName& attr1) {
-  if (!isConnected()) {
+  if (!isConnected() ||
+      !V8DOMActivityLogger::HasActivityLoggerInIsolatedWorlds()) {
     return;
   }
   V8DOMActivityLogger* activity_logger =
-      V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorldForMainThread();
+      V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorld(
+          GetDocument().GetAgent().isolate());
   if (!activity_logger) {
     return;
   }
@@ -8148,11 +8255,13 @@ void Element::LogAddElementIfIsolatedWorldAndInDocument(
     const char element[],
     const QualifiedName& attr1,
     const QualifiedName& attr2) {
-  if (!isConnected()) {
+  if (!isConnected() ||
+      !V8DOMActivityLogger::HasActivityLoggerInIsolatedWorlds()) {
     return;
   }
   V8DOMActivityLogger* activity_logger =
-      V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorldForMainThread();
+      V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorld(
+          GetDocument().GetAgent().isolate());
   if (!activity_logger) {
     return;
   }
@@ -8168,11 +8277,13 @@ void Element::LogAddElementIfIsolatedWorldAndInDocument(
     const QualifiedName& attr1,
     const QualifiedName& attr2,
     const QualifiedName& attr3) {
-  if (!isConnected()) {
+  if (!isConnected() ||
+      !V8DOMActivityLogger::HasActivityLoggerInIsolatedWorlds()) {
     return;
   }
   V8DOMActivityLogger* activity_logger =
-      V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorldForMainThread();
+      V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorld(
+          GetDocument().GetAgent().isolate());
   if (!activity_logger) {
     return;
   }
@@ -8187,11 +8298,13 @@ void Element::LogAddElementIfIsolatedWorldAndInDocument(
 void Element::LogUpdateAttributeIfIsolatedWorldAndInDocument(
     const char element[],
     const AttributeModificationParams& params) {
-  if (!isConnected()) {
+  if (!isConnected() ||
+      !V8DOMActivityLogger::HasActivityLoggerInIsolatedWorlds()) {
     return;
   }
   V8DOMActivityLogger* activity_logger =
-      V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorldForMainThread();
+      V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorld(
+          GetDocument().GetAgent().isolate());
   if (!activity_logger) {
     return;
   }

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <memory>
+#include <queue>
 #include <string>
 
 #include "base/containers/flat_map.h"
@@ -20,9 +21,14 @@
 #include "base/timer/timer.h"
 #include "components/services/storage/indexed_db/locks/partitioned_lock_manager.h"
 #include "components/services/storage/public/cpp/buckets/bucket_info.h"
+#include "components/services/storage/public/cpp/quota_error_or.h"
+#include "components/services/storage/public/mojom/blob_storage_context.mojom.h"
+#include "components/services/storage/public/mojom/file_system_access_context.mojom.h"
 #include "content/browser/indexed_db/indexed_db_bucket_context_handle.h"
+#include "content/browser/indexed_db/indexed_db_external_object.h"
 #include "content/browser/indexed_db/indexed_db_task_helper.h"
 #include "content/common/content_export.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace storage {
@@ -32,9 +38,9 @@ class QuotaManagerProxy;
 namespace content {
 class IndexedDBBackingStore;
 class IndexedDBDatabase;
+class IndexedDBDataItemReader;
 class IndexedDBFactory;
 class IndexedDBPreCloseTaskQueue;
-class TransactionalLevelDBFactory;
 
 constexpr const char kIDBCloseImmediatelySwitch[] = "idb-close-immediately";
 
@@ -89,6 +95,12 @@ class CONTENT_EXPORT IndexedDBBucketContext {
   // Visible for testing.
   static constexpr const base::TimeDelta kMaxEarliestBucketCompactionFromNow =
       base::Days(3);
+
+  // `CheckCanUseDiskSpace` fudges quota values a little. If there is excess
+  // free space, QuotaManager may not be checked the next time a transaction
+  // requests space. The decays over this time period.
+  static constexpr const base::TimeDelta kBucketSpaceCacheTimeLimit =
+      base::Seconds(30);
 
   enum class ClosingState {
     // IndexedDBBucketContext isn't closing.
@@ -145,11 +157,15 @@ class CONTENT_EXPORT IndexedDBBucketContext {
       storage::BucketInfo bucket_info,
       bool persist_for_incognito,
       base::Clock* clock,
-      TransactionalLevelDBFactory* transactional_leveldb_factory,
       std::unique_ptr<PartitionedLockManager> lock_manager,
       Delegate&& delegate,
       std::unique_ptr<IndexedDBBackingStore> backing_store,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
+      scoped_refptr<base::TaskRunner> io_task_runner,
+      mojo::PendingRemote<storage::mojom::BlobStorageContext>
+          blob_storage_context,
+      mojo::PendingRemote<storage::mojom::FileSystemAccessContext>
+          file_system_access_context,
       InstanceClosure initialization_closure);
 
   IndexedDBBucketContext(const IndexedDBBucketContext&) = delete;
@@ -176,6 +192,22 @@ class CONTENT_EXPORT IndexedDBBucketContext {
   // Runs `method` on `this`. This exists to facilitate running the setter on
   // the correct sequence.
   void RunInstanceClosure(InstanceClosure method);
+
+  // Called when `space_requested` bytes are about to be used by committing a
+  // transaction. Will invoke `disk_space_check_callback` if this usage is
+  // approved, or false if there's insufficient space as per the `QuotaManager`.
+  // If `disk-space_check_callback` is non-null, it will be invoked with the
+  // response. If it is null, the check is considered a dry-run, which warms up
+  // the space cache but doesn't decrement from it.
+  void CheckCanUseDiskSpace(
+      int64_t space_requested,
+      base::OnceCallback<void(bool)> disk_space_check_callback);
+
+  // Create external objects from |objects| and store the results in
+  // |mojo_objects|. |mojo_objects| must be the same length as |objects|.
+  void CreateAllExternalObjects(
+      const std::vector<IndexedDBExternalObject>& objects,
+      std::vector<blink::mojom::IDBExternalObjectPtr>* mojo_objects);
 
   const storage::BucketInfo& bucket_info() { return bucket_info_; }
   storage::BucketLocator bucket_locator() {
@@ -224,6 +256,13 @@ class CONTENT_EXPORT IndexedDBBucketContext {
     return quota_manager_proxy_.get();
   }
 
+  storage::mojom::BlobStorageContext* blob_storage_context() {
+    return blob_storage_context_.get();
+  }
+  storage::mojom::FileSystemAccessContext* file_system_access_context() {
+    return file_system_access_context_.get();
+  }
+
  private:
   friend IndexedDBFactory;
   friend IndexedDBBucketContextHandle;
@@ -238,6 +277,8 @@ class CONTENT_EXPORT IndexedDBBucketContext {
 
   // Test needs access to CompactionKillSwitchWorks.
   FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest, CompactionKillSwitchWorks);
+
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBBucketContextTest, BucketSpaceDecay);
 
   // Used to synchronize the global throttling of LevelDB cleanup operations.
   // See `for_each_bucket_context`.
@@ -270,6 +311,22 @@ class CONTENT_EXPORT IndexedDBBucketContext {
   // compaction time.
   bool ShouldRunCompaction();
 
+  void OnGotBucketSpaceRemaining(storage::QuotaErrorOr<int64_t> space_left);
+
+  // Returns the amount of bucket space `this` has the authority to approve by
+  // decaying `bucket_space_remaining_` according to the amount of time passed
+  // since `bucket_space_remaining_timestamp_`.
+  int64_t GetBucketSpaceToAllot();
+
+  // Bind `receiver` to read from the file at `path`.
+  void BindFileReader(
+      const base::FilePath& path,
+      base::Time expected_modification_time,
+      base::OnceClosure release_callback,
+      mojo::PendingReceiver<storage::mojom::BlobDataItemReader> receiver);
+  // Removes all readers for this file path.
+  void RemoveBoundReaders(const base::FilePath& path);
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   storage::BucketInfo bucket_info_;
@@ -284,7 +341,6 @@ class CONTENT_EXPORT IndexedDBBucketContext {
   bool has_blobs_outstanding_ = false;
   bool skip_closing_sequence_ = false;
   const raw_ptr<base::Clock> clock_;
-  const raw_ptr<TransactionalLevelDBFactory> transactional_leveldb_factory_;
 
   bool running_tasks_ = false;
   bool task_run_scheduled_ = false;
@@ -302,6 +358,32 @@ class CONTENT_EXPORT IndexedDBBucketContext {
   // given out for this factory using OpenReference. This is used as closing
   // criteria for this object, see CanClose.
   int64_t open_handles_ = 0;
+
+  // A queue of callbacks representing `CheckCanUseDiskSpace()` requests.
+  std::queue<std::tuple<int64_t /*space_requested*/,
+                        base::OnceCallback<void(bool /*allowed*/)>>>
+      bucket_space_check_callbacks_;
+  // The number of bytes `this` has the authority to approve in response to
+  // `CheckCanUseDiskSpace` requests before the QuotaManager will be consulted
+  // once more. This is a performance optimization.
+  int64_t bucket_space_remaining_ = 0;
+  // Timestamp when `bucket_space_remaining_` was last fetched from the quota
+  // manager.
+  base::TimeTicks bucket_space_remaining_timestamp_;
+
+  // Members in the following block are used for `CreateAllExternalObjects`.
+  // Shared task runner used to read blob files on.
+  const scoped_refptr<base::TaskRunner> file_task_runner_;
+  // Shared task runner used for async I/O while reading blob files.
+  const scoped_refptr<base::TaskRunner> io_task_runner_;
+  // Mojo connection to `BlobStorageContext`, which runs on the IO thread.
+  mojo::Remote<storage::mojom::BlobStorageContext> blob_storage_context_;
+  // Mojo connection to `FileSystemAccessContextImpl`, which runs on the UI
+  // thread.
+  mojo::Remote<storage::mojom::FileSystemAccessContext>
+      file_system_access_context_;
+  std::map<base::FilePath, std::unique_ptr<IndexedDBDataItemReader>>
+      file_reader_map_;
 
   std::unique_ptr<IndexedDBPreCloseTaskQueue> pre_close_task_queue_;
 

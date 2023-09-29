@@ -19,29 +19,6 @@ SyncSetupService::SyncSetupService(syncer::SyncService* sync_service)
 
 SyncSetupService::~SyncSetupService() {}
 
-bool SyncSetupService::IsDataTypeActive(syncer::ModelType datatype) const {
-  return sync_service_->GetActiveDataTypes().Has(datatype);
-}
-
-bool SyncSetupService::IsDataTypePreferred(
-    syncer::UserSelectableType datatype) const {
-  return sync_service_->GetUserSettings()->GetSelectedTypes().Has(datatype);
-}
-
-bool SyncSetupService::IsSyncEverythingEnabled() const {
-  return sync_service_->GetUserSettings()->IsSyncEverythingEnabled();
-}
-
-void SyncSetupService::SetSyncEverythingEnabled(bool sync_all) {
-  CHECK(sync_blocker_);
-  sync_service_->GetUserSettings()->SetSelectedTypes(
-      sync_all, sync_service_->GetUserSettings()->GetSelectedTypes());
-}
-
-bool SyncSetupService::IsEncryptEverythingEnabled() const {
-  return sync_service_->GetUserSettings()->IsEncryptEverythingEnabled();
-}
-
 void SyncSetupService::PrepareForFirstSyncSetup() {
   if (!sync_blocker_)
     sync_blocker_ = sync_service_->GetSetupInProgressHandle();
@@ -58,10 +35,6 @@ void SyncSetupService::SetInitialSyncFeatureSetupComplete(
     sync_service_->GetUserSettings()->SetInitialSyncFeatureSetupComplete(
         source);
   }
-}
-
-bool SyncSetupService::IsInitialSyncFeatureSetupComplete() const {
-  return sync_service_->GetUserSettings()->IsInitialSyncFeatureSetupComplete();
 }
 
 void SyncSetupService::CommitSyncChanges() {

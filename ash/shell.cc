@@ -36,6 +36,7 @@
 #include "ash/calendar/calendar_controller.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/child_accounts/parent_access_controller_impl.h"
+#include "ash/clipboard/clipboard_history_controller_delegate.h"
 #include "ash/clipboard/clipboard_history_controller_impl.h"
 #include "ash/clipboard/clipboard_history_util.h"
 #include "ash/clipboard/control_v_histogram_recorder.h"
@@ -76,8 +77,6 @@
 #include "ash/frame_throttler/frame_throttling_controller.h"
 #include "ash/game_dashboard/game_dashboard_controller.h"
 #include "ash/glanceables/glanceables_controller.h"
-#include "ash/glanceables/glanceables_delegate.h"
-#include "ash/glanceables/glanceables_v2_controller.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/hud_display/hud_display.h"
 #include "ash/ime/ime_controller_impl.h"
@@ -793,11 +792,6 @@ Shell::~Shell() {
   // Accelerometer file reader stops listening to tablet mode controller.
   AccelerometerReader::GetInstance()->StopListenToTabletModeController();
 
-  if (features::AreGlanceablesEnabled()) {
-    // Close all glanceables so that all widgets are destroyed.
-    glanceables_controller_->DestroyUi();
-  }
-
   // Destroy |ambient_controller_| before |assistant_controller_|.
   ambient_controller_.reset();
 
@@ -812,8 +806,6 @@ Shell::~Shell() {
 
   // Must be destructed before human_presence_orientation_controller_.
   power_prefs_.reset();
-
-  accelerator_prefs_.reset();
 
   // Must be destructed before the tablet mode and message center controllers,
   // both of which these rely on.
@@ -886,22 +878,23 @@ Shell::~Shell() {
   // Close all widgets (including the shelf) and destroy all window containers.
   CloseAllRootWindowChildWindows();
 
-  // Glanceables has a dependency on `tablet_mode_controller_`. Should be
-  // destroyed first to remove the tablet mode observer.
   glanceables_controller_.reset();
-  glanceables_v2_controller_.reset();
 
   multitask_menu_nudge_delegate_.reset();
   tablet_mode_controller_.reset();
   login_screen_controller_.reset();
+
+  // This must be destroyed before `message_center_controller_` in order to
+  // restore the original settings if a focus session was active. Also, this
+  // should be destroyed before `system_notification_controller_`, which could
+  // be indirectly called by `focus_mode_controller_` to update the DND
+  // notification.
+  focus_mode_controller_.reset();
+
   system_notification_controller_.reset();
   // Should be destroyed after Shelf and |system_notification_controller_|.
   system_tray_model_.reset();
   system_sounds_delegate_.reset();
-
-  // This must be destroyed before `message_center_controller_` in order to
-  // restore the original settings if a focus session was active.
-  focus_mode_controller_.reset();
 
   // MultiDisplayMetricsController has a dependency on `mru_window_tracker_`.
   multi_display_metrics_controller_.reset();
@@ -1234,10 +1227,6 @@ void Shell::Init(
   capture_mode_controller_ = std::make_unique<CaptureModeController>(
       shell_delegate_->CreateCaptureModeDelegate());
 
-  if (features::IsFocusModeEnabled()) {
-    focus_mode_controller_ = std::make_unique<FocusModeController>();
-  }
-
   // Accelerometer file reader starts listening to tablet mode controller.
   AccelerometerReader::GetInstance()->StartListenToTabletModeController();
 
@@ -1404,7 +1393,8 @@ void Shell::Init(
       ash_accelerator_configuration_.get());
 
   clipboard_history_controller_ =
-      std::make_unique<ClipboardHistoryControllerImpl>();
+      std::make_unique<ClipboardHistoryControllerImpl>(
+          shell_delegate_->CreateClipboardHistoryControllerDelegate());
 
   // `HoldingSpaceController` must be instantiated before the shelf.
   holding_space_controller_ = std::make_unique<HoldingSpaceController>();
@@ -1599,6 +1589,10 @@ void Shell::Init(
   system_notification_controller_ =
       std::make_unique<SystemNotificationController>();
 
+  if (features::IsFocusModeEnabled()) {
+    focus_mode_controller_ = std::make_unique<FocusModeController>();
+  }
+
   // WmModeController should be created before initializing the window tree
   // hosts, since the latter will initialize the shelf on each display, which
   // hosts the WM mode tray button.
@@ -1668,15 +1662,9 @@ void Shell::Init(
         std::make_unique<DisplayAlignmentController>();
   }
 
-  if (features::AreGlanceablesEnabled()) {
-    glanceables_controller_ = std::make_unique<GlanceablesController>();
-    glanceables_controller_->Init(shell_delegate_->CreateGlanceablesDelegate(
-        glanceables_controller_.get()));
-  }
-
   if (features::AreGlanceablesV2Enabled() ||
       features::AreGlanceablesV2EnabledForTrustedTesters()) {
-    glanceables_v2_controller_ = std::make_unique<GlanceablesV2Controller>();
+    glanceables_controller_ = std::make_unique<GlanceablesController>();
   }
 
   projector_controller_ = std::make_unique<ProjectorControllerImpl>();

@@ -19,8 +19,8 @@
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
-#import "ios/chrome/browser/snapshots/snapshot_cache.h"
-#import "ios/chrome/browser/snapshots/snapshot_cache_observer.h"
+#import "ios/chrome/browser/snapshots/snapshot_storage.h"
+#import "ios/chrome/browser/snapshots/snapshot_storage_observer.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/inactive_tabs/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_consumer.h"
@@ -79,19 +79,19 @@ void AddWebStateObservations(
 void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
                            WebStateList* web_state_list) {
   [consumer populateItems:CreateItemsOrderedByRecency(web_state_list)
-           selectedItemID:nil];
+           selectedItemID:web::WebStateID()];
 }
 
 }  // namespace
 
 @interface InactiveTabsMediator () <CRWWebStateObserver,
                                     PrefObserverDelegate,
-                                    SnapshotCacheObserver,
+                                    SnapshotStorageObserver,
                                     WebStateListObserving> {
   // The list of inactive tabs.
   WebStateList* _webStateList;
-  // The snapshot cache of _webStateList.
-  __weak SnapshotCache* _snapshotCache;
+  // The snapshot storage of _webStateList.
+  __weak SnapshotStorage* _snapshotStorage;
   // The observers of _webStateList.
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserverBridge;
   std::unique_ptr<ScopedWebStateListObservation> _scopedWebStateListObservation;
@@ -135,7 +135,7 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
   CHECK(sessionRestorationAgent ||
         web::features::UseSessionSerializationOptimizations());
   CHECK(snapshotAgent);
-  CHECK(snapshotAgent->snapshot_cache());
+  CHECK(snapshotAgent->snapshot_storage());
   CHECK(tabRestoreService);
   self = [super init];
   if (self) {
@@ -165,8 +165,8 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
     _prefObserverBridge->ObserveChangesForPreference(
         prefs::kInactiveTabsTimeThreshold, &_prefChangeRegistrar);
 
-    _snapshotCache = snapshotAgent->snapshot_cache();
-    [_snapshotCache addObserver:self];
+    _snapshotStorage = snapshotAgent->snapshot_storage();
+    [_snapshotStorage addObserver:self];
 
     _sessionRestorationAgent = sessionRestorationAgent;
     _snapshotAgent = snapshotAgent;
@@ -176,7 +176,7 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
 }
 
 - (void)dealloc {
-  [_snapshotCache removeObserver:self];
+  [_snapshotStorage removeObserver:self];
 }
 
 - (void)setConsumer:
@@ -208,8 +208,8 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
   _prefChangeRegistrar.RemoveAll();
   _prefObserverBridge.reset();
   _prefService = nullptr;
-  [_snapshotCache removeObserver:self];
-  _snapshotCache = nil;
+  [_snapshotStorage removeObserver:self];
+  _snapshotStorage = nil;
   _sessionRestorationAgent = nullptr;
   [self discardSavedClosedItems];
   _snapshotAgent = nullptr;
@@ -232,7 +232,7 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
 - (void)updateConsumerItemForWebState:(web::WebState*)webState {
   TabSwitcherItem* item =
       [[WebStateTabSwitcherItem alloc] initWithWebState:webState];
-  [_consumer replaceItemID:webState->GetStableIdentifier() withItem:item];
+  [_consumer replaceItemID:webState->GetUniqueIdentifier() withItem:item];
 }
 
 #pragma mark - PrefObserverDelegate
@@ -245,9 +245,9 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
   }
 }
 
-#pragma mark - SnapshotCacheObserver
+#pragma mark - SnapshotStorageObserver
 
-- (void)snapshotCache:(SnapshotCache*)snapshotCache
+- (void)snapshotStorage:(SnapshotStorage*)snapshotStorage
     didUpdateSnapshotForID:(SnapshotID)snapshotID {
   web::WebState* webState = nullptr;
   for (int i = 0; i < _webStateList->count(); i++) {
@@ -264,9 +264,7 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
     // consumer's responsibility to ignore any updates before inserts.
     TabSwitcherItem* item =
         [[WebStateTabSwitcherItem alloc] initWithWebState:webState];
-    // Items are indexed with the stable identifier. Don't pass a snapshot ID
-    // here.
-    [_consumer replaceItemID:webState->GetStableIdentifier() withItem:item];
+    [_consumer replaceItemID:webState->GetUniqueIdentifier() withItem:item];
   }
 }
 
@@ -282,8 +280,8 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
   }
 
   web::WebState* detachedWebState = detachChange.detached_web_state();
-  [_consumer removeItemWithID:detachedWebState->GetStableIdentifier()
-               selectedItemID:nil];
+  [_consumer removeItemWithID:detachedWebState->GetUniqueIdentifier()
+               selectedItemID:web::WebStateID()];
 
   _scopedWebStateObservation->RemoveObservation(detachedWebState);
 }
@@ -318,7 +316,9 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
       web::WebState* insertedWebState = insertChange.inserted_web_state();
       TabSwitcherItem* item =
           [[WebStateTabSwitcherItem alloc] initWithWebState:insertedWebState];
-      [_consumer insertItem:item atIndex:status.index selectedItemID:nil];
+      [_consumer insertItem:item
+                    atIndex:status.index
+             selectedItemID:web::WebStateID()];
 
       _scopedWebStateObservation->AddObservation(insertedWebState);
       break;
@@ -354,15 +354,15 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
   NOTREACHED_NORETURN();
 }
 
-- (BOOL)isItemWithIDSelected:(NSString*)itemID {
+- (BOOL)isItemWithIDSelected:(web::WebStateID)itemID {
   NOTREACHED_NORETURN();
 }
 
-- (void)moveItemWithID:(NSString*)itemID toIndex:(NSUInteger)index {
+- (void)moveItemWithID:(web::WebStateID)itemID toIndex:(NSUInteger)index {
   NOTREACHED_NORETURN();
 }
 
-- (void)closeItemsWithIDs:(NSArray<NSString*>*)itemIDs {
+- (void)closeItemsWithIDs:(const std::set<web::WebStateID>&)itemIDs {
   NOTREACHED_NORETURN();
 }
 
@@ -413,20 +413,20 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
   _snapshotAgent->RemoveAllSnapshots();
 }
 
-- (void)
-    showCloseItemsConfirmationActionSheetWithItems:(NSArray<NSString*>*)items
-                                            anchor:
-                                                (UIBarButtonItem*)buttonAnchor {
+- (void)showCloseItemsConfirmationActionSheetWithItems:
+            (const std::set<web::WebStateID>&)itemIDs
+                                                anchor:(UIBarButtonItem*)
+                                                           buttonAnchor {
   NOTREACHED_NORETURN();
 }
 
-- (void)shareItems:(NSArray<NSString*>*)items
+- (void)shareItems:(const std::set<web::WebStateID>&)itemIDs
             anchor:(UIBarButtonItem*)buttonAnchor {
   NOTREACHED_NORETURN();
 }
 
 - (NSArray<UIMenuElement*>*)addToButtonMenuElementsForItems:
-    (NSArray<NSString*>*)items {
+    (const std::set<web::WebStateID>&)itemIDs {
   NOTREACHED_NORETURN();
 }
 
@@ -445,11 +445,11 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
 
 #pragma mark - TabCollectionCommands
 
-- (void)selectItemWithID:(NSString*)itemID {
+- (void)selectItemWithID:(web::WebStateID)itemID {
   NOTREACHED_NORETURN();
 }
 
-- (void)closeItemWithID:(NSString*)itemID {
+- (void)closeItemWithID:(web::WebStateID)itemID {
   // TODO(crbug.com/1418021): Add metrics when the user closes an inactive tab.
   int index = GetWebStateIndex(_webStateList, WebStateSearchCriteria{
                                                   .identifier = itemID,
@@ -459,7 +459,7 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
   }
 }
 
-- (void)setPinState:(BOOL)pinState forItemWithIdentifier:(NSString*)identifier {
+- (void)setPinState:(BOOL)pinState forItemWithID:(web::WebStateID)itemID {
   NOTREACHED_NORETURN();
 }
 

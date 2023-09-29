@@ -41,7 +41,7 @@ def __parse_rewrapper_cmdline(ctx, cmd):
     return cmd.args[wrapped_command_pos:], cfg_file, True
 
 # TODO(b/278225415): change gn so this wrapper (and by extension this handler) becomes unnecessary.
-def __rewrite_clang_code_coverage_wrapper(ctx, cmd):
+def __parse_clang_code_coverage_wrapper_cmdline(ctx, cmd):
     # Example command:
     #   python3
     #     ../../build/toolchain/clang_code_coverage_wrapper.py
@@ -78,33 +78,40 @@ def __rewrite_clang_code_coverage_wrapper(ctx, cmd):
         fail("couldn't find rewrapper cfg file in %s" % str(cmd.args))
     coverage_wrapper_command = cmd.args[:rewrapper_pos] + cmd.args[wrapped_command_pos:]
     clang_command = clang_code_coverage_wrapper.run(ctx, list(coverage_wrapper_command))
-
-    ctx.actions.fix(
-        args = clang_command,
-        reproxy_config = json.encode(rewrapper_cfg.parse(ctx, cfg_file)),
-    )
+    return clang_command, cfg_file
 
 def __rewrite_rewrapper(ctx, cmd):
     # If clang-coverage, needs different handling.
     if len(cmd.args) > 2 and "clang_code_coverage_wrapper.py" in cmd.args[1]:
-        __rewrite_clang_code_coverage_wrapper(ctx, cmd)
-        return
-
-    # Below is handling for generic rewrapper.
-    args, cfg_file, wrapped = __parse_rewrapper_cmdline(ctx, cmd)
-    if not wrapped:
-        return
+        args, cfg_file = __parse_clang_code_coverage_wrapper_cmdline(ctx, cmd)
+    else:
+        # handling for generic rewrapper.
+        args, cfg_file, wrapped = __parse_rewrapper_cmdline(ctx, cmd)
+        if not wrapped:
+            print("command doesn't have rewrapper. %s" % str(cmd.args))
+            return
     if not cfg_file:
         fail("couldn't find rewrapper cfg file in %s" % str(cmd.args))
+    reproxy_config = rewrapper_cfg.parse(ctx, cfg_file)
+    if cmd.outputs[0] == ctx.fs.canonpath("./obj/third_party/abseil-cpp/absl/functional/any_invocable_test/any_invocable_test.o"):
+        # need longer timeout for any_invocable_test.o crbug.com/1484474
+        reproxy_config.update({
+            "exec_timeout": "4m",
+        })
     ctx.actions.fix(
         args = args,
-        reproxy_config = json.encode(rewrapper_cfg.parse(ctx, cfg_file)),
+        reproxy_config = json.encode(reproxy_config)
     )
 
 def __strip_rewrapper(ctx, cmd):
-    args, _, wrapped = __parse_rewrapper_cmdline(ctx, cmd)
-    if not wrapped:
-        return
+    # If clang-coverage, needs different handling.
+    if len(cmd.args) > 2 and "clang_code_coverage_wrapper.py" in cmd.args[1]:
+        args, _ = __parse_clang_code_coverage_wrapper_cmdline(ctx, cmd)
+    else:
+        args, _, wrapped = __parse_rewrapper_cmdline(ctx, cmd)
+        if not wrapped:
+            print("command doesn't have rewrapper. %s" % str(cmd.args))
+            return
     ctx.actions.fix(args = args)
 
 def __rewrite_action_remote_py(ctx, cmd):
@@ -129,6 +136,12 @@ def __rewrite_action_remote_py(ctx, cmd):
     for i, arg in enumerate(cmd.args):
         if i < 3:
             continue
+
+        # TODO: b/300046750 - Fix GN args and/or implement input processor.
+        if arg == "--custom_processor=mojom_parser":
+            print("--custom_processor=mojom_parser is not supported. " +
+                  "Running locally. cmd=%s" % " ".join(cmd.args))
+            return
         if arg.startswith("--cfg="):
             cfg_file = ctx.fs.canonpath(arg.removeprefix("--cfg="))
             continue
@@ -177,22 +190,11 @@ def __step_config(ctx, step_config):
             "name": "action_remote",
             "command_prefix": platform.python_bin + " ../../build/util/action_remote.py ../../buildtools/reclient/rewrapper",
             "handler": "rewrite_action_remote_py",
+            "remote_command": "python3",
         },
     ]
 
     for rule in step_config["rules"]:
-        # mojo/mojom_parser will always have rewrapper config when use_remoteexec=true.
-        # Mutate the original step rule to rewrite rewrapper and convert its rewrapper config to reproxy config.
-        # Stop handling the rule so that it's not modified below.
-        # TODO(b/292838933): Implement mojom_parser processor in Starlark?
-        if rule["name"] == "mojo/mojom_parser":
-            rule.update({
-                "command_prefix": platform.python_bin + " ../../build/util/action_remote.py ../../buildtools/reclient/rewrapper --custom_processor=mojom_parser",
-                "handler": "rewrite_action_remote_py",
-            })
-            new_rules.insert(0, rule)
-            continue
-
         # Replace nacl-clang/clang++ rules without command_prefix, because they will incorrectly match rewrapper.
         # Replace the original step rule with one that only rewrites rewrapper and convert its rewrapper config to reproxy config.
         if rule["name"].find("nacl-clang") >= 0 and not rule.get("command_prefix"):
@@ -249,6 +251,7 @@ def __step_config(ctx, step_config):
             # done on Reproxy side.
             "exec_strategy": "remote_local_fallback",
             "exec_timeout": rule.get("timeout", "10m"),
+            "reclient_timeout": rule.get("timeout", "10m"),
             "download_outputs": True,
         }
         new_rules.append(rule)

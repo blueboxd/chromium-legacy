@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_shape.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_tree_as_text.h"
 #include "third_party/blink/renderer/core/page/print_context.h"
+#include "third_party/blink/renderer/core/paint/fragment_data_iterator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -337,28 +338,26 @@ static void WriteTextFragment(WTF::TextStream& ts,
 static void WritePaintProperties(WTF::TextStream& ts,
                                  const LayoutObject& o,
                                  int indent) {
-  bool has_fragments = o.FirstFragment().NextFragment();
+  bool has_fragments = o.IsFragmented();
   if (has_fragments) {
     WriteIndent(ts, indent);
     ts << "fragments:\n";
   }
   int fragment_index = 0;
-  for (const auto* fragment = &o.FirstFragment(); fragment;
-       fragment = fragment->NextFragment(), ++fragment_index) {
+  for (const FragmentData& fragment : FragmentDataIterator(o)) {
     WriteIndent(ts, indent);
     if (has_fragments)
-      ts << " " << fragment_index << ":";
-    ts << " paint_offset=(" << fragment->PaintOffset().ToString() << ")";
-    if (fragment->HasLocalBorderBoxProperties()) {
+      ts << " " << fragment_index++ << ":";
+    ts << " paint_offset=(" << fragment.PaintOffset().ToString() << ")";
+    if (fragment.HasLocalBorderBoxProperties()) {
       // To know where they point into the paint property tree, you can dump
       // the tree using ShowAllPropertyTrees(frame_view).
-      ts << " state=(" << fragment->LocalBorderBoxProperties().ToString()
-         << ")";
+      ts << " state=(" << fragment.LocalBorderBoxProperties().ToString() << ")";
     }
     if (o.HasLayer()) {
-      ts << " cull_rect=(" << fragment->GetCullRect().ToString()
+      ts << " cull_rect=(" << fragment.GetCullRect().ToString()
          << ") contents_cull_rect=("
-         << fragment->GetContentsCullRect().ToString() << ")";
+         << fragment.GetContentsCullRect().ToString() << ")";
     }
     ts << "\n";
   }
@@ -482,15 +481,14 @@ static void Write(WTF::TextStream& ts,
       ts << " scrollX " << scroll_position.x();
     if (scroll_position.y())
       ts << " scrollY " << scroll_position.y();
-    if (layer.GetLayoutBox() &&
-        layer.GetLayoutBox()->PixelSnappedClientWidth() !=
-            layer.GetLayoutBox()->PixelSnappedScrollWidth())
-      ts << " scrollWidth " << layer.GetLayoutBox()->PixelSnappedScrollWidth();
-    if (layer.GetLayoutBox() &&
-        layer.GetLayoutBox()->PixelSnappedClientHeight() !=
-            layer.GetLayoutBox()->PixelSnappedScrollHeight())
-      ts << " scrollHeight "
-         << layer.GetLayoutBox()->PixelSnappedScrollHeight();
+    if (layer.GetLayoutBox() && layer.GetLayoutBox()->ClientWidth() !=
+                                    layer.GetLayoutBox()->ScrollWidth()) {
+      ts << " scrollWidth " << layer.GetLayoutBox()->ScrollWidth();
+    }
+    if (layer.GetLayoutBox() && layer.GetLayoutBox()->ClientHeight() !=
+                                    layer.GetLayoutBox()->ScrollHeight()) {
+      ts << " scrollHeight " << layer.GetLayoutBox()->ScrollHeight();
+    }
   }
 
   if (paint_phase == kLayerPaintPhaseBackground)

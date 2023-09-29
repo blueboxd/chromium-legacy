@@ -224,6 +224,8 @@ Depending on the scope, the updater is installed at:
 * (Windows, System): `%PROGRAM_FILES%\{COMPANY}\{UPDATERNAME}\{VERSION}\updater.exe`
 * (macOS, User): `~/Library/{COMPANY}/{UPDATERNAME}/{VERSION}/{UPDATERNAME}.app`
 * (macOS, System): `/Library/{COMPANY}/{UPDATERNAME}/{VERSION}/{UPDATERNAME}.app`
+* (Linux, User): `~/.local/{COMPANY}/{UPDATERNAME}/{VERSION}/updater`
+* (Linux, System): `/opt/{COMPANY}/{UPDATERNAME}/{VERSION}/updater`
 
 ### Command Line
 
@@ -461,7 +463,7 @@ The updater communicates with update servers using the
 [Omaha Protocol](protocol_3_1.md).
 
 The updater uses platform-native network stacks (WinHTTP on Windows and
-NSURLSession on macOS).
+NSURLSession on macOS) with user-agent `"{PRODUCT_FULLNAME} {UpdaterVersion}"`.
 
 #### Security
 It is not possible to MITM the updater even if the network (including TLS) is
@@ -536,10 +538,35 @@ installing so that the updater can provide feedback to the user on the progress.
 * `InstallerResult` : Specifies the result type and how to determine success or
 failure:
   *   0 - SUCCESS
-  *   1 - FAILED\_CUSTOM\_ERROR
-  *   2 - FAILED\_MSI\_ERROR
-  *   3 - FAILED\_SYSTEM\_ERROR
-  *   4 - FAILED\_EXIT\_CODE (default)
+      The installer succeeded, unconditionally.
+      - if a launch command was provided via the installer API, the command will
+        be launched and the updater UI will exit silently. Otherwise, the
+        updater will show an install success dialog.
+
+  *   All the error installer results below are treated the same.
+      - if an installer error was not provided via the installer API or the exit
+        code, generic error `kErrorApplicationInstallerFailed` will be reported.
+      - the installer extra code is used if reported via the installer API.
+      - the text description of the error is used if reported via the installer
+        API.
+      *   1 - FAILED\_CUSTOM\_ERROR
+      *   2 - FAILED\_MSI\_ERROR
+      *   3 - FAILED\_SYSTEM\_ERROR
+      *   4 - FAILED\_EXIT\_CODE (default)
+
+  *   If an installer result is not explicitly reported by the installer, the
+      installer API values are internally set based on whether the exit code
+      from the installer process is a success or an error:
+      - If the exit code is a success, the installer result is set to success.
+        If a launch command was provided via the installer API, the command will
+        be launched and the updater UI will exit silently. Otherwise, the
+        updater will show an install success dialog.
+      - If the exit code is a failure, the installer result is set to
+        `kExitCode`, the installer error is set to
+        `kErrorApplicationInstallerFailed`, and the installer extra code is set
+        to the exit code.
+      - If a text description is reported via the installer API, it will be
+        used.
 * `InstallerResultUIString` : A string to be displayed to the user, if
 `InstallerResult` is FAILED*.
 * `InstallerSuccessLaunchCmdLine` : On success, the installer writes a command
@@ -557,6 +584,23 @@ display the string.
 
 TODO(crbug.com/1339454): Implement running installers at
 BELOW_NORMAL_PRIORITY_CLASS if the update flow is a background flow.
+
+#### Updater UI behavior
+
+The updater UI does the following:
+*   on successful installs that do not specify an installer API launch command:
+    *   Displays a "Thank you for installing" message that the user must click
+        to close.
+*   on successful installs that specify a launch command:
+    *   Shows all UI until installation is completed then launches the launch
+        command and then exits without displaying the thank you message or
+        requiring the user to click on the UI.
+*   on error:
+    *   The UI is always shown with the error message. If a specific text
+        description of the error is provided via the installer API, that is
+        shown. Otherwise, a generic message with the error code is shown, either
+        the code provided via the installer API, or the exit code, or a generic
+        error `kErrorApplicationInstallerFailed`.
 
 ### Installer Setup
 
@@ -772,6 +816,13 @@ The enrollment token is searched in the order:
 CBCM enterprise enrollment and policy fetches are done every time an install or
 or update happens, as well as when the updater periodic background task
 `--wake` runs.
+
+#### Linux
+The enrollment token is stored in:
+`/opt/{COMPANY_SHORTNAME}/{PRODUCT_FULLNAME}/CloudManagementEnrollmentToken`
+
+The device management token is stored in:
+`/opt/{COMPANY_SHORTNAME}/{PRODUCT_FULLNAME}/CloudManagement`
 
 ### Enterprise Policies
 Enterprise policies can prevent the installation of applications:

@@ -216,10 +216,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return false;
   }
 
-  // Returns whether this object needs a scroll paint property tree node. These
-  // are a requirement for composited scrolling but are also created for
-  // non-composited scrollers.
+  // Returns whether this object needs a scroll paint property tree node.
   bool NeedsScrollNode(CompositingReasons direct_compositing_reasons) const;
+
+  // Returns true if this LayoutBox has a scroll paint property node and the
+  // node is currently composited in cc.
+  bool UsesCompositedScrolling() const;
 
   // Use this with caution! No type checking is done!
   LayoutBox* FirstChildBox() const;
@@ -1011,11 +1013,17 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   bool HasScrollableOverflowX() const {
     NOT_DESTROYED();
+    if (RuntimeEnabledFeatures::LayoutNewOverflowLogicEnabled()) {
+      return ScrollsOverflowX() && ScrollWidth() != ClientWidth();
+    }
     return ScrollsOverflowX() &&
            PixelSnappedScrollWidth() != PixelSnappedClientWidth();
   }
   bool HasScrollableOverflowY() const {
     NOT_DESTROYED();
+    if (RuntimeEnabledFeatures::LayoutNewOverflowLogicEnabled()) {
+      return ScrollsOverflowY() && ScrollHeight() != ClientHeight();
+    }
     return ScrollsOverflowY() &&
            PixelSnappedScrollHeight() != PixelSnappedClientHeight();
   }
@@ -1446,6 +1454,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // acceptable anchor element.
   // https://drafts.csswg.org/css-anchor-position-1/#ref-for-valdef-anchor-implicit
   const LayoutObject* AcceptableImplicitAnchor() const;
+
+  bool UsesPositionFallbackStyle() const;
 
   // Returns position fallback results for anchor positioned element.
   absl::optional<wtf_size_t> PositionFallbackIndex() const;

@@ -2726,7 +2726,7 @@
           Earth Flow
         </message>
         <message name="IDS_PERSONALIZATION_APP_TIME_OF_DAY_VIDEO_ALBUM_DESCRIPTION" desc="Common description all videos in the ambient section of the hub.">
-          <ph name="PRODUCT_NAME">$1<ex>Chromebook</ex></ph> exclusive
+          Exclusive to <ph name="PRODUCT_NAME">$1<ex>Chromebook</ex></ph>
         </message>
         <message name="IDS_PERSONALIZATION_APP_TIME_OF_DAY_BANNER_TITLE" desc="Title for the Time of Day promo banner.">
           Exclusive <ph name="PRODUCT_NAME">$1<ex>Chromebook</ex></ph> assets now available
@@ -3963,6 +3963,9 @@
         <message name="IDS_FEEDBACK_TOOL_PRIVACY_NOTE" desc="Text for the privacy note included in the feedback app">
           Go to the <ph name="BEGIN_LINK1">&lt;a id="legalHelpPageUrl"&gt;</ph>Legal Help page<ph name="END_LINK1">&lt;/a&gt;</ph> to request content changes for legal reasons. Some account and system information may be sent to Google. We will use the information you give us to help address technical issues and to improve our services, subject to our <ph name="BEGIN_LINK2">&lt;a id="privacyPolicyUrl"&gt;</ph>Privacy Policy<ph name="END_LINK2">&lt;/a&gt;</ph> and <ph name="BEGIN_LINK3">&lt;a id="termsOfServiceUrl"&gt;</ph>Terms of Service<ph name="END_LINK3">&lt;/a&gt;</ph>.
         </message>
+        <message name="IDS_FEEDBACK_TOOL_PRIVACY_NOTE_LOGGED_OUT" desc="Text for the privacy note included in the feedback app when users are logged out">
+          Some account and system information may be sent to Google. We use this information to help address technical issues and improve our services, subject to our Privacy Policy (<ph name="privacyPolicyUrl">$1<ex>https://policies.google.com/privacy</ex></ph>) and Terms of Service (<ph name="termsOfServiceUrl">$2<ex>https://policies.google.com/terms</ex></ph>). To request content changes, go to Legal Help (<ph name="legalHelpPageUrl">$3<ex>https://support.google.com/legal/answer/3110420</ex></ph>).
+        </message>
         <message name="IDS_FEEDBACK_TOOL_MAY_BE_SHARED_NOTE" desc="Text to inform all users that their feedback may be shared">
           We may share feedback submitted via this form with our partners to troubleshoot bugs and other issues that you report to us. Don’t include sensitive information such as passwords.
         </message>
@@ -4063,6 +4066,10 @@
         <message name="IDS_SHORTCUT_CUSTOMIZATION_CANCEL" desc="Used to cancel action in various modals">
           Cancel
         </message>
+        <!-- TODO(b/286268215): Translate this string -->
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_EDIT" desc="Used to edit action in various modals" translateable="false">
+          Edit
+        </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_EDIT_VIEW_STATUS_MESSAGE" desc="Instructions to user when they're inputting a new shortcut">
           Press 1-4 modifiers and 1 other key on your keyboard. To exit editing mode, press alt + esc.
         </message>
@@ -4108,6 +4115,12 @@
             that includes a top row key but does not include the search key">
           Shortcut with top row keys need to include the search key.
         </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_SEACH_WITH_FUNCTION_KEY_NOT_ALLOWED_STATUS_MESSAGE"
+            desc="The status message that displays when user press a key combination
+            that includes the search key with a function key."
+            translateable="false">
+          Shortcut with function keys and search are not allowed. Press a new shortcut.
+        </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_NON_SEARCH_SHORTCUT_WARNING"
             desc="The status (warning) message that displays when user attempts to input a shortcut that does not include the search/meta key.">
           Shortcut without search key might conflict with some app's shortcut. Press this shortcut again to continue using it, or press a new shortcut using the search key.
@@ -4121,8 +4134,11 @@
         <message name="IDS_SHORTCUT_CUSTOMIZATION_SEARCH_PLACEHOLDER_LABEL" desc="Placeholder text shown in search input field before user has typed anything.">
           Search shortcuts
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_SEARCH_ACCELERATOR_TEXT_DIVIDER" desc="The text shown between multiple shortcut keys in search results.">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ACCELERATOR_TEXT_DIVIDER" desc="The text shown between multiple shortcut keys.">
           or
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ACCELERATOR_ROW_A11Y" desc="Accessibility text for the selected accelerator row.">
+          <ph name="DESCRIPTION">$1<ex>Open notifications</ex></ph>, <ph name="ACCELERATOR_INFO">$2<ex>ctrl T</ex></ph>.
         </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_SEARCH_RESULT_ROW_A11Y_RESULT_SELECTED" desc="ChromeVox alert to indicate the position number of a selected result in a list of search results and the selected result text itself, and that the user can press enter to navigate to section described by the search result.">
           Search result <ph name="LIST_POSITION">$1<ex>1</ex></ph> of <ph name="LIST_SIZE">$2<ex>2</ex></ph>: <ph name="SEARCH_RESULT_TEXT">$3<ex>Open new tab, ctrl T</ex></ph>. Press Enter to navigate to shortcut.
@@ -4297,6 +4313,10 @@
         <!-- TODO(b/286268215): Translate this string -->
         <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_LAUNCH_MAIL" desc="The text read aloud by the screen reader describing the keyboard icon 'launch mail'." translateable="false">
           launch mail
+        </message>
+        <!-- TODO(b/286268215): Translate this string -->
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_STAND_BY" desc="The text read aloud by the screen reader describing the keyboard icon 'lock'." translateable="false">
+          lock
         </message>
         <!-- TODO(b/286268215): Translate this string -->
         <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_CONTEXT_MENU" desc="The text read aloud by the screen reader describing the keyboard icon 'context menu." translateable="false">

@@ -41,12 +41,14 @@ import org.chromium.net.CronetTestRule.RequiresMinAndroidApi;
 import org.chromium.net.CronetTestRule.RequiresMinApi;
 import org.chromium.net.NetworkChangeNotifierAutoDetect.ConnectivityManagerDelegate;
 import org.chromium.net.TestUrlRequestCallback.ResponseStep;
+import org.chromium.net.httpflags.BaseFeature;
 import org.chromium.net.httpflags.FlagValue;
 import org.chromium.net.httpflags.Flags;
 import org.chromium.net.impl.CronetLibraryLoader;
 import org.chromium.net.impl.CronetManifest;
 import org.chromium.net.impl.CronetManifestInterceptor;
 import org.chromium.net.impl.CronetUrlRequestContext;
+import org.chromium.net.impl.ImplVersion;
 import org.chromium.net.impl.NativeCronetEngineBuilderImpl;
 import org.chromium.net.impl.NetworkExceptionImpl;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -160,16 +162,21 @@ public class CronetUrlRequestContextTest {
         mTestRule.getTestFramework().interceptContext(new CronetManifestInterceptor(metaData));
     }
 
-    private void setLogFlag(String marker) {
+    private void setLogFlag(String marker, String appId, String minVersion) {
+        FlagValue.ConstrainedValue.Builder constrainedValueBuilder =
+                FlagValue.ConstrainedValue.newBuilder().setStringValue(
+                        "Test log flag value " + marker);
+        if (appId != null) {
+            constrainedValueBuilder.setAppId(appId);
+        }
+        if (minVersion != null) {
+            constrainedValueBuilder.setMinVersion(minVersion);
+        }
         mTestRule.getTestFramework().setHttpFlags(
                 Flags.newBuilder()
                         .putFlags(CronetLibraryLoader.LOG_FLAG_NAME,
                                 FlagValue.newBuilder()
-                                        .addConstrainedValues((
-                                                FlagValue.ConstrainedValue.newBuilder()
-                                                        .setStringValue(
-                                                                "Test log flag value " + marker))
-                                                                      .build())
+                                        .addConstrainedValues(constrainedValueBuilder)
                                         .build())
                         .build());
     }
@@ -187,7 +194,7 @@ public class CronetUrlRequestContextTest {
             throws Exception {
         try (LogcatCapture logcatSink = new LogcatCapture(
                      Arrays.asList(Log.normalizeTag(CronetLibraryLoader.TAG + ":I"),
-                             Log.normalizeTag(TAG + ":I")))) {
+                             Log.normalizeTag(TAG + ":I"), "chromium:I"))) {
             // Use the engine at least once to ensure we do not race against Cronet initialization.
             runOneRequest();
 
@@ -220,7 +227,7 @@ public class CronetUrlRequestContextTest {
     testHttpFlagsAreLoaded() throws Exception {
         setReadHttpFlagsInManifest(true);
         String marker = UUID.randomUUID().toString();
-        setLogFlag(marker);
+        setLogFlag(marker, /*appId=*/null, /*minVersion=*/null);
         runRequestWhileExpectingLog(marker, /*shouldBeLogged=*/true);
     }
 
@@ -232,7 +239,111 @@ public class CronetUrlRequestContextTest {
     testHttpFlagsAreNotLoadedIfDisabledInManifest() throws Exception {
         setReadHttpFlagsInManifest(false);
         String marker = UUID.randomUUID().toString();
-        setLogFlag(marker);
+        setLogFlag(marker, /*appId=*/null, /*minVersion=*/null);
+        runRequestWhileExpectingLog(marker, /*shouldBeLogged=*/false);
+    }
+
+    @Test
+    @SmallTest
+    @IgnoreFor(implementations = {CronetImplementation.FALLBACK},
+            reason = "HTTP flags are only supported on native Cronet for now")
+    public void
+    testHttpFlagsNotAppliedIfAppIdDoesntMatch() throws Exception {
+        setReadHttpFlagsInManifest(true);
+        String marker = UUID.randomUUID().toString();
+        setLogFlag(marker, /*appId=*/"org.chromium.fake.app.id", /*minVersion=*/null);
+        runRequestWhileExpectingLog(marker, /*shouldBeLogged=*/false);
+    }
+
+    @Test
+    @SmallTest
+    @IgnoreFor(implementations = {CronetImplementation.FALLBACK},
+            reason = "HTTP flags are only supported on native Cronet for now")
+    public void
+    testHttpFlagsAppliedIfAppIdMatches() throws Exception {
+        setReadHttpFlagsInManifest(true);
+        String marker = UUID.randomUUID().toString();
+        setLogFlag(marker, /*appId=*/mTestRule.getTestFramework().getContext().getPackageName(),
+                /*minVersion=*/ImplVersion.getCronetVersion());
+        runRequestWhileExpectingLog(marker, /*shouldBeLogged=*/true);
+    }
+
+    @Test
+    @SmallTest
+    @IgnoreFor(implementations = {CronetImplementation.FALLBACK},
+            reason = "HTTP flags are only supported on native Cronet for now")
+    public void
+    testHttpFlagsNotAppliedIfBelowMinVersion() throws Exception {
+        setReadHttpFlagsInManifest(true);
+        String marker = UUID.randomUUID().toString();
+        setLogFlag(marker, /*appId=*/null, /*minVersion=*/"999999.0.0.0");
+        runRequestWhileExpectingLog(marker, /*shouldBeLogged=*/false);
+    }
+
+    @Test
+    @SmallTest
+    @IgnoreFor(implementations = {CronetImplementation.FALLBACK},
+            reason = "HTTP flags are only supported on native Cronet for now")
+    public void
+    testHttpFlagsAppliedIfAtMinVersion() throws Exception {
+        setReadHttpFlagsInManifest(true);
+        String marker = UUID.randomUUID().toString();
+        setLogFlag(marker, /*appId=*/null, /*minVersion=*/ImplVersion.getCronetVersion());
+        runRequestWhileExpectingLog(marker, /*shouldBeLogged=*/true);
+    }
+
+    @Test
+    @SmallTest
+    @IgnoreFor(implementations = {CronetImplementation.FALLBACK},
+            reason = "HTTP flags are only supported on native Cronet for now")
+    public void
+    testHttpFlagsAppliedIfAboveMinVersion() throws Exception {
+        setReadHttpFlagsInManifest(true);
+        String marker = UUID.randomUUID().toString();
+        setLogFlag(marker, /*appId=*/null, /*minVersion=*/"100.0.0.0");
+        runRequestWhileExpectingLog(marker, /*shouldBeLogged=*/true);
+    }
+
+    private void setChromiumBaseFeatureLogFlag(boolean enable, String marker) {
+        mTestRule.getTestFramework().setHttpFlags(
+                Flags.newBuilder()
+                        .putFlags(BaseFeature.FLAG_PREFIX + "CronetLogMe",
+                                FlagValue.newBuilder()
+                                        .addConstrainedValues(
+                                                FlagValue.ConstrainedValue.newBuilder()
+                                                        .setBoolValue(enable))
+                                        .build())
+                        .putFlags(BaseFeature.FLAG_PREFIX + "CronetLogMe"
+                                        + BaseFeature.PARAM_DELIMITER + "message",
+                                FlagValue.newBuilder()
+                                        .addConstrainedValues(
+                                                FlagValue.ConstrainedValue.newBuilder()
+                                                        .setStringValue(marker))
+                                        .build())
+                        .build());
+    }
+
+    @Test
+    @SmallTest
+    @IgnoreFor(implementations = {CronetImplementation.FALLBACK},
+            reason = "HTTP flags are only supported on native Cronet for now")
+    public void
+    testBaseFeatureFlagsOverridesEnabled() throws Exception {
+        setReadHttpFlagsInManifest(true);
+        String marker = UUID.randomUUID().toString();
+        setChromiumBaseFeatureLogFlag(true, marker);
+        runRequestWhileExpectingLog(marker, /*shouldBeLogged=*/true);
+    }
+
+    @Test
+    @SmallTest
+    @IgnoreFor(implementations = {CronetImplementation.FALLBACK},
+            reason = "HTTP flags are only supported on native Cronet for now")
+    public void
+    testBaseFeatureFlagsOverridesDisabled() throws Exception {
+        setReadHttpFlagsInManifest(true);
+        String marker = UUID.randomUUID().toString();
+        setChromiumBaseFeatureLogFlag(false, marker);
         runRequestWhileExpectingLog(marker, /*shouldBeLogged=*/false);
     }
 

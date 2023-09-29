@@ -394,6 +394,7 @@ void FullscreenModel::SetProgress(CGFloat progress) {
 }
 
 void FullscreenModel::OnScrollViewSizeBroadcasted(CGSize scroll_view_size) {
+  CHECK(base::FeatureList::IsEnabled(web::features::kSmoothScrollingDefault));
   SetScrollViewHeight(scroll_view_size.height);
 }
 
@@ -403,10 +404,12 @@ void FullscreenModel::OnScrollViewContentSizeBroadcasted(CGSize content_size) {
 
 void FullscreenModel::OnScrollViewContentInsetBroadcasted(
     UIEdgeInsets content_inset) {
+  CHECK(base::FeatureList::IsEnabled(web::features::kSmoothScrollingDefault));
   SetTopContentInset(content_inset.top);
 }
 
 void FullscreenModel::OnContentScrollOffsetBroadcasted(CGFloat offset) {
+  CHECK(base::FeatureList::IsEnabled(web::features::kSmoothScrollingDefault));
   SetYContentOffset(offset);
 }
 

@@ -6,11 +6,12 @@
 
 #include <memory>
 
+#include "base/i18n/time_formatting.h"
 #include "base/logging.h"
-#include "base/strings/stringprintf.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "chromeos/ash/components/policy/weekly_time/time_utils.h"
+#include "third_party/icu/source/i18n/unicode/timezone.h"
 
 namespace ash::report::utils {
 
@@ -42,18 +43,11 @@ absl::optional<base::Time> GetPreviousMonth(base::Time ts) {
   ts.UTCExplode(&exploded);
 
   // Set new time to the first midnight of the previous month.
+  // "+ 11) % 12) + 1" wraps the month around if it goes outside 1..12.
+  exploded.month = (((exploded.month - 1) + 11) % 12) + 1;
+  exploded.year -= (exploded.month == 12);
   exploded.day_of_month = 1;
-  exploded.month -= 1;
-  exploded.hour = 0;
-  exploded.minute = 0;
-  exploded.second = 0;
-  exploded.millisecond = 0;
-
-  // Handle case when month is January.
-  if (exploded.month < 1) {
-    exploded.year -= 1;
-    exploded.month = 12;
-  }
+  exploded.hour = exploded.minute = exploded.second = exploded.millisecond = 0;
 
   base::Time new_month_ts;
   bool success = base::Time::FromUTCExploded(exploded, &new_month_ts);
@@ -76,18 +70,11 @@ absl::optional<base::Time> GetNextMonth(base::Time ts) {
   ts.UTCExplode(&exploded);
 
   // Set new time to the first midnight of the next month.
+  // "+ 11) % 12) + 1" wraps the month around if it goes outside 1..12.
+  exploded.month = (((exploded.month + 1) + 11) % 12) + 1;
+  exploded.year += (exploded.month == 1);
   exploded.day_of_month = 1;
-  exploded.month += 1;
-  exploded.hour = 0;
-  exploded.minute = 0;
-  exploded.second = 0;
-  exploded.millisecond = 0;
-
-  // Handle case when month is December.
-  if (exploded.month > 12) {
-    exploded.year += 1;
-    exploded.month = 1;
-  }
+  exploded.hour = exploded.minute = exploded.second = exploded.millisecond = 0;
 
   base::Time new_month_ts;
   bool success = base::Time::FromUTCExploded(exploded, &new_month_ts);
@@ -130,42 +117,26 @@ absl::optional<base::Time> GetPreviousYear(base::Time ts) {
 
 bool IsSameYearAndMonth(base::Time ts1, base::Time ts2) {
   base::Time::Exploded ts1_exploded;
-  base::Time::Exploded ts2_exploded;
-
   ts1.UTCExplode(&ts1_exploded);
+  base::Time::Exploded ts2_exploded;
   ts2.UTCExplode(&ts2_exploded);
-
-  if ((ts1_exploded.year == ts2_exploded.year) &&
-      (ts1_exploded.month == ts2_exploded.month)) {
-    return true;
-  }
-
-  return false;
+  return (ts1_exploded.year == ts2_exploded.year) &&
+         (ts1_exploded.month == ts2_exploded.month);
 }
 
 std::string FormatTimestampToMidnightGMTString(base::Time ts) {
-  base::Time::Exploded exploded;
-  ts.UTCExplode(&exploded);
-  return base::StringPrintf("%04d-%02d-%02d %02d:%02d:%02d.%03d GMT",
-                            exploded.year, exploded.month,
-                            exploded.day_of_month,
-                            /* hour */ 0,
-                            /* minute */ 0,
-                            /* second */ 0,
-                            /* millisecond */ 0);
+  return base::UnlocalizedTimeFormatWithPattern(ts, "yyyy-MM-dd 00:00:00.000 z",
+                                                icu::TimeZone::getGMT());
 }
 
 std::string TimeToYYYYMMDDString(base::Time ts) {
-  base::Time::Exploded exploded;
-  ts.UTCExplode(&exploded);
-  return base::StringPrintf("%04d%02d%02d", exploded.year, exploded.month,
-                            exploded.day_of_month);
+  return base::UnlocalizedTimeFormatWithPattern(ts, "yyyyMMdd",
+                                                icu::TimeZone::getGMT());
 }
 
 std::string TimeToYYYYMMString(base::Time ts) {
-  base::Time::Exploded exploded;
-  ts.UTCExplode(&exploded);
-  return base::StringPrintf("%04d%02d", exploded.year, exploded.month);
+  return base::UnlocalizedTimeFormatWithPattern(ts, "yyyyMM",
+                                                icu::TimeZone::getGMT());
 }
 
 }  // namespace ash::report::utils

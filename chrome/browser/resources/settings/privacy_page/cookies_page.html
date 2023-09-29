@@ -9,8 +9,26 @@
         padding: 0 var(--cr-section-padding);
       }
 
+      #exceptionHeader3pcd {
+        padding: 0 var(--cr-section-padding);
+        margin-bottom: -32px;
+      }
+
       #explanationText {
         margin-top: 16px;
+      }
+
+      #blockThirdPartyToggle {
+        padding: 0;
+      }
+
+      #trackingProtectionControls {
+        padding: var(--cr-section-vertical-padding) var(--cr-section-padding);
+      }
+
+      #advancedHeader {
+        padding-top: 24px;
+        padding-bottom: 8px;
       }
 
       .radio-group-sub-heading {
@@ -24,11 +42,8 @@
       }
 
       .bullet-row > div {
-        padding: 0 var(--cr-section-padding);
-      }
-
-      .bullet-row > iron-icon {
-        padding-left: 8px;
+        padding-left: var(--cr-section-padding);
+        padding-right: 48px;
       }
 
       .bullet-line {
@@ -57,6 +72,11 @@
         padding-bottom: 12px;
       }
 
+      #firstPartySetsToggle {
+        padding-inline-end: 0;
+        padding-inline-start: 0;
+      }
+
       #toastText {
         align-items: center;
         display: flex;
@@ -64,76 +84,57 @@
         min-height: var(--cr-section-two-line-min-height);
       }
     </style>
-    <picture>
+    <picture hidden="[[is3pcdRedesignEnabled_]]">
       <source
           srcset="chrome://settings/images/cookies_banner_dark.svg"
           media="(prefers-color-scheme: dark)">
       <img id="banner" alt=""
           src="chrome://settings/images/cookies_banner.svg">
     </picture>
+    <picture hidden="[[!is3pcdRedesignEnabled_]]">
+      <source
+            srcset="chrome://settings/images/tracking_protection_banner_dark.svg"
+            media="(prefers-color-scheme: dark)">
+        <img id="banner" alt=""
+            src="chrome://settings/images/tracking_protection_banner.svg">
+      </template>
+    </picture>
     <template is="dom-if" if="[[is3pcdRedesignEnabled_]]">
       <div id="explanationText" class="secondary">
         $i18n{trackingProtectionPageDescription}
       </div>
-      <div id="generalControls">
-        <h2>$i18n{trackingProtectionHeading}</h2>
-        <settings-radio-group id="primarySettingGroup" no-set-pref
-            pref="{{prefs.tracking_protection.tracking_protection_level}}"
-            selectable-elements="
-                cr-radio-button, settings-collapse-radio-button"
-            on-change="onCookieControlsModeChanged_">
-          <settings-collapse-radio-button id="standard"
-              pref="[[prefs.tracking_protection.tracking_protection_level]]"
-              name="[[trackingProtectionLevelEnum_.STANDARD]]"
-              label="$i18n{trackingProtectionStandardRadioLabel}"
-              sub-label="$i18n{trackingProtectionStandardRadioSubLabel}"
-              expand-aria-label="
-                  $i18n{thirdPartyCookiesPageAllowExpandA11yLabel}">
-            <div slot="collapse">
-              <div class="bullet-row">
-                <iron-icon icon="settings:visibility-off"></iron-icon>
-                <div>
-                  $i18n{trackingProtectionStandardBulletOne}
-                  <div class="secondary">
-                    $i18n{trackingProtectionStandardBulletOneDescription}
-                  </div>
-                </div>
-              </div>
-              <div class="bullet-row">
-                <iron-icon icon="settings:visibility-off"></iron-icon>
-                <div>
-                  $i18n{trackingProtectionStandardBulletTwo}
-                  <div class="secondary">
-                    $i18nRaw{trackingProtectionStandardBulletTwoDescription}
-                  </div>
-                </div>
-              </div>
+      <div id="trackingProtectionControls">
+        <div class="bullet-row">
+          <iron-icon icon="settings:visibility-off"></iron-icon>
+          <div>
+            $i18n{trackingProtectionBulletOne}
+            <div class="secondary">
+              $i18n{trackingProtectionBulletOneDescription}
             </div>
-          </settings-collapse-radio-button>
-          <settings-collapse-radio-button id="custom"
-              pref="[[prefs.tracking_protection.tracking_protection_level]]"
-              name="[[trackingProtectionLevelEnum_.CUSTOM]]"
-              label="$i18n{trackingProtectionCustomRadioLabel}"
-              sub-label="$i18n{trackingProtectionCustomRadioSubLabel}"
-              expand-aria-label="
-                  $i18n{thirdPartyCookiesPageBlockIncognitoExpandA11yLabel}">
-            <div slot="collapse">
-              <settings-toggle-button
-                id="blockThirdPartyToggle"
-                pref="
-                    {{prefs.tracking_protection.block_all_3pc_toggle_enabled}}"
-                label="$i18n{trackingProtectionThirdPartyCookiesToggleLabel}"
-                sub-label="
-                    $i18n{trackingProtectionThirdPartyCookiesToggleSubLabel}"
-                learn-more-url="
-                    $i18n{trackingProtectionThirdPartyCookiesLearnMoreUrl}">
-              </settings-toggle-button>
-              <settings-do-not-track-toggle id="doNotTrack" prefs="{{prefs}}">
-              </settings-do-not-track-toggle>
+          </div>
+        </div>
+        <div class="bullet-row">
+          <iron-icon icon="settings:domain-verification"></iron-icon>
+          <div>
+            $i18n{trackingProtectionBulletTwo}
+            <div class="secondary">
+              $i18nRaw{trackingProtectionBulletTwoDescription}
             </div>
-          </settings-collapse-radio-button>
-        </settings-radio-group>
+        </div>
       </div>
+      <h2 id="advancedHeader">$i18n{trackingProtectionAdvancedLabel}</h2>
+      <settings-toggle-button
+          id="blockThirdPartyToggle"
+          pref="{{prefs.tracking_protection.block_all_3pc_toggle_enabled}}"
+          label="$i18n{trackingProtectionThirdPartyCookiesToggleLabel}"
+          sub-label="
+            $i18n{trackingProtectionThirdPartyCookiesToggleSubLabel}"
+          learn-more-url="
+            $i18n{trackingProtectionThirdPartyCookiesLearnMoreUrl}"
+          icon="settings:visibility-off">
+      </settings-toggle-button>
+      <settings-do-not-track-toggle id="doNotTrack" prefs="{{prefs}}">
+      </settings-do-not-track-toggle>
     </template>
     <template is="dom-if"
       if="[[isPrivacySandboxSettings4CookieSettingsEnabled_(
@@ -212,7 +213,9 @@
                   $i18n{thirdPartyCookiesPageBlockBulTwo}
                 </div>
               </div>
-              <template is="dom-if" if="[[enableFirstPartySetsUI_]]">
+            </div>
+            <template is="dom-if" if="[[enableFirstPartySetsUI_]]">
+              <div slot="noSelectionCollapse">
                 <settings-toggle-button
                     id="firstPartySetsToggle"
                     pref="{{prefs.privacy_sandbox.first_party_sets_enabled}}"
@@ -221,8 +224,8 @@
                     disabled="[[firstPartySetsToggleDisabled_(
                         prefs.profile.cookie_controls_mode.value)]]">
                 </settings-toggle-button>
-              </template>
-            </div>
+              </div>
+            </template>
           </settings-collapse-radio-button>
         </settings-radio-group>
       </div>
@@ -289,17 +292,19 @@
                 <iron-icon icon="settings:block"></iron-icon>
                 <div class="secondary">$i18n{cookiePageBlockThirdBulTwo}</div>
               </div>
-              <template is="dom-if" if="[[enableFirstPartySetsUI_]]">
+            </div>
+            <template is="dom-if" if="[[enableFirstPartySetsUI_]]">
+              <div slot="noSelectionCollapse">
                 <settings-toggle-button
                     id="firstPartySetsToggle"
                     pref="{{prefs.privacy_sandbox.first_party_sets_enabled}}"
                     label="$i18n{cookiePageFpsLabel}"
                     sub-label="$i18n{cookiePageFpsSubLabel}"
                     disabled="[[firstPartySetsToggleDisabled_(
-                        prefs.generated.cookie_primary_setting.value)]]">
+                        prefs.profile.cookie_controls_mode.value)]]">
                 </settings-toggle-button>
-              </template>
-            </div>
+              </div>
+            </template>
           </settings-collapse-radio-button>
           <settings-collapse-radio-button id="blockAll"
               pref="[[blockAllPref_]]"
@@ -351,7 +356,9 @@
         on-click="onSiteDataClick_" label="$i18n{cookiePageAllSitesLink}"
         role-description="$i18n{subpageArrowRoleDescription}">
     </cr-link-row>
-    <template is="dom-if" if="[[isPrivacySandboxSettings4_]]">
+    <template is="dom-if"
+      if="[[isPrivacySandboxSettings4CookieSettingsEnabled_(
+        isPrivacySandboxSettings4_, is3pcdRedesignEnabled_)]]">
       <div id="exceptionHeader">
         <h2>$i18n{thirdPartyCookiesPageCustomizedBehaviorHeading}</h2>
         <div id="exceptionHeaderSubLabel" class="secondary">
@@ -368,7 +375,22 @@
           cookies-exception-type="third-party">
       </site-list>
     </template>
-    <template is="dom-if" if="[[!isPrivacySandboxSettings4_]]">
+    <template is="dom-if" if="[[is3pcdRedesignEnabled_]]">
+      <div id="exceptionHeader3pcd">
+        <h2>$i18n{siteDataPageCustomized3pcdHeading}</h2>
+      </div>
+      <site-list id="allowExceptionsList"
+          category="[[cookiesContentSettingType_]]"
+          category-subtype="[[contentSetting_.ALLOW]]"
+          category-header="$i18n{siteSettings3pcdBehaviorsDescription}"
+          read-only-list="[[exceptionListsReadOnly_]]"
+          search-filter="[[searchTerm]]"
+          cookies-exception-type="third-party">
+      </site-list>
+    </template>
+    <template is="dom-if"
+      if="[[isPrivacySandboxSettings3CookieSettingsEnabled_(
+        isPrivacySandboxSettings4_, is3pcdRedesignEnabled_)]]">
       <div id="exceptionHeader">
         <h2>$i18n{siteSettingsCustomizedBehaviors}</h2>
       </div>

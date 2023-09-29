@@ -147,23 +147,6 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
   // Request underlying source to capture a new frame.
   virtual void RequestRefreshFrame() {}
 
-  // Called when a frame is dropped by VideoTrackAdapter indicating a frame
-  // was not delivered to the sink, or by the MediaStreamVideoSink indicating
-  // that the <video> tag was not in a started state. Note that the
-  // MediaStreamTrack Statistics API does not consider the latter a dropped
-  // frame, since it was delivered to the sink. Also note that if multiple
-  // VideoTrackAdapters are used, the same frame could be reported as dropped
-  // multiple times. This method should not be used for frame counters.
-  // TODO(https://crbug.com/1481448): Consider if it would be better to delete
-  // this to avoid differences with the stats API or rename it to avoid
-  // confusion.
-  //
-  // Internally calls `OnFrameDroppedInternal`, which can optionally be
-  // overridden by a subclass for further handling of the frame drop events.
-  // TODO(https://crbug.com/1472978): Merge this method and
-  // OnFrameDroppedInternal() into a single method.
-  void OnFrameDropped(media::VideoCaptureFrameDropReason reason);
-
   // Optionally overridden by subclasses to implement handling log messages.
   virtual void OnLog(const std::string& message) {}
 
@@ -244,9 +227,6 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
   virtual base::WeakPtr<MediaStreamVideoSource> GetWeakPtr() = 0;
 
  protected:
-  virtual void OnFrameDroppedInternal(
-      media::VideoCaptureFrameDropReason reason) {}
-
   // MediaStreamSource implementation.
   void DoChangeSource(const MediaStreamDevice& new_device) override;
   void DoStopSource() override;
@@ -266,10 +246,13 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
   // * |crop_version_callback| whenever it is guaranteed that all subsequent
   //   frames that |frame_callback| will be called for, will have either
   //   the given crop version or higher.
+  // * |frame_dropped_callback| will be called when a frame was dropped prior to
+  //   delivery (i.e. |frame_callback| was not called for this frame).
   virtual void StartSourceImpl(
       VideoCaptureDeliverFrameCB frame_callback,
       EncodedVideoFrameCB encoded_frame_callback,
-      VideoCaptureCropVersionCB crop_version_callback) = 0;
+      VideoCaptureCropVersionCB crop_version_callback,
+      VideoCaptureNotifyFrameDroppedCB frame_dropped_callback) = 0;
   void OnStartDone(mojom::MediaStreamRequestResult result);
 
   // A subclass that supports restart must override this method such that it

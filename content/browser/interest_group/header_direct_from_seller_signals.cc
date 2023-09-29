@@ -13,7 +13,9 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #include "url/gurl.h"
@@ -156,16 +158,23 @@ std::string NoMatchError(std::string ad_slot) {
 
 // Searches for a signals dict whose adSlot value matches `ad_slot`, continuing
 // to the next response if no match is found.
-void OnJsonDecoded(std::unique_ptr<const std::set<std::string>> responses,
-                   std::set<std::string>::iterator it,
-                   std::string ad_slot,
-                   std::vector<std::string> errors,
-                   HeaderDirectFromSellerSignals::CompletionCallback callback,
-                   data_decoder::DataDecoder::ValueOrError result) {
+void OnJsonDecoded(
+    HeaderDirectFromSellerSignals::GetDecoderCallback get_decoder,
+    std::unique_ptr<const std::set<std::string>> responses,
+    std::set<std::string>::iterator it,
+    std::string ad_slot,
+    std::vector<std::string> errors,
+    HeaderDirectFromSellerSignals::CompletionCallback callback,
+    base::TimeTicks start_time,
+    data_decoder::DataDecoder::ValueOrError result) {
   std::unique_ptr<HeaderDirectFromSellerSignals> maybe_parsed =
       MaybeFindAdSlotSignalsInResponse(result, ad_slot, *it, errors);
   if (maybe_parsed) {
     // Found a match.
+    base::UmaHistogramTimes(
+        "Ads.InterestGroup.NetHeaderResponse.HeaderDirectFromSellerSignals."
+        "ParseAndFindMatchTime",
+        base::TimeTicks::Now() - start_time);
     std::move(callback).Run(std::move(maybe_parsed), std::move(errors));
     return;
   }
@@ -173,16 +182,26 @@ void OnJsonDecoded(std::unique_ptr<const std::set<std::string>> responses,
   ++it;
   if (it == responses->end()) {
     // No responses matched so add an error and return.
+    base::UmaHistogramTimes(
+        "Ads.InterestGroup.NetHeaderResponse.HeaderDirectFromSellerSignals."
+        "ParseAndFindMatchTime",
+        base::TimeTicks::Now() - start_time);
     errors.push_back(NoMatchError(ad_slot));
     std::move(callback).Run(std::make_unique<HeaderDirectFromSellerSignals>(),
                             std::move(errors));
     return;
   }
+
   // Decode the next response.
-  data_decoder::DataDecoder::ParseJsonIsolated(
-      *it, base::BindOnce(&OnJsonDecoded, std::move(responses), it,
-                          std::move(ad_slot), std::move(errors),
-                          std::move(callback)));
+  data_decoder::DataDecoder* maybe_decoder = get_decoder.Run();
+  if (!maybe_decoder) {
+    return;
+  }
+
+  maybe_decoder->ParseJson(
+      *it, base::BindOnce(&OnJsonDecoded, std::move(get_decoder),
+                          std::move(responses), it, std::move(ad_slot),
+                          std::move(errors), std::move(callback), start_time));
 }
 
 }  // namespace
@@ -191,14 +210,19 @@ HeaderDirectFromSellerSignals::HeaderDirectFromSellerSignals() = default;
 
 HeaderDirectFromSellerSignals::~HeaderDirectFromSellerSignals() = default;
 
-// TODO(crbug.com/1462720): Add UMA for response size and parsing time.
+// TODO(crbug.com/1462720): Add UMA for response size.
 /* static */
 void HeaderDirectFromSellerSignals::ParseAndFind(
+    GetDecoderCallback get_decoder,
     const std::set<std::string>& responses,
     std::string ad_slot,
     CompletionCallback callback) {
   std::vector<std::string> errors;
   if (responses.empty()) {
+    base::UmaHistogramTimes(
+        "Ads.InterestGroup.NetHeaderResponse.HeaderDirectFromSellerSignals."
+        "ParseAndFindMatchTime",
+        base::Seconds(0));
     errors.push_back(NoMatchError(ad_slot));
     std::move(callback).Run(std::make_unique<HeaderDirectFromSellerSignals>(),
                             std::move(errors));
@@ -210,10 +234,14 @@ void HeaderDirectFromSellerSignals::ParseAndFind(
   // copy is required.
   auto my_responses = std::make_unique<const std::set<std::string>>(responses);
   auto it = my_responses->begin();
-  data_decoder::DataDecoder::ParseJsonIsolated(
-      *it, base::BindOnce(&OnJsonDecoded, std::move(my_responses), it,
-                          std::move(ad_slot), std::move(errors),
-                          std::move(callback)));
+  data_decoder::DataDecoder* maybe_decoder = get_decoder.Run();
+  if (!maybe_decoder) {
+    return;
+  }
+  maybe_decoder->ParseJson(
+      *it, base::BindOnce(&OnJsonDecoded, get_decoder, std::move(my_responses),
+                          it, std::move(ad_slot), std::move(errors),
+                          std::move(callback), base::TimeTicks::Now()));
 }
 
 HeaderDirectFromSellerSignals::HeaderDirectFromSellerSignals(

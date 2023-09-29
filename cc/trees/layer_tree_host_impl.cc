@@ -120,6 +120,7 @@
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
+#include "gpu/command_buffer/common/shared_image_capabilities.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -570,8 +571,8 @@ void LayerTreeHostImpl::BeginMainFrameAborted(
     const viz::BeginFrameArgs& args,
     bool next_bmf,
     bool scroll_and_viewport_changes_synced) {
-  if (reason == CommitEarlyOutReason::ABORTED_NOT_VISIBLE ||
-      reason == CommitEarlyOutReason::FINISHED_NO_UPDATES) {
+  if (reason == CommitEarlyOutReason::kAbortedNotVisible ||
+      reason == CommitEarlyOutReason::kFinishedNoUpdates) {
     frame_trackers_.NotifyMainFrameCausedNoDamage(args, true);
   } else {
     frame_trackers_.NotifyMainFrameProcessed(args);
@@ -1327,14 +1328,14 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   if (settings_.enable_compositing_based_throttling)
     throttle_decider_.Prepare();
   for (EffectTreeLayerListIterator it(active_tree());
-       it.state() != EffectTreeLayerListIterator::State::END; ++it) {
+       it.state() != EffectTreeLayerListIterator::State::kEnd; ++it) {
     auto target_render_pass_id = it.target_render_surface()->render_pass_id();
     viz::CompositorRenderPass* target_render_pass =
         FindRenderPassById(frame->render_passes, target_render_pass_id);
 
     AppendQuadsData append_quads_data;
 
-    if (it.state() == EffectTreeLayerListIterator::State::TARGET_SURFACE) {
+    if (it.state() == EffectTreeLayerListIterator::State::kTargetSurface) {
       RenderSurfaceImpl* render_surface = it.target_render_surface();
       if (render_surface->HasCopyRequest()) {
         active_tree()
@@ -1347,13 +1348,13 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
       if (settings_.enable_compositing_based_throttling && target_render_pass)
         throttle_decider_.ProcessRenderPass(*target_render_pass);
     } else if (it.state() ==
-               EffectTreeLayerListIterator::State::CONTRIBUTING_SURFACE) {
+               EffectTreeLayerListIterator::State::kContributingSurface) {
       RenderSurfaceImpl* render_surface = it.current_render_surface();
       if (render_surface->contributes_to_drawn_surface()) {
         render_surface->AppendQuads(draw_mode, target_render_pass,
                                     &append_quads_data);
       }
-    } else if (it.state() == EffectTreeLayerListIterator::State::LAYER) {
+    } else if (it.state() == EffectTreeLayerListIterator::State::kLayer) {
       LayerImpl* layer = it.current_layer();
       if (layer->WillDraw(draw_mode, &resource_provider_)) {
         DCHECK_EQ(active_tree_.get(), layer->layer_tree_impl());
@@ -2874,6 +2875,8 @@ void LayerTreeHostImpl::UpdateRasterCapabilities() {
   viz::RasterContextProvider::ScopedRasterContextLock scoped_lock(
       worker_context_provider);
   const auto& context_caps = worker_context_provider->ContextCapabilities();
+  const auto& shared_image_caps =
+      worker_context_provider->SharedImageInterface()->GetCapabilities();
 
   raster_caps_.max_texture_size = context_caps.max_texture_size;
   raster_caps_.ui_rgba_format =
@@ -2881,7 +2884,7 @@ void LayerTreeHostImpl::UpdateRasterCapabilities() {
 
   raster_caps_.tile_overlay_candidate =
       settings_.resource_settings.use_gpu_memory_buffer_resources &&
-      context_caps.supports_scanout_shared_images;
+      shared_image_caps.supports_scanout_shared_images;
   raster_caps_.tile_texture_target = GL_TEXTURE_2D;
 
   if (settings_.gpu_rasterization_disabled || !context_caps.gpu_rasterization) {
@@ -4593,9 +4596,11 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
     viz::RasterContextProvider* context_provider =
         layer_tree_frame_sink_->context_provider();
     const auto& caps = context_provider->ContextCapabilities();
+    const auto& shared_image_caps =
+        context_provider->SharedImageInterface()->GetCapabilities();
     overlay_candidate =
         settings_.resource_settings.use_gpu_memory_buffer_resources &&
-        caps.supports_scanout_shared_images &&
+        shared_image_caps.supports_scanout_shared_images &&
         viz::CanCreateGpuMemoryBufferForSinglePlaneSharedImageFormat(format);
     if (overlay_candidate) {
       shared_image_usage |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
@@ -4706,12 +4711,13 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
 
     transferable = viz::TransferableResource::MakeGpu(
         mailbox, texture_target, sync_token, upload_size, format,
-        overlay_candidate);
+        overlay_candidate, viz::TransferableResource::ResourceSource::kUI);
   } else {
     layer_tree_frame_sink_->DidAllocateSharedBitmap(std::move(shm.region),
                                                     shared_bitmap_id);
-    transferable = viz::TransferableResource::MakeSoftware(shared_bitmap_id,
-                                                           upload_size, format);
+    transferable = viz::TransferableResource::MakeSoftware(
+        shared_bitmap_id, upload_size, format,
+        viz::TransferableResource::ResourceSource::kUI);
   }
   transferable.color_space = color_space;
   id = resource_provider_.ImportResource(

@@ -19,8 +19,8 @@
 #import "ios/chrome/browser/parcel_tracking/parcel_tracking_util.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/commands/parcel_tracking_opt_in_commands.h"
-#import "ios/chrome/browser/text_selection/text_classifier_model_service.h"
-#import "ios/chrome/browser/text_selection/text_classifier_model_service_factory.h"
+#import "ios/chrome/browser/text_selection/model/text_classifier_model_service.h"
+#import "ios/chrome/browser/text_selection/model/text_classifier_model_service_factory.h"
 #import "ios/public/provider/chrome/browser/context_menu/context_menu_api.h"
 #import "ios/web/common/annotations_utils.h"
 #import "ios/web/common/url_scheme_util.h"
@@ -102,7 +102,8 @@ void AnnotationsTabHelper::OnTextExtracted(web::WebState* web_state,
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(&ios::provider::ExtractDataElementsFromText, text,
+      base::BindOnce(&ios::provider::ExtractDataElementsFromText,
+                     metadata.Clone(), text,
                      ios::provider::GetHandledIntentTypesForOneTap(web_state),
                      ukm::GetSourceIdForWebStateDocument(web_state),
                      std::move(model_path)),
@@ -156,16 +157,21 @@ void AnnotationsTabHelper::ApplyDeferredProcessing(
     DCHECK(manager);
     base::Value annotations(std::move(deferred.value()));
     if (IsIOSParcelTrackingEnabled()) {
-      AnnotationsTabHelper::MaybeShowParcelTrackingUI(annotations.GetList());
+      AnnotationsTabHelper::ProcessParcelTrackingNumbers(annotations.GetList());
     }
     manager->DecorateAnnotations(web_state_, annotations, seq_id);
   }
 }
 
-void AnnotationsTabHelper::MaybeShowParcelTrackingUI(
+void AnnotationsTabHelper::ProcessParcelTrackingNumbers(
     base::Value::List& annotations_list) {
-  NSMutableArray<CustomTextCheckingResult*>* parcels =
+  // Return early if not currently active WebState.
+  if (!web_state_->IsVisible()) {
+    return;
+  }
+  NSMutableArray<CustomTextCheckingResult*>* unique_parcels =
       [[NSMutableArray alloc] init];
+  NSMutableSet* existing_parcel_numbers = [NSMutableSet set];
   for (size_t i = 0; i < annotations_list.size();) {
     const base::Value::Dict& entity = annotations_list[i].GetDict();
     NSTextCheckingResult* match = web::DecodeNSTextCheckingResultData(
@@ -174,27 +180,30 @@ void AnnotationsTabHelper::MaybeShowParcelTrackingUI(
       i++;
       continue;
     }
-    [parcels addObject:base::apple::ObjCCast<CustomTextCheckingResult>(match)];
+    CustomTextCheckingResult* parcel =
+        base::apple::ObjCCast<CustomTextCheckingResult>(match);
+    // Avoid adding duplicates to `unique_parcels`.
+    if (![existing_parcel_numbers containsObject:[parcel carrierNumber]]) {
+      [existing_parcel_numbers addObject:[parcel carrierNumber]];
+      [unique_parcels addObject:parcel];
+    }
     // Remove the parcel from annotations_list to prevent decorating the
     // tracking number.
     annotations_list.EraseValue(annotations_list[i]);
   }
-  if ([parcels count] > 0) {
-    ChromeBrowserState* browser_state =
-        ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
-    if (IsUserEligibleParcelTrackingOptInPrompt(browser_state)) {
-      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-          FROM_HERE, base::BindOnce(&AnnotationsTabHelper::ShowParcelTrackingUI,
-                                    weak_factory_.GetWeakPtr(), parcels));
-    }
+  if ([unique_parcels count] > 0) {
+    // Call asynchronously to allow the rest of the annotations to be decorated
+    // first.
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AnnotationsTabHelper::MaybeShowParcelTrackingUI,
+                       weak_factory_.GetWeakPtr(), unique_parcels));
   }
 }
 
-void AnnotationsTabHelper::ShowParcelTrackingUI(
+void AnnotationsTabHelper::MaybeShowParcelTrackingUI(
     NSArray<CustomTextCheckingResult*>* parcels) {
-  [parcel_tracking_handler_
-      showParcelTrackingOptInPromptWithParcels:parcels
-                                   forWebState:web_state_];
+  [parcel_tracking_handler_ showParcelTrackingUIWithParcels:parcels];
 }
 
 WEB_STATE_USER_DATA_KEY_IMPL(AnnotationsTabHelper)

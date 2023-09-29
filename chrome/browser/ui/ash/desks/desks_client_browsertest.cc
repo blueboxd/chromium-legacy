@@ -15,6 +15,7 @@
 #include "ash/public/cpp/saved_desk_delegate.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/system/toast_manager.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -45,6 +46,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/spin_wait.h"
 #include "base/uuid.h"
 #include "base/value_iterators.h"
 #include "base/values.h"
@@ -70,6 +72,7 @@
 #include "chrome/browser/ui/ash/desks/chrome_desks_util.h"
 #include "chrome/browser/ui/ash/desks/desks_client.h"
 #include "chrome/browser/ui/ash/desks/desks_templates_app_launch_handler.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -98,7 +101,9 @@
 #include "components/app_restore/restore_data.h"
 #include "components/app_restore/window_properties.h"
 #include "components/desks_storage/core/admin_template_service.h"
+#include "components/desks_storage/core/desk_model.h"
 #include "components/desks_storage/core/desk_template_util.h"
+#include "components/desks_storage/core/saved_desk_builder.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/policy/policy_constants.h"
@@ -149,6 +154,8 @@ constexpr char kTestAdminTemplateFormat[] =
     "\"1633535632\",\"desk\":{}}]";
 constexpr char kTestTabGroupNameFormat[] = "test_tab_group_%u";
 constexpr char kTestAppName[] = "test_app_name";
+constexpr char kUnknownTestAppName[] = "unknown_test_app_name";
+constexpr char kUnknownTestAppId[] = "07eb07d7-f338-48aa-a996-7beb76a5042c";
 
 Browser* FindBrowser(int32_t window_id) {
   for (auto* browser : *BrowserList::GetInstance()) {
@@ -264,9 +271,9 @@ void DeleteDeskTemplate(const base::Uuid& uuid) {
   run_loop.Run();
 }
 
-web_app::AppId CreateSystemWebApp(Profile* profile,
+webapps::AppId CreateSystemWebApp(Profile* profile,
                                   apps::AppLaunchParams params) {
-  const web_app::AppId app_id = params.app_id;
+  const webapps::AppId app_id = params.app_id;
   base::RunLoop launch_wait;
   apps::AppServiceProxyFactory::GetForProfile(profile)->LaunchAppWithParams(
       std::move(params),
@@ -279,33 +286,33 @@ web_app::AppId CreateSystemWebApp(Profile* profile,
 // Creates the app launch params for `app_type` for testing.
 apps::AppLaunchParams GetAppLaunchParams(Profile* profile,
                                          ash::SystemWebAppType app_type) {
-  web_app::AppId app_id = *ash::GetAppIdForSystemWebApp(profile, app_type);
+  webapps::AppId app_id = *ash::GetAppIdForSystemWebApp(profile, app_type);
   return apps::AppLaunchParams(
       app_id, apps::LaunchContainer::kLaunchContainerWindow,
       WindowOpenDisposition::NEW_WINDOW, apps::LaunchSource::kFromTest);
 }
 
-web_app::AppId CreateFilesSystemWebApp(Profile* profile) {
+webapps::AppId CreateFilesSystemWebApp(Profile* profile) {
   apps::AppLaunchParams params =
       GetAppLaunchParams(profile, ash::SystemWebAppType::FILE_MANAGER);
   return CreateSystemWebApp(profile, std::move(params));
 }
 
-web_app::AppId CreateSettingsSystemWebApp(Profile* profile) {
+webapps::AppId CreateSettingsSystemWebApp(Profile* profile) {
   apps::AppLaunchParams params =
       GetAppLaunchParams(profile, ash::SystemWebAppType::SETTINGS);
   params.restore_id = kSettingsWindowId;
   return CreateSystemWebApp(profile, std::move(params));
 }
 
-web_app::AppId CreateHelpSystemWebApp(Profile* profile) {
+webapps::AppId CreateHelpSystemWebApp(Profile* profile) {
   apps::AppLaunchParams params =
       GetAppLaunchParams(profile, ash::SystemWebAppType::HELP);
   params.restore_id = kHelpWindowId;
   return CreateSystemWebApp(profile, std::move(params));
 }
 
-web_app::AppId CreateOsUrlHandlerSystemWebApp(Profile* profile,
+webapps::AppId CreateOsUrlHandlerSystemWebApp(Profile* profile,
                                               const GURL& override_url) {
   apps::AppLaunchParams params =
       GetAppLaunchParams(profile, ash::SystemWebAppType::OS_URL_HANDLER);
@@ -594,7 +601,7 @@ class DesksClientTest : public extensions::PlatformAppBrowserTest,
           web_app::mojom::UserDisplayMode::kStandalone;
     }
     web_app_info->title = u"A Web App";
-    const web_app::AppId app_id =
+    const webapps::AppId app_id =
         web_app::test::InstallWebApp(profile(), std::move(web_app_info));
 
     return launch_in_browser
@@ -794,7 +801,7 @@ IN_PROC_BROWSER_TEST_P(DesksClientTest, CaptureActiveDeskAsTemplateTest) {
       window->GetProperty(app_restore::kWindowIdKey);
 
   // Create the settings app, which is a system web app.
-  web_app::AppId settings_app_id =
+  webapps::AppId settings_app_id =
       CreateSettingsSystemWebApp(browser()->profile());
 
   // Change the Settings app's bounds too.
@@ -1496,7 +1503,7 @@ IN_PROC_BROWSER_TEST_P(DesksClientTest, GetDeskTemplateJson) {
                       aura::client::kWindowWorkspaceVisibleOnAllWorkspaces);
 
   // Create the settings app, which is a system web app.
-  web_app::AppId settings_app_id =
+  webapps::AppId settings_app_id =
       CreateSettingsSystemWebApp(browser()->profile());
 
   // Change the Settings app's bounds too.
@@ -2191,7 +2198,7 @@ IN_PROC_BROWSER_TEST_P(DesksClientTest,
       window->GetProperty(app_restore::kWindowIdKey);
 
   // Create the settings app, which is a system web app.
-  web_app::AppId settings_app_id =
+  webapps::AppId settings_app_id =
       CreateSettingsSystemWebApp(browser()->profile());
 
   // Change the Settings app's bounds too.
@@ -2993,6 +3000,101 @@ IN_PROC_BROWSER_TEST_P(DesksClientTest, FloatingWorkspaceOnSavedDesksUI) {
   EXPECT_FALSE(zero_state_templates_button->GetVisible());
 }
 
+IN_PROC_BROWSER_TEST_P(DesksClientTest,
+                       DisplaysAppUnavailableToastForUnavailableBrowserApp) {
+  // Build a saved desk with an unsupoorted browser app.
+  std::unique_ptr<ash::DeskTemplate> unsupported_template =
+      desks_storage::SavedDeskBuilder()
+          .AddAppWindow(
+              desks_storage::SavedDeskBrowserBuilder()
+                  .SetIsApp(true)
+                  .SetIsLacros(false)
+                  .SetUrls({GURL(kExampleUrl1)})
+                  .SetGenericBuilder(desks_storage::SavedDeskGenericAppBuilder()
+                                         .SetWindowId(kTestWindowId)
+                                         .SetName(kUnknownTestAppName))
+                  .Build())
+          .Build();
+
+  // Programmatically add to storage, we do this because you cannot capture
+  // an unsupported app.
+  base::RunLoop loop;
+  DesksClient::Get()->GetDeskModel()->AddOrUpdateEntry(
+      std::move(unsupported_template),
+      base::BindLambdaForTesting(
+          [&](desks_storage::DeskModel::AddOrUpdateEntryStatus status,
+              std::unique_ptr<ash::DeskTemplate> new_entry) {
+            EXPECT_EQ(desks_storage::DeskModel::AddOrUpdateEntryStatus::kOk,
+                      status);
+            loop.Quit();
+          }));
+  loop.Run();
+
+  // Enter overview and launch template
+  ash::ToggleOverview();
+  ash::WaitForOverviewEnterAnimation();
+  ClickZeroStateTemplatesButton();
+  ClickFirstTemplateItem();
+
+  // Spin in case we need to wait for the toast to appear.
+  SPIN_FOR_TIMEDELTA_OR_UNTIL_TRUE(
+      base::Seconds(45),
+      ash::ToastManager::Get()->IsRunning(
+          chrome_desks_util::kAppNotAvailableTemplateToastName));
+}
+
+IN_PROC_BROWSER_TEST_P(DesksClientTest,
+                       DisplaysAppUnavailableToastForUnavailableGenericApp) {
+  // Build a saved desk with an unsupoorted generic app.
+  std::unique_ptr<ash::DeskTemplate> unsupported_template =
+      desks_storage::SavedDeskBuilder()
+          .AddAppWindow(desks_storage::SavedDeskGenericAppBuilder()
+                            .SetWindowId(kTestWindowId)
+                            .SetAppId(kUnknownTestAppId)
+                            .Build())
+          .Build();
+
+  // We will need to add `kUnknownAppId` to the app registry cache so that
+  // it will be stored properly.  We will make sure that its readiness will
+  // trigger the toast on launch. We use kArc so that it will be a supported
+  // type for a template, however its readiness will remain kUnknown which
+  // should trigger the toast.
+  std::vector<apps::AppPtr> deltas;
+  deltas.push_back(
+      std::make_unique<apps::App>(apps::AppType::kArc, kUnknownTestAppId));
+  apps::AppRegistryCacheWrapper::Get()
+      .GetAppRegistryCache(
+          multi_user_util::GetAccountIdFromProfile(browser()->profile()))
+      ->OnApps(std::move(deltas), apps::AppType::kArc,
+               /*should_notify_initializied=*/false);
+
+  // Programmatically add to storage, we do this because you cannot capture
+  // an unsupported app.
+  base::RunLoop loop;
+  DesksClient::Get()->GetDeskModel()->AddOrUpdateEntry(
+      std::move(unsupported_template),
+      base::BindLambdaForTesting(
+          [&](desks_storage::DeskModel::AddOrUpdateEntryStatus status,
+              std::unique_ptr<ash::DeskTemplate> new_entry) {
+            EXPECT_EQ(desks_storage::DeskModel::AddOrUpdateEntryStatus::kOk,
+                      status);
+            loop.Quit();
+          }));
+  loop.Run();
+
+  // Enter overview and launch template
+  ash::ToggleOverview();
+  ash::WaitForOverviewEnterAnimation();
+  ClickZeroStateTemplatesButton();
+  ClickFirstTemplateItem();
+
+  // Spin in case we need to wait for the toast to appear.
+  SPIN_FOR_TIMEDELTA_OR_UNTIL_TRUE(
+      base::Seconds(45),
+      ash::ToastManager::Get()->IsRunning(
+          chrome_desks_util::kAppNotAvailableTemplateToastName));
+}
+
 class DesksTemplatesClientLacrosTest : public InProcessBrowserTest {
  public:
   DesksTemplatesClientLacrosTest() {
@@ -3467,7 +3569,13 @@ class DesksTemplatesClientMultiProfileTest : public ash::LoginManagerTest {
   AccountId account_id2_;
 };
 
-IN_PROC_BROWSER_TEST_F(DesksTemplatesClientMultiProfileTest, MultiProfileTest) {
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_MultiProfileTest DISABLED_MultiProfileTest
+#else
+#define MAYBE_MultiProfileTest MultiProfileTest
+#endif
+IN_PROC_BROWSER_TEST_F(DesksTemplatesClientMultiProfileTest,
+                       MAYBE_MultiProfileTest) {
   CreateBrowser(ash::ProfileHelper::Get()->GetProfileByAccountId(account_id1_));
   // Capture the active desk, which contains the browser windows.
   std::unique_ptr<ash::DeskTemplate> desk_template =
@@ -3527,6 +3635,7 @@ class AdminTemplateTest : public extensions::PlatformAppBrowserTest {
     struct WindowDefinition {
       std::vector<std::string> urls;
       absl::optional<gfx::Rect> bounds;
+      absl::optional<int32_t> activation_index;
     };
 
     std::vector<WindowDefinition> windows;
@@ -3556,6 +3665,10 @@ class AdminTemplateTest : public extensions::PlatformAppBrowserTest {
       if (definition.windows[i].bounds) {
         window.Set("current_bounds",
                    CreateBounds(*definition.windows[i].bounds));
+      }
+
+      if (definition.windows[i].activation_index) {
+        window.Set("index", *definition.windows[i].activation_index);
       }
 
       base::Value::List urls;
@@ -3614,11 +3727,15 @@ class AdminTemplateTest : public extensions::PlatformAppBrowserTest {
 
 // TODO(b/273803538): Add tests for lacros.
 IN_PROC_BROWSER_TEST_F(AdminTemplateTest, LaunchAdminTemplate) {
-  // Launch an admin template with a single browser. Verifies that a browser was
-  // actually launched.
-  auto admin_template = CreateAdminTemplate(
-      {.windows = {
-           {.urls = {kExampleUrl1}, .bounds = gfx::Rect(100, 50, 400, 300)}}});
+  // Launch an admin template with two browsers. Verifies that the browsers were
+  // actually launched.  One browser will have an activation index, but it
+  // it should be ignored.
+  auto admin_template =
+      CreateAdminTemplate({.windows = {{.urls = {kExampleUrl1},
+                                        .bounds = gfx::Rect(100, 50, 400, 300)},
+                                       {.urls = {kExampleUrl2},
+                                        .bounds = gfx::Rect(100, 50, 400, 300),
+                                        .activation_index = -100}}});
   ASSERT_NE(admin_template, nullptr);
 
   base::Uuid template_uuid = admin_template->uuid();
@@ -3629,27 +3746,38 @@ IN_PROC_BROWSER_TEST_F(AdminTemplateTest, LaunchAdminTemplate) {
   saved_desk_controller->LaunchAdminTemplate(
       template_uuid, display::Screen::GetScreen()->GetPrimaryDisplay().id());
 
-  // Verify that there are two browsers (one from the suite and one from the
-  // test), and verify that our launched browser is stacked on top.
-  Browser* new_browser = FindLaunchedBrowserByURLs({GURL(kExampleUrl1)});
-  ASSERT_TRUE(new_browser);
+  // Verify that there are three browsers (two from the suite and one from the
+  // test), and verify that our launched browsers are stacked on top.
+  Browser* new_browser_one = FindLaunchedBrowserByURLs({GURL(kExampleUrl1)});
+  Browser* new_browser_two = FindLaunchedBrowserByURLs({GURL(kExampleUrl2)});
+  ASSERT_TRUE(new_browser_one);
+  ASSERT_TRUE(new_browser_two);
 
   aura::Window* old_browser_window = browser()->window()->GetNativeWindow();
-  aura::Window* new_browser_window = new_browser->window()->GetNativeWindow();
+  aura::Window* new_browser_window_one =
+      new_browser_one->window()->GetNativeWindow();
+  aura::Window* new_browser_window_two =
+      new_browser_two->window()->GetNativeWindow();
 
-  // Both browsers should be on the same desk.
-  ASSERT_EQ(old_browser_window->parent(), new_browser_window->parent());
+  // All browsers should be on the same desk.
+  ASSERT_EQ(old_browser_window->parent(), new_browser_window_one->parent());
+  ASSERT_EQ(old_browser_window->parent(), new_browser_window_two->parent());
+  ASSERT_EQ(new_browser_window_one->parent(), new_browser_window_two->parent());
 
-  // Verify that the new browser window is stacked in front of the
-  // existing. Children are ordered from bottommost to topmost. We therefore
+  // Verify that the new browser windows are stacked in front of the
+  // existing window and that they are ordered relative to the order in their
+  // template. Children are ordered from bottommost to topmost. We therefore
   // expect the new window to have an index that is higher than the old.
-  const auto& container = new_browser_window->parent()->children();
-  size_t new_index =
-      base::ranges::find(container, new_browser_window) - container.begin();
+  const auto& container = new_browser_window_one->parent()->children();
+  size_t new_index_one =
+      base::ranges::find(container, new_browser_window_one) - container.begin();
+  size_t new_index_two =
+      base::ranges::find(container, new_browser_window_two) - container.begin();
   size_t old_index =
       base::ranges::find(container, old_browser_window) - container.begin();
 
-  EXPECT_GT(new_index, old_index);
+  EXPECT_GT(new_index_one, new_index_two);
+  EXPECT_GT(new_index_two, old_index);
 }
 
 IN_PROC_BROWSER_TEST_F(AdminTemplateTest, AdminTemplateWindowOffset) {
@@ -3736,12 +3864,18 @@ IN_PROC_BROWSER_TEST_F(AdminTemplateTest, AdminTemplateWindowUpdate) {
   // windows are updated.
   updated_template = nullptr;
 
+  aura::Window* browser2_window = browser2->window()->GetNativeWindow();
+
   // Set the bounds of the two windows. This should result in the template
   // getting updated.
   const gfx::Rect window1_set_bounds(50, 50, 640, 480);
   browser1->window()->GetNativeWindow()->SetBounds(window1_set_bounds);
   const gfx::Rect window2_set_bounds(100, 100, 800, 600);
   browser2->window()->GetNativeWindow()->SetBounds(window2_set_bounds);
+
+  // Reverse the Z order, we will use this to verify that the Z order is
+  // persisted.
+  browser2_window->parent()->StackChildAtTop(browser2_window);
 
   ASSERT_TRUE(updated_template);
 
@@ -3753,6 +3887,10 @@ IN_PROC_BROWSER_TEST_F(AdminTemplateTest, AdminTemplateWindowUpdate) {
   data2 = ash::QueryRestoreData(*updated_template, {}, /*window_id=*/2);
   ASSERT_TRUE(data2);
   EXPECT_THAT(data2->current_bounds, Optional(window2_set_bounds));
+
+  // Verify that Z ordering was preserved
+  EXPECT_EQ(data1->activation_index, 0);
+  EXPECT_EQ(data2->activation_index, -1);
 }
 
 IN_PROC_BROWSER_TEST_F(AdminTemplateTest, AdminTemplateHistograms) {

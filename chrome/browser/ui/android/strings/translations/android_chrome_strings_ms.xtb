@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
 <translation id="1011749477052068769">Alihkan ke sini</translation>
+<translation id="1014147525163127655">Tiada apa-apa kunci laluan untuk <ph name="ORIGIN" /> pada peranti ini</translation>
 <translation id="1016498331642356377">Cari menggunakan suara anda dengan pantas. Untuk mengedit pintasan ini, sentuh dan tahan.</translation>
 <translation id="1024113959924243553">Chrome Dev</translation>
 <translation id="1028699632127661925">Menghantar ke <ph name="DEVICE_NAME" />...</translation>
@@ -175,6 +176,7 @@ Apabila anda memadamkan sejarah penyemakan imbas anda — semua atau untuk laman
 <translation id="19288952978244135">Buka semula Chrome.</translation>
 <translation id="1933845786846280168">Tab yang Dipilih</translation>
 <translation id="1943432128510653496">Simpan kata laluan</translation>
+<translation id="1944535645109964458">Tiada kunci laluan tersedia</translation>
 <translation id="1952172573699511566">Tapak web akan menunjukkan teks dalam bahasa pilihan anda, jika boleh.</translation>
 <translation id="1959679933317802873">Menunggu kandungan</translation>
 <translation id="1960290143419248813">Kemas kini Chrome tidak disokong untuk versi Android ini lagi</translation>
@@ -263,6 +265,7 @@ Apabila anda memadamkan sejarah penyemakan imbas anda — semua atau untuk laman
 <translation id="2461822463642141190">Semasa</translation>
 <translation id="2472163211318554013">Log masuk untuk memanfaatkan Chrome sepenuhnya</translation>
 <translation id="247737702124049222">Perihalan imej dihidupkan</translation>
+<translation id="2479148705183875116">Pergi ke Tetapan</translation>
 <translation id="2482878487686419369">Pemberitahuan</translation>
 <translation id="2496180316473517155">Sejarah penyemakan imbas</translation>
 <translation id="2497852260688568942">Penyegerakan dilumpuhkan oleh pentadbir anda</translation>
@@ -626,6 +629,7 @@ Token keadaan sulit meningkatkan privasi pada web dan tidak boleh digunakan untu
 <translation id="4257230861809842349">Padamkan kata laluan daripada Google Password Manager?</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Jenis data yang digunakan:<ph name="END_BOLD" /> Sejarah penyemakan imbas anda, rekod laman yang anda lawati menggunakan Chrome pada peranti ini.</translation>
 <translation id="4269820728363426813">Salin alamat pautan</translation>
+<translation id="4277529130885813215">Gunakan peranti lain</translation>
 <translation id="4283102315569707115">Minta laman desktop secara lalai?</translation>
 <translation id="4285846616383034558">Kuki, cache dan data laman lain</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Hidupkan kunci skrin dalam tetapan Android<ph name="END_LINK" /></translation>
@@ -672,6 +676,7 @@ Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain s
 <translation id="452750746583162491">Semak data anda yang disegerak</translation>
 <translation id="4528638190900283934">Log masuk untuk mendapatkan ciri tambahan</translation>
 <translation id="4532845899244822526">Pilih folder</translation>
+<translation id="4543131175509360848">Tiada helaian kunci laluan</translation>
 <translation id="4547551584605870320">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> tab}other{<ph name="TAB_COUNT_MANY" /> tab, <ph name="TAB_COUNT_INCOGNITO" /> inkognito}}</translation>
 <translation id="4554077758708533499">Disambungkan menggunakan kabel USB</translation>
 <translation id="4558311620361989323">Pintasan halaman web</translation>
@@ -946,6 +951,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5869522115854928033">Kata laluan disimpan</translation>
 <translation id="587735546353481577">Untuk mengikuti laman, pergi ke laman tersebut, buka menu Chrome dan ketik Ikut.</translation>
 <translation id="5879072387416556377">Dapatkan cadangan lebih baik</translation>
+<translation id="5899667542927581604">Tiada helaian kunci laluan yang ditutup</translation>
 <translation id="5916664084637901428">Hidupkan</translation>
 <translation id="5919204609460789179">Kemas kini <ph name="PRODUCT_NAME" /> untuk memulakan penyegerakan</translation>
 <translation id="5938820472109305350">Tambah <ph name="INTEREST" /></translation>
@@ -1166,6 +1172,7 @@ Sebagai contoh, sesetengah laman web mungkin memberi respons kepada permintaan i
 <translation id="6955535239952325894">Tetapan ini dilumpuhkan pada penyemak imbas terurus</translation>
 <translation id="6963766334940102469">Padamkan penanda halaman</translation>
 <translation id="696447261358045621">Tinggalkan mod Inkognito</translation>
+<translation id="6965382102122355670">OK</translation>
 <translation id="6971862865055170158">Jangan luluskan</translation>
 <translation id="6978717888677691380">Laman yang anda sekat</translation>
 <translation id="6979737339423435258">Sepanjang masa</translation>
@@ -1324,6 +1331,7 @@ Sebagai contoh, sesetengah laman web mungkin memberi respons kepada permintaan i
 <translation id="7757787379047923882">Teks dikongsi daripada <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">Kad SD <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Tambahkan alamat</translation>
+<translation id="7766587497031415281">Lebih pilihan untuk mengosongkan data semakan imbas</translation>
 <translation id="7772032839648071052">Sahkan frasa laluan</translation>
 <translation id="7772375229873196092">Tutup <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 dan <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> lagi}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 dan <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> lagi}}</translation>
@@ -1588,6 +1596,7 @@ Sebagai contoh, sesetengah laman web mungkin memberi respons kepada permintaan i
 <translation id="9063523880881406963">Matikan Minta tapak desktop</translation>
 <translation id="9065203028668620118">Edit</translation>
 <translation id="9065383040763568503">Data tersimpan yang Chrome anggap tidak penting (misalnya tapak yang tiada tetapan yang disimpan atau yang jarang anda lawati)</translation>
+<translation id="9067341854474068781">Tiada helaian kunci laluan dibuka pada ketinggian penuh</translation>
 <translation id="906781307897697745">di <ph name="PRODUCT_NAME" /></translation>
 <translation id="9069999660519089861">Tiada halaman belum dibaca</translation>
 <translation id="9070377983101773829">Mulakan carian suara</translation>

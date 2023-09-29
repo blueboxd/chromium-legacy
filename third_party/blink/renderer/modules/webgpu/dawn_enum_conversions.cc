@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_blend_operation.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_buffer_binding_type.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_compare_function.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_compute_pass_timestamp_location.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_cull_mode.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_error_filter.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_feature_name.h"
@@ -22,7 +21,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_pipeline_statistic_name.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_primitive_topology.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_query_type.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_render_pass_timestamp_location.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_sampler_binding_type.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_stencil_operation.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_storage_texture_access.h"
@@ -208,6 +206,8 @@ WGPUTextureFormat AsDawnEnum(const V8GPUTextureFormat& webgpu_enum) {
       // Packed 32 bit formats
     case V8GPUTextureFormat::Enum::kRgb9E5Ufloat:
       return WGPUTextureFormat_RGB9E5Ufloat;
+    case V8GPUTextureFormat::Enum::kRgb10A2Uint:
+      return WGPUTextureFormat_RGB10A2Uint;
     case V8GPUTextureFormat::Enum::kRgb10A2Unorm:
       return WGPUTextureFormat_RGB10A2Unorm;
     case V8GPUTextureFormat::Enum::kRg11B10Ufloat:
@@ -420,6 +420,8 @@ const char* FromDawnEnum(WGPUTextureFormat dawn_enum) {
     // Packed 32 bit formats
     case WGPUTextureFormat_RGB9E5Ufloat:
       return "rgb9e5ufloat";
+    case WGPUTextureFormat_RGB10A2Uint:
+      return "rgb10a2uint";
     case WGPUTextureFormat_RGB10A2Unorm:
       return "rgb10a2unorm";
     case WGPUTextureFormat_RG11B10Ufloat:
@@ -840,6 +842,8 @@ WGPUVertexFormat AsDawnEnum(const V8GPUVertexFormat& webgpu_enum) {
       return WGPUVertexFormat_Sint32x3;
     case V8GPUVertexFormat::Enum::kSint32X4:
       return WGPUVertexFormat_Sint32x4;
+    case V8GPUVertexFormat::Enum::kUnorm1010102:
+      return WGPUVertexFormat_Unorm10_10_10_2;
   }
 }
 
@@ -911,26 +915,6 @@ WGPUErrorFilter AsDawnEnum(const V8GPUErrorFilter& webgpu_enum) {
       return WGPUErrorFilter_Validation;
     case V8GPUErrorFilter::Enum::kInternal:
       return WGPUErrorFilter_Internal;
-  }
-}
-
-WGPUComputePassTimestampLocation AsDawnEnum(
-    const V8GPUComputePassTimestampLocation& webgpu_enum) {
-  switch (webgpu_enum.AsEnum()) {
-    case V8GPUComputePassTimestampLocation::Enum::kBeginning:
-      return WGPUComputePassTimestampLocation_Beginning;
-    case V8GPUComputePassTimestampLocation::Enum::kEnd:
-      return WGPUComputePassTimestampLocation_End;
-  }
-}
-
-WGPURenderPassTimestampLocation AsDawnEnum(
-    const V8GPURenderPassTimestampLocation& webgpu_enum) {
-  switch (webgpu_enum.AsEnum()) {
-    case V8GPURenderPassTimestampLocation::Enum::kBeginning:
-      return WGPURenderPassTimestampLocation_Beginning;
-    case V8GPURenderPassTimestampLocation::Enum::kEnd:
-      return WGPURenderPassTimestampLocation_End;
   }
 }
 

@@ -255,7 +255,9 @@ bool IsBottomOmniboxSteadyStateEnabled() {
 BASE_FEATURE(kOnlyAccessClipboardAsync,
              "OnlyAccessClipboardAsync",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
+BASE_FEATURE(kDBVideoInSettings,
+             "DBVideoInSettings",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kDefaultBrowserTriggerCriteriaExperiment,
              "DefaultBrowserTriggerCriteriaExperiment",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -283,3 +285,7 @@ BASE_FEATURE(kBlockSimultaneousCellSelectionKillSwitch,
 BASE_FEATURE(kIOSSaveToPhotos,
              "IOSSaveToPhotos",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSettingsWillBeDismissedBugFixKillSwitch,
+             "SettingsWillBeDismissedBugFixKillSwitch",
+             base::FEATURE_ENABLED_BY_DEFAULT);

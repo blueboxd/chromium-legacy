@@ -5,10 +5,19 @@
 #ifndef CHROME_BROWSER_PRIVACY_SANDBOX_PRIVACY_SANDBOX_SETTINGS_DELEGATE_H_
 #define CHROME_BROWSER_PRIVACY_SANDBOX_PRIVACY_SANDBOX_SETTINGS_DELEGATE_H_
 
+#include <memory>
+
 #include "base/memory/raw_ptr.h"
+#include "build/build_config.h"
+#include "build/buildflag.h"
 #include "components/privacy_sandbox/privacy_sandbox_settings.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
+
+#if BUILDFLAG(IS_ANDROID)
+class WebappRegistry;
+#endif
 
 class PrivacySandboxSettingsDelegate
     : public privacy_sandbox::PrivacySandboxSettings::Delegate {
@@ -22,10 +31,40 @@ class PrivacySandboxSettingsDelegate
   bool IsIncognitoProfile() const override;
   bool HasAppropriateTopicsConsent() const override;
   bool IsSubjectToM1NoticeRestricted() const override;
+  bool IsCookieDeprecationExperimentEligible() const override;
+  bool IsCookieDeprecationExperimentCurrentlyEligible() const override;
+
+#if BUILDFLAG(IS_ANDROID)
+  void OverrideWebappRegistryForTesting(
+      std::unique_ptr<WebappRegistry> webapp_registry);
+#endif
 
  private:
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class TpcdExperimentEligibility {
+    kEligible = 0,
+    k3pCookiesBlocked = 1,
+    kHasNotSeenNotice = 2,
+    kNewUser = 3,
+    kEnterpriseUser = 4,
+    kPwaOrTwaInstalled = 5,  // Android only
+    kMaxValue = kPwaOrTwaInstalled,
+  };
+
+  TpcdExperimentEligibility GetCookieDeprecationExperimentCurrentEligibility()
+      const;
+
   bool PrivacySandboxRestrictedNoticeRequired() const;
+  bool IsSubjectToEnterprisePolicies() const;
   raw_ptr<Profile> profile_;
+  // TODO(linnan): Remove this field when
+  // `IsCookieDeprecationExperimentEligible()` consults `ExperimentManager`.
+  mutable absl::optional<bool> is_cookie_deprecation_experiment_eligible_;
+
+#if BUILDFLAG(IS_ANDROID)
+  std::unique_ptr<WebappRegistry> webapp_registry_;
+#endif
 };
 
 #endif  // CHROME_BROWSER_PRIVACY_SANDBOX_PRIVACY_SANDBOX_SETTINGS_DELEGATE_H_

@@ -37,7 +37,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/chromeos_buildflags.h"
 #include "content/browser/browser_main_loop.h"
-#include "content/browser/buildflags.h"
 #include "content/browser/first_party_sets/first_party_sets_handler_impl.h"
 #include "content/browser/network/http_cache_backend_file_operations_factory.h"
 #include "content/browser/network/socket_broker_impl.h"
@@ -65,7 +64,6 @@
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
-#include "services/network/public/cpp/thread_delegate.h"
 #include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -147,13 +145,6 @@ std::unique_ptr<network::NetworkService>& GetLocalNetworkService() {
       service;
   return service.GetOrCreateValue();
 }
-
-// If this is enabled, RestrictedCookieManagers in the network service will
-// receive messages on a high priority task queue to improve performance of sync
-// cookie calls from the renderer.
-BASE_FEATURE(kNetworkServiceCookiesHighPriorityTaskRunner,
-             "NetworkServiceCookiesHighPriorityTaskRunner",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If this feature is enabled, the Network Service will run on its own thread
 // when running in-process; otherwise it will run on the IO thread.
@@ -338,7 +329,7 @@ void CreateNetworkContextInternal(
   // This might recreate g_client if the network service needed to be restarted.
   auto* network_service = GetNetworkService();
 
-#if BUILDFLAG(USE_SOCKET_BROKER)
+#if BUILDFLAG(IS_WIN)
   // If the browser has started shutting down, it is possible that either a)
   // `g_client` was never created if shutdown started before the network service
   // was created, or b) the network service might have crashed meaning
@@ -351,7 +342,7 @@ void CreateNetworkContextInternal(
       !params->socket_broker) {
     params->socket_broker = g_client->BindSocketBroker();
   }
-#endif  // BUILDFLAG(USE_SOCKET_BROKER)
+#endif  // BUILDFLAG(IS_WIN)
 
   network_service->CreateNetworkContext(std::move(context), std::move(params));
 }
@@ -383,11 +374,6 @@ void CreateInProcessNetworkService(
   scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   if (base::FeatureList::IsEnabled(kNetworkServiceDedicatedThread)) {
     base::Thread::Options options(base::MessagePumpType::IO, 0);
-    if (base::FeatureList::IsEnabled(
-            kNetworkServiceCookiesHighPriorityTaskRunner)) {
-      options.delegate =
-          std::make_unique<network::ThreadDelegate>(options.message_pump_type);
-    }
     GetNetworkServiceDedicatedThread().StartWithOptions(std::move(options));
     task_runner = GetNetworkServiceDedicatedThread().task_runner();
   } else {
@@ -661,14 +647,10 @@ network::mojom::NetworkService* GetNetworkService() {
         } else {
           if (service_was_bound)
             LOG(ERROR) << "Network service crashed, restarting service.";
-          ServiceProcessHost::Options options;
-          options.WithDisplayName(u"Network Service");
-          if (base::FeatureList::IsEnabled(
-                  kNetworkServiceCookiesHighPriorityTaskRunner)) {
-            options.WithExtraCommandLineSwitches(
-                {network::switches::kNetworkServiceScheduler});
-          }
-          ServiceProcessHost::Launch(std::move(receiver), std::move(options));
+          ServiceProcessHost::Launch(std::move(receiver),
+                                     ServiceProcessHost::Options()
+                                         .WithDisplayName(u"Network Service")
+                                         .Pass());
         }
       } else {
         DCHECK(IsInProcessNetworkService())

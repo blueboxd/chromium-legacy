@@ -14,6 +14,7 @@
 #import "components/keyed_service/core/service_access_type.h"
 #import "components/keyed_service/ios/browser_state_dependency_manager.h"
 #import "components/network_time/network_time_tracker.h"
+#import "components/password_manager/core/browser/sharing/password_receiver_service.h"
 #import "components/prefs/pref_service.h"
 #import "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #import "components/supervised_user/core/common/buildflags.h"
@@ -31,12 +32,14 @@
 #import "ios/chrome/browser/bookmarks/model/bookmark_undo_service_factory.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_sync_service_factory.h"
-#import "ios/chrome/browser/consent_auditor/consent_auditor_factory.h"
+#import "ios/chrome/browser/consent_auditor/model/consent_auditor_factory.h"
 #import "ios/chrome/browser/favicon/favicon_service_factory.h"
 #import "ios/chrome/browser/gcm/ios_chrome_gcm_profile_service_factory.h"
 #import "ios/chrome/browser/history/history_service_factory.h"
 #import "ios/chrome/browser/metrics/google_groups_updater_service_factory.h"
 #import "ios/chrome/browser/passwords/ios_chrome_account_password_store_factory.h"
+#import "ios/chrome/browser/passwords/ios_chrome_password_receiver_service_factory.h"
+#import "ios/chrome/browser/passwords/ios_chrome_password_sender_service_factory.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
@@ -54,7 +57,7 @@
 #import "ios/chrome/browser/sync/session_sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_invalidations_service_factory.h"
 #import "ios/chrome/browser/trusted_vault/ios_trusted_vault_service_factory.h"
-#import "ios/chrome/browser/webdata_services/web_data_service_factory.h"
+#import "ios/chrome/browser/webdata_services/model/web_data_service_factory.h"
 #import "ios/chrome/common/channel_info.h"
 #import "ios/web/public/thread/web_task_traits.h"
 #import "ios/web/public/thread/web_thread.h"
@@ -83,9 +86,6 @@ std::unique_ptr<KeyedService> BuildSyncService(web::BrowserState* context) {
   ios::AboutSigninInternalsFactory::GetForBrowserState(browser_state);
 
   syncer::SyncServiceImpl::InitParams init_params;
-  // On non-iOS platforms, there are some "uninteresting" types of profiles such
-  // as guest or system profiles. There's no such thing on iOS.
-  init_params.is_regular_profile_for_uma = true;
   init_params.identity_manager =
       IdentityManagerFactory::GetForBrowserState(browser_state);
   init_params.sync_client =
@@ -127,6 +127,13 @@ std::unique_ptr<KeyedService> BuildSyncService(web::BrowserState* context) {
           device_info_sync_service->GetDeviceInfoTracker(),
           device_info_sync_service->GetLocalDeviceInfoProvider());
     }
+  }
+
+  password_manager::PasswordReceiverService* password_receiver_service =
+      IOSChromePasswordReceiverServiceFactory::GetForBrowserState(
+          browser_state);
+  if (password_receiver_service) {
+    password_receiver_service->OnSyncServiceInitialized(sync_service.get());
   }
 
   // Allow sync_preferences/ components to use SyncService.
@@ -207,6 +214,8 @@ SyncServiceFactory::SyncServiceFactory()
   DependsOn(ios::WebDataServiceFactory::GetInstance());
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(IOSChromeGCMProfileServiceFactory::GetInstance());
+  DependsOn(IOSChromePasswordReceiverServiceFactory::GetInstance());
+  DependsOn(IOSChromePasswordSenderServiceFactory::GetInstance());
   DependsOn(IOSChromePasswordStoreFactory::GetInstance());
   DependsOn(IOSChromeAccountPasswordStoreFactory::GetInstance());
   DependsOn(IOSTrustedVaultServiceFactory::GetInstance());

@@ -1003,7 +1003,7 @@ static StyleBaseData* GetBaseData(const StyleResolverState& state) {
     return nullptr;
   }
   auto* old_style = animating_element->GetComputedStyle();
-  return old_style ? old_style->BaseData().Get() : nullptr;
+  return old_style ? old_style->BaseData() : nullptr;
 }
 
 static const ComputedStyle* CachedAnimationBaseComputedStyle(
@@ -1065,7 +1065,7 @@ const ComputedStyle* StyleResolver::ResolveStyle(
 
   // Compute the base style, or reuse an existing cached base style if
   // applicable (ie., only animation has changed). This is the bulk of the
-  // style computation itself, also also where the caching for the base
+  // style computation itself, also where the caching for the base
   // computed style optimization happens.
   ApplyBaseStyle(element, style_recalc_context, style_request, state, cascade);
 
@@ -1139,12 +1139,6 @@ const ComputedStyle* StyleResolver::ResolveStyle(
   return state.TakeStyle();
 }
 
-static bool AllowsInheritance(const StyleRequest& style_request,
-                              const ComputedStyle* parent_style) {
-  // The spec disallows inheritance for ::backdrop.
-  return parent_style && style_request.pseudo_id != kPseudoIdBackdrop;
-}
-
 void StyleResolver::InitStyle(Element& element,
                               const StyleRequest& style_request,
                               const ComputedStyle& source_for_noninherited,
@@ -1193,9 +1187,13 @@ void StyleResolver::InitStyle(Element& element,
     // be propagated from shadow host to distributed node.
     if (!style_request.IsPseudoStyleRequest() && element.AssignedSlot()) {
       if (Element* parent = element.parentElement()) {
-        if (const ComputedStyle* shadow_host_style =
-                parent->GetComputedStyle()) {
-          state.StyleBuilder().SetUserModify(shadow_host_style->UserModify());
+        if (!RuntimeEnabledFeatures::
+                InheritUserModifyWithoutContenteditableEnabled() ||
+            !element.FastHasAttribute(html_names::kContenteditableAttr)) {
+          if (const ComputedStyle* shadow_host_style =
+                  parent->GetComputedStyle()) {
+            state.StyleBuilder().SetUserModify(shadow_host_style->UserModify());
+          }
         }
       }
     }
@@ -1440,12 +1438,13 @@ void StyleResolver::ApplyBaseStyleNoCache(
         style_request.pseudo_id);
   }
 
-  if (!AllowsInheritance(style_request, state.ParentStyle())) {
-    // We either have no parent, or we are ::backdrop (which does not
-    // allow inheriting from its parent), so use the initial style
-    // as the parent. Note that we need to do this before MPC lookup,
-    // so that the parent comparison (to determine if we have a hit
-    // on inherited properties) is correctly determined.
+  if (!state.ParentStyle() ||
+      (style_request.pseudo_id == kPseudoIdBackdrop &&
+       !RuntimeEnabledFeatures::BackdropInheritOriginatingEnabled())) {
+    // We have no parent so use the initial style as the parent. Note that we
+    // need to do this before MPC lookup, so that the parent comparison (to
+    // determine if we have a hit on inherited properties) is correctly
+    // determined.
     state.SetParentStyle(InitialStyleForElement());
     state.SetLayoutParentStyle(state.ParentStyle());
 
@@ -1908,8 +1907,10 @@ void StyleResolver::CollectPseudoRulesForElement(
     PseudoId pseudo_id,
     const AtomicString& view_transition_name,
     unsigned rules_to_include) {
-  collector.SetPseudoElementStyleRequest(
-      StyleRequest(pseudo_id, nullptr, view_transition_name));
+  collector.SetPseudoElementStyleRequest(StyleRequest(
+      pseudo_id,
+      /* parent_style */ nullptr,
+      /* originating_element_style */ nullptr, view_transition_name));
 
   if (rules_to_include & kUACSSRules) {
     MatchUARules(element, collector);
@@ -2104,10 +2105,19 @@ bool StyleResolver::CacheSuccess::InheritedVariablesChanged(
          builder.InheritedVariables();
 }
 
+bool StyleResolver::CacheSuccess::LineHeightChanged(
+    const ComputedStyleBuilder& builder) const {
+  if (!cached_matched_properties) {
+    return false;
+  }
+  return cached_matched_properties->computed_style->LineHeight() !=
+         builder.LineHeight();
+}
+
 bool StyleResolver::CacheSuccess::IsUsableAfterApplyInheritedOnly(
     const ComputedStyleBuilder& builder) const {
   return !EffectiveZoomChanged(builder) && !FontChanged(builder) &&
-         !InheritedVariablesChanged(builder);
+         !InheritedVariablesChanged(builder) && !LineHeightChanged(builder);
 }
 
 StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(

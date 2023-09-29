@@ -53,10 +53,6 @@ class AutofillProviderAndroidBridge {
     gfx::RectF bounds;
   };
 
-  // Informs the Java side of the bridge that the native autofill provider is
-  // being destroyed.
-  virtual void DetachNativeAutofillProvider() = 0;
-
   // Attaches the bridge to its Java counterpart.
   virtual void AttachToJavaAutofillProvider(
       JNIEnv* env,
@@ -66,9 +62,6 @@ class AutofillProviderAndroidBridge {
   virtual void StartAutofillSession(FormDataAndroid& form,
                                     const FieldInfo& field,
                                     bool has_server_predictions) = 0;
-  // TODO(crbug.com/1478934): Remove this method? It is a no-op on the Java
-  // side.
-  virtual void Reset() = 0;
 
   // Informs the Java side that the server prediction request is completed.
   virtual void OnServerPredictionQueryDone(bool success) = 0;
@@ -86,6 +79,11 @@ class AutofillProviderAndroidBridge {
 
   // Informs the Java side that the `field` has changed.
   virtual void OnFormFieldDidChange(const FieldInfo& field) = 0;
+
+  // Informs the Java side that the visibility of the fields with `indices` has
+  // changed.
+  virtual void OnFormFieldVisibilitiesDidChange(
+      base::span<const int> indices) = 0;
 
   // Informs the Java side that `field` has new `bounds`.
   // TODO(crbug.com/1478934): Make naming consistent across events, e.g.,

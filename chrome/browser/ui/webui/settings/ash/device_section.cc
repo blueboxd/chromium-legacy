@@ -17,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
+#include "chrome/browser/ui/webui/ash/settings/pages/printing/printing_section.h"
 #include "chrome/browser/ui/webui/ash/settings/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/settings/ash/device_display_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/device_keyboard_handler.h"
@@ -48,7 +49,11 @@ using ::chromeos::settings::mojom::kCustomizePenButtonsSubpagePath;
 using ::chromeos::settings::mojom::kCustomizeTabletButtonsSubpagePath;
 using ::chromeos::settings::mojom::kDeviceSectionPath;
 using ::chromeos::settings::mojom::kDisplaySubpagePath;
+using ::chromeos::settings::mojom::kEditDictionarySubpagePath;
 using ::chromeos::settings::mojom::kGraphicsTabletSubpagePath;
+using ::chromeos::settings::mojom::kInputMethodOptionsSubpagePath;
+using ::chromeos::settings::mojom::kInputSubpagePath;
+using ::chromeos::settings::mojom::kJapaneseManageUserDictionarySubpagePath;
 using ::chromeos::settings::mojom::kKeyboardSubpagePath;
 using ::chromeos::settings::mojom::kPerDeviceKeyboardRemapKeysSubpagePath;
 using ::chromeos::settings::mojom::kPerDeviceKeyboardSubpagePath;
@@ -861,12 +866,12 @@ void AddDeviceKeyboardStrings(content::WebUIDataSource* html_source) {
         IDS_SETTINGS_TOUCHPAD_SIMULATE_RIGHT_CLICK_OPTION_SEARCH);
     html_source->AddLocalizedString(
         "fKeyShiftOptionSearch",
-        IDS_SETTINGS_F_KEY_SHIFT_DROPDOWN_OPTION_LAUNCHER);
+        IDS_SETTINGS_F_KEY_SHIFT_DROPDOWN_OPTION_SEARCH);
     html_source->AddLocalizedString(
         "fKeyCtrlShiftOptionSearch",
-        IDS_SETTINGS_F_KEY_CTRL_SHIFT_DROPDOWN_OPTION_LAUNCHER);
+        IDS_SETTINGS_F_KEY_CTRL_SHIFT_DROPDOWN_OPTION_SEARCH);
     html_source->AddLocalizedString(
-        "fKeyAltOptionSearch", IDS_SETTINGS_F_KEY_ALT_DROPDOWN_OPTION_LAUNCHER);
+        "fKeyAltOptionSearch", IDS_SETTINGS_F_KEY_ALT_DROPDOWN_OPTION_SEARCH);
   }
 }
 
@@ -964,13 +969,35 @@ enum class TouchpadSensitivity {
 
 DeviceSection::DeviceSection(Profile* profile,
                              SearchTagRegistry* search_tag_registry,
+                             CupsPrintersManager* printers_manager,
                              PrefService* pref_service)
     : OsSettingsSection(profile, search_tag_registry),
-      power_subsection_(profile, search_tag_registry, pref_service),
-      storage_subsection_(profile, search_tag_registry) {
+      power_subsection_(
+          !ash::features::IsOsSettingsRevampWayfindingEnabled()
+              ? absl::make_optional<PowerSection>(profile,
+                                                  search_tag_registry,
+                                                  pref_service)
+              : absl::nullopt),
+      printing_subsection_(
+          ash::features::IsOsSettingsRevampWayfindingEnabled()
+              ? absl::make_optional<PrintingSection>(profile,
+                                                     search_tag_registry,
+                                                     printers_manager)
+              : absl::nullopt),
+      storage_subsection_(
+          !ash::features::IsOsSettingsRevampWayfindingEnabled()
+              ? absl::make_optional<StorageSection>(profile,
+                                                    search_tag_registry)
+              : absl::nullopt) {
   CHECK(profile);
   CHECK(search_tag_registry);
   CHECK(pref_service);
+  if (ash::features::IsOsSettingsRevampWayfindingEnabled()) {
+    CHECK(printing_subsection_);
+  } else {
+    CHECK(power_subsection_);
+    CHECK(storage_subsection_);
+  }
 
   SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
   updater.AddSearchTags(GetDeviceSearchConcepts());
@@ -1065,9 +1092,11 @@ void DeviceSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   AddDeviceDisplayStrings(html_source);
   AddDeviceAudioStrings(html_source);
 
-  if (!ash::features::IsOsSettingsRevampWayfindingEnabled()) {
-    power_subsection_.AddLoadTimeData(html_source);
-    storage_subsection_.AddLoadTimeData(html_source);
+  if (ash::features::IsOsSettingsRevampWayfindingEnabled()) {
+    printing_subsection_->AddLoadTimeData(html_source);
+  } else {
+    power_subsection_->AddLoadTimeData(html_source);
+    storage_subsection_->AddLoadTimeData(html_source);
   }
 }
 
@@ -1077,9 +1106,11 @@ void DeviceSection::AddHandlers(content::WebUI* web_ui) {
   web_ui->AddMessageHandler(std::make_unique<PointerHandler>());
   web_ui->AddMessageHandler(std::make_unique<StylusHandler>());
 
-  if (!ash::features::IsOsSettingsRevampWayfindingEnabled()) {
-    power_subsection_.AddHandlers(web_ui);
-    storage_subsection_.AddHandlers(web_ui);
+  if (ash::features::IsOsSettingsRevampWayfindingEnabled()) {
+    printing_subsection_->AddHandlers(web_ui);
+  } else {
+    power_subsection_->AddHandlers(web_ui);
+    storage_subsection_->AddHandlers(web_ui);
   }
 }
 
@@ -1131,6 +1162,9 @@ bool DeviceSection::LogMetric(mojom::Setting setting,
 }
 
 void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
+  const bool kIsRevampEnabled =
+      ash::features::IsOsSettingsRevampWayfindingEnabled();
+
   // Pointers.
   generator->RegisterTopLevelSubpage(
       IDS_SETTINGS_MOUSE_AND_TOUCHPAD_TITLE, mojom::Subpage::kPointers,
@@ -1158,9 +1192,8 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                             generator);
 
   const int kKeyboardTitleStringID =
-      ash::features::IsOsSettingsRevampWayfindingEnabled()
-          ? IDS_OS_SETTINGS_REVAMP_KEYBOARD_AND_INPUTS_TITLE
-          : IDS_SETTINGS_KEYBOARD_TITLE;
+      kIsRevampEnabled ? IDS_OS_SETTINGS_REVAMP_KEYBOARD_AND_INPUTS_TITLE
+                       : IDS_SETTINGS_KEYBOARD_TITLE;
   if (base::FeatureList::IsEnabled(ash::features::kInputDeviceSettingsSplit)) {
     // Per-device Keyboard.
     generator->RegisterTopLevelSubpage(kKeyboardTitleStringID,
@@ -1254,6 +1287,52 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   RegisterNestedSettingBulk(mojom::Subpage::kKeyboard, kKeyboardSettings,
                             generator);
 
+  if (kIsRevampEnabled) {
+    // Input subpage
+    generator->RegisterTopLevelSubpage(
+        IDS_OS_SETTINGS_LANGUAGES_INPUT_PAGE_TITLE_V2, mojom::Subpage::kInput,
+        mojom::SearchResultIcon::kGlobe,
+        mojom::SearchResultDefaultRank::kMedium, mojom::kInputSubpagePath);
+    static constexpr mojom::Setting kInputSubpageSettings[] = {
+        mojom::Setting::kAddInputMethod,
+        mojom::Setting::kShowEmojiSuggestions,
+        mojom::Setting::kShowInputOptionsInShelf,
+        mojom::Setting::kSpellCheck,
+    };
+    RegisterNestedSettingBulk(mojom::Subpage::kInput, kInputSubpageSettings,
+                              generator);
+
+    // Edit dictionary subpage
+    generator->RegisterNestedSubpage(
+        IDS_OS_SETTINGS_LANGUAGES_EDIT_DICTIONARY_LABEL,
+        mojom::Subpage::kEditDictionary, mojom::Subpage::kInput,
+        mojom::SearchResultIcon::kGlobe,
+        mojom::SearchResultDefaultRank::kMedium,
+        mojom::kEditDictionarySubpagePath);
+
+    // Japanese Manage User Dictionary subpage
+    generator->RegisterNestedSubpage(
+        IDS_OS_SETTINGS_LANGUAGES_JAPANESE_MANAGE_USER_DICTIONARY_LABEL,
+        mojom::Subpage::kJapaneseManageUserDictionary, mojom::Subpage::kInput,
+        mojom::SearchResultIcon::kGlobe,
+        mojom::SearchResultDefaultRank::kMedium,
+        mojom::kJapaneseManageUserDictionarySubpagePath);
+
+    // Input method options subpage
+    generator->RegisterNestedSubpage(
+        IDS_SETTINGS_LANGUAGES_INPUT_METHOD_OPTIONS_TITLE,
+        mojom::Subpage::kInputMethodOptions, mojom::Subpage::kInput,
+        mojom::SearchResultIcon::kGlobe,
+        mojom::SearchResultDefaultRank::kMedium,
+        mojom::kInputMethodOptionsSubpagePath);
+    static constexpr mojom::Setting kInputMethodOptionsSubpageSettings[] = {
+        mojom::Setting::kShowPKAutoCorrection,
+        mojom::Setting::kShowVKAutoCorrection,
+    };
+    RegisterNestedSettingBulk(mojom::Subpage::kInputMethodOptions,
+                              kInputMethodOptionsSubpageSettings, generator);
+  }
+
   // Stylus.
   generator->RegisterTopLevelSubpage(
       IDS_SETTINGS_STYLUS_TITLE, mojom::Subpage::kStylus,
@@ -1290,12 +1369,15 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   RegisterNestedSettingBulk(mojom::Subpage::kDisplay, kDisplaySettings,
                             generator);
 
-  if (!ash::features::IsOsSettingsRevampWayfindingEnabled()) {
+  if (ash::features::IsOsSettingsRevampWayfindingEnabled()) {
+    // Printing.
+    printing_subsection_->RegisterHierarchy(generator);
+  } else {
     // Power.
-    power_subsection_.RegisterHierarchy(generator);
+    power_subsection_->RegisterHierarchy(generator);
 
     // Storage.
-    storage_subsection_.RegisterHierarchy(generator);
+    storage_subsection_->RegisterHierarchy(generator);
   }
 
   // Audio.
@@ -1583,6 +1665,8 @@ void DeviceSection::AddDevicePointersStrings(
       {"cursorAccelerationLabel", IDS_SETTINGS_CURSOR_ACCELERATION_LABEL},
       {"mouseScrollAccelerationLabel",
        IDS_SETTINGS_MOUSE_SCROLL_ACCELERATION_LABEL},
+      {"mouseControlledScrollingLabel",
+       IDS_SETTINGS_MOUSE_CONTROLLED_SCROLLING_LABEL},
       {"pointingStickAccelerationLabel",
        IDS_SETTINGS_POINTING_STICK_ACCELERATION_LABEL},
       {"touchpadAccelerationLabel",
@@ -1629,8 +1713,8 @@ void DeviceSection::AddDevicePointersStrings(
   html_source->AddString("naturalScrollLearnMoreLink",
                          GetHelpUrlWithBoard(chrome::kNaturalScrollHelpURL));
   html_source->AddString(
-      "scrollAccelerationLearnMoreLink",
-      GetHelpUrlWithBoard(chrome::kScrollAccelerationHelpURL));
+      "controlledScrollingLearnMoreLink",
+      GetHelpUrlWithBoard(chrome::kControlledScrollingHelpURL));
   html_source->AddString("hapticFeedbackLearnMoreLink",
                          GetHelpUrlWithBoard(chrome::kHapticFeedbackHelpURL));
 
@@ -1661,8 +1745,11 @@ void DeviceSection::AddCustomizeButtonsPageStrings(
        IDS_SETTINGS_CUSTOMIZE_BUTTONS_DIALOG_SAVE},
       {"buttonRenamingDialogTitle",
        IDS_SETTINGS_CUSTOMIZE_BUTTONS_RENAMING_DIALOG_TITLE},
+      {"customizeButtonSubpageDescription",
+       IDS_SETTINGS_CUSTOMIZE_BUTTONS_SUBPAGE_DESCRIPTION},
       {"customizeMouseButtonsTitle",
        IDS_SETTINGS_CUSTOMIZE_MOUSE_BUTTONS_TITLE},
+      {"keyCombinationDialogTitle", IDS_SETTINGS_KEY_COMBINATION_DIALOG_TITLE},
       {"keyCombinationOptionLabel", IDS_SETTINGS_KEY_COMBINATION_OPTION_LABEL},
       {"noRemappingOptionLabel", IDS_SETTINGS_NO_REMAPPING_OPTION_LABEL},
   };

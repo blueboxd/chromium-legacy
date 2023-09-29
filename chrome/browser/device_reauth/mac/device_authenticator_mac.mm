@@ -5,6 +5,7 @@
 #include "chrome/browser/device_reauth/mac/device_authenticator_mac.h"
 
 #include "base/functional/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "chrome/browser/browser_process.h"
@@ -21,19 +22,13 @@
 
 DeviceAuthenticatorMac::DeviceAuthenticatorMac(
     std::unique_ptr<AuthenticatorMacInterface> authenticator,
-    DeviceAuthenticatorProxy* proxy)
-    : ChromeDeviceAuthenticatorCommon(proxy),
+    DeviceAuthenticatorProxy* proxy,
+    const device_reauth::DeviceAuthParams& params)
+    : ChromeDeviceAuthenticatorCommon(proxy,
+                                      params.GetAuthenticationValidityPeriod()),
       authenticator_(std::move(authenticator)) {}
 
 DeviceAuthenticatorMac::~DeviceAuthenticatorMac() = default;
-
-// static
-scoped_refptr<DeviceAuthenticatorMac> DeviceAuthenticatorMac::CreateForTesting(
-    std::unique_ptr<AuthenticatorMacInterface> authenticator,
-    DeviceAuthenticatorProxy* proxy) {
-  return base::WrapRefCounted(
-      new DeviceAuthenticatorMac(std::move(authenticator), proxy));
-}
 
 bool DeviceAuthenticatorMac::CanAuthenticateWithBiometrics() {
   bool is_available = authenticator_->CheckIfBiometricsAvailable()
@@ -65,14 +60,7 @@ bool DeviceAuthenticatorMac::CanAuthenticateWithBiometricOrScreenLock() {
   return authenticator_->CheckIfBiometricsOrScreenLockAvailable();
 }
 
-void DeviceAuthenticatorMac::Authenticate(
-    device_reauth::DeviceAuthRequester requester,
-    AuthenticateCallback callback,
-    bool use_last_valid_auth) {
-  NOTIMPLEMENTED();
-}
-
-void DeviceAuthenticatorMac::Cancel(device_reauth::DeviceAuthRequester) {
+void DeviceAuthenticatorMac::Cancel() {
   touch_id_auth_context_ = nullptr;
   if (callback_) {
     // No code should be run after the callback as the callback could already be

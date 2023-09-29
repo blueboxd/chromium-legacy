@@ -29,8 +29,8 @@ class TrackingProtectionOnboarding : public KeyedService {
   };
 
   enum class NoticeAction {
-    // No Action taken - notice destroyed due to other reasons.
-    kNone = 0,
+    // Other action taken - notice dismissed due to other actions.
+    kOther = 0,
     // Using the GotIt button.
     kGotIt = 1,
     // Using the Settings button.
@@ -47,6 +47,8 @@ class TrackingProtectionOnboarding : public KeyedService {
     // Fired when a profile is onboarded (shown the TrackingProtection
     // onboarding notice)
     virtual void OnTrackingProtectionOnboarded() {}
+    // Fired when the ShouldSHowNotice is updated (to True or False).
+    virtual void OnShouldShowNoticeUpdated() {}
   };
 
   explicit TrackingProtectionOnboarding(PrefService* pref_service);
@@ -58,6 +60,10 @@ class TrackingProtectionOnboarding : public KeyedService {
   // To be called by the Mode B experiment service to indicate that the profile
   // is eligible for onboarding.
   void MaybeMarkEligible();
+
+  // To be called by the Mode B experiment service to indicate that the profile
+  // is no longer eligible for onboarding.
+  void MaybeMarkIneligible();
 
   // Indicates the onboarding status for the user. Return value is the enum
   // defined above.
@@ -76,6 +82,8 @@ class TrackingProtectionOnboarding : public KeyedService {
  private:
   // Called when the underlying onboarding pref is changed.
   virtual void OnOnboardingPrefChanged() const;
+  // Called when the notice has been acked.
+  virtual void OnOnboardingAckedChanged() const;
   base::ObserverList<Observer>::Unchecked observers_;
   raw_ptr<PrefService> pref_service_;
   PrefChangeRegistrar pref_change_registrar_;

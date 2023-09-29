@@ -122,6 +122,15 @@ builder.
   * [`//build/config/android/.+`](https://cs.chromium.org/chromium/src/build/config/android/)
   * exclude: [`//components/cronet/ios/.+`](https://cs.chromium.org/chromium/src/components/cronet/ios/)
 
+* [android-cronet-x86-dbg-lollipop-tests](https://ci.chromium.org/p/chromium/builders/try/android-cronet-x86-dbg-lollipop-tests) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-cronet-x86-dbg-lollipop-tests""))
+
+  Location filters:
+  * [`//components/cronet/.+`](https://cs.chromium.org/chromium/src/components/cronet/)
+  * [`//components/grpc_support/.+`](https://cs.chromium.org/chromium/src/components/grpc_support/)
+  * [`//build/android/.+`](https://cs.chromium.org/chromium/src/build/android/)
+  * [`//build/config/android/.+`](https://cs.chromium.org/chromium/src/build/config/android/)
+  * exclude: [`//components/cronet/ios/.+`](https://cs.chromium.org/chromium/src/components/cronet/ios/)
+
 * [android-pie-arm64-dbg](https://ci.chromium.org/p/chromium/builders/try/android-pie-arm64-dbg) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-pie-arm64-dbg""))
 
   Location filters:
@@ -585,17 +594,11 @@ as required builders.
 * [android-12-x64-dual-coverage-exp-rel](https://ci.chromium.org/p/chromium/builders/try/android-12-x64-dual-coverage-exp-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-12-x64-dual-coverage-exp-rel""))
   * Experiment percentage: 3.0
 
-* [android-12-x64-siso-rel](https://ci.chromium.org/p/chromium/builders/try/android-12-x64-siso-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-12-x64-siso-rel""))
-  * Experiment percentage: 10.0
-
 * [android-arm64-siso-rel](https://ci.chromium.org/p/chromium/builders/try/android-arm64-siso-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-arm64-siso-rel""))
-  * Experiment percentage: 20.0
+  * Experiment percentage: 10.0
 
 * [android-nougat-x86-dual-coverage-exp-rel](https://ci.chromium.org/p/chromium/builders/try/android-nougat-x86-dual-coverage-exp-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-nougat-x86-dual-coverage-exp-rel""))
   * Experiment percentage: 3.0
-
-* [android-nougat-x86-siso-rel](https://ci.chromium.org/p/chromium/builders/try/android-nougat-x86-siso-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-nougat-x86-siso-rel""))
-  * Experiment percentage: 20.0
 
 * [chromeos-amd64-generic-siso-rel](https://ci.chromium.org/p/chromium/builders/try/chromeos-amd64-generic-siso-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""chromeos-amd64-generic-siso-rel""))
   * Experiment percentage: 0.01
@@ -622,26 +625,29 @@ as required builders.
   * [`//tools/clang/scripts/update.py`](https://cs.chromium.org/search?q=+file:tools/clang/scripts/update.py)
   * [`//ui/gl/features.gni`](https://cs.chromium.org/search?q=+file:ui/gl/features.gni)
 
-* [fuchsia-x64-cast-receiver-siso-rel](https://ci.chromium.org/p/chromium/builders/try/fuchsia-x64-cast-receiver-siso-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""fuchsia-x64-cast-receiver-siso-rel""))
-  * Experiment percentage: 20.0
+* [ios-simulator-siso](https://ci.chromium.org/p/chromium/builders/try/ios-simulator-siso) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""ios-simulator-siso""))
+  * Experiment percentage: 10.0
 
 * [linux-chromeos-siso-rel](https://ci.chromium.org/p/chromium/builders/try/linux-chromeos-siso-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux-chromeos-siso-rel""))
-  * Experiment percentage: 20.0
+  * Experiment percentage: 10.0
 
 * [linux-lacros-siso-rel](https://ci.chromium.org/p/chromium/builders/try/linux-lacros-siso-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux-lacros-siso-rel""))
-  * Experiment percentage: 20.0
+  * Experiment percentage: 10.0
 
 * [linux-siso-rel](https://ci.chromium.org/p/chromium/builders/try/linux-siso-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux-siso-rel""))
-  * Experiment percentage: 20.0
+  * Experiment percentage: 10.0
 
 * [linux-wayland-siso-rel](https://ci.chromium.org/p/chromium/builders/try/linux-wayland-siso-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux-wayland-siso-rel""))
-  * Experiment percentage: 20.0
+  * Experiment percentage: 10.0
 
 * [linux_chromium_asan_siso_rel_ng](https://ci.chromium.org/p/chromium/builders/try/linux_chromium_asan_siso_rel_ng) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux_chromium_asan_siso_rel_ng""))
-  * Experiment percentage: 20.0
+  * Experiment percentage: 10.0
 
 * [linux_chromium_tsan_siso_rel_ng](https://ci.chromium.org/p/chromium/builders/try/linux_chromium_tsan_siso_rel_ng) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux_chromium_tsan_siso_rel_ng""))
-  * Experiment percentage: 20.0
+  * Experiment percentage: 10.0
+
+* [mac-siso-rel](https://ci.chromium.org/p/chromium/builders/try/mac-siso-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""mac-siso-rel""))
+  * Experiment percentage: 10.0
 
 * [mac13-arm64-rel](https://ci.chromium.org/p/chromium/builders/try/mac13-arm64-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""mac13-arm64-rel""))
   * Experiment percentage: 100.0

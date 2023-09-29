@@ -45,6 +45,7 @@
 #include "content/browser/indexed_db/indexed_db_bucket_context.h"
 #include "content/browser/indexed_db/indexed_db_bucket_context_handle.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
+#include "content/browser/indexed_db/indexed_db_client_state_checker_wrapper.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_data_format_version.h"
@@ -54,6 +55,7 @@
 #include "content/browser/indexed_db/indexed_db_reporting.h"
 #include "content/browser/indexed_db/indexed_db_task_helper.h"
 #include "content/browser/indexed_db/indexed_db_tombstone_sweeper.h"
+#include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
@@ -170,13 +172,10 @@ std::tuple<bool, leveldb::Status> AreSchemasKnown(
 
 IndexedDBFactory::IndexedDBFactory(
     IndexedDBContextImpl* context,
-    IndexedDBClassFactory* indexed_db_class_factory,
     base::Clock* clock)
     : context_(context),
-      class_factory_(indexed_db_class_factory),
       clock_(clock) {
   DCHECK(context);
-  DCHECK(indexed_db_class_factory);
   DCHECK(clock);
   base::trace_event::MemoryDumpManager::GetInstance()
       ->RegisterDumpProviderWithSequencedTaskRunner(
@@ -269,18 +268,9 @@ void IndexedDBFactory::Open(
                                        std::move(client_state_checker));
     return;
   }
-  std::unique_ptr<IndexedDBDatabase> database =
-      class_factory_->CreateIndexedDBDatabase(
-          name, *bucket_context_handle.bucket_context(),
-          std::move(unique_identifier));
-  if (!database.get()) {
-    error = IndexedDBDatabaseError(
-        blink::mojom::IDBException::kUnknownError,
-        u"Internal error creating database backend for indexedDB.open.");
-    connection->factory_client->OnError(error);
-    return;
-  }
-
+  auto database = std::make_unique<IndexedDBDatabase>(
+      name, *bucket_context_handle.bucket_context(),
+      std::move(unique_identifier));
   // The database must be added before the schedule call, as the
   // CreateDatabaseDeleteClosure can be called synchronously.
   auto* database_ptr = database.get();
@@ -351,17 +341,9 @@ void IndexedDBFactory::DeleteDatabase(
     return;
   }
 
-  std::unique_ptr<IndexedDBDatabase> database =
-      class_factory_->CreateIndexedDBDatabase(
-          name, *bucket_context_handle.bucket_context(), unique_identifier);
-  if (!database.get()) {
-    error = IndexedDBDatabaseError(blink::mojom::IDBException::kUnknownError,
-                                   u"Internal error creating database backend "
-                                   u"for indexedDB.deleteDatabase.");
-    factory_client->OnError(error);
-    return;
-  }
-
+  auto database = std::make_unique<IndexedDBDatabase>(
+      name, *bucket_context_handle.bucket_context(),
+      std::move(unique_identifier));
   base::WeakPtr<IndexedDBDatabase> database_ptr =
       bucket_context_handle->AddDatabase(name, std::move(database))
           ->AsWeakPtr();
@@ -412,7 +394,7 @@ void IndexedDBFactory::HandleBackingStoreCorruption(
   const base::FilePath file_path =
       path_base.Append(indexed_db::GetLevelDBFileName(bucket_locator));
   leveldb::Status s =
-      class_factory_->leveldb_factory().DestroyLevelDB(file_path);
+      IndexedDBClassFactory::Get()->leveldb_factory().DestroyLevelDB(file_path);
   DLOG_IF(ERROR, !s.ok()) << "Unable to delete backing store: " << s.ToString();
 }
 
@@ -751,12 +733,27 @@ IndexedDBFactory::GetOrCreateBucketContext(const storage::BucketInfo& bucket,
   bucket_delegate.for_each_bucket_context = base::BindRepeating(
       &IndexedDBFactory::ForEachBucketContext, weak_factory_.GetWeakPtr());
 
+  mojo::PendingRemote<storage::mojom::BlobStorageContext> blob_storage_context;
+  // May be null in unit tests.
+  if (context_->blob_storage_context()) {
+    context_->blob_storage_context()->Clone(
+        blob_storage_context.InitWithNewPipeAndPassReceiver());
+  }
+
+  mojo::PendingRemote<storage::mojom::FileSystemAccessContext> fsa_context;
+  // May be null in unit tests.
+  if (context_->file_system_access_context()) {
+    context_->file_system_access_context()->Clone(
+        fsa_context.InitWithNewPipeAndPassReceiver());
+  }
+
   auto bucket_context = std::make_unique<IndexedDBBucketContext>(
       bucket,
       /*persist_for_incognito=*/is_incognito_and_in_memory, clock_,
-      &class_factory_->transactional_leveldb_factory(), std::move(lock_manager),
-      std::move(bucket_delegate), std::move(backing_store),
-      context_->quota_manager_proxy(), for_each_bucket_context_);
+      std::move(lock_manager), std::move(bucket_delegate),
+      std::move(backing_store), context_->quota_manager_proxy(),
+      context_->IOTaskRunner(), std::move(blob_storage_context),
+      std::move(fsa_context), for_each_bucket_context_);
 
   it = bucket_contexts_.emplace(bucket_locator.id, std::move(bucket_context))
            .first;
@@ -767,23 +764,18 @@ IndexedDBFactory::GetOrCreateBucketContext(const storage::BucketInfo& bucket,
 
 std::unique_ptr<IndexedDBBackingStore> IndexedDBFactory::CreateBackingStore(
     IndexedDBBackingStore::Mode backing_store_mode,
-    TransactionalLevelDBFactory* transactional_leveldb_factory,
     const storage::BucketLocator& bucket_locator,
     const base::FilePath& blob_path,
     std::unique_ptr<TransactionalLevelDBDatabase> db,
-    storage::mojom::BlobStorageContext* blob_storage_context,
-    storage::mojom::FileSystemAccessContext* file_system_access_context,
     std::unique_ptr<storage::FilesystemProxy> filesystem_proxy,
     IndexedDBBackingStore::BlobFilesCleanedCallback blob_files_cleaned,
     IndexedDBBackingStore::ReportOutstandingBlobsCallback
         report_outstanding_blobs,
     scoped_refptr<base::SequencedTaskRunner> idb_task_runner) {
   return std::make_unique<IndexedDBBackingStore>(
-      backing_store_mode, transactional_leveldb_factory, bucket_locator,
-      blob_path, std::move(db), blob_storage_context,
-      file_system_access_context, std::move(filesystem_proxy),
-      std::move(blob_files_cleaned), std::move(report_outstanding_blobs),
-      std::move(idb_task_runner));
+      backing_store_mode, bucket_locator, blob_path, std::move(db),
+      std::move(filesystem_proxy), std::move(blob_files_cleaned),
+      std::move(report_outstanding_blobs), std::move(idb_task_runner));
 }
 std::tuple<std::unique_ptr<IndexedDBBackingStore>,
            leveldb::Status,
@@ -830,7 +822,8 @@ IndexedDBFactory::OpenAndVerifyIndexedDBBackingStore(
           {"IndexedDB (database was corrupt): ", corruption_message});
       // This is a special case where we want to make sure the database is
       // deleted, so we try to delete again.
-      status = class_factory_->leveldb_factory().DestroyLevelDB(database_path);
+      status = IndexedDBClassFactory::Get()->leveldb_factory().DestroyLevelDB(
+          database_path);
 
       if (UNLIKELY(!status.ok())) {
         LOG(ERROR) << "Unable to delete backing store: " << status.ToString();
@@ -848,7 +841,7 @@ IndexedDBFactory::OpenAndVerifyIndexedDBBackingStore(
     size_t write_buffer_size = leveldb_env::WriteBufferSize(
         base::SysInfo::AmountOfTotalDiskSpace(database_path));
     std::tie(database_state, status, is_disk_full) =
-        class_factory_->leveldb_factory().OpenLevelDBState(
+        IndexedDBClassFactory::Get()->leveldb_factory().OpenLevelDBState(
             database_path, create_if_missing, write_buffer_size);
     if (UNLIKELY(!status.ok())) {
       if (!status.IsNotFound()) {
@@ -876,10 +869,12 @@ IndexedDBFactory::OpenAndVerifyIndexedDBBackingStore(
 
   // Create the TransactionalLevelDBDatabase wrapper.
   std::unique_ptr<TransactionalLevelDBDatabase> database =
-      class_factory_->transactional_leveldb_factory().CreateLevelDBDatabase(
-          std::move(database_state), std::move(scopes),
-          context_->IDBTaskRunner(),
-          TransactionalLevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase);
+      IndexedDBClassFactory::Get()
+          ->transactional_leveldb_factory()
+          .CreateLevelDBDatabase(std::move(database_state), std::move(scopes),
+                                 context_->IDBTaskRunner(),
+                                 TransactionalLevelDBDatabase::
+                                     kDefaultMaxOpenIteratorsPerDatabase);
 
   bool are_schemas_known = false;
   std::tie(are_schemas_known, status) = AreSchemasKnown(database.get());
@@ -908,9 +903,7 @@ IndexedDBFactory::OpenAndVerifyIndexedDBBackingStore(
       is_incognito_and_in_memory ? IndexedDBBackingStore::Mode::kInMemory
                                  : IndexedDBBackingStore::Mode::kOnDisk;
   std::unique_ptr<IndexedDBBackingStore> backing_store = CreateBackingStore(
-      backing_store_mode, &class_factory_->transactional_leveldb_factory(),
-      bucket_locator, blob_path, std::move(database),
-      context_->blob_storage_context(), context_->file_system_access_context(),
+      backing_store_mode, bucket_locator, blob_path, std::move(database),
       std::move(filesystem_proxy),
       base::BindRepeating(&IndexedDBFactory::BlobFilesCleaned,
                           weak_factory_.GetWeakPtr(), bucket_locator),

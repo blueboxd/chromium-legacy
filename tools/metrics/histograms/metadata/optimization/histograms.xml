@@ -33,6 +33,11 @@ chromium-metrics-reviews@google.com.
   <variant name="Unknown" summary="Unknown"/>
 </variants>
 
+<variants name="ModelExecutionFeature">
+  <variant name="Unknown" summary="Unknown"/>
+  <variant name="WallpaperSearch" summary="Wallpaper search"/>
+</variants>
+
 <variants name="OptimizationTarget">
   <variant name="AutofillFieldTypeClassification"
       summary="Classifies autofill field types"/>
@@ -190,6 +195,16 @@ chromium-metrics-reviews@google.com.
   <variant name="PageNavigation" summary="Page navigation"/>
 </variants>
 
+<histogram name="OptimizationGuide.AccessTokenHelper.Result"
+    enum="OptimizationGuideAccessTokenResult" expires_after="M121">
+  <owner>rajendrant@chromium.org</owner>
+  <owner>sophiechang@google.com</owner>
+  <summary>
+    Records the result of an OAuth access token request. Recorded every time a
+    request was made for allowed request contexts for on-demand hints.
+  </summary>
+</histogram>
+
 <histogram name="OptimizationGuide.ApplyDecision.{OptimizationType}"
     enum="OptimizationGuideOptimizationTypeDecision" expires_after="2024-03-10">
   <owner>sophiechang@chromium.org</owner>
@@ -247,7 +262,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult"
     enum="OptimizationGuideHintCacheLevelDBStoreLoadMetadataResult"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -269,6 +284,11 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="OptimizationGuide.HintsFetcher.GetHintsRequest.ActiveRequestCanceled.{RequestContext}"
     units="counts" expires_after="2024-03-10">
+  <obsolete>
+    Recorded as RequestCanceled in
+    OptimizationGuide.HintsFetcher.GetHintsRequest.RequestStatus.* as of
+    2023-09-14.
+  </obsolete>
   <owner>sophiechang@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <summary>
@@ -347,6 +367,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="OptimizationGuide.HintsFetcher.GetHintsRequest.RequestStatus.{RequestContext}"
+    enum="OptimizationGuideFetcherRequestStatus" expires_after="2024-03-10">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>sophiechang@chromium.org</owner>
+  <summary>
+    The status of making a request using {RequestContext} of the
+    OptmizationGuide HintsFetcher. This includes whether a network request was
+    actually sent or not.
+  </summary>
+  <token key="RequestContext" variants="RequestContext"/>
+</histogram>
+
 <histogram name="OptimizationGuide.HintsFetcher.GetHintsRequest.Status"
     enum="HttpResponseCode" expires_after="2024-02-11">
   <owner>mcrouse@chromium.org</owner>
@@ -358,7 +391,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.HintsFetcher.GetHintsRequest.UrlCount"
-    units="total url count" expires_after="2024-01-14">
+    units="total url count" expires_after="2024-03-17">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -368,8 +401,11 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.HintsFetcher.RequestStatus.{RequestContext}"
-    enum="OptimizationGuideHintsFetcherRequestStatus"
-    expires_after="2024-03-10">
+    enum="OptimizationGuideFetcherRequestStatus" expires_after="2024-03-10">
+  <obsolete>
+    Renamed to OptimizationGuide.HintsFetcher.GetHintsRequest.RequestStatus.* as
+    of 2023-09-14.
+  </obsolete>
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -430,7 +466,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="OptimizationGuide.HintsManager.RaceNavigationFetchAttemptStatus"
     enum="OptimizationGuideRaceNavigationFetchAttemptStatus"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -459,6 +495,52 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records whether the metadata fetch validation received the hints correctly.
     Recorded on iOS when the mainframe navigation commits.
+  </summary>
+</histogram>
+
+<histogram
+    name="OptimizationGuide.ModelExecutionFetcher.FetchLatency.{ModelExecutionFeature}"
+    units="ms" expires_after="2024-03-10">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>rajendrant@chromium.org</owner>
+  <summary>
+    The duration of a request to fetch model execution from the remote
+    Optimization Guide Service starts until it completes. Recorded every time
+    model execution results are fetched and parsed successfully.
+  </summary>
+  <token key="ModelExecutionFeature" variants="ModelExecutionFeature"/>
+</histogram>
+
+<histogram name="OptimizationGuide.ModelExecutionFetcher.NetErrorCode"
+    enum="NetErrorCodes" expires_after="2024-03-10">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>rajendrant@chromium.org</owner>
+  <summary>
+    Net error codes for each model execution request to the Optimization Guide
+    Service, recorded on success and failure.
+  </summary>
+</histogram>
+
+<histogram
+    name="OptimizationGuide.ModelExecutionFetcher.RequestStatus.{ModelExecutionFeature}"
+    enum="OptimizationGuideFetcherRequestStatus" expires_after="2024-03-10">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>rajendrant@chromium.org</owner>
+  <summary>
+    The status of making a model execution request for {ModelExecutionFeature}
+    to the Optmization Guide Service. This includes whether a network request
+    was actually sent or not.
+  </summary>
+  <token key="ModelExecutionFeature" variants="ModelExecutionFeature"/>
+</histogram>
+
+<histogram name="OptimizationGuide.ModelExecutionFetcher.Status"
+    enum="HttpResponseCode" expires_after="2024-03-10">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>rajendrant@chromium.org</owner>
+  <summary>
+    The HTTP response code for each model execution request to the Optimization
+    Guide Service, recorded on success and failure.
   </summary>
 </histogram>
 
@@ -673,7 +755,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PageContentAnnotations.AnnotateVisitResultCached"
-    enum="BooleanCacheHit" expires_after="2024-01-14">
+    enum="BooleanCacheHit" expires_after="2024-03-17">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -724,7 +806,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PageContentAnnotations.GoogleSearchMetadataExtracted"
-    enum="Boolean" expires_after="2024-01-21">
+    enum="Boolean" expires_after="2024-03-24">
   <owner>sophiechang@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -760,7 +842,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PageContentAnnotations.SalientImageAvailability"
-    enum="OptimizationGuideSalientImageAvailability" expires_after="2024-01-14">
+    enum="OptimizationGuideSalientImageAvailability" expires_after="2024-03-17">
   <owner>tbansal@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>Records the availability of salient images on page load.</summary>
@@ -941,7 +1023,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PageContentAnnotationsService.VisibilityScoreOfGoogleSRP"
-    units="score" expires_after="2024-01-14">
+    units="score" expires_after="2024-03-17">
   <owner>robertogden@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -1309,7 +1391,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PredictionModelFetcher.GetModelsResponse.NetErrorCode"
-    enum="NetErrorCodes" expires_after="2024-01-21">
+    enum="NetErrorCodes" expires_after="2024-03-24">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -1339,7 +1421,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PredictionModelFetcher.GetModelsResponse.Status"
-    enum="HttpResponseCode" expires_after="2024-01-21">
+    enum="HttpResponseCode" expires_after="2024-03-24">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -1480,7 +1562,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.ProcessHintsResult"
-    enum="OptimizationGuideProcessHintsResult" expires_after="2024-01-14">
+    enum="OptimizationGuideProcessHintsResult" expires_after="2024-03-17">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>

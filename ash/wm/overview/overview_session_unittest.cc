@@ -25,6 +25,7 @@
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view_test_api.h"
@@ -76,22 +77,19 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "base/containers/contains.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
-#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/to_vector.h"
 #include "base/time/time.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/wm/features.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/window_types.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -111,7 +109,6 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/gfx/geometry/insets_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/transform_util.h"
@@ -2006,9 +2003,9 @@ TEST_P(OverviewSessionTest, ExitOverviewWhenAllGridsEmpty) {
   auto* item2 = GetOverviewItemForWindow(window2);
   ASSERT_TRUE(item1 && item2);
 
-  // Close |item2|. Verify that we are still in overview mode because |window1|
+  // Close `item2`. Verify that we are still in overview mode because `window1`
   // is still open. All the grids should not have a no windows widget.
-  item2->CloseWindow();
+  item2->CloseWindows();
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(GetOverviewSession());
   ASSERT_EQ(3u, grids.size());
@@ -2018,9 +2015,9 @@ TEST_P(OverviewSessionTest, ExitOverviewWhenAllGridsEmpty) {
   for (auto& grid : grids)
     EXPECT_FALSE(grid->no_windows_widget());
 
-  // Close |item1|. Verify that since no windows are open, we exit overview
+  // Close `item1`. Verify that since no windows are open, we exit overview
   // mode.
-  item1->CloseWindow();
+  item1->CloseWindows();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetOverviewSession());
 }
@@ -2466,15 +2463,16 @@ TEST_P(OverviewSessionTest, OverviewItemTitleCloseVisibilityOnDrag) {
   base::RunLoop().RunUntilIdle();
 
   if (chromeos::features::IsJellyEnabled()) {
-    // When Jellyroll is enabled, we show the title and hide the close button
-    // only for the overview item being dragged.
-    EXPECT_EQ(1.f, GetTitlebarOpacity(item1));
+    // When Jellyroll is enabled, the title is always shown and the layer is
+    // created only after the drag has started moving.
+    EXPECT_TRUE(GetCloseButton(item1)->layer());
     EXPECT_EQ(0.f, GetCloseButtonOpacity(item1));
   } else {
     EXPECT_EQ(0.f, GetTitlebarOpacity(item1));
     EXPECT_EQ(1.f, GetCloseButtonOpacity(item1));
+    EXPECT_EQ(1.f, GetTitlebarOpacity(item2));
   }
-  EXPECT_EQ(1.f, GetTitlebarOpacity(item2));
+
   EXPECT_EQ(0.f, GetCloseButtonOpacity(item2));
 
   // Drag |item1| in a way so that |window1| does not get activated (drags
@@ -3168,11 +3166,13 @@ TEST_P(OverviewSessionTest, FadeIn) {
   const gfx::Rect bounds = gfx::ToEnclosedRect(item->target_bounds());
   EXPECT_TRUE(GetGridBounds().Contains(bounds));
 
-  // Header is expected to be shown immediately.
-  // Header is expected to be shown immediately.
-  EXPECT_EQ(
-      1.0f,
-      item->overview_item_view()->header_view()->layer()->GetTargetOpacity());
+  // Header is expected to be shown immediately without Jelly. With Jelly, the
+  // header isn't painted to layer until dragged.
+  if (!chromeos::features::IsJellyrollEnabled()) {
+    EXPECT_EQ(
+        1.0f,
+        item->overview_item_view()->header_view()->layer()->GetTargetOpacity());
+  }
 
   EXPECT_EQ(OverviewEnterExitType::kFadeInEnter,
             GetOverviewSession()->enter_exit_overview_type());
@@ -3365,7 +3365,7 @@ TEST_P(OverviewSessionTest, ClosingTransientTree) {
 
   auto* item = GetOverviewItemForWindow(window);
   ASSERT_TRUE(item);
-  item->CloseWindow();
+  item->CloseWindows();
 
   // `NativeWidgetAura::Close()` fires a post task.
   base::RunLoop().RunUntilIdle();
@@ -5930,8 +5930,8 @@ TEST_P(ContinuousOverviewAnimationTest, WindowSizesAndOpacities) {
   // Confirm the opacity of minimized windows is not 100%.
   float opacity = GetOverviewItemForWindow(minimized_window.get())
                       ->GetLeafItemForWindow(minimized_window.get())
-                      ->overview_item_view()
-                      ->layer()
+                      ->item_widget()
+                      ->GetLayer()
                       ->opacity();
   EXPECT_NE(opacity, 1.f);
   EXPECT_NE(opacity, 0.f);
@@ -5999,9 +5999,8 @@ TEST_P(ContinuousOverviewAnimationTest, WindowCornerRadiiAndShadows) {
   EXPECT_FALSE(HasRoundedCorner(active_item));
   EXPECT_TRUE(HasRoundedCorner(minimized_item));
 
-  // If a window is minimized, it should hide its shadows until the enter
-  // animation ends. Otherwise, retain its shadow the entire time.
-  EXPECT_FALSE(GetShadowBounds(active_item).IsEmpty());
+  // Shadows are hidden until the continuous swipe is over.
+  EXPECT_TRUE(GetShadowBounds(active_item).IsEmpty());
   EXPECT_TRUE(GetShadowBounds(minimized_item).IsEmpty());
 
   // Reset.
@@ -6022,12 +6021,10 @@ TEST_P(ContinuousOverviewAnimationTest, WindowCornerRadiiAndShadows) {
   active_item = GetOverviewItemForWindow(active_window.get());
   minimized_item = GetOverviewItemForWindow(minimized_window.get());
 
-  // During the entry animation, the non-minimized windows do not show their
-  // rounded corners or shadows until the animation is complete. Minimized
-  // windows always have rounded corners and immediately show their shadows.
-  // TODO(b/293923755): Both minimized and non-minimized windows should show
-  // their shadow after the animation is complete.
-  EXPECT_FALSE(HasRoundedCorner(active_item));
+  // Rounded corners are shown once the fingers lift. Shadows on minimized
+  // windows are shown, but shadows on non-minimized windows are hidden until
+  // the animation is finished.
+  EXPECT_TRUE(HasRoundedCorner(active_item));
   EXPECT_TRUE(GetShadowBounds(active_item).IsEmpty());
   EXPECT_TRUE(HasRoundedCorner(minimized_item));
   EXPECT_FALSE(GetShadowBounds(minimized_item).IsEmpty());
@@ -6599,6 +6596,34 @@ TEST_F(TabletModeOverviewSessionTest, MinimizedRoundedCorners) {
   EXPECT_FALSE(GetOverviewController()->InOverviewSession());
   EXPECT_TRUE(WindowState::Get(window.get())->IsMinimized());
   EXPECT_EQ(gfx::RoundedCornersF(), window->layer()->rounded_corner_radii());
+}
+
+// Tests the UAF issue reported in b/301368132 has been fixed. The overview
+// item in `OverviewWindowDragController::CompleteDrag()` may be reset in
+// `OverviewGrid::RemoveItem()` and is accessed again when getting the
+// window for `ScopedFloatContainerStacker::OnDragFinished()`.
+TEST_F(TabletModeOverviewSessionTest, AvoidUaFOnCompleteDrag) {
+  std::unique_ptr<aura::Window> window = CreateAppWindow(gfx::Rect(100, 100));
+  WindowState* window_state = WindowState::Get(window.get());
+  const WindowSnapWMEvent snap_type(WM_EVENT_SNAP_PRIMARY);
+  window_state->OnWMEvent(&snap_type);
+  EXPECT_EQ(chromeos::WindowStateType::kPrimarySnapped,
+            window_state->GetStateType());
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+
+  window_state->Minimize();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  auto* overview_item = GetOverviewItemForWindow(window.get());
+
+  // Trigger `OverviewWindowDragController::CompleteDrag()` and verify that
+  // there will be no crash.
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(gfx::ToRoundedPoint(
+      overview_item->GetTargetBoundsInScreen().CenterPoint()));
+  event_generator->ClickLeftButton();
+  EXPECT_EQ(chromeos::WindowStateType::kPrimarySnapped,
+            window_state->GetStateType());
 }
 
 // Test the split view and overview functionalities in tablet mode.
@@ -8978,8 +9003,9 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, ResizeWindowTest) {
   EXPECT_NE(GetGridBounds(), overview_full_bounds);
   EXPECT_NE(GetGridBounds(), overview_snapped_bounds);
   EXPECT_EQ(GetGridBounds(), GetSplitViewRightWindowBounds());
-  EXPECT_TRUE(
-      split_view_controller()->split_view_overview_session_for_testing());
+  EXPECT_TRUE(RootWindowController::ForWindow(Shell::GetPrimaryRootWindow())
+                  ->split_view_overview_session());
+
   // Verify the overview width has decreased by the same amount the window has
   // increased.
   EXPECT_EQ(overview_snapped_bounds.width() - drag_x, GetGridBounds().width());

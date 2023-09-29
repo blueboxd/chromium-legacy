@@ -62,7 +62,7 @@ constexpr base::TimeDelta kTinyTime = base::Microseconds(1);
 const char kTrustedScoringSignalsResponse[] = R"(
   {
     "renderUrls": {"https://render.url.test/": 4},
-    "adComponentRenderUrls": {
+    "adComponentRenderURLs": {
       "https://component1.test/": 1,
       "https://component2.test/": 2
     }
@@ -842,6 +842,9 @@ TEST_F(SellerWorkletTest, NetworkError) {
   EXPECT_EQ("Failed to load https://url.test/ HTTP status = 404 Not Found.",
             WaitForDisconnect());
 
+  // Wait until idle to ensure all requests have been observed within the
+  // `auction_network_events_handler_`.
+  task_environment_.RunUntilIdle();
   EXPECT_THAT(
       auction_network_events_handler_.GetObservedRequests(),
       testing::ElementsAre(
@@ -864,6 +867,9 @@ TEST_F(SellerWorkletTest, ScoreAd) {
   // CreateBasicSellAdScript() does indeed work.
   RunScoreAdWithJavascriptExpectingResult(CreateBasicSellAdScript(), 1);
 
+  // Wait until idle to ensure all requests have been observed within the
+  // `auction_network_events_handler_`.
+  task_environment_.RunUntilIdle();
   EXPECT_THAT(auction_network_events_handler_.GetObservedRequests(),
               testing::ElementsAre("Sent URL: https://url.test/",
                                    "Received URL: https://url.test/",
@@ -1668,7 +1674,7 @@ TEST_F(SellerWorkletTest, ScoreAdTrustedScoringSignals) {
       TrustedSignalsRequestManager::kAutoSendDelay, /*expected_errors=*/{},
       /*expected_data_version=*/1);
   RunScoreAdWithReturnValueExpectingResultInExactTime(
-      "trustedScoringSignals.adComponentRenderUrls === undefined ? 1 : 0", 1,
+      "trustedScoringSignals.adComponentRenderURLs === undefined ? 1 : 0", 1,
       mojom::ComponentAuctionModifiedBidParamsPtr(),
       TrustedSignalsRequestManager::kAutoSendDelay, /*expected_errors=*/{},
       /*expected_data_version=*/1);
@@ -1705,13 +1711,13 @@ TEST_F(SellerWorkletTest, ScoreAdTrustedScoringSignals) {
       TrustedSignalsRequestManager::kAutoSendDelay, /*expected_errors=*/{},
       /*expected_data_version=*/5);
   RunScoreAdWithReturnValueExpectingResultInExactTime(
-      "trustedScoringSignals.adComponentRenderUrls['https://component1.test/']",
+      "trustedScoringSignals.adComponentRenderURLs['https://component1.test/']",
       1 /* Magic value in trustedScoringSignals */,
       mojom::ComponentAuctionModifiedBidParamsPtr(),
       TrustedSignalsRequestManager::kAutoSendDelay, /*expected_errors=*/{},
       /*expected_data_version=*/5);
   RunScoreAdWithReturnValueExpectingResultInExactTime(
-      "trustedScoringSignals.adComponentRenderUrls['https://component2.test/']",
+      "trustedScoringSignals.adComponentRenderURLs['https://component2.test/']",
       2 /* Magic value in trustedScoringSignals */,
       mojom::ComponentAuctionModifiedBidParamsPtr(),
       TrustedSignalsRequestManager::kAutoSendDelay, /*expected_errors=*/{},
@@ -2230,7 +2236,7 @@ TEST_F(SellerWorkletTest, ScoreAdParallelTrustedScoringSignalsBatched3) {
 TEST_F(SellerWorkletTest, ScoreAdLoadCompletionOrder) {
   constexpr char kJsonResponse[] = "{}";
   constexpr char kDirectFromSellerSignalsHeaders[] =
-      "X-Allow-FLEDGE: true\nX-FLEDGE-Auction-Only: true";
+      "Ad-Auction-Allowed: true\nAd-Auction-Only: true";
 
   direct_from_seller_seller_signals_ = GURL("https://url.test/sellersignals");
   direct_from_seller_auction_signals_ = GURL("https://url.test/auctionsignals");
@@ -2333,7 +2339,7 @@ if (auctionSignalsJson !== '{"worklet":2}') {
 }
 )";
   constexpr char kDirectFromSellerSignalsHeaders[] =
-      "X-Allow-FLEDGE: true\nX-FLEDGE-Auction-Only: true";
+      "Ad-Auction-Allowed: true\nAd-Auction-Only: true";
 
   direct_from_seller_seller_signals_ = GURL("https://url.test/sellersignals");
   direct_from_seller_auction_signals_ = GURL("https://url.test/auctionsignals");
@@ -3213,7 +3219,7 @@ TEST_F(SellerWorkletTest, ReportResultDataVersion) {
 TEST_F(SellerWorkletTest, ReportResultLoadCompletionOrder) {
   constexpr char kJsonResponse[] = "{}";
   constexpr char kDirectFromSellerSignalsHeaders[] =
-      "X-Allow-FLEDGE: true\nX-FLEDGE-Auction-Only: true";
+      "Ad-Auction-Allowed: true\nAd-Auction-Only: true";
 
   direct_from_seller_seller_signals_ = GURL("https://url.test/sellersignals");
   direct_from_seller_auction_signals_ = GURL("https://url.test/auctionsignals");

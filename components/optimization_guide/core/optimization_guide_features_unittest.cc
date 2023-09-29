@@ -17,6 +17,7 @@
 #include "components/optimization_guide/core/model_util.h"
 #include "components/optimization_guide/core/optimization_guide_constants.h"
 #include "components/optimization_guide/proto/models.pb.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -151,9 +152,65 @@ TEST(OptimizationGuideFeaturesTest,
       features::ShouldExecutePageVisibilityModelOnPageContent("zh-CN"));
 }
 
-TEST(OptimizationGuideFeaturesTest, OptimizationGuidePersonalizedFetching) {
+TEST(OptimizationGuideFeaturesTest, RemotePageMetadataEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
 
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kRemotePageMetadata,
+      {{"supported_locales", "en-US,en-CA"}, {"supported_countries", "US,CA"}});
+
+  EXPECT_TRUE(features::RemotePageMetadataEnabled("en-US", "CA"));
+  EXPECT_FALSE(features::RemotePageMetadataEnabled("", ""));
+  EXPECT_FALSE(features::RemotePageMetadataEnabled("en-US", "badcountry"));
+  EXPECT_FALSE(features::RemotePageMetadataEnabled("badlocale", "US"));
+}
+
+TEST(OptimizationGuideFeaturesTest, ShouldPersistSalientImageMetadata) {
+  base::test::ScopedFeatureList scoped_feature_list;
+
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kPageContentAnnotationsPersistSalientImageMetadata,
+      {{"supported_locales", "en-US,en-CA"}, {"supported_countries", "US,CA"}});
+
+  EXPECT_TRUE(features::ShouldPersistSalientImageMetadata("en-US", "CA"));
+  // Tests case-insensitivity.
+  EXPECT_TRUE(features::ShouldPersistSalientImageMetadata("en-US", "cA"));
+  EXPECT_FALSE(features::ShouldPersistSalientImageMetadata("", ""));
+  EXPECT_FALSE(
+      features::ShouldPersistSalientImageMetadata("en-US", "badcountry"));
+  EXPECT_FALSE(features::ShouldPersistSalientImageMetadata("badlocale", "US"));
+}
+
+TEST(OptimizationGuideFeaturesTest,
+     OptimizationGuidePersonalizedFetchingScopes) {
+  {
+    EXPECT_THAT(
+        features::GetOAuthScopesForPersonalizedMetadata(),
+        ::testing::UnorderedElementsAre(GaiaConstants::kGoogleUserInfoProfile));
+  }
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeatureWithParameters(
+        features::kOptimizationGuidePersonalizedFetching, {});
+    EXPECT_THAT(
+        features::GetOAuthScopesForPersonalizedMetadata(),
+        ::testing::UnorderedElementsAre(GaiaConstants::kGoogleUserInfoProfile));
+  }
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeatureWithParameters(
+        features::kOptimizationGuidePersonalizedFetching,
+        {
+            {"oauth_scopes", ""},
+        });
+    EXPECT_THAT(
+        features::GetOAuthScopesForPersonalizedMetadata(),
+        ::testing::UnorderedElementsAre(GaiaConstants::kGoogleUserInfoProfile));
+  }
+}
+
+TEST(OptimizationGuideFeaturesTest, OptimizationGuidePersonalizedFetching) {
+  base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       features::kOptimizationGuidePersonalizedFetching,
       {
@@ -162,15 +219,15 @@ TEST(OptimizationGuideFeaturesTest, OptimizationGuidePersonalizedFetching) {
       });
 
   // Check scopes.
-  EXPECT_THAT(features::OAuthScopesForPersonalizedMetadata(),
+  EXPECT_THAT(features::GetOAuthScopesForPersonalizedMetadata(),
               ::testing::UnorderedElementsAre("scope", "scope2"));
 
   // Check contexts.
-  EXPECT_FALSE(features::EnabledPersonalizedMetadata(
+  EXPECT_FALSE(features::ShouldEnablePersonalizedMetadata(
       optimization_guide::proto::CONTEXT_UNSPECIFIED));
-  EXPECT_TRUE(features::EnabledPersonalizedMetadata(
+  EXPECT_TRUE(features::ShouldEnablePersonalizedMetadata(
       optimization_guide::proto::CONTEXT_PAGE_NAVIGATION));
-  EXPECT_TRUE(features::EnabledPersonalizedMetadata(
+  EXPECT_TRUE(features::ShouldEnablePersonalizedMetadata(
       optimization_guide::proto::CONTEXT_BOOKMARKS));
 }
 

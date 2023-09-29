@@ -4,6 +4,7 @@
 
 #include "content/browser/preloading/prefetch/prefetch_response_reader.h"
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "content/browser/preloading/prefetch/prefetch_streaming_url_loader.h"
@@ -66,7 +67,7 @@ PrefetchResponseReader::~PrefetchResponseReader() {
 
 void PrefetchResponseReader::SetStreamingURLLoader(
     base::WeakPtr<PrefetchStreamingURLLoader> streaming_url_loader) {
-  DCHECK(!streaming_url_loader_);
+  CHECK(!streaming_url_loader_);
   streaming_url_loader_ = std::move(streaming_url_loader);
 }
 
@@ -93,6 +94,39 @@ void PrefetchResponseReader::OnServingURLLoaderMojoDisconnect() {
 }
 
 PrefetchRequestHandler PrefetchResponseReader::CreateRequestHandler() {
+  if (create_request_handler_called_) {
+    // Monitor cases where CreateRequestHandler() is called multiple times, for
+    // investigation of crbug.com/1483599. Anyway such cases should be handled
+    // (failing gracefully) below, e.g. by checking `body_`.
+    // TODO(crbug.com/1483599): Remove this.
+    base::debug::DumpWithoutCrashing();
+  }
+  create_request_handler_called_ = true;
+
+  // Returns a null handler if some checks fail here.
+  // This is a subset of the checks in `BindAndStart()`, but not identical,
+  // because `load_state_` can be transitioned between the two methods. Still
+  // the CHECKs in `BindAndStart()` should pass even when `load_state_` is
+  // transitioned.
+  switch (load_state_) {
+    case LoadState::kResponseReceived:
+    case LoadState::kCompleted:
+    case LoadState::kFailed:
+      if (!body_) {
+        // This might be because `CreateRequestHandler()` is called for the
+        // second time.
+        return {};
+      }
+      break;
+
+    case LoadState::kRedirectHandled:
+      break;
+
+    case LoadState::kStarted:
+    case LoadState::kFailedResponseReceived:
+      return {};
+  }
+
   if (streaming_url_loader_) {
     streaming_url_loader_->OnStartServing();
   }
@@ -127,8 +161,6 @@ void PrefetchResponseReader::BindAndStart(
 
   switch (load_state_) {
     case LoadState::kResponseReceived:
-    case LoadState::kCompleted:
-    case LoadState::kFailed:
       // In these cases, `ForwardResponse()` is expected to be called always
       // inside `RunEventQueue()` below, because `CreateRequestHandler()` was
       // called after response headers are received. Both the head and body
@@ -142,6 +174,17 @@ void PrefetchResponseReader::BindAndStart(
       // reach here.
       //
       // TODO(crbug.com/1449360): we might want to revisit this behavior.
+
+      // TODO(crbug.com/1483599): The code below is duplicated to investigate
+      // the `load_state_` value on CHECK failure. Remove the duplicated code.
+      CHECK(GetHead());
+      CHECK(forward_body_);
+      break;
+    case LoadState::kCompleted:
+      CHECK(GetHead());
+      CHECK(forward_body_);
+      break;
+    case LoadState::kFailed:
       CHECK(GetHead());
       CHECK(forward_body_);
       break;
@@ -227,6 +270,10 @@ void PrefetchResponseReader::RunEventQueue(ServingUrlLoaderClientId client_id) {
 
 void PrefetchResponseReader::OnComplete(
     network::URLLoaderCompletionStatus completion_status) {
+  // TODO(crbug.com/1484028): Remove this alias.
+  auto load_state = load_state_;
+  base::debug::Alias(&load_state);
+
   switch (load_state_) {
     case LoadState::kStarted:
       CHECK_NE(completion_status.error_code, net::OK);
@@ -243,14 +290,18 @@ void PrefetchResponseReader::OnComplete(
       load_state_ = LoadState::kFailed;
       break;
     case LoadState::kRedirectHandled:
+      CHECK(false);
+      break;
     case LoadState::kCompleted:
+      CHECK(false);
+      break;
     case LoadState::kFailed:
       CHECK(false);
       break;
   }
 
-  DCHECK(!response_complete_time_);
-  DCHECK(!completion_status_);
+  CHECK(!response_complete_time_);
+  CHECK(!completion_status_);
   response_complete_time_ = base::TimeTicks::Now();
   completion_status_ = completion_status;
 
@@ -326,6 +377,7 @@ void PrefetchResponseReader::OnReceiveResponse(
       load_state_ = LoadState::kResponseReceived;
       head->navigation_delivery_type =
           network::mojom::NavigationDeliveryType::kNavigationalPrefetch;
+      CHECK(body);
       break;
 
     case PrefetchStreamingURLLoaderStatus::kPrefetchWasDecoy:
@@ -367,7 +419,7 @@ void PrefetchResponseReader::OnReceiveResponse(
 
 void PrefetchResponseReader::ForwardCompletionStatus(
     ServingUrlLoaderClientId client_id) {
-  DCHECK(completion_status_);
+  CHECK(completion_status_);
   if (network::mojom::URLLoaderClient* client =
           serving_url_loader_clients_.Get(client_id)) {
     client->OnComplete(completion_status_.value());

@@ -24,7 +24,9 @@
 #include "components/viz/test/test_context_support.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
+#include "gpu/command_buffer/common/shared_image_capabilities.h"
 #include "gpu/config/gpu_feature_info.h"
+#include "gpu/ipc/client/shared_image_interface_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -127,6 +129,9 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
   scoped_refptr<gfx::NativePixmap> GetNativePixmap(
       const gpu::Mailbox& mailbox) override;
 
+  std::unique_ptr<gpu::SharedImageInterface::ScopedMapping> MapSharedImage(
+      const gpu::Mailbox& mailbox) override;
+
   size_t shared_image_count() const { return shared_images_.size(); }
   const gfx::Size& MostRecentSize() const { return most_recent_size_; }
   const gpu::SyncToken& MostRecentGeneratedToken() const {
@@ -137,6 +142,9 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
   }
   bool CheckSharedImageExists(const gpu::Mailbox& mailbox) const;
 
+  const gpu::SharedImageCapabilities& GetCapabilities() override;
+  void SetCapabilities(const gpu::SharedImageCapabilities& caps);
+
  private:
   mutable base::Lock lock_;
 
@@ -145,6 +153,10 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
   gpu::SyncToken most_recent_generated_token_;
   gpu::SyncToken most_recent_destroy_token_;
   base::flat_set<gpu::Mailbox> shared_images_;
+
+  base::flat_map<gpu::Mailbox, gpu::GpuMemoryBufferHandleInfo>
+      mailbox_to_gmb_handle_info_map_;
+  gpu::SharedImageCapabilities shared_image_capabilities_;
 };
 
 class TestContextProvider
@@ -164,6 +176,8 @@ class TestContextProvider
 
   // Creates a context backed by TestRasterInterface with no lock.
   static scoped_refptr<TestContextProvider> CreateRaster();
+  static scoped_refptr<TestContextProvider> CreateRaster(
+      std::unique_ptr<TestRasterInterface> raster);
   static scoped_refptr<TestContextProvider> CreateRaster(
       std::unique_ptr<TestContextSupport> support);
 

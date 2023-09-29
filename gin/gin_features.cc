@@ -106,7 +106,6 @@ const base::FeatureParam<int> kV8MemoryReducerGCCount{
     &kV8MemoryReducer, "V8MemoryReducerGCCount", 3};
 
 // Enables MinorMC young generation garbage collector.
-BASE_FEATURE(kV8MinorMC, "V8MinorMC", base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kV8MinorMS, "V8MinorMS", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables Sparkplug compiler. Note that this only sets the V8 flag when
@@ -190,7 +189,7 @@ BASE_FEATURE(kV8IgnitionElideRedundantTdzChecks,
 // Wasm functions. We want to remove this fallback in the future.
 BASE_FEATURE(kV8MidtierRegallocFallback,
              "V8MidtierRegallocFallback",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // JavaScript language features.
 
@@ -237,6 +236,11 @@ BASE_FEATURE(kJavaScriptCompileHintsMagic,
 // Enables the iterator helpers proposal.
 BASE_FEATURE(kJavaScriptIteratorHelpers,
              "kJavaScriptIteratorHelpers",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables the Promise.withResolvers proposal.
+BASE_FEATURE(kJavaScriptPromiseWithResolvers,
+             "JavaScriptPromiseWithResolvers",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // WebAssembly features.

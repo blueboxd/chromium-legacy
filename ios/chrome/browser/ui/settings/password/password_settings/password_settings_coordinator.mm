@@ -6,6 +6,10 @@
 
 #import <UIKit/UIKit.h>
 
+#import "base/debug/dump_without_crashing.h"
+#import "base/i18n/message_formatter.h"
+#import "base/metrics/user_metrics.h"
+#import "base/strings/sys_string_conversions.h"
 #import "components/google/core/common/google_util.h"
 #import "components/keyed_service/core/service_access_type.h"
 #import "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
@@ -20,9 +24,12 @@
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
+#import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
+#import "ios/chrome/browser/ui/settings/password/password_manager_ui_features.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings/password_bulk_move_handler.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings/password_export_handler.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_constants.h"
@@ -31,15 +38,31 @@
 #import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings/scoped_password_settings_reauth_module_override.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_in_other_apps/passwords_in_other_apps_coordinator.h"
+#import "ios/chrome/browser/ui/settings/password/reauthentication/reauthentication_coordinator.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/password_utils.h"
-#import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "net/base/mac/url_conversions.h"
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/base/l10n/l10n_util_mac.h"
+
+using password_manager::features::IsAuthOnEntryV2Enabled;
+
+namespace {
+
+// The user action for when the bulk move passwords to account confirmation
+// dialog's cancel button is clicked.
+constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogCancelled =
+    "Mobile.PasswordsSettings.BulkSavePasswordsToAccountDialog.Cancelled";
+
+// The user action for when the bulk move passwords to account confirmation
+// dialog's accept button is clicked.
+constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
+    "Mobile.PasswordsSettings.BulkSavePasswordsToAccountDialog.Accepted";
+
+}  // namespace
 
 // Methods to update state in response to actions taken in the Export
 // ActivityViewController.
@@ -90,6 +113,7 @@
     PasswordSettingsPresentationDelegate,
     PasswordsInOtherAppsCoordinatorDelegate,
     PopoverLabelViewControllerDelegate,
+    ReauthenticationCoordinatorDelegate,
     SettingsNavigationControllerDelegate> {
   // Service which gives us a view on users' saved passwords.
   std::unique_ptr<password_manager::SavedPasswordsPresenter>
@@ -121,6 +145,12 @@
 // Coordinator for the "Passwords in Other Apps" screen.
 @property(nonatomic, strong)
     PasswordsInOtherAppsCoordinator* passwordsInOtherAppsCoordinator;
+
+// Coordinator for blocking Password Settings until Local Authentication is
+// passed. Used for requiring authentication when opening Password Settings
+// from outside the Password Manager and when the app is
+// backgrounded/foregrounded with Password Settings opened.
+@property(nonatomic, strong) ReauthenticationCoordinator* reauthCoordinator;
 
 @end
 
@@ -168,15 +198,20 @@
   self.mediator.consumer = self.passwordSettingsViewController;
   self.passwordSettingsViewController.delegate = self.mediator;
 
+  // Don't animate presentation when content will be covered for authentication.
+  // Otherwise content can be visible during the animation phase.
   [self.baseViewController
       presentViewController:self.settingsNavigationController
-                   animated:YES
+                   animated:_skipAuthenticationOnStart ||
+                            !IsAuthOnEntryV2Enabled()
                  completion:nil];
+
+  [self startReauthCoordinatorWithAuthOnStart:!_skipAuthenticationOnStart];
 }
 
 - (void)stop {
   // If the parent coordinator is stopping `self` while the UI is still being
-  // presented, dismiss without animation. Dismissals due to user actions(e.g,
+  // presented, dismiss without animation. Dismissals due to user actions (e.g,
   // swipe or tap on Done) are animated.
   if (self.baseViewController.presentedViewController ==
       self.settingsNavigationController) {
@@ -201,6 +236,8 @@
   self.mediator.consumer = nil;
   self.mediator = nil;
   _savedPasswordsPresenter.reset();
+
+  [self stopReauthenticationCoordinator];
 }
 
 #pragma mark - PasswordSettingsPresentationDelegate
@@ -269,6 +306,7 @@
 
 - (void)showPasswordsInOtherAppsScreen {
   DCHECK(!self.passwordsInOtherAppsCoordinator);
+  [self stopReauthCoordinatorBeforeStartingChildCoordinator];
   self.passwordsInOtherAppsCoordinator =
       [[PasswordsInOtherAppsCoordinator alloc]
           initWithBaseNavigationController:self.settingsNavigationController
@@ -278,15 +316,17 @@
 }
 
 - (void)showOnDeviceEncryptionSetUp {
-  GURL url = google_util::AppendGoogleLocaleParam(
+  GURL URL = google_util::AppendGoogleLocaleParam(
       GURL(kOnDeviceEncryptionOptInURL),
       GetApplicationContext()->GetApplicationLocale());
-  BlockToOpenURL(self.passwordSettingsViewController, self.dispatcher)(url);
+  OpenNewTabCommand* command = [OpenNewTabCommand commandWithURLFromChrome:URL];
+  [self.dispatcher closeSettingsUIAndOpenURL:command];
 }
 
 - (void)showOnDeviceEncryptionHelp {
-  GURL url = GURL(kOnDeviceEncryptionLearnMoreURL);
-  BlockToOpenURL(self.passwordSettingsViewController, self.dispatcher)(url);
+  GURL URL = GURL(kOnDeviceEncryptionLearnMoreURL);
+  OpenNewTabCommand* command = [OpenNewTabCommand commandWithURLFromChrome:URL];
+  [self.dispatcher closeSettingsUIAndOpenURL:command];
 }
 
 #pragma mark - PopoverLabelViewControllerDelegate
@@ -300,8 +340,38 @@
 
 #pragma mark - BulkMoveLocalPasswordsToAccountHandler
 
-- (void)showAuthentication {
-  // TODO(crbug.com/1479177): Add auth for bulk move passwords.
+- (void)showAuthenticationForMovePasswordsToAccountWithMessage:
+    (NSString*)message {
+  // No need to auth if AuthOnEntryV2 is enabled, since user is presumed to have
+  // just recently authed.
+  if (IsAuthOnEntryV2Enabled()) {
+    [self.mediator userDidStartBulkMoveLocalPasswordsToAccountFlow];
+    return;
+  }
+
+  if ([self.reauthModule canAttemptReauth]) {
+    __weak PasswordSettingsCoordinator* weakSelf = self;
+
+    void (^onReauthenticationFinished)(ReauthenticationResult) = ^(
+        ReauthenticationResult result) {
+      PasswordSettingsCoordinator* strongSelf = weakSelf;
+      if (!strongSelf) {
+        return;
+      }
+
+      // On auth success, move passwords. Otherwise, do nothing.
+      if (result == ReauthenticationResult::kSuccess) {
+        [strongSelf.mediator userDidStartBulkMoveLocalPasswordsToAccountFlow];
+      }
+    };
+
+    [self.reauthModule
+        attemptReauthWithLocalizedReason:message
+                    canReusePreviousAuth:NO
+                                 handler:onReauthenticationFinished];
+  } else {
+    [self showSetPasscodeForMovePasswordsToAccountDialog];
+  }
 }
 
 - (void)showConfirmationDialogWithAlertTitle:(NSString*)alertTitle
@@ -320,7 +390,9 @@
           l10n_util::GetNSString(
               IDS_IOS_PASSWORD_SETTINGS_BULK_UPLOAD_PASSWORDS_ALERT_CANCEL)
                 style:UIAlertActionStyleCancel
-              handler:^(UIAlertAction* action){
+              handler:^(UIAlertAction* action) {
+                base::RecordAction(base::UserMetricsAction(
+                    kBulkMovePasswordsToAccountConfirmationDialogCancelled));
               }];
   [movePasswordsConfirmation addAction:cancelAction];
 
@@ -332,12 +404,15 @@
               IDS_IOS_PASSWORD_SETTINGS_BULK_UPLOAD_PASSWORDS_ALERT_BUTTON)
                 style:UIAlertActionStyleDefault
               handler:^(UIAlertAction* action) {
+                base::RecordAction(base::UserMetricsAction(
+                    kBulkMovePasswordsToAccountConfirmationDialogAccepted));
                 PasswordSettingsCoordinator* strongSelf = weakSelf;
                 if (!strongSelf) {
                   return;
                 }
-                [strongSelf.mediator
-                        userDidStartBulkMoveLocalPasswordsToAccountFlow];
+                [strongSelf
+                    showAuthenticationForMovePasswordsToAccountWithMessage:
+                        alertTitle];
               }];
 
   [movePasswordsConfirmation addAction:movePasswordsAction];
@@ -355,8 +430,26 @@
                  completion:nil];
 }
 
-- (void)showSetPasscodeAlert {
-  // TODO(crbug.com/1479177): Add auth for bulk move passwords.
+- (void)showSetPasscodeForMovePasswordsToAccountDialog {
+  [self
+      showSetPasscodeDialogWithContent:
+          l10n_util::GetNSString(
+              IDS_IOS_PASSWORD_SETTINGS_BULK_UPLOAD_PASSWORDS_SET_UP_SCREENLOCK_CONTENT)];
+}
+
+- (void)showMovedToAccountSnackbarWithPasswordCount:(int)count
+                                          userEmail:(std::string)email {
+  std::u16string pattern = l10n_util::GetStringUTF16(
+      IDS_IOS_PASSWORD_SETTINGS_BULK_UPLOAD_PASSWORDS_SNACKBAR_MESSAGE);
+  std::u16string result = base::i18n::MessageFormatter::FormatWithNamedArgs(
+      pattern, "COUNT", count, "EMAIL", base::UTF8ToUTF16(email));
+
+  TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
+  [self.handlerForSnackbarCommands
+      showSnackbarWithMessage:base::SysUTF16ToNSString(result)
+                   buttonText:nil
+                messageAction:nil
+             completionAction:nil];
 }
 
 #pragma mark - PasswordExportHandler
@@ -422,7 +515,7 @@
                                          IDS_IOS_EXPORT_PASSWORDS_CANCEL_BUTTON)
                                style:UIAlertActionStyleCancel
                              handler:^(UIAlertAction*) {
-                               [weakSelf.mediator userDidCancelExportFlow];
+                               [weakSelf.mediator exportFlowCanceled];
                              }];
   [_preparingPasswordsAlert addAction:cancelAction];
   [self.passwordSettingsViewController
@@ -431,34 +524,10 @@
                  completion:nil];
 }
 
-- (void)showSetPasscodeDialog {
-  UIAlertController* alertController = [UIAlertController
-      alertControllerWithTitle:l10n_util::GetNSString(
-                                   IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_TITLE)
-                       message:
-                           l10n_util::GetNSString(
-                               IDS_IOS_SETTINGS_EXPORT_PASSWORDS_SET_UP_SCREENLOCK_CONTENT)
-                preferredStyle:UIAlertControllerStyleAlert];
-
-  void (^blockOpenURL)(const GURL&) =
-      BlockToOpenURL(self.passwordSettingsViewController, self.dispatcher);
-  UIAlertAction* learnAction = [UIAlertAction
-      actionWithTitle:l10n_util::GetNSString(
-                          IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_LEARN_HOW)
-                style:UIAlertActionStyleDefault
-              handler:^(UIAlertAction*) {
-                blockOpenURL(GURL(kPasscodeArticleURL));
-              }];
-  [alertController addAction:learnAction];
-  UIAlertAction* okAction =
-      [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_OK)
-                               style:UIAlertActionStyleDefault
-                             handler:nil];
-  [alertController addAction:okAction];
-  alertController.preferredAction = okAction;
-  [self.passwordSettingsViewController presentViewController:alertController
-                                                    animated:YES
-                                                  completion:nil];
+- (void)showSetPasscodeForPasswordExportDialog {
+  [self showSetPasscodeDialogWithContent:
+            l10n_util::GetNSString(
+                IDS_IOS_SETTINGS_EXPORT_PASSWORDS_SET_UP_SCREENLOCK_CONTENT)];
 }
 
 #pragma mark - ExportActivityViewControllerDelegate
@@ -475,6 +544,7 @@
   [self.passwordsInOtherAppsCoordinator stop];
   self.passwordsInOtherAppsCoordinator.delegate = nil;
   self.passwordsInOtherAppsCoordinator = nil;
+  [self restartReauthCoordinator];
 }
 
 #pragma mark - SettingsNavigationControllerDelegate
@@ -504,11 +574,62 @@
 }
 
 - (id<SnackbarCommands>)handlerForSnackbarCommands {
-  NOTREACHED();
-  return nil;
+  return HandlerForProtocol(self.browser->GetCommandDispatcher(),
+                            SnackbarCommands);
+}
+
+#pragma mark - ReauthenticationCoordinatorDelegate
+
+- (void)successfulReauthenticationWithCoordinator:
+    (ReauthenticationCoordinator*)coordinator {
+  // No-op.
+}
+
+- (void)willPushReauthenticationViewController {
+  // Cancel password export flow before authentication UI is presented.
+  if (_preparingPasswordsAlert.beingPresented) {
+    [_preparingPasswordsAlert dismissViewControllerAnimated:NO completion:nil];
+    [self.mediator exportFlowCanceled];
+    _preparingPasswordsAlert = nil;
+  }
 }
 
 #pragma mark - Private
+
+// Closes the settings and load the passcode help article in a new tab.
+- (void)showPasscodeHelp {
+  GURL URL = GURL(kPasscodeArticleURL);
+  OpenNewTabCommand* command = [OpenNewTabCommand commandWithURLFromChrome:URL];
+  [self.dispatcher closeSettingsUIAndOpenURL:command];
+}
+
+// Helper to show the "set passcode" dialog with customizable content.
+- (void)showSetPasscodeDialogWithContent:(NSString*)content {
+  UIAlertController* alertController = [UIAlertController
+      alertControllerWithTitle:l10n_util::GetNSString(
+                                   IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_TITLE)
+                       message:content
+                preferredStyle:UIAlertControllerStyleAlert];
+
+  __weak PasswordSettingsCoordinator* weakSelf = self;
+  UIAlertAction* learnAction = [UIAlertAction
+      actionWithTitle:l10n_util::GetNSString(
+                          IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_LEARN_HOW)
+                style:UIAlertActionStyleDefault
+              handler:^(UIAlertAction*) {
+                [weakSelf showPasscodeHelp];
+              }];
+  [alertController addAction:learnAction];
+  UIAlertAction* okAction =
+      [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_OK)
+                               style:UIAlertActionStyleDefault
+                             handler:nil];
+  [alertController addAction:okAction];
+  alertController.preferredAction = okAction;
+  [self.passwordSettingsViewController presentViewController:alertController
+                                                    animated:YES
+                                                  completion:nil];
+}
 
 // Helper method for presenting several ViewControllers used in the export flow.
 // Ensures that the "Preparing passwords" alert is dismissed when something is
@@ -528,6 +649,68 @@
     [self.passwordSettingsViewController presentViewController:viewController
                                                       animated:YES
                                                     completion:nil];
+  }
+}
+
+// Starts reauthCoordinator.
+// - authOnStart: Pass `YES` to cover Password Settings with an empty view
+// controller until successful Local Authentication when reauthCoordinator
+// starts.
+//
+// Local authentication is required every time the current
+// scene is backgrounded and foregrounded until reauthCoordinator is stopped.
+- (void)startReauthCoordinatorWithAuthOnStart:(BOOL)authOnStart {
+  // No-op if Auth on Entry is not enabled for the password manager.
+  if (!IsAuthOnEntryV2Enabled()) {
+    return;
+  }
+
+  if (_reauthCoordinator) {
+    // The previous reauth coordinator should have been stopped and deallocated
+    // by now. Create a crash report without crashing and gracefully handle the
+    // error by cleaning up the old coordinator.
+    base::debug::DumpWithoutCrashing();
+    [_reauthCoordinator stopAndPopViewController];
+  }
+
+  _reauthCoordinator = [[ReauthenticationCoordinator alloc]
+      initWithBaseNavigationController:_settingsNavigationController
+                               browser:self.browser
+                reauthenticationModule:_reauthModule
+                           authOnStart:authOnStart];
+
+  _reauthCoordinator.delegate = self;
+
+  [_reauthCoordinator start];
+}
+
+// Stops reauthCoordinator.
+- (void)stopReauthenticationCoordinator {
+  [_reauthCoordinator stop];
+  _reauthCoordinator.delegate = nil;
+  _reauthCoordinator = nil;
+}
+
+// Stop reauth coordinator when a child coordinator will be started.
+//
+// Needed so reauth coordinator doesn't block for reauth if the scene state
+// changes while the child coordinator is presenting its content. The child
+// coordinator will add its own reauth coordinator to block its content for
+// reauth.
+- (void)stopReauthCoordinatorBeforeStartingChildCoordinator {
+  // See PasswordsCoordinator
+  // stopReauthCoordinatorBeforeStartingChildCoordinator.
+  [_reauthCoordinator stopAndPopViewController];
+  _reauthCoordinator.delegate = nil;
+  _reauthCoordinator = nil;
+}
+
+// Starts reauthCoordinator after a child coordinator content was dismissed.
+- (void)restartReauthCoordinator {
+  // Restart reauth coordinator so it monitors scene state changes and requests
+  // local authentication after the scene goes to the background.
+  if (IsAuthOnEntryV2Enabled()) {
+    [self startReauthCoordinatorWithAuthOnStart:NO];
   }
 }
 

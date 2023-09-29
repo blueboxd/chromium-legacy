@@ -4,8 +4,9 @@
 
 module trace_report.mojom;
 
+import "mojo/public/mojom/base/big_buffer.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "mojo/public/mojom/base/uuid.mojom";
+import "mojo/public/mojom/base/token.mojom";
 
 // Keep in sync with ReportUploadState from
 // content/browser/tracing/trace_report/trace_report_database.h
@@ -21,13 +22,15 @@ enum ReportUploadState {
 // TODO: update once the skip reasons have been established.
 enum SkipUploadReason {
   kNoSkip = 0,
-  kSizeLimitExceeded = 1
+  kSizeLimitExceeded = 1,
+  kNotAnonymized = 2,
+  kScenarioQuotaExceeded = 3,
 };
 
 // Information about a single trace to display
 struct ClientTraceReport {
   // A unique identifier for each trace recorded.
-  mojo_base.mojom.Uuid uuid;
+  mojo_base.mojom.Token uuid;
 
   // The time at which the report was created.
   mojo_base.mojom.Time creation_time;
@@ -68,16 +71,17 @@ interface PageHandler {
   GetAllTraceReports() => (array<ClientTraceReport> reports);
 
   // Delete a single trace from the database.
-  DeleteSingleTrace(mojo_base.mojom.Uuid uuid) => (bool success);
+  DeleteSingleTrace(mojo_base.mojom.Token uuid) => (bool success);
 
   // Delete all traces from the database.
   DeleteAllTraces() => (bool success);
 
   // Manually upload a trace.
-  UserUploadSingleTrace(mojo_base.mojom.Uuid uuid) => (bool success);
+  UserUploadSingleTrace(mojo_base.mojom.Token uuid) => (bool success);
 
   // Download locally the trace file.
-  DownloadTrace(mojo_base.mojom.Uuid uuid) => (string? trace);
+  DownloadTrace(mojo_base.mojom.Token uuid)
+    => (mojo_base.mojom.BigBuffer? trace);
 };
 
 // WebUI-side handler for requests from the browser.

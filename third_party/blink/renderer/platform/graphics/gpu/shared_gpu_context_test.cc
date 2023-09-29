@@ -140,9 +140,9 @@ class SharedGpuContextTestViz : public Test {
         std::make_unique<base::SingleThreadTaskRunner::CurrentDefaultHandle>(
             task_runner_);
     test_context_provider_ = viz::TestContextProvider::Create();
-    InitializeSharedGpuContext(test_context_provider_.get(),
-                               /*cache = */ nullptr,
-                               SetIsContextLost::kSetToFalse);
+    InitializeSharedGpuContextGLES2(test_context_provider_.get(),
+                                    /*cache = */ nullptr,
+                                    SetIsContextLost::kSetToFalse);
   }
 
   void TearDown() override {
@@ -178,9 +178,9 @@ TEST_F(SharedGpuContextTest, Canvas2DLayerBridgeAutoRecovery) {
       std::make_unique<FakeCanvasResourceHost>(size);
   host->SetPreferred2DRasterMode(RasterModeHint::kPreferGPU);
   std::unique_ptr<Canvas2DLayerBridge> bridge =
-      std::make_unique<Canvas2DLayerBridge>(size, kNonOpaque);
+      std::make_unique<Canvas2DLayerBridge>();
   bridge->SetCanvasResourceHost(host.get());
-  EXPECT_TRUE(bridge->IsAccelerated());
+  EXPECT_EQ(host->GetRasterMode(), RasterMode::kGPU);
   EXPECT_TRUE(SharedGpuContext::IsValidWithoutRestoring());
 }
 

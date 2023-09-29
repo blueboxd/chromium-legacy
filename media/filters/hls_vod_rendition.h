@@ -5,7 +5,7 @@
 #ifndef MEDIA_FILTERS_HLS_VOD_RENDITION_H_
 #define MEDIA_FILTERS_HLS_VOD_RENDITION_H_
 
-#include "media/base/moving_average.h"
+#include "base/moving_window.h"
 #include "media/filters/hls_rendition.h"
 
 namespace media {
@@ -31,6 +31,7 @@ class MEDIA_EXPORT HlsVodRendition : public HlsRendition {
                   ManifestDemuxer::DelayCallback time_remaining_cb) override;
   bool Seek(base::TimeDelta seek_time) override;
   void CancelPendingNetworkRequests() override;
+  void Stop() override;
 
  private:
   struct SegmentInfo {
@@ -98,10 +99,12 @@ class MEDIA_EXPORT HlsVodRendition : public HlsRendition {
   absl::optional<PendingSegment> pending_stream_fetch_ = absl::nullopt;
 
   // Record the time it takes to download content.
-  MovingAverage fetch_time_;
+  base::MovingAverage<base::TimeDelta, base::TimeDelta> fetch_time_;
 
   // Fetch segments in order always.
   std::vector<SegmentInfo>::iterator fetch_queue_;
+
+  bool is_stopped_for_shutdown_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -191,6 +191,10 @@ base::RepeatingClosure UpdateEngine::InvokeOperation(
                               : base::BindRepeating(
                                     [](scoped_refptr<UpdateContext> context) {
                                       context->is_cancelled = true;
+                                      for (const auto& entry :
+                                           context->components) {
+                                        entry.second->Cancel();
+                                      }
                                     },
                                     update_context);
 }
@@ -431,9 +435,12 @@ bool UpdateEngine::IsThrottled(bool is_foreground) const {
          now < throttle_updates_until;
 }
 
-void UpdateEngine::SendUninstallPing(const CrxComponent& crx_component,
-                                     int reason,
-                                     Callback callback) {
+void UpdateEngine::SendPing(const CrxComponent& crx_component,
+                            int event_type,
+                            int result_code,
+                            int error_code,
+                            int extra_code1,
+                            Callback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const std::string& id = crx_component.app_id;
@@ -454,7 +461,8 @@ void UpdateEngine::SendUninstallPing(const CrxComponent& crx_component,
   CHECK_EQ(1u, update_context->components.count(id));
   const auto& component = update_context->components.at(id);
 
-  component->Uninstall(crx_component, reason);
+  component->PingOnly(crx_component, event_type, result_code, error_code,
+                      extra_code1);
 
   update_context->component_queue.push(id);
 

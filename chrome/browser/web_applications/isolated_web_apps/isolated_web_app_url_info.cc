@@ -97,10 +97,9 @@ void IsolatedWebAppUrlInfo::CreateFromIsolatedWebAppLocation(
     base::OnceCallback<void(base::expected<IsolatedWebAppUrlInfo, std::string>)>
         callback) {
   absl::visit(base::Overloaded{
-                  [&](const InstalledBundle&) {
-                    std::move(callback).Run(base::unexpected(
-                        "Getting IsolationInfo from |InstalledBundle| is not "
-                        "implemented"));
+                  [&](const InstalledBundle& installed_bundle) {
+                    GetSignedWebBundleIdByPath(installed_bundle.path,
+                                               std::move(callback));
                   },
                   [&](const DevModeBundle& dev_mode_bundle) {
                     GetSignedWebBundleIdByPath(dev_mode_bundle.path,
@@ -132,7 +131,7 @@ const url::Origin& IsolatedWebAppUrlInfo::origin() const {
   return origin_;
 }
 
-const AppId& IsolatedWebAppUrlInfo::app_id() const {
+const webapps::AppId& IsolatedWebAppUrlInfo::app_id() const {
   return app_id_;
 }
 

@@ -238,12 +238,6 @@ void GPUDevice::AddSingletonWarning(GPUSingletonWarning type) {
             "has no effect. It is likely that \"depthOrArrayLayers\" was "
             "intended instead.";
         break;
-      case GPUSingletonWarning::kTimestampArray:
-        // TODO(dawn:1800): Remove after a deprecation period;
-        message =
-            "Specifying timestampWrites as an array is deprecated and will "
-            "soon be removed.";
-        break;
       case GPUSingletonWarning::kCount:
         NOTREACHED();
     }
@@ -545,7 +539,8 @@ ScriptPromise GPUDevice::createRenderPipelineAsync(
   ScriptPromise promise = resolver->Promise();
 
   v8::Isolate* isolate = script_state->GetIsolate();
-  ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
+  ExceptionState exception_state(isolate,
+                                 ExceptionContextType::kOperationInvoke,
                                  "GPUDevice", "createRenderPipelineAsync");
   OwnedRenderPipelineDescriptor dawn_desc_info;
   ConvertToDawnType(isolate, this, descriptor, &dawn_desc_info,

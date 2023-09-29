@@ -38,7 +38,7 @@ public class PageInfoCookiesController
     private final String mFullUrl;
     private final String mTitle;
     private CookieControlsBridge mBridge;
-    private PageInfoCookiesPreference mSubPage;
+    private PageInfoCookiesSettings mSubPage;
 
     private int mAllowedCookies;
     private int mBlockedCookies;
@@ -95,10 +95,10 @@ public class PageInfoCookiesController
         assert mSubPage == null;
         if (!canCreateSubpageFragment()) return null;
 
-        mSubPage = new PageInfoCookiesPreference();
+        mSubPage = new PageInfoCookiesSettings();
         View view = addSubpageFragment(mSubPage);
-        PageInfoCookiesPreference.PageInfoCookiesViewParams params =
-                new PageInfoCookiesPreference.PageInfoCookiesViewParams();
+        PageInfoCookiesSettings.PageInfoCookiesViewParams params =
+                new PageInfoCookiesSettings.PageInfoCookiesViewParams();
         params.thirdPartyCookieBlockingEnabled = getDelegate().cookieControlsShown();
         params.onThirdPartyCookieToggleChanged = this::onThirdPartyCookieToggleChanged;
         params.onClearCallback = this::onClearCookiesClicked;
@@ -233,8 +233,8 @@ public class PageInfoCookiesController
     }
 
     private void updateRowViewSubtitle() {
-        boolean blockingEnabled = mStatus == CookieControlsStatus.ENABLED;
-        if (!blockingEnabled) {
+        if (mStatus == CookieControlsStatus.DISABLED) return;
+        if (mStatus == CookieControlsStatus.DISABLED_FOR_SITE) {
             mRowView.updateSubtitle(
                     mRowView.getContext().getString(R.string.page_info_cookies_subtitle_allowed));
             return;

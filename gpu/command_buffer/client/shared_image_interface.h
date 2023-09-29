@@ -37,8 +37,13 @@ class GpuFence;
 class Size;
 }  // namespace gfx
 
+namespace viz {
+class TestSharedImageInterface;
+}
+
 namespace gpu {
 class GpuMemoryBufferManager;
+struct SharedImageCapabilities;
 
 // An interface to create shared images and swap chains that can be imported
 // into other APIs. This interface is thread-safe and (essentially) stateless.
@@ -64,8 +69,24 @@ class GPU_EXPORT SharedImageInterface {
     // Returns BufferFormat.
     gfx::BufferFormat Format();
 
+    // Returns whether the underlying resource is shared memory.
+    bool IsSharedMemory();
+
+    // Dumps information about the memory backing this instance to |pmd|.
+    // The memory usage is attributed to |buffer_dump_guid|.
+    // |tracing_process_id| uniquely identifies the process owning the memory.
+    // |importance| is relevant only for the cases of co-ownership, the memory
+    // gets attributed to the owner with the highest importance.
+    void OnMemoryDump(
+        base::trace_event::ProcessMemoryDump* pmd,
+        const base::trace_event::MemoryAllocatorDumpGuid& buffer_dump_guid,
+        uint64_t tracing_process_id,
+        int importance);
+
    private:
     friend class ClientSharedImageInterface;
+    friend class SharedImageInterfaceInProcess;
+    friend class viz::TestSharedImageInterface;
 
     ScopedMapping();
     static std::unique_ptr<ScopedMapping> Create(
@@ -341,6 +362,8 @@ class GPU_EXPORT SharedImageInterface {
   // This api is required to provide flexibility to clients by allowing them to
   // choose where it wants the blocking to happen.
   virtual void WaitForMailboxToBeMappable(const Mailbox& mailbox);
+
+  virtual const SharedImageCapabilities& GetCapabilities() = 0;
 };
 
 }  // namespace gpu

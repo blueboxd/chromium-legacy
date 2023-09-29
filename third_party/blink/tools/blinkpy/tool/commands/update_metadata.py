@@ -19,7 +19,6 @@ import re
 from concurrent.futures import Executor
 from typing import (
     Any,
-    ClassVar,
     Collection,
     Dict,
     FrozenSet,
@@ -181,6 +180,25 @@ class UpdateMetadata(Command):
                 help=('Path to a wptreport log file (or directory of '
                       'log files) to use in the update. May specify '
                       'multiple times.')),
+            optparse.make_option(
+                '--update-properties',
+                action='callback',
+                callback=self._parse_update_properties,
+                type='string',
+                help=('Path to a JSON file specifying what properties to use '
+                      'in conditions. See https://web-platform-tests.org/tools'
+                      '/wptrunner/docs/expectation.html'
+                      '#properties-file-format for format.')),
+            optparse.make_option(
+                '--min-samples',
+                metavar='N',
+                type='int',
+                default=4,
+                help=("Minimum number of results to update a test's "
+                      'expectations. Default to 4 so that expectations are '
+                      'only updated for tests that exhaust all retries. '
+                      'A threshold too low may destabilize expectations for '
+                      'flaky or unexpectedly passing tests.')),
             RebaselineCL.patchset_option,
             RebaselineCL.test_name_file_option,
             RebaselineCL.only_changed_tests_option,
@@ -215,13 +233,16 @@ class UpdateMetadata(Command):
         manifests = load_and_update_manifests(
             self._path_finder, force_update=options.manifest_update)
         builds = self._select_builds(options)
+        update_properties = (options.update_properties
+                             or self.default_update_properties(builds))
         updater = MetadataUpdater.from_manifests(
             manifests,
             wpt_metadata.TestConfigurations.generate(self._tool),
             self._tool.port_factory.get(),
             self._explicit_include_patterns(options, args),
             options.exclude,
-            update_properties=self.update_properties(builds),
+            min_samples=options.min_samples,
+            update_properties=update_properties,
             overwrite_conditions=options.overwrite_conditions,
             disable_intermittent=options.disable_intermittent,
             keep_statuses=options.keep_statuses,
@@ -261,7 +282,8 @@ class UpdateMetadata(Command):
             _log.error('%s', error)
             return 1
 
-    def update_properties(self, builds: List[Build]) -> UpdateProperties:
+    def default_update_properties(self,
+                                  builds: List[Build]) -> UpdateProperties:
         primary_properties = list(UpdateProperties.DEFAULT.primary_properties)
         specifiers = frozenset(
             itertools.chain.from_iterable(
@@ -474,10 +496,10 @@ class UpdateMetadata(Command):
             UpdateAbortError: If one or more builds finished with
                 `INFRA_FAILURE` and the user chose not to continue.
         """
-        if GitCL.filter_infra_failed(build_statuses):
+        if GitCL.filter_incomplete(build_statuses):
             if not self._tool.user.confirm(default=User.DEFAULT_NO):
-                raise UpdateAbortError('Aborting update due to build(s) with '
-                                       'infrastructure failures.')
+                raise UpdateAbortError(
+                    'Aborting update due to build(s) with incomplete results.')
         # TODO(crbug.com/1299650): Filter by failed builds again after the FYI
         # builders are green and no longer experimental.
         build_ids = [
@@ -536,6 +558,36 @@ class UpdateMetadata(Command):
             raise optparse.OptionValueError(
                 '%r is neither a regular file nor a directory' % value)
         setattr(parser.values, option.dest, reports)
+
+    def _parse_update_properties(self, option: optparse.Option, _opt_str: str,
+                                 value: Optional[str],
+                                 parser: optparse.OptionParser):
+        try:
+            raw_properties = json.loads(self._fs.read_text_file(value))
+        except (IOError, ValueError) as error:
+            raise optparse.OptionValueError(
+                f'{value!r} is not a valid JSON file.') from error
+        try:
+            primary_properties = raw_properties['properties']
+            dependent_properties = raw_properties.get('dependents', {})
+            if not isinstance(primary_properties, list):
+                raise ValueError
+            if not isinstance(dependent_properties, dict):
+                raise ValueError
+            for prop in itertools.chain.from_iterable([
+                    primary_properties,
+                    dependent_properties,
+                    *dependent_properties.values(),
+            ]):
+                if not isinstance(prop, str):
+                    raise ValueError
+        except Exception as error:
+            raise optparse.OptionValueError(
+                f'{value!r} does not conform to the properties file format: '
+                '{"properties": ["<prop1>", ...], "dependents": '
+                '{"<prop1>": ["<prop2>", ...], ...}"}') from error
+        setattr(parser.values, option.dest,
+                UpdateProperties(primary_properties, dependent_properties))
 
 
 class UpdateAbortError(Exception):
@@ -631,16 +683,12 @@ TestInfoMap = Mapping[str, TestInfo]
 
 
 class MetadataUpdater:
-    # When using wptreports from builds, only update expectations for tests
-    # that exhaust all retries. Unexpectedly passing tests and occasional
-    # flakes/timeouts will not cause an update.
-    min_results_for_update: ClassVar[int] = 4
-
     def __init__(
         self,
         test_files: TestFileMap,
         test_info: TestInfoMap,
         configs: wpt_metadata.TestConfigurations,
+        min_samples: int = 4,
         update_properties: UpdateProperties = UpdateProperties.DEFAULT,
         overwrite_conditions: Literal['yes', 'no', 'fill'] = 'fill',
         disable_intermittent: Optional[str] = None,
@@ -650,6 +698,7 @@ class MetadataUpdater:
     ):
         self._configs = configs
         self._test_info = test_info
+        self._min_samples = min_samples
         self.update_properties = update_properties
         # Ensure all configs have exactly the same properties.
         assert len({frozenset(config.data) for config in self._configs}) == 1
@@ -866,7 +915,7 @@ class MetadataUpdater:
 
         report['results'] = []
         for test_id, results in results_by_test.items():
-            if len(results) >= self.min_results_for_update:
+            if len(results) >= self._min_samples:
                 report['results'].extend(results)
         return report
 

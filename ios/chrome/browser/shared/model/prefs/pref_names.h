@@ -27,6 +27,7 @@ extern const char kDetectAddressesEnabled[];
 extern const char kEnableDoNotTrack[];
 extern const char kFeaturePushNotificationPermissions[];
 extern const char kFirstFollowUIShownCount[];
+extern const char kFirstFollowUpdateUIShownCount[];
 extern const char kHttpServerProperties[];
 extern const char kInactiveTabsTimeThreshold[];
 extern const char kIncognitoInterstitialEnabled[];
@@ -70,6 +71,7 @@ extern const char kIosSafetyCheckManagerPasswordCheckResult[];
 extern const char kIosSafetyCheckManagerUpdateCheckResult[];
 extern const char kIosSafetyCheckManagerSafeBrowsingCheckResult[];
 extern const char kIosSaveToPhotosDefaultGaiaId[];
+extern const char kIosSettingsSafetyCheckLastRunTime[];
 extern const char kIosNtpFeedTopPromoAlreadySeen[];
 extern const char kIosNtpFeedTopSigninPromoDisplayedCount[];
 extern const char kIosReadingListPromoAlreadySeen[];
@@ -123,6 +125,8 @@ extern const char kAutofillBrandingIconDisplayCount[];
 extern const char kAutofillBrandingKeyboardAccessoriesTapped[];
 
 extern const char kPriceNotificationsHasBeenShown[];
+
+extern const char kPasswordSharingFlowHasBeenEntered[];
 
 }  // namespace prefs
 

@@ -329,6 +329,25 @@ void PlatformNotificationServiceImpl::GetDisplayedNotifications(
       std::move(callback));
 }
 
+void PlatformNotificationServiceImpl::GetDisplayedNotificationsForOrigin(
+    const GURL& origin,
+    DisplayedNotificationsCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (g_browser_process->IsShuttingDown() || !profile_) {
+    return;
+  }
+
+  // Tests will not have a message center.
+  if (profile_->AsTestingProfile()) {
+    std::set<std::string> displayed_notifications;
+    std::move(callback).Run(std::move(displayed_notifications),
+                            false /* supports_synchronization */);
+    return;
+  }
+  NotificationDisplayServiceFactory::GetForProfile(profile_)
+      ->GetDisplayedForOrigin(origin, std::move(callback));
+}
+
 void PlatformNotificationServiceImpl::ScheduleTrigger(base::Time timestamp) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (g_browser_process->IsShuttingDown() || !profile_)
@@ -464,7 +483,7 @@ PlatformNotificationServiceImpl::CreateNotificationFromData(
   // triggered from workers (where `web_app_hint_url` is always blank) but also
   // for persistent notifications triggered from web pages (where the page url
   // might be a better "hint" than the service worker scope).
-  absl::optional<web_app::AppId> web_app_id = FindWebAppId(web_app_hint_url);
+  absl::optional<webapps::AppId> web_app_id = FindWebAppId(web_app_hint_url);
 
   absl::optional<WebAppIconAndTitle> web_app_icon_and_title;
 #if BUILDFLAG(IS_CHROMEOS)
@@ -594,7 +613,7 @@ std::u16string PlatformNotificationServiceImpl::DisplayNameForContextMessage(
   return std::u16string();
 }
 
-absl::optional<web_app::AppId> PlatformNotificationServiceImpl::FindWebAppId(
+absl::optional<webapps::AppId> PlatformNotificationServiceImpl::FindWebAppId(
     const GURL& web_app_hint_url) const {
 #if !BUILDFLAG(IS_ANDROID)
   web_app::WebAppProvider* web_app_provider =
@@ -615,7 +634,7 @@ PlatformNotificationServiceImpl::FindWebAppIconAndTitle(
   web_app::WebAppProvider* web_app_provider =
       web_app::WebAppProvider::GetForLocalAppsUnchecked(profile_);
   if (web_app_provider) {
-    const absl::optional<web_app::AppId> app_id =
+    const absl::optional<webapps::AppId> app_id =
         web_app_provider->registrar_unsafe().FindAppWithUrlInScope(
             web_app_hint_url);
     if (app_id) {
@@ -647,7 +666,7 @@ bool PlatformNotificationServiceImpl::IsActivelyInstalledWebAppScope(
     return false;
   }
 
-  const absl::optional<web_app::AppId> app_id =
+  const absl::optional<webapps::AppId> app_id =
       web_app_provider->registrar_unsafe().FindAppWithUrlInScope(web_app_url);
   return app_id.has_value() &&
          web_app_provider->registrar_unsafe().IsActivelyInstalled(

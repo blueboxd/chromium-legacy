@@ -10,6 +10,7 @@ absl_source_set("status") {
     "status_payload_printer.h",
   ]
   sources = [
+    "internal/status_internal.cc",
     "internal/status_internal.h",
     "status.cc",
     "status_payload_printer.cc",
@@ -40,6 +41,7 @@ absl_test("status_test") {
     ":status",
     "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/strings:cord",
+    "//third_party/abseil-cpp/absl/strings:str_format",
   ]
 }
 

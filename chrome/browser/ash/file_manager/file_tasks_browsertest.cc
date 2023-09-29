@@ -34,6 +34,7 @@
 #include "chrome/browser/ash/file_manager/file_tasks.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/filesystem_api_util.h"
+#include "chrome/browser/ash/file_manager/office_file_tasks.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/file_manager/url_util.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
@@ -526,7 +527,7 @@ IN_PROC_BROWSER_TEST_P(FileTasksBrowserTest, ExecuteWebApp) {
   TaskDescriptor task_descriptor;
   if (GetParam().crosapi_state == TestProfileParam::CrosapiParam::kDisabled) {
     // Install a PWA in ash.
-    web_app::AppId app_id =
+    webapps::AppId app_id =
         web_app::test::InstallWebApp(profile, std::move(web_app_info));
     task_descriptor = TaskDescriptor(app_id, TaskType::TASK_TYPE_WEB_APP,
                                      "https://www.example.com/handle_file");
@@ -765,12 +766,14 @@ IN_PROC_BROWSER_TEST_P(FileTasksPolicyBrowserTest, TasksMarkedAsBlocked) {
                           base::Unretained(this)));
   ASSERT_TRUE(policy::DlpRulesManagerFactory::GetForPrimaryProfile());
 
+  auto files_controller =
+      std::make_unique<policy::DlpFilesControllerAsh>(*rules_manager_, profile);
+
+  ON_CALL(*rules_manager_, GetDlpFilesController)
+      .WillByDefault(testing::Return(files_controller.get()));
+
   ON_CALL(*rules_manager_, IsFilesPolicyEnabled)
       .WillByDefault(testing::Return(true));
-  std::unique_ptr<policy::DlpFilesControllerAsh> files_controller_ =
-      std::make_unique<policy::DlpFilesControllerAsh>(*rules_manager_);
-  ON_CALL(*rules_manager_, GetDlpFilesController)
-      .WillByDefault(testing::Return(files_controller_.get()));
 
   EXPECT_CALL(*rules_manager_, IsRestrictedDestination)
       .Times(testing::AtLeast(1))
@@ -1524,6 +1527,7 @@ class OneDriveTest : public TestAccountBrowserTest,
       provided_file_system_;  // Owned by Service.
   const blink::StorageKey kTestStorageKey =
       blink::StorageKey::CreateFromStringForTesting("chrome://abc");
+  base::HistogramTester histogram_;
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -1806,6 +1810,16 @@ IN_PROC_BROWSER_TEST_F(OneDriveTest,
 
   auto launches = web_app_publisher_->GetLaunches();
   ASSERT_EQ(0u, launches.size());
+
+  histogram_.ExpectUniqueSample(
+      ash::cloud_upload::kOneDriveTransferRequiredMetric,
+      OfficeFilesTransferRequired::kNotRequired, 1);
+  histogram_.ExpectUniqueSample(
+      ash::cloud_upload::kOneDriveTaskResultMetricName,
+      ash::cloud_upload::OfficeTaskResult::kFailedToOpen, 1);
+  histogram_.ExpectUniqueSample(
+      kOneDriveErrorMetricName,
+      ash::cloud_upload::OfficeOneDriveOpenErrors::kEmailsDoNotMatch, 1);
 }
 
 // Test that OpenOrMoveFiles() will not open an Android OneDrive office file
@@ -1838,6 +1852,17 @@ IN_PROC_BROWSER_TEST_F(OneDriveTest,
 
   auto launches = web_app_publisher_->GetLaunches();
   ASSERT_EQ(0u, launches.size());
+
+  histogram_.ExpectUniqueSample(
+      ash::cloud_upload::kOneDriveTransferRequiredMetric,
+      OfficeFilesTransferRequired::kNotRequired, 1);
+  histogram_.ExpectUniqueSample(
+      ash::cloud_upload::kOneDriveTaskResultMetricName,
+      ash::cloud_upload::OfficeTaskResult::kFailedToOpen, 1);
+  // Expect get actions error for a non-existent path.
+  histogram_.ExpectUniqueSample(
+      kOneDriveErrorMetricName,
+      ash::cloud_upload::OfficeOneDriveOpenErrors::kGetActionsGenericError, 1);
 }
 
 // Test that OpenOrMoveFiles() will not open an Android OneDrive office file
@@ -1874,6 +1899,18 @@ IN_PROC_BROWSER_TEST_F(
 
   auto launches = web_app_publisher_->GetLaunches();
   ASSERT_EQ(0u, launches.size());
+
+  histogram_.ExpectUniqueSample(
+      ash::cloud_upload::kOneDriveTransferRequiredMetric,
+      OfficeFilesTransferRequired::kNotRequired, 1);
+  histogram_.ExpectUniqueSample(
+      ash::cloud_upload::kOneDriveTaskResultMetricName,
+      ash::cloud_upload::OfficeTaskResult::kFailedToOpen, 1);
+  // Expect the conversion to an ODFS equivalent URL to fail.
+  histogram_.ExpectUniqueSample(
+      kOneDriveErrorMetricName,
+      ash::cloud_upload::OfficeOneDriveOpenErrors::kConversionToODFSUrlError,
+      1);
 }
 
 // Test that the setup flow for office files, that has never been run before,

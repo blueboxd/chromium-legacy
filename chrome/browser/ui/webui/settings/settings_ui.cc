@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/commerce/shopping_service_factory.h"
+#include "chrome/browser/companion/core/features.h"
 #include "chrome/browser/download/bubble/download_bubble_prefs.h"
 #include "chrome/browser/performance_manager/public/user_tuning/user_performance_tuning_manager.h"
 #include "chrome/browser/performance_manager/public/user_tuning/user_tuning_utils.h"
@@ -128,15 +129,13 @@
 #include "chrome/browser/ash/account_manager/account_apps_availability.h"
 #include "chrome/browser/ash/account_manager/account_apps_availability_factory.h"
 #include "chrome/browser/ash/account_manager/account_manager_util.h"
-#include "chrome/browser/ash/android_sms/android_sms_app_manager.h"
-#include "chrome/browser/ash/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/ash/eche_app/eche_app_manager_factory.h"
 #include "chrome/browser/ash/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/ash/phonehub/phone_hub_manager_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/ui/webui/settings/ash/account_manager_ui_handler.h"
+#include "chrome/browser/ui/webui/ash/settings/pages/people/account_manager_ui_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/multidevice_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/browser_resources.h"
@@ -369,7 +368,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 
   html_source->AddBoolean(
       "enablePageContentSetting",
-      base::FeatureList::IsEnabled(features::kPageContentOptIn));
+      base::FeatureList::IsEnabled(features::kPageContentOptIn) ||
+          base::FeatureList::IsEnabled(
+              companion::features::kCompanionEnablePageContent));
 
   html_source->AddBoolean(
       "downloadBubblePartialViewControlledByPref",
@@ -506,6 +507,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
                           base::FeatureList::IsEnabled(
                               features::kPerformanceSettingsPreloadingSubpage));
   html_source->AddBoolean(
+      "isPerformanceSettingsPreloadingSubpageV2Enabled",
+      features::kPerformanceSettingsPreloadingSubpageV2.Get());
+  html_source->AddBoolean(
       "isBatterySaverModeManagedByOS",
       performance_manager::user_tuning::IsBatterySaverModeManagedByOS());
 
@@ -547,13 +551,7 @@ void SettingsUI::InitBrowserSettingsWebUIHandlers() {
             ash::AccountAppsAvailabilityFactory::GetForProfile(profile)));
   }
 
-  // MultideviceHandler is required in browser settings to show a special note
-  // under the notification permission that is auto-granted for Android Messages
-  // integration in ChromeOS.
   if (!profile->IsGuestSession()) {
-    auto* android_sms_service =
-        ash::android_sms::AndroidSmsServiceFactory::GetForBrowserContext(
-            profile);
     ash::phonehub::PhoneHubManager* phone_hub_manager =
         ash::phonehub::PhoneHubManagerFactory::GetForProfile(profile);
     ash::eche_app::EcheAppManager* eche_app_manager =
@@ -567,11 +565,6 @@ void SettingsUI::InitBrowserSettingsWebUIHandlers() {
         phone_hub_manager
             ? phone_hub_manager->GetMultideviceFeatureAccessManager()
             : nullptr,
-        android_sms_service
-            ? android_sms_service->android_sms_pairing_state_tracker()
-            : nullptr,
-        android_sms_service ? android_sms_service->android_sms_app_manager()
-                            : nullptr,
         eche_app_manager ? eche_app_manager->GetAppsAccessManager() : nullptr,
         phone_hub_manager ? phone_hub_manager->GetCameraRollManager() : nullptr,
         phone_hub_manager ? phone_hub_manager->GetBrowserTabsModelProvider()

@@ -29,19 +29,17 @@ class EditorConsentStore {
 
   void ProcessPromoCardAction(PromoCardAction promo_card_action);
 
+  void SetPrefService(PrefService* pref_service);
+
  private:
   void SetConsentStatus(ConsentStatus consent_status);
 
   // Updates the consent status based on the change in the user prefs.
   void OnUserPrefChanged();
 
-  int GetConsentWindowDismissCount();
-
-  void IncrementConsentWindowDismissCount();
-
-  void ResetConsentWindowDismissCount();
-
   void OverrideUserPref(bool new_pref_value);
+
+  void InitializePrefChangeRegistrar(PrefService* pref_service);
 
   // Not owned by this class.
   raw_ptr<PrefService> pref_service_;

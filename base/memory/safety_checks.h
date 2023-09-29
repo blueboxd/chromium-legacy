@@ -86,14 +86,14 @@ constexpr bool ShouldUsePartitionAlloc(MemorySafetyCheck checks) {
 }
 
 // Returns |partition_alloc::AllocFlags| corresponding to |checks|.
-constexpr unsigned int GetAllocFlags(MemorySafetyCheck checks) {
+constexpr partition_alloc::AllocFlags GetAllocFlags(MemorySafetyCheck checks) {
   return partition_alloc::AllocFlags::kReturnNull |
          partition_alloc::AllocFlags::kNoHooks;
 }
 
 // Returns |partition_alloc::FreeFlags| corresponding to |checks|.
-constexpr unsigned int GetFreeFlags(MemorySafetyCheck checks) {
-  return 0;
+constexpr partition_alloc::FreeFlags GetFreeFlags(MemorySafetyCheck checks) {
+  return partition_alloc::FreeFlags::kNone;
 }
 
 }  // namespace
@@ -113,8 +113,7 @@ NOINLINE void* HandleMemorySafetyCheckedOperatorNew(std::size_t count) {
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   if constexpr (ShouldUsePartitionAlloc(checks)) {
     auto* root = allocator_shim::internal::PartitionAllocMalloc::Allocator();
-    return root->AllocNoHooks<GetAllocFlags(checks)>(
-        count, partition_alloc::PartitionPageSize());
+    return root->AllocInline<GetAllocFlags(checks)>(count);
   } else
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   {

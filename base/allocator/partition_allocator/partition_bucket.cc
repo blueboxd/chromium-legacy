@@ -188,7 +188,7 @@ uintptr_t ReserveMemoryFromPool(pool_handle pool,
 }
 
 SlotSpanMetadata* PartitionDirectMap(PartitionRoot* root,
-                                     unsigned int flags,
+                                     AllocFlags flags,
                                      size_t raw_size,
                                      size_t slot_span_alignment) {
   PA_DCHECK((slot_span_alignment >= PartitionPageSize()) &&
@@ -198,7 +198,7 @@ SlotSpanMetadata* PartitionDirectMap(PartitionRoot* root,
   // scoped unlocking.
   PartitionRootLock(root).AssertAcquired();
 
-  const bool return_null = flags & AllocFlags::kReturnNull;
+  const bool return_null = ContainsFlags(flags, AllocFlags::kReturnNull);
   if (PA_UNLIKELY(raw_size > MaxDirectMapped())) {
     if (return_null) {
       return nullptr;
@@ -260,6 +260,7 @@ SlotSpanMetadata* PartitionDirectMap(PartitionRoot* root,
         slot_span_alignment - PartitionPageSize();
     const size_t reservation_size = PartitionRoot::GetDirectMapReservationSize(
         raw_size + padding_for_alignment);
+    PA_DCHECK(reservation_size >= raw_size);
 #if BUILDFLAG(PA_DCHECK_IS_ON)
     const size_t available_reservation_size =
         reservation_size - padding_for_alignment -
@@ -336,15 +337,17 @@ SlotSpanMetadata* PartitionDirectMap(PartitionRoot* root,
     // so no other thread can update the same offset table entries at the
     // same time. Furthermore, nobody will be ready these offsets until this
     // function returns.
-    uintptr_t address_start = reservation_start;
-    uintptr_t address_end = address_start + reservation_size;
-    auto* offset_ptr = ReservationOffsetPointer(address_start);
-    uint16_t offset = 0;
-    while (address_start < address_end) {
-      PA_DCHECK(offset_ptr < GetReservationOffsetTableEnd(address_start));
+    auto* offset_ptr = ReservationOffsetPointer(reservation_start);
+    [[maybe_unused]] const auto* offset_ptr_end =
+        GetReservationOffsetTableEnd(reservation_start);
+
+    // |raw_size| > MaxBucketed(). So |reservation_size| > 0.
+    PA_DCHECK(reservation_size > 0);
+    const uint16_t offset_end = (reservation_size - 1) >> kSuperPageShift;
+    for (uint16_t offset = 0; offset <= offset_end; ++offset) {
       PA_DCHECK(offset < kOffsetTagNormalBuckets);
-      *offset_ptr++ = offset++;
-      address_start += kSuperPageSize;
+      PA_DCHECK(offset_ptr < offset_ptr_end);
+      *offset_ptr++ = offset;
     }
 
     auto* super_page_extent = PartitionSuperPageToExtent(reservation_start);
@@ -621,7 +624,7 @@ void PartitionBucket::Init(uint32_t new_slot_size) {
 
 PA_ALWAYS_INLINE SlotSpanMetadata* PartitionBucket::AllocNewSlotSpan(
     PartitionRoot* root,
-    unsigned int flags,
+    AllocFlags flags,
     size_t slot_span_alignment) {
   PA_DCHECK(!(root->next_partition_page % PartitionPageSize()));
   PA_DCHECK(!(root->next_partition_page_end % PartitionPageSize()));
@@ -696,7 +699,7 @@ PA_ALWAYS_INLINE SlotSpanMetadata* PartitionBucket::AllocNewSlotSpan(
 
 uintptr_t PartitionBucket::AllocNewSuperPageSpan(PartitionRoot* root,
                                                  size_t super_page_count,
-                                                 unsigned int flags) {
+                                                 AllocFlags flags) {
   PA_CHECK(super_page_count > 0);
   PA_CHECK(super_page_count <=
            std::numeric_limits<size_t>::max() / kSuperPageSize);
@@ -709,7 +712,7 @@ uintptr_t PartitionBucket::AllocNewSuperPageSpan(PartitionRoot* root,
   uintptr_t super_page_span_start = ReserveMemoryFromPool(
       pool, requested_address, super_page_count * kSuperPageSize);
   if (PA_UNLIKELY(!super_page_span_start)) {
-    if (flags & AllocFlags::kReturnNull) {
+    if (ContainsFlags(flags, AllocFlags::kReturnNull)) {
       return 0;
     }
 
@@ -729,12 +732,12 @@ uintptr_t PartitionBucket::AllocNewSuperPageSpan(PartitionRoot* root,
 }
 
 PA_ALWAYS_INLINE uintptr_t
-PartitionBucket::AllocNewSuperPage(PartitionRoot* root, unsigned int flags) {
+PartitionBucket::AllocNewSuperPage(PartitionRoot* root, AllocFlags flags) {
   auto super_page = AllocNewSuperPageSpan(root, 1, flags);
   if (PA_UNLIKELY(!super_page)) {
     // If the `kReturnNull` flag isn't set and the allocation attempt fails,
     // `AllocNewSuperPageSpan` should've failed with an OOM crash.
-    PA_DCHECK(flags & AllocFlags::kReturnNull);
+    PA_DCHECK(ContainsFlags(flags, AllocFlags::kReturnNull));
     return 0;
   }
   return SuperPagePayloadBegin(super_page, root->IsQuarantineAllowed());
@@ -1291,7 +1294,7 @@ void PartitionBucket::SortActiveSlotSpans() {
 }
 
 uintptr_t PartitionBucket::SlowPathAlloc(PartitionRoot* root,
-                                         unsigned int flags,
+                                         AllocFlags flags,
                                          size_t raw_size,
                                          size_t slot_span_alignment,
                                          bool* is_already_zeroed) {
@@ -1329,7 +1332,7 @@ uintptr_t PartitionBucket::SlowPathAlloc(PartitionRoot* root,
               SlotSpanMetadata::get_sentinel_slot_span());
 
     // No fast path for direct-mapped allocations.
-    if (flags & AllocFlags::kFastPathOrReturnNull) {
+    if (ContainsFlags(flags, AllocFlags::kFastPathOrReturnNull)) {
       return 0;
     }
 
@@ -1375,7 +1378,7 @@ uintptr_t PartitionBucket::SlowPathAlloc(PartitionRoot* root,
     if (PA_UNLIKELY(!new_slot_span) &&
         PA_LIKELY(decommitted_slot_spans_head != nullptr)) {
       // Commit can be expensive, don't do it.
-      if (flags & AllocFlags::kFastPathOrReturnNull) {
+      if (ContainsFlags(flags, AllocFlags::kFastPathOrReturnNull)) {
         return 0;
       }
 
@@ -1406,7 +1409,7 @@ uintptr_t PartitionBucket::SlowPathAlloc(PartitionRoot* root,
     PA_DCHECK(new_slot_span);
   } else {
     // Getting a new slot span is expensive, don't do it.
-    if (flags & AllocFlags::kFastPathOrReturnNull) {
+    if (ContainsFlags(flags, AllocFlags::kFastPathOrReturnNull)) {
       return 0;
     }
 
@@ -1422,7 +1425,7 @@ uintptr_t PartitionBucket::SlowPathAlloc(PartitionRoot* root,
   if (PA_UNLIKELY(!new_slot_span)) {
     PA_DCHECK(active_slot_spans_head ==
               SlotSpanMetadata::get_sentinel_slot_span());
-    if (flags & AllocFlags::kReturnNull) {
+    if (ContainsFlags(flags, AllocFlags::kReturnNull)) {
       return 0;
     }
     // See comment in PartitionDirectMap() for unlocking.
@@ -1459,7 +1462,7 @@ uintptr_t PartitionBucket::SlowPathAlloc(PartitionRoot* root,
 uintptr_t PartitionBucket::AllocNewSuperPageSpanForGwpAsan(
     PartitionRoot* root,
     size_t super_page_count,
-    unsigned int flags) {
+    AllocFlags flags) {
   return AllocNewSuperPageSpan(root, super_page_count, flags);
 }
 

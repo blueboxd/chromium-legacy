@@ -165,12 +165,14 @@ PageInfoViewFactory::CreateAdPersonalizationPageView() {
                                                              ui_delegate_));
 }
 
-// TODO(crbug.com/1346305): Use translatable strings instead of hardcoded one.
 std::unique_ptr<views::View> PageInfoViewFactory::CreateCookiesPageView() {
+  const std::u16string title_label =
+      ui_delegate_->IsTrackingProtection3pcdEnabled()
+          ? l10n_util::GetStringUTF16(
+                IDS_PAGE_INFO_SUB_PAGE_VIEW_TRACKING_PROTECTION_HEADER)
+          : l10n_util::GetStringUTF16(IDS_PAGE_INFO_COOKIES_HEADER);
   return std::make_unique<PageInfoSubpageView>(
-      CreateSubpageHeader(
-          l10n_util::GetStringUTF16(IDS_PAGE_INFO_COOKIES_HEADER),
-          presenter_->GetSubjectNameForDisplay()),
+      CreateSubpageHeader(title_label, presenter_->GetSubjectNameForDisplay()),
       std::make_unique<PageInfoCookiesContentView>(presenter_));
 }
 
@@ -253,8 +255,12 @@ const ui::ImageModel PageInfoViewFactory::GetPermissionIcon(
   ContentSetting setting = info.setting == CONTENT_SETTING_DEFAULT
                                ? info.default_setting
                                : info.setting;
+
+  // For guard content settings and Automatic Picture-in-Picture, ASK is treated
+  // as an "on" state.
   const bool show_blocked_badge =
-      !permissions::PermissionUtil::IsGuardContentSetting(info.type)
+      (!permissions::PermissionUtil::IsGuardContentSetting(info.type) &&
+       info.type != ContentSettingsType::AUTO_PICTURE_IN_PICTURE)
           ? setting == CONTENT_SETTING_BLOCK || setting == CONTENT_SETTING_ASK
           : setting == CONTENT_SETTING_BLOCK;
 

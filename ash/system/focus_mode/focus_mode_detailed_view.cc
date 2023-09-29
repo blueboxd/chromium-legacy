@@ -14,18 +14,14 @@
 #include "ash/style/switch.h"
 #include "ash/style/typography.h"
 #include "ash/system/focus_mode/focus_mode_controller.h"
+#include "ash/system/focus_mode/focus_mode_util.h"
 #include "ash/system/time/time_view_utils.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/tri_view.h"
 #include "base/functional/bind.h"
-#include "base/i18n/number_formatting.h"
 #include "base/i18n/time_formatting.h"
-#include "base/i18n/unicodestring.h"
 #include "base/location.h"
 #include "base/time/time.h"
-#include "third_party/icu/source/i18n/unicode/measfmt.h"
-#include "third_party/icu/source/i18n/unicode/measunit.h"
-#include "third_party/icu/source/i18n/unicode/measure.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
@@ -34,7 +30,6 @@
 #include "ui/message_center/message_center.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_utils.h"
@@ -53,48 +48,6 @@ constexpr auto kToggleViewInsets = gfx::Insets::VH(13, 24);
 // Margins between children in the `toggle_view_`.
 constexpr int kToggleViewBetweenChildSpacing = 16;
 
-// Adaptation of `base::TimeDurationFormat`. This helper function
-// takes a `TimeDelta` and a pointer to a `u16string` and writes the time in
-// short width.
-// If `include_hours` is true:
-//   If there is more than 1 hour remaining, hours will be included
-//   in the string (e.g. "1 hr, 20 min"). If there are 0 hours in the time, then
-//   this function excludes hours from the string (e.g. "20 min"). If there is
-//   less than 1 minute left, this function give the string "0 min".
-// If `include_hours` is false:
-//   This function gives a string containing the total minutes in `time`. For
-//   example, if the time is 1 hour and 20 minutes, this function gives "80
-//   min".
-bool TimeDurationFormatShortWidthWithNonzeroUnits(base::TimeDelta time,
-                                                  bool include_hours,
-                                                  std::u16string* out) {
-  UErrorCode status = U_ZERO_ERROR;
-  const int64_t hours = include_hours ? time.InHours() : 0;
-  const int64_t minutes =
-      time.InMinutes() - hours * base::Time::kMinutesPerHour;
-
-  icu::MeasureFormat measure_format(icu::Locale::getDefault(),
-                                    UMeasureFormatWidth::UMEASFMT_WIDTH_SHORT,
-                                    status);
-  icu::UnicodeString formatted;
-  icu::FieldPosition ignore(icu::FieldPosition::DONT_CARE);
-
-  std::vector<const icu::Measure> measures;
-
-  if (hours != 0) {
-    measures.push_back(
-        icu::Measure(hours, icu::MeasureUnit::createHour(status), status));
-  }
-
-  measures.push_back(
-      icu::Measure(minutes, icu::MeasureUnit::createMinute(status), status));
-  measure_format.formatMeasures(&measures[0], measures.size(), formatted,
-                                ignore, status);
-
-  *out = base::i18n::UnicodeStringToString16(formatted);
-  return U_SUCCESS(status);
-}
-
 // Creates the appropriately formatted string to display for the time remaining
 // display in the detailed view. When focus mode is active, this function
 // returns a string reading the hours and minutes remaining in the session, with
@@ -108,26 +61,20 @@ std::u16string CreateTimeRemainingString() {
   CHECK(controller);
 
   const base::Time now = base::Time::Now();
-  const bool in_focus_session = controller->in_focus_session();
   const base::TimeDelta session_duration_remaining =
-      in_focus_session ? controller->end_time() - now
-                       : controller->session_duration();
-  std::u16string time_string;
-  if (TimeDurationFormatShortWidthWithNonzeroUnits(
-          session_duration_remaining,
-          /*include_hours=*/in_focus_session, &time_string)) {
-    // `FocusModeController::end_time_` is only calculated when the focus
-    // session is started. Thus, if focus mode is not active, we can find this
-    // end time by adding the focus mode controller's session duration to the
-    // current time.
-    const base::Time end_time = now + session_duration_remaining;
-    return l10n_util::GetStringFUTF16(
-        IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_TIME_SUBLABEL, time_string,
-        base::TimeFormatTimeOfDay(end_time));
-  }
-
-  return base::NumberToString16(
-      std::ceil(session_duration_remaining.InSecondsF()));
+      controller->in_focus_session() ? controller->end_time() - now
+                                     : controller->session_duration();
+  // `FocusModeController::end_time_` is only calculated when the focus
+  // session is started. Thus, if focus mode is not active, we can find this
+  // end time by adding the focus mode controller's session duration to the
+  // current time.
+  const base::Time end_time = now + session_duration_remaining;
+  const std::u16string time_string = focus_mode_util::GetDurationString(
+      session_duration_remaining,
+      focus_mode_util::TimeFormatType::kMinutesOnly);
+  return l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_TIME_SUBLABEL, time_string,
+      focus_mode_util::GetFormattedClockString(end_time));
 }
 
 }  // namespace
@@ -183,7 +130,13 @@ void FocusModeDetailedView::OnQuietModeChanged(bool in_quiet_mode) {
 }
 
 void FocusModeDetailedView::OnFocusModeChanged(bool in_focus_session) {
-  // TODO(b/286932057): Panel should close when focus mode is started.
+  // TODO(b/302194469): centralize bubble-closing logic.
+  if (in_focus_session) {
+    // Close the system tray bubble. Deletes `this`.
+    CloseBubble();
+    return;
+  }
+
   toggle_view_->text_label()->SetText(l10n_util::GetStringUTF16(
       in_focus_session ? IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_ACTIVE_LABEL
                        : IDS_ASH_STATUS_TRAY_FOCUS_MODE));

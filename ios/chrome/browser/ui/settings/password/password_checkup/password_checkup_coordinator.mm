@@ -116,6 +116,8 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
   [self.delegate passwordCheckupCoordinatorDidRemove:self];
 }
 
+// Opens the Password Issues list displaying compromised, weak or reused
+// credentials for `warningType`.
 - (void)showPasswordIssuesWithWarningType:
     (password_manager::WarningType)warningType {
   DUMP_WILL_BE_CHECK(!_passwordIssuesCoordinator);
@@ -154,7 +156,13 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
     return;
   }
 
-  CHECK_GT(viewControllerIndex, 0);
+  // If the view controller is at the top of the navigation stack, go to the
+  // previous view controller.
+  if (viewControllerIndex == 0) {
+    [self.baseNavigationController popViewControllerAnimated:YES];
+
+    return;
+  }
 
   // Go to the previous view controller in the navigation stack.
   [self.baseNavigationController

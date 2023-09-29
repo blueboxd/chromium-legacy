@@ -7,12 +7,14 @@
 #import "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
+#import "components/feature_engagement/public/tracker.h"
 #import "components/keyed_service/core/service_access_type.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
+#import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager_factory.h"
 #import "ios/chrome/browser/passwords/password_checkup_metrics.h"
@@ -38,10 +40,10 @@
 #import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_consumer.h"
-#import "ios/chrome/browser/ui/settings/password/passwords_in_other_apps/passwords_in_other_apps_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_mediator.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_settings_commands.h"
 #import "ios/chrome/browser/ui/settings/password/reauthentication/reauthentication_coordinator.h"
+#import "ios/chrome/browser/ui/settings/password/widget_promo_instructions/widget_promo_instructions_coordinator.h"
 #import "ios/chrome/browser/ui/settings/utils/password_utils.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -54,11 +56,11 @@ using password_manager::WarningType;
     PasswordDetailsCoordinatorDelegate,
     PasswordIssuesCoordinatorDelegate,
     PasswordCheckupCoordinatorDelegate,
-    PasswordsInOtherAppsCoordinatorDelegate,
     PasswordSettingsCoordinatorDelegate,
     PasswordsSettingsCommands,
     PasswordManagerViewControllerPresentationDelegate,
-    ReauthenticationCoordinatorDelegate>
+    ReauthenticationCoordinatorDelegate,
+    WidgetPromoInstructionsCoordinatorDelegate>
 
 // Main view controller for this coordinator.
 @property(nonatomic, strong)
@@ -95,10 +97,6 @@ using password_manager::WarningType;
 // Coordinator for add password details.
 @property(nonatomic, strong) AddPasswordCoordinator* addPasswordCoordinator;
 
-// Coordinator for passwords in other apps promotion view.
-@property(nonatomic, strong)
-    PasswordsInOtherAppsCoordinator* passwordsInOtherAppsCoordinator;
-
 @property(nonatomic, strong)
     PasswordSettingsCoordinator* passwordSettingsCoordinator;
 
@@ -108,6 +106,11 @@ using password_manager::WarningType;
 
 // Modal alert for interactions with passwords list.
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
+
+// Coordinator that presents the instructions on how to install the Password
+// Manager widget.
+@property(nonatomic, strong)
+    WidgetPromoInstructionsCoordinator* widgetPromoInstructionsCoordinator;
 
 // Indicates that a password manager visit metric has been recorded.
 // Used to only record the metric the first time authentication is passed.
@@ -150,6 +153,7 @@ using password_manager::WarningType;
   ChromeBrowserState* browserState = self.browser->GetBrowserState();
   FaviconLoader* faviconLoader =
       IOSChromeFaviconLoaderFactory::GetForBrowserState(browserState);
+
   self.mediator = [[PasswordsMediator alloc]
       initWithPasswordCheckManager:IOSChromePasswordCheckManagerFactory::
                                        GetForBrowserState(browserState)
@@ -157,6 +161,9 @@ using password_manager::WarningType;
                        syncService:SyncServiceFactory::GetForBrowserState(
                                        browserState)
                        prefService:browserState->GetPrefs()];
+  self.mediator.tracker =
+      feature_engagement::TrackerFactory::GetForBrowserState(browserState);
+
   self.reauthModule = password_manager::BuildReauthenticationModule(
       /*successfulReauthTimeAccessor=*/self.mediator);
   ChromeAccountManagerService* accountManagerService =
@@ -211,10 +218,6 @@ using password_manager::WarningType;
   [self.passwordDetailsCoordinator stop];
   self.passwordDetailsCoordinator.delegate = nil;
   self.passwordDetailsCoordinator = nil;
-
-  [self.passwordsInOtherAppsCoordinator stop];
-  self.passwordsInOtherAppsCoordinator.delegate = nil;
-  self.passwordsInOtherAppsCoordinator = nil;
 
   [self.passwordSettingsCoordinator stop];
   self.passwordSettingsCoordinator.delegate = nil;
@@ -398,9 +401,28 @@ using password_manager::WarningType;
       initWithBaseViewController:self.viewController
                          browser:self.browser];
   self.passwordSettingsCoordinator.delegate = self;
+  // No auth required as Passwords Coordinator already is auth protected.
+  self.passwordSettingsCoordinator.skipAuthenticationOnStart = YES;
 
   base::RecordAction(base::UserMetricsAction("PasswordManager_OpenSettings"));
   [self.passwordSettingsCoordinator start];
+}
+
+- (void)showPasswordManagerWidgetPromoInstructions {
+  // TODO(crbug.com/1464966): Switch back to DCHECK if the number of reports is
+  // low.
+  DUMP_WILL_BE_CHECK(!self.widgetPromoInstructionsCoordinator);
+
+  // TODO(crbug.com/1486873): Validate that reauth coordinator should be stopped
+  // here.
+  [self stopReauthCoordinatorBeforeStartingChildCoordinator];
+
+  self.widgetPromoInstructionsCoordinator =
+      [[WidgetPromoInstructionsCoordinator alloc]
+          initWithBaseViewController:self.viewController
+                             browser:self.browser];
+  self.widgetPromoInstructionsCoordinator.delegate = self;
+  [self.widgetPromoInstructionsCoordinator start];
 }
 
 // TODO(crbug.com/1406871): Remove when kIOSPasswordCheckup is enabled by
@@ -467,18 +489,6 @@ using password_manager::WarningType;
           showPasswordDetailsInEditModeWithoutAuthentication];
 }
 
-#pragma mark - PasswordsInOtherAppsCoordinatorDelegate
-
-- (void)passwordsInOtherAppsCoordinatorDidRemove:
-    (PasswordsInOtherAppsCoordinator*)coordinator {
-  DCHECK_EQ(self.passwordsInOtherAppsCoordinator, coordinator);
-  [self.passwordsInOtherAppsCoordinator stop];
-  self.passwordsInOtherAppsCoordinator.delegate = nil;
-  self.passwordsInOtherAppsCoordinator = nil;
-
-  [self restartReauthCoordinator];
-}
-
 #pragma mark - PasswordSettingsCoordinatorDelegate
 
 - (void)passwordSettingsCoordinatorDidRemove:
@@ -499,6 +509,8 @@ using password_manager::WarningType;
 
   [self recordPasswordManagerVisitIfNeeded];
 
+  [self.mediator askFETToShowPasswordManagerWidgetPromo];
+
   // Cleanup reauthCoordinator if scene state monitoring is not enabled.
   if (!password_manager::features::IsAuthOnEntryV2Enabled()) {
     [_reauthCoordinator stop];
@@ -510,6 +522,17 @@ using password_manager::WarningType;
 - (void)willPushReauthenticationViewController {
   [self dismissAlertCoordinator];
   [self dismissActionSheetCoordinator];
+}
+
+#pragma mark - WidgetPromoInstructionsCoordinatorDelegate
+
+- (void)removeWidgetPromoInstructionsCoordinator:
+    (WidgetPromoInstructionsCoordinator*)coordinator {
+  DCHECK_EQ(self.widgetPromoInstructionsCoordinator, coordinator);
+  [self.widgetPromoInstructionsCoordinator stop];
+  self.widgetPromoInstructionsCoordinator.delegate = nil;
+  self.widgetPromoInstructionsCoordinator = nil;
+  [self restartReauthCoordinator];
 }
 
 #pragma mark - Private

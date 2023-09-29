@@ -179,13 +179,9 @@ void PrerendererImpl::ProcessCandidatesForPrerender(
     // requests rejected by PrerenderHostRegistry can be filtered out. But
     // ideally PrerenderHostRegistry should implement the history management
     // mechanism by itself.
-    started_prerenders_.erase(
-        std::remove_if(started_prerenders_.begin(), started_prerenders_.end(),
-                       [&](const PrerenderInfo& x) {
-                         return base::Contains(removed_prerender_rules_set,
-                                               x.prerender_host_id);
-                       }),
-        started_prerenders_.end());
+    base::EraseIf(started_prerenders_, [&](const PrerenderInfo& x) {
+      return base::Contains(removed_prerender_rules_set, x.prerender_host_id);
+    });
   }
 
   // Actually start the candidates once the diffing is done.
@@ -322,7 +318,7 @@ bool PrerendererImpl::ShouldWaitForPrerenderResult(const GURL& url) {
   return begin != end;
 }
 
-void PrerendererImpl::OnCancel(const GURL& url,
+void PrerendererImpl::OnCancel(int host_frame_tree_node_id,
                                const PrerenderCancellationReason& reason) {
   if (!base::FeatureList::IsEnabled(
           features::kPrerender2NewLimitAndScheduler)) {
@@ -332,17 +328,22 @@ void PrerendererImpl::OnCancel(const GURL& url,
   switch (reason.final_status()) {
     // TODO(crbug.com/1464021): Support other final status cases.
     case PrerenderFinalStatus::kMaxNumOfRunningNonEagerPrerendersExceeded:
-    case PrerenderFinalStatus::kSpeculationRuleRemoved:
-      started_prerenders_.erase(
-          std::remove_if(started_prerenders_.begin(), started_prerenders_.end(),
-                         [&](const PrerenderInfo& prerender_info) {
-                           return prerender_info.url == url;
-                         }),
-          started_prerenders_.end());
+    case PrerenderFinalStatus::kSpeculationRuleRemoved: {
+      auto erasing_prerender_it = std::find_if(
+          started_prerenders_.begin(), started_prerenders_.end(),
+          [&](const PrerenderInfo& prerender_info) {
+            return prerender_info.prerender_host_id == host_frame_tree_node_id;
+          });
 
-      // Notify PreloadingDecider.
-      prerender_cancellation_callback_.Run(url);
+      if (erasing_prerender_it != started_prerenders_.end()) {
+        auto url = erasing_prerender_it->url;
+        started_prerenders_.erase(erasing_prerender_it);
+
+        // Notify PreloadingDecider.
+        prerender_cancellation_callback_.Run(url);
+      }
       break;
+    }
     default:
       break;
   }

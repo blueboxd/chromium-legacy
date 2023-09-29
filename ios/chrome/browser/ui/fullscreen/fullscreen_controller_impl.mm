@@ -39,20 +39,20 @@ FullscreenControllerImpl::FullscreenControllerImpl(Browser* browser)
                     mediator:&mediator_]) {
   DCHECK(broadcaster_);
   [broadcaster_ addObserver:bridge_
-                forSelector:@selector(broadcastScrollViewSize:)];
-  [broadcaster_ addObserver:bridge_
                 forSelector:@selector(broadcastScrollViewContentSize:)];
-  [broadcaster_ addObserver:bridge_
-                forSelector:@selector(broadcastScrollViewContentInset:)];
-  [broadcaster_ addObserver:bridge_
-                forSelector:@selector(broadcastContentScrollOffset:)];
   if (base::FeatureList::IsEnabled(web::features::kSmoothScrollingDefault)) {
+    [broadcaster_ addObserver:bridge_
+                  forSelector:@selector(broadcastScrollViewSize:)];
     [broadcaster_ addObserver:bridge_
                   forSelector:@selector(broadcastScrollViewIsScrolling:)];
     [broadcaster_ addObserver:bridge_
                   forSelector:@selector(broadcastScrollViewIsDragging:)];
     [broadcaster_ addObserver:bridge_
                   forSelector:@selector(broadcastScrollViewIsZooming:)];
+    [broadcaster_ addObserver:bridge_
+                  forSelector:@selector(broadcastScrollViewContentInset:)];
+    [broadcaster_ addObserver:bridge_
+                  forSelector:@selector(broadcastContentScrollOffset:)];
   }
   [broadcaster_ addObserver:bridge_
                 forSelector:@selector(broadcastCollapsedTopToolbarHeight:)];
@@ -69,20 +69,20 @@ FullscreenControllerImpl::~FullscreenControllerImpl() {
   web_state_list_observer_.Disconnect();
   [notification_observer_ disconnect];
   [broadcaster_ removeObserver:bridge_
-                   forSelector:@selector(broadcastScrollViewSize:)];
-  [broadcaster_ removeObserver:bridge_
                    forSelector:@selector(broadcastScrollViewContentSize:)];
-  [broadcaster_ removeObserver:bridge_
-                   forSelector:@selector(broadcastScrollViewContentInset:)];
-  [broadcaster_ removeObserver:bridge_
-                   forSelector:@selector(broadcastContentScrollOffset:)];
   if (base::FeatureList::IsEnabled(web::features::kSmoothScrollingDefault)) {
+    [broadcaster_ removeObserver:bridge_
+                     forSelector:@selector(broadcastScrollViewSize:)];
     [broadcaster_ removeObserver:bridge_
                      forSelector:@selector(broadcastScrollViewIsScrolling:)];
     [broadcaster_ removeObserver:bridge_
                      forSelector:@selector(broadcastScrollViewIsDragging:)];
     [broadcaster_ removeObserver:bridge_
                      forSelector:@selector(broadcastScrollViewIsZooming:)];
+    [broadcaster_ removeObserver:bridge_
+                     forSelector:@selector(broadcastScrollViewContentInset:)];
+    [broadcaster_ removeObserver:bridge_
+                     forSelector:@selector(broadcastContentScrollOffset:)];
   }
   [broadcaster_ removeObserver:bridge_
                    forSelector:@selector(broadcastCollapsedTopToolbarHeight:)];

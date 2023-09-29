@@ -63,7 +63,6 @@ class ImageFetcher;
 class MetricsReporter;
 class RefreshTaskScheduler;
 class PersistentKeyValueStoreImpl;
-class ResourceFetcher;
 class StreamModel;
 class SurfaceUpdater;
 
@@ -99,7 +98,6 @@ class FeedStream : public FeedApi,
              PrefService* profile_prefs,
              FeedNetwork* feed_network,
              ImageFetcher* image_fetcher,
-             ResourceFetcher* resource_fetcher,
              FeedStore* feed_store,
              PersistentKeyValueStoreImpl* persistent_key_value_store,
              TemplateURLService* template_url_service,
@@ -140,7 +138,7 @@ class FeedStream : public FeedApi,
   void FetchResource(
       const GURL& url,
       const std::string& method,
-      const std::vector<std::string>& header_name_and_values,
+      const std::vector<std::string>& header_names_and_values,
       const std::string& post_data,
       base::OnceCallback<void(NetworkResponse)> callback) override;
   void ExecuteOperations(
@@ -419,11 +417,14 @@ class FeedStream : public FeedApi,
   void BackgroundRefreshComplete(LoadStreamTask::Result result);
   void LoadTaskComplete(const LoadStreamTask::Result& result);
   void UploadActionsComplete(UploadActionsTask::Result result);
+  void FetchResourceComplete(base::OnceCallback<void(NetworkResponse)> callback,
+                             FeedNetwork::RawResponse response);
   void ClearAll();
   void ClearStream(const StreamType& stream_type, int sequence_number);
 
   bool IsFeedEnabledByEnterprisePolicy();
   bool IsFeedEnabled();
+  bool IsFeedEnabledByDse();
 
   bool HasReachedConditionsToUploadActionsWithNoticeCard();
 
@@ -463,7 +464,6 @@ class FeedStream : public FeedApi,
   raw_ptr<PrefService> profile_prefs_;  // May be null.
   raw_ptr<FeedNetwork> feed_network_;
   raw_ptr<ImageFetcher> image_fetcher_;
-  raw_ptr<ResourceFetcher> resource_fetcher_;
   raw_ptr<FeedStore, DanglingUntriaged> store_;
   raw_ptr<PersistentKeyValueStoreImpl, DanglingUntriaged>
       persistent_key_value_store_;
@@ -504,6 +504,7 @@ class FeedStream : public FeedApi,
   BooleanPrefMember has_stored_data_;
   BooleanPrefMember snippets_enabled_by_policy_;
   BooleanPrefMember articles_list_visible_;
+  BooleanPrefMember snippets_enabled_by_dse_;
   BooleanPrefMember signin_allowed_;
 
   // State loaded at startup:

@@ -276,20 +276,6 @@
       "Libfuzzer Upload iOS Catalyst Debug": {
         "_default": "_default"
       },
-      "Linux ChromiumOS Full": {
-        "build_time": {
-          "p50_mins": 60
-        },
-        "fail_rate": {
-          "average": 0.2
-        },
-        "infra_fail_rate": {
-          "average": 0.05
-        },
-        "pending_time": {
-          "p50_mins": 20
-        }
-      },
       "Linux Debug (NVIDIA)": {
         "_default": "_default"
       },
@@ -495,9 +481,6 @@
         "_default": "_default"
       },
       "android-13-x64-rel": {
-        "_default": "_default"
-      },
-      "android-archive-dbg": {
         "_default": "_default"
       },
       "android-archive-rel": {
@@ -766,20 +749,6 @@
       "ios-simulator-noncq": {
         "_default": "_default"
       },
-      "lacros-amd64-generic-binary-size-rel": {
-        "build_time": {
-          "p50_mins": 60
-        },
-        "fail_rate": {
-          "average": 0.2
-        },
-        "infra_fail_rate": {
-          "average": 0.05
-        },
-        "pending_time": {
-          "p50_mins": 20
-        }
-      },
       "lacros-amd64-generic-rel": {
         "build_time": {
           "p50_mins": 60
@@ -873,9 +842,6 @@
       "lacros64-archive-rel": {
         "_default": "_default"
       },
-      "linux-archive-dbg": {
-        "_default": "_default"
-      },
       "linux-archive-rel": {
         "_default": "_default"
       },
@@ -909,6 +875,9 @@
         "pending_time": {
           "p50_mins": 20
         }
+      },
+      "linux-chromeos-archive-rel": {
+        "_default": "_default"
       },
       "linux-chromeos-dbg": {
         "build_time": {
@@ -1003,16 +972,13 @@
       "linux-win_cross-rel": {
         "_default": "_default"
       },
-      "mac-archive-dbg": {
-        "_default": "_default"
-      },
       "mac-archive-rel": {
         "_default": "_default"
       },
-      "mac-arm64-archive-dbg": {
+      "mac-arm64-archive-rel": {
         "_default": "_default"
       },
-      "mac-arm64-archive-rel": {
+      "mac-arm64-dbg": {
         "_default": "_default"
       },
       "mac-arm64-on-arm64-rel": {
@@ -1039,9 +1005,6 @@
       "mac13-arm64-rel-tests": {
         "_default": "_default"
       },
-      "win-archive-dbg": {
-        "_default": "_default"
-      },
       "win-archive-rel": {
         "_default": "_default"
       },
@@ -1049,9 +1012,6 @@
         "_default": "_default"
       },
       "win-rel-cft": {
-        "_default": "_default"
-      },
-      "win32-archive-dbg": {
         "_default": "_default"
       },
       "win32-archive-rel": {

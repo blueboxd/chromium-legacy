@@ -528,13 +528,7 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
 
   if (IsExplicitScrollType(scroll_type) ||
       scroll_type == mojom::blink::ScrollType::kScrollStart) {
-    // We don't need to show scrollbars for kCompositor scrolls unless the
-    // scrollbar is non-composited (!NeedsCompositorScrolling). See
-    // PaintLayerScrollableArea::ShouldDirectlyCompositeScrollbar.
-    if (scroll_type != mojom::blink::ScrollType::kCompositor ||
-        !NeedsCompositedScrolling()) {
-      ShowNonMacOverlayScrollbars();
-    }
+    ShowNonMacOverlayScrollbars();
     GetScrollAnchor()->Clear();
   }
   if (ContentCaptureManager* manager = frame_view->GetFrame()
@@ -724,8 +718,8 @@ gfx::Size PaintLayerScrollableArea::PixelSnappedContentsSize(
   // considered at least as large as the container. Otherwise, the snapshot
   // will be clipped by PendingLayer to the content size.
   if (IsA<LayoutView>(GetLayoutBox())) {
-    if (auto* transition = ViewTransitionUtils::GetActiveTransition(
-            GetLayoutBox()->GetDocument());
+    if (auto* transition =
+            ViewTransitionUtils::GetTransition(GetLayoutBox()->GetDocument());
         transition && transition->IsRootTransitioning()) {
       PhysicalSize container_size(transition->GetSnapshotRootSize());
       size.width = std::max(container_size.width, size.width);
@@ -3089,7 +3083,7 @@ void PaintLayerScrollableArea::DidScrollWithScrollbar(
       UseCounter::Count(
           GetLayoutBox()->GetDocument(),
           WebFeature::kScrollbarUseScrollbarButtonReversedDirection);
-      U_FALLTHROUGH;
+      [[fallthrough]];
     case kBackButtonStartPart:
     case kForwardButtonEndPart:
       scrollbar_use_uma =

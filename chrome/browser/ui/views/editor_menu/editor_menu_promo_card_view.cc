@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/views/editor_menu/editor_menu_promo_card_view.h"
 
-#include <algorithm>
-
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/task/sequenced_task_runner.h"
@@ -14,10 +12,10 @@
 #include "chrome/browser/ui/views/editor_menu/utils/utils.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/vector_icons/vector_icons.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/color/color_id.h"
-#include "ui/display/screen.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
@@ -57,17 +55,6 @@ constexpr int kPromoCardIconSizeDip = 48;
 constexpr int kPromoCardHorizontalPaddingDip = 16;
 constexpr gfx::Insets kPromoCardInsets =
     gfx::Insets::VH(12, kPromoCardHorizontalPaddingDip);
-
-constexpr int kPromoCardMinWidthDip = 320;
-constexpr int kPromoCardMaxWidthDip = 592;
-
-// Spacing between this view and the anchor view (context menu).
-constexpr int kMarginDip = 8;
-
-int GetPromoCardWidth(int anchor_view_width) {
-  return std::clamp(anchor_view_width, kPromoCardMinWidthDip,
-                    kPromoCardMaxWidthDip);
-}
 
 int GetPromoCardLabelWidth(int promo_card_width) {
   return promo_card_width - kPromoCardInsets.width() - kPromoCardIconSizeDip -
@@ -113,6 +100,7 @@ views::UniqueWidgetPtr EditorMenuPromoCardView::CreateWidget(
 
 void EditorMenuPromoCardView::AddedToWidget() {
   widget_observation_.Observe(GetWidget());
+  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 }
 
 void EditorMenuPromoCardView::RequestFocus() {
@@ -150,9 +138,17 @@ void EditorMenuPromoCardView::OnWidgetActivationChanged(views::Widget* widget,
   GetWidget()->Close();
 }
 
+bool EditorMenuPromoCardView::AcceleratorPressed(
+    const ui::Accelerator& accelerator) {
+  CHECK_EQ(accelerator.key_code(), ui::VKEY_ESCAPE);
+  CHECK(GetWidget());
+  GetWidget()->Close();
+  return true;
+}
+
 void EditorMenuPromoCardView::UpdateBounds(
     const gfx::Rect& anchor_view_bounds) {
-  const int promo_card_width = GetPromoCardWidth(anchor_view_bounds.width());
+  const int promo_card_width = GetEditorMenuWidth(anchor_view_bounds.width());
 
   // Multiline labels aren't resized properly in flex or box layouts. According
   // to https://crbug.com/678337#c7 this isn't easy to fix. As a workaround, we
@@ -162,30 +158,12 @@ void EditorMenuPromoCardView::UpdateBounds(
   description_->SetMaximumWidth(label_width);
 
   // Since the width of the labels can affect their preferred height, compute
-  // promo card height after label width has been set.
-  const int promo_card_height = GetHeightForWidth(promo_card_width);
+  // promo card preferred size after label width has been set.
+  const gfx::Size promo_card_size(promo_card_width,
+                                  GetHeightForWidth(promo_card_width));
 
-  // Try to align the left edges of the promo card and anchor view. If that
-  // places the promo card partially offscreen, align the right edges instead.
-  int x = anchor_view_bounds.x();
-  if (x + promo_card_width > display::Screen::GetScreen()
-                                 ->GetDisplayMatching(anchor_view_bounds)
-                                 .work_area()
-                                 .right()) {
-    x = anchor_view_bounds.right() - promo_card_width;
-  }
-
-  // Try to position the promo card above the anchor view. If that places the
-  // promo card partially offscreen, position it below the anchor view instead.
-  int y = anchor_view_bounds.y() - kMarginDip - promo_card_height;
-  if (y < display::Screen::GetScreen()
-              ->GetDisplayMatching(anchor_view_bounds)
-              .work_area()
-              .y()) {
-    y = anchor_view_bounds.bottom() + kMarginDip;
-  }
-
-  GetWidget()->SetBounds(gfx::Rect(x, y, promo_card_width, promo_card_height));
+  GetWidget()->SetBounds(
+      GetEditorMenuBounds(anchor_view_bounds, promo_card_size));
 }
 
 void EditorMenuPromoCardView::InitLayout() {

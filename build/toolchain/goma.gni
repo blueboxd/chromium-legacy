@@ -18,3 +18,23 @@ if (use_goma && goma_dir == "") {
 
 assert(!is_win || !use_goma || is_clang,
        "cl.exe does not work on goma, use clang")
+
+if (use_goma) {
+  if (host_os == "win") {
+    print("The gn arg use_goma=true will be deprecated by EOY 2023. " +
+          "Please use `use_remoteexec=true` instead. See " +
+          "https://chromium.googlesource.com/chromium/src/+/main/docs/" +
+          "windows_build_instructions.md#use-reclient " +
+          "for setup instructions.")
+  } else if (host_os == "mac") {
+    print("The gn arg use_goma=true will be deprecated by EOY 2023. " +
+          "Please use `use_remoteexec=true` instead. " +
+          "If you are a googler see http://go/building-chrome-mac" +
+          "#using-remote-execution for setup instructions.")
+  } else {
+    print("The gn arg use_goma=true will be deprecated by EOY 2023. " +
+          "Please use `use_remoteexec=true` instead. See " +
+          "https://chromium.googlesource.com/chromium/src/+/main/docs/" +
+          "linux/build_instructions.md#use-reclient for setup instructions.")
+  }
+}

@@ -395,6 +395,11 @@ const base::FeatureParam<int> kBrowsingTopicsTaxonomyVersion{
 const base::FeatureParam<std::string> kBrowsingTopicsDisabledTopicsList{
     &kBrowsingTopicsParameters, "disabled_topics_list", ""};
 
+// Comma separated list of Topic IDs. Prioritize these topics and their
+// descendants during top topic selection.
+const base::FeatureParam<std::string> kBrowsingTopicsPrioritizedTopicsList{
+    &kBrowsingTopicsParameters, "prioritized_topics_list", ""};
+
 // Enables the deprecatedBrowsingTopics XHR attribute. For this feature to take
 // effect, the main Topics feature has to be enabled first (i.e.
 // `kBrowsingTopics` is enabled, and, either a valid Origin Trial token exists
@@ -430,12 +435,6 @@ BASE_FEATURE(kCacheStorageCodeCacheHintHeader,
              base::FEATURE_DISABLED_BY_DEFAULT);
 const base::FeatureParam<std::string> kCacheStorageCodeCacheHintHeaderName{
     &kCacheStorageCodeCacheHintHeader, "name", "x-CacheStorageCodeCacheHint"};
-
-// Modifies the logic in `blink::CanChangeToUrlForHistoryApi()` to be more
-// spec-compliant.
-BASE_FEATURE(kCanChangeToUrlForHistoryApiUpdate,
-             "CanChangeToUrlForHistoryApiUpdate",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(
     kCanvas2DHibernation,
@@ -748,10 +747,6 @@ BASE_FEATURE(kExcludeLowEntropyImagesFromLCP,
 const base::FeatureParam<double> kMinimumEntropyForLCP{
     &kExcludeLowEntropyImagesFromLCP, "min_bpp", 0.05};
 
-BASE_FEATURE(kExtendScriptResourceLifetime,
-             "ExtendScriptResourceLifetime",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enable the <fencedframe> element; see crbug.com/1123606. Note that enabling
 // this feature does not automatically expose this element to the web, it only
 // allows the element to be enabled by the runtime enabled feature, for origin
@@ -764,6 +759,10 @@ BASE_FEATURE(kFencedFrames, "FencedFrames", base::FEATURE_DISABLED_BY_DEFAULT);
 // * Extra format for ad size macro substitution:
 //   ${AD_WIDTH} and ${AD_HEIGHT}, on top of the previous
 //   {%AD_WIDTH%} and {%AD_HEIGHT%}.
+// * Input validation (no disallowed URI component characters) in
+//   registerAdMacro keys and values.
+// * Send automatic beacons to all registered destinations without requiring
+//   event data to be in place.
 BASE_FEATURE(kFencedFramesM119Features,
              "FencedFramesM119Features",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1027,16 +1026,21 @@ const base::FeatureParam<bool> kLCPCriticalPathPredictorDryRun{
 const base::FeatureParam<int> kLCPCriticalPathPredictorMaxElementLocatorLength{
     &kLCPCriticalPathPredictor, "lcpp_max_element_locator_length", 1024};
 
-const base::FeatureParam<LcppImageLoadPriority>::Option
-    lcpp_image_load_priorities[] = {
-        {LcppImageLoadPriority::kMedium, "medium"},
-        {LcppImageLoadPriority::kHigh, "high"},
-        {LcppImageLoadPriority::kVeryHigh, "very_high"},
+const base::FeatureParam<LcppResourceLoadPriority>::Option
+    lcpp_resource_load_priorities[] = {
+        {LcppResourceLoadPriority::kMedium, "medium"},
+        {LcppResourceLoadPriority::kHigh, "high"},
+        {LcppResourceLoadPriority::kVeryHigh, "very_high"},
 };
-const base::FeatureParam<LcppImageLoadPriority>
+const base::FeatureParam<LcppResourceLoadPriority>
     kLCPCriticalPathPredictorImageLoadPriority{
         &kLCPCriticalPathPredictor, "lcpp_image_load_priority",
-        LcppImageLoadPriority::kVeryHigh, &lcpp_image_load_priorities};
+        LcppResourceLoadPriority::kVeryHigh, &lcpp_resource_load_priorities};
+
+const base::FeatureParam<LcppResourceLoadPriority>
+    kLCPCriticalPathPredictorInfluencerScriptLoadPriority{
+        &kLCPCriticalPathPredictor, "lcpp_script_load_priority",
+        LcppResourceLoadPriority::kVeryHigh, &lcpp_resource_load_priorities};
 
 BASE_FEATURE(kLCPScriptObserver,
              "LCPScriptObserver",
@@ -1047,6 +1051,16 @@ const base::FeatureParam<int> kLCPScriptObserverMaxUrlLength{
 
 const base::FeatureParam<int> kLCPScriptObserverMaxUrlCountPerOrigin{
     &kLCPScriptObserver, "lcpp_max_url_count_per_origin", 5};
+
+BASE_FEATURE(kLCPPFontURLPredictor,
+             "LCPPFontURLPredictor",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<int> kLCPPFontURLPredictorMaxUrlLength{
+    &kLCPPFontURLPredictor, "lcpp_max_font_url_length", 1024};
+
+const base::FeatureParam<int> kLCPPFontURLPredictorMaxUrlCountPerOrigin{
+    &kLCPPFontURLPredictor, "lcpp_max_font_url_count_per_origin", 10};
 
 // Enables reporting as LCP of the time the first frame of a video was painted.
 BASE_FEATURE(kLCPVideoFirstFrame,
@@ -1119,6 +1133,13 @@ const base::FeatureParam<bool>
     kLowPriorityAsyncScriptExecutionMainFrameOnlyParam{
         &kLowPriorityAsyncScriptExecution, "low_pri_async_exec_main_frame_only",
         false};
+
+// kLowPriorityAsyncScriptExecution will exclude scripts that influence LCP
+// element.
+const base::FeatureParam<bool>
+    kLowPriorityAsyncScriptExecutionExcludeLcpInfluencersParam{
+        &kLowPriorityAsyncScriptExecution,
+        "low_pri_async_exec_exclude_lcp_influencers", false};
 
 BASE_FEATURE(kLowPriorityScriptLoading,
              "LowPriorityScriptLoading",
@@ -1201,7 +1222,7 @@ BASE_FEATURE(kNoForcedFrameUpdatesForWebTests,
 
 BASE_FEATURE(kOriginAgentClusterDefaultEnabled,
              "OriginAgentClusterDefaultEnable",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kOriginAgentClusterDefaultWarning,
              "OriginAgentClusterDefaultWarning",
@@ -1405,16 +1426,6 @@ constexpr base::FeatureParam<bool> kPrivateAggregationApiDebugModeEnabledAtAll{
     &kPrivateAggregationApi, "debug_mode_enabled_at_all",
     /*default_value=*/true};
 
-// Controls whether third-party cookie eligibility should be queried before
-// allowing debug mode to be used by a context. If enabled, any
-// `enableDebugMode()` calls in a context that does not have third-party cookie
-// eligibility will essentially have no effect. This param has no effect if
-// `kPrivateAggregationApiDebugModeEnabledAtAll` is disabled.
-constexpr base::FeatureParam<bool>
-    kPrivateAggregationApiDebugModeSettingsCheckEnabled{
-        &kPrivateAggregationApi, "debug_mode_settings_check_enabled",
-        /*default_value=*/false};
-
 BASE_FEATURE(kProcessHtmlDataImmediately,
              "ProcessHtmlDataImmediately",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1431,13 +1442,22 @@ const base::FeatureParam<bool> kProcessHtmlDataImmediatelyMainFrame{
 const base::FeatureParam<bool> kProcessHtmlDataImmediatelySubsequentChunks{
     &kProcessHtmlDataImmediately, "rest", false};
 
-BASE_FEATURE(kProduceCompileHints,
-             "ProduceCompileHints",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kProduceCompileHints2,
+             "ProduceCompileHints2",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 const base::FeatureParam<int> kProduceCompileHintsOnIdleDelayParam{
-    &kProduceCompileHints, "delay-in-ms", 10000};
+    &kProduceCompileHints2, "delay-in-ms", 10000};
 const base::FeatureParam<double> kProduceCompileHintsNoiseLevel{
-    &kProduceCompileHints, "noise probability", 0.5};
+    &kProduceCompileHints2, "noise probability", 0.5};
+const base::FeatureParam<double> kProduceCompileHintsDataProductionLevel{
+    &kProduceCompileHints2, "data production probability", 0.005};
+BASE_FEATURE(kForceProduceCompileHints,
+             "ForceProduceCompileHints",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kConsumeCompileHints,
+             "ConsumeCompileHints",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kQueueBlockingGestureScrolls,
              "QueueBlockingGestureScrolls",
@@ -1526,8 +1546,8 @@ BASE_FEATURE(kRunTextInputUpdatePostLifecycle,
              "RunTextInputUpdatePostLifecycle",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kRuntimeFeatureStateControllerApplyFeatureDiff,
-             "RuntimeFeatureStateControllerApplyFeatureDiff",
+BASE_FEATURE(kOriginTrialStateHostApplyFeatureDiff,
+             "OriginTrialStateHostApplyFeatureDiff",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // https://html.spec.whatwg.org/multipage/system-state.html#safelisted-scheme
@@ -1967,7 +1987,14 @@ BASE_FEATURE(kWebAudioSinkSelection,
              "kWebAudioSinkSelection",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables cache-aware WebFonts loading. See https://crbug.com/570205.
+// Enabling this flag bypasses additional buffering when using the Web Audio
+// API, which may reduce audio output latency but may also increase the
+// probability of an audio glitch.
+BASE_FEATURE(kWebAudioBypassOutputBuffering,
+             "WebAudioBypassOutputBuffering",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+/// Enables cache-aware WebFonts loading. See https://crbug.com/570205.
 // The feature is disabled on Android for WebView API issue discussed at
 // https://crbug.com/942440.
 BASE_FEATURE(kWebFontsCacheAwareTimeoutAdaption,

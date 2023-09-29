@@ -12,7 +12,6 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsSizer;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.MutableFlagWithSafeDefault;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
@@ -26,8 +25,6 @@ import java.util.function.BooleanSupplier;
  * various components lazily.
  */
 public class PageInsightsCoordinator {
-    private static MutableFlagWithSafeDefault sPageInsightsHub =
-            new MutableFlagWithSafeDefault(ChromeFeatureList.CCT_PAGE_INSIGHTS_HUB, false);
 
     private final Context mContext;
 
@@ -42,7 +39,7 @@ public class PageInsightsCoordinator {
 
     /** Returns true if page insight is enabled in the feature flag. */
     public static boolean isFeatureEnabled() {
-        return sPageInsightsHub.isEnabled();
+        return ChromeFeatureList.sCctPageInsightsHub.isEnabled();
     }
 
     /**
@@ -56,13 +53,15 @@ public class PageInsightsCoordinator {
      * @param controlsStateProvider Provides the browser controls' state.
      * @param browserControlsSizer Bottom browser controls resizer.
      * @param isPageInsightsHubEnabled Supplier of the feature flag.
+     * @param firstLoadTimeMs Timestamp for the first page load completion.
      */
     public PageInsightsCoordinator(Context context, ObservableSupplier<Tab> tabProvider,
             Supplier<ShareDelegate> shareDelegateSupplier,
             ManagedBottomSheetController bottomSheetController,
             BottomSheetController bottomUiController, ExpandedSheetHelper expandedSheetHelper,
             BrowserControlsStateProvider controlsStateProvider,
-            BrowserControlsSizer browserControlsSizer, BooleanSupplier isPageInsightsHubEnabled) {
+            BrowserControlsSizer browserControlsSizer, BooleanSupplier isPageInsightsHubEnabled,
+            long firstLoadTimeMs) {
         mContext = context;
         mTabProvider = tabProvider;
         mBottomSheetController = bottomSheetController;
@@ -72,14 +71,15 @@ public class PageInsightsCoordinator {
         mBrowserControlsSizer = browserControlsSizer;
         mMediator = new PageInsightsMediator(mContext, mTabProvider, shareDelegateSupplier,
                 mBottomSheetController, mBottomUiController, mExpandedSheetHelper,
-                mControlsStateProvider, mBrowserControlsSizer, isPageInsightsHubEnabled);
+                mControlsStateProvider, mBrowserControlsSizer, isPageInsightsHubEnabled,
+                firstLoadTimeMs);
     }
 
     /**
      * Launch PageInsights hub in bottom sheet container and fetch the data to show.
      */
     public void launch() {
-        mMediator.openInExpandedState();
+        mMediator.launch();
     }
 
     /**

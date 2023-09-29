@@ -82,6 +82,10 @@ AppListSearchView::AppListSearchView(
   scroll_view_->ClipHeightTo(0, std::numeric_limits<int>::max());
   scroll_view_->SetDrawOverflowIndicator(false);
 
+  // Arrow keys are used for focus updating and the result selection handles the
+  // scrolling.
+  scroll_view_->SetAllowKeyboardScrolling(false);
+
   // Don't paint a background. The bubble already has one.
   scroll_view_->SetBackgroundColor(absl::nullopt);
 
@@ -112,12 +116,14 @@ AppListSearchView::AppListSearchView(
       view_delegate->SetCategoryEnabled(AppListSearchControlCategory::kImages,
                                         false);
 
-      // TODO(crbug.com/1352636): Update the strings with the l10n translated
-      // ones.
-      AppListToastView::Builder toast_view_builder(
-          u"You can now find your images by keyword");
+      const std::u16string notifier_title = l10n_util::GetStringUTF16(
+          IDS_ASH_SEARCH_IMAGE_SEARCH_PRIVACY_NOTICE_TITLE);
+      const std::u16string notifier_subtitle = l10n_util::GetStringUTF16(
+          IDS_ASH_SEARCH_IMAGE_SEARCH_PRIVACY_NOTICE_CONTENT);
+
+      AppListToastView::Builder toast_view_builder(notifier_title);
       toast_view_builder.SetButton(
-          u"Get started",
+          l10n_util::GetStringUTF16(IDS_ASH_CONTINUE_BUTTON),
           base::BindRepeating(&AppListSearchView::OnSearchNotifierButtonPressed,
                               weak_ptr_factory_.GetWeakPtr()));
       search_notifier_ = scroll_contents->AddChildView(
@@ -125,13 +131,25 @@ AppListSearchView::AppListSearchView(
               .SetIcon(ui::ImageModel::FromVectorIcon(
                   vector_icons::kImageSearchIcon, ui::kColorMenuIcon,
                   kSearchNotifierIconSize))
-              .SetSubtitle(
-                  u"Try \'cat\', \'dog\', \'building\', \'receipts\', etc")
+              .SetSubtitle(notifier_subtitle)
+              .SetSubtitleMultiline(true)
               .Build());
       search_notifier_->SetProperty(views::kMarginsKey,
                                     gfx::Insets::TLBR(16, 16, 0, 16));
       search_notifier_->icon()->SetProperty(views::kMarginsKey,
                                             gfx::Insets::TLBR(8, 8, 8, 0));
+      search_notifier_->toast_button()->SetAccessibleName(notifier_subtitle);
+
+      // Add a guidance under AppListSearchView to guide users to move focus to
+      // the search notifier.
+      auto notifier_guide = std::make_unique<views::AXVirtualView>();
+      search_notifier_guide_ = notifier_guide.get();
+      auto& data = notifier_guide->GetCustomData();
+      data.role = ax::mojom::Role::kAlert;
+      data.SetName(notifier_title);
+      data.SetDescription(l10n_util::GetStringUTF16(
+          IDS_ASH_SEARCH_IMAGE_SEARCH_PRIVACY_NOTICE_ACCESSIBILITY_GUIDANCE));
+      GetViewAccessibility().AddVirtualChildView(std::move(notifier_guide));
     }
   }
 
@@ -316,11 +334,46 @@ void AppListSearchView::VisibilityChanged(View* starting_from,
   }
 }
 
+void AppListSearchView::OnKeyEvent(ui::KeyEvent* event) {
+  // Only handle the key event that triggers the focus or result selection
+  // traversal here.
+  if (event->type() != ui::ET_KEY_PRESSED ||
+      !(IsUnhandledArrowKeyEvent(*event) ||
+        event->key_code() == ui::VKEY_TAB)) {
+    return;
+  }
+
+  // Only handle the case when the search notifier has the focus.
+  if (!search_notifier_ || !search_notifier_->toast_button()->HasFocus()) {
+    return;
+  }
+
+  // Left/Right key shouldn't update the focus. Set the event to handled to make
+  // left/right keys no-ops.
+  if (IsUnhandledLeftRightKeyEvent(*event)) {
+    event->SetHandled();
+    return;
+  }
+
+  bool moving_down =
+      (event->key_code() == ui::VKEY_TAB && !event->IsShiftDown()) ||
+      event->key_code() == ui::VKEY_DOWN;
+  if (moving_down) {
+    search_box_view_->EnterSearchResultSelection(*event);
+  } else {
+    search_box_view_->close_button()->RequestFocus();
+  }
+  event->SetHandled();
+}
+
 void AppListSearchView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (!GetVisible()) {
     return;
   }
 
+  // Set the role of AppListSearchView to ListBox along with notifying value
+  // change to "interject" the node announcement before the search result is
+  // announced.
   node_data->role = ax::mojom::Role::kListBox;
 
   std::u16string value;
@@ -351,6 +404,19 @@ void AppListSearchView::OnActiveAppListModelsChanged(
   for (auto* container : result_container_views_) {
     container->SetResults(search_model->results());
   }
+}
+
+bool AppListSearchView::OverrideKeyNavigationAboveSearchResults(
+    const ui::KeyEvent& key_event) {
+  // The toast button on the search notifier is the only target to check if the
+  // `key_event` should be handled. Other events will be handled by either the
+  // search box or the SearchBoxViewDelegate.
+  if (!search_notifier_) {
+    return false;
+  }
+
+  search_notifier_->toast_button()->RequestFocus();
+  return true;
 }
 
 void AppListSearchView::UpdateForNewSearch(bool search_active) {
@@ -390,6 +456,20 @@ void AppListSearchView::OnBoundsChanged(const gfx::Rect& old_bounds) {
 }
 
 void AppListSearchView::OnSelectedResultChanged() {
+  if (search_notifier_guide_) {
+    // Only announce the guidance to the notifier if the selected result is the
+    // first available one.
+    ui::AXNodeData& notifier_guidance_node_data =
+        search_notifier_guide_->GetCustomData();
+    if (search_notifier_ && search_box_view_->search_box()->HasFocus() &&
+        result_selection_controller_
+            ->IsSelectedResultAtFirstAvailableLocation()) {
+      notifier_guidance_node_data.RemoveState(ax::mojom::State::kIgnored);
+    } else {
+      notifier_guidance_node_data.AddState(ax::mojom::State::kIgnored);
+    }
+  }
+
   if (!result_selection_controller_->selected_result()) {
     return;
   }

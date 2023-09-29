@@ -53,13 +53,13 @@
                                            var(--cros-nudge-background-color));
     --emoji-picker-nudge-icon-color: var(--cros-sys-on_primary,
                                      var(--cros-button-icon-color-primary));
-    --emoji-picker-search-field-clear-icon-color: var(--cros-sys-primary,
+    --emoji-picker-search-field-clear-icon-color: var(--cros-sys-secondary,
                                                   var(--cros-icon-color-primary));
     --emoji-picker-search-field-placeholder-color: var(--cros-sys-secondary,
                                                    var(--cros-text-color-disabled));
     --emoji-picker-search-field-search-icon-color: var(--cros-sys-secondary,
                                                    var(--cros-text-color-secondary));
-    --emoji-picker-search-field-container-color: var(--cros-sys-input_field_on_shaded,
+    --emoji-picker-search-field-container-color: var(--cros-sys-input_field_on_base,
                                                  var(--cros-toolbar-search-bg-color));
     --emoji-picker-symbol-color: var(--cros-sys-on_surface,
                                  var(--cros-text-color-primary));
@@ -72,7 +72,7 @@
     background-color: var(--emoji-picker-container-color);
     display: flex;
     flex-direction: column;
-    font-family: 'Roboto', sans-serif;
+    font: var(--cros-body-2-font);
     height: calc(var(--emoji-picker-height) - var(--emoji-picker-top-padding));
     margin-top: 0;
     padding-top: var(--emoji-picker-top-padding);
@@ -140,6 +140,7 @@
 
   .chevron {
     --cr-icon-button-fill-color: var(--emoji-picker-icon-button-icon-color);
+    --cr-icon-button-focus-outline-color: var(--emoji-picker-focus-ring-color);
     --cr-icon-button-icon-size: 20px;
     --cr-icon-button-size: 28px;
     background-color: var(--emoji-picker-container-color);

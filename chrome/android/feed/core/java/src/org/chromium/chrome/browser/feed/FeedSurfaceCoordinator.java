@@ -29,7 +29,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ResettersForTesting;
+import org.chromium.base.TimeUtils;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.jank_tracker.JankScenario;
+import org.chromium.base.jank_tracker.JankTracker;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
@@ -48,6 +51,7 @@ import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareDelegate;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.top.Toolbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
@@ -65,6 +69,11 @@ import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.components.signin.Tribool;
+import org.chromium.components.signin.base.AccountInfo;
+import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.third_party.android.swiperefresh.SwipeRefreshLayout;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.ViewUtils;
@@ -88,6 +97,7 @@ public class FeedSurfaceCoordinator
     private static final long DELAY_FEED_HEADER_IPH_MS = 50;
 
     protected final Activity mActivity;
+    private final JankTracker mJankTracker;
     private final SnackbarManager mSnackbarManager;
     @Nullable
     private final View mNtpHeader;
@@ -291,6 +301,8 @@ public class FeedSurfaceCoordinator
                     endScroll();
                     if (newState == RecyclerView.SCROLL_STATE_SETTLING) {
                         startFling();
+                    } else {
+                        finishJankTracking();
                     }
                     break;
                 }
@@ -298,6 +310,8 @@ public class FeedSurfaceCoordinator
                     endFling();
                     if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
                         startScroll();
+                    } else {
+                        finishJankTracking();
                     }
                     break;
                 }
@@ -312,6 +326,11 @@ public class FeedSurfaceCoordinator
         @Override
         public void onScrolled(RecyclerView view, int dx, int dy) {}
 
+        private void finishJankTracking() {
+            mJankTracker.finishTrackingScenario(JankScenario.FEED_SCROLLING,
+                    TimeUtils.uptimeMillis() * TimeUtils.NANOSECONDS_PER_MILLISECOND);
+        }
+
         private void startScroll() {
             // TODO(nuskos): These next two are just a "hack" to get a nice track name
             // in the UI (it uses the first event it hits). Eventually with the Perfetto
@@ -319,6 +338,7 @@ public class FeedSurfaceCoordinator
             TraceEvent.startAsync("Feed.ScrollState", hashCode());
             TraceEvent.finishAsync("Feed.ScrollState", hashCode());
             TraceEvent.startAsync("Feed.TouchScrollStarted", hashCode());
+            mJankTracker.startTrackingScenario(JankScenario.FEED_SCROLLING);
         }
         private void endScroll() {
             TraceEvent.finishAsync("Feed.TouchScrollEnded", hashCode());
@@ -352,6 +372,7 @@ public class FeedSurfaceCoordinator
      * @param activity The containing {@link Activity}.
      * @param snackbarManager The {@link SnackbarManager} displaying Snackbar UI.
      * @param windowAndroid The window of the page.
+     * @param jankTracker tracks the jank during feed scrolling.
      * @param snapScrollHelper The {@link SnapScrollHelper} for the New Tab Page.
      * @param ntpHeader The extra header on top of the feeds for the New Tab Page.
      * @param toolbarHeight The height of the toolbar which overlaps Feed content at the top of the
@@ -376,9 +397,10 @@ public class FeedSurfaceCoordinator
      * @param tabModelSelector TabModelSelector used to get TabModels we can observe.
      */
     public FeedSurfaceCoordinator(Activity activity, SnackbarManager snackbarManager,
-            WindowAndroid windowAndroid, @Nullable SnapScrollHelper snapScrollHelper,
-            @Nullable View ntpHeader, @Px int toolbarHeight, boolean showDarkBackground,
-            FeedSurfaceDelegate delegate, Profile profile, boolean isPlaceholderShownInitially,
+            WindowAndroid windowAndroid, @Nullable JankTracker jankTracker,
+            @Nullable SnapScrollHelper snapScrollHelper, @Nullable View ntpHeader,
+            @Px int toolbarHeight, boolean showDarkBackground, FeedSurfaceDelegate delegate,
+            Profile profile, boolean isPlaceholderShownInitially,
             BottomSheetController bottomSheetController,
             Supplier<ShareDelegate> shareDelegateSupplier,
             @Nullable ScrollableContainerDelegate externalScrollableContainerDelegate,
@@ -398,6 +420,7 @@ public class FeedSurfaceCoordinator
         mBottomSheetController = bottomSheetController;
         mProfile = profile;
         mWindowAndroid = windowAndroid;
+        mJankTracker = jankTracker;
         mShareSupplier = shareDelegateSupplier;
         mScrollableContainerDelegate = externalScrollableContainerDelegate;
         mPrivacyPreferencesManager = privacyPreferencesManager;
@@ -755,6 +778,29 @@ public class FeedSurfaceCoordinator
     /** Sets the {@link StreamTabId} of the feed given a {@link NewTabPageLaunchOrigin}. */
     public void setTabIdFromLaunchOrigin(@NewTabPageLaunchOrigin int launchOrigin) {
         mMediator.setTabId(getTabIdFromLaunchOrigin(launchOrigin));
+    }
+
+    /*
+     * Returns true if the primary signed-in account is subject to parental controls.
+     */
+    public boolean isPrimaryAccountSupervised() {
+        if (mProfile == null) {
+            return false;
+        }
+        final IdentityManager identityManager =
+                IdentityServicesProvider.get().getIdentityManager(mProfile);
+        final @Nullable CoreAccountInfo primaryAccount =
+                identityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN);
+
+        if (primaryAccount == null) {
+            return false;
+        }
+
+        final @Nullable AccountInfo primaryAccountInfo =
+                identityManager.findExtendedAccountInfoByEmailAddress(primaryAccount.getEmail());
+        return primaryAccountInfo != null
+                && primaryAccountInfo.getAccountCapabilities().isSubjectToParentalControls()
+                == Tribool.TRUE;
     }
 
     /**

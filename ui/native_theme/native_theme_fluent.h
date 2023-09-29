@@ -59,6 +59,7 @@ class NATIVE_THEME_EXPORT NativeThemeFluent : public NativeThemeBase {
   gfx::Size GetPartSize(Part part,
                         State state,
                         const ExtraParams& extra) const override;
+  int GetPaintedScrollbarTrackInset() const override;
 
  private:
   friend class NativeThemeFluentTest;
@@ -97,6 +98,12 @@ class NATIVE_THEME_EXPORT NativeThemeFluent : public NativeThemeBase {
   bool ArrowIconsAvailable() const { return typeface_.get(); }
 
   const char* GetArrowCodePointForScrollbarPart(Part part) const;
+
+  // Used by Overlay Fluent scrollbars to paint buttons with rounded corners.
+  void PaintRoundedButton(cc::PaintCanvas* canvas,
+                          SkRect rect,
+                          cc::PaintFlags paint_flags,
+                          NativeTheme::Part direction) const;
 
   // The value stores a shared pointer to SkTypeface with the font family, which
   // contains arrow icons.

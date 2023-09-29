@@ -705,6 +705,12 @@ void FederatedAuthRequestImpl::RequestToken(
   if (HasPendingRequest()) {
     fedcm_metrics_->RecordRequestTokenStatus(TokenStatus::kTooManyRequests,
                                              requirement);
+
+    AddDevToolsIssue(
+        blink::mojom::FederatedAuthRequestResult::kErrorTooManyRequests);
+    AddConsoleErrorMessage(
+        blink::mojom::FederatedAuthRequestResult::kErrorTooManyRequests);
+
     std::move(callback).Run(RequestTokenStatus::kErrorTooManyRequests,
                             absl::nullopt, "",
                             /*is_account_auto_selected=*/false);
@@ -1049,8 +1055,8 @@ void FederatedAuthRequestImpl::FetchEndpointsForIdps(
     fetch_data_.for_idp_signin = for_idp_signin;
   }
 
-  provider_fetcher_ =
-      std::make_unique<FederatedProviderFetcher>(network_manager_.get());
+  provider_fetcher_ = std::make_unique<FederatedProviderFetcher>(
+      render_frame_host(), network_manager_.get());
   provider_fetcher_->Start(
       fetch_data_.pending_idps, icon_ideal_size, icon_minimum_size,
       base::BindOnce(&FederatedAuthRequestImpl::OnAllConfigAndWellKnownFetched,
@@ -1718,6 +1724,7 @@ void FederatedAuthRequestImpl::OnDismissErrorDialog(
     blink::mojom::FederatedAuthRequestResult result,
     absl::optional<TokenStatus> token_status,
     IdentityRequestDialogController::DismissReason dismiss_reason) {
+  // TODO(crbug.com/1478837): Record metrics for error UI
   CompleteRequestWithError(result, token_status,
                            /*should_delay_callback=*/false);
 }
@@ -1823,6 +1830,7 @@ void FederatedAuthRequestImpl::ShowErrorDialog(
       base::BindOnce(&FederatedAuthRequestImpl::CompleteRequestWithError,
                      weak_ptr_factory_.GetWeakPtr()));
 
+  // TODO(crbug.com/1485710): Refactor IdentityCredentialTokenError
   request_dialog_controller_->ShowErrorDialog(
       GetTopFrameOriginForDisplay(GetEmbeddingOrigin()), iframe_for_display,
       FormatOriginForDisplay(url::Origin::Create(idp_config_url)),
@@ -1835,7 +1843,11 @@ void FederatedAuthRequestImpl::ShowErrorDialog(
           &FederatedAuthRequestImpl::OnDismissErrorDialog,
           weak_ptr_factory_.GetWeakPtr(),
           FederatedAuthRequestResult::kErrorFetchingIdTokenInvalidResponse,
-          TokenStatus::kIdTokenInvalidResponse));
+          TokenStatus::kIdTokenInvalidResponse),
+      error && !error->url.is_empty()
+          ? base::BindOnce(&FederatedAuthRequestImpl::ShowModalDialog,
+                           weak_ptr_factory_.GetWeakPtr(), error->url)
+          : base::NullCallback());
 }
 
 void FederatedAuthRequestImpl::OnTokenResponseReceived(
@@ -1844,29 +1856,31 @@ void FederatedAuthRequestImpl::OnTokenResponseReceived(
     IdpNetworkRequestManager::TokenResult result) {
   CHECK(result.token.empty() || !result.error);
 
-  if (IsFedCmErrorEnabled() &&
-      status.parse_status != IdpNetworkRequestManager::ParseStatus::kSuccess) {
-    ShowErrorDialog(idp->config_url, result.error);
-    return;
-  }
+  auto complete_request_callback =
+      IsFedCmErrorEnabled() &&
+              status.parse_status !=
+                  IdpNetworkRequestManager::ParseStatus::kSuccess
+          ? base::BindOnce(&FederatedAuthRequestImpl::ShowErrorDialog,
+                           weak_ptr_factory_.GetWeakPtr(), idp->config_url,
+                           result.error)
+          : base::BindOnce(&FederatedAuthRequestImpl::CompleteTokenRequest,
+                           weak_ptr_factory_.GetWeakPtr(), std::move(idp),
+                           status, result.token);
 
   // When fetching id tokens we show a "Verify" sheet to users in case fetching
-  // takes a long time due to latency etc.. In case that the fetching process is
+  // takes a long time due to latency etc. In case that the fetching process is
   // fast, we still want to show the "Verify" sheet for at least
   // |token_request_delay_| seconds for better UX.
   token_response_time_ = base::TimeTicks::Now();
   base::TimeDelta fetch_time = token_response_time_ - select_account_time_;
   if (should_complete_request_immediately_ ||
       fetch_time >= token_request_delay_) {
-    CompleteTokenRequest(std::move(idp), status, result.token);
+    std::move(complete_request_callback).Run();
     return;
   }
 
   base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&FederatedAuthRequestImpl::CompleteTokenRequest,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(idp), status,
-                     result.token),
+      FROM_HERE, std::move(complete_request_callback),
       token_request_delay_ - fetch_time);
 }
 

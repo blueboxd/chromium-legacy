@@ -9,13 +9,17 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/test/mock_callback.h"
+#include "components/url_formatter/url_formatter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_utils.h"
 
+using ::testing::HasSubstr;
 using ::testing::NotNull;
+
 using UiResult = AutoPipSettingView::UiResult;
 
 struct TestParams {
@@ -29,10 +33,6 @@ class AutoPipSettingViewTest : public views::ViewsTestBase,
 
   void SetUp() override {
     ViewsTestBase::SetUp();
-
-    // Create parent Widget.
-    parent_widget_ = CreateTestWidget();
-    parent_widget_->Show();
 
     // Create the anchor Widget.
     views::Widget::InitParams anchor_view_widget_params =
@@ -50,113 +50,176 @@ class AutoPipSettingViewTest : public views::ViewsTestBase,
     const gfx::Rect browser_view_overridden_bounds(0, 0, 500, 500);
 
     // Create the Auto PiP Setting View.
-    setting_view_ = new AutoPipSettingView(
-        result_cb().Get(), hide_view_cb().Get(), browser_view_overridden_bounds,
-        anchor_view, views::BubbleBorder::TOP_CENTER,
-        parent_widget_->GetNativeView());
-    setting_view_->Show();
-
-    event_generator_ = std::make_unique<ui::test::EventGenerator>(
-        views::GetRootWindow(setting_view_->GetWidget()));
+    setting_view_ = std::make_unique<AutoPipSettingView>(
+        result_cb().Get(), hide_view_cb().Get(), origin_,
+        browser_view_overridden_bounds, anchor_view,
+        views::BubbleBorder::TOP_CENTER);
   }
 
   void TearDown() override {
-    setting_view_ = nullptr;
     anchor_view_widget_.reset();
-    parent_widget_.reset();
-    event_generator_.reset();
+    setting_view_.reset();
     ViewsTestBase::TearDown();
   }
 
-  ui::test::EventGenerator* event_generator() { return event_generator_.get(); }
+  std::unique_ptr<AutoPipSettingView>& setting_view() { return setting_view_; }
 
-  const views::Label* autopip_description() const {
-    return setting_view_->get_autopip_description_for_testing();
-  }
-
-  const views::MdTextButton* allow_once_button() const {
-    return setting_view_->get_allow_once_button_for_testing();
-  }
-
-  const views::MdTextButton* allow_on_every_visit_button() const {
-    return setting_view_->get_allow_on_every_visit_button_button_for_testing();
-  }
-
-  const views::MdTextButton* block_button() const {
-    return setting_view_->get_block_button_for_testing();
-  }
-
-  const AutoPipSettingView* setting_view() const { return setting_view_; }
-  AutoPipSettingView* setting_view() { return setting_view_; }
+  const GURL origin() const { return origin_; }
 
   base::MockOnceCallback<void(UiResult)>& result_cb() { return result_cb_; }
   base::MockOnceCallback<void()>& hide_view_cb() { return hide_view_cb_; }
 
-  const views::MdTextButton* GetButtonForUiResult(UiResult ui_result) const {
+  const views::MdTextButton* GetButtonForUiResult(UiResult ui_result,
+                                                  views::Widget* widget) const {
     switch (ui_result) {
       case UiResult::kAllowOnce:
-        return allow_once_button();
+        return GetButton(UiResult::kAllowOnce, widget);
       case UiResult::kAllowOnEveryVisit:
-        return allow_on_every_visit_button();
+        return GetButton(UiResult::kAllowOnEveryVisit, widget);
       case UiResult::kBlock:
-        return block_button();
+        return GetButton(UiResult::kBlock, widget);
       case UiResult::kDismissed:
         return nullptr;
     }
   }
 
+  void ClickButton(const views::MdTextButton* button_to_test,
+                   views::Widget* widget) {
+    std::unique_ptr<ui::test::EventGenerator> event_generator =
+        std::make_unique<ui::test::EventGenerator>(
+            views::GetRootWindow(widget));
+    event_generator->MoveMouseTo(
+        button_to_test->GetBoundsInScreen().CenterPoint());
+    event_generator->ClickLeftButton();
+  }
+
+  const views::MdTextButton* GetButton(UiResult button_id,
+                                       views::Widget* widget) const {
+    return static_cast<views::MdTextButton*>(
+        widget->GetContentsView()->GetViewByID(static_cast<int>(button_id)));
+  }
+
  private:
   base::MockOnceCallback<void(UiResult)> result_cb_;
   base::MockOnceCallback<void()> hide_view_cb_;
-  std::unique_ptr<views::Widget> parent_widget_;
+  const GURL origin_{"https://example.com"};
   std::unique_ptr<views::Widget> anchor_view_widget_;
-  raw_ptr<AutoPipSettingView> setting_view_ = nullptr;
-  std::unique_ptr<ui::test::EventGenerator> event_generator_;
+  std::unique_ptr<AutoPipSettingView> setting_view_;
 };
 
 TEST_F(AutoPipSettingViewTest, TestInitControlViewButton) {
-  EXPECT_TRUE(setting_view()->GetVisible());
-  ASSERT_THAT(allow_once_button(), NotNull());
-  EXPECT_EQ(gfx::ALIGN_CENTER, allow_once_button()->GetHorizontalAlignment());
-  EXPECT_EQ(ui::ButtonStyle::kTonal, allow_once_button()->GetStyle());
-}
-
-TEST_F(AutoPipSettingViewTest, TestSetTitle) {
-  EXPECT_TRUE(setting_view()->GetVisible());
-  const auto* expected_title =
-      u"Sample long title, that should cause the widget size to be adjusted.";
-  // Set small size, which should be updated to accommodate the long title.
-  const auto initial_widget_size = gfx::Size(10, 10);
-  setting_view()->GetWidget()->SetSize(initial_widget_size);
-  setting_view()->SetDialogTitle(expected_title);
-
-  EXPECT_FALSE(setting_view()->ShouldCenterWindowTitleText());
-  EXPECT_EQ(expected_title, setting_view()->GetWindowTitle());
-  EXPECT_GE(
-      setting_view()->GetWidget()->GetWindowBoundsInScreen().size().width(),
-      initial_widget_size.width());
-  EXPECT_GE(
-      setting_view()->GetWidget()->GetWindowBoundsInScreen().size().height(),
-      initial_widget_size.height());
+  views::Widget* widget =
+      views::BubbleDialogDelegate::CreateBubble(std::move(setting_view()));
+  widget->Show();
+  EXPECT_TRUE(widget->IsVisible());
+  const auto* allow_once_button = GetButton(UiResult::kAllowOnce, widget);
+  ASSERT_THAT(allow_once_button, NotNull());
+  EXPECT_EQ(gfx::ALIGN_CENTER, allow_once_button->GetHorizontalAlignment());
+  EXPECT_EQ(ui::ButtonStyle::kTonal, allow_once_button->GetStyle());
 }
 
 TEST_F(AutoPipSettingViewTest, TestShow) {
-  ASSERT_THAT(setting_view()->GetWidget(), NotNull());
-  EXPECT_TRUE(setting_view()->GetVisible());
+  views::Widget* widget =
+      views::BubbleDialogDelegate::CreateBubble(std::move(setting_view()));
+  widget->Show();
+  EXPECT_TRUE(widget->IsVisible());
 }
 
 TEST_F(AutoPipSettingViewTest, TestViewConstructor) {
-  EXPECT_TRUE(setting_view()->GetVisible());
   EXPECT_EQ(views::BubbleBorder::TOP_CENTER, setting_view()->arrow());
   EXPECT_TRUE(setting_view()->use_custom_frame());
 }
 
-TEST_F(AutoPipSettingViewTest, VerifyBubbleBorderCustomizations) {
-  EXPECT_TRUE(setting_view()->GetVisible());
+TEST_F(AutoPipSettingViewTest, TestBubbleTitleNoElide) {
+  // Get the origin text for testing.
+  const auto origin_text = setting_view()->get_origin_text_for_testing();
 
-  // Verify Bubble border customizations.
-  EXPECT_EQ(views::BubbleBorder::STANDARD_SHADOW,
-            setting_view()->GetBubbleFrameView()->bubble_border()->shadow());
+  // Create and show bubble.
+  views::Widget* widget =
+      views::BubbleDialogDelegate::CreateBubble(std::move(setting_view()));
+  widget->Show();
+
+  // Verify that the bubble title contains the origin.
+  EXPECT_EQ(base::UTF16ToUTF8(origin_text), origin().host());
+}
+
+TEST_F(AutoPipSettingViewTest, TestBubbleTitleElideBehaviorForNonFileURL) {
+  // Set up the setting view.
+  const GURL origin{
+      "https://example_very_long_url_for_testing_that_should_be_elided.com"};
+
+  auto anchor_view_widget = CreateTestWidget();
+  anchor_view_widget->Show();
+  auto* anchor_view =
+      anchor_view_widget->SetContentsView(std::make_unique<views::View>());
+
+  auto setting_view = std::make_unique<AutoPipSettingView>(
+      result_cb().Get(), hide_view_cb().Get(), origin, gfx::Rect(), anchor_view,
+      views::BubbleBorder::TOP_CENTER);
+
+  // Get the origin text for testing.
+  const auto origin_text = setting_view->get_origin_text_for_testing();
+
+  // Create and show bubble.
+  views::Widget* widget =
+      views::BubbleDialogDelegate::CreateBubble(std::move(setting_view));
+  widget->Show();
+
+  // Ensure that the origin text has been elided at head.
+  EXPECT_TRUE(
+      base::StartsWith(origin_text, std::u16string(gfx::kEllipsisUTF16)));
+}
+
+TEST_F(AutoPipSettingViewTest, TestBubbleTitleElideBehaviorForFileURL) {
+  // Set up the setting view.
+  const GURL origin{
+      "file://example_very_long_file_url_for_testing_that_should_be_elided"};
+
+  auto anchor_view_widget = CreateTestWidget();
+  anchor_view_widget->Show();
+  auto* anchor_view =
+      anchor_view_widget->SetContentsView(std::make_unique<views::View>());
+
+  auto setting_view = std::make_unique<AutoPipSettingView>(
+      result_cb().Get(), hide_view_cb().Get(), origin, gfx::Rect(), anchor_view,
+      views::BubbleBorder::TOP_CENTER);
+
+  // Get the origin text for testing.
+  const auto origin_text = setting_view->get_origin_text_for_testing();
+
+  // Create and show bubble.
+  views::Widget* widget =
+      views::BubbleDialogDelegate::CreateBubble(std::move(setting_view));
+  widget->Show();
+
+  // Ensure that the origin text has been elided at tail.
+  EXPECT_TRUE(base::EndsWith(origin_text, std::u16string(gfx::kEllipsisUTF16)));
+}
+
+TEST_F(AutoPipSettingViewTest, TestOriginLabelForGURLWithLocalHost) {
+  // Set up the setting view.
+  const GURL origin{
+      "file:///example_very_long_file_url_for_testing_that_should_be_elided"};
+
+  auto anchor_view_widget = CreateTestWidget();
+  anchor_view_widget->Show();
+  auto* anchor_view =
+      anchor_view_widget->SetContentsView(std::make_unique<views::View>());
+
+  auto setting_view = std::make_unique<AutoPipSettingView>(
+      result_cb().Get(), hide_view_cb().Get(), origin, gfx::Rect(), anchor_view,
+      views::BubbleBorder::TOP_CENTER);
+
+  // Get the origin text for testing.
+  const auto origin_text = setting_view->get_origin_text_for_testing();
+
+  // Create and show bubble.
+  views::Widget* widget =
+      views::BubbleDialogDelegate::CreateBubble(std::move(setting_view));
+  widget->Show();
+
+  // Verify that the bubble title contains the origin.
+  EXPECT_EQ(origin_text, u"localhost");
 }
 
 const struct TestParams kTestParams[] = {{UiResult::kAllowOnce},
@@ -169,10 +232,12 @@ INSTANTIATE_TEST_SUITE_P(AllButtonCallbacks,
 
 // Test UiResult callbacks.
 TEST_P(AutoPipSettingViewTest, ButtonCallbackTest) {
-  EXPECT_TRUE(setting_view()->GetVisible());
+  views::Widget* widget =
+      views::BubbleDialogDelegate::CreateBubble(std::move(setting_view()));
+  widget->Show();
 
   const views::MdTextButton* button_to_test =
-      GetButtonForUiResult(GetParam().ui_result);
+      GetButtonForUiResult(GetParam().ui_result, widget);
   if (!button_to_test) {
     return;
   }
@@ -180,13 +245,10 @@ TEST_P(AutoPipSettingViewTest, ButtonCallbackTest) {
   EXPECT_CALL(result_cb(), Run(GetParam().ui_result));
 
   // Move mouse to the center of the button.
-  event_generator()->MoveMouseTo(
-      button_to_test->GetBoundsInScreen().CenterPoint());
-  event_generator()->ClickLeftButton();
+  ClickButton(button_to_test, widget);
 
-  // Verify that the view is hidden and Widget closed.
-  EXPECT_TRUE(setting_view()->GetWidget()->IsClosed());
-  EXPECT_FALSE(setting_view()->GetVisible());
+  // Verify that the widget closed.
+  EXPECT_TRUE(widget->IsClosed());
 }
 
 INSTANTIATE_TEST_SUITE_P(AllMultipleClicks,
@@ -195,10 +257,12 @@ INSTANTIATE_TEST_SUITE_P(AllMultipleClicks,
 
 // Verify that multiple clicks on UI button does not crash.
 TEST_P(AutoPipSettingViewTest, MultipleClicksDontCrash) {
-  EXPECT_TRUE(setting_view()->GetVisible());
+  views::Widget* widget =
+      views::BubbleDialogDelegate::CreateBubble(std::move(setting_view()));
+  widget->Show();
 
   const views::MdTextButton* button_to_test =
-      GetButtonForUiResult(GetParam().ui_result);
+      GetButtonForUiResult(GetParam().ui_result, widget);
   if (!button_to_test) {
     return;
   }
@@ -206,12 +270,11 @@ TEST_P(AutoPipSettingViewTest, MultipleClicksDontCrash) {
   EXPECT_CALL(result_cb(), Run(GetParam().ui_result));
 
   // Move mouse to the center of the button.
-  event_generator()->MoveMouseTo(
-      button_to_test->GetBoundsInScreen().CenterPoint());
+  ClickButton(button_to_test, widget);
 
   // Perform multiple clicks to verify there are no crashes.
-  event_generator()->ClickLeftButton();
-  event_generator()->ClickLeftButton();
+  ClickButton(button_to_test, widget);
+  ClickButton(button_to_test, widget);
 }
 
 INSTANTIATE_TEST_SUITE_P(AllButtonCallbacksHideOverlayBackgroundLayer,
@@ -220,10 +283,12 @@ INSTANTIATE_TEST_SUITE_P(AllButtonCallbacksHideOverlayBackgroundLayer,
 
 // Verify that the |hide_view_cb_| is executed.
 TEST_P(AutoPipSettingViewTest, OverlayBackgroundLayerIsHidden) {
-  EXPECT_TRUE(setting_view()->GetVisible());
+  views::Widget* widget =
+      views::BubbleDialogDelegate::CreateBubble(std::move(setting_view()));
+  widget->Show();
 
   const views::MdTextButton* button_to_test =
-      GetButtonForUiResult(GetParam().ui_result);
+      GetButtonForUiResult(GetParam().ui_result, widget);
   if (!button_to_test) {
     return;
   }
@@ -233,7 +298,5 @@ TEST_P(AutoPipSettingViewTest, OverlayBackgroundLayerIsHidden) {
   EXPECT_CALL(hide_view_cb(), Run());
 
   // Move mouse to the center of the button.
-  event_generator()->MoveMouseTo(
-      button_to_test->GetBoundsInScreen().CenterPoint());
-  event_generator()->ClickLeftButton();
+  ClickButton(button_to_test, widget);
 }

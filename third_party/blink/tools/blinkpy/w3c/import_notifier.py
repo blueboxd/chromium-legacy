@@ -56,18 +56,13 @@ class ImportNotifier:
             self.host)
 
         self._monorail_api = MonorailAPI
+        self._buganizer_api = BuganizerClient
         self.default_port = host.port_factory.get()
         self.default_port.set_option_default(
             'test_types', typing.get_args(wpt_metadata.TestType))
         self.finder = path_finder.PathFinder(host.filesystem)
         self.owners_extractor = DirectoryOwnersExtractor(host)
         self.new_failures_by_directory = defaultdict(list)
-
-        try:
-            self.buganizer_client = BuganizerClient()
-        except Exception as e:
-            _log.warning('buganizer instantiation failed')
-            _log.warning(e)
 
     def main(self,
              wpt_revision_start,
@@ -341,7 +336,11 @@ class ImportNotifier:
                              'was not added to the CC list.')
 
             # component could be None.
-            components = [metadata.component] if metadata.component else None
+            components = [metadata.monorail_component
+                          ] if metadata.monorail_component else None
+            buganizer_public_components = [
+                metadata.buganizer_public_component
+            ] if metadata.buganizer_public_component else None
 
             prologue = ('WPT import {} introduced new failures in {}:\n\n'
                         'List of new failures:\n'.format(
@@ -381,6 +380,10 @@ class ImportNotifier:
                                                    labels=['Test-WebTest'])
             _log.info(bug)
             _log.info("WPT-NOTIFY enabled in %s; adding the bug to the pending list." % full_directory)
+
+            # TODO(crbug.com/1487196): refactor this so we use a common issue which is converted later to
+            # buganizer or monorail specific issue.
+            bug.buganizer_public_components = buganizer_public_components
             bugs.append(bug)
         return bugs
 
@@ -451,20 +454,32 @@ class ImportNotifier:
 
         _log.info('Filing %d bugs in the pending list to Monorail', len(bugs))
         api = self._get_monorail_api(service_account_key_json)
-        for index, bug in enumerate(bugs, start=1):
+        buganizer_api = None
+        try:
+            buganizer_api = self._get_buganizer_api()
+        except Exception as e:
+            _log.warning('buganizer instantiation failed')
+            _log.warning(e)
 
-            if USE_BUGANIZER:
-                buganizer_res = self.buganizer_client.NewIssue(
+        for index, bug in enumerate(bugs, start=1):
+            buganizer_component_id = BUGANIZER_WPT_COMPONENT
+            if buganizer_api and USE_BUGANIZER:
+                if bug.buganizer_public_components:
+                    buganizer_component_id = bug.buganizer_public_components[0]
+                buganizer_res = buganizer_api.NewIssue(
                     title=bug.summary,
                     description=bug.description,
                     cc=bug.cc,
                     status="New",
-                    componentId=BUGANIZER_WPT_COMPONENT)
+                    componentId=buganizer_component_id)
             else:
                 # using monorail
                 response = api.insert_issue(bug)
                 _log.info('[%d] Filed bug: %s', index,
                           MonorailIssue.crbug_link(response['id']))
+
+    def _get_buganizer_api(self):
+        return self._buganizer_api()
 
     def _get_monorail_api(self, service_account_key_json):
         if service_account_key_json:

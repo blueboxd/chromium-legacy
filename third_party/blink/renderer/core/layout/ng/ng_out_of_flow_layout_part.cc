@@ -6,6 +6,7 @@
 
 #include <math.h>
 
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/anchor_position_scroll_data.h"
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
@@ -1842,6 +1843,33 @@ NGOutOfFlowLayoutPart::TryCalculateOffset(
       candidate_style, node_info.constraint_space.AvailableSize(),
       anchor_evaluator);
 
+  {
+    auto& document = node_info.node.GetDocument();
+    if (candidate_style.ResolvedJustifySelf(ItemPosition::kNormal)
+            .GetPosition() != ItemPosition::kNormal) {
+      if (insets.inline_start && insets.inline_end) {
+        UseCounter::Count(document,
+                          WebFeature::kOutOfFlowJustifySelfBothInsets);
+      } else if (insets.inline_start || insets.inline_end) {
+        UseCounter::Count(document,
+                          WebFeature::kOutOfFlowJustifySelfSingleInset);
+      } else {
+        UseCounter::Count(document, WebFeature::kOutOfFlowJustifySelfNoInsets);
+      }
+    }
+
+    if (candidate_style.ResolvedAlignSelf(ItemPosition::kNormal)
+            .GetPosition() != ItemPosition::kNormal) {
+      if (insets.block_start && insets.block_end) {
+        UseCounter::Count(document, WebFeature::kOutOfFlowAlignSelfBothInsets);
+      } else if (insets.block_start || insets.block_end) {
+        UseCounter::Count(document, WebFeature::kOutOfFlowAlignSelfSingleInset);
+      } else {
+        UseCounter::Count(document, WebFeature::kOutOfFlowAlignSelfNoInsets);
+      }
+    }
+  }
+
   const LogicalRect unclamped_available_rect =
       ComputeOutOfFlowAvailableRect(node_info.node, node_info.constraint_space,
                                     insets, node_info.static_position);
@@ -2021,11 +2049,7 @@ const NGLayoutResult* NGOutOfFlowLayoutPart::Layout(
                          is_last_fragmentainer_so_far);
   }
 
-  if (layout_result->Status() != NGLayoutResult::kSuccess) {
-    DCHECK_EQ(layout_result->Status(),
-              NGLayoutResult::kOutOfFragmentainerSpace);
-    return layout_result;
-  }
+  DCHECK_EQ(layout_result->Status(), NGLayoutResult::kSuccess);
 
   layout_result->GetMutableForOutOfFlow().SetOutOfFlowInsetsForGetComputedStyle(
       offset_info.insets_for_get_computed_style,
@@ -2253,16 +2277,7 @@ void NGOutOfFlowLayoutPart::AddOOFToFragmentainer(
     HeapVector<NodeToLayout>* fragmented_descendants) {
   const NGLayoutResult* result = LayoutOOFNode(descendant, fragmentainer_space,
                                                is_last_fragmentainer_so_far);
-
-  if (result->Status() != NGLayoutResult::kSuccess) {
-    DCHECK_EQ(result->Status(), NGLayoutResult::kOutOfFragmentainerSpace);
-    // If we're out of space, continue layout in the next fragmentainer.
-    NodeToLayout fragmented_descendant = descendant;
-    fragmented_descendant.offset_info.offset.block_offset = LayoutUnit();
-    fragmented_descendants->emplace_back(fragmented_descendant);
-    *has_actual_break_inside = true;
-    return;
-  }
+  DCHECK_EQ(result->Status(), NGLayoutResult::kSuccess);
 
   // Apply the relative positioned offset now that fragmentation is complete.
   LogicalOffset oof_offset = result->OutOfFlowPositionedOffset();
@@ -2622,10 +2637,6 @@ void NGOutOfFlowLayoutPart::ReplaceFragment(
       // that contains the fragment.
       bool is_out_of_flow = containing_block->IsOutOfFlowPositioned();
       containing_block = containing_block->ContainingNGBox();
-      if (containing_block->IsColumnSpanAll()) {
-        is_inside_spanner = true;
-        continue;
-      }
       if (containing_block->IsFragmentationContextRoot() && !is_out_of_flow) {
         // If the OOF element we are searching for has a CB that is nested
         // within a spanner, that OOF will *not* be laid out in the nearest
@@ -2637,6 +2648,9 @@ void NGOutOfFlowLayoutPart::ReplaceFragment(
           continue;
         }
         break;
+      }
+      if (containing_block->IsColumnSpanAll()) {
+        is_inside_spanner = true;
       }
     } while (containing_block->MightBeInsideFragmentationContext());
 

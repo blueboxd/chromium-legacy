@@ -30,7 +30,6 @@
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
-#include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_host.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
@@ -65,6 +64,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
+#include "third_party/blink/public/common/service_worker/embedded_worker_status.h"
 #include "third_party/blink/public/common/service_worker/service_worker_scope_match.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
@@ -967,31 +967,28 @@ ServiceWorkerContextWrapper::GetRunningServiceWorkerInfos() {
   return running_service_workers_;
 }
 
+bool ServiceWorkerContextWrapper::IsLiveStartingServiceWorker(
+    int64_t service_worker_version_id) {
+  auto* version = GetLiveServiceWorker(service_worker_version_id);
+  return (version) ? version->running_status() ==
+                         blink::EmbeddedWorkerStatus::kStarting
+                   : false;
+}
+
 bool ServiceWorkerContextWrapper::IsLiveRunningServiceWorker(
     int64_t service_worker_version_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // We might be shutting down.
-  if (!context())
-    return false;
-
-  auto* version = context()->GetLiveVersion(service_worker_version_id);
-  if (!version)
-    return false;
-
-  auto running_status = version->running_status();
-  if (running_status != EmbeddedWorkerStatus::STARTING &&
-      running_status != EmbeddedWorkerStatus::RUNNING) {
-    return false;
-  }
-
-  return true;
+  auto* version = GetLiveServiceWorker(service_worker_version_id);
+  return (version) ? version->running_status() ==
+                         blink::EmbeddedWorkerStatus::kRunning
+                   : false;
 }
 
 service_manager::InterfaceProvider&
 ServiceWorkerContextWrapper::GetRemoteInterfaces(
     int64_t service_worker_version_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  CHECK(IsLiveRunningServiceWorker(service_worker_version_id));
+  CHECK(IsLiveStartingServiceWorker(service_worker_version_id) ||
+        IsLiveRunningServiceWorker(service_worker_version_id));
 
   // This function should only be called on live running service workers
   // so it should be safe to dereference the returned pointer without
@@ -1603,7 +1600,7 @@ void ServiceWorkerContextWrapper::DidFindRegistrationForNavigationHint(
     return;
   }
   if (registration->active_version()->running_status() ==
-      EmbeddedWorkerStatus::RUNNING) {
+      blink::EmbeddedWorkerStatus::kRunning) {
     std::move(callback).Run(
         StartServiceWorkerForNavigationHintResult::ALREADY_RUNNING);
     return;
@@ -1645,7 +1642,7 @@ void ServiceWorkerContextWrapper::DidFindRegistrationForWarmUp(
       registration->active_version()->fetch_handler_existence() ==
           ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST ||
       registration->active_version()->running_status() ==
-          EmbeddedWorkerStatus::RUNNING) {
+          blink::EmbeddedWorkerStatus::kRunning) {
     std::move(callback).Run();
     MaybeProcessPendingWarmUpRequest();
     return;
@@ -1947,6 +1944,17 @@ void ServiceWorkerContextWrapper::ClearRunningServiceWorkers() {
       observer.OnVersionStoppedRunning(version_id);
   }
   running_service_workers_.clear();
+}
+
+ServiceWorkerVersion* ServiceWorkerContextWrapper::GetLiveServiceWorker(
+    int64_t service_worker_version_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // We might be shutting down.
+  if (!context()) {
+    return nullptr;
+  }
+
+  return context()->GetLiveVersion(service_worker_version_id);
 }
 
 }  // namespace content

@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 import '//components/autofill/ios/form_util/resources/create_fill_namespace.js';
-import '//components/autofill/ios/form_util/resources/fill_constants.js';
 import '//components/autofill/ios/form_util/resources/fill_element_inference.js';
 import '//components/autofill/ios/form_util/resources/fill_util.js';
+
+import * as fillConstants from '//components/autofill/ios/form_util/resources/fill_constants.js';
 
 // This file provides methods used to fill forms in JavaScript.
 
@@ -24,6 +25,9 @@ import '//components/autofill/ios/form_util/resources/fill_util.js';
  *   is_focusable: boolean,
  *   should_autocomplete: boolean,
  *   role: number,
+ *   placeholder_attribute: string,
+ *   aria_label: string,
+ *   aria_description: string,
  *   option_contents: Array<string>,
  *   option_values: Array<string>
  * }}
@@ -97,7 +101,7 @@ function extractFieldsFromControlElements_(
 
     // To avoid overly expensive computation, we impose a maximum number of
     // allowable fields.
-    if (formFields.length > __gCrWeb.fill.MAX_EXTRACTABLE_FIELDS) {
+    if (formFields.length > fillConstants.MAX_EXTRACTABLE_FIELDS) {
       return false;
     }
   }
@@ -304,9 +308,9 @@ __gCrWeb.fill.formOrFieldsetsToFormData = function(
       currentField['label'] =
           __gCrWeb.fill.inferLabelForElement(controlElement);
     }
-    if (currentField['label'].length > __gCrWeb.fill.MAX_DATA_LENGTH) {
+    if (currentField['label'].length > fillConstants.MAX_DATA_LENGTH) {
       currentField['label'] =
-          currentField['label'].substr(0, __gCrWeb.fill.MAX_DATA_LENGTH);
+          currentField['label'].substr(0, fillConstants.MAX_DATA_LENGTH);
     }
 
     if (controlElement === formControlElement) {
@@ -398,10 +402,8 @@ __gCrWeb.fill.webFormElementToFormData = function(
  *
  * @param {FormControlElement} element The element to be processed.
  * @param {number} extractMask A bit field mask to extract data from |element|.
- *     See the document on variable __gCrWeb.fill.EXTRACT_MASK_NONE,
- *     __gCrWeb.fill.EXTRACT_MASK_VALUE,
- *     __gCrWeb.fill.EXTRACT_MASK_OPTION_TEXT and
- *     __gCrWeb.fill.EXTRACT_MASK_OPTIONS.
+ *     See the documentation on variable EXTRACT_MASK_VALUE,
+ *     EXTRACT_MASK_OPTION_TEXT and EXTRACT_MASK_OPTIONS.
  * @param {AutofillFormFieldData} field Field to fill in the element
  *     information.
  */
@@ -429,7 +431,7 @@ __gCrWeb.fill.webFormControlElementToFormField = function(
     field['autocomplete_attribute'] = autocompleteAttribute;
   }
   if (field['autocomplete_attribute'] != null &&
-      field['autocomplete_attribute'].length > __gCrWeb.fill.MAX_DATA_LENGTH) {
+      field['autocomplete_attribute'].length > fillConstants.MAX_DATA_LENGTH) {
     // Discard overly long attribute values to avoid DOS-ing the browser
     // process. However, send over a default string to indicate that the
     // attribute was present.
@@ -439,6 +441,15 @@ __gCrWeb.fill.webFormControlElementToFormField = function(
   const roleAttribute = element.getAttribute('role');
   if (roleAttribute && roleAttribute.toLowerCase() === 'presentation') {
     field['role'] = __gCrWeb.fill.ROLE_ATTRIBUTE_PRESENTATION;
+  }
+
+  field['placeholder_attribute'] = element.getAttribute('placeholder') || '';
+  if (field['placeholder_attribute'] != null &&
+      field['placeholder_attribute'].length > fillConstants.MAX_DATA_LENGTH) {
+    // Discard overly long attribute values to avoid DOS-ing the browser
+    // process. However, send over a default string to indicate that the
+    // attribute was present.
+    field['placeholder_attribute'] = 'x-max-data-length-exceeded';
   }
 
   field['aria_label'] = __gCrWeb.fill.getAriaLabel(element);
@@ -468,18 +479,18 @@ __gCrWeb.fill.webFormControlElementToFormField = function(
     field['is_checkable'] = __gCrWeb.fill.isCheckableElement(element);
   } else if (__gCrWeb.fill.isTextAreaElement(element)) {
     // Nothing more to do in this case.
-  } else if (extractMask & __gCrWeb.fill.EXTRACT_MASK_OPTIONS) {
+  } else if (extractMask & fillConstants.EXTRACT_MASK_OPTIONS) {
     __gCrWeb.fill.getOptionStringsFromElement(element, field);
   }
 
-  if (!(extractMask & __gCrWeb.fill.EXTRACT_MASK_VALUE)) {
+  if (!(extractMask & fillConstants.EXTRACT_MASK_VALUE)) {
     return;
   }
 
   let value = __gCrWeb.fill.value(element);
 
   if (__gCrWeb.fill.isSelectElement(element) &&
-      (extractMask & __gCrWeb.fill.EXTRACT_MASK_OPTION_TEXT)) {
+      (extractMask & fillConstants.EXTRACT_MASK_OPTION_TEXT)) {
     // Convert the |select_element| value to text if requested.
     const options = element.options;
     for (let index = 0; index < options.length; ++index) {
@@ -497,8 +508,8 @@ __gCrWeb.fill.webFormControlElementToFormField = function(
   // which isn't really meaningful here, but we need to follow the same logic to
   // get the same form signature wherever possible (to get the benefits of the
   // existing crowdsourced field detection corpus).
-  if (value.length > __gCrWeb.fill.MAX_DATA_LENGTH) {
-    value = value.substr(0, __gCrWeb.fill.MAX_DATA_LENGTH);
+  if (value.length > fillConstants.MAX_DATA_LENGTH) {
+    value = value.substr(0, fillConstants.MAX_DATA_LENGTH);
   }
   field['value'] = value;
 };
@@ -515,7 +526,7 @@ __gCrWeb.fill.webFormControlElementToFormField = function(
 __gCrWeb.fill.autofillSubmissionData = function(form) {
   const formData = new __gCrWeb['common'].JSONSafeObject();
   const extractMask =
-      __gCrWeb.fill.EXTRACT_MASK_VALUE | __gCrWeb.fill.EXTRACT_MASK_OPTIONS;
+      fillConstants.EXTRACT_MASK_VALUE | fillConstants.EXTRACT_MASK_OPTIONS;
   __gCrWeb['fill'].webFormElementToFormData(
       window, form, null, extractMask, formData, null);
   return __gCrWeb.stringify([formData]);

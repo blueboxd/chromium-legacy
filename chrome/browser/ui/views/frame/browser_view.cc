@@ -37,6 +37,7 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/download/bubble/download_bubble_prefs.h"
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -91,7 +92,7 @@
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/ui_features.h"
-#include "chrome/browser/ui/user_education/browser_feature_promo_snooze_service.h"
+#include "chrome/browser/ui/user_education/browser_feature_promo_storage_service.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/accelerator_table.h"
 #include "chrome/browser/ui/views/accessibility/accessibility_focus_highlight.h"
@@ -109,6 +110,7 @@
 #include "chrome/browser/ui/views/eye_dropper/eye_dropper.h"
 #include "chrome/browser/ui/views/find_bar_host.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
+#include "chrome/browser/ui/views/frame/browser_actions.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout_delegate.h"
@@ -206,6 +208,7 @@
 #include "components/services/screen_ai/buildflags/buildflags.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
+#include "components/sync/service/sync_service.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/user_education/common/feature_promo_handle.h"
@@ -844,7 +847,8 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
     : views::ClientView(nullptr, nullptr),
       browser_(std::move(browser)),
       accessibility_mode_observer_(
-          std::make_unique<AccessibilityModeObserver>(this)) {
+          std::make_unique<AccessibilityModeObserver>(this)),
+      browser_actions_(*browser_) {
   SetShowIcon(
       ::ShouldShowWindowIcon(browser_.get(), AppUsesWindowControlsOverlay()));
 
@@ -878,8 +882,8 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
       MaybeRegisterChromeFeaturePromos(
           user_education_service->feature_promo_registry());
       MaybeRegisterChromeTutorials(user_education_service->tutorial_registry());
-      feature_promo_snooze_service_ =
-          std::make_unique<BrowserFeaturePromoSnoozeService>(GetProfile());
+      feature_promo_storage_service_ =
+          std::make_unique<BrowserFeaturePromoStorageService>(GetProfile());
       feature_promo_controller_ =
           std::make_unique<BrowserFeaturePromoController>(
               this,
@@ -887,7 +891,7 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
                   GetProfile()),
               &user_education_service->feature_promo_registry(),
               &user_education_service->help_bubble_factory_registry(),
-              feature_promo_snooze_service_.get(),
+              feature_promo_storage_service_.get(),
               &user_education_service->tutorial_service());
     }
   }
@@ -906,6 +910,9 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
     UpdateWindowControlsOverlayEnabled();
     UpdateBorderlessModeEnabled();
   }
+
+  UpdateResizable();
+
   // TabStrip takes ownership of the controller.
   auto tabstrip_controller = std::make_unique<BrowserTabStripController>(
       browser_->tab_strip_model(), this, std::move(tab_menu_model_factory));
@@ -1613,6 +1620,8 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
     old_contents->StoreFocus();
   }
 
+  UpdateResizable();
+
   // If |contents_container_| already has the correct WebContents, we can save
   // some work.  This also prevents extra events from being reported by the
   // Visibility API under Windows, as ChangeWebContents will briefly hide
@@ -2153,6 +2162,20 @@ bool BrowserView::AppUsesWindowControlsOverlay() const {
 
 bool BrowserView::IsWindowControlsOverlayEnabled() const {
   return window_controls_overlay_enabled_;
+}
+
+// TODO(laurila, crbug.com/1466855): Now this is only called when `BrowserView`
+// is initialized / tab changed and that's not enough. This should also be
+// called every time `WidgetDelegate::SetCanResize` is called.
+void BrowserView::UpdateResizable() {
+  // Additional windowing controls (AWC) is a desktop-only feature.
+#if !BUILDFLAG(IS_ANDROID)
+  content::WebContents* web_contents = GetActiveWebContents();
+  if (!web_contents) {
+    return;
+  }
+  web_contents->UpdateResizable(CanResize());
+#endif
 }
 
 void BrowserView::UpdateWindowControlsOverlayEnabled() {
@@ -3184,7 +3207,8 @@ void BrowserView::OnTabStripModelChanged(
       aura::Window* window = contents.contents->GetNativeView();
       aura::Window* root_window = GetNativeWindow()->GetRootWindow();
       aura::client::ParentWindowWithContext(window, root_window,
-                                            root_window->GetBoundsInScreen());
+                                            root_window->GetBoundsInScreen(),
+                                            display::kInvalidDisplayId);
       DCHECK(contents.contents->GetNativeView()->GetRootWindow());
     }
 #endif
@@ -3688,6 +3712,14 @@ views::View* BrowserView::CreateMacOverlayView() {
     params.parent = parent->GetNativeView();
     params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
     OverlayWidget* overlay_widget = new OverlayWidget(GetWidget());
+
+    // When the overlay is used some Views are moved to the overlay_widget. When
+    // this happens we want the fullscreen state of the overlay_widget to match
+    // that of BrowserView's Widget. Without this, some views would not think
+    // they are in a fullscreen Widget, when we want them to behave as though
+    // they are in a fullscreen Widget.
+    overlay_widget->SetCheckParentForFullscreen();
+
     overlay_widget->Init(std::move(params));
     overlay_widget->SetNativeWindowProperty(kBrowserViewKey, this);
 
@@ -4571,14 +4603,11 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
     immersive_mode_controller_->SetEnabled(fullscreen);
   }
 
-#if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if !BUILDFLAG(IS_MAC)
   // On Mac platforms, FullscreenStateChanged() is invoked from
   // BrowserFrameMac::OnWindowFullscreenTransitionComplete when the asynchronous
   // fullscreen transition is complete. On other platforms, there is no
   // asynchronous transition so we synchronously invoke the function.
-  //
-  // On Lacros, the state change is only realized after the
-  // window has been informed that the state change has been performed.
   FullscreenStateChanged();
 #endif
 
@@ -4847,6 +4876,11 @@ bool BrowserView::IsFeaturePromoActive(const base::Feature& iph_feature) const {
              iph_feature, user_education::FeaturePromoStatus::kContinued);
 }
 
+bool BrowserView::CanShowFeaturePromo(const base::Feature& iph_feature) const {
+  return initialized_ && feature_promo_controller_ &&
+         feature_promo_controller_->CanShowPromo(iph_feature);
+}
+
 bool BrowserView::MaybeShowFeaturePromo(
     const base::Feature& iph_feature,
     user_education::FeaturePromoController::BubbleCloseCallback close_callback,
@@ -4895,10 +4929,19 @@ user_education::FeaturePromoHandle BrowserView::CloseFeaturePromoAndContinue(
 }
 
 void BrowserView::NotifyFeatureEngagementEvent(const char* event_name) {
-  if (!feature_promo_controller_)
+  if (!feature_promo_controller_) {
     return;
+  }
   feature_promo_controller_->feature_engagement_tracker()->NotifyEvent(
       event_name);
+}
+
+void BrowserView::NotifyPromoFeatureUsed(const base::Feature& iph_feature) {
+  if (!feature_promo_controller_) {
+    return;
+  }
+  feature_promo_controller_->feature_engagement_tracker()->NotifyUsedEvent(
+      iph_feature);
 }
 
 bool BrowserView::DoCutCopyPasteForWebContents(WebContents* contents,

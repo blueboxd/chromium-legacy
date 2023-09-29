@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/webui/settings/ash/input_device_settings/input_device_settings_provider.mojom.h"
 #include "mojo/public/cpp/bindings/clone_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
@@ -33,6 +34,7 @@ const ::ash::mojom::Keyboard kKeyboard1 =
                            /*device_key=*/"fake-device-key1",
                            /*meta_key=*/::ash::mojom::MetaKey::kLauncher,
                            /*modifier_keys=*/{},
+                           /*top_row_action_keys=*/{},
                            ::ash::mojom::KeyboardSettings::New());
 const ::ash::mojom::Keyboard kKeyboard2 =
     ::ash::mojom::Keyboard(/*name=*/"Logitech K580",
@@ -41,6 +43,7 @@ const ::ash::mojom::Keyboard kKeyboard2 =
                            /*device_key=*/"fake-device-key2",
                            /*meta_key=*/::ash::mojom::MetaKey::kExternalMeta,
                            /*modifier_keys=*/{},
+                           /*top_row_action_keys=*/{},
                            ::ash::mojom::KeyboardSettings::New());
 const ::ash::mojom::Keyboard kKeyboard3 =
     ::ash::mojom::Keyboard(/*name=*/"HP 910 White Bluetooth Keyboard",
@@ -49,6 +52,7 @@ const ::ash::mojom::Keyboard kKeyboard3 =
                            /*device_key=*/"fake-device-key3",
                            /*meta_key=*/::ash::mojom::MetaKey::kExternalMeta,
                            /*modifier_keys=*/{},
+                           /*top_row_action_keys=*/{},
                            ::ash::mojom::KeyboardSettings::New());
 const ::ash::mojom::Touchpad kTouchpad1 =
     ::ash::mojom::Touchpad(/*name=*/"test touchpad",
@@ -242,6 +246,27 @@ class FakeGraphicsTabletSettingsObserver
  private:
   std::vector<::ash::mojom::GraphicsTabletPtr> graphics_tablets_;
   int num_times_graphics_tablet_list_updated_ = 0;
+};
+
+class FakeButtonPressObserver : public mojom::ButtonPressObserver {
+ public:
+  void OnButtonPressed(::ash::mojom::ButtonPtr button) override {
+    last_pressed_button_ = std::move(button);
+  }
+
+  bool has_last_pressed_button() {
+    return last_pressed_button_.get() != nullptr;
+  }
+
+  const ::ash::mojom::Button& last_pressed_button() {
+    DCHECK(last_pressed_button_);
+    return *last_pressed_button_;
+  }
+
+  mojo::Receiver<mojom::ButtonPressObserver> receiver{this};
+
+ private:
+  ::ash::mojom::ButtonPtr last_pressed_button_;
 };
 
 class FakeInputDeviceSettingsController
@@ -871,6 +896,60 @@ TEST_F(InputDeviceSettingsProviderTest, ObservationStateOnDestruction) {
 
   widget_.reset();
   EXPECT_FALSE(controller_->observed_currently());
+}
+
+TEST_F(InputDeviceSettingsProviderTest, ButtonPressObserverTest) {
+  FakeButtonPressObserver fake_observer;
+  provider_->ObserveButtonPresses(
+      fake_observer.receiver.BindNewPipeAndPassRemote());
+
+  ::ash::mojom::ButtonPtr expected_button =
+      ::ash::mojom::Button::NewCustomizableButton(
+          ::ash::mojom::CustomizableButton::kMiddle);
+  provider_->OnCustomizableMouseButtonPressed(kMouse1, *expected_button);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(*expected_button, fake_observer.last_pressed_button());
+
+  expected_button = ::ash::mojom::Button::NewCustomizableButton(
+      ::ash::mojom::CustomizableButton::kForward);
+  provider_->OnCustomizablePenButtonPressed(kGraphicsTablet1, *expected_button);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(*expected_button, fake_observer.last_pressed_button());
+
+  expected_button = ::ash::mojom::Button::NewVkey(ui::VKEY_0);
+  provider_->OnCustomizablePenButtonPressed(kGraphicsTablet1, *expected_button);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(*expected_button, fake_observer.last_pressed_button());
+}
+
+TEST_F(InputDeviceSettingsProviderTest, ButtonPressObserverFollowsWindowFocus) {
+  FakeButtonPressObserver fake_observer;
+  provider_->ObserveButtonPresses(
+      fake_observer.receiver.BindNewPipeAndPassRemote());
+
+  widget_->Hide();
+
+  ::ash::mojom::ButtonPtr expected_button =
+      ::ash::mojom::Button::NewCustomizableButton(
+          ::ash::mojom::CustomizableButton::kMiddle);
+
+  provider_->OnCustomizableMouseButtonPressed(kMouse1, *expected_button);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(fake_observer.has_last_pressed_button());
+
+  provider_->OnCustomizablePenButtonPressed(kGraphicsTablet1, *expected_button);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(fake_observer.has_last_pressed_button());
+
+  provider_->OnCustomizableTabletButtonPressed(kGraphicsTablet1,
+                                               *expected_button);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(fake_observer.has_last_pressed_button());
+
+  widget_->Show();
+  provider_->OnCustomizableMouseButtonPressed(kMouse1, *expected_button);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(*expected_button, fake_observer.last_pressed_button());
 }
 
 }  // namespace ash::settings

@@ -220,6 +220,20 @@ crbug.com/957807 [ chromeos ] WebglExtension_WEBGL_compressed_texture_pvrtc [ Sk
 crbug.com/1473838 [ chromeos passthrough ] WebglExtension_EXT_texture_mirror_clamp_to_edge [ Skip ]
 crbug.com/1473838 [ chromeos passthrough ] WebglExtension_WEBGL_polygon_mode [ Skip ]
 
+# Extensions not available on jacuzzi ChromeOS devices.
+crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi ] WebglExtension_EXT_color_buffer_half_float [ Skip ]
+crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi ] WebglExtension_EXT_frag_depth [ Skip ]
+crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
+crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi ] WebglExtension_OES_texture_float [ Skip ]
+crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi ] WebglExtension_OES_texture_float_linear [ Skip ]
+crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi ] WebglExtension_OES_texture_half_float [ Skip ]
+crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi ] WebglExtension_OES_texture_half_float_linear [ Skip ]
+crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi ] WebglExtension_WEBGL_color_buffer_float [ Skip ]
+crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi ] WebglExtension_WEBGL_compressed_texture_s3tc [ Skip ]
+crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
+crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi ] WebglExtension_WEBGL_draw_buffers [ Skip ]
+
 # Extensions not available on LaCrOS (ChromeOS / Intel bot).
 crbug.com/1473838 [ linux intel passthrough display-server-wayland ] WebglExtension_EXT_texture_mirror_clamp_to_edge [ Skip ]
 crbug.com/1473838 [ linux intel passthrough display-server-wayland ] WebglExtension_WEBGL_polygon_mode [ Skip ]
@@ -398,13 +412,11 @@ crbug.com/1473838 [ no-passthrough ] conformance/extensions/ext-blend-func-exten
 # finder:enable-narrowing
 
 # Failing on most platforms. Only runs with passthrough.
-crbug.com/1175371 [ android angle-opengles passthrough ] conformance/extensions/khr-parallel-shader-compile.html [ Failure ]
-crbug.com/1175371 [ angle-opengles chromeos passthrough ] conformance/extensions/khr-parallel-shader-compile.html [ Failure ]
+crbug.com/1175371 [ angle-opengles chromeos mesa_ge_21.0 passthrough target-cpu-64 ] conformance/extensions/khr-parallel-shader-compile.html [ Failure ]
 crbug.com/1175371 [ angle-opengl display-server-x linux passthrough renderer-skia-gl ] conformance/extensions/khr-parallel-shader-compile.html [ Failure ]
 crbug.com/1175371 [ angle-opengles display-server-wayland linux passthrough ] conformance/extensions/khr-parallel-shader-compile.html [ Failure ]
-crbug.com/1175371 [ angle-metal monterey ] conformance/extensions/khr-parallel-shader-compile.html [ Failure ]
-crbug.com/1175371 [ angle-metal ventura ] conformance/extensions/khr-parallel-shader-compile.html [ Failure ]
-crbug.com/1175371 [ angle-opengl mac ] conformance/extensions/khr-parallel-shader-compile.html [ Failure ]
+crbug.com/1175371 [ mac angle-metal ] conformance/extensions/khr-parallel-shader-compile.html [ Failure ]
+crbug.com/1175371 [ mac angle-opengl ] conformance/extensions/khr-parallel-shader-compile.html [ Failure ]
 crbug.com/1175371 [ win ] conformance/extensions/khr-parallel-shader-compile.html [ Failure ]
 
 # Won't investigate failure on validating command decoder. Remove once it's unshipped.
@@ -509,7 +521,6 @@ crbug.com/1230781 [ mac amd-0x67ef angle-opengl ] conformance/canvas/to-data-url
 # been made more robust.
 # crbug.com/735483 [ mac amd release ] conformance/rendering/texture-switch-performance.html [ Failure ]
 
-crbug.com/1435021 [ mac amd-0x67ef angle-metal ] conformance/textures/misc/texture-active-bind.html [ Failure ]
 crbug.com/1435021 [ mac amd-0x67ef angle-metal ] conformance/canvas/draw-webgl-to-canvas-test.html [ Failure ]
 
 ## Mac Intel ##

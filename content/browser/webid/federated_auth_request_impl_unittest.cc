@@ -671,14 +671,16 @@ class TestDialogController
     }
   }
 
-  void ShowErrorDialog(const std::string& top_frame_for_display,
-                       const absl::optional<std::string>& iframe_for_display,
-                       const std::string& idp_for_display,
-                       const blink::mojom::RpContext& rp_context,
-                       const IdentityProviderMetadata& idp_metadata,
-                       const absl::optional<TokenError>& error,
-                       IdentityRequestDialogController::DismissCallback
-                           dismiss_callback) override {
+  void ShowErrorDialog(
+      const std::string& top_frame_for_display,
+      const absl::optional<std::string>& iframe_for_display,
+      const std::string& idp_for_display,
+      const blink::mojom::RpContext& rp_context,
+      const IdentityProviderMetadata& idp_metadata,
+      const absl::optional<TokenError>& error,
+      IdentityRequestDialogController::DismissCallback dismiss_callback,
+      IdentityRequestDialogController::MoreDetailsCallback
+          more_details_callback) override {
     if (!state_) {
       return;
     }
@@ -1456,6 +1458,10 @@ TEST_F(FederatedAuthRequestImplTest, AccountEndpointDifferentOriginIdp) {
 // Test that request fails if IDP signin URL is different origin from IDP config
 // URL.
 TEST_F(FederatedAuthRequestImplTest, SigninUrlDifferentOriginIdp) {
+  // We only validate the signin_url if IdpSigninStatus is enabled.
+  base::test::ScopedFeatureList list;
+  list.InitAndEnableFeature(features::kFedCmIdpSigninStatusEnabled);
+
   MockConfiguration configuration = kConfigurationValid;
   configuration.idp_info[kProviderUrlFull].config.idp_signin_url =
       "https://idp2.example/signin_url";
@@ -3984,9 +3990,7 @@ TEST_F(FederatedAuthRequestImplTest, TooManyRequests) {
   // been finalized.
   RequestExpectations expectations = {
       RequestTokenStatus::kErrorTooManyRequests,
-      // TODO(crbug.com/1456183): We currently do not show any console errors in
-      // this case, but we probably should. For now, pass kSuccess.
-      FederatedAuthRequestResult::kSuccess,
+      FederatedAuthRequestResult::kErrorTooManyRequests,
       /*standalone_console_message=*/absl::nullopt,
       /*selected_idp_config_url=*/absl::nullopt};
   RunAuthTest(kDefaultRequestParameters, expectations, configuration);

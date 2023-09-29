@@ -175,6 +175,7 @@
 <translation id="19288952978244135">‏Chrome را دوباره باز کنید.</translation>
 <translation id="1933845786846280168">برگه انتخاب‌شده</translation>
 <translation id="1943432128510653496">ذخیره گذرواژه‌ها</translation>
+<translation id="1944535645109964458">گذرکلیدی موجود نیست</translation>
 <translation id="1952172573699511566">درصورت امکان، وب‌سایت‌ها نوشتار را به زبان ترجیحی شما نمایش می‌دهند.</translation>
 <translation id="1959679933317802873">درانتظار محتوا</translation>
 <translation id="1960290143419248813">‏به‌روزرسانی‌های Chrome دیگر در این نسخه Android پشتیبانی نمی‌شوند</translation>
@@ -222,6 +223,7 @@
 <translation id="2189903024544168260">علاقه برداشته شد</translation>
 <translation id="2194856509914051091">مواردی که باید درنظر داشت</translation>
 <translation id="2200113223741723867">مدیریت هم‌رسانی داده‌های استفاده</translation>
+<translation id="221494669172414749">‏باز کردن Chrome بدون قفل نمایه باعث می‌شود گذرواژه‌ها و روش‌های پرداخت ذخیره‌شده‌تان از خودرو حذف شود. استفاده از قفل نمایه امنیت این داده‌ها را حفظ می‌کند.</translation>
 <translation id="2218567645332692482">‏پیمایش‌ها به HTTPS ارتقا می‌یابد و پیش‌از بار شدن سایت‌هایی که از HTTPS پشتیبانی نمی‌کنند، هشدار دریافت می‌کنید</translation>
 <translation id="2227444325776770048">ادامه دادن به‌عنوان <ph name="USER_FULL_NAME" /></translation>
 <translation id="2230777942707397948">پنجره خالی</translation>
@@ -262,6 +264,7 @@
 <translation id="2461822463642141190">فعلی</translation>
 <translation id="2472163211318554013">‏برای بردن بیشترین بهره از Chrome، به سیستم وارد شوید</translation>
 <translation id="247737702124049222">توضیحات تصویر روشن است</translation>
+<translation id="2479148705183875116">رفتن به تنظیمات</translation>
 <translation id="2482878487686419369">اعلان‌ها</translation>
 <translation id="2496180316473517155">سابقه مرور</translation>
 <translation id="2497852260688568942">سرپرستتان همگام‌سازی را غیرفعال کرده است</translation>
@@ -625,6 +628,7 @@
 <translation id="4257230861809842349">‏گذرواژه‌ها از «مدیر گذرواژه Google» حذف شود؟</translation>
 <translation id="4262915912852657291">‏<ph name="BEGIN_BOLD" />انواع داده‌ای که استفاده می‌شود:<ph name="END_BOLD" /> سابقه مرور شما، سابقه سایت‌هایی که بااستفاده از Chrome در این دستگاه از آن‌ها بازدید کرده‌اید.</translation>
 <translation id="4269820728363426813">کپی نشانی پیوند</translation>
+<translation id="4277529130885813215">استفاده از دستگاهی دیگر</translation>
 <translation id="4283102315569707115">به‌طور پیش‌فرض از سایت‌های ویژه رایانه درخواست شود؟</translation>
 <translation id="4285846616383034558">کوکی‌ها، حافظه نهان، و دیگر داده‌های سایت</translation>
 <translation id="4291407919474070700">‏<ph name="BEGIN_LINK" />روشن کردن قفل صفحه در تنظیمات Android<ph name="END_LINK" /></translation>
@@ -1013,6 +1017,7 @@
 <translation id="6295158916970320988">همه سایت‌ها</translation>
 <translation id="6303969859164067831">خروج از سیستم و خاموش کردن همگام‌سازی</translation>
 <translation id="6312687380483398334">برنامه‌های وب (بی‌صدا)</translation>
+<translation id="6315386555979018699">حذف و ادامه</translation>
 <translation id="6316139424528454185">‏نسخه Android پشتیبانی نمی‌شود</translation>
 <translation id="6324916366299863871">ویرایش میان‌بر</translation>
 <translation id="6324977638108296054">نمی‌توان پیوند به مورد برجسته‌شده ایجاد کرد</translation>
@@ -1164,6 +1169,7 @@
 <translation id="6955535239952325894">این تنظیم در مرورگرهای مدیریت‌شده غیرفعال است</translation>
 <translation id="6963766334940102469">حذف نشانک‌ها</translation>
 <translation id="696447261358045621">خروج از «حالت ناشناس»</translation>
+<translation id="6965382102122355670">تأیید</translation>
 <translation id="6971862865055170158">تأیید نکردن</translation>
 <translation id="6978717888677691380">سایت‌هایی که مسدود کرده‌اید</translation>
 <translation id="6979737339423435258">از ابتدا تا الآن</translation>
@@ -1322,6 +1328,7 @@
 <translation id="7757787379047923882">نوشتار هم‌رسانی‌شده از <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">‏کارت SD <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">افزودن آدرس</translation>
+<translation id="7766587497031415281">گزینه‌های بیشتر برای پاک کردن داده‌های مرور</translation>
 <translation id="7772032839648071052">تأیید گذرعبارت</translation>
 <translation id="7772375229873196092">بستن <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش پرداخت دیگر}one{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش پرداخت دیگر}other{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش پرداخت دیگر}}</translation>
@@ -1575,6 +1582,7 @@
 <translation id="8998289560386111590">در دستگاهتان دردسترس نیست</translation>
 <translation id="8998729206196772491">‏هم‌اکنون درحال ورود به سیستم با یک حساب مدیریت‌شده توسط <ph name="MANAGED_DOMAIN" /> و ارائه کنترل داده‌های Chrome خودتان به سرپرست این حساب هستید. داده‌هایتان به‌طور دائم به این حساب مرتبط می‌شوند. با خروج از Chrome، داده‌هایتان از این دستگاه حذف می‌شوند اما همچنان در حساب Google شما باقی می‌ماند.</translation>
 <translation id="9012585441087414258">‏دربرابر سایت‌ها، بارگیری‌ها، و افزونه‌هایی که خطرناک بودنشان مشخص شده است از شما محافظت می‌کند. اگر صفحه‌ای کار مشکوکی انجام دهد، نشانی‌های وب و بیت‌های محتوای صفحه به «مرور ایمن Google» ارسال می‌شود.</translation>
+<translation id="9019199799064251516">بدون قفل نمایه خودرو ادامه می‌دهید؟</translation>
 <translation id="9022774213089566801">اغلب از آن‌ها بازدید شده است</translation>
 <translation id="9022871169049522985">سایت‌ها و تبلیغ‌کنندگان می‌توانند عملکرد آگهی‌هایشان را بسنجند</translation>
 <translation id="9035378196785279980">‏انتقال به\u2026</translation>
@@ -1637,5 +1645,6 @@
 <translation id="983192555821071799">بستن همه برگه‌ها</translation>
 <translation id="987264212798334818">موارد کلی</translation>
 <translation id="992745192656291733"><ph name="TAB_COUNT" /> برگه</translation>
+<translation id="993520549480398880">نشانک‌ها، سابقه، و موارد دیگر نیز از این خودرو پاک شود</translation>
 <translation id="996149300115483134">منوی کارت فید بسته شد</translation>
 </translationbundle>

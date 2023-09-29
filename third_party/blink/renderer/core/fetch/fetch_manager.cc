@@ -99,6 +99,35 @@ namespace {
 // 64 kilobytes.
 constexpr uint64_t kMaxScheduledDeferredBytesPerOrigin = 64 * 1024;
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+//
+// Must remain in sync with FetchKeepAliveRendererMetricType in
+// tools/metrics/histograms/enums.xml.
+enum class FetchKeepAliveRendererMetricType {
+  kLoadingSuceeded = 0,
+  kLoadingFailed = 1,
+  kAbortedByUser = 2,
+  kContextDestroyed = 3,
+  kMaxValue = kContextDestroyed,
+};
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+//
+// Must remain in sync with FetchLaterRendererMetricType in
+// tools/metrics/histograms/enums.xml.
+enum class FetchLaterRendererMetricType {
+  kAbortedByUser = 0,
+  kContextDestroyed = 1,
+  kActivatedByTimeout = 2,
+  kMaxValue = kActivatedByTimeout,
+};
+
+void LogFetchLaterMetric(const FetchLaterRendererMetricType& type) {
+  base::UmaHistogramEnumeration("FetchLater.Renderer.Metrics", type);
+}
+
 bool HasNonEmptyLocationHeader(const FetchHeaderList* headers) {
   String value;
   if (!headers->Get(http_names::kLocation, value))
@@ -171,6 +200,9 @@ class FetchManager::Loader : public GarbageCollected<FetchManager::Loader>,
   void Start();
   virtual void Dispose();
   virtual void Abort();
+
+  void LogIfKeepalive(const FetchKeepAliveRendererMetricType& type) const;
+  void LogIfKeepalive(const std::string& metric) const;
 
   class SRIVerifier final : public GarbageCollected<SRIVerifier>,
                             public BytesConsumer::Client {
@@ -354,6 +386,7 @@ FetchManager::Loader::Loader(ExecutionContext* execution_context,
       V8ThrowException::CreateTypeError(isolate, "Failed to fetch");
   exception_.Reset(isolate, exception);
   SendHistogram(FetchManagerLoaderCheckPoint::kConstructor);
+  LogIfKeepalive("FetchKeepAlive.Renderer.Total");
 }
 
 FetchManager::Loader::~Loader() {
@@ -425,6 +458,8 @@ void FetchManager::Loader::DidReceiveResponse(
 
   auto response_type = response.GetType();
   DCHECK_NE(response_type, FetchResponseType::kError);
+
+  LogIfKeepalive(FetchKeepAliveRendererMetricType::kLoadingSuceeded);
 
   ScriptState::Scope scope(script_state_);
 
@@ -711,6 +746,7 @@ void FetchManager::Loader::Abort() {
     threadable_loader_ = nullptr;
     loader->Cancel();
   }
+  LogIfKeepalive(FetchKeepAliveRendererMetricType::kAbortedByUser);
   NotifyFinished();
 }
 
@@ -973,12 +1009,14 @@ void FetchManager::Loader::Failed(
       }
       resolver_->Reject(value);
       SendHistogram(FetchManagerLoaderCheckPoint::kFailed);
+      LogIfKeepalive(FetchKeepAliveRendererMetricType::kLoadingFailed);
     }
   }
   NotifyFinished();
 }
 
 void FetchManager::Loader::NotifyFinished() {
+  LogIfKeepalive("FetchKeepAlive.Renderer.Total.Finished");
   if (fetch_manager_)
     fetch_manager_->OnLoaderFinished(this);
 }
@@ -997,6 +1035,19 @@ FetchRequestData* FetchManager::Loader::fetch_request_data() const {
 
 ExecutionContext* FetchManager::Loader::GetExecutionContext() {
   return execution_context_;
+}
+
+void FetchManager::Loader::LogIfKeepalive(
+    const FetchKeepAliveRendererMetricType& type) const {
+  if (fetch_request_data_->Keepalive()) {
+    base::UmaHistogramEnumeration("FetchKeepAlive.Renderer.Metrics", type);
+  }
+}
+
+void FetchManager::Loader::LogIfKeepalive(const std::string& metric) const {
+  if (fetch_request_data_->Keepalive()) {
+    base::UmaHistogramBoolean(metric, true);
+  }
 }
 
 // A subtype of Loader to handle the deferred fetching algorithm[1].
@@ -1038,7 +1089,9 @@ class FetchManager::DeferredLoader : public FetchManager::Loader {
                              fetch_request_data,
                              script_state,
                              signal),
-        fetch_later_result_(MakeGarbageCollected<FetchLaterResult>()) {}
+        fetch_later_result_(MakeGarbageCollected<FetchLaterResult>()) {
+    base::UmaHistogramBoolean("FetchLater.Renderer.Total", true);
+  }
   ~DeferredLoader() override = default;
 
   FetchLaterResult* fetch_later_result() { return fetch_later_result_; }
@@ -1066,6 +1119,7 @@ class FetchManager::DeferredLoader : public FetchManager::Loader {
     // 12. Add the following abort steps to requestObject’s signal:
     //     1. Set deferredRecord’s invoke state to "aborted".
     SetInvokeState(InvokeState::ABORTED);
+    LogFetchLaterMetric(FetchLaterRendererMetricType::kAbortedByUser);
     //     2. Remove deferredRecord from request’s client’s fetch group’s
     //     deferred fetch records.
     FetchManager::Loader::Abort();
@@ -1262,11 +1316,14 @@ void FetchManager::ContextDestroyed() {
   // https://whatpr.org/fetch/1647/53e4c3d...71fd383.html#concept-defer=fetch-record
   // When a fetch group fetchGroup is terminated:
   // 1. For each fetch record of fetchGroup's ...
-  for (auto& loader : loaders_)
+  for (auto& loader : loaders_) {
+    loader->LogIfKeepalive(FetchKeepAliveRendererMetricType::kContextDestroyed);
     loader->Dispose();
+  }
 
   // 2. For each deferred fetch record of fetchGroup's ...
   for (auto& deferred_loader : deferred_loaders_) {
+    LogFetchLaterMetric(FetchLaterRendererMetricType::kContextDestroyed);
     deferred_loader->Dispose();
   }
 }

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/safety_hub/menu_notification.h"
 
 #include <memory>
+#include <string>
 
 #include "base/json/values_util.h"
 #include "chrome/browser/ui/safety_hub/safety_hub_service.h"
@@ -131,4 +132,26 @@ void SafetyHubMenuNotification::UpdateResult(
     should_be_shown_after_interval_ = true;
   }
   result_ = std::move(result);
+}
+
+// static
+std::unique_ptr<SafetyHubMenuNotification>
+SafetyHubMenuNotification::FromDictValue(const base::Value::Dict& dict,
+                                         SafetyHubService* service) {
+  auto notification = std::make_unique<SafetyHubMenuNotification>(dict);
+  if (dict.contains(kSafetyHubMenuNotificationResultKey)) {
+    notification->result_ = service->GetResultFromDictValue(
+        *dict.FindDict(kSafetyHubMenuNotificationResultKey));
+  }
+  return notification;
+}
+
+std::u16string SafetyHubMenuNotification::GetNotificationString() const {
+  CHECK(result_);
+  return result_->GetNotificationString();
+}
+
+int SafetyHubMenuNotification::GetNotificationCommandId() const {
+  CHECK(result_);
+  return result_->GetNotificationCommandId();
 }

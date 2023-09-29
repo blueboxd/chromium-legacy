@@ -59,7 +59,9 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
+#include "chrome/browser/web_applications/app_service/publisher_helper.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
@@ -510,6 +512,22 @@ void ExtensionAppsChromeOs::UnpauseApp(const std::string& app_id) {
   app_time->ResumeWebActivity(app_id);
 }
 
+void ExtensionAppsChromeOs::UpdateAppSize(const std::string& app_id) {
+  if (app_type() != AppType::kChromeApp) {
+    return;
+  }
+
+  const extensions::Extension* extension = MaybeGetExtension(app_id);
+  if (!extension) {
+    return;
+  }
+
+  extensions::path_util::CalculateExtensionDirectorySize(
+      extension->path(),
+      base::BindOnce(&ExtensionAppsChromeOs::OnSizeCalculated,
+                     weak_factory_.GetWeakPtr(), extension->id()));
+}
+
 void ExtensionAppsChromeOs::OnAppWindowAdded(
     extensions::AppWindow* app_window) {
   if (!ShouldRecordAppWindowActivity(app_window)) {
@@ -616,11 +634,15 @@ void ExtensionAppsChromeOs::OnArcAppListPrefsDestroyed() {
 void ExtensionAppsChromeOs::OnIsCapturingVideoChanged(
     content::WebContents* web_contents,
     bool is_capturing_video) {
-  const web_app::AppId* web_app_id =
+  const webapps::AppId* web_app_id =
       web_app::WebAppTabHelper::GetAppId(web_contents);
   if (web_app_id) {
-    // This media access is coming from a web app.
-    return;
+    if (web_app::WebAppProvider::GetForWebApps(profile()) &&
+        !web_app::IsAppServiceShortcut(
+            *web_app_id, *web_app::WebAppProvider::GetForWebApps(profile()))) {
+      // This media access is coming from a web app.
+      return;
+    }
   }
 
   std::string app_id = app_constants::kChromeAppId;
@@ -643,11 +665,15 @@ void ExtensionAppsChromeOs::OnIsCapturingVideoChanged(
 void ExtensionAppsChromeOs::OnIsCapturingAudioChanged(
     content::WebContents* web_contents,
     bool is_capturing_audio) {
-  const web_app::AppId* web_app_id =
+  const webapps::AppId* web_app_id =
       web_app::WebAppTabHelper::GetAppId(web_contents);
   if (web_app_id) {
-    // This media access is coming from a web app.
-    return;
+    if (web_app::WebAppProvider::GetForWebApps(profile()) &&
+        !web_app::IsAppServiceShortcut(
+            *web_app_id, *web_app::WebAppProvider::GetForWebApps(profile()))) {
+      // This media access is coming from a web app.
+      return;
+    }
   }
 
   std::string app_id = app_constants::kChromeAppId;
@@ -966,25 +992,7 @@ AppPtr ExtensionAppsChromeOs::CreateApp(const extensions::Extension* extension,
   } else if (extension->is_extension()) {
     app->intent_filters = apps_util::CreateIntentFiltersForExtension(extension);
   }
-
-  // Calculating app size is asynchronous. The app will be republished with size
-  // on completion.
-  if (base::FeatureList::IsEnabled(::features::kAppManagementAppDetails)) {
-    CalculateAppSize(extension);
-  }
-
   return app;
-}
-
-void ExtensionAppsChromeOs::CalculateAppSize(
-    const extensions::Extension* extension) {
-  if (app_type() != AppType::kChromeApp) {
-    return;
-  }
-  extensions::path_util::CalculateExtensionDirectorySize(
-      extension->path(),
-      base::BindOnce(&ExtensionAppsChromeOs::OnSizeCalculated,
-                     weak_factory_.GetWeakPtr(), extension->id()));
 }
 
 void ExtensionAppsChromeOs::OnSizeCalculated(const std::string& app_id,

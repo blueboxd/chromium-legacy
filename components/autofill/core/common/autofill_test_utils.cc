@@ -97,6 +97,14 @@ RemoteFrameToken MakeRemoteFrameToken(RandomizeFrame randomize) {
   }
 }
 
+FormData CreateFormDataForFrame(FormData form, LocalFrameToken frame_token) {
+  form.host_frame = frame_token;
+  for (FormFieldData& field : form.fields) {
+    field.host_frame = frame_token;
+  }
+  return form;
+}
+
 FormData WithoutValues(FormData form) {
   for (FormFieldData& field : form.fields) {
     field.value.clear();
@@ -136,7 +144,7 @@ FormFieldData CreateTestFormField(std::string_view label,
   field.label = base::UTF8ToUTF16(label);
   field.name = base::UTF8ToUTF16(name);
   field.value = base::UTF8ToUTF16(value);
-  field.form_control_type = type;
+  field.form_control_type = StringToFormControlType(type);
   field.is_focusable = true;
   return field;
 }

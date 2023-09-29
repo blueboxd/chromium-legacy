@@ -28,7 +28,7 @@ const char kJavascriptMimeType[] = "application/javascript";
 const char kJsonMimeType[] = "application/json";
 const char kWasmMimeType[] = "application/wasm";
 
-const char kAllowFledgeHeader[] = "X-Allow-FLEDGE: true";
+const char kAllowFledgeHeader[] = "Ad-Auction-Allowed: true";
 
 void AddResponse(network::TestURLLoaderFactory* url_loader_factory,
                  const GURL& url,
@@ -106,7 +106,7 @@ void AddBidderJsonResponse(
   }
   if (format_version_string) {
     headers.append(
-        base::StringPrintf("\nX-Fledge-Bidding-Signals-Format-Version:  %s",
+        base::StringPrintf("\nAd-Auction-Bidding-Signals-Format-Version:  %s",
                            format_version_string->c_str()));
   }
   AddResponse(url_loader_factory, url, kJsonMimeType, absl::nullopt, content,

@@ -39,6 +39,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
+#include "gpu/command_buffer/common/shared_image_capabilities.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "media/base/format_utils.h"
@@ -535,9 +536,10 @@ class VideoResourceUpdater::HardwarePlaneResource
     const gpu::Capabilities& caps = context_provider_->ContextCapabilities();
     DCHECK(format.is_single_plane());
     // TODO(hitawala): Add multiplanar support for software decode.
+    auto* sii = SharedImageInterface();
     overlay_candidate_ =
         use_gpu_memory_buffer_resources &&
-        caps.supports_scanout_shared_images &&
+        sii->GetCapabilities().supports_scanout_shared_images &&
         CanCreateGpuMemoryBufferForSinglePlaneSharedImageFormat(format);
     uint32_t shared_image_usage =
         gpu::SHARED_IMAGE_USAGE_GLES2 | gpu::SHARED_IMAGE_USAGE_DISPLAY_READ;
@@ -547,7 +549,6 @@ class VideoResourceUpdater::HardwarePlaneResource
           gfx::BufferUsage::SCANOUT,
           SinglePlaneSharedImageFormatToBufferFormat(format), caps);
     }
-    auto* sii = SharedImageInterface();
     mailbox_ = sii->CreateSharedImage(
         format, size, color_space, kTopLeft_GrSurfaceOrigin,
         kPremul_SkAlphaType, shared_image_usage, "VideoResourceUpdater",
@@ -993,7 +994,8 @@ void VideoResourceUpdater::CopyHardwarePlane(
   auto transferable_resource = viz::TransferableResource::MakeGpu(
       hardware_resource->mailbox(), GL_TEXTURE_2D, sync_token,
       output_plane_resource_size, copy_si_format,
-      false /* is_overlay_candidate */);
+      false /* is_overlay_candidate */,
+      viz::TransferableResource::ResourceSource::kVideo);
   transferable_resource.color_space = resource_color_space;
   external_resources->resources.push_back(std::move(transferable_resource));
 
@@ -1065,7 +1067,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
       auto transfer_resource = viz::TransferableResource::MakeGpu(
           mailbox_holder.mailbox, mailbox_holder.texture_target,
           mailbox_holder.sync_token, plane_size, si_formats[i],
-          video_frame->metadata().allow_overlay);
+          video_frame->metadata().allow_overlay,
+          viz::TransferableResource::ResourceSource::kVideo);
       transfer_resource.color_space = resource_color_space;
       transfer_resource.color_space_when_sampled =
           resource_color_space_when_sampled;
@@ -1336,7 +1339,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       external_resources.type = VideoFrameResourceType::RGBA_PREMULTIPLIED;
       transferable_resource = viz::TransferableResource::MakeSoftware(
           software_resource->shared_bitmap_id(),
-          software_resource->resource_size(), plane_resource->si_format());
+          software_resource->resource_size(), plane_resource->si_format(),
+          viz::TransferableResource::ResourceSource::kVideo);
     } else {
       HardwarePlaneResource* hardware_resource = plane_resource->AsHardware();
       external_resources.type = VideoFrameResourceType::RGBA;
@@ -1345,7 +1349,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       transferable_resource = viz::TransferableResource::MakeGpu(
           hardware_resource->mailbox(), hardware_resource->texture_target(),
           sync_token, hardware_resource->resource_size(), output_si_format,
-          hardware_resource->overlay_candidate());
+          hardware_resource->overlay_candidate(),
+          viz::TransferableResource::ResourceSource::kVideo);
     }
 
     transferable_resource.color_space = output_color_space;
@@ -1526,7 +1531,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
         plane_resource->resource_size(),
         i == 0 ? output_si_format
                : subplane_si_format.value_or(output_si_format),
-        plane_resource->overlay_candidate());
+        plane_resource->overlay_candidate(),
+        viz::TransferableResource::ResourceSource::kVideo);
     transferable_resource.color_space = output_color_space;
     external_resources.resources.push_back(std::move(transferable_resource));
     external_resources.release_callbacks.push_back(base::BindOnce(

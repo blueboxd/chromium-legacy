@@ -32,14 +32,13 @@ using mojom::SubmissionSource;
 using FieldInfo = AutofillProviderAndroidBridge::FieldInfo;
 
 // static
-AutofillProviderAndroid* AutofillProviderAndroid::Create(
+void AutofillProviderAndroid::CreateForWebContents(
     content::WebContents* web_contents) {
-  DCHECK(!FromWebContents(web_contents));
-  // This object is owned by WebContents - it passed ownership of itself to
-  // the WebContents in its (parent class) constructor.
-  // TODO(crbug.com/1478934): Simplify this - the parent class should just be an
-  // interface.
-  return new AutofillProviderAndroid(web_contents);
+  if (!FromWebContents(web_contents)) {
+    web_contents->SetUserData(
+        UserDataKey(),
+        base::WrapUnique(new AutofillProviderAndroid(web_contents)));
+  }
 }
 
 AutofillProviderAndroid* AutofillProviderAndroid::FromWebContents(
@@ -55,10 +54,7 @@ AutofillProviderAndroid::AutofillProviderAndroid(
       bridge_(AndroidAutofillBridgeFactory::GetInstance()
                   .CreateAutofillProviderAndroidBridge(/*delegate=*/this)) {}
 
-AutofillProviderAndroid::~AutofillProviderAndroid() {
-  // TODO(crbug.com/1478934): Move this into the bridge destructor.
-  bridge_->DetachNativeAutofillProvider();
-}
+AutofillProviderAndroid::~AutofillProviderAndroid() = default;
 
 void AutofillProviderAndroid::AttachToJavaAutofillProvider(
     JNIEnv* env,
@@ -122,19 +118,16 @@ void AutofillProviderAndroid::StartNewSession(AndroidAutofillManager* manager,
                                               const FormFieldData& field,
                                               const gfx::RectF& bounding_box) {
   form_ = std::make_unique<FormDataAndroid>(form);
-  field_id_ = field.global_id();
-  field_type_group_ = manager->ComputeFieldTypeGroupForField(form, field);
-  triggered_origin_ = field.origin;
-
   FieldInfo field_info;
   if (!form_->GetFieldIndex(field, &field_info.index)) {
-    form_.reset();
-    field_id_ = {};
-    field_type_group_ = FieldTypeGroup::kNoGroup;
-    triggered_origin_ = {};
+    Reset();
     return;
   }
 
+  field_id_ = field.global_id();
+  field_type_group_ = manager->ComputeFieldTypeGroupForField(form, field);
+  triggered_origin_ = field.origin;
+  check_submission_ = false;
   manager_ = manager->GetWeakPtrToLeafClass();
 
   // Set the field type predictions in `form_`.
@@ -278,6 +271,7 @@ void AutofillProviderAndroid::OnFocusOnFormField(
   }
 
   field_info.bounds = ToClientAreaBound(bounding_box);
+  MaybeFireFormFieldVisibilitiesDidChange(manager, form);
   bridge_->OnFocusChanged(field_info);
 }
 
@@ -296,6 +290,23 @@ void AutofillProviderAndroid::MaybeFireFormFieldDidChange(
   form_->OnFormFieldDidChange(field_info.index, field.value);
   field_info.bounds = ToClientAreaBound(bounding_box);
   bridge_->OnFormFieldDidChange(field_info);
+}
+
+void AutofillProviderAndroid::MaybeFireFormFieldVisibilitiesDidChange(
+    AndroidAutofillManager* manager,
+    const FormData& form) {
+  if (!IsCurrentlyLinkedManager(manager) || !IsCurrentlyLinkedForm(form) ||
+      !base::FeatureList::IsEnabled(
+          features::kAndroidAutofillSupportVisibilityChanges)) {
+    return;
+  }
+
+  std::vector<int> field_indices_with_change =
+      form_->UpdateFieldVisibilities(form);
+  if (field_indices_with_change.empty()) {
+    return;
+  }
+  bridge_->OnFormFieldVisibilitiesDidChange(field_indices_with_change);
 }
 
 void AutofillProviderAndroid::OnDidFillAutofillFormData(
@@ -362,7 +373,8 @@ void AutofillProviderAndroid::OnServerQueryRequestError(
   }
 }
 
-void AutofillProviderAndroid::Reset(AndroidAutofillManager* manager) {
+void AutofillProviderAndroid::OnManagerResetOrDestroyed(
+    AndroidAutofillManager* manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!IsCurrentlyLinkedManager(manager)) {
     return;
@@ -376,7 +388,6 @@ void AutofillProviderAndroid::Reset(AndroidAutofillManager* manager) {
   }
 
   Reset();
-  bridge_->Reset();
 }
 
 bool AutofillProviderAndroid::GetCachedIsAutofilled(
@@ -402,7 +413,7 @@ gfx::RectF AutofillProviderAndroid::ToClientAreaBound(
 }
 
 void AutofillProviderAndroid::Reset() {
-  form_.reset(nullptr);
+  form_.reset();
   field_id_ = {};
   field_type_group_ = FieldTypeGroup::kNoGroup;
   triggered_origin_ = {};

@@ -115,17 +115,16 @@ static base::Time kLiveTimelineOffset() {
   // 2012-11-10 12:34:56.789123456
   // Since base::Time only has a resolution of microseconds,
   // construct a base::Time for 2012-11-10 12:34:56.789123.
-  base::Time::Exploded exploded_time;
-  exploded_time.year = 2012;
-  exploded_time.month = 11;
-  exploded_time.day_of_month = 10;
-  exploded_time.day_of_week = 6;
-  exploded_time.hour = 12;
-  exploded_time.minute = 34;
-  exploded_time.second = 56;
-  exploded_time.millisecond = 789;
+  static constexpr base::Time::Exploded kExplodedTime = {.year = 2012,
+                                                         .month = 11,
+                                                         .day_of_week = 6,
+                                                         .day_of_month = 10,
+                                                         .hour = 12,
+                                                         .minute = 34,
+                                                         .second = 56,
+                                                         .millisecond = 789};
   base::Time timeline_offset;
-  EXPECT_TRUE(base::Time::FromUTCExploded(exploded_time, &timeline_offset));
+  EXPECT_TRUE(base::Time::FromUTCExploded(kExplodedTime, &timeline_offset));
 
   timeline_offset += base::Microseconds(123);
 
@@ -2955,8 +2954,9 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackPositiveStartTime) {
 // Ensures audio-video playback with missing or negative timestamps fails
 // instead of crashing.  See http://crbug.com/396864.
 TEST_F(PipelineIntegrationTest, BasicPlaybackChainedOggVideo) {
-  ASSERT_EQ(DEMUXER_ERROR_COULD_NOT_PARSE,
-            Start("double-bear.ogv", kUnreliableDuration));
+  ASSERT_EQ(PIPELINE_OK, Start("double-bear.ogv", kUnreliableDuration));
+  Play();
+  EXPECT_EQ(PIPELINE_ERROR_DECODE, WaitUntilEndedOrError());
 }
 
 // Tests that we signal ended even when audio runs longer than video track.
@@ -2980,6 +2980,15 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackAudioShorterThanVideo) {
 }
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
+TEST_F(PipelineIntegrationTest, NegativeVideoTimestamps) {
+  ASSERT_EQ(PIPELINE_OK,
+            Start("sync2-trimmed.mp4", kHashed | kUnreliableDuration));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_EQ("aa56bcbc674d2e7a60bbecb77c55bb1e", GetVideoHash());
+  EXPECT_AUDIO_HASH("89.10,30.04,90.81,29.89,89.55,29.20,");
+}
+
 TEST_F(PipelineIntegrationTest, Rotated_Metadata_0) {
   ASSERT_EQ(PIPELINE_OK, Start("bear_rotate_0.mp4"));
   ASSERT_EQ(VIDEO_ROTATION_0,

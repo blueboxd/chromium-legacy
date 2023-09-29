@@ -4,9 +4,12 @@
 
 #import "ios/chrome/browser/shared/model/prefs/browser_prefs.h"
 
+#import "base/apple/foundation_util.h"
 #import "base/containers/contains.h"
+#import "base/json/values_util.h"
 #import "base/time/time.h"
 #import "base/types/cxx23_to_underlying.h"
+#import "base/values.h"
 #import "components/autofill/core/common/autofill_prefs.h"
 #import "components/browsing_data/core/pref_names.h"
 #import "components/commerce/core/pref_names.h"
@@ -78,6 +81,7 @@
 #import "ios/chrome/browser/shared/model/browser_state/browser_state_info_cache.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/ui/app_store_rating/constants.h"
 #import "ios/chrome/browser/ui/authentication/history_sync/history_sync_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
@@ -147,6 +151,11 @@ const char kObsoleteIosSettingsPromoAlreadySeen[] =
     "ios.settings.promo_already_seen";
 const char kObsoleteIosSettingsSigninPromoDisplayedCount[] =
     "ios.settings.signin_promo_displayed_count";
+// Deprecated 09/2023.
+// Synced boolean that indicates if a user has manually toggled the settings
+// associated with the PrivacySandboxSettings feature.
+inline constexpr char kPrivacySandboxManuallyControlled[] =
+    "privacy_sandbox.manually_controlled";
 
 }  // namespace
 
@@ -324,6 +333,14 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
       PrefRegistry::LOSSY_PREF);
   registry->RegisterTimePref(prefs::kIosSafetyCheckManagerLastRunTime,
                              base::Time(), PrefRegistry::LOSSY_PREF);
+  // TODO(crbug.com/1481230): Remove this Pref when Settings Safety Check is
+  // refactored to use the new Safety Check Manager.
+  registry->RegisterTimePref(prefs::kIosSettingsSafetyCheckLastRunTime,
+                             base::Time());
+  // Preferences related to app store rating.
+  registry->RegisterIntegerPref(kAppStoreRatingTotalDaysOnChromeKey, 0);
+  registry->RegisterListPref(kAppStoreRatingActiveDaysInPastWeekKey);
+  registry->RegisterTimePref(kAppStoreRatingLastShownPromoDayKey, base::Time());
 }
 
 void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -517,8 +534,13 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(kObsoleteIosSettingsPromoAlreadySeen, false);
   registry->RegisterIntegerPref(kObsoleteIosSettingsSigninPromoDisplayedCount,
                                 0);
+
+  registry->RegisterBooleanPref(kPrivacySandboxManuallyControlled, false);
   // Register prefs used to skip too frequent History Sync Opt-In prompt.
   history_sync::RegisterBrowserStatePrefs(registry);
+
+  registry->RegisterBooleanPref(prefs::kPasswordSharingFlowHasBeenEntered,
+                                false);
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -547,6 +569,50 @@ void MigrateObsoleteLocalStatePrefs(PrefService* prefs) {
   // Added 04/2023
   if (prefs->FindPreference(kTrialPrefName)) {
     prefs->ClearPref(kTrialPrefName);
+  }
+
+  // Added 09/2023
+  // TODO(crbug.com/1485045) To be removed after a few milestones.
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  {
+    NSString* key = @(kAppStoreRatingActiveDaysInPastWeekKey);
+    NSArray* value =
+        base::apple::ObjCCastStrict<NSArray>([defaults objectForKey:key]);
+    if (value != nil) {
+      [defaults removeObjectForKey:key];
+
+      base::Value::List list_value;
+      for (NSDate* date : value) {
+        base::Time time = base::Time::FromNSDate(date);
+        list_value.Append(TimeToValue(time));
+      }
+      prefs->SetList(kAppStoreRatingActiveDaysInPastWeekKey,
+                     std::move(list_value));
+    }
+  }
+
+  // Added 09/2023
+  // TODO(crbug.com/1485045) To be removed after a few milestones.
+  {
+    NSString* key = @(kAppStoreRatingTotalDaysOnChromeKey);
+    NSInteger value = [defaults integerForKey:key];
+    if (value) {
+      [defaults removeObjectForKey:key];
+      prefs->SetInteger(kAppStoreRatingTotalDaysOnChromeKey, value);
+    }
+  }
+
+  // Added 09/2023
+  // TODO(crbug.com/1485045) To be removed after a few milestones.
+  {
+    NSString* key = @(kAppStoreRatingLastShownPromoDayKey);
+    NSDate* value =
+        base::apple::ObjCCastStrict<NSDate>([defaults objectForKey:key]);
+    if (value) {
+      [defaults removeObjectForKey:key];
+      prefs->SetTime(kAppStoreRatingLastShownPromoDayKey,
+                     base::Time::FromNSDate(value));
+    }
   }
 }
 
@@ -611,6 +677,7 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
   // Added 09/2023.
   prefs->ClearPref(kObsoleteIosSettingsPromoAlreadySeen);
   prefs->ClearPref(kObsoleteIosSettingsSigninPromoDisplayedCount);
+  prefs->ClearPref(kPrivacySandboxManuallyControlled);
 }
 
 void MigrateObsoleteUserDefault(void) {

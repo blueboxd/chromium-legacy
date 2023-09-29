@@ -90,7 +90,7 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
   MediaTrackCapabilities* getCapabilities() const override;
   MediaTrackConstraints* getConstraints() const override;
   MediaTrackSettings* getSettings() const override;
-  MediaStreamTrackVideoStats* videoStats(ExceptionState&) override;
+  MediaStreamTrackVideoStats* stats(ExceptionState&) override;
   CaptureHandle* getCaptureHandle() const override;
   ScriptPromise applyConstraints(ScriptState*,
                                  const MediaTrackConstraints*) override;
@@ -131,6 +131,8 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
 
   std::unique_ptr<AudioSourceProvider> CreateWebAudioSource(
       int context_sample_rate) override;
+
+  MediaStreamTrackPlatform::VideoFrameStats GetVideoFrameStats() const;
 
   ImageCapture* GetImageCapture() override { return image_capture_; }
 

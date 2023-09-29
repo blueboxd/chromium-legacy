@@ -36,7 +36,6 @@
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_data_format_version.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
-#include "content/browser/indexed_db/indexed_db_leveldb_env.h"
 #include "content/browser/indexed_db/indexed_db_pre_close_task_queue.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
@@ -1036,8 +1035,7 @@ TEST_F(IndexedDBFactoryTest, GetDatabaseNames_ExistingFactory) {
 class LookingForQuotaErrorMockFactoryClient : public IndexedDBFactoryClient {
  public:
   LookingForQuotaErrorMockFactoryClient()
-      : IndexedDBFactoryClient(nullptr,
-                               mojo::NullAssociatedRemote(),
+      : IndexedDBFactoryClient(mojo::NullAssociatedRemote(),
                                base::SequencedTaskRunner::GetCurrentDefault()) {
   }
   ~LookingForQuotaErrorMockFactoryClient() override = default;
@@ -1058,8 +1056,7 @@ class LookingForQuotaErrorMockFactoryClient : public IndexedDBFactoryClient {
 };
 
 TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
-  FakeLevelDBFactory fake_ldb_factory(
-      IndexedDBClassFactory::GetLevelDBOptions(), "indexed-db");
+  FakeLevelDBFactory fake_ldb_factory({}, "indexed-db");
   fake_ldb_factory.EnqueueNextOpenLevelDBStateResult(
       nullptr, leveldb::Status::IOError("Disk is full."), true);
   SetUpContextWithFactories(&fake_ldb_factory,
@@ -1069,7 +1066,8 @@ TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
       std::make_unique<LookingForQuotaErrorMockFactoryClient>();
   auto dummy_database_callbacks =
       base::MakeRefCounted<IndexedDBDatabaseCallbacks>(
-          nullptr, mojo::NullAssociatedRemote(), context()->IDBTaskRunner());
+          nullptr, mojo::NullAssociatedRemote(),
+          context()->IDBTaskRunner().get());
   const blink::StorageKey storage_key =
       blink::StorageKey::CreateFromStringForTesting("http://localhost:81");
   auto bucket_locator = storage::BucketLocator();

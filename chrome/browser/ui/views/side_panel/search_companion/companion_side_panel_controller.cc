@@ -15,7 +15,9 @@
 #include "chrome/browser/ui/views/side_panel/companion_side_panel_web_view.h"
 #include "chrome/browser/ui/views/side_panel/search_companion/search_companion_side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_registry.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_util.h"
 #include "chrome/browser/ui/webui/side_panel/companion/companion_page_handler.h"
 #include "chrome/browser/ui/webui/side_panel/companion/companion_side_panel_untrusted_ui.h"
 #include "chrome/common/pref_names.h"
@@ -37,6 +39,14 @@ CompanionSidePanelController::~CompanionSidePanelController() = default;
 void CompanionSidePanelController::CreateAndRegisterEntry() {
   auto* registry = SidePanelRegistry::Get(web_contents_);
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+  if (!browser) {
+    // If no browser was found via WebContents, it is probably because the
+    // web_contents has not been attached to a window yet. Since we are only
+    // using the browser to find the SearchCompanionSidePanelCoordinator, and
+    // then the name and icon which don't change, it is safe to grab the
+    // LastActive browser as a fallback.
+    browser = chrome::FindLastActive();
+  }
   if (!registry || !browser ||
       registry->GetEntryForKey(
           SidePanelEntry::Key(SidePanelEntry::Id::kSearchCompanion))) {
@@ -99,6 +109,36 @@ void CompanionSidePanelController::UpdateNewTabButton(GURL url_to_open) {
 
 void CompanionSidePanelController::OnCompanionSidePanelClosed() {
   open_in_new_tab_url_ = GURL();
+}
+
+bool CompanionSidePanelController::IsCompanionShowing() {
+  SidePanelRegistry* registry = SidePanelRegistry::Get(web_contents_);
+  if (!registry) {
+    return false;
+  }
+
+  return registry->active_entry().has_value() &&
+         registry->active_entry().value()->key() ==
+             SidePanelEntry::Key(SidePanelEntry::Id::kSearchCompanion);
+}
+
+void CompanionSidePanelController::SetCompanionAsActiveEntry(
+    content::WebContents* contents) {
+  // It is not guaranteed that the WebContents already has an entry for CSC,
+  // so we need to explicelty create one.
+  companion::CompanionTabHelper::FromWebContents(contents)
+      ->CreateAndRegisterEntry();
+
+  SidePanelRegistry* new_tab_registry = SidePanelRegistry::Get(contents);
+  if (!new_tab_registry) {
+    return;
+  }
+  SidePanelEntry* entry = new_tab_registry->GetEntryForKey(
+      SidePanelEntry::Key(SidePanelEntry::Id::kSearchCompanion));
+  if (!entry) {
+    return;
+  }
+  new_tab_registry->SetActiveEntry(entry);
 }
 
 content::WebContents*
@@ -194,7 +234,8 @@ void CompanionSidePanelController::DidOpenRequestedURL(
     bool renderer_initiated) {
   // Ensure that the navigation is coming from a page we trust before
   // redirecting to main browser.
-  if (!IsSiteTrusted(source_render_frame_host->GetLastCommittedURL())) {
+  if (!IsSiteTrusted(
+          source_render_frame_host->GetLastCommittedOrigin().GetURL())) {
     return;
   }
 
@@ -279,6 +320,24 @@ void CompanionSidePanelController::DidOpenRequestedURL(
         base::BindOnce(&CompanionSidePanelController::NotifyLinkClick,
                        weak_ptr_factory_.GetWeakPtr(), url, std::move(metadata),
                        tab_web_contents));
+  }
+}
+
+void CompanionSidePanelController::FrameSizeChanged(
+    content::RenderFrameHost* render_frame_host,
+    const gfx::Size& frame_size) {
+  // We need to wait for the WebContents to have bounds before issuing the Lens
+  // request. This method gets notified once the WebContents has bounds, so we
+  // can issue the Lens request.
+  if (render_frame_host && !render_frame_host->GetParent()) {
+    auto* tab_helper =
+        companion::CompanionTabHelper::FromWebContents(web_contents_);
+    std::unique_ptr<side_panel::mojom::ImageQuery> image_query =
+        tab_helper->GetImageQuery();
+    if (!image_query) {
+      return;
+    }
+    tab_helper->GetCompanionPageHandler()->OnImageQuery(*image_query);
   }
 }
 

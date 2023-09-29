@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/containers/cxx20_erase.h"
 #include "ash/constants/ash_features.h"
 #include "ash/controls/rounded_scroll_bar.h"
 #include "ash/public/cpp/ash_view_ids.h"
@@ -29,6 +30,7 @@
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
@@ -248,11 +250,9 @@ class ScrollContentsView : public views::View {
     }
 
     if (!details.is_add && details.parent == this) {
-      headers_.erase(std::remove_if(headers_.begin(), headers_.end(),
-                                    [details](const Header& header) {
-                                      return header.view.get() == details.child;
-                                    }),
-                     headers_.end());
+      base::EraseIf(headers_, [details](const Header& header) {
+          return header.view.get() == details.child;
+      });
     } else if (details.is_add && details.parent == this &&
                details.child == children().front()) {
       // We always want padding on the bottom of the scroll contents.
@@ -707,8 +707,7 @@ int TrayDetailedView::GetHeightForWidth(int width) const {
   return height();
 }
 
-const char* TrayDetailedView::GetClassName() const {
-  return "TrayDetailedView";
-}
+BEGIN_METADATA(TrayDetailedView, views::View)
+END_METADATA
 
 }  // namespace ash

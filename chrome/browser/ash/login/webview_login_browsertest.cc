@@ -158,7 +158,7 @@ constexpr test::UIPath kPrimaryButton = {"gaia-signin", "signin-frame-dialog",
 constexpr test::UIPath kSecondaryButton = {"gaia-signin", "signin-frame-dialog",
                                            "secondary-action-button"};
 constexpr test::UIPath kQuickStartButton = {
-    "gaia-signin", "signin-frame-dialog", "quick-start-button"};
+    "gaia-signin", "signin-frame-dialog", "quick-start-signin-button"};
 
 // UMA names for better test reading.
 const char kLoginRequests[] = "OOBE.GaiaScreen.LoginRequests";
@@ -958,7 +958,7 @@ IN_PROC_BROWSER_TEST_F(ReauthTokenWebviewLoginTest, FetchSuccess) {
   test::OobeJS().ClickOnPath(kPrimaryButton);
   OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
 
-  UserContext* user_context = nullptr;
+  const UserContext* user_context = nullptr;
   if (ash::features::ShouldUseAuthSessionStorage()) {
     CHECK(LoginDisplayHost::default_host()
               ->GetWizardContext()
@@ -994,7 +994,7 @@ IN_PROC_BROWSER_TEST_F(ReauthTokenWebviewLoginTest, FetchFailure) {
   test::OobeJS().ClickOnPath(kPrimaryButton);
   OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
 
-  UserContext* user_context = nullptr;
+  const UserContext* user_context = nullptr;
   if (ash::features::ShouldUseAuthSessionStorage()) {
     CHECK(LoginDisplayHost::default_host()
               ->GetWizardContext()

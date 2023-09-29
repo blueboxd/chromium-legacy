@@ -243,10 +243,12 @@ public class Features {
     // DropDataContentProvider.call
     public static final String IMAGE_DRAG_DROP = "IMAGE_DRAG_DROP";
 
-    // ProfileStore.getOrCreateProfileAsync
-    // ProfileStore.getProfileAsync
-    // ProfileStore.getAllProfileNamesAsync
-    // ProfileStore.deleteProfileAsync
+    // ProfileStore.getInstance
+    // ProfileStore.getOrCreateProfile
+    // ProfileStore.getProfile
+    // ProfileStore.getAllProfileNames
+    // ProfileStore.deleteProfile
+    // Profile.getName
     // Profile.getCookieManager
     // Profile.getWebStorage
     // Profile.getGeolocationPermissions
@@ -260,4 +262,8 @@ public class Features {
     // WebSettingsCompat.setUserAgentMetadataFromMap
     // WebSettingsCompat.getUserAgentMetadataMap
     public static final String USER_AGENT_METADATA = "USER_AGENT_METADATA";
+
+    // WebSettingsCompat.setAttributionBehavior
+    // WebSettingsCompat.getAttributionBehavior
+    public static final String ATTRIBUTION_BEHAVIOR = "ATTRIBUTION_BEHAVIOR";
 }

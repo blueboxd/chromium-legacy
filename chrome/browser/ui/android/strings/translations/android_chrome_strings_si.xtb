@@ -175,6 +175,7 @@
 <translation id="19288952978244135">Chrome යළි විවෘත කරන්න.</translation>
 <translation id="1933845786846280168">තෝරා ගත් ටැබය</translation>
 <translation id="1943432128510653496">මුරපද සුරකින්න</translation>
+<translation id="1944535645109964458">මුරයතුරු කිසිවක් නොලැබේ</translation>
 <translation id="1952172573699511566">හැකි විට, වෙබ් අඩවි ඔබේ කැමතිම භාෂාවෙන් පෙළ පෙන්වනු ඇත.</translation>
 <translation id="1959679933317802873">අන්තර්ගතය සඳහා රැඳී සිටීම</translation>
 <translation id="1960290143419248813">Android හි මෙම අනුවාදය සඳහා Chrome යාවත්කාලීන කිරීම් තව දුරටත් සහය නොදක්වයි.</translation>
@@ -222,6 +223,7 @@
 <translation id="2189903024544168260">ලැදිකම ඉවත් කරන ලදි</translation>
 <translation id="2194856509914051091">සලකා බැලිය යුතු කරුණු</translation>
 <translation id="2200113223741723867">භාවිත දත්ත බෙදා ගැනීම කළමනාකරණය කරන්න</translation>
+<translation id="221494669172414749">පැතිකඩ අගුලක් නොමැතිව Chrome විවෘත කිරීම ඔබේ සුරකින ලද මුරපද සහ ගෙවීම් ක්‍රම මෝටර් රථයෙන් ඉවත් කරනු ඇත. පැතිකඩ අගුලක් භාවිතා කිරීම මෙම දත්ත සුරක්ෂිතව තබා ගනී.</translation>
 <translation id="2218567645332692482">HTTPS වෙත සංචාලන උත්ශ්‍රේණි කර එයට සහාය නොදක්වන අඩවි පූරණය කිරීමට පෙර ඔබට අනතුරු අඟවන්න</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> ලෙස දිගටම කර ගෙන යන්න</translation>
 <translation id="2230777942707397948">හිස් කවුළුව</translation>
@@ -262,6 +264,7 @@
 <translation id="2461822463642141190">වත්මන්</translation>
 <translation id="2472163211318554013">Chrome වෙතින් උපරිම ප්‍රයෝජන ලබා ගැනීමට පුරන්න</translation>
 <translation id="247737702124049222">රූප විස්තර ක්‍රියාත්මකයි</translation>
+<translation id="2479148705183875116">සැකසීම් වෙත යන්න</translation>
 <translation id="2482878487686419369">දැනුම්දීම්</translation>
 <translation id="2496180316473517155">බ්‍රවුස් ඉතිහාසය</translation>
 <translation id="2497852260688568942">සමමුහුර්ත කිරීම ඔබේ පරිපාලක විසින් අබල කර ඇත</translation>
@@ -625,6 +628,7 @@
 <translation id="4257230861809842349">Google මුරපද කළමනාකරු වෙතින් මුරපද මකන්න ද?</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />භාවිත කරන දත්ත මොනවාද:<ph name="END_BOLD" /> ඔබගේ බ්‍රවුස් කිරීමේ ඉතිහාසය, මෙම උපාංගයේ Chrome භාවිතයෙන් ඔබ පිවිසි අඩවිවල වාර්තාවක්.</translation>
 <translation id="4269820728363426813">ලින්ක් ලිපිනය පිටපත් කරන්න</translation>
+<translation id="4277529130885813215">වෙනත් උපාංගයක් භාවිතා කරන්න</translation>
 <translation id="4283102315569707115">පෙරනිමියෙන් ඩෙස්ක්ටොප් අඩවි ඉල්ලන්න ද?</translation>
 <translation id="4285846616383034558">කුකීස්, කෑෂය, සහ අනෙකුත් අඩවි දත්ත</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Android සැකසීම් තුළ තිර අගුල ක්‍රියාත්මක කරන්න<ph name="END_LINK" /></translation>
@@ -1013,6 +1017,7 @@
 <translation id="6295158916970320988">සියලු අඩවි</translation>
 <translation id="6303969859164067831">වරනය වී සමමුහුව ක්‍රියාවිරහිත කරන්න</translation>
 <translation id="6312687380483398334">වෙබ් යෙදුම් (නිහඬ)</translation>
+<translation id="6315386555979018699">මකා ඉදිරියට යන්න</translation>
 <translation id="6316139424528454185">Android අනුවාදයට සහය දක්වනු නොලැබේ</translation>
 <translation id="6324916366299863871">කෙටිමඟ සංස්කරණය</translation>
 <translation id="6324977638108296054">උද්දීපනයට සබැඳිය තැනිය නොහැකිය</translation>
@@ -1164,6 +1169,7 @@
 <translation id="6955535239952325894">මෙම සැකසීම කළමනා කෙරෙන බ්‍රවුසර මත අබල කෙරේ</translation>
 <translation id="6963766334940102469">පිටුසන් මකන්න</translation>
 <translation id="696447261358045621">අප්‍රසිද්ධ ප්‍රකාරය හැර යන්න</translation>
+<translation id="6965382102122355670">හරි</translation>
 <translation id="6971862865055170158">අනුමත නොකරන්න</translation>
 <translation id="6978717888677691380">ඔබ අවහිර කළ අඩවි</translation>
 <translation id="6979737339423435258">සියලු කාලය තුළ</translation>
@@ -1322,6 +1328,7 @@
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" /> වෙතින් බෙදා ගත් පාඨය</translation>
 <translation id="7762668264895820836">SD පත <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">ලිපිනය එක් කරන්න</translation>
+<translation id="7766587497031415281">බ්‍රවුස් කිරීමේ දත්ත හිස් කිරීමට තවත් විකල්ප</translation>
 <translation id="7772032839648071052">රහස්පදය ස්ථිර කරන්න</translation>
 <translation id="7772375229873196092"><ph name="APP_NAME" /> වසන්න</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />... සහ තවත් <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" />... සහ තවත් <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />... සහ තවත් <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
@@ -1575,6 +1582,7 @@
 <translation id="8998289560386111590">ඔබේ උපාංගයෙහි නොමැත</translation>
 <translation id="8998729206196772491">ඔබ <ph name="MANAGED_DOMAIN" /> මගින් කළමනාකරණය කරන ගිණුමක් සමගින් පුරමින් සහ එහි පරිපාලකට ඔබේ Chrome දත්තවල පාලනය දෙමින් සිටී. ඔබේ දත්ත මෙම ගිණුමට ස්ථිරව බැඳෙනු ඇත. Chrome වෙතින් වැරීම ඔබේ දත්ත මෙම උපාංගය වෙතින් මකනු ඇති නමුත්, ඔබේ දත්ත Google ගිණුම තුළ ගබඩා වී තිබෙනු ඇත.</translation>
 <translation id="9012585441087414258">අනතුරුදායක බව දන්නා අඩවි, බාගැනීම්, සහ දිගුවලින් ආරක්ෂා කරයි. පිටුවක් සැක කටයුතු දෙයක් කරන්නේ නම්, URL ලිපින සහ පිටු අන්තර්ගතයෙහි බිටු Google ආරක්ෂිත බ්‍රවුස් කිරීම වෙත යවනු ලැබේ.</translation>
+<translation id="9019199799064251516">මෝටර් රථ පැතිකඩ අගුලක් නොමැතිව ඉදිරියට යන්න ද?</translation>
 <translation id="9022774213089566801">නිතර පිවිසි</translation>
 <translation id="9022871169049522985">අඩවිවලට සහ වෙළඳ ප්‍රචාරකයන්ට ඔවුන්ගේ දැන්වීම්වල කාර්ය සාධනය මැනිය හැක</translation>
 <translation id="9035378196785279980">වෙත \u2026ගෙන යන්න</translation>
@@ -1637,5 +1645,6 @@
 <translation id="983192555821071799">සියලු පටිති වසන්න</translation>
 <translation id="987264212798334818">සාමාන්‍ය</translation>
 <translation id="992745192656291733">ටැබ <ph name="TAB_COUNT" /></translation>
+<translation id="993520549480398880">මෙම මෝටර් රථයෙන් පිටුසන්, ඉතිහාසය, සහ තවත් දේ ඉවත් කරන්න</translation>
 <translation id="996149300115483134">සංග්‍රහ කාඩ්පත් මෙනුව වසා ඇත</translation>
 </translationbundle>

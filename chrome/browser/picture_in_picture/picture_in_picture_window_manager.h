@@ -5,14 +5,19 @@
 #ifndef CHROME_BROWSER_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_WINDOW_MANAGER_H_
 #define CHROME_BROWSER_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_WINDOW_MANAGER_H_
 
+#include <vector>
+
 #include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "build/build_config.h"
+#include "chrome/browser/picture_in_picture/auto_pip_setting_overlay_view.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/picture_in_picture_window_options/picture_in_picture_window_options.mojom.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/bubble/bubble_border.h"
+#include "url/origin.h"
 
 namespace content {
 enum class PictureInPictureResult;
@@ -77,6 +82,25 @@ class PictureInPictureWindowManager {
   // used by ChromeOS ARC windows which do not have a WebContents as the source.
   void EnterPictureInPictureWithController(
       content::PictureInPictureWindowController* pip_window_controller);
+
+  // Expected behavior of the window UI-initiated close.
+  enum class UiBehavior {
+    // Close the window, but don't try to pause the video.  This is also the
+    // behavior of `ExitPictureInPicture()`.
+    kCloseWindowOnly,
+
+    // Close the window, and also pause the video.
+    kCloseWindowAndPauseVideo,
+
+    // Act like the back-to-tab button: focus the opener window, and don't pause
+    // the video.
+    kCloseWindowAndFocusOpener,
+  };
+
+  // The user has requested to close the pip window.  This is similar to
+  // `ExitPictureInPicture()`, except that it's strictly user-initiated via the
+  // window UI.
+  bool ExitPictureInPictureViaWindowUi(UiBehavior behavior);
 
   // Closes any existing picture-in-picture windows (video or document pip).
   // Returns true if a picture-in-picture window was closed, and false if there
@@ -143,8 +167,24 @@ class PictureInPictureWindowManager {
   }
 
 #if !BUILDFLAG(IS_ANDROID)
-  std::unique_ptr<views::View> GetOverlayView();
+  std::unique_ptr<AutoPipSettingOverlayView> GetOverlayView(
+      const gfx::Rect& browser_view_overridden_bounds,
+      views::View* anchor_view,
+      views::BubbleBorder::Arrow arrow);
 #endif
+
+  // Get the origins for initiators of active Picture-in-Picture sessions.
+  // Always returns an empty vector for Document Picture-in-Picture sessions.
+  // For Video picture-in-picture sessions, the maximum size of the vector
+  // will be 1, because only one window can be present per Chrome instances.
+  // See spec for detailed information:
+  // https://www.w3.org/TR/picture-in-picture/#defines
+  std::vector<url::Origin> GetActiveSessionOrigins();
+
+  void set_window_controller_for_testing(
+      content::PictureInPictureWindowController* controller) {
+    pip_window_controller_ = controller;
+  }
 
  private:
   friend struct base::DefaultSingletonTraits<PictureInPictureWindowManager>;

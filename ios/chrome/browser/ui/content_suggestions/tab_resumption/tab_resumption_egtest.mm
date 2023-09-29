@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/tab_resumption/tab_resumption_constants.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
@@ -200,6 +201,55 @@ NSString* HostnameFromGURL(GURL URL) {
                             destinationUrl.host())];
   [ChromeEarlGrey
       waitForWebStateContainingText:"Anyone know any good pony jokes?"];
+}
+
+// Tests that interacting with the Shortcuts tile works when the tab resumption
+// tile is displayed.
+- (void)testInteractWithAnotherTile {
+  // Check that the tile is not displayed when there is no distant tab.
+  WaitUntilTabResumptionTileVisibleOrTimeout(false);
+
+  // Create a distant session with 4 tabs.
+  [DistantTabsAppInterface
+      addSessionToFakeSyncServer:@"Desktop"
+               modifiedTimeDelta:base::Minutes(5)
+                            tabs:[FakeDistantTab
+                                     createFakeTabsForServerURL:self.testServer
+                                                                    ->base_url()
+                                                   numberOfTabs:4]];
+  [ChromeEarlGrey triggerSyncCycleForType:syncer::SESSIONS];
+
+  // Check that the tile is displayed when there is a distant tab.
+  WaitUntilTabResumptionTileVisibleOrTimeout(true);
+
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    // Rotate iphone device so Magic Stack can be scrollable.
+    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
+                                  error:nil];
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
+        performAction:grey_scrollInDirection(kGREYDirectionDown, 150)];
+  }
+  [[[EarlGrey selectElementWithMatcher:
+                  grey_allOf(chrome_test_util::ButtonWithAccessibilityLabelId(
+                                 IDS_IOS_CONTENT_SUGGESTIONS_RECENT_TABS),
+                             grey_sufficientlyVisible(), nil)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionRight, 350)
+      onElementWithMatcher:grey_accessibilityID(
+                               kMagicStackScrollViewAccessibilityIdentifier)]
+      performAction:grey_tap()];
+
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::HeaderWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_SUGGESTIONS_RECENT_TABS)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::NavigationBarDoneButton()]
+      performAction:grey_tap()];
+
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    // Rotate iphone device back to portrait mode.
+    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait error:nil];
+  }
 }
 
 // Tests that the context menu has the correct action and correctly hides the

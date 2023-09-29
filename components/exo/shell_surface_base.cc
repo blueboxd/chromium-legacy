@@ -4,6 +4,8 @@
 
 #include "components/exo/shell_surface_base.h"
 
+#include <stdint.h>
+
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/metrics/login_unlock_throughput_recorder.h"
@@ -18,14 +20,16 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/check.h"
+#include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/chromeos_ui_constants.h"
 #include "chromeos/ui/base/window_pin_type.h"
 #include "chromeos/ui/base/window_properties.h"
@@ -55,6 +59,10 @@
 #include "ui/compositor_extra/shadow.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
+#include "ui/gfx/geometry/rrect_f.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -139,11 +147,32 @@ class CustomFrameView : public ash::NonClientFrameViewAsh {
       return;
     }
 
-    // TODO(zoraiznaeem): Get frame radius from client.
-    header_view_->SetHeaderCornerRadius(
-        chromeos::GetFrameCornerRadius(frame()->GetNativeWindow()));
+    if (!chromeos::features::IsRoundedWindowsEnabled()) {
+      header_view_->SetHeaderCornerRadius(
+          chromeos::GetFrameCornerRadius(frame()->GetNativeWindow()));
+      return;
+    }
 
-    // TODO(crbug/1415486): Apply rounded corners to exo’s root surface.
+    absl::optional<gfx::RoundedCornersF> window_radii =
+        shell_surface_->window_corners_radii();
+
+    if (!window_radii) {
+      return;
+    }
+
+    // TODO(crbug.com/1415486): Support variable radius corner for header_view.
+    DCHECK_EQ(window_radii->upper_left(), window_radii->upper_right());
+    header_view_->SetHeaderCornerRadius(window_radii->upper_left());
+
+    const gfx::RoundedCornersF root_surface_radii = {
+        0, 0, window_radii->lower_right(), window_radii->lower_left()};
+
+    Surface* root_surface = shell_surface_->root_surface();
+    DCHECK(root_surface);
+
+    shell_surface_->ApplyRoundedCornersToSurfaceTree(
+        gfx::RectF(root_surface->surface_hierarchy_content_bounds()),
+        root_surface_radii);
   }
 
   gfx::Rect GetWindowBoundsForClientBounds(
@@ -450,6 +479,12 @@ void ShellSurfaceBase::SetTopInset(int height) {
   pending_top_inset_height_ = height;
 }
 
+void ShellSurfaceBase::SetWindowCornerRadii(const gfx::RoundedCornersF& radii) {
+  TRACE_EVENT1("exo", "ShellSurfaceBase::SetWindowCornerRadii", "radii",
+               radii.ToString());
+  pending_window_corners_radii_dp_ = radii;
+}
+
 void ShellSurfaceBase::SetBoundsForShadows(
     const absl::optional<gfx::Rect>& shadow_bounds) {
   if (shadow_bounds_ != shadow_bounds) {
@@ -612,15 +647,13 @@ void ShellSurfaceBase::SetPip() {
 }
 
 void ShellSurfaceBase::UnsetPip() {
-  if (!widget_) {
-    pending_pip_ = false;
-    return;
-  }
-
-  // Set all the necessary window properties and window state.
-  auto* window = widget_->GetNativeWindow();
-  window->SetProperty(ash::kWindowPipTypeKey, false);
-  window->SetProperty(aura::client::kZOrderingKey, ui::ZOrderLevel::kNormal);
+  // Ash does not implement restoring the pip state. Additionally it does not
+  // make sense for browser pip window to unset pip since the browser(lacros)
+  // creates a separate window for a pip and once pip is not needed,
+  // the window is destroyed rather than restoring it to some other state.
+  // However, ClientControlledShellSurface(Arc++), has a concept of restoring
+  // from pip state and implements UnsetPip.
+  NOTIMPLEMENTED();
 }
 
 void ShellSurfaceBase::SetFloatToLocation(
@@ -966,6 +999,14 @@ void ShellSurfaceBase::AddOverlay(OverlayParams&& overlay_params) {
   overlay_widget_->Init(std::move(params));
   overlay_widget_->GetNativeWindow()->SetEventTargeter(
       std::make_unique<aura::WindowTargeter>());
+
+  if (overlay_params.corners_radii) {
+    ui::Layer* layer = overlay_widget_->GetLayer();
+    const gfx::RoundedCornersF& radii = overlay_params.corners_radii.value();
+    layer->SetRoundedCornerRadius(radii);
+    layer->SetIsFastRoundedCorner(/*enable=*/!radii.IsEmpty());
+  }
+
   overlay_widget_->Show();
 
   // Setup Focus Traversal.
@@ -1573,6 +1614,11 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   else
     params.bounds = gfx::Rect(origin_, gfx::Size());
 
+  // This is called before CommitWidget:
+  if (pending_display_id_ != display::kInvalidDisplayId) {
+    params.display_id = pending_display_id_;
+  }
+
   params.name = base::StringPrintf("ExoShellSurface-%d", shell_id++);
 
   WMHelper::AppPropertyResolver::Params property_resolver_params;
@@ -1778,13 +1824,36 @@ void ShellSurfaceBase::UpdateHostWindowOrigin() {
   gfx::Point origin = GetClientViewBounds().origin();
 
   origin += GetSurfaceOrigin().OffsetFromOrigin();
+  // As `origin` is in DP here, it eventually needs to be converted to pixels.
+  // We need to make subpixel adjustment so the `origin` in pixel coordinates
+  // will align exactly to a pixel boundary. Here, we calculate the closest
+  // pixel boundary by converting to pixels and rounding the original DP value.
+  // Note that this shouldn't take `scaled_root_origin` into account as its
+  // original value is in pixels and it needs a different type of subpixel
+  // adjustment (i.e. preserving the original pixel distance between two
+  // points).
+  const gfx::Vector2dF surface_origin_subpixel_offset =
+      ScaleVector2d(ToRoundedVector2d(ScaleVector2d(origin.OffsetFromOrigin(),
+                                                    GetScaleFactor())),
+                    1.f / GetScaleFactor()) -
+      origin.OffsetFromOrigin();
+
   const gfx::Vector2dF root_surface_origin_dp = ScaleVector2d(
       root_surface_origin_pixel().OffsetFromOrigin(), 1.f / GetScaleFactor());
   origin -= ToFlooredVector2d(root_surface_origin_dp);
-  // Set subpixel offset to the diff between the dp scaled origin in float and
-  // its floored value to adjust root surface origin to be at the same position.
+  // Subpixel offset used to adjust the offset of `root_origin` so it will
+  // exactly match the original value in pixels.
+  const gfx::Vector2dF root_surface_origin_subpixel_offset =
+      ToFlooredVector2d(root_surface_origin_dp) - root_surface_origin_dp;
+
+  // Two offsets can be simply added together because
+  // `surface_origin_subpixel_offset` is used for shifting the origin on a pixel
+  // boundary while `root_surface_origin_subpixel_offset` just ensures that the
+  // root surface origin stays the same value in pixel while scrolling when a
+  // sub surface moves (e.g. by scrolling) but the actual value it's preserving
+  // doesn't matter.
   host_window()->layer()->SetSubpixelPositionOffset(
-      ToFlooredVector2d(root_surface_origin_dp) - root_surface_origin_dp);
+      surface_origin_subpixel_offset + root_surface_origin_subpixel_offset);
 
   if (origin != host_window()->bounds().origin()) {
     AllocateLocalSurfaceId();
@@ -1860,20 +1929,31 @@ void ShellSurfaceBase::UpdateCornerRadius() {
 
   ash::WindowState* window_state =
       ash::WindowState::Get(widget_->GetNativeWindow());
-  // The host window's transform scales by |1/GetScale()| but we do not want the
-  // rounded corners scaled that way. So we multiply the radius by |GetScale()|.
   if (window_state) {
     ash::SetCornerRadius(
         window_state->window(), host_window()->layer(),
-        window_state->IsPip()
-            ? base::ClampRound(GetScale() * chromeos::kPipRoundedCornerRadius)
-            : 0);
+        window_state->IsPip() ? chromeos::kPipRoundedCornerRadius : 0);
   }
 }
 
 void ShellSurfaceBase::UpdateFrameType() {
   // Nothing to do here for now as frame type is updated immediately in
   // OnSetFrame() by default.
+}
+
+void ShellSurfaceBase::UpdateWindowRoundedCorners() {
+  // If non_client_view is not avaliable, it means that widget_ is neither a
+  // normal window or a bubble. Therefore it should not have any decorations
+  // including a rounded window.
+  if (!widget_ || !widget_->non_client_view()) {
+    DCHECK(widget_ && !pending_window_corners_radii_dp_);
+    // It is possible to get here before the widget has actually been created.
+    // The state will be set once the widget gets created.
+    return;
+  }
+
+  window_corners_radii_dp_ = pending_window_corners_radii_dp_;
+  widget_->non_client_view()->frame_view()->UpdateWindowRoundedCorners();
 }
 
 gfx::Rect ShellSurfaceBase::GetVisibleBounds() const {
@@ -1895,14 +1975,7 @@ gfx::Rect ShellSurfaceBase::GetVisibleBounds() const {
     return gfx::Rect(size);
   }
 
-  const auto* screen = display::Screen::GetScreen();
-  display::Display display;
-
-  if (!screen->GetDisplayWithDisplayId(display_id_, &display))
-    return geometry_;
-
-  // Convert from display to screen coordinates.
-  return geometry_ + display.bounds().OffsetFromOrigin();
+  return geometry_;
 }
 
 gfx::Rect ShellSurfaceBase::GetClientViewBounds() const {
@@ -2071,6 +2144,7 @@ void ShellSurfaceBase::CommitWidget() {
 
   UpdateHostWindowOrigin();
   UpdateShape();
+  UpdateWindowRoundedCorners();
 
   // Don't show yet if the shell surface doesn't have content or is minimized
   // while waiting for content.

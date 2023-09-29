@@ -88,7 +88,7 @@ const base::FeatureParam<bool> kEsbIphBubbleAndCollapseSettingsEnableCollapse{
 
 BASE_FEATURE(kEvaluateProtectedPasswordLengthMinimum,
              "EvaluateProtectedPasswordLengthMinimum",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 const base::FeatureParam<int> kEvaluateProtectedPasswordLengthMinimumValue{
     &kEvaluateProtectedPasswordLengthMinimum, "MinimumValue",
@@ -109,14 +109,6 @@ const base::FeatureParam<int> kExtensionTelemetryWritesPerInterval{
 BASE_FEATURE(kExtensionTelemetryConfiguration,
              "SafeBrowsingExtensionTelemetryConfiguration",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kExtensionTelemetryCookiesGetAllSignal,
-             "SafeBrowsingExtensionTelemetryCookiesGetAllSignal",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kExtensionTelemetryPersistence,
-             "SafeBrowsingExtensionTelemetryPersistence",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kExtensionTelemetryFileData,
              "SafeBrowsingExtensionTelemetryFileData",
@@ -162,14 +154,6 @@ BASE_FEATURE(kExtensionTelemetryTabsApiSignal,
 
 BASE_FEATURE(kExtensionTelemetryTabsExecuteScriptSignal,
              "SafeBrowsingExtensionTelemetryTabsExecuteScriptSignal",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kExtensionTelemetryCookiesGetSignal,
-             "SafeBrowsingExtensionTelemetryCookiesGetSignal",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kExtensionTelemetryDeclarativeNetRequestSignal,
-             "SafeBrowsingExtensionTelemetryDeclarativeNetRequestSignal",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kExtensionTelemetryDisableOffstoreExtensions,
@@ -292,6 +276,10 @@ BASE_FEATURE(kSafeBrowsingSkipImageCssFont,
 #endif
 );
 
+BASE_FEATURE(kSafeBrowsingSkipSubresources,
+             "SafeBrowsingSkipSubResources",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kSevenZipEvaluationEnabled,
              "SafeBrowsingSevenZipEvaluationEnabled",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -324,11 +312,7 @@ BASE_FEATURE(kTailoredSecurityObserverRetries,
 
 BASE_FEATURE(kTailoredSecurityIntegration,
              "TailoredSecurityIntegration",
-#if BUILDFLAG(IS_IOS)
-             base::FEATURE_DISABLED_BY_DEFAULT
-#else
              base::FEATURE_ENABLED_BY_DEFAULT
-#endif
 );
 
 BASE_FEATURE(kTailoredSecurityUpdatedMessages,
@@ -381,13 +365,9 @@ constexpr struct {
     {&kDownloadTailoredWarnings, true},
     {&kEvaluateProtectedPasswordLengthMinimum, false},
     {&kExtensionTelemetry, true},
-    {&kExtensionTelemetryCookiesGetAllSignal, true},
-    {&kExtensionTelemetryCookiesGetSignal, true},
-    {&kExtensionTelemetryDeclarativeNetRequestSignal, true},
     {&kExtensionTelemetryDisableOffstoreExtensions, true},
     {&kExtensionTelemetryFileData, true},
     {&kExtensionTelemetryInterceptRemoteHostsContactedInRenderer, true},
-    {&kExtensionTelemetryPersistence, true},
     {&kExtensionTelemetryPotentialPasswordTheft, true},
     {&kExtensionTelemetryReportContactedHosts, true},
     {&kExtensionTelemetryReportHostsContactedViaWebSocket, true},
@@ -405,6 +385,8 @@ constexpr struct {
     {&kSafeBrowsingCsbrrNewDownloadTrigger, true},
     {&kSafeBrowsingLookupMechanismExperiment, true},
     {&kSafeBrowsingRemoveCookiesInAuthRequests, true},
+    {&kSafeBrowsingSkipImageCssFont, true},
+    {&kSafeBrowsingSkipSubresources, true},
     {&kSevenZipEvaluationEnabled, true},
     {&kSimplifiedUrlDisplay, true},
     {&kStrictDownloadTimeout, true},

@@ -192,8 +192,6 @@ static_library("shopping_service") {
     "discounts_storage.h",
     "metrics/scheduled_metrics_manager.cc",
     "metrics/scheduled_metrics_manager.h",
-    "parcel_manager.cc",
-    "parcel_manager.h",
     "price_tracking_utils.cc",
     "price_tracking_utils.h",
     "shopping_bookmark_model_observer.cc",
@@ -218,6 +216,7 @@ static_library("shopping_service") {
     "//base",
     "//components/bookmarks/browser",
     "//components/commerce/core/parcel:parcel",
+    "//components/history/core/browser",
     "//components/keyed_service/core",
     "//components/leveldb_proto",
     "//components/optimization_guide/core",
@@ -260,6 +259,8 @@ source_set("shopping_service_test_support") {
   testonly = true
 
   sources = [
+    "mock_discounts_storage.cc",
+    "mock_discounts_storage.h",
     "mock_shopping_service.cc",
     "mock_shopping_service.h",
     "shopping_service_test_base.cc",
@@ -300,6 +301,7 @@ source_set("shopping_service_unit_tests") {
 
   sources = [
     "bookmark_update_manager_unittest.cc",
+    "discounts_storage_unittest.cc",
     "metrics/scheduled_metrics_manager_unittest.cc",
     "pdp_metrics_unittest.cc",
     "price_tracking_utils_unittest.cc",
@@ -311,12 +313,14 @@ source_set("shopping_service_unit_tests") {
 
   deps = [
     ":account_checker_test_support",
+    ":discounts_db_content_proto",
     ":metrics",
     ":pref_names",
     ":shopping_service_test_support",
     "parcel:unit_tests",
     "subscriptions:test_support",
     "webui:unit_tests",
+    "//components/history/core/browser",
     "//components/search",
   ]
 }
@@ -409,5 +413,20 @@ source_set("commerce_constants") {
 source_set("commerce_types") {
   sources = [ "commerce_types.h" ]
 
-  deps = [ "//url" ]
+  deps = [
+    ":proto",
+    "//base",
+    "//url",
+  ]
+}
+
+source_set("utils") {
+  sources = [
+    "commerce_utils.cc",
+    "commerce_utils.h",
+  ]
+  deps = [
+    ":commerce_constants",
+    "//net:net",
+  ]
 }

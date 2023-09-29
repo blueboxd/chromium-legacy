@@ -57,9 +57,14 @@ class MockReadAnythingUntrustedPageHandler
               (override));
   MOCK_METHOD(void, OnFontChange, (const std::string& font), (override));
   MOCK_METHOD(void, OnFontSizeChange, (double font_size), (override));
+  MOCK_METHOD(void, OnSpeechRateChange, (double rate), (override));
   MOCK_METHOD(void,
               OnColorChange,
               (read_anything::mojom::Colors color),
+              (override));
+  MOCK_METHOD(void,
+              OnHighlightGranularityChanged,
+              (read_anything::mojom::HighlightGranularity color),
               (override));
 
   mojo::PendingRemote<read_anything::mojom::UntrustedPageHandler>
@@ -223,6 +228,10 @@ class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
 
   void OnFontSizeReset() { controller_->OnFontSizeReset(); }
 
+  void TurnedHighlightOn() { controller_->TurnedHighlightOn(); }
+
+  void TurnedHighlightOff() { controller_->TurnedHighlightOff(); }
+
   std::vector<ui::AXNodeID> GetChildren(ui::AXNodeID ax_node_id) {
     return controller_->GetChildren(ax_node_id);
   }
@@ -273,6 +282,13 @@ class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
 
   size_t GetNextSentence(const std::u16string& text, size_t maxTextLength) {
     return controller_->GetNextSentence(text, maxTextLength);
+  }
+
+  std::string LanguageCodeForSpeech() {
+    return controller_->GetLanguageCodeForSpeech();
+  }
+  void SetLanguageCode(std::string code) {
+    controller_->SetLanguageForTesting(code);
   }
 
   ui::AXTreeID tree_id_;
@@ -1459,6 +1475,30 @@ TEST_F(ReadAnythingAppControllerTest, OnFontSizeReset_SetsFontSizeToDefault) {
   OnFontSizeReset();
 }
 
+TEST_F(ReadAnythingAppControllerTest, TurnedHighlightOn_SavesHighlightState) {
+  EXPECT_CALL(page_handler_,
+              OnHighlightGranularityChanged(
+                  read_anything::mojom::HighlightGranularity::kOn))
+      .Times(1);
+  EXPECT_CALL(page_handler_,
+              OnHighlightGranularityChanged(
+                  read_anything::mojom::HighlightGranularity::kOff))
+      .Times(0);
+  TurnedHighlightOn();
+}
+
+TEST_F(ReadAnythingAppControllerTest, TurnedHighlightOff_SavesHighlightState) {
+  EXPECT_CALL(page_handler_,
+              OnHighlightGranularityChanged(
+                  read_anything::mojom::HighlightGranularity::kOn))
+      .Times(0);
+  EXPECT_CALL(page_handler_,
+              OnHighlightGranularityChanged(
+                  read_anything::mojom::HighlightGranularity::kOff))
+      .Times(1);
+  TurnedHighlightOff();
+}
+
 TEST_F(ReadAnythingAppControllerTest, GetNextSentence_ReturnsCorrectIndex) {
   const std::u16string first_sentence = u"This is a normal sentence. ";
   const std::u16string second_sentence = u"This is a second sentence.";
@@ -1509,4 +1549,10 @@ TEST_F(
   size_t index = GetNextSentence(sentence, 12);
   EXPECT_TRUE(index < sentence.length());
   EXPECT_EQ(sentence.substr(0, index), u"Hello, ");
+}
+
+TEST_F(ReadAnythingAppControllerTest,
+       GetLanguageCodeForSpeech_ReturnsCorrectLanguageCode) {
+  SetLanguageCode("es");
+  ASSERT_EQ(LanguageCodeForSpeech(), "es");
 }

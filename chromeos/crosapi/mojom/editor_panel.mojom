@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Next MinVersion: 2
+
 module crosapi.mojom;
 
 [Stable, Extensible]
@@ -21,6 +23,11 @@ enum EditorPanelMode {
 [Stable, Extensible]
 enum EditorPanelPresetQueryCategory {
   [Default] kUnknown = 0,
+  [MinVersion=1] kShorten = 1,
+  [MinVersion=1] kElaborate = 2,
+  [MinVersion=1] kRephrase = 3,
+  [MinVersion=1] kFormalize = 4,
+  [MinVersion=1] kEmojify = 5,
 };
 
 [Stable]
@@ -40,6 +47,7 @@ struct EditorPanelContext {
 
 // EditorPanelManager is an interface to allow lacros to handle requests between
 // the context menu editor panel and the backend of the editor feature
+// Next MinVersion: 2
 [Stable, Uuid="a5d776e7-98e6-489c-9b15-57f00000c847"]
 interface EditorPanelManager {
   // Gets the context required to determine what should be shown on the editor
@@ -62,4 +70,7 @@ interface EditorPanelManager {
 
   // Starts the write/rewrite flow with a freeform query.
   StartEditingFlowWithFreeform@5(string text);
+
+  // Should be called when the editor menu is shown or hidden.
+  [MinVersion=1] OnEditorMenuVisibilityChanged@6(bool visible);
 };

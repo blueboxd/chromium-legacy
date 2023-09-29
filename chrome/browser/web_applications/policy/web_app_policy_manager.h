@@ -36,6 +36,8 @@ class PrefRegistrySyncable;
 
 namespace web_app {
 
+BASE_DECLARE_FEATURE(kDesktopPWAsForceUnregisterOSIntegration);
+
 class WebAppProvider;
 
 // Policy installation allows enterprise admins to control and manage
@@ -87,15 +89,16 @@ class WebAppPolicyManager {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Gets ids of web apps disabled by SystemFeaturesDisableList policy.
-  const std::set<AppId>& GetDisabledWebAppsIds() const;
+  const std::set<webapps::AppId>& GetDisabledWebAppsIds() const;
 
   // Checks if web app is disabled by SystemFeaturesDisableList policy.
-  bool IsWebAppInDisabledList(const AppId& app_id) const;
+  bool IsWebAppInDisabledList(const webapps::AppId& app_id) const;
 
   // Checks if UI mode of disabled web apps is hidden.
   bool IsDisabledAppsModeHidden() const;
 
-  RunOnOsLoginPolicy GetUrlRunOnOsLoginPolicy(const AppId& app_id) const;
+  RunOnOsLoginPolicy GetUrlRunOnOsLoginPolicy(
+      const webapps::AppId& app_id) const;
 
   void SetOnAppsSynchronizedCompletedCallbackForTesting(
       base::OnceClosure callback);
@@ -107,7 +110,7 @@ class WebAppPolicyManager {
   void MaybeOverrideManifest(content::RenderFrameHost* frame_host,
                              blink::mojom::ManifestPtr& manifest) const;
 
-  bool IsPreventCloseEnabled(const AppId& app_id) const;
+  bool IsPreventCloseEnabled(const webapps::AppId& app_id) const;
 
   void RefreshPolicyInstalledAppsForTesting();
 
@@ -125,6 +128,7 @@ class WebAppPolicyManager {
 
     RunOnOsLoginPolicy run_on_os_login_policy;
     bool prevent_close;
+    bool force_unregister_os_integration = false;
   };
 
   struct CustomManifestValues {
@@ -153,7 +157,12 @@ class WebAppPolicyManager {
       std::map<GURL, ExternallyManagedAppManager::InstallResult>
           install_results,
       std::map<GURL, bool> uninstall_results);
+
   void ApplyPolicySettings();
+  void ApplyRunOnOsLoginPolicySettings(
+      base::OnceClosure policy_settings_applied_callback);
+  void ApplyForceOSUnregistrationPolicySettings(
+      base::OnceClosure policy_settings_applied_callback);
 
   void OverrideManifest(const GURL& custom_values_key,
                         blink::mojom::ManifestPtr& manifest) const;
@@ -170,7 +179,7 @@ class WebAppPolicyManager {
 
   void OnDisableModePolicyChanged();
 
-  void OnSyncPolicySettingsCommandsComplete(std::vector<std::string> app_ids);
+  void OnSyncPolicySettingsCommandsComplete();
 
   // Populates ids lists of web apps disabled by SystemFeaturesDisableList
   // policy.
@@ -186,7 +195,7 @@ class WebAppPolicyManager {
   // to an app that is installed with an invalid start URL. This has an unique
   // id compared to its default app counterpart (if any), and is hence treated
   // as a valid app w.r.t to the web apps system even though it is invalid.
-  bool IsMaybeErrorLoadedPolicyApp(const AppId& app_id,
+  bool IsMaybeErrorLoadedPolicyApp(const webapps::AppId& app_id,
                                    const GURL& policy_install_url);
 
   raw_ptr<Profile> profile_ = nullptr;
@@ -206,7 +215,7 @@ class WebAppPolicyManager {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // List of disabled system and progressive web apps, containing app ids.
-  std::set<AppId> disabled_web_apps_;
+  std::set<webapps::AppId> disabled_web_apps_;
 
   // Testing callbacks
   base::OnceClosure refresh_policy_settings_completed_;

@@ -256,10 +256,6 @@
 #include "chrome/renderer/cco/multiline_detector.h"
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chromeos/constants/chromeos_features.h"
-#endif
-
 using autofill::AutofillAgent;
 using autofill::PasswordAutofillAgent;
 using autofill::PasswordGenerationAgent;
@@ -1662,16 +1658,6 @@ void ChromeContentRendererClient::
 #endif  // !BUILDFLAG(IS_ANDROID)
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (chromeos::features::IsBlinkExtensionEnabled()) {
-    blink::WebRuntimeFeatures::EnableBlinkExtensionChromeOS(true);
-  }
-
-  if (chromeos::features::IsBlinkExtensionDiagnosticsEnabled()) {
-    blink::WebRuntimeFeatures::EnableBlinkExtensionDiagnostics(true);
-  }
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 
 bool ChromeContentRendererClient::AllowScriptExtensionForServiceWorker(
@@ -1785,7 +1771,7 @@ bool ChromeContentRendererClient::IsSafeRedirectTarget(const GURL& from_url,
       return false;
     // TODO(solomonkinard): Use initiator_origin and add tests.
     if (extensions::WebAccessibleResourcesInfo::IsResourceWebAccessible(
-            extension, to_url.path(), absl::optional<url::Origin>())) {
+            extension, to_url.path(), nullptr)) {
       return true;
     }
     return extension->guid() == from_url.host();

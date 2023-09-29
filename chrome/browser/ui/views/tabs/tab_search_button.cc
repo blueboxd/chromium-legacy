@@ -25,12 +25,13 @@ namespace {
 constexpr int kCRTabSearchCornerRadius = 10;
 }
 
-TabSearchButton::TabSearchButton(TabStrip* tab_strip)
+TabSearchButton::TabSearchButton(TabStrip* tab_strip, Edge flat_edge)
     : TabStripControlButton(tab_strip,
                             PressedCallback(),
                             features::IsChromeRefresh2023()
                                 ? vector_icons::kExpandMoreIcon
-                                : vector_icons::kCaretDownIcon),
+                                : vector_icons::kCaretDownIcon,
+                            flat_edge),
       tab_search_bubble_host_(std::make_unique<TabSearchBubbleHost>(
           this,
           tab_strip->controller()->GetProfile())) {
@@ -48,11 +49,6 @@ TabSearchButton::TabSearchButton(TabStrip* tab_strip)
     UpdateBackgroundFrameInactiveColorId(
         kColorNewTabButtonCRBackgroundFrameInactive);
   }
-
-  const bool paint_transparent_for_custom_image_theme =
-      features::IsChromeRefresh2023() ? false : true;
-  SetPaintTransparentForCustomImageTheme(
-      paint_transparent_for_custom_image_theme);
 
   UpdateColors();
 }

@@ -22,6 +22,7 @@
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "content/public/common/color_parser.h"
+#include "skia/ext/image_operations.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -31,6 +32,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -73,20 +75,29 @@ int GetIconAndImageCornerRadius() {
   return 4;
 }
 
-// The size of entities and weather icons relative to their background. 0.5
-// means entities/weather icons take up half of the space.
-double GetEntityAndWeatherBackgroundScale() {
+// The size of entities relative to their background. 0.5 means entities take up
+// half of the space.
+double GetEntityBackgroundScale() {
   // When `kSquareSuggestIconEntities` is disabled, entities shouldn't be
-  // scaled. Weather icons should also not be scaled if
-  // `kSquareSuggestIconWeather` is disabled.
-  DCHECK(OmniboxFieldTrial::kSquareSuggestIconEntities.Get() ||
-         OmniboxFieldTrial::kSquareSuggestIconWeather.Get());
+  // scaled.
+  DCHECK(OmniboxFieldTrial::kSquareSuggestIconEntities.Get());
   double scale = OmniboxFieldTrial::kSquareSuggestIconEntitiesScale.Get();
   DCHECK_GT(scale, 0);
   DCHECK_LE(scale, 1);
   return scale;
 }
 
+// Size of weather icon with a round square background.
+int GetWeatherImageSize() {
+  DCHECK(OmniboxFieldTrial::kSquareSuggestIconWeather.Get());
+  return 24;
+}
+
+// Size of the weather's round square background.
+int GetWeatherBackgroundSize() {
+  DCHECK(OmniboxFieldTrial::kSquareSuggestIconWeather.Get());
+  return 28;
+}
 ////////////////////////////////////////////////////////////////////////////////
 // PlaceholderImageSource:
 
@@ -286,17 +297,19 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
             : kColorOmniboxAnswerIconBackground;
     const auto& icon = gfx::CreateVectorIcon(
         vector_icon, color_provider->GetColor(foreground_color_id));
+    const int answer_image_size = GetAnswerImageSize();
     answer_image_view_->SetImageSize(
-        gfx::Size(GetAnswerImageSize(), GetAnswerImageSize()));
+        gfx::Size(answer_image_size, answer_image_size));
     if (OmniboxFieldTrial::kSquareSuggestIconAnswers.Get()) {
       answer_image_view_->SetImage(
           gfx::ImageSkiaOperations::CreateImageWithRoundRectBackground(
-              GetAnswerImageSize(), GetIconAndImageCornerRadius(),
+              gfx::SizeF(answer_image_size, answer_image_size),
+              GetIconAndImageCornerRadius(),
               color_provider->GetColor(background_color_id), icon));
     } else {
       answer_image_view_->SetImage(
           gfx::ImageSkiaOperations::CreateImageWithCircleBackground(
-              GetAnswerImageSize() / 2,
+              /*radius=*/answer_image_size / 2,
               color_provider->GetColor(background_color_id), icon));
     }
   };
@@ -359,7 +372,8 @@ void OmniboxMatchCellView::SetIcon(const gfx::ImageSkia& image,
             : kColorOmniboxResultsIconGM3Background;
     icon_view_->SetImage(
         gfx::ImageSkiaOperations::CreateImageWithRoundRectBackground(
-            kUniformRowHeightIconSize, GetIconAndImageCornerRadius(),
+            gfx::SizeF(kUniformRowHeightIconSize, kUniformRowHeightIconSize),
+            GetIconAndImageCornerRadius(),
             GetColorProvider()->GetColor(background_color), image));
   } else {
     icon_view_->SetImage(image);
@@ -382,22 +396,25 @@ void OmniboxMatchCellView::SetImage(const gfx::ImageSkia& image,
   int height = image.height();
   const int max = std::max(width, height);
 
+  // Weather icon square background should be the same color as the pop-up
+  // background.
   if (OmniboxFieldTrial::kSquareSuggestIconWeather.Get() && is_weather_answer) {
-    // Weather icon square background should be the same color as the pop-up
-    // background.
+    // Explicitly resize the weather icon to avoid pixelation.
+    gfx::ImageSkia resized_image = gfx::ImageSkiaOperations::CreateResizedImage(
+        image, skia::ImageOperations::RESIZE_GOOD,
+        gfx::Size(GetWeatherImageSize(), GetWeatherImageSize()));
     answer_image_view_->SetImage(
         gfx::ImageSkiaOperations::CreateImageWithRoundRectBackground(
-            max / GetEntityAndWeatherBackgroundScale(),
+            gfx::SizeF(GetWeatherBackgroundSize(), GetWeatherBackgroundSize()),
             GetIconAndImageCornerRadius(),
             GetColorProvider()->GetColor(kColorOmniboxResultsBackground),
-            gfx::ImageSkiaOperations::CreateImageWithRoundRectClip(
-                GetIconAndImageCornerRadius(), image)));
+            resized_image));
   } else if (OmniboxFieldTrial::kSquareSuggestIconEntities.Get() &&
              !is_weather_answer) {
+    const float scaled_size = max / GetEntityBackgroundScale();
     answer_image_view_->SetImage(
         gfx::ImageSkiaOperations::CreateImageWithRoundRectBackground(
-            max / GetEntityAndWeatherBackgroundScale(),
-            GetIconAndImageCornerRadius(),
+            gfx::SizeF(scaled_size, scaled_size), GetIconAndImageCornerRadius(),
             GetColorProvider()->GetColor(kColorOmniboxResultsIconGM3Background),
             gfx::ImageSkiaOperations::CreateImageWithRoundRectClip(
                 GetIconAndImageCornerRadius(), image)));
@@ -518,7 +535,10 @@ bool OmniboxMatchCellView::GetCanProcessEventsWithinSubtree() const {
 
 gfx::Size OmniboxMatchCellView::CalculatePreferredSize() const {
   int height = 0;
-  if (OmniboxFieldTrial::IsChromeRefreshSuggestHoverFillShapeEnabled()) {
+  if (OmniboxFieldTrial::IsActionsUISimplificationEnabled()) {
+    height = GetEntityImageSize() +
+             2 * OmniboxFieldTrial::kRichSuggestionVerticalMargin.Get();
+  } else if (OmniboxFieldTrial::IsChromeRefreshSuggestHoverFillShapeEnabled()) {
     height = GetEntityImageSize();
   } else if (OmniboxFieldTrial::IsUniformRowHeightEnabled()) {
     height = GetEntityImageSize() +

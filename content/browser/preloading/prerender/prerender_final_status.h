@@ -23,6 +23,8 @@ namespace content {
 // https://docs.google.com/document/d/1PnrfowsZMt62PX1EvvTp2Nqs3ji1zrklrAEe1JYbkTk
 // to ensure failure reasons are correctly shown in the DevTools
 // frontend.
+//
+// LINT.IfChange
 enum class PrerenderFinalStatus {
   kActivated = 0,
   kDestroyed = 1,
@@ -78,7 +80,7 @@ enum class PrerenderFinalStatus {
   // kFailToGetMemoryUsage = 37,
 
   kDataSaverEnabled = 38,
-  kHasEffectiveUrl = 39,
+  kTriggerUrlHasEffectiveUrl = 39,
   kActivatedBeforeStarted = 40,
   kInactivePageRestriction = 41,
   kStartFailed = 42,
@@ -148,8 +150,13 @@ enum class PrerenderFinalStatus {
   kMaxNumOfRunningNonEagerPrerendersExceeded = 74,
   kMaxNumOfRunningEmbedderPrerendersExceeded = 75,
 
-  kMaxValue = kMaxNumOfRunningEmbedderPrerendersExceeded,
+  kPrerenderingUrlHasEffectiveUrl = 76,
+  kRedirectedPrerenderingUrlHasEffectiveUrl = 77,
+  kActivationUrlHasEffectiveUrl = 78,
+
+  kMaxValue = kActivationUrlHasEffectiveUrl,
 };
+// LINT.ThenChange()
 
 // Helper method to convert PrerenderFinalStatus to PreloadingFailureReason.
 PreloadingFailureReason CONTENT_EXPORT

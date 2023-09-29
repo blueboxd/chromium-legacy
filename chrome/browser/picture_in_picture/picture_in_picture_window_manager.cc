@@ -29,7 +29,7 @@ namespace {
 
 // The minimum window size for Document Picture-in-Picture windows. This does
 // not apply to video Picture-in-Picture windows.
-constexpr gfx::Size kMinWindowSize(300, 52);
+constexpr gfx::Size kMinWindowSize(240, 52);
 
 // The maximum window size for Document Picture-in-Picture windows. This does
 // not apply to video Picture-in-Picture windows.
@@ -140,6 +140,27 @@ PictureInPictureWindowManager::EnterVideoPictureInPicture(
 
   NotifyObservers(&Observer::OnEnterPictureInPicture);
   return content::PictureInPictureResult::kSuccess;
+}
+
+bool PictureInPictureWindowManager::ExitPictureInPictureViaWindowUi(
+    UiBehavior behavior) {
+  if (!pip_window_controller_) {
+    return false;
+  }
+
+  switch (behavior) {
+    case UiBehavior::kCloseWindowOnly:
+      pip_window_controller_->Close(/*should_pause_video=*/false);
+      break;
+    case UiBehavior::kCloseWindowAndPauseVideo:
+      pip_window_controller_->Close(/*should_pause_video=*/true);
+      break;
+    case UiBehavior::kCloseWindowAndFocusOpener:
+      pip_window_controller_->CloseAndFocusInitiator();
+      break;
+  }
+
+  return true;
 }
 
 bool PictureInPictureWindowManager::ExitPictureInPicture() {
@@ -311,7 +332,7 @@ void PictureInPictureWindowManager::CreateWindowInternal(
 }
 
 void PictureInPictureWindowManager::CloseWindowInternal() {
-  DCHECK(pip_window_controller_);
+  CHECK(pip_window_controller_);
 
   video_web_contents_observer_.reset();
   pip_window_controller_->Close(false /* should_pause_video */);
@@ -333,8 +354,12 @@ void PictureInPictureWindowManager::DocumentWebContentsDestroyed() {
     pip_window_controller_ = nullptr;
 }
 
-std::unique_ptr<views::View> PictureInPictureWindowManager::GetOverlayView() {
-  // This should probably DCHECK, but tests often can't set the controller.
+std::unique_ptr<AutoPipSettingOverlayView>
+PictureInPictureWindowManager::GetOverlayView(
+    const gfx::Rect& browser_view_overridden_bounds,
+    views::View* anchor_view,
+    views::BubbleBorder::Arrow arrow) {
+  // This should probably CHECK, but tests often can't set the controller.
   if (!pip_window_controller_) {
     return nullptr;
   }
@@ -360,7 +385,8 @@ std::unique_ptr<views::View> PictureInPictureWindowManager::GetOverlayView() {
       web_contents,
       base::BindOnce(&PictureInPictureWindowManager::ExitPictureInPictureSoon));
 
-  auto overlay_view = auto_pip_setting_helper->CreateOverlayViewIfNeeded();
+  auto overlay_view = auto_pip_setting_helper->CreateOverlayViewIfNeeded(
+      browser_view_overridden_bounds, anchor_view, arrow);
   if (overlay_view) {
     // Retain the setting helper for the overlay view, and add the overlay view.
     auto_pip_setting_helper_ = std::move(auto_pip_setting_helper);
@@ -369,6 +395,16 @@ std::unique_ptr<views::View> PictureInPictureWindowManager::GetOverlayView() {
   return overlay_view;
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+std::vector<url::Origin>
+PictureInPictureWindowManager::GetActiveSessionOrigins() {
+  std::vector<url::Origin> active_origins;
+  if (pip_window_controller_ &&
+      pip_window_controller_->GetOrigin().has_value()) {
+    active_origins.push_back(pip_window_controller_->GetOrigin().value());
+  }
+  return active_origins;
+}
 
 PictureInPictureWindowManager::PictureInPictureWindowManager() = default;
 

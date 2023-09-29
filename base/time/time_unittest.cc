@@ -603,6 +603,12 @@ TEST_F(TimeTest, ParseTimeTest10) {
   EXPECT_EQ(parsed_time, comparison_time_local_);
 }
 
+TEST_F(TimeTest, ParseTimeTest11) {
+  Time parsed_time;
+  EXPECT_TRUE(Time::FromString("2007-10-15 12:45:00", &parsed_time));
+  EXPECT_EQ(parsed_time, comparison_time_local_);
+}
+
 // Test some of edge cases around epoch, etc.
 TEST_F(TimeTest, ParseTimeTestEpoch0) {
   Time parsed_time;
@@ -1330,12 +1336,6 @@ TEST_F(TimeTest, MAYBE_NowOverride) {
 }
 
 #undef MAYBE_NowOverride
-
-TEST_F(TimeTest, TimeFormatHTTP) {
-  base::Time time;
-  ASSERT_TRUE(base::Time::FromString("1994-11-06T08:49:37Z", &time));
-  EXPECT_EQ("Sun, 06 Nov 1994 08:49:37 GMT", TimeFormatHTTP(time));
-}
 
 #if BUILDFLAG(IS_FUCHSIA)
 TEST(ZxTimeTest, ToFromConversions) {

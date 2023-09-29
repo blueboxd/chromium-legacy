@@ -25,14 +25,12 @@ class AutofillProviderAndroidBridgeImpl : public AutofillProviderAndroidBridge {
   ~AutofillProviderAndroidBridgeImpl() override;
 
   // AutofillProviderAndroidBridge:
-  void DetachNativeAutofillProvider() override;
   void AttachToJavaAutofillProvider(
       JNIEnv* env,
       const base::android::JavaRef<jobject>& jcaller) override;
   void StartAutofillSession(FormDataAndroid& form,
                             const FieldInfo& field,
                             bool has_server_predictions) override;
-  void Reset() override;
   void OnServerPredictionQueryDone(bool success) override;
   void ShowDatalistPopup(base::span<const std::u16string> values,
                          base::span<const std::u16string> labels,
@@ -40,6 +38,7 @@ class AutofillProviderAndroidBridgeImpl : public AutofillProviderAndroidBridge {
   void HideDatalistPopup() override;
   void OnFocusChanged(const absl::optional<FieldInfo>& field) override;
   void OnFormFieldDidChange(const FieldInfo& field) override;
+  void OnFormFieldVisibilitiesDidChange(base::span<const int> indices) override;
   void OnTextFieldDidScroll(const FieldInfo& field) override;
   void OnFormSubmitted(mojom::SubmissionSource submission_source) override;
   void OnDidFillAutofillFormData() override;
@@ -54,8 +53,7 @@ class AutofillProviderAndroidBridgeImpl : public AutofillProviderAndroidBridge {
 
   // Informs the `Delegate` that the linked form should be sent to the renderer
   // for filling. Invoked when the user has accepted Autofill.
-  // TODO(crbug.com/1478934): Remove the form_data parameter. It is not used.
-  void OnAutofillAvailable(JNIEnv* env, jobject jcaller, jobject form_data);
+  void OnAutofillAvailable(JNIEnv* env, jobject jcaller);
 
   // Informs the `Delegate` that the datalist `value` should be accepted in the
   // renderer. Invoked when the user has accepted a datalist entry.

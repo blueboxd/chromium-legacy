@@ -3169,7 +3169,7 @@ void NearbySharingServiceImpl::OnIncomingTransferUpdate(
     RecordNearbyShareTransferFinalStatusMetric(
         &feature_usage_metrics_,
         /*is_incoming=*/true, share_target.type, metadata.status(),
-        share_target.is_known, share_target.for_self_share);
+        share_target.is_known, share_target.for_self_share, is_screen_locked_);
 
     ShareTargetInfo* info = GetShareTargetInfo(share_target);
     CHECK(info->endpoint_id().has_value());
@@ -3213,7 +3213,7 @@ void NearbySharingServiceImpl::OnOutgoingTransferUpdate(
     RecordNearbyShareTransferFinalStatusMetric(
         &feature_usage_metrics_,
         /*is_incoming=*/false, share_target.type, metadata.status(),
-        share_target.is_known, share_target.for_self_share);
+        share_target.is_known, share_target.for_self_share, is_screen_locked_);
 
     ShareTargetInfo* info = GetShareTargetInfo(share_target);
     CHECK(info->endpoint_id().has_value());
@@ -3858,10 +3858,13 @@ void NearbySharingServiceImpl::OnStorageCheckCompleted(
   }
 
   if (base::FeatureList::IsEnabled(features::kNearbySharingSelfShare)) {
-    // Auto-accept self shares when not in high-visibility mode.
-    if (share_target.for_self_share && !IsInHighVisibility()) {
+    // Auto-accept self shares when not in high-visibility mode, unless the
+    // filetype includes WiFi credentials.
+    if (share_target.CanAutoAccept() && !IsInHighVisibility()) {
       CD_LOG(INFO, Feature::NS) << __func__ << ": Auto-accepting self share.";
       Accept(share_target, base::DoNothing());
+    } else {
+      CD_LOG(INFO, Feature::NS) << __func__ << ": Can't auto-accept transfer.";
     }
   }
 

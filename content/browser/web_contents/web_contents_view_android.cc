@@ -221,6 +221,11 @@ DropData* WebContentsViewAndroid::GetDropData() const {
   return NULL;
 }
 
+// TODO(crbug.com/1482848): Investigate if this needs to be implemented.
+void WebContentsViewAndroid::CancelDragDropForPortalActivation() {
+  NOTIMPLEMENTED();
+}
+
 gfx::Rect WebContentsViewAndroid::GetViewBounds() const {
   return gfx::Rect(view_.GetSize());
 }
@@ -348,6 +353,7 @@ void WebContentsViewAndroid::ShowPopupMenu(
 
 void WebContentsViewAndroid::StartDragging(
     const DropData& drop_data,
+    const url::Origin& source_origin,
     blink::DragOperationsMask allowed_ops,
     const gfx::ImageSkia& image,
     const gfx::Vector2d& cursor_offset,
@@ -401,7 +407,9 @@ void WebContentsViewAndroid::StartDragging(
   }
 }
 
-void WebContentsViewAndroid::UpdateDragCursor(ui::mojom::DragOperation op) {
+void WebContentsViewAndroid::UpdateDragOperation(
+    ui::mojom::DragOperation op,
+    bool document_is_handling_drag) {
   // Intentional no-op because Android does not have cursor.
 }
 

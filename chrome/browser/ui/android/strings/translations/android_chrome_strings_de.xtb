@@ -58,6 +58,7 @@ Nur Personen, die deine Passphrase kennen, können deine verschlüsselten Daten 
 <translation id="124678866338384709">Aktuellen Tab schließen</translation>
 <translation id="1246905108078336582">Vorschlag aus Zwischenablage entfernen?</translation>
 <translation id="1258753120186372309">Google-Doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1263063910731171689">Du siehst jetzt unter „Folge ich“ Inhalte von und über <ph name="SITE_NAME" />. Die Websites und Suchanfragen, denen du folgst, werden in deinem Google-Konto gespeichert. Du kannst sie jederzeit in den Einstellungen verwalten.</translation>
 <translation id="1263231323834454256">Leseliste</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> konnte nicht geteilt werden</translation>
 <translation id="1269129608791067105">Hier wird dein Verlauf angezeigt</translation>
@@ -136,6 +137,7 @@ Wenn du deinen Browserverlauf löschst – entweder komplett oder für eine bes
 <translation id="1671236975893690980">Download ausstehend...</translation>
 <translation id="1672586136351118594">Nicht mehr anzeigen</translation>
 <translation id="1680919990519905526">Über Google Lens kaufen <ph name="BEGIN_NEW" />Neu<ph name="END_NEW" /></translation>
+<translation id="1687482373098770139">Bald siehst du unter „Folge ich“ Inhalte von und über <ph name="SITE_NAME" />. Die Websites und Suchanfragen, denen du folgst, werden in deinem Google-Konto gespeichert. Du kannst sie jederzeit in den Einstellungen verwalten.</translation>
 <translation id="1702543251015153180">Möchtest du deine Einstellungen für das dunkle Design ändern?</translation>
 <translation id="1702907158640575240">Verwalteter Browser</translation>
 <translation id="1710099199314114079">Tabs wechseln oder schließen</translation>
@@ -173,6 +175,7 @@ Wenn du deinen Browserverlauf löschst – entweder komplett oder für eine bes
 <translation id="19288952978244135">Öffne Chrome noch einmal.</translation>
 <translation id="1933845786846280168">Ausgewählter Tab</translation>
 <translation id="1943432128510653496">Passwörter speichern</translation>
+<translation id="1944535645109964458">Keine Passkeys verfügbar</translation>
 <translation id="1952172573699511566">Sofern dies möglich ist, wird Text auf Websites in deiner bevorzugten Sprache angezeigt.</translation>
 <translation id="1959679933317802873">Inhalte werden abgerufen</translation>
 <translation id="1960290143419248813">Chrome-Updates werden für diese Version von Android nicht mehr unterstützt</translation>
@@ -220,6 +223,7 @@ Wenn du deinen Browserverlauf löschst – entweder komplett oder für eine bes
 <translation id="2189903024544168260">Interesse entfernt</translation>
 <translation id="2194856509914051091">Wichtige Punkte</translation>
 <translation id="2200113223741723867">Freigabe von Nutzungsdaten verwalten</translation>
+<translation id="221494669172414749">Wenn du Chrome ohne Profilsperre öffnest, werden deine gespeicherten Passwörter und Zahlungsmethoden aus dem Auto entfernt. Durch das Verwenden einer Profilsperre werden diese Daten geschützt.</translation>
 <translation id="2218567645332692482">Aufrufe von Websites auf HTTPS umstellen und warnen, bevor Websites geladen werden, die das Protokoll nicht unterstützen</translation>
 <translation id="2227444325776770048">Als <ph name="USER_FULL_NAME" /> fortfahren</translation>
 <translation id="2230777942707397948">Leeres Fenster</translation>
@@ -260,6 +264,7 @@ Wenn du deinen Browserverlauf löschst – entweder komplett oder für eine bes
 <translation id="2461822463642141190">Aktuell</translation>
 <translation id="2472163211318554013">Wenn du Chrome optimal nutzen möchtest, melde dich an</translation>
 <translation id="247737702124049222">Bildbeschreibungen sind aktiviert</translation>
+<translation id="2479148705183875116">Zu den Einstellungen</translation>
 <translation id="2482878487686419369">Benachrichtigungen</translation>
 <translation id="2496180316473517155">Browserverlauf</translation>
 <translation id="2497852260688568942">Die Synchronisierung wurde von deinem Administrator deaktiviert</translation>
@@ -310,6 +315,7 @@ Private State Tokens verbessern den Datenschutz im Web und können nicht dazu ve
 <translation id="265156376773362237">Standard-Vorabladen</translation>
 <translation id="2656405586795711023">Web-Apps</translation>
 <translation id="2669454659051515572">Alle Personen, die dieses Gerät nutzen, können heruntergeladene Dateien sehen</translation>
+<translation id="2673169232805572412">Wenn eine Website versucht, dein Passwort zu stehlen, oder wenn du eine schädliche Datei herunterlädst, kann Chrome URLs, einschließlich Teile von Seiteninhalten, an Google senden</translation>
 <translation id="2702516483241149200">Neu: Link teilen, der direkt zu diesem Text führt</translation>
 <translation id="2708051474374549906">Proaktiver Schutz in Echtzeit vor gefährlichen Websites, Downloads und Erweiterungen auf der Grundlage deiner Browserdaten, die an Google gesendet werden</translation>
 <translation id="2708226184420201102">In <ph name="PRODUCT_NAME" /> öffnen</translation>
@@ -622,6 +628,7 @@ Private State Tokens verbessern den Datenschutz im Web und können nicht dazu ve
 <translation id="4257230861809842349">Passwörter aus dem Google Passwortmanager löschen?</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Welche Daten werden verwendet?<ph name="END_BOLD" /> Dein Browserverlauf, das heißt eine Liste der von dir auf diesem Gerät in Chrome besuchten Websites.</translation>
 <translation id="4269820728363426813">URL kopieren</translation>
+<translation id="4277529130885813215">Anderes Gerät verwenden</translation>
 <translation id="4283102315569707115">Desktopwebsites standardmäßig anfordern?</translation>
 <translation id="4285846616383034558">Cookies, Cache und andere Websitedaten</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Displaysperre in den Android-Einstellungen aktivieren<ph name="END_LINK" /></translation>
@@ -1010,6 +1017,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6295158916970320988">Alle Websites</translation>
 <translation id="6303969859164067831">Abmelden und die Synchronisierung ausschalten</translation>
 <translation id="6312687380483398334">Web-Apps (stumm)</translation>
+<translation id="6315386555979018699">Löschen und fortfahren</translation>
 <translation id="6316139424528454185">Android-Version nicht unterstützt</translation>
 <translation id="6324916366299863871">Verknüpfung bearbeiten</translation>
 <translation id="6324977638108296054">Link zum markierten Text kann nicht erstellt werden</translation>
@@ -1161,6 +1169,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6955535239952325894">Diese Einstellung ist bei verwalteten Browsern deaktiviert</translation>
 <translation id="6963766334940102469">Lesezeichen löschen</translation>
 <translation id="696447261358045621">Inkognitomodus deaktivieren</translation>
+<translation id="6965382102122355670">Ok</translation>
 <translation id="6971862865055170158">Nicht genehmigen</translation>
 <translation id="6978717888677691380">Von dir blockierte Websites</translation>
 <translation id="6979737339423435258">Gesamte Zeit</translation>
@@ -1572,6 +1581,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8998289560386111590">Auf deinem Gerät nicht verfügbar</translation>
 <translation id="8998729206196772491">Du meldest dich mit einem von <ph name="MANAGED_DOMAIN" /> verwalteten Konto an und gibst dem Administrator der Domain Kontrolle über deine Chrome-Daten. Die Daten werden diesem Konto dauerhaft zugeordnet. Wenn du dich von Chrome abmeldest, werden deine Daten auf dem Gerät gelöscht, bleiben jedoch in deinem Google-Konto erhalten.</translation>
 <translation id="9012585441087414258">Schützt vor Websites, Downloads und Erweiterungen, die als schädlich bekannt sind. Wenn sich eine Seite verdächtig verhält, werden URLs und Teile von Seiteninhalten an Google Safe Browsing gesendet.</translation>
+<translation id="9019199799064251516">Ohne Autoprofilsperre fortfahren?</translation>
 <translation id="9022774213089566801">Häufig besucht</translation>
 <translation id="9022871169049522985">Websites und Werbetreibende können die Leistung ihrer Werbung analysieren</translation>
 <translation id="9035378196785279980">Verschieben in\u2026</translation>
@@ -1634,5 +1644,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="983192555821071799">Alle Tabs schließen</translation>
 <translation id="987264212798334818">Allgemein</translation>
 <translation id="992745192656291733"><ph name="TAB_COUNT" /> Tabs</translation>
+<translation id="993520549480398880">Auch Lesezeichen, Verlauf und mehr aus diesem Auto löschen</translation>
 <translation id="996149300115483134">Feedkartenmenü ist geschlossen</translation>
 </translationbundle>

@@ -274,6 +274,7 @@ class SkiaOutputSurfaceImplOnGpu
                          SharedImageFormat format,
                          const gfx::Size& size,
                          const gfx::ColorSpace& color_space,
+                         SkAlphaType alpha_type,
                          uint32_t usage,
                          std::string debug_label,
                          gpu::SurfaceHandle surface_handle);
@@ -284,6 +285,10 @@ class SkiaOutputSurfaceImplOnGpu
 
   // Called on the viz thread!
   base::ScopedClosureRunner GetCacheBackBufferCb();
+
+  // Checks the relevant context for completed tasks and, indirectly, causes
+  // associated completion callbacks to run.
+  void CheckAsyncWorkCompletion();
 
  private:
   struct MailboxAccessData {
@@ -306,6 +311,7 @@ class SkiaOutputSurfaceImplOnGpu
   bool InitializeForGL();
   bool InitializeForVulkan();
   bool InitializeForDawn();
+  bool InitializeForMetal();
 
   // Provided as a callback to |device_|.
   void DidSwapBuffersCompleteInternal(gpu::SwapBuffersCompleteParams params,
@@ -343,6 +349,12 @@ class SkiaOutputSurfaceImplOnGpu
   bool is_using_graphite_dawn() const {
     return !!dawn_context_provider_ && gpu_preferences_.gr_context_type ==
                                            gpu::GrContextType::kGraphiteDawn;
+  }
+
+  bool is_using_graphite_metal() const {
+    return !!context_state_->metal_context_provider() &&
+           gpu_preferences_.gr_context_type ==
+               gpu::GrContextType::kGraphiteMetal;
   }
 
   // Helper for `FlushSurface()` & `FlushContext()` methods, flushes writes

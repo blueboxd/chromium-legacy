@@ -137,9 +137,8 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
       authenticationService:self.authService
       accountManagerService:ChromeAccountManagerServiceFactory::
                                 GetForBrowserState(browserState)
+                prefService:browserState->GetPrefs()
         initialAccountState:_accountState];
-  self.mediator.syncSetupService =
-      SyncSetupServiceFactory::GetForBrowserState(browserState);
   self.mediator.commandHandler = self;
   self.mediator.syncErrorHandler = self;
   self.mediator.forcedSigninEnabled =

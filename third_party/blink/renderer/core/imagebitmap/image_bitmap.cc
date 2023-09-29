@@ -15,6 +15,7 @@
 #include "gpu/config/gpu_feature_info.h"
 #include "skia/ext/legacy_display_globals.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
@@ -284,9 +285,8 @@ scoped_refptr<StaticBitmapImage> FlipImageVertically(
   paint.setBlendMode(SkBlendMode::kSrc);
   canvas->drawImage(input->PaintImageForCurrentFrame(), 0, 0,
                     SkSamplingOptions(), &paint);
-  return resource_provider->Snapshot(
-      CanvasResourceProvider::FlushReason::kNon2DCanvas,
-      input->CurrentFrameOrientation());
+  return resource_provider->Snapshot(FlushReason::kNon2DCanvas,
+                                     input->CurrentFrameOrientation());
 }
 
 scoped_refptr<StaticBitmapImage> ScaleImage(
@@ -315,9 +315,8 @@ scoped_refptr<StaticBitmapImage> ScaleImage(
           SkRect::MakeWH(parsed_options.resize_width,
                          parsed_options.resize_height),
           sampling, &paint, SkCanvas::kStrict_SrcRectConstraint);
-      return resource_provider->Snapshot(
-          CanvasResourceProvider::FlushReason::kNon2DCanvas,
-          image->CurrentFrameOrientation());
+      return resource_provider->Snapshot(FlushReason::kNon2DCanvas,
+                                         image->CurrentFrameOrientation());
     }
   }
 
@@ -424,9 +423,8 @@ scoped_refptr<StaticBitmapImage> BakeOrientation(
       gfx::RectFToSkRect(gfx::RectF(dst_rect)), SkSamplingOptions(), &paint,
       WebCoreClampingModeToSkiaRectConstraint(
           Image::kDoNotClampImageToSourceRect));
-  return resource_provider->Snapshot(
-      CanvasResourceProvider::FlushReason::kNon2DCanvas,
-      input->CurrentFrameOrientation());
+  return resource_provider->Snapshot(FlushReason::kNon2DCanvas,
+                                     input->CurrentFrameOrientation());
 }
 
 scoped_refptr<StaticBitmapImage> MakeBlankImage(
@@ -478,9 +476,8 @@ static scoped_refptr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
                           SkRect::MakeWH(src_rect.width(), src_rect.height()),
                           SkSamplingOptions(), &paint,
                           SkCanvas::kStrict_SrcRectConstraint);
-    result = resource_provider->Snapshot(
-        CanvasResourceProvider::FlushReason::kNon2DCanvas,
-        image->CurrentFrameOrientation());
+    result = resource_provider->Snapshot(FlushReason::kNon2DCanvas,
+                                         image->CurrentFrameOrientation());
   }
 
   // down-scaling has higher priority than other tasks, up-scaling has lower.
@@ -523,8 +520,7 @@ static scoped_refptr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
 
   // premultiply / unpremultiply if needed
   result = GetImageWithAlphaDisposition(
-      CanvasResourceProvider::FlushReason::kCreateImageBitmap,
-      std::move(result),
+      FlushReason::kCreateImageBitmap, std::move(result),
       parsed_options.premultiply_alpha ? kPremultiplyAlpha
                                        : kUnpremultiplyAlpha);
   if (!result)
@@ -586,7 +582,8 @@ ImageBitmap::ImageBitmap(ImageElementBase* image,
             ? ImageDecoder::kHighBitDepthToHalfFloat
             : ImageDecoder::kDefaultBitDepth,
         parsed_options.has_color_space_conversion ? ColorBehavior::kTag
-                                                  : ColorBehavior::kIgnore));
+                                                  : ColorBehavior::kIgnore,
+        Platform::GetMaxDecodedImageBytes()));
     auto skia_image = ImageBitmap::GetSkImageFromDecoder(std::move(decoder));
     if (!skia_image)
       return;
@@ -654,8 +651,7 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas,
                          const ImageBitmapOptions* options) {
   SourceImageStatus status;
   scoped_refptr<Image> image_input = canvas->GetSourceImageForCanvas(
-      CanvasResourceProvider::FlushReason::kCreateImageBitmap, &status,
-      gfx::SizeF());
+      FlushReason::kCreateImageBitmap, &status, gfx::SizeF());
   if (status != kNormalSourceImageStatus)
     return;
   DCHECK(IsA<StaticBitmapImage>(image_input.get()));
@@ -681,7 +677,7 @@ ImageBitmap::ImageBitmap(OffscreenCanvas* offscreen_canvas,
                          const ImageBitmapOptions* options) {
   SourceImageStatus status;
   scoped_refptr<Image> raw_input = offscreen_canvas->GetSourceImageForCanvas(
-      CanvasResourceProvider::FlushReason::kCreateImageBitmap, &status,
+      FlushReason::kCreateImageBitmap, &status,
       gfx::SizeF(offscreen_canvas->Size()));
   DCHECK(IsA<StaticBitmapImage>(raw_input.get()));
   scoped_refptr<StaticBitmapImage> input =
@@ -884,9 +880,8 @@ scoped_refptr<StaticBitmapImage> ImageBitmap::Transfer() {
       paint.setBlendMode(SkBlendMode::kSrc);
       canvas->drawImage(image_->PaintImageForCurrentFrame(), 0, 0,
                         SkSamplingOptions(), &paint);
-      image_ = resource_provider->Snapshot(
-          CanvasResourceProvider::FlushReason::kNon2DCanvas,
-          image_->CurrentFrameOrientation());
+      image_ = resource_provider->Snapshot(FlushReason::kNon2DCanvas,
+                                           image_->CurrentFrameOrientation());
     }
   }
 
@@ -939,9 +934,8 @@ void ImageBitmap::ResolvePromiseOnOriginalThread(
                                              orientation);
   DCHECK(IsMainThread());
   if (!parsed_options->premultiply_alpha) {
-    image = GetImageWithAlphaDisposition(
-        CanvasResourceProvider::FlushReason::kCreateImageBitmap,
-        std::move(image), kUnpremultiplyAlpha);
+    image = GetImageWithAlphaDisposition(FlushReason::kCreateImageBitmap,
+                                         std::move(image), kUnpremultiplyAlpha);
   }
   if (!image) {
     resolver->Reject(
@@ -1133,7 +1127,7 @@ ScriptPromise ImageBitmap::CreateImageBitmap(
 }
 
 scoped_refptr<Image> ImageBitmap::GetSourceImageForCanvas(
-    CanvasResourceProvider::FlushReason reason,
+    FlushReason reason,
     SourceImageStatus* status,
     const gfx::SizeF&,
     const AlphaDisposition alpha_disposition) {

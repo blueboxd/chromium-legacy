@@ -138,6 +138,9 @@ enum class SignInHistorySyncStep {
   SigninCoordinatorResult result;
   if (previousResult == SigninCoordinatorResultInterrupted) {
     result = SigninCoordinatorResultInterrupted;
+    // If a SigninCoordinator is interrupted, the completion info should not
+    // contain a identity even if a sign-in has been completed successfully.
+    identity = nil;
   } else if (identity) {
     result = SigninCoordinatorResultSuccess;
   } else {
@@ -186,6 +189,7 @@ enum class SignInHistorySyncStep {
                                  browser:self.browser
                            showUserEmail:NO
                        signOutIfDeclined:NO
+                              isOptional:YES
                              accessPoint:_accessPoint];
       coordinator.delegate = self;
       return coordinator;

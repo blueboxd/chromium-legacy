@@ -83,7 +83,7 @@ COMPONENT_EXPORT(PERMISSIONS_COMMON)
 BASE_DECLARE_FEATURE(kPermissionStorageAccessAPI);
 
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
-BASE_DECLARE_FEATURE(kWindowManagementPermissionAlias);
+BASE_DECLARE_FEATURE(kWindowPlacementPermissionAlias);
 
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
 BASE_DECLARE_FEATURE(kBlockMidiByDefault);
@@ -96,6 +96,9 @@ extern const base::FeatureParam<bool> kUseStrongerPromptLanguage;
 
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
 extern const base::FeatureParam<base::TimeDelta> kOneTimePermissionTimeout;
+
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
+extern const base::FeatureParam<base::TimeDelta> kOneTimePermissionLongTimeout;
 
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
 extern const base::FeatureParam<std::string>

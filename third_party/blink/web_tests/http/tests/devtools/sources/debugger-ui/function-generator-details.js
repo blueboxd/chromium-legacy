@@ -5,10 +5,11 @@
 import {TestRunner} from 'test_runner';
 import {SourcesTestRunner} from 'sources_test_runner';
 
+import * as UIModule from 'devtools/ui/legacy/legacy.js';
+
 (async function() {
   TestRunner.addResult(
       `Tests that Debugger.getGeneratorObjectDetails command returns correct result.\n`);
-  await TestRunner.loadLegacyModule('sources');
   await TestRunner.showPanel('sources');
   await TestRunner.evaluateInPagePromise(`
       function forward(iter, step)
@@ -49,7 +50,7 @@ import {SourcesTestRunner} from 'sources_test_runner';
   `);
 
   function performStandardTestCase(pageExpression, next) {
-    UI.context.flavor(SDK.ExecutionContext)
+    UIModule.Context.Context.instance().flavor(SDK.ExecutionContext)
         .evaluate({expression: pageExpression})
         .then(didEvaluate);
 

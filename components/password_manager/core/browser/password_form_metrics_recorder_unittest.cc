@@ -40,7 +40,7 @@ namespace {
 
 constexpr ukm::SourceId kTestSourceId = 0x1234;
 
-using metrics_util::PasswordAccountStorageUsageLevel;
+using features_util::PasswordAccountStorageUsageLevel;
 using UkmEntry = ukm::builders::PasswordForm;
 
 // Create a UkmEntryBuilder with kTestSourceId.
@@ -637,7 +637,9 @@ FormData ConvertToFormData(const std::vector<TestCaseFieldInfo>& fields) {
     if (field.automatically_filled)
       form_field.properties_mask |= FieldPropertiesFlags::kAutofilledOnPageLoad;
 
-    form_field.form_control_type = field.is_password ? "password" : "text";
+    form_field.form_control_type =
+        field.is_password ? autofill::StringToFormControlType("password")
+                          : autofill::StringToFormControlType("text");
 
     form.fields.push_back(form_field);
   }

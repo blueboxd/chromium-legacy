@@ -8,6 +8,7 @@ import static org.chromium.components.browser_ui.share.ClipboardConstants.CLIPBO
 import static org.chromium.components.browser_ui.share.ClipboardConstants.CLIPBOARD_SHARED_URI_TIMESTAMP;
 import static org.chromium.components.browser_ui.site_settings.SingleCategorySettingsConstants.USER_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_PREFERENCE_KEY;
 
+import org.chromium.base.shared_preferences.KeyPrefix;
 import org.chromium.build.annotations.CheckDiscard;
 import org.chromium.components.browser_ui.accessibility.AccessibilityConstants;
 
@@ -43,7 +44,7 @@ import java.util.List;
  * LegacyChromePreferenceKeys#getPrefixesInUse()}.
  * 3. Delete the KeyPrefix constant.
  *
- * Tests in ChromePreferenceKeysTest and checks in {@link ChromePreferenceKeyChecker} ensure the
+ * Tests in ChromePreferenceKeysTest and checks in {@link StrictPreferenceKeyChecker} ensure the
  * validity of this file.
  */
 public final class ChromePreferenceKeys {
@@ -242,14 +243,6 @@ public final class ChromePreferenceKeys {
             "Chrome.RequestDesktopSiteGlobalSetting.DefaultOnCohortDisplaySpec";
 
     /**
-     * Whether the Device Lock page has been shown to the user and acknowledged with a device lock
-     * present. This is used to determine whether to show the device lock page when the user is
-     * interacting with sensitive personal data on the device.
-     */
-    public static final String DEVICE_LOCK_PAGE_HAS_BEEN_PASSED =
-            "Chrome.DeviceLockPage.HasBeenPassed";
-
-    /**
      * Indicates that Chrome should show an alert to the user about data privacy if the device
      * lock is removed.
      */
@@ -370,14 +363,15 @@ public final class ChromePreferenceKeys {
     public static final String HISTORY_SHOW_HISTORY_INFO = "history_home_show_info";
 
     /** Keys used to save settings related to homepage. */
-    public static final String HOMEPAGE_CUSTOM_URI = "homepage_custom_uri";
-    public static final String HOMEPAGE_ENABLED = "homepage";
-    public static final String HOMEPAGE_USE_CHROME_NTP = "Chrome.Homepage.UseNTP";
-    public static final String HOMEPAGE_USE_DEFAULT_URI = "homepage_partner_enabled";
-    public static final String HOMEPAGE_PARTNER_CUSTOMIZED_DEFAULT_URI =
+    public static final String DEPRECATED_HOMEPAGE_CUSTOM_URI = "homepage_custom_uri";
+    public static final String DEPRECATED_HOMEPAGE_PARTNER_CUSTOMIZED_DEFAULT_URI =
             "Chrome.Homepage.PartnerCustomizedDefaultUri";
+    public static final String HOMEPAGE_CUSTOM_GURL = "Chrome.Homepage.CustomGurl";
+    public static final String HOMEPAGE_ENABLED = "homepage";
     public static final String HOMEPAGE_PARTNER_CUSTOMIZED_DEFAULT_GURL =
             "Chrome.Homepage.PartnerCustomizedDefaultGurl";
+    public static final String HOMEPAGE_USE_CHROME_NTP = "Chrome.Homepage.UseNTP";
+    public static final String HOMEPAGE_USE_DEFAULT_URI = "homepage_partner_enabled";
 
     /**
      * Key used to save homepage location set by enterprise policy
@@ -1017,9 +1011,10 @@ public final class ChromePreferenceKeys {
                 DEFAULT_BROWSER_PROMO_SESSION_COUNT,
                 DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING,
                 DEFAULT_ENABLE_DESKTOP_SITE_GLOBAL_SETTING_COHORT,
+                DEPRECATED_HOMEPAGE_LOCATION_POLICY,
+                DEPRECATED_HOMEPAGE_PARTNER_CUSTOMIZED_DEFAULT_URI,
                 DESKTOP_SITE_GLOBAL_SETTING_DEFAULT_ON_COHORT_DISPLAY_SPEC,
                 DESKTOP_SITE_GLOBAL_SETTING_OPT_IN_MESSAGE_COHORT,
-                DEVICE_LOCK_PAGE_HAS_BEEN_PASSED,
                 DEVICE_LOCK_SHOW_ALERT_IF_REMOVED,
                 DOWNLOAD_INTERSTITIAL_DOWNLOAD_PENDING_REMOVAL,
                 DSE_NEW_TAB_URL,
@@ -1033,10 +1028,9 @@ public final class ChromePreferenceKeys {
                 FLAGS_LAST_CACHED_MINIMAL_BROWSER_FLAGS_TIME_MILLIS,
                 FLAGS_SAFE_MODE_ENABLED,
                 FLAGS_SAFE_MODE_RUNS_LEFT,
-                DEPRECATED_HOMEPAGE_LOCATION_POLICY,
+                HOMEPAGE_CUSTOM_GURL,
                 HOMEPAGE_LOCATION_POLICY_GURL,
                 HOMEPAGE_USE_CHROME_NTP,
-                HOMEPAGE_PARTNER_CUSTOMIZED_DEFAULT_URI,
                 HOMEPAGE_PARTNER_CUSTOMIZED_DEFAULT_GURL,
                 IMAGE_DESCRIPTIONS_JUST_ONCE_COUNT,
                 IMAGE_DESCRIPTIONS_DONT_ASK_AGAIN,

@@ -49,7 +49,6 @@ class CreditCard;
 
 namespace autofill_metrics {
 class FormEventLoggerBase;
-struct FormGroupFillingStats;
 }  // namespace autofill_metrics
 
 // A given maximum is enforced to minimize the number of buckets generated.
@@ -713,13 +712,13 @@ class AutofillMetrics {
   // Utility to log URL keyed form interaction events.
   class FormInteractionsUkmLogger {
    public:
-    FormInteractionsUkmLogger(ukm::UkmRecorder* ukm_recorder,
-                              const ukm::SourceId source_id);
+    FormInteractionsUkmLogger(AutofillClient* autofill_client,
+                              ukm::UkmRecorder* ukm_recorder);
 
     bool has_pinned_timestamp() const { return !pinned_timestamp_.is_null(); }
     void set_pinned_timestamp(base::TimeTicks t) { pinned_timestamp_ = t; }
 
-    ukm::builders::Autofill_CreditCardFill CreateCreditCardFillBuilder() const;
+    ukm::builders::Autofill_CreditCardFill CreateCreditCardFillBuilder();
     void Record(ukm::builders::Autofill_CreditCardFill&& builder);
 
     // Initializes this logger with a source_id. Unless forms is parsed no
@@ -812,8 +811,13 @@ class AutofillMetrics {
     int64_t MillisecondsSinceFormParsed(
         const base::TimeTicks& form_parsed_timestamp) const;
 
-    raw_ptr<ukm::UkmRecorder> ukm_recorder_;  // Weak reference.
-    ukm::SourceId source_id_;
+    ukm::SourceId GetSourceId();
+
+    // These objects outlive.
+    raw_ptr<AutofillClient> autofill_client_;
+    raw_ptr<ukm::UkmRecorder> ukm_recorder_;
+
+    absl::optional<ukm::SourceId> source_id_;
     base::TimeTicks pinned_timestamp_;
   };
 
@@ -1139,39 +1143,6 @@ class AutofillMetrics {
       size_t num_edited_autofilled_fields,
       bool observed_submission);
 
-  // Logs the `filling_stats` of the fields within a `form_type`. The filling
-  // status consistent of the number of accepted, corrected or and unfilled
-  // fields.
-  static void LogFieldFillingStats(
-      FormType form_type,
-      const autofill_metrics::FormGroupFillingStats& filling_stats);
-
-  // Logs a form-wide score for the fields of `form_type` based on the
-  // field-wise `filling_stats`. The score is calculated as follows:
-  // S = 2*number(filled and accepted) - 3*number(filled and corrected) + 100
-  // Note that the score is offset by 100 since UMA cannot log negative numbers
-  // It is also limited to 200.
-  // Each filled and accepted field contributes to a positive score of 2, while
-  // each filled and correct field contributes with a negative score of 3.
-  // The metric is only recorded if at least one field was accepted or
-  // corrected.
-  static void LogFormFillingScore(
-      FormType form_type,
-      const autofill_metrics::FormGroupFillingStats& filling_stats);
-
-  // Similar to LogFormFillingScore but with a different score function:
-  // S = number(filled and accepted) * 10 + number(corrected)
-  // This score serves as a 2D histogram to record the number of corrected and
-  // accepted fields into a single histogram.
-  // Note that the number of accepted fields is limited to 19 and the number of
-  // corrected fields is limited to 9.
-  // A score of 45 would mean that 4 fields have been accepted and 5 corrected.
-  // The metric is only recorded if at least one field was accepted or
-  // corrected.
-  static void LogFormFillingComplexScore(
-      FormType form_type,
-      const autofill_metrics::FormGroupFillingStats& filling_stats);
-
   // Logs the number of sections and the number of fields/section.
   static void LogSectioningMetrics(
       const base::flat_map<Section, size_t>& fields_per_section);
@@ -1407,6 +1378,14 @@ class AutofillMetrics {
   // |frame_token| and |renderer_id|.
   static uint64_t FieldGlobalIdToHash64Bit(
       const FieldGlobalId& field_global_id);
+
+  // Log the Autofill2_FieldInfoAfterSubmission UKM event after the form is
+  // submitted and uploaded for votes to the crowdsourcing server.
+  static void LogAutofillFieldInfoAfterSubmission(
+      ukm::UkmRecorder* ukm_recorder,
+      ukm::SourceId source_id,
+      const FormStructure& form,
+      const base::TimeTicks& form_submitted_timestamp);
 
  private:
   static void Log(AutocompleteEvent event);

@@ -223,7 +223,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.ContentExtension.DisplayCount" units="count"
-    expires_after="2023-09-24">
+    expires_after="2024-09-18">
   <owner>olivierrobin@chromium.org</owner>
   <owner>rkgibson@chromium.org</owner>
   <summary>
@@ -234,7 +234,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.ContentExtension.Index" units="index"
-    expires_after="2023-10-04">
+    expires_after="2024-09-18">
   <owner>olivierrobin@chromium.org</owner>
   <owner>rkgibson@chromium.org</owner>
   <summary>
@@ -741,16 +741,6 @@ chromium-metrics-reviews@google.com.
   <owner>bling-team@google.com</owner>
   <summary>
     Page on which the iOS web edit menu is dismissed by updating the selection.
-  </summary>
-</histogram>
-
-<histogram name="IOS.EnterTabSwitcherSnapshotResult"
-    enum="EnterTabSwitcherSnapshotResult" expires_after="2021-08-01">
-  <owner>edchin@chromium.org</owner>
-  <owner>justincohen@chromium.org</owner>
-  <summary>
-    Tracks the result of snapshotting when the user enters the tab switcher.
-    Recorded whenever the user enters the tab switcher.
   </summary>
 </histogram>
 
@@ -1672,7 +1662,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.OpenIn.DownloadResult" enum="IOSOpenInDownloadResult"
-    expires_after="2024-01-21">
+    expires_after="2024-03-24">
   <owner>ewannpv@chromium.org</owner>
   <owner>mrefaat@chromium.org</owner>
   <owner>bling-team@google.com</owner>
@@ -1720,7 +1710,8 @@ chromium-metrics-reviews@google.com.
   <owner>bling-mony-pod@google.com</owner>
   <summary>
     A bitfield value representing various sub-events that can take place during
-    an action customization session.
+    an action customization session. Only fired when some customization actually
+    occurred.
   </summary>
 </histogram>
 
@@ -1784,7 +1775,8 @@ chromium-metrics-reviews@google.com.
   <owner>bling-mony-pod@google.com</owner>
   <summary>
     A bitfield value representing various sub-events that can take place during
-    a destination customization session.
+    a destination customization session. Only fired when some customization
+    actually occurred.
   </summary>
 </histogram>
 
@@ -1839,6 +1831,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     The cause of the overflow menu being programatically reordered when it is
     reordered.
+  </summary>
+</histogram>
+
+<histogram name="IOS.OverflowMenu.OverflowMenuVisited" units="bitfield value"
+    expires_after="2024-02-11">
+  <owner>rkgibson@google.com</owner>
+  <owner>bling-mony-pod@google.com</owner>
+  <summary>
+    A bitfield value representing various sub events that can take place when
+    visiting the overflow menu. Fired once per visit, when the menu closes.
   </summary>
 </histogram>
 
@@ -1906,7 +1908,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.PageLoadedSnapshotResult" enum="PageLoadedSnapshotResult"
-    expires_after="2021-08-01">
+    expires_after="2024-03-01">
   <owner>edchin@chromium.org</owner>
   <owner>justincohen@chromium.org</owner>
   <summary>
@@ -1922,6 +1924,22 @@ chromium-metrics-reviews@google.com.
     Measures the time from the end of user input in the omnibox to when the page
     is fully loaded. Only measures page loads initiated by user typing a URL or
     selecting a suggested entry from the URL bar.
+  </summary>
+</histogram>
+
+<histogram name="IOS.ParcelTracking.OptIn.ActionOnPrompt"
+    enum="IOSParcelTrackingOptInActionOnPrompt" expires_after="2024-03-07">
+  <owner>hiramahmood@google.com</owner>
+  <owner>thegreenfrog@chromium.org</owner>
+  <summary>Logs a user's action on the Parcel Tracking Opt-In prompt.</summary>
+</histogram>
+
+<histogram name="IOS.ParcelTracking.OptIn.Displayed" enum="Boolean"
+    expires_after="2024-03-07">
+  <owner>hiramahmood@google.com</owner>
+  <owner>thegreenfrog@chromium.org</owner>
+  <summary>
+    Logs each time when the Parcel Tracking Opt-In prompt is displayed.
   </summary>
 </histogram>
 
@@ -1947,6 +1965,17 @@ chromium-metrics-reviews@google.com.
   <summary>
     Tracks the bottom sheet dismissal, use of a password suggestion and long
     press menu events.
+  </summary>
+</histogram>
+
+<histogram name="IOS.PasswordManager.BulkSavePasswordsInAccountCount"
+    units="passwords" expires_after="2024-01-28">
+  <owner>nicolasmacbeth@google.com</owner>
+  <owner>tmartino@chromium.org</owner>
+  <summary>
+    The number of local passwords the user has moved to their account using the
+    bulk save passwords in account module in password manager settings. This is
+    logged when the user chooses to bulk move their passwords to their account.
   </summary>
 </histogram>
 
@@ -2367,7 +2396,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.SandboxMetrics.AverageColorSnapshotSize" units="KB"
-    expires_after="2023-12-10">
+    expires_after="2024-03-24">
   <owner>michaeldo@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>
@@ -2378,7 +2407,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.SandboxMetrics.AverageGreySnapshotSize" units="KB"
-    expires_after="2023-12-10">
+    expires_after="2024-03-24">
   <owner>michaeldo@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>
@@ -2577,15 +2606,51 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="IOS.SaveToPhotos" enum="IOSSaveToPhotosType"
+    expires_after="2024-03-19">
+  <owner>qpubert@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <summary>
+    Logged before the &quot;Save to Photos&quot; UI is dismissed with the result
+    i.e. whether upload succeeded or failed, reason of the failure if any and
+    whether any action was performed after the upload, such as opening the
+    Photos app or showing StoreKit.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SaveToPhotos.AccountPicker"
+    enum="IOSSaveToPhotosAccountPickerType" expires_after="2024-03-19">
+  <owner>qpubert@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <summary>
+    Logged after the &quot;Save to Photos&quot; UI knows what account to use as
+    destination for the photo to be saved i.e. an account saved in preferences
+    as the default (account picker skipped), or an account selected with the
+    account picker, or no account if the user cancels.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SaveToPhotos.Settings" enum="IOSSaveToPhotosSettingsType"
+    expires_after="2024-03-19">
+  <owner>qpubert@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <summary>
+    Logged when the Photos service starts, if and only if the Save to Photos
+    settings are accessible from Settings. It gives information about the state
+    of the Save to Photos &quot;default account&quot; settings i.e. whether the
+    user opted-in to skip the account picker.
+  </summary>
+</histogram>
+
 <histogram name="IOS.SearchExtension.Action" enum="IOSSearchExtensionAction"
-    expires_after="2023-09-24">
+    expires_after="2024-09-18">
   <owner>olivierrobin@chromium.org</owner>
   <owner>rkgibson@chromium.org</owner>
   <summary>The action selected by the user in the Search Extension.</summary>
 </histogram>
 
 <histogram name="IOS.SearchExtension.DisplayCount" units="count"
-    expires_after="2023-09-24">
+    expires_after="2024-09-18">
   <owner>olivierrobin@chromium.org</owner>
   <owner>rkgibson@chromium.org</owner>
   <summary>
@@ -2656,7 +2721,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.ShareExtension.ReceivedEntriesCount" units="files"
-    expires_after="2024-01-28">
+    expires_after="2024-09-18">
   <owner>olivierrobin@chromium.org</owner>
   <owner>rkgibson@chromium.org</owner>
   <summary>
@@ -2666,14 +2731,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.ShareExtension.ReceivedEntry"
-    enum="IOSShareExtensionReceivedEntryType" expires_after="2024-01-28">
+    enum="IOSShareExtensionReceivedEntryType" expires_after="2024-09-18">
   <owner>olivierrobin@chromium.org</owner>
   <owner>rkgibson@chromium.org</owner>
   <summary>Type of the item received from the iOS share extension.</summary>
 </histogram>
 
 <histogram name="IOS.ShareExtension.ReceivedEntryDelay" units="ms"
-    expires_after="2023-10-04">
+    expires_after="2024-09-18">
   <owner>olivierrobin@chromium.org</owner>
   <owner>rkgibson@chromium.org</owner>
   <summary>
@@ -2683,7 +2748,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.ShareExtension.Source"
-    enum="IOSShareExtensionReceivedEntrySource" expires_after="2024-01-28">
+    enum="IOSShareExtensionReceivedEntrySource" expires_after="2024-09-18">
   <owner>olivierrobin@chromium.org</owner>
   <owner>rkgibson@chromium.org</owner>
   <summary>
@@ -2865,10 +2930,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.TabGrid.Selection.AddToBookmarks" units="Tabs"
-    expires_after="2023-11-01">
-  <owner>mrefaat@chromium.org</owner>
-  <owner>michaeldo@chromium.org</owner>
-  <owner>bling-team@google.com</owner>
+    expires_after="2024-11-01">
+  <owner>gambard@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
   <summary>
     The number of Tab Grid items bookmarked with a single add to bookmarks
     operation from the tab grid selection mode.
@@ -2876,10 +2940,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.TabGrid.Selection.AddToReadingList" units="Tabs"
-    expires_after="2023-11-01">
-  <owner>mrefaat@chromium.org</owner>
-  <owner>michaeldo@chromium.org</owner>
-  <owner>bling-team@google.com</owner>
+    expires_after="2024-11-01">
+  <owner>gambard@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
   <summary>
     The number of Tab Grid items added to reading list with a single add to
     reading list operation from the tab grid selection mode.
@@ -2887,10 +2950,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.TabGrid.Selection.CloseTabs" units="Tabs"
-    expires_after="2024-01-28">
-  <owner>mrefaat@chromium.org</owner>
-  <owner>michaeldo@chromium.org</owner>
-  <owner>bling-team@google.com</owner>
+    expires_after="2024-11-01">
+  <owner>gambard@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
   <summary>
     The number of Tab Grid items closed with a single Close Tab(s) operation
     from the tab grid selection mode.
@@ -2898,10 +2960,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.TabGrid.Selection.ShareTabs" units="Tabs"
-    expires_after="2023-11-01">
-  <owner>mrefaat@chromium.org</owner>
-  <owner>michaeldo@chromium.org</owner>
-  <owner>bling-team@google.com</owner>
+    expires_after="2024-11-01">
+  <owner>gambard@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
   <summary>
     The number of Tab Grid items shared with a single share operation from the
     tab grid selection mode.
@@ -2911,8 +2972,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="IOS.TabGrid.TabSelected.TimeSinceLastActivation" units="ms"
     expires_after="2024-01-28">
   <owner>gambard@chromium.org</owner>
-  <owner>lpromero@chromium.org</owner>
-  <owner>bling-team@google.com</owner>
+  <owner>chromeleon@google.com</owner>
   <summary>
     Recorded when a tab is selected from the TabGrid. Time spent since the last
     time this tab was made active.
@@ -2923,7 +2983,7 @@ chromium-metrics-reviews@google.com.
     expires_after="2024-06-28">
   <owner>ewannpv@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
-  <owner>bling-team@google.com</owner>
+  <owner>chromeleon@google.com</owner>
   <summary>
     The delay in milliseconds between the Tab is opened from the tab pickup
     banner on this device and the last time the same Tab was modified on the
@@ -3044,7 +3104,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.TabSwitcher.PinnedTabs.DragOrigin"
-    enum="IOSTabSwitcherDragOrigin" expires_after="2024-01-22">
+    enum="IOSTabSwitcherDragOrigin" expires_after="2024-03-24">
   <owner>ewannpv@chromium.org</owner>
   <owner>pakzhygitov@google.com</owner>
   <owner>bling-team@google.com</owner>
@@ -3212,7 +3272,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.Variations.FirstRun.SeedFetchResult"
-    enum="VariationsSeedFetchResult" expires_after="2023-11-09">
+    enum="VariationsSeedFetchResult" expires_after="2024-03-26">
   <owner>ginnyhuang@chromium.org</owner>
   <owner>bling-get-set-up@google.com</owner>
   <summary>
@@ -3269,7 +3329,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.WhatsNew.InstructionsShown" enum="WhatsNewType"
-    expires_after="2023-12-01">
+    expires_after="2024-03-17">
   <owner>cheickcisse@google.com</owner>
   <owner>sebsg@google.com</owner>
   <summary>

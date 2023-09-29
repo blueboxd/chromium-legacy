@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/functional/bind.h"
+#include "base/i18n/time_formatting.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/strings/escape.h"
@@ -37,6 +38,8 @@ std::string GetLogSourceValue(const PolicyLogger::Log::Source log_source) {
       return "Policy Fetching";
     case PolicyLogger::Log::Source::kAuthentication:
       return "Authentication";
+    case PolicyLogger::Log::Source::kRemoteCommands:
+      return "Remote Commands";
     default:
       NOTREACHED();
   }

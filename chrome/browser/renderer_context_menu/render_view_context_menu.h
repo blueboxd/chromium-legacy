@@ -133,7 +133,7 @@ class RenderViewContextMenu
   void ExecuteCommand(int command_id, int event_flags) override;
   void AddSpellCheckServiceItem(bool is_checked) override;
   void AddAccessibilityLabelsServiceItem(bool is_checked) override;
-  void AddPdfOcrMenuItem(bool is_always_active) override;
+  void AddPdfOcrMenuItem() override;
 
   // Registers a one-time callback that will be called the next time a context
   // menu is shown.
@@ -230,6 +230,10 @@ class RenderViewContextMenu
 
   // Writes the specified text/url to the system clipboard.
   void WriteURLToClipboard(const GURL& url);
+
+  // Issues a preconnection request to the given url.
+  void IssuePreconnectionToUrl(const std::string& anonymization_key_url,
+                               const std::string& preconnect_url);
 
   // RenderViewContextMenuBase:
   void InitMenu() override;

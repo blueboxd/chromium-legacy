@@ -38,12 +38,12 @@ class EditLabels : public views::View {
       DisplayOverlayController* controller,
       Action* action,
       NameTag* name_tag,
-      bool set_title);
+      bool should_update_title);
 
   EditLabels(DisplayOverlayController* controller,
              Action* action,
              NameTag* name_tag,
-             bool set_title);
+             bool should_update_title);
 
   EditLabels(const EditLabels&) = delete;
   EditLabels& operator=(const EditLabels&) = delete;
@@ -52,8 +52,18 @@ class EditLabels : public views::View {
   void OnActionInputBindingUpdated();
 
   void SetNameTagState(bool is_error, const std::u16string& error_tooltip);
+  void RemoveNewState();
+  // Called when this view is clicked upon.
+  void FocusLabel();
+
+  void set_should_update_title(bool should_update_title) {
+    should_update_title_ = should_update_title;
+  }
+
+  void ShowEduNudgeForEditingTip();
 
  private:
+  friend class ButtonOptionsMenuTest;
   friend class EditLabelTest;
 
   void Init();
@@ -77,7 +87,7 @@ class EditLabels : public views::View {
   bool missing_assign_ = false;
 
   // Allows for title modification if true.
-  bool set_title_ = false;
+  bool should_update_title_ = false;
 };
 }  // namespace arc::input_overlay
 

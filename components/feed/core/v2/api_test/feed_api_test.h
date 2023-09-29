@@ -41,6 +41,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "net/http/http_status_code.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -218,6 +219,10 @@ class TestSingleWebFeedSurface : public TestSurfaceBase {
       std::string = "",
       SingleWebFeedEntryPoint entry_point = SingleWebFeedEntryPoint::kOther);
 };
+class TestSupervisedFeedSurface : public TestSurfaceBase {
+ public:
+  explicit TestSupervisedFeedSurface(FeedStream* stream = nullptr);
+};
 
 class TestImageFetcher : public ImageFetcher {
  public:
@@ -259,6 +264,14 @@ class TestFeedNetwork : public FeedNetwork {
       std::string request_bytes,
       const AccountInfo& account_info,
       absl::optional<RequestMetadata> request_metadata,
+      base::OnceCallback<void(RawResponse)> callback) override;
+
+  void SendAsyncDataRequest(
+      const GURL& url,
+      base::StringPiece request_method,
+      net::HttpRequestHeaders request_headers,
+      std::string request_body,
+      const AccountInfo& account_info,
       base::OnceCallback<void(RawResponse)> callback) override;
 
   void CancelRequests() override;
@@ -319,6 +332,9 @@ class TestFeedNetwork : public FeedNetwork {
   }
   void InjectListWebFeedsResponse(const FeedNetwork::RawResponse& response) {
     InjectApiRawResponse<ListWebFeedsDiscoverApi>(response);
+  }
+  void InjectRawResponse(const FeedNetwork::RawResponse& response) {
+    injected_raw_response_ = response;
   }
 
   void InjectEmptyActionRequestResult();
@@ -403,6 +419,7 @@ class TestFeedNetwork : public FeedNetwork {
   std::map<NetworkRequestType, int> api_request_count_;
   std::vector<NetworkRequestType> sent_request_types_;
   absl::optional<feedwire::Response> injected_response_;
+  absl::optional<RawResponse> injected_raw_response_;
 };
 
 // Forwards to |FeedStream::WireResponseTranslator| unless a response is
@@ -516,7 +533,8 @@ class FeedApiTest : public testing::Test, public FeedStream::Delegate {
 
   // Replace stream_.
   void CreateStream(bool wait_for_initialization = true,
-                    bool start_surface = false);
+                    bool start_surface = false,
+                    bool is_new_tab_search_engine_url_android_enabled = false);
   std::unique_ptr<StreamModel> CreateStreamModel();
   bool IsTaskQueueIdle() const;
   void WaitForIdleTaskQueue();
@@ -537,7 +555,7 @@ class FeedApiTest : public testing::Test, public FeedStream::Delegate {
  protected:
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-  TestingPrefServiceSimple profile_prefs_;
+  sync_preferences::TestingPrefServiceSyncable profile_prefs_;
   std::unique_ptr<TestMetricsReporter> metrics_reporter_;
   TestFeedNetwork network_;
   TestWireResponseTranslator response_translator_;

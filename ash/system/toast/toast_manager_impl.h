@@ -54,8 +54,9 @@ class ASH_EXPORT ToastManagerImpl : public ToastManager,
       const std::string& id) override;
   bool MaybeActivateHighlightedDismissButtonOnActiveToast(
       const std::string& id) override;
-  bool IsRunning(const std::string& id) const override;
+  bool IsRunning(std::string_view id) const override;
   std::unique_ptr<ScopedToastPause> CreateScopedPause() override;
+  bool IsHighlighted(std::string_view id) const override;
 
   // ToastOverlay::Delegate overrides:
   void OnClosed() override;
@@ -73,6 +74,7 @@ class ASH_EXPORT ToastManagerImpl : public ToastManager,
   friend class DesksTestApi;
   friend class ToastManagerImplTest;
   friend class BatterySaverControllerTest;
+  friend class BatteryNotificationTest;
   friend class eche_app::LaunchAppHelperTest;
   friend class video_conference::VideoConferenceIntegrationTest;
 

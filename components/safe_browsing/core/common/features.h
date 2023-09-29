@@ -124,10 +124,6 @@ extern const base::FeatureParam<int>
 extern const base::FeatureParam<int>
     kExtensionTelemetryFileDataStartupDelaySeconds;
 
-// Enables data collected by the kExtensionTelemetry to be written and read to
-// disk. This data will be uploaded for analysis.
-BASE_DECLARE_FEATURE(kExtensionTelemetryPersistence);
-
 // Specifies the upload interval for extension telemetry reports.
 extern const base::FeatureParam<int> kExtensionTelemetryUploadIntervalSeconds;
 
@@ -157,18 +153,6 @@ BASE_DECLARE_FEATURE(
 // Enables collection of potential password theft data and uploads
 // telemetry reports to SB servers.
 BASE_DECLARE_FEATURE(kExtensionTelemetryPotentialPasswordTheft);
-
-// Enables collection of arguments whenever an extension invokes the
-// cookies.getAll API call.
-BASE_DECLARE_FEATURE(kExtensionTelemetryCookiesGetAllSignal);
-
-// Enables collection of arguments whenever an extension invokes the
-// cookies.get API call.
-BASE_DECLARE_FEATURE(kExtensionTelemetryCookiesGetSignal);
-
-// Enables collection of DeclarativeNetRequest rules when an extension invokes
-// the updateDynamicRules()/updateSessionRules() APIs.
-BASE_DECLARE_FEATURE(kExtensionTelemetryDeclarativeNetRequestSignal);
 
 // Enables remotely disabling of malicious off-store extensions identified in
 // Extension Telemetry service reports.
@@ -273,6 +257,10 @@ BASE_DECLARE_FEATURE(kSafeBrowsingRemoveCookiesInAuthRequests);
 // Controls whether to skip Safe Browsing checks on images, CSS and font URLs in
 // renderer URL loader throttle.
 BASE_DECLARE_FEATURE(kSafeBrowsingSkipImageCssFont);
+
+// Controls whether to skip Safe Browsing checks on all subresource URLs in
+// renderer and browser URL loader throttles.
+BASE_DECLARE_FEATURE(kSafeBrowsingSkipSubresources);
 
 // Controls whether the new 7z evaluation is performed on downloads.
 BASE_DECLARE_FEATURE(kSevenZipEvaluationEnabled);

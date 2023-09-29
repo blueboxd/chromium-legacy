@@ -93,27 +93,19 @@ MimeType TranslateMimeTypeToHistogramEnum(const base::StringPiece& mime_type) {
 }
 
 HlsFallbackImplementation SelectHlsFallbackImplementation() {
-#if !BUILDFLAG(IS_ANDROID)
-  // TODO(crbug/1266991): This should return kBuiltinHlsPlayer when we launch
-  // on non-mobile. For now, do not support it.
-  return HlsFallbackImplementation::kNone;
-#elif !BUILDFLAG(ENABLE_HLS_DEMUXER)
-  // Android build supporting only media player.
-  if (base::FeatureList::IsEnabled(kHlsPlayer)) {
-    return HlsFallbackImplementation::kMediaPlayer;
-  }
-  return HlsFallbackImplementation::kNone;
-#else
-  // Android build with both builtin & media player implementations.
-  // Prefer builtin if it is enabled.
+#if BUILDFLAG(ENABLE_HLS_DEMUXER)
   if (base::FeatureList::IsEnabled(kBuiltInHlsPlayer)) {
     return HlsFallbackImplementation::kBuiltinHlsPlayer;
   }
+#endif
+
+#if BUILDFLAG(IS_ANDROID)
   if (base::FeatureList::IsEnabled(kHlsPlayer)) {
     return HlsFallbackImplementation::kMediaPlayer;
   }
-  return HlsFallbackImplementation::kNone;
 #endif
+
+  return HlsFallbackImplementation::kNone;
 }
 
 #endif  // BUILDFLAG(ENABLE_HLS_DEMUXER) || BUILDFLAG(IS_ANDROID)
@@ -227,6 +219,10 @@ void DemuxerManager::SetLoadedUrl(GURL url) {
   // The URL might be a rather large data:// url, so move it to prevent a
   // copy.
   loaded_url_ = std::move(url);
+}
+
+const GURL& DemuxerManager::LoadedUrl() const {
+  return loaded_url_;
 }
 
 #if BUILDFLAG(ENABLE_HLS_DEMUXER) || BUILDFLAG(IS_ANDROID)
@@ -379,6 +375,22 @@ PipelineStatus DemuxerManager::CreateDemuxer(
     return DEMUXER_ERROR_COULD_NOT_OPEN;
   }
 
+  // We can only do a universal suspend for posters, unless the flag is enabled.
+  auto suspended_mode = Pipeline::StartType::kSuspendAfterMetadataForAudioOnly;
+  if (has_poster || base::FeatureList::IsEnabled(kPreloadMetadataLazyLoad)) {
+    suspended_mode = Pipeline::StartType::kSuspendAfterMetadata;
+  }
+
+#if BUILDFLAG(ENABLE_HLS_DEMUXER)
+  if (hls_fallback_ == HlsFallbackImplementation::kBuiltinHlsPlayer ||
+      loaded_url_.path_piece().ends_with(".m3u8")) {
+    SetDemuxer(CreateHlsDemuxer());
+    return std::move(on_demuxer_created)
+        .Run(demuxer_.get(), suspended_mode, /*is_streaming=*/false,
+             /*is_static=*/false);
+  }
+#endif  // BUILDFLAG(ENABLE_HLS_DEMUXER)
+
 #if BUILDFLAG(IS_ANDROID)
   const bool media_player_hls =
       hls_fallback_ == HlsFallbackImplementation::kMediaPlayer;
@@ -390,15 +402,6 @@ PipelineStatus DemuxerManager::CreateDemuxer(
              /*is_static = */ false);
   }
 #endif
-
-#if BUILDFLAG(ENABLE_HLS_DEMUXER)
-  if (hls_fallback_ == HlsFallbackImplementation::kBuiltinHlsPlayer) {
-    SetDemuxer(CreateHlsDemuxer());
-    return std::move(on_demuxer_created)
-        .Run(demuxer_.get(), Pipeline::StartType::kNormal,
-             /*is_streaming=*/false, /*is_static=*/false);
-  }
-#endif  // BUILDFLAG(ENABLE_HLS_DEMUXER)
 
   // TODO(sandersd): FileSystem objects may also be non-static, but due to our
   // caching layer such situations are broken already. http://crbug.com/593159
@@ -434,11 +437,6 @@ PipelineStatus DemuxerManager::CreateDemuxer(
              is_static);
   }
 
-  // We can only do a universal suspend for posters, unless the flag is enabled.
-  auto suspended_mode = Pipeline::StartType::kSuspendAfterMetadataForAudioOnly;
-  if (has_poster || base::FeatureList::IsEnabled(kPreloadMetadataLazyLoad)) {
-    suspended_mode = Pipeline::StartType::kSuspendAfterMetadata;
-  }
   return std::move(on_demuxer_created)
       .Run(demuxer_.get(), suspended_mode, IsStreaming(), is_static);
 }

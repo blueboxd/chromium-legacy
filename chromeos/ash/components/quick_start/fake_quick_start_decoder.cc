@@ -34,6 +34,17 @@ void FakeQuickStartDecoder::DecodeWifiCredentialsResponse(
   std::move(callback).Run(std::move(credentials_), error_);
 }
 
+void FakeQuickStartDecoder::DecodeUserVerificationMethod(
+    const absl::optional<std::vector<uint8_t>>& data,
+    DecodeUserVerificationMethodCallback callback) {
+  if (error_ != absl::nullopt) {
+    std::move(callback).Run(nullptr, error_);
+  } else {
+    std::move(callback).Run(std::move(user_verification_method_),
+                            absl::nullopt);
+  }
+}
+
 void FakeQuickStartDecoder::DecodeUserVerificationRequested(
     const absl::optional<std::vector<uint8_t>>& data,
     DecodeUserVerificationRequestedCallback callback) {
@@ -77,6 +88,16 @@ void FakeQuickStartDecoder::DecodeNotifySourceOfUpdateResponse(
 
   std::move(callback).Run(std::move(notify_source_of_update_response_),
                           absl::nullopt);
+}
+
+void FakeQuickStartDecoder::DecodeQuickStartMessage(
+    const absl::optional<std::vector<uint8_t>>& data,
+    DecodeQuickStartMessageCallback callback) {
+  if (error_ != absl::nullopt) {
+    std::move(callback).Run(nullptr, error_);
+  } else {
+    std::move(callback).Run(std::move(quick_start_message_), absl::nullopt);
+  }
 }
 
 void FakeQuickStartDecoder::SetUserVerificationRequested(
@@ -125,6 +146,11 @@ void FakeQuickStartDecoder::SetBootstrapConfigurationsResponse(
     absl::optional<mojom::QuickStartDecoderError> error) {
   response_cryptauth_device_id_ = cryptauth_device_id;
   error_ = error;
+}
+
+void FakeQuickStartDecoder::SetQuickStartMessage(
+    mojom::QuickStartMessagePtr quick_start_message) {
+  quick_start_message_ = std::move(quick_start_message);
 }
 
 }  // namespace ash::quick_start

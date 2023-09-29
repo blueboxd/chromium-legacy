@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="my">
 <translation id="1011749477052068769">ဤနေရာသို့ ရွှေ့ရန်</translation>
+<translation id="1014147525163127655">ဤစက်တွင် <ph name="ORIGIN" /> အတွက် လျှို့ဝှက်ကီးများ မရှိပါ</translation>
 <translation id="1016498331642356377">သင့်အသံဖြင့် အမြန်ရှာပါ။ ဤဖြတ်လမ်းလင့်ခ်ကို ပြင်ဆင်ရန် တို့ထိ၍ဖိထားပါ။</translation>
 <translation id="1024113959924243553">Chrome Dev</translation>
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" /> သို့ ပို့နေသည်...</translation>
@@ -175,6 +176,7 @@
 <translation id="19288952978244135">Chrome ပြန်ဖွင့်ပါ။</translation>
 <translation id="1933845786846280168">ရွေးထားသည့်တဘ်</translation>
 <translation id="1943432128510653496">စကားဝှက်များကို သိမ်းဆည်းပါ</translation>
+<translation id="1944535645109964458">လျှို့ဝှက်ကီး မရနိုင်ပါ</translation>
 <translation id="1952172573699511566">ပြနိုင်သည့်အခါတွင် ဝဘ်ဆိုက်များက သင်ပိုမိုနှစ်သက်သည့် ဘာသာစကားဖြင့် စာသားများကို ပြသပါမည်။</translation>
 <translation id="1959679933317802873">အကြောင်းအရာကို စောင့်နေသည်</translation>
 <translation id="1960290143419248813">Chrome အပ်ဒိတ်များကို ဤ Android ဗားရှင်းတွင် ပံ့ပိုးထားခြင်း မရှိတော့ပါ</translation>
@@ -263,6 +265,7 @@
 <translation id="2461822463642141190">လက်ရှိ</translation>
 <translation id="2472163211318554013">Chrome ကို အကောင်းဆုံးသုံးနိုင်ရန် လက်မှတ်ထိုးဝင်ပါ</translation>
 <translation id="247737702124049222">ပုံအကြောင်းအရာများကို ဖွင့်ထားသည်</translation>
+<translation id="2479148705183875116">'ဆက်တင်များ' သို့ သွားရန်</translation>
 <translation id="2482878487686419369">အကြောင်းကြားစာ</translation>
 <translation id="2496180316473517155">အသုံးပြုခြင်း မှတ်တမ်း</translation>
 <translation id="2497852260688568942">စင့်ခ်ပြုလုပ်ခြင်းကို သင့်စီမံခန့်ခွဲသူက ပိတ်ဆို့ထားပါသည်</translation>
@@ -626,6 +629,7 @@
 <translation id="4257230861809842349">Google Password Manager မှ စကားဝှက်များကို ဖျက်မလား။</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />အသုံးပြုသည့် ဒေတာ-<ph name="END_BOLD" /> ဤစက်တွင် Chrome အသုံးပြု၍ သင်ဝင်ကြည့်ထားသော ဝဘ်ဆိုက်မှတ်တမ်းတစ်ခုဖြစ်သည့် သင်၏ ကြည့်ရှုခြင်းမှတ်တမ်း။</translation>
 <translation id="4269820728363426813">လင့် လိပ်စာ ကူးယူရန်</translation>
+<translation id="4277529130885813215">စက်နောက်တစ်ခု သုံးရန်</translation>
 <translation id="4283102315569707115">ဒက်စ်တော့ဝဘ်ဆိုက်များကို မူရင်းသတ်မှတ်ချက်အနေဖြင့် တောင်းဆိုမလား။</translation>
 <translation id="4285846616383034558">ကွတ်ကီး၊ ကက်ရှ်နှင့် အခြား ဝဘ်ဆိုက်ဒေတာများ</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Android ဆက်တင်များတွင် ဖန်သားပြင်လော့ခ်ဖွင့်ရန်<ph name="END_LINK" /></translation>
@@ -672,6 +676,7 @@
 <translation id="452750746583162491">သင်စင့်ခ်လုပ်ထားသည့် ဒေတာများကို ပြန်စစ်ခြင်း</translation>
 <translation id="4528638190900283934">ထပ်ဆောင်းဝန်ဆောင်မှုများအတွက် လက်မှတ်ထိုးဝင်ပါ</translation>
 <translation id="4532845899244822526">ဖိုင်တွဲရွေးရန်</translation>
+<translation id="4543131175509360848">လျှို့ဝှက်ကီးစာမျက်နှာများ မရှိပါ</translation>
 <translation id="4547551584605870320">{TAB_COUNT,plural, =1{တဘ် <ph name="TAB_COUNT_ONE" /> ခု}other{တဘ် <ph name="TAB_COUNT_MANY" /> ခု, ရုပ်ဖျက်တဘ်<ph name="TAB_COUNT_INCOGNITO" /> ခု}}</translation>
 <translation id="4554077758708533499">USB ကြိုးနှင့် ချိတ်ဆက်ထားသည်</translation>
 <translation id="4558311620361989323">ဝဘ်စာမျက်နှာ ဖြတ်လမ်းလင့်ခ်များ</translation>
@@ -946,6 +951,7 @@
 <translation id="5869522115854928033">သိမ်းဆည်းထားသည့် စကားဝှက်များ</translation>
 <translation id="587735546353481577">ဝဘ်ဆိုက်တစ်ခုကို လိုက်ကြည့်ရန် ၎င်းသို့သွားပြီး Chrome မီနူးဖွင့်ကာ ‘လိုက်ကြည့်ရန်’ ကို တို့ပါ။</translation>
 <translation id="5879072387416556377">ပိုကောင်းသည့်အကြံပြုချက်များ ရယူခြင်း</translation>
+<translation id="5899667542927581604">ပိတ်ထားသော လျှို့ဝှက်ကီးစာမျက်နှာများ မရှိပါ</translation>
 <translation id="5916664084637901428">ဖွင့်ရန်</translation>
 <translation id="5919204609460789179">စင့်ခ်လုပ်ရန် <ph name="PRODUCT_NAME" /> ကို အပ်ဒိတ်လုပ်ပါ</translation>
 <translation id="5938820472109305350"><ph name="INTEREST" /> ထည့်ရန်</translation>
@@ -1165,6 +1171,7 @@
 <translation id="6955535239952325894">ကြီးကြပ်ထားသောဘရောင်ဇာများတွင် ဤဆက်တင်ကို ပိတ်ထားသည်</translation>
 <translation id="6963766334940102469">မှတ်သားချက်များ ဖျက်မည်</translation>
 <translation id="696447261358045621">ရုပ်ဖျက်မုဒ်မှ ထွက်ရန်</translation>
+<translation id="6965382102122355670">OK</translation>
 <translation id="6971862865055170158">ခွင့်မပြုပါ</translation>
 <translation id="6978717888677691380">သင်ပိတ်ထားသည့် ဝဘ်ဆိုက်များ</translation>
 <translation id="6979737339423435258">အားလုံး</translation>
@@ -1323,6 +1330,7 @@
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" /> မှ မျှဝေထားသော စာသား</translation>
 <translation id="7762668264895820836">SD ကတ် <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">လိပ်စာများ ထည့်သွင်းပါ</translation>
+<translation id="7766587497031415281">ဖွင့်ကြည့်ထားသည့်မှတ်တမ်းဒေတာကိုရှင်းရန် နောက်ထပ်ရွေးစရာများ</translation>
 <translation id="7772032839648071052">စကားစုဝှက်ကို အတည်ပြုရန်</translation>
 <translation id="7772375229873196092"><ph name="APP_NAME" /> ကိုပိတ်ပါ</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 နှင့် နောက်ထပ် <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ခု}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 နှင့် နောက်ထပ် <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ခု}}</translation>
@@ -1587,6 +1595,7 @@
 <translation id="9063523880881406963">ဆိုဒ်အကြီး တောင်းဆိုချက် ပိတ်မည်</translation>
 <translation id="9065203028668620118">ပြင်ဆင်ရန်</translation>
 <translation id="9065383040763568503">Chrome က အရေးကြီးသည်ဟု မယူဆသည့် သိမ်းထားသောဒေတာများ (ဥပမာ - သိမ်းထားသောဆက်တင်များ မရှိသည့် သို့မဟုတ် သင် မကြာခဏ ဝင်ကြည့်လေ့မရှိသည့် ဝဘ်ဆိုက်များ)</translation>
+<translation id="9067341854474068781">မြင်ကွင်းအပြည့် ဖွင့်ထားသော လျှို့ဝှက်ကီးစာမျက်နှာများ မရှိပါ</translation>
 <translation id="906781307897697745"><ph name="PRODUCT_NAME" /> တွင်</translation>
 <translation id="9069999660519089861">မဖတ်ရသေးသော စာမျက်နှာ မရှိပါ</translation>
 <translation id="9070377983101773829">အသံဖြင့် ရှာဖွေမှု စတင်ရန်</translation>

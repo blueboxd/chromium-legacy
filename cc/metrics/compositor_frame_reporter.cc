@@ -11,6 +11,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/containers/cxx20_erase.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
@@ -174,6 +175,12 @@ void ReportEventLatencyMetric(
 
 constexpr char kTraceCategory[] =
     "cc,benchmark," TRACE_DISABLED_BY_DEFAULT("devtools.timeline.frame");
+
+bool IsTracingEnabled() {
+  bool enabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(kTraceCategory, &enabled);
+  return enabled;
+}
 
 base::TimeTicks ComputeSafeDeadlineForFrame(const viz::BeginFrameArgs& args) {
   return args.frame_time + (args.interval * 1.5);
@@ -1240,6 +1247,10 @@ void CompositorFrameReporter::ReportCompositorLatencyTraceEvents(
         has_partial_update_);
   }
 
+  if (!IsTracingEnabled()) {
+    return;
+  }
+
   const auto trace_track =
       perfetto::Track(base::trace_event::GetNextGlobalTraceId());
   TRACE_EVENT_BEGIN(
@@ -1481,11 +1492,6 @@ void CompositorFrameReporter::ReportScrollJankMetrics() const {
 }
 
 void CompositorFrameReporter::ReportEventLatencyTraceEvents() const {
-  // TODO(mohsen): This function is becoming large and there is concerns about
-  // having this in the compositor critical path. crbug.com/1072740 is
-  // considering doing the reporting off-thread, but as a short-term solution,
-  // we should investigate whether we can skip this function entirely if tracing
-  // is off and whether that has any positive impact or not.
   for (const auto& event_metrics : events_metrics_) {
     EventLatencyTracingRecorder::RecordEventLatencyTraceEvent(
         event_metrics.get(), frame_termination_time_, &stage_history_,
@@ -1817,13 +1823,11 @@ void CompositorFrameReporter::DiscardOldPartialUpdateReporters() {
     return;
   }
   // Remove all destroyed reporters from `partial_update_dependents_`.
-  partial_update_dependents_.erase(
-      std::remove_if(
-          partial_update_dependents_.begin(), partial_update_dependents_.end(),
-          [](const base::WeakPtr<CompositorFrameReporter>& reporter) {
-            return !reporter;
-          }),
-      partial_update_dependents_.end());
+  base::EraseIf(partial_update_dependents_,
+                [](const base::WeakPtr<CompositorFrameReporter>& reporter) {
+    return !reporter;
+  });
+
 }
 
 base::WeakPtr<CompositorFrameReporter> CompositorFrameReporter::GetWeakPtr() {

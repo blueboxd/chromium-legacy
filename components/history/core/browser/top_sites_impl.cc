@@ -517,8 +517,11 @@ void TopSitesImpl::SetTopSitesFromHistory(
     if (!url.is_valid() || IsBlocked(url)) {
       continue;
     }
-    most_repeated_queries.emplace_back(url, query->normalized_term,
-                                       *query->score);
+    most_repeated_queries.emplace_back(url, query->normalized_term);
+    most_repeated_queries.back().visit_count = query->visit_count;
+    most_repeated_queries.back().last_visit_time = query->last_visit_time;
+    most_repeated_queries.back().score = *query->score;
+    most_repeated_queries.back().is_srp = true;
     if (most_repeated_queries.size() >= most_repeated_queries_limit) {
       break;
     }

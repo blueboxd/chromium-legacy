@@ -9,21 +9,35 @@
 
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
+#include "chrome/browser/ui/views/toolbar/overflow_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "ui/views/view.h"
 
 // Manages toolbar elements' visibility using flex rules.
-class ToolbarController {
+class ToolbarController : public ui::SimpleMenuModel::Delegate {
  public:
   ToolbarController(std::vector<ui::ElementIdentifier> element_ids,
                     int element_flex_order_start,
-                    views::View* toolbar_container_view);
+                    views::View* toolbar_container_view,
+                    views::View* overflow_button);
   ToolbarController(const ToolbarController&) = delete;
   ToolbarController& operator=(const ToolbarController&) = delete;
-  ~ToolbarController();
+  ~ToolbarController() override;
+
+  // Returns true if layout manager of `toolbar_container_view_` hides any
+  // toolbar elements.
+  bool ShouldShowOverflowButton();
+
+  void SetOverflowButtonVisible(bool should_show) {
+    overflow_button_->SetVisible(should_show);
+  }
+
+  // Create the overflow menu model for hidden buttons.
+  std::unique_ptr<ui::SimpleMenuModel> CreateOverflowMenuModel();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ToolbarControllerTest, FlexOrderCorrect);
+  friend class ToolbarControllerInteractiveTest;
+  friend class ToolbarControllerUnitTest;
 
   // Searches for a toolbar element from `toolbar_container_view_` with `id`.
   views::View* FindToolbarElementWithId(ui::ElementIdentifier id) {
@@ -31,6 +45,12 @@ class ToolbarController {
         std::as_const(*this).FindToolbarElementWithId(id));
   }
   const views::View* FindToolbarElementWithId(ui::ElementIdentifier id) const;
+
+  // Returns currently hidden elements.
+  std::vector<const views::View*> GetOverflowedElements();
+
+  // ui::SimpleMenuModel::Delegate:
+  void ExecuteCommand(int command_id, int event_flags) override;
 
   // The toolbar elements managed by this controller.
   // Order matters as each will be assigned with a flex order that increments by
@@ -42,7 +62,11 @@ class ToolbarController {
   const int element_flex_order_start_;
 
   // Reference to ToolbarView::container_view_. Must outlive `this`.
-  const raw_ptr<views::View> toolbar_container_view_;
+  const raw_ptr<const views::View> toolbar_container_view_;
+
+  // The button with a chevron icon that indicates at least one element in
+  // `element_ids_` overflows. Owned by `toolbar_container_view_`.
+  raw_ptr<views::View> overflow_button_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_CONTROLLER_H_

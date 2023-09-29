@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
@@ -46,8 +47,10 @@ FormFieldData CreateTestField(std::u16string name = u"SomeName") {
   f.name = std::move(name);
   f.name_attribute = f.name;
   f.id_attribute = u"some_id";
-  f.form_control_type = "text";
+  f.form_control_type = StringToFormControlType("text");
   f.check_status = FormFieldData::CheckStatus::kChecked;
+  f.role = FormFieldData::RoleAttribute::kOther;
+  f.is_focusable = true;
   return f;
 }
 
@@ -123,6 +126,11 @@ TEST(FormDataAndroidTest, SimilarFormAs) {
   // If is_form_tag differs, they are not similar.
   f = af.form();
   f.is_form_tag = !f.is_form_tag;
+  EXPECT_FALSE(af.SimilarFormAs(f));
+
+  // If their global ids differ, they are not similar.
+  f = af.form();
+  f.unique_renderer_id = FormRendererId(f.unique_renderer_id.value() + 1);
   EXPECT_FALSE(af.SimilarFormAs(f));
 }
 
@@ -220,6 +228,42 @@ TEST(FormDataAndroidTest, UpdateFieldTypes) {
   EXPECT_CALL(*bridges[0], UpdateFieldTypes);
   EXPECT_CALL(*bridges[1], UpdateFieldTypes);
   form_android.UpdateFieldTypes(FormStructure(form));
+}
+
+// Tests that calling `UpdateFieldVisibilities` propagates the visibility to the
+// affected fields and returns their indices.
+TEST(FormDataAndroidTest, UpdateFieldVisibilities) {
+  std::vector<MockFormFieldDataAndroidBridge*> bridges;
+  EnableFieldTestingFactoryAndSaveBridges(&bridges);
+
+  FormData form = CreateTestForm();
+  form.fields = {CreateTestField(), CreateTestField(), CreateTestField()};
+  form.fields[0].role = FormFieldData::RoleAttribute::kPresentation;
+  form.fields[1].is_focusable = false;
+  EXPECT_FALSE(form.fields[0].IsFocusable());
+  EXPECT_FALSE(form.fields[1].IsFocusable());
+  EXPECT_TRUE(form.fields[2].IsFocusable());
+  FormDataAndroid form_android(form);
+
+  ASSERT_THAT(bridges, SizeIs(3));
+  ASSERT_TRUE(bridges[0]);
+  ASSERT_TRUE(bridges[1]);
+  ASSERT_TRUE(bridges[2]);
+
+  // `form_android` created a copy of `form` - therefore modifying the fields
+  // here does not change the values inside `form_android`.
+  form.fields[0].role = FormFieldData::RoleAttribute::kOther;
+  form.fields[1].is_focusable = true;
+  EXPECT_TRUE(form.fields[0].IsFocusable());
+  EXPECT_TRUE(form.fields[1].IsFocusable());
+  EXPECT_TRUE(form.fields[2].IsFocusable());
+
+  EXPECT_CALL(*bridges[0], UpdateVisible(true));
+  EXPECT_CALL(*bridges[1], UpdateVisible(true));
+  EXPECT_CALL(*bridges[2], UpdateVisible).Times(0);
+  form_android.UpdateFieldVisibilities(form);
+
+  EXPECT_TRUE(FormData::DeepEqual(form, form_android.form()));
 }
 
 }  // namespace autofill

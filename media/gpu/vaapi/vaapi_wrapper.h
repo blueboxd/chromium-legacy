@@ -93,6 +93,7 @@ enum class VAImplementation {
   kMesaGallium,
   kIntelI965,
   kIntelIHD,
+  kChromiumFakeDriver,
   kOther,
   kInvalid,
 };
@@ -551,6 +552,10 @@ class MEDIA_GPU_EXPORT VaapiWrapper
       bool& packed_sps,
       bool& packed_pps,
       bool& packed_slice);
+
+  // Gets the minimum segment block size supported for AV1 encoding.
+  [[nodiscard]] bool GetMinAV1SegmentSize(VideoCodecProfile profile,
+                                          uint32_t& min_seg_size);
 
   // Blits a VASurface |va_surface_src| into another VASurface
   // |va_surface_dest| applying pixel format conversion, cropping

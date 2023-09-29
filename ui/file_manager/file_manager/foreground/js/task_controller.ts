@@ -11,7 +11,7 @@ import {assertInstanceof, assertNotReached} from 'chrome://resources/ash/common/
 
 import {getMimeType, startIOTask} from '../../common/js/api.js';
 import {type AnnotatedTask, getDefaultTask} from '../../common/js/file_tasks.js';
-import {metrics} from '../../common/js/metrics.js';
+import {recordDirectoryListLoadWithTolerance, startInterval} from '../../common/js/metrics.js';
 import {str, strf, util} from '../../common/js/util.js';
 import {Crostini} from '../../externs/background/crostini.js';
 import {ProgressCenter} from '../../externs/background/progress_center.js';
@@ -20,7 +20,7 @@ import {FileData, FileKey, FileTasks as StoreFileTasks, PropStatus, State} from 
 import {VolumeManager} from '../../externs/volume_manager.js';
 import {fetchFileTasks} from '../../state/ducks/current_directory.js';
 import {getFilesData, getStore, type Store, waitForState} from '../../state/store.js';
-import {FilesPasswordDialog} from '../elements/files_password_dialog.js';
+import {XfPasswordDialog} from '../../widgets/xf_password_dialog.js';
 
 import {DirectoryModel} from './directory_model.js';
 import {FileSelection, FileSelectionHandler} from './file_selection.js';
@@ -419,7 +419,7 @@ export class TaskController {
 
     try {
       const metricName = 'UpdateAvailableApps';
-      metrics.startInterval(metricName);
+      startInterval(metricName);
       const tasks = await this.getFileTasks();
       // Update the DOM.
       this.display_(tasks);
@@ -429,7 +429,7 @@ export class TaskController {
       if (window.IN_TEST) {
         this.ui_.taskMenuButton.toggleAttribute('get-tasks-completed', true);
       }
-      metrics.recordDirectoryListLoadWithTolerance(
+      recordDirectoryListLoadWithTolerance(
           metricName, openTaskItems.length, [10, 100], /*tolerance=*/ 0.8);
     } catch (error: any) {
       if (error) {
@@ -629,7 +629,7 @@ export class TaskController {
     let password: string|null = null;
     // Ask for password.
     try {
-      const dialog = this.ui_.passwordDialog as FilesPasswordDialog;
+      const dialog = this.ui_.passwordDialog as XfPasswordDialog;
       password = await dialog.askForPassword(entry.fullPath, password);
     } catch (error) {
       console.warn('User cancelled password fetch ', error);

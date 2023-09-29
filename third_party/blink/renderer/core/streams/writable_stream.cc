@@ -213,8 +213,9 @@ WritableStream* WritableStream::CreateWithCountQueueingStrategy(
     size_t high_water_mark,
     std::unique_ptr<WritableStreamTransferringOptimizer> optimizer) {
   v8::Isolate* isolate = script_state->GetIsolate();
-  ExceptionState exception_state(isolate, ExceptionState::kConstructionContext,
-                                 "WritableStream");
+  ExceptionState exception_state(
+      isolate, ExceptionContextType::kConstructorOperationInvoke,
+      "WritableStream");
   v8::MicrotasksScope microtasks_scope(
       isolate, ToMicrotaskQueue(script_state),
       v8::MicrotasksScope::kDoNotRunMicrotasks);
@@ -275,7 +276,8 @@ void WritableStream::Serialize(ScriptState* script_state,
   // 7. Let promise be ! ReadableStreamPipeTo(readable, value, false, false,
   //    false).
   auto promise = ReadableStream::PipeTo(script_state, readable, this,
-                                        MakeGarbageCollected<PipeOptions>());
+                                        MakeGarbageCollected<PipeOptions>(),
+                                        exception_state);
 
   // 8. Set promise.[[PromiseIsHandled]] to true.
   promise.MarkAsHandled();

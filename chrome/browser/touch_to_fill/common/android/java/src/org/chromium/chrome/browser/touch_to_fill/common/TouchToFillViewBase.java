@@ -13,6 +13,7 @@ import android.widget.RelativeLayout;
 import androidx.annotation.Nullable;
 import androidx.annotation.Px;
 import androidx.annotation.VisibleForTesting;
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -25,6 +26,9 @@ import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.ui.accessibility.AccessibilityState;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.base.ViewUtils;
+
+import java.util.Set;
+
 /**
  * This is a base class for the Touch to Fill View classes.
  */
@@ -86,9 +90,9 @@ public abstract class TouchToFillViewBase implements BottomSheetContent {
 
     /**
      * Used as a helper for the suggestion list height calculation.
-     * @return the item type of the suggestions in the list on the {@link BottomSheet}.
+     * @return the item types of the suggestions in the list on the {@link BottomSheet}.
      */
-    protected abstract int listedItemType();
+    protected abstract Set<Integer> listedItemTypes();
 
     /**
      * Used as a helper for the suggestion list height calculation.
@@ -96,8 +100,17 @@ public abstract class TouchToFillViewBase implements BottomSheetContent {
      */
     protected abstract int footerItemType();
 
-    public TouchToFillViewBase(
-            BottomSheetController bottomSheetController, RelativeLayout contentView) {
+    /**
+     * @param bottomSheetController The {@link BottomSheetController} used to show/hide the sheet.
+     * @param contentView The content of the bottom sheet.
+     * @param suppressCollectionA11y Disables/enables setting the collection related a11y node info,
+     *                               basically removing the "2 of 4" part in a regular RecycleView
+     *                               item announcement. Setting it to `true` implies that the item
+     *                               content description is updated accordingly for items that are
+     *                               eligible for indexing from the UI perspective.
+     */
+    public TouchToFillViewBase(BottomSheetController bottomSheetController,
+            RelativeLayout contentView, Boolean suppressCollectionA11y) {
         mBottomSheetController = bottomSheetController;
         mContentView = contentView;
         mSheetItemListView = getContentView().findViewById(R.id.sheet_item_list);
@@ -107,6 +120,14 @@ public abstract class TouchToFillViewBase implements BottomSheetContent {
             @Override
             public boolean isAutoMeasureEnabled() {
                 return true;
+            }
+
+            @Override
+            public void onInitializeAccessibilityNodeInfo(RecyclerView.Recycler recycler,
+                    RecyclerView.State state, AccessibilityNodeInfoCompat info) {
+                if (!suppressCollectionA11y) {
+                    super.onInitializeAccessibilityNodeInfo(recycler, state, info);
+                }
             }
         });
 
@@ -245,8 +266,6 @@ public abstract class TouchToFillViewBase implements BottomSheetContent {
      * Measures the content of the bottom sheet.
      */
     protected void remeasure() {
-        RelativeLayout.LayoutParams sheetItemListLayoutParams =
-                (RelativeLayout.LayoutParams) mSheetItemListView.getLayoutParams();
         mContentView.measure(
                 View.MeasureSpec.makeMeasureSpec(getInsetDisplayWidthPx(), MeasureSpec.AT_MOST),
                 MeasureSpec.UNSPECIFIED);
@@ -262,7 +281,8 @@ public abstract class TouchToFillViewBase implements BottomSheetContent {
 
     private boolean isListedItem(View childInSheetView) {
         int posInAdapter = mSheetItemListView.getChildAdapterPosition(childInSheetView);
-        return mSheetItemListView.getAdapter().getItemViewType(posInAdapter) == listedItemType();
+        return listedItemTypes().contains(
+                mSheetItemListView.getAdapter().getItemViewType(posInAdapter));
     }
 
     private boolean isFooterItem(View childInSheetView) {

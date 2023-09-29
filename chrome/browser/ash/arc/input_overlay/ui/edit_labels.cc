@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/arc/input_overlay/ui/edit_labels.h"
 
+#include "base/check_op.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/action.h"
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/edit_label.h"
@@ -20,9 +21,9 @@ std::unique_ptr<EditLabels> EditLabels::CreateEditLabels(
     DisplayOverlayController* controller,
     Action* action,
     NameTag* name_tag,
-    bool set_title) {
-  auto labels =
-      std::make_unique<EditLabels>(controller, action, name_tag, set_title);
+    bool should_update_title) {
+  auto labels = std::make_unique<EditLabels>(controller, action, name_tag,
+                                             should_update_title);
   labels->Init();
   return labels;
 }
@@ -30,11 +31,11 @@ std::unique_ptr<EditLabels> EditLabels::CreateEditLabels(
 EditLabels::EditLabels(DisplayOverlayController* controller,
                        Action* action,
                        NameTag* name_tag,
-                       bool set_title)
+                       bool should_update_title)
     : controller_(controller),
       action_(action),
       name_tag_(name_tag),
-      set_title_(set_title) {}
+      should_update_title_(should_update_title) {}
 
 EditLabels::~EditLabels() = default;
 
@@ -51,7 +52,7 @@ void EditLabels::Init() {
   }
 
   UpdateNameTag();
-  if (set_title_) {
+  if (should_update_title_) {
     UpdateNameTagTitle();
   }
 }
@@ -75,11 +76,33 @@ void EditLabels::SetNameTagState(bool is_error,
   // still has label unassigned, `name_tag_` still needs to show error.
   if (!is_error && missing_assign_) {
     name_tag_->SetState(
-        /*is_error=*/true,
+        /*is_error=*/!action_->is_new(),
         l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_EDIT_MISSING_BINDING));
   } else {
     name_tag_->SetState(is_error, error_tooltip);
   }
+}
+
+void EditLabels::FocusLabel() {
+  // Clicking the edit labels with an already focused edit label causes the next
+  // label to gain focus.
+  for (size_t i = 0; i < labels_.size(); i++) {
+    auto* label = labels_[i];
+    if (label->HasFocus()) {
+      labels_[(i + 1) % labels_.size()]->RequestFocus();
+      return;
+    }
+  }
+  labels_[0]->RequestFocus();
+}
+
+void EditLabels::ShowEduNudgeForEditingTip() {
+  size_t size = labels_.size();
+  DCHECK_GE(size, 1u);
+  // TODO(b/274690042): Replace it with localized strings.
+  controller_->AddNudgeWidget(labels_[size - 1],
+                              u"You can easily click and swap this key. To "
+                              u"edit the details, tap the row.");
 }
 
 void EditLabels::InitForActionTapKeyboard() {
@@ -151,10 +174,20 @@ void EditLabels::UpdateNameTag() {
   name_tag_->SetSubtitle(labels_.size() == 1 ? u"Key " + key_string
                                              : u"Keys " + key_string);
   name_tag_->SetState(
-      /*is_error=*/missing_assign_,
+      // The name tag is not set to be in an error state if it was newly
+      // created.
+      /*is_error=*/missing_assign_ && !action_->is_new(),
       missing_assign_
           ? l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_EDIT_MISSING_BINDING)
           : u"");
+}
+
+void EditLabels::RemoveNewState() {
+  for (auto* label : labels_) {
+    label->RemoveNewState();
+  }
+
+  UpdateNameTag();
 }
 
 }  // namespace arc::input_overlay

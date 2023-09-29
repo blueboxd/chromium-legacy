@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_SAFETY_HUB_MENU_NOTIFICATION_H_
 
 #include <memory>
+#include <string>
 
 #include "base/time/time.h"
 #include "base/values.h"
@@ -40,16 +41,9 @@ class SafetyHubMenuNotification {
 
   base::Value::Dict ToDictValue() const;
 
-  template <typename T>
   static std::unique_ptr<SafetyHubMenuNotification> FromDictValue(
-      const base::Value::Dict& dict) {
-    auto notification = std::make_unique<SafetyHubMenuNotification>(dict);
-    if (dict.contains(kSafetyHubMenuNotificationResultKey)) {
-      notification->result_ = SafetyHubService::Result::FromDictValue<T>(
-          *dict.FindDict(kSafetyHubMenuNotificationResultKey));
-    }
-    return notification;
-  }
+      const base::Value::Dict& dict,
+      SafetyHubService* service);
 
   // Called when the menu notification will be shown. This will make the
   // notification the currently active one.
@@ -71,6 +65,13 @@ class SafetyHubMenuNotification {
   // available. If the updated result is similar to the current one, no changes
   // are made. Otherwise, the menu notification will be considered as a new one.
   void UpdateResult(std::unique_ptr<SafetyHubService::Result> result);
+
+  // Returns the notification string that will be shown in the three-dot menu.
+  std::u16string GetNotificationString() const;
+
+  // Returns the Command ID of the notification that will be shown in the
+  // three-dot menu.
+  int GetNotificationCommandId() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SafetyHubMenuNotificationTest, ToFromDictValue);

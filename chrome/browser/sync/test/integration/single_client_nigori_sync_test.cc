@@ -35,7 +35,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/features/password_features.h"
-#include "components/password_manager/core/browser/password_manager_features_util.h"
+#include "components/password_manager/core/browser/features/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/base/features.h"
@@ -2063,8 +2063,16 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
 
 // This test verifies that client handles security domain reset and able to
 // register again after that and follow key rotation.
+// TODO(crbug.com/1482344) Test failing on linux-lacros-tester-rel
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_ShouldFollowKeyRotationAfterSecurityDomainReset \
+  DISABLED_ShouldFollowKeyRotationAfterSecurityDomainReset
+#else
+#define MAYBE_ShouldFollowKeyRotationAfterSecurityDomainReset \
+  ShouldFollowKeyRotationAfterSecurityDomainReset
+#endif
 IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
-                       ShouldFollowKeyRotationAfterSecurityDomainReset) {
+                       MAYBE_ShouldFollowKeyRotationAfterSecurityDomainReset) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(FakeSecurityDomainsServerMemberStatusChecker(
                   /*expected_member_count=*/1,

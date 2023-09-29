@@ -9,6 +9,7 @@
 
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/keyboard/key_command_actions.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_paging.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_toolbars_action_wrangler.h"
@@ -23,7 +24,6 @@ class GURL;
 @protocol IncognitoReauthCommands;
 @protocol IncognitoReauthConsumer;
 @class LayoutGuideCenter;
-@protocol PopupMenuCommands;
 @protocol RecentTabsConsumer;
 @class RecentTabsTableViewController;
 @class TabGridBottomToolbar;
@@ -35,7 +35,6 @@ class GURL;
 @protocol TabGridMutator;
 @protocol TabGridToolbarsCommandsWrangler;
 @class TabGridTopToolbar;
-@class TabGridViewController;
 
 // Configurations for tab grid pages.
 enum class TabGridPageConfiguration {
@@ -57,15 +56,6 @@ enum class TabGridPageConfiguration {
 
 @protocol TabGridViewControllerDelegate <NSObject>
 
-// Asks the delegate for the page that should currently be active.
-- (TabGridPage)activePageForTabGridViewController:
-    (TabGridViewController*)tabGridViewController;
-
-// Notifies the delegate that the tab grid was dismissed via the
-// ViewRevealingAnimatee.
-- (void)tabGridViewControllerDidDismiss:
-    (TabGridViewController*)tabGridViewController;
-
 // Opens a link when the user clicks on the in-text link.
 - (void)openLinkWithURL:(const GURL&)URL;
 
@@ -84,7 +74,8 @@ enum class TabGridPageConfiguration {
 // View controller representing a tab switcher. The tab switcher has an
 // incognito tab grid, regular tab grid, and remote tabs.
 @interface TabGridViewController
-    : UIViewController <IncognitoReauthObserver,
+    : UIViewController <GridConsumer,
+                        IncognitoReauthObserver,
                         KeyCommandActions,
                         TabGridConsumer,
                         LegacyGridTransitionAnimationLayoutProviding,
@@ -95,9 +86,6 @@ enum class TabGridPageConfiguration {
 @property(nonatomic, weak) id<ApplicationCommands> handler;
 @property(nonatomic, weak) id<IncognitoReauthCommands> reauthHandler;
 @property(nonatomic, weak) IncognitoReauthSceneAgent* reauthAgent;
-// Handlers for popup menu commands for the regular and incognito states.
-@property(nonatomic, weak) id<PopupMenuCommands> regularPopupMenuHandler;
-@property(nonatomic, weak) id<PopupMenuCommands> incognitoPopupMenuHandler;
 
 // Delegate for this view controller to handle presenting tab UI.
 @property(nonatomic, weak) id<TabPresentationDelegate> tabPresentationDelegate;

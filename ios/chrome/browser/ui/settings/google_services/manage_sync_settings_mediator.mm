@@ -13,6 +13,7 @@
 #import "base/i18n/message_formatter.h"
 #import "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
+#import "components/prefs/pref_service.h"
 #import "components/signin/public/base/consent_level.h"
 #import "components/signin/public/base/signin_metrics.h"
 #import "components/signin/public/identity_manager/account_info.h"
@@ -46,6 +47,7 @@
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_central_account_item.h"
+#import "ios/chrome/browser/ui/authentication/history_sync/history_sync_utils.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_command_handler.h"
@@ -143,6 +145,8 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
   // Chrome account manager service observer bridge.
   std::unique_ptr<ChromeAccountManagerServiceObserverBridge>
       _accountAccountManagerServiceObserver;
+  // The pref service.
+  PrefService* _prefService;
   // Signed-in identity. Note: may be nil while signing out.
   id<SystemIdentity> _signedInIdentity;
 }
@@ -152,6 +156,7 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
           identityManager:(signin::IdentityManager*)identityManager
     authenticationService:(AuthenticationService*)authenticationService
     accountManagerService:(ChromeAccountManagerService*)accountManagerService
+              prefService:(PrefService*)prefService
       initialAccountState:(SyncSettingsAccountState)initialAccountState {
   self = [super init];
   if (self) {
@@ -169,6 +174,7 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
             self, _chromeAccountManagerService);
     _signedInIdentity = _authenticationService->GetPrimaryIdentity(
         signin::ConsentLevel::kSignin);
+    _prefService = prefService;
     _initialAccountState = initialAccountState;
   }
   return self;
@@ -181,6 +187,7 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
   _authenticationService = nullptr;
   _chromeAccountManagerService = nullptr;
   _accountAccountManagerServiceObserver.reset();
+  _prefService = nullptr;
   _signedInIdentity = nil;
 }
 
@@ -309,17 +316,18 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
         // It's possible that the sync everything pref remains true when a
         // policy change doesn't allow to sync everthing anymore. Fix that here.
         BOOL isSyncingEverything =
-            self.syncSetupService->IsSyncEverythingEnabled();
+            _syncService->GetUserSettings()->IsSyncEverythingEnabled();
         BOOL canSyncEverything = self.allItemsAreSynceable;
         if (isSyncingEverything && !canSyncEverything) {
-          self.syncSetupService->SetSyncEverythingEnabled(NO);
+          _syncService->GetUserSettings()->SetSelectedTypes(
+              false, _syncService->GetUserSettings()->GetSelectedTypes());
         }
         return;
       }
 
       BOOL shouldSyncEverythingBeEditable = !self.disabledBecauseOfSyncError;
       BOOL shouldSyncEverythingItemBeOn =
-          self.syncSetupService->IsSyncEverythingEnabled();
+          _syncService->GetUserSettings()->IsSyncEverythingEnabled();
       SyncSwitchItem* syncEverythingItem =
           base::apple::ObjCCastStrict<SyncSwitchItem>(self.syncEverythingItem);
       BOOL needsUpdate =
@@ -369,14 +377,14 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
     syncer::UserSelectableType dataType =
         static_cast<syncer::UserSelectableType>(syncSwitchItem.dataType);
     BOOL isDataTypeSynced =
-        self.syncSetupService->IsDataTypePreferred(dataType);
+        _syncService->GetUserSettings()->GetSelectedTypes().Has(dataType);
     BOOL isEnabled = self.shouldSyncDataItemEnabled &&
                      ![self isManagedSyncSettingsDataType:dataType];
 
     // kPayments can only be selected if kAutofill is also selected.
     // TODO(crbug.com/1435431): Remove this coupling.
     if (dataType == syncer::UserSelectableType::kPayments &&
-        !self.syncSetupService->IsDataTypePreferred(
+        !_syncService->GetUserSettings()->GetSelectedTypes().Has(
             syncer::UserSelectableType::kAutofill)) {
       isEnabled = false;
     }
@@ -388,10 +396,11 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
       // cases they may not, e.g. if one of them is disabled by policy. In that
       // case, show the toggle as on if at least one of them is enabled. The
       // toggle should reflect the value of the non-disabled type.
-      isDataTypeSynced = self.syncSetupService->IsDataTypePreferred(
-                             syncer::UserSelectableType::kHistory) ||
-                         self.syncSetupService->IsDataTypePreferred(
-                             syncer::UserSelectableType::kTabs);
+      isDataTypeSynced =
+          _syncService->GetUserSettings()->GetSelectedTypes().Has(
+              syncer::UserSelectableType::kHistory) ||
+          _syncService->GetUserSettings()->GetSelectedTypes().Has(
+              syncer::UserSelectableType::kTabs);
       isEnabled = self.shouldSyncDataItemEnabled &&
                   (![self isManagedSyncSettingsDataType:
                               syncer::UserSelectableType::kHistory] ||
@@ -818,6 +827,12 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
   TableViewModel* model = self.consumer.tableViewModel;
   DCHECK(![model hasSectionForSectionIdentifier:SyncErrorsSectionIdentifier]);
 
+  // During some signout flows, it can happen that the Account section doesn't
+  // exist at this point. In that case, there's nothing to update here.
+  if (![model hasSectionForSectionIdentifier:AccountSectionIdentifier]) {
+    return;
+  }
+
   NSInteger previousSection =
       [model sectionForSectionIdentifier:AccountSectionIdentifier];
   DCHECK_NE(NSNotFound, previousSection);
@@ -963,7 +978,7 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
       return !self.disabledBecauseOfSyncError;
     case SyncSettingsAccountState::kSyncing:
     case SyncSettingsAccountState::kAdvancedInitialSyncSetup:
-      return (!self.syncSetupService->IsSyncEverythingEnabled() ||
+      return (!_syncService->GetUserSettings()->IsSyncEverythingEnabled() ||
               !self.allItemsAreSynceable) &&
              !self.disabledBecauseOfSyncError;
   }
@@ -1102,10 +1117,14 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
           return;
         }
 
-        self.syncSetupService->SetSyncEverythingEnabled(value);
+        _syncService->GetUserSettings()->SetSelectedTypes(
+            value, _syncService->GetUserSettings()->GetSelectedTypes());
         break;
       case HistoryDataTypeItemType: {
         DCHECK(syncSwitchItem);
+        // Update History Sync decline prefs.
+        value ? history_sync::ResetDeclinePrefs(_prefService)
+              : history_sync::RecordDeclinePrefs(_prefService);
         // Don't try to toggle the managed item.
         if (![self isManagedSyncSettingsDataType:syncer::UserSelectableType::
                                                      kHistory]) {
@@ -1286,13 +1305,13 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
 
       // Also override the title to be more accurate, if only passwords are
       // being encrypted.
-      if (!self.syncSetupService->IsEncryptEverythingEnabled()) {
+      if (!_syncService->GetUserSettings()->IsEncryptEverythingEnabled()) {
         syncErrorItem.text = GetNSString(IDS_IOS_SYNC_PASSWORDS_ERROR_TITLE);
       }
       break;
     case SyncTrustedVaultRecoverabilityDegradedErrorItemType:
       syncErrorItem.detailText = GetNSString(
-          self.syncSetupService->IsEncryptEverythingEnabled()
+          _syncService->GetUserSettings()->IsEncryptEverythingEnabled()
               ? IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_FIX_RECOVERABILITY_DEGRADED_FOR_EVERYTHING
               : IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_FIX_RECOVERABILITY_DEGRADED_FOR_PASSWORDS);
 

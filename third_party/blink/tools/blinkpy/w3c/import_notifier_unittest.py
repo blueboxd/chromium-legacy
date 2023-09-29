@@ -23,13 +23,13 @@ from blinkpy.w3c.directory_owners_extractor import WPTDirMetadata
 from blinkpy.w3c.local_wpt_mock import MockLocalWPT
 from blinkpy.w3c.import_notifier import ImportNotifier, TestFailure
 from blinkpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater
+from blinkpy.w3c.buganizer_mock import BuganizerClientMock
 
 bootstrap_wpt_imports()
 from wptrunner import metadata
 
 UMBRELLA_BUG = WPTExpectationsUpdater.UMBRELLA_BUG
 MOCK_WEB_TESTS = '/mock-checkout/' + RELATIVE_WEB_TESTS
-
 
 class ImportNotifierTest(unittest.TestCase):
     def setUp(self):
@@ -71,6 +71,7 @@ class ImportNotifierTest(unittest.TestCase):
         ])
         self.notifier = ImportNotifier(self.host, self.git, self.local_wpt,
                                        configs)
+        self._buganizer_api = BuganizerClientMock
 
     def test_find_changed_baselines_of_tests(self):
         changed_files = [
@@ -517,8 +518,10 @@ class ImportNotifierTest(unittest.TestCase):
                     'crbug.com/12345 external/wpt/foo/baz.html [ Fail ]'),
             ],
         }
-        dir_metadata = WPTDirMetadata(component='Blink>Infra>Ecosystem',
-                                      should_notify=True)
+        dir_metadata = WPTDirMetadata(
+            monorail_component='Blink>Infra>Ecosystem',
+            buganizer_public_component='123',
+            should_notify=True)
         with mock.patch.object(self.notifier.owners_extractor,
                                'read_dir_metadata',
                                return_value=dir_metadata):
@@ -526,6 +529,7 @@ class ImportNotifierTest(unittest.TestCase):
                 'SHA_START', 'SHA_END', 'https://crrev.com/c/12345')
             self.assertEqual(bug.body['cc'], [])
             self.assertEqual(bug.body['components'], ['Blink>Infra>Ecosystem'])
+            self.assertEquals(bug.buganizer_public_components, ['123'])
             self.assertEqual(
                 bug.body['summary'],
                 '[WPT] New failures introduced in external/wpt/foo '

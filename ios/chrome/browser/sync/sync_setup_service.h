@@ -20,6 +20,9 @@ class SyncSetupInProgressHandle;
 // Class that allows configuring sync. It handles enabling and disabling it, as
 // well as choosing datatypes. Most actions are delayed until a commit is done,
 // to allow the complex sync setup flow on iOS.
+// vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+// DEPRECATED! Please do not add new usages. Use SyncService directly instead!
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 class SyncSetupService : public KeyedService {
  public:
   explicit SyncSetupService(syncer::SyncService* sync_service);
@@ -28,23 +31,6 @@ class SyncSetupService : public KeyedService {
   SyncSetupService& operator=(const SyncSetupService&) = delete;
 
   ~SyncSetupService() override;
-
-  // Returns whether the given datatype has been enabled for sync and its
-  // initialization is complete (SyncEngineHost::OnEngineInitialized has been
-  // called).
-  virtual bool IsDataTypeActive(syncer::ModelType datatype) const;
-  // Returns whether the given datatype is enabled by the user.
-  // TODO(crbug.com/1429249): Rename to get rid of the `preferred` terminology.
-  virtual bool IsDataTypePreferred(syncer::UserSelectableType datatype) const;
-
-  // Returns whether all datatypes are being synced.
-  virtual bool IsSyncEverythingEnabled() const;
-  // Sets whether all datatypes should be synced or not. Changes won't take
-  // effect before the next call to `CommitChanges`.
-  virtual void SetSyncEverythingEnabled(bool sync_all);
-
-  // Returns whether all sync data is being encrypted.
-  virtual bool IsEncryptEverythingEnabled() const;
 
   // Pauses sync allowing the user to configure what data to sync before
   // actually starting to sync data with the server.
@@ -57,9 +43,6 @@ class SyncSetupService : public KeyedService {
   // This method should only be used with UnifiedConsent flag.
   virtual void SetInitialSyncFeatureSetupComplete(
       syncer::SyncFirstSetupCompleteSource source);
-
-  // Returns true if the user finished the Sync setup flow.
-  virtual bool IsInitialSyncFeatureSetupComplete() const;
 
   // Commits all the pending configuration changes to Sync.
   void CommitSyncChanges();

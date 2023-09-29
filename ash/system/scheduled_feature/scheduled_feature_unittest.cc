@@ -83,18 +83,6 @@ constexpr base::TimeDelta kMaxRefreshBackoff = base::Minutes(1);
 
 enum AmPm { kAM, kPM };
 
-Geoposition CreateGeoposition(double latitude,
-                              double longitude,
-                              base::Time timestamp) {
-  Geoposition position;
-  position.latitude = latitude;
-  position.longitude = longitude;
-  position.status = Geoposition::STATUS_OK;
-  position.accuracy = 10;
-  position.timestamp = timestamp;
-  return position;
-}
-
 // Returns the `ScheduleCheckpoint` that is expected to come next after
 // `current_checkpoint` (sunrise, morning, late afternoon, sunset, sunrise,
 // etc).
@@ -380,13 +368,6 @@ class ScheduledFeatureTest : public NoSessionAshTestBase,
     waiter.Wait();
   }
 
-  // Sets the geoposition to be returned from the `factory_` upon the
-  // `GeolocationController` request.
-  void SetServerPosition(const Geoposition& position) {
-    position_ = position;
-    factory()->set_position(position_);
-  }
-
   // Checks if the feature is observing geoposition changes.
   bool IsFeatureObservingGeoposition() {
     return geolocation_controller()->HasObserverForTesting(feature());
@@ -449,7 +430,7 @@ struct TestTimestamp {
 
 struct TimeAndLocation {
   TestTimestamp timestamp;
-  Geoposition geoposition;
+  SimpleGeoposition geoposition;
 };
 
 // Iterates through all possible geopositions using the `kSunsetToSunrise`
@@ -493,9 +474,6 @@ class ScheduledFeatureGeopositionTest
 
     std::vector<TimeAndLocation> test_params;
     for (const TestTimestamp& timestamp : kAllTimestamps) {
-      base::Time fake_geoposition_timestamp;
-      CHECK(base::Time::FromUTCString(timestamp.utc_value,
-                                      &fake_geoposition_timestamp));
       TimeAndLocation time_and_location;
       time_and_location.timestamp = timestamp;
 
@@ -504,9 +482,7 @@ class ScheduledFeatureGeopositionTest
         for (double longitude = kMinLongitude; longitude <= kMaxLongitude;
              increment_coordinate(kMaxLongitude, kLongitudeStepSize,
                                   longitude)) {
-          time_and_location.geoposition = CreateGeoposition(
-              latitude, longitude, fake_geoposition_timestamp);
-          CHECK(time_and_location.geoposition.Valid());
+          time_and_location.geoposition = {latitude, longitude};
           test_params.push_back(time_and_location);
         }
       }
@@ -517,7 +493,8 @@ class ScheduledFeatureGeopositionTest
   void SetUp() override {
     ScheduledFeatureTest::SetUp();
     SetWallClockOrigin(GetParam().timestamp.utc_value);
-    SetServerPosition(GetParam().geoposition);
+    factory()->SetValidPosition(GetParam().geoposition.latitude,
+                                GetParam().geoposition.longitude, Now());
     FireTimerToFetchGeoposition();
     feature()->SetScheduleType(ScheduleType::kSunsetToSunrise);
   }
@@ -848,12 +825,9 @@ TEST_F(ScheduledFeatureTest, SunsetSunriseGeoposition) {
   EXPECT_TRUE(timer_ptr()->IsRunning());
   EXPECT_FALSE(observer1.possible_change_in_timezone());
 
-  // Prepare a valid geoposition.
-  const Geoposition position = CreateGeoposition(
-      kFakePosition1_Latitude, kFakePosition1_Longitude, Now());
-
   // Set and fetch position update.
-  SetServerPosition(position);
+  factory()->SetValidPosition(kFakePosition1_Latitude, kFakePosition1_Longitude,
+                              Now());
   FireTimerToFetchGeoposition();
   EXPECT_TRUE(observer1.possible_change_in_timezone());
   const auto sunset_time1 = geolocation_controller()->GetSunsetTime();
@@ -896,11 +870,10 @@ TEST_F(ScheduledFeatureTest, SunsetSunriseGeoposition) {
   //      sunset2      now (sunrise1)     sunrise2
   //
 
-  const Geoposition position2 = CreateGeoposition(
-      kFakePosition2_Latitude, kFakePosition2_Longitude, Now());
   // Replace a response `position` with `position2`.
   factory()->ClearResponses();
-  SetServerPosition(position2);
+  factory()->SetValidPosition(kFakePosition2_Latitude, kFakePosition2_Longitude,
+                              Now());
   FireTimerToFetchGeoposition();
   EXPECT_TRUE(observer1.possible_change_in_timezone());
   EXPECT_TRUE(IsFeatureObservingGeoposition());
@@ -931,11 +904,9 @@ TEST_F(ScheduledFeatureTest, SunsetSunriseAllDaylight) {
   constexpr double kTestLongitude = 20.225282;
 
   SetWallClockOrigin("07 Jun 2023 20:30:00.000");
-  const Geoposition position =
-      CreateGeoposition(kTestLatitude, kTestLongitude, Now());
 
   // Set and fetch position update.
-  SetServerPosition(position);
+  factory()->SetValidPosition(kTestLatitude, kTestLongitude, Now());
   FireTimerToFetchGeoposition();
 
   feature()->SetScheduleType(ScheduleType::kSunsetToSunrise);
@@ -1408,8 +1379,10 @@ TEST_P(ScheduledFeatureGeopositionTest, CyclesThroughCheckpoints) {
   }
 
   const size_t num_checkpoints_observed = checkpoint_observer.changes().size();
-  // There are a couple of corner cases where more than 4 checkpoints are
-  // observed in 24 hours. Example:
+  // There are a couple of corner cases where 3 or 5 checkpoints are observed in
+  // 24 hours.
+  //
+  // Example of 5:
   // Now: 5:59 AM
   // Sunrise today: 6:00 AM
   // Sunrise tomorrow: 5:58 AM
@@ -1420,7 +1393,18 @@ TEST_P(ScheduledFeatureGeopositionTest, CyclesThroughCheckpoints) {
   // * Late Afternoon (4 PM)
   // * Sunset (6 PM)
   // * Sunrise 2 (5:58 AM)
-  ASSERT_GE(num_checkpoints_observed, kNumCheckpointsPerDay);
+  //
+  // Example of 3:
+  // Now: 6:01 AM
+  // Sunrise today: 6:00 AM
+  // Sunrise tomorrow: 6:02 AM
+  //
+  // Expected checkpoint changes:
+  // * Morning (10 AM)
+  // * Late Afternoon (4 PM)
+  // * Sunset (6 PM)
+  ASSERT_GE(num_checkpoints_observed, kNumCheckpointsPerDay - 1);
+  ASSERT_LE(num_checkpoints_observed, kNumCheckpointsPerDay + 1);
   for (size_t i = 1; i < num_checkpoints_observed; ++i) {
     EXPECT_EQ(
         checkpoint_observer.changes()[i].second,

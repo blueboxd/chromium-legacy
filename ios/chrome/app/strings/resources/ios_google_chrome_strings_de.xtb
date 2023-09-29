@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
+<translation id="1105362920864247682">Browserdaten in Chrome löschen.</translation>
 <translation id="1143896152279775643">Dein Passwort wird im Google Passwortmanager für <ph name="EMAIL" /> gespeichert.</translation>
 <translation id="1180362651362502943">Chrome-Daten in deinem Google-Konto weiterhin verwenden.</translation>
 <translation id="1282031177488366470">Helfen, die Funktionen und die Leistung von Chrome zu verbessern</translation>
@@ -24,10 +25,10 @@ Wichtige Hinweise:
 
   • Falls du die Synchronisierung deines Verlaufs in deinem Google-Konto aktivierst, können die Messwerte auch Informationen zu den von dir besuchten URLs enthalten.<ph name="END_INDENT" /></translation>
 <translation id="1554731936187952550">Du nutzt den umfangreichen Schutz von Chrome vor schädlichen Websites</translation>
+<translation id="1657395063736185342">Bilder in Chromium suchen</translation>
 <translation id="1675955119303651351">Einige deiner Chrome-Daten wurden noch nicht in deinem Google-Konto gespeichert.
         Warte einige Minuten, bevor du dich abmeldest. Wenn du dich jetzt abmeldest, werden diese Daten gelöscht.</translation>
 <translation id="1682483655351012182">Chrome-Daten synchronisieren</translation>
-<translation id="1733654336159102143">Sperre die Inkognitotabs, wenn du Chrome verlässt oder zu einer anderen App wechselst.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1843217788865538014">Automatisch Chrome verwenden, wenn du in Nachrichten, Dokumenten und anderen Apps auf Links tippst.</translation>
 <translation id="1917964099031477364">Dieses Konto und alle nicht gespeicherten Daten werden aus Chrome und anderen Google Apps auf diesem Gerät entfernt.</translation>
@@ -36,6 +37,7 @@ Wichtige Hinweise:
 <translation id="2120238739383482109">Öffnet die Chrome-Lesezeichen.</translation>
 <translation id="2147651015520127414">Chrome hat verifiziert, dass <ph name="ISSUER" /> das Zertifikat dieser Website ausgestellt hat.</translation>
 <translation id="2199719347983604670">Daten aus der Chrome-Synchronisierung</translation>
+<translation id="2311240109311056604">Öffnet Chrome Dino.</translation>
 <translation id="2339201583852607431">Dein Passwort wird in deinem Google-Konto (<ph name="EMAIL" />) gespeichert.</translation>
 <translation id="2342919707875585281">Chrome teilt deinen Standort mit Websites, für die du das zulässt.</translation>
 <translation id="2347208864470321755">Wenn diese Funktion aktiviert ist, bietet Chrome an, Seiten in anderen Sprachen mithilfe von Google Übersetzer zu übersetzen. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
@@ -53,7 +55,7 @@ Wichtige Hinweise:
 <translation id="2732745070297234559">Chrome konnte nicht alle Passwörter prüfen. Versuche es morgen noch einmal.</translation>
 <translation id="2736805085127235148">Chrome-Benachrichtigungen sind in den Geräteeinstellungen momentan deaktiviert.</translation>
 <translation id="2767464022270041271">Keine gespeicherten Passwörter. Der Google Passwortmanager kann deine Passwörter prüfen, wenn du sie speicherst.</translation>
-<translation id="2840432500933227975">Öffne die Chrome-Einstellungen unter iOS, tippe auf „Standard-Browser-App“ und wähle „Chrome“ aus.</translation>
+<translation id="2868822340714096138">Browserdaten in Chrome löschen</translation>
 <translation id="2869959624320573933">In Chrome anmelden</translation>
 <translation id="2876628302275096482"><ph name="BEGIN_LINK" />Weitere Informationen zum Datenschutz bei Chrome<ph name="END_LINK" /></translation>
 <translation id="2957447865124070833">Wähle <ph name="BEGIN_BOLD" />Chrome<ph name="END_BOLD" /> aus</translation>
@@ -72,6 +74,7 @@ Wichtige Hinweise:
 <translation id="3655656110921623717">Das bedeutet, dass Chrome immer die mobile Website anfordert.</translation>
 <translation id="3720541637541300822">Inkognitotabs sperren, wenn Chrome geschlossen wird</translation>
 <translation id="3741995255368156336">Öffnet die Chrome-Leseliste.</translation>
+<translation id="3744018071945602754">Passwörter in Chrome verwalten</translation>
 <translation id="3827545470516145620">Dieses Gerät wird durch die standardmäßigen Sicherheitsfunktionen geschützt</translation>
 <translation id="384394811301901750">Google Chrome kann gerade nicht auf die Kamera zugreifen.</translation>
 <translation id="3901001113120561395">Chrome optimal nutzen.</translation>
@@ -86,6 +89,7 @@ Wichtige Hinweise:
 <translation id="4233521129555661685"><ph name="USER_EMAIL1" /> hat Chrome genutzt und Lesezeichen, Passwörter und andere Einstellungen auf diesem Gerät festgelegt.</translation>
 <translation id="424864128008805179">Von Chrome abmelden?</translation>
 <translation id="4251174643044751591">Dadurch wird die Seite mit den Einstellungen für Zahlungsmethoden in Chrome geöffnet.</translation>
+<translation id="4453284704333523777">Chrome-Einstellungen verwalten</translation>
 <translation id="4508370294876102450">Chrome über jede App öffnen</translation>
 <translation id="4523886039239821078">Einige Add-ons führen zum Ausfall von Chrome. Bitte deinstalliere:</translation>
 <translation id="4633328489441962921">Chrome kann nicht nach Aktualisierungen suchen</translation>
@@ -99,10 +103,12 @@ Wichtige Hinweise:
 <translation id="484033449593719797">Wird von Chrome Beta nicht unterstützt</translation>
 <translation id="4840404732697892756">Der Google Passwortmanager kann deine Passwörter prüfen, wenn du dich mit deinem Google-Konto anmeldest.</translation>
 <translation id="4903674399067644695">Auf dieser Karte findest du Vorschläge, wie du Chrome optimal nutzen kannst.</translation>
+<translation id="49200511069271369">Deine Organisation, <ph name="DOMAIN" />, verwaltet dieses Konto und die Nutzung von Chrome. Dein Administrator kann einzelne Funktionen einrichten oder einschränken.</translation>
 <translation id="5030102366287574140">Chrome kann helfen, dich vor Bedrohungen wie Datenpannen und schädlichen Erweiterungen zu schützen</translation>
 <translation id="5108659628347594808">Chrome verbessern</translation>
 <translation id="5112925986883715005">Chrome-Leseliste ansehen</translation>
 <translation id="5119391094379141756">Chrome auswählen</translation>
+<translation id="5156818928311866442">Öffnet die Chrome-Einstellung, mit der Chrome als Standardbrowser festgelegt wird.</translation>
 <translation id="5162467219239570114">Chrome ist veraltet. Wenn im <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" /> kein Update verfügbar ist, unterstützt dein Gerät neuere Versionen von Chrome möglicherweise nicht mehr.</translation>
 <translation id="5190139289262548459">Deine Organisation, <ph name="DOMAIN" />, verwaltet das Konto, in dem du angemeldet bist, und die Nutzung von Chrome.</translation>
 <translation id="5389212809648216794">Google Chrome kann nicht auf die Kamera zugreifen, da diese gerade von einer anderen App verwendet wird</translation>
@@ -120,6 +126,7 @@ Wichtige Hinweise:
 <translation id="571296537125272375">Offline, Chrome kann nicht nach Aktualisierungen suchen</translation>
 <translation id="5716154293141027663">Chrome immer öffnen, wenn du auf Links in anderen Apps tippst</translation>
 <translation id="5808435672482059465">Chrome-Verlauf ansehen</translation>
+<translation id="589695154992054845">Dadurch wird der Passwortmanager in Chrome geöffnet.</translation>
 <translation id="5998675059699164418">Deine Organisation verlangt, dass du dich für die Verwendung von Chrome anmeldest.</translation>
 <translation id="6054613632208573261">Standardmäßig Chrome verwenden</translation>
 <translation id="6063091872902370735">Anmeldung in Chrome zulassen</translation>
@@ -129,6 +136,7 @@ Wichtige Hinweise:
 <translation id="6247557882553405851">Google Passwortmanager</translation>
 <translation id="6412673304250309937">Prüft URLs anhand einer Liste unsicherer Websites, die in Chrome gespeichert wird. Wenn eine Website versucht, dein Passwort zu stehlen, oder wenn du eine schädliche Datei herunterlädst, kann Chrome auch URLs, einschließlich Teile von Seiteninhalten, an Safe Browsing senden.</translation>
 <translation id="6427126399757991875">Deine Organisation richtet Chrome ein…</translation>
+<translation id="6545449117344801102">Chrome erkennt Adressen über Google Maps, um dir Wegbeschreibungen und lokale Informationen bereitzustellen.</translation>
 <translation id="6600954340915313787">In Chrome kopiert</translation>
 <translation id="6634107063912726160">Wenn du dich abmeldest, synchronisiert Chrome keine neuen Daten mehr mit deinem Google-Konto. Daten, die bereits synchronisiert wurden, bleiben im Konto gespeichert.</translation>
 <translation id="6646696210740573446">Sendet einen verschleierten Teil der URL über einen Datenschutzserver, der deine IP-Adresse verbirgt, an Google. Wenn eine Website versucht, dein Passwort zu stehlen, oder wenn du eine schädliche Datei herunterlädst, kann Chrome auch URLs und Teile von Seiteninhalten an Google senden.</translation>
@@ -143,6 +151,7 @@ Nur Personen, die deine Passphrase kennen, können deine verschlüsselten Daten 
 <translation id="6916015246697034114">Sprachsuche in Chrome</translation>
 <translation id="6964931465519938134">Du kannst jetzt Chrome jederzeit nutzen, wenn du in Nachrichten, Dokumenten und anderen Apps auf Links tippst.</translation>
 <translation id="6975725306479268850">Chrome für Autofill auswählen</translation>
+<translation id="7004159181872656283">Bilder in Chromium suchen.</translation>
 <translation id="7056826488869329999">Dadurch wird der Sicherheitscheck in Chrome geöffnet und ausgeführt.</translation>
 <translation id="7059914902409643750">Chrome personalisieren</translation>
 <translation id="7124339256045485976">Chrome auf dem neuesten Stand halten</translation>
@@ -150,7 +159,9 @@ Nur Personen, die deine Passphrase kennen, können deine verschlüsselten Daten 
 <translation id="7165736900384873061">Google Chrome QR-Scanner nutzen</translation>
 <translation id="7173660919484573146">Chrome verwendet Face ID, um den autorisierten Zugriff auf deine Passwörter zu gewährleisten.</translation>
 <translation id="7187993566681480880">Schützt dich in Chrome und erhöht möglicherweise die Sicherheit in anderen Google-Apps, wenn du angemeldet bist.</translation>
+<translation id="7200524487407690471">Chrome führt jeden Tag automatisch einen Sicherheitscheck durch, um dich unter anderem vor Datenpannen und unsicheren Websites zu schützen. Weitere Informationen zum Sicherheitscheck findest du in den Einstellungen.</translation>
 <translation id="72119412072970160">Du kannst die im Google Passwortmanager gespeicherten Passwörter in anderen Apps auf deinem iPad verwenden.</translation>
+<translation id="7254380941803999489">Chrome als Standardbrowser festlegen</translation>
 <translation id="7261678641327190792">Chrome kann deine Passwörter nicht prüfen</translation>
 <translation id="7272930098487145294">Um Bilder zu speichern, gib Chrome unter „Einstellungen“ die Berechtigung zum Hinzufügen von Fotos</translation>
 <translation id="7275945473750112644">Dein Konto wird von <ph name="HOSTED_DOMAIN" /> verwaltet, deine Chrome-Daten werden von diesem Gerät gelöscht</translation>
@@ -209,6 +220,7 @@ Wichtige Hinweise:
 <ph name="BEGIN_INDENT" />  • Daten zu deiner Chrome-Nutzung werden an Google gesendet, können aber nicht mit dir in Verbindung gebracht werden.
   • Falls Chrome abstürzt, können die Details zum Absturz einige personenbezogene Daten enthalten.
   • Falls du die Synchronisierung aktivierst, können die Messwerte auch Informationen zu den von dir besuchten URLs enthalten.<ph name="END_INDENT" /></translation>
+<translation id="9071207983537882274">Dadurch werden die Einstellungen in Chrome geöffnet.</translation>
 <translation id="9112744793181547300">Chrome als Standardbrowser festlegen?</translation>
 <translation id="9122931302567044771">Das bedeutet, dass Chrome immer die Desktopversion der Website anfordert.</translation>
 <translation id="9181628561061032322">Öffnet die zuletzt geöffneten Chrome-Tabs.</translation>

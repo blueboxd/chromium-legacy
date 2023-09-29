@@ -7,9 +7,11 @@
 #include <string>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/ash/printing/printer_installation_manager.h"
 #include "chrome/browser/ash/printing/usb_printer_notification_controller.h"
 #include "chromeos/printing/ppd_provider.h"
@@ -63,6 +65,7 @@ void AutomaticUsbPrinterConfigurer::UpdateListOfConnectedPrinters(
     connected_printers_.erase(id);
     configured_printers_.erase(id);
     unconfigured_printers_.erase(id);
+    ppd_references_.erase(id);
   }
 
   // Process added printers.
@@ -141,17 +144,29 @@ void AutomaticUsbPrinterConfigurer::OnResolvePpdReferenceDone(
   // new printer's configuration is saved to `connected_printers_` only if the
   // setup succeeds.
   chromeos::Printer printer = detected.printer;
+  if (printer.supports_ippusb()) {
+    printer.SetAffectedByIppUsbMigration(true);
+  }
 
-  if (code == chromeos::PpdProvider::SUCCESS) {
+  // Experimental path (b/184293121).
+  const bool force_ipp =
+      detected.printer.supports_ippusb() &&
+      base::FeatureList::IsEnabled(features::kIppFirstSetupForUsbPrinters);
+
+  if (code == chromeos::PpdProvider::SUCCESS && !force_ipp) {
     *printer.mutable_ppd_reference() = ref;
   } else {
-    // Detected printer supports ipp-over-usb and we could not find a ppd
-    // for it. We can try to set it up automatically (by IPP Everywhere).
-    // We have to switch to the ippusb scheme.
+    // Detected printer supports ipp-over-usb. We can try to set it up
+    // automatically (by IPP Everywhere). We have to switch to the ippusb
+    // scheme.
     printer.SetUri(chromeos::Uri(base::StringPrintf(
         "ippusb://%04x_%04x/ipp/print", detected.ppd_search_data.usb_vendor_id,
         detected.ppd_search_data.usb_product_id)));
     printer.mutable_ppd_reference()->autoconf = true;
+    // If we have PpdReference, we save it for later.
+    if (code == chromeos::PpdProvider::SUCCESS) {
+      ppd_references_[printer_id] = ref;
+    }
   }
 
   installation_manager_->SetUpPrinter(
@@ -169,6 +184,45 @@ void AutomaticUsbPrinterConfigurer::OnSetupComplete(
   if (it == connected_printers_.end()) {
     return;
   }
+
+  auto it_ref = ppd_references_.find(printer.id());
+
+  // Notify metrics when necessary.
+  if (printer.ppd_reference().autoconf) {
+    // This setup attempt was performed via IPP Everywhere.
+    if (it_ref != ppd_references_.end()) {
+      // And there is a PPD file for this printer.
+      base::UmaHistogramEnumeration(
+          "Printing.CUPS.AutomaticIppSetupResultOfUsbPrinterWithPpd", result);
+    }
+  } else {
+    // This setup attempt was performed with PPD file.
+    if (printer.supports_ippusb()) {
+      // And the printer supports IPP-over-USB.
+      base::UmaHistogramEnumeration(
+          "Printing.CUPS.AutomaticPpdSetupResultOfUsbPrinterSupportingIpp",
+          result);
+    }
+  }
+
+  if (it_ref != ppd_references_.end()) {
+    // We have a PPD for this printer. We can try to use it if IPP Everywhere
+    // setup failed.
+    if (result == PrinterSetupResult::kPrinterIsNotAutoconfigurable) {
+      // Repeat the setup procedure with the given PPD file.
+      chromeos::Printer ppd_printer = it->second.printer;
+      *ppd_printer.mutable_ppd_reference() = std::move(it_ref->second);
+      ppd_references_.erase(it_ref);
+      installation_manager_->SetUpPrinter(
+          ppd_printer, /*is_automatic_installation=*/true,
+          base::BindOnce(&AutomaticUsbPrinterConfigurer::OnSetupComplete,
+                         weak_factory_.GetWeakPtr(), ppd_printer));
+      return;
+    }
+    // Nevermind. Just remove it.
+    ppd_references_.erase(it_ref);
+  }
+
   const bool success = (result == PrinterSetupResult::kSuccess);
   if (success) {
     it->second.printer = printer;

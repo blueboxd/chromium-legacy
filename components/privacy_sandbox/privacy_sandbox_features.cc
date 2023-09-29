@@ -8,7 +8,7 @@ namespace privacy_sandbox {
 
 BASE_FEATURE(kPrivacySandboxSettings4,
              "PrivacySandboxSettings4",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 const char kPrivacySandboxSettings4ConsentRequiredName[] = "consent-required";
 const char kPrivacySandboxSettings4NoticeRequiredName[] = "notice-required";
@@ -65,6 +65,9 @@ const base::FeatureParam<bool>
         &kPrivacySandboxSettings4, "suppress-dialog-for-external-app-launches",
         true};
 
+const base::FeatureParam<bool> kPrivacySandboxSettings4CloseAllPrompts{
+    &kPrivacySandboxSettings4, "close-all-prompts", true};
+
 BASE_FEATURE(kPrivacySandboxSettings3,
              "PrivacySandboxSettings3",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -94,19 +97,33 @@ BASE_FEATURE(kDisablePrivacySandboxPrompts,
 
 BASE_FEATURE(kPrivacySandboxFirstPartySetsUI,
              "PrivacySandboxFirstPartySetsUI",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 const base::FeatureParam<bool> kPrivacySandboxFirstPartySetsUISampleSets{
     &kPrivacySandboxFirstPartySetsUI, "use-sample-sets", false};
 
 BASE_FEATURE(kEnforcePrivacySandboxAttestations,
              "EnforcePrivacySandboxAttestations",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 const char kPrivacySandboxEnrollmentOverrides[] =
     "privacy-sandbox-enrollment-overrides";
 
 BASE_FEATURE(kPrivacySandboxAttestationsHigherComponentRegistrationPriority,
              "PrivacySandboxAttestationsHigherComponentRegistrationPriority",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kPrivacySandboxProactiveTopicsBlocking,
+             "PrivacySandboxProactiveTopicsBlocking",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Show the Tracking Protection onboarding flow if not already onboarded.
+BASE_FEATURE(kTrackingProtectionOnboardingForceEligibility,
+             "TrackingProtectionOnboardingForceEligibility",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Resets the tracking protection Onboarding eligibility.
+BASE_FEATURE(kTrackingProtectionOnboardingResetEligibilityForTesting,
+             "TrackingProtectionOnboardingResetEligibilityForTesting",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace privacy_sandbox

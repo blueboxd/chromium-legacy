@@ -462,7 +462,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.Android.UserFontSizePref.OnStartup" units="%"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>twellington@chromium.org</owner>
   <owner>skym@chromium.org</owner>
   <summary>
@@ -622,7 +622,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.CrosAutoclick.TrayMenu.ChangeAction"
-    enum="AutoclickActionType" expires_after="2023-11-30">
+    enum="AutoclickActionType" expires_after="2024-03-24">
   <owner>katie@chromium.org</owner>
   <owner>dtseng@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
@@ -884,7 +884,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.CrosSelectToSpeak.BackgroundShading"
-    enum="BooleanEnabled" expires_after="2023-11-30">
+    enum="BooleanEnabled" expires_after="2024-03-24">
   <owner>katie@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -1145,7 +1145,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.CrosVirtualKeyboard" enum="BooleanEnabled"
-    expires_after="2023-11-30">
+    expires_after="2024-03-24">
   <owner>dtseng@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
@@ -1337,7 +1337,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.iOS.NewLargerTextCategory" enum="BooleanHit"
-    expires_after="2023-10-16">
+    expires_after="2024-10-16">
   <owner>gambard@chromium.org</owner>
   <owner>rkgibson@google.com</owner>
   <summary>
@@ -1763,7 +1763,6 @@ chromium-metrics-reviews@google.com.
     expires_after="never">
 <!-- expires-never: Core metric for monitoring OOBE accessibility status. -->
 
-  <owner>lpalmaro@chromium.org</owner>
   <owner>jessejames@chromium.org</owner>
   <owner>rsorokin@chromium.org</owner>
   <owner>alemate@chromium.org</owner>
@@ -2577,7 +2576,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DomDistiller.Time.ViewingReaderModePage" units="ms"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>mdjones@chromium.org</owner>
   <summary>
     Records the amount of time a user spent on a Reader Mode Page.

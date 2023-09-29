@@ -6,6 +6,7 @@
 
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/task/sequenced_task_runner.h"
@@ -36,19 +37,13 @@ void SaveAvailability(BiometricAuthenticationStatusWin availability) {
 
 DeviceAuthenticatorWin::DeviceAuthenticatorWin(
     std::unique_ptr<AuthenticatorWinInterface> authenticator,
-    DeviceAuthenticatorProxy* proxy)
-    : ChromeDeviceAuthenticatorCommon(proxy),
+    DeviceAuthenticatorProxy* proxy,
+    const device_reauth::DeviceAuthParams& params)
+    : ChromeDeviceAuthenticatorCommon(proxy,
+                                      params.GetAuthenticationValidityPeriod()),
       authenticator_(std::move(authenticator)) {}
 
 DeviceAuthenticatorWin::~DeviceAuthenticatorWin() = default;
-
-// static
-scoped_refptr<DeviceAuthenticatorWin> DeviceAuthenticatorWin::CreateForTesting(
-    std::unique_ptr<AuthenticatorWinInterface> authenticator,
-    DeviceAuthenticatorProxy* proxy) {
-  return base::WrapRefCounted(
-      new DeviceAuthenticatorWin(std::move(authenticator), proxy));
-}
 
 bool DeviceAuthenticatorWin::CanAuthenticateWithBiometrics() {
   // Setting that pref happens once when the ChromeDeviceAuthenticatorFactory
@@ -61,13 +56,6 @@ bool DeviceAuthenticatorWin::CanAuthenticateWithBiometrics() {
 bool DeviceAuthenticatorWin::CanAuthenticateWithBiometricOrScreenLock() {
   return CanAuthenticateWithBiometrics() ||
          authenticator_->CanAuthenticateWithScreenLock();
-}
-
-void DeviceAuthenticatorWin::Authenticate(
-    device_reauth::DeviceAuthRequester requester,
-    AuthenticateCallback callback,
-    bool use_last_valid_auth) {
-  NOTIMPLEMENTED();
 }
 
 void DeviceAuthenticatorWin::AuthenticateWithMessage(
@@ -85,8 +73,7 @@ void DeviceAuthenticatorWin::AuthenticateWithMessage(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void DeviceAuthenticatorWin::Cancel(
-    device_reauth::DeviceAuthRequester requester) {
+void DeviceAuthenticatorWin::Cancel() {
   // TODO(crbug.com/1354552): Add implementation of the Cancel method.
   NOTIMPLEMENTED();
 }

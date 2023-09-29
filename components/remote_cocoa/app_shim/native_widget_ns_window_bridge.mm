@@ -974,14 +974,14 @@ void NativeWidgetNSWindowBridge::EnableImmersiveFullscreen(
   if (tab_widget_bridge) {
     NSWindow* tab_window = tab_widget_bridge->ns_window();
     immersive_mode_controller_ =
-        std::make_unique<ImmersiveModeTabbedController>(
+        std::make_unique<ImmersiveModeTabbedControllerCocoa>(
             ns_window(), GetFromId(fullscreen_overlay_widget_id)->ns_window(),
             tab_window);
   } else {
-    immersive_mode_controller_ = std::make_unique<ImmersiveModeController>(
+    immersive_mode_controller_ = std::make_unique<ImmersiveModeControllerCocoa>(
         ns_window(), GetFromId(fullscreen_overlay_widget_id)->ns_window());
   }
-  immersive_mode_controller_->Enable();
+  immersive_mode_controller_->Init();
 
   // It is possible for the fullscreen transition to complete before the
   // immersive mode controller is created. Mark the transition as complete as
@@ -1031,26 +1031,12 @@ void NativeWidgetNSWindowBridge::ImmersiveFullscreenRevealUnlock() {
   }
 }
 
-bool NativeWidgetNSWindowBridge::ImmersiveFullscreenIsEnabled() {
-  if (!immersive_mode_controller_) {
-    return false;
-  }
-  return immersive_mode_controller_->is_enabled();
-}
-
-bool NativeWidgetNSWindowBridge::ImmersiveFullscreenIsTabbed() {
-  if (!immersive_mode_controller_) {
-    return false;
-  }
-  return immersive_mode_controller_->IsTabbed();
-}
-
-mojom::ToolbarVisibilityStyle
-NativeWidgetNSWindowBridge::ImmersiveFullscreenLastUsedStyle() {
-  if (!immersive_mode_controller_) {
-    return mojom::ToolbarVisibilityStyle::kAlways;
-  }
-  return immersive_mode_controller_->last_used_style();
+bool NativeWidgetNSWindowBridge::ShouldUseCustomTitlebarHeightForFullscreen()
+    const {
+  return immersive_mode_controller_ &&
+         immersive_mode_controller_->is_initialized() &&
+         immersive_mode_controller_->IsTabbed() &&
+         !immersive_mode_controller_->IsContentFullscreen();
 }
 
 void NativeWidgetNSWindowBridge::OnImmersiveFullscreenToolbarRevealChanged(

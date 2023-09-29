@@ -77,7 +77,7 @@ BASE_FEATURE(kUseAlternativePortForGloballyReachableCheck,
 
 BASE_FEATURE(kSHA1ServerSignature,
              "SHA1ServerSignature",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableTLS13EarlyData,
              "EnableTLS13EarlyData",
@@ -85,7 +85,7 @@ BASE_FEATURE(kEnableTLS13EarlyData,
 
 BASE_FEATURE(kEncryptedClientHello,
              "EncryptedClientHello",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEncryptedClientHelloQuic,
              "EncryptedClientHelloQuic",
@@ -241,14 +241,10 @@ BASE_FEATURE(kCookieSameSiteConsidersRedirectChain,
 
 BASE_FEATURE(kWaitForFirstPartySetsInit,
              "WaitForFirstPartySetsInit",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kPartitionedCookies,
              "PartitionedCookies",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kNoncedPartitionedCookies,
-             "NoncedPartitionedCookies",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kBlockTruncatedCookies,
@@ -267,7 +263,8 @@ BASE_FEATURE(kCookieDomainRejectNonASCII,
 // by the top level site to reduce fingerprinting.
 BASE_FEATURE(kThirdPartyStoragePartitioning,
              "ThirdPartyStoragePartitioning",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Whether to use the new code paths needed to support partitioning Blob URLs.
 // This exists as a kill-switch in case an issue is identified with the Blob
 // URL implementation that causes breakage.
@@ -313,6 +310,10 @@ BASE_FEATURE(kBlockNewForbiddenHeaders,
 BASE_FEATURE(kPlatformKeyProbeSHA256,
              "PlatformKeyProbeSHA256",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kEnableGetNetworkConnectivityHintAPI,
+             "EnableGetNetworkConnectivityHintAPI",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 // Prefetch to follow normal semantics instead of 5-minute rule
@@ -352,10 +353,6 @@ BASE_FEATURE(kAsyncMultiPortPath,
 BASE_FEATURE(kEnableIpProtectionProxy,
              "EnableIpPrivacyProxy",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-const base::FeatureParam<std::string> kIpPrivacyProxyServer{
-    &kEnableIpProtectionProxy, /*name=*/"IpPrivacyProxyServer",
-    /*default_value=*/""};
 
 const base::FeatureParam<std::string> kIpPrivacyTokenServer{
     &kEnableIpProtectionProxy, /*name=*/"IpPrivacyTokenServer",
@@ -459,8 +456,16 @@ BASE_FEATURE(kThirdPartyPartitionedStorageAllowedByDefault,
              "ThirdPartyPartitionedStorageAllowedByDefault",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kCookieDeprecationFacilitatedTestingLabels,
-             "CookieDeprecationFacilitatedTestingLabels",
+BASE_FEATURE(kPriorityHeader,
+             "PriorityHeader",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSpdyHeadersToHttpResponseUseBuilder,
+             "SpdyHeadersToHttpResponseUseBuilder",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSpdyHeadersToHttpResponseVerifyCorrectness,
+             "SpdyHeadersToHttpResponseVerifyCorrectness",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace net::features

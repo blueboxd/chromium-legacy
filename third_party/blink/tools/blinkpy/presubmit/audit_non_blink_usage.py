@@ -23,7 +23,7 @@ import sys
 _DISALLOW_NON_BLINK_MOJOM = (
     # network::mojom::Foo is allowed to use as non-blink mojom type.
     '(?!network::)(\w+::)?mojom::(?!blink).+',
-    'Using non-blink mojom types, consider using "::mojom::blink::Foo" instead'
+    'Using non-blink mojom types, consider using "::mojom::blink::Foo" instead '
     'of "::mojom::Foo" unless you have clear reasons not to do so.',
     'Warning')
 
@@ -130,6 +130,7 @@ _CONFIG = [
             'base::Token',
             'base::UnguessableToken',
             'base::UnguessableTokenHash',
+            'base::UnlocalizedTimeFormatWithPattern',
             'base::UnsafeSharedMemoryRegion',
             'base::Uuid',
             'base::WeakPtr',
@@ -140,6 +141,7 @@ _CONFIG = [
             'base::bit_cast',
             'base::expected',
             'base::make_span',
+            'base::optional_ref',
             'base::to_underlying',
             'base::unexpected',
             'base::ranges::.+',

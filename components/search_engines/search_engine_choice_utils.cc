@@ -107,17 +107,31 @@ const base::flat_set<int> GetEeaChoiceCountries() {
 const char kSearchEngineChoiceScreenEventsHistogram[] =
     "Search.ChoiceScreenEvents";
 
+bool ShouldShowUpdatedSettings(PrefService& profile_prefs) {
+  return base::FeatureList::IsEnabled(switches::kSearchEngineChoice) &&
+         IsEeaChoiceCountry(GetSearchEngineChoiceCountryId(profile_prefs));
+}
+
 bool ShouldShowChoiceScreen(const policy::PolicyService& policy_service,
                             const ProfileProperties& profile_properties) {
   if (!base::FeatureList::IsEnabled(switches::kSearchEngineChoice)) {
     return false;
   }
 
-  // A command line argument with the option for disabling the choice screen for
-  // testing and autmation environments.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSearchEngineChoiceScreen)) {
+  if (!profile_properties.is_regular_profile) {
     return false;
+  }
+
+  base::CommandLine* const command_line =
+      base::CommandLine::ForCurrentProcess();
+  // A command line argument with the option for disabling the choice screen for
+  // testing and automation environments.
+  if (command_line->HasSwitch(switches::kDisableSearchEngineChoiceScreen)) {
+    return false;
+  }
+  // Force-enable the choice screen for testing the screen itself.
+  if (command_line->HasSwitch(switches::kForceSearchEngineChoiceScreen)) {
+    return true;
   }
 
   PrefService& prefs = CHECK_DEREF(profile_properties.pref_service.get());
@@ -133,8 +147,7 @@ bool ShouldShowChoiceScreen(const policy::PolicyService& policy_service,
     return false;
   }
 
-  return profile_properties.is_regular_profile &&
-         IsSearchEngineChoiceScreenAllowedByPolicy(policy_service);
+  return IsSearchEngineChoiceScreenAllowedByPolicy(policy_service);
 }
 
 int GetSearchEngineChoiceCountryId(PrefService& profile_prefs) {

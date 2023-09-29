@@ -30,6 +30,7 @@
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
+#include "ash/public/cpp/personalization_app/time_of_day_test_utils.h"
 #include "ash/public/cpp/test/in_process_image_decoder.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -53,9 +54,12 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/scoped_run_loop_timeout.h"
+#include "base/test/test_future.h"
 #include "base/time/time.h"
 #include "build/buildflag.h"
 #include "chromeos/ash/components/assistant/buildflags.h"
+#include "chromeos/ash/components/dbus/dlcservice/dlcservice.pb.h"
+#include "chromeos/ash/components/dbus/dlcservice/fake_dlcservice_client.h"
 #include "chromeos/ash/services/libassistant/public/cpp/assistant_interaction_metadata.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "net/base/url_util.h"
@@ -75,6 +79,8 @@ using assistant::AssistantInteractionMetadata;
 
 constexpr char kUser1[] = "user1@gmail.com";
 constexpr char kUser2[] = "user2@gmail.com";
+constexpr base::FilePath::CharType kTestDlcRootPath[] =
+    FILE_PATH_LITERAL("/test/time_of_day");
 
 std::vector<base::OnceClosure> GetEventGeneratorCallbacks(
     ui::test::EventGenerator* event_generator) {
@@ -149,12 +155,18 @@ class AmbientUiVisibilityBarrier : public AmbientUiModelObserver {
 
 class AmbientControllerTest : public AmbientAshTestBase {
  public:
-  AmbientControllerTest() = default;
+  AmbientControllerTest() {
+    dlcservice_client_.set_install_root_path(kTestDlcRootPath);
+  }
   ~AmbientControllerTest() override = default;
 
   // AmbientAshTestBase:
   void SetUp() override {
-    feature_list_.InitAndEnableFeature(features::kAmbientModeThrottleAnimation);
+    std::vector<base::test::FeatureRef> features_to_enable =
+        personalization_app::GetTimeOfDayEnabledFeatures();
+    features_to_enable.emplace_back(features::kTimeOfDayDlc);
+    features_to_enable.emplace_back(features::kAmbientModeThrottleAnimation);
+    feature_list_.InitWithFeatures(features_to_enable, {});
     AmbientAshTestBase::SetUp();
     GetSessionControllerClient()->set_show_lock_screen_views(true);
   }
@@ -205,6 +217,7 @@ class AmbientControllerTest : public AmbientAshTestBase {
 
  protected:
   base::UserActionTester user_action_tester_;
+  FakeDlcserviceClient dlcservice_client_;
 };
 
 // Tests for behavior that are agnostic to the AmbientUiSettings selected by
@@ -690,68 +703,47 @@ TEST_F(AmbientControllerTest,
 
 TEST_F(AmbientControllerTest,
        CheckAcquireAndReleaseWakeLockWhenBatteryStateChanged) {
+  // When the battery is not charging
+  // No power connected, should not acquire wake lock
   SetPowerStateDischarging();
-  SetExternalPowerConnected();
-  SetBatteryPercent(50.f);
-
-  // Lock screen to start ambient mode.
+  SetExternalPowerDisconnected();
   LockScreen();
   FastForwardByLockScreenInactivityTimeout();
   FastForwardTiny();
 
   EXPECT_TRUE(ambient_controller()->ShouldShowAmbientUi());
-  // Should not acquire wake lock when device is not charging and with low
-  // battery.
   EXPECT_EQ(0, GetNumOfActiveWakeLocks(
                    device::mojom::WakeLockType::kPreventDisplaySleep));
 
-  // Connect the device with a charger.
+  // External official power connected, should acquire wake lock.
+  SetExternalPowerConnected();
+  base::RunLoop().RunUntilIdle();
+  HideAmbientScreen();
+  FastForwardByLockScreenInactivityTimeout();
+  FastForwardTiny();
+
+  EXPECT_EQ(1, GetNumOfActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventDisplaySleep));
+
+  // External USB power connected, should not acquire wake lock because the
+  // power is not strong enough.
+  SetExternalUsbPowerConnected();
+  base::RunLoop().RunUntilIdle();
+  HideAmbientScreen();
+  FastForwardByLockScreenInactivityTimeout();
+  FastForwardTiny();
+
+  EXPECT_EQ(0, GetNumOfActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventDisplaySleep));
+
+  // When the battery is charging, should acquire wake lock.
   SetPowerStateCharging();
   base::RunLoop().RunUntilIdle();
+  HideAmbientScreen();
+  FastForwardByLockScreenInactivityTimeout();
+  FastForwardTiny();
 
-  // Should acquire the wake lock when battery is charging.
   EXPECT_EQ(1, GetNumOfActiveWakeLocks(
-                   device::mojom::WakeLockType::kPreventDisplaySleep));
-
-  // Simulates a full battery.
-  SetBatteryPercent(100.f);
-
-  // Should keep the wake lock as the charger is still connected.
-  EXPECT_EQ(1, GetNumOfActiveWakeLocks(
-                   device::mojom::WakeLockType::kPreventDisplaySleep));
-
-  // Disconnects the charger again.
-  SetPowerStateDischarging();
-  base::RunLoop().RunUntilIdle();
-
-  // Should keep the wake lock when battery is high.
-  EXPECT_EQ(1, GetNumOfActiveWakeLocks(
-                   device::mojom::WakeLockType::kPreventDisplaySleep));
-
-  SetBatteryPercent(50.f);
-  base::RunLoop().RunUntilIdle();
-
-  // Should release the wake lock when battery is not charging and low.
-  EXPECT_EQ(0, GetNumOfActiveWakeLocks(
-                   device::mojom::WakeLockType::kPreventDisplaySleep));
-
-  SetBatteryPercent(100.f);
-  base::RunLoop().RunUntilIdle();
-
-  // Should take the wake lock when battery is not charging and high.
-  EXPECT_EQ(1, GetNumOfActiveWakeLocks(
-                   device::mojom::WakeLockType::kPreventDisplaySleep));
-
-  SetExternalPowerDisconnected();
-  base::RunLoop().RunUntilIdle();
-
-  // Should release the wake lock when power is not connected.
-  EXPECT_EQ(0, GetNumOfActiveWakeLocks(
-                   device::mojom::WakeLockType::kPreventDisplaySleep));
-
-  // An unbalanced release should do nothing.
-  UnlockScreen();
-  EXPECT_EQ(0, GetNumOfActiveWakeLocks(
                    device::mojom::WakeLockType::kPreventDisplaySleep));
 }
 
@@ -885,6 +877,19 @@ TEST_P(AmbientControllerTestForAnyUiSettings,
   EXPECT_FALSE(ambient_controller()->ShouldShowAmbientUi());
 }
 
+TEST_P(AmbientControllerTestForAnyUiSettings, ShowThenImmediatelyClose) {
+  // Try to launch ambient mode. It may not finish initialization or start
+  // rendering. Then close it immediately. Wait a while, and make sure no
+  // pending tasks run that may launch the UI unexpectedly afterwards.
+  ambient_controller()->SetUiVisibilityShouldShow();
+  ASSERT_TRUE(ambient_controller()->ShouldShowAmbientUi());
+  CloseAmbientScreen();
+  ASSERT_FALSE(ambient_controller()->ShouldShowAmbientUi());
+  task_environment()->FastForwardBy(base::Minutes(1));
+  EXPECT_FALSE(ambient_controller()->ShouldShowAmbientUi());
+  EXPECT_FALSE(GetContainerView());
+}
+
 TEST_F(AmbientControllerTest,
        ShouldDismissContainerViewOnKeyEventWhenLockScreenInBackground) {
   GetSessionControllerClient()->SetShouldLockScreenAutomatically(true);
@@ -964,6 +969,7 @@ TEST_F(AmbientControllerTest,
   // mode since we do not prevent the device go to sleep which will natually
   // lock the device.
   SetPowerStateDischarging();
+  SetExternalPowerDisconnected();
   EXPECT_FALSE(ambient_controller()->ShouldShowAmbientUi());
 
   // Should not lock the device but still enter ambient mode when the screen is
@@ -1125,6 +1131,7 @@ TEST_F(AmbientControllerTest,
        ShouldHideAmbientScreenWhenDisplayIsOffAndNotStartWhenLockScreen) {
   GetSessionControllerClient()->SetShouldLockScreenAutomatically(true);
   SetPowerStateDischarging();
+  SetExternalPowerDisconnected();
   EXPECT_FALSE(ambient_controller()->ShouldShowAmbientUi());
 
   // Should not lock the device and enter ambient mode when the screen is
@@ -2118,8 +2125,9 @@ TEST_F(AmbientControllerTest, RendersCorrectViewForVideo) {
       GetContainerView()->GetViewByID(kAmbientVideoWebView));
   ASSERT_TRUE(web_view);
   EXPECT_TRUE(web_view->current_url().SchemeIsFile());
-  EXPECT_EQ(web_view->current_url().path(),
-            GetTimeOfDaySrcDir().Append(kAmbientVideoHtml).value());
+  const base::FilePath video_html_full_path =
+      base::FilePath(kTestDlcRootPath).Append(kTimeOfDayVideoHtmlSubPath);
+  EXPECT_EQ(web_view->current_url().path(), video_html_full_path.value());
   std::string video_file_requested;
   ASSERT_TRUE(net::GetValueForKeyInQuery(web_view->current_url(), "video_file",
                                          &video_file_requested));
@@ -2149,8 +2157,7 @@ TEST_F(AmbientControllerTest, RendersCorrectViewForVideo) {
       GetContainerView()->GetViewByID(kAmbientVideoWebView));
   ASSERT_TRUE(web_view);
   EXPECT_TRUE(web_view->current_url().SchemeIsFile());
-  EXPECT_EQ(web_view->current_url().path(),
-            GetTimeOfDaySrcDir().Append(kAmbientVideoHtml).value());
+  EXPECT_EQ(web_view->current_url().path(), video_html_full_path.value());
   ASSERT_TRUE(net::GetValueForKeyInQuery(web_view->current_url(), "video_file",
                                          &video_file_requested));
   EXPECT_EQ(video_file_requested, kTimeOfDayCloudsVideo);
@@ -2301,6 +2308,7 @@ TEST_F(AmbientControllerDurationTest, DoNotAcquireWakeLockOnBatteryMode) {
 
   // Set power to battery mode.
   SetPowerStateDischarging();
+  SetExternalPowerDisconnected();
 
   SetAmbientModeEnabled(true);
   SetScreenSaverDuration(0);
@@ -2320,6 +2328,7 @@ TEST_F(AmbientControllerDurationTest, AcquireWakeLockWhileOnAcMode) {
 
   // Set power to AC mode, charging.
   SetPowerStateCharging();
+  SetExternalPowerConnected();
 
   SetAmbientModeEnabled(true);
   SetScreenSaverDuration(0);
@@ -2353,6 +2362,7 @@ TEST_F(AmbientControllerDurationTest, ReleaseWakeLockWhenUnplugged) {
 
   // Set power to battery mode. Verify that wake lock is released.
   SetPowerStateDischarging();
+  SetExternalPowerDisconnected();
   FastForwardTiny();
   EXPECT_EQ(0, GetNumOfActiveWakeLocks(
                    device::mojom::WakeLockType::kPreventDisplaySleep));

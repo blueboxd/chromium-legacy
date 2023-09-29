@@ -493,9 +493,7 @@ WaylandRemoteShell::~WaylandRemoteShell() {
 }
 
 std::unique_ptr<ClientControlledShellSurface>
-WaylandRemoteShell::CreateShellSurface(Surface* surface,
-                                       int container,
-                                       double default_device_scale_factor) {
+WaylandRemoteShell::CreateShellSurface(Surface* surface, int container) {
   return display_->CreateOrGetClientControlledShellSurface(
       surface, container, use_default_scale_cancellation_,
       /*supports_floated_state=*/event_mapping_.has_bounds_change_reason_float);
@@ -1487,6 +1485,17 @@ void remote_surface_set_scale_factor(wl_client* client,
       scale_factor);
 }
 
+void remote_surface_set_window_corner_radii(wl_client* client,
+                                            wl_resource* resource,
+                                            uint32_t upper_left_radius,
+                                            uint32_t upper_right_radius,
+                                            uint32_t lower_right_radius,
+                                            uint32_t lower_left_radius) {
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetWindowCornerRadii(
+      gfx::RoundedCornersF(upper_left_radius, upper_right_radius,
+                           lower_right_radius, lower_left_radius));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // notification_surface_interface:
 
@@ -1559,6 +1568,15 @@ void toast_surface_set_bounds_in_output(wl_client* client,
       GetUserDataAs<WaylandDisplayHandler>(output_resource);
   GetUserDataAs<ToastSurface>(resource)->SetBounds(
       display_handler->id(), gfx::Rect(x, y, width, height));
+}
+
+void toast_surface_set_scale_factor(wl_client* client,
+                                    wl_resource* resource,
+                                    uint scale_factor_as_uint) {
+  static_assert(sizeof(uint32_t) == sizeof(float),
+                "Sizes must match for reinterpret cast to be meaningful");
+  float scale_factor = *reinterpret_cast<float*>(&scale_factor_as_uint);
+  GetUserDataAs<ToastSurface>(resource)->SetScaleFactor(scale_factor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

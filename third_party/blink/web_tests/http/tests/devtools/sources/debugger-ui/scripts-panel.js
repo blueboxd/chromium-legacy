@@ -7,10 +7,10 @@ import {SourcesTestRunner} from 'sources_test_runner';
 import {SDKTestRunner} from 'sdk_test_runner';
 
 import * as SDK from 'devtools/core/sdk/sdk.js';
+import * as SourcesModule from 'devtools/panels/sources/sources.js';
 
 (async function() {
   TestRunner.addResult(`Tests that scripts panel UI elements work as intended.\n`);
-  await TestRunner.loadLegacyModule('sources');
   await TestRunner.showPanel('sources');
 
   function dumpNavigator(sourcesNavigatorView) {
@@ -19,7 +19,7 @@ import * as SDK from 'devtools/core/sdk/sdk.js';
   }
 
   function createNavigatorView() {
-    var navigatorView = new Sources.NetworkNavigatorView();
+    var navigatorView = new SourcesModule.SourcesNavigator.NetworkNavigatorView();
     navigatorView.show(UI.inspectorView.element);
     return navigatorView;
   }

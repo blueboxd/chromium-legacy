@@ -64,7 +64,9 @@ TEST_F(IMEDetailedViewPixelTest, Basics) {
 
   // Compare pixels.
   TrayDetailedView* detailed_view =
-      system_tray->bubble()->quick_settings_view()->GetDetailedViewForTest();
+      system_tray->bubble()
+          ->quick_settings_view()
+          ->GetDetailedViewForTest<TrayDetailedView>();
 
   // Show the keyboard toggle with ime list.
   static_cast<IMEDetailedView*>(detailed_view)
@@ -75,7 +77,7 @@ TEST_F(IMEDetailedViewPixelTest, Basics) {
   ASSERT_TRUE(detailed_view);
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "check_view",
-      /*revision_number=*/7, detailed_view));
+      /*revision_number=*/8, detailed_view));
 }
 
 }  // namespace

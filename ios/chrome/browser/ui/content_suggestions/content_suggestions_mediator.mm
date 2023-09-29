@@ -244,6 +244,8 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
   TabResumptionItem* _tabResumptionItem;
   // The latest module ranking returned from the SegmentationService.
   NSArray<NSNumber*>* _magicStackOrderFromSegmentation;
+  // YES if the module ranking has been received from the SegmentationService.
+  BOOL _magicStackOrderFromSegmentationReceived;
   // The latest Magic Stack module order sent up to the consumer. This includes
   // any omissions due to filtering from `_magicStackOrderFromSegmentation` (or
   // `magicStackOrder:` if kSegmentationPlatformIosModuleRanker is disabled) and
@@ -343,6 +345,22 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 
     if (IsSafetyCheckMagicStackEnabled() &&
         !safety_check_prefs::IsSafetyCheckInMagicStackDisabled(_localState)) {
+      if (!_prefObserverBridge) {
+        _prefObserverBridge = std::make_unique<PrefObserverBridge>(self);
+      }
+
+      _prefChangeRegistrar.Init(_localState);
+
+      // TODO(crbug.com/1481230): Stop observing
+      // `kIosSettingsSafetyCheckLastRunTime` changes once the Settings Safety
+      // Check is refactored to use the new Safety Check Manager.
+      _prefObserverBridge->ObserveChangesForPreference(
+          prefs::kIosSettingsSafetyCheckLastRunTime, &_prefChangeRegistrar);
+
+      _prefObserverBridge->ObserveChangesForPreference(
+          prefs::kIosSafetyCheckManagerSafeBrowsingCheckResult,
+          &_prefChangeRegistrar);
+
       IOSChromeSafetyCheckManager* safetyCheckManager =
           IOSChromeSafetyCheckManagerFactory::GetForBrowserState(
               browser->GetBrowserState());
@@ -467,22 +485,13 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
   [self hideTabResumption];
 }
 
-- (void)disableSafetyCheck {
+- (void)disableSafetyCheck:(ContentSuggestionsModuleType)type {
   safety_check_prefs::DisableSafetyCheckInMagicStack(_localState);
-
-  ContentSuggestionsModuleType type;
-  int checkIssuesCount = CheckIssuesCount(_safetyCheckState);
-  if (checkIssuesCount > 2) {
-    type = ContentSuggestionsModuleType::kSafetyCheckMultiRowOverflow;
-  } else if (checkIssuesCount > 1) {
-    type = ContentSuggestionsModuleType::kSafetyCheckMultiRow;
-  } else {
-    type = ContentSuggestionsModuleType::kSafetyCheck;
-  }
 
   MagicStackOrderChange change{MagicStackOrderChange::Type::kRemove};
   change.old_module = type;
   change.index = [self indexForMagicStackModule:type];
+  CHECK(change.index != NSNotFound);
   [self.consumer updateMagicStackOrder:change];
 }
 
@@ -764,6 +773,9 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 
 #pragma mark - Private
 
+// Creates the initial `SafetyCheckState` based on the previous check states
+// stored in Prefs, or (for development builds) the overridden check states via
+// Experimental settings.
 - (SafetyCheckState*)initialSafetyCheckState {
   SafetyCheckState* state = [[SafetyCheckState alloc]
       initWithUpdateChromeState:UpdateChromeSafetyCheckState::kDefault
@@ -830,13 +842,28 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
     state.compromisedPasswordsCount = counts.compromised_count;
   }
 
-  // Last run time.
+  state.lastRunTime = [self latestSafetyCheckRunTimestamp];
+
+  state.runningState = CanRunSafetyCheck(state.lastRunTime)
+                           ? RunningSafetyCheckState::kRunning
+                           : RunningSafetyCheckState::kDefault;
+
+  return state;
+}
+
+// Returns the last run time of the Safety Check, regardless if the check was
+// started from the Safety Check (Magic Stack) module, or the Safety Check
+// Settings UI.
+- (absl::optional<base::Time>)latestSafetyCheckRunTimestamp {
+  IOSChromeSafetyCheckManager* safetyCheckManager =
+      IOSChromeSafetyCheckManagerFactory::GetForBrowserState(
+          _browser->GetBrowserState());
+
   base::Time lastRunTimeViaModule =
       safetyCheckManager->GetLastSafetyCheckRunTime();
 
   base::Time lastRunTimeViaSettings =
-      base::Time::FromDoubleT([[NSUserDefaults standardUserDefaults]
-          doubleForKey:kTimestampOfLastIssueFoundKey]);
+      _localState->GetTime(prefs::kIosSettingsSafetyCheckLastRunTime);
 
   // Use the most recent Last Run Time—regardless of where the Safety Check was
   // run—to minimize user confusion.
@@ -846,17 +873,10 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 
   base::TimeDelta lastRunAge = base::Time::Now() - lastRunTime;
 
-  // Only display the Last Run Time in the module if the run happened within the
-  // last 24hr.
-  state.lastRunTime = lastRunAge <= kSafetyCheckRunThreshold
-                          ? absl::optional<base::Time>(lastRunTime)
-                          : absl::nullopt;
-
-  state.runningState = CanRunSafetyCheck(state.lastRunTime)
-                           ? RunningSafetyCheckState::kRunning
-                           : RunningSafetyCheckState::kDefault;
-
-  return state;
+  // Only return the Last Run Time if the run happened within the last 24hr.
+  return lastRunAge <= kSafetyCheckRunThreshold
+             ? absl::optional<base::Time>(lastRunTime)
+             : absl::nullopt;
 }
 
 - (void)configureConsumer {
@@ -1105,6 +1125,8 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
         }
         break;
       case ContentSuggestionsModuleType::kSafetyCheck:
+      case ContentSuggestionsModuleType::kSafetyCheckMultiRow:
+      case ContentSuggestionsModuleType::kSafetyCheckMultiRowOverflow:
         if (!IsSafetyCheckMagicStackEnabled() ||
             safety_check_prefs::IsSafetyCheckInMagicStackDisabled(
                 _localState)) {
@@ -1197,10 +1219,10 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
           addObject:@(int(ContentSuggestionsModuleType::kTabResumption))];
     }
   }
+  _magicStackOrderFromSegmentationReceived = YES;
   _magicStackOrderFromSegmentation = magicStackOrder;
   _latestMagicStackOrder = [self segmentationMagicStackOrder];
   [self.consumer setMagicStackOrder:_latestMagicStackOrder];
-  [self.feedDelegate contentSuggestionsWasUpdated];
 }
 
 - (void)addSetUpListToMagicStackOrder:(NSMutableArray*)order {
@@ -1218,6 +1240,8 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
   }
 }
 
+// Adds the Safety Check module to `order` based on the current Safety Check
+// state.
 - (void)addSafetyCheckToMagicStackOrder:(NSMutableArray*)order {
   CHECK(IsSafetyCheckMagicStackEnabled());
 
@@ -1351,14 +1375,20 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
           segmentation_platform::features::kSegmentationPlatformIosModuleRanker)
           ? [self segmentationMagicStackOrder]
           : [self magicStackOrder];
-  if ([_latestMagicStackOrder count] > 0) {
+  if ([self isMagicStackOrderReady]) {
     // Only indicate the need for an explicit insertion if the tab resumption
     // item was received after building the initial Magic Stack order or getting
     // the Magic Stack Order from Segmentation.
+    NSUInteger insertionIndex = [self
+        indexForMagicStackModule:ContentSuggestionsModuleType::kTabResumption];
+    if (insertionIndex == NSNotFound) {
+      return;
+    }
+    // Only continue on to insert Tab Resumption after `isMagicStackOrderReady`
+    // if it is in the Magic Stack order
     MagicStackOrderChange change{MagicStackOrderChange::Type::kInsert,
                                  ContentSuggestionsModuleType::kTabResumption};
-    change.index = [self
-        indexForMagicStackModule:ContentSuggestionsModuleType::kTabResumption];
+    change.index = insertionIndex;
     [self.consumer updateMagicStackOrder:change];
   }
   [self.consumer showTabResumptionWithItem:_tabResumptionItem];
@@ -1371,11 +1401,31 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 }
 
 // Returns the index rank of `moduleType`.
+// Callers of this need to handle a NSNotFound return case and do nothing in
+// that case.
 - (NSUInteger)indexForMagicStackModule:
     (ContentSuggestionsModuleType)moduleType {
   NSUInteger index = [_latestMagicStackOrder indexOfObject:@(int(moduleType))];
-  CHECK(index != NSNotFound);
+  if (index == NSNotFound) {
+    // It is possible that a feature is enabled but the segmentation model being
+    // used didn't return the feature's module (i.e. first browser session after
+    // enabling a feature, so the latest model will not be downloaded until the
+    // following session since experiment models are tied via finch). It is also
+    // possible that the segmentation result has not returned yet.
+    CHECK(base::FeatureList::IsEnabled(
+        segmentation_platform::features::kSegmentationPlatformIosModuleRanker));
+  }
   return index;
+}
+
+// Returns NO if client is expecting the order from Segmentation and it has not
+// returned yet.
+- (BOOL)isMagicStackOrderReady {
+  if (base::FeatureList::IsEnabled(segmentation_platform::features::
+                                       kSegmentationPlatformIosModuleRanker)) {
+    return _magicStackOrderFromSegmentationReceived;
+  }
+  return YES;
 }
 
 #pragma mark - Properties
@@ -1441,6 +1491,23 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
         tab_resumption_prefs::IsTabResumptionDisabled(_localState)) {
       [self hideTabResumption];
     }
+  }
+
+  if (IsSafetyCheckMagicStackEnabled() &&
+      (preferenceName == prefs::kIosSettingsSafetyCheckLastRunTime ||
+       preferenceName ==
+           prefs::kIosSafetyCheckManagerSafeBrowsingCheckResult)) {
+    _safetyCheckState.lastRunTime = [self latestSafetyCheckRunTimestamp];
+
+    _safetyCheckState.safeBrowsingState =
+        SafeBrowsingSafetyCheckStateForName(
+            _localState->GetString(
+                prefs::kIosSafetyCheckManagerSafeBrowsingCheckResult))
+            .value_or(_safetyCheckState.safeBrowsingState);
+
+    // Trigger a module update when the Last Run Time, or Safe Browsing state,
+    // has changed.
+    [self runningStateChanged:_safetyCheckState.runningState];
   }
 }
 

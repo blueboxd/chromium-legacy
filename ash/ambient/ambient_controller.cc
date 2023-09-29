@@ -119,12 +119,12 @@ bool IsChargerConnected() {
   DCHECK(PowerStatus::IsInitialized());
   auto* power_status = PowerStatus::Get();
   if (power_status->IsBatteryPresent()) {
-    // If battery is full or battery is charging, that implies power is
-    // connected. Also return true if a power source is connected and
-    // battery is not discharging.
+    // If battery is charging, that implies sufficient power is connected. If
+    // battery is not charging, return true only if an official, non-USB charger
+    // is connected. This will happen if the battery is fully charged or
+    // charging is delayed by Adaptive Charging.
     return power_status->IsBatteryCharging() ||
-           (power_status->IsLinePowerConnected() &&
-            power_status->GetBatteryPercent() > 95.f);
+           power_status->IsMainsChargerConnected();
   } else {
     // Chromeboxes have no battery.
     return power_status->IsLinePowerConnected();
@@ -1167,10 +1167,15 @@ AmbientWeatherModel* AmbientController::GetAmbientWeatherModel() {
 
 std::unique_ptr<views::Widget> AmbientController::CreateWidget(
     aura::Window* container) {
+  if (!ShouldShowAmbientUi()) {
+    return nullptr;
+  }
+
+  CHECK(session_metrics_recorder_);
+  session_metrics_recorder_->RegisterScreen();
   std::unique_ptr<AmbientContainerView> container_view;
   container_view = std::make_unique<AmbientContainerView>(
-      GetCurrentUiSettings(), ambient_ui_launcher_->CreateView(),
-      session_metrics_recorder_.get());
+      GetCurrentUiSettings(), ambient_ui_launcher_->CreateView());
   auto* widget_delegate = new AmbientWidgetDelegate();
   widget_delegate->SetInitiallyFocusedView(container_view.get());
 
@@ -1208,6 +1213,8 @@ std::unique_ptr<views::Widget> AmbientController::CreateWidget(
 }
 
 void AmbientController::OnUiLauncherInitialized(bool success) {
+  CHECK(session_metrics_recorder_);
+  session_metrics_recorder_->SetInitStatus(success);
   if (!success) {
     // Success = false denotes a case where the screensaver is in a permanent
     // error state and such that the UI and any further attempts to launch the
@@ -1235,6 +1242,7 @@ void AmbientController::CreateAndShowWidgets() {
 void AmbientController::StopScreensaver() {
   CloseAllWidgets(close_widgets_immediately_);
   session_metrics_recorder_.reset();
+  ui_launcher_init_callback_.Cancel();
   ambient_ui_launcher_->Finalize();
 }
 
@@ -1250,14 +1258,15 @@ void AmbientController::MaybeStartScreenSaver() {
   // Add observer for assistant interaction model
   AssistantInteractionController::Get()->GetModel()->AddObserver(this);
 
-  session_metrics_recorder_ =
-      std::make_unique<AmbientSessionMetricsRecorder>(GetCurrentUiSettings());
+  session_metrics_recorder_ = std::make_unique<AmbientSessionMetricsRecorder>(
+      ambient_ui_launcher_->CreateMetricsDelegate(GetCurrentUiSettings()));
 
   SetUpPreTargetHandler();
 
-  ambient_ui_launcher_->Initialize(
+  ui_launcher_init_callback_.Reset(
       base::BindOnce(&AmbientController::OnUiLauncherInitialized,
                      weak_ptr_factory_.GetWeakPtr()));
+  ambient_ui_launcher_->Initialize(ui_launcher_init_callback_.callback());
 }
 
 AmbientUiSettings AmbientController::GetCurrentUiSettings() const {

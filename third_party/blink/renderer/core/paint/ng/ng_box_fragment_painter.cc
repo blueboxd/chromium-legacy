@@ -14,13 +14,12 @@
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/layout_text_combine.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
-#include "third_party/blink/renderer/core/layout/ng/layout_ng_mixin.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
@@ -439,7 +438,7 @@ void NGBoxFragmentPainter::PaintInternal(const PaintInfo& paint_info) {
   absl::optional<DrawingRecorder> recorder;
   absl::optional<GraphicsContextStateSaver> graphics_context_state_saver;
   const auto* const text_combine =
-      DynamicTo<LayoutNGTextCombine>(box_fragment_.GetLayoutObject());
+      DynamicTo<LayoutTextCombine>(box_fragment_.GetLayoutObject());
   if (UNLIKELY(text_combine)) {
     if (text_combine->NeedsAffineTransformInPaint()) {
       if (original_phase == PaintPhase::kForeground)
@@ -946,10 +945,12 @@ void NGBoxFragmentPainter::PaintFloatingChildren(
     }
   }
 
-  // Now process the inline formatting context, if any. Note that even if this
-  // is an inline formatting context, we still need to walk the box fragment
-  // children (like we did above). If a float is block-fragmented, it is resumed
-  // as a regular box fragment child, rather than becoming a fragment item.
+  // Now process the inline formatting context, if any.
+  //
+  // TODO(mstensho): Clean up this. Now that floats no longer escape their
+  // inline formatting context when fragmented, we should only have to one of
+  // these things; either walk the inline items, OR walk the box fragment
+  // children (above).
   if (const NGPhysicalBoxFragment* box =
           DynamicTo<NGPhysicalBoxFragment>(&container)) {
     if (const NGFragmentItems* items = box->Items()) {
@@ -1793,7 +1794,6 @@ void NGBoxFragmentPainter::PaintTextClipMask(const PaintInfo& paint_info,
                                              bool object_has_multiple_boxes) {
   PaintInfo mask_paint_info(paint_info.context, CullRect(mask_rect),
                             PaintPhase::kTextClip);
-  mask_paint_info.SetFragmentID(paint_info.FragmentID());
   if (!object_has_multiple_boxes) {
     PaintObject(mask_paint_info, paint_offset);
     return;
@@ -2126,7 +2126,7 @@ bool NGBoxFragmentPainter::HitTestTextItem(
   }
 
   const auto* const text_combine =
-      DynamicTo<LayoutNGTextCombine>(box_fragment_.GetLayoutObject());
+      DynamicTo<LayoutTextCombine>(box_fragment_.GetLayoutObject());
 
   // TODO(layout-dev): Clip to line-top/bottom.
   const PhysicalRect rect =

@@ -154,6 +154,15 @@ bool IsExperimentalAccessibilityGoogleTtsLanguagePacksEnabled() {
       ::features::kExperimentalAccessibilityGoogleTtsLanguagePacks);
 }
 
+BASE_FEATURE(kExperimentalAccessibilityGoogleTtsHighQualityVoices,
+             "ExperimentalAccessibilityGoogleTtsHighQualityVoices",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsExperimentalAccessibilityGoogleTtsHighQualityVoicesEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kExperimentalAccessibilityGoogleTtsHighQualityVoices);
+}
+
 BASE_FEATURE(kExperimentalAccessibilityColorEnhancementSettings,
              "ExperimentalAccessibilityColorEnhancementSettings",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -216,12 +225,12 @@ bool IsAccessibilityGameFaceIntegrationEnabled() {
   return base::FeatureList::IsEnabled(
       ::features::kAccessibilityGameFaceIntegration);
 }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 BASE_FEATURE(kBacklightOcr, "BacklightOcr", base::FEATURE_DISABLED_BY_DEFAULT);
 bool IsBacklightOcrEnabled() {
   return base::FeatureList::IsEnabled(features::kBacklightOcr);
 }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 BASE_FEATURE(kAugmentExistingImageLabels,
              "AugmentExistingImageLabels",
@@ -291,6 +300,17 @@ bool IsReadAnythingWithScreen2xEnabled() {
   return base::FeatureList::IsEnabled(::features::kReadAnythingWithScreen2x) &&
          !base::FeatureList::IsEnabled(
              ::features::kEmergencyDisableScreenAIMainContentExtraction);
+}
+
+// This feature is only used for generating training data for Screen2x and should
+// never be used in any other circumstance, and should not be enabled by default.
+BASE_FEATURE(kDataCollectionModeForScreen2x,
+             "DataCollectionModeForScreen2x",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsDataCollectionModeForScreen2xEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kDataCollectionModeForScreen2x);
 }
 
 // This feature is only for debug purposes and for security/privacy reasons,

@@ -49,7 +49,6 @@ import org.chromium.components.security_state.SecurityStateModel;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.GURL;
-import org.chromium.url.URI;
 
 import java.util.Objects;
 
@@ -383,7 +382,7 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
             if (DomDistillerUrlUtils.isDistilledPage(url)) {
                 GURL originalUrl =
                         DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(new GURL(url));
-                return buildUrlBarData(originalUrl.getSpec(), isOfflinePage);
+                return buildUrlBarData(mUrlFormatter.format(originalUrl), isOfflinePage);
             }
 
             if (isOfflinePage) {
@@ -443,8 +442,7 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
             autocompleteSchemeClassifier = mChromeAutocompleteSchemeClassifier;
 
             if (cachedSpannableDisplayText != null) {
-                return UrlBarData.forUrlAndText(
-                        new GURL(url), cachedSpannableDisplayText, editingText);
+                return UrlBarData.forUrlAndText(url, cachedSpannableDisplayText, editingText);
             } else {
                 spannableDisplayText = new SpannableStringBuilder(displayText);
                 OmniboxUrlEmphasizer.emphasizeUrl(spannableDisplayText,
@@ -454,7 +452,7 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
                 mSpannableDisplayTextCache.put(cacheKey, spannableDisplayText);
             }
         }
-        return UrlBarData.forUrlAndText(new GURL(url), spannableDisplayText, editingText);
+        return UrlBarData.forUrlAndText(url, spannableDisplayText, editingText);
     }
 
     /**
@@ -651,12 +649,12 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
         }
 
         @Nullable
-        String publisherUrl = TrustedCdn.getPublisherUrl(tab);
+        GURL publisherUrl = TrustedCdn.getPublisherUrl(tab);
 
         if (publisherUrl != null) {
             assert getSecurityLevelFromStateModel(tab.getWebContents())
                     != ConnectionSecurityLevel.DANGEROUS;
-            return (URI.create(publisherUrl).getScheme().equals(UrlConstants.HTTPS_SCHEME))
+            return (publisherUrl.getScheme().equals(UrlConstants.HTTPS_SCHEME))
                     ? ConnectionSecurityLevel.SECURE
                     : ConnectionSecurityLevel.WARNING;
         }

@@ -21,8 +21,26 @@
   :host-context([chrome-refresh-2023]) .dropdown-item:focus {
     background-color: var(--cr-hover-background-color);
   }
+  :host-context([chrome-refresh-2023]) #audio-controls {
+    background: var(--audio-controls-background);
+    border-radius: 18px;
+    padding: 8px 0px;
+    margin-left: 8px;
+  }
   .dropdown-item {
     display: block;
+  }
+  .dropdown-voice-selection {
+    display: flex;
+    min-width: 312px;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .dropdown-voice-selection cr-icon-button {
+    margin: 0;
+  }
+  .dropdown-voice-selection p {
+    margin: 8px 0;
   }
   /* TODO(b/1465029): Investigate why chrome refresh colors don't always
      work on first launch. */
@@ -32,7 +50,7 @@
   .back, .section {
     font-weight: bold;
   }
-  #font-size-decrease{
+  #font-size-decrease {
     margin-left: 16px;
   }
   .font-size {
@@ -44,52 +62,100 @@
   .check-mark {
     visibility: hidden;
   }
+  #toolbar-container {
+    overflow: visible;
+    white-space: nowrap;
+    max-height: 50px;
+  }
+  #more, cr-icon-button#moreOptionsMenu {
+    display: none;
+  }
 </style>
-<div class="toolbar-container">
+<div id="toolbar-container" class="toolbar-container">
   <span id="read-aloud-container" hidden="[[!isReadAloudEnabled_]]">
+    <span id="audio-controls">
+      <cr-icon-button
+        class="toolbar-button"
+        id="play-pause"
+        iron-icon="read-anything-20:play"
+        on-click="onPlayPauseClick_">
+      </cr-icon-button>
+      <span id="granularity-container" hidden="[[isPaused_]]">
+        <cr-icon-button id="previousGranularity"
+          class="toolbar-button"
+        iron-icon="read-anything:previous"
+        on-click="onPreviousGranularityClick_">
+      </cr-icon-button>
+      <cr-icon-button id="nextGranularity"
+        class="toolbar-button"
+        iron-icon="read-anything:next"
+        on-click="onNextGranularityClick_">
+        </cr-icon-button>
+      </span>
+    </span>
     <cr-icon-button
-      id="play-pause"
-      iron-icon="read-anything-20:play"
-      on-click="onPlayPauseClick_">
-    </cr-icon-button>
-    <cr-icon-button
+      class="toolbar-button"
       id="rate"
       iron-icon="voice-rate:1"
       on-click="onShowRateMenuClick_">
     </cr-icon-button>
+    <cr-icon-button id="voice-selection" on-click="onVoiceSelectionMenuClick_"
+      class="toolbar-button"
+      iron-icon="read-anything:voice-selection">
+    </cr-icon-button>
+    <cr-icon-button
+      class="toolbar-button"
+      id="highlight"
+      iron-icon="read-anything:highlight-on"
+      title="$i18n{turnHighlightOff}"
+      on-click="onHighlightClick_">
+    </cr-icon-button>
   </span>
+  <template is="dom-repeat" items="[[textStyleOptions_]]">
+    <cr-icon-button
+      class="toolbar-button"
+      id="[[item.id]]"
+      iron-icon="[[item.icon]]"
+      on-click="onTextStyleMenuButtonClick_">
+    </cr-icon-button>
+  </template>
   <cr-icon-button
-      id="font-size"
-      iron-icon="read-anything:font-size"
-      on-click="onShowFontSizeMenuClick_">
-  </cr-icon-button>
-  <cr-icon-button
-      id="font"
-      iron-icon="read-anything:font"
-      on-click="onShowFontMenuClick_">
-  </cr-icon-button>
-  <cr-icon-button
-      id="color"
-      iron-icon="read-anything:color"
-      on-click="onShowColorMenuClick_">
-  </cr-icon-button>
-  <cr-icon-button
-      id="line-spacing"
-      iron-icon="read-anything:line-spacing"
-      on-click="onShowLineSpacingMenuClick_">
-  </cr-icon-button>
-  <cr-icon-button
-      id="letter-spacing"
-      iron-icon="read-anything:letter-spacing"
-      on-click="onShowLetterSpacingMenuClick_">
+      id="more"
+      iron-icon="cr:more-vert"
+      on-click="onMoreOptionsClick_">
   </cr-icon-button>
 
+  <cr-action-menu id="moreOptionsMenu">
+    <template is="dom-repeat" items="[[textStyleOptions_]]">
+      <cr-icon-button
+        id="[[item.id]]"
+        iron-icon="[[item.icon]]"
+        on-click="onTextStyleMenuButtonClick_">
+      </cr-icon-button>
+    </template>
+  </cr-action-menu>
   <cr-action-menu id="rateMenu">
     <template is="dom-repeat" items="[[rateOptions_]]">
       <button class="dropdown-item" on-click="onRateClick_">
         <iron-icon class="button-image check-mark"
             icon="read-anything:check-mark"></iron-icon>
         [[item]]x
+      </button>
+    </template>
+  </cr-action-menu>
+  <cr-action-menu id="voiceSelectionMenu">
+    <template is="dom-repeat" items="[[voiceSelectionOptions_]]">
+      <!--  TODO(crbug.com/1474951): show a header for each locale group before
+            listing the languages of the locale -->
+      <!--  TODO(crbug.com/1474951): show currently selected language -->
+      <!--  TODO(crbug.com/1474951): allow user to change language -->
+      <button class="dropdown-item dropdown-voice-selection"
+        on-click="onVoiceSelectClick_">
+        <p>[[item.title]]</p>
+        <!-- TODO(crbug.com/1474951): Show pause button when a preview is
+                      playing -->
+        <cr-icon-button on-click="onVoicePreviewClick_" class="button-image"
+          iron-icon="read-anything-20:play-circle"></cr-icon-button>
       </button>
     </template>
   </cr-action-menu>
@@ -106,8 +172,11 @@
         iron-icon="read-anything:font-size-increase"
         on-click="onFontSizeIncreaseClick_">
     </cr-icon-button>
-    <cr-button class="text-button" on-click="onFontResetClick_">
-      Reset
+    <cr-button
+        class="text-button"
+        id="font-size-reset"
+        on-click="onFontResetClick_">
+      $i18n{fontResetTitle}
     </cr-button>
   </cr-action-menu>
   <cr-action-menu id="colorMenu">
@@ -141,7 +210,7 @@
     </template>
   </cr-action-menu>
   <cr-action-menu id="fontMenu">
-  <template is="dom-repeat" items="[[fontOptions_]]">
+  <template id="fontTemplate" is="dom-repeat" items="[[fontOptions_]]">
     <button class="dropdown-item" on-click="onFontClick_">
       <iron-icon class="button-image check-mark"
           icon="read-anything:check-mark"></iron-icon>

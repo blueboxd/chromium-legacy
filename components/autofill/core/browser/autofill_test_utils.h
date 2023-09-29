@@ -147,6 +147,9 @@ Iban GetIban();
 // Returns an IBAN full of dummy info, different to the above.
 Iban GetIban2();
 
+// Returns a server-based IBAN full of dummy info.
+Iban GetServerIban();
+
 // Returns an IBAN full of dummy info, different to the above and without
 // nickname.
 Iban GetIbanWithoutNickname();
@@ -167,7 +170,6 @@ CreditCard GetIncompleteCreditCard();
 // Returns a masked server card full of dummy info.
 CreditCard GetMaskedServerCard();
 CreditCard GetMaskedServerCard2();
-CreditCard GetMaskedServerCardWithCvc();
 CreditCard GetMaskedServerCardWithNonLegacyId();
 CreditCard GetMaskedServerCardWithLegacyId();
 CreditCard GetMaskedServerCardVisa();
@@ -184,6 +186,9 @@ CreditCard GetVirtualCard();
 // Returns a randomly generated credit card of |record_type|. Note that the
 // card is not guaranteed to be valid/sane from a card validation standpoint.
 CreditCard GetRandomCreditCard(CreditCard::RecordType record_Type);
+
+// Returns a copy of `credit_card` with `cvc` set as specified.
+CreditCard WithCvc(CreditCard credit_card, std::u16string cvc = u"123");
 
 // Returns a credit card cloud token data full of dummy info.
 CreditCardCloudTokenData GetCreditCardCloudTokenData1();

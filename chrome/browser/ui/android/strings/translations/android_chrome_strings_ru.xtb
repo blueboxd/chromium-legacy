@@ -58,6 +58,7 @@
 <translation id="124678866338384709">Закрыть вкладку</translation>
 <translation id="1246905108078336582">Удалить подсказку из буфера обмена?</translation>
 <translation id="1258753120186372309">Дудл Google: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1263063910731171689">Теперь в ленте будут появляться материалы о сайте <ph name="SITE_NAME" /> и его контент. Сайты и поисковые запросы, на которые вы подписаны, сохраняются в вашем аккаунте Google. Управлять своими подписками можно в настройках.</translation>
 <translation id="1263231323834454256">Список для чтения</translation>
 <translation id="1266864766717917324">Не удалось отправить: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269129608791067105">Здесь будет показана история браузера</translation>
@@ -136,6 +137,7 @@
 <translation id="1671236975893690980">Ожидание скачивания…</translation>
 <translation id="1672586136351118594">Больше не показывать</translation>
 <translation id="1680919990519905526">Найти в Покупках через Google Объектив <ph name="BEGIN_NEW" />Новинка<ph name="END_NEW" /></translation>
+<translation id="1687482373098770139">Скоро в ленте будут появляться материалы о сайте <ph name="SITE_NAME" /> и его контент. Сайты и поисковые запросы, на которые вы подписаны, сохраняются в вашем аккаунте Google. Управлять своими подписками можно в настройках.</translation>
 <translation id="1702543251015153180">Изменить настройки тёмной темы?</translation>
 <translation id="1702907158640575240">Управляемый браузер</translation>
 <translation id="1710099199314114079">Переключить или закрыть вкладки</translation>
@@ -173,6 +175,7 @@
 <translation id="19288952978244135">Снова запустите браузер Chrome.</translation>
 <translation id="1933845786846280168">Выбранная вкладка</translation>
 <translation id="1943432128510653496">Сохранение паролей</translation>
+<translation id="1944535645109964458">Ключи доступа не найдены</translation>
 <translation id="1952172573699511566">Когда это возможно, текст на сайтах будет отображаться на выбранном вами языке.</translation>
 <translation id="1959679933317802873">Ожидается контент</translation>
 <translation id="1960290143419248813">Невозможно обновить Chrome в текущей версии Android.</translation>
@@ -220,6 +223,7 @@
 <translation id="2189903024544168260">Интерес удален.</translation>
 <translation id="2194856509914051091">Важная информация</translation>
 <translation id="2200113223741723867">Управление передачей данных об использовании</translation>
+<translation id="221494669172414749">Если вы откроете Chrome без блокировки профиля, сохраненные пароли и способы оплаты будут удалены с автомобиля. Используйте блокировку профиля, чтобы защитить данные.</translation>
 <translation id="2218567645332692482">Использовать протокол HTTPS и предупреждать, если загружаемые сайты его не поддерживают</translation>
 <translation id="2227444325776770048">Продолжить как <ph name="USER_FULL_NAME" /></translation>
 <translation id="2230777942707397948">Пустое окно</translation>
@@ -260,6 +264,7 @@
 <translation id="2461822463642141190">Сейчас</translation>
 <translation id="2472163211318554013">Чтобы пользоваться всеми возможностями Chrome, войдите в аккаунт.</translation>
 <translation id="247737702124049222">Описания изображений включены.</translation>
+<translation id="2479148705183875116">Открыть настройки</translation>
 <translation id="2482878487686419369">Уведомления</translation>
 <translation id="2496180316473517155">История браузера</translation>
 <translation id="2497852260688568942">Ваш администратор отключил синхронизацию</translation>
@@ -623,6 +628,7 @@
 <translation id="4257230861809842349">Удалить пароли из Google Менеджера паролей?</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Какие данные используются.<ph name="END_BOLD" /> История вашего браузера – список сайтов, которые вы открывали в браузере Chrome на этом устройстве.</translation>
 <translation id="4269820728363426813">Копировать адрес ссылки</translation>
+<translation id="4277529130885813215">Использовать другое устройство</translation>
 <translation id="4283102315569707115">Запрашивать полные версии сайтов по умолчанию?</translation>
 <translation id="4285846616383034558">Файлы cookie, кеш и другие данные сайтов</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Включить блокировку экрана в настройках Android<ph name="END_LINK" /></translation>
@@ -1011,6 +1017,7 @@
 <translation id="6295158916970320988">Все сайты</translation>
 <translation id="6303969859164067831">Выйти из аккаунта и отключить синхронизацию</translation>
 <translation id="6312687380483398334">Веб-приложения (тихий режим)</translation>
+<translation id="6315386555979018699">Удалить и продолжить</translation>
 <translation id="6316139424528454185">Устаревшая версия Android</translation>
 <translation id="6324916366299863871">Изменить ярлык</translation>
 <translation id="6324977638108296054">Невозможно создать ссылку на выделенный текст.</translation>
@@ -1162,6 +1169,7 @@
 <translation id="6955535239952325894">В управляемых браузерах эта настройка отключена</translation>
 <translation id="6963766334940102469">Удалить закладки</translation>
 <translation id="696447261358045621">Выйти из режима инкогнито</translation>
+<translation id="6965382102122355670">ОК</translation>
 <translation id="6971862865055170158">Не разрешать</translation>
 <translation id="6978717888677691380">Заблокированные сайты</translation>
 <translation id="6979737339423435258">Все время</translation>
@@ -1320,6 +1328,7 @@
 <translation id="7757787379047923882">Текст с устройства <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">SD-карта <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Добавить адрес</translation>
+<translation id="7766587497031415281">Другие параметры очистки данных о работе в браузере</translation>
 <translation id="7772032839648071052">Подтвердите кодовую фразу</translation>
 <translation id="7772375229873196092">Закрыть вкладку "<ph name="APP_NAME" />"</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способ оплаты}one{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способ оплаты}few{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способа оплаты}many{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способов оплаты}other{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способа оплаты}}</translation>
@@ -1573,6 +1582,7 @@
 <translation id="8998289560386111590">Недоступно на вашем устройстве</translation>
 <translation id="8998729206196772491">Вы входите в аккаунт, которым управляет администратор домена <ph name="MANAGED_DOMAIN" />. Он может контролировать ваши данные Chrome, которые теперь будут связаны с управляемым аккаунтом. При выходе из системы все данные Chrome, хранящиеся на этом устройстве, будут удалены, но останутся в вашем аккаунте Google.</translation>
 <translation id="9012585441087414258">Защита от сайтов, расширений и скачанных файлов, признанных опасными. Если на какой-либо странице произойдет что-то подозрительное, ведущие на нее URL и часть ее контента будут отправлены в Google Безопасный просмотр.</translation>
+<translation id="9019199799064251516">Продолжить без блокировки профиля для автомобиля?</translation>
 <translation id="9022774213089566801">Часто посещаемые</translation>
 <translation id="9022871169049522985">Сайты и рекламодатели могут оценивать эффективность своей рекламы</translation>
 <translation id="9035378196785279980">Место перемещения</translation>
@@ -1635,5 +1645,6 @@
 <translation id="983192555821071799">Закрыть все вкладки</translation>
 <translation id="987264212798334818">Общие</translation>
 <translation id="992745192656291733">Вкладок: <ph name="TAB_COUNT" /></translation>
+<translation id="993520549480398880">Также удалить закладки, историю и другие данные с этого автомобиля</translation>
 <translation id="996149300115483134">Меню карточки из ленты закрыто</translation>
 </translationbundle>

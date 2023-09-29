@@ -12,6 +12,7 @@
 
 #include "base/check.h"
 #include "base/check_op.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
@@ -19,6 +20,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "chrome/test/base/chromeos/crosier/helper/switches.h"
 #include "chrome/test/base/chromeos/crosier/helper/utils.h"
 
 namespace {
@@ -48,7 +50,8 @@ TestSudoHelperClient::TestSudoHelperClient(const std::string_view server_path)
 
 TestSudoHelperClient::~TestSudoHelperClient() = default;
 
-bool TestSudoHelperClient::RunCommand(const std::string_view command) {
+TestSudoHelperClient::Result TestSudoHelperClient::RunCommand(
+    const std::string_view command) {
   base::FilePath client_path;
   CHECK(base::CreateTemporaryFile(&client_path));
 
@@ -58,7 +61,7 @@ bool TestSudoHelperClient::RunCommand(const std::string_view command) {
   crosier::SendString(sock, ToJsonRunCommand(command));
 
   // Reads the 1 byte return code.
-  char return_code = 0;
+  signed char return_code = 0;
   crosier::ReadBuffer(sock, &return_code, 1);
 
   // Reads the output.
@@ -73,7 +76,23 @@ bool TestSudoHelperClient::RunCommand(const std::string_view command) {
   // Clean up the client socket path.
   unlink(client_path.value().c_str());
 
-  return return_code == 0;
+  return Result(return_code, output);
+}
+
+// static
+TestSudoHelperClient::Result TestSudoHelperClient::ConnectAndRunCommand(
+    const std::string_view command) {
+  base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  if (!cmdline->HasSwitch(crosier::kSwitchSocketPath)) {
+    LOG(ERROR)
+        << "Switch " << crosier::kSwitchSocketPath
+        << " not specified, can't connect to the test_sudo_helper server.";
+    return Result();
+  }
+
+  TestSudoHelperClient client(
+      cmdline->GetSwitchValueASCII(crosier::kSwitchSocketPath));
+  return client.RunCommand(command);
 }
 
 base::ScopedFD TestSudoHelperClient::ConnectToServer(
@@ -87,6 +106,9 @@ base::ScopedFD TestSudoHelperClient::ConnectToServer(
   socklen_t addr_len =
       offsetof(struct sockaddr_un, sun_path) + server_path_.size();
   PCHECK(connect(client_sock.get(), reinterpret_cast<sockaddr*>(&addr),
-                 addr_len) == 0);
+                 addr_len) == 0)
+      << "Unable to connect to test_sudo_helper.py's socket. This probably "
+      << "means that the script didn't get started before the test or it "
+      << "exited or crashed in the meantime.";
   return client_sock;
 }

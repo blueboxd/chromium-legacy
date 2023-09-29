@@ -25,6 +25,7 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/data_model/data_model_utils.h"
 #include "components/autofill/core/browser/data_model/phone_number.h"
+#include "components/autofill/core/browser/field_type_utils.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_parsing/credit_card_field.h"
 #include "components/autofill/core/browser/geo/alternative_state_name_map.h"
@@ -677,8 +678,9 @@ std::u16string GetStreetAddressForInput(
     const std::u16string& address_value,
     const std::string& address_language_code,
     FormFieldData* field) {
-  if (field->form_control_type == "textarea")
+  if (field->form_control_type == StringToFormControlType("textarea")) {
     return address_value;
+  }
 
   ::i18n::addressinput::AddressData address_data;
   address_data.language_code = address_language_code;
@@ -737,8 +739,9 @@ std::u16string GetStateTextForInput(const std::u16string& state_value,
 // determine if the year needs to be truncated.
 std::u16string GetExpirationYearForInput(const CreditCard& credit_card,
                                          const AutofillField& field) {
-  ServerFieldType field_type = field.Type().GetStorableType();
-  std::u16string value = field_type == CREDIT_CARD_EXP_2_DIGIT_YEAR
+  const size_t year_length =
+      DetermineExpirationYearLength(field, field.Type().GetStorableType());
+  std::u16string value = year_length == 2
                              ? credit_card.Expiration2DigitYearAsString()
                              : credit_card.Expiration4DigitYearAsString();
 
@@ -900,11 +903,12 @@ std::u16string GetValueForCreditCard(
     std::string* failure_to_fill) {
   ServerFieldType storable_type = field.Type().GetStorableType();
 
-  if (field.form_control_type == "month") {
+  if (field.form_control_type == StringToFormControlType("month")) {
     return GetExpirationForMonthControl(credit_card);
   } else {
     switch (storable_type) {
       case CREDIT_CARD_VERIFICATION_CODE:
+      case CREDIT_CARD_STANDALONE_VERIFICATION_CODE:
         return GetCreditCardVerificationCodeForInput(credit_card,
                                                      action_persistence, cvc);
       case CREDIT_CARD_NUMBER:
@@ -970,6 +974,7 @@ std::u16string GetValueForVirtualCardPreview(const CreditCard& virtual_card,
 
   switch (storable_type) {
     case CREDIT_CARD_VERIFICATION_CODE:
+    case CREDIT_CARD_STANDALONE_VERIFICATION_CODE:
       // For preview virtual card CVC, return three dots unless for American
       // Express, which uses 4-digit CVCs.
       return virtual_card.network() == kAmericanExpressCard

@@ -295,7 +295,6 @@ void SetFlags(IsolateHolder::ScriptMode mode,
     SetV8FlagsFormatted("--memory-reducer-gc-count=%i",
                         features::kV8MemoryReducerGCCount.Get());
   }
-  SetV8FlagsIfOverridden(features::kV8MinorMC, "--minor-ms", "--no-minor-ms");
   SetV8FlagsIfOverridden(features::kV8MinorMS, "--minor-ms", "--no-minor-ms");
   SetV8FlagsIfOverridden(features::kV8Sparkplug, "--sparkplug",
                          "--no-sparkplug");
@@ -386,6 +385,12 @@ void SetFlags(IsolateHolder::ScriptMode mode,
   SetV8FlagsIfOverridden(features::kJavaScriptArrayBufferTransfer,
                          "--harmony-rab-gsab-transfer",
                          "--no-harmony-rab-gsab-transfer");
+  SetV8FlagsIfOverridden(features::kJavaScriptIteratorHelpers,
+                         "--harmony-iterator-helpers",
+                         "--no-harmony-iterator-helpers");
+  SetV8FlagsIfOverridden(features::kJavaScriptPromiseWithResolvers,
+                         "--js-promise-withresolvers",
+                         "--no-js-promise-withresolvers");
 
   if (IsolateHolder::kStrictMode == mode) {
     SetV8Flags("--use_strict");
@@ -397,10 +402,6 @@ void SetFlags(IsolateHolder::ScriptMode mode,
 
   SetV8FlagsIfOverridden(features::kJavaScriptCompileHintsMagic,
                          "--compile-hints-magic", "--no-compile-hints-magic");
-
-  SetV8FlagsIfOverridden(features::kJavaScriptIteratorHelpers,
-                         "--harmony-iterator-helpers",
-                         "--no-harmony-iterator-helpers");
 
   // WebAssembly features.
 

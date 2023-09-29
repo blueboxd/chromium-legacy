@@ -11,7 +11,7 @@
 #include "base/functional/bind.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "base/uuid.h"
+#include "base/token.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -20,12 +20,13 @@ namespace {
 
 NewTraceReport MakeNewTraceReport(base::Time now = base::Time::Now()) {
   NewTraceReport new_report;
-  new_report.uuid = base::Uuid::GenerateRandomV4();
+  new_report.uuid = base::Token::CreateRandom();
   new_report.scenario_name = "test_scenario";
   new_report.upload_rule_name = "test_rule";
   new_report.total_size = 42;
   new_report.creation_time = now;
-  new_report.proto = "proto";
+  new_report.trace_content = "trace proto";
+  new_report.system_profile = "system profile";
   new_report.skip_reason = SkipUploadReason::kNoSkip;
   return new_report;
 }
@@ -62,12 +63,15 @@ TEST_F(TraceReportDatabaseTest, AddingNewTraceReport) {
 
   // Create Report for the local traces database.
   NewTraceReport new_report = MakeNewTraceReport();
+  const auto new_uuid = new_report.uuid;
   const auto new_size = new_report.total_size;
 
   ASSERT_TRUE(trace_report_.AddTrace(new_report));
 
   auto received_reports = trace_report_.GetAllReports();
 
+  // Verify that the conversion from string to Token is done correctly
+  EXPECT_EQ(new_uuid, received_reports[0].uuid);
   EXPECT_EQ(received_reports.size(), 1u);
   EXPECT_EQ(received_reports[0].scenario_name, "test_scenario");
   EXPECT_EQ(received_reports[0].upload_rule_name, "test_rule");
@@ -75,16 +79,18 @@ TEST_F(TraceReportDatabaseTest, AddingNewTraceReport) {
   EXPECT_EQ(received_reports[0].upload_state, ReportUploadState::kPending);
 }
 
-TEST_F(TraceReportDatabaseTest, RetreiveProtoFromTrace) {
+TEST_F(TraceReportDatabaseTest, RetrieveTraceContentFromReport) {
   // Create Report for the local traces database.
   NewTraceReport new_report = MakeNewTraceReport();
   ASSERT_TRUE(trace_report_.AddTrace(new_report));
 
-  absl::optional<std::string> received_value =
-      trace_report_.GetProtoValue(new_report.uuid);
-  ASSERT_TRUE(received_value);
+  absl::optional<std::string> trace_content =
+      trace_report_.GetTraceContent(new_report.uuid);
+  EXPECT_EQ(trace_content, new_report.trace_content);
 
-  EXPECT_EQ(received_value, new_report.proto);
+  absl::optional<std::string> system_profile =
+      trace_report_.GetSystemProfile(new_report.uuid);
+  EXPECT_EQ(system_profile, new_report.system_profile);
 }
 
 TEST_F(TraceReportDatabaseTest, DeletingSingleTrace) {
@@ -190,6 +196,23 @@ TEST_F(TraceReportDatabaseTest, UserRequestedUpload) {
             ReportUploadState::kPending_UserRequested);
 }
 
+TEST_F(TraceReportDatabaseTest, UserRequestedUploadNotAnonymized) {
+  EXPECT_EQ(trace_report_.GetAllReports().size(), 0u);
+
+  // Create Report for the local traces database.
+  NewTraceReport new_report = MakeNewTraceReport();
+  new_report.skip_reason = SkipUploadReason::kNotAnonymized;
+  ASSERT_TRUE(trace_report_.AddTrace(new_report));
+  EXPECT_EQ(trace_report_.GetAllReports().size(), 1u);
+
+  ASSERT_TRUE(trace_report_.UserRequestedUpload(new_report.uuid));
+
+  auto all_traces = trace_report_.GetAllReports();
+  EXPECT_EQ(all_traces.size(), 1u);
+  EXPECT_EQ(all_traces[0].upload_state, ReportUploadState::kNotUploaded);
+  EXPECT_EQ(all_traces[0].skip_reason, SkipUploadReason::kNotAnonymized);
+}
+
 TEST_F(TraceReportDatabaseTest, UploadComplete) {
   EXPECT_EQ(trace_report_.GetAllReports().size(), 0u);
 
@@ -208,7 +231,7 @@ TEST_F(TraceReportDatabaseTest, UploadComplete) {
   EXPECT_EQ(all_traces[0].upload_state, ReportUploadState::kUploaded);
   EXPECT_EQ(all_traces[0].upload_time, uploaded_time);
 
-  EXPECT_FALSE(trace_report_.GetProtoValue(report_uuid));
+  EXPECT_FALSE(trace_report_.GetTraceContent(report_uuid));
 }
 
 TEST_F(TraceReportDatabaseTest, GetNextReportPendingUpload) {

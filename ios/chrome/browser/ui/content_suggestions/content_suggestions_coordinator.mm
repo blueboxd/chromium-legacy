@@ -70,6 +70,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
+#import "ios/chrome/browser/ui/content_suggestions/magic_stack_half_sheet_table_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/content_suggestions/safety_check/safety_check_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/safety_check/types.h"
@@ -97,17 +98,10 @@
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "url/gurl.h"
 
-namespace {
-// Kill-switch for quick fix of crbug.com/1204507
-BASE_FEATURE(kNoRecentTabIfNullWebState,
-             "NoRecentTabIfNullWebState",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-}  // namespace
-
 @interface ContentSuggestionsCoordinator () <
     ContentSuggestionsMenuProvider,
     ContentSuggestionsViewControllerAudience,
+    MagicStackHalfSheetTableViewControllerDelegate,
     SafetyCheckViewDelegate,
     SetUpListDefaultBrowserPromoCoordinatorDelegate,
     SetUpListViewDelegate>
@@ -142,6 +136,10 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
 
   // The Show More Menu presented from the Set Up List in the Magic Stack.
   SetUpListShowMoreViewController* _setUpListShowMoreViewController;
+
+  // The edit half sheet for toggling all Magic Stack modules.
+  MagicStackHalfSheetTableViewController*
+      _magicStackHalfSheetTableViewController;
 }
 
 - (void)start {
@@ -264,6 +262,10 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
   self.sharingCoordinator = nil;
   [_defaultBrowserPromoCoordinator stop];
   _defaultBrowserPromoCoordinator = nil;
+  [_magicStackHalfSheetTableViewController.presentingViewController
+      dismissViewControllerAnimated:NO
+                         completion:nil];
+  _magicStackHalfSheetTableViewController = nil;
   _started = NO;
 }
 
@@ -284,9 +286,7 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
   DiscoverFeedServiceFactory::GetForBrowserState(
       self.browser->GetBrowserState())
       ->SetIsShownOnStartSurface(false);
-  if (ShouldShowReturnToMostRecentTabForStartSurface()) {
-    [self.contentSuggestionsMediator hideRecentTabTile];
-  }
+  [self.contentSuggestionsMediator hideRecentTabTile];
 }
 
 - (void)returnToRecentTabWasAdded {
@@ -310,7 +310,9 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
       [self.contentSuggestionsMediator disableTabResumption];
       break;
     case ContentSuggestionsModuleType::kSafetyCheck:
-      [self.contentSuggestionsMediator disableSafetyCheck];
+    case ContentSuggestionsModuleType::kSafetyCheckMultiRow:
+    case ContentSuggestionsModuleType::kSafetyCheckMultiRowOverflow:
+      [self.contentSuggestionsMediator disableSafetyCheck:type];
       break;
     case ContentSuggestionsModuleType::kSetUpListSync:
     case ContentSuggestionsModuleType::kSetUpListDefaultBrowser:
@@ -321,6 +323,38 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
     default:
       break;
   }
+}
+
+- (void)didTapMagicStackEditButton {
+  _magicStackHalfSheetTableViewController =
+      [[MagicStackHalfSheetTableViewController alloc]
+          initWithPrefService:GetApplicationContext()->GetLocalState()];
+  _magicStackHalfSheetTableViewController.delegate = self;
+
+  UINavigationController* navViewController = [[UINavigationController alloc]
+      initWithRootViewController:_magicStackHalfSheetTableViewController];
+
+  navViewController.modalPresentationStyle = UIModalPresentationPageSheet;
+  UISheetPresentationController* presentationController =
+      navViewController.sheetPresentationController;
+  presentationController.prefersEdgeAttachedInCompactHeight = YES;
+  presentationController.widthFollowsPreferredContentSizeWhenEdgeAttached = YES;
+  presentationController.detents = @[
+    UISheetPresentationControllerDetent.mediumDetent,
+    UISheetPresentationControllerDetent.largeDetent
+  ];
+  [self.viewController presentViewController:navViewController
+                                    animated:YES
+                                  completion:nil];
+}
+
+#pragma mark - MagicStackHalfSheetTableViewControllerDelegate
+
+- (void)dismissMagicStackHalfSheet {
+  [_magicStackHalfSheetTableViewController.presentingViewController
+      dismissViewControllerAnimated:YES
+                         completion:nil];
+  _magicStackHalfSheetTableViewController = nil;
 }
 
 #pragma mark - Public methods
@@ -415,6 +449,9 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
 
 #pragma mark - SafetyCheckViewDelegate
 
+// Called when a Safety Check item is selected by the user. Depending on the
+// Safety Check item `type`, this method fires a UI command to present the
+// Update Chrome page, Password Checkup, or Safety Check half sheet.
 - (void)didSelectSafetyCheckItem:(SafetyCheckItemType)type {
   CHECK(IsSafetyCheckMagicStackEnabled());
 
@@ -638,30 +675,24 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
     return;
   }
 
-  if (ShouldShowReturnToMostRecentTabForStartSurface()) {
-    web::WebState* most_recent_tab =
-        StartSurfaceRecentTabBrowserAgent::FromBrowser(self.browser)
-            ->most_recent_tab();
-    // TODO(crbug.com/1204507): Fix reproduced steps that produce state where
-    // most_recent_tab is null but ShouldShowStartSurface() is YES.
-    if (!base::FeatureList::IsEnabled(kNoRecentTabIfNullWebState) ||
-        most_recent_tab) {
-      [self.contentSuggestionsMetricsRecorder recordReturnToRecentTabTileShown];
-      DiscoverFeedServiceFactory::GetForBrowserState(
-          self.browser->GetBrowserState())
-          ->SetIsShownOnStartSurface(true);
-      NSString* time_label = GetRecentTabTileTimeLabelForSceneState(scene);
-      [self.contentSuggestionsMediator
-          configureMostRecentTabItemWithWebState:most_recent_tab
-                                       timeLabel:time_label];
-      if (!_startSurfaceObserver) {
-        _startSurfaceObserver =
-            std::make_unique<StartSurfaceRecentTabObserverBridge>(
-                self.contentSuggestionsMediator);
-        StartSurfaceRecentTabBrowserAgent::FromBrowser(self.browser)
-            ->AddObserver(_startSurfaceObserver.get());
-      }
-    }
+  web::WebState* most_recent_tab =
+      StartSurfaceRecentTabBrowserAgent::FromBrowser(self.browser)
+          ->most_recent_tab();
+  CHECK(most_recent_tab);
+  [self.contentSuggestionsMetricsRecorder recordReturnToRecentTabTileShown];
+  DiscoverFeedServiceFactory::GetForBrowserState(
+      self.browser->GetBrowserState())
+      ->SetIsShownOnStartSurface(true);
+  NSString* time_label = GetRecentTabTileTimeLabelForSceneState(scene);
+  [self.contentSuggestionsMediator
+      configureMostRecentTabItemWithWebState:most_recent_tab
+                                   timeLabel:time_label];
+  if (!_startSurfaceObserver) {
+    _startSurfaceObserver =
+        std::make_unique<StartSurfaceRecentTabObserverBridge>(
+            self.contentSuggestionsMediator);
+    StartSurfaceRecentTabBrowserAgent::FromBrowser(self.browser)
+        ->AddObserver(_startSurfaceObserver.get());
   }
 }
 

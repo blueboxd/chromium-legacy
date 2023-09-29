@@ -143,6 +143,9 @@ struct InterestGroup {
   // this InterestGroup, if used by an additional bid for a negative targeting,
   // can only be used by its owner.
   array<uint8, 32>? additional_bid_key;
+
+  // Origin for the Coordinator to be used for Private Aggregation.
+  url.mojom.Origin? aggregation_coordinator_origin;
 };
 
 // Packages the details necessary for the browser process to retrieve a
@@ -187,9 +190,10 @@ struct DirectFromSellerSignalsSubresource {
 // origin of the prefix and the URL of each source bundle must have a scheme of
 // https (uuid-in-package isn't supported since it doesn't support CORS), and
 // each origin must match `seller` in AuctionAdConfig. The response must be
-// served with the headers `X-FLEDGE-Auction-Only: true` and `X-Allow-Fledge:
-// true`. The request is made with CORS, using the caller of runAdAuction()'s
-// frame as the initiator.
+// served with the legacy headers `X-FLEDGE-Auction-Only: true` and
+// `X-Allow-Fledge: true` or the new headers `Ad-Auction-Only: true` and
+// `Ad-Auction-Allowed: true`. The request is made with CORS, using the caller
+// of runAdAuction()'s frame as the initiator.
 //
 // The worklet process will parse the signals object and deliver it to worklet
 // functions (generateBid(), scoreAd(), reportWin(), reportResult()).
@@ -423,8 +427,8 @@ struct AuctionAdConfigNonSharedParams {
   // This is only required for auctions that provide additional bids, and each
   // of those additional bids must use the same auction nonce to ensure that
   // each of those additional bids was intended for this and only this auction.
-  // In multi-seller auctions, this field is only meaningful for the top-level
-  // auction config; it's ignored in component auction configs.
+  // In multi-seller auctions, it must be component auction configs providing
+  // this for their auctions.
   mojo_base.mojom.Uuid? auction_nonce;
 
   // Nested auctions whose results will also be fed to `seller`. Only the top
@@ -496,4 +500,7 @@ struct AuctionAdConfig {
   // Optionally specifies that some bids will be provided as signed exchanges,
   // via `AbortableAdAuction.ResolvedAdditionalBids()`.
   bool expects_additional_bids = false;
+
+  // Origin for the Coordinator to be used for Private Aggregation.
+  url.mojom.Origin? aggregation_coordinator_origin;
 };

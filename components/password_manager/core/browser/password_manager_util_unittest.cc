@@ -41,6 +41,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if BUILDFLAG(IS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 using autofill::password_generation::PasswordGenerationType;
 using device_reauth::MockDeviceAuthenticator;
 using password_manager::Facet;
@@ -75,7 +79,7 @@ class MockPasswordManagerClient
   MOCK_METHOD(void, GeneratePassword, (PasswordGenerationType), (override));
   MOCK_METHOD(PrefService*, GetPrefs, (), (const, override));
   MOCK_METHOD(PrefService*, GetLocalStatePrefs, (), (const, override));
-  MOCK_METHOD(scoped_refptr<device_reauth::DeviceAuthenticator>,
+  MOCK_METHOD(std::unique_ptr<device_reauth::DeviceAuthenticator>,
               GetDeviceAuthenticator,
               (),
               (override));
@@ -231,7 +235,8 @@ class MockAutofillClient : public autofill::AutofillClient {
               (override));
   MOCK_METHOD(void,
               ShowEditAddressProfileDialog,
-              (const autofill::AutofillProfile&),
+              (const autofill::AutofillProfile&,
+               AutofillClient::AddressProfileSavePromptCallback),
               (override));
   MOCK_METHOD(void, ShowDeleteAddressProfileDialog, (), (override));
   MOCK_METHOD(bool, HasCreditCardScanFeature, (), (override));
@@ -347,8 +352,7 @@ using testing::Return;
 class PasswordManagerUtilTest : public testing::Test {
  public:
   PasswordManagerUtilTest() {
-    authenticator_ =
-        base::MakeRefCounted<device_reauth::MockDeviceAuthenticator>();
+    authenticator_ = std::make_unique<device_reauth::MockDeviceAuthenticator>();
     pref_service_.registry()->RegisterBooleanPref(
         password_manager::prefs::kCredentialsEnableService, true);
     pref_service_.registry()->RegisterBooleanPref(
@@ -369,9 +373,7 @@ class PasswordManagerUtilTest : public testing::Test {
     ON_CALL(mock_client_, GetLocalStatePrefs())
         .WillByDefault(Return(&pref_service_));
     ON_CALL(mock_client_, GetPrefs()).WillByDefault(Return(&pref_service_));
-    ON_CALL(mock_client_, GetDeviceAuthenticator())
-        .WillByDefault(Return(authenticator_));
-    ON_CALL(*authenticator_, CanAuthenticateWithBiometrics)
+    ON_CALL(*authenticator_.get(), CanAuthenticateWithBiometrics)
         .WillByDefault(Return(true));
 #endif
   }
@@ -386,7 +388,7 @@ class PasswordManagerUtilTest : public testing::Test {
 
  protected:
   MockPasswordManagerClient mock_client_;
-  scoped_refptr<device_reauth::MockDeviceAuthenticator> authenticator_;
+  std::unique_ptr<device_reauth::MockDeviceAuthenticator> authenticator_;
   TestingPrefServiceSimple pref_service_;
   syncer::TestSyncService sync_service_;
 };
@@ -927,7 +929,8 @@ TEST(PasswordManagerUtil, ConstructGURLWithScheme) {
 TEST(PasswordManagerUtil, IsValidPasswordURL) {
   std::vector<std::pair<GURL, bool>> test_cases = {
       {GURL("noscheme.com"), false},
-      {GURL("https://;/invalid"), false},
+      {GURL("https://;/valid"), true},
+      {GURL("https://^/invalid"), false},
       {GURL("scheme://unsupported"), false},
       {GURL("http://example.com"), true},
       {GURL("https://test.com/login"), true}};
@@ -962,20 +965,33 @@ TEST_F(PasswordManagerUtilTest, CanUseBiometricAuth) {
 
 TEST_F(PasswordManagerUtilTest, BiometricsUnavailable) {
   SetBiometricAuthenticationBeforeFilling(/*available=*/false);
-  EXPECT_CALL(*authenticator_.get(), CanAuthenticateWithBiometrics)
+  EXPECT_CALL(*authenticator_, CanAuthenticateWithBiometrics)
       .WillOnce(Return(false));
+  EXPECT_CALL(mock_client_, GetDeviceAuthenticator)
+      .WillOnce(Return(testing::ByMove(std::move(authenticator_))));
   EXPECT_FALSE(
       ShouldShowBiometricAuthenticationBeforeFillingPromo(&mock_client_));
 }
 
 TEST_F(PasswordManagerUtilTest, ShouldShowBiometricAuthPromo) {
   SetBiometricAuthenticationBeforeFilling(/*available=*/false);
-  EXPECT_CALL(*authenticator_.get(), CanAuthenticateWithBiometrics)
+  EXPECT_CALL(*authenticator_, CanAuthenticateWithBiometrics)
       .WillOnce(Return(true));
+  EXPECT_CALL(mock_client_, GetDeviceAuthenticator)
+      .WillOnce(Return(testing::ByMove(std::move(authenticator_))));
   EXPECT_TRUE(
       ShouldShowBiometricAuthenticationBeforeFillingPromo(&mock_client_));
 }
 
-#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+#elif BUILDFLAG(IS_ANDROID)
+TEST_F(PasswordManagerUtilTest, CanUseBiometricAuthAndroidAutomotive) {
+  if (!base::android::BuildInfo::GetInstance()->is_automotive()) {
+    GTEST_SKIP();
+  }
+
+  EXPECT_TRUE(CanUseBiometricAuth(authenticator_.get(), &mock_client_));
+}
+
+#endif
 
 }  // namespace password_manager_util

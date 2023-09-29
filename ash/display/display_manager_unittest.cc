@@ -3719,8 +3719,7 @@ TEST_F(DisplayManagerTest, AccelerometerSupport) {
 namespace {
 
 std::unique_ptr<display::DisplayMode> MakeDisplayMode() {
-  return std::make_unique<display::DisplayMode>(gfx::Size(1366, 768), false,
-                                                60);
+  return display::CreateDisplayModePtrForTest(gfx::Size(1366, 768), false, 60);
 }
 
 }  // namespace
@@ -3752,7 +3751,7 @@ TEST_F(DisplayManagerTest, DisconnectedInternalDisplayShouldUpdateDisplayInfo) {
           .AddMode(MakeDisplayMode())
           .SetOrigin({0, 1000})
           .Build();
-  // "Connectd display" has the current mode.
+  // "Connected display" has the current mode.
   external_snapshot->set_current_mode(external_snapshot->native_mode());
 
   outputs.push_back(external_snapshot.get());
@@ -3803,7 +3802,7 @@ TEST_F(DisplayManagerTest, UpdateInternalDisplayNativeBounds) {
           .SetNativeMode(MakeDisplayMode())
           .AddMode(MakeDisplayMode())
           .Build();
-  // "Connectd display" has the current mode.
+  // "Connected display" has the current mode.
   external_snapshot->set_current_mode(external_snapshot->native_mode());
   outputs.push_back(external_snapshot.get());
 

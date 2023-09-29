@@ -226,6 +226,8 @@ OFFICIAL_BENCHMARK_CONFIGS = PerfSuite(
     [_GetBenchmarkConfig(b.Name()) for b in OFFICIAL_BENCHMARKS])
 OFFICIAL_BENCHMARK_CONFIGS = OFFICIAL_BENCHMARK_CONFIGS.Remove([
     'blink_perf.sanitizer-api',
+    'blink_perf.svg',
+    'blink_perf.paint',
     'jetstream2-minormc',
     'octane-minormc',
     'speedometer2-minormc',
@@ -384,6 +386,8 @@ _LINUX_BENCHMARK_CONFIGS = PerfSuite(OFFICIAL_BENCHMARK_CONFIGS).Remove([
     'v8.runtime_stats.top_25',
 ]).Add([
     'blink_perf.sanitizer-api',
+    'blink_perf.svg',
+    'blink_perf.paint',
 ])
 _LINUX_BENCHMARK_CONFIGS_WITH_MINORMC = PerfSuite(_LINUX_BENCHMARK_CONFIGS).Add(
     [
@@ -511,9 +515,6 @@ _ANDROID_PIXEL6_EXECUTABLE_CONFIGS = frozenset([
 _ANDROID_PIXEL6_PRO_EXECUTABLE_CONFIGS = frozenset([
     _components_perftests(60),
 ])
-_ANDROID_GO_WEMBLEY_BENCHMARK_CONFIGS = PerfSuite(
-    [_GetBenchmarkConfig('startup.mobile'),
-     _GetBenchmarkConfig('speedometer2')])
 _ANDROID_PIXEL2_AAB_FYI_BENCHMARK_CONFIGS = PerfSuite(
     [_GetBenchmarkConfig('startup.mobile')])
 _ANDROID_PIXEL2_FYI_BENCHMARK_CONFIGS = PerfSuite([
@@ -762,10 +763,11 @@ ANDROID_PIXEL6_PRO_PGO = PerfPlatform(
     'android',
     executables=_ANDROID_PIXEL6_PRO_EXECUTABLE_CONFIGS,
     pinpoint_only=True)
-ANDROID_GO_WEMBLEY = PerfPlatform('android-go-wembley-perf',
-                                  'Android U',
-                                  _ANDROID_GO_WEMBLEY_BENCHMARK_CONFIGS, 2,
-                                  'android')
+ANDROID_GO_WEMBLEY = PerfPlatform('android-go-wembley-perf', 'Android U',
+                                  _ANDROID_GO_BENCHMARK_CONFIGS, 20, 'android')
+ANDROID_GO_WEMBLEY_WEBVIEW = PerfPlatform(
+    'android-go-wembley_webview-perf', 'Android U',
+    _ANDROID_GO_WEBVIEW_BENCHMARK_CONFIGS, 20, 'android')
 ANDROID_NEW_PIXEL = PerfPlatform('android-new-pixel-perf',
                                  'Android T',
                                  PerfSuite([]),

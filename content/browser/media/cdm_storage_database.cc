@@ -20,9 +20,9 @@ namespace {
 // schema.
 static const int kVersionNumber = 1;
 
-}  // namespace
+const char kUmaPrefix[] = "Media.EME.CdmStorageDatabaseSQLiteError.";
 
-using CdmStorageHostOpenError = CdmStorageHost::CdmStorageHostOpenError;
+}  // namespace
 
 CdmStorageDatabase::CdmStorageDatabase(const base::FilePath& path)
     : path_(path),
@@ -33,12 +33,18 @@ CdmStorageDatabase::CdmStorageDatabase(const base::FilePath& path)
       // many keys, to keep the index B-tree flat.
       db_(sql::DatabaseOptions{.exclusive_locking = true,
                                .page_size = 32768,
-                               .cache_size = 8}) {}
+                               .cache_size = 8}) {
+  // base::Unretained is safe because `db_` is owned by `this`
+  db_.set_error_callback(base::BindRepeating(
+      &CdmStorageDatabase::OnDatabaseError, base::Unretained(this)));
+}
 
-CdmStorageHostOpenError CdmStorageDatabase::EnsureOpenForTesting() {
+CdmStorageDatabase::~CdmStorageDatabase() = default;
+
+CdmStorageOpenError CdmStorageDatabase::EnsureOpen() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // If in use or open successful, returns `CdmStorageHostOpenError::kOk`.
+  // If in use or open successful, returns `CdmStorageOpenError::kOk`.
   return OpenDatabase();
 }
 
@@ -48,7 +54,7 @@ absl::optional<std::vector<uint8_t>> CdmStorageDatabase::ReadFile(
     const std::string& file_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (OpenDatabase() != CdmStorageHostOpenError::kOk) {
+  if (OpenDatabase() != CdmStorageOpenError::kOk) {
     return absl::nullopt;
   }
 
@@ -60,6 +66,8 @@ absl::optional<std::vector<uint8_t>> CdmStorageDatabase::ReadFile(
             "AND file_name=? ";
   // clang-format on
   DCHECK(db_.IsSQLValid(kSelectSql));
+
+  last_operation_ = "ReadFile";
 
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE, kSelectSql));
   statement.BindString(0, storage_key.Serialize());
@@ -89,7 +97,7 @@ bool CdmStorageDatabase::WriteFile(const blink::StorageKey& storage_key,
                                    const std::vector<uint8_t>& data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (OpenDatabase() != CdmStorageHostOpenError::kOk) {
+  if (OpenDatabase() != CdmStorageOpenError::kOk) {
     return false;
   }
 
@@ -99,6 +107,8 @@ bool CdmStorageDatabase::WriteFile(const blink::StorageKey& storage_key,
           "VALUES(?,?,?,?)";
   // clang-format on
   DCHECK(db_.IsSQLValid(kInsertSql));
+
+  last_operation_ = "WriteFile";
 
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE, kInsertSql));
   statement.BindString(0, storage_key.Serialize());
@@ -117,7 +127,7 @@ bool CdmStorageDatabase::DeleteFile(const blink::StorageKey& storage_key,
                                     const std::string& file_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (OpenDatabase() != CdmStorageHostOpenError::kOk) {
+  if (OpenDatabase() != CdmStorageOpenError::kOk) {
     return false;
   }
 
@@ -129,6 +139,8 @@ bool CdmStorageDatabase::DeleteFile(const blink::StorageKey& storage_key,
           "AND file_name=? ";
   // clang-format on
   DCHECK(db_.IsSQLValid(kDeleteSql));
+
+  last_operation_ = "DeleteFile";
 
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE, kDeleteSql));
   statement.BindString(0, storage_key.Serialize());
@@ -146,13 +158,15 @@ bool CdmStorageDatabase::DeleteDataForStorageKey(
     const media::CdmType& cdm_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (OpenDatabase() != CdmStorageHostOpenError::kOk) {
+  if (OpenDatabase() != CdmStorageOpenError::kOk) {
     return false;
   }
 
   static constexpr char kDeleteSql[] =
       "DELETE FROM cdm_storage WHERE storage_key=?";
   DCHECK(db_.IsSQLValid(kDeleteSql));
+
+  last_operation_ = "DeleteForStorageKey";
 
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE, kDeleteSql));
   statement.BindString(0, storage_key.Serialize());
@@ -177,21 +191,15 @@ bool CdmStorageDatabase::ClearDatabase() {
   return sql::Database::Delete(path_);
 }
 
-CdmStorageHostOpenError CdmStorageDatabase::OpenDatabase(bool is_retry) {
+CdmStorageOpenError CdmStorageDatabase::OpenDatabase(bool is_retry) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (db_.is_open()) {
-    return CdmStorageHostOpenError::kOk;
+    return CdmStorageOpenError::kOk;
   }
 
   bool success = false;
 
-  // If this is not the first call to `OpenDatabase()` because we are re-trying
-  // initialization, then the error callback will have previously been set.
-  db_.reset_error_callback();
-
-  // base::Unretained is safe because `db_` is owned by `this`
-  db_.set_error_callback(base::BindRepeating(
-      &CdmStorageDatabase::OnDatabaseError, base::Unretained(this)));
+  last_operation_ = "OpenDatabase";
 
   if (path_.empty()) {
     success = db_.OpenInMemory();
@@ -201,7 +209,7 @@ CdmStorageHostOpenError CdmStorageDatabase::OpenDatabase(bool is_retry) {
 
   if (!success) {
     DVLOG(1) << "Failed to open CDM database: " << db_.GetErrorMessage();
-    return CdmStorageHostOpenError::kDatabaseOpenError;
+    return CdmStorageOpenError::kDatabaseOpenError;
   }
 
   sql::MetaTable meta_table;
@@ -210,7 +218,7 @@ CdmStorageHostOpenError CdmStorageDatabase::OpenDatabase(bool is_retry) {
     // Wipe the database and start over. If we've already wiped the database
     // and are still failing, just return false.
     db_.Raze();
-    return is_retry ? CdmStorageHostOpenError::kDatabaseRazeError
+    return is_retry ? CdmStorageOpenError::kDatabaseRazeError
                     : OpenDatabase(/*is_retry=*/true);
   }
 
@@ -224,7 +232,7 @@ CdmStorageHostOpenError CdmStorageDatabase::OpenDatabase(bool is_retry) {
     // TODO(crbug.com/1454512) Add UMA to report if incompatible database
     // version occurs.
     db_.Raze();
-    return is_retry ? CdmStorageHostOpenError::kDatabaseRazeError
+    return is_retry ? CdmStorageOpenError::kDatabaseRazeError
                     : OpenDatabase(/*is_retry=*/true);
   }
 
@@ -242,10 +250,10 @@ CdmStorageHostOpenError CdmStorageDatabase::OpenDatabase(bool is_retry) {
 
   if (!db_.Execute(kCreateTableSql)) {
     DVLOG(1) << "Failed to execute " << kCreateTableSql;
-    return CdmStorageHostOpenError::kSQLExecutionError;
+    return CdmStorageOpenError::kSQLExecutionError;
   }
 
-  return CdmStorageHostOpenError::kOk;
+  return CdmStorageOpenError::kOk;
 }
 
 void CdmStorageDatabase::OnDatabaseError(int error, sql::Statement* stmt) {
@@ -253,6 +261,11 @@ void CdmStorageDatabase::OnDatabaseError(int error, sql::Statement* stmt) {
 
   sql::UmaHistogramSqliteResult("Media.EME.CdmStorageDatabaseSQLiteError",
                                 error);
+
+  if (last_operation_) {
+    sql::UmaHistogramSqliteResult(kUmaPrefix + *last_operation_, error);
+    last_operation_.reset();
+  }
 }
 
 }  // namespace content

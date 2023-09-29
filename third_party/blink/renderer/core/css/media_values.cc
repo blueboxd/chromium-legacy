@@ -320,6 +320,26 @@ ui::WindowShowState MediaValues::CalculateWindowShowState(LocalFrame* frame) {
   return widget->WindowShowState();
 }
 
+bool MediaValues::CalculateResizable(LocalFrame* frame) {
+  DCHECK(frame);
+
+  bool resizable = frame->GetPage()->GetSettings().GetResizable();
+  // Initial state set in /third_party/blink/renderer/core/frame/settings.json5
+  // should match with this.
+  if (!resizable) {
+    // Only non-default value should be returned "early" from the settings
+    // without checking from widget. Settings are only used for testing.
+    return resizable;
+  }
+
+  FrameWidget* widget = frame->GetWidgetForLocalRoot();
+  if (!widget) {
+    return true;
+  }
+
+  return widget->Resizable();
+}
+
 bool MediaValues::CalculateThreeDEnabled(LocalFrame* frame) {
   return frame->GetPage()->GetSettings().GetAcceleratedCompositingEnabled();
 }

@@ -146,6 +146,21 @@ bool OSExchangeDataProviderMac::DidOriginateFromRenderer() const {
   return false;
 }
 
+absl::optional<url::Origin>
+OSExchangeDataProviderMac::GetRendererTaintedOrigin() const {
+  NSString* item =
+      [GetPasteboard() stringForType:kUTTypeChromiumRendererInitiatedDrag];
+  if (!item) {
+    return absl::nullopt;
+  }
+
+  if (0 == [item length]) {
+    return url::Origin();
+  }
+
+  return url::Origin::Create(GURL(base::SysNSStringToUTF8(item)));
+}
+
 void OSExchangeDataProviderMac::MarkAsFromPrivileged() {
   NOTIMPLEMENTED();
 }

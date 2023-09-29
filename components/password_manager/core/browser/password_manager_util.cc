@@ -28,6 +28,7 @@
 #include "components/password_manager/core/browser/credentials_cleaner.h"
 #include "components/password_manager/core/browser/credentials_cleaner_runner.h"
 #include "components/password_manager/core/browser/features/password_features.h"
+#include "components/password_manager/core/browser/features/password_manager_features_util.h"
 #include "components/password_manager/core/browser/http_credentials_cleaner.h"
 #include "components/password_manager/core/browser/old_google_credentials_cleaner.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
@@ -37,7 +38,6 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
-#include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -48,6 +48,10 @@
 #include "components/sync/service/sync_service.h"
 #include "components/sync/service/sync_user_settings.h"
 #include "url/url_util.h"
+
+#if BUILDFLAG(IS_ANDROID)
+#include "base/android/build_info.h"
+#endif
 
 using autofill::password_generation::PasswordGenerationType;
 using password_manager::PasswordForm;
@@ -414,8 +418,10 @@ bool ShouldBiometricAuthenticationForFillingToggleBeVisible(
 
 bool ShouldShowBiometricAuthenticationBeforeFillingPromo(
     password_manager::PasswordManagerClient* client) {
-  return client && client->GetDeviceAuthenticator() &&
-         client->GetDeviceAuthenticator()->CanAuthenticateWithBiometrics() &&
+  std::unique_ptr<device_reauth::DeviceAuthenticator> device_authenticator =
+      client->GetDeviceAuthenticator();
+  return client && device_authenticator &&
+         device_authenticator->CanAuthenticateWithBiometrics() &&
          !client->GetPrefs()->GetBoolean(
              password_manager::prefs::kBiometricAuthenticationBeforeFilling);
 }
@@ -430,10 +436,16 @@ bool CanUseBiometricAuth(device_reauth::DeviceAuthenticator* authenticator,
   }
   return client->GetPasswordFeatureManager()
       ->IsBiometricAuthenticationBeforeFillingEnabled();
-#else
+#elif BUILDFLAG(IS_ANDROID)
+  if (base::android::BuildInfo::GetInstance()->is_automotive()) {
+    CHECK(authenticator);
+    return true;
+  }
   return authenticator && authenticator->CanAuthenticateWithBiometrics() &&
          base::FeatureList::IsEnabled(
              password_manager::features::kBiometricTouchToFill);
+#else
+  return false;
 #endif
 }
 

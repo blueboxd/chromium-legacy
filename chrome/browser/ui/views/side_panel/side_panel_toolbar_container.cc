@@ -28,6 +28,7 @@
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/dialog_model_menu_model_adapter.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
@@ -138,11 +139,8 @@ SidePanelToolbarContainer::SidePanelToolbarContainer(BrowserView* browser_view)
       ->SetFlexAllocationOrder(views::FlexAllocationOrder::kReverse)
       .SetDefault(views::kFlexBehaviorKey,
                   hide_icon_flex_specification.WithOrder(3));
-  side_panel_button_->SetProperty(
-      views::kFlexBehaviorKey,
-      base::FeatureList::IsEnabled(features::kResponsiveToolbar)
-          ? hide_icon_flex_specification.WithOrder(1)
-          : views::FlexSpecification());
+  side_panel_button_->SetProperty(views::kFlexBehaviorKey,
+                                  views::FlexSpecification());
   AddMainItem(side_panel_button_);
   // Before creating the pinned buttons, verify that the pref value is correct
   // and update it if not. If the user has been moved into a different default
@@ -331,3 +329,6 @@ SidePanelCoordinator* SidePanelToolbarContainer::GetSidePanelCoordinator() {
   return SidePanelUtil::GetSidePanelCoordinatorForBrowser(
       browser_view_->browser());
 }
+
+BEGIN_METADATA(SidePanelToolbarContainer, ToolbarIconContainerView)
+END_METADATA

@@ -175,6 +175,7 @@
 <translation id="19288952978244135">Նորից բացեք Chrome-ը:</translation>
 <translation id="1933845786846280168">Ընտրված ներդիր</translation>
 <translation id="1943432128510653496">Պահել գաղտնաբառերը</translation>
+<translation id="1944535645109964458">Հասանելի անցաբառեր չկան</translation>
 <translation id="1952172573699511566">Կայքերի տեքստը հնարավորության դեպքում կցուցադրվի ձեր ընտրած լեզվով։</translation>
 <translation id="1959679933317802873">Բովանդակության սպասում</translation>
 <translation id="1960290143419248813">Chrome-ն այլևս չի թարմացվում Android-ի այս տարբերակում</translation>
@@ -222,6 +223,7 @@
 <translation id="2189903024544168260">Հետաքրքրությունը հեռացվեց</translation>
 <translation id="2194856509914051091">Կարևոր տեղեկություններ</translation>
 <translation id="2200113223741723867">Կառավարել օգտագործման տվյալների տրամադրումը</translation>
+<translation id="221494669172414749">Եթե դուք բացեք Chrome-ը առանց պրոֆիլի կողպման, ձեր պահված գաղտնաբառերը և վճարման եղանակները կհեռացվեն մեքենայից։ Տվյալները պաշտպանելու համար օգտագործեք պրոֆիլի կողպում։</translation>
 <translation id="2218567645332692482">Օգտագործել HTTPS հաղորդակարգը և նախազգուշացնել, երբ բեռնվող կայքերը չեն աջակցում այն</translation>
 <translation id="2227444325776770048">Շարունակել որպես <ph name="USER_FULL_NAME" /></translation>
 <translation id="2230777942707397948">Դատարկ պատուհան</translation>
@@ -262,6 +264,7 @@
 <translation id="2461822463642141190">Ընթացիկ</translation>
 <translation id="2472163211318554013">Մտեք հաշիվ՝ Chromе-ի բոլոր գործառույթներից օգտվելու համար</translation>
 <translation id="247737702124049222">Պատկերների նկարագրությունները միացված են</translation>
+<translation id="2479148705183875116">Անցնել կարգավորումներ</translation>
 <translation id="2482878487686419369">Ծանուցումներ</translation>
 <translation id="2496180316473517155">Դիտարկումների պատմություն</translation>
 <translation id="2497852260688568942">Ձեր ադմինիստրատորն անջատել է համաժամացումը</translation>
@@ -625,6 +628,7 @@
 <translation id="4257230861809842349">Ջնջե՞լ գաղտնաբառերը Google գաղտնաբառերի կառավարչից</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Ինչ տվյալներ են օգտագործվում.<ph name="END_BOLD" /> ձեր այցելությունների պատմությունը այն կայքերի ցանկն է, որոնք դուք այցելել եք Chrome-ի միջոցով այս սարքում։</translation>
 <translation id="4269820728363426813">Պատճենել հղման հասցեն</translation>
+<translation id="4277529130885813215">Օգտագործել այլ սարք</translation>
 <translation id="4283102315569707115">Օգտագործե՞լ կայքերի համակարգչային տարբերակներն ըստ կանխադրման</translation>
 <translation id="4285846616383034558">Քուքիները, քեշը և կայքերի այլ տվյալներ</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Միացնել էկրանի կողպումը Android-ի կարգավորումներում<ph name="END_LINK" /></translation>
@@ -1013,6 +1017,7 @@
 <translation id="6295158916970320988">Բոլոր կայքերը</translation>
 <translation id="6303969859164067831">Դուրս գրվել հաշվից և անջատել համաժամացումը</translation>
 <translation id="6312687380483398334">Վեբ հավելվածներ (լուռ)</translation>
+<translation id="6315386555979018699">Ջնջել և շարունակել</translation>
 <translation id="6316139424528454185">Android-ի հնացած տարբերակ</translation>
 <translation id="6324916366299863871">Փոփոխել դյուրանցումը</translation>
 <translation id="6324977638108296054">Չհաջողվեց ստեղծել ընդգծված տեքստի հղում։</translation>
@@ -1164,6 +1169,7 @@
 <translation id="6955535239952325894">Այս կարգավորումը ցուցադրվում է կառավարվող դիտարկիչներում</translation>
 <translation id="6963766334940102469">Ջնջել էջանիշները</translation>
 <translation id="696447261358045621">Դուրս գալ ինկոգնիտո ռեժիմից</translation>
+<translation id="6965382102122355670">Եղավ</translation>
 <translation id="6971862865055170158">Չհաստատել</translation>
 <translation id="6978717888677691380">Ձեր արգելափակած կայքերը</translation>
 <translation id="6979737339423435258">Ամբողջ ժամանակաշրջանի</translation>
@@ -1322,6 +1328,7 @@
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" /> սարքից ուղարկված հաղորդագրություն</translation>
 <translation id="7762668264895820836">SD քարտ <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Ավելացնել հասցե</translation>
+<translation id="7766587497031415281">Այցելությունների պատմությունը մաքրելու այլ ընտրանքներ</translation>
 <translation id="7772032839648071052">Հաստատեք անցաբառը</translation>
 <translation id="7772375229873196092">Փակել <ph name="APP_NAME" />-ը</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ու վճարման ևս <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> եղանակ}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ու վճարման ևս <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> եղանակ}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ու վճարման ևս <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> եղանակ}}</translation>
@@ -1575,6 +1582,7 @@
 <translation id="8998289560386111590">Հասանելի չէ ձեր սարքում</translation>
 <translation id="8998729206196772491">Դուք մուտք եք գործում <ph name="MANAGED_DOMAIN" /> տիրույթի կողմից կառավարվող հաշիվ` դրա ադմինիստրատորին թույլ տալով վերահսկել ձեր Chrome-ի տվյալները: Ձեր տվյալները մշտապես կկապվեն այս հաշվի հետ: Եթե դուրս գաք Chrome-ից, այս սարքում պահված տվյալները կջնջվեն, սակայն կպահպանվեն ձեր Google հաշվում:</translation>
 <translation id="9012585441087414258">Պաշտպանում է վտանգավոր կայքերից, ընդլայնումներից և ներբեռնումներից։ Եթե որևէ էջում որևէ կասկածելի բան է նկատվում, URL-ները և էջի բովանդակության հատվածներ ուղարկվում են «Google Ապահով դիտարկում» ծառայությանը։</translation>
+<translation id="9019199799064251516">Շարունակե՞լ առանց մեքենայի պրոֆիլի կողպման</translation>
 <translation id="9022774213089566801">Հաճախ այցելած</translation>
 <translation id="9022871169049522985">Կայքերն ու գովազդատուները կարող են գնահատել իրենց գովազդի արդյունավետությունը</translation>
 <translation id="9035378196785279980">Տեղափոխել\u2026</translation>
@@ -1637,5 +1645,6 @@
 <translation id="983192555821071799">Փակել բոլոր ներդիրները</translation>
 <translation id="987264212798334818">Ընդհանուր</translation>
 <translation id="992745192656291733"><ph name="TAB_COUNT" /> ներդիր</translation>
+<translation id="993520549480398880">Նաև մաքրել էջանիշները, պատմությունը և այլ տվյալներ այս մեքենայից</translation>
 <translation id="996149300115483134">Լրահոսի քարտի ընտրացանկը փակված է</translation>
 </translationbundle>

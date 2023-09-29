@@ -7,15 +7,17 @@
 #import "base/containers/cxx20_erase_vector.h"
 #import "base/i18n/message_formatter.h"
 #import "base/memory/raw_ptr.h"
+#import "base/metrics/user_metrics.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/password_manager/core/browser/features/password_features.h"
-#import "components/password_manager/core/browser/password_manager_features_util.h"
+#import "components/password_manager/core/browser/features/password_manager_features_util.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/password_manager/core/common/password_manager_pref_names.h"
 #import "components/prefs/pref_service.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #import "components/sync/base/features.h"
+#import "components/sync/base/model_type.h"
 #import "components/sync/base/passphrase_enums.h"
 #import "components/sync/base/user_selectable_type.h"
 #import "components/sync/service/sync_service_utils.h"
@@ -31,13 +33,18 @@
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
+using password_manager::CredentialUIEntry;
 using password_manager::prefs::kCredentialsEnableService;
 
 namespace {
 
+// The user action for when the bulk move passwords to account section button is
+// clicked.
+constexpr const char* kBulkMovePasswordsToAccountButtonClickedUserAction =
+    "Mobile.PasswordsSettings.BulkSavePasswordsToAccountButtonClicked";
+
 // Returns true if the credential passed is not stored in the account store.
-bool isCredentialNotInAccountStore(
-    const password_manager::CredentialUIEntry& credential) {
+bool IsCredentialNotInAccountStore(const CredentialUIEntry& credential) {
   return !credential.stored_in.contains(
       password_manager::PasswordForm::Store::kAccountStore);
 }
@@ -181,7 +188,23 @@ bool isCredentialNotInAccountStore(
 }
 
 - (void)userDidStartBulkMoveLocalPasswordsToAccountFlow {
-  // TODO(crbug.com/1479178): Move passwords to account store.
+  int localPasswordsCount = [self computeLocalPasswordsCount];
+
+  _syncService->TriggerLocalDataMigration(
+      syncer::ModelTypeSet{syncer::ModelType::PASSWORDS});
+
+  // TODO(crbug.com/1482293): Remove this histogram enumeration when using
+  // `MoveCredentialsToAccount`.
+  base::UmaHistogramEnumeration(
+      "PasswordManager.AccountStorage.MoveToAccountStoreFlowAccepted2",
+      password_manager::metrics_util::MoveToAccountStoreTrigger::
+          kExplicitlyTriggeredForMultiplePasswordsInSettings);
+
+  base::UmaHistogramCounts100(
+      "IOS.PasswordManager.BulkSavePasswordsInAccountCount",
+      localPasswordsCount);
+
+  [self showMovedToAccountSnackbarWithPasswordCount:localPasswordsCount];
 }
 
 - (void)userDidStartExportFlow {
@@ -189,7 +212,7 @@ bool isCredentialNotInAccountStore(
   // can return duplicate passwords that shouldn't be included in the export.
   // However, this method also returns blocked sites ("Never save for
   // example.com"), so those must be filtered before passing to the exporter.
-  std::vector<password_manager::CredentialUIEntry> passwords =
+  std::vector<CredentialUIEntry> passwords =
       _savedPasswordsPresenter->GetSavedCredentials();
   base::EraseIf(passwords, [](const auto& credential) {
     return credential.blocked_by_user;
@@ -201,7 +224,7 @@ bool isCredentialNotInAccountStore(
   [self.passwordExporter resetExportState];
 }
 
-- (void)userDidCancelExportFlow {
+- (void)exportFlowCanceled {
   [self.passwordExporter cancelExport];
 }
 
@@ -234,8 +257,8 @@ bool isCredentialNotInAccountStore(
   [self.exportHandler showPreparingPasswordsAlert];
 }
 
-- (void)showSetPasscodeDialog {
-  [self.exportHandler showSetPasscodeDialog];
+- (void)showSetPasscodeForPasswordExportDialog {
+  [self.exportHandler showSetPasscodeForPasswordExportDialog];
 }
 
 - (void)updateExportPasswordsButton {
@@ -248,6 +271,9 @@ bool isCredentialNotInAccountStore(
 #pragma mark - PasswordSettingsDelegate
 
 - (void)bulkMovePasswordsToAccountButtonClicked {
+  base::RecordAction(base::UserMetricsAction(
+      kBulkMovePasswordsToAccountButtonClickedUserAction));
+
   // Create the confirmation dialog title.
   NSString* alertTitle = l10n_util::GetPluralNSStringF(
       IDS_IOS_PASSWORD_SETTINGS_BULK_UPLOAD_PASSWORDS_ALERT_TITLE,
@@ -421,7 +447,7 @@ bool isCredentialNotInAccountStore(
   for (password_manager::AffiliatedGroup group : affiliatedGroups) {
     passwordsCount += base::ranges::count_if(group.GetCredentials().begin(),
                                              group.GetCredentials().end(),
-                                             isCredentialNotInAccountStore);
+                                             IsCredentialNotInAccountStore);
   }
 
   return passwordsCount;
@@ -440,7 +466,7 @@ bool isCredentialNotInAccountStore(
   for (const password_manager::AffiliatedGroup& group : affiliatedGroups) {
     auto credential = base::ranges::find_if(group.GetCredentials().begin(),
                                             group.GetCredentials().end(),
-                                            isCredentialNotInAccountStore);
+                                            IsCredentialNotInAccountStore);
 
     // If a credential exists in this group that is in the profile store, append
     // the group's display name to the distinct domains.
@@ -452,6 +478,15 @@ bool isCredentialNotInAccountStore(
   }
 
   return distinctDomains;
+}
+
+// Shows the snackbar indicating to the user that their local passwords have
+// been saved to their account.
+- (void)showMovedToAccountSnackbarWithPasswordCount:(int)count {
+  [self.bulkMovePasswordsToAccountHandler
+      showMovedToAccountSnackbarWithPasswordCount:count
+                                        userEmail:_syncService->GetAccountInfo()
+                                                      .email];
 }
 
 @end

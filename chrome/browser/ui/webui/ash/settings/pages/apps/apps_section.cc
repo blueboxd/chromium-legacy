@@ -19,9 +19,9 @@
 #include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/apps/android_apps_handler.h"
+#include "chrome/browser/ui/webui/ash/settings/pages/apps/plugin_vm_handler.h"
+#include "chrome/browser/ui/webui/ash/settings/pages/crostini/guest_os_handler.h"
 #include "chrome/browser/ui/webui/ash/settings/search/search_tag_registry.h"
-#include "chrome/browser/ui/webui/settings/ash/guest_os_handler.h"
-#include "chrome/browser/ui/webui/settings/ash/plugin_vm_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
@@ -31,6 +31,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/content_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -44,6 +45,7 @@ using ::chromeos::settings::mojom::kAppNotificationsSubpagePath;
 using ::chromeos::settings::mojom::kAppsSectionPath;
 using ::chromeos::settings::mojom::kArcVmUsbPreferencesSubpagePath;
 using ::chromeos::settings::mojom::kGooglePlayStoreSubpagePath;
+using ::chromeos::settings::mojom::kManageIsolatedWebAppsSubpagePath;
 using ::chromeos::settings::mojom::kPluginVmSharedPathsSubpagePath;
 using ::chromeos::settings::mojom::kPluginVmUsbPreferencesSubpagePath;
 using ::chromeos::settings::mojom::Section;
@@ -200,8 +202,6 @@ void AddAppManagementStrings(content::WebUIDataSource* html_source) {
 
   webui::LocalizedString kLocalizedStrings[] = {
       {"appManagementAppDetailsTitle", IDS_APP_MANAGEMENT_APP_DETAILS_TITLE},
-      {"appManagementAppDetailsTooltipCrosSystem",
-       IDS_APP_MANAGEMENT_APP_DETAILS_TOOLTIP_CROS_SYSTEM},
       {"appManagementAppDetailsTypeAndroid",
        IDS_APP_MANAGEMENT_APP_DETAILS_TYPE_ANDROID},
       {"appManagementAppDetailsTypeChrome",
@@ -216,6 +216,8 @@ void AddAppManagementStrings(content::WebUIDataSource* html_source) {
        IDS_APP_MANAGEMENT_APP_DETAILS_INSTALL_SOURCE_PLAY_STORE},
       {"appManagementAppDetailsInstallSourceBrowser",
        IDS_APP_MANAGEMENT_APP_DETAILS_INSTALL_SOURCE_BROWSER},
+      {"appManagementAppDetailsTypeAndSourcePreinstalledApp",
+       IDS_APP_MANAGEMENT_APP_DETAILS_TYPE_AND_SOURCE_PREINSTALLED_APP},
       {"appManagementAppDetailsTypeAndSourceCombined",
        IDS_APP_MANAGEMENT_APP_DETAILS_TYPE_AND_SOURCE_COMBINED},
       {"appManagementAppDetailsVersion",
@@ -226,8 +228,6 @@ void AddAppManagementStrings(content::WebUIDataSource* html_source) {
        IDS_APP_MANAGEMENT_APP_DETAILS_APP_SIZE},
       {"appManagementAppDetailsDataSize",
        IDS_APP_MANAGEMENT_APP_DETAILS_DATA_SIZE},
-      {"appManagementAppDetailsTotalSize",
-       IDS_APP_MANAGEMENT_APP_DETAILS_TOTAL_SIZE},
       {"appManagementAppInstalledByPolicyLabel",
        IDS_APP_MANAGEMENT_POLICY_APP_POLICY_STRING},
       {"appManagementArcManagePermissionsLabel",
@@ -443,6 +443,11 @@ void AppsSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"appNotificationsTitle", IDS_SETTINGS_APP_NOTIFICATIONS_LINK_TEXT},
       {"doNotDisturbToggleTitle",
        IDS_SETTINGS_APP_NOTIFICATIONS_DO_NOT_DISTURB_TOGGLE_TITLE},
+      {"manageIsolatedWebAppsLinkText",
+       IDS_SETTINGS_MANAGE_ISOLATED_WEB_APPS_LINK_TEXT},
+      {"manageIsolatedWebAppsTitle",
+       IDS_SETTINGS_MANAGE_ISOLATED_WEB_APPS_SUBPAGE_TITLE},
+
       {"doNotDisturbToggleDescription",
        kIsRevampEnabled
            ? IDS_OS_SETTINGS_REVAMP_APP_NOTIFICATIONS_DO_NOT_DISTURB_TOGGLE_DESCRIPTION
@@ -457,6 +462,8 @@ void AppsSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_APP_NOTIFICATIONS_DND_ENABLED_SUBLABEL_TEXT},
       {"appBadgingToggleLabel", IDS_SETTINGS_APP_BADGING_TOGGLE_LABEL},
       {"appBadgingToggleSublabel", IDS_SETTINGS_APP_BADGING_TOGGLE_SUBLABEL},
+      {"enableIsolatedWebAppsToggleLabel",
+       IDS_SETTINGS_ENABLE_ISOLATED_WEB_APPS_LABEL},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -466,6 +473,9 @@ void AppsSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
   html_source->AddBoolean("appManagementArcReadOnlyPermissions",
                           arc::IsReadOnlyPermissionsEnabled());
+
+  html_source->AddString("appManagementDeviceName",
+                         ui::GetChromeOSDeviceName());
 
   html_source->AddString("appNotificationsBrowserSettingsURL",
                          chrome::kAppNotificationsBrowserSettingsURL);
@@ -488,6 +498,17 @@ void AppsSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       "showOsSettingsAppBadgingToggle",
       base::FeatureList::IsEnabled(features::kOsSettingsAppBadgingToggle));
   html_source->AddBoolean("isArcVmEnabled", arc::IsArcVmEnabled());
+
+  // TODO(crbug.com/1481737): Double check that this is the correct feature
+  // check.
+  html_source->AddBoolean(
+      "showManageIsolatedWebAppsRow",
+      base::FeatureList::IsEnabled(::features::kIsolatedWebApps));
+  html_source->AddString(
+      "isolatedWebAppsDescription",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_ISOLATED_WEB_APPS_DESCRIPTION,
+          base::ASCIIToUTF16(chrome::kIsolatedWebAppsLearnMoreUrl)));
 
   AddAppManagementStrings(html_source);
   AddGuestOsStrings(html_source);
@@ -557,6 +578,15 @@ void AppsSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                                    mojom::Subpage::kAppNotifications);
   generator->RegisterNestedSetting(mojom::Setting::kAppBadgingOnOff,
                                    mojom::Subpage::kAppNotifications);
+
+  // Manage Isolated Web Apps
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_APPS_LINK_TEXT,
+                                     mojom::Subpage::kManageIsolatedWebApps,
+                                     mojom::SearchResultIcon::kAppsGrid,
+                                     mojom::SearchResultDefaultRank::kMedium,
+                                     mojom::kManageIsolatedWebAppsSubpagePath);
+  generator->RegisterNestedSetting(mojom::Setting::kEnableIsolatedWebAppsOnOff,
+                                   mojom::Subpage::kManageIsolatedWebApps);
 
   // Note: The subpage name in the UI is updated dynamically based on the app
   // being shown, but we use a generic "App details" string here.

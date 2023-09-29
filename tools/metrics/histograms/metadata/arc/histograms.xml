@@ -143,6 +143,15 @@ chromium-metrics-reviews@google.com.
   <variant name="ResumeMigration" summary="resume migration"/>
 </variants>
 
+<variants name="ChromeOSAppType">
+  <variant name="ArcApp"/>
+  <variant name="Browser"/>
+  <variant name="ChromeApp"/>
+  <variant name="CrostiniApp"/>
+  <variant name="Others"/>
+  <variant name="SystemApp"/>
+</variants>
+
 <variants name="FileTypeByDirectoryOrNot">
   <variant name="Directories" summary="directories"/>
   <variant name="Files"
@@ -242,7 +251,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Accessibility.WindowCount" enum="ArcAccessibilityFeature"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>sahok@chromium.org</owner>
   <owner>arc-framework@google.com</owner>
   <summary>
@@ -548,6 +557,22 @@ chromium-metrics-reviews@google.com.
     including policy based applications, default applications and user prompted
     installations. Warning: this histogram was expired from 09/01/2021 to
     10/01/2021; data may be missing.
+  </summary>
+</histogram>
+
+<histogram name="Arc.AppRequestedInSession" units="count"
+    expires_after="2024-09-15">
+  <owner>khmel@google.com</owner>
+  <owner>hidehiko@chromium.org</owner>
+  <owner>arc-performance@google.com</owner>
+  <summary>
+    Number of requests of ARC app launching in a user session.
+
+    Note: this is emitted at the beginning of the next user session. This is
+    because ash-chrome may be shutdown unexepctedly (incl. crashes), so emit the
+    value at the end of the user session is not reliable enough. Instead, the
+    number of requests are tracked and stored in the PrefService to survive
+    chrome restart, and the value is emitted in the next user session.
   </summary>
 </histogram>
 
@@ -864,7 +889,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.ClipboardDragDrop" enum="ArcClipboardDragDropEvent"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>yhanada@google.com</owner>
   <owner>arc-framework@google.com</owner>
   <summary>The number of clipboard and drag-and-drop events.</summary>
@@ -1345,7 +1370,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.GuestZram.TotalReclaimTime" units="ms"
-    expires_after="2023-10-01">
+    expires_after="2024-10-01">
   <owner>hungmn@google.com</owner>
   <owner>raging@google.com</owner>
   <owner>yuholong@google.com</owner>
@@ -1357,7 +1382,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.GuestZram.UnreclaimedProcess" units="count"
-    expires_after="2023-10-01">
+    expires_after="2024-10-01">
   <owner>hungmn@google.com</owner>
   <owner>raging@google.com</owner>
   <owner>yuholong@google.com</owner>
@@ -1505,7 +1530,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.LaunchedWithGhostWindow" units="apps"
-    expires_after="2023-12-09">
+    expires_after="2024-03-17">
   <owner>sstan@chromium.org</owner>
   <owner>nancylingwang@chromium.org</owner>
   <summary>The number of ARC apps launched with ghost window.</summary>
@@ -1657,7 +1682,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Net.ArcNetworkEvent" enum="ArcNetworkEvent"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>hugobenichi@google.com</owner>
   <owner>cros-networking@google.com</owner>
   <summary>
@@ -1682,6 +1707,26 @@ chromium-metrics-reviews@google.com.
   <owner>arc-core@google.com</owner>
   <summary>
     Records the success result of DNS query resolution inside ARC.
+  </summary>
+</histogram>
+
+<histogram name="Arc.Net.QoS.NewQosSocketCount" units="count"
+    expires_after="2024-08-31">
+  <owner>chuweih@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    Records the count of newly opened QoS socket connections in a single poll
+    every time socket connections information is polled regularly in ARC.
+  </summary>
+</histogram>
+
+<histogram name="Arc.Net.Qos.QosSocketPercentage" units="%"
+    expires_after="2024-08-31">
+  <owner>chuweih@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    Records the percentage of QoS socket connections in a single poll every time
+    socket connections information is polled regularly in ARC.
   </summary>
 </histogram>
 
@@ -2172,7 +2217,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.SdkVersionUpgradeType" enum="ArcSdkVersionUpgradeType"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>niwa@google.com</owner>
   <owner>arcvm-eng@google.com</owner>
   <summary>
@@ -2777,6 +2822,28 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records the number of each use case of window predictor. Recorded when the
     window perdictor called to launch ARC ghost window intentionally.
+  </summary>
+</histogram>
+
+<histogram name="Arc.WM.WindowMaximizedDelayTime.{ChromeOSAppType}" units="ms"
+    expires_after="2024-09-30">
+  <owner>lingyufeng@google.com</owner>
+  <owner>arc-framework@google.com</owner>
+  <summary>
+    Records the time elapsed from a window maximizing operation until the window
+    state is changed to be maximized. The data is collected once when a
+    maximizing operation happens.
+  </summary>
+</histogram>
+
+<histogram name="Arc.WM.WindowMinimizedDelayTime.{ChromeOSAppType}" units="ms"
+    expires_after="2024-09-30">
+  <owner>lingyufeng@google.com</owner>
+  <owner>arc-framework@google.com</owner>
+  <summary>
+    Records the time elapsed from window minimizing operation until the window
+    state is changed to be minimized. The data is collected once when a
+    minimizing operation happens.
   </summary>
 </histogram>
 

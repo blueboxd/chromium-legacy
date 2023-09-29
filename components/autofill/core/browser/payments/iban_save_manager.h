@@ -10,11 +10,10 @@
 #include "base/memory/raw_ptr.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/data_model/iban.h"
+#include "components/autofill/core/browser/strike_databases/payments/iban_save_strike_database.h"
 #include "components/autofill/core/common/signatures.h"
 
 namespace autofill {
-
-class IbanSaveStrikeDatabase;
 
 // Decides whether an IBAN local save should be offered and handles the workflow
 // for local saves.
@@ -30,7 +29,8 @@ class IbanSaveManager {
     virtual void OnDeclineSaveIbanComplete() {}
   };
 
-  explicit IbanSaveManager(AutofillClient* client);
+  IbanSaveManager(AutofillClient* client,
+                  PersonalDataManager* personal_data_manager);
   IbanSaveManager(const IbanSaveManager&) = delete;
   IbanSaveManager& operator=(const IbanSaveManager&) = delete;
   virtual ~IbanSaveManager();
@@ -62,6 +62,10 @@ class IbanSaveManager {
   }
 
  private:
+  // Returns true if local save should be offered for the
+  // `iban_import_candidate`.
+  bool ShouldOfferLocalSave(const Iban& iban_import_candidate);
+
   // Returns the IbanSaveStrikeDatabase for `client_`;
   IbanSaveStrikeDatabase* GetIbanSaveStrikeDatabase();
 
@@ -73,11 +77,16 @@ class IbanSaveManager {
       const absl::optional<std::u16string>& nickname = absl::nullopt);
 
   // The IBAN to be saved if local IBAN save is accepted. It will be set if
-  // imported IBAN is not empty.
+  // imported IBAN is not empty. The record type of this IBAN candidate is
+  // initially set to `kUnknown`.
   Iban iban_save_candidate_;
 
   // The associated autofill client. Weak reference.
   const raw_ptr<AutofillClient> client_;
+
+  // The personal data manager, used to save and load personal data to/from the
+  // web database.
+  const raw_ptr<PersonalDataManager> personal_data_manager_;
 
   // StrikeDatabase used to check whether to offer to save the IBAN or not.
   std::unique_ptr<IbanSaveStrikeDatabase> iban_save_strike_database_;

@@ -217,7 +217,7 @@ public class StartSurfaceTest {
         StartSurfaceTestUtils.waitForTabSwitcherVisible(cta);
         ViewUtils.waitForVisibleView(
                 allOf(withParent(withId(TabUiTestHelper.getTabSwitcherParentId(cta))),
-                        withId(R.id.tab_list_view)));
+                        withId(R.id.tab_list_recycler_view)));
 
         StartSurfaceTestUtils.pressBack(mActivityTestRule);
         onViewWaiting(allOf(withId(R.id.primary_tasks_surface_view), isDisplayed()));
@@ -628,7 +628,6 @@ public class StartSurfaceTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "https://crbug.com/1471244")
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS})
     public void testShow_SingleAsHomepage_BottomSheet_WithBottomSheetGtsSupport() {

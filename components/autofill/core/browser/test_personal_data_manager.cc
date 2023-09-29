@@ -63,24 +63,22 @@ void TestPersonalDataManager::AddProfile(const AutofillProfile& profile) {
 void TestPersonalDataManager::UpdateProfile(const AutofillProfile& profile) {
   AutofillProfile* existing_profile = GetProfileByGUID(profile.guid());
   if (existing_profile) {
-    RemoveByGUID(existing_profile->guid());
-    AddProfile(profile);
+    *existing_profile = profile;
+    NotifyPersonalDataObserver();
   }
 }
 
 void TestPersonalDataManager::RemoveByGUID(const std::string& guid) {
-  CreditCard* credit_card = GetCreditCardByGUID(guid);
-  if (credit_card) {
+  if (CreditCard* credit_card = GetCreditCardByGUID(guid)) {
     local_credit_cards_.erase(base::ranges::find(
         local_credit_cards_, credit_card, &std::unique_ptr<CreditCard>::get));
-  }
-
-  AutofillProfile* profile = GetProfileByGUID(guid);
-  if (profile) {
+    NotifyPersonalDataObserver();
+  } else if (AutofillProfile* profile = GetProfileByGUID(guid)) {
     std::vector<std::unique_ptr<AutofillProfile>>& profiles =
         GetProfileStorage(profile->source());
     profiles.erase(base::ranges::find(profiles, profile,
                                       &std::unique_ptr<AutofillProfile>::get));
+    NotifyPersonalDataObserver();
   }
 }
 
@@ -97,7 +95,11 @@ void TestPersonalDataManager::AddCreditCard(const CreditCard& credit_card) {
   NotifyPersonalDataObserver();
 }
 
-std::string TestPersonalDataManager::AddIban(const Iban& iban) {
+std::string TestPersonalDataManager::AddIban(Iban iban) {
+  CHECK_EQ(iban.record_type(), Iban::kUnknown);
+  iban.set_record_type(Iban::kLocalIban);
+  iban.set_identifier(
+      Iban::Guid(base::Uuid::GenerateRandomV4().AsLowercaseString()));
   std::unique_ptr<Iban> local_iban = std::make_unique<Iban>(iban);
   local_ibans_.push_back(std::move(local_iban));
   NotifyPersonalDataObserver();

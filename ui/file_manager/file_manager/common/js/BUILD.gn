@@ -22,7 +22,6 @@ group("closure_compile") {
 
 group("js_modules") {
   deps = [
-    ":api",
     ":app_util",
     ":array_data_model",
     ":async_util",
@@ -34,9 +33,6 @@ group("js_modules") {
     ":filtered_volume_manager",
     ":glitch",
     ":icon_util",
-    ":lru_cache",
-    ":metrics",
-    ":metrics_base",
     ":notifications",
     ":progress_center_common",
     ":recent_date_bucket",
@@ -50,7 +46,6 @@ group("js_modules") {
 
 js_type_check("closure_compile_jsmodules") {
   deps = [
-    ":api",
     ":app_util",
     ":array_data_model",
     ":async_util",
@@ -61,9 +56,6 @@ js_type_check("closure_compile_jsmodules") {
     ":filtered_volume_manager",
     ":glitch",
     ":icon_util",
-    ":lru_cache",
-    ":metrics",
-    ":metrics_base",
     ":mock_entry",
     ":notifications",
     ":progress_center_common",
@@ -100,13 +92,6 @@ js_type_check("test_support_modules_type_check") {
       ]
 }
 
-js_library("api") {
-  deps = [
-    ":util",
-    "//ui/file_manager/file_manager/externs:files_app_entry_interfaces",
-  ]
-}
-
 js_library("app_util") {
   deps = [
     ":storage",
@@ -139,7 +124,6 @@ js_library("error_counter") {
 }
 
 js_library("glitch") {
-  deps = [ ":metrics" ]
 }
 
 js_library("dialog_type") {
@@ -221,26 +205,6 @@ js_unittest("filtered_volume_manager_unittest") {
     "//ui/file_manager/file_manager/background/js:mock_volume_manager",
     "//ui/file_manager/file_manager/common/js:volume_manager_types",
   ]
-}
-
-js_library("lru_cache") {
-}
-
-js_unittest("lru_cache_unittest") {
-  deps = [
-    ":lru_cache",
-    "//chrome/test/data/webui/chromeos:chai_assert",
-  ]
-}
-
-js_library("metrics") {
-  visibility = []
-  visibility = [ "//ui/file_manager/file_manager/*" ]
-  deps = [ ":metrics_base" ]
-}
-
-js_library("metrics_base") {
-  externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
 js_library("mock_chrome") {
@@ -357,7 +321,6 @@ js_test_type_check("js_test_type_check") {
     ":file_type_unittest",
     ":files_app_entry_types_unittest",
     ":filtered_volume_manager_unittest",
-    ":lru_cache_unittest",
     ":recent_date_bucket_unittest",
     ":storage_unittest",
     ":util_unittest",
@@ -367,9 +330,12 @@ js_test_type_check("js_test_type_check") {
   closure_flags =
       strict_error_checking_closure_args + [
         "language_in=ECMASCRIPT_2020",
-        "js_module_root=./gen/ui",
-        "js_module_root=" + rebase_path("//ui", root_build_dir),
+        "js_module_root=./gen/ui/file_manager/tsc/",
+        "js_module_root=./gen/ui/file_manager/",
+        "js_module_root=" + rebase_path("//ui/file_manager", root_build_dir),
         "browser_resolver_prefix_replacements=\"chrome://webui-test/=./\"",
         "hide_warnings_for=third_party/",
+        "hide_warnings_for=gen/ui/file_manager/tsc/",
       ]
+  extra_deps = [ "//ui/file_manager:js_from_ts" ]
 }

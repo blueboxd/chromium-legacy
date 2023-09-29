@@ -295,7 +295,7 @@ Only someone with your passphrase can read your encrypted data. The passphrase i
         Tap "Chromium" then "Default Browser App."
       </message>
       <message name="IDS_IOS_DEFAULT_BROWSER_VIDEO_PROMO_SUBTITLE_TEXT" desc="Chromium version of the subtitle for the default browser video promo. [iOS only]">
-        Open Chromium Settings in iOS, then tap on "Browser Default APP" and select Chromium.
+        Open Chromium Settings in iOS, then tap on "Default Browser App" and select Chromium.
       </message>
       <message name="IDS_IOS_DISCONNECT_DIALOG_TITLE" desc="The title of the disconnect dialog [Length: 30em].">
         Sign out of Chromium?
@@ -432,6 +432,19 @@ Things to consider:
       </message>
       <message name="IDS_IOS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY" desc="The text of the identity section for iOS.">
         Chromium verified that <ph name="ISSUER">$1<ex>VeriSign</ex></ph> issued this website's certificate.
+      </message>
+      <message name="IDS_IOS_PARCEL_TRACKING_INFOBAR_ASK_TO_TRACK_SUBTITLE" desc="Text for the subtitle string of the Parcel Tracking 'Ask to Track' infobar.">
+        {COUNT, plural,
+        =1 {Chromium can help you track this package on the New Tab Page.}
+        other {Chromium can help you track these packages on the New Tab Page.}}
+      </message>
+      <message name="IDS_IOS_PARCEL_TRACKING_INFOBAR_NEW_PACKAGE_TRACKED_SUBTITLE" desc="Text for the subtitle string of the Parcel Tracking 'Ask to Track' infobar.">
+        {COUNT, plural,
+        =1 {Chromium will help track this package on the New Tab Page.}
+        other {Chromium will help track these packages on the New Tab Page.}}
+      </message>
+      <message name="IDS_IOS_PARCEL_TRACKING_MODULE_HIDE_ALERT_DESCRIPTION" desc="Description for the alert dialog warning the user they are about to hide the parcel tracking module.">
+          If you hide "<ph name="Module_Name"><ex>Package Tracking</ex>$1</ph>", Chromium will no longer auto-track your future packages.
       </message>
       <message name="IDS_IOS_PARCEL_TRACKING_OPT_IN_TITLE" desc="Text for the title string of the parcel tracking opt-in half-sheet screen.">
         Auto-Track Your Packages on Chromium
@@ -684,7 +697,7 @@ Things to consider:
         Turn on “Lock Incognito Tabs When You Close Chromium.”
       </message>
       <message name="IDS_IOS_WHATS_NEW_INCOGNITO_LOCK_SUBTITLE" desc="Chromium version of Incognito Lock subtitle displayed in What's New. [iOS only]">
-        Lock your incognito when you leave Chromium or switch to a different app.
+        Lock your incognito tabs when you leave Chromium or switch to a different app.
       </message>
       <message name="IDS_IOS_WHATS_NEW_MINI_MAPS_TITLE" desc="Chromium version of Mini Maps title displayed in What's New. [iOS only]">
         Maps in Chromium
@@ -760,6 +773,9 @@ Things to consider:
       </message>
       <message name="IDS_IOS_INTENTS_SEARCH_WITH_VOICE_TITLE" desc="Siri Shortcut for search with voice title [iOS only]">
         Search With Voice in Chromium
+      </message>
+      <message name="IDS_IOS_INTENTS_SEARCH_WITH_VOICE_DESCRIPTION" desc="Siri Shortcut description for searching with voice [iOS only]">
+        Search With Voice in Chromium.
       </message>
       <message name="IDS_IOS_INTENTS_OPEN_LENS_TITLE" desc="Siri Shortcut for opening Lens (Visual Search) [iOS only]">
         Search Visuals in Chromium

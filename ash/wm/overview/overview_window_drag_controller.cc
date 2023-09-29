@@ -7,14 +7,10 @@
 #include <algorithm>
 #include <utility>
 
-#include "ash/constants/ash_features.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/utility/haptics_util.h"
-#include "ash/wm/desks/cros_next_default_desk_button.h"
 #include "ash/wm/desks/cros_next_desk_icon_button.h"
-#include "ash/wm/desks/desk_preview_view.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/legacy_desk_bar_view.h"
 #include "ash/wm/float/float_controller.h"
@@ -32,18 +28,17 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_util.h"
+#include "base/debug/crash_logging.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/presentation_time_recorder.h"
 #include "ui/display/display.h"
-#include "ui/events/devices/haptic_touchpad_effects.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -302,6 +297,7 @@ OverviewWindowDragController::CompleteDrag(
     const gfx::PointF& location_in_screen) {
   per_grid_desks_bar_data_.clear();
   DragResult result = DragResult::kNeverDisambiguated;
+
   switch (current_drag_behavior_) {
     case DragBehavior::kNoDrag:
       NOTREACHED();
@@ -321,15 +317,18 @@ OverviewWindowDragController::CompleteDrag(
   }
 
   did_move_ = false;
+
   // `item_` may be null if `CompleteNormalDrag()` resulted in moving the
   // window into another desk. At this point, we can just pass in a nullptr and
   // the `FloatContainerStacker` will reset the stacking. Also,
   // `ActivateDraggedWindow()` above may have started the session shutdown, so
   // the `FloatContainerStacker` may be null.
-  if (overview_session_->float_container_stacker()) {
-    overview_session_->float_container_stacker()->OnDragFinished(
-        item_ ? item_->GetWindow() : nullptr);
+  if (auto* float_container_stacker =
+          overview_session_->float_container_stacker()) {
+    float_container_stacker->OnDragFinished(item_ ? item_->GetWindow()
+                                                  : nullptr);
   }
+
   item_ = nullptr;
   current_drag_behavior_ = DragBehavior::kNoDrag;
   UnpauseOcclusionTracker();
@@ -459,6 +458,9 @@ void OverviewWindowDragController::ActivateDraggedWindow() {
   if (!should_allow_split_view_ ||
       split_state == SplitViewController::State::kNoSnap) {
     overview_session_->SelectWindow(item_);
+    // Explicitly set `item_` to null to avoid being accessed after been
+    // released in `OverviewGrid::RemoveItem()`. See UaF reported in b/301368132
+    item_ = nullptr;
   } else if (split_view_controller->CanSnapWindow(item_->GetWindow())) {
     SnapWindow(split_view_controller,
                split_state == SplitViewController::State::kPrimarySnapped
@@ -467,6 +469,8 @@ void OverviewWindowDragController::ActivateDraggedWindow() {
   } else {
     split_view_controller->EndSplitView();
     overview_session_->SelectWindow(item_);
+    // Same as above, explicitly set `item_` to nullptr to avoid UaF.
+    item_ = nullptr;
     ShowAppCannotSnapToast();
   }
   current_drag_behavior_ = DragBehavior::kNoDrag;
@@ -857,6 +861,40 @@ OverviewWindowDragController::CompleteNormalDrag(
 
 void OverviewWindowDragController::UpdateDragIndicatorsAndOverviewGrid(
     const gfx::PointF& location_in_screen) {
+  // Crash keys for helping debug http://b/300700394.
+  // OWDC_UDIAOG stands for
+  // `OverviewWindowDragController::UpdateDragIndicatorsAndOverviewGrid`. Here
+  // using the short version since the log method has a character count limit
+  // of 40.
+  SCOPED_CRASH_KEY_BOOL("OWDC_UDIAOG", "is_touch_dragging_",
+                        is_touch_dragging_);
+  SCOPED_CRASH_KEY_BOOL("OWDC_UDIAOG", "in_tablet_mode",
+                        Shell::Get()->IsInTabletMode());
+  SCOPED_CRASH_KEY_BOOL("OWDC_UDIAOG", "item_", !!item_);
+  SCOPED_CRASH_KEY_BOOL("OWDC_UDIAOG", "item_->root_window()",
+                        item_ && item_->root_window());
+  SCOPED_CRASH_KEY_STRING32("OWDC_UDIAOG", "initial_event_location_",
+                            initial_event_location_.ToString());
+  SCOPED_CRASH_KEY_STRING32("OWDC_UDIAOG", "initial_centerpoint_",
+                            initial_centerpoint_.ToString());
+  SCOPED_CRASH_KEY_STRING32("OWDC_UDIAOG", "location_in_screen",
+                            location_in_screen.ToString());
+
+  SCOPED_CRASH_KEY_NUMBER("OWDC_UDIAOG", "display_count_", display_count_);
+  SCOPED_CRASH_KEY_NUMBER("OWDC_UDIAOG", "current_display_count",
+                          Shell::GetAllRootWindows().size());
+  SCOPED_CRASH_KEY_BOOL(
+      "OWDC_UDIAOG", "display_valid",
+      Shell::Get()->cursor_manager()->GetDisplay().is_valid());
+
+  if (item_) {
+    if (auto* window_state = WindowState::Get(item_->GetWindow())) {
+      std::stringstream ss;
+      ss << WindowState::Get(item_->GetWindow())->GetStateType();
+      SCOPED_CRASH_KEY_STRING32("OWDC_UDIAOG", "item_state_type", ss.str());
+    }
+  }
+
   DCHECK(should_allow_split_view_);
   snap_position_ = GetSnapPosition(location_in_screen);
   overview_session_->UpdateSplitViewDragIndicatorsWindowDraggingStates(

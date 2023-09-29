@@ -119,8 +119,7 @@ absl::optional<ServiceWorkerRouterCondition> RouterUrlPatternConditionToBlink(
     return absl::nullopt;
   }
   blink::ServiceWorkerRouterCondition condition;
-  condition.type =
-      blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern;
+  condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
   condition.url_pattern = std::move(*url_pattern);
   return condition;
 }
@@ -152,7 +151,7 @@ absl::optional<ServiceWorkerRouterCondition> RouterRequestConditionToBlink(
     return absl::nullopt;
   }
   ServiceWorkerRouterCondition condition;
-  condition.type = ServiceWorkerRouterCondition::ConditionType::kRequest;
+  condition.type = ServiceWorkerRouterCondition::Type::kRequest;
   condition.request = std::move(request);
   return condition;
 }
@@ -179,7 +178,7 @@ RouterRunningStatusConditionToBlink(RouterCondition* v8_condition,
       break;
   }
   ServiceWorkerRouterCondition condition;
-  condition.type = ServiceWorkerRouterCondition::ConditionType::kRunningStatus;
+  condition.type = ServiceWorkerRouterCondition::Type::kRunningStatus;
   condition.running_status = std::move(running_status);
   return condition;
 }
@@ -189,25 +188,25 @@ ServiceWorkerRouterSource RouterSourceEnumToBlink(
   switch (v8_source_enum.AsEnum()) {
     case V8RouterSourceEnum::Enum::kNetwork: {
       ServiceWorkerRouterSource source;
-      source.type = ServiceWorkerRouterSource::SourceType::kNetwork;
+      source.type = ServiceWorkerRouterSource::Type::kNetwork;
       source.network_source.emplace();
       return source;
     }
     case V8RouterSourceEnum::Enum::kRaceNetworkAndFetchHandler: {
       ServiceWorkerRouterSource source;
-      source.type = ServiceWorkerRouterSource::SourceType::kRace;
+      source.type = ServiceWorkerRouterSource::Type::kRace;
       source.race_source.emplace();
       return source;
     }
     case V8RouterSourceEnum::Enum::kFetchEvent: {
       ServiceWorkerRouterSource source;
-      source.type = ServiceWorkerRouterSource::SourceType::kFetchEvent;
+      source.type = ServiceWorkerRouterSource::Type::kFetchEvent;
       source.fetch_event_source.emplace();
       return source;
     }
     case V8RouterSourceEnum::Enum::kCache: {
       ServiceWorkerRouterSource source;
-      source.type = ServiceWorkerRouterSource::SourceType::kCache;
+      source.type = ServiceWorkerRouterSource::Type::kCache;
       source.cache_source.emplace();
       return source;
     }
@@ -223,7 +222,7 @@ absl::optional<ServiceWorkerRouterSource> RouterSourceToBlink(
   }
   ServiceWorkerRouterSource source;
   if (v8_source->hasCacheName()) {
-    source.type = ServiceWorkerRouterSource::SourceType::kCache;
+    source.type = ServiceWorkerRouterSource::Type::kCache;
     ServiceWorkerRouterCacheSource cache_source;
     cache_source.cache_name = AtomicString(v8_source->cacheName()).Latin1();
     source.cache_source = std::move(cache_source);

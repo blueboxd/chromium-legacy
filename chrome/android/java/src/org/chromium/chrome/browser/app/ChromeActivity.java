@@ -66,8 +66,6 @@ import org.chromium.chrome.browser.ChromeKeyboardVisibilityDelegate;
 import org.chromium.chrome.browser.ChromeWindow;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.IntentHandler.IntentHandlerDelegate;
-import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.PlayServicesVersionInfo;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.app.appmenu.AppMenuPropertiesDelegateImpl;
@@ -108,7 +106,6 @@ import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSessionState;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.flags.IntCachedFieldTrialParameter;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManagerSupplier;
 import org.chromium.chrome.browser.fullscreen.FullscreenBackPressHandler;
@@ -129,7 +126,6 @@ import org.chromium.chrome.browser.media.FullscreenVideoPictureInPictureControll
 import org.chromium.chrome.browser.metrics.ActivityTabStartupMetricsTracker;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
-import org.chromium.chrome.browser.modaldialog.TabModalLifetimeHandler;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.night_mode.WebContentsDarkModeController;
@@ -264,9 +260,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                    MenuOrKeyboardActionController, CompositorViewHolder.Initializer,
                    TabModelInitializer {
     private static final String TAG = "ChromeActivity";
-    public static final IntCachedFieldTrialParameter CONTENT_VIS_DELAY_MS =
-            new IntCachedFieldTrialParameter(
-                    ChromeFeatureList.FOLDABLE_JANK_FIX, "content_visibility_delay", 5);
+    private static final int CONTENT_VIS_DELAY_MS = 5;
     public static final String UNFOLD_LATENCY_BEGIN_TIMESTAMP = "unfold_latency_begin_timestamp";
     private C mComponent;
 
@@ -304,10 +298,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private ContextReporter mContextReporter;
 
     private boolean mPartnerBrowserRefreshNeeded;
-
-    protected final IntentHandlerDelegate mIntentHandlerDelegate;
-    // Time at which an intent was received and handled.
-    protected long mIntentHandlingTimeMs;
 
     /** Set if {@link #postDeferredStartupIfNeeded()} is called before native has loaded. */
     private boolean mDeferredStartupQueued;
@@ -408,14 +398,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private boolean mBlockingDrawForAppRestart;
     private Runnable mShowContentRunnable;
     private boolean mIsRecreatingForTabletModeChange;
-    // Handling the dismissal of tab modal dialog.
-    private TabModalLifetimeHandler mTabModalLifetimeHandler;
     // This is only used on automotive.
     private @Nullable MissingDeviceLockLauncher mMissingDeviceLockLauncher;
 
     protected ChromeActivity() {
-        mIntentHandlerDelegate = createIntentHandlerDelegate();
-        mIntentHandlingTimeMs = SystemClock.uptimeMillis();
         mManualFillingComponentSupplier.set(ManualFillingComponentFactory.createComponent());
     }
 
@@ -734,7 +720,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             setLowEndTheme();
 
             WarmupManager warmupManager = WarmupManager.getInstance();
-            if (warmupManager.hasViewHierarchyWithToolbar(getControlContainerLayoutId())) {
+            if (warmupManager.hasViewHierarchyWithToolbar(getControlContainerLayoutId(), this)) {
                 View placeHolderView = new View(this);
                 setContentView(placeHolderView);
                 ViewGroup contentParent = (ViewGroup) placeHolderView.getParent();
@@ -1280,12 +1266,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     @Override
-    public void onNewIntent(Intent intent) {
-        mIntentHandlingTimeMs = SystemClock.uptimeMillis();
-        super.onNewIntent(intent);
-    }
-
-    @Override
     public void onNewIntentWithNative(Intent intent) {
         if (mFullscreenVideoPictureInPictureController != null) {
             mFullscreenVideoPictureInPictureController.onFrameworkExitedPictureInPicture();
@@ -1293,11 +1273,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         super.onNewIntentWithNative(intent);
         getLaunchCauseMetrics().onReceivedIntent();
-        if (IntentHandler.shouldIgnoreIntent(intent, isCustomTab())) {
-            return;
-        }
-
-        IntentHandler.onNewIntent(intent, mIntentHandlerDelegate, mIntentHandlingTimeMs);
     }
 
     /**
@@ -1393,8 +1368,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     private void onDeferredStartupForMultiWindowMode() {
         // If the Activity was launched in multi-window mode, record a user action.
-        recordMultiWindowModeChanged(
-                /* isInMultiWindowMode= */ true, /* isDeferredStartup= */ true);
+        recordMultiWindowModeChanged(/*isInMultiWindowMode=*/true, /*isDeferredStartup=*/true);
     }
 
     /**
@@ -1673,21 +1647,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     @Override
     protected ModalDialogManager createModalDialogManager() {
-        var dialogManager = new ModalDialogManager(
+        return new ModalDialogManager(
                 new AppModalPresenter(this), ModalDialogManager.ModalDialogType.APP);
-        // TODO(crbug.com/1157310): Transition this::method refs to dedicated suppliers.
-        mTabModalLifetimeHandler = new TabModalLifetimeHandler(this, getLifecycleDispatcher(),
-                dialogManager,
-                ()
-                        -> mRootUiCoordinator.getAppBrowserControlsVisibilityDelegate(),
-                this::getTabObscuringHandler, this::getToolbarManager,
-                getContextualSearchManagerSupplier(), getTabModelSelectorSupplier(),
-                this::getBrowserControlsManager, this::getFullscreenManager, mBackPressManager);
-        return dialogManager;
-    }
-
-    protected TabModalLifetimeHandler getTabModalLifetimeHandler() {
-        return mTabModalLifetimeHandler;
     }
 
     protected Drawable getBackgroundDrawable() {
@@ -1763,8 +1724,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
             @Override
             public void onCurrentModeChanged(Mode currentMode) {
-                if (ChromeFeatureList.isEnabled(ChromeFeatureList.FOLDABLE_JANK_FIX)
-                        && !mBlockingDrawForAppRestart && getTabletMode().changed) {
+                if (!mBlockingDrawForAppRestart && getTabletMode().changed) {
                     mBlockingDrawForAppRestart = true;
                     findViewById(android.R.id.content).setVisibility(View.INVISIBLE);
                     showContent();
@@ -1834,15 +1794,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
 
         return true;
-    }
-
-    protected IntentHandlerDelegate createIntentHandlerDelegate() {
-        return new IntentHandlerDelegate() {
-            @Override
-            public void processUrlViewIntent(LoadUrlParams loadUrlParams,
-                    @TabOpenType int tabOpenType, String externalAppId, int tabIdToBringToFront,
-                    Intent intent) {}
-        };
     }
 
     /**
@@ -2151,7 +2102,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     // Triggers runnable that makes content visible.
     private void showContent() {
         if (!mBlockingDrawForAppRestart || mShowContentRunnable == null) return;
-        mHandler.postDelayed(mShowContentRunnable, CONTENT_VIS_DELAY_MS.getValue());
+        mHandler.postDelayed(mShowContentRunnable, CONTENT_VIS_DELAY_MS);
     }
 
     // Checks whether the given uiModeTypes were present on oldUiMode or newUiMode but not the
@@ -2813,7 +2764,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     public TabletMode getTabletMode() {
         assert mConfig
                 != null : "Can not determine the tablet mode when mConfig is not initialized";
-        int smallestWidth = getCurrentSmallestScreenWidth(this);
+        int smallestWidth = DisplayUtil.getCurrentSmallestScreenWidth(this);
         boolean isTablet = smallestWidth >= DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP;
         boolean wasTablet =
                 mConfig.smallestScreenWidthDp >= DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP;
@@ -2838,8 +2789,14 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mIsTabReparentingPrepared = true;
             if (!isFinishing()) {
                 mIsRecreatingForTabletModeChange = true;
-                // Store the OnPause timestamp before recreation to capture unfold latency metric.
-                if (isTablet) super.setOnPauseBeforeFoldRecreateTimestampMs();
+                // Store the OnPause timestamp before recreation to capture unfold latency metric
+                // only if the activity is currently not in stopped state, to not capture the time
+                // when system was suspended. Hence, unfolding instances where Chrome wasn't in
+                // foreground are not captured in this metric.
+                if (isTablet
+                        && ApplicationStatus.getStateForActivity(this) != ActivityState.STOPPED) {
+                    super.setOnPauseBeforeFoldRecreateTimestampMs();
+                }
                 recreate();
                 mHandler.removeCallbacks(mShowContentRunnable);
                 return true;

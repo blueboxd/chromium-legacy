@@ -65,18 +65,18 @@ namespace file_manager {
 // affecting File Manager. Dispatches appropriate File Browser events.
 class EventRouter
     : public KeyedService,
-      public extensions::ExtensionRegistryObserver,
-      public ash::system::TimezoneSettings::Observer,
-      public VolumeManagerObserver,
-      public arc::ArcIntentHelperObserver,
-      public drive::DriveIntegrationServiceObserver,
-      public guest_os::GuestOsSharePath::Observer,
-      public ash::TabletModeObserver,
-      public file_manager::io_task::IOTaskController::Observer,
-      public guest_os::GuestOsMountProviderRegistry::Observer,
-      public chromeos::DlpClient::Observer,
-      public apps::AppRegistryCache::Observer,
-      public network::NetworkConnectionTracker::NetworkConnectionObserver {
+      extensions::ExtensionRegistryObserver,
+      ash::system::TimezoneSettings::Observer,
+      VolumeManagerObserver,
+      arc::ArcIntentHelperObserver,
+      drive::DriveIntegrationService::Observer,
+      guest_os::GuestOsSharePath::Observer,
+      ash::TabletModeObserver,
+      file_manager::io_task::IOTaskController::Observer,
+      guest_os::GuestOsMountProviderRegistry::Observer,
+      chromeos::DlpClient::Observer,
+      apps::AppRegistryCache::Observer,
+      network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   using DispatchDirectoryChangeEventImplCallback =
       base::RepeatingCallback<void(const base::FilePath& virtual_path,
@@ -166,12 +166,13 @@ class EventRouter
   void SetDispatchDirectoryChangeEventImplForTesting(
       const DispatchDirectoryChangeEventImplCallback& callback);
 
-  // DriveIntegrationServiceObserver override.
+  // DriveIntegrationService::Observer implementation.
+  void OnDriveIntegrationServiceDestroyed() override;
   void OnFileSystemMountFailed() override;
   void OnDriveConnectionStatusChanged(
       drive::util::ConnectionStatus status) override;
 
-  // guest_os::GuestOsSharePath::Observer overrides.
+  // GuestOsSharePath::Observer implementation.
   void OnPersistedPathRegistered(const std::string& vm_name,
                                  const base::FilePath& path) override;
   void OnUnshare(const std::string& vm_name,
@@ -278,10 +279,6 @@ class EventRouter
 
   void NotifyDriveConnectionStatusChanged();
 
-  void DisplayDriveConfirmDialog(
-      const drivefs::mojom::DialogReason& reason,
-      base::OnceCallback<void(drivefs::mojom::DialogResult)> callback);
-
   // Used by `file_manager::ScopedSuppressDriveNotificationsForPath` to prevent
   // Drive notifications for a given file identified by its relative Drive path.
   void SuppressDriveNotificationsForFilePath(
@@ -333,7 +330,7 @@ class EventRouter
 
   std::unique_ptr<SystemNotificationManager> notification_manager_;
   std::unique_ptr<DeviceEventRouter> device_event_router_;
-  std::unique_ptr<DriveFsEventRouter> drivefs_event_router_;
+  const std::unique_ptr<DriveFsEventRouter> drivefs_event_router_;
 
   DispatchDirectoryChangeEventImplCallback
       dispatch_directory_change_event_impl_;
@@ -349,6 +346,10 @@ class EventRouter
   base::ScopedObservation<apps::AppRegistryCache,
                           apps::AppRegistryCache::Observer>
       app_registry_cache_observer_{this};
+
+  base::ScopedObservation<drive::DriveIntegrationService,
+                          drive::DriveIntegrationService::Observer>
+      drive_observer_{this};
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

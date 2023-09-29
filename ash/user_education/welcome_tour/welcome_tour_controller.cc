@@ -34,6 +34,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/timer/elapsed_timer.h"
+#include "components/user_education/common/events.h"
 #include "components/user_education/common/help_bubble.h"
 #include "components/user_education/common/tutorial_description.h"
 #include "components/user_manager/user_type.h"
@@ -457,12 +458,6 @@ void WelcomeTourController::MaybeAbortWelcomeTour(
       UserEducationPrivateApiKey(), TutorialId::kWelcomeTour);
 }
 
-// TODO(http://b/277091006): Stabilize app launches.
-// TODO(http://b/277091067): Stabilize apps in launcher.
-// TODO(http://b/277091443): Stabilize apps in shelf.
-// TODO(http://b/277091733): Stabilize continue section in launcher.
-// TODO(http://b/277091715): Stabilize pods in shelf.
-// TODO(http://b/277091619): Stabilize wallpaper.
 void WelcomeTourController::OnWelcomeTourStarted() {
   aborted_reason_ = welcome_tour_metrics::AbortedReason::kUnknown;
   accelerator_handler_ = std::make_unique<WelcomeTourAcceleratorHandler>(
@@ -502,12 +497,6 @@ void WelcomeTourController::OnWelcomeTourStarted() {
   }
 }
 
-// TODO(http://b/277091006): Restore app launches.
-// TODO(http://b/277091067): Restore apps in launcher.
-// TODO(http://b/277091443): Restore apps in shelf.
-// TODO(http://b/277091733): Restore continue section in launcher.
-// TODO(http://b/277091715): Restore pods in shelf.
-// TODO(http://b/277091619): Restore wallpaper.
 void WelcomeTourController::OnWelcomeTourEnded(
     bool completed,
     base::ElapsedTimer time_since_start) {

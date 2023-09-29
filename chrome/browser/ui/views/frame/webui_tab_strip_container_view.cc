@@ -718,7 +718,8 @@ void WebUITabStripContainerView::SetContainerTargetVisibility(
     time_at_open_ = base::TimeTicks::Now();
 
     browser_view_->CloseFeaturePromo(
-        feature_engagement::kIPHWebUITabStripFeature);
+        feature_engagement::kIPHWebUITabStripFeature,
+        user_education::FeaturePromoCloseReason::kFeatureEngaged);
   } else {
     if (time_at_open_) {
       RecordTabStripUIOpenDurationHistogram(base::TimeTicks::Now() -
@@ -950,3 +951,6 @@ void WebUITabStripContainerView::DeinitializeWebView() {
     tab_strip_ui->Deinitialize();
   }
 }
+
+BEGIN_METADATA(WebUITabStripContainerView, views::AccessiblePaneView)
+END_METADATA

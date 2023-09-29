@@ -6,6 +6,9 @@ package org.chromium.chrome.browser.compositor.layouts;
 
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
+
+import androidx.annotation.NonNull;
 
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
@@ -22,8 +25,6 @@ import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
-import org.chromium.chrome.browser.theme.ThemeColorProvider;
-import org.chromium.chrome.browser.theme.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.features.start_surface.StartSurface;
@@ -37,15 +38,8 @@ import java.util.concurrent.Callable;
  * the tablet.
  */
 public class LayoutManagerChromeTablet extends LayoutManagerChrome {
-    // Tab Switcher
-    private final ScrimCoordinator mScrimCoordinator;
-    private final Callable<ViewGroup> mCreateStartSurfaceCallable;
     // Tab Strip
     private StripLayoutHelperManager mTabStripLayoutHelperManager;
-
-    // Theme Color
-    TopUiThemeColorProvider mTopUiThemeColorProvider;
-    ThemeColorObserver mThemeColorObserver;
 
     // Internal State
     /** A {@link TitleCache} instance that stores all title/favicon bitmaps as CC resources. */
@@ -53,9 +47,6 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
     // is currently called when returning to the static layout, which is when these titles will be
     // visible. See https://crbug.com/1329293.
     protected LayerTitleCache mLayerTitleCache;
-
-    private final Supplier<StartSurface> mStartSurfaceSupplier;
-    private final Supplier<TabSwitcher> mTabSwitcherSupplier;
 
     /**
      * Creates an instance of a {@link LayoutManagerChromePhone}.
@@ -74,11 +65,12 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
      * @param scrimCoordinator {@link ScrimCoordinator} to show/hide scrim.
      * @param lifecycleDispatcher @{@link ActivityLifecycleDispatcher} to be passed to TabStrip
      *         helper.
-     * @param delayedStartSurfaceCallable Callable to create StartSurface/GTS views.
+     * @param delayedTabSwitcherOrStartSurfaceCallable Callable to create StartSurface/GTS views.
      * @param multiInstanceManager @{link MultiInstanceManager} passed to @{link StripLayoutHelper}
      *         to support tab drag and drop.
      * @param toolbarContainerView @{link View} passed to @{link StripLayoutHelper} to support tab
      *         drag and drop.
+     * @param tabHoverCardViewStub The {@link ViewStub} representing the strip tab hover card.
      */
     public LayoutManagerChromeTablet(LayoutManagerHost host, ViewGroup contentContainer,
             Supplier<StartSurface> startSurfaceSupplier, Supplier<TabSwitcher> tabSwitcherSupplier,
@@ -88,21 +80,18 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
             ObservableSupplier<TabModelStartupInfo> tabModelStartupInfoSupplier,
             ViewGroup tabSwitcherViewHolder, ScrimCoordinator scrimCoordinator,
             ActivityLifecycleDispatcher lifecycleDispatcher,
-            Callable<ViewGroup> delayedStartSurfaceCallable,
-            MultiInstanceManager multiInstanceManager, View toolbarContainerView) {
+            Callable<ViewGroup> delayedTabSwitcherOrStartSurfaceCallable,
+            MultiInstanceManager multiInstanceManager, View toolbarContainerView,
+            @NonNull ViewStub tabHoverCardViewStub) {
         super(host, contentContainer, startSurfaceSupplier, tabSwitcherSupplier,
                 browserControlsStateProvider, tabContentManagerSupplier, topUiThemeColorProvider,
-                tabSwitcherViewHolder, scrimCoordinator);
-        mStartSurfaceSupplier = startSurfaceSupplier;
-        mTabSwitcherSupplier = tabSwitcherSupplier;
+                tabSwitcherViewHolder, scrimCoordinator, delayedTabSwitcherOrStartSurfaceCallable);
         mTabStripLayoutHelperManager = new StripLayoutHelperManager(host.getContext(), host, this,
                 mHost.getLayoutRenderHost(),
                 ()
                         -> mLayerTitleCache,
                 tabModelStartupInfoSupplier, lifecycleDispatcher, multiInstanceManager,
-                toolbarContainerView);
-        mScrimCoordinator = scrimCoordinator;
-        mCreateStartSurfaceCallable = delayedStartSurfaceCallable;
+                toolbarContainerView, tabHoverCardViewStub);
         addSceneOverlay(mTabStripLayoutHelperManager);
         addObserver(mTabStripLayoutHelperManager.getTabSwitcherObserver());
 
@@ -122,12 +111,6 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
             removeObserver(mTabStripLayoutHelperManager.getTabSwitcherObserver());
             mTabStripLayoutHelperManager.destroy();
             mTabStripLayoutHelperManager = null;
-        }
-
-        if (mTopUiThemeColorProvider != null && mThemeColorObserver != null) {
-            mTopUiThemeColorProvider.removeThemeColorObserver(mThemeColorObserver);
-            mTopUiThemeColorProvider = null;
-            mThemeColorObserver = null;
         }
     }
 
@@ -174,27 +157,6 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
         if (mTabStripLayoutHelperManager != null) {
             mTabStripLayoutHelperManager.setTabModelSelector(selector, creator);
         }
-    }
-
-    @Override
-    public void showLayout(int layoutType, boolean animate) {
-        if (layoutType == LayoutType.TAB_SWITCHER && mOverviewLayout == null
-                && mTabSwitcherLayout == null) {
-            try {
-                if (!mStartSurfaceSupplier.hasValue() && !mTabSwitcherSupplier.hasValue()) {
-                    final ViewGroup containerView = mCreateStartSurfaceCallable.call();
-                    createOverviewLayout(mStartSurfaceSupplier.get(), mTabSwitcherSupplier.get(),
-                            mHost.getBrowserControlsManager(), mScrimCoordinator, containerView);
-                    mThemeColorObserver =
-                            (color, shouldAnimate) -> containerView.setBackgroundColor(color);
-                    mTopUiThemeColorProvider = getTopUiThemeColorProvider().get();
-                    mTopUiThemeColorProvider.addThemeColorObserver(mThemeColorObserver);
-                }
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to initialize start surface.", e);
-            }
-        }
-        super.showLayout(layoutType, animate);
     }
 
     @Override

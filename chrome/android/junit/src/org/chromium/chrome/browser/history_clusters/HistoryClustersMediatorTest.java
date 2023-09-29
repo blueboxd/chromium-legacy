@@ -499,7 +499,7 @@ public class HistoryClustersMediatorTest {
     public void testOpenInFullPageTablet() {
         doReturn(2).when(mResources).getInteger(R.integer.min_screen_width_bucket);
         mMediator.openHistoryClustersUi("pandas");
-        verify(mTab).loadUrl(argThat(hasSameUrl("chrome://history/2?q=pandas")));
+        verify(mTab).loadUrl(argThat(hasSameUrl("chrome://history/grouped?q=pandas")));
     }
 
     @Test
@@ -1024,6 +1024,28 @@ public class HistoryClustersMediatorTest {
         mMediator.destroy();
 
         ShadowLooper.idleMainLooper();
+    }
+
+    @Test
+    public void testStaleResults() {
+        Promise<HistoryClustersResult> promise = new Promise();
+        doReturn(promise).when(mBridge).queryClusters("query");
+        Promise<HistoryClustersResult> secondPromise = new Promise();
+        doReturn(secondPromise).when(mBridge).loadMoreClusters("query");
+        doReturn(3).when(mLayoutManager).findLastVisibleItemPosition();
+
+        mMediator.setQueryState(QueryState.forQuery("query", ""));
+        fulfillPromise(promise, mHistoryClustersResultWithQuery);
+
+        // Post a task that will continueQuery.
+        mMediator.onScrolled(mRecyclerView, 1, 1);
+
+        // Invalidate the task above by resetting the UI.
+        doReturn(new Promise<>()).when(mBridge).queryClusters("");
+        mMediator.setQueryState(QueryState.forQueryless());
+        ShadowLooper.idleMainLooper();
+
+        verify(mBridge, never()).loadMoreClusters("query");
     }
 
     private <T> void fulfillPromise(Promise<T> promise, T result) {

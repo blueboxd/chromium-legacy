@@ -384,6 +384,7 @@ class CORE_EXPORT NGFragmentBuilder {
   }
 
   void SetIsBlockInInline() { is_block_in_inline_ = true; }
+  void SetIsLineForParallelFlow() { is_line_for_parallel_flow_ = true; }
 
   void SetHasBlockFragmentation() { has_block_fragmentation_ = true; }
 
@@ -422,6 +423,9 @@ class CORE_EXPORT NGFragmentBuilder {
   void SetShouldForceSameFragmentationFlow() {
     should_force_same_fragmentation_flow_ = true;
   }
+  bool ShouldForceSameFragmentationFlow() const {
+    return should_force_same_fragmentation_flow_;
+  }
 
   // Downgrade the break appeal if the specified break appeal is lower than any
   // found so far.
@@ -448,6 +452,40 @@ class CORE_EXPORT NGFragmentBuilder {
   // See NGLayoutRsult::BlockEndAnnotatioSpace().
   void SetBlockEndAnnotationSpace(LayoutUnit space) {
     block_end_annotation_space_ = space;
+  }
+
+  // Report space shortage, i.e. how much more space would have been sufficient
+  // to prevent some piece of content from breaking. This information may be
+  // used by the column balancer to stretch columns.
+  void PropagateSpaceShortage(absl::optional<LayoutUnit> space_shortage);
+
+  absl::optional<LayoutUnit> MinimalSpaceShortage() const {
+    if (minimal_space_shortage_ == kIndefiniteSize) {
+      return absl::nullopt;
+    }
+    return minimal_space_shortage_;
+  }
+
+  void PropagateTallestUnbreakableBlockSize(LayoutUnit unbreakable_block_size) {
+    // We should only calculate the block-size of the tallest piece of
+    // unbreakable content during the initial column balancing pass, when we
+    // haven't set a tentative fragmentainer block-size yet.
+    DCHECK(IsInitialColumnBalancingPass());
+
+    tallest_unbreakable_block_size_ =
+        std::max(tallest_unbreakable_block_size_, unbreakable_block_size);
+  }
+
+  void SetIsInitialColumnBalancingPass() {
+    // Note that we have no dedicated flag for being in the initial column
+    // balancing pass here. We'll just bump tallest_unbreakable_block_size_ to
+    // 0, so that NGLayoutResult knows that we need to store unbreakable
+    // block-size.
+    DCHECK_EQ(tallest_unbreakable_block_size_, LayoutUnit::Min());
+    tallest_unbreakable_block_size_ = LayoutUnit();
+  }
+  bool IsInitialColumnBalancingPass() const {
+    return tallest_unbreakable_block_size_ >= LayoutUnit();
   }
 
   const NGLayoutResult* Abort(NGLayoutResult::EStatus);
@@ -558,6 +596,9 @@ class CORE_EXPORT NGFragmentBuilder {
   // See NGLayoutResult::BlockEndAnnotationSpace().
   LayoutUnit block_end_annotation_space_;
 
+  LayoutUnit minimal_space_shortage_ = kIndefiniteSize;
+  LayoutUnit tallest_unbreakable_block_size_ = LayoutUnit::Min();
+
   // The number of line boxes or flex lines added to the builder. Only updated
   // if we're performing block fragmentation.
   int line_count_ = 0;
@@ -569,6 +610,7 @@ class CORE_EXPORT NGFragmentBuilder {
   bool subtree_modified_margin_strut_ = false;
   bool is_new_fc_ = false;
   bool is_block_in_inline_ = false;
+  bool is_line_for_parallel_flow_ = false;
   bool has_floating_descendants_for_paint_ = false;
   bool has_descendant_that_depends_on_percentage_block_size_ = false;
   bool has_orthogonal_fallback_size_descendant_ = false;

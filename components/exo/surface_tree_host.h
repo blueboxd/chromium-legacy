@@ -18,14 +18,15 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/types/display_constants.h"
-#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 
 namespace aura {
 class Window;
 }  // namespace aura
 
 namespace viz {
-class ContextProvider;
+class RasterContextProvider;
 }
 
 namespace exo {
@@ -165,6 +166,12 @@ class SurfaceTreeHost : public SurfaceDelegate,
   // Overridden from ui::LayerOwner::Observer
   void OnLayerRecreated(ui::Layer* old_layer) override;
 
+  // Applies rounded_corner_bounds (bounds + radii_in_dps) to the surface tree.
+  // `rounded_corner_bounds` should be in the coordinate space of the
+  void ApplyRoundedCornersToSurfaceTree(
+      const gfx::RectF& bounds,
+      const gfx::RoundedCornersF& radii_in_dps);
+
  protected:
   void UpdateDisplayOnTree();
 
@@ -235,6 +242,13 @@ class SurfaceTreeHost : public SurfaceDelegate,
 
   float CalculateScaleFactor(const absl::optional<float>& scale_factor) const;
 
+  // Applies `rounded_corner_bounds` to the `surface` and propagates the bounds
+  // to its subsurfaces. `rounded_corner_bounds` should be in the local
+  // coordinates of the `surface`.
+  void ApplyAndPropagateRoundedCornersToSurfaceTree(
+      Surface* surface,
+      const gfx::RRectF& rounded_corners_bounds);
+
   std::unique_ptr<LayerTreeFrameSinkHolder> CreateLayerTreeFrameSinkHolder();
 
   // The FrameSinkId associated with this.
@@ -279,7 +293,7 @@ class SurfaceTreeHost : public SurfaceDelegate,
 
   viz::FrameTokenGenerator next_token_;
 
-  scoped_refptr<viz::ContextProvider> context_provider_;
+  scoped_refptr<viz::RasterContextProvider> context_provider_;
 
   display::ScopedDisplayObserver display_observer_{this};
 

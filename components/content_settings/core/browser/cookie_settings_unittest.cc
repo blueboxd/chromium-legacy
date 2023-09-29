@@ -23,6 +23,7 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/content_settings/core/test/content_settings_mock_provider.h"
 #include "components/content_settings/core/test/content_settings_test_utils.h"
+#include "components/privacy_sandbox/privacy_sandbox_prefs.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/base/features.h"
@@ -51,9 +52,9 @@ struct TestCase {
   const char* test_name;
   bool storage_access_grant_eligible;
   bool top_level_storage_access_grant_eligible;
+  // Whether `net::features::kTpcdSupportSettings` is enabled.
   bool eligible_for_3pcd_support;
-  // tpcd_metadata_grant_eligible aka the feature
-  // `net::features::kThirdPartyStoragePartitioning` is enabled.
+  // Whether `net::features::kThirdPartyStoragePartitioning` is enabled.
   bool tpcd_metadata_grant_eligible;
 };
 
@@ -158,7 +159,11 @@ class CookieSettingsTest : public testing::TestWithParam<TestCase> {
     enabled_features.push_back({kImprovedCookieControls, {}});
     disabled_features.push_back(net::features::kTpcdSupportSettings);
 #else
-    enabled_features.push_back({net::features::kTpcdSupportSettings, {}});
+    if (Is3pcdSupportEligible()) {
+      enabled_features.push_back({net::features::kTpcdSupportSettings, {}});
+    } else {
+      disabled_features.push_back(net::features::kTpcdSupportSettings);
+    }
 
     if (IsStorageAccessGrantEligible()) {
       enabled_features.push_back({blink::features::kStorageAccessAPI, {}});
@@ -180,6 +185,7 @@ class CookieSettingsTest : public testing::TestWithParam<TestCase> {
     ContentSettingsRegistry::GetInstance()->ResetForTest();
     CookieSettings::RegisterProfilePrefs(prefs_.registry());
     HostContentSettingsMap::RegisterProfilePrefs(prefs_.registry());
+    privacy_sandbox::RegisterProfilePrefs(prefs_.registry());
     settings_map_ = new HostContentSettingsMap(
         &prefs_, false /* is_off_the_record */, false /* store_last_modified */,
         false /* restore_session */, false /* should_record_metrics */);
@@ -218,9 +224,6 @@ class CookieSettingsTest : public testing::TestWithParam<TestCase> {
       overrides.Put(
           net::CookieSettingOverride::kTopLevelStorageAccessGrantEligible);
     }
-    if (Is3pcdSupportEligible()) {
-      overrides.Put(net::CookieSettingOverride::k3pcdSupport);
-    }
     if (Is3pcdMetadataGrantEligible()) {
       overrides.Put(net::CookieSettingOverride::k3pcdMetadataGrantEligible);
     }
@@ -245,7 +248,9 @@ class CookieSettingsTest : public testing::TestWithParam<TestCase> {
                : CONTENT_SETTING_BLOCK;
   }
 
-  ContentSetting SettingWith3pcdSupportOverride() const {
+  // Assumes that cookie access would be blocked if not for a
+  // `ContentSettingsType::TPCD_SUPPORT` setting.
+  ContentSetting SettingWith3pcdSupportSetting() const {
     return Is3pcdSupportEligible() ? CONTENT_SETTING_ALLOW
                                    : CONTENT_SETTING_BLOCK;
   }
@@ -284,10 +289,10 @@ class CookieSettingsTest : public testing::TestWithParam<TestCase> {
     return net::cookie_util::StorageAccessResult::ACCESS_BLOCKED;
   }
 
-  // The cookie access result would be blocked if not for a third-party cookie
-  // override.
+  // The cookie access result would be blocked if not for a
+  // `ContentSettingsType::TPCD_SUPPORT` setting.
   net::cookie_util::StorageAccessResult
-  BlockedStorageAccessResultWith3pcdSupportOverride() const {
+  BlockedStorageAccessResultWith3pcdSupportSetting() const {
     if (Is3pcdSupportEligible()) {
       return net::cookie_util::StorageAccessResult::ACCESS_ALLOWED_3PCD;
     }
@@ -350,8 +355,7 @@ class CookieSettingsTest : public testing::TestWithParam<TestCase> {
 
 #if !BUILDFLAG(IS_IOS)
 TEST(CookieSettings, TestDefaultStorageAccessSetting) {
-  EXPECT_FALSE(
-      base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI));
+  EXPECT_TRUE(base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI));
 }
 #endif
 
@@ -799,7 +803,13 @@ TEST_P(CookieSettingsTest, CookiesExplicitSessionOnly) {
   EXPECT_TRUE(cookie_settings_->IsCookieSessionOnly(kBlockedSite));
 }
 
-TEST_P(CookieSettingsTest, ThirdPartyExceptionSessionOnly) {
+#if BUILDFLAG(IS_IOS) && BUILDFLAG(USE_BLINK)
+#define MAYBE_ThirdPartyExceptionSessionOnly \
+  DISABLED_ThirdPartyExceptionSessionOnly
+#else
+#define MAYBE_ThirdPartyExceptionSessionOnly ThirdPartyExceptionSessionOnly
+#endif  // BUILDFLAG(IS_IOS) && BUILDFLAG(USE_BLINK)
+TEST_P(CookieSettingsTest, MAYBE_ThirdPartyExceptionSessionOnly) {
   cookie_settings_->SetThirdPartyCookieSetting(kBlockedSite,
                                                CONTENT_SETTING_SESSION_ONLY);
   EXPECT_EQ(cookie_settings_->IsCookieSessionOnly(kBlockedSite),
@@ -1130,7 +1140,14 @@ TEST_P(CookieSettingsTest, DeletionWithSubDomains) {
   EXPECT_TRUE(ShouldDeleteCookieOnExit(kSubDomain, true));
 }
 
-TEST_P(CookieSettingsTest, DeleteCookiesWithThirdPartyException) {
+#if BUILDFLAG(IS_IOS) && BUILDFLAG(USE_BLINK)
+#define MAYBE_DeleteCookiesWithThirdPartyException \
+  DISABLED_DeleteCookiesWithThirdPartyException
+#else
+#define MAYBE_DeleteCookiesWithThirdPartyException \
+  DeleteCookiesWithThirdPartyException
+#endif  // BUILDFLAG(IS_IOS) && BUILDFLAG(USE_BLINK)
+TEST_P(CookieSettingsTest, MAYBE_DeleteCookiesWithThirdPartyException) {
   cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_ALLOW);
   cookie_settings_->SetThirdPartyCookieSetting(kHttpsSite,
                                                CONTENT_SETTING_SESSION_ONLY);
@@ -1455,11 +1472,11 @@ TEST_P(CookieSettingsTest, GetCookieSetting3pcdSupport) {
 
   EXPECT_EQ(cookie_settings_->GetCookieSetting(
                 url, top_level_url, GetCookieSettingOverrides(), nullptr),
-            SettingWith3pcdSupportOverride());
+            SettingWith3pcdSupportSetting());
   histogram_tester.ExpectTotalCount(kAllowedRequestsHistogram, 1);
   histogram_tester.ExpectBucketCount(
       kAllowedRequestsHistogram,
-      static_cast<int>(BlockedStorageAccessResultWith3pcdSupportOverride()), 1);
+      static_cast<int>(BlockedStorageAccessResultWith3pcdSupportSetting()), 1);
 
   // Invalid pair the |top_level_url| granting access to |url| is now being
   // loaded under |url| as the top level url.
@@ -1487,10 +1504,13 @@ TEST_P(CookieSettingsTest, GetCookieSetting3pcdMetadataGrants) {
   prefs_.SetInteger(prefs::kCookieControlsMode,
                     static_cast<int>(CookieControlsMode::kBlockThirdParty));
 
-  settings_map_->SetContentSettingCustomScope(
+  ContentSettingsForOneType tpcd_metadata_grants;
+  tpcd_metadata_grants.emplace_back(
       ContentSettingsPattern::FromURLNoWildcard(url),
       ContentSettingsPattern::FromURLNoWildcard(top_level_url),
-      ContentSettingsType::TPCD_METADATA_GRANTS, CONTENT_SETTING_ALLOW);
+      base::Value(ContentSetting::CONTENT_SETTING_ALLOW), std::string(), false);
+  cookie_settings_->SetContentSettingsFor3pcdMetadataGrants(
+      tpcd_metadata_grants);
 
   EXPECT_EQ(cookie_settings_->GetCookieSetting(
                 url, top_level_url, GetCookieSettingOverrides(), nullptr),

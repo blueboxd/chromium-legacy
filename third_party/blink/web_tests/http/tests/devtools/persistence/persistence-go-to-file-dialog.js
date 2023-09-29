@@ -6,9 +6,10 @@ import {TestRunner} from 'test_runner';
 import {SourcesTestRunner} from 'sources_test_runner';
 import {BindingsTestRunner} from 'bindings_test_runner';
 
+import * as UIModule from 'devtools/ui/legacy/legacy.js';
+
 (async function() {
   TestRunner.addResult(`Verify that GoTo source dialog filters out mapped uiSourceCodes.\n`);
-  await TestRunner.loadLegacyModule('sources');
   await TestRunner.loadLegacyModule('quick_open');
   await TestRunner.addScriptTag('resources/foo.js');
 
@@ -48,7 +49,7 @@ import {BindingsTestRunner} from 'bindings_test_runner';
         keys.push(provider.itemKeyAt(i));
       keys.sort();
       TestRunner.addResult(keys.join('\n'));
-      UI.Dialog.instance.hide();
+      UIModule.Dialog.Dialog.instance.hide();
       next();
     });
     QuickOpen.QuickOpen.show('');

@@ -5,24 +5,18 @@
 #include "chrome/browser/v8_compile_hints/v8_compile_hints_tab_helper.h"
 
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/v8_compile_hints/v8_compile_hints_tab_helper.h"
 #include "components/optimization_guide/core/optimization_guide_decider.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "content/public/browser/navigation_handle.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "v8_compile_hints_tab_helper.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace v8_compile_hints {
-
-namespace features {
-
-BASE_FEATURE(kConsumeCompileHints,
-             "ConsumeCompileHints",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-}  // namespace features
 
 V8CompileHintsTabHelper::~V8CompileHintsTabHelper() = default;
 
@@ -33,14 +27,14 @@ V8CompileHintsTabHelper::V8CompileHintsTabHelper(
       content::WebContentsUserData<V8CompileHintsTabHelper>(*web_contents),
       optimization_guide_decider_(optimization_guide_decider),
       web_contents_(web_contents) {
-  CHECK(base::FeatureList::IsEnabled(features::kConsumeCompileHints));
+  CHECK(base::FeatureList::IsEnabled(blink::features::kConsumeCompileHints));
   optimization_guide_decider_->RegisterOptimizationTypes(
       {optimization_guide::proto::V8_COMPILE_HINTS});
 }
 
 void V8CompileHintsTabHelper::MaybeCreateForWebContents(
     content::WebContents* web_contents) {
-  if (!base::FeatureList::IsEnabled(features::kConsumeCompileHints)) {
+  if (!base::FeatureList::IsEnabled(blink::features::kConsumeCompileHints)) {
     return;
   }
 
@@ -88,11 +82,25 @@ void V8CompileHintsTabHelper::OnOptimizationGuideDecision(
   if (!model || !model->has_sample_count() || !model->has_clear_ones() ||
       !model->has_clear_zeros() ||
       static_cast<size_t>(model->bloom_filter().size()) != kModelInt64Count) {
-    // TODO(chromium:1406506): Add UMA metrics for this event.
+    base::UmaHistogramEnumeration(kModelQualityHistogramName,
+                                  V8CompileHintsModelQuality::kNoModel);
     return;
   }
-  // TODO(chromium:1406506): Reject models which are not "good" + add UMA
-  // metrics.
+
+  // Reject models which are not good enough. The model goodness is estimated by
+  // checking whether the "clear zeros" and "clear ones" counts match an
+  // expected Bloom filter.
+  constexpr int32_t kClearZerosMin = 32000;
+  constexpr int32_t kClearOnesMin = 1000;
+  if (model->clear_zeros() < kClearZerosMin ||
+      model->clear_ones() < kClearOnesMin) {
+    base::UmaHistogramEnumeration(kModelQualityHistogramName,
+                                  V8CompileHintsModelQuality::kBadModel);
+    return;
+  }
+
+  base::UmaHistogramEnumeration(kModelQualityHistogramName,
+                                V8CompileHintsModelQuality::kGoodModel);
 
   SendDataToRenderer(*model);
 }

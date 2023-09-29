@@ -214,6 +214,9 @@ bool IsBottomOmniboxSteadyStateEnabled();
 // synchronous clipboard access will always return nil/false.
 BASE_DECLARE_FEATURE(kOnlyAccessClipboardAsync);
 
+// Feature flag that enables default browser video in settings experiment.
+BASE_DECLARE_FEATURE(kDBVideoInSettings);
+
 // Feature flag that enables default browser promo to be displayed without
 // matching all the criteria and in depth metrics collection for the displayed
 // promo.
@@ -238,5 +241,9 @@ BASE_DECLARE_FEATURE(kBlockSimultaneousCellSelectionKillSwitch);
 
 // Feature flag enabling Save to Photos.
 BASE_DECLARE_FEATURE(kIOSSaveToPhotos);
+
+// Kill switch to control the `settingsWillBeDismissed` bug fix (see
+// crbug.com/1482284).
+BASE_DECLARE_FEATURE(kSettingsWillBeDismissedBugFixKillSwitch);
 
 #endif  // IOS_CHROME_BROWSER_SHARED_PUBLIC_FEATURES_FEATURES_H_

@@ -81,10 +81,12 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
   void InstallUpdaterAndApp(
       const std::string& app_id,
       const bool is_silent_install,
+      const std::string& tag,
       const std::string& child_window_text_to_find) const override {
     RunCommand("install_updater_and_app",
                {Param("app_id", app_id),
                 Param("is_silent_install", BoolToString(is_silent_install)),
+                Param("tag", tag),
                 Param("child_window_text_to_find", child_window_text_to_find)});
   }
 
@@ -233,6 +235,11 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     RunCommand("expect_not_registered", {Param("app_id", app_id)});
   }
 
+  void ExpectAppTag(const std::string& app_id,
+                    const std::string& tag) const override {
+    RunCommand("expect_app_tag", {Param("app_id", app_id), Param("tag", tag)});
+  }
+
   void ExpectAppVersion(const std::string& app_id,
                         const base::Version& version) const override {
     RunCommand("expect_app_version", {Param("app_id", app_id),
@@ -358,6 +365,7 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
   void RunHandoff(const std::string& app_id) const override {
     RunCommand("run_handoff", {Param("app_id", app_id)});
   }
+#endif  // BUILDFLAG(IS_WIN)
 
   void InstallAppViaService(
       const std::string& app_id,
@@ -368,7 +376,6 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
          Param("expected_final_values",
                StringFromValue(base::Value(expected_final_values.Clone())))});
   }
-#endif  // BUILDFLAG(IS_WIN)
 
   base::FilePath GetDifferentUserPath() const override {
     // On POSIX, the path may be chowned; so do not use a file not owned by the
@@ -413,6 +420,12 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     RunCommand(
         "run_recovery_component",
         {Param("app_id", app_id), Param("version", version.GetString())});
+  }
+
+  void SetLastChecked(const base::Time& time) const override {
+    RunCommand(
+        "set_last_checked",
+        {Param("time", base::NumberToString(time.ToJsTimeIgnoringNull()))});
   }
 
   void ExpectLastChecked() const override { RunCommand("expect_last_checked"); }

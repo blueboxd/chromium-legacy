@@ -45,6 +45,7 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/permissions/contexts/bluetooth_chooser_context.h"
+#include "components/permissions/features.h"
 #include "components/permissions/object_permission_context_base.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_util.h"
@@ -101,6 +102,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::MEDIASTREAM_CAMERA, "media-stream-camera"},
     {ContentSettingsType::PROTOCOL_HANDLERS, "register-protocol-handler"},
     {ContentSettingsType::AUTOMATIC_DOWNLOADS, "multiple-automatic-downloads"},
+    {ContentSettingsType::MIDI, "midi"},
     {ContentSettingsType::MIDI_SYSEX, "midi-sysex"},
     {ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER, "protected-content"},
     {ContentSettingsType::BACKGROUND_SYNC, "background-sync"},
@@ -150,7 +152,6 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::IMPORTANT_SITE_INFO, nullptr},
     {ContentSettingsType::PERMISSION_AUTOBLOCKER_DATA, nullptr},
     {ContentSettingsType::ADS_DATA, nullptr},
-    {ContentSettingsType::MIDI, nullptr},
     {ContentSettingsType::PASSWORD_PROTECTION, nullptr},
     {ContentSettingsType::MEDIA_ENGAGEMENT, nullptr},
     {ContentSettingsType::CLIENT_HINTS, nullptr},
@@ -198,6 +199,9 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::COOKIE_CONTROLS_METADATA, nullptr},
     {ContentSettingsType::TPCD_SUPPORT, nullptr},
     {ContentSettingsType::TPCD_METADATA_GRANTS, nullptr},
+    // TODO(crbug.com/1011533): Update the name once the design is finalized
+    // for the integration with Safety Hub.
+    {ContentSettingsType::FILE_SYSTEM_ACCESS_EXTENDED_PERMISSION, nullptr},
 };
 
 static_assert(std::size(kContentSettingsTypeGroupNames) ==
@@ -513,7 +517,6 @@ const std::vector<ContentSettingsType>& GetVisiblePermissionCategories() {
       ContentSettingsType::LOCAL_FONTS,
       ContentSettingsType::MEDIASTREAM_CAMERA,
       ContentSettingsType::MEDIASTREAM_MIC,
-      ContentSettingsType::MIDI_SYSEX,
       ContentSettingsType::MIXEDSCRIPT,
       ContentSettingsType::NOTIFICATIONS,
       ContentSettingsType::POPUPS,
@@ -561,6 +564,13 @@ const std::vector<ContentSettingsType>& GetVisiblePermissionCategories() {
     if (base::FeatureList::IsEnabled(
             blink::features::kMediaSessionEnterPictureInPicture)) {
       base_types->push_back(ContentSettingsType::AUTO_PICTURE_IN_PICTURE);
+    }
+
+    if (base::FeatureList::IsEnabled(
+            permissions::features::kBlockMidiByDefault)) {
+      base_types->push_back(ContentSettingsType::MIDI);
+    } else {
+      base_types->push_back(ContentSettingsType::MIDI_SYSEX);
     }
 
     initialized = true;
@@ -1066,7 +1076,7 @@ ContentSetting GetContentSettingForOrigin(Profile* profile,
       content_settings::SessionModel::OneTime) {
     DCHECK(
         permissions::PermissionUtil::CanPermissionBeAllowedOnce(content_type));
-    DCHECK_EQ(result.status, PermissionStatus::ASK);
+    DCHECK_EQ(result.status, PermissionStatus::GRANTED);
     return CONTENT_SETTING_DEFAULT;
   }
   return permissions::PermissionUtil::PermissionStatusToContentSetting(

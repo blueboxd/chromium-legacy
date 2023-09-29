@@ -46,9 +46,6 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
       const attribution_reporting::EventReportWindows&,
       int max_event_level_reports,
       base::Time source_time) const override;
-  base::Time GetExpiryTime(absl::optional<base::TimeDelta> declared_expiry,
-                           base::Time source_time,
-                           attribution_reporting::mojom::SourceType) override;
   absl::optional<base::Time> GetReportWindowTime(
       absl::optional<base::TimeDelta> declared_window,
       base::Time source_time) override;
@@ -59,8 +56,6 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
   attribution_reporting::EventReportWindows GetDefaultEventReportWindows(
       attribution_reporting::mojom::SourceType source_type,
       base::TimeDelta last_report_window) const override;
-
-  void set_max_attributions_per_source(int max);
 
   void set_max_sources_per_origin(int max);
 

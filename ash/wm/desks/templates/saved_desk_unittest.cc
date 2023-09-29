@@ -989,8 +989,7 @@ TEST_F(SavedDeskTest, SaveDeskButtonContainerAligned) {
   // https://crbug.com/1289020.
 
   // Delete an overview item and verify.
-  auto* item = GetOverviewItemForWindow(test_widget->GetNativeWindow());
-  item->CloseWindow();
+  GetOverviewItemForWindow(test_widget->GetNativeWindow())->CloseWindows();
 
   // `NativeWidgetAura::Close()` fires a post task.
   base::RunLoop().RunUntilIdle();
@@ -3556,18 +3555,13 @@ TEST_F(SavedDeskTest, TimeStrFormat) {
   // ``Tomorrow 10:30 AM`` for test.
   base::Time time_long_ago, time_today, time_yesterday;
 
-  // 01-01-2022 10:30 AM.
-  base::Time::Exploded exploded_long_ago = {
-      /*year=*/2022,
-      /*month=*/1,
-      /*day_of_week=*/6,
-      /*day_of_month=*/1,
-      /*hour=*/10,
-      /*minute=*/30,
-      /*second=*/0,
-      /*millisecond=*/0,
-  };
-  ASSERT_TRUE(base::Time::FromLocalExploded(exploded_long_ago, &time_long_ago));
+  static constexpr base::Time::Exploded kLongAgo = {.year = 2022,
+                                                    .month = 1,
+                                                    .day_of_week = 6,
+                                                    .day_of_month = 1,
+                                                    .hour = 10,
+                                                    .minute = 30};
+  ASSERT_TRUE(base::Time::FromLocalExploded(kLongAgo, &time_long_ago));
 
   // Today 10:30 AM.
   base::Time::Exploded exploded_today;

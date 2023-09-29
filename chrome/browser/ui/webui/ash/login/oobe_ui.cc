@@ -17,6 +17,7 @@
 #include "ash/public/cpp/network_config_service.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/shell.h"
+#include "ash/webui/common/trusted_types_util.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
@@ -91,6 +92,7 @@
 #include "chrome/browser/ui/webui/ash/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/ash/login/offline_login_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/online_authentication_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/oobe_display_chooser.h"
 #include "chrome/browser/ui/webui/ash/login/os_install_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/os_trial_screen_handler.h"
@@ -114,6 +116,7 @@
 #include "chrome/browser/ui/webui/ash/login/tpm_error_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/update_required_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/update_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/user_allowlist_check_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/welcome_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/wrong_hwid_screen_handler.h"
@@ -286,6 +289,7 @@ void CreateAndAddOobeUIDataSource(Profile* profile,
 
   content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
       profile, chrome::kChromeUIOobeHost);
+  ash::EnableTrustedTypesCSP(source);
   source->AddLocalizedStrings(localized_strings);
   source->UseStringsJs();
 
@@ -322,7 +326,7 @@ void CreateAndAddOobeUIDataSource(Profile* profile,
                      features::IsOobeTouchpadScrollEnabled());
 
   source->AddBoolean("isDrivePinningEnabled",
-                     drive::util::IsOobeDrivePinningAvailable(profile));
+                     drive::util::IsOobeDrivePinningScreenEnabled());
 
   // Whether the timings in oobe_trace.js will be output to the console.
   source->AddBoolean(
@@ -358,7 +362,6 @@ void CreateAndAddOobeUIDataSource(Profile* profile,
 
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ObjectSrc, "object-src chrome:;");
-  source->DisableTrustedTypesCSP();
 
   // Only add a filter when runing as test.
   const bool is_running_test = command_line->HasSwitch(::switches::kTestName) ||
@@ -482,6 +485,10 @@ void OobeUI::ConfigureOobeDisplay() {
   AddScreenHandler(std::make_unique<GaiaScreenHandler>(network_state_informer_,
                                                        error_screen));
 
+  AddScreenHandler(std::make_unique<OnlineAuthenticationScreenHandler>());
+
+  AddScreenHandler(std::make_unique<UserAllowlistCheckScreenHandler>());
+
   AddScreenHandler(std::make_unique<SamlConfirmPasswordHandler>());
 
   AddScreenHandler(std::make_unique<SignInFatalErrorScreenHandler>());
@@ -553,8 +560,7 @@ void OobeUI::ConfigureOobeDisplay() {
 
   AddScreenHandler(std::make_unique<AddChildScreenHandler>());
 
-  Profile* const profile = Profile::FromWebUI(web_ui());
-  if (drive::util::IsOobeDrivePinningAvailable(profile)) {
+  if (drive::util::IsOobeDrivePinningScreenEnabled()) {
     AddScreenHandler(std::make_unique<DrivePinningScreenHandler>());
   }
 
@@ -562,6 +568,7 @@ void OobeUI::ConfigureOobeDisplay() {
 
   AddScreenHandler(std::make_unique<CryptohomeRecoveryScreenHandler>());
 
+  Profile* const profile = Profile::FromWebUI(web_ui());
   // Set up the chrome://theme/ source, for Chrome logo.
   content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
 
@@ -656,6 +663,12 @@ void OobeUI::BindInterface(
   auth::BindToPinFactorEditor(std::move(receiver),
                               quick_unlock::QuickUnlockFactory::GetDelegate(),
                               *pin_backend);
+}
+
+void OobeUI::BindInterface(
+    mojo::PendingReceiver<auth::mojom::PasswordFactorEditor> receiver) {
+  auth::BindToPasswordFactorEditor(
+      std::move(receiver), quick_unlock::QuickUnlockFactory::GetDelegate());
 }
 
 OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)

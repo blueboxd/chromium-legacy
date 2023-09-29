@@ -17,7 +17,6 @@
 
 class WebStateListDelegate;
 class WebStateListObserver;
-class WebStateListOrderController;
 struct WebStateOpener;
 
 namespace web {
@@ -129,24 +128,6 @@ class WebStateList {
   // index. The WebStateOpener `opener` must be non-null and the WebState
   // must be in WebStateList.
   void SetOpenerOfWebStateAt(int index, WebStateOpener opener);
-
-  // Returns the index of the next WebState in the sequence of WebStates opened
-  // from the specified WebState after `start_index`, or kInvalidIndex if there
-  // are no such WebState. If `use_group` is true, the opener's navigation index
-  // is used to detect navigation changes within the same session.
-  // If `exclude_pinned` is true, pinned WebStates are removed from search.
-  int GetIndexOfNextWebStateOpenedBy(const web::WebState* opener,
-                                     int start_index,
-                                     bool use_group) const;
-
-  // Returns the index of the last WebState in the sequence of WebStates opened
-  // from the specified WebState after `start_index`, or kInvalidIndex if there
-  // are no such WebState. If `use_group` is true, the opener's navigation index
-  // is used to detect navigation changes within the same session.
-  // If `exclude_pinned` is true, pinned WebStates are removed from search.
-  int GetIndexOfLastWebStateOpenedBy(const web::WebState* opener,
-                                     int start_index,
-                                     bool use_group) const;
 
   // Changes the pinned state of the WebState at `index`. Returns the index the
   // WebState is now at (it may have been moved to maintain contiguity of pinned
@@ -273,18 +254,6 @@ class WebStateList {
   // specified index to null.
   void ClearOpenersReferencing(int index);
 
-  // Returns the index of the `n`-th WebState (with n > 0) in the sequence of
-  // WebStates opened from the specified WebState starting the search from
-  // `start_index` (the returned index may be smaller than `start_index` if
-  // the element have been rearranged), or kInvalidIndex if there are no such
-  // WebState. If `use_group` is true, the opener's navigation index is used
-  // to detect navigation changes within the same session.
-  // If `exclude_pinned` is true, pinned WebStates are removed from search.
-  int GetIndexOfNthWebStateOpenedBy(const web::WebState* opener,
-                                    int start_index,
-                                    bool use_group,
-                                    int n) const;
-
   // Changes the pinned state of the WebState at `index`, moving the tab to the
   // end of the pinned/unpinned section in the process if necessary. Returns
   // the new index of the WebState.
@@ -326,10 +295,6 @@ class WebStateList {
 
   // Wrappers to the WebStates hosted by the WebStateList.
   std::vector<std::unique_ptr<WebStateWrapper>> web_state_wrappers_;
-
-  // An object that determines where new WebState should be inserted and where
-  // selection should move when a WebState is detached.
-  std::unique_ptr<WebStateListOrderController> order_controller_;
 
   // List of observers notified of changes to the model.
   base::ObserverList<WebStateListObserver, true> observers_;

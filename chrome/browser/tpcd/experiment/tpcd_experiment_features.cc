@@ -4,31 +4,41 @@
 
 #include "chrome/browser/tpcd/experiment/tpcd_experiment_features.h"
 
-#include "base/feature_list.h"
+#include <string>
+
 #include "base/metrics/field_trial_params.h"
+#include "base/time/time.h"
+#include "content/public/common/content_features.h"
 
 namespace tpcd::experiment {
 
-// Enables the Third Party Cookie Deprecation (TPCD) Mode B Experiment
-// feature.
-BASE_FEATURE(k3PCDModeBExperiment,
-             "3PCDModeBExperiment",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+// Set the version of the experiment finch config.
+const base::FeatureParam<int> kVersion{
+    &features::kCookieDeprecationFacilitatedTesting, /*name=*/"version",
+    /*default_value=*/0};
 
-// Set which experiment cohort a user is assigned to ("modeb", "modebprime",
-// "control", etc.).
-const base::FeatureParam<std::string> kCohort{
-    &k3PCDModeBExperiment, /*name=*/"cohort", /*default_value=*/""};
+// True IFF third-party cookies are disabled.
+// Distinguishes between "Mode A" and "Mode B" cohorts.
+const base::FeatureParam<bool> kDisable3PCookies{
+    &features::kCookieDeprecationFacilitatedTesting,
+    /*name=*/"disable_3p_cookies",
+    /*default_value=*/false};
 
-const base::FeatureParam<bool> kDisable3PCookies{&k3PCDModeBExperiment,
-                                                 /*name=*/"disable_3p_cookies",
-                                                 /*default_value=*/false};
+// Whether Ads APIs should be disabled.
+const base::FeatureParam<bool> kDisableAdsAPIs{
+    &features::kCookieDeprecationFacilitatedTesting,
+    /*name=*/"disable_ads_apis",
+    /*default_value=*/false};
 
-const base::FeatureParam<bool> kDisableAdsAPIs{&k3PCDModeBExperiment,
-                                               /*name=*/"disable_ads_apis",
-                                               /*default_value=*/false};
+extern const base::FeatureParam<base::TimeDelta> kDecisionDelayTime{
+    &features::kCookieDeprecationFacilitatedTesting,
+    /*name=*/"decision_delay_time",
+    /*default_value=*/base::Seconds(1)};
 
-const base::FeatureParam<bool> kLabelTraffic{
-    &k3PCDModeBExperiment, /*name=*/"label_traffic", /*default_value=*/false};
+// Set whether to force client being eligible for manual testing.
+const base::FeatureParam<bool> kForceEligibleForTesting{
+    &features::kCookieDeprecationFacilitatedTesting,
+    /*name=*/"force_eligible",
+    /*default_value=*/false};
 
 }  // namespace tpcd::experiment

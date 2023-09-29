@@ -352,7 +352,9 @@ bool DisplayLockContext::ShouldStyleChildren() const {
          forced_info_.is_forced(ForcedPhase::kStyleAndLayoutTree) ||
          (document_->GetDisplayLockDocumentState()
               .ActivatableDisplayLocksForced() &&
-          IsActivatable(DisplayLockActivationReason::kAny));
+          IsActivatable(DisplayLockActivationReason::kAny)) ||
+         (document_->ExistingAXObjectCache() &&
+          IsActivatable(DisplayLockActivationReason::kAccessibility));
 }
 
 void DisplayLockContext::DidStyleSelf() {
@@ -387,7 +389,11 @@ bool DisplayLockContext::ShouldLayoutChildren() const {
   return !is_locked_ || forced_info_.is_forced(ForcedPhase::kLayout) ||
          (document_->GetDisplayLockDocumentState()
               .ActivatableDisplayLocksForced() &&
-          IsActivatable(DisplayLockActivationReason::kAny));
+          IsActivatable(DisplayLockActivationReason::kAny)) ||
+         (document_->ExistingAXObjectCache() &&
+          document_->GetStyleEngine()
+              .StyleMaybeAffectedByLayoutForAccessibility() &&
+          IsActivatable(DisplayLockActivationReason::kAccessibility));
 }
 
 void DisplayLockContext::DidLayoutChildren() {
@@ -725,6 +731,10 @@ bool DisplayLockContext::MarkForLayoutIfNeeded() {
     } scoped_force(this);
 
     auto* layout_object = element_->GetLayoutObject();
+
+    // Ensure any layout-type specific caches are dirty.
+    layout_object->SetGridPlacementDirty(true);
+
     if (child_layout_was_blocked_ || HasStashedScrollOffset()) {
       // We've previously blocked a child traversal when doing self-layout for
       // the locked element, so we're marking it with child-needs-layout so that

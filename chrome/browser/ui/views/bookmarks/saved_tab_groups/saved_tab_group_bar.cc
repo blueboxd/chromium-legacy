@@ -10,12 +10,14 @@
 
 #include "base/functional/bind.h"
 #include "base/uuid.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_service_factory.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/bookmarks/saved_tab_groups/saved_tab_group_button.h"
 #include "chrome/browser/ui/views/bookmarks/saved_tab_groups/saved_tab_group_drag_data.h"
 #include "chrome/browser/ui/views/bookmarks/saved_tab_groups/saved_tab_group_overflow_button.h"
@@ -74,6 +76,7 @@ SavedTabGroupModel* GetSavedTabGroupModelFromBrowser(Browser* browser) {
 // destroyed and recreated.
 class SavedTabGroupBar::OverflowMenu : public views::View {
  public:
+  METADATA_HEADER(OverflowMenu);
   explicit OverflowMenu(SavedTabGroupBar& parent_bar)
       : parent_bar_(parent_bar) {}
 
@@ -178,14 +181,21 @@ class SavedTabGroupBar::OverflowMenu : public views::View {
   raw_ref<SavedTabGroupBar> parent_bar_;
 };
 
-// TODO(crbug/1372008): Prevent `SavedTabGroupBar` from instantiating if the
-// corresponding feature flag is disabled.
+BEGIN_METADATA(SavedTabGroupBar, OverflowMenu, views::View)
+END_METADATA
+
 SavedTabGroupBar::SavedTabGroupBar(Browser* browser,
                                    SavedTabGroupModel* saved_tab_group_model,
                                    bool animations_enabled = true)
     : saved_tab_group_model_(saved_tab_group_model),
       browser_(browser),
       animations_enabled_(animations_enabled) {
+  // When the #tab-groups-saved feature flag is turned on and profile is
+  // regular, `SavedTabGroupBar` is instantiated. If the #tab-groups-saved
+  // feature flag is turned off, there is no SavedTabGroupModel.
+  DCHECK(base::FeatureList::IsEnabled(features::kTabGroupsSave));
+  DCHECK(browser_->profile()->IsRegularProfile());
+  DCHECK(saved_tab_group_model_);
   SetAccessibilityProperties(
       ax::mojom::Role::kToolbar,
       /*name=*/l10n_util::GetStringUTF16(IDS_ACCNAME_SAVED_TAB_GROUPS));
@@ -338,8 +348,13 @@ bool SavedTabGroupBar::AreDropTypesRequired() {
 }
 
 bool SavedTabGroupBar::CanDrop(const OSExchangeData& data) {
-  // TODO(tbergquist): prevent cross-profile drops.
-  return data.HasCustomFormat(SavedTabGroupDragData::GetFormatType());
+  absl::optional<SavedTabGroupDragData> drag_data =
+      SavedTabGroupDragData::ReadFromOSExchangeData(&data);
+  if (!drag_data.has_value()) {
+    return false;
+  }
+
+  return saved_tab_group_model_->Contains(drag_data.value().guid());
 }
 
 void SavedTabGroupBar::OnDragEntered(const ui::DropTargetEvent& event) {
@@ -468,12 +483,6 @@ void SavedTabGroupBar::Layout() {
 }
 
 int SavedTabGroupBar::CalculatePreferredWidthRestrictedBy(int max_width) const {
-  // Happens when the browser is in incognito mode.
-  // TODO(crbug/1467894): Only add SavedTabGroupBar with regular profiles.
-  if (children().empty()) {
-    return 0;
-  }
-
   // Early return if the only button is the overflow button. It should be
   // invisible in this case. Happens when saved tab groups is enabled and no
   // groups are saved yet.
@@ -496,13 +505,8 @@ int SavedTabGroupBar::CalculatePreferredWidthRestrictedBy(int max_width) const {
   const int last_visible_button_index =
       CalculateLastVisibleButtonIndexForWidth(max_width);
 
-  // Precompute the first button since it is guaranteed to be shown and never
-  // exceed `max_width`, and the overflow button if it should be shown and we
-  // have already reserved space for it.
-  int width = children()[0]->GetPreferredSize().width() +
-              (should_show_overflow ? overflow_button_width : 0);
-
-  for (int i = 1; i <= last_visible_button_index; ++i) {
+  int width = should_show_overflow ? overflow_button_width : 0;
+  for (int i = 0; i <= last_visible_button_index; ++i) {
     width += children()[i]->GetPreferredSize().width() + kBetweenElementSpacing;
   }
 
@@ -754,15 +758,15 @@ int SavedTabGroupBar::CalculateLastVisibleButtonIndexForWidth(
     int max_width) const {
   const int buttons_to_consider =
       std::min(children().size() - 1, size_t(kMaxVisibleButtons));
-  int current_width = children()[0]->GetPreferredSize().width();
+  int current_width = 0;
   int last_visible_button_index = 0;
 
-  // Only consider buttons from index 0 to kMaxVisibleButtons in the worst
+  // Only consider buttons from index 0 to kMaxVisibleButtons-1 in the worst
   // case. For each button to consider, check if we have enough room to
   // display it.
-  for (int i = 1; i < buttons_to_consider; ++i) {
+  for (int i = 0; i < buttons_to_consider; ++i) {
     const int button_width = children()[i]->GetPreferredSize().width();
-    current_width += kBetweenElementSpacing + button_width;
+    current_width += button_width + kBetweenElementSpacing;
 
     if (current_width > max_width) {
       break;
@@ -847,3 +851,6 @@ SavedTabGroupBar::CalculateDropIndicatorIndexInCombinedSpace() const {
   // Otherwise we can show an indicator at the actual drop index.
   return insertion_index;
 }
+
+BEGIN_METADATA(SavedTabGroupBar, views::AccessiblePaneView)
+END_METADATA

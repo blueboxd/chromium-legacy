@@ -8,6 +8,7 @@
 
 import {MessageType, ProblemType} from '//resources/ash/common/quick_unlock/setup_pin_keyboard.js';
 import {$} from '//resources/ash/common/util.js';
+import {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.js';
 
 import {AssistantNativeIconType} from '../../assistant_optin/utils.js';
 import {Oobe} from '../cr_ui.js';
@@ -663,7 +664,7 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
     {
       id: 'gaia-signin',
       kind: ScreenKind.NORMAL,
-      handledSteps: 'online-gaia,allowlist-error,enrollment-nudge',
+      handledSteps: 'online-gaia,enrollment-nudge',
       states: [
         {
           id: 'online-gaia',
@@ -675,14 +676,6 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
               gaiaPath: 'embedded/setup/v2/chromeos',
               gaiaUrl: 'https://accounts.google.com/',
               hl: loadTimeData.getString('app_locale'),
-            });
-          },
-        },
-        {
-          id: 'allowlist-error',
-          trigger: (screen) => {
-            screen.showAllowlistCheckFailedError({
-              enterpriseManaged: false,
             });
           },
         },
@@ -1392,7 +1385,7 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
       // will append apps instead of replacing.
       states: [
         {
-          id: '2-apps',
+          id: '3-apps',
           trigger: (screen) => {
             screen.reset();
             screen.loadAppList([
@@ -1411,6 +1404,19 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
                 in_app_purchases: true,
                 was_installed: false,
                 content_rating: '',
+                description: 'Short description',
+              },
+              {
+                title: 'anotherGapp',
+                icon_url: 'https://www.google.com/favicon.ico',
+                category: 'Games',
+                in_app_purchases: true,
+                was_installed: false,
+                content_rating: '',
+                // Current limitation is 80 characters.
+                description:
+                    'Lorem ipsum dolor sit amet, consectetur adipiscing elit,' +
+                    ' sed do eiusmod tempor',
               },
             ]);
           },
@@ -1793,6 +1799,14 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
           },
         },
       ],
+    },
+    {
+      id: 'user-allowlist-check-screen',
+      kind: ScreenKind.NORMAL,
+    },
+    {
+      id: 'online-authentication-screen',
+      kind: ScreenKind.NORMAL,
     },
   ];
 
@@ -2302,7 +2316,7 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
     createCssStyle(name, styleSpec) {
       var style = document.createElement('style');
       style.type = 'text/css';
-      style.innerHTML = '.' + name + ' {' + styleSpec + '}';
+      style.innerHTML = sanitizeInnerHtml('.' + name + ' {' + styleSpec + '}');
       document.getElementsByTagName('head')[0].appendChild(style);
     }
 

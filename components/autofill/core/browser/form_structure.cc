@@ -298,11 +298,11 @@ void PopulateRandomizedFieldMetadata(
                           RandomizedEncoder::FIELD_NAME, field.name_attribute,
                           /*include_checksum=*/false, metadata->mutable_name());
   }
-  if (!field.form_control_type.empty()) {
+  if (!FormControlTypeToString(field.form_control_type).empty()) {
     EncodeRandomizedValue(encoder, form_signature, field_signature,
                           RandomizedEncoder::FIELD_CONTROL_TYPE,
-                          field.form_control_type, /*include_checksum=*/false,
-                          metadata->mutable_type());
+                          FormControlTypeToString(field.form_control_type),
+                          /*include_checksum=*/false, metadata->mutable_type());
   }
   if (!field.label.empty()) {
     EncodeRandomizedValue(encoder, form_signature, field_signature,
@@ -364,10 +364,11 @@ FormStructure::FormStructure(const FormData& form)
     if (!ShouldSkipField(field))
       ++active_field_count_;
 
-    if (field.form_control_type == "password")
+    if (field.form_control_type == StringToFormControlType("password")) {
       has_password_field_ = true;
-    else
+    } else {
       all_fields_are_passwords_ = false;
+    }
 
     fields_.push_back(std::make_unique<AutofillField>(field));
   }
@@ -838,9 +839,9 @@ std::vector<FormDataPredictions> FormStructure::GetFieldTypePredictions(
           base::NumberToString(field->host_form_signature.value());
       annotated_field.signature = field->FieldSignatureAsStr();
       annotated_field.heuristic_type =
-          AutofillType(field->heuristic_type()).ToString();
+          FieldTypeToStringPiece(field->heuristic_type());
       annotated_field.server_type =
-          AutofillType(field->server_type()).ToString();
+          FieldTypeToStringPiece(field->server_type());
       annotated_field.overall_type = field->Type().ToString();
       annotated_field.parseable_name =
           base::UTF16ToUTF8(field->parseable_name());
@@ -1418,7 +1419,8 @@ void FormStructure::EncodeFormFieldsForUpload(
     }
 
     if (is_raw_metadata_uploading_enabled) {
-      added_field->set_type(field->form_control_type);
+      added_field->set_type(
+          std::string(FormControlTypeToString(field->form_control_type)));
 
       if (!field->name.empty())
         added_field->set_name(base::UTF16ToUTF8(field->name));
@@ -1853,10 +1855,10 @@ std::ostream& operator<<(std::ostream& buffer, const FormStructure& form) {
     buffer << "\n  Name: " << field->parseable_name();
 
     auto type = field->Type().ToString();
-    auto heuristic_type = AutofillType(field->heuristic_type()).ToString();
-    auto server_type = AutofillType(field->server_type()).ToString();
-    if (field->server_type_prediction_is_override())
-      server_type += " (manual override)";
+    auto heuristic_type = FieldTypeToStringPiece(field->heuristic_type());
+    auto server_type = FieldTypeToStringPiece(field->server_type());
+    const char* is_override =
+        field->server_type_prediction_is_override() ? " (manual override)" : "";
     auto html_type_description =
         field->html_type() != HtmlFieldType::kUnspecified
             ? base::StrCat(
@@ -1868,8 +1870,9 @@ std::ostream& operator<<(std::ostream& buffer, const FormStructure& form) {
     }
 
     buffer << "\n  Type: "
-           << base::StrCat({type, " (heuristic: ", heuristic_type, ", server: ",
-                            server_type, html_type_description, ")"});
+           << base::StrCat({type, " (heuristic: ", heuristic_type,
+                            ", server: ", server_type, is_override,
+                            html_type_description, ")"});
     buffer << "\n  Section: " << field->section;
 
     constexpr size_t kMaxLabelSize = 100;
@@ -1928,8 +1931,10 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
     buffer << Tr{} << "Placeholder:" << field->placeholder;
 
     auto type = field->Type().ToString();
-    auto heuristic_type = AutofillType(field->heuristic_type()).ToString();
-    auto server_type = AutofillType(field->server_type()).ToString();
+    auto heuristic_type =
+        std::string(FieldTypeToStringPiece(field->heuristic_type()));
+    auto server_type =
+        std::string(FieldTypeToStringPiece(field->server_type()));
     if (field->server_type_prediction_is_override())
       server_type += " (manual override)";
     auto html_type_description =

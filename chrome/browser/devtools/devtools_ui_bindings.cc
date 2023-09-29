@@ -42,11 +42,9 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/hats/hats_service.h"
 #include "chrome/browser/ui/hats/hats_service_factory.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/chrome_manifest_url_handlers.h"
 #include "chrome/common/pref_names.h"
@@ -92,6 +90,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
@@ -108,21 +107,21 @@ struct FrameNavigateParams;
 
 namespace {
 
-static const char kFrontendHostId[] = "id";
-static const char kFrontendHostMethod[] = "method";
-static const char kFrontendHostParams[] = "params";
-static const char kTitleFormat[] = "DevTools - %s";
+const char kFrontendHostId[] = "id";
+const char kFrontendHostMethod[] = "method";
+const char kFrontendHostParams[] = "params";
+const char kTitleFormat[] = "DevTools - %s";
 
-static const char kRemotePageActionInspect[] = "inspect";
-static const char kRemotePageActionReload[] = "reload";
-static const char kRemotePageActionActivate[] = "activate";
-static const char kRemotePageActionClose[] = "close";
+const char kRemotePageActionInspect[] = "inspect";
+const char kRemotePageActionReload[] = "reload";
+const char kRemotePageActionActivate[] = "activate";
+const char kRemotePageActionClose[] = "close";
 
-static const char kConfigDiscoverUsbDevices[] = "discoverUsbDevices";
-static const char kConfigPortForwardingEnabled[] = "portForwardingEnabled";
-static const char kConfigPortForwardingConfig[] = "portForwardingConfig";
-static const char kConfigNetworkDiscoveryEnabled[] = "networkDiscoveryEnabled";
-static const char kConfigNetworkDiscoveryConfig[] = "networkDiscoveryConfig";
+const char kConfigDiscoverUsbDevices[] = "discoverUsbDevices";
+const char kConfigPortForwardingEnabled[] = "portForwardingEnabled";
+const char kConfigPortForwardingConfig[] = "portForwardingConfig";
+const char kConfigNetworkDiscoveryEnabled[] = "networkDiscoveryEnabled";
+const char kConfigNetworkDiscoveryConfig[] = "networkDiscoveryConfig";
 
 // This constant should be in sync with
 // the constant
@@ -140,16 +139,6 @@ base::Value::Dict CreateFileSystemValue(
   file_system_value.Set("rootURL", file_system.root_url);
   file_system_value.Set("fileSystemPath", file_system.file_system_path);
   return file_system_value;
-}
-
-Browser* FindBrowser(content::WebContents* web_contents) {
-  for (auto* browser : *BrowserList::GetInstance()) {
-    int tab_index = browser->tab_strip_model()->GetIndexOfWebContents(
-        web_contents);
-    if (tab_index != TabStripModel::kNoTab)
-      return browser;
-  }
-  return nullptr;
 }
 
 // DevToolsUIDefaultDelegate --------------------------------------------------
@@ -198,7 +187,7 @@ void DefaultBindingsDelegate::OpenInNewTab(const std::string& url) {
   content::OpenURLParams params(GURL(url), content::Referrer(),
                                 WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                 ui::PAGE_TRANSITION_LINK, false);
-  Browser* browser = FindBrowser(web_contents_);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   browser->OpenURL(params);
 }
 
@@ -365,6 +354,9 @@ std::string SanitizeFrontendQueryParam(
     return value;
   }
 
+  if (key == "veLogging" && value == "true") {
+    return value;
+  }
 #if defined(AIDA_SCOPE)
   if (key == "enableAida" && value == "true") {
     return value;
@@ -1355,9 +1347,17 @@ void DevToolsUIBindings::RecordCountHistogram(const std::string& name,
     return;
   }
 
-  if (!(min <= sample && sample < exclusive_max && buckets >= 3)) {
-    frontend_host_->BadMessageReceived();
-    return;
+  // DevTools previously would crash if histogram counts didn't make sense.
+  // We've changed this to a DCHECK and instead clamp the value for counts,
+  // because it doesn't really make sense to crash if the histogram is out
+  // of range.
+  DCHECK_GE(sample, min);
+  DCHECK_LT(sample, exclusive_max);
+
+  if (sample < min) {
+    sample = 0;
+  } else if (sample >= exclusive_max) {
+    sample = exclusive_max - 1;
   }
 
   base::UmaHistogramCustomCounts(name, sample, min, exclusive_max, buckets);
@@ -1368,19 +1368,23 @@ void DevToolsUIBindings::RecordEnumeratedHistogram(const std::string& name,
                                                    int boundary_value) {
   if (!frontend_host_)
     return;
+
+  DCHECK_GE(boundary_value, 0);
+  DCHECK_LT(boundary_value, 1000);
+  DCHECK_GE(sample, 0);
+  DCHECK_LT(sample, boundary_value);
   if (!(boundary_value >= 0 && boundary_value <= 1000 && sample >= 0 &&
         sample < boundary_value)) {
-    // TODO(nick): Replace with chrome::bad_message::ReceivedBadMessage().
-    frontend_host_->BadMessageReceived();
+    // We should have DCHECK'd in debug builds; for release builds, if we're
+    // out of range, just omit the histogram
     return;
   }
 
   const std::string kDevToolsHistogramPrefix = "DevTools.";
-  if (name.compare(0, kDevToolsHistogramPrefix.size(),
-                   kDevToolsHistogramPrefix) == 0)
-    base::UmaHistogramExactLinear(name, sample, boundary_value);
-  else
-    frontend_host_->BadMessageReceived();
+  DCHECK_EQ(name.compare(0, kDevToolsHistogramPrefix.size(),
+                         kDevToolsHistogramPrefix),
+            0);
+  base::UmaHistogramExactLinear(name, sample, boundary_value);
 }
 
 void DevToolsUIBindings::RecordPerformanceHistogram(const std::string& name,

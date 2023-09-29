@@ -56,9 +56,17 @@ public class AndroidStylusWritingHandler implements StylusWritingHandler, Stylus
 
         InputMethodManager inputMethodManager = context.getSystemService(InputMethodManager.class);
         List<InputMethodInfo> inputMethods = inputMethodManager.getInputMethodList();
-        ComponentName defaultImePackage =
-                ComponentName.unflattenFromString(Settings.Secure.getString(
-                        context.getContentResolver(), Settings.Secure.DEFAULT_INPUT_METHOD));
+        String defaultIme = Settings.Secure.getString(
+                context.getContentResolver(), Settings.Secure.DEFAULT_INPUT_METHOD);
+
+        if (defaultIme == null) {
+            Log.d(TAG,
+                    "Stylus handwriting feature is not supported as "
+                            + "default IME could not be fetched.");
+            return false;
+        }
+
+        ComponentName defaultImePackage = ComponentName.unflattenFromString(defaultIme);
 
         for (InputMethodInfo inputMethod : inputMethods) {
             if (!inputMethod.getComponent().equals(defaultImePackage)) continue;
@@ -91,16 +99,13 @@ public class AndroidStylusWritingHandler implements StylusWritingHandler, Stylus
     }
 
     @Override
-    public void onWindowFocusChanged(Context context, boolean hasFocus) {}
-
-    @Override
     public boolean canShowSoftKeyboard() {
-        // TODO(mahesh.ma): We can return false here when Android stylus writing service has widget
-        // toolbar that can allow editing commands like add space, backspace, perform editor actions
-        // like next, prev, search, go etc, or an option to show/hide keyboard. Until then it is
-        // better to allow showing soft keyboard for above operations. It can be noted that Platform
-        // Edit text behaviour is also to show soft keyboard during stylus writing in Android T.
-        return true;
+        // We can return false here when Android stylus writing service has widget toolbar that can
+        // allow editing commands like add space, backspace, perform editor actions like next, prev,
+        // search, go etc, or an option to show/hide keyboard. Until then it is better to allow
+        // showing soft keyboard for above operations. It can be noted that Platform Edit text
+        // behaviour is also to show soft keyboard during stylus writing in Android T.
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
     }
 
     @Override

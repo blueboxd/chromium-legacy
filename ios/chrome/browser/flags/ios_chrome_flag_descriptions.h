@@ -96,6 +96,11 @@ extern const char kAutofillEnableSupportForLandmarkDescription[];
 extern const char kAutofillEnableCardProductNameName[];
 extern const char kAutofillEnableCardProductNameDescription[];
 
+// Title and description for flag to enable virtual card enrollment and
+// retrieval.
+extern const char kAutofillEnableVirtualCardsName[];
+extern const char kAutofillEnableVirtualCardsDescription[];
+
 // Title and description for the flag to control the autofill delay.
 extern const char kAutofillIOSDelayBetweenFieldsName[];
 extern const char kAutofillIOSDelayBetweenFieldsDescription[];
@@ -230,6 +235,10 @@ extern const char kEnableUIButtonConfigurationDescription[];
 extern const char kCredentialProviderExtensionPromoName[];
 extern const char kCredentialProviderExtensionPromoDescription[];
 
+// Title and description for default browser video in settings experiment.
+extern const char kDBVideoInSettingsName[];
+extern const char kDBVideoInSettingsDescription[];
+
 // Title and description for the flag to enable the default browser blue dot
 // promo.
 extern const char kDefaultBrowserBlueDotPromoName[];
@@ -347,11 +356,6 @@ extern const char kEnableRedInterstitialFaceliftDescription[];
 // iOS.
 extern const char kEditPasswordsInSettingsName[];
 extern const char kEditPasswordsInSettingsDescription[];
-
-// Title and description for the flag to enable kTailoredSecurityIntegration
-// flag on iOS.
-extern const char kTailoredSecurityIntegrationName[];
-extern const char kTailoredSecurityIntegrationDescription[];
 
 // Title and description for the flag to enable address verification support in
 // autofill address save prompts.
@@ -580,6 +584,11 @@ extern const char kIOSSharedHighlightingV2Description[];
 // Title and description for the flag to enable IPH for safari switcher.
 extern const char kIPHForSafariSwitcherName[];
 extern const char kIPHForSafariSwitcherDescription[];
+
+// Title and description for the flag to enable the Password Manager widget
+// promo IPH.
+extern const char kIPHiOSPromoPasswordManagerWidgetName[];
+extern const char kIPHiOSPromoPasswordManagerWidgetDescription[];
 
 // Title and description for the flag to lock the bottom toolbar into place.
 extern const char kLockBottomToolbarName[];
@@ -909,10 +918,6 @@ extern const char kSyncSandboxDescription[];
 extern const char kSyncSegmentsDataName[];
 extern const char kSyncSegmentsDataDescription[];
 
-// Title and description for the flag to synthesize native restore web states.
-extern const char kSynthesizedRestoreSessionName[];
-extern const char kSynthesizedRestoreSessionDescription[];
-
 // Title and description for the flag to enable TFLite for language detection.
 extern const char kTFLiteLanguageDetectionName[];
 extern const char kTFLiteLanguageDetectionDescription[];
@@ -931,6 +936,10 @@ extern const char kThemeColorInTopToolbarDescription[];
 // the device camera from the home screen widget.
 extern const char kEnableLensInHomeScreenWidgetName[];
 extern const char kEnableLensInHomeScreenWidgetDescription[];
+
+// Title and description for the flag to enable the iOS Large Fakebox feature
+extern const char kIOSLargeFakeboxName[];
+extern const char kIOSLargeFakeboxDescription[];
 
 // Title and description for the flag to enable using direct upload for
 // Lens searches in iOS.

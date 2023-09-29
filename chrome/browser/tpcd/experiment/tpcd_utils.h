@@ -7,14 +7,11 @@
 
 namespace tpcd::experiment::utils {
 
-enum class ExperimentCohort {
-  kUnset = 0,
+enum class ExperimentState {
+  kUnknownEligibility = 0,
   kIneligible = 1,
-  kModeB = 2,
-  kModeBPrime = 3,
-  kControl = 4,
-  kControlPrime = 5,
-  kMaxValue = kControlPrime,
+  kEligible = 2,
+  kMaxValue = kEligible,
 };
 
 }  // namespace tpcd::experiment::utils

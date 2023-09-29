@@ -14,6 +14,7 @@ try_.defaults.set(
     pool = try_.DEFAULT_POOL,
     builderless = False,
     os = os.LINUX_DEFAULT,
+    contact_team_email = "chrome-gpu-infra@google.com",
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
@@ -268,6 +269,21 @@ try_.builder(
         "ci/Dawn Mac x64 Experimental Release (AMD)",
     ],
     pool = "luci.chromium.gpu.mac.retina.amd.try",
+    builderless = True,
+    os = os.MAC_ANY,
+    test_presentation = resultdb.test_presentation(
+        grouping_keys = ["status", "v.test_suite", "v.gpu"],
+    ),
+)
+
+try_.builder(
+    name = "dawn-try-mac-arm64-deps-rel",
+    mirrors = [
+        "ci/Dawn Mac arm64 DEPS Release (Apple M2)",
+    ],
+    # TODO(crbug.com/1435476): Switch to a dedicated M2 pool once we have
+    # allocated machines.
+    pool = "luci.chromium.gpu.mac.arm64.apple.m1.try",
     builderless = True,
     os = os.MAC_ANY,
     test_presentation = resultdb.test_presentation(

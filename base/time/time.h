@@ -77,10 +77,6 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 
-#if BUILDFLAG(IS_APPLE)
-#include "base/time/buildflags/buildflags.h"
-#endif
-
 #if BUILDFLAG(IS_FUCHSIA)
 #include <zircon/types.h>
 #endif
@@ -143,9 +139,7 @@ class BASE_EXPORT TimeDelta {
   static TimeDelta FromZxDuration(zx_duration_t nanos);
 #endif
 #if BUILDFLAG(IS_APPLE)
-#if BUILDFLAG(ENABLE_MACH_ABSOLUTE_TIME_TICKS)
   static TimeDelta FromMachTime(uint64_t mach_time);
-#endif  // BUILDFLAG(ENABLE_MACH_ABSOLUTE_TIME_TICKS)
 #endif  // BUILDFLAG(IS_APPLE)
 
   // Converts an integer value representing TimeDelta to a class. This is used
@@ -577,14 +571,20 @@ class BASE_EXPORT Time : public time_internal::TimeBase<Time> {
       (sizeof(time_t) == 4 ? 2037 : std::numeric_limits<int>::max());
 #endif
 
-  // Represents an exploded time that can be formatted nicely. This is kind of
-  // like the Win32 SYSTEMTIME structure or the Unix "struct tm" with a few
-  // additions and changes to prevent errors.
+  // Represents an exploded time. This is kind of like the Win32 SYSTEMTIME
+  // structure or the Unix "struct tm" with a few additions and changes to
+  // prevent errors.
+  //
   // This structure always represents dates in the Gregorian calendar and always
   // encodes day_of_week as Sunday==0, Monday==1, .., Saturday==6. This means
   // that base::Time::LocalExplode and base::Time::FromLocalExploded only
   // respect the current local time zone in the conversion and do *not* use a
   // calendar or day-of-week encoding from the current locale.
+  //
+  // NOTE: Generally, you should prefer the functions in
+  // base/i18n/time_formatting.h (in particular,
+  // `UnlocalizedTimeFormatWithPattern()`) over trying to create a formatted
+  // time string from this object.
   struct BASE_EXPORT Exploded {
     int year;          // Four digit year "2007"
     int month;         // 1-based month (values 1 = January, etc.)
@@ -752,7 +752,7 @@ class BASE_EXPORT Time : public time_internal::TimeBase<Time> {
   // month is set to 31 on a 28-30 day month. Returns Time(0) on overflow.
   // FromLocalExploded respects the current time zone but does not attempt to
   // use the calendar or day-of-week encoding from the current locale - see the
-  // comments on base::Time::Exploded for more information.
+  // comments on Exploded for more information.
   [[nodiscard]] static bool FromUTCExploded(const Exploded& exploded,
                                             Time* time) {
     return FromExploded(false, exploded, time);
@@ -795,7 +795,7 @@ class BASE_EXPORT Time : public time_internal::TimeBase<Time> {
   // of the year 30828. Some platforms might convert over a wider input range.
   // LocalExplode respects the current time zone but does not attempt to use the
   // calendar or day-of-week encoding from the current locale - see the comments
-  // on base::Time::Exploded for more information.
+  // on Exploded for more information.
   void UTCExplode(Exploded* exploded) const { Explode(false, exploded); }
   void LocalExplode(Exploded* exploded) const { Explode(true, exploded); }
 
@@ -812,7 +812,7 @@ class BASE_EXPORT Time : public time_internal::TimeBase<Time> {
   // DEPRECATED - Do not use in new code. When deserializing from `base::Value`,
   // prefer the helpers from //base/json/values_util.h instead.
   // Otherwise, use `Time::FromDeltaSinceWindowsEpoch()` for `Time` and
-  // `TimeDelta::FromMicroseconds()` for `TimeDelta`. http://crbug.com/634507
+  // `Microseconds()` for `TimeDelta`. http://crbug.com/634507
   static constexpr Time FromInternalValue(int64_t us) { return Time(us); }
 
  private:
@@ -1198,14 +1198,12 @@ class BASE_EXPORT TimeTicks : public time_internal::TimeBase<TimeTicks> {
 #endif
 
 #if BUILDFLAG(IS_APPLE)
-#if BUILDFLAG(ENABLE_MACH_ABSOLUTE_TIME_TICKS)
   static TimeTicks FromMachAbsoluteTime(uint64_t mach_absolute_time);
 
   // Sets the current Mach timebase to `timebase`. Returns the old timebase.
   static mach_timebase_info_data_t SetMachTimebaseInfoForTesting(
       mach_timebase_info_data_t timebase);
 
-#endif  // BUILDFLAG(ENABLE_MACH_ABSOLUTE_TIME_TICKS)
 #endif  // BUILDFLAG(IS_APPLE)
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1382,10 +1380,6 @@ class BASE_EXPORT ThreadTicks : public time_internal::TimeBase<ThreadTicks> {
 
 // For logging use only.
 BASE_EXPORT std::ostream& operator<<(std::ostream& os, ThreadTicks time_ticks);
-
-// Returns a string representation of the given time in the IMF-fixdate format
-// defined by RFC 7231 (satisfying its HTTP-date format).
-BASE_EXPORT std::string TimeFormatHTTP(base::Time time);
 
 }  // namespace base
 

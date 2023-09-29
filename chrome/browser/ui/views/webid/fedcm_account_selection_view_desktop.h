@@ -199,10 +199,9 @@ class FedCmAccountSelectionView : public AccountSelectionView,
                      const ui::Event& event) override;
   void OnBackButtonClicked() override;
   void OnCloseButtonClicked(const ui::Event& event) override;
-  void OnMoreDetailsButtonClicked(const GURL& url,
-                                  const ui::Event& event) override;
-  void OnGotItButtonClicked(const ui::Event& event) override;
-  void OnSigninToIdP() override;
+  void OnSigninToIdP(const ui::Event& event) override;
+  void OnGotIt(const ui::Event& event) override;
+  void OnMoreDetails(const ui::Event& event) override;
 
   void ShowVerifyingSheet(const Account& account,
                           const IdentityProviderDisplayData& idp_display_data);

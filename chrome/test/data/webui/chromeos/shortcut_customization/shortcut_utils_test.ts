@@ -8,7 +8,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {stringToMojoString16} from 'chrome://resources/js/mojo_type_util.js';
 import {CycleTabsTextSearchResult, SnapWindowLeftSearchResult, TakeScreenshotSearchResult} from 'chrome://shortcut-customization/js/fake_data.js';
 import {Accelerator, AcceleratorCategory, AcceleratorKeyState, Modifier, StandardAcceleratorInfo, TextAcceleratorPart, TextAcceleratorPartType} from 'chrome://shortcut-customization/js/shortcut_types.js';
-import {compareAcceleratorInfos, getAccelerator, getAcceleratorId, getModifiersForAcceleratorInfo, getModifierString, getSortedModifiers, getSourceAndActionFromAcceleratorId, getURLForSearchResult, isCustomizationDisabled, isStandardAcceleratorInfo, isTextAcceleratorInfo, SHORTCUTS_APP_URL} from 'chrome://shortcut-customization/js/shortcut_utils.js';
+import {compareAcceleratorInfos, getAccelerator, getAcceleratorId, getModifiersForAcceleratorInfo, getModifierString, getSortedModifiers, getSourceAndActionFromAcceleratorId, getURLForSearchResult, isCustomizationAllowed, isStandardAcceleratorInfo, isTextAcceleratorInfo, SHORTCUTS_APP_URL} from 'chrome://shortcut-customization/js/shortcut_utils.js';
 import {assertArrayEquals, assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
 import {createStandardAcceleratorInfo, createTextAcceleratorInfo} from './shortcut_customization_test_util.js';
@@ -36,14 +36,14 @@ function areStandardAcceleratorInfosEqual(
 }
 
 suite('shortcutUtilsTest', function() {
-  test('CustomizationDisabled', async () => {
-    loadTimeData.overrideValues({isCustomizationEnabled: false});
-    assertTrue(isCustomizationDisabled());
+  test('CustomizationAllowed', async () => {
+    loadTimeData.overrideValues({isCustomizationAllowed: true});
+    assertTrue(isCustomizationAllowed());
   });
 
-  test('CustomizationEnabled', async () => {
-    loadTimeData.overrideValues({isCustomizationEnabled: true});
-    assertFalse(isCustomizationDisabled());
+  test('CustomizationDisallowed', async () => {
+    loadTimeData.overrideValues({isCustomizationAllowed: false});
+    assertFalse(isCustomizationAllowed());
   });
 
   test('GetAcceleratorId', async () => {
@@ -160,11 +160,11 @@ suite('shortcutUtilsTest', function() {
         /*keyCode=*/ 221,
         /*keyDisplay=*/ ']');
 
-    // No modifier, high priority.
+    // Meta only key, highest priority.
     const standardAcceleratorInfo2 = createStandardAcceleratorInfo(
         Modifier.NONE,
-        /*keyCode=*/ 221,
-        /*keyDisplay=*/ ']');
+        /*keyCode=*/ 91,
+        /*keyDisplay=*/ 'Meta');
 
     // Lots of modifiers, low priority.
     const standardAcceleratorInfo3 = createStandardAcceleratorInfo(
@@ -178,11 +178,12 @@ suite('shortcutUtilsTest', function() {
         /*keyCode=*/ 221,
         /*keyDisplay=*/ ']');
 
-    // Meta only key, highest priority.
+    // No modifier, high priority.
     const standardAcceleratorInfo5 = createStandardAcceleratorInfo(
         Modifier.NONE,
-        /*keyCode=*/ 91,
-        /*keyDisplay=*/ 'Meta');
+        /*keyCode=*/ 221,
+        /*keyDisplay=*/ ']');
+
 
     const initialOrder = [
       standardAcceleratorInfo1,
@@ -192,8 +193,8 @@ suite('shortcutUtilsTest', function() {
       standardAcceleratorInfo5,
     ];
     const expectedOrder = [
-      standardAcceleratorInfo5,
       standardAcceleratorInfo2,
+      standardAcceleratorInfo5,
       standardAcceleratorInfo1,
       standardAcceleratorInfo4,
       standardAcceleratorInfo3,

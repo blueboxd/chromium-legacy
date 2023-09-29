@@ -10,8 +10,8 @@
 #include "ash/glanceables/common/glanceables_list_footer_view.h"
 #include "ash/glanceables/common/glanceables_progress_bar_view.h"
 #include "ash/glanceables/common/glanceables_view_id.h"
+#include "ash/glanceables/glanceables_controller.h"
 #include "ash/glanceables/glanceables_metrics.h"
-#include "ash/glanceables/glanceables_v2_controller.h"
 #include "ash/glanceables/tasks/glanceables_task_view.h"
 #include "ash/glanceables/tasks/glanceables_tasks_client.h"
 #include "ash/public/cpp/new_window_delegate.h"
@@ -217,7 +217,7 @@ void TasksBubbleView::ScheduleUpdateTasksList(bool initial_update) {
   GlanceablesTaskList* active_task_list = tasks_combobox_model_->GetTaskListAt(
       task_list_combo_box_view_->GetSelectedIndex().value());
   tasks_combobox_model_->SaveLastSelectedTaskList(active_task_list->id);
-  Shell::Get()->glanceables_v2_controller()->GetTasksClient()->GetTasks(
+  Shell::Get()->glanceables_controller()->GetTasksClient()->GetTasks(
       active_task_list->id,
       base::BindOnce(&TasksBubbleView::UpdateTasksList,
                      weak_ptr_factory_.GetWeakPtr(), active_task_list->id,
@@ -247,10 +247,8 @@ void TasksBubbleView::UpdateTasksList(const std::string& task_list_id,
     }
 
     if (num_tasks_shown_ < kMaximumTasks) {
-      auto* view = task_items_container_view_->AddChildView(
+      task_items_container_view_->AddChildView(
           std::make_unique<GlanceablesTaskView>(task_list_id, task.get()));
-      view->SetCrossAxisAlignment(views::LayoutAlignment::kStart);
-      view->SetOrientation(views::LayoutOrientation::kHorizontal);
       ++num_tasks_shown_;
     }
     ++num_tasks_;
@@ -287,7 +285,7 @@ void TasksBubbleView::UpdateTasksList(const std::string& task_list_id,
     }
   }
 
-  auto* controller = Shell::Get()->glanceables_v2_controller();
+  auto* controller = Shell::Get()->glanceables_controller();
 
   if (initial_update) {
     RecordTasksInitialLoadTime(

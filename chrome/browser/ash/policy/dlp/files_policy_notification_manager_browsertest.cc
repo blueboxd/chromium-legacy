@@ -81,7 +81,8 @@ constexpr base::TimeDelta kWarningTimeout = base::Minutes(5);
 
 }  // namespace
 
-using BlockedFilesMap = std::map<DlpConfidentialFile, Policy>;
+using BlockedFilesMap =
+    std::map<DlpConfidentialFile, FilesPolicyDialog::BlockReason>;
 
 class MockFilesPolicyDialogFactory : public FilesPolicyDialogFactory {
  public:
@@ -550,8 +551,10 @@ class NonIOErrorBrowserTest
 IN_PROC_BROWSER_TEST_P(NonIOErrorBrowserTest, MultiFileOKShowsDialog) {
   auto action = GetParam();
   BlockedFilesMap blocked_map;
-  blocked_map.emplace(base::FilePath("file1.txt"), Policy::kDlp);
-  blocked_map.emplace(base::FilePath("file2.txt"), Policy::kDlp);
+  blocked_map.emplace(base::FilePath("file1.txt"),
+                      FilesPolicyDialog::BlockReason::kDlp);
+  blocked_map.emplace(base::FilePath("file2.txt"),
+                      FilesPolicyDialog::BlockReason::kDlp);
   EXPECT_CALL(*factory_,
               CreateErrorDialog(blocked_map, action, testing::NotNull()))
       .Times(1);
@@ -647,8 +650,10 @@ IN_PROC_BROWSER_TEST_P(NonIOErrorBrowserTest, MultiFileCloseCancels) {
 IN_PROC_BROWSER_TEST_P(NonIOErrorBrowserTest, MultiFileOKShowsDialog_Timeout) {
   auto action = GetParam();
   BlockedFilesMap blocked_map;
-  blocked_map.emplace(base::FilePath("file1.txt"), Policy::kDlp);
-  blocked_map.emplace(base::FilePath("file2.txt"), Policy::kDlp);
+  blocked_map.emplace(base::FilePath("file1.txt"),
+                      FilesPolicyDialog::BlockReason::kDlp);
+  blocked_map.emplace(base::FilePath("file2.txt"),
+                      FilesPolicyDialog::BlockReason::kDlp);
   // Set factory to create a real dialog.
   // Null modal parent means the dialog is a system modal.
   EXPECT_CALL(*factory_,
@@ -778,6 +783,14 @@ class IOTaskBrowserTest
               nullptr);
   }
 
+  void TearDownOnMainThread() override {
+    // The files controller must be destroyed before the profile since it's
+    // holding a pointer to it.
+    files_controller_.reset();
+    mock_rules_manager_ = nullptr;
+    FilesPolicyNotificationManagerBrowserTest::TearDownOnMainThread();
+  }
+
   std::unique_ptr<KeyedService> SetDlpRulesManager(
       content::BrowserContext* context) {
     auto dlp_rules_manager =
@@ -788,7 +801,7 @@ class IOTaskBrowserTest
 
     files_controller_ =
         std::make_unique<testing::NiceMock<policy::MockDlpFilesControllerAsh>>(
-            *mock_rules_manager_);
+            *mock_rules_manager_, Profile::FromBrowserContext(context));
 
     ON_CALL(*mock_rules_manager_, GetDlpFilesController())
         .WillByDefault(::testing::Return(files_controller_.get()));
@@ -987,6 +1000,8 @@ IN_PROC_BROWSER_TEST_P(IOTaskBrowserTest,
 
   // Skip the warning timeout.
   task_runner->FastForwardBy(kWarningTimeout);
+  // Wait till IO task is complete.
+  base::RunLoop().RunUntilIdle();
 
   const std::u16string timeout_title =
       action == dlp::FileAction::kCopy
@@ -1040,9 +1055,16 @@ IN_PROC_BROWSER_TEST_P(IOTaskBrowserTest, FilesPolicyWarnSettings) {
   auto notification = bridge_->GetDisplayedNotification(kNotificationId1);
   ASSERT_TRUE(notification.has_value());
 
-  // Show the dialog.
-  ASSERT_TRUE(bridge_->GetDisplayedNotification(kNotificationId1).has_value());
   bridge_->Click(kNotificationId1, NotificationButton::OK);
+
+  // By waiting for the Files app, we make sure that
+  // FilesPolicyNotificationManager::LaunchFilesApp called when the dialog is
+  // show successfully completes before the test ends, since it will at some
+  // point asynchronously call AppServiceProxyAsh::LaunchAppWithIntent and we
+  // need to make sure the files controller is still alive at that point.
+  Browser* first_app = ui_test_utils::WaitForBrowserToOpen();
+  ASSERT_TRUE(first_app);
+  ASSERT_EQ(first_app, FindFilesApp());
 }
 
 // Tests that clicking the OK button on a warning notification shown for copy or
@@ -1265,8 +1287,10 @@ IN_PROC_BROWSER_TEST_P(IOTaskBrowserTest,
   auto [type, action] = GetParam();
 
   BlockedFilesMap blocked_map;
-  blocked_map.emplace(base::FilePath("file1.txt"), Policy::kDlp);
-  blocked_map.emplace(base::FilePath("file2.txt"), Policy::kDlp);
+  blocked_map.emplace(base::FilePath("file1.txt"),
+                      FilesPolicyDialog::BlockReason::kDlp);
+  blocked_map.emplace(base::FilePath("file2.txt"),
+                      FilesPolicyDialog::BlockReason::kDlp);
   EXPECT_CALL(*factory_,
               CreateErrorDialog(blocked_map, action, testing::NotNull()))
       .Times(2);

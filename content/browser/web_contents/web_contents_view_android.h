@@ -71,6 +71,7 @@ class WebContentsViewAndroid : public WebContentsView,
   void RestoreFocus() override;
   void FocusThroughTabTraversal(bool reverse) override;
   DropData* GetDropData() const override;
+  void CancelDragDropForPortalActivation() override;
   gfx::Rect GetViewBounds() const override;
   void CreateView(gfx::NativeView context) override;
   RenderWidgetHostViewBase* CreateViewForWidget(
@@ -101,13 +102,15 @@ class WebContentsViewAndroid : public WebContentsView,
       bool allow_multiple_selection) override;
   ui::OverscrollRefreshHandler* GetOverscrollRefreshHandler() const override;
   void StartDragging(const DropData& drop_data,
+                     const url::Origin& source_origin,
                      blink::DragOperationsMask allowed_ops,
                      const gfx::ImageSkia& image,
                      const gfx::Vector2d& cursor_offset,
                      const gfx::Rect& drag_obj_rect,
                      const blink::mojom::DragEventSourceInfo& event_info,
                      RenderWidgetHostImpl* source_rwh) override;
-  void UpdateDragCursor(ui::mojom::DragOperation operation) override;
+  void UpdateDragOperation(ui::mojom::DragOperation operation,
+                           bool document_is_handling_drag) override;
   void GotFocus(RenderWidgetHostImpl* render_widget_host) override;
   void LostFocus(RenderWidgetHostImpl* render_widget_host) override;
   void TakeFocus(bool reverse) override;

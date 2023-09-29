@@ -343,9 +343,10 @@ TEST_F(PeripheralCustomizationEventRewriterTest, KeyEventActionRewriting) {
   TestAcceleratorObserver accelerator_observer;
   TestEventRewriterContinuation continuation;
 
-  mouse_settings_->button_remappings.push_back(mojom::ButtonRemapping::New(
-      "", mojom::Button::NewVkey(ui::VKEY_A),
-      mojom::RemappingAction::NewAction(AcceleratorAction::kBrightnessDown)));
+  mouse_settings_->button_remappings.push_back(
+      mojom::ButtonRemapping::New("", mojom::Button::NewVkey(ui::VKEY_A),
+                                  mojom::RemappingAction::NewAcceleratorAction(
+                                      AcceleratorAction::kBrightnessDown)));
 
   rewriter_->RewriteEvent(CreateKeyButtonEvent(ui::ET_KEY_PRESSED, ui::VKEY_A),
                           continuation.weak_ptr_factory_.GetWeakPtr());
@@ -369,7 +370,8 @@ TEST_F(PeripheralCustomizationEventRewriterTest, MouseEventActionRewriting) {
   mouse_settings_->button_remappings.push_back(mojom::ButtonRemapping::New(
       "",
       mojom::Button::NewCustomizableButton(mojom::CustomizableButton::kMiddle),
-      mojom::RemappingAction::NewAction(AcceleratorAction::kLaunchApp0)));
+      mojom::RemappingAction::NewAcceleratorAction(
+          AcceleratorAction::kLaunchApp0)));
 
   rewriter_->RewriteEvent(
       CreateMouseButtonEvent(ui::ET_MOUSE_PRESSED, ui::EF_MIDDLE_MOUSE_BUTTON,
@@ -1051,6 +1053,151 @@ TEST_P(ModifierRewritingTest, MouseEvent) {
   EXPECT_EQ(ConvertToString(CreateMouseButtonEvent(
                 ui::ET_MOUSE_PRESSED, test_flag | ui::EF_FORWARD_MOUSE_BUTTON,
                 ui::EF_FORWARD_MOUSE_BUTTON)),
+            ConvertToString(*continuation.passthrough_event));
+}
+
+class StaticShortcutActionRewritingTest
+    : public PeripheralCustomizationEventRewriterTest,
+      public testing::WithParamInterface<
+          std::tuple<mojom::StaticShortcutAction, ui::KeyEvent>> {};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    StaticShortcutActionRewritingTest,
+    testing::ValuesIn(
+        std::vector<std::tuple<mojom::StaticShortcutAction, ui::KeyEvent>>({
+            {mojom::StaticShortcutAction::kCopy,
+             CreateKeyButtonEvent(ui::ET_KEY_PRESSED,
+                                  ui::VKEY_C,
+                                  ui::EF_CONTROL_DOWN,
+                                  ui::DomCode::US_C,
+                                  ui::DomKey::Constant<'c'>::Character)},
+            {mojom::StaticShortcutAction::kPaste,
+             CreateKeyButtonEvent(ui::ET_KEY_PRESSED,
+                                  ui::VKEY_V,
+                                  ui::EF_CONTROL_DOWN,
+                                  ui::DomCode::US_V,
+                                  ui::DomKey::Constant<'v'>::Character)},
+        })));
+
+TEST_P(StaticShortcutActionRewritingTest, StaticShortcutMouseRewriting) {
+  const auto& [static_shortcut_action, expected_key_event] = GetParam();
+
+  mouse_settings_->button_remappings.push_back(mojom::ButtonRemapping::New(
+      "",
+      mojom::Button::NewCustomizableButton(mojom::CustomizableButton::kForward),
+      mojom::RemappingAction::NewStaticShortcutAction(static_shortcut_action)));
+
+  TestEventRewriterContinuation continuation;
+  ui::MouseEvent mouse_pressed_event =
+      CreateMouseButtonEvent(ui::ET_MOUSE_PRESSED, ui::EF_FORWARD_MOUSE_BUTTON,
+                             ui::EF_FORWARD_MOUSE_BUTTON, kMouseDeviceId);
+  ui::KeyEvent expected_mouse_pressed_event = expected_key_event;
+  expected_mouse_pressed_event.set_source_device_id(kMouseDeviceId);
+
+  rewriter_->RewriteEvent(mouse_pressed_event,
+                          continuation.weak_ptr_factory_.GetWeakPtr());
+
+  ASSERT_TRUE(continuation.passthrough_event);
+  EXPECT_EQ(ConvertToString(expected_mouse_pressed_event),
+            ConvertToString(*continuation.passthrough_event));
+  ui::MouseEvent mouse_release_event =
+      CreateMouseButtonEvent(ui::ET_MOUSE_RELEASED, ui::EF_FORWARD_MOUSE_BUTTON,
+                             ui::EF_FORWARD_MOUSE_BUTTON, kMouseDeviceId);
+
+  continuation.reset();
+  rewriter_->RewriteEvent(mouse_release_event,
+                          continuation.weak_ptr_factory_.GetWeakPtr());
+
+  ASSERT_TRUE(continuation.passthrough_event);
+  ui::KeyEvent expected_mouse_release_event = CreateKeyButtonEvent(
+      ui::ET_KEY_RELEASED, expected_key_event.key_code(),
+      expected_key_event.flags(), expected_key_event.code(),
+      expected_key_event.GetDomKey());
+  expected_mouse_release_event.set_source_device_id(kMouseDeviceId);
+  EXPECT_EQ(ConvertToString(expected_mouse_release_event),
+            ConvertToString(*continuation.passthrough_event));
+}
+
+TEST_P(StaticShortcutActionRewritingTest,
+       StaticShortcutGraphicsTabletRewriting) {
+  const auto& [static_shortcut_action, expected_key_event] = GetParam();
+  graphics_tablet_settings_->pen_button_remappings.push_back(
+      mojom::ButtonRemapping::New(
+          "",
+          mojom::Button::NewCustomizableButton(
+              mojom::CustomizableButton::kForward),
+          mojom::RemappingAction::NewStaticShortcutAction(
+              static_shortcut_action)));
+  graphics_tablet_settings_->tablet_button_remappings.push_back(
+      mojom::ButtonRemapping::New(
+          "",
+          mojom::Button::NewCustomizableButton(
+              mojom::CustomizableButton::kBack),
+          mojom::RemappingAction::NewStaticShortcutAction(
+              static_shortcut_action)));
+
+  TestEventRewriterContinuation continuation;
+
+  ui::MouseEvent pen_pressed_event = CreateMouseButtonEvent(
+      ui::ET_MOUSE_PRESSED, ui::EF_FORWARD_MOUSE_BUTTON,
+      ui::EF_FORWARD_MOUSE_BUTTON, kGraphicsTabletDeviceId);
+  ui::KeyEvent expected_pen_pressed_event = expected_key_event;
+  expected_pen_pressed_event.set_source_device_id(kGraphicsTabletDeviceId);
+
+  rewriter_->RewriteEvent(pen_pressed_event,
+                          continuation.weak_ptr_factory_.GetWeakPtr());
+
+  ASSERT_TRUE(continuation.passthrough_event);
+  EXPECT_EQ(ConvertToString(expected_pen_pressed_event),
+            ConvertToString(*continuation.passthrough_event));
+
+  ui::MouseEvent pen_release_event = CreateMouseButtonEvent(
+      ui::ET_MOUSE_RELEASED, ui::EF_FORWARD_MOUSE_BUTTON,
+      ui::EF_FORWARD_MOUSE_BUTTON, kGraphicsTabletDeviceId);
+  ui::KeyEvent expected_pen_release_event = CreateKeyButtonEvent(
+      ui::ET_KEY_RELEASED, expected_key_event.key_code(),
+      expected_key_event.flags(), expected_key_event.code(),
+      expected_key_event.GetDomKey());
+  expected_pen_release_event.set_source_device_id(kGraphicsTabletDeviceId);
+
+  continuation.reset();
+  rewriter_->RewriteEvent(pen_release_event,
+                          continuation.weak_ptr_factory_.GetWeakPtr());
+
+  ASSERT_TRUE(continuation.passthrough_event);
+  EXPECT_EQ(ConvertToString(expected_pen_release_event),
+            ConvertToString(*continuation.passthrough_event));
+
+  ui::MouseEvent tablet_pressed_event =
+      CreateMouseButtonEvent(ui::ET_MOUSE_PRESSED, ui::EF_BACK_MOUSE_BUTTON,
+                             ui::EF_BACK_MOUSE_BUTTON, kGraphicsTabletDeviceId);
+  ui::KeyEvent expected_tablet_pressed_event = expected_key_event;
+  expected_tablet_pressed_event.set_source_device_id(kGraphicsTabletDeviceId);
+
+  continuation.reset();
+  rewriter_->RewriteEvent(tablet_pressed_event,
+                          continuation.weak_ptr_factory_.GetWeakPtr());
+
+  ASSERT_TRUE(continuation.passthrough_event);
+  EXPECT_EQ(ConvertToString(expected_tablet_pressed_event),
+            ConvertToString(*continuation.passthrough_event));
+
+  ui::MouseEvent tablet_release_event =
+      CreateMouseButtonEvent(ui::ET_MOUSE_RELEASED, ui::EF_BACK_MOUSE_BUTTON,
+                             ui::EF_BACK_MOUSE_BUTTON, kGraphicsTabletDeviceId);
+  ui::KeyEvent expected_tablet_release_event = CreateKeyButtonEvent(
+      ui::ET_KEY_RELEASED, expected_key_event.key_code(),
+      expected_key_event.flags(), expected_key_event.code(),
+      expected_key_event.GetDomKey());
+  expected_tablet_release_event.set_source_device_id(kGraphicsTabletDeviceId);
+
+  continuation.reset();
+  rewriter_->RewriteEvent(tablet_release_event,
+                          continuation.weak_ptr_factory_.GetWeakPtr());
+
+  ASSERT_TRUE(continuation.passthrough_event);
+  EXPECT_EQ(ConvertToString(expected_tablet_release_event),
             ConvertToString(*continuation.passthrough_event));
 }
 

@@ -25,17 +25,6 @@ enum class SafeBrowsingState {
   kMaxValue = kDisabledByUser,
 };
 
-// State that a top card in the SafetyHub page can be in.
-// Should be kept in sync with the corresponding enum in
-// chrome/browser/resources/settings/safety_hub/safety_hub_browser_proxy.ts
-enum class SafetyHubCardState {
-  kWarning = 0,
-  kWeak = 1,
-  kInfo = 2,
-  kSafe = 3,
-  kMaxValue = kSafe,
-};
-
 /**
  * This handler deals with the permission-related operations on the site
  * settings page.
@@ -79,6 +68,8 @@ class SafetyHubHandler : public settings::SettingsPageUIHandler {
   FRIEND_TEST_ALL_PREFIXES(SafetyHubHandlerParameterizedTest,
                            PasswordCardState);
   FRIEND_TEST_ALL_PREFIXES(SafetyHubHandlerTest, PasswordCardCheckTime);
+  FRIEND_TEST_ALL_PREFIXES(SafetyHubHandlerTest, VersionCardUpToDate);
+  FRIEND_TEST_ALL_PREFIXES(SafetyHubHandlerTest, VersionCardOutOfDate);
 
   // SettingsPageUIHandler implementation.
   void OnJavascriptAllowed() override;
@@ -152,11 +143,14 @@ class SafetyHubHandler : public settings::SettingsPageUIHandler {
   // Returns the data for the password card.
   void HandleGetPasswordCardData(const base::Value::List& args);
 
-  // Helper function for determining password card strings and state.
-  base::Value::Dict GetPasswordCardData(int compromised_count,
-                                        int weak_count,
-                                        int reused_count,
-                                        base::Time last_check);
+  // Returns the data for the version card.
+  void HandleGetVersionCardData(const base::Value::List& args);
+
+  // Returns true if Safety Hub has recommendations.
+  void HandleGetSafetyHubHasRecommendations(const base::Value::List& args);
+
+  // Returns the subheader for Safety Hub entry point in settings.
+  void HandleGetSafetyHubEntryPointSubheader(const base::Value::List& args);
 
   // Sends the list of notification permissions to review to the WebUI.
   void SendNotificationPermissionReviewList();

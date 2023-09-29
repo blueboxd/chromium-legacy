@@ -958,9 +958,7 @@ void LocalFrameMojoHandler::GetFirstRectForRange(const gfx::Range& range) {
   WebPluginContainerImpl* plugin_container = frame_->GetWebPluginContainer();
   if (plugin_container) {
     // Pepper-free PDF will reach here.
-    FrameWidget* frame_widget = frame_->GetWidgetForLocalRoot();
-    rect = frame_widget->BlinkSpaceToEnclosedDIPs(
-        plugin_container->Plugin()->GetPluginCaretBounds());
+    rect = plugin_container->Plugin()->GetPluginCaretBounds();
   } else {
     // TODO(crbug.com/702990): Remove `pepper_has_caret` once pepper is removed.
     bool pepper_has_caret = client->GetCaretBoundsFromFocusedPlugin(rect);
@@ -1289,7 +1287,8 @@ void LocalFrameMojoHandler::OnPortalActivated(
       frame_, portal_token, std::move(portal), std::move(portal_client),
       std::move(data.message), ports, std::move(callback));
 
-  ThreadDebugger* debugger = MainThreadDebugger::Instance();
+  v8::Isolate* isolate = dom_window->GetIsolate();
+  ThreadDebugger* debugger = MainThreadDebugger::Instance(isolate);
   if (debugger)
     debugger->ExternalAsyncTaskStarted(data.sender_stack_trace_id);
   dom_window->DispatchEvent(*event);
@@ -1322,6 +1321,7 @@ void LocalFrameMojoHandler::UpdateBrowserControlsState(
 
 void LocalFrameMojoHandler::SetV8CompileHints(
     base::ReadOnlySharedMemoryRegion data) {
+  CHECK(base::FeatureList::IsEnabled(blink::features::kConsumeCompileHints));
   Page* page = GetPage();
   if (page == nullptr) {
     return;

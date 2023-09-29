@@ -486,9 +486,6 @@ TEST_F(ExtensionTelemetryServiceTest, TestExtensionInfoProtoConstruction) {
 TEST_F(ExtensionTelemetryServiceTest,
        PersistsReportsOnShutdownWithSignalDataPresent) {
   // Setting up the persister and signals.
-  telemetry_service_->SetEnabled(false);
-  scoped_feature_list.InitAndEnableFeature(kExtensionTelemetryPersistence);
-  telemetry_service_->SetEnabled(true);
   PrimeTelemetryServiceWithSignal();
   task_environment_.RunUntilIdle();
   // After a shutdown, the persister should create a file of persisted data.
@@ -508,9 +505,6 @@ TEST_F(ExtensionTelemetryServiceTest,
 TEST_F(ExtensionTelemetryServiceTest,
        DoesNotPersistsReportsOnShutdownWithNoSignalDataPresent) {
   // Setting up the persister and signals.
-  telemetry_service_->SetEnabled(false);
-  scoped_feature_list.InitAndEnableFeature(kExtensionTelemetryPersistence);
-  telemetry_service_->SetEnabled(true);
   task_environment_.RunUntilIdle();
   // After a shutdown, the persister should not persist a file. There are
   // extensions installed but there is no signal data present.
@@ -525,9 +519,6 @@ TEST_F(ExtensionTelemetryServiceTest,
 TEST_F(ExtensionTelemetryServiceTest, PersistsReportOnFailedUpload) {
   // Setting up the persister, signals, upload/write intervals, and the
   // uploader itself.
-  telemetry_service_->SetEnabled(false);
-  scoped_feature_list.InitAndEnableFeature(kExtensionTelemetryPersistence);
-  telemetry_service_->SetEnabled(true);
   base::TimeDelta interval = telemetry_service_->current_reporting_interval();
   profile_.GetPrefs()->SetTime(prefs::kExtensionTelemetryLastUploadTime,
                                base::Time::NowFromSystemTime());
@@ -548,9 +539,6 @@ TEST_F(ExtensionTelemetryServiceTest, NoReportPersistedIfUploadSucceeds) {
   // same as the reporting interval. At each interval, the in-memory data
   // is used to create a report which is then uploaded. If the upload succeeds,
   // there is no need to persist anything.
-  telemetry_service_->SetEnabled(false);
-  scoped_feature_list.InitAndEnableFeature(kExtensionTelemetryPersistence);
-  telemetry_service_->SetEnabled(true);
   base::TimeDelta interval = telemetry_service_->current_reporting_interval();
   profile_.GetPrefs()->SetTime(prefs::kExtensionTelemetryLastUploadTime,
                                base::Time::NowFromSystemTime());
@@ -569,10 +557,14 @@ TEST_F(ExtensionTelemetryServiceTest, PersistsReportsOnInterval) {
   // Setting up the persister, signals, upload/write intervals, and the
   // uploader itself.
   telemetry_service_->SetEnabled(false);
+  // NumberOfWritesInInterval defaults to 1, setting to 4 to test functionality
+  // of writing at intervals and uploading multiple files.
   scoped_feature_list.InitWithFeaturesAndParameters(
-      {{kExtensionTelemetry, {{"NumberOfWritesInInterval", "4"}}},
-       {kExtensionTelemetryPersistence, {}}},
-      {});
+      /*enabled_features=*/
+      {
+          {kExtensionTelemetry, {{"NumberOfWritesInInterval", "4"}}},
+      },
+      /*disabled_features=*/{});
   telemetry_service_->SetEnabled(true);
   base::TimeDelta interval = telemetry_service_->current_reporting_interval();
   profile_.GetPrefs()->SetTime(prefs::kExtensionTelemetryLastUploadTime,
@@ -603,10 +595,13 @@ TEST_F(ExtensionTelemetryServiceTest, MalformedPersistedFile) {
   // Setting up the persister, signals, upload/write intervals, and the
   // uploader itself.
   telemetry_service_->SetEnabled(false);
+
   scoped_feature_list.InitWithFeaturesAndParameters(
-      {{kExtensionTelemetry, {{"NumberOfWritesInInterval", "4"}}},
-       {kExtensionTelemetryPersistence, {}}},
-      {});
+      /*enabled_features=*/
+      {
+          {kExtensionTelemetry, {{"NumberOfWritesInInterval", "4"}}},
+      },
+      /*disabled_features=*/{});
   telemetry_service_->SetEnabled(true);
   base::TimeDelta interval = telemetry_service_->current_reporting_interval();
   profile_.GetPrefs()->SetTime(prefs::kExtensionTelemetryLastUploadTime,
@@ -641,8 +636,6 @@ TEST_F(ExtensionTelemetryServiceTest, MalformedPersistedFile) {
 TEST_F(ExtensionTelemetryServiceTest, StartupUploadCheck) {
   // Setting up the persister, signals, upload/write intervals, and the
   // uploader itself.
-  telemetry_service_->SetEnabled(false);
-  scoped_feature_list.InitAndEnableFeature(kExtensionTelemetryPersistence);
   telemetry_service_->SetEnabled(true);
   task_environment_.RunUntilIdle();
   profile_.GetPrefs()->SetTime(prefs::kExtensionTelemetryLastUploadTime,
@@ -668,7 +661,6 @@ TEST_F(ExtensionTelemetryServiceTest, StartupUploadCheck) {
 }
 
 TEST_F(ExtensionTelemetryServiceTest, PersisterThreadSafetyCheck) {
-  scoped_feature_list.InitAndEnableFeature(kExtensionTelemetryPersistence);
   std::unique_ptr<ExtensionTelemetryService> telemetry_service_2 =
       std::make_unique<ExtensionTelemetryService>(
           &profile_, test_url_loader_factory_.GetSafeWeakWrapper());
@@ -962,6 +954,34 @@ TEST_F(ExtensionTelemetryServiceTest, FileData_HandlesEmptyFileDataInPrefs) {
   empty_file_data_dicts.Set(kExtensionId[1], base::Value::Dict());
   profile_.GetPrefs()->SetDict(prefs::kExtensionTelemetryFileData,
                                std::move(empty_file_data_dicts));
+
+  std::unique_ptr<TelemetryReport> telemetry_report_pb = GetTelemetryReport();
+
+  // Verify Extension 0 does not have offstore file data.
+  EXPECT_EQ(telemetry_report_pb->reports(0).extension().id(), kExtensionId[0]);
+  EXPECT_FALSE(telemetry_report_pb->reports(0).extension().has_manifest_json());
+  EXPECT_EQ(telemetry_report_pb->reports(0).extension().file_infos_size(), 0);
+
+  // Verify Extension 1 does not have offstore file data.
+  EXPECT_EQ(telemetry_report_pb->reports(1).extension().id(), kExtensionId[1]);
+  EXPECT_FALSE(telemetry_report_pb->reports(1).extension().has_manifest_json());
+  EXPECT_EQ(telemetry_report_pb->reports(1).extension().file_infos_size(), 0);
+}
+
+TEST_F(ExtensionTelemetryServiceTest,
+       FileData_EnforcesCollectionDurationLimit) {
+  // Enable |kExtensionTelemetryFileData| feature and starts collection.
+  telemetry_service_->SetEnabled(false);
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      {kExtensionTelemetryFileData},
+      {{"StartupDelaySeconds",
+        base::NumberToString(kFileDataStartUpDelaySeconds)}});
+  // Set collection duration limit to 0 milliseconds.
+  telemetry_service_->offstore_file_data_collection_duration_limit_ =
+      base::Milliseconds(0);
+  telemetry_service_->SetEnabled(true);
+  task_environment_.FastForwardBy(base::Seconds(kFileDataStartUpDelaySeconds));
+  task_environment_.RunUntilIdle();
 
   std::unique_ptr<TelemetryReport> telemetry_report_pb = GetTelemetryReport();
 

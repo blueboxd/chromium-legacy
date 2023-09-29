@@ -6,9 +6,11 @@
 
 #include <memory>
 
+#include "base/test/scoped_feature_list.h"
 #include "base/uuid.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/bookmarks/saved_tab_groups/saved_tab_group_button.h"
 #include "chrome/browser/ui/views/bookmarks/saved_tab_groups/saved_tab_group_overflow_button.h"
 #include "chrome/test/base/test_browser_window.h"
@@ -53,7 +55,9 @@ const tab_groups::TabGroupColorId kNewColor = tab_groups::TabGroupColorId::kRed;
 class SavedTabGroupBarUnitTest : public ChromeViewsTestBase {
  public:
   SavedTabGroupBarUnitTest()
-      : saved_tab_group_model_(std::make_unique<SavedTabGroupModel>()) {}
+      : saved_tab_group_model_(std::make_unique<SavedTabGroupModel>()) {
+    feature_list_.InitAndEnableFeature(features::kTabGroupsSave);
+  }
 
   SavedTabGroupBar* saved_tab_group_bar() { return saved_tab_group_bar_.get(); }
   SavedTabGroupModel* saved_tab_group_model() {
@@ -91,10 +95,7 @@ class SavedTabGroupBarUnitTest : public ChromeViewsTestBase {
   }
 
   int GetWidthOfButtonsAndPadding() {
-    // Remove extra padding from the last button.
-    int size = saved_tab_group_bar_->children()[0]->GetVisible()
-                   ? -button_padding_
-                   : 0;
+    int size = 0;
 
     // Iterate through bubble getting size plus button padding calculated
     // button_sizes + extra_padding
@@ -123,6 +124,7 @@ class SavedTabGroupBarUnitTest : public ChromeViewsTestBase {
   std::unique_ptr<SavedTabGroupBar> saved_tab_group_bar_;
   std::unique_ptr<SavedTabGroupModel> saved_tab_group_model_;
 
+  base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<TestBrowserWindow> browser_window_;
   std::unique_ptr<Browser> browser_;
@@ -356,7 +358,7 @@ TEST_F(SavedTabGroupBarUnitTest, CalculatePreferredWidthRestrictedByExactSize) {
   saved_tab_group_bar()->SetBounds(
       0, 2, saved_tab_group_bar()->CalculatePreferredWidthRestrictedBy(400), 2);
 
-  // Update the `new_width` to take the buttons into account
+  // Update the `new_width` to take the buttons into account.
   int new_width = GetWidthOfButtonsAndPadding();
   calculated_width =
       saved_tab_group_bar()->CalculatePreferredWidthRestrictedBy(new_width);

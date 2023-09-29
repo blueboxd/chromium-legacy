@@ -136,11 +136,6 @@ std::vector<ash::AcceleratorData> GetDefaultAccelerators() {
             ash::kEnabledWithImprovedDesksKeyboardShortcutsAcceleratorData,
             ash::
                 kEnabledWithImprovedDesksKeyboardShortcutsAcceleratorDataLength));
-  } else if (::features::IsNewShortcutMappingEnabled()) {
-    AppendAcceleratorData(
-        accelerators,
-        base::make_span(ash::kEnableWithNewMappingAcceleratorData,
-                        ash::kEnableWithNewMappingAcceleratorDataLength));
   } else {
     AppendAcceleratorData(
         accelerators,
@@ -204,18 +199,14 @@ AshAcceleratorConfiguration::~AshAcceleratorConfiguration() {
 // static:
 void AshAcceleratorConfiguration::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
-  if (!::features::IsShortcutCustomizationEnabled()) {
-    return;
-  }
-
   registry->RegisterDictionaryPref(prefs::kShortcutCustomizationOverrides);
 }
 
 void AshAcceleratorConfiguration::OnActiveUserPrefServiceChanged(
     PrefService* pref_service) {
   // A pref service may not be available in tests.
-  if (!::features::IsShortcutCustomizationEnabled() || !pref_service ||
-      pref_service != GetActiveUserPrefService()) {
+  if (!pref_service || pref_service != GetActiveUserPrefService() ||
+      !Shell::Get()->accelerator_prefs()->IsCustomizationAllowed()) {
     return;
   }
 
@@ -424,6 +415,10 @@ void AshAcceleratorConfiguration::AddObserver(Observer* observer) {
 
 void AshAcceleratorConfiguration::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
+}
+
+bool AshAcceleratorConfiguration::HasObserver(Observer* observer) {
+  return observer_list_.HasObserver(observer);
 }
 
 // This function must only be called after Initialize().

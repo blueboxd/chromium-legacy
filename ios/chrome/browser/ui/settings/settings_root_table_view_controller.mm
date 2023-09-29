@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
@@ -85,6 +86,12 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
         self.tableView.editing ? [self createEditModeCancelButton]
                                : self.backButtonItem;
   }
+
+  // The following two lines cause the table view to refresh the cell heights
+  // with animation without reloading the cells. This is needed for
+  // cells that can be significantly taller in edit mode.
+  [self.tableView beginUpdates];
+  [self.tableView endUpdates];
 }
 
 - (void)updatedToolbarForEditState {
@@ -187,8 +194,10 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
   // can leave the new top view controller with a toolbar when it doesn't
   // require one. Disabling editing mode to avoid this. See crbug.com/1404111 as
   // an example.
-  if (parent == nullptr) {
-    if ([self respondsToSelector:@selector(settingsWillBeDismissed)]) {
+  if (!parent) {
+    if (!base::FeatureList::IsEnabled(
+            kSettingsWillBeDismissedBugFixKillSwitch) &&
+        [self respondsToSelector:@selector(settingsWillBeDismissed)]) {
       [self performSelector:@selector(settingsWillBeDismissed)];
     }
 
@@ -198,6 +207,15 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
   }
 
   [self.navigationController setToolbarHidden:YES animated:YES];
+}
+
+- (void)didMoveToParentViewController:(UIViewController*)parent {
+  [super didMoveToParentViewController:parent];
+  if (!parent &&
+      base::FeatureList::IsEnabled(kSettingsWillBeDismissedBugFixKillSwitch) &&
+      [self respondsToSelector:@selector(settingsWillBeDismissed)]) {
+    [self performSelector:@selector(settingsWillBeDismissed)];
+  }
 }
 
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated {

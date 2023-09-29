@@ -22,9 +22,7 @@ BASE_DECLARE_FEATURE(kGroupingFrameworkForZPS);
 BASE_DECLARE_FEATURE(kGroupingFrameworkForNonZPS);
 BASE_DECLARE_FEATURE(kOmniboxDemoteByType);
 BASE_DECLARE_FEATURE(kPreferNonShortcutMatchesWhenDeduping);
-BASE_DECLARE_FEATURE(kPreferTailOverHistoryClusterSuggestions);
 BASE_DECLARE_FEATURE(kSingleSortAndCullPass);
-BASE_DECLARE_FEATURE(kUpdateResultDebounce);
 
 // Features below this line should be sorted alphabetically by their comments.
 
@@ -115,11 +113,6 @@ BASE_DECLARE_FEATURE(kOmniboxSteadyStateHeight);
 BASE_DECLARE_FEATURE(kOmniboxSteadyStateTextStyle);
 
 BASE_DECLARE_FEATURE(kOmniboxSteadyStateTextColor);
-
-BASE_DECLARE_FEATURE(kDiscardTemporaryInputOnTabSwitch);
-BASE_DECLARE_FEATURE(kRedoCurrentMatch);
-BASE_DECLARE_FEATURE(kRevertModelBeforeClosingPopup);
-BASE_DECLARE_FEATURE(kUseExistingAutocompleteClient);
 
 // Omnibox & Suggestions UI - these affect both the omnibox and the suggestions
 // popup.

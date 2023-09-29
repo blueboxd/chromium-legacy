@@ -394,9 +394,6 @@
                      originator_client_item_id:
                          (NSString*)originator_client_item_id;
 
-// Injects a typed URL to the sync FakeServer.
-+ (void)addFakeSyncServerTypedURL:(NSString*)URL;
-
 // Injects a HISTORY visit to the sync FakeServer.
 + (void)addFakeSyncServerHistoryVisit:(NSURL*)URL;
 
@@ -500,9 +497,6 @@
 
 // Returns YES if UKM feature is enabled.
 + (BOOL)isUKMEnabled [[nodiscard]];
-
-// Returns YES if kSynthesizedRestoreSessionEnabled feature is enabled.
-+ (BOOL)isSynthesizedRestoreSessionEnabled [[nodiscard]];
 
 // Returns YES if kTestFeature is enabled.
 + (BOOL)isTestFeatureEnabled;

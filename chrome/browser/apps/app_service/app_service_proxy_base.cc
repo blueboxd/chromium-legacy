@@ -16,12 +16,14 @@
 #include "base/functional/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_source.h"
+#include "chrome/browser/apps/app_service/app_icon/icon_effects.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/apps/app_service/metrics/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/publishers/app_publisher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
 #include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/cpp/intent.h"
@@ -208,32 +210,47 @@ void AppServiceProxyBase::OnSupportedLinksPreferenceChanged(
   publishers_[app_type]->OnSupportedLinksPreferenceChanged(app_id, open_in_app);
 }
 
-absl::optional<IconKey> AppServiceProxyBase::GetIconKey(const std::string& id) {
-  return app_outer_icon_loader_.GetIconKey(id);
+std::unique_ptr<IconLoader::Releaser> AppServiceProxyBase::LoadIcon(
+    AppType app_type,
+    const std::string& app_id,
+    const IconType& icon_type,
+    int32_t size_hint_in_dip,
+    bool allow_placeholder_icon,
+    apps::LoadIconCallback callback) {
+  return app_icon_loader()->LoadIcon(app_type, app_id, icon_type,
+                                     size_hint_in_dip, allow_placeholder_icon,
+                                     std::move(callback));
+}
+
+uint32_t AppServiceProxyBase::GetIconEffects(const std::string& app_id) {
+  absl::optional<apps::IconKey> icon_key =
+      app_icon_loader()->GetIconKey(app_id);
+  if (!icon_key.has_value()) {
+    return IconEffects::kNone;
+  }
+  return icon_key->icon_effects;
 }
 
 std::unique_ptr<apps::IconLoader::Releaser>
-AppServiceProxyBase::LoadIconFromIconKey(const std::string& id,
-                                         const IconKey& icon_key,
-                                         IconType icon_type,
-                                         int32_t size_hint_in_dip,
-                                         bool allow_placeholder_icon,
-                                         LoadIconCallback callback) {
-  return app_outer_icon_loader_.LoadIconFromIconKey(
-      id, icon_key, icon_type, size_hint_in_dip, allow_placeholder_icon,
-      std::move(callback));
-}
+AppServiceProxyBase::LoadIconWithIconEffects(AppType app_type,
+                                             const std::string& app_id,
+                                             uint32_t icon_effects,
+                                             IconType icon_type,
+                                             int32_t size_hint_in_dip,
+                                             bool allow_placeholder_icon,
+                                             LoadIconCallback callback) {
+  absl::optional<apps::IconKey> icon_key =
+      app_icon_loader()->GetIconKey(app_id);
+  if (!icon_key.has_value()) {
+    std::move(callback).Run(std::make_unique<IconValue>());
+    return nullptr;
+  }
 
-std::unique_ptr<apps::IconLoader::Releaser>
-AppServiceProxyBase::LoadIconFromIconKey(AppType app_type,
-                                         const std::string& app_id,
-                                         const IconKey& icon_key,
-                                         IconType icon_type,
-                                         int32_t size_hint_in_dip,
-                                         bool allow_placeholder_icon,
-                                         LoadIconCallback callback) {
-  return LoadIconFromIconKey(app_id, icon_key, icon_type, size_hint_in_dip,
-                             allow_placeholder_icon, std::move(callback));
+  icon_key->icon_effects = icon_effects;
+
+  return app_icon_loader()->LoadIconFromIconKey(
+      app_id, icon_key.value(), icon_type, size_hint_in_dip,
+      allow_placeholder_icon, std::move(callback));
 }
 
 void AppServiceProxyBase::Launch(const std::string& app_id,
@@ -430,6 +447,15 @@ void AppServiceProxyBase::GetMenuModel(
   } else {
     std::move(callback).Run(MenuItems());
   }
+}
+
+void AppServiceProxyBase::UpdateAppSize(const std::string& app_id) {
+  auto app_type = app_registry_cache_.GetAppType(app_id);
+  auto* publisher = GetPublisher(app_type);
+  if (publisher) {
+    publisher->UpdateAppSize(app_id);
+  }
+  return;
 }
 
 void AppServiceProxyBase::ExecuteContextMenuCommand(

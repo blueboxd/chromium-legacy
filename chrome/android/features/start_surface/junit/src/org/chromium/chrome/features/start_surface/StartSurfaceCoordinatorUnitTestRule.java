@@ -26,6 +26,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.FeatureList;
 import org.chromium.base.FeatureListJni;
+import org.chromium.base.jank_tracker.PlaceholderJankTracker;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplierImpl;
@@ -40,7 +41,6 @@ import org.chromium.chrome.browser.feed.FeedServiceBridgeJni;
 import org.chromium.chrome.browser.feed.FeedSurfaceMediator;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
-import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthController;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcherImpl;
 import org.chromium.chrome.browser.init.ChromeActivityNativeDelegate;
@@ -77,15 +77,11 @@ import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.search_engines.TemplateUrlService;
-import org.chromium.components.url_formatter.UrlFormatter;
-import org.chromium.components.url_formatter.UrlFormatterJni;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.components.user_prefs.UserPrefsJni;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
 import org.chromium.ui.test.util.modaldialog.FakeModalDialogManager;
-import org.chromium.url.GURL;
-import org.chromium.url.JUnitTestGURLs;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -201,13 +197,6 @@ public class StartSurfaceCoordinatorUnitTestRule implements TestRule {
                 .thenReturn(Mockito.mock(SigninManager.class));
         mJniMocker.mock(IdentityServicesProviderJni.TEST_HOOKS, identityServicesProviderJniMock);
 
-        // Set home page url.
-        GURL homePageGURL = JUnitTestGURLs.NTP_URL;
-        UrlFormatter.Natives urlFormatterJniMock = Mockito.mock(UrlFormatter.Natives.class);
-        when(urlFormatterJniMock.fixupUrl(HomepageManager.getHomepageUri()))
-                .thenReturn(homePageGURL);
-        mJniMocker.mock(UrlFormatterJni.TEST_HOOKS, urlFormatterJniMock);
-
         mJniMocker.mock(FaviconHelperJni.TEST_HOOKS, Mockito.mock(FaviconHelper.Natives.class));
         mJniMocker.mock(
                 FeedServiceBridgeJni.TEST_HOOKS, Mockito.mock(FeedServiceBridge.Natives.class));
@@ -263,9 +252,9 @@ public class StartSurfaceCoordinatorUnitTestRule implements TestRule {
 
         mCoordinator = new StartSurfaceCoordinator(mActivity, scrimCoordinator,
                 Mockito.mock(BottomSheetController.class), new OneshotSupplierImpl<>(),
-                new ObservableSupplierImpl<>(), false, windowAndroid, mContainerView,
-                new ObservableSupplierImpl<>(), mTabModelSelector, browserControlsManager,
-                snackbarManager, new ObservableSupplierImpl<>(),
+                new ObservableSupplierImpl<>(), false, windowAndroid, new PlaceholderJankTracker(),
+                mContainerView, new ObservableSupplierImpl<>(), mTabModelSelector,
+                browserControlsManager, snackbarManager, new ObservableSupplierImpl<>(),
                 ()
                         -> omniboxStub,
                 tabContentManager, new FakeModalDialogManager(ModalDialogType.APP),

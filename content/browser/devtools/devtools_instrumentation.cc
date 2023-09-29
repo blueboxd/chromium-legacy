@@ -615,28 +615,7 @@ void DidActivatePrerender(const NavigationRequest& nav_request,
                           const absl::optional<base::UnguessableToken>&
                               initiator_devtools_navigation_token) {
   FrameTreeNode* ftn = nav_request.frame_tree_node();
-  if (initiator_devtools_navigation_token.has_value()) {
-    DispatchToAgents(ftn, &protocol::PreloadHandler::DidActivatePrerender,
-                     initiator_devtools_navigation_token.value(), nav_request);
-  }
   UpdateChildFrameTrees(ftn, /* update_target_info= */ true);
-}
-
-void DidCancelPrerender(
-    FrameTreeNode* ftn,
-    const GURL& prerendering_url,
-    const base::UnguessableToken& initiator_devtools_navigation_token,
-    PrerenderFinalStatus status,
-    const std::string& disallowed_api_method) {
-  if (!ftn) {
-    return;
-  }
-
-  std::string initiating_frame_id =
-      ftn->current_frame_host()->devtools_frame_token().ToString();
-  DispatchToAgents(ftn, &protocol::PreloadHandler::DidCancelPrerender,
-                   prerendering_url, initiator_devtools_navigation_token,
-                   initiating_frame_id, status, disallowed_api_method);
 }
 
 void DidUpdatePrefetchStatus(
@@ -1047,6 +1026,39 @@ DevToolsAgentHostImpl* GetDevToolsAgentHostForNetworkOverrides(
 }
 
 }  // namespace
+
+void ApplyAuctionNetworkRequestOverrides(
+    FrameTreeNode* frame_tree_node,
+    network::ResourceRequest* request,
+    bool* network_instrumentation_enabled) {
+  bool disable_cache = false;
+  DevToolsAgentHostImpl* agent_host =
+      GetDevToolsAgentHostForNetworkOverrides(frame_tree_node);
+  if (!agent_host) {
+    return;
+  }
+
+  for (auto* network : protocol::NetworkHandler::ForAgentHost(agent_host)) {
+    if (!network->enabled()) {
+      continue;
+    }
+    *network_instrumentation_enabled = true;
+    network->ApplyOverrides(&request->headers, &request->skip_service_worker,
+                            &disable_cache,
+                            &request->devtools_accepted_stream_types);
+  }
+
+  for (auto* emulation : protocol::EmulationHandler::ForAgentHost(agent_host)) {
+    bool ua_overridden = false;
+    bool accept_language_overridden = false;
+    emulation->ApplyOverrides(&request->headers, &ua_overridden,
+                              &accept_language_overridden);
+  }
+
+  if (disable_cache) {
+    request->load_flags = net::LOAD_BYPASS_CACHE;
+  }
+}
 
 void ApplyNetworkRequestOverrides(
     FrameTreeNode* frame_tree_node,

@@ -49,42 +49,36 @@ inline bool MaybeIdeograph(UScriptCode script, StringView text) {
 class SpacingApplier {
  public:
   void SetSpacing(const Vector<wtf_size_t, 16>& offsets,
-                  float spacing,
-                  const NGInlineItem* current_item) {
+                  const NGInlineItem* current_item,
+                  const ComputedStyle& style) {
     DCHECK(current_item->TextShapeResult());
+    const float spacing = NGTextAutoSpace::GetSpacingWidth(style.GetFont());
     const wtf_size_t* offset = offsets.begin();
-    bool has_adjacent_glyph = false;
     if (!offsets.empty() && *offset == current_item->StartOffset()) {
       DCHECK(last_item_);
       // There would be spacing added to the previous item due to its last glyph
       // is next to `current_item`'s first glyph, since the two glyphs meet the
       // condition of adding spacing.
       // https://drafts.csswg.org/css-text-4/#propdef-text-autospace.
-      // In this case, when applying text spacing to `current_item`, also tells
-      // it to set the first glyph unsafe to break before.
-      has_adjacent_glyph = true;
       offsets_with_spacing_.emplace_back(
-          OffsetWithSpacing({.offset = *offset - 1, .spacing = spacing}));
+          OffsetWithSpacing({.offset = *offset, .spacing = spacing}));
       ++offset;
     }
     // Apply all pending spaces to the previous item.
     ApplyIfNeeded();
     offsets_with_spacing_.Shrink(0);
-    has_spacing_added_to_adjacent_glyph_ = has_adjacent_glyph;
 
     // Update the previous item in prepare for the next iteration.
     last_item_ = current_item;
     for (; offset != offsets.end(); ++offset) {
       offsets_with_spacing_.emplace_back(
-          OffsetWithSpacing({.offset = *offset - 1, .spacing = spacing}));
+          OffsetWithSpacing({.offset = *offset, .spacing = spacing}));
     }
   }
 
   void ApplyIfNeeded() {
-    // Nothing to update.
-    if (offsets_with_spacing_.empty() &&
-        !has_spacing_added_to_adjacent_glyph_) {
-      return;
+    if (offsets_with_spacing_.empty()) {
+      return;  // Nothing to update.
     }
     DCHECK(last_item_);
 
@@ -96,14 +90,12 @@ class SpacingApplier {
     ShapeResult* shape_result =
         const_cast<ShapeResult*>(last_item_->TextShapeResult());
     DCHECK(shape_result);
-    shape_result->ApplyTextAutoSpacing(has_spacing_added_to_adjacent_glyph_,
-                                       offsets_with_spacing_);
+    shape_result->ApplyTextAutoSpacing(offsets_with_spacing_);
     NGInlineItem* item = const_cast<NGInlineItem*>(last_item_);
     item->SetUnsafeToReuseShapeResult();
   }
 
  private:
-  bool has_spacing_added_to_adjacent_glyph_ = false;
   const NGInlineItem* last_item_ = nullptr;
   // Stores the spacing (1/8 ic) and auto-space points's previous positions, for
   // the previous item.
@@ -123,13 +115,19 @@ void NGTextAutoSpace::Initialize(const NGInlineItemsData& data) {
   // packed in `NGInlineItemSegments` to save memory.
   const String& text = data.text_content;
   if (!data.segments) {
-    const NGInlineItem& item0 = items.front();
-    RunSegmenter::RunSegmenterRange range = item0.CreateRunSegmenterRange();
-    if (!MaybeIdeograph(range.script, text)) {
-      return;
+    for (const NGInlineItem& item : items) {
+      if (item.Type() != NGInlineItem::kText) {
+        // Only `kText` has the data, see `NGInlineItem::SetSegmentData`.
+        continue;
+      }
+      RunSegmenter::RunSegmenterRange range = item.CreateRunSegmenterRange();
+      if (!MaybeIdeograph(range.script, text)) {
+        return;
+      }
+      range.end = text.length();
+      ranges_.push_back(range);
+      break;
     }
-    range.end = text.length();
-    ranges_.push_back(range);
   } else {
     data.segments->ToRanges(ranges_);
     if (std::none_of(ranges_.begin(), ranges_.end(),
@@ -167,14 +165,17 @@ void NGTextAutoSpace::Apply(NGInlineItemsData& data,
       // Empty items may not have `ShapeResult`. Skip it.
       continue;
     }
+    DCHECK(offsets.empty());
     const ComputedStyle* style = item.Style();
     DCHECK(style);
     if (UNLIKELY(style->TextAutospace() != ETextAutospace::kNormal)) {
-      last_type.reset();
+      applier.SetSpacing(offsets, &item, *style);
+      last_type = kOther;
       continue;
     }
     if (UNLIKELY(!style->IsHorizontalWritingMode()) &&
         UNLIKELY(style->GetTextOrientation() == ETextOrientation::kUpright)) {
+      applier.SetSpacing(offsets, &item, *style);
       // Upright non-ideographic characters are `kOther`.
       // https://drafts.csswg.org/css-text-4/#non-ideographic-letters
       last_type = GetPrevType(text, item.EndOffset());
@@ -235,9 +236,7 @@ void NGTextAutoSpace::Apply(NGInlineItemsData& data,
     } while (offset < item.EndOffset());
 
     if (!offsets_out) {
-      DCHECK(item.TextShapeResult());
-      float spacing = GetSpacingWidth(style->GetFont());
-      applier.SetSpacing(offsets, spacing, &item);
+      applier.SetSpacing(offsets, &item, *style);
     } else {
       offsets_out->AppendVector(offsets);
     }

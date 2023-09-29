@@ -1139,14 +1139,23 @@ void SiteSettingsHandler::HandleClearUnpartitionedUsage(
   if (origin.opaque())
     return;
   AllowJavascript();
-
-  // TODO(crbug.com/1368048): This code assumes that model pointers are valid.
-  // This assumption requires specific front-end behavior which is not strictly
-  // enforced.
-  DCHECK(browsing_data_model_);
   DCHECK(cookies_tree_model_);
-
   RemoveMatchingNodes(cookies_tree_model_.get(), origin, absl::nullopt);
+
+  // TODO(crbug.com/1368048) - Permission info loading before storage info
+  // can result in an interleaving of actions that means this pointer is
+  // null (as it hasn't loaded yet, but the user can delete an entry which has
+  // been created by permission info).
+  if (browsing_data_model_) {
+    // The provided origin may be an IWA, or a regular site.
+    if (origin.GetURL().SchemeIsHTTPOrHTTPS()) {
+      browsing_data_model_->RemoveUnpartitionedBrowsingData(origin.host(),
+                                                            base::DoNothing());
+    } else {
+      browsing_data_model_->RemoveUnpartitionedBrowsingData(origin,
+                                                            base::DoNothing());
+    }
+  }
 
   // The scheme for some sites detail page is http on
   // chrome://settings/content/all. Cookies or site data might not cleared if
@@ -1169,7 +1178,7 @@ void SiteSettingsHandler::HandleClearUnpartitionedUsage(
     affected_origins.emplace_back(https_origin);
   }
 
-  RemoveNonTreeModelData(affected_origins);
+  RemoveNonModelData(affected_origins);
 }
 
 void SiteSettingsHandler::HandleClearPartitionedUsage(
@@ -2315,14 +2324,14 @@ void SiteSettingsHandler::GetOriginStorage(
                          [](const url::Origin& origin) { return origin; }},
         *entry.data_owner);
 
-    // If the storage is backed by a StorageKey we need to ensure the grouping
-    // key matches the top-site and doesn't default to the origin in the UI.
+    // If the storage is partitioned on a third party we need to ensure the
+    // grouping key matches the top-site and doesn't default to the origin
+    // in the UI.
     absl::optional<GroupingKey> partition_grouping_key = absl::nullopt;
-    const blink::StorageKey* storage_key =
-        absl::get_if<blink::StorageKey>(&entry.data_key.get());
-    if (storage_key != nullptr && storage_key->IsThirdPartyContext()) {
-      partition_grouping_key = GroupingKey::Create(
-          url::Origin::Create(GURL(storage_key->top_level_site().Serialize())));
+    auto third_party_partitioning_site = entry.GetThirdPartyPartitioningSite();
+    if (third_party_partitioning_site) {
+      partition_grouping_key = GroupingKey::Create(url::Origin::Create(
+          GURL(third_party_partitioning_site->Serialize())));
     }
     UpdateDataFromModel(all_sites_map, origin_size_map, origin,
                         entry.data_details->storage_size,
@@ -2380,6 +2389,15 @@ void SiteSettingsHandler::HandleClearSiteGroupDataAndCookies(
     const base::Value::List& args) {
   CHECK_EQ(1U, args.size());
   auto grouping_key = GroupingKey::Deserialize(args[0].GetString());
+  net::SchemefulSite https_top_level_site;
+  net::SchemefulSite http_top_level_site;
+  if (absl::optional<std::string> etld_plus_one =
+          grouping_key.GetEtldPlusOne()) {
+    https_top_level_site =
+        net::SchemefulSite(ConvertEtldToOrigin(*etld_plus_one, true));
+    http_top_level_site =
+        net::SchemefulSite(ConvertEtldToOrigin(*etld_plus_one, false));
+  }
 
   AllowJavascript();
   RemoveMatchingNodes(cookies_tree_model_.get(), absl::nullopt, grouping_key);
@@ -2387,18 +2405,28 @@ void SiteSettingsHandler::HandleClearSiteGroupDataAndCookies(
   // Retrieve all of the origin entries grouped under this group.
   std::vector<url::Origin> affected_origins;
   for (const auto& origin_is_partitioned : all_sites_map_[grouping_key]) {
-    // Ignore entries which are partitioned, as no non-cookie tree storage is
-    // partitioned.
-    // TODO(crbug.com/1468277): Call RemovePartitionedBrowsingData() for this
-    // case using the {origin, grouping_key} pair.
-    if (origin_is_partitioned.second)
-      continue;
+    if (origin_is_partitioned.second) {
+      // Ensure that if the entry is partitioned, the partitioning site has
+      // been set.
+      CHECK(https_top_level_site.GetURL().is_valid());
+      CHECK(http_top_level_site.GetURL().is_valid());
 
-    affected_origins.emplace_back(
-        // A placeholder origin may have been created, in this case the
-        // grouping key itself should be used as the origin, the same as it
-        // would have been for display.
-        ResolveOriginInSiteGroup(grouping_key, origin_is_partitioned.first));
+      // Partitioned entries must be removed from the browsing data model.
+      if (browsing_data_model_) {
+        browsing_data_model_->RemovePartitionedBrowsingData(
+            origin_is_partitioned.first.host(), https_top_level_site,
+            base::DoNothing());
+        browsing_data_model_->RemovePartitionedBrowsingData(
+            origin_is_partitioned.first.host(), http_top_level_site,
+            base::DoNothing());
+      }
+    } else {
+      affected_origins.emplace_back(
+          // A placeholder origin may have been created, in this case the
+          // grouping key itself should be used as the origin, the same as it
+          // would have been for display.
+          ResolveOriginInSiteGroup(grouping_key, origin_is_partitioned.first));
+    }
   }
 
   // Cookies may have associated with the entry for the grouping url itself.
@@ -2411,7 +2439,19 @@ void SiteSettingsHandler::HandleClearSiteGroupDataAndCookies(
         ConvertEtldToOrigin(*etld_plus1, /*secure=*/true));
   }
 
-  RemoveNonTreeModelData(affected_origins);
+  if (browsing_data_model_) {
+    for (const auto& origin : affected_origins) {
+      if (origin.GetURL().SchemeIsHTTPOrHTTPS()) {
+        browsing_data_model_->RemoveUnpartitionedBrowsingData(
+            origin.host(), base::DoNothing());
+      } else {
+        browsing_data_model_->RemoveUnpartitionedBrowsingData(
+            origin, base::DoNothing());
+      }
+    }
+  }
+
+  RemoveNonModelData(affected_origins);
 }
 
 void SiteSettingsHandler::HandleRecordAction(const base::Value::List& args) {
@@ -2440,8 +2480,12 @@ void SiteSettingsHandler::HandleGetNumCookiesString(
   ResolveJavascriptCallback(base::Value(callback_id), base::Value(string));
 }
 
-void SiteSettingsHandler::RemoveNonTreeModelData(
+void SiteSettingsHandler::RemoveNonModelData(
     const std::vector<url::Origin>& origins) {
+  if (origins.empty()) {
+    return;
+  }
+
   // TODO(crbug.com/1268626): Remove client hint information, which cannot be
   // associated with Cookie node information as the scheme in the cookie node
   // may not match due to HTTP / HTTPS distinction issues.
@@ -2456,51 +2500,6 @@ void SiteSettingsHandler::RemoveNonTreeModelData(
         ->SetWebsiteSettingDefaultScope(
             origin.GetURL(), GURL(),
             ContentSettingsType::REDUCED_ACCEPT_LANGUAGE, base::Value());
-  }
-  // Remove Privacy Sandbox API data.
-  content::BrowsingDataRemover* remover = profile_->GetBrowsingDataRemover();
-  std::unique_ptr<content::BrowsingDataFilterBuilder> filter =
-      content::BrowsingDataFilterBuilder::Create(
-          content::BrowsingDataFilterBuilder::Mode::kDelete);
-  for (const auto& origin : origins) {
-    filter->AddOrigin(origin);
-  }
-  remover->RemoveWithFilter(
-      base::Time::Min(), base::Time::Max(),
-      content::BrowsingDataRemover::DATA_TYPE_PRIVACY_SANDBOX &
-          // Part of BrowsingDataModel:
-          ~content::BrowsingDataRemover::DATA_TYPE_TRUST_TOKENS,
-      content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
-      std::move(filter));
-
-  // Remove Privacy Sandbox API data not integrated with the
-  // BrowsingDataRemover.
-  if (auto* browsing_topics_service =
-          browsing_topics::BrowsingTopicsServiceFactory::GetForProfile(
-              profile_)) {
-    for (const auto& origin : origins) {
-      browsing_topics_service->ClearTopicsDataForOrigin(origin);
-    }
-  }
-
-  // Remove any Browsing Data Model data associated with the origins.
-  // TODO(crbug.com/1271155) - When the browsing data model supports all storage
-  // types, re-work this handler to work directly with primary hosts as defined
-  // by the model.
-  // TODO(crbug.com/1368048) - Permission info loading before storage info
-  // can result in an interleaving of actions that means this pointer is
-  // null (as it hasn't loaded yet, but the user can delete an entry which has
-  // been created by permission info).
-  if (browsing_data_model_) {
-    for (const auto& origin : origins) {
-      browsing_data_model_->RemoveBrowsingData(origin, base::DoNothing());
-
-      // Also remove Browsing Data Model data associated with the origin's host.
-      if (origin.GetURL().SchemeIsHTTPOrHTTPS()) {
-        browsing_data_model_->RemoveBrowsingData(origin.host(),
-                                                 base::DoNothing());
-      }
-    }
   }
 
 #if BUILDFLAG(IS_WIN)

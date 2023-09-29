@@ -11,6 +11,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_role_properties.h"
@@ -44,12 +45,16 @@ void ReadAnythingAppModel::OnSettingsRestoredFromPrefs(
     read_anything::mojom::LetterSpacing letter_spacing,
     const std::string& font,
     double font_size,
-    read_anything::mojom::Colors color) {
+    read_anything::mojom::Colors color,
+    double speech_rate,
+    read_anything::mojom::HighlightGranularity granularity) {
   line_spacing_ = GetLineSpacingValue(line_spacing);
   letter_spacing_ = GetLetterSpacingValue(letter_spacing);
   font_name_ = font;
   font_size_ = font_size;
   color_theme_ = static_cast<size_t>(color);
+  speech_rate_ = speech_rate;
+  highlight_granularity_ = static_cast<size_t>(granularity);
 }
 
 void ReadAnythingAppModel::InsertDisplayNode(ui::AXNodeID node) {
@@ -546,6 +551,10 @@ void ReadAnythingAppModel::ProcessNonGeneratedEvents(
     switch (event.event_type) {
       case ax::mojom::Event::kLoadComplete:
         requires_distillation_ = true;
+        if (features::IsDataCollectionModeForScreen2xEnabled()) {
+          page_finished_loading_for_data_collection_ = true;
+        }
+
         // TODO(accessibility): Some pages may never completely load; use a
         // timer with a reasonable delay to force distillation -> drawing.
         // Investigate if this is needed.
@@ -737,4 +746,31 @@ void ReadAnythingAppModel::DecreaseTextSize() {
 
 void ReadAnythingAppModel::ResetTextSize() {
   font_size_ = kReadAnythingDefaultFontScale;
+}
+
+std::vector<std::string> ReadAnythingAppModel::GetSupportedFonts() const {
+  std::vector<std::string> font_choices_;
+
+  if (base::Contains(kLanguagesSupportedByPoppins, default_language_code())) {
+    font_choices_.push_back("Poppins");
+  }
+  font_choices_.push_back("Sans-serif");
+  font_choices_.push_back("Serif");
+  if (base::Contains(kLanguagesSupportedByComicNeue, default_language_code())) {
+    font_choices_.push_back("Comic Neue");
+  }
+  if (base::Contains(kLanguagesSupportedByLexendDeca,
+                     default_language_code())) {
+    font_choices_.push_back("Lexend Deca");
+  }
+  if (base::Contains(kLanguagesSupportedByEbGaramond,
+                     default_language_code())) {
+    font_choices_.push_back("EB Garamond");
+  }
+  if (base::Contains(kLanguagesSupportedByStixTwoText,
+                     default_language_code())) {
+    font_choices_.push_back("STIX Two Text");
+  }
+
+  return font_choices_;
 }

@@ -80,7 +80,7 @@ class DictationTestUtils {
   std::vector<base::test::FeatureRef> GetDisabledFeatures();
 
   // Script-related methods.
-  std::string ExecuteAccessibilityCommonScript(const std::string& script);
+  void ExecuteAccessibilityCommonScript(const std::string& script);
   void DisablePumpkin();
 
   // Methods for interacting with the editable.
@@ -114,6 +114,7 @@ class DictationTestUtils {
   // Set up helper methods.
   void SetUpPumpkinDir();
   void SetUpTestSupport();
+  void WaitForDictationJSReady();
   void WaitForPumpkinTaggerReady();
   void WaitForFocusHandler();
 

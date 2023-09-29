@@ -874,6 +874,24 @@ experimental domain Audits
       # Contains additional info when the failure was due to a request.
       optional FailedRequestInfo failedRequestInfo
 
+  type PropertyRuleIssueReason extends string
+    enum
+      InvalidSyntax
+      InvalidInitialValue
+      InvalidInherits
+      InvalidName
+
+  # This issue warns about errors in property rules that lead to property
+  # registrations being ignored.
+  type PropertyRuleIssueDetails extends object
+    properties
+      # Source code position of the property rule.
+      SourceCodeLocation sourceCodeLocation
+      # Reason why the property rule was discarded.
+      PropertyRuleIssueReason propertyRuleIssueReason
+      # The value of the property rule property that failed to parse
+      optional string propertyValue
+
   # A unique identifier for the type of issue. Each type may use one of the
   # optional fields in InspectorIssueDetails to convey more specific
   # information about the kind of issue.
@@ -898,6 +916,7 @@ experimental domain Audits
       BounceTrackingIssue
       StylesheetLoadingIssue
       FederatedAuthUserInfoRequestIssue
+      PropertyRuleIssue
 
   # This struct holds a list of optional fields with additional information
   # specific to the kind of issue. When adding a new issue code, please also
@@ -921,6 +940,7 @@ experimental domain Audits
       optional FederatedAuthRequestIssueDetails federatedAuthRequestIssueDetails
       optional BounceTrackingIssueDetails bounceTrackingIssueDetails
       optional StylesheetLoadingIssueDetails stylesheetLoadingIssueDetails
+      optional PropertyRuleIssueDetails propertyRuleIssueDetails
       optional FederatedAuthUserInfoRequestIssueDetails federatedAuthUserInfoRequestIssueDetails
 
   # A unique id for a DevTools inspector issue. Allows other entities (e.g.
@@ -5736,6 +5756,8 @@ domain Network
       SameSiteNoneInsecure
       # The cookie was not stored due to user preferences.
       UserPreferences
+      # The cookie was blocked due to third-party cookie phaseout.
+      ThirdPartyPhaseout
       # The cookie was blocked by third-party cookie blocking between sites in
       # the same First-Party Set.
       ThirdPartyBlockedInFirstPartySet
@@ -5781,6 +5803,8 @@ domain Network
       # character if it appears in the middle of the cookie name, value, an
       # attribute name, or an attribute value.
       DisallowedCharacter
+      # Cookie contains no content or only whitespace.
+      NoCookieContent
 
   # Types of reasons why a cookie may not be sent with a request.
   experimental type CookieBlockedReason extends string
@@ -5807,6 +5831,8 @@ domain Network
       SameSiteNoneInsecure
       # The cookie was not sent due to user preferences.
       UserPreferences
+      # The cookie was blocked due to third-party cookie phaseout.
+      ThirdPartyPhaseout
       # The cookie was blocked by third-party cookie blocking between sites in
       # the same First-Party Set.
       ThirdPartyBlockedInFirstPartySet
@@ -9331,11 +9357,13 @@ experimental domain Storage
       loaded
       bid
       win
+      additionalBid
+      additionalBidWin
 
   # Ad advertising element inside an interest group.
   type InterestGroupAd extends object
     properties
-      string renderUrl
+      string renderURL
       optional string metadata
 
   # The full details of an interest group.
@@ -9345,10 +9373,10 @@ experimental domain Storage
       string name
       Network.TimeSinceEpoch expirationTime
       string joiningOrigin
-      optional string biddingUrl
-      optional string biddingWasmHelperUrl
-      optional string updateUrl
-      optional string trustedBiddingSignalsUrl
+      optional string biddingLogicURL
+      optional string biddingWasmHelperURL
+      optional string updateURL
+      optional string trustedBiddingSignalsURL
       array of string trustedBiddingSignalsKeys
       optional string userBiddingSignals
       array of InterestGroupAd ads
@@ -11318,7 +11346,7 @@ experimental domain Preload
       TriggerBackgrounded
       MemoryLimitExceeded
       DataSaverEnabled
-      HasEffectiveUrl
+      TriggerUrlHasEffectiveUrl
       ActivatedBeforeStarted
       InactivePageRestriction
       StartFailed
@@ -11353,18 +11381,9 @@ experimental domain Preload
       MaxNumOfRunningEagerPrerendersExceeded
       MaxNumOfRunningNonEagerPrerendersExceeded
       MaxNumOfRunningEmbedderPrerendersExceeded
-
-  # Fired when a prerender attempt is completed.
-  event prerenderAttemptCompleted
-    parameters
-      PreloadingAttemptKey key
-      # The frame id of the frame initiating prerendering.
-      Page.FrameId initiatingFrameId
-      string prerenderingUrl
-      PrerenderFinalStatus finalStatus
-      # This is used to give users more information about the name of the API call
-      # that is incompatible with prerender and has caused the cancellation of the attempt
-      optional string disallowedApiMethod
+      PrerenderingUrlHasEffectiveUrl
+      RedirectedPrerenderingUrlHasEffectiveUrl
+      ActivationUrlHasEffectiveUrl
 
   # Fired when a preload enabled state is updated.
   event preloadEnabledStateUpdated

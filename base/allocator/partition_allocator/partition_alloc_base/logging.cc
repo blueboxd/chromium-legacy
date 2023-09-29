@@ -121,7 +121,7 @@ bool ShouldCreateLogMessage(int severity) {
 }
 
 int GetVlogVerbosity() {
-  return std::max(-1, LOG_INFO - GetMinLogLevel());
+  return std::max(-1, LOGGING_INFO - GetMinLogLevel());
 }
 
 void RawLog(int level, const char* message) {

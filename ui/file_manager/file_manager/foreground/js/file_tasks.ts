@@ -13,7 +13,7 @@ import {executeTask, getDirectory, getFileTasks} from '../../common/js/api.js';
 import {AsyncQueue} from '../../common/js/async_util.js';
 import {type AnnotatedTask, annotateTasks, getDefaultTask, INSTALL_LINUX_PACKAGE_TASK_DESCRIPTOR, isFilesAppId, parseActionId} from '../../common/js/file_tasks.js';
 import {FileType} from '../../common/js/file_type.js';
-import {metrics} from '../../common/js/metrics.js';
+import {recordEnum, recordTime} from '../../common/js/metrics.js';
 import {ProgressCenterItem, ProgressItemState, ProgressItemType} from '../../common/js/progress_center_common.js';
 import {LEGACY_FILES_EXTENSION_ID} from '../../common/js/url_constants.js';
 import {str, strf, util} from '../../common/js/util.js';
@@ -24,11 +24,11 @@ import {FileTasks as StoreFileTasks} from '../../externs/ts/state.js';
 import {VolumeInfo} from '../../externs/volume_info.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
 import {getStore} from '../../state/store.js';
-import {FilesPasswordDialog} from '../elements/files_password_dialog.js';
+import {USER_CANCELLED, XfPasswordDialog} from '../../widgets/xf_password_dialog.js';
 
 import {constants} from './constants.js';
 import {DirectoryChangeTracker, DirectoryModel} from './directory_model.js';
-import {FileTransferController} from './file_transfer_controller.js';
+import {FileTransferController, PastePlan} from './file_transfer_controller.js';
 import {MetadataItem} from './metadata/metadata_item.js';
 import {MetadataModel} from './metadata/metadata_model.js';
 import {TaskController} from './task_controller.js';
@@ -177,11 +177,11 @@ export class FileTasks {
    */
   private static recordEnumWithOnlineAndOffline_(
       volumeManager: VolumeManager, name: string, value: any, values: any[]) {
-    metrics.recordEnum(name, value, values);
+    recordEnum(name, value, values);
     if (FileTasks.isOffline_(volumeManager)) {
-      metrics.recordEnum(name + '.Offline', value, values);
+      recordEnum(name + '.Offline', value, values);
     } else {
-      metrics.recordEnum(name + '.Online', value, values);
+      recordEnum(name + '.Online', value, values);
     }
   }
 
@@ -242,7 +242,7 @@ export class FileTasks {
       default:
         root = 'Other';
     }
-    metrics.recordTime(`ZipMountTime.${root}`, time);
+    recordTime(`ZipMountTime.${root}`, time);
   }
 
   /**
@@ -290,9 +290,9 @@ export class FileTasks {
         break;
     }
 
-    metrics.recordEnum(
+    recordEnum(
         histogramName, fileHandler,
-        Object.keys(OfficeFileHandlersHistogramValues).length);
+        Object.values(OfficeFileHandlersHistogramValues));
   }
 
   /** Returns true if the descriptor is for an internal task.  */
@@ -350,7 +350,7 @@ export class FileTasks {
 
       assert(volumeManager.getLocationInfo(pvmDir));
 
-      fileTransferController.executePaste(new FileTransferController.PastePlan(
+      fileTransferController.executePaste(new PastePlan(
           entries.map(e => e.toURL()), [], pvmDir, metadataModel,
           /*isMove=*/ isMyFiles));
       directoryModel.changeDirectoryEntry(pvmDir);
@@ -579,11 +579,11 @@ export class FileTasks {
       const isBulkPinningEnabled =
           !!getStore().getState()?.preferences?.driveFsBulkPinningEnabled;
       for (const entry of this.entries_) {
-        metrics.recordEnum(
+        recordEnum(
             'DriveOfflineOpen.Unavailable', FileTasks.getViewFileType(entry),
             UMA_INDEX_KNOWN_EXTENSIONS as string[]);
         if (isBulkPinningEnabled) {
-          metrics.recordEnum(
+          recordEnum(
               'GoogleDrive.BulkPinning.OfflineOpen',
               FileTasks.getViewFileType(entry),
               UMA_INDEX_KNOWN_EXTENSIONS as string[]);
@@ -712,7 +712,7 @@ export class FileTasks {
       while (true) {
         // Ask for password.
         do {
-          const dialog = this.ui_.passwordDialog as FilesPasswordDialog;
+          const dialog = this.ui_.passwordDialog as XfPasswordDialog;
           password = await dialog.askForPassword(filename, password);
         } while (!password);
 
@@ -771,7 +771,7 @@ export class FileTasks {
     } catch (error) {
       // No need to display an error message if user canceled mounting or
       // canceled the password prompt.
-      if (error === FilesPasswordDialog.USER_CANCELLED ||
+      if (error === USER_CANCELLED ||
           error === VolumeManagerCommon.VolumeError.CANCELLED) {
         return;
       }

@@ -19,7 +19,6 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/extension_commands_global_registry.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/ui/browser.h"
@@ -29,9 +28,10 @@
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/translate/partial_translate_bubble_model.h"
-#include "chrome/browser/ui/user_education/browser_feature_promo_snooze_service.h"
+#include "chrome/browser/ui/user_education/browser_feature_promo_storage_service.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views_context.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
+#include "chrome/browser/ui/views/frame/browser_actions.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/contents_web_view.h"
@@ -90,6 +90,10 @@ class TopControlsSlideControllerTest;
 class WebAppFrameToolbarView;
 class WebContentsCloseHandler;
 class WebUITabStripContainerView;
+
+namespace actions {
+class ActionItem;
+}  // namespace actions
 
 namespace ui {
 class NativeTheme;
@@ -372,6 +376,10 @@ class BrowserView : public BrowserWindow,
     return immersive_mode_controller_.get();
   }
 
+  actions::ActionItem* root_action_item() const {
+    return browser_actions_.root_action_item();
+  }
+
   // Returns true if the view has been initialized.
   bool initialized() const { return initialized_; }
 
@@ -635,6 +643,7 @@ class BrowserView : public BrowserWindow,
 
   BrowserFeaturePromoController* GetFeaturePromoController() override;
   bool IsFeaturePromoActive(const base::Feature& iph_feature) const override;
+  bool CanShowFeaturePromo(const base::Feature& iph_feature) const override;
   bool MaybeShowFeaturePromo(
       const base::Feature& iph_feature,
       user_education::FeaturePromoController::BubbleCloseCallback
@@ -655,11 +664,11 @@ class BrowserView : public BrowserWindow,
           user_education::FeaturePromoSpecification::NoSubstitution()) override;
   bool CloseFeaturePromo(
       const base::Feature& iph_feature,
-      user_education::FeaturePromoCloseReason close_reason =
-          user_education::FeaturePromoCloseReason::kFeatureEngaged) override;
+      user_education::FeaturePromoCloseReason close_reason) override;
   user_education::FeaturePromoHandle CloseFeaturePromoAndContinue(
       const base::Feature& iph_feature) override;
   void NotifyFeatureEngagementEvent(const char* event_name) override;
+  void NotifyPromoFeatureUsed(const base::Feature& iph_feature) override;
 
   void ShowIncognitoClearBrowsingDataDialog() override;
 
@@ -991,6 +1000,10 @@ class BrowserView : public BrowserWindow,
 
   void UpdateWindowControlsOverlayEnabled();
 
+  // Sends widget's `can_resize` to blink to update `resizable` CSS @media
+  // feature.
+  void UpdateResizable();
+
   // Updates the visibility of the Window Controls Overlay toggle button.
   void UpdateWindowControlsOverlayToggleVisible();
 
@@ -1253,10 +1266,14 @@ class BrowserView : public BrowserWindow,
   // The last bounds we notified about in TryNotifyWindowBoundsChanged().
   gfx::Rect last_widget_bounds_;
 
+  // `browser_actions_` creates the root browser level action along with child
+  // actions.
+  const BrowserActions browser_actions_;
+
   std::unique_ptr<AccessibilityFocusHighlight> accessibility_focus_highlight_;
 
-  std::unique_ptr<BrowserFeaturePromoSnoozeService>
-      feature_promo_snooze_service_ = nullptr;
+  std::unique_ptr<BrowserFeaturePromoStorageService>
+      feature_promo_storage_service_ = nullptr;
   std::unique_ptr<BrowserFeaturePromoController> feature_promo_controller_ =
       nullptr;
 

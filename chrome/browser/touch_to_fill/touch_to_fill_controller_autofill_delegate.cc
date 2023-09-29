@@ -50,7 +50,7 @@ TouchToFillControllerAutofillDelegate::TouchToFillControllerAutofillDelegate(
     base::PassKey<TouchToFillControllerAutofillTest>,
     password_manager::PasswordManagerClient* password_client,
     content::WebContents* web_contents,
-    scoped_refptr<device_reauth::DeviceAuthenticator> authenticator,
+    std::unique_ptr<device_reauth::DeviceAuthenticator> authenticator,
     base::WeakPtr<password_manager::WebAuthnCredentialsDelegate>
         webauthn_delegate,
     std::unique_ptr<password_manager::PasswordCredentialFiller> filler,
@@ -67,7 +67,7 @@ TouchToFillControllerAutofillDelegate::TouchToFillControllerAutofillDelegate(
 
 TouchToFillControllerAutofillDelegate::TouchToFillControllerAutofillDelegate(
     ChromePasswordManagerClient* password_client,
-    scoped_refptr<device_reauth::DeviceAuthenticator> authenticator,
+    std::unique_ptr<device_reauth::DeviceAuthenticator> authenticator,
     base::WeakPtr<password_manager::WebAuthnCredentialsDelegate>
         webauthn_delegate,
     std::unique_ptr<password_manager::PasswordCredentialFiller> filler,
@@ -92,7 +92,7 @@ TouchToFillControllerAutofillDelegate::
     ~TouchToFillControllerAutofillDelegate() {
   if (authenticator_) {
     // This is a noop if no auth triggered by Touch To Fill is in progress.
-    authenticator_->Cancel(device_reauth::DeviceAuthRequester::kTouchToFill);
+    authenticator_->Cancel();
   }
 }
 
@@ -132,11 +132,10 @@ void TouchToFillControllerAutofillDelegate::OnCredentialSelected(
   // `this` notifies the authenticator when it is destructed, resulting in
   // the callback being reset by the authenticator. Therefore, it is safe
   // to use base::Unretained.
-  authenticator_->Authenticate(
-      device_reauth::DeviceAuthRequester::kTouchToFill,
+  authenticator_->AuthenticateWithMessage(
+      u"",
       base::BindOnce(&TouchToFillControllerAutofillDelegate::OnReauthCompleted,
-                     base::Unretained(this), credential),
-      /*use_last_valid_auth=*/true);
+                     base::Unretained(this), credential));
 }
 
 void TouchToFillControllerAutofillDelegate::OnPasskeyCredentialSelected(

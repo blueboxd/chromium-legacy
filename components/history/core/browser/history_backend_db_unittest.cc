@@ -2089,118 +2089,6 @@ TEST_F(HistoryBackendDBTest, MigrateKeywordSearchTerms) {
   EXPECT_EQ(normalized_term, keyword_search_term_row.normalized_term);
 }
 
-// Test to verify the left-over typed_url sync metadata gets cleared correctly
-// during migration to version 41.
-TEST_F(HistoryBackendDBTest, MigrateTypedURLLeftoverMetadata) {
-  ASSERT_NO_FATAL_FAILURE(CreateDBVersion(40));
-
-  // Define common uninteresting data for visits.
-  const VisitID referring_visit = 0;
-  const ui::PageTransition transition = ui::PAGE_TRANSITION_TYPED;
-  const base::Time visit_time(base::Time::Now());
-  const base::TimeDelta visit_duration(base::Seconds(30));
-
-  // The first visit has both a DB entry and a metadata entry.
-  const VisitID visit_id1 = 1;
-  const URLID url_id1 = 10;
-  const SegmentID segment_id1 = 20;
-  const std::string metadata_value1 = "BLOB1";
-
-  // The second one as well has both a DB entry and a metadata entry.
-  const VisitID visit_id2 = 2;
-  const URLID url_id2 = 11;
-  const SegmentID segment_id2 = 21;
-  const std::string metadata_value2 = "BLOB2";
-
-  // The second visit has only a left-over metadata entry.
-  const URLID url_id3 = 12;
-  const std::string metadata_value3 = "BLOB3";
-
-  {
-    // Open the db for manual manipulation.
-    sql::Database db;
-    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
-
-    const char kInsertVisitStatement[] =
-        "INSERT INTO visits "
-        "(id, url, visit_time, from_visit, transition, segment_id, "
-        "visit_duration) VALUES (?, ?, ?, ?, ?, ?, ?)";
-    {
-      sql::Statement s(db.GetUniqueStatement(kInsertVisitStatement));
-      s.BindInt64(0, visit_id1);
-      s.BindInt64(1, url_id1);
-      s.BindInt64(2, visit_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
-      s.BindInt64(3, referring_visit);
-      s.BindInt64(4, transition);
-      s.BindInt64(5, segment_id1);
-      s.BindInt64(6, visit_duration.InMicroseconds());
-      ASSERT_TRUE(s.Run());
-    }
-    {
-      sql::Statement s(db.GetUniqueStatement(kInsertVisitStatement));
-      s.BindInt64(0, visit_id2);
-      s.BindInt64(1, url_id2);
-      s.BindInt64(2, visit_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
-      s.BindInt64(3, referring_visit);
-      s.BindInt64(4, transition);
-      s.BindInt64(5, segment_id2);
-      s.BindInt64(6, visit_duration.InMicroseconds());
-      ASSERT_TRUE(s.Run());
-    }
-
-    const char kInsertMetadataStatement[] =
-        "INSERT INTO typed_url_sync_metadata (storage_key, value) VALUES (?, "
-        "?)";
-    {
-      sql::Statement s(db.GetUniqueStatement(kInsertMetadataStatement));
-      s.BindInt64(0, url_id3);
-      s.BindString(1, metadata_value3);
-      ASSERT_TRUE(s.Run());
-    }
-    {
-      sql::Statement s(db.GetUniqueStatement(kInsertMetadataStatement));
-      s.BindInt64(0, url_id2);
-      s.BindString(1, metadata_value2);
-      ASSERT_TRUE(s.Run());
-    }
-    {
-      sql::Statement s(db.GetUniqueStatement(kInsertMetadataStatement));
-      s.BindInt64(0, url_id1);
-      s.BindString(1, metadata_value1);
-      ASSERT_TRUE(s.Run());
-    }
-  }
-
-  // Re-open the db, triggering migration.
-  CreateBackendAndDatabase();
-  DeleteBackend();
-  {
-    // Re-open the db for manual manipulation.
-    sql::Database db;
-    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
-    {
-      // The version should have been updated.
-      sql::Statement s(db.GetUniqueStatement(
-          "SELECT value FROM meta WHERE key = 'version'"));
-      ASSERT_GE(HistoryDatabase::GetCurrentVersion(), 41);
-      EXPECT_TRUE(s.Step());
-      EXPECT_EQ(HistoryDatabase::GetCurrentVersion(), s.ColumnInt(0));
-    }
-    {
-      // Check that the left-over metadata entry is deleted.
-      sql::Statement s(db.GetUniqueStatement(
-          "SELECT storage_key FROM typed_url_sync_metadata"));
-      std::set<URLID> remaining_metadata;
-      while (s.Step()) {
-        remaining_metadata.insert(s.ColumnInt64(0));
-      }
-      EXPECT_EQ(remaining_metadata.count(url_id3), 0u);
-      EXPECT_EQ(remaining_metadata.count(url_id2), 1u);
-      EXPECT_EQ(remaining_metadata.count(url_id1), 1u);
-    }
-  }
-}
-
 TEST_F(HistoryBackendDBTest, MigrateContentAnnotationsWithoutEntitiesColumn) {
   ASSERT_NO_FATAL_FAILURE(CreateDBVersion(46));
 
@@ -3094,6 +2982,34 @@ TEST_F(HistoryBackendDBTest, MigrateVisitsAddVisitedLinkIdColumn) {
   }
 }
 
+TEST_F(HistoryBackendDBTest, MigrateRemoveTypedUrlMetadataTable) {
+  ASSERT_NO_FATAL_FAILURE(CreateDBVersion(67));
+
+  // Open the old version of the DB and make sure the "typed_url_sync_metadata"
+  // table exists.
+  const char kTypedUrlMetadataTable[] = "typed_url_sync_metadata";
+  {
+    sql::Database db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
+    ASSERT_TRUE(db.DoesTableExist(kTypedUrlMetadataTable));
+  }
+
+  // Re-open the db, triggering migration.
+  CreateBackendAndDatabase();
+
+  // The version should have been updated.
+  ASSERT_GE(HistoryDatabase::GetCurrentVersion(), 68);
+
+  DeleteBackend();
+
+  // Open the db manually again and make sure the table does not exist anymore.
+  {
+    sql::Database db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
+    EXPECT_FALSE(db.DoesTableExist(kTypedUrlMetadataTable));
+  }
+}
+
 // ^^^ NEW MIGRATION TESTS GO HERE ^^^
 
 // Preparation for the next DB migration: This test verifies that the test DB
@@ -3131,7 +3047,6 @@ TEST_F(HistoryBackendDBTest, QuerySegmentUsage) {
   const GURL url2("http://www.foo.com");
   const int visit_count1 = 10;
   const int visit_count2 = 5;
-  const base::Time time(base::Time::Now());
 
   URLID url_id1 = db_->AddURL(URLRow(url1));
   ASSERT_NE(0, url_id1);
@@ -3145,8 +3060,14 @@ TEST_F(HistoryBackendDBTest, QuerySegmentUsage) {
       url_id2, VisitSegmentDatabase::ComputeSegmentName(url2));
   ASSERT_NE(0, segment_id2);
 
-  ASSERT_TRUE(db_->UpdateSegmentVisitCount(segment_id1, time, visit_count1));
-  ASSERT_TRUE(db_->UpdateSegmentVisitCount(segment_id2, time, visit_count2));
+  const base::Time now(base::Time::Now());
+  ASSERT_TRUE(db_->UpdateSegmentVisitCount(segment_id1, now, visit_count1));
+  ASSERT_TRUE(db_->UpdateSegmentVisitCount(segment_id2, now, visit_count2));
+  const base::Time two_days_ago = now - base::Days(2);
+  ASSERT_TRUE(
+      db_->UpdateSegmentVisitCount(segment_id1, two_days_ago, visit_count1));
+  ASSERT_TRUE(
+      db_->UpdateSegmentVisitCount(segment_id2, two_days_ago, visit_count2));
 
   // Without a filter, the "file://" URL should win.
   std::vector<std::unique_ptr<PageUsageData>> results =
@@ -3154,6 +3075,8 @@ TEST_F(HistoryBackendDBTest, QuerySegmentUsage) {
   ASSERT_EQ(1u, results.size());
   EXPECT_EQ(url1, results[0]->GetURL());
   EXPECT_EQ(segment_id1, results[0]->GetID());
+  EXPECT_EQ(now.LocalMidnight(), results[0]->GetLastVisitTimeslot());
+  EXPECT_EQ(visit_count1 * 2, results[0]->GetVisitCount());
 
   // With the filter, the "file://" URL should be filtered out, so the "http://"
   // URL should win instead.
@@ -3162,6 +3085,8 @@ TEST_F(HistoryBackendDBTest, QuerySegmentUsage) {
   ASSERT_EQ(1u, results2.size());
   EXPECT_EQ(url2, results2[0]->GetURL());
   EXPECT_EQ(segment_id2, results2[0]->GetID());
+  EXPECT_EQ(now.LocalMidnight(), results2[0]->GetLastVisitTimeslot());
+  EXPECT_EQ(visit_count2 * 2, results2[0]->GetVisitCount());
 }
 
 TEST_F(HistoryBackendDBTest, QuerySegmentUsageReturnsNothingForZeroVisits) {

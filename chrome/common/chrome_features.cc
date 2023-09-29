@@ -861,6 +861,13 @@ BASE_FEATURE(kKAnonymityServiceStorage,
              "KAnonymityServiceStorage",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Place Lacros's browser components in a location shared across users.
+BASE_FEATURE(kLacrosSharedComponentsDir,
+             "LacrosSharedComponentsDir",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 #if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS)
 BASE_FEATURE(kLinuxLowMemoryMonitor,
              "LinuxLowMemoryMonitor",
@@ -1044,14 +1051,14 @@ BASE_FEATURE(kPrintPreviewSetupAssistance,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
+#if BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kPrivacyGuideAndroid,
              "PrivacyGuideAndroid",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
-#if BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kPrivacyGuideAndroidPostMVP,
              "PrivacyGuideAndroidPostMVP",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 // Enables or disables push subscriptions keeping Chrome running in the
@@ -1420,8 +1427,15 @@ const base::FeatureParam<double>
     kTrustSafetySentimentSurveyV2ControlGroupProbability{
         &kTrustSafetySentimentSurveyV2, "control-group-probability", 0.0};
 const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyV2DownloadWarningUIProbability{
+        &kTrustSafetySentimentSurveyV2, "download-warning-ui-probability", 0.0};
+const base::FeatureParam<double>
     kTrustSafetySentimentSurveyV2PasswordCheckProbability{
         &kTrustSafetySentimentSurveyV2, "password-check-probability", 0.0};
+const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyV2PasswordProtectionUIProbability{
+        &kTrustSafetySentimentSurveyV2, "password-protection-ui-probability",
+        0.0};
 const base::FeatureParam<double>
     kTrustSafetySentimentSurveyV2SafetyCheckProbability{
         &kTrustSafetySentimentSurveyV2, "safety-check-probability", 0.0};
@@ -1459,9 +1473,16 @@ const base::FeatureParam<std::string>
 const base::FeatureParam<std::string>
     kTrustSafetySentimentSurveyV2ControlGroupTriggerId{
         &kTrustSafetySentimentSurveyV2, "control-group-trigger-id", ""};
+extern const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyV2DownloadWarningUITriggerId{
+        &kTrustSafetySentimentSurveyV2, "download-warning-ui-trigger-id", ""};
 const base::FeatureParam<std::string>
     kTrustSafetySentimentSurveyV2PasswordCheckTriggerId{
         &kTrustSafetySentimentSurveyV2, "password-check-trigger-id", ""};
+extern const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyV2PasswordProtectionUITriggerId{
+        &kTrustSafetySentimentSurveyV2, "password-protection-ui-trigger-id",
+        ""};
 const base::FeatureParam<std::string>
     kTrustSafetySentimentSurveyV2SafetyCheckTriggerId{
         &kTrustSafetySentimentSurveyV2, "safety-check-trigger-id", ""};
@@ -1567,7 +1588,7 @@ BASE_FEATURE(kWebKioskEnableLacros,
 // which makes blink expose IWA APIs to be used by the web app.
 BASE_FEATURE(kWebKioskEnableIwaApis,
              "WebKioskEnableIwaApis",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)

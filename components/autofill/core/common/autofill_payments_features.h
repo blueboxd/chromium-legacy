@@ -41,7 +41,6 @@ BASE_DECLARE_FEATURE(kAutofillEnableServerIban);
 BASE_DECLARE_FEATURE(kAutofillEnableStickyManualFallbackForCards);
 BASE_DECLARE_FEATURE(kAutofillEnableUpdateVirtualCardEnrollment);
 BASE_DECLARE_FEATURE(kAutofillEnableVirtualCardFidoEnrollment);
-BASE_DECLARE_FEATURE(kAutofillEnableVirtualCardManagementInDesktopSettingsPage);
 BASE_DECLARE_FEATURE(kAutofillEnableVirtualCardMetadata);
 BASE_DECLARE_FEATURE(kAutofillMoveLegalTermsAndIconForNewCardEnrollment);
 BASE_DECLARE_FEATURE(kAutofillOfferToSaveCardWithSameLastFour);
@@ -58,6 +57,7 @@ BASE_DECLARE_FEATURE(kAutofillUseEloRegexForBinMatching);
 #if BUILDFLAG(IS_IOS)
 BASE_DECLARE_FEATURE(kAutofillUseTwoDotsForLastFourDigits);
 BASE_DECLARE_FEATURE(kAutofillEnablePaymentsMandatoryReauthOnBling);
+BASE_DECLARE_FEATURE(kAutofillEnableVirtualCards);
 #endif
 
 #if BUILDFLAG(IS_ANDROID)

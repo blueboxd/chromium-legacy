@@ -59,6 +59,8 @@
   E_CPONLY(kColorCaptionButtonBackground) \
   /* Captured tab colors. */ \
   E_CPONLY(kColorCapturedTabContentsBorder) \
+  /* Cast dialog colors. */ \
+  E_CPONLY(kColorCastDialogHelpIcon) \
   /* Desktop media tab list colors. */ \
   E_CPONLY(kColorDesktopMediaTabListBorder) \
   E_CPONLY(kColorDesktopMediaTabListPreviewBackground) \
@@ -694,6 +696,16 @@
   E_CPONLY(kColorReadAnythingFocusRingBackgroundDark) \
   E_CPONLY(kColorReadAnythingFocusRingBackgroundLight) \
   E_CPONLY(kColorReadAnythingFocusRingBackgroundYellow) \
+  E_CPONLY(kColorCurrentReadAloudHighlight) \
+  E_CPONLY(kColorCurrentReadAloudHighlightBlue) \
+  E_CPONLY(kColorCurrentReadAloudHighlightDark) \
+  E_CPONLY(kColorCurrentReadAloudHighlightLight) \
+  E_CPONLY(kColorCurrentReadAloudHighlightYellow) \
+  E_CPONLY(kColorPreviousReadAloudHighlight) \
+  E_CPONLY(kColorPreviousReadAloudHighlightBlue) \
+  E_CPONLY(kColorPreviousReadAloudHighlightDark) \
+  E_CPONLY(kColorPreviousReadAloudHighlightLight) \
+  E_CPONLY(kColorPreviousReadAloudHighlightYellow) \
 
 #if BUILDFLAG(IS_CHROMEOS)
 #define CHROME_PLATFORM_SPECIFIC_COLOR_IDS \

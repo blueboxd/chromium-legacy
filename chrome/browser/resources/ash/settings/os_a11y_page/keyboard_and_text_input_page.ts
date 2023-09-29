@@ -98,7 +98,11 @@ export class SettingsKeyboardAndTextInputPageElement extends
 
       dictationLearnMoreUrl_: {
         type: String,
-        value: 'https://support.google.com/chromebook?p=text_dictation_m100',
+        value() {
+          return loadTimeData.getBoolean('isKioskModeActive') ?
+              '' :
+              'https://support.google.com/chromebook?p=text_dictation_m100';
+        },
       },
 
       /**
@@ -160,7 +164,7 @@ export class SettingsKeyboardAndTextInputPageElement extends
     this.useDictationLocaleSubtitleOverride_ = false;
   }
 
-  override ready() {
+  override ready(): void {
     super.ready();
     this.addWebUiListener(
         'dictation-locale-menu-subtitle-changed',
@@ -179,7 +183,7 @@ export class SettingsKeyboardAndTextInputPageElement extends
   /**
    * Note: Overrides RouteOriginMixin implementation
    */
-  override currentRouteChanged(newRoute: Route, prevRoute?: Route) {
+  override currentRouteChanged(newRoute: Route, prevRoute?: Route): void {
     super.currentRouteChanged(newRoute, prevRoute);
 
     // Does not apply to this page.

@@ -510,6 +510,15 @@ TEST_F(RedactionToolTest, RedactCustomPatterns) {
             RedactCustomPatterns("\"attested_device_id\"=\"-5CD045B0DZ\""));
   EXPECT_EQ("\"attested_device_id\"=\"5CD045B0DZ-\"",
             RedactCustomPatterns("\"attested_device_id\"=\"5CD045B0DZ-\""));
+  // redact lsusb's iSerial with a nonzero index.
+  EXPECT_EQ("iSerial    3 (Serial: 14)",
+            RedactCustomPatterns("iSerial    3 12345abcdEFG"));
+  // Do not redact lsusb's iSerial when the index is 0.
+  EXPECT_EQ("iSerial    0 ",
+            RedactCustomPatterns("iSerial    0 "));
+  // redact usbguard's serial number in syslog
+  EXPECT_EQ("serial \"(Serial: 15)\"",
+            RedactCustomPatterns("serial \"usb1234AA5678\""));
 
   // Valid PSM identifiers.
   EXPECT_EQ("PSM id: (PSM ID: 1)", RedactCustomPatterns("PSM id: ABCZ/123xx"));
@@ -526,6 +535,8 @@ TEST_F(RedactionToolTest, RedactCustomPatterns) {
   EXPECT_EQ("/root/123xx", RedactCustomPatterns("/root/123xx"));
   // PSM mention without whitespace, e.g. in base64-encoded data.
   EXPECT_EQ("PSM+ABCZ/123xx", RedactCustomPatterns("PSM+ABCZ/123xx"));
+  // PSM mention with only newline whitespace, e.g. in base64-encoded data.
+  EXPECT_EQ("PSM+\r\nABCZ/123xx", RedactCustomPatterns("PSM+\r\nABCZ/123xx"));
 
   EXPECT_EQ("\"gaia_id\":\"(GAIA: 1)\"",
             RedactCustomPatterns("\"gaia_id\":\"1234567890\""));

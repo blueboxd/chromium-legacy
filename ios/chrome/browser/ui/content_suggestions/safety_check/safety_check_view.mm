@@ -46,6 +46,7 @@
 
 #pragma mark - Private methods
 
+// Creates all views for the Safety Check (Magic Stack) module.
 - (void)createSubviews {
   // Return if the subviews have already been created and added.
   if (!(self.subviews.count == 0)) {
@@ -115,7 +116,7 @@
         [[NSMutableArray alloc] init];
 
     // Update Chrome check
-    if (_state.updateChromeState != UpdateChromeSafetyCheckState::kUpToDate) {
+    if (InvalidUpdateChromeState(_state.updateChromeState)) {
       SafetyCheckItemView* updateChromeView = [[SafetyCheckItemView alloc]
           initWithItemType:SafetyCheckItemType::kUpdateChrome
                 layoutType:SafetyCheckItemLayoutType::kCompact];
@@ -126,7 +127,7 @@
     }
 
     // Password check
-    if (_state.passwordState != PasswordSafetyCheckState::kSafe) {
+    if (InvalidPasswordState(_state.passwordState)) {
       SafetyCheckItemView* passwordView = [[SafetyCheckItemView alloc]
                    initWithItemType:SafetyCheckItemType::kPassword
                          layoutType:SafetyCheckItemLayoutType::kCompact
@@ -144,7 +145,7 @@
     // NOTE: Don't add the Safe Browsing check if two items already exist in
     // `safetyCheckItems`. At most, the compact view displays two rows of items.
     if ([safetyCheckItems count] < 2 &&
-        _state.safeBrowsingState != SafeBrowsingSafetyCheckState::kSafe) {
+        InvalidSafeBrowsingState(_state.safeBrowsingState)) {
       SafetyCheckItemView* safeBrowsingView = [[SafetyCheckItemView alloc]
           initWithItemType:SafetyCheckItemType::kSafeBrowsing
                 layoutType:SafetyCheckItemLayoutType::kCompact];

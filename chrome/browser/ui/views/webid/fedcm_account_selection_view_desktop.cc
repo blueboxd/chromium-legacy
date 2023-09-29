@@ -457,34 +457,34 @@ void FedCmAccountSelectionView::OnCloseButtonClicked(const ui::Event& event) {
       views::Widget::ClosedReason::kCloseButtonClicked);
 }
 
-// TODO(crbug.com/1478837): Record metrics for error UI
-void FedCmAccountSelectionView::OnMoreDetailsButtonClicked(
-    const GURL& url,
-    const ui::Event& event) {
+void FedCmAccountSelectionView::OnSigninToIdP(const ui::Event& event) {
   if (input_protector_->IsPossiblyUnintendedInteraction(event)) {
     return;
   }
 
-  ShowModalDialog(url);
-}
-
-// TODO(crbug.com/1478837): Record metrics for error UI
-void FedCmAccountSelectionView::OnGotItButtonClicked(const ui::Event& event) {
-  if (input_protector_->IsPossiblyUnintendedInteraction(event)) {
-    return;
-  }
-
-  bubble_widget_->CloseWithReason(
-      views::Widget::ClosedReason::kAcceptButtonClicked);
-}
-
-void FedCmAccountSelectionView::OnSigninToIdP() {
   delegate_->OnSigninToIdP();
   is_mismatch_continue_clicked_ = true;
   popup_window_state_ =
       PopupWindowResult::kAccountsNotReceivedAndPopupNotClosedByIdp;
   UMA_HISTOGRAM_ENUMERATION("Blink.FedCm.IdpSigninStatus.MismatchDialogResult",
                             MismatchDialogResult::kContinued);
+}
+
+void FedCmAccountSelectionView::OnGotIt(const ui::Event& event) {
+  if (input_protector_->IsPossiblyUnintendedInteraction(event)) {
+    return;
+  }
+
+  delegate_->OnDismiss(DismissReason::kGotItButton);
+}
+
+void FedCmAccountSelectionView::OnMoreDetails(const ui::Event& event) {
+  if (input_protector_->IsPossiblyUnintendedInteraction(event)) {
+    return;
+  }
+
+  delegate_->OnMoreDetails();
+  delegate_->OnDismiss(DismissReason::kMoreDetailsButton);
 }
 
 content::WebContents* FedCmAccountSelectionView::ShowModalDialog(

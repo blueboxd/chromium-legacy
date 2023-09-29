@@ -5,10 +5,16 @@
 #ifndef COMPONENTS_SERVICES_APP_SERVICE_PUBLIC_CPP_APP_STORAGE_APP_STORAGE_FILE_HANDLER_H_
 #define COMPONENTS_SERVICES_APP_SERVICE_PUBLIC_CPP_APP_STORAGE_APP_STORAGE_FILE_HANDLER_H_
 
+#include <vector>
+
 #include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
+#include "base/sequence_checker.h"
 #include "base/task/sequenced_task_runner_helpers.h"
+#include "base/values.h"
+#include "components/services/app_service/public/cpp/app_types.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class SequencedTaskRunner;
 
@@ -33,13 +39,47 @@ class COMPONENT_EXPORT(APP_UPDATE) AppStorageFileHandler
         AppStorageFileHandler>::owning_task_runner();
   }
 
+  // Writes `apps` to the AppStorage file. This method must be invoked on a
+  // background task runner `owning_task_runner`.
+  void WriteToFile(std::vector<AppPtr> apps);
+
+  // Reads the app info from the AppStorage file. This method must be invoked on
+  // a background task runner `owning_task_runner`.
+  std::vector<AppPtr> ReadFromFile();
+
+  const base::FilePath& GetFilePath() { return file_path_; }
+
  private:
   friend class base::RefCountedDeleteOnSequence<AppStorageFileHandler>;
   friend class base::DeleteHelper<AppStorageFileHandler>;
 
   virtual ~AppStorageFileHandler();
 
+  // Converts std::vector<AppPtr> to base::Value,
+  // e.g.:
+  // {
+  //   "agimnkijcaahngcdmfeangaknmldooml":    // app_id
+  //     {
+  //         "type": 5,
+  //         "name": "YouTube",
+  //         ...
+  //     },
+  //   "cnbgggchhmkkdmeppjobngjoejnihlei":    // app_id
+  //     {
+  //         "type": 1,
+  //         "name": "PlayStore",
+  //         ...
+  //     },
+  //   ...
+  // }
+  base::Value ConvertAppsToValue(std::vector<AppPtr> apps);
+
+  // Converts base::Value to std::vector<AppPtr>,
+  std::vector<AppPtr> ConvertValueToApps(base::Value app_info_value);
+
   base::FilePath file_path_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 }  // namespace apps

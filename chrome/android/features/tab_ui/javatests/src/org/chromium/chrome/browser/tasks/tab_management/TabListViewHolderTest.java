@@ -58,7 +58,6 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.JniMocker;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridge;
@@ -68,7 +67,6 @@ import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tab.state.LevelDBPersistedDataStorage;
 import org.chromium.chrome.browser.tab.state.LevelDBPersistedDataStorageJni;
 import org.chromium.chrome.browser.tab.state.PersistedTabDataConfiguration;
@@ -920,10 +918,10 @@ public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
             mockCurrencyFormatter();
             mockUrlUtilities();
             mockOptimizationGuideResponse(OptimizationGuideDecision.TRUE, ANY_PRICE_TRACKING_DATA);
-            MockTab tab = (MockTab) MockTab.createAndInitialize(1, false);
+            MockTab tab = MockTab.createAndInitialize(1, false);
             tab.setGurlOverrideForTesting(TEST_GURL);
             tab.setIsInitialized(true);
-            CriticalPersistedTabData.from(tab).setTimestampMillis(System.currentTimeMillis());
+            tab.setTimestampMillis(System.currentTimeMillis());
             TabListMediator.ShoppingPersistedTabDataFetcher fetcher =
                     new TabListMediator.ShoppingPersistedTabDataFetcher(tab, null);
             mGridModel.set(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER, fetcher);
@@ -1043,7 +1041,6 @@ public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
             mStripMCP.destroy();
             mGridMCP.destroy();
             mSelectableMCP.destroy();
-            CachedFeatureFlags.resetFlagsForTesting();
         });
         super.tearDownTest();
     }

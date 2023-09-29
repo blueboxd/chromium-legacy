@@ -350,7 +350,7 @@ static void FailedAccessCheckCallbackInMainThread(v8::Local<v8::Object> holder,
   // V8 to pass in more contextual information, so that we can build a full
   // ExceptionState.
   ExceptionState exception_state(
-      holder->GetIsolate(), ExceptionState::kUnknownContext, nullptr, nullptr);
+      holder->GetIsolate(), ExceptionContextType::kUnknown, nullptr, nullptr);
   BindingSecurity::FailedAccessCheckFor(holder->GetIsolate(),
                                         WrapperTypeInfo::Unwrap(data), holder,
                                         exception_state);
@@ -388,8 +388,8 @@ TrustedTypesCodeGenerationCheck(v8::Local<v8::Context> context,
                                 v8::Local<v8::Value> source,
                                 bool is_code_like) {
   v8::Isolate* isolate = context->GetIsolate();
-  ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
-                                 "eval", "");
+  ExceptionState exception_state(
+      isolate, ExceptionContextType::kOperationInvoke, "eval", "");
 
   // If the input is not a string or TrustedScript, pass it through.
   if (!source->IsString() && !is_code_like &&
@@ -578,6 +578,15 @@ bool WasmGCEnabledCallback(v8::Local<v8::Context> context) {
   return RuntimeEnabledFeatures::WebAssemblyGCEnabled(execution_context);
 }
 
+bool WasmJSStringBuiltinsEnabledCallback(v8::Local<v8::Context> context) {
+  ExecutionContext* execution_context = ToExecutionContext(context);
+  if (!execution_context) {
+    return false;
+  }
+  return RuntimeEnabledFeatures::WebAssemblyJSStringBuiltinsEnabled(
+      execution_context);
+}
+
 bool JavaScriptCompileHintsMagicEnabledCallback(
     v8::Local<v8::Context> context) {
   ExecutionContext* execution_context = ToExecutionContext(context);
@@ -642,8 +651,9 @@ v8::MaybeLocal<v8::Promise> HostImportModuleDynamically(
           script_state->GetContext(), v8::Local<v8::Module>(),
           v8_import_assertions, /*v8_import_assertions_has_positions=*/false));
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  resolver->SetPropertyName("import");
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+      script_state,
+      ExceptionContext(ExceptionContextType::kUnknown, "", "import"));
   ScriptPromise promise = resolver->Promise();
 
   String invalid_attribute_key;
@@ -705,6 +715,8 @@ void InitializeV8Common(v8::Isolate* isolate) {
   isolate->SetWasmModuleCallback(WasmModuleOverride);
   isolate->SetWasmInstanceCallback(WasmInstanceOverride);
   isolate->SetWasmGCEnabledCallback(WasmGCEnabledCallback);
+  isolate->SetWasmImportedStringsEnabledCallback(
+      WasmJSStringBuiltinsEnabledCallback);
   isolate->SetSharedArrayBufferConstructorEnabledCallback(
       SharedArrayBufferConstructorEnabledCallback);
   isolate->SetJavaScriptCompileHintsMagicEnabledCallback(

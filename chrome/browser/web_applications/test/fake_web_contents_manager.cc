@@ -90,6 +90,12 @@ class FakeWebContentsManager::FakeUrlLoader : public WebAppUrlLoader {
         FROM_HERE, base::BindOnce(std::move(callback), page.url_load_result));
   }
 
+  void PrepareForLoad(content::WebContents* web_contents,
+                      base::OnceClosure callback) override {
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, std::move(callback));
+  }
+
  private:
   base::WeakPtr<FakeWebContentsManager> manager_;
 
@@ -374,7 +380,7 @@ void FakeWebContentsManager::DeleteIconState(const GURL& icon_url) {
   icon_state_.erase(icon_url);
 }
 
-AppId FakeWebContentsManager::CreateBasicInstallPageState(
+webapps::AppId FakeWebContentsManager::CreateBasicInstallPageState(
     const GURL& install_url,
     const GURL& manifest_url,
     const GURL& start_url,

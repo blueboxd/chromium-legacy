@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://webui-test/mojo_webui_test_support.js';
 import 'chrome://customize-chrome-side-panel.top-chrome/wallpaper_search.js';
 
 import {CustomizeChromePageCallbackRouter, CustomizeChromePageHandlerRemote} from 'chrome://customize-chrome-side-panel.top-chrome/customize_chrome.mojom-webui.js';
@@ -10,6 +9,7 @@ import {CustomizeChromeApiProxy} from 'chrome://customize-chrome-side-panel.top-
 import {WallpaperSearchElement} from 'chrome://customize-chrome-side-panel.top-chrome/wallpaper_search.js';
 import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {TestMock} from 'chrome://webui-test/test_mock.js';
+import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
 import {installMock} from './test_support.js';
 
@@ -31,6 +31,13 @@ suite('WallpaperSearchTest', () => {
 
   test('wallpaper search element added to side panel', async () => {
     assertTrue(document.body.contains(wallpaperSearchElement));
+  });
+
+  test('clicking back button creates event', async () => {
+    const eventPromise = eventToPromise('back-click', wallpaperSearchElement);
+    wallpaperSearchElement.$.heading.getBackButton().click();
+    const event = await eventPromise;
+    assertTrue(!!event);
   });
 
   test('clicking search invokes backend', () => {

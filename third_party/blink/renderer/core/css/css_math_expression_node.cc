@@ -249,6 +249,14 @@ bool CanEagerlySimplify(const CSSMathExpressionNode* operand) {
     case CalculationResultCategory::kCalcFrequency:
     case CalculationResultCategory::kCalcResolution:
       return true;
+    case CalculationResultCategory::kCalcLength: {
+      switch (operand->ResolvedUnitType()) {
+        case CSSPrimitiveValue::UnitType::kPixels:
+          return true;
+        default:
+          return false;
+      }
+    }
     default:
       return false;
   }
@@ -360,7 +368,7 @@ CSSMathExpressionNumericLiteral::ComputeValueInCanonicalUnit() const {
       if (CSSPrimitiveValue::IsRelativeUnit(value_->GetType())) {
         return absl::nullopt;
       }
-      U_FALLTHROUGH;
+      [[fallthrough]];
     case kCalcAngle:
     case kCalcTime:
     case kCalcFrequency:
@@ -631,6 +639,10 @@ CSSMathExpressionOperation::CreateComparisonFunctionSimplified(
         EvaluateOperator(canonical_values, op), canonical_unit);
   }
 
+  if (operands.size() == 1) {
+    return operands.front()->Copy();
+  }
+
   const bool can_be_resolved_with_conversion_data =
       DetermineCanBeSimplifiedWithConversionData(operands);
   return MakeGarbageCollected<CSSMathExpressionOperation>(
@@ -701,10 +713,6 @@ CSSMathExpressionNode*
 CSSMathExpressionOperation::CreateTrigonometricFunctionSimplified(
     Operands&& operands,
     CSSValueID function_id) {
-  if (!RuntimeEnabledFeatures::CSSTrigonometricFunctionsEnabled()) {
-    return nullptr;
-  }
-
   double value;
   auto unit_type = CSSPrimitiveValue::UnitType::kUnknown;
   bool error = false;
@@ -1870,8 +1878,6 @@ class CSSMathExpressionNodeParser {
       case CSSValueID::kClamp:
       case CSSValueID::kCalc:
       case CSSValueID::kWebkitCalc:
-        return true;
-      // TODO(crbug.com/1190444): Add other trigonometric functions
       case CSSValueID::kSin:
       case CSSValueID::kCos:
       case CSSValueID::kTan:
@@ -1879,7 +1885,7 @@ class CSSMathExpressionNodeParser {
       case CSSValueID::kAcos:
       case CSSValueID::kAtan:
       case CSSValueID::kAtan2:
-        return RuntimeEnabledFeatures::CSSTrigonometricFunctionsEnabled();
+        return true;
       case CSSValueID::kPow:
       case CSSValueID::kSqrt:
       case CSSValueID::kHypot:
@@ -2010,7 +2016,6 @@ class CSSMathExpressionNodeParser {
       case CSSValueID::kAsin:
       case CSSValueID::kAcos:
       case CSSValueID::kAtan:
-        DCHECK(RuntimeEnabledFeatures::CSSTrigonometricFunctionsEnabled());
         max_argument_count = 1;
         break;
       case CSSValueID::kPow:
@@ -2043,7 +2048,6 @@ class CSSMathExpressionNodeParser {
         min_argument_count = 2;
         break;
       case CSSValueID::kAtan2:
-        DCHECK(RuntimeEnabledFeatures::CSSTrigonometricFunctionsEnabled());
         max_argument_count = 2;
         min_argument_count = 2;
         break;
@@ -2094,14 +2098,23 @@ class CSSMathExpressionNodeParser {
       case CSSValueID::kWebkitCalc:
         return const_cast<CSSMathExpressionNode*>(nodes.front().Get());
       case CSSValueID::kMin:
-        return CSSMathExpressionOperation::CreateComparisonFunctionSimplified(
-            std::move(nodes), CSSMathOperator::kMin);
       case CSSValueID::kMax:
-        return CSSMathExpressionOperation::CreateComparisonFunctionSimplified(
-            std::move(nodes), CSSMathOperator::kMax);
-      case CSSValueID::kClamp:
-        return CSSMathExpressionOperation::CreateComparisonFunctionSimplified(
-            std::move(nodes), CSSMathOperator::kClamp);
+      case CSSValueID::kClamp: {
+        CSSMathOperator op = CSSMathOperator::kMin;
+        if (function_id == CSSValueID::kMax) {
+          op = CSSMathOperator::kMax;
+        }
+        if (function_id == CSSValueID::kClamp) {
+          op = CSSMathOperator::kClamp;
+        }
+        CSSMathExpressionNode* node =
+            CSSMathExpressionOperation::CreateComparisonFunctionSimplified(
+                std::move(nodes), op);
+        if (node) {
+          context_.Count(WebFeature::kCSSComparisonFunctions);
+        }
+        return node;
+      }
       case CSSValueID::kSin:
       case CSSValueID::kCos:
       case CSSValueID::kTan:
@@ -2109,7 +2122,6 @@ class CSSMathExpressionNodeParser {
       case CSSValueID::kAcos:
       case CSSValueID::kAtan:
       case CSSValueID::kAtan2:
-        DCHECK(RuntimeEnabledFeatures::CSSTrigonometricFunctionsEnabled());
         return CSSMathExpressionOperation::
             CreateTrigonometricFunctionSimplified(std::move(nodes),
                                                   function_id);

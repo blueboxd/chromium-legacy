@@ -76,7 +76,8 @@ FormFieldDataAndroidBridgeImpl::GetOrCreateJavaPeer(
       ConvertUTF8ToJavaString(env, field.autocomplete_attribute),
       field.should_autocomplete,
       ConvertUTF16ToJavaString(env, field.placeholder),
-      ConvertUTF8ToJavaString(env, field.form_control_type),
+      ConvertUTF8ToJavaString(env,
+                              FormControlTypeToString(field.form_control_type)),
       ConvertUTF16ToJavaString(env, field.id_attribute),
       /*optionValues=*/ProjectOptions(field.options, &SelectOption::value),
       /*optionContents=*/ProjectOptions(field.options, &SelectOption::content),
@@ -141,6 +142,16 @@ void FormFieldDataAndroidBridgeImpl::UpdateValue(std::u16string_view value) {
 
   Java_FormFieldData_updateValue(env, obj,
                                  ConvertUTF16ToJavaString(env, value));
+}
+
+void FormFieldDataAndroidBridgeImpl::UpdateVisible(bool visible) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null()) {
+    return;
+  }
+
+  Java_FormFieldData_updateVisible(env, obj, visible);
 }
 
 }  // namespace autofill

@@ -36,9 +36,6 @@ class BaseUpdateMetadataTest(LoggingTestCase):
     def setUp(self):
         super().setUp()
         self.maxDiff = None
-        # Lower this threshold so that test results do not need to be repeated.
-        MetadataUpdater.min_results_for_update = 1
-
         self.tool = MockBlinkTool()
         self.finder = path_finder.PathFinder(self.tool.filesystem)
         self.tool.filesystem.write_text_file(
@@ -217,7 +214,7 @@ class UpdateMetadataExecuteTest(BaseUpdateMetadataTest):
                 'OK',
                 'status':
                 'CRASH',
-            }],
+            }] * 4,
         }).encode()
 
     def _unstaged_changes(self):
@@ -289,7 +286,7 @@ class UpdateMetadataExecuteTest(BaseUpdateMetadataTest):
                 'subtests': [],
                 'expected': 'PASS',
                 'status': 'FAIL',
-            }],
+            }] * 4,
         }).encode()
         with self._patch_builtins() as stack:
             stack.enter_context(self._unstaged_changes())
@@ -355,21 +352,24 @@ class UpdateMetadataExecuteTest(BaseUpdateMetadataTest):
                 '}\n',
             ])
 
-    def test_execute_with_infra_failure(self):
+    def test_execute_with_incomplete_results(self):
         self.command.git_cl = MockGitCL(
             self.tool, {
                 Build('test-linux-wpt-rel', 1000, '1000'):
                 TryJobStatus.from_bb_status('INFRA_FAILURE'),
                 Build('test-mac-wpt-rel', 2000, '2000'):
                 TryJobStatus.from_bb_status('SUCCESS'),
+                Build('test-mac-wpt-rel', 3000, '3000'):
+                TryJobStatus.from_bb_status('CANCELED'),
             })
         with self._patch_builtins():
             exit_code = self.command.main([])
         self.assertEqual(exit_code, 1)
         self.assertLog([
-            'WARNING: Some builds have infrastructure failures:\n',
+            'WARNING: Some builds have incomplete results:\n',
             'WARNING:   "test-linux-wpt-rel" build 1000\n',
-            'WARNING: Examples of infrastructure failures include:\n',
+            'WARNING:   "test-mac-wpt-rel" build 3000\n',
+            'WARNING: Examples of incomplete results include:\n',
             'WARNING:   * Shard terminated the harness after timing out.\n',
             'WARNING:   * Harness exited early due to excessive unexpected '
             'failures.\n',
@@ -380,8 +380,7 @@ class UpdateMetadataExecuteTest(BaseUpdateMetadataTest):
             'HEAD/docs/testing/web_test_expectations.md#handle-bot-timeouts\n',
             'INFO: All builds finished.\n',
             'INFO: Continue?\n',
-            'ERROR: Aborting update due to build(s) with infrastructure '
-            'failures.\n',
+            'ERROR: Aborting update due to build(s) with incomplete results.\n',
         ])
 
     def test_execute_no_trigger_jobs(self):
@@ -490,7 +489,7 @@ class UpdateMetadataExecuteTest(BaseUpdateMetadataTest):
                 'test': '/new-test-on-tot.html',
                 'subtests': [],
                 'status': 'PASS',
-            }],
+            }] * 4,
         }).encode()
         with self._patch_builtins():
             exit_code = self.command.main(['fail.html'])
@@ -639,10 +638,10 @@ class UpdateMetadataExecuteTest(BaseUpdateMetadataTest):
                 'specifiers': ['Trusty', 'Debug'],
             },
         })
-        update_properties = self.command.update_properties(
+        update_properties = self.command.default_update_properties(
             [Build('test-linux-wpt-rel')])
         self.assertEqual(update_properties.primary_properties, ['product'])
-        update_properties = self.command.update_properties(
+        update_properties = self.command.default_update_properties(
             [Build('test-linux-wpt-rel'),
              Build('test-linux-wpt-dbg')])
         self.assertEqual(update_properties.primary_properties,
@@ -693,6 +692,9 @@ class UpdateMetadataASTSerializationTest(BaseUpdateMetadataTest):
                     configs[run_info] = test_port
 
             configs = TestConfigurations(self.tool.filesystem, configs)
+            # Lower this threshold so that test results do not need to be
+            # repeated.
+            options.setdefault('min_samples', 1)
             updater = MetadataUpdater.from_manifests(
                 manifests, configs, self.tool.port_factory.get(), **options)
             updater.collect_results(
@@ -1180,19 +1182,20 @@ class UpdateMetadataASTSerializationTest(BaseUpdateMetadataTest):
         unexpectedly passes. Unexpected passes should be removed separately
         using long-term test history.
         """
-        MetadataUpdater.min_results_for_update = 2
         self.write_contents(
             'external/wpt/fail.html.ini', """\
             [fail.html]
               expected: FAIL
             """)
-        self.update({
-            'results': [{
-                'test': '/fail.html',
-                'status': 'PASS',
-                'expected': 'FAIL',
-            }],
-        })
+        self.update(
+            {
+                'results': [{
+                    'test': '/fail.html',
+                    'status': 'PASS',
+                    'expected': 'FAIL',
+                }],
+            },
+            min_samples=2)
         self.assert_contents(
             'external/wpt/fail.html.ini', """\
             [fail.html]
@@ -1922,3 +1925,42 @@ class UpdateMetadataArgumentParsingTest(unittest.TestCase):
         with self.assert_parse_error('is neither a regular file '
                                      'nor a directory'):
             self.command.parse_args(['--report=does/not/exist'])
+
+    def test_update_properties(self):
+        self.tool.filesystem.write_text_file(
+            'update-props.json',
+            json.dumps({
+                'properties': ['product'],
+                'dependents': {
+                    'product': ['virtual_suite'],
+                },
+            }))
+        options, _ = self.command.parse_args(
+            ['--update-properties=update-props.json'])
+        self.assertEqual(options.update_properties.primary_properties,
+                         ['product'])
+        self.assertEqual(options.update_properties.dependent_properties,
+                         {'product': ['virtual_suite']})
+
+    def test_update_properties_bad_format(self):
+        self.tool.filesystem.write_text_file('bad-props.json', json.dumps({}))
+        with self.assert_parse_error('does not conform'):
+            self.command.parse_args(['--update-properties=bad-props.json'])
+        self.tool.filesystem.write_text_file(
+            'bad-props.json',
+            json.dumps({
+                'properties': ['product'],
+                'dependents': ['os'],
+            }))
+        with self.assert_parse_error('does not conform'):
+            self.command.parse_args(['--update-properties=bad-props.json'])
+
+    def test_update_properties_invalid_json(self):
+        self.tool.filesystem.write_text_file('bad-props.json', '{')
+        with self.assert_parse_error('is not a valid JSON file'):
+            self.command.parse_args(['--update-properties=bad-props.json'])
+
+    def test_update_properties_does_not_exist(self):
+        with self.assert_parse_error('is not a valid JSON file'):
+            self.command.parse_args(
+                ['--update-properties=does-not-exist.json'])

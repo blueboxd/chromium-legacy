@@ -17,6 +17,7 @@ ci.defaults.set(
     pool = ci.gpu.POOL,
     sheriff_rotations = sheriff_rotations.CHROMIUM_GPU,
     tree_closing = True,
+    contact_team_email = "chrome-gpu-infra@google.com",
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
     health_spec = health_spec.DEFAULT,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
@@ -93,9 +94,6 @@ ci.gpu.linux_builder(
         category = "Linux",
     ),
     cq_mirrors_console_view = "mirrors",
-    reclient_bootstrap_env = {
-        "RBE_clang_depscan_archive": "true",
-    },
 )
 
 ci.gpu.linux_builder(
@@ -119,9 +117,6 @@ ci.gpu.linux_builder(
     console_view_entry = consoles.console_view_entry(
         category = "Linux",
     ),
-    reclient_bootstrap_env = {
-        "RBE_clang_depscan_archive": "true",
-    },
 )
 
 ci.gpu.mac_builder(

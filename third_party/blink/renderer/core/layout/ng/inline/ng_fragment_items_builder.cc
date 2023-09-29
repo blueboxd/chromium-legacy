@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
-#include "third_party/blink/renderer/core/layout/ng/svg/ng_svg_text_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_text_layout_algorithm.h"
 
 namespace blink {
 
@@ -429,7 +429,7 @@ absl::optional<PhysicalSize> NGFragmentItemsBuilder::ToFragmentItems(
   ConvertToPhysical(outer_size);
   absl::optional<PhysicalSize> new_size;
   if (node_.IsSvgText()) {
-    new_size = NGSvgTextLayoutAlgorithm(node_, GetWritingMode())
+    new_size = SvgTextLayoutAlgorithm(node_, GetWritingMode())
                    .Layout(TextContent(false), items_);
   }
   new (data) NGFragmentItems(this);

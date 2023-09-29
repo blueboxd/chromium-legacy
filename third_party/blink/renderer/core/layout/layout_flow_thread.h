@@ -54,6 +54,7 @@ class CORE_EXPORT LayoutFlowThread : public LayoutBlockFlow {
   ~LayoutFlowThread() override = default;
   void Trace(Visitor*) const override;
 
+  bool IsLayoutNGObject() const final;
   bool IsLayoutFlowThread() const final {
     NOT_DESTROYED();
     return true;
@@ -124,6 +125,8 @@ class CORE_EXPORT LayoutFlowThread : public LayoutBlockFlow {
                        const PhysicalOffset& additional_offset,
                        NGOutlineType) const override;
 
+  void Paint(const PaintInfo& paint_info) const final;
+
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation&,
                    const PhysicalOffset& accumulated_offset,
@@ -171,6 +174,8 @@ class CORE_EXPORT LayoutFlowThread : public LayoutBlockFlow {
       PageBoundaryRule) const = 0;
 
   const char* GetName() const override = 0;
+
+  RecalcLayoutOverflowResult RecalcLayoutOverflow() final;
 
  protected:
   void GenerateColumnSetIntervalTree();

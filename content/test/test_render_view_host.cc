@@ -379,7 +379,7 @@ TestRenderViewHost::TestRenderViewHost(
                          std::move(main_browsing_context_state),
                          create_case),
       delete_counter_(nullptr) {
-  if (frame_tree->type() == FrameTree::Type::kFencedFrame) {
+  if (frame_tree->is_fenced_frame()) {
     // TestRenderWidgetHostViewChildFrame deletes itself in
     // RenderWidgetHostViewChildFrame::Destroy.
     new TestRenderWidgetHostViewChildFrame(GetWidget());
@@ -515,16 +515,9 @@ void TestRenderViewHost::TestOnUpdateStateWithFile(
 
 RenderViewHostImplTestHarness::RenderViewHostImplTestHarness()
     : RenderViewHostTestHarness(
-          base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
-  std::vector<ui::ResourceScaleFactor> scale_factors;
-  scale_factors.push_back(ui::k100Percent);
-  scoped_set_supported_scale_factors_ =
-      std::make_unique<ui::test::ScopedSetSupportedResourceScaleFactors>(
-          scale_factors);
-}
+          base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
-RenderViewHostImplTestHarness::~RenderViewHostImplTestHarness() {
-}
+RenderViewHostImplTestHarness::~RenderViewHostImplTestHarness() = default;
 
 TestRenderViewHost* RenderViewHostImplTestHarness::test_rvh() {
   return contents()->GetRenderViewHost();

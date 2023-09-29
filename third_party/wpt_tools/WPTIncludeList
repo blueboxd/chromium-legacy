@@ -52,6 +52,7 @@
 ./tools/manifest/jsonlib.py
 ./tools/manifest/log.py
 ./tools/manifest/manifest.py
+./tools/manifest/mputil.py
 ./tools/manifest/requirements.txt
 ./tools/manifest/sourcefile.py
 ./tools/manifest/testpaths.py
@@ -381,6 +382,7 @@
 ./tools/wptrunner/wptrunner/expectedtree.py
 ./tools/wptrunner/wptrunner/font.py
 ./tools/wptrunner/wptrunner/formatters/__init__.py
+./tools/wptrunner/wptrunner/formatters/chromium.py
 ./tools/wptrunner/wptrunner/formatters/wptreport.py
 ./tools/wptrunner/wptrunner/formatters/wptscreenshot.py
 ./tools/wptrunner/wptrunner/instruments.py

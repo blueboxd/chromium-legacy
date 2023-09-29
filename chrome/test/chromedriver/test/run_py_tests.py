@@ -791,6 +791,41 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testEvaluateScript(self):
     self.assertEqual(1, self._driver.ExecuteScript('return 1'))
     self.assertEqual(None, self._driver.ExecuteScript(''))
+    self.assertEqual(None, self._driver.ExecuteScript('return null'))
+    self.assertEqual(None, self._driver.ExecuteScript('return undefined'))
+    self.assertEqual("Chrome", self._driver.ExecuteScript('return "Chrome"'))
+    self.assertEqual([], self._driver.ExecuteScript('return []'))
+    self.assertEqual([5, 6.1, "WebDriver"],
+                     self._driver.ExecuteScript('return [5, 6.1, "WebDriver"]'))
+    self.assertEqual({}, self._driver.ExecuteScript('return {}'))
+    self.assertEqual({'one': 2, 'two': [3]},
+                     self._driver.ExecuteScript(
+                         'return {"one": 2, "two": [3]}'))
+    self.assertEqual({},
+                     self._driver.ExecuteScript(
+                         'return new Map([["one", 2], ["two", [3]]])'))
+    self.assertEqual({},
+                     self._driver.ExecuteScript(
+                         'return new Set(["one", 2])'))
+    [body1, body2] = self._driver.ExecuteScript(
+        'return [document.body, document.body]')
+    self.assertEqual(body1._id, body2._id)
+    [body2, obj1] = self._driver.ExecuteScript(
+        'return [document.body, {"a": document.body}]')
+    self.assertEqual(body1._id, body2._id)
+    self.assertEqual(body1._id, obj1['a']._id)
+    [root1, body2] = self._driver.ExecuteScript(
+        'return [document.documentElement, document.body]')
+    self.assertEqual(body1._id, body2._id)
+    self.assertNotEqual(root1._id, body1._id)
+    [root2, obj1] = self._driver.ExecuteScript(
+        ''.join(['return [document.documentElement, {',
+                 '  "a": document.body, ',
+                 '  "b": {"c": document.documentElement}}]']))
+    self.assertEqual(root1._id, root2._id)
+    self.assertEqual(body1._id, obj1['a']._id)
+    self.assertEqual(root1._id, obj1['b']['c']._id)
+
 
   def testEvaluateScriptWithArgs(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
@@ -1162,6 +1197,25 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         isinstance(element.FindElement('tag name', 'br'),
                    webelement.WebElement))
 
+  def testFindChildElementStaleElement1(self):
+    # Test the standard compliance of error handling
+    div = self._driver.ExecuteScript(
+        'document.body.innerHTML = "<div><br><br></div><div><a></a></div>";'
+        'return document.getElementsByTagName("div")[0];')
+    self._driver.ExecuteScript("arguments[0].remove();", div)
+    with self.assertRaises(chromedriver.StaleElementReference):
+      div.FindElement('tag name', 'br')
+
+  def testFindChildElementStaleElement2(self):
+    # Test the standard compliance of error handling
+    div = self._driver.ExecuteScript(
+        'document.body.innerHTML = "<div><br><br></div><div><a></a></div>";'
+        'return document.getElementsByTagName("div")[0];')
+    self._driver.ExecuteScript(
+        'document.body.innerHTML = "<div>new</div>";')
+    with self.assertRaises(chromedriver.StaleElementReference):
+      div.FindElement('tag name', 'br')
+
   def testFindChildElements(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     self._driver.ExecuteScript(
@@ -1172,6 +1226,25 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertEqual(2, len(brs))
     for br in brs:
       self.assertTrue(isinstance(br, webelement.WebElement))
+
+  def testFindChildElementsStaleElement1(self):
+    # Test the standard compliance of error handling
+    div = self._driver.ExecuteScript(
+        'document.body.innerHTML = "<div><br><br></div><div><a></a></div>";'
+        'return document.getElementsByTagName("div")[0];')
+    self._driver.ExecuteScript("arguments[0].remove();", div)
+    with self.assertRaises(chromedriver.StaleElementReference):
+      div.FindElements('tag name', 'br')
+
+  def testFindChildElementsStaleElement2(self):
+    # Test the standard compliance of error handling
+    div = self._driver.ExecuteScript(
+        'document.body.innerHTML = "<div><br><br></div><div><a></a></div>";'
+        'return document.getElementsByTagName("div")[0];')
+    self._driver.ExecuteScript(
+        'document.body.innerHTML = "<div>new</div>";')
+    with self.assertRaises(chromedriver.StaleElementReference):
+      div.FindElements('tag name', 'br')
 
   def testClickElement(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
@@ -5606,7 +5679,7 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTestWithWebServer):
     self.assertEqual('12', hints['platformVersion'])
     self.assertEqual(False, hints['wow64'])
 
-  def testClientHintsDeviceName(self):
+  def testClientHintsDeviceNameNexus5(self):
     driver = self.CreateDriver(
         mobile_emulation = {'deviceName': 'Nexus 5'})
     driver.Load(self._http_server.GetUrl() + '/userAgent')
@@ -5626,6 +5699,49 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTestWithWebServer):
                            'AppleWebKit/537.36 (KHTML, like Gecko) ',
                            f'Chrome/{major_version}.0.0.0 ',
                            'Mobile Safari/537.36'))
+    actual_ua = driver.ExecuteScript('return navigator.userAgent')
+    self.assertEqual(expected_ua, actual_ua)
+
+  def testClientHintsDeviceNameIPhoneX(self):
+    driver = self.CreateDriver(
+        mobile_emulation = {'deviceName': 'iPhone X'})
+    driver.Load(self._http_server.GetUrl() + '/userAgent')
+    self.assertEqual('', driver.ExecuteScript(
+        'return navigator.userAgentData.platform'))
+    self.assertEqual(True, driver.ExecuteScript(
+        'return navigator.userAgentData.mobile'))
+    hints = self.getHighEntropyClientHints(driver)
+    self.assertEqual('', hints['architecture'])
+    self.assertEqual('', hints['bitness'])
+    self.assertEqual('', hints['model'])
+    self.assertEqual('', hints['platformVersion'])
+    self.assertEqual(False, hints['wow64'])
+    expected_ua = ''.join(('Mozilla/5.0 ',
+                           '(iPhone; CPU iPhone OS 13_2_3 like Mac OS X) ',
+                           'AppleWebKit/605.1.15 (KHTML, like Gecko) ',
+                           'Version/13.0.3 ',
+                           'Mobile/15E148 Safari/604.1'))
+    actual_ua = driver.ExecuteScript('return navigator.userAgent')
+    self.assertEqual(expected_ua, actual_ua)
+
+  def testClientHintsDeviceNameIPad(self):
+    driver = self.CreateDriver(
+        mobile_emulation = {'deviceName': 'iPad'})
+    driver.Load(self._http_server.GetUrl() + '/userAgent')
+    self.assertEqual('', driver.ExecuteScript(
+        'return navigator.userAgentData.platform'))
+    self.assertEqual(False, driver.ExecuteScript(
+        'return navigator.userAgentData.mobile'))
+    hints = self.getHighEntropyClientHints(driver)
+    self.assertEqual('', hints['architecture'])
+    self.assertEqual('', hints['bitness'])
+    self.assertEqual('', hints['model'])
+    self.assertEqual('', hints['platformVersion'])
+    self.assertEqual(False, hints['wow64'])
+    expected_ua = ''.join(('Mozilla/5.0 (iPad; CPU OS 11_0 like Mac OS X) ',
+                           'AppleWebKit/604.1.34 (KHTML, like Gecko) ',
+                           'Version/11.0 Mobile/15A5341f Safari/604.1'
+                           ))
     actual_ua = driver.ExecuteScript('return navigator.userAgent')
     self.assertEqual(expected_ua, actual_ua)
 
@@ -6822,7 +6938,10 @@ class FedCmSpecificTest(ChromeDriverBaseTestWithWebServer):
             'enable-experimental-web-platform-features']
     self._driver = self.CreateDriver(
         accept_insecure_certs=True,
-        chrome_switches=self.chrome_switches)
+        chrome_switches=self.chrome_switches +
+            ["--enable-features=FedCmIdpSigninStatusEnabled"])
+
+    self._driver.Load(self._url_prefix + "/mark-signed-in")
 
   def FedCmDialogCondition(self):
     try:
@@ -6867,14 +6986,7 @@ class FedCmSpecificTest(ChromeDriverBaseTestWithWebServer):
     self.assertEqual('Error: NetworkError: Error retrieving a token.', token)
 
   def testConfirmIdpSignin(self):
-    self._driver = self.CreateDriver(
-        accept_insecure_certs=True,
-        chrome_switches=self.chrome_switches +
-            ["--enable-features=FedCmIdpSigninStatusEnabled"])
-
     self._accounts = ""
-
-    self._driver.Load(self._url_prefix + "/mark-signed-in")
 
     self._driver.Load(self._https_server.GetUrl() + "/fedcm.html")
 

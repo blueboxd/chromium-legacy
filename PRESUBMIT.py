@@ -321,7 +321,9 @@ _BANNED_JAVASCRIPT_FUNCTIONS : Sequence [BanRule] = (
           'ash/webui/multidevice_debug/resources/webui.js',
           'ash/webui/projector_app/resources/annotator/trusted/annotator_browser_proxy.js',
           'ash/webui/projector_app/resources/app/trusted/projector_browser_proxy.js',
-          'ash/webui/scanning/resources/scanning_browser_proxy.js',
+          # TODO(b/301634378): Remove violation exception once Scanning App
+          # migrated off usage of `chrome.send`.
+          'ash/webui/scanning/resources/scanning_browser_proxy.ts',
       ),
     ),
 )
@@ -634,8 +636,9 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
         'deprecated (http://crbug.com/634507). Please avoid converting away',
         'from the Time types in Chromium code, especially if any math is',
         'being done on time values. For interfacing with platform/library',
-        'APIs, use FromMicroseconds() or InMicroseconds(), or one of the other',
-        'type converter methods instead. For faking TimeXXX values (for unit',
+        'APIs, use base::Time::(From,To)DeltaSinceWindowsEpoch() or',
+        'base::{TimeDelta::In}Microseconds(), or one of the other type',
+        'converter methods instead. For faking TimeXXX values (for unit',
         'testing only), use TimeXXX() + Microseconds(N). For',
         'other use cases, please contact base/time/OWNERS.',
       ),
@@ -914,6 +917,19 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
     ),
     BanRule(
+      r'/\babsl::FixedArray\b',
+      (
+        'absl::FixedArray is banned. Use base::FixedArray instead.',
+      ),
+      True,
+      [
+        # base::FixedArray provides canonical access.
+        r'^base/types/fixed_array.h',
+        # Not an error in third_party folders.
+        _THIRD_PARTY_EXCEPT_BLINK,
+      ],
+    ),
+    BanRule(
       r'/\babsl::FunctionRef\b',
       (
         'absl::FunctionRef is banned. Use base::FunctionRef instead.',
@@ -1005,6 +1021,7 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       [
         # Needed to use QUICHE API.
         r'chrome/browser/ip_protection/.*',
+        r'services/network/web_transport.*',
         _THIRD_PARTY_EXCEPT_BLINK  # Not an error in third_party folders.
       ],
     ),
@@ -1880,7 +1897,10 @@ _KNOWN_ROBOTS = set(
           for s in ('swarming-tasks',)
   ) | set('%s@fuchsia-infra.iam.gserviceaccount.com' % s
           for s in ('global-integration-try-builder',
-                    'global-integration-ci-builder'))
+                    'global-integration-ci-builder')
+  ) | set('%s@prod.google.com' % s
+          for s in ('chops-security-borg',
+                    'chops-security-cronjobs-cpesuggest'))
 
 _INVALID_GRD_FILE_LINE = [
         (r'<file lang=.* path=.*', 'Path should come before lang in GRD files.')
@@ -6728,13 +6748,16 @@ def CheckAssertAshOnlyCode(input_api, output_api):
     return errors
 
 
-def _IsRendererOnlyCppFile(input_api, affected_file):
+def _IsMiraclePtrDisallowed(input_api, affected_file):
     path = affected_file.LocalPath()
     if not _IsCPlusPlusFile(input_api, path):
         return False
 
-    # Any code under a "renderer" subdirectory is assumed to be Renderer-only.
-    if "/renderer/" in path and not "/image-decoders/" in path:
+    # Renderer code is generally allowed to use MiraclePtr.
+    # These directories, however, are specifically disallowed.
+    if ("third_party/blink/renderer/core/" in path
+            or "third_party/blink/renderer/platform/heap/" in path
+            or "third_party/blink/renderer/platform/wtf/" in path):
         return True
 
     # Blink's public/web API is only used/included by Renderer-only code.  Note
@@ -6755,13 +6778,13 @@ def CheckRawPtrUsage(input_api, output_api):
     # The regex below matches "raw_ptr<" following a word boundary, but not in a
     # C++ comment.
     raw_ptr_matcher = input_api.re.compile(r'^((?!//).)*\braw_ptr<')
-    file_filter = lambda f: _IsRendererOnlyCppFile(input_api, f)
+    file_filter = lambda f: _IsMiraclePtrDisallowed(input_api, f)
     for f, line_num, line in input_api.RightHandSideLines(file_filter):
         if raw_ptr_matcher.search(line):
             errors.append(
                 output_api.PresubmitError(
                     'Problem on {path}:{line} - '\
-                    'raw_ptr<T> should not be used in Renderer-only code '\
+                    'raw_ptr<T> should not be used in this renderer code '\
                     '(as documented in the "Pointers to unprotected memory" '\
                     'section in //base/memory/raw_ptr.md)'.format(
                         path=f.LocalPath(), line=line_num)))

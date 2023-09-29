@@ -4,6 +4,8 @@
 
 #include "chromeos/ash/components/language_packs/language_pack_manager.h"
 
+#include <string_view>
+
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/functional/bind.h"
@@ -15,9 +17,13 @@
 #include "base/no_destructor.h"
 #include "chromeos/ash/components/dbus/dlcservice/dlcservice.pb.h"
 #include "chromeos/ash/components/dbus/dlcservice/dlcservice_client.h"
+#include "chromeos/ash/components/language_packs/handwriting.h"
 #include "chromeos/ash/components/language_packs/language_packs_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/dlcservice/dbus-constants.h"
+#include "ui/base/ime/ash/input_method_manager.h"
+
+using ::ash::input_method::InputMethodManager;
 
 namespace ash::language_packs {
 namespace {
@@ -59,6 +65,7 @@ void OnInstallDlcComplete(OnInstallCompleteCallback callback,
                           const std::string& locale,
                           const DlcserviceClient::InstallResult& dlc_result) {
   PackResult result = ConvertDlcInstallResultToPackResult(dlc_result);
+  result.feature_id = feature_id;
   result.language_code = locale;
 
   const bool success = result.operation_error == PackResult::ErrorCode::kNone;
@@ -80,9 +87,11 @@ void OnInstallDlcComplete(OnInstallCompleteCallback callback,
 }
 
 void OnUninstallDlcComplete(OnUninstallCompleteCallback callback,
+                            std::string_view feature_id,
                             const std::string& locale,
                             const std::string& err) {
   PackResult result;
+  result.feature_id = feature_id;
   result.language_code = locale;
   result.operation_error = ConvertDlcErrorToErrorCode(err);
 
@@ -100,6 +109,7 @@ void OnUninstallDlcComplete(OnUninstallCompleteCallback callback,
 }
 
 void OnGetDlcState(GetPackStateCallback callback,
+                   std::string_view feature_id,
                    const std::string& locale,
                    const std::string& err,
                    const dlcservice::DlcState& dlc_state) {
@@ -114,9 +124,26 @@ void OnGetDlcState(GetPackStateCallback callback,
     result.pack_state = PackResult::StatusCode::kUnknown;
   }
 
+  result.feature_id = feature_id;
   result.language_code = locale;
 
   std::move(callback).Run(result);
+}
+
+// This functions goes through the list of locales to install and remove,
+// according to the diff. It performs the actual installation and uninstallation
+// of DLCs on the device.
+// It should be called whenever Input Methods are changed.
+void InstallOrRemoveToMatchState(const std::string& feature_id,
+                                 const StringsDiff& locale_diff) {
+  for (const auto& locale : locale_diff.remove) {
+    LanguagePackManager::GetInstance()->RemovePack(feature_id, locale,
+                                                   base::DoNothing());
+  }
+  for (const auto& locale : locale_diff.add) {
+    LanguagePackManager::GetInstance()->InstallPack(feature_id, locale,
+                                                    base::DoNothing());
+  }
 }
 
 }  // namespace
@@ -199,39 +226,39 @@ const base::flat_map<PackSpecPair, std::string>& GetAllLanguagePackDlcIds() {
           {{kHandwritingFeatureId, "zh-HK"}, "handwriting-zh-HK"},
 
           // Text-To-Speech.
-          {{kTtsFeatureId, "bn"}, "tts-bn-bd"},
-          {{kTtsFeatureId, "cs"}, "tts-cs-cz"},
-          {{kTtsFeatureId, "da"}, "tts-da-dk"},
-          {{kTtsFeatureId, "de"}, "tts-de-de"},
-          {{kTtsFeatureId, "el"}, "tts-el-gr"},
-          {{kTtsFeatureId, "en-au"}, "tts-en-au"},
-          {{kTtsFeatureId, "en-gb"}, "tts-en-gb"},
-          {{kTtsFeatureId, "en-us"}, "tts-en-us"},
-          {{kTtsFeatureId, "es-es"}, "tts-es-es"},
-          {{kTtsFeatureId, "es-us"}, "tts-es-us"},
-          {{kTtsFeatureId, "fi"}, "tts-fi-fi"},
-          {{kTtsFeatureId, "fil"}, "tts-fil-ph"},
-          {{kTtsFeatureId, "fr"}, "tts-fr-fr"},
-          {{kTtsFeatureId, "hi"}, "tts-hi-in"},
-          {{kTtsFeatureId, "hu"}, "tts-hu-hu"},
-          {{kTtsFeatureId, "id"}, "tts-id-id"},
-          {{kTtsFeatureId, "it"}, "tts-it-it"},
-          {{kTtsFeatureId, "ja"}, "tts-ja-jp"},
-          {{kTtsFeatureId, "km"}, "tts-km-kh"},
-          {{kTtsFeatureId, "ko"}, "tts-ko-kr"},
-          {{kTtsFeatureId, "nb"}, "tts-nb-no"},
-          {{kTtsFeatureId, "ne"}, "tts-ne-np"},
-          {{kTtsFeatureId, "nl"}, "tts-nl-nl"},
-          {{kTtsFeatureId, "pl"}, "tts-pl-pl"},
-          {{kTtsFeatureId, "pt"}, "tts-pt-br"},
-          {{kTtsFeatureId, "si"}, "tts-si-lk"},
-          {{kTtsFeatureId, "sk"}, "tts-sk-sk"},
-          {{kTtsFeatureId, "sv"}, "tts-sv-se"},
-          {{kTtsFeatureId, "th"}, "tts-th-th"},
-          {{kTtsFeatureId, "tr"}, "tts-tr-tr"},
-          {{kTtsFeatureId, "uk"}, "tts-uk-ua"},
-          {{kTtsFeatureId, "vi"}, "tts-vi-vn"},
-          {{kTtsFeatureId, "yue"}, "tts-yue-hk"},
+          {{kTtsFeatureId, "bn"}, "tts-bn-bd-b"},
+          {{kTtsFeatureId, "cs"}, "tts-cs-cz-b"},
+          {{kTtsFeatureId, "da"}, "tts-da-dk-b"},
+          {{kTtsFeatureId, "de"}, "tts-de-de-b"},
+          {{kTtsFeatureId, "el"}, "tts-el-gr-b"},
+          {{kTtsFeatureId, "en-au"}, "tts-en-au-b"},
+          {{kTtsFeatureId, "en-gb"}, "tts-en-gb-b"},
+          {{kTtsFeatureId, "en-us"}, "tts-en-us-b"},
+          {{kTtsFeatureId, "es-es"}, "tts-es-es-b"},
+          {{kTtsFeatureId, "es-us"}, "tts-es-us-b"},
+          {{kTtsFeatureId, "fi"}, "tts-fi-fi-b"},
+          {{kTtsFeatureId, "fil"}, "tts-fil-ph-b"},
+          {{kTtsFeatureId, "fr"}, "tts-fr-fr-b"},
+          {{kTtsFeatureId, "hi"}, "tts-hi-in-b"},
+          {{kTtsFeatureId, "hu"}, "tts-hu-hu-b"},
+          {{kTtsFeatureId, "id"}, "tts-id-id-b"},
+          {{kTtsFeatureId, "it"}, "tts-it-it-b"},
+          {{kTtsFeatureId, "ja"}, "tts-ja-jp-b"},
+          {{kTtsFeatureId, "km"}, "tts-km-kh-b"},
+          {{kTtsFeatureId, "ko"}, "tts-ko-kr-b"},
+          {{kTtsFeatureId, "nb"}, "tts-nb-no-b"},
+          {{kTtsFeatureId, "ne"}, "tts-ne-np-b"},
+          {{kTtsFeatureId, "nl"}, "tts-nl-nl-b"},
+          {{kTtsFeatureId, "pl"}, "tts-pl-pl-b"},
+          {{kTtsFeatureId, "pt"}, "tts-pt-br-b"},
+          {{kTtsFeatureId, "si"}, "tts-si-lk-b"},
+          {{kTtsFeatureId, "sk"}, "tts-sk-sk-b"},
+          {{kTtsFeatureId, "sv"}, "tts-sv-se-b"},
+          {{kTtsFeatureId, "th"}, "tts-th-th-b"},
+          {{kTtsFeatureId, "tr"}, "tts-tr-tr-b"},
+          {{kTtsFeatureId, "uk"}, "tts-uk-ua-b"},
+          {{kTtsFeatureId, "vi"}, "tts-vi-vn-b"},
+          {{kTtsFeatureId, "yue"}, "tts-yue-hk-b"},
       });
 
   return *all_dlc_ids;
@@ -266,11 +293,7 @@ PackResult::PackResult() {
 
 PackResult::~PackResult() = default;
 
-PackResult::PackResult(const PackResult& pr)
-    : pack_state(pr.pack_state),
-      operation_error(pr.operation_error),
-      language_code(pr.language_code),
-      path(pr.path) {}
+PackResult::PackResult(const PackResult&) = default;
 ///////////////////////////////////////////////////////////
 
 bool LanguagePackManager::IsPackAvailable(const std::string& feature_id,
@@ -320,7 +343,8 @@ void LanguagePackManager::GetPackState(const std::string& feature_id,
                                 GetFeatureIdValueForUma(feature_id));
 
   DlcserviceClient::Get()->GetDlcState(
-      *dlc_id, base::BindOnce(&OnGetDlcState, std::move(callback), locale));
+      *dlc_id,
+      base::BindOnce(&OnGetDlcState, std::move(callback), feature_id, locale));
 }
 
 void LanguagePackManager::RemovePack(const std::string& feature_id,
@@ -338,8 +362,8 @@ void LanguagePackManager::RemovePack(const std::string& feature_id,
   }
 
   DlcserviceClient::Get()->Uninstall(
-      *dlc_id,
-      base::BindOnce(&OnUninstallDlcComplete, std::move(callback), locale));
+      *dlc_id, base::BindOnce(&OnUninstallDlcComplete, std::move(callback),
+                              feature_id, locale));
 }
 
 void LanguagePackManager::InstallBasePack(
@@ -389,6 +413,19 @@ void LanguagePackManager::UpdatePacksForOobe(
   }
 }
 
+void LanguagePackManager::UpdatePacksForInputMethods(
+    base::span<const std::string> current_hwr_locales,
+    InputMethodManager* const input_method_manager) {
+  const base::flat_set<std::string> target_hwr_locales =
+      GetHandwritingLocalesFromEnabledInputMethods(input_method_manager);
+
+  const StringsDiff locale_diff = ComputeStringsDiff(
+      {current_hwr_locales.begin(), current_hwr_locales.end()},
+      target_hwr_locales);
+
+  InstallOrRemoveToMatchState(kHandwritingFeatureId, locale_diff);
+}
+
 void LanguagePackManager::AddObserver(Observer* const observer) {
   observers_.AddObserver(observer);
 }
@@ -398,8 +435,12 @@ void LanguagePackManager::RemoveObserver(Observer* const observer) {
 }
 
 void LanguagePackManager::NotifyPackStateChanged(
+    std::string_view feature_id,
+    std::string_view locale,
     const dlcservice::DlcState& dlc_state) {
   PackResult result = ConvertDlcStateToPackResult(dlc_state);
+  result.feature_id = feature_id;
+  result.language_code = locale;
   for (Observer& observer : observers_) {
     observer.OnPackStateChanged(result);
   }
@@ -409,11 +450,13 @@ void LanguagePackManager::OnDlcStateChanged(
     const dlcservice::DlcState& dlc_state) {
   // As of now, we only have Handwriting as a client.
   // We will check the full list once we have more than one DLC.
-  if (dlc_state.id() != kHandwritingFeatureId) {
+  const absl::optional<std::string> handwriting_locale =
+      DlcToHandwritingLocale(dlc_state.id());
+  if (!handwriting_locale.has_value()) {
     return;
   }
 
-  NotifyPackStateChanged(dlc_state);
+  NotifyPackStateChanged(kHandwritingFeatureId, *handwriting_locale, dlc_state);
 }
 
 LanguagePackManager::LanguagePackManager() = default;

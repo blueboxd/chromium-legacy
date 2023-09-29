@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.feed;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -39,6 +41,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLog;
 
+import org.chromium.base.jank_tracker.PlaceholderJankTracker;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
@@ -79,10 +82,17 @@ import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.feed.proto.wire.ReliabilityLoggingEnums.DiscoverLaunchResult;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.search_engines.TemplateUrlService;
+import org.chromium.components.signin.AccountCapabilitiesConstants;
+import org.chromium.components.signin.base.AccountCapabilities;
+import org.chromium.components.signin.base.AccountInfo;
+import org.chromium.components.signin.base.CoreAccountId;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Tests for {@link FeedSurfaceCoordinator}.
@@ -255,6 +265,7 @@ public class FeedSurfaceCoordinatorTest {
         Profile.setLastUsedProfileForTesting(mProfileMock);
         IdentityServicesProvider.setInstanceForTests(mIdentityService);
         when(mIdentityService.getSigninManager(any(Profile.class))).thenReturn(mSigninManager);
+        when(mIdentityService.getIdentityManager(any(Profile.class))).thenReturn(mIdentityManager);
         when(mSigninManager.getIdentityManager()).thenReturn(mIdentityManager);
         SignInPromo.setDisablePromoForTesting(true);
 
@@ -266,6 +277,7 @@ public class FeedSurfaceCoordinatorTest {
                 .thenAnswer(invocation -> mPrefService.getBoolean(Pref.ENABLE_SNIPPETS));
         when(mPrefService.getBoolean(Pref.ENABLE_SNIPPETS)).thenReturn(true);
         when(mPrefService.getBoolean(Pref.ARTICLES_LIST_VISIBLE)).thenReturn(true);
+        when(mPrefService.getBoolean(Pref.ENABLE_SNIPPETS_BY_DSE)).thenReturn(true);
         TemplateUrlServiceFactory.setInstanceForTesting(mUrlService);
         when(mPrivacyPreferencesManager.isMetricsReportingEnabled()).thenReturn(true);
 
@@ -498,6 +510,38 @@ public class FeedSurfaceCoordinatorTest {
                         SectionHeaderListProperties.STICKY_HEADER_VISIBLILITY_KEY));
     }
 
+    @Test
+    public void testIsPrimaryAccountSupervisedForChildUser() {
+        AccountInfo account = createFakeAccount(/*isChild=*/true);
+        when(mIdentityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN)).thenReturn(account);
+        when(mIdentityManager.findExtendedAccountInfoByEmailAddress(account.getEmail()))
+                .thenReturn(account);
+        assertTrue(mCoordinator.isPrimaryAccountSupervised());
+    }
+
+    @Test
+    public void testIsPrimaryAccountSupervisedForRegularUser() {
+        AccountInfo account = createFakeAccount(/*isChild=*/false);
+        when(mIdentityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN)).thenReturn(account);
+        when(mIdentityManager.findExtendedAccountInfoByEmailAddress(account.getEmail()))
+                .thenReturn(account);
+        assertFalse(mCoordinator.isPrimaryAccountSupervised());
+    }
+
+    @Test
+    public void testIsPrimaryAccountSupervisedForSignedOutUser() {
+        when(mIdentityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN)).thenReturn(null);
+        assertFalse(mCoordinator.isPrimaryAccountSupervised());
+    }
+
+    private AccountInfo createFakeAccount(boolean isChild) {
+        AccountCapabilities capabilities = new AccountCapabilities(new HashMap<>(
+                Map.of(AccountCapabilitiesConstants.IS_SUBJECT_TO_PARENTAL_CONTROLS_CAPABILITY_NAME,
+                        isChild)));
+        return new AccountInfo(new CoreAccountId("id"), "test@gmail.com", "gaiaId", "John Doe",
+                "John", null, capabilities);
+    }
+
     private boolean hasStreamBound() {
         if (mCoordinator.getMediatorForTesting().getCurrentStreamForTesting() == null) {
             return false;
@@ -507,9 +551,10 @@ public class FeedSurfaceCoordinatorTest {
     }
 
     private FeedSurfaceCoordinator createCoordinator() {
-        return new FeedSurfaceCoordinator(mActivity, mSnackbarManager, mWindowAndroid, mSnapHelper,
-                null, 0, false, new TestSurfaceDelegate(), mProfileMock, false,
-                mBottomSheetController, mShareDelegateSupplier, mScrollableContainerDelegate,
+        return new FeedSurfaceCoordinator(mActivity, mSnackbarManager, mWindowAndroid,
+                new PlaceholderJankTracker(), mSnapHelper, null, 0, false,
+                new TestSurfaceDelegate(), mProfileMock, false, mBottomSheetController,
+                mShareDelegateSupplier, mScrollableContainerDelegate,
                 NewTabPageLaunchOrigin.UNKNOWN, mPrivacyPreferencesManager,
                 ()
                         -> { return null; },

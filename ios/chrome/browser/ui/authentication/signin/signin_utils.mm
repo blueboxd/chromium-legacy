@@ -12,6 +12,8 @@
 #import "components/prefs/pref_service.h"
 #import "components/signin/ios/browser/features.h"
 #import "components/sync/base/features.h"
+#import "components/sync/service/sync_service.h"
+#import "components/sync/service/sync_user_settings.h"
 #import "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
@@ -24,8 +26,6 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/system_identity.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
-#import "ios/chrome/browser/sync/sync_setup_service.h"
-#import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/history_sync/history_sync_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_constants.h"
@@ -129,9 +129,11 @@ bool ShouldPresentUserSigninUpgrade(ChromeBrowserState* browser_state,
       auth_service->HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
     syncer::SyncService* sync_service =
         SyncServiceFactory::GetForBrowserState(browser_state);
-    HistorySyncSkipReason skip_reason =
-        [HistorySyncCoordinator getHistorySyncOptInSkipReason:sync_service
-                                        authenticationService:auth_service];
+    HistorySyncSkipReason skip_reason = [HistorySyncCoordinator
+        getHistorySyncOptInSkipReason:sync_service
+                authenticationService:auth_service
+                          prefService:browser_state->GetPrefs()
+                isHistorySyncOptional:YES];
     switch (skip_reason) {
       case HistorySyncSkipReason::kNone:
         // Need to show the upgrade promo, to show the history sync opt-in.
@@ -140,6 +142,7 @@ bool ShouldPresentUserSigninUpgrade(ChromeBrowserState* browser_state,
         NOTREACHED_NORETURN();
       case HistorySyncSkipReason::kAlreadyOptedIn:
       case HistorySyncSkipReason::kSyncForbiddenByPolicies:
+      case HistorySyncSkipReason::kDeclinedTooOften:
         return false;
     }
   }
@@ -262,12 +265,12 @@ IdentitySigninState GetPrimaryIdentitySigninState(
     ChromeBrowserState* browser_state) {
   AuthenticationService* auth_service =
       AuthenticationServiceFactory::GetForBrowserState(browser_state);
-  SyncSetupService* syncSetupService =
-      SyncSetupServiceFactory::GetForBrowserState(browser_state);
+  syncer::SyncService* syncService =
+      SyncServiceFactory::GetForBrowserState(browser_state);
   // TODO(crbug.com/1462552): After phase 3 migration of kSync users, Remove
   // this usage.
   if (auth_service->HasPrimaryIdentity(signin::ConsentLevel::kSync) &&
-      syncSetupService->IsInitialSyncFeatureSetupComplete()) {
+      syncService->GetUserSettings()->IsInitialSyncFeatureSetupComplete()) {
     return IdentitySigninStateSignedInWithSyncEnabled;
   } else if (auth_service->HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
     return IdentitySigninStateSignedInWithSyncDisabled;

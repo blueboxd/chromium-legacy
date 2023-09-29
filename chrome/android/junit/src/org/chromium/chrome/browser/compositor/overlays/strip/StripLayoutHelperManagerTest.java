@@ -12,6 +12,7 @@ import android.content.Context;
 import android.graphics.RectF;
 import android.view.ContextThemeWrapper;
 import android.view.View;
+import android.view.ViewStub;
 
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.test.core.app.ApplicationProvider;
@@ -91,11 +92,15 @@ public class StripLayoutHelperManagerTest {
     @Mock
     private TabModelFilterProvider mTabModelFilterProvider;
     @Mock
-    private TabModel mTabModel;
+    private TabModel mStandardTabModel;
+    @Mock
+    private TabModel mIncognitoTabModel;
     @Mock
     private Tab mSelectedTab;
     @Mock
     private StripLayoutTab mHoveredStripTab;
+    @Mock
+    private ViewStub mTabHoverCardViewStub;
 
     private StripLayoutHelperManager mStripLayoutHelperManager;
     private Context mContext;
@@ -127,7 +132,8 @@ public class StripLayoutHelperManagerTest {
         mTabModelStartupInfoSupplier = new ObservableSupplierImpl<>();
         mStripLayoutHelperManager = new StripLayoutHelperManager(mContext, mManagerHost,
                 mUpdateHost, mRenderHost, mLayerTitleCacheSupplier, mTabModelStartupInfoSupplier,
-                mLifecycleDispatcher, mMultiInstanceManager, mToolbarContainerView);
+                mLifecycleDispatcher, mMultiInstanceManager, mToolbarContainerView,
+                mTabHoverCardViewStub);
         mStripLayoutHelperManager.setTabModelSelector(mTabModelSelector, mTabCreatorManager);
     }
 
@@ -406,9 +412,9 @@ public class StripLayoutHelperManagerTest {
         int selectedTabId = 2;
         mStripLayoutHelperManager.setTabStripTreeProviderForTesting(mTabStripTreeProvider);
 
-        when(mTabModelSelector.getCurrentModel()).thenReturn(mTabModel);
-        when(mTabModel.index()).thenReturn(selectedTabId);
-        when(mTabModel.getTabAt(selectedTabId)).thenReturn(mSelectedTab);
+        when(mTabModelSelector.getCurrentModel()).thenReturn(mStandardTabModel);
+        when(mStandardTabModel.index()).thenReturn(selectedTabId);
+        when(mStandardTabModel.getTabAt(selectedTabId)).thenReturn(mSelectedTab);
         when(mSelectedTab.getId()).thenReturn(selectedTabId);
 
         when(mHoveredStripTab.getId()).thenReturn(hoveredTabId);

@@ -71,6 +71,10 @@ class LazyNow;
 namespace blink {
 namespace scheduler {
 
+BASE_FEATURE(kTaskAttributionInfrastructureDisabledForTesting,
+             "TaskAttributionInfrastructureDisabledForTesting",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 using base::sequence_manager::TaskQueue;
 using base::sequence_manager::TaskTimeObserver;
 using base::sequence_manager::TimeDomain;
@@ -2095,6 +2099,14 @@ void MainThreadSchedulerImpl::RemoveRAILModeObserver(
   main_thread_only().rail_mode_observers.RemoveObserver(observer);
 }
 
+void MainThreadSchedulerImpl::ForEachMainThreadIsolate(
+    base::RepeatingCallback<void(v8::Isolate* isolate)> callback) {
+  // TODO(dtapuska): For each AgentGroupScheduler's isolate invoke the callback.
+  if (v8::Isolate* isolate = Isolate()) {
+    callback.Run(isolate);
+  }
+}
+
 void MainThreadSchedulerImpl::SetRendererProcessType(
     WebRendererProcessType type) {
   main_thread_only().process_type = type;
@@ -2825,7 +2837,10 @@ bool MainThreadSchedulerImpl::AllPagesFrozen() const {
 }
 
 TaskAttributionTracker* MainThreadSchedulerImpl::GetTaskAttributionTracker() {
-  return main_thread_only().task_attribution_tracker.get();
+  return base::FeatureList::IsEnabled(
+             kTaskAttributionInfrastructureDisabledForTesting)
+             ? nullptr
+             : main_thread_only().task_attribution_tracker.get();
 }
 
 void MainThreadSchedulerImpl::InitializeTaskAttributionTracker(

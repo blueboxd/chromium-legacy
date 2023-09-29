@@ -280,7 +280,6 @@
 <translation id="3226405216343213872">Se caută scanere</translation>
 <translation id="3226657629376379887">Meniu de acțiuni pentru aspect</translation>
 <translation id="3246869037381808805">Sarcinile de printare mai vechi de o zi vor fi eliminate</translation>
-<translation id="3248223063252096240"><ph name="PRODUCT_NAME" /> exclusiv</translation>
 <translation id="3268178239013324452">Nereușită – Ușă deschisă</translation>
 <translation id="3275729367986477355">Imagine avatar</translation>
 <translation id="3283504360622356314">{0,plural, =1{Editează fișierul}few{Editează fișierele}other{Editează fișierele}}</translation>
@@ -921,6 +920,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">Selectează <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /></translation>
 <translation id="8151185429379586178">Instrumente dezvoltator</translation>
+<translation id="8152370627892825"><ph name="DESCRIPTION" />, <ph name="ACCELERATOR_INFO" />.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8183974620058026102">Atașează</translation>
 <translation id="8206859287963243715">Celular</translation>

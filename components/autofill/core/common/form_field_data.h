@@ -9,6 +9,7 @@
 
 #include <limits>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <vector>
 
@@ -148,6 +149,10 @@ class Section {
 LogBuffer& operator<<(LogBuffer& buffer, const Section& section);
 std::ostream& operator<<(std::ostream& os, const Section& section);
 
+using FormControlType = mojom::FormControlType;
+
+LogBuffer& operator<<(LogBuffer& buffer, FormControlType type);
+
 // Stores information about a field in a form. Read more about forms and fields
 // at FormData.
 struct FormFieldData {
@@ -239,6 +244,11 @@ struct FormFieldData {
   bool HadFocus() const;
   bool WasPasswordAutofilled() const;
 
+  // Returns the currently selected text. Returns the empty string if
+  // `selection_start` and/or `selection_end` are out of bounds.
+  std::u16string GetSelection() const;
+  std::u16string_view GetSelectionAsStringView() const;
+
   // NOTE: Update `SameFieldAs()` and `FormFieldDataAndroid::SimilarFieldAs()`
   // if needed when adding new a member.
 
@@ -253,7 +263,15 @@ struct FormFieldData {
   std::u16string name_attribute;
   std::u16string label;
   std::u16string value;
-  std::string form_control_type;
+  // The range within `value` that is selected. `selection_start` points at the
+  // first selected character, `selection_end` points after the last selected
+  // character. That is, if nothing is selected, `selection_start` and
+  // `selection_end` are identical and represent the cursor position.
+  // Use GetSelection() or GetSelectionAsStringView() to safely get the selected
+  // substring of `value`.
+  uint32_t selection_start = 0;
+  uint32_t selection_end = 0;
+  FormControlType form_control_type = FormControlType::kEmpty;
   std::string autocomplete_attribute;
   absl::optional<AutocompleteParsingResult> parsed_autocomplete;
   std::u16string placeholder;
@@ -343,6 +361,14 @@ struct FormFieldData {
   // user modified.
   bool force_override = false;
 };
+
+// TODO(crbug.com/1482526): Eliminate references to this function where
+// possible.
+std::string_view FormControlTypeToString(FormControlType type);
+
+// TODO(crbug.com/1482526): Eliminate references to this function where
+// possible.
+FormControlType StringToFormControlType(std::string_view type);
 
 // Serialize and deserialize FormFieldData. These are used when FormData objects
 // are serialized and deserialized.

@@ -737,7 +737,7 @@ AXObjectCacheImpl::AXObjectCacheImpl(Document& document,
       ax_tree_source_(BlinkAXTreeSource::Create(*this)),
       ax_tree_serializer_(
           std::make_unique<
-              ui::AXTreeSerializer<AXObject*, HeapVector<AXObject*>>>(
+              ui::AXTreeSerializer<AXObject*, HeapVector<Member<AXObject>>>>(
               ax_tree_source_,
               /*crash_on_error*/ true)) {
   use_ax_menu_list_ = GetSettings()->GetUseAXMenuList();
@@ -1931,81 +1931,6 @@ void AXObjectCacheImpl::RemoveSubtreeWithFlatTraversal(const Node* node,
   }
 }
 
-void AXObjectCacheImpl::InvalidateCachedValuesOnSubtreeWithCleanLayout(
-    Node* node) {
-  if (AXObject* object = GetOrCreate(node)) {
-    ax_tree_serializer_->MarkSubtreeDirty(object);
-
-    // Store the parent for later children changed notification in case object
-    // is detached from parent during processing.
-    AXObject* parent_to_notify = object->ParentObject();
-
-    DCHECK(AXObject::CanSafelyUseFlatTreeTraversalNow(*object->GetDocument()))
-        << "Cannot remove children now: " << object->ToString(true, true);
-
-    InvalidateCachedValuesOnSubtreeWithCleanLayoutRecursive(object);
-
-    // Notify the subtree's parent if necessary.
-    ChildrenChangedWithCleanLayout(parent_to_notify);
-  }
-}
-
-void AXObjectCacheImpl::InvalidateCachedValuesOnSubtreeWithCleanLayoutRecursive(
-    AXObject* object) {
-  CHECK(!IsFrozen());
-  DCHECK(object);
-  if (object->IsDetached()) {
-    return;
-  }
-  // Invalidate the parent before its children, because some child cached values
-  // are dependent on the parent values.
-  bool was_included = object->LastKnownIsIncludedInTreeValue();
-  object->InvalidateCachedValues();
-  object->UpdateCachedAttributeValuesIfNeeded(/* notify_parent */ false);
-  bool is_included = object->AccessibilityIsIncludedInTree();
-  // If the included state changes, the parents all the way up to the first
-  // included ancestor must update their children. A children changed event does
-  // not need to be fired for every node here -- it's enough to fire for the
-  // ancestor of the whole subtree, which is done in the non-recursive caller.
-  if (was_included != is_included) {
-    if (AXObject* parent = object->ParentObject()) {
-      if (AXObject* included_parent = InvalidateChildren(parent)) {
-        included_parent->SetNeedsToUpdateChildren();
-      }
-    }
-  }
-
-  // Set of all children, whether in included or not.
-  HeapHashSet<Member<AXObject>> children;
-
-  // Gather the updated included children list. In some cases, the children are
-  // dirty and need to be refreshed. Any objects reused for the child refresh
-  // will first update their cached values, in order to make sure they are
-  // included and actually should be added.
-  if (was_included || is_included) {
-    for (AXObject* ax_included_child : object->ChildrenIncludingIgnored()) {
-      children.insert(ax_included_child);
-    }
-  }
-
-  // Gather children found through flat traversal that were not included.
-  Node* node = object->GetNode();
-  if (node) {
-    for (Node* child_node = LayoutTreeBuilderTraversal::FirstChild(*node);
-         child_node;
-         child_node = LayoutTreeBuilderTraversal::NextSibling(*child_node)) {
-      if (AXObject* ax_unincluded_child = GetOrCreate(child_node)) {
-        children.insert(ax_unincluded_child);
-      }
-    }
-  }
-
-  // Recurse through the de-duped list of children.
-  for (AXObject* child : children) {
-    InvalidateCachedValuesOnSubtreeWithCleanLayoutRecursive(child);
-  }
-}
-
 AXID AXObjectCacheImpl::GenerateAXID() const {
   static AXID last_used_id = 0;
 
@@ -2127,12 +2052,12 @@ void AXObjectCacheImpl::DeferTreeUpdate(
     AXObjectCacheImpl::TreeUpdateReason update_reason,
     Node* node,
     ax::mojom::blink::Event event) {
-  DCHECK(node);
-  DCHECK(!has_been_disposed_);
-  DCHECK(!IsFrozen());
-  DCHECK(!processing_deferred_events_)
+  CHECK(node);
+  CHECK(!has_been_disposed_);
+  CHECK(!IsFrozen());
+  CHECK(!processing_deferred_events_)
       << "Call clean layout method directly while processing deferred events.";
-  DCHECK(!updating_tree_);
+  CHECK(!updating_tree_);
 
   Document& tree_update_document = node->GetDocument();
   if (!CanDeferTreeUpdate(&tree_update_document)) {
@@ -2164,18 +2089,18 @@ void AXObjectCacheImpl::DeferTreeUpdate(
     ax::mojom::blink::Event event) {
   // Called for updates that do not have a DOM node, e.g. a children or text
   // changed event that occurs on an anonymous layout block flow.
-  DCHECK(obj);
-  DCHECK(!has_been_disposed_);
-  DCHECK(!IsFrozen());
-  DCHECK(!processing_deferred_events_)
+  CHECK(obj);
+  CHECK(!has_been_disposed_);
+  CHECK(!IsFrozen());
+  CHECK(!processing_deferred_events_)
       << "Call clean layout method directly while processing deferred events.";
-  DCHECK(!updating_tree_);
+  CHECK(!updating_tree_);
 
   if (obj->IsDetached()) {
     return;
   }
 
-  DCHECK(obj->AXObjectID());
+  CHECK(obj->AXObjectID());
 
   Document* tree_update_document = obj->GetDocument();
 
@@ -2399,6 +2324,7 @@ void AXObjectCacheImpl::NodeIsAttached(Node* node) {
       node_object_mapping_.Contains(node)) {
     RemoveSubtreeWithFlatTraversal(node, /* remove_root */ false,
                                    /* notify_parent */ false);
+    ChildrenChanged(node);
   }
 
   DeferTreeUpdate(TreeUpdateReason::kNodeIsAttached, node);
@@ -2730,7 +2656,7 @@ void AXObjectCacheImpl::CheckTreeIsUpdated() const {
   CHECK(invalidated_ids_main_.empty());
   CHECK(invalidated_ids_popup_.empty());
 
-#if EXPENSIVE_DCHECKS_ARE_ON()
+#if DCHECK_IS_ON()
   for (const auto& entry : objects_) {
     const AXObject* object = entry.value;
     DCHECK(!object->IsDetached());
@@ -2757,6 +2683,26 @@ void AXObjectCacheImpl::CheckTreeIsUpdated() const {
         << "No cached values should require an update at this point: "
         << "\n* Object: " << object->ToString(true) << "\n* Included parent: "
         << (included_parent ? included_parent->ToString(true) : "");
+    if (object->AccessibilityIsIncludedInTree()) {
+      for (const auto& child : object->CachedChildrenIncludingIgnored()) {
+        CHECK(child->AccessibilityIsIncludedInTree())
+            << "Included parent cannot have unlincluded child:"
+            << "\n* Parent: " << object->ToString(true, true)
+            << "\n* Child: " << child->ToString(true, true);
+      }
+    }
+  }
+#else
+  // TODO(crbug.com/1480627) Temporary: do not ship in stable builds.
+  for (const auto& entry : objects_) {
+    const AXObject* object = entry.value;
+    CHECK(!object->IsDetached());
+    CHECK(!object->IsMissingParent())
+        << "No object should be missing its parent: "
+        << "\n* Object: " << object->ToString(true, true)
+        << "\n* Computed parent: "
+        << (object->ComputeParent() ? object->ComputeParent()->ToString(true)
+                                    : "not found");
   }
 #endif
 }
@@ -3345,9 +3291,6 @@ void AXObjectCacheImpl::FireTreeUpdatedEventImmediately(
     case TreeUpdateReason::kIdChanged:
       IdChangedWithCleanLayout(node);
       break;
-    case TreeUpdateReason::kInvalidateCachedValuesOnSubtree:
-      InvalidateCachedValuesOnSubtreeWithCleanLayout(node);
-      break;
     case TreeUpdateReason::kMarkDirtyFromHandleLayout:
     case TreeUpdateReason::kMarkDirtyFromHandleScroll:
     case TreeUpdateReason::kMarkDirtyFromRemove:
@@ -3838,8 +3781,13 @@ void AXObjectCacheImpl::HandleAttributeChanged(const QualifiedName& attr_name,
     } else if (attr_name == html_names::kAriaExpandedAttr) {
       DeferTreeUpdate(TreeUpdateReason::kAriaExpandedChanged, element);
     } else if (attr_name == html_names::kAriaHiddenAttr) {
-      DeferTreeUpdate(TreeUpdateReason::kInvalidateCachedValuesOnSubtree,
-                      element);
+      // Removing the subtree will also notify its parent that children changed,
+      // causing the subtree to recursively be rebuilt with correct cached
+      // values. This is much simpler than attempting to invalidate cached
+      // values in every node in the subtree, especially when cached values
+      // can depend on ancestor cached values, aria-owns and other markup
+      // can significantly complicate the code paths.
+      RemoveSubtreeWhenSafe(element);
     } else if (attr_name == html_names::kAriaOwnsAttr) {
       if (relation_cache_) {
         relation_cache_->UpdateReverseOwnsRelations(*element);
@@ -4647,7 +4595,11 @@ void AXObjectCacheImpl::SerializeDirtyObjectsAndEvents(
     bool& had_end_of_test_event,
     bool& had_load_complete_messages,
     bool& need_to_send_location_changes) {
+  // TODO(accessibility) Remove this once non-postlifecycle serialization code
+  // is completely removed, as it is redundant with other calls.
+#if BUILDFLAG(IS_FUCHSIA)
   CheckTreeIsUpdated();
+#endif
 
   // Make a copy of the events, because it's possible that
   // actions inside this loop will cause more events to be

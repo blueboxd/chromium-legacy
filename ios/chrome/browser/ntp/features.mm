@@ -6,11 +6,11 @@
 
 #import <Foundation/Foundation.h>
 
+#import "base/containers/contains.h"
 #import "base/metrics/field_trial_params.h"
-#import "components/variations/service/variations_service.h"
+#import "components/country_codes/country_codes.h"
 #import "components/version_info/channel.h"
 #import "ios/chrome/app/background_mode_buildflags.h"
-#import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/common/channel_info.h"
 
@@ -72,7 +72,7 @@ BASE_FEATURE(kEnableFeedExperimentTagging,
              "EnableFeedExperimentTagging",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kIOSSetUpList, "IOSSetUpList", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIOSSetUpList, "IOSSetUpList", base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kFeedDisableHotStartRefresh,
              "FeedDisableHotStartRefresh",
@@ -88,6 +88,10 @@ BASE_FEATURE(kDiscoverFeedSportCard,
 
 BASE_FEATURE(kContentPushNotifications,
              "ContentPushNotifications",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kIOSLargeFakebox,
+             "IOSLargeFakebox",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Key for NSUserDefaults containing a bool indicating whether the next run
@@ -131,12 +135,9 @@ const char kEnableFeedUseInteractivityInvalidationForForegroundRefreshes[] =
     "EnableFeedUseInteractivityInvalidationForForegroundRefreshes";
 
 bool IsWebChannelsEnabled() {
-  const char* launched_countries[6] = {"au", "ca", "gb", "nz", "us", "za"};
-  variations::VariationsService* variations_service =
-      GetApplicationContext()->GetVariationsService();
-  if (variations_service &&
-      base::Contains(launched_countries,
-                     variations_service->GetStoredPermanentCountry())) {
+  std::string launched_countries[6] = {"AU", "CA", "GB", "NZ", "US", "ZA"};
+  if (base::Contains(launched_countries,
+                     country_codes::GetCurrentCountryCode())) {
     return true;
   }
   return base::FeatureList::IsEnabled(kEnableWebChannels);
@@ -370,4 +371,8 @@ bool IsFollowUIUpdateEnabled() {
 
 bool IsContentPushNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kContentPushNotifications);
+}
+
+bool IsIOSLargeFakeboxEnabled() {
+  return base::FeatureList::IsEnabled(kIOSLargeFakebox);
 }

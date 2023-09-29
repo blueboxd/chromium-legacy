@@ -74,23 +74,17 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
  public:
   TestableIndexedDBBackingStore(
       IndexedDBBackingStore::Mode backing_store_mode,
-      TransactionalLevelDBFactory* leveldb_factory,
       const storage::BucketLocator& bucket_locator,
       const base::FilePath& blob_path,
       std::unique_ptr<TransactionalLevelDBDatabase> db,
-      storage::mojom::BlobStorageContext* blob_storage_context,
-      storage::mojom::FileSystemAccessContext* file_system_access_context,
       std::unique_ptr<storage::FilesystemProxy> filesystem_proxy,
       BlobFilesCleanedCallback blob_files_cleaned,
       ReportOutstandingBlobsCallback report_outstanding_blobs,
       scoped_refptr<base::SequencedTaskRunner> idb_task_runner)
       : IndexedDBBackingStore(backing_store_mode,
-                              leveldb_factory,
                               bucket_locator,
                               blob_path,
                               std::move(db),
-                              blob_storage_context,
-                              file_system_access_context,
                               std::move(filesystem_proxy),
                               std::move(blob_files_cleaned),
                               std::move(report_outstanding_blobs),
@@ -125,15 +119,9 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
 // TestableIndexedDBBackingStore subclass.
 class TestIDBFactory : public IndexedDBFactory {
  public:
-  explicit TestIDBFactory(
-      IndexedDBContextImpl* idb_context,
-      storage::mojom::BlobStorageContext* blob_storage_context,
-      storage::mojom::FileSystemAccessContext* file_system_access_context)
+  explicit TestIDBFactory(IndexedDBContextImpl* idb_context)
       : IndexedDBFactory(idb_context,
-                         IndexedDBClassFactory::Get(),
-                         base::DefaultClock::GetInstance()),
-        blob_storage_context_(blob_storage_context),
-        file_system_access_context_(file_system_access_context) {}
+                         base::DefaultClock::GetInstance()) {}
 
   TestIDBFactory(const TestIDBFactory&) = delete;
   TestIDBFactory& operator=(const TestIDBFactory&) = delete;
@@ -143,12 +131,9 @@ class TestIDBFactory : public IndexedDBFactory {
  protected:
   std::unique_ptr<IndexedDBBackingStore> CreateBackingStore(
       IndexedDBBackingStore::Mode backing_store_mode,
-      TransactionalLevelDBFactory* leveldb_factory,
       const storage::BucketLocator& bucket_locator,
       const base::FilePath& blob_path,
       std::unique_ptr<TransactionalLevelDBDatabase> db,
-      storage::mojom::BlobStorageContext*,
-      storage::mojom::FileSystemAccessContext*,
       std::unique_ptr<storage::FilesystemProxy> filesystem_proxy,
       IndexedDBBackingStore::BlobFilesCleanedCallback blob_files_cleaned,
       IndexedDBBackingStore::ReportOutstandingBlobsCallback
@@ -158,15 +143,10 @@ class TestIDBFactory : public IndexedDBFactory {
     // than the versions that were passed in to this method. This way tests can
     // use a different context from what is stored in the IndexedDBContext.
     return std::make_unique<TestableIndexedDBBackingStore>(
-        backing_store_mode, leveldb_factory, bucket_locator, blob_path,
-        std::move(db), blob_storage_context_, file_system_access_context_,
+        backing_store_mode, bucket_locator, blob_path, std::move(db),
         std::move(filesystem_proxy), std::move(blob_files_cleaned),
         std::move(report_outstanding_blobs), std::move(idb_task_runner));
   }
-
- private:
-  raw_ptr<storage::mojom::BlobStorageContext> blob_storage_context_;
-  raw_ptr<storage::mojom::FileSystemAccessContext> file_system_access_context_;
 };
 
 struct BlobWrite {
@@ -221,6 +201,10 @@ class MockBlobStorageContext : public ::storage::mojom::BlobStorageContext {
         base::BindOnce(std::move(callback),
                        storage::mojom::WriteBlobToFileResult::kSuccess));
   }
+  void Clone(mojo::PendingReceiver<::storage::mojom::BlobStorageContext>
+                 receiver) override {
+    receivers_.Add(this, std::move(receiver));
+  }
 
   const std::vector<BlobWrite>& writes() { return writes_; }
   void ClearWrites() { writes_.clear(); }
@@ -232,6 +216,7 @@ class MockBlobStorageContext : public ::storage::mojom::BlobStorageContext {
  private:
   std::vector<BlobWrite> writes_;
   bool write_files_to_disk_ = false;
+  mojo::ReceiverSet<::storage::mojom::BlobStorageContext> receivers_;
 };
 
 class FakeFileSystemAccessTransferToken
@@ -280,6 +265,11 @@ class MockFileSystemAccessContext
     NOTREACHED();
   }
 
+  void Clone(mojo::PendingReceiver<::storage::mojom::FileSystemAccessContext>
+                 receiver) override {
+    receivers_.Add(this, std::move(receiver));
+  }
+
   const std::vector<
       mojo::Remote<::blink::mojom::FileSystemAccessTransferToken>>&
   writes() {
@@ -290,6 +280,7 @@ class MockFileSystemAccessContext
  private:
   std::vector<mojo::Remote<::blink::mojom::FileSystemAccessTransferToken>>
       writes_;
+  mojo::ReceiverSet<::storage::mojom::FileSystemAccessContext> receivers_;
 };
 
 class IndexedDBBackingStoreTest : public testing::Test {
@@ -313,12 +304,18 @@ class IndexedDBBackingStoreTest : public testing::Test {
         quota_manager_.get(),
         base::SingleThreadTaskRunner::GetCurrentDefault());
 
+    mojo::PendingRemote<storage::mojom::BlobStorageContext>
+        blob_storage_context;
+    blob_context_->Clone(blob_storage_context.InitWithNewPipeAndPassReceiver());
+
+    mojo::PendingRemote<storage::mojom::FileSystemAccessContext> fsa_context;
+    file_system_access_context_->Clone(
+        fsa_context.InitWithNewPipeAndPassReceiver());
+
     idb_context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         temp_dir_.GetPath(), quota_manager_proxy_,
-        base::DefaultClock::GetInstance(),
-        /*blob_storage_context=*/mojo::NullRemote(),
-        /*file_system_access_context=*/mojo::NullRemote(),
-        base::SequencedTaskRunner::GetCurrentDefault(),
+        base::DefaultClock::GetInstance(), std::move(blob_storage_context),
+        std::move(fsa_context), base::SequencedTaskRunner::GetCurrentDefault(),
         base::SequencedTaskRunner::GetCurrentDefault());
 
     // Needed to get the QuotaClient bound.
@@ -348,9 +345,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
     bucket_info.name = storage::kDefaultBucketName;
     auto bucket_locator = bucket_info.ToBucketLocator();
 
-    idb_factory_ = std::make_unique<TestIDBFactory>(
-        idb_context_.get(), blob_context_.get(),
-        file_system_access_context_.get());
+    idb_factory_ = std::make_unique<TestIDBFactory>(idb_context_.get());
 
     leveldb::Status s;
     std::tie(bucket_context_handle_, s, std::ignore, data_loss_info_,

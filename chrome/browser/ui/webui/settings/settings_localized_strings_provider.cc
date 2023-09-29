@@ -76,6 +76,8 @@
 #include "components/password_manager/core/browser/manage_passwords_referrer.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/performance_manager/public/features.h"
+#include "components/permissions/features.h"
+#include "components/plus_addresses/features.h"
 #include "components/prefs/pref_service.h"
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/safe_browsing/core/browser/hashprefix_realtime/hash_realtime_utils.h"
@@ -83,7 +85,7 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/services/screen_ai/buildflags/buildflags.h"
 #include "components/signin/public/base/signin_buildflags.h"
-#include "components/strings/grit/components_chromium_strings.h"
+#include "components/strings/grit/components_branded_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/supervised_user/core/common/features.h"
@@ -252,7 +254,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
               crosapi::mojom::SessionType::kPublicSession ||
           profile->IsGuestSession());
 #else
-                          profile->IsGuestSession());
+                           profile->IsGuestSession());
 #endif
 
   html_source->AddBoolean("isChildAccount", profile->IsChild());
@@ -741,6 +743,8 @@ void AddPerformanceStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PERFORMANCE_TAB_DISCARDING_EXCEPTIONS_ADD_DIALOG_MANUAL},
       {"tabDiscardingExceptionsActiveSiteAriaDescription",
        IDS_SETTINGS_PERFORMANCE_TAB_DISCARDING_EXCEPTIONS_ACTIVE_SITE_ARIA_DESCRIPTION},
+      {"preloadingToggleSummary",
+       IDS_SETTINGS_PERFORMANCE_PRELOAD_TOGGLE_SUMMARY},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -951,7 +955,8 @@ bool CheckDeviceAuthAvailability(content::WebContents* web_contents) {
     return false;
   }
 
-  return autofill::IsDeviceAuthAvailable(client->GetDeviceAuthenticator());
+  return autofill::IsDeviceAuthAvailable(
+      client->GetDeviceAuthenticator().get());
 }
 
 bool CheckCvcStorageAvailability() {
@@ -1033,7 +1038,7 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
      IDS_AUTOFILL_EDIT_ADDRESS_REQUIRED_FIELD_FORM_ERROR},
     {"editAddressRequiredFieldsError",
      IDS_AUTOFILL_EDIT_ADDRESS_REQUIRED_FIELDS_FORM_ERROR},
-    {"clearCreditCard", IDS_SETTINGS_CREDIT_CARD_CLEAR},
+    {"clearCreditCard", IDS_SETTINGS_CREDIT_CARD_REMOVE},
     {"creditCardExpiration", IDS_SETTINGS_CREDIT_CARD_EXPIRATION_DATE},
     {"creditCardName", IDS_SETTINGS_NAME_ON_CREDIT_CARD},
     {"creditCardNickname", IDS_SETTINGS_CREDIT_CARD_NICKNAME},
@@ -1062,7 +1067,8 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
     {"migratableCardsInfoSingle", IDS_SETTINGS_SINGLE_MIGRATABLE_CARD_INFO},
     {"migratableCardsInfoMultiple",
      IDS_SETTINGS_MULTIPLE_MIGRATABLE_CARDS_INFO},
-    {"remoteCreditCardLinkLabel", IDS_SETTINGS_REMOTE_CREDIT_CARD_LINK_LABEL},
+    {"remotePaymentMethodsLinkLabel",
+     IDS_SETTINGS_REMOTE_PAYMENT_METHODS_LINK_LABEL},
     {"canMakePaymentToggleLabel", IDS_SETTINGS_CAN_MAKE_PAYMENT_TOGGLE_LABEL},
     {"autofillDetail", IDS_SETTINGS_AUTOFILL_DETAIL},
     {"passwords", IDS_SETTINGS_PASSWORD_MANAGER},
@@ -1077,7 +1083,8 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
     {"passwordsLeakDetectionSignedOutEnabledDescription",
      IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_SIGNED_OUT_ENABLED_DESC},
     {"editPasskeySiteLabel", IDS_SETTINGS_PASSKEYS_SITE_LABEL},
-    {"editPasskeyUsernameLabel", IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_USERNAME_LABEL},
+    {"editPasskeyUsernameLabel",
+     IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_USERNAME_LABEL},
 #if BUILDFLAG(IS_MAC)
     {"passkeyLengthError", IDS_SETTINGS_PASSKEYS_LENGTH_ERROR},
     {"editPasskeyDialogTitle", IDS_SETTINGS_PASSKEYS_DIALOG_TITLE},
@@ -1123,6 +1130,7 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_PASSWORDS_BIOMETRIC_AUTHENTICATION_FOR_FILLING_TOGGLE_LABEL_WIN},
     {"managePasskeysSubTitle", IDS_AUTOFILL_MANAGE_PASSKEYS_SUB_TITLE_WIN},
 #endif
+    {"plusAddressSettings", IDS_PLUS_ADDRESS_SETTINGS_LABEL},
   };
 
   GURL google_password_manager_url = GetGooglePasswordManagerURL(
@@ -1195,13 +1203,6 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       base::FeatureList::IsEnabled(
           autofill::features::kAutofillEnableSupportForHonorificPrefixes));
 
-  html_source->AddBoolean(
-      "virtualCardEnrollmentEnabled",
-      base::FeatureList::IsEnabled(
-          autofill::features::kAutofillEnableUpdateVirtualCardEnrollment) &&
-          base::FeatureList::IsEnabled(
-              autofill::features::
-                  kAutofillEnableVirtualCardManagementInDesktopSettingsPage));
   html_source->AddString(
       "unenrollVirtualCardDialogLabel",
       l10n_util::GetStringFUTF16(
@@ -1221,6 +1222,9 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       "syncEnableContactInfoDataTypeInTransportMode",
       base::FeatureList::IsEnabled(
           syncer::kSyncEnableContactInfoDataTypeInTransportMode));
+
+  html_source->AddString("plusAddressManagementUrl",
+                         plus_addresses::kPlusAddressManagementUrl.Get());
 }
 
 void AddSignOutDialogStrings(content::WebUIDataSource* html_source,
@@ -1342,7 +1346,15 @@ void AddPersonalizationOptionsStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_PAGE_CONTENT_LINK_ROW_SUBLABEL_ON},
     {"pageContentLinkRowSublabelOff",
      IDS_SETTINGS_PAGE_CONTENT_LINK_ROW_SUBLABEL_OFF},
+    {"pageContentPageTitle", IDS_SETTINGS_PAGE_CONTENT_PAGE_TITLE},
     {"pageContentToggleLabel", IDS_SETTINGS_PAGE_CONTENT_TOGGLE_LABEL},
+    {"pageContentToggleSublabel", IDS_SETTINGS_PAGE_CONTENT_TOGGLE_SUBLABEL},
+    {"pageContentWhenOnBulletOne",
+     IDS_SETTINGS_PAGE_CONTENT_WHEN_ON_BULLET_ONE},
+    {"pageContentThingsToConsiderBulletOne",
+     IDS_SETTINGS_PAGE_CONTENT_THINGS_TO_CONSIDER_BULLET_ONE},
+    {"pageContentThingsToConsiderBulletTwo",
+     IDS_SETTINGS_PAGE_CONTENT_THINGS_TO_CONSIDER_BULLET_TWO},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }
@@ -1718,6 +1730,9 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
 
   html_source->AddString("cookiesSettingsHelpCenterURL",
                          chrome::kCookiesSettingsHelpCenterURL);
+
+  html_source->AddString("trackingProtectionHelpCenterURL",
+                         chrome::kTrackingProtectionHelpCenterURL);
 
   html_source->AddString("firstPartySetsLearnMoreURL",
                          chrome::kFirstPartySetsLearnMoreURL);
@@ -2329,6 +2344,7 @@ void AddSafetyCheckStrings(content::WebUIDataSource* html_source) {
 void AddSafetyHubStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"safetyHub", IDS_SETTINGS_SAFETY_HUB},
+      {"safetyHubEntryPointHeader", IDS_SETTINGS_SAFETY_HUB_ENTRY_POINT_HEADER},
       {"safetyHubEntryPointNothingToDo",
        IDS_SETTINGS_SAFETY_HUB_ENTRY_POINT_NOTHING_TO_DO},
       {"safetyHubEntryPointButton", IDS_SETTINGS_SAFETY_HUB_ENTRY_POINT_BUTTON},
@@ -2336,14 +2352,41 @@ void AddSafetyHubStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_SAFETY_HUB_PAGE_CARD_SECTION_HEADER},
       {"safetyHubPageModuleSectionHeader",
        IDS_SETTINGS_SAFETY_HUB_PAGE_MODULE_SECTION_HEADER},
-      {"safetyHubPageUserEduSectionHeader",
-       IDS_SETTINGS_SAFETY_HUB_PAGE_USER_EDU_SECTION_HEADER},
       {"safetyHubEmptyStateModuleHeader",
        IDS_SETTINGS_SAFETY_HUB_EMPTY_STATE_MODULE_HEADER},
       {"safetyHubEmptyStateModuleSubheader",
        IDS_SETTINGS_SAFETY_HUB_EMPTY_STATE_MODULE_SUBHEADER},
+      {"safetyHubGoSiteSettingsItem",
+       IDS_SETTINGS_SAFETY_HUB_GO_SITE_SETTINGS_ITEM},
+      {"safetyHubGoNotificationSettingsItem",
+       IDS_SETTINGS_SAFETY_HUB_GO_NOTIFICATION_SETTINGS_ITEM},
+      {"safetyHubUserEduModuleHeader",
+       IDS_SETTINGS_SAFETY_HUB_USER_EDU_MODULE_HEADER},
+      {"safetyHubUserEduDataHeader",
+       IDS_SETTINGS_SAFETY_HUB_USER_EDU_DATA_HEADER},
+      {"safetyHubUserEduIncognitoHeader",
+       IDS_SETTINGS_SAFETY_HUB_USER_EDU_INCOGNITO_HEADER},
+      {"safetyHubUserEduSafeBrowsingHeader",
+       IDS_SETTINGS_SAFETY_HUB_USER_EDU_SAFE_BROWSING_HEADER},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
+
+  html_source->AddString("safetyHubUserEduDataSubheader",
+                         l10n_util::GetStringFUTF16(
+                             IDS_SETTINGS_SAFETY_HUB_USER_EDU_DATA_SUBHEADER,
+                             base::ASCIIToUTF16(chrome::kChromeSafePageURL)));
+
+  html_source->AddString(
+      "safetyHubUserEduIncognitoSubheader",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_SAFETY_HUB_USER_EDU_INCOGNITO_SUBHEADER,
+          base::ASCIIToUTF16(chrome::kIncognitoHelpCenterURL)));
+
+  html_source->AddString(
+      "safetyHubUserEduSafeBrowsingSubheader",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_SAFETY_HUB_USER_EDU_SAFE_BROWSING_SUBHEADER,
+          base::ASCIIToUTF16(chrome::kSafeBrowsingPTourURL)));
 }
 
 void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
@@ -2551,21 +2594,14 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_TRACKING_PROTECTION_PAGE_TITLE},
     {"trackingProtectionPageDescription",
      IDS_SETTINGS_TRACKING_PROTECTION_PAGE_DESCRIPTION},
-    {"trackingProtectionHeading", IDS_SETTINGS_TRACKING_PROTECTION_HEADING},
-    {"trackingProtectionStandardRadioLabel",
-     IDS_SETTINGS_TRACKING_PROTECTION_STANDARD_RADIO_LABEL},
-    {"trackingProtectionStandardRadioSubLabel",
-     IDS_SETTINGS_TRACKING_PROTECTION_STANDARD_RADIO_SUB_LABEL},
-    {"trackingProtectionStandardBulletOne",
-     IDS_SETTINGS_TRACKING_PROTECTION_STANDARD_BULLET_ONE},
-    {"trackingProtectionStandardBulletOneDescription",
-     IDS_SETTINGS_TRACKING_PROTECTION_STANDARD_BULLET_ONE_DESCRIPTION},
-    {"trackingProtectionStandardBulletTwo",
-     IDS_SETTINGS_TRACKING_PROTECTION_STANDARD_BULLET_TWO},
-    {"trackingProtectionCustomRadioLabel",
-     IDS_SETTINGS_TRACKING_PROTECTION_CUSTOM_RADIO_LABEL},
-    {"trackingProtectionCustomRadioSubLabel",
-     IDS_SETTINGS_TRACKING_PROTECTION_CUSTOM_RADIO_SUB_LABEL},
+    {"trackingProtectionBulletOne",
+     IDS_SETTINGS_TRACKING_PROTECTION_BULLET_ONE},
+    {"trackingProtectionBulletOneDescription",
+     IDS_SETTINGS_TRACKING_PROTECTION_BULLET_ONE_DESCRIPTION},
+    {"trackingProtectionBulletTwo",
+     IDS_SETTINGS_TRACKING_PROTECTION_BULLET_TWO},
+    {"trackingProtectionAdvancedLabel",
+     IDS_SETTINGS_TRACKING_PROTECTION_ADVANCED_LABEL},
     {"trackingProtectionThirdPartyCookiesToggleLabel",
      IDS_SETTINGS_TRACKING_PROTECTION_THIRD_PARTY_COOKIES_TOGGLE_LABEL},
     {"trackingProtectionThirdPartyCookiesToggleSubLabel",
@@ -2886,6 +2922,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_CUSTOMIZED_BEHAVIORS},
     {"siteSettingsCustomizedBehaviorsDescription",
      IDS_SETTINGS_SITE_SETTINGS_CUSTOMIZED_BEHAVIORS_DESCRIPTION},
+    {"siteSettings3pcdBehaviorsDescription",
+     IDS_SETTINGS_SITE_SETTINGS_3PCD_BEHAVIORS_DESCRIPTION},
     {"siteSettingsCustomizedBehaviorsDescriptionShort",
      IDS_SETTINGS_SITE_SETTINGS_CUSTOMIZED_BEHAVIORS_DESCRIPTION_SHORT},
     {"siteSettingsAdsDescription", IDS_SETTINGS_SITE_SETTINGS_ADS_DESCRIPTION},
@@ -3036,6 +3074,10 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_LOCATION_DESCRIPTION},
     {"siteSettingsLocationAllowed",
      IDS_SETTINGS_SITE_SETTINGS_LOCATION_ALLOWED},
+    {"siteSettingsLocationAskQuiet",
+     IDS_SETTINGS_SITE_SETTINGS_PERMISSION_QUIET},
+    {"siteSettingsLocationAskCPSS", IDS_SETTINGS_SITE_SETTINGS_PERMISSION_CPSS},
+    {"siteSettingsLocationAskLoud", IDS_SETTINGS_SITE_SETTINGS_PERMISSION_LOUD},
     {"siteSettingsLocationBlocked",
      IDS_SETTINGS_SITE_SETTINGS_LOCATION_BLOCKED},
     {"siteSettingsLocationBlockedSubLabel",
@@ -3081,6 +3123,14 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS_PARTIAL},
     {"siteSettingsNotificationsPartialSubLabel",
      IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS_PARTIAL_SUB_LABEL},
+    {"siteSettingsNotificationsAskState",
+     IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS_ASK_STATE},
+    {"siteSettingsNotificationsAskQuiet",
+     IDS_SETTINGS_SITE_SETTINGS_PERMISSION_QUIET},
+    {"siteSettingsNotificationsAskCPSS",
+     IDS_SETTINGS_SITE_SETTINGS_PERMISSION_CPSS},
+    {"siteSettingsNotificationsAskLoud",
+     IDS_SETTINGS_SITE_SETTINGS_PERMISSION_LOUD},
     {"siteSettingsNotificationsBlocked",
      IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS_BLOCKED},
     {"siteSettingsNotificationsBlockedSubLabel",
@@ -3222,12 +3272,12 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
 
   // Tracking protection learn more links.
   html_source->AddString(
-      "trackingProtectionStandardBulletTwoDescription",
+      "trackingProtectionBulletTwoDescription",
       l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_TRACKING_PROTECTION_STANDARD_BULLET_TWO_DESCRIPTION,
-          base::ASCIIToUTF16(chrome::kCookiesSettingsHelpCenterURL)));
+          IDS_SETTINGS_TRACKING_PROTECTION_BULLET_TWO_DESCRIPTION,
+          base::ASCIIToUTF16(chrome::kTrackingProtectionHelpCenterURL)));
   html_source->AddString("trackingProtectionThirdPartyCookiesLearnMoreUrl",
-                         chrome::kCookiesSettingsHelpCenterURL);
+                         chrome::kUserBypassHelpCenterURL);
 
   // These ones cannot be constexpr because we need to check base::FeatureList.
   static webui::LocalizedString kSensorsLocalizedStrings[] = {
@@ -3263,10 +3313,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
       "enableExperimentalWebPlatformFeatures",
       cmd.HasSwitch(::switches::kEnableExperimentalWebPlatformFeatures));
 
-  html_source->AddBoolean(
-      "enableQuietNotificationPromptsSetting",
-      base::FeatureList::IsEnabled(features::kQuietNotificationPrompts));
-
   html_source->AddBoolean("enableWebBluetoothNewPermissionsBackend",
                           base::FeatureList::IsEnabled(
                               features::kWebBluetoothNewPermissionsBackend));
@@ -3276,7 +3322,17 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
       base::FeatureList::IsEnabled(
           features::kFileSystemAccessPersistentPermissions));
 
-  // The exception placeholder should not be translated. See crbug.com/1095878.
+  html_source->AddBoolean(
+      "permissionDedicatedCpssSettings",
+      base::FeatureList::IsEnabled(
+          permissions::features::kPermissionDedicatedCpssSetting));
+
+  html_source->AddBoolean(
+      "blockMidiByDefault",
+      base::FeatureList::IsEnabled(permissions::features::kBlockMidiByDefault));
+
+  // The exception placeholder should not be translated. See
+  // crbug.com/1095878.
   html_source->AddString("addSiteExceptionPlaceholder", "[*.]example.com");
 }
 
@@ -3323,6 +3379,8 @@ void AddSiteDataPageStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_SITE_DATA_PAGE_BLOCK_RADIO_SUB_LABEL},
       {"siteDataPageCustomizedBehaviorHeading",
        IDS_SETTINGS_SITE_DATA_PAGE_CUSTOMIZED_BEHAVIOR_HEADING},
+      {"siteDataPageCustomized3pcdHeading",
+       IDS_SETTINGS_SITE_SETTINGS_3PCD_BEHAVIORS},
       {"siteDataPageCustomizedBehaviorDescription",
        IDS_SETTINGS_SITE_DATA_PAGE_CUSTOMIZED_BEHAVIOR_DESCRIPTION},
       {"siteDataPageAllowExceptionsSubHeading",

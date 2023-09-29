@@ -13,8 +13,11 @@
 #import "components/content_settings/core/browser/host_content_settings_map.h"
 #import "components/feature_engagement/public/event_constants.h"
 #import "components/feature_engagement/public/tracker.h"
+#import "components/infobars/core/infobar.h"
+#import "components/infobars/core/infobar_manager.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/password_manager/core/common/password_manager_features.h"
+#import "components/prefs/pref_service.h"
 #import "components/profile_metrics/browser_profile_type.h"
 #import "components/safe_browsing/core/common/features.h"
 #import "components/segmentation_platform/embedder/default_model/device_switcher_result_dispatcher.h"
@@ -22,8 +25,8 @@
 #import "components/translate/core/browser/translate_manager.h"
 #import "ios/chrome/browser/app_launcher/model/app_launcher_abuse_detector.h"
 #import "ios/chrome/browser/app_launcher/model/app_launcher_tab_helper.h"
-#import "ios/chrome/browser/commerce/push_notification/push_notification_feature.h"
-#import "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
+#import "ios/chrome/browser/commerce/model/push_notification/push_notification_feature.h"
+#import "ios/chrome/browser/content_settings/model/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/credential_provider_promo/features.h"
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/download/download_directory_util.h"
@@ -36,12 +39,17 @@
 #import "ios/chrome/browser/find_in_page/util.h"
 #import "ios/chrome/browser/follow/follow_browser_agent.h"
 #import "ios/chrome/browser/follow/followed_web_site.h"
+#import "ios/chrome/browser/infobars/infobar_ios.h"
+#import "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/intents/intents_donation_helper.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder_browser_agent.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ntp/new_tab_page_state.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/overscroll_actions/overscroll_actions_tab_helper.h"
+#import "ios/chrome/browser/parcel_tracking/parcel_tracking_infobar_delegate.h"
+#import "ios/chrome/browser/parcel_tracking/parcel_tracking_step.h"
+#import "ios/chrome/browser/parcel_tracking/parcel_tracking_util.h"
 #import "ios/chrome/browser/passwords/password_controller_delegate.h"
 #import "ios/chrome/browser/prerender/preload_controller_delegate.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
@@ -59,6 +67,7 @@
 #import "ios/chrome/browser/shared/model/browser/browser_provider.h"
 #import "ios/chrome/browser/shared/model/browser/browser_provider_interface.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/public/commands/activity_service_commands.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
@@ -102,6 +111,7 @@
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
 #import "ios/chrome/browser/store_kit/store_kit_coordinator_delegate.h"
 #import "ios/chrome/browser/sync/sync_error_browser_agent.h"
+#import "ios/chrome/browser/tab_insertion/model/tab_insertion_browser_agent.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/app_store_rating/features.h"
@@ -197,6 +207,7 @@
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
+#import "ios/chrome/browser/view_source/model/view_source_browser_agent.h"
 #import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
 #import "ios/chrome/browser/web/page_placeholder_browser_agent.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
@@ -207,10 +218,8 @@
 #import "ios/chrome/browser/web/web_navigation_ntp_delegate.h"
 #import "ios/chrome/browser/web/web_state_delegate_browser_agent.h"
 #import "ios/chrome/browser/web/web_state_update_browser_agent.h"
-#import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
-#import "ios/chrome/browser/web_state_list/view_source_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_usage_enabler_browser_agent.h"
-#import "ios/chrome/browser/webui/net_export_tab_helper_delegate.h"
+#import "ios/chrome/browser/webui/model/net_export_tab_helper_delegate.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/fullscreen/fullscreen_api.h"
 #import "ios/public/provider/chrome/browser/signin/choice_api.h"
@@ -1533,13 +1542,20 @@ enum class ToolbarKind {
 }
 
 - (void)showPaymentsBottomSheet:(const autofill::FormActivityParams&)params {
+  if (self.paymentsSuggestionBottomSheetCoordinator) {
+    return;
+  }
   self.paymentsSuggestionBottomSheetCoordinator =
       [[PaymentsSuggestionBottomSheetCoordinator alloc]
           initWithBaseViewController:self.viewController
                              browser:self.browser
                               params:params];
-  self.paymentsSuggestionBottomSheetCoordinator.applicationCommandsHandler =
-      HandlerForProtocol(self.dispatcher, ApplicationCommands);
+  self.paymentsSuggestionBottomSheetCoordinator
+      .applicationSettingsCommandsHandler =
+      HandlerForProtocol(self.dispatcher, ApplicationSettingsCommands);
+  self.paymentsSuggestionBottomSheetCoordinator
+      .browserCoordinatorCommandsHandler =
+      HandlerForProtocol(self.dispatcher, BrowserCoordinatorCommands);
   [self.paymentsSuggestionBottomSheetCoordinator start];
 }
 
@@ -1758,6 +1774,11 @@ enum class ToolbarKind {
   // Preload VoiceSearchController and views and view controllers needed
   // for voice search.
   [_voiceSearchController prepareToAppear];
+}
+
+- (void)dismissPaymentSuggestions {
+  [self.paymentsSuggestionBottomSheetCoordinator stop];
+  self.paymentsSuggestionBottomSheetCoordinator = nil;
 }
 
 #pragma mark - DefaultPromoCommands
@@ -2052,6 +2073,7 @@ enum class ToolbarKind {
       initWithBaseViewController:self.viewController
                          browser:self.browser];
   pageInfoCoordinator.presentationProvider = self;
+  [self.pageInfoCoordinator stop];
   self.pageInfoCoordinator = pageInfoCoordinator;
   [self.pageInfoCoordinator start];
 }
@@ -2303,14 +2325,69 @@ enum class ToolbarKind {
 
 #pragma mark - ParcelTrackingOptInCommands
 
-- (void)showParcelTrackingOptInPromptWithParcels:
+- (void)showParcelTrackingUIWithParcels:
+    (NSArray<CustomTextCheckingResult*>*)parcels {
+  // TODO(crbug.com/1473449): Once Shopping Service API is ready, return
+  // early if the parcels are already being tracked.
+  if (IsUserEligibleParcelTrackingOptInPrompt(
+          self.browser->GetBrowserState())) {
+    [self showParcelTrackingOptInPromptWithParcels:parcels];
+  } else {
+    [self maybeShowParcelTrackingInfobarWithParcels:parcels];
+  }
+}
+
+- (void)showParcelTrackingInfobarWithParcels:
             (NSArray<CustomTextCheckingResult*>*)parcels
-                                     forWebState:(web::WebState*)webState {
+                                     forStep:(ParcelTrackingStep)step {
+  web::WebState* activeWebState = self.activeWebState;
+  CHECK(activeWebState);
+  std::unique_ptr<ParcelTrackingInfobarDelegate> delegate =
+      std::make_unique<ParcelTrackingInfobarDelegate>(
+          activeWebState, step, parcels,
+          HandlerForProtocol(self.dispatcher, ApplicationCommands),
+          HandlerForProtocol(self.dispatcher, ParcelTrackingOptInCommands));
+  infobars::InfoBarManager* infobar_manager =
+      InfoBarManagerImpl::FromWebState(activeWebState);
+
+  std::unique_ptr<infobars::InfoBar> infobar = std::make_unique<InfoBarIOS>(
+      InfobarType::kInfobarTypeParcelTracking, std::move(delegate));
+  infobar_manager->AddInfoBar(std::move(infobar),
+                              /*replace_existing=*/true);
+}
+
+#pragma mark - ParcelTrackingOptInCommands helpers
+
+- (void)maybeShowParcelTrackingInfobarWithParcels:
+    (NSArray<CustomTextCheckingResult*>*)parcels {
+  IOSParcelTrackingOptInStatus optInStatus =
+      static_cast<IOSParcelTrackingOptInStatus>(
+          self.browser->GetBrowserState()->GetPrefs()->GetInteger(
+              prefs::kIosParcelTrackingOptInStatus));
+  ParcelTrackingStep step;
+  switch (optInStatus) {
+    case IOSParcelTrackingOptInStatus::kAlwaysTrack:
+      step = ParcelTrackingStep::kNewPackageTracked;
+      break;
+    case IOSParcelTrackingOptInStatus::kAskToTrack:
+      step = ParcelTrackingStep::kAskedToTrackPackage;
+      break;
+    case IOSParcelTrackingOptInStatus::kNeverTrack:
+      // Do not display infobar.
+      return;
+  }
+  [self showParcelTrackingInfobarWithParcels:parcels forStep:step];
+}
+
+- (void)showParcelTrackingOptInPromptWithParcels:
+    (NSArray<CustomTextCheckingResult*>*)parcels {
+  web::WebState* activeWebState = self.activeWebState;
+  CHECK(activeWebState);
   [self dismissParcelTrackingOptInPrompt];
   self.parcelTrackingOptInCoordinator = [[ParcelTrackingOptInCoordinator alloc]
       initWithBaseViewController:self.viewController
                          browser:self.browser
-                        webState:webState
+                        webState:activeWebState
                          parcels:parcels];
   [self.parcelTrackingOptInCoordinator start];
 }
@@ -2745,21 +2822,16 @@ enum class ToolbarKind {
          baseViewForWebState:(web::WebState*)webState {
   NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
   if (NTPHelper && NTPHelper->IsActive()) {
-    // NTPCoordinator should be started at this point. If for some reason it is
-    // not, the DCHECK will let us know and we will fall back to using the
-    // webState's view.
-    DCHECK(_NTPCoordinator.started);
+    // If NTPCoordinator is not started yet, fall back to using the
+    // webState's view. `_NTPCoordinator.started` should be true in most cases
+    // but it can be false when the app will be terminated or the browser data
+    // is removed. In particular, it can be false when this method is called as
+    // a delayed task while the app is being terminated.
     if (_NTPCoordinator.started) {
       return _NTPCoordinator.viewController.view;
     }
   }
   return webState->GetView();
-}
-
-- (UIViewTintAdjustmentMode)snapshotGenerator:
-                                (SnapshotGenerator*)snapshotGenerator
-         defaultTintAdjustmentModeForWebState:(web::WebState*)webState {
-  return UIViewTintAdjustmentModeAutomatic;
 }
 
 #pragma mark - NewTabPageCommands

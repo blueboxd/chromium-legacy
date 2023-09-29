@@ -176,6 +176,9 @@ message ServiceWorkerRegistrationData {
           }
           optional Status status = 1;
         }
+        message OrCondition {
+          repeated Condition conditions = 1;
+        }
         oneof condition {
           // Used for representing URLPattern.
           URLPattern url_pattern = 1;
@@ -183,6 +186,9 @@ message ServiceWorkerRegistrationData {
           Request request = 2;
           // Used for representing running status.
           RunningStatus running_status = 3;
+          // Used for representing 'or' condition.
+          // The `_condition` suffix is to avoid conflicts with keywords in C++
+          OrCondition or_condition = 4;
         }
       }
       message Source {

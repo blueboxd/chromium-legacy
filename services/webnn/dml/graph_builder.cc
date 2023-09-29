@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "services/webnn/dml/error.h"
 
 namespace webnn::dml {
@@ -96,30 +97,22 @@ NodeOutputInfo GraphBuilder::CreateNodeOutput(const NodeInfo& node_info,
   return {base::checked_cast<uint32_t>(node_outputs_.size() - 1)};
 }
 
+uint32_t GraphBuilder::CreateOutputEdge(
+    const NodeOutputInfo& node_output_info) {
+  NodeOutput node_output = GetNodeOutput(node_output_info);
+  uint32_t graph_output_index =
+      base::checked_cast<uint32_t>(dml_output_edges_.size());
+  DML_OUTPUT_GRAPH_EDGE_DESC output_edge = {
+      .FromNodeIndex = node_output.node_info.index,
+      .FromNodeOutputIndex = node_output.output_index,
+      .GraphOutputIndex = graph_output_index};
+  dml_output_edges_.push_back(std::move(output_edge));
+  return graph_output_index;
+}
+
 ComPtr<IDMLCompiledOperator> GraphBuilder::Compile(
-    const std::vector<NodeOutputInfo>& node_output_infos,
     DML_EXECUTION_FLAGS flags) const {
-  ComPtr<IDMLCompiledOperator> compiled_operator;
-  // If there is only one operator node in the graph, just compile the operator
-  // and return the compiled operator.
-  if (dml_operators_.size() == 1) {
-    RETURN_NULL_IF_FAILED(dml_device_->CompileOperator(
-        dml_operators_[0].Get(), flags, IID_PPV_ARGS(&compiled_operator)));
-    return compiled_operator;
-  }
-
-  // Create output edges with node outputs.
-  size_t outputs_count = node_output_infos.size();
-  std::vector<DML_OUTPUT_GRAPH_EDGE_DESC> output_edges(outputs_count);
-  for (size_t index = 0; index < outputs_count; ++index) {
-    NodeOutput node_output = GetNodeOutput(node_output_infos[index]);
-    DML_OUTPUT_GRAPH_EDGE_DESC output_edge = {
-        .FromNodeIndex = node_output.node_info.index,
-        .FromNodeOutputIndex = node_output.output_index,
-        .GraphOutputIndex = base::checked_cast<uint32_t>(index)};
-    output_edges[index] = std::move(output_edge);
-  }
-
+  TRACE_EVENT0("gpu", "dml::GraphBuilder::Compile");
   std::vector<DML_GRAPH_NODE_DESC> dml_nodes(dml_nodes_.size());
   for (size_t i = 0; i < dml_nodes.size(); ++i) {
     dml_nodes[i] = {DML_GRAPH_NODE_TYPE_OPERATOR, &dml_nodes_[i]};
@@ -137,14 +130,14 @@ ComPtr<IDMLCompiledOperator> GraphBuilder::Compile(
                                  &dml_intermediate_edges_[i]};
   }
 
-  std::vector<DML_GRAPH_EDGE_DESC> dml_output_edges(output_edges.size());
+  std::vector<DML_GRAPH_EDGE_DESC> dml_output_edges(dml_output_edges_.size());
   for (size_t i = 0; i < dml_output_edges.size(); ++i) {
-    dml_output_edges[i] = {DML_GRAPH_EDGE_TYPE_OUTPUT, &output_edges[i]};
+    dml_output_edges[i] = {DML_GRAPH_EDGE_TYPE_OUTPUT, &dml_output_edges_[i]};
   }
 
   DML_GRAPH_DESC dml_graph_desc = {
       .InputCount = input_count_,
-      .OutputCount = base::checked_cast<uint32_t>(outputs_count),
+      .OutputCount = base::checked_cast<uint32_t>(dml_output_edges_.size()),
       .NodeCount = base::checked_cast<uint32_t>(dml_nodes.size()),
       .Nodes = dml_nodes.data(),
       .InputEdgeCount = base::checked_cast<uint32_t>(dml_input_edges.size()),
@@ -159,6 +152,7 @@ ComPtr<IDMLCompiledOperator> GraphBuilder::Compile(
   RETURN_NULL_IF_FAILED(
       dml_device_->QueryInterface(IID_PPV_ARGS(&dml_device1)));
 
+  ComPtr<IDMLCompiledOperator> compiled_operator;
   RETURN_NULL_IF_FAILED(dml_device1->CompileGraph(
       &dml_graph_desc, flags, IID_PPV_ARGS(&compiled_operator)));
   return compiled_operator;

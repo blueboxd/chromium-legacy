@@ -6,10 +6,10 @@ import {TestRunner} from 'test_runner';
 import {SourcesTestRunner} from 'sources_test_runner';
 
 import * as SDK from 'devtools/core/sdk/sdk.js';
+import * as BindingsModule from 'devtools/models/bindings/bindings.js';
 
 (async function() {
   TestRunner.addResult(`Tests SourceMap and StyleSheetMapping.\n`);
-  await TestRunner.loadLegacyModule('sources');
   await TestRunner.evaluateInPagePromise(`
       function addStyleSheet()
       {
@@ -44,7 +44,7 @@ import * as SDK from 'devtools/core/sdk/sdk.js';
 
   function cssUISourceCodeAdded(uiSourceCode) {
     styleSheetId = cssModel.getStyleSheetIdsForURL(styleSheetURL)[0];
-    TestRunner.addSniffer(Bindings.CSSWorkspaceBinding.ModelInfo.prototype, 'updateLocations', locationsUpdated, true);
+    TestRunner.addSniffer(BindingsModule.CSSWorkspaceBinding.ModelInfo.prototype, 'updateLocations', locationsUpdated, true);
     TestRunner.addResult('Added CSS uiSourceCode: ' + uiSourceCode.url());
     TestRunner.waitForUISourceCode(sourceURL).then(scssUISourceCodeAdded);
   }

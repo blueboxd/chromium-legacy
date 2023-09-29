@@ -1048,6 +1048,8 @@ void AccessibilityControllerImpl::RegisterProfilePrefs(
                                 false);
   registry->RegisterBooleanPref(
       prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled, false);
+  registry->RegisterBooleanPref(prefs::kAccessibilityFaceTrackingEnabled,
+                                false);
 
   // Not syncable because it might change depending on application locale,
   // user settings, and because different languages can cause speech recognition
@@ -2937,7 +2939,7 @@ void AccessibilityControllerImpl::ShowToast(AccessibilityToastType type) {
 }
 
 void AccessibilityControllerImpl::AddShowToastCallbackForTesting(
-    base::RepeatingClosure callback) {
+    base::RepeatingCallback<void(AccessibilityToastType)> callback) {
   accessibility_notification_controller_->AddShowToastCallbackForTesting(
       std::move(callback));
 }

@@ -123,55 +123,24 @@ clang::ast_matchers::internal::Matcher<clang::QualType> StackAllocatedQualType(
 //    }
 clang::ast_matchers::internal::Matcher<clang::NamedDecl> PtrAndRefExclusions(
     const RawPtrAndRefExclusionsOptions& options) {
-  if (!options.fix_crbug_1449812) {
-    // Before fix for crbug.com/1449812
-    // - File exclusion is performed based on the `SourceLocation` obtained
-    //   via `getBeginLoc()`.
-    // - System header check is based on expansion location.
-    if (!options.should_exclude_stack_allocated_records) {
-      return anyOf(
-          isExpansionInSystemHeader(), isInExternCContext(),
-          isRawPtrExclusionAnnotated(), isBeginInThirdPartyLocation(),
-          isBeginInGeneratedLocation(),
-          isBeginInLocationListedInFilterFile(options.paths_to_exclude),
-          isFieldDeclListedInFilterFile(options.fields_to_exclude),
-          ImplicitFieldDeclaration(), isObjCSynthesize());
-    } else {
-      return anyOf(
-          isExpansionInSystemHeader(), isInExternCContext(),
-          isRawPtrExclusionAnnotated(), isBeginInThirdPartyLocation(),
-          isBeginInGeneratedLocation(),
-          isBeginInLocationListedInFilterFile(options.paths_to_exclude),
-          isFieldDeclListedInFilterFile(options.fields_to_exclude),
-          ImplicitFieldDeclaration(), isObjCSynthesize(),
-          hasDescendant(
-              StackAllocatedQualType(options.stack_allocated_predicate)),
-          isDeclaredInStackAllocated(*options.stack_allocated_predicate));
-    }
+  if (!options.should_exclude_stack_allocated_records) {
+    return anyOf(isSpellingInSystemHeader(), isInExternCContext(),
+                 isRawPtrExclusionAnnotated(), isInThirdPartyLocation(),
+                 isInGeneratedLocation(), isNotSpelledInSource(),
+                 isInLocationListedInFilterFile(options.paths_to_exclude),
+                 isFieldDeclListedInFilterFile(options.fields_to_exclude),
+                 ImplicitFieldDeclaration(), isObjCSynthesize());
   } else {
-    // After fix for crbug.com/1449812
-    // - File exclusion is performed based on the `SourceLocation` obtained
-    //   via `getLocation()`.
-    // - System header check is based on spelling location.
-    if (!options.should_exclude_stack_allocated_records) {
-      return anyOf(isSpellingInSystemHeader(), isInExternCContext(),
-                   isRawPtrExclusionAnnotated(), isInThirdPartyLocation(),
-                   isInGeneratedLocation(), isNotSpelledInSource(),
-                   isInLocationListedInFilterFile(options.paths_to_exclude),
-                   isFieldDeclListedInFilterFile(options.fields_to_exclude),
-                   ImplicitFieldDeclaration(), isObjCSynthesize());
-    } else {
-      return anyOf(
-          isSpellingInSystemHeader(), isInExternCContext(),
-          isRawPtrExclusionAnnotated(), isInThirdPartyLocation(),
-          isInGeneratedLocation(), isNotSpelledInSource(),
-          isInLocationListedInFilterFile(options.paths_to_exclude),
-          isFieldDeclListedInFilterFile(options.fields_to_exclude),
-          ImplicitFieldDeclaration(), isObjCSynthesize(),
-          hasDescendant(
-              StackAllocatedQualType(options.stack_allocated_predicate)),
-          isDeclaredInStackAllocated(*options.stack_allocated_predicate));
-    }
+    return anyOf(
+        isSpellingInSystemHeader(), isInExternCContext(),
+        isRawPtrExclusionAnnotated(), isInThirdPartyLocation(),
+        isInGeneratedLocation(), isNotSpelledInSource(),
+        isInLocationListedInFilterFile(options.paths_to_exclude),
+        isFieldDeclListedInFilterFile(options.fields_to_exclude),
+        ImplicitFieldDeclaration(), isObjCSynthesize(),
+        hasDescendant(
+            StackAllocatedQualType(options.stack_allocated_predicate)),
+        isDeclaredInStackAllocated(*options.stack_allocated_predicate));
   }
 }
 
@@ -211,23 +180,12 @@ clang::ast_matchers::internal::Matcher<clang::Decl> AffectedRawPtrFieldDecl(
       fieldDecl(hasType(pointerType(pointee(qualType(allOf(
           isConstQualified(), hasUnqualifiedDesugaredType(anyCharType())))))));
 
-  if (!options.fix_crbug_1449812) {
-    auto field_decl_matcher =
-        fieldDecl(allOf(hasType(supported_pointer_types_matcher),
-                        unless(anyOf(const_char_pointer_matcher,
-                                     isBeginInScratchSpace(),
-                                     PtrAndRefExclusions(options)))))
-            .bind("affectedFieldDecl");
-    return field_decl_matcher;
-  } else {
-    // `isBeginInScratchSpace()` check is done inside `PtrAndRefExclusions`.
     auto field_decl_matcher =
         fieldDecl(allOf(hasType(supported_pointer_types_matcher),
                         unless(anyOf(const_char_pointer_matcher,
                                      PtrAndRefExclusions(options)))))
             .bind("affectedFieldDecl");
     return field_decl_matcher;
-  }
 }
 
 clang::ast_matchers::internal::Matcher<clang::Decl> AffectedRawRefFieldDecl(
@@ -399,6 +357,11 @@ clang::ast_matchers::internal::Matcher<clang::Stmt> BadRawPtrCastExpr(
             in_allowlisted_invocation_ctx, cast_expr_to_const_pointer,
             isInRawPtrCastHeader(), in_template_invocation_ctx);
 
+  // To correctly display the error location, bind enclosing castExpr if
+  // available.
+  auto enclosingCastExpr = hasEnclosingExplicitCastExpr(
+      explicitCastExpr().bind("enclosingCastExpr"));
+
   // Implicit/explicit casting from/to |raw_ptr<T>| matches.
   // Both casting direction is unsafe.
   //   https://godbolt.org/z/zqKMzcKfo
@@ -409,7 +372,8 @@ clang::ast_matchers::internal::Matcher<clang::Stmt> BadRawPtrCastExpr(
           allOf(anyOf(hasSourceExpression(hasType(src_type)),
                       implicitCastExpr(hasImplicitDestinationType(dst_type)),
                       explicitCastExpr(hasDestinationType(dst_type))),
-                cast_kind, anyOf(isInStdBitCastHeader(), unless(exclusions))))
+                cast_kind, optionally(enclosingCastExpr),
+                anyOf(isInStdBitCastHeader(), unless(exclusions))))
           .bind("castExpr");
   return cast_matcher;
 }

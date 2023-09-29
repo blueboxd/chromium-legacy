@@ -21,6 +21,7 @@ ChromeBroadcastObserverInterface::~ChromeBroadcastObserverInterface() = default;
 }
 
 - (void)broadcastScrollViewSize:(CGSize)scrollViewSize {
+  CHECK(base::FeatureList::IsEnabled(web::features::kSmoothScrollingDefault));
   self.observer->OnScrollViewSizeBroadcasted(scrollViewSize);
 }
 
@@ -29,10 +30,12 @@ ChromeBroadcastObserverInterface::~ChromeBroadcastObserverInterface() = default;
 }
 
 - (void)broadcastScrollViewContentInset:(UIEdgeInsets)contentInset {
+  CHECK(base::FeatureList::IsEnabled(web::features::kSmoothScrollingDefault));
   self.observer->OnScrollViewContentInsetBroadcasted(contentInset);
 }
 
 - (void)broadcastContentScrollOffset:(CGFloat)offset {
+  CHECK(base::FeatureList::IsEnabled(web::features::kSmoothScrollingDefault));
   self.observer->OnContentScrollOffsetBroadcasted(offset);
 }
 

@@ -25,12 +25,19 @@ class ScalableIphFactoryImpl : public ScalableIphFactory {
 
   static void BuildInstance();
 
+  static bool IsBrowserContextEligible(
+      content::BrowserContext* browser_context);
+
   void SetDelegateFactoryForTesting(
       DelegateTestingFactory delegate_testing_factory);
 
   bool has_delegate_factory_for_testing() const {
     return !delegate_testing_factory_.is_null();
   }
+
+  content::BrowserContext* GetBrowserContextToUseForDebug(
+      content::BrowserContext* browser_context,
+      scalable_iph::Logger* logger) const override;
 
  protected:
   // BrowserContextKeyedServiceFactory:
@@ -41,6 +48,13 @@ class ScalableIphFactoryImpl : public ScalableIphFactory {
 
  private:
   friend base::NoDestructor<ScalableIphFactoryImpl>;
+
+  // This is the actual implementation of `GetBrowserContextToUse`. We have this
+  // interface to have logging. `GetBrowserContextToUse` is a const member
+  // function. We have to pass a logger from outside.
+  content::BrowserContext* GetBrowserContextToUseInternal(
+      content::BrowserContext* browser_context,
+      scalable_iph::Logger* logger) const;
 
   std::unique_ptr<scalable_iph::ScalableIphDelegate> CreateScalableIphDelegate(
       Profile* profile,

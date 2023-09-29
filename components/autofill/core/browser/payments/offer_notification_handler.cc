@@ -10,8 +10,8 @@
 #include "components/autofill/core/browser/payments/autofill_offer_manager.h"
 #include "components/autofill/core/browser/payments/offer_notification_options.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/commerce/core/commerce_utils.h"
 #include "components/search/ntp_features.h"
-#include "net/base/url_util.h"
 #include "url/gurl.h"
 
 namespace autofill {
@@ -40,15 +40,6 @@ bool IsOfferValid(AutofillOfferData* offer) {
   return true;
 }
 
-bool UrlContainsDiscountUtmTag(const GURL& url) {
-  std::string utm_name;
-  // TODO(b:289242951): Update the utm tag and value once they are finalized.
-  if (!net::GetValueForKeyInQuery(url, "utm_source", &utm_name)) {
-    return false;
-  }
-  return utm_name == "chrome-history-cluster-with-discount";
-}
-
 }  // namespace
 
 OfferNotificationHandler::OfferNotificationHandler(
@@ -64,7 +55,7 @@ void OfferNotificationHandler::UpdateOfferNotificationVisibility(
   bool show_offer_notification_sync =
       !(base::FeatureList::IsEnabled(
             ntp_features::kNtpHistoryClustersModuleDiscounts) &&
-        UrlContainsDiscountUtmTag(url)) &&
+        commerce::UrlContainsDiscountUtmTag(url)) &&
       ValidOfferExistsForUrl(url);
 
   if (show_offer_notification_sync) {
@@ -79,9 +70,10 @@ void OfferNotificationHandler::UpdateOfferNotificationVisibility(
     AutofillOfferData* offer = offer_manager_->GetOfferForUrl(url);
     CHECK(IsOfferValid(offer));
     int64_t offer_id = offer->GetOfferId();
+    bool offer_id_has_shown_before = shown_notification_ids_.contains(offer_id);
     client->UpdateOfferNotification(
-        offer, {.notification_has_been_shown =
-                    shown_notification_ids_.contains(offer_id)});
+        offer, {.notification_has_been_shown = offer_id_has_shown_before,
+                .show_notification_automatically = !offer_id_has_shown_before});
     shown_notification_ids_.insert(offer_id);
   } else {
     client->DismissOfferNotification();
@@ -119,13 +111,41 @@ void OfferNotificationHandler::UpdateOfferNotificationForShoppingServiceOffer(
   if (!client || url != client->GetLastCommittedPrimaryMainFrameURL()) {
     return;
   }
-
   int64_t offer_id = offer.GetOfferId();
-  client->UpdateOfferNotification(
-      &offer, {.notification_has_been_shown =
-                   shown_notification_ids_.contains(offer_id),
-               .expand_notification_icon = true});
+  OfferNotificationOptions offer_notification_options = {
+      .notification_has_been_shown = shown_notification_ids_.contains(offer_id),
+      .expand_notification_icon = true,
+      .show_notification_automatically =
+          ShowShoppingServiceOfferNotificationAutomatically(url, offer)};
+
+  client->UpdateOfferNotification(&offer, offer_notification_options);
   shown_notification_ids_.insert(offer_id);
+}
+
+bool OfferNotificationHandler::
+    ShowShoppingServiceOfferNotificationAutomatically(
+        const GURL& url,
+        const AutofillOfferData& offer) {
+  bool offer_has_been_shown_before =
+      shown_notification_ids_.contains(offer.GetOfferId());
+
+  // If the URL contains the expected UTM tags, the notification should show
+  // automatically if the offer has not been shown before.
+  if (base::FeatureList::IsEnabled(
+          ntp_features::kNtpHistoryClustersModuleDiscounts) &&
+      commerce::UrlContainsDiscountUtmTag(url)) {
+    return !offer_has_been_shown_before;
+  }
+
+  // If the URL doesn't contains the expected UTM tags and the available offer
+  // is a merchant-wide offer, the notification should not show automatically.
+  if (offer.IsMerchantWideOffer()) {
+    return false;
+  }
+
+  // At this point, the notification should show automatically if it hasn't
+  // been shown before.
+  return !offer_has_been_shown_before;
 }
 
 }  // namespace autofill

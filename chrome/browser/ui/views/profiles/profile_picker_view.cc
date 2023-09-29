@@ -196,6 +196,16 @@ void ProfilePicker::SwitchToDiceSignIn(
         profile_color, std::move(switch_finished_callback));
   }
 }
+
+// static
+void ProfilePicker::SwitchToReauth(
+    Profile* profile,
+    base::OnceCallback<void()> on_error_callback) {
+  if (g_profile_picker_view) {
+    g_profile_picker_view->SwitchToReauth(profile,
+                                          std::move(on_error_callback));
+  }
+}
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -749,6 +759,12 @@ void ProfilePickerView::OnProfileForDiceForcedSigninCreated(
   ProfilePickerForceSigninDialog::ShowForceSigninDialog(profile);
 }
 
+void ProfilePickerView::SwitchToReauth(
+    Profile* profile,
+    base::OnceCallback<void()> on_error_callback) {
+  GetProfilePickerFlowController()->SwitchToReauth(
+      profile, std::move(on_error_callback));
+}
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -760,7 +776,7 @@ void ProfilePickerView::SwitchToSignedInFlow(
   GetProfilePickerFlowController()->SwitchToPostSignIn(
       signed_in_profile,
       IdentityManagerFactory::GetForProfile(signed_in_profile)
-          ->GetPrimaryAccountId(signin::ConsentLevel::kSignin),
+          ->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin),
       profile_color, std::move(contents));
 }
 #endif

@@ -41,9 +41,6 @@ extern const base::FeatureParam<base::TimeDelta>
 BASE_DECLARE_FEATURE(kWebApkInstallFailureNotification);
 BASE_DECLARE_FEATURE(kWebApkInstallFailureRetry);
 BASE_DECLARE_FEATURE(kBlockInstallPromptIfIgnoreRecently);
-
-BASE_DECLARE_FEATURE(kUniversalInstallManifest);
-BASE_DECLARE_FEATURE(kUniversalInstallIcon);
 #endif  // BUILDFLAG(IS_ANDROID)
 
 BASE_DECLARE_FEATURE(kCreateShortcutIgnoresManifest);
@@ -56,6 +53,10 @@ extern const base::FeatureParam<int> kBannerParamsDaysAfterBannerDismissedKey;
 extern const base::FeatureParam<int> kBannerParamsDaysAfterBannerIgnoredKey;
 
 BASE_DECLARE_FEATURE(kWebAppsEnableMLModelForPromotion);
+
+BASE_DECLARE_FEATURE(kUniversalInstallManifest);
+BASE_DECLARE_FEATURE(kUniversalInstallIcon);
+extern const base::FeatureParam<int> kMinimumFaviconSize;
 
 }  // namespace features
 }  // namespace webapps

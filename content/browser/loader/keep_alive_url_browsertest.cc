@@ -794,8 +794,16 @@ IN_PROC_BROWSER_TEST_P(SendBeaconBrowserTest,
 // endpoint (/no-cors-server-redirect-307) which does not support CORS.
 // As navigator.sendBeacon() marks its request with `no-cors`, the redirect
 // should succeed.
+// TODO(crbug.com/1485088): Flaky on Android and Mac.
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
+#define MAYBE_CrossOriginAndCORSSafelistedRedirectRequest \
+  DISABLED_CrossOriginAndCORSSafelistedRedirectRequest
+#else
+#define MAYBE_CrossOriginAndCORSSafelistedRedirectRequest \
+  CrossOriginAndCORSSafelistedRedirectRequest
+#endif
 IN_PROC_BROWSER_TEST_P(SendBeaconBrowserTest,
-                       CrossOriginAndCORSSafelistedRedirectRequest) {
+                       MAYBE_CrossOriginAndCORSSafelistedRedirectRequest) {
   const auto beacon_endpoint =
       base::StringPrintf("%s?id=%s", kKeepAliveEndpoint, kBeaconId);
   auto request_handler =

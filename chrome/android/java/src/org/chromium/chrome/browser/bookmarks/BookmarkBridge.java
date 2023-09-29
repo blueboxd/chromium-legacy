@@ -29,7 +29,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
 import org.chromium.components.bookmarks.BookmarkType;
-import org.chromium.components.commerce.core.ShoppingService;
 import org.chromium.components.power_bookmarks.PowerBookmarkMeta;
 import org.chromium.components.power_bookmarks.PowerBookmarkType;
 import org.chromium.content_public.browser.WebContents;
@@ -43,12 +42,20 @@ import java.util.List;
  * bookmark model stored in native.
  */
 class BookmarkBridge {
+    private final ObserverList<BookmarkModelObserver> mObservers = new ObserverList<>();
+
     private long mNativeBookmarkBridge;
     private boolean mIsDestroyed;
     private boolean mIsDoingExtensiveChanges;
     private boolean mIsNativeBookmarkModelLoaded;
-    private final ObserverList<BookmarkModelObserver> mObservers = new ObserverList<>();
-    private ShoppingService mShoppingService;
+
+    // Lazily set pseudo-constants. These should never change at runtime. Used to avoid crossing
+    // JNI to fetch information.
+    private @Nullable BookmarkId mRootFolderId;
+    private @Nullable BookmarkId mMobileFolderId;
+    private @Nullable BookmarkId mOtherFolderId;
+    private @Nullable BookmarkId mDesktopFolderId;
+    private @Nullable BookmarkId mReadingListFolderId;
 
     /**
      * Handler to fetch the bookmarks, titles, urls and folder hierarchy.
@@ -216,30 +223,15 @@ class BookmarkBridge {
     }
 
     /**
-     * @return The top level folder's parents.
+     * @return The top level folders, including special folders (managed bookmarks, reading list,
+     *         partner bookmarks).
      */
-    public List<BookmarkId> getTopLevelFolderParentIds() {
+    public List<BookmarkId> getTopLevelFolderIds() {
         ThreadUtils.assertOnUiThread();
         if (mNativeBookmarkBridge == 0) return new ArrayList<>();
         assert mIsNativeBookmarkModelLoaded;
         List<BookmarkId> result = new ArrayList<>();
-        BookmarkBridgeJni.get().getTopLevelFolderParentIds(mNativeBookmarkBridge, result);
-        return result;
-    }
-
-    /**
-     * @param getSpecial Whether special top folders should be returned.
-     * @param getNormal  Whether normal top folders should be returned.
-     * @return The top level folders. Note that special folders come first and normal top folders
-     *         will be in the alphabetical order.
-     */
-    public List<BookmarkId> getTopLevelFolderIds(boolean getSpecial, boolean getNormal) {
-        ThreadUtils.assertOnUiThread();
-        if (mNativeBookmarkBridge == 0) return new ArrayList<>();
-        assert mIsNativeBookmarkModelLoaded;
-        List<BookmarkId> result = new ArrayList<>();
-        BookmarkBridgeJni.get().getTopLevelFolderIds(
-                mNativeBookmarkBridge, getSpecial, getNormal, result);
+        BookmarkBridgeJni.get().getTopLevelFolderIds(mNativeBookmarkBridge, result);
         return result;
     }
 
@@ -248,7 +240,11 @@ class BookmarkBridge {
         ThreadUtils.assertOnUiThread();
         if (mNativeBookmarkBridge == 0) return null;
         assert mIsNativeBookmarkModelLoaded;
-        return BookmarkBridgeJni.get().getReadingListFolder(mNativeBookmarkBridge);
+        if (mReadingListFolderId == null) {
+            mReadingListFolderId =
+                    BookmarkBridgeJni.get().getReadingListFolder(mNativeBookmarkBridge);
+        }
+        return mReadingListFolderId;
     }
 
     /**
@@ -321,7 +317,10 @@ class BookmarkBridge {
         ThreadUtils.assertOnUiThread();
         if (mNativeBookmarkBridge == 0) return null;
         assert mIsNativeBookmarkModelLoaded;
-        return BookmarkBridgeJni.get().getRootFolderId(mNativeBookmarkBridge);
+        if (mRootFolderId == null) {
+            mRootFolderId = BookmarkBridgeJni.get().getRootFolderId(mNativeBookmarkBridge);
+        }
+        return mRootFolderId;
     }
 
     /**
@@ -331,7 +330,10 @@ class BookmarkBridge {
         ThreadUtils.assertOnUiThread();
         if (mNativeBookmarkBridge == 0) return null;
         assert mIsNativeBookmarkModelLoaded;
-        return BookmarkBridgeJni.get().getMobileFolderId(mNativeBookmarkBridge);
+        if (mMobileFolderId == null) {
+            mMobileFolderId = BookmarkBridgeJni.get().getMobileFolderId(mNativeBookmarkBridge);
+        }
+        return mMobileFolderId;
     }
 
     /**
@@ -341,7 +343,10 @@ class BookmarkBridge {
         ThreadUtils.assertOnUiThread();
         if (mNativeBookmarkBridge == 0) return null;
         assert mIsNativeBookmarkModelLoaded;
-        return BookmarkBridgeJni.get().getOtherFolderId(mNativeBookmarkBridge);
+        if (mOtherFolderId == null) {
+            mOtherFolderId = BookmarkBridgeJni.get().getOtherFolderId(mNativeBookmarkBridge);
+        }
+        return mOtherFolderId;
     }
 
     /**
@@ -351,7 +356,10 @@ class BookmarkBridge {
         ThreadUtils.assertOnUiThread();
         if (mNativeBookmarkBridge == 0) return null;
         assert mIsNativeBookmarkModelLoaded;
-        return BookmarkBridgeJni.get().getDesktopFolderId(mNativeBookmarkBridge);
+        if (mDesktopFolderId == null) {
+            mDesktopFolderId = BookmarkBridgeJni.get().getDesktopFolderId(mNativeBookmarkBridge);
+        }
+        return mDesktopFolderId;
     }
 
     /**
@@ -939,9 +947,7 @@ class BookmarkBridge {
         BookmarkId getBookmarkIdForWebContents(
                 long nativeBookmarkBridge, WebContents webContents, boolean onlyEditable);
         BookmarkItem getBookmarkById(long nativeBookmarkBridge, long id, int type);
-        void getTopLevelFolderParentIds(long nativeBookmarkBridge, List<BookmarkId> bookmarksList);
-        void getTopLevelFolderIds(long nativeBookmarkBridge, boolean getSpecial, boolean getNormal,
-                List<BookmarkId> bookmarksList);
+        void getTopLevelFolderIds(long nativeBookmarkBridge, List<BookmarkId> bookmarksList);
         BookmarkId getReadingListFolder(long nativeBookmarkBridge);
         void getAllFoldersWithDepths(
                 long nativeBookmarkBridge, List<BookmarkId> folderList, List<Integer> depthList);

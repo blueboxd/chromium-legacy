@@ -27,11 +27,11 @@
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/file_manager/file_manager_copy_or_move_hook_delegate.h"
-#include "chrome/browser/ash/file_manager/file_tasks.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/filesystem_api_util.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
 #include "chrome/browser/ash/file_manager/io_task_util.h"
+#include "chrome/browser/ash/file_manager/office_file_tasks.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -235,6 +235,11 @@ void CopyOrMoveIOTaskImpl::Complete(State state) {
   base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(complete_callback_), std::move(*progress_)));
+}
+
+void CopyOrMoveIOTaskImpl::CompleteWithError(PolicyError policy_error) {
+  progress_->state = State::kError;
+  progress_->policy_error.emplace(std::move(policy_error));
 }
 
 void CopyOrMoveIOTaskImpl::VerifyTransfer() {

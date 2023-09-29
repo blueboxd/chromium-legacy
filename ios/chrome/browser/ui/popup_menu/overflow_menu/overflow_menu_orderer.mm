@@ -11,7 +11,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "components/prefs/pref_service.h"
 #import "components/prefs/scoped_user_pref_update.h"
-#import "ios/chrome/browser/commerce/push_notification/push_notification_feature.h"
+#import "ios/chrome/browser/commerce/model/push_notification/push_notification_feature.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_backed_boolean.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
@@ -286,6 +286,10 @@ base::Value::Dict DictFromBadgeData(const BadgeData badgeData) {
   return _destinationCustomizationModel;
 }
 
+- (BOOL)isDestinationCustomizationInProgress {
+  return _destinationCustomizationModel != nil;
+}
+
 #pragma mark - Public
 
 - (void)recordClickForDestination:(overflow_menu::Destination)destination {
@@ -393,6 +397,11 @@ base::Value::Dict DictFromBadgeData(const BadgeData badgeData) {
 }
 
 - (void)commitActionsUpdate {
+  if (!_actionCustomizationModel.hasChanged) {
+    [self cancelActionsUpdate];
+    return;
+  }
+
   ActionOrderData actionOrderData;
   for (OverflowMenuAction* action in self.actionCustomizationModel
            .shownActions) {
@@ -418,6 +427,11 @@ base::Value::Dict DictFromBadgeData(const BadgeData badgeData) {
 }
 
 - (void)commitDestinationsUpdate {
+  if (!_destinationCustomizationModel.hasChanged) {
+    [self cancelDestinationsUpdate];
+    return;
+  }
+
   DestinationOrderData orderData;
   for (OverflowMenuDestination* destination in self
            .destinationCustomizationModel.shownDestinations) {
@@ -465,6 +479,34 @@ base::Value::Dict DictFromBadgeData(const BadgeData badgeData) {
 
 - (void)cancelDestinationsUpdate {
   _destinationCustomizationModel = nil;
+}
+
+- (void)customizationUpdateToggledShown:(BOOL)shown
+                    forLinkedActionType:(overflow_menu::ActionType)actionType
+                         actionSubtitle:(NSString*)actionSubtitle {
+  if (!_actionCustomizationModel) {
+    return;
+  }
+
+  OverflowMenuAction* correspondingAction;
+  for (OverflowMenuAction* action in _actionCustomizationModel.actionsGroup
+           .actions) {
+    if (action.actionType == static_cast<int>(actionType)) {
+      correspondingAction = action;
+      break;
+    }
+  }
+
+  if (!correspondingAction) {
+    return;
+  }
+
+  if (shown) {
+    correspondingAction.subtitle = nil;
+  } else {
+    correspondingAction.highlighted = YES;
+    correspondingAction.subtitle = actionSubtitle;
+  }
 }
 
 #pragma mark - Private

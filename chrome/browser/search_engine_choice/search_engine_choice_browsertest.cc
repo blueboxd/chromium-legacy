@@ -25,9 +25,9 @@
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
-#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -37,10 +37,12 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/search_engines/default_search_manager.h"
 #include "components/search_engines/search_engine_choice_utils.h"
+#include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/search_engines_test_util.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/public/base/signin_switches.h"
+#include "components/webapps/common/web_app_id.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -109,7 +111,7 @@ void SetUserSelectedDefaultSearchProvider(
   template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
 }
 
-web_app::AppId InstallPWA(Profile* profile, const GURL& start_url) {
+webapps::AppId InstallPWA(Profile* profile, const GURL& start_url) {
   auto web_app_info = std::make_unique<web_app::WebAppInstallInfo>();
   web_app_info->start_url = start_url;
   web_app_info->scope = start_url.GetWithoutFilename();
@@ -297,6 +299,13 @@ IN_PROC_BROWSER_TEST_F(SearchEngineChoiceBrowserTest,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP));
   EXPECT_FALSE(service->IsShowingDialog(browser()));
 
+  // Make sure that the dialog doesn't open on the devtools url
+  ASSERT_TRUE(ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(chrome::kChromeUIDevToolsURL),
+      WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP));
+  EXPECT_FALSE(service->IsShowingDialog(browser()));
+
   // Dialog gets displayed when we navigate to chrome://new-tab-page.
   ASSERT_TRUE(ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUINewTabPageURL),
@@ -349,15 +358,6 @@ IN_PROC_BROWSER_TEST_F(SearchEngineChoiceBrowserTest,
   EXPECT_EQ(first_profile_service->GetNumberOfBrowsersWithDialogsOpen(), 2u);
   CheckChoiceScreenWasDisplayedRecordedOnce();
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-  // Create another profile and open a browser with it.
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  Profile* second_profile = &profiles::testing::CreateProfileSync(
-      profile_manager, profile_manager->GenerateNextProfileDirectoryPath());
-  auto* second_profile_service = static_cast<MockSearchEngineChoiceService*>(
-      SearchEngineChoiceServiceFactory::GetForProfile(second_profile));
-  Browser* browser_with_second_profile = CreateBrowser(second_profile);
-#endif
   // Simulate a dialog closing event for the first profile and test that the
   // dialogs for that profile are closed.
   first_profile_service->NotifyChoiceMade(/*prepopulate_id=*/1);
@@ -367,14 +367,55 @@ IN_PROC_BROWSER_TEST_F(SearchEngineChoiceBrowserTest,
   EXPECT_FALSE(first_profile_service->IsShowingDialog(
       second_browser_with_first_profile));
   EXPECT_EQ(first_profile_service->GetNumberOfBrowsersWithDialogsOpen(), 0u);
+}
 
+// We don't run this test on ChromeOS Ash because we can't create multiple
+// profiles on Ash.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-  // Test that the browser with the second profile is still showing a dialog.
+IN_PROC_BROWSER_TEST_F(SearchEngineChoiceBrowserTest,
+                       DialogGetsDisplayedOnlyForFirstProfile) {
+  Profile* first_profile = browser()->profile();
+  Browser* browser_with_first_profile = browser();
+  auto* first_profile_service = static_cast<MockSearchEngineChoiceService*>(
+      SearchEngineChoiceServiceFactory::GetForProfile(first_profile));
+
+  // Navigate to a URL to display the dialog.
+  ASSERT_TRUE(ui_test_utils::NavigateToURLWithDisposition(
+      browser_with_first_profile, GURL(chrome::kChromeUINewTabPageURL),
+      WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP));
+
+  EXPECT_TRUE(
+      first_profile_service->IsShowingDialog(browser_with_first_profile));
+
+  // Create another profile and open a browser with it.
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  Profile* second_profile = &profiles::testing::CreateProfileSync(
+      profile_manager, profile_manager->GenerateNextProfileDirectoryPath());
+  auto* second_profile_service = static_cast<MockSearchEngineChoiceService*>(
+      SearchEngineChoiceServiceFactory::GetForProfile(second_profile));
+  Browser* browser_with_second_profile = CreateBrowser(second_profile);
+
+  // Make sure that the browser with the second profile doesn't have a
+  // dialog opened.
+  EXPECT_FALSE(
+      second_profile_service->IsShowingDialog(browser_with_second_profile));
+  CheckChoiceScreenWasDisplayedRecordedOnce();
+
+  // Test that the second profile will display the dialog when forced to.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kForceSearchEngineChoiceScreen);
+
+  // Navigate to a URL to display the dialog.
+  ASSERT_TRUE(ui_test_utils::NavigateToURLWithDisposition(
+      browser_with_second_profile, GURL(chrome::kChromeUINewTabPageURL),
+      WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP));
+
   EXPECT_TRUE(
       second_profile_service->IsShowingDialog(browser_with_second_profile));
-  EXPECT_EQ(second_profile_service->GetNumberOfBrowsersWithDialogsOpen(), 1u);
-#endif
 }
+#endif
 
 IN_PROC_BROWSER_TEST_F(SearchEngineChoiceBrowserTest,
                        DialogDoesNotShowAgainAfterSettingPref) {
@@ -472,7 +513,7 @@ IN_PROC_BROWSER_TEST_F(SearchEngineChoiceBrowserTest,
       SearchEngineChoiceServiceFactory::GetForProfile(profile));
 
   const GURL start_url("https://app.site.test/example/index");
-  const web_app::AppId app_id = InstallPWA(profile, start_url);
+  const webapps::AppId app_id = InstallPWA(profile, start_url);
 
   // PWA browsers should not show the dialog.
   Browser* app_browser = web_app::LaunchWebAppBrowserAndWait(profile, app_id);

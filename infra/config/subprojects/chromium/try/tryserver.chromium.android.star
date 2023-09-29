@@ -75,9 +75,7 @@ This builder shadows android-12-x64-rel builder to experiment both jacoco and cl
     # are addressed
     # use_orchestrator_pool = True,
     use_clang_coverage = True,
-    # TODO(crbug.com/1416662): Add java coverage once dual coverage supported
-    # in recipe.
-    # use_java_coverage = True,
+    use_java_coverage = True,
 )
 
 try_.orchestrator_builder(
@@ -100,32 +98,6 @@ try_.compilator_builder(
     name = "android-12-x64-rel-compilator",
     branch_selector = branches.selector.ANDROID_BRANCHES,
     main_list_view = "try",
-    # TODO: b/297443583 - Enable remote typescript on production.
-    siso_configs = ["builder", "local_typescript"],
-    siso_enabled = True,
-)
-
-try_.orchestrator_builder(
-    name = "android-12-x64-siso-rel",
-    description_html = """\
-This builder shadows android-12-x64-rel builder to compare between Siso builds and Ninja builds.<br/>
-This builder should be removed after migrating android-12-x64-rel from Ninja to Siso. b/277863839
-""",
-    mirrors = builder_config.copy_from("try/android-12-x64-rel"),
-    compilator = "android-12-x64-siso-rel-compilator",
-    coverage_test_types = ["unit", "overall"],
-    main_list_view = "try",
-    tryjob = try_.job(
-        # Decreasing the experiment percentage while enabling tests to reduce
-        # extra workloads on the test pool.
-        experiment_percentage = 10,
-    ),
-    use_java_coverage = True,
-)
-
-try_.compilator_builder(
-    name = "android-12-x64-siso-rel-compilator",
-    main_list_view = "try",
     siso_enabled = True,
 )
 
@@ -143,6 +115,11 @@ try_.builder(
         "ci/android-13-x64-rel",
     ],
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+)
+
+try_.builder(
+    name = "android-arm-compile-dbg",
+    mirrors = ["ci/Android arm Builder (dbg)"],
 )
 
 try_.orchestrator_builder(
@@ -185,7 +162,7 @@ This builder should be removed after migrating android-arm64-rel from Ninja to S
     coverage_test_types = ["unit", "overall"],
     main_list_view = "try",
     tryjob = try_.job(
-        experiment_percentage = 20,
+        experiment_percentage = 10,
     ),
     use_clang_coverage = True,
 )
@@ -202,6 +179,11 @@ try_.compilator_builder(
 #     mirrors = ["ci/android-asan"],
 #     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 # )
+
+try_.builder(
+    name = "android-asan-compile-dbg",
+    mirrors = ["ci/Android ASAN (dbg)"],
+)
 
 try_.builder(
     name = "android-bfcache-rel",
@@ -236,6 +218,13 @@ try_.builder(
         },
     },
     tryjob = try_.job(),
+)
+
+try_.builder(
+    name = "android-clobber-rel",
+    mirrors = [
+        "ci/android-archive-rel",
+    ],
 )
 
 try_.builder(
@@ -400,20 +389,32 @@ try_.builder(
 )
 
 try_.builder(
-    name = "android-cronet-x86-dbg-lolipop",
+    name = "android-cronet-x86-dbg-lollipop-tests",
     mirrors = [
         "ci/android-cronet-x86-dbg",
         "ci/android-cronet-x86-dbg-lollipop-tests",
     ],
+    contact_team_email = "cronet-team@google.com",
+    main_list_view = "try",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    tryjob = try_.job(
+        location_filters = [
+            "components/cronet/.+",
+            "components/grpc_support/.+",
+            "build/android/.+",
+            "build/config/android/.+",
+            cq.location_filter(exclude = True, path_regexp = "components/cronet/ios/.+"),
+        ],
+    ),
 )
 
 try_.builder(
-    name = "android-cronet-x86-dbg-marshmallow",
+    name = "android-cronet-x86-dbg-marshmallow-tests",
     mirrors = [
         "ci/android-cronet-x86-dbg",
         "ci/android-cronet-x86-dbg-marshmallow-tests",
     ],
+    contact_team_email = "cronet-team@google.com",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -460,38 +461,7 @@ This builder shadows android-nougat-x86-rel builder to experiment both jacoco an
     # are addressed
     # use_orchestrator_pool = True,
     use_clang_coverage = True,
-    # TODO(crbug.com/1416662): Add java coverage once dual coverage supported
-    # in recipe.
-    # use_java_coverage = True,
-)
-
-try_.orchestrator_builder(
-    name = "android-nougat-x86-siso-rel",
-    description_html = """\
-This builder shadows android-nougat-x86-rel builder to compare between Siso builds and Ninja builds.<br/>
-This builder should be removed after migrating android-nougat-x86-rel from Ninja to Siso. b/277863839
-""",
-    mirrors = builder_config.copy_from("try/android-nougat-x86-rel"),
-    try_settings = builder_config.try_settings(
-        is_compile_only = True,
-    ),
-    compilator = "android-nougat-x86-siso-rel-compilator",
-    coverage_test_types = ["unit", "overall"],
-    experiments = {
-        "chromium.add_one_test_shard": 10,
-    },
-    main_list_view = "try",
-    tryjob = try_.job(
-        experiment_percentage = 20,
-    ),
     use_java_coverage = True,
-)
-
-try_.compilator_builder(
-    name = "android-nougat-x86-siso-rel-compilator",
-    cores = 64,
-    main_list_view = "try",
-    siso_enabled = True,
 )
 
 try_.orchestrator_builder(
@@ -518,6 +488,7 @@ try_.compilator_builder(
     branch_selector = branches.selector.ANDROID_BRANCHES,
     cores = 64 if settings.is_main else 32,
     main_list_view = "try",
+    siso_enabled = True,
 )
 
 try_.builder(
@@ -662,13 +633,6 @@ try_.builder(
         "ci/Android WebView P (dbg)",
     ],
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
-)
-
-try_.builder(
-    name = "android_archive_rel_ng",
-    mirrors = [
-        "ci/android-archive-rel",
-    ],
 )
 
 try_.builder(

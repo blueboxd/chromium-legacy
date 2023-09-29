@@ -264,7 +264,7 @@ targets.mixin(
     ],
     swarming = targets.swarming(
         dimensions = {
-            "cpu": "x86",
+            "cpu": "x86-64",
             "kvm": "1",
             "os": "Ubuntu-22.04",
             "pool": "chromium.tests",
@@ -295,7 +295,7 @@ targets.mixin(
     ],
     swarming = targets.swarming(
         dimensions = {
-            "cpu": "x86",
+            "cpu": "x86-64",
             "kvm": "1",
             "gce": "1",
             "os": "Ubuntu-22.04",
@@ -325,7 +325,7 @@ targets.mixin(
     ],
     swarming = targets.swarming(
         dimensions = {
-            "cpu": "x86",
+            "cpu": "x86-64",
             "kvm": "1",
             "gce": "1",
             "os": "Ubuntu-22.04",
@@ -385,7 +385,7 @@ targets.mixin(
     ],
     swarming = targets.swarming(
         dimensions = {
-            "cpu": "x86",
+            "cpu": "x86-64",
             "kvm": "1",
             "gce": "1",
             "os": "Ubuntu-18.04",
@@ -677,6 +677,72 @@ targets.mixin(
     ),
 )
 
+# TODO: Remove this mixin after task scheduling issue is resolved.
+# This uses a different task dimensions set to reduce Datastore index size.
+targets.mixin(
+    name = "linux-jammy-2",
+    swarming = targets.swarming(
+        dimensions = {
+            "os": "Ubuntu-22.04",
+            "zone": "us",
+        },
+    ),
+)
+targets.mixin(
+    name = "linux-jammy-3",
+    swarming = targets.swarming(
+        dimensions = {
+            "os": "Ubuntu-22.04",
+            "locale": "en_US.UTF-8",
+        },
+    ),
+)
+targets.mixin(
+    name = "linux-jammy-4",
+    swarming = targets.swarming(
+        dimensions = {
+            "os": "Ubuntu-22.04",
+            "kvm": "1",
+        },
+    ),
+)
+targets.mixin(
+    name = "linux-jammy-5",
+    swarming = targets.swarming(
+        dimensions = {
+            "os": "Ubuntu-22.04",
+            "python": "3",
+        },
+    ),
+)
+targets.mixin(
+    name = "linux-jammy-6",
+    swarming = targets.swarming(
+        dimensions = {
+            "os": "Ubuntu-22.04",
+            "inside_docker": "0",
+        },
+    ),
+)
+targets.mixin(
+    name = "linux-jammy-7",
+    swarming = targets.swarming(
+        dimensions = {
+            "os": "Ubuntu-22.04",
+            "python": "3.8",
+        },
+    ),
+)
+targets.mixin(
+    name = "linux-jammy-8",
+    swarming = targets.swarming(
+        dimensions = {
+            "os": "Ubuntu-22.04",
+            "cipd_platform": "linux-amd64",
+        },
+    ),
+)
+
 targets.mixin(
     name = "linux-jammy-or-bionic",
     swarming = targets.swarming(
@@ -913,7 +979,7 @@ targets.mixin(
     swarming = targets.swarming(
         dimensions = {
             "cpu": "arm64",
-            "os": "Mac-13",
+            "os": "Mac-14",
         },
     ),
 )
@@ -923,7 +989,7 @@ targets.mixin(
     swarming = targets.swarming(
         dimensions = {
             "cpu": "x86-64",
-            "os": "Mac-13",
+            "os": "Mac-13.5",
         },
     ),
 )
@@ -1546,12 +1612,12 @@ targets.mixin(
     name = "xcode_15_beta",
     args = [
         "--xcode-build-version",
-        "15a5229m",
+        "15a240d",
     ],
     swarming = targets.swarming(
         named_caches = [
             swarming.cache(
-                name = "xcode_ios_15a5229m",
+                name = "xcode_ios_15a240d",
                 path = "Xcode.app",
             ),
         ],
@@ -1562,12 +1628,12 @@ targets.mixin(
     name = "xcode_15_main",
     args = [
         "--xcode-build-version",
-        "15a5229m",
+        "15a240d",
     ],
     swarming = targets.swarming(
         named_caches = [
             swarming.cache(
-                name = "xcode_ios_15a5229m",
+                name = "xcode_ios_15a240d",
                 path = "Xcode.app",
             ),
         ],

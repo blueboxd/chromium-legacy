@@ -190,10 +190,7 @@ enum class AttestedApiStatus {
 class PrivacySandboxSettingsAttestationsBrowserTestBase
     : public PrivacySandboxSettingsBrowserTest {
  public:
-  PrivacySandboxSettingsAttestationsBrowserTestBase() {
-    attestations_feature_.InitAndEnableFeature(
-        privacy_sandbox::kEnforcePrivacySandboxAttestations);
-  }
+  PrivacySandboxSettingsAttestationsBrowserTestBase() = default;
 
   void SetUpOnMainThread() override {
     // `PrivacySandboxAttestations` has a member of type
@@ -298,7 +295,6 @@ class PrivacySandboxSettingsAttestationsBrowserTestBase
   std::unique_ptr<privacy_sandbox::ScopedPrivacySandboxAttestations>
       scoped_attestations_;
   content::test::FencedFrameTestHelper fenced_frame_test_helper_;
-  base::test::ScopedFeatureList attestations_feature_;
 };
 
 class PrivacySandboxSettingsEventReportingBrowserTest
@@ -313,7 +309,7 @@ class PrivacySandboxSettingsEventReportingBrowserTest
 IN_PROC_BROWSER_TEST_F(PrivacySandboxSettingsEventReportingBrowserTest,
                        AutomaticBeaconDestinationEnrolled) {
   privacy_sandbox_settings()->SetAllPrivacySandboxAllowedForTesting();
-  EXPECT_TRUE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
+  EXPECT_TRUE(privacy_sandbox_settings()->IsAttributionReportingEverAllowed());
 
   // In order to check events reported over the network, we register an HTTP
   // response interceptor for each reportEvent request we expect.
@@ -354,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(PrivacySandboxSettingsEventReportingBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrivacySandboxSettingsEventReportingBrowserTest,
                        AutomaticBeaconDestinationNotEnrolled) {
   privacy_sandbox_settings()->SetAllPrivacySandboxAllowedForTesting();
-  EXPECT_TRUE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
+  EXPECT_TRUE(privacy_sandbox_settings()->IsAttributionReportingEverAllowed());
 
   // In order to check events reported over the network, we register an HTTP
   // response interceptor for each reportEvent request we expect.
@@ -397,7 +393,7 @@ IN_PROC_BROWSER_TEST_F(PrivacySandboxSettingsEventReportingBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrivacySandboxSettingsEventReportingBrowserTest,
                        ReportEventDestinationEnrolled) {
   privacy_sandbox_settings()->SetAllPrivacySandboxAllowedForTesting();
-  EXPECT_TRUE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
+  EXPECT_TRUE(privacy_sandbox_settings()->IsAttributionReportingEverAllowed());
 
   // In order to check events reported over the network, we register an HTTP
   // response interceptor for each reportEvent request we expect.
@@ -434,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(PrivacySandboxSettingsEventReportingBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrivacySandboxSettingsEventReportingBrowserTest,
                        ReportEventCustomURLDestinationEnrolled) {
   privacy_sandbox_settings()->SetAllPrivacySandboxAllowedForTesting();
-  EXPECT_TRUE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
+  EXPECT_TRUE(privacy_sandbox_settings()->IsAttributionReportingEverAllowed());
 
   // In order to check events reported over the network, we register an HTTP
   // response interceptor for each reportEvent request we expect.
@@ -467,7 +463,7 @@ IN_PROC_BROWSER_TEST_F(PrivacySandboxSettingsEventReportingBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrivacySandboxSettingsEventReportingBrowserTest,
                        ReportEventDestinationNotEnrolled) {
   privacy_sandbox_settings()->SetAllPrivacySandboxAllowedForTesting();
-  EXPECT_TRUE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
+  EXPECT_TRUE(privacy_sandbox_settings()->IsAttributionReportingEverAllowed());
 
   // In order to check events reported over the network, we register an HTTP
   // response interceptor for each reportEvent request we expect.
@@ -507,7 +503,7 @@ IN_PROC_BROWSER_TEST_F(PrivacySandboxSettingsEventReportingBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrivacySandboxSettingsEventReportingBrowserTest,
                        ReportEventCustomURLDestinationNotEnrolled) {
   privacy_sandbox_settings()->SetAllPrivacySandboxAllowedForTesting();
-  EXPECT_TRUE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
+  EXPECT_TRUE(privacy_sandbox_settings()->IsAttributionReportingEverAllowed());
 
   // In order to check events reported over the network, we register an HTTP
   // response interceptor for each reportEvent request we expect.
@@ -630,7 +626,7 @@ IN_PROC_BROWSER_TEST_F(
     PrivacySandboxSettingsAttestPrivateAggregationInProtectedAudienceBrowserTest,
     SameOrigin_Enrolled_Success) {
   privacy_sandbox_settings()->SetAllPrivacySandboxAllowedForTesting();
-  EXPECT_TRUE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
+  EXPECT_TRUE(privacy_sandbox_settings()->IsAttributionReportingEverAllowed());
 
   SetAttestations({std::make_pair(
       "a.test", AttestedApiStatus::kProtectedAudienceAndPrivateAggregation)});
@@ -651,7 +647,7 @@ IN_PROC_BROWSER_TEST_F(
     PrivacySandboxSettingsAttestPrivateAggregationInProtectedAudienceBrowserTest,
     SameOrigin_NotEnrolled_Failure) {
   privacy_sandbox_settings()->SetAllPrivacySandboxAllowedForTesting();
-  EXPECT_TRUE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
+  EXPECT_TRUE(privacy_sandbox_settings()->IsAttributionReportingEverAllowed());
 
   SetAttestations(
       {std::make_pair("a.test", AttestedApiStatus::kProtectedAudience)});
@@ -672,7 +668,7 @@ IN_PROC_BROWSER_TEST_F(
     PrivacySandboxSettingsAttestPrivateAggregationInProtectedAudienceBrowserTest,
     CrossOrigin_Enrolled_Success) {
   privacy_sandbox_settings()->SetAllPrivacySandboxAllowedForTesting();
-  EXPECT_TRUE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
+  EXPECT_TRUE(privacy_sandbox_settings()->IsAttributionReportingEverAllowed());
 
   SetAttestations(
       {std::make_pair(
@@ -698,7 +694,7 @@ IN_PROC_BROWSER_TEST_F(
     PrivacySandboxSettingsAttestPrivateAggregationInProtectedAudienceBrowserTest,
     CrossOrigin_NotEnrolled_Failure) {
   privacy_sandbox_settings()->SetAllPrivacySandboxAllowedForTesting();
-  EXPECT_TRUE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
+  EXPECT_TRUE(privacy_sandbox_settings()->IsAttributionReportingEverAllowed());
 
   SetAttestations(
       {std::make_pair(

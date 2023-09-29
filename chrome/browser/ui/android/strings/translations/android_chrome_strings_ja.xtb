@@ -176,6 +176,7 @@
 <translation id="19288952978244135">Chrome を再度開きます。</translation>
 <translation id="1933845786846280168">選択したタブ</translation>
 <translation id="1943432128510653496">パスワードの保存</translation>
+<translation id="1944535645109964458">利用可能なパスキーがありません</translation>
 <translation id="1952172573699511566">可能な場合、設定した言語でウェブサイトのテキストを表示します。</translation>
 <translation id="1959679933317802873">コンテンツの待機中</translation>
 <translation id="1960290143419248813">このバージョンの Android では Chrome の更新はサポートされなくなりました</translation>
@@ -264,6 +265,7 @@
 <translation id="2461822463642141190">現在</translation>
 <translation id="2472163211318554013">Chrome を最大限に活用するにはログインしてください</translation>
 <translation id="247737702124049222">画像の説明をオンにしました</translation>
+<translation id="2479148705183875116">設定に移動</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2496180316473517155">閲覧履歴</translation>
 <translation id="2497852260688568942">同期は管理者により無効にされています</translation>
@@ -627,6 +629,7 @@
 <translation id="4257230861809842349">Google パスワード マネージャーからパスワードを削除しますか？</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />使用されるデータ:<ph name="END_BOLD" /> ユーザーの閲覧履歴（該当のデバイスで Chrome を使用して訪れたウェブサイトの記録）。</translation>
 <translation id="4269820728363426813">リンクアドレスをコピー</translation>
+<translation id="4277529130885813215">別のデバイスを使用</translation>
 <translation id="4283102315569707115">デフォルトで PC 版サイトをリクエストしますか？</translation>
 <translation id="4285846616383034558">Cookie、キャッシュ、その他のサイトデータ</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Android の設定で画面ロックをオンにする<ph name="END_LINK" /></translation>
@@ -1167,6 +1170,7 @@
 <translation id="6955535239952325894">この設定は管理対象のブラウザでは無効です</translation>
 <translation id="6963766334940102469">ブックマークを削除</translation>
 <translation id="696447261358045621">シークレット モードを終了</translation>
+<translation id="6965382102122355670">OK</translation>
 <translation id="6971862865055170158">承認しない</translation>
 <translation id="6978717888677691380">ブロックしたウェブサイト</translation>
 <translation id="6979737339423435258">全期間</translation>
@@ -1325,6 +1329,7 @@
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" /> からテキストが共有されました</translation>
 <translation id="7762668264895820836">SD カード <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">住所を追加</translation>
+<translation id="7766587497031415281">閲覧データを削除するその他の方法</translation>
 <translation id="7772032839648071052">パスフレーズの確認</translation>
 <translation id="7772375229873196092"><ph name="APP_NAME" /> を閉じる</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 他 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 件}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 他 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 件}}</translation>

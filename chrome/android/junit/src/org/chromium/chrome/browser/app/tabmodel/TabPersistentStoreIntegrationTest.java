@@ -37,7 +37,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.ntp.RecentlyClosedBridge;
 import org.chromium.chrome.browser.ntp.RecentlyClosedBridgeJni;
@@ -64,8 +63,6 @@ import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabModelSelectorMetadata;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStoreObserver;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -163,24 +160,14 @@ public class TabPersistentStoreIntegrationTest {
     @Test
     @SmallTest
     @Feature({"TabPersistentStore"})
-    @DisableFeatures(ChromeFeatureList.CRITICAL_PERSISTED_TAB_DATA)
     public void testOpenAndCloseTabCreatesAndDeletesFile_tabState() {
-        doTestOpenAndCloseTabCreatesAndDeletesFile();
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"TabPersistentStore"})
-    @EnableFeatures(ChromeFeatureList.CRITICAL_PERSISTED_TAB_DATA)
-    public void testOpenAndCloseTabCreatesAndDeletesFile_persistedTabData() {
         doTestOpenAndCloseTabCreatesAndDeletesFile();
     }
 
     private void doTestOpenAndCloseTabCreatesAndDeletesFile() {
         // Setup the test: Create a tab
         TabModel tabModel = mTabModelSelector.getModel(false);
-        MockTab tab =
-                (MockTab) MockTab.createAndInitialize(TAB_ID, false, TabLaunchType.FROM_CHROME_UI);
+        MockTab tab = MockTab.createAndInitialize(TAB_ID, false, TabLaunchType.FROM_CHROME_UI);
         // Ordinarily, TabState comes from native, so setup a stub in TabStateExtractor.
         TabState tabState = new TabState();
         tabState.contentsState = WEB_CONTENTS_STATE;
@@ -211,16 +198,7 @@ public class TabPersistentStoreIntegrationTest {
     @Test
     @SmallTest
     @Feature({"TabPersistentStore"})
-    @DisableFeatures(ChromeFeatureList.CRITICAL_PERSISTED_TAB_DATA)
     public void testUndoTabClosurePersistsState_tabState() {
-        doTestUndoTabClosurePersistsState();
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"TabPersistentStore"})
-    @EnableFeatures(ChromeFeatureList.CRITICAL_PERSISTED_TAB_DATA)
-    public void testUndoTabClosurePersistsState_persistedTabData() {
         doTestUndoTabClosurePersistsState();
     }
 
@@ -247,7 +225,6 @@ public class TabPersistentStoreIntegrationTest {
     @Test
     @SmallTest
     @Feature({"TabPersistentStore"})
-    @EnableFeatures(ChromeFeatureList.CRITICAL_PERSISTED_TAB_DATA)
     public void testCloseTabPersistsState() {
         AtomicInteger timesMetadataSaved = new AtomicInteger();
         observeOnMetadataSavedAsynchronously(timesMetadataSaved);
@@ -274,7 +251,6 @@ public class TabPersistentStoreIntegrationTest {
     @SmallTest
     @Feature({"TabPersistentStore"})
     @Config(manifest = Config.NONE, shadows = {ShadowHomepageManager.class})
-    @EnableFeatures(ChromeFeatureList.CRITICAL_PERSISTED_TAB_DATA)
     public void testCloseAllTabsPersistsState() {
         AtomicInteger timesMetadataSaved = new AtomicInteger();
         observeOnMetadataSavedAsynchronously(timesMetadataSaved);

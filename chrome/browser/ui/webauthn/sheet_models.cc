@@ -1499,7 +1499,7 @@ AuthenticatorMultiSourcePickerSheetModel::
   using ICloudKeychainMech =
       AuthenticatorRequestDialogModel::Mechanism::ICloudKeychain;
   bool has_local_passkeys =
-      std::ranges::any_of(dialog_model->mechanisms(), [](const auto& mech) {
+      base::ranges::any_of(dialog_model->mechanisms(), [](const auto& mech) {
         return absl::holds_alternative<CredentialMech>(mech.type) &&
                absl::get<CredentialMech>(mech.type).value().source !=
                    device::AuthenticatorType::kPhone;
@@ -1527,7 +1527,7 @@ AuthenticatorMultiSourcePickerSheetModel::
   }
 
   const absl::optional<std::u16string>& phone_name =
-      dialog_model->GetPrioritySyncedPhoneName();
+      dialog_model->GetPriorityPhoneName();
   if (phone_name) {
     primary_passkeys_label_ =
         l10n_util::GetStringFUTF16(IDS_WEBAUTHN_FROM_PHONE_LABEL, *phone_name);

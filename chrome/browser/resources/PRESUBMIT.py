@@ -133,6 +133,7 @@ def CheckNoNewJs(input_api, output_api):
   EXCLUDED_PATHS = [
     'chrome/browser/resources/.eslintrc',
     'chrome/browser/resources/about_sys/',
+    'chrome/browser/resources/ash/settings/.eslintrc',
     'chrome/browser/resources/bluetooth_internals/',
     'chrome/browser/resources/chromeos/',
     'chrome/browser/resources/device_log_ui/',
@@ -147,7 +148,6 @@ def CheckNoNewJs(input_api, output_api):
     'chrome/browser/resources/internals/notifications/',
     'chrome/browser/resources/internals/query_tiles/',
     'chrome/browser/resources/inspect/',
-    'chrome/browser/resources/invalidations/',
     'chrome/browser/resources/nearby_internals/',
     'chrome/browser/resources/nearby_share/',
     'chrome/browser/resources/net_internals/',

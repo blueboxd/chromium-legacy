@@ -134,7 +134,7 @@
       default: "",
     },
 
-    // Specifiy the default value of the base::Feature instance. This field
+    // Specify the default value of the base::Feature instance. This field
     // works only if base_feature is not "none".
     // If the field is missing or "", the default value depends on the 'status'
     // field.  See the comment above.
@@ -195,23 +195,6 @@
       default: false,
       value_type: "bool",
     },
-
-    override_from_pref: {
-      valid_keys: [
-        // Chrome Prefs name (string) from which we will conditionally override
-        // the runtime feature value.
-        "name",
-        // If the preference equals the provided integral, string, or boolean
-        // value, the feature will be force enabled.
-        "force_enable_val",
-        // If the preference equals the provided integral, string, or
-        // boolean value, the feature will be force disabled.
-        "force_disable_val",
-        // Short-hand boolean flag. If true, will always override
-        // the feature. The specified Chrome Pref must be boolean.
-        "override_from_boolean_val",
-      ],
-    }
   },
 
   data: [
@@ -407,6 +390,10 @@
       public: true,
       settable_from_internals: true,
     },
+    {
+      name: "BackdropInheritOriginating",
+      status: "experimental",
+    },
     // When enabled, enforces new interoperable semantics for 3D transforms.
     // See crbug.com/1008483.
     {
@@ -464,7 +451,7 @@
       // 1. If event.preventDefault() is called, prompt cancel dialog.
       // 2. If event.returnValue is the empty string, do not prompt cancel dialog.
       name: "BeforeunloadEventCancelByPreventDefault",
-      status: "experimental",
+      status: "stable",
       public: true,
     },
     {
@@ -475,8 +462,6 @@
       name: "BlinkExtensionChromeOS",
       browser_process_read_write_access: true,
       base_feature: "none",
-      // TODO(b/294479032): Remove when access control is implemented.
-      public: true,
     },
     {
       name: "BlinkExtensionChromeOSHID",
@@ -496,9 +481,8 @@
     {
       name: "BlinkExtensionDiagnostics",
       depends_on: ["BlinkExtensionChromeOS"],
+      browser_process_read_write_access: true,
       base_feature: "none",
-      // TODO(b/294479032): Remove when access control is implemented.
-      public: true,
     },
     {
       name: "BlinkLifecycleScriptForbidden",
@@ -645,16 +629,17 @@
       status: "stable",
     },
     {
+      // https://www.w3.org/TR/css-shapes/#supported-basic-shapes
+      name: "ClipPathXYWHAndRect",
+      status: "stable",
+    },
+    {
       name: "CloseWatcher",
     },
     {
       name: "CoepReflection",
       status: "test",
       base_feature: "none",
-    },
-    {
-      name: "CompositeBackgroundAttachmentFixed",
-      status: "stable",
     },
     {
       name: "CompositeBGColorAnimation",
@@ -687,6 +672,10 @@
         "Android": "stable",
         "default": "",
       }
+    },
+    {
+      name: "CompositionUpdateBeforeBeforeInput",
+      status: "stable",
     },
     {
       name: "CompressionDictionaryTransport",
@@ -750,7 +739,7 @@
       base_feature: "none",
     },
     {
-      name: "CookieDeprecationFacilitatedTestingLabels",
+      name: "CookieDeprecationFacilitatedTesting",
       base_feature: "none",
     },
     {
@@ -865,11 +854,6 @@
       name: "CSSDynamicRangeLimit",
       status: "experimental",
     },
-    // Exists so that we can run a reverse-Finch experiment to assess its performance.
-    {
-      name: "CSSEasySelectors",
-      status: "stable",
-    },
     {
       // Include custom properties in CSSComputedStyleDeclaration::item/length.
       // https://crbug.com/949807
@@ -907,7 +891,7 @@
     {
       // crbug.com/1447058
       name: "CssFormSizing",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "CSSGridTemplatePropertyInterpolation",
@@ -1038,9 +1022,14 @@
       base_feature: "CssPaintingForSpellingGrammarErrors",
     },
     {
+      // Ignore the stylesheet encoding when parsing URLs, always using UTF-8.
+      // See crbug.com/1485525.
+      name: "CSSParserIgnoreCharsetForURLs",
+    },
+    {
       // crbug.com/1443291: Phrase Line Breaking
       name: "CSSPhraseLineBreak",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSPictureInPicture",
@@ -1217,12 +1206,6 @@
       base_feature: "none",
     },
     {
-      // Explainer: https://github.com/DevSDK/css-trigonometric-functions
-      name: "CSSTrigonometricFunctions",
-      status: "stable",
-      base_feature: "none",
-    },
-    {
       name: "CSSUpdateMediaFeature",
       status: "stable",
     },
@@ -1272,9 +1255,10 @@
     {
       name: "Database",
       public: true,
-      status: "test",
+      status: "experimental",
       base_feature: "none",
       origin_trial_feature_name: "WebSQL",
+      origin_trial_type: "deprecation",
     },
     {
       name: "DateInputInlineBlock",
@@ -1316,6 +1300,14 @@
     {
       name: "DesktopPWAsSubApps",
       status: "test",
+    },
+    {
+      // This flag makes the details element's toggle events use the
+      // ToggleEvent class instead of being a regular Event.
+      // http://crbug.com/1416738
+      // https://github.com/whatwg/html/pull/8893
+      name: "DetailsElementToggleEvent",
+      status: "stable",
     },
     {
       name: "DetailsStyling",
@@ -1531,6 +1523,10 @@
       name: "EventTimingInteractionCount",
       status: "experimental",
       base_feature: "none",
+    },
+     {
+      name: "ExcludeBrokenImageIconFromBeingLcpEligible",
+      status: "experimental",
     },
     {
       name: "ExperimentalContentSecurityPolicyFeatures",
@@ -1891,7 +1887,7 @@
       // Allow these form controls to have vertical writing mode: select, meter,
       // progress, button and non-text-based input types.
       name: "FormControlsVerticalWritingModeSupport",
-      status: "experimental",
+      status: "stable",
     },
     {
       // TODO(crbug.com/484651): Allow text-based form controls to have vertical
@@ -1924,7 +1920,10 @@
       // Enables `fullscreen` windowFeatures parameter in window.open().
       name: "FullscreenPopupWindows",
       status: "experimental",
-      base_feature: "FullscreenPopupWindows"
+      base_feature_status: "enabled",
+      copied_from_base_feature_if: "overridden",
+      origin_trial_feature_name: "FullscreenPopupWindows",
+      origin_trial_os: ["win", "mac", "linux", "chromeos"],
     },
     {
       name: "GamepadButtonAxisEvents",
@@ -1993,7 +1992,7 @@
     },
     {
       name: "HighlightInheritance",
-      status: "test",
+      status: "experimental",
       base_feature: "none",
     },
     {
@@ -2058,13 +2057,6 @@
       base_feature: "none",
     },
     {
-      // TODO(crbug.com/1406358): Remove after the origin trial ends in M113.
-      name: "IgnoreCSPInWebPaymentAPI",
-      origin_trial_feature_name: "IgnoreCSPInWebPaymentAPI",
-      origin_trial_allows_third_party: true,
-      public: true,
-    },
-    {
       name: "ImplicitRootScroller",
       public: true,
       settable_from_internals: true,
@@ -2089,13 +2081,17 @@
     },
     {
       name: "InertDisplayTransition",
-      status: "experimental",
+      status: "stable",
     },
     {
       // If a painting bug no longer reproduces with this feature enabled, then
       // the bug is caused by incorrect cull rects.
       name: "InfiniteCullRect",
       base_feature: "none",
+    },
+    {
+      name: "InheritUserModifyWithoutContenteditable",
+      status: "stable",
     },
     {
       // If enabled, setting innerHTML will use a special fast-path parser.
@@ -2128,6 +2124,11 @@
     },
     {
       name: "InteroperablePrivateAttribution",
+      status: "experimental",
+    },
+    {
+      // If enabled, IntersectionObserverScrollMargin will be parsed.
+      name: "IntersectionObserverScrollMargin",
       status: "experimental",
     },
     {
@@ -2171,6 +2172,10 @@
     },
     {
       name: "LayoutNewFixedPositionInvalidation",
+      status: "stable",
+    },
+    {
+      name: "LayoutNewOverflowLogic",
       status: "stable",
     },
     {
@@ -2455,6 +2460,10 @@
       status: "experimental",
     },
     {
+      name: "NavigateEventSourceElement",
+      status: "experimental",
+    },
+    {
       name: "NavigationId",
       status: "experimental",
       origin_trial_feature_name: "SoftNavigationHeuristics",
@@ -2493,6 +2502,10 @@
       status: "stable",
     },
     {
+      name: "NonInheritedWebkitBoxDirection",
+      status: "stable",
+    },
+    {
       // Kill switch for crbug.com/1427047 fix.
       // TODO(xiaochengh): Remove in M117.
       name: "NonReentrantFieldSetDisable",
@@ -2522,7 +2535,6 @@
       // Disable this feature to stop parsing or allowing these values.
       // https://drafts.csswg.org/css-ui-4/#appearance-switching
       name: "NonStandardAppearanceValuesLowUsage",
-      status: "stable",
     },
     {
       name: "NotificationConstructor",
@@ -2561,6 +2573,11 @@
       name: "NoVarySearchPrefetch",
       base_feature: "none",
       origin_trial_feature_name: "NoVarySearchPrefetch",
+    },
+    {
+      name: "ObservableAPI",
+      status: "experimental",
+      public: true,
     },
     {
       name: "OffMainThreadCSSPaint",
@@ -2756,6 +2773,11 @@
       // Android does not have support for PagePopup
       status: {"Android": "", "default": "stable"},
       base_feature: "none",
+    },
+    {
+      name: "PageRevealEvent",
+      status: "experimental",
+      implied_by: ["ViewTransitionOnNavigation"],
     },
     {
       name: "PaintFlexGridSortedByOrder",
@@ -2977,7 +2999,7 @@
       // When enabled, gives the option to pretty-print JSON documents to
       // cleanly format the JSON and make it readable.
       name:"PrettyPrintJSONDocument",
-      status: "stable",
+      status: "experimental",
     },
     // The RTE feature encompasses multiple APIs, including: Attribution
     // Reporting, FLEDGE, Topics and Fenced Frames.
@@ -3097,8 +3119,7 @@
     },
     {
       name: "RemoveDanglingMarkupInTarget",
-      status: "experimental",
-      base_feature: "none",
+      status: "stable",
     },
     {
       name: "RemoveDataUrlInSvgUse",
@@ -3163,20 +3184,12 @@
       status: "experimental",
     },
     {
-      name: "RTCEncodedAudioFrameClone",
-      status: "experimental",
-    },
-    {
       name: "RTCEncodedFrameSetMetadata",
       status: "experimental",
       origin_trial_feature_name: "RTCEncodedFrameSetMetadata",
     },
     {
       name: "RTCEncodedVideoFrameAdditionalMetadata",
-      status: "experimental",
-    },
-    {
-      name: "RTCEncodedVideoFrameClone",
       status: "experimental",
     },
     // Legacy callback-based getStats() has limited availability unless this
@@ -3191,7 +3204,7 @@
     // Enables the use of |RTCRtpEncodingParameters.codec|
     {
       name: "RTCRtpEncodingParametersCodec",
-      status: "experimental",
+      status: "stable",
     },
     // Enables the use of |RTCRtpTransceiver::getHeaderExtensionsToNegotiate|,
     // |RTCRtpTransceiver::setHeaderExtensionsToNegotiate|, and
@@ -3229,7 +3242,7 @@
     {
       // https://wicg.github.io/webcomponents/proposals/Scoped-Custom-Element-Registries
       name: "ScopedCustomElementRegistry",
-      status: "test",
+      status: "experimental",
       base_feature: "none",
     },
     // WebSpeech API with both speech recognition and synthesis functionality
@@ -3328,6 +3341,12 @@
       base_feature: "none",
     },
     {
+      // Allows the HTML parser to put <hr> tags inside <select> tags.
+      // https://chromestatus.com/feature/6198448366026752
+      name: "SelectHr",
+      status: "stable",
+    },
+    {
       name: "SendBeaconThrowForBlobWithNonSimpleType",
       public: true,
       status: "stable",
@@ -3375,6 +3394,10 @@
       base_feature: "none",
       origin_trial_feature_name: "ServiceWorkerStaticRouter",
       public: true,
+    },
+    {
+      name: "SetSequentialFocusStartingPoint",
+      status: "experimental",
     },
     {
       name: "SharedArrayBuffer",
@@ -3596,12 +3619,12 @@
       // permissions::features::kPermissionStorageAccessAPI is enabled.
       name: "StorageAccessAPI",
       public: true,
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "StorageAccessAPIForOriginExtension",
       public: true,
-      status: "test",
+      status: "stable",
       depends_on: ["StorageAccessAPI"],
     },
     {
@@ -4041,6 +4064,12 @@
       status: "experimental",
       base_feature: "none",
     },
+    {
+      name: "WebAssemblyJSStringBuiltins",
+      origin_trial_feature_name: "WebAssemblyJSStringBuiltins",
+      status: "experimental",
+      base_feature: "none",
+    },
     // WebAuth is disabled on Android versions prior to N (7.0) due to lack of
     // supporting APIs, see runtime_features.cc.
     {
@@ -4362,21 +4391,27 @@
     {
       name: "WindowDefaultStatus",
     },
-    // Allows use of `window-management` as an alias for `window-placement`
-    // permission. See crbug.com/1328581
-    {
-      name: "WindowManagementPermissionAlias",
-      status: "stable",
-    },
     // Allows sites to request fullscreen when the set of screens change.
     {
       name: "WindowPlacementFullscreenOnScreensChange",
       status: "experimental",
     },
+    // Allows use of `window-placement` as an alias for `window-management`
+    // permission. See crbug.com/1328581
+    {
+      name: "WindowPlacementPermissionAlias",
+      status: "stable",
+    },
     // Flag guard for change to XML parser to merge adjacent CDATA sections.
     // See https://crrev.com/c/4790343.
     {
       name: "XMLParserMergeAdjacentCDataSections",
+      status: "stable",
+    },
+    {
+      // Update xywh()/rect() computed value to use inset() per the spec:
+      // https://drafts.csswg.org/css-shapes-1/#basic-shape-computed-values
+      name: "XYWHAndRectComputedValue",
       status: "stable",
     },
     {

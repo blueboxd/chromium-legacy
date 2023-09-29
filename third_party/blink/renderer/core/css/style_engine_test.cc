@@ -357,9 +357,9 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   FontSelectionCapabilities capabilities =
       font_face->GetFontSelectionCapabilities();
   ASSERT_EQ(capabilities.weight,
-            FontSelectionRange({BoldWeightValue(), BoldWeightValue()}));
+            FontSelectionRange({kBoldWeightValue, kBoldWeightValue}));
   ASSERT_EQ(capabilities.slope,
-            FontSelectionRange({NormalSlopeValue(), NormalSlopeValue()}));
+            FontSelectionRange({kNormalSlopeValue, kNormalSlopeValue}));
 
   auto* font_face_parsed_sheet = MakeGarbageCollected<StyleSheetContents>(
       MakeGarbageCollected<CSSParserContext>(GetDocument()));
@@ -386,9 +386,9 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   EXPECT_TRUE(font_face);
   capabilities = font_face->GetFontSelectionCapabilities();
   ASSERT_EQ(capabilities.weight,
-            FontSelectionRange({BoldWeightValue(), BoldWeightValue()}));
+            FontSelectionRange({kBoldWeightValue, kBoldWeightValue}));
   ASSERT_EQ(capabilities.slope,
-            FontSelectionRange({ItalicSlopeValue(), ItalicSlopeValue()}));
+            FontSelectionRange({kItalicSlopeValue, kItalicSlopeValue}));
 
   auto* style_element = MakeGarbageCollected<HTMLStyleElement>(GetDocument());
   style_element->setInnerHTML(
@@ -412,9 +412,9 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   EXPECT_TRUE(font_face);
   capabilities = font_face->GetFontSelectionCapabilities();
   ASSERT_EQ(capabilities.weight,
-            FontSelectionRange({BoldWeightValue(), BoldWeightValue()}));
+            FontSelectionRange({kBoldWeightValue, kBoldWeightValue}));
   ASSERT_EQ(capabilities.slope,
-            FontSelectionRange({ItalicSlopeValue(), ItalicSlopeValue()}));
+            FontSelectionRange({kItalicSlopeValue, kItalicSlopeValue}));
 
   GetStyleEngine().RemoveInjectedSheet(font_face_key, WebCssOrigin::kUser);
   UpdateAllLifecyclePhases();
@@ -431,9 +431,9 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   EXPECT_TRUE(font_face);
   capabilities = font_face->GetFontSelectionCapabilities();
   ASSERT_EQ(capabilities.weight,
-            FontSelectionRange({NormalWeightValue(), NormalWeightValue()}));
+            FontSelectionRange({kNormalWeightValue, kNormalWeightValue}));
   ASSERT_EQ(capabilities.slope,
-            FontSelectionRange({ItalicSlopeValue(), ItalicSlopeValue()}));
+            FontSelectionRange({kItalicSlopeValue, kItalicSlopeValue}));
 
   // @keyframes rules
 
@@ -3680,6 +3680,42 @@ TEST_F(StyleEngineTest, MediaQueriesChangeDisplayState) {
               GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
                   GetCSSPropertyBackgroundColor()));
   }
+}
+
+TEST_F(StyleEngineTest, MediaQueriesChangeResizable) {
+  ScopedDesktopPWAsAdditionalWindowingControlsForTest scoped_feature(true);
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      body {
+        background-color: white;
+      }
+      @media (resizable: true) {
+        body {
+          background-color: yellow;
+        }
+      }
+      @media (resizable: false) {
+        body {
+          background-color: cyan;
+        }
+      }
+    </style>
+    <body></body>
+  )HTML");
+
+  // resizable: true
+  // Default is set in /third_party/blink/renderer/core/frame/settings.json5.
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(Color::FromRGB(/*yellow*/ 255, 255, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyBackgroundColor()));
+
+  // resizable: false
+  GetFrame().GetSettings()->SetResizable(false);
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(Color::FromRGB(/*cyan*/ 0, 255, 255),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyBackgroundColor()));
 }
 
 namespace {

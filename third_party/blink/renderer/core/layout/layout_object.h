@@ -75,8 +75,8 @@ class Cursor;
 }
 
 namespace blink {
+class AccompaniedFragmentIterator;
 class AffineTransform;
-class FragmentDataIterator;
 class HitTestLocation;
 class HitTestRequest;
 class LayoutBlock;
@@ -98,6 +98,7 @@ enum VisualRectFlags {
   // When mapping to absolute coordinates and the main frame is remote, don't
   // apply the main frame root scroller's overflow clip.
   kDontApplyMainFrameOverflowClip = 1 << 2,
+  kIgnoreLocalClipPath = 1 << 3,
 };
 
 enum CursorDirective { kSetCursorBasedOnStyle, kSetCursor, kDoNotSetCursor };
@@ -889,7 +890,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   }
   bool IsFieldset() const {
     NOT_DESTROYED();
-    return IsOfType(kLayoutObjectNGFieldset);
+    return IsOfType(kLayoutObjectFieldset);
   }
   bool IsFrame() const {
     NOT_DESTROYED();
@@ -897,7 +898,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   }
   bool IsFrameSet() const {
     NOT_DESTROYED();
-    return IsOfType(kLayoutObjectNGFrameSet);
+    return IsOfType(kLayoutObjectFrameSet);
   }
   bool IsLayoutNGBlockFlow() const {
     NOT_DESTROYED();
@@ -923,9 +924,9 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectNGOutsideListMarker);
   }
-  bool IsLayoutNGTextCombine() const {
+  bool IsLayoutTextCombine() const {
     NOT_DESTROYED();
-    return IsOfType(kLayoutObjectNGTextCombine);
+    return IsOfType(kLayoutObjectTextCombine);
   }
   bool IsLayoutNGView() const {
     NOT_DESTROYED();
@@ -961,7 +962,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   }
   bool IsButton() const {
     NOT_DESTROYED();
-    return IsOfType(kLayoutObjectNGButton);
+    return IsOfType(kLayoutObjectButton);
   }
   bool IsLayoutNGCustom() const {
     NOT_DESTROYED();
@@ -1037,16 +1038,16 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   }
   bool IsTextArea() const {
     NOT_DESTROYED();
-    return IsOfType(kLayoutObjectNGTextControlMultiLine);
+    return IsOfType(kLayoutObjectTextControlMultiLine);
   }
   bool IsTextControl() const {
     NOT_DESTROYED();
-    return IsOfType(kLayoutObjectNGTextControlMultiLine) ||
-           IsOfType(kLayoutObjectNGTextControlSingleLine);
+    return IsOfType(kLayoutObjectTextControlMultiLine) ||
+           IsOfType(kLayoutObjectTextControlSingleLine);
   }
   bool IsTextField() const {
     NOT_DESTROYED();
-    return IsOfType(kLayoutObjectNGTextControlSingleLine);
+    return IsOfType(kLayoutObjectTextControlSingleLine);
   }
   bool IsVideo() const {
     NOT_DESTROYED();
@@ -1282,7 +1283,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   }
   bool IsSVGForeignObject() const {
     NOT_DESTROYED();
-    return IsOfType(kLayoutObjectNGSVGForeignObject);
+    return IsOfType(kLayoutObjectSVGForeignObject);
   }
   bool IsSVGResourceContainer() const {
     NOT_DESTROYED();
@@ -1292,9 +1293,9 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectSVGFilterPrimitive);
   }
-  bool IsNGSVGText() const {
+  bool IsSVGText() const {
     NOT_DESTROYED();
-    return IsOfType(kLayoutObjectNGSVGText);
+    return IsOfType(kLayoutObjectSVGText);
   }
 
   // FIXME: Those belong into a SVG specific base-class for all layoutObjects
@@ -1311,7 +1312,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   bool IsBlendingAllowed() const {
     NOT_DESTROYED();
     return !IsSVG() || IsSVGShape() || IsSVGImage() || IsSVGInline() ||
-           IsSVGRoot() || IsSVGForeignObject() || IsNGSVGText() ||
+           IsSVGRoot() || IsSVGForeignObject() || IsSVGText() ||
            // Blending does not apply to non-renderable elements such as
            // patterns (see: https://github.com/w3c/fxtf-drafts/issues/309).
            (IsSVGContainer() && !IsSVGHiddenContainer());
@@ -1816,7 +1817,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
            SpannerPlaceholder();
   }
 
-  // We include LayoutNGButton in this check, because buttons are
+  // We include LayoutButton in this check, because buttons are
   // implemented using flex box but should still support things like
   // first-line, first-letter and text-overflow.
   // The flex box and grid specs require that flex box and grid do not
@@ -2652,7 +2653,8 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // from the coordinate system of the property container.
   const LayoutObject* GetPropertyContainer(
       AncestorSkipInfo*,
-      PropertyTreeStateOrAlias* = nullptr) const;
+      PropertyTreeStateOrAlias* = nullptr,
+      VisualRectFlags = kDefaultVisualRectFlags) const;
 
   // Do a rect-based hit test with this object as the stop node.
   HitTestResult HitTestForOcclusion(const PhysicalRect&) const;
@@ -2774,8 +2776,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   // There 2 different types of list markers:
   // * LayoutNGInsideListMarker (LayoutInline): for inside markers
-  // * LayoutNGOutsideListMarker (LayoutNGBlockFlowMixin<LayoutBlockFlow>):
-  //   for outside markers.
+  // * LayoutNGOutsideListMarker (LayoutNGBlockFlow): for outside markers.
 
   // Any kind of LayoutBox list marker.
   // TODO(1229581): Remove this function. Just use
@@ -2858,7 +2859,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // FragmentData (and therefore also next fragmentainer), if any.
   Vector<PhysicalRect> CollectOutlineRectsAndAdvance(
       NGOutlineType,
-      FragmentDataIterator& iterator) const;
+      AccompaniedFragmentIterator& iterator) const;
 
   struct OutlineInfo {
     int width = 0;
@@ -3509,6 +3510,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // The identifier name for blink::LayoutFoo should be kLayoutObjectFoo.
   enum LayoutObjectType {
     kLayoutObjectBr,
+    kLayoutObjectButton,
     kLayoutObjectCanvas,
     kLayoutObjectCounter,
     kLayoutObjectCustomScrollbarPart,
@@ -3516,6 +3518,8 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     kLayoutObjectFrame,
     kLayoutObjectIFrame,
     kLayoutObjectImage,
+    kLayoutObjectFieldset,
+    kLayoutObjectFrameSet,
     kLayoutObjectListMarkerImage,
     kLayoutObjectMathML,
     kLayoutObjectMathMLRoot,
@@ -3523,19 +3527,13 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     kLayoutObjectMultiColumnSet,
     kLayoutObjectMultiColumnSpannerPlaceholder,
     kLayoutObjectNGBlockFlow,
-    kLayoutObjectNGButton,
     kLayoutObjectNGCustom,
-    kLayoutObjectNGFieldset,
     kLayoutObjectNGFlexibleBox,
-    kLayoutObjectNGFrameSet,
     kLayoutObjectNGGrid,
     kLayoutObjectNGInlineListItem,
     kLayoutObjectNGInsideListMarker,
     kLayoutObjectNGListItem,
     kLayoutObjectNGOutsideListMarker,
-    kLayoutObjectNGTextCombine,
-    kLayoutObjectNGTextControlMultiLine,
-    kLayoutObjectNGTextControlSingleLine,
     kLayoutObjectNGView,
     kLayoutObjectProgress,
     kLayoutObjectQuote,
@@ -3550,15 +3548,17 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     kLayoutObjectTableCol,
     kLayoutObjectTableRow,
     kLayoutObjectTableSection,
+    kLayoutObjectTextCombine,
+    kLayoutObjectTextControlMultiLine,
+    kLayoutObjectTextControlSingleLine,
     kLayoutObjectVideo,
     kLayoutObjectView,
     kLayoutObjectWidget,
 
-    kLayoutObjectNGSVGForeignObject,
-    kLayoutObjectNGSVGText,
     kLayoutObjectSVG, /* Keep by itself? */
     kLayoutObjectSVGContainer,
     kLayoutObjectSVGFilterPrimitive,
+    kLayoutObjectSVGForeignObject,
     kLayoutObjectSVGHiddenContainer,
     kLayoutObjectSVGImage,
     kLayoutObjectSVGInline,
@@ -3566,9 +3566,10 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     kLayoutObjectSVGResourceContainer,
     kLayoutObjectSVGRoot,
     kLayoutObjectSVGShape,
+    kLayoutObjectSVGTSpan,
+    kLayoutObjectSVGText,
     kLayoutObjectSVGTextPath,
     kLayoutObjectSVGTransformableContainer,
-    kLayoutObjectSVGTSpan,
     kLayoutObjectSVGViewportContainer,
   };
   virtual bool IsOfType(LayoutObjectType type) const {

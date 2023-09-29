@@ -23,7 +23,7 @@
 #include "ash/detachable_base/detachable_base_handler.h"
 #include "ash/display/display_prefs.h"
 #include "ash/display/privacy_screen_controller.h"
-#include "ash/glanceables/glanceables_v2_controller.h"
+#include "ash/glanceables/glanceables_controller.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/login_expanded_public_account_view.h"
@@ -43,7 +43,6 @@
 #include "ash/system/camera/camera_effects_controller.h"
 #include "ash/system/focus_mode/focus_mode_controller.h"
 #include "ash/system/geolocation/geolocation_controller.h"
-#include "ash/system/gesture_education/gesture_education_notification_controller.h"
 #include "ash/system/hotspot/hotspot_info_cache.h"
 #include "ash/system/human_presence/snooping_protection_controller.h"
 #include "ash/system/input_device_settings/input_device_settings_controller_impl.h"
@@ -122,9 +121,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry,
   FocusModeController::RegisterProfilePrefs(registry);
   FullscreenController::RegisterProfilePrefs(registry);
   GeolocationController::RegisterProfilePrefs(registry);
-  GestureEducationNotificationController::RegisterProfilePrefs(registry,
-                                                               for_test);
-  GlanceablesV2Controller::RegisterUserProfilePrefs(registry);
+  GlanceablesController::RegisterUserProfilePrefs(registry);
   holding_space_prefs::RegisterProfilePrefs(registry);
   HotspotInfoCache::RegisterProfilePrefs(registry);
   InputDeviceSettingsControllerImpl::RegisterProfilePrefs(registry);

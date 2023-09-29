@@ -153,6 +153,10 @@ BASE_FEATURE(kCacheControlNoStoreEnterBackForwardCache,
              "CacheControlNoStoreEnterBackForwardCache",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kCdmStorageDatabase,
+             "CdmStorageDatabase",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Clear the window.name property for the top-level cross-site navigations that
 // swap BrowsingContextGroups(BrowsingInstances).
 BASE_FEATURE(kClearCrossSiteCrossBrowsingContextGroupWindowName,
@@ -162,6 +166,21 @@ BASE_FEATURE(kClearCrossSiteCrossBrowsingContextGroupWindowName,
 BASE_FEATURE(kCompositeBGColorAnimation,
              "CompositeBGColorAnimation",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Gate access to cookie deprecation API which allows developers to opt in
+// server side testing without cookies.
+// (See https://developer.chrome.com/en/docs/privacy-sandbox/chrome-testing)
+BASE_FEATURE(kCookieDeprecationFacilitatedTesting,
+             "CookieDeprecationFacilitatedTesting",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Set whether to enable cookie deprecation API in incognito mode.
+//
+// TODO(linnan): Consider renaming to "enable_otr_profiles" to include
+// guest profiles as well.
+const base::FeatureParam<bool>
+    kCookieDeprecationFacilitatedTestingEnableIncognito{
+        &kCookieDeprecationFacilitatedTesting, "enable_incognito", false};
 
 // Enables Blink cooperative scheduling.
 BASE_FEATURE(kCooperativeScheduling,
@@ -254,6 +273,13 @@ const base::FeatureParam<base::TimeDelta> kDIPSClientBounceDetectionTimeout{
 BASE_FEATURE(kDocumentPolicy,
              "DocumentPolicy",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enable early swapping of RenderFrameHosts during some back/forward
+// navigations. This is an experimental feature intended to support new kinds of
+// navigation transitions. See https://crbug.com/1480129.
+BASE_FEATURE(kEarlyDocumentSwapForBackForwardTransitions,
+             "EarlyDocumentSwapForBackForwardTransitions",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable establishing the GPU channel early in renderer startup.
 BASE_FEATURE(kEarlyEstablishGpuChannel,
@@ -356,7 +382,7 @@ BASE_FEATURE(kWebIdentityMDocs,
 // Enables usage of First Party Sets to determine cookie availability.
 BASE_FEATURE(kFirstPartySets,
              "FirstPartySets",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether to clear sites data on FPS transitions.
 const base::FeatureParam<bool> kFirstPartySetsClearSiteDataOnChangedSets{
@@ -365,7 +391,7 @@ const base::FeatureParam<bool> kFirstPartySetsClearSiteDataOnChangedSets{
 // Controls how many sites are allowed to be in the Associated subset (ignoring
 // ccTLD aliases).
 const base::FeatureParam<int> kFirstPartySetsMaxAssociatedSites{
-    &kFirstPartySets, "FirstPartySetsMaxAssociatedSites", 3};
+    &kFirstPartySets, "FirstPartySetsMaxAssociatedSites", 5};
 
 // Controls the maximum time duration an outermost frame navigation should be
 // deferred by FPS initialization.
@@ -374,7 +400,7 @@ const base::FeatureParam<int> kFirstPartySetsMaxAssociatedSites{
 const base::FeatureParam<base::TimeDelta>
     kFirstPartySetsNavigationThrottleTimeout{
         &kFirstPartySets, "FirstPartySetsNavigationThrottleTimeout",
-        base::Seconds(2)};
+        base::Seconds(0)};
 
 // Enables scrollers inside Blink to store scroll offsets in fractional
 // floating-point numbers rather than truncating to integers.
@@ -1058,7 +1084,7 @@ BASE_FEATURE(kEnableExperimentalWebAssemblyJSPI,
 // https://github.com/WebAssembly/gc.
 BASE_FEATURE(kWebAssemblyGarbageCollection,
              "WebAssemblyGarbageCollection",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable WebAssembly lazy compilation (JIT on first call).
 BASE_FEATURE(kWebAssemblyLazyCompilation,

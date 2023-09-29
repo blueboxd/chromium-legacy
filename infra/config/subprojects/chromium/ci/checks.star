@@ -30,6 +30,7 @@ ci.builder(
         category = "presubmit",
         short_name = "linux",
     ),
+    contact_team_email = "chrome-browser-infra-team@google.com",
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
     properties = {
         "$depot_tools/presubmit": {
@@ -52,6 +53,7 @@ ci.builder(
         category = "presubmit",
         short_name = "win",
     ),
+    contact_team_email = "chrome-browser-infra-team@google.com",
     execution_timeout = 6 * time.hour,
     properties = {
         "$depot_tools/presubmit": {
@@ -60,4 +62,20 @@ ci.builder(
         },
         "repo_name": "chromium",
     },
+)
+
+ci.builder(
+    name = "linux-3p-licenses",
+    description_html = "Daily scan for third party license errors.",
+    executable = "recipe:chromium_licenses/scan",
+    schedule = "15 22 * * *",  # 10:15pm UTC / 8:15am AEST / 1:15am PST
+    triggered_by = None,
+    os = os.LINUX_DEFAULT,
+    console_view_entry = consoles.console_view_entry(
+        console_view = "checks",
+        category = "3p-licenses",
+        short_name = "linux",
+    ),
+    contact_team_email = "chops-security-core@google.com",
+    execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
 )

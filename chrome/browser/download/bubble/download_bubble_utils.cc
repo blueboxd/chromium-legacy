@@ -82,14 +82,16 @@ bool IsPendingDeepScanning(const DownloadUIModel* model) {
 }
 
 bool IsItemInProgress(const download::DownloadItem* item) {
-  if (item->IsDangerous() || IsPendingDeepScanning(item)) {
+  if (item->IsDangerous() || item->IsInsecure() ||
+      IsPendingDeepScanning(item)) {
     return false;
   }
   return item->GetState() == download::DownloadItem::IN_PROGRESS;
 }
 
 bool IsItemInProgress(const offline_items_collection::OfflineItem& item) {
-  // Offline items cannot be pending deep scanning.
+  // Offline items cannot be pending deep scanning, and insecure warnings are
+  // not shown for them.
   if (item.is_dangerous) {
     return false;
   }
@@ -99,7 +101,8 @@ bool IsItemInProgress(const offline_items_collection::OfflineItem& item) {
 }
 
 bool IsModelInProgress(const DownloadUIModel* model) {
-  if (model->IsDangerous() || IsPendingDeepScanning(model)) {
+  if (model->IsDangerous() || model->IsInsecure() ||
+      IsPendingDeepScanning(model)) {
     return false;
   }
   return model->GetState() == download::DownloadItem::IN_PROGRESS;
@@ -140,7 +143,7 @@ Browser* FindBrowserToShowAnimation(download::DownloadItem* item,
   return browser_to_show_animation;
 }
 
-const web_app::AppId* GetWebAppIdForBrowser(const Browser* browser) {
+const webapps::AppId* GetWebAppIdForBrowser(const Browser* browser) {
   return web_app::AppBrowserController::IsWebApp(browser)
              ? &browser->app_controller()->app_id()
              : nullptr;

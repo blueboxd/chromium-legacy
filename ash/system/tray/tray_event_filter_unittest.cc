@@ -4,11 +4,11 @@
 
 #include "ash/system/tray/tray_event_filter.h"
 
-#include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/constants/ash_features.h"
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/system/ime_menu/ime_menu_tray.h"
 #include "ash/system/message_center/ash_message_popup_collection.h"
@@ -21,12 +21,16 @@
 #include "ash/system/tray/tray_utils.h"
 #include "ash/system/unified/date_tray.h"
 #include "ash/system/unified/unified_system_tray.h"
+#include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/message_center/message_center.h"
+#include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_util.h"
 
 using message_center::MessageCenter;
 using message_center::Notification;
@@ -64,6 +68,12 @@ class TestTrayBackgroundView : public TrayBackgroundView {
   void HandleLocaleChange() override {}
 
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override {
+    if (bubble_view == bubble_->GetBubbleView()) {
+      CloseBubble();
+    }
+  }
+
+  void HideBubble(const TrayBubbleView* bubble_view) override {
     if (bubble_view == bubble_->GetBubbleView()) {
       CloseBubble();
     }
@@ -184,16 +194,8 @@ class TrayEventFilterTest : public AshTestBase,
     return GetPrimaryUnifiedSystemTray()->IsMessageCenterBubbleShown();
   }
 
-  gfx::Rect GetQuickSettingsBubbleBounds() {
-    return GetPrimaryUnifiedSystemTray()->GetBubbleBoundsInScreen();
-  }
-
   UnifiedSystemTray* GetPrimaryUnifiedSystemTray() {
     return GetPrimaryShelf()->GetStatusAreaWidget()->unified_system_tray();
-  }
-
-  UnifiedMessageCenterBubble* GetMessageCenterBubble() {
-    return GetPrimaryUnifiedSystemTray()->message_center_bubble();
   }
 
   void AnimatePopupAnimationUntilIdle() {
@@ -220,72 +222,10 @@ INSTANTIATE_TEST_SUITE_P(IsQsRevampEnabled,
                          TrayEventFilterTest,
                          testing::Bool());
 
-TEST_P(TrayEventFilterTest, ClickOutsideBubble) {
-  ShowTestBubble();
-  auto* bubble_widget = GetTestBubbleWidget();
-  EXPECT_TRUE(bubble_widget);
-
-  // Clicking outside the bubble should trigger `ClickedOutsideBubble()`.
-  ClickOutsideWidget(bubble_widget);
-
-  EXPECT_TRUE(test_tray_background_view()->clicked_outside_bubble_called());
-}
-
-TEST_P(TrayEventFilterTest, ClickInsideBubble) {
-  ShowTestBubble();
-  auto* bubble_widget = GetTestBubbleWidget();
-  EXPECT_TRUE(bubble_widget);
-
-  // Clicking inside the bubble should not trigger `ClickedOutsideBubble()`.
-  ClickInsideWidget(bubble_widget);
-
-  EXPECT_FALSE(test_tray_background_view()->clicked_outside_bubble_called());
-}
-
-TEST_P(TrayEventFilterTest, ClickOnTray) {
-  auto* test_tray = test_tray_background_view();
-  LeftClickOn(test_tray);
-  EXPECT_TRUE(test_tray->bubble());
-
-  // Clicking on the tray when bubble is open will not trigger
-  // `ClickedOutsideBubble()`, since this will be handled in the tray level.
-  LeftClickOn(test_tray);
-  EXPECT_FALSE(test_tray->clicked_outside_bubble_called());
-}
-
-TEST_P(TrayEventFilterTest, CaptureMode) {
-  ShowTestBubble();
-  auto* bubble_widget = GetTestBubbleWidget();
-  EXPECT_TRUE(bubble_widget);
-
-  CaptureModeController::Get()->Start(CaptureModeEntryType::kQuickSettings);
-
-  // Clicking outside of the bubble during capture mode should not trigger
-  // `ClickedOutsideBubble()`.
-  ClickOutsideWidget(bubble_widget);
-  EXPECT_FALSE(test_tray_background_view()->clicked_outside_bubble_called());
-}
-
-TEST_P(TrayEventFilterTest, ClickOnMenuContainer) {
-  // Create a menu window and place it in the menu container window.
-  std::unique_ptr<aura::Window> menu_window = CreateTestWindow();
-  menu_window->set_owned_by_parent(false);
-  Shell::GetPrimaryRootWindowController()
-      ->GetContainer(kShellWindowId_MenuContainer)
-      ->AddChild(menu_window.get());
-
-  ShowTestBubble();
-  EXPECT_TRUE(GetTestBubbleWidget());
-
-  // Clicking on the menu container should not trigger
-  // `ClickedOutsideBubble()`.
-  auto* event_generator = GetEventGenerator();
-  event_generator->MoveMouseTo(menu_window->GetBoundsInScreen().CenterPoint());
-  event_generator->ClickLeftButton();
-
-  EXPECT_FALSE(test_tray_background_view()->clicked_outside_bubble_called());
-}
-
+// Tests that clicking on notification popup when bubble is open will not result
+// in the bubble closes. The logic for this is handled in
+// `bubble_utils::ShouldCloseBubbleForEvent()` where we ignore events happen
+// inside a `kShellWindowId_SettingBubbleContainer`.
 TEST_P(TrayEventFilterTest, ClickOnPopupWhenBubbleOpen) {
   // Update display so that the screen is height enough and expand/collapse
   // notification is allowed on top of the tray bubble.
@@ -326,29 +266,6 @@ TEST_P(TrayEventFilterTest, ClickOnPopupWhenBubbleOpen) {
   AnimatePopupAnimationUntilIdle();
   EXPECT_TRUE(ash_notification_popup->IsExpanded());
   EXPECT_TRUE(IsQuickSettingsBubbleShown());
-}
-
-TEST_P(TrayEventFilterTest, ClickOnKeyboardContainer) {
-  // Simulate the virtual keyboard being open. In production the virtual
-  // keyboard container only exists while the keyboard is open.
-  std::unique_ptr<aura::Window> keyboard_container =
-      CreateTestWindow(gfx::Rect(), aura::client::WINDOW_TYPE_NORMAL,
-                       kShellWindowId_VirtualKeyboardContainer);
-  std::unique_ptr<aura::Window> keyboard_window = CreateTestWindow();
-  keyboard_window->set_owned_by_parent(false);
-  keyboard_container->AddChild(keyboard_window.get());
-
-  ShowTestBubble();
-  EXPECT_TRUE(GetTestBubbleWidget());
-
-  // Clicking on the keyboard container should not trigger
-  // `ClickedOutsideBubble()`.
-  auto* event_generator = GetEventGenerator();
-  event_generator->MoveMouseTo(
-      keyboard_window->GetBoundsInScreen().CenterPoint());
-  event_generator->ClickLeftButton();
-
-  EXPECT_FALSE(test_tray_background_view()->clicked_outside_bubble_called());
 }
 
 TEST_P(TrayEventFilterTest, DraggingInsideDoesNotCloseBubble) {
@@ -399,6 +316,35 @@ TEST_P(TrayEventFilterTest, DraggingOnTrayClosesBubble) {
   EXPECT_FALSE(test_tray_background_view()->bubble());
 }
 
+// Tests that when we drag up to show the hotseat, the open bubble will be close
+// to make sure it does not overlap with the hotseat (crbug/1329327).
+TEST_P(TrayEventFilterTest, ShowHotseatClosesBubble) {
+  TabletModeControllerTestApi().EnterTabletMode();
+  std::unique_ptr<aura::Window> window =
+      CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+  ASSERT_EQ(HotseatState::kHidden,
+            GetPrimaryShelf()->shelf_layout_manager()->hotseat_state());
+
+  ShowTestBubble();
+  EXPECT_TRUE(GetTestBubbleWidget());
+
+  // Dragging up to show the hotseat.
+  gfx::Rect display_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  const gfx::Point start = display_bounds.bottom_center();
+  const gfx::Point end = start + gfx::Vector2d(0, -80);
+  GetEventGenerator()->GestureScrollSequence(
+      start, end, /*duration=*/base::Milliseconds(100),
+      /*steps=*/4);
+  ASSERT_EQ(HotseatState::kExtended,
+            GetPrimaryShelf()->shelf_layout_manager()->hotseat_state());
+
+  // `ClickedOutsideBubble()` should be triggered to close the bubble.
+  EXPECT_TRUE(test_tray_background_view()->clicked_outside_bubble_called());
+  EXPECT_FALSE(test_tray_background_view()->bubble());
+}
+
 TEST_P(TrayEventFilterTest, ClickOnCalendarBubbleClosesOtherTrays) {
   Shell::Get()->ime_controller()->ShowImeMenuOnShelf(true);
   auto* status_area = GetPrimaryShelf()->GetStatusAreaWidget();
@@ -426,6 +372,41 @@ TEST_P(TrayEventFilterTest, TransitionFromQsToCalendar) {
   EXPECT_TRUE(IsQuickSettingsBubbleShown());
 }
 
+TEST_P(TrayEventFilterTest, CloseTrayBubbleWhenWindowActivated) {
+  StatusAreaWidget* status_area = GetPrimaryShelf()->GetStatusAreaWidget();
+  UnifiedSystemTray* system_tray = status_area->unified_system_tray();
+
+  LeftClickOn(system_tray);
+  ASSERT_EQ(status_area->open_shelf_pod_bubble(),
+            system_tray->bubble()->GetBubbleView());
+
+  // Showing a new window and activating it will close the system bubble.
+  std::unique_ptr<views::Widget> widget(CreateTestWidget());
+  EXPECT_TRUE(widget->IsActive());
+  EXPECT_FALSE(system_tray->bubble());
+
+  // Show a second widget.
+  std::unique_ptr<views::Widget> second_widget(CreateTestWidget());
+  EXPECT_TRUE(second_widget->IsActive());
+
+  // Re-show the system bubble.
+  LeftClickOn(system_tray);
+
+  // Re-activate the first widget. The system bubble should hide again.
+  widget->Activate();
+  EXPECT_FALSE(system_tray->bubble());
+
+  Shell::Get()->ime_controller()->ShowImeMenuOnShelf(true);
+  TrayBackgroundView* ime_menu = status_area->ime_menu_tray();
+
+  // Test the same thing with the ime tray.
+  LeftClickOn(ime_menu);
+  ASSERT_EQ(status_area->open_shelf_pod_bubble(), ime_menu->GetBubbleView());
+
+  second_widget->Activate();
+  EXPECT_FALSE(ime_menu->GetBubbleView());
+}
+
 using TrayEventFilterQsRevampDisabledTest = TrayEventFilterTest;
 
 INSTANTIATE_TEST_SUITE_P(QsRevampDisabled,
@@ -445,7 +426,7 @@ TEST_P(TrayEventFilterQsRevampDisabledTest,
   auto border_insets =
       GetPrimaryUnifiedSystemTray()->GetBubbleView()->GetBorderInsets();
   event_generator->MoveMouseTo(
-      GetQuickSettingsBubbleBounds().origin() +
+      GetPrimaryUnifiedSystemTray()->GetBubbleBoundsInScreen().origin() +
       gfx::Vector2d(border_insets.left(), border_insets.top()));
   event_generator->ClickLeftButton();
 
@@ -453,7 +434,9 @@ TEST_P(TrayEventFilterQsRevampDisabledTest,
   EXPECT_TRUE(IsQuickSettingsBubbleShown());
 
   // Clicking inside the message center bubble should not close either bubble.
-  ClickInsideWidget(GetMessageCenterBubble()->GetBubbleWidget());
+  ClickInsideWidget(GetPrimaryUnifiedSystemTray()
+                        ->message_center_bubble()
+                        ->GetBubbleWidget());
 
   EXPECT_TRUE(IsMessageCenterBubbleShown());
   EXPECT_TRUE(IsQuickSettingsBubbleShown());

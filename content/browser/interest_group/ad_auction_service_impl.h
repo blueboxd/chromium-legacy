@@ -81,6 +81,7 @@ class CONTENT_EXPORT AdAuctionServiceImpl final
       DeprecatedReplaceInURNCallback callback) override;
   void GetInterestGroupAdAuctionData(
       const url::Origin& seller,
+      blink::mojom::AdAuctionCoordinator coordinator,
       GetInterestGroupAdAuctionDataCallback callback) override;
   void CreateAdRequest(blink::mojom::AdRequestConfigPtr config,
                        CreateAdRequestCallback callback) override;
@@ -118,6 +119,7 @@ class CONTENT_EXPORT AdAuctionServiceImpl final
     BiddingAndAuctionData data;
     base::Uuid request_id;
     url::Origin seller;
+    blink::mojom::AdAuctionCoordinator coordinator;
     GetInterestGroupAdAuctionDataCallback callback;
   };
 
@@ -210,10 +212,11 @@ class CONTENT_EXPORT AdAuctionServiceImpl final
   const raw_ptr<PrivateAggregationManager> private_aggregation_manager_;
 
   // Whether a UseCounter has already been logged for usage of the Private
-  // Aggregation API in general and the extended Private Aggregation API,
-  // respectively.
+  // Aggregation API in general, the extended Private Aggregation API and the
+  // Private Aggregation API's enableDebugMode(), respectively.
   bool has_logged_private_aggregation_web_features_ = false;
   bool has_logged_extended_private_aggregation_web_feature_ = false;
+  bool has_logged_private_aggregation_enable_debug_mode_web_feature_ = false;
 
   base::WeakPtrFactory<AdAuctionServiceImpl> weak_ptr_factory_{this};
 };

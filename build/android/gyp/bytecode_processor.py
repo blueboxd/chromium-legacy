@@ -21,8 +21,8 @@ from util import server_utils
 import action_helpers  # build_utils adds //build to sys.path.
 
 _SRC_PATH = pathlib.Path(build_utils.DIR_SOURCE_ROOT).resolve()
-sys.path.append(str(_SRC_PATH / 'tools/android/modularization/gn'))
-from dep_operations import NO_VALID_GN_STR
+sys.path.append(str(_SRC_PATH / 'build/gn_ast'))
+from gn_editor import NO_VALID_GN_STR
 
 
 def _ShouldIgnoreDep(dep_name: str):
@@ -58,19 +58,6 @@ def _ParseDepGraph(jar_path: str):
     dep_to = parsed[2]
     dep_graph[dep_from].add(dep_to)
   return dep_graph
-
-
-def _GnTargetToBuildFilePath(gn_target: str):
-  """Returns the relative BUILD.gn file path for this target from src root."""
-  assert gn_target.startswith('//'), f'Relative {gn_target} name not supported.'
-  ninja_target_name = gn_target[2:]
-
-  # Remove the colon at the end
-  colon_index = ninja_target_name.find(':')
-  if colon_index != -1:
-    ninja_target_name = ninja_target_name[:colon_index]
-
-  return os.path.join(ninja_target_name, 'BUILD.gn')
 
 
 def _EnsureDirectClasspathIsComplete(
@@ -153,18 +140,8 @@ def _EnsureDirectClasspathIsComplete(
     if not auto_add_deps:
       print_and_maybe_exit()
     else:
-      # Normalize chrome_public_apk__java to chrome_public_apk.
-      gn_target = gn_target.split('__', 1)[0]
-
-      # TODO(https://crbug.com/1099522): This should be generalized into util.
-      build_file_path = _GnTargetToBuildFilePath(gn_target)
-      cmd = [
-          'tools/android/modularization/gn/dep_operations.py', 'add', '--quiet',
-          '--file', build_file_path, '--target', gn_target, '--deps'
-      ]
       class_lookup_index = dep_utils.ClassLookupIndex(pathlib.Path(output_dir),
                                                       should_build=False)
-
       missing_deps = set()
       for dep_to in missing_classes:
         # Using dep_utils.ClassLookupIndex ensures we respect the preferred dep
@@ -173,9 +150,9 @@ def _EnsureDirectClasspathIsComplete(
         assert suggested_deps, f'Unable to find target for {dep_to}'
         suggested_deps = dep_utils.DisambiguateDeps(suggested_deps)
         missing_deps.add(suggested_deps[0].target)
-      cmd += missing_deps
-      failed = False
+      cmd = dep_utils.CreateAddDepsCommand(gn_target, sorted(missing_deps))
 
+      failed = False
       try:
         stdout = build_utils.CheckOutput(cmd,
                                          cwd=build_utils.DIR_SOURCE_ROOT,
@@ -190,6 +167,8 @@ def _EnsureDirectClasspathIsComplete(
           failed = True
         else:
           raise
+
+      build_file_path = dep_utils.GnTargetToBuildFilePath(gn_target)
       if failed:
         print(f'Unable to auto-add missing dep(s) to {build_file_path}.')
         print_and_maybe_exit()

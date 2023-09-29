@@ -372,10 +372,6 @@ void AutofillPopupControllerImpl::AcceptSuggestion(int index,
     return;
   }
 
-  AcceptSuggestionWithoutThreshold(index);
-}
-
-void AutofillPopupControllerImpl::AcceptSuggestionWithoutThreshold(int index) {
   if (static_cast<size_t>(index) >= suggestions_.size()) {
     // Prevents crashes from crbug.com/521133. It seems that in rare cases or
     // races the suggestions_ and the user-selected index may be out of sync.
@@ -682,12 +678,6 @@ AutofillPopupControllerImpl::CreateSubPopupView(
   auto sub_view =
       view_.Call(&AutofillPopupView::CreateSubPopupView, controller);
   return sub_view.value_or(nullptr);
-}
-
-void AutofillPopupControllerImpl::SetViewForTesting(
-    base::WeakPtr<AutofillPopupView> view) {
-  view_ = std::move(view);
-  time_view_shown_ = base::TimeTicks::Now();
 }
 
 void AutofillPopupControllerImpl::FireControlsChangedEvent(bool is_show) {

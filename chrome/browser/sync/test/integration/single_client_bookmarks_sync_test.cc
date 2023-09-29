@@ -203,7 +203,10 @@ class SingleClientBookmarksSyncTestWithEnabledReuploadPreexistingBookmarks
 
 class SingleClientBookmarksThrottlingSyncTest : public SyncTest {
  public:
-  SingleClientBookmarksThrottlingSyncTest() : SyncTest(SINGLE_CLIENT) {}
+  SingleClientBookmarksThrottlingSyncTest() : SyncTest(SINGLE_CLIENT) {
+    features_override_.InitAndDisableFeature(
+        syncer::kSyncPollImmediatelyOnEveryStartup);
+  }
 
   void SetUpInProcessBrowserTestFixture() override {
     SyncTest::SetUpInProcessBrowserTestFixture();
@@ -241,6 +244,7 @@ class SingleClientBookmarksThrottlingSyncTest : public SyncTest {
   }
 
  private:
+  base::test::ScopedFeatureList features_override_;
   base::CallbackListSubscription create_services_subscription_;
 };
 
@@ -696,10 +700,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
   // Set the supported scale factors to 1x and 2x such that
   // BookmarkModel::GetFavicon() requests both 1x and 2x.
   // 1x -> for sync, 2x -> for the UI.
-  std::vector<ui::ResourceScaleFactor> supported_scale_factors;
-  supported_scale_factors.push_back(ui::k100Percent);
-  supported_scale_factors.push_back(ui::k200Percent);
-  ui::SetSupportedResourceScaleFactors(supported_scale_factors);
+  ui::SetSupportedResourceScaleFactors({ui::k100Percent, ui::k200Percent});
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -1963,9 +1964,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksThrottlingSyncTest,
   histogram_tester.ExpectTotalCount("Sync.ModelTypeCommitWithDepletedQuota", 0);
 }
 
-// TODO(crbug.com/1447535): Disabled due to flakiness.
 IN_PROC_BROWSER_TEST_F(SingleClientBookmarksThrottlingSyncTest,
-                       DISABLED_DepleteQuotaAndRecover) {
+                       DepleteQuotaAndRecover) {
   ASSERT_TRUE(SetupClients());
 
   // Setup custom quota params: to effectively never refill, and custom nudge

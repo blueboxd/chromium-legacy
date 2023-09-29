@@ -25,8 +25,8 @@
 #import "ios/chrome/app/main_application_delegate_testing.h"
 #import "ios/chrome/app/main_controller.h"
 #import "ios/chrome/app/startup/app_launch_metrics.h"
-#import "ios/chrome/browser/commerce/push_notification/push_notification_feature.h"
-#import "ios/chrome/browser/crash_report/crash_keys_helper.h"
+#import "ios/chrome/browser/commerce/model/push_notification/push_notification_feature.h"
+#import "ios/chrome/browser/crash_report/model/crash_keys_helper.h"
 #import "ios/chrome/browser/download/background_service/background_download_service_factory.h"
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/push_notification/push_notification_delegate.h"
@@ -61,14 +61,15 @@ const int kMainIntentCheckDelay = 1;
   // The set of "scene sessions" that needs to be discarded. See
   // -application:didDiscardSceneSessions: for details.
   NSSet<UISceneSession*>* _sceneSessionsToDiscard;
-  // Delegate that handles delivered push notification workflow.
-  PushNotificationDelegate* _pushNotificationDelegate;
 }
 
 // YES if application:didFinishLaunchingWithOptions: was called. Used to
 // determine whether or not shutdown should be invoked from
 // applicationWillTerminate:.
 @property(nonatomic, assign) BOOL didFinishLaunching;
+
+// Delegate that handles delivered push notification workflow.
+@property(nonatomic, strong) PushNotificationDelegate* pushNotificationDelegate;
 
 @end
 
@@ -85,6 +86,8 @@ const int kMainIntentCheckDelay = 1;
         [[AppState alloc] initWithStartupInformation:_startupInformation];
     _pushNotificationDelegate =
         [[PushNotificationDelegate alloc] initWithAppState:_appState];
+    // TODO:(crbug.com/1487183) Move APNS device registration further down
+    // startup sequence.
     [PushNotificationUtil registerDeviceWithAPNS];
     [_mainController setAppState:_appState];
   }
@@ -216,7 +219,7 @@ const int kMainIntentCheckDelay = 1;
   // application. In that case, the user must relaunch the application or must
   // restart the device before the system will launch the application and invoke
   // this function.
-  UIBackgroundFetchResult result = [_pushNotificationDelegate
+  UIBackgroundFetchResult result = [self.pushNotificationDelegate
       applicationWillProcessIncomingRemoteNotification:userInfo];
   if (completionHandler) {
     completionHandler(result);
@@ -225,21 +228,23 @@ const int kMainIntentCheckDelay = 1;
 
 - (void)application:(UIApplication*)application
     didRegisterForRemoteNotificationsWithDeviceToken:(NSData*)deviceToken {
+  // In rare cases, for example when a user obtains a new device and restores it
+  // from a previous backup, iOS invokes the [application
+  // didRegisterForRemoteNotificationsWithDeviceToken:] function potentially
+  // before Chrome threads have been initialized. In this case, iOS'
+  // invocation is ignored and the device is registered for push notifications
+  // through the normal startup process.
+  if (!web::WebThread::IsThreadInitialized(web::WebThread::UI)) {
+    return;
+  }
+
   // This method is invoked by iOS on the successful registration of the app to
   // APNS and retrieval of the device's APNS token.
   base::UmaHistogramBoolean("IOS.PushNotification.APNSDeviceRegistration",
                             true);
-
-  // TODO(crbug.com/1478263) Move PushNotificationDelegate to
-  // property and this should avoid the need to use strongSelf.
-  __weak MainApplicationDelegate* weakSelf = self;
   web::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(^{
-        MainApplicationDelegate* strongSelf = weakSelf;
-        if (!strongSelf) {
-          return;
-        }
-        [strongSelf->_pushNotificationDelegate
+        [self.pushNotificationDelegate
             applicationDidRegisterWithAPNS:deviceToken];
       }));
 }

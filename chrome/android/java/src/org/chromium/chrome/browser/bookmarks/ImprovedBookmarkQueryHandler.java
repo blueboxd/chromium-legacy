@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.bookmarks;
 
+import android.text.TextUtils;
+
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.bookmarks.BookmarkUiPrefs.BookmarkRowSortOrder;
@@ -69,6 +71,7 @@ public class ImprovedBookmarkQueryHandler implements BookmarkQueryHandler {
     @Override
     public List<BookmarkListEntry> buildBookmarkListForSearch(
             String query, Set<PowerBookmarkType> powerFilter) {
+        if (TextUtils.isEmpty(query)) return Collections.emptyList();
         List<BookmarkListEntry> bookmarkListEntries =
                 mBasicBookmarkQueryHandler.buildBookmarkListForSearch(query, powerFilter);
         applyPowerFilters(bookmarkListEntries, powerFilter);
@@ -136,7 +139,7 @@ public class ImprovedBookmarkQueryHandler implements BookmarkQueryHandler {
 
     private boolean isPriceTracked(BookmarkListEntry bookmarkListEntry) {
         PowerBookmarkMeta meta = bookmarkListEntry.getPowerBookmarkMeta();
-        if (meta == null || !meta.hasShoppingSpecifics()) return false;
+        if (!PowerBookmarkUtils.isShoppingListItem(meta)) return false;
         return mShoppingService.isSubscribedFromCache(
                 PowerBookmarkUtils.createCommerceSubscriptionForShoppingSpecifics(
                         meta.getShoppingSpecifics()));

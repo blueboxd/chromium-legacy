@@ -83,7 +83,8 @@ TEST_F(UnifiedSliderViewPixelTest, DefaultSlider) {
       /*revision_number=*/0, widget_.get()));
 }
 
-TEST_F(UnifiedSliderViewPixelTest, DefaultSliderMuted) {
+// TODO(crbug.com/1486954): Flaky.
+TEST_F(UnifiedSliderViewPixelTest, DISABLED_DefaultSliderMuted) {
   // Creates a `UnifiedVolumeView` that's on the main page. This slider is in
   // `QuickSettingsSlider::Style::kDefault` style.
   auto default_slider = std::make_unique<UnifiedVolumeView>(
@@ -121,7 +122,8 @@ TEST_F(UnifiedSliderViewPixelTest, RadioActiveSlider) {
       /*revision_number=*/0, widget_.get()));
 }
 
-TEST_F(UnifiedSliderViewPixelTest, RadioActiveSliderMuted) {
+// Flaky. See https://crbug.com/1484867
+TEST_F(UnifiedSliderViewPixelTest, DISABLED_RadioActiveSliderMuted) {
   // Creates a `UnifiedVolumeView` that's on the audio subpage. This slider is
   // in the `QuickSettingsSlider::Style::kRadioActive` style.
   auto radio_active_slider = std::make_unique<UnifiedVolumeView>(

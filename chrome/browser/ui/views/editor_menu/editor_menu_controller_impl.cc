@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/editor_menu/utils/preset_text_query.h"
 #include "chromeos/crosapi/mojom/editor_panel.mojom.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -43,12 +44,30 @@ crosapi::mojom::EditorPanelManager& GetEditorPanelManager() {
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 
+PresetQueryCategory GetPresetQueryCategory(
+    const crosapi::mojom::EditorPanelPresetQueryCategory category) {
+  switch (category) {
+    case crosapi::mojom::EditorPanelPresetQueryCategory::kUnknown:
+      return PresetQueryCategory::kUnknown;
+    case crosapi::mojom::EditorPanelPresetQueryCategory::kShorten:
+      return PresetQueryCategory::kShorten;
+    case crosapi::mojom::EditorPanelPresetQueryCategory::kElaborate:
+      return PresetQueryCategory::kElaborate;
+    case crosapi::mojom::EditorPanelPresetQueryCategory::kRephrase:
+      return PresetQueryCategory::kRephrase;
+    case crosapi::mojom::EditorPanelPresetQueryCategory::kFormalize:
+      return PresetQueryCategory::kFormalize;
+    case crosapi::mojom::EditorPanelPresetQueryCategory::kEmojify:
+      return PresetQueryCategory::kEmojify;
+  }
+}
+
 PresetTextQueries GetPresetTextQueries(
     const std::vector<EditorPanelPresetTextQueryPtr>& preset_text_queries) {
   PresetTextQueries queries;
   for (const auto& query : preset_text_queries) {
     queries.emplace_back(query->text_query_id, base::UTF8ToUTF16(query->name),
-                         PresetQueryCategory(query->category));
+                         GetPresetQueryCategory(query->category));
   }
   return queries;
 }
@@ -76,9 +95,14 @@ void EditorMenuControllerImpl::OnAnchorBoundsChanged(
     return;
   }
 
-  // Update the bounds of the shown view.
-  // TODO(b/295060733): The main view.
-  // TODO(b/295061567): The consent view.
+  auto* editor_menu_view = editor_menu_widget_->GetContentsView();
+  if (views::IsViewClass<EditorMenuView>(editor_menu_view)) {
+    views::AsViewClass<EditorMenuView>(editor_menu_view)
+        ->UpdateBounds(anchor_bounds);
+  } else if (views::IsViewClass<EditorMenuPromoCardView>(editor_menu_view)) {
+    views::AsViewClass<EditorMenuPromoCardView>(editor_menu_view)
+        ->UpdateBounds(anchor_bounds);
+  }
 }
 
 void EditorMenuControllerImpl::OnDismiss(bool is_other_command_executed) {
@@ -113,6 +137,16 @@ void EditorMenuControllerImpl::OnPromoCardWidgetClosed(
       GetEditorPanelManager().OnPromoCardDismissed();
       break;
   }
+}
+
+void EditorMenuControllerImpl::OnEditorMenuVisibilityChanged(bool visible) {
+  GetEditorPanelManager().OnEditorMenuVisibilityChanged(visible);
+}
+
+void EditorMenuControllerImpl::OnGetEditorPanelContextResultForTesting(
+    const gfx::Rect& anchor_bounds,
+    crosapi::mojom::EditorPanelContextPtr context) {
+  OnGetEditorPanelContextResult(anchor_bounds, std::move(context));
 }
 
 void EditorMenuControllerImpl::OnGetEditorPanelContextResult(

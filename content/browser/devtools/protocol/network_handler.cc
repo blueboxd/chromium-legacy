@@ -784,6 +784,11 @@ GetProtocolBlockedSetCookieReason(net::CookieInclusionStatus status) {
         Network::SetCookieBlockedReasonEnum::ThirdPartyBlockedInFirstPartySet);
   }
   if (status.HasExclusionReason(
+          net::CookieInclusionStatus::EXCLUDE_THIRD_PARTY_PHASEOUT)) {
+    blockedReasons->push_back(
+        Network::SetCookieBlockedReasonEnum::ThirdPartyPhaseout);
+  }
+  if (status.HasExclusionReason(
           net::CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE)) {
     blockedReasons->push_back(Network::SetCookieBlockedReasonEnum::SyntaxError);
   }
@@ -821,6 +826,11 @@ GetProtocolBlockedSetCookieReason(net::CookieInclusionStatus status) {
           net::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR)) {
     blockedReasons->push_back(
         Network::SetCookieBlockedReasonEnum::UnknownError);
+  }
+  if (status.HasExclusionReason(
+          net::CookieInclusionStatus::EXCLUDE_NO_COOKIE_CONTENT)) {
+    blockedReasons->push_back(
+        Network::SetCookieBlockedReasonEnum::NoCookieContent);
   }
 
   return blockedReasons;
@@ -888,6 +898,11 @@ GetProtocolBlockedCookieReason(net::CookieInclusionStatus status) {
               EXCLUDE_THIRD_PARTY_BLOCKED_WITHIN_FIRST_PARTY_SET)) {
     blockedReasons->push_back(
         Network::CookieBlockedReasonEnum::ThirdPartyBlockedInFirstPartySet);
+  }
+  if (status.HasExclusionReason(
+          net::CookieInclusionStatus::EXCLUDE_THIRD_PARTY_PHASEOUT)) {
+    blockedReasons->push_back(
+        Network::CookieBlockedReasonEnum::ThirdPartyPhaseout);
   }
   if (status.HasExclusionReason(net::CookieInclusionStatus::
                                     EXCLUDE_NAME_VALUE_PAIR_EXCEEDS_MAX_SIZE)) {
@@ -1991,6 +2006,8 @@ String blockedReason(blink::ResourceRequestBlockedReason reason) {
       // This is actually never reached, as the conversion request
       // is marked as successful and no blocking reason is reported.
       NOTREACHED();
+      return protocol::Network::BlockedReasonEnum::Other;
+    case blink::ResourceRequestBlockedReason::kSupervisedUserUrlBlocked:
       return protocol::Network::BlockedReasonEnum::Other;
   }
   NOTREACHED();

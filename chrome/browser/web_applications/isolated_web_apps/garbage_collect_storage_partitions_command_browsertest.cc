@@ -17,18 +17,18 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
 #include "chrome/browser/web_applications/commands/web_app_uninstall_command.h"
-#include "chrome/browser/web_applications/extensions_manager.h"
 #include "chrome/browser/web_applications/isolated_web_apps/get_controlled_frame_partition_command.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_installation_manager.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/jobs/uninstall/remove_web_app_job.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
-#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_test_utils.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "components/webapps/browser/uninstall_result_code.h"
+#include "components/webapps/common/web_app_id.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_partition_config.h"
 #include "content/public/test/browser_test.h"
@@ -203,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(GarbageCollectStoragePartitionsCommandBrowserTest,
 
   base::RunLoop run_loop;
   provider()
-      .extensions_manager()
+      .isolated_web_app_installation_manager()
       .on_garbage_collect_storage_partitions_done_for_testing()
       .Post(FROM_HERE, run_loop.QuitClosure());
   run_loop.Run();

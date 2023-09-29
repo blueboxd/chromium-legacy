@@ -5,6 +5,9 @@
 #import "ios/chrome/browser/ui/settings/password/passwords_mediator.h"
 
 #import "base/memory/raw_ptr.h"
+#import "components/feature_engagement/public/event_constants.h"
+#import "components/feature_engagement/public/feature_constants.h"
+#import "components/feature_engagement/public/tracker.h"
 #import "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #import "components/password_manager/core/browser/password_manager_util.h"
 #import "components/password_manager/core/browser/password_sync_util.h"
@@ -21,6 +24,7 @@
 #import "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/settings/password/account_storage_utils.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_consumer.h"
+#import "ios/chrome/browser/ui/settings/password/passwords_mediator+private.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
 #import "ios/chrome/browser/ui/settings/password/saved_passwords_presenter_observer.h"
 #import "ios/chrome/browser/ui/settings/utils/password_auto_fill_status_manager.h"
@@ -38,7 +42,10 @@ using password_manager::features::IsPasswordCheckupEnabled;
 
 @interface PasswordsMediator () <PasswordCheckObserver,
                                  SavedPasswordsPresenterObserver,
-                                 SyncObserverModelBridge> {
+                                 SyncObserverModelBridge>
+@end
+
+@implementation PasswordsMediator {
   // The service responsible for password check feature.
   scoped_refptr<IOSChromePasswordCheckManager> _passwordCheckManager;
 
@@ -75,10 +82,6 @@ using password_manager::features::IsPasswordCheckupEnabled;
   // The user pref service.
   raw_ptr<PrefService> _prefService;
 }
-
-@end
-
-@implementation PasswordsMediator
 
 - (instancetype)initWithPasswordCheckManager:
                     (scoped_refptr<IOSChromePasswordCheckManager>)
@@ -124,6 +127,11 @@ using password_manager::features::IsPasswordCheckupEnabled;
 }
 
 - (void)disconnect {
+  if (_shouldNotifyFETToDismissPasswordManagerWidgetPromo && _tracker) {
+    _tracker->Dismissed(
+        feature_engagement::kIPHiOSPromoPasswordManagerWidgetFeature);
+  }
+  _tracker = nullptr;
   _syncObserver.reset();
   _passwordsPresenterObserver.reset();
   _passwordCheckObserver.reset();
@@ -132,6 +140,13 @@ using password_manager::features::IsPasswordCheckupEnabled;
   _faviconLoader = nullptr;
   _prefService = nullptr;
   _syncService = nullptr;
+}
+
+- (void)askFETToShowPasswordManagerWidgetPromo {
+  if (self.tracker && !_shouldNotifyFETToDismissPasswordManagerWidgetPromo) {
+    [self.consumer setShouldShowPasswordManagerWidgetPromo:
+                       [self shouldShowPasswordManagerWidgetPromo]];
+  }
 }
 
 #pragma mark - PasswordManagerViewControllerDelegate
@@ -249,6 +264,16 @@ using password_manager::features::IsPasswordCheckupEnabled;
   return password_manager::ShouldShowLocalOnlyIconForGroup(group, _syncService);
 }
 
+- (void)notifyFETOfPasswordManagerWidgetPromoDismissal {
+  if (self.tracker) {
+    self.tracker->NotifyEvent(
+        feature_engagement::events::kPasswordManagerWidgetPromoClosed);
+    self.tracker->Dismissed(
+        feature_engagement::kIPHiOSPromoPasswordManagerWidgetFeature);
+  }
+  _shouldNotifyFETToDismissPasswordManagerWidgetPromo = NO;
+}
+
 #pragma mark - PasswordCheckObserver
 
 - (void)passwordCheckStateDidChange:(PasswordCheckState)state {
@@ -361,6 +386,16 @@ using password_manager::features::IsPasswordCheckupEnabled;
   return password_manager::sync_util::GetAccountForSaving(_prefService,
                                                           _syncService) &&
          !_syncService->GetUserSettings()->IsEncryptEverythingEnabled();
+}
+
+- (BOOL)shouldShowPasswordManagerWidgetPromo {
+  if (self.tracker &&
+      self.tracker->ShouldTriggerHelpUI(
+          feature_engagement::kIPHiOSPromoPasswordManagerWidgetFeature)) {
+    self.shouldNotifyFETToDismissPasswordManagerWidgetPromo = YES;
+    return YES;
+  }
+  return NO;
 }
 
 #pragma mark - SavedPasswordsPresenterObserver

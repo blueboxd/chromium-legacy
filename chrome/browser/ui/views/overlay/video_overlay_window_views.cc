@@ -211,11 +211,6 @@ class OverlayWindowFrameView : public views::NonClientFrameView {
     // Allows for dragging and resizing the window.
     return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
   }
-  void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override {}
-  void ResetWindowControls() override {}
-  void UpdateWindowIcon() override {}
-  void UpdateWindowTitle() override {}
-  void SizeConstraintsChanged() override {}
 
   // views::ViewTargeterDelegate:
   bool DoesIntersectRect(const View* target,
@@ -328,10 +323,7 @@ VideoOverlayWindowViews::VideoOverlayWindowViews(
           VideoOverlayWindowViews::kControlHideDelayAfterMove,
           base::BindRepeating(
               &VideoOverlayWindowViews::ReEnableControlsAfterMove,
-              base::Unretained(this))),
-      get_overlay_view_cb_(base::BindRepeating(
-          &PictureInPictureWindowManager::GetOverlayView,
-          base::Unretained(PictureInPictureWindowManager::GetInstance()))) {
+              base::Unretained(this))) {
   display::Screen::GetScreen()->AddObserver(this);
 }
 
@@ -492,7 +484,10 @@ void VideoOverlayWindowViews::OnKeyEvent(ui::KeyEvent* event) {
 #if BUILDFLAG(IS_WIN)
   if (event->type() == ui::ET_KEY_PRESSED && event->IsAltDown() &&
       event->key_code() == ui::VKEY_F4) {
-    GetController()->Close(true /* should_pause_video */);
+    PictureInPictureWindowManager::GetInstance()
+        ->ExitPictureInPictureViaWindowUi(
+            PictureInPictureWindowManager::UiBehavior::
+                kCloseWindowAndPauseVideo);
     event->SetHandled();
   }
 #endif  // BUILDFLAG(IS_WIN)
@@ -742,14 +737,23 @@ void VideoOverlayWindowViews::SetUpViews() {
           [](VideoOverlayWindowViews* overlay) {
             // Only pause the video if play/pause is available.
             const bool should_pause_video = overlay->show_play_pause_button_;
-            overlay->controller_->Close(should_pause_video);
+            PictureInPictureWindowManager::GetInstance()
+                ->ExitPictureInPictureViaWindowUi(
+                    should_pause_video
+                        ? PictureInPictureWindowManager::UiBehavior::
+                              kCloseWindowAndPauseVideo
+                        : PictureInPictureWindowManager::UiBehavior::
+                              kCloseWindowOnly);
             overlay->RecordButtonPressed(OverlayWindowControl::kClose);
           },
           base::Unretained(this)));
   auto back_to_tab_label_button =
       std::make_unique<BackToTabLabelButton>(base::BindRepeating(
           [](VideoOverlayWindowViews* overlay) {
-            overlay->controller_->CloseAndFocusInitiator();
+            PictureInPictureWindowManager::GetInstance()
+                ->ExitPictureInPictureViaWindowUi(
+                    PictureInPictureWindowManager::UiBehavior::
+                        kCloseWindowAndFocusOpener);
             overlay->RecordButtonPressed(OverlayWindowControl::kBackToTab);
           },
           base::Unretained(this)));
@@ -1237,12 +1241,20 @@ void VideoOverlayWindowViews::ShowInactive() {
     overlay_view_ = nullptr;
   }
 
+  // TODO(crbug.com/1472386): Confirm whether the anchor should remain as FLOAT.
+  auto overlay_view =
+      get_overlay_view_cb_
+          ? get_overlay_view_cb_.Run()
+          : PictureInPictureWindowManager::GetInstance()->GetOverlayView(
+                /*browser_view_overridden_bounds=*/gfx::Rect(),
+                window_background_view_, views::BubbleBorder::Arrow::FLOAT);
   // Re-add it if needed.
-  if (auto overlay_view = get_overlay_view_cb_.Run()) {
+  if (overlay_view) {
     overlay_view_ = GetContentsView()->AddChildView(std::move(overlay_view));
     // Also update the bounds, since that's already happened for everything
     // else, potentially, during widget resize.
     overlay_view_->SetBoundsRect(gfx::Rect(GetBounds().size()));
+    overlay_view_->ShowBubble(GetNativeView());
   }
 
   // If this is not the first time the window is shown, this will be a no-op.
@@ -1422,7 +1434,10 @@ void VideoOverlayWindowViews::OnGestureEvent(ui::GestureEvent* event) {
     RecordTapGesture(OverlayWindowControl::kSkipAd);
     event->SetHandled();
   } else if (GetCloseControlsBounds().Contains(event->location())) {
-    controller_->Close(true /* should_pause_video */);
+    PictureInPictureWindowManager::GetInstance()
+        ->ExitPictureInPictureViaWindowUi(
+            PictureInPictureWindowManager::UiBehavior::
+                kCloseWindowAndPauseVideo);
     RecordTapGesture(OverlayWindowControl::kClose);
     event->SetHandled();
   } else if (GetPlayPauseControlsBounds().Contains(event->location())) {

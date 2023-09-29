@@ -25,6 +25,7 @@ using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaArrayOfStrings;
+using base::android::ToJavaIntArray;
 
 void JNI_AutofillProvider_Init(JNIEnv* env,
                                const JavaParamRef<jobject>& jcaller,
@@ -32,28 +33,20 @@ void JNI_AutofillProvider_Init(JNIEnv* env,
   auto* web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
   DCHECK(web_contents);
 
-  auto* provider = AutofillProvider::FromWebContents(web_contents);
-  if (!provider) {
-    provider = AutofillProviderAndroid::Create(web_contents);
-  }
-  static_cast<AutofillProviderAndroid*>(provider)->AttachToJavaAutofillProvider(
-      env, jcaller);
+  AutofillProviderAndroid::CreateForWebContents(web_contents);
+  AutofillProviderAndroid::FromWebContents(web_contents)
+      ->AttachToJavaAutofillProvider(env, jcaller);
 }
 
 AutofillProviderAndroidBridgeImpl::AutofillProviderAndroidBridgeImpl(
     Delegate* delegate)
     : delegate_(*delegate) {}
 
-AutofillProviderAndroidBridgeImpl::~AutofillProviderAndroidBridgeImpl() =
-    default;
-
-void AutofillProviderAndroidBridgeImpl::DetachNativeAutofillProvider() {
+AutofillProviderAndroidBridgeImpl::~AutofillProviderAndroidBridgeImpl() {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null()) {
-    return;
+  if (ScopedJavaLocalRef<jobject> obj = java_ref_.get(env); !obj.is_null()) {
+    Java_AutofillProvider_setNativeAutofillProvider(env, obj, 0);
   }
-  Java_AutofillProvider_setNativeAutofillProvider(env, obj, 0);
 }
 
 void AutofillProviderAndroidBridgeImpl::AttachToJavaAutofillProvider(
@@ -83,16 +76,6 @@ void AutofillProviderAndroidBridgeImpl::StartAutofillSession(
       env, obj, form.GetJavaPeer(), field.index, field.bounds.x(),
       field.bounds.y(), field.bounds.width(), field.bounds.height(),
       has_server_predictions);
-}
-
-void AutofillProviderAndroidBridgeImpl::Reset() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null()) {
-    return;
-  }
-
-  Java_AutofillProvider_reset(env, obj);
 }
 
 void AutofillProviderAndroidBridgeImpl::OnServerPredictionQueryDone(
@@ -174,6 +157,18 @@ void AutofillProviderAndroidBridgeImpl::OnFormFieldDidChange(
       field.bounds.width(), field.bounds.height());
 }
 
+void AutofillProviderAndroidBridgeImpl::OnFormFieldVisibilitiesDidChange(
+    base::span<const int> indices) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null()) {
+    return;
+  }
+
+  Java_AutofillProvider_onFormFieldVisibilitiesDidChange(
+      env, obj, ToJavaIntArray(env, indices));
+}
+
 void AutofillProviderAndroidBridgeImpl::OnFormSubmitted(
     mojom::SubmissionSource submission_source) {
   JNIEnv* env = AttachCurrentThread();
@@ -202,8 +197,7 @@ void AutofillProviderAndroidBridgeImpl::DetachFromJavaAutofillProvider(
 }
 
 void AutofillProviderAndroidBridgeImpl::OnAutofillAvailable(JNIEnv* env,
-                                                            jobject jcaller,
-                                                            jobject form_data) {
+                                                            jobject jcaller) {
   delegate_->OnAutofillAvailable();
 }
 

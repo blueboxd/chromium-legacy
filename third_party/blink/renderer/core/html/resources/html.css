@@ -522,6 +522,10 @@ input[type="url" i] {
   padding-inline: 2px;
 }
 
+input[type="tel" i] {
+  direction: ltr;
+}
+
 input::-webkit-inner-spin-button {
     appearance: auto;
     display: inline-block;
@@ -911,6 +915,14 @@ input[type="week" i][readonly]::-webkit-clear-button,
 input[type="week" i][readonly]::-webkit-inner-spin-button,
 input[readonly]::-webkit-calendar-picker-indicator {
     visibility: hidden;
+}
+
+/* Form controls that measure the inline size without doing actual layout
+   need to disable `text-autospace`, if their content can be affected by
+   the property. crbug.com/1484863 */
+input[type="date" i], input[type="datetime-local" i], input[type="month" i],
+input[type="week" i], select {
+    text-autospace: no-autospace !important;
 }
 
 select {

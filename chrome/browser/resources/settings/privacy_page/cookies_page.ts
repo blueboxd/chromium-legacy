@@ -35,7 +35,7 @@ import {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyElementInteractions
 import {NetworkPredictionOptions} from '../performance_page/constants.js';
 import {routes} from '../route.js';
 import {Route, RouteObserverMixin, Router} from '../router.js';
-import {ContentSetting, ContentSettingsTypes, CookieControlsMode, TrackingProtectionLevel} from '../site_settings/constants.js';
+import {ContentSetting, ContentSettingsTypes, CookieControlsMode} from '../site_settings/constants.js';
 import {CookiePrimarySetting} from '../site_settings/site_settings_prefs_browser_proxy.js';
 
 import {getTemplate} from './cookies_page.html.js';
@@ -83,12 +83,6 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
       cookiePrimarySettingEnum_: {
         type: Object,
         value: CookiePrimarySetting,
-      },
-
-      /** Tracking protection levels for use in bindings. */
-      trackingProtectionLevelEnum_: {
-        type: Object,
-        value: TrackingProtectionLevel,
       },
 
       /** Cookie control modes for use in bindings. */
@@ -175,9 +169,15 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
       assert(toFocus);
       focusWithoutInk(toFocus);
     };
-    this.focusConfig.set(
-        `${routes.SITE_SETTINGS_ALL.path}_${routes.COOKIES.path}`,
-        selectSiteDataLinkRow);
+    if (this.is3pcdRedesignEnabled_) {
+      this.focusConfig.set(
+          `${routes.SITE_SETTINGS_ALL.path}_${routes.TRACKING_PROTECTION.path}`,
+          selectSiteDataLinkRow);
+    } else {
+      this.focusConfig.set(
+          `${routes.SITE_SETTINGS_ALL.path}_${routes.COOKIES.path}`,
+          selectSiteDataLinkRow);
+    }
 
     if (this.showPreloadingSubpage_) {
       const selectPreloadingLinkRow = () => {
@@ -193,7 +193,11 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
   }
 
   override currentRouteChanged(route: Route) {
-    if (route !== routes.COOKIES) {
+    if (this.is3pcdRedesignEnabled_) {
+      if (route !== routes.TRACKING_PROTECTION) {
+        this.$.toast.hide();
+      }
+    } else if (route !== routes.COOKIES) {
       this.$.toast.hide();
     }
   }

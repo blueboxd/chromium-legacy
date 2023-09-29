@@ -31,6 +31,7 @@
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/common/aliases.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/input/native_web_keyboard_event.h"
 #include "content/public/test/test_renderer_host.h"
@@ -42,6 +43,7 @@
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/canvas_painter.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -95,6 +97,7 @@ Suggestion CreateSuggestionWithChildren(
     std::vector<Suggestion> children,
     const std::u16string& name = u"Suggestion") {
   Suggestion parent(name);
+  parent.popup_item_id = PopupItemId::kAddressEntry;
   parent.children = std::move(children);
   return parent;
 }
@@ -269,7 +272,6 @@ class PopupViewViewsTestWithClickablePopupItemId
 TEST_F(PopupViewViewsTest, ShowHideTest) {
   CreateAndShowView({PopupItemId::kAutocompleteEntry});
   EXPECT_CALL(controller(), AcceptSuggestion).Times(0);
-  EXPECT_CALL(controller(), AcceptSuggestionWithoutThreshold).Times(0);
   view().Hide();
 }
 
@@ -422,7 +424,6 @@ TEST_F(PopupViewViewsTest, ClickDisabledEntry) {
   CreateAndShowView();
 
   EXPECT_CALL(controller(), AcceptSuggestion).Times(0);
-  EXPECT_CALL(controller(), AcceptSuggestionWithoutThreshold).Times(0);
 
   gfx::Point inside_point(GetRowViewAt(0).x() + 1, GetRowViewAt(0).y() + 1);
   ui::MouseEvent click_mouse_event(
@@ -639,7 +640,6 @@ class PopupViewViewsTestKeyboard : public PopupViewViewsTest {
 TEST_F(PopupViewViewsTestKeyboard, FillOnEnter) {
   SelectFirstSuggestion();
   EXPECT_CALL(controller(), AcceptSuggestion(0, _));
-  EXPECT_CALL(controller(), AcceptSuggestionWithoutThreshold).Times(0);
   SimulateKeyPress(ui::VKEY_RETURN);
 }
 
@@ -647,7 +647,6 @@ TEST_F(PopupViewViewsTestKeyboard, FillOnEnter) {
 TEST_F(PopupViewViewsTestKeyboard, FillOnTabPressed) {
   SelectFirstSuggestion();
   EXPECT_CALL(controller(), AcceptSuggestion(0, _));
-  EXPECT_CALL(controller(), AcceptSuggestionWithoutThreshold).Times(0);
   SimulateKeyPress(ui::VKEY_TAB);
 }
 
@@ -656,7 +655,6 @@ TEST_F(PopupViewViewsTestKeyboard, FillOnTabPressed) {
 TEST_F(PopupViewViewsTestKeyboard, NoFillOnTabPressedWithModifiers) {
   SelectFirstSuggestion();
   EXPECT_CALL(controller(), AcceptSuggestion(0, _)).Times(0);
-  EXPECT_CALL(controller(), AcceptSuggestionWithoutThreshold).Times(0);
   SimulateKeyPress(ui::VKEY_TAB, /*shift_modifier_pressed=*/false,
                    /*non_shift_modifier_pressed=*/true);
 }
@@ -676,7 +674,6 @@ TEST_F(PopupViewViewsTest, NoAutofillOptionsTriggeredOnTabPressed) {
   // Because the selected line is PopupItemId::kAutofillOptions, we expect that
   // the tab key does not trigger anything.
   EXPECT_CALL(controller(), AcceptSuggestion).Times(0);
-  EXPECT_CALL(controller(), AcceptSuggestionWithoutThreshold).Times(0);
   SimulateKeyPress(ui::VKEY_TAB);
 }
 
@@ -771,6 +768,7 @@ TEST_F(PopupViewViewsTest, VoiceOverTest) {
 
   // Create autofill menu.
   controller().set_suggestions({suggestion});
+
   CreateAndShowView();
 
   // Verify that the accessibility layer gets the right string to read out.
@@ -778,6 +776,31 @@ TEST_F(PopupViewViewsTest, VoiceOverTest) {
   GetPopupRowViewAt(0).GetContentView().GetAccessibleNodeData(&node_data);
   EXPECT_EQ(voice_over_value,
             node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
+}
+
+TEST_F(PopupViewViewsTest, ExpandableSuggestionA11yMessageTest) {
+  // Set up the popup with suggestions.
+  std::u16string address_line = u"Address line #1";
+  Suggestion suggestion(address_line, PopupItemId::kAddressEntry);
+  suggestion.children = {Suggestion(PopupItemId::kFillFullAddress),
+                         Suggestion(PopupItemId::kFillFullName)};
+  controller().set_suggestions({suggestion});
+  CreateAndShowView();
+
+  // Verify that the accessibility layer gets the right string to read out.
+  ui::AXNodeData node_data;
+  GetPopupRowViewAt(0).GetContentView().GetAccessibleNodeData(&node_data);
+  EXPECT_EQ(
+      node_data.GetString16Attribute(ax::mojom::StringAttribute::kName),
+      base::JoinString(
+          {address_line,
+           l10n_util::GetStringUTF16(
+               IDS_AUTOFILL_EXPANDABLE_SUGGESTION_FULL_ADDRESS_A11Y_ADDON),
+           l10n_util::GetStringFUTF16(
+               IDS_AUTOFILL_EXPANDABLE_SUGGESTION_SUBMENU_HINT,
+               l10n_util::GetStringUTF16(
+                   IDS_AUTOFILL_EXPANDABLE_SUGGESTION_EXPAND_SHORTCUT))},
+          u". "));
 }
 
 TEST_F(PopupViewViewsTest, UpdateSuggestionsNoCrash) {

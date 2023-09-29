@@ -204,8 +204,21 @@ class WindowEventObserver : public ui::EventObserver {
 };
 
 void DefinitelyExitPictureInPicture(
-    PictureInPictureBrowserFrameView& frame_view) {
-  if (!PictureInPictureWindowManager::GetInstance()->ExitPictureInPicture()) {
+    PictureInPictureBrowserFrameView& frame_view,
+    PictureInPictureWindowManager::UiBehavior behavior) {
+  switch (behavior) {
+    case PictureInPictureWindowManager::UiBehavior::kCloseWindowOnly:
+    case PictureInPictureWindowManager::UiBehavior::kCloseWindowAndPauseVideo:
+      frame_view.set_close_reason(
+          PictureInPictureBrowserFrameView::CloseReason::kCloseButton);
+      break;
+    case PictureInPictureWindowManager::UiBehavior::kCloseWindowAndFocusOpener:
+      frame_view.set_close_reason(
+          PictureInPictureBrowserFrameView::CloseReason::kBackToTabButton);
+      break;
+  }
+  if (!PictureInPictureWindowManager::GetInstance()
+           ->ExitPictureInPictureViaWindowUi(behavior)) {
     // If the picture-in-picture controller has been disconnected for
     // some reason, then just manually close the window to prevent
     // getting into a state where the back to tab button no longer
@@ -451,13 +464,21 @@ PictureInPictureBrowserFrameView::PictureInPictureBrowserFrameView(
                                      gfx::Insets::TLBR(0, 8, 0, 4));
   }
 
+  // For file URLs, we want to elide the tail, since the file name and/or query
+  // part of the file URL can be made to look like an origin for spoofing. For
+  // HTTPS URLs, we elide the head to prevent spoofing via long origins, since
+  // in the HTTPS case everything besides the origin is removed for display.
+  auto elide_behavior = location_bar_model_->GetURL().SchemeIsFile()
+                            ? gfx::ELIDE_TAIL
+                            : gfx::ELIDE_HEAD;
+
   // Creates the window title.
   top_bar_container_view_->AddChildView(
       views::Builder<views::Label>()
           .CopyAddressTo(&window_title_)
           .SetText(location_bar_model_->GetURLForDisplay())
           .SetHorizontalAlignment(gfx::ALIGN_LEFT)
-          .SetElideBehavior(gfx::ELIDE_HEAD)
+          .SetElideBehavior(elide_behavior)
           .SetProperty(
               views::kFlexBehaviorKey,
               views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
@@ -489,9 +510,9 @@ PictureInPictureBrowserFrameView::PictureInPictureBrowserFrameView(
   back_to_tab_button_ = button_container_view_->AddChildView(
       std::make_unique<BackToTabButton>(base::BindRepeating(
           [](PictureInPictureBrowserFrameView* frame_view) {
-            frame_view->close_reason_ = CloseReason::kBackToTabButton;
-            PictureInPictureWindowManager::GetInstance()->FocusInitiator();
-            DefinitelyExitPictureInPicture(*frame_view);
+            DefinitelyExitPictureInPicture(
+                *frame_view, PictureInPictureWindowManager::UiBehavior::
+                                 kCloseWindowAndFocusOpener);
           },
           base::Unretained(this))));
 
@@ -499,8 +520,9 @@ PictureInPictureBrowserFrameView::PictureInPictureBrowserFrameView(
   close_image_button_ = button_container_view_->AddChildView(
       std::make_unique<CloseImageButton>(base::BindRepeating(
           [](PictureInPictureBrowserFrameView* frame_view) {
-            frame_view->close_reason_ = CloseReason::kCloseButton;
-            DefinitelyExitPictureInPicture(*frame_view);
+            DefinitelyExitPictureInPicture(
+                *frame_view,
+                PictureInPictureWindowManager::UiBehavior::kCloseWindowOnly);
           },
           base::Unretained(this))));
 
@@ -531,15 +553,15 @@ PictureInPictureBrowserFrameView::PictureInPictureBrowserFrameView(
   hide_close_button_animation_.set_continuous(false);
   hide_close_button_animation_.set_delegate(this);
 
-#if !BUILDFLAG(IS_ANDROID)
   // If the window manager wants us to display an overlay, get it.  In practice,
   // this is the auto-pip Allow / Block content setting UI.
   if (auto auto_pip_setting_overlay =
-          PictureInPictureWindowManager::GetInstance()->GetOverlayView()) {
+          PictureInPictureWindowManager::GetInstance()->GetOverlayView(
+              browser_view->browser()->override_bounds(),
+              top_bar_container_view_, views::BubbleBorder::TOP_CENTER)) {
     auto_pip_setting_overlay_ =
         AddChildView(std::move(auto_pip_setting_overlay));
   }
-#endif
 
 #if BUILDFLAG(IS_LINUX)
   frame_background_ = std::make_unique<views::FrameBackground>();
@@ -763,9 +785,10 @@ void PictureInPictureBrowserFrameView::AddedToWidget() {
   show_close_button_animation_.SetContainer(animation_container);
   hide_close_button_animation_.SetContainer(animation_container);
 
-  // TODO(https://crbug.com/1475419): Don't force dark mode once we support a
-  // light mode window.
-  GetWidget()->SetColorModeOverride(ui::ColorProviderKey::ColorMode::kDark);
+  // If the AutoPiP setting overlay is set, show the permission settings bubble.
+  if (auto_pip_setting_overlay_) {
+    auto_pip_setting_overlay_->ShowBubble(GetWidget()->GetNativeView());
+  }
 
   BrowserNonClientFrameView::AddedToWidget();
 }
@@ -776,6 +799,11 @@ void PictureInPictureBrowserFrameView::RemovedFromWidget() {
 #if RESIZE_DOCUMENT_PICTURE_IN_PICTURE_TO_DIALOG
   child_dialog_observer_helper_.reset();
 #endif  // RESIZE_DOCUMENT_PICTURE_IN_PICTURE_TO_DIALOG
+
+  // Clear the AutoPiP setting overlay view.
+  if (auto_pip_setting_overlay_) {
+    auto_pip_setting_overlay_ = nullptr;
+  }
 
   BrowserNonClientFrameView::RemovedFromWidget();
 }

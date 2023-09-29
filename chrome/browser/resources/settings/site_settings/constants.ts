@@ -33,6 +33,7 @@ export enum ContentSettingsTypes {
   JAVASCRIPT = 'javascript',
   LOCAL_FONTS = 'local-fonts',
   MIC = 'media-stream-mic',  // AKA Microphone.
+  MIDI = 'midi',
   MIDI_DEVICES = 'midi-sysex',
   MIXEDSCRIPT = 'mixed-script',
   NOTIFICATIONS = 'notifications',
@@ -114,14 +115,15 @@ export enum SiteSettingSource {
 }
 
 /**
- * Enumeration of states for the notification default setting generated pref.
- * Must be kept in sync with the enum of the same name located in:
- * chrome/browser/content_settings/generated_notification_pref.h
+ * Enumeration of states for the notification and geolocation default setting
+ * generated pref. Must be kept in sync with the SettingsState enum in:
+ * chrome/browser/content_settings/generated_permission_prompting_behavior_pref.h
  */
-export enum NotificationSetting {
-  ASK = 0,
-  QUIETER_MESSAGING = 1,
-  BLOCK = 2,
+export enum SettingsState {
+  LOUD = 0,
+  QUIET = 1,
+  CPSS = 2,
+  BLOCK = 3,
 }
 
 /**
@@ -192,15 +194,4 @@ export enum CookiesExceptionType {
   THIRD_PARTY = 'third-party',
   SITE_DATA = 'site-data',
   COMBINED = 'combined',
-}
-
-/**
- * Possible preference settings for the
- * `tracking_protection.tracking_protection_level` pref. This should be kept in
- * sync with the `TrackingProtectionLevel` enum in
- * components/privacy_sandbox/tracking_protection_prefs.h
- */
-export enum TrackingProtectionLevel {
-  STANDARD = 0,
-  CUSTOM = 1,
 }

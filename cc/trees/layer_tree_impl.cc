@@ -225,16 +225,13 @@ void LayerTreeImpl::DidUpdateScrollOffset(ElementId id) {
   }
 
   // This bit controls whether we'll update the transform node based on a
-  // changed scroll offset. If scroll unification is off, we always do this
-  // because the scroll handling code will only invoke a scroll update on nodes
-  // that can compositor scroll. However, with scroll unification, we can
-  // mutate scroll nodes which have main thread scrolling reasons, or aren't
-  // backed by a layer at all. In those cases, we don't want to produce any
-  // immediate changes in the compositor, we want the scroll to propagate
-  // through Blink in a commit and have Blink update properties, paint,
-  // compositing, etc. Thus, we avoid mutating the transform tree in this case.
+  // changed scroll offset. We can mutate scroll nodes which have main thread
+  // scrolling reasons, or aren't backed by a layer at all, but in those cases
+  // we don't want to produce any immediate changes in the compositor. Instead
+  // we want the scroll to propagate through Blink in a commit and have Blink
+  // update properties, paint, compositing, etc. Thus, we avoid mutating the
+  // transform tree in this case.
   bool should_realize_scroll_on_compositor =
-      !base::FeatureList::IsEnabled(features::kScrollUnification) ||
       scroll_tree.CanRealizeScrollsOnCompositor(*scroll_node);
 
   // A ScrollNode may have an invalid transform_id if its scroller is
@@ -898,9 +895,10 @@ void LayerTreeImpl::HandleTickmarksVisibilityChange() {
 
     // Android Overlay Scrollbar don't have FindInPage Tickmarks.
     if (scrollbar->GetScrollbarAnimator() != LayerTreeSettings::AURA_OVERLAY)
-      DCHECK(!scrollbar->HasFindInPageTickmarks());
+      DCHECK(!scrollbar->has_find_in_page_tickmarks());
 
-    controller->UpdateTickmarksVisibility(scrollbar->HasFindInPageTickmarks());
+    controller->UpdateTickmarksVisibility(
+        scrollbar->has_find_in_page_tickmarks());
   }
 }
 
@@ -1625,10 +1623,10 @@ bool LayerTreeImpl::UpdateDrawProperties(
       settings().minimum_occlusion_tracking_size);
 
   for (EffectTreeLayerListIterator it(this);
-       it.state() != EffectTreeLayerListIterator::State::END; ++it) {
+       it.state() != EffectTreeLayerListIterator::State::kEnd; ++it) {
     occlusion_tracker.EnterLayer(it);
 
-    if (it.state() == EffectTreeLayerListIterator::State::LAYER) {
+    if (it.state() == EffectTreeLayerListIterator::State::kLayer) {
       LayerImpl* layer = it.current_layer();
       layer->draw_properties().occlusion_in_content_space =
           occlusion_tracker.GetCurrentOcclusionForLayer(layer->DrawTransform());
@@ -1637,7 +1635,7 @@ bool LayerTreeImpl::UpdateDrawProperties(
     // TODO(khushalsagar) : Skip computing occlusion for shared elements. See
     // crbug.com/1258058.
     if (it.state() ==
-        EffectTreeLayerListIterator::State::CONTRIBUTING_SURFACE) {
+        EffectTreeLayerListIterator::State::kContributingSurface) {
       const RenderSurfaceImpl* occlusion_surface =
           occlusion_tracker.OcclusionSurfaceForContributingSurface();
       gfx::Transform draw_transform;
@@ -2194,6 +2192,11 @@ void LayerTreeImpl::RegisterScrollbar(ScrollbarLayerImplBase* scrollbar_layer) {
   if (IsActiveTree() && scrollbar_layer->is_overlay_scrollbar() &&
       scrollbar_layer->GetScrollbarAnimator() !=
           LayerTreeSettings::NO_ANIMATOR) {
+    // Fluent overlay scrollbars are invisible until the DidRequestShow gets
+    // called.
+    if (scrollbar_layer->IsFluentOverlayScrollbarEnabled()) {
+      scrollbar_layer->SetOverlayScrollbarLayerOpacityAnimated(0.f);
+    }
     host_impl_->RegisterScrollbarAnimationController(
         scroll_element_id, scrollbar_layer->Opacity());
   }
@@ -2425,21 +2428,6 @@ static void FindClosestMatchingLayer(const gfx::PointF& screen_space_point,
   }
 }
 
-LayerImpl* LayerTreeImpl::FindFirstScrollingLayerOrScrollbarThatIsHitByPoint(
-    const gfx::PointF& screen_space_point) {
-  if (layer_list_.empty())
-    return nullptr;
-
-  FindClosestMatchingLayerState state;
-  LayerImpl* root_layer = layer_list_[0].get();
-  auto HitTestScrollingLayerOrScrollbarFunctor = [](const LayerImpl* layer) {
-    return layer->HitTestable() && layer->IsScrollerOrScrollbar();
-  };
-  FindClosestMatchingLayer(screen_space_point, root_layer,
-                           HitTestScrollingLayerOrScrollbarFunctor, &state);
-  return state.closest_match;
-}
-
 struct HitTestVisibleScrollableOrTouchableFunctor {
   bool operator()(LayerImpl* layer) const { return layer->HitTestable(); }
 };
@@ -2501,28 +2489,6 @@ LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPointInWheelEventHandlerRegion(
   FindWheelEventHandlerLayerFunctor func = {screen_space_point};
   return FindLayerThatIsHitByPointInEventHandlerRegion(screen_space_point,
                                                        func);
-}
-
-std::vector<const LayerImpl*>
-LayerTreeImpl::FindLayersHitByPointInNonFastScrollableRegion(
-    const gfx::PointF& screen_space_point) {
-  std::vector<const LayerImpl*> layers;
-  if (layer_list_.empty())
-    return layers;
-  if (!UpdateDrawProperties())
-    return layers;
-  for (const auto* layer : *this) {
-    if (layer->non_fast_scrollable_region().IsEmpty())
-      continue;
-    if (!PointHitsLayer(layer, screen_space_point, nullptr))
-      continue;
-    if (PointHitsRegion(screen_space_point, layer->ScreenSpaceTransform(),
-                        layer->non_fast_scrollable_region(), layer)) {
-      layers.push_back(layer);
-    }
-  }
-
-  return layers;
 }
 
 std::vector<const LayerImpl*>

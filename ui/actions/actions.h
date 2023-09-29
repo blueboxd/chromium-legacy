@@ -10,11 +10,14 @@
 
 #include "base/callback_list.h"
 #include "base/component_export.h"
+#include "base/containers/flat_map.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
+#include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/actions/action_id.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/class_property.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/events/event.h"
@@ -50,7 +53,8 @@ class COMPONENT_EXPORT(ACTIONS) ActionList {
 
 class COMPONENT_EXPORT(ACTIONS) BaseAction
     : public ui::metadata::MetaDataProvider,
-      public ActionList::Delegate {
+      public ActionList::Delegate,
+      public ui::PropertyHandler {
  public:
   METADATA_HEADER_BASE(BaseAction);
   BaseAction();
@@ -113,6 +117,27 @@ class COMPONENT_EXPORT(ACTIONS) ActionItem : public BaseAction {
     ActionItemBuilder&& AddChildren(Child&& child, Types&&... args) && {
       return std::move(this->AddChildrenImpl(&child, &args...));
     }
+    template <typename ActionPtr>
+    ActionItemBuilder& CopyAddressTo(ActionPtr* action_address) & {
+      *action_address = action_item_.get();
+      return *this;
+    }
+    template <typename ActionPtr>
+    ActionItemBuilder&& CopyAddressTo(ActionPtr* action_address) && {
+      return std::move(this->CopyAddressTo(action_address));
+    }
+
+    template <typename T>
+    ActionItemBuilder& SetProperty(const ui::ClassProperty<T>* property,
+                                   ui::metadata::ArgType<T> value) & {
+      action_item_->SetProperty(property, value);
+      return *this;
+    }
+    template <typename T>
+    ActionItemBuilder&& SetProperty(const ui::ClassProperty<T>* property,
+                                    ui::metadata::ArgType<T> value) && {
+      return std::move(this->SetProperty(property, value));
+    }
     ActionItemBuilder& SetActionId(absl::optional<ActionId> action_id) &;
     ActionItemBuilder&& SetActionId(absl::optional<ActionId> action_id) &&;
     ActionItemBuilder& SetAccelerator(ui::Accelerator accelerator) &;
@@ -160,6 +185,11 @@ class COMPONENT_EXPORT(ACTIONS) ActionItem : public BaseAction {
   ActionItem& operator=(const ActionItem&) = delete;
   ~ActionItem() override;
 
+  // Build an action.
+  static ActionItemBuilder Builder(InvokeActionCallback callback);
+  static ActionItemBuilder Builder();
+
+  // Configure action states and attributes.
   absl::optional<ActionId> GetActionId() const;
   void SetActionId(absl::optional<ActionId> action_id);
   ui::Accelerator GetAccelerator() const;
@@ -183,15 +213,19 @@ class COMPONENT_EXPORT(ACTIONS) ActionItem : public BaseAction {
   [[nodiscard]] base::CallbackListSubscription AddActionChangedCallback(
       ActionChangedCallback callback);
 
-  // Alternative terms used to identify this action. Used for search indexing
+  // Alternative terms used to identify this action. Used for search indexing.
   void AddSynonyms(std::initializer_list<std::u16string> synonyms);
 
+  // Do a "batch" update of the ActionItem state without triggering
+  // ActionChanged callbacks for each state change.
+  [[nodiscard]] ScopedActionUpdate BeginUpdate();
+
+  // Invoke an action.
   void InvokeAction();
 
-  static ActionItemBuilder Builder(InvokeActionCallback callback);
-  static ActionItemBuilder Builder();
-
-  [[nodiscard]] ScopedActionUpdate BeginUpdate();
+  // Get action metrics.
+  int GetInvokeCount() const;
+  absl::optional<base::TimeTicks> GetLastInvokeTime() const;
 
  protected:
   // ActionList::Delegate override.
@@ -219,6 +253,8 @@ class COMPONENT_EXPORT(ACTIONS) ActionItem : public BaseAction {
   ui::ImageModel image_;
   Synonyms synonyms_;
   InvokeActionCallback callback_;
+  int invoke_count_ = 0;
+  absl::optional<base::TimeTicks> last_invoke_time_;
 };
 
 class COMPONENT_EXPORT(ACTIONS) ActionManager
@@ -236,6 +272,28 @@ class COMPONENT_EXPORT(ACTIONS) ActionManager
   static ActionManager& GetForTesting();
   static void ResetForTesting();
 
+  // Searches existing maps for the given ActionId and returns the corresponding
+  // string if found, otherwise returns an empty string.
+  static absl::optional<std::string> ActionIdToString(const ActionId action_id);
+  // Searches existing maps for the given string and returns the corresponding
+  // ActionId if found, otherwise returns kActionsEnd.
+  static absl::optional<ActionId> StringToActionId(
+      const std::string action_id_string);
+  static std::vector<absl::optional<std::string>> ActionIdsToStrings(
+      std::vector<ActionId> action_ids);
+  static std::vector<absl::optional<ActionId>> StringsToActionIds(
+      std::vector<std::string> action_id_strings);
+
+  static void AddActionIdToStringMappings(
+      base::flat_map<ActionId, std::string_view> map);
+  static void AddStringToActionIdMappings(
+      base::flat_map<std::string_view, ActionId> map);
+
+  // The second element in the pair is set to true if a new ActionId is
+  // created, or false if an ActionId with the given name already exists.
+  static std::pair<ActionId, bool> CreateActionId(
+      const std::string& action_name);
+
   void IndexActions();
   ActionItem* FindAction(std::u16string term, ActionItem* scope = nullptr);
   ActionItem* FindAction(ActionId action_id, ActionItem* scope = nullptr);
@@ -245,6 +303,10 @@ class COMPONENT_EXPORT(ACTIONS) ActionManager
 
   ActionItem* AddAction(std::unique_ptr<ActionItem> action_item);
   std::unique_ptr<ActionItem> RemoveAction(ActionItem* action_item);
+  template <typename Action, typename... Types>
+  void AddActions(Action&& action, Types&&... args) & {
+    AddActionsImpl(&action, &args...);
+  }
 
   // Clears the actions stored in `root_action_parent_`.
   void ResetActions();
@@ -253,7 +315,7 @@ class COMPONENT_EXPORT(ACTIONS) ActionManager
   void ResetActionItemInitializerList();
 
   // Appends `initializer` to the end of the current `initializer_list_`.
-  void AppendActionItemInitializer(
+  [[nodiscard]] base::CallbackListSubscription AppendActionItemInitializer(
       ActionItemInitializerList::CallbackType initializer);
 
  protected:
@@ -261,18 +323,32 @@ class COMPONENT_EXPORT(ACTIONS) ActionManager
   ~ActionManager() override;
 
  private:
+  template <typename... Args>
+  void AddActionsImpl(Args*... args) {
+    std::vector<std::unique_ptr<ActionItem>*> actions = {args...};
+    for (auto* action : actions) {
+      AddAction(std::move(*action));
+    }
+  }
   ActionItem* FindActionImpl(ActionId action_id, const ActionList& list);
   void GetActionsImpl(ActionItem* item, ActionItemVector& items);
+
+  // Merges the `map2` into `map1`.
+  template <typename T, typename U>
+  static void MergeMaps(base::flat_map<T, U>& map1, base::flat_map<T, U>& map2);
 
   // Holds the chain of ActionManager initializer callbacks.
   std::unique_ptr<ActionItemInitializerList> initializer_list_;
 
-  // Holds the subscriptions for initializers in the `initializer_list_`.
-  std::vector<base::CallbackListSubscription> initializer_subscriptions_;
-
   // All "root" actions are parented to this action.
   BaseAction root_action_parent_;
+
+  static base::flat_map<ActionId, std::string_view>& GetActionIdToStringMap();
+  static base::flat_map<std::string_view, ActionId>& GetStringToActionIdMap();
 };
+
+COMPONENT_EXPORT(ACTIONS)
+extern const ui::ClassProperty<bool>* const kActionItemPinnableKey;
 
 }  // namespace actions
 

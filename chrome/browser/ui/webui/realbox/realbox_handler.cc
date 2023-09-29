@@ -587,6 +587,10 @@ void RealboxHandler::SetupWebUIDataSource(content::WebUIDataSource* source,
   source->AddBoolean(
       "realboxLensDirectUpload",
       base::FeatureList::IsEnabled(ntp_features::kNtpLensDirectUpload));
+
+  source->AddBoolean(
+      "omniboxActionsUISimplification",
+      base::FeatureList::IsEnabled(omnibox::kOmniboxActionsUISimplification));
 }
 
 // static
@@ -674,13 +678,8 @@ std::string RealboxHandler::AutocompleteMatchVectorIconToResourceName(
   } else if (icon.is_empty()) {
     return "";  // An empty resource name is effectively a blank icon.
   } else {
-    NOTREACHED()
-        << "Every vector icon returned by AutocompleteMatch::GetVectorIcon "
-           "must have an equivalent SVG resource for the NTP Realbox. "
-           "icon.name: '"
-        << icon.name << "'";
+    return PedalVectorIconToResourceName(icon);
   }
-  return "";
 }
 
 // static

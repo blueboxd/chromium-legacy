@@ -14,12 +14,15 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/commands/web_app_command.h"
+#include "chrome/browser/web_applications/generated_icon_fix_util.h"
 #include "chrome/browser/web_applications/install_bounce_metric.h"
 #include "chrome/browser/web_applications/locks/shared_web_contents_with_app_lock.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
+#include "chrome/browser/web_applications/web_app_registry_update.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/browser/web_applications/web_contents/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/web_contents/web_app_url_loader.h"
@@ -56,8 +59,8 @@ WebAppInstallFinalizer::FinalizeOptions GetFinalizerOptionForSyncInstall() {
 InstallFromSyncCommand::Params::~Params() = default;
 
 InstallFromSyncCommand::Params::Params(
-    const AppId& app_id,
-    const ManifestId& manifest_id,
+    const webapps::AppId& app_id,
+    const webapps::ManifestId& manifest_id,
     const GURL& start_url,
     const std::string& title,
     const GURL& scope,
@@ -87,7 +90,7 @@ InstallFromSyncCommand::InstallFromSyncCommand(
           "InstallFromSyncCommand"),
       lock_description_(
           std::make_unique<SharedWebContentsWithAppLockDescription,
-                           base::flat_set<AppId>>({params.app_id})),
+                           base::flat_set<webapps::AppId>>({params.app_id})),
       profile_(profile),
       params_(params),
       install_callback_(std::move(install_callback)),
@@ -223,7 +226,7 @@ void InstallFromSyncCommand::OnDidPerformInstallableCheck(
   }
 
   // Ensure that the manifest linked is the right one.
-  AppId generated_app_id =
+  webapps::AppId generated_app_id =
       GenerateAppIdFromManifestId(install_info_->manifest_id);
   if (params_.app_id != generated_app_id) {
     // Add the error to the log.
@@ -273,6 +276,10 @@ void InstallFromSyncCommand::OnIconsRetrievedFinalizeInstall(
   install_error_log_entry_.LogDownloadedIconsErrors(
       *current_info, result, icons_map, icons_http_results);
 
+  current_info->generated_icon_fix =
+      generated_icon_fix_util::CreateInitialTimeWindow(
+          GeneratedIconFixSource_SYNC_INSTALL);
+
   lock_->install_finalizer().FinalizeInstall(
       *current_info, GetFinalizerOptionForSyncInstall(),
       base::BindOnce(&InstallFromSyncCommand::OnInstallFinalized,
@@ -280,13 +287,14 @@ void InstallFromSyncCommand::OnIconsRetrievedFinalizeInstall(
 }
 
 void InstallFromSyncCommand::OnInstallFinalized(FinalizeMode mode,
-                                                const AppId& app_id,
+                                                const webapps::AppId& app_id,
                                                 webapps::InstallResultCode code,
                                                 OsHooksErrors os_hooks_errors) {
   if (mode == FinalizeMode::kNormalWebAppInfo && !IsSuccess(code)) {
     InstallFallback(code);
     return;
   }
+
   ReportResultAndDestroy(app_id, code);
 }
 
@@ -319,7 +327,7 @@ void InstallFromSyncCommand::InstallFallback(webapps::InstallResultCode code) {
 }
 
 void InstallFromSyncCommand::ReportResultAndDestroy(
-    const AppId& app_id,
+    const webapps::AppId& app_id,
     webapps::InstallResultCode code) {
   bool success = IsSuccess(code);
   debug_value_.Set("result_code", base::ToString(code));

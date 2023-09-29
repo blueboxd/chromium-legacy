@@ -64,18 +64,14 @@ bool FormDataAndroid::GetSimilarFieldIndex(const FormFieldData& field,
 }
 
 bool FormDataAndroid::SimilarFormAs(const FormData& form) const {
-  // `SimilarFormAs` checks `FormData` members that are unlikely to have been
-  // changed by direct user input. If they differ, the form has changed enough
-  // (e.g. by adding or removing fields) warrant starting a new Autofill
-  // session.
-  // Note that Comparing unique renderer ids is not a strict enough check, since
-  // these remain constant even if the page has dynamically modified its fields
-  // to have different labels, form control types, etc.
+  // Note that comparing unique renderer ids alone is not a strict enough check,
+  // since these remain constant even if the page has dynamically modified its
+  // fields to have different labels, form control types, etc.
   auto SimilarityTuple = [](const FormData& f) {
-    return std::tuple_cat(
-        std::tie(f.name, f.id_attribute, f.name_attribute, f.url, f.action,
-                 f.is_action_empty, f.is_form_tag),
-        std::make_tuple(f.fields.size()));
+    return std::tuple_cat(std::tie(f.host_frame, f.unique_renderer_id, f.name,
+                                   f.id_attribute, f.name_attribute, f.url,
+                                   f.action, f.is_action_empty, f.is_form_tag),
+                          std::make_tuple(f.fields.size()));
   };
 
   if (SimilarityTuple(form_) != SimilarityTuple(form)) {
@@ -110,6 +106,23 @@ void FormDataAndroid::UpdateFieldTypes(const FormStructure& form_structure) {
     if (++form_field_data_android == fields_.end())
       break;
   }
+}
+
+std::vector<int> FormDataAndroid::UpdateFieldVisibilities(
+    const FormData& form) {
+  CHECK_EQ(form_.fields.size(), form.fields.size());
+  CHECK_EQ(form_.fields.size(), fields_.size());
+
+  // We rarely expect to find any difference in visibility - therefore do not
+  // reserve space in the vector.
+  std::vector<int> indices;
+  for (size_t i = 0; i < form_.fields.size(); ++i) {
+    if (form_.fields[i].IsFocusable() != form.fields[i].IsFocusable()) {
+      fields_[i]->OnFormFieldVisibilityDidChange(form.fields[i]);
+      indices.push_back(i);
+    }
+  }
+  return indices;
 }
 
 }  // namespace autofill

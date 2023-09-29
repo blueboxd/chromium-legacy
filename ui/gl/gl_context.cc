@@ -113,7 +113,6 @@ bool GLContext::MakeCurrent(GLSurface* surface) {
 
 GLApi* GLContext::CreateGLApi(DriverGL* driver) {
   real_gl_api_ = new RealGLApi;
-  real_gl_api_->set_gl_workarounds(gl_workarounds_);
   real_gl_api_->SetDisabledExtensions(disabled_gl_extensions_);
   real_gl_api_->Initialize(driver);
   return real_gl_api_;
@@ -277,8 +276,10 @@ void GLContext::BackpressureFenceWait(uint64_t fence_id) {
 
   // Waiting on |fence_id| has implicitly waited on all previous fences, so
   // remove them.
-  while (backpressure_fences_.begin()->first < fence_id)
+  while (!backpressure_fences_.empty() &&
+         backpressure_fences_.begin()->first < fence_id) {
     backpressure_fences_.erase(backpressure_fences_.begin());
+  }
 }
 
 bool GLContext::HasBackpressureFences() const {
@@ -365,11 +366,6 @@ void GLContext::SetCurrent(GLSurface* surface) {
       GetGLImplementation() != kGLImplementationStubGL) {
     SetThreadLocalCurrentGL(nullptr);
   }
-}
-
-void GLContext::SetGLWorkarounds(const GLWorkarounds& workarounds) {
-  DCHECK(!real_gl_api_);
-  gl_workarounds_ = workarounds;
 }
 
 void GLContext::SetDisabledGLExtensions(

@@ -26,10 +26,7 @@ class ScriptPromiseResolver::ExceptionStateScope final : public ExceptionState {
   explicit ExceptionStateScope(ScriptPromiseResolver* resolver)
       : ExceptionState(resolver->script_state_->GetIsolate(),
                        resolver->exception_context_),
-        resolver_(resolver) {
-    CHECK_NE(resolver->exception_context_.GetContext(),
-             ExceptionContext::Context::kEmpty);
-  }
+        resolver_(resolver) {}
   ~ExceptionStateScope() {
     DCHECK(HadException());
     resolver_->Reject(GetException());
@@ -41,7 +38,9 @@ class ScriptPromiseResolver::ExceptionStateScope final : public ExceptionState {
 };
 
 ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* script_state)
-    : ScriptPromiseResolver(script_state, ExceptionContext()) {}
+    : ScriptPromiseResolver(
+          script_state,
+          ExceptionContext(ExceptionContextType::kUnknown, nullptr, nullptr)) {}
 
 ScriptPromiseResolver::ScriptPromiseResolver(
     ScriptState* script_state,
@@ -50,13 +49,12 @@ ScriptPromiseResolver::ScriptPromiseResolver(
       state_(kPending),
       script_state_(script_state),
       resolver_(script_state),
-      exception_context_(exception_context),
-      class_like_name_(exception_context_.GetClassName()),
-      property_like_name_(exception_context_.GetPropertyName()) {
+      exception_context_(exception_context) {
   if (GetExecutionContext()->IsContextDestroyed()) {
     state_ = kDetached;
     resolver_.Clear();
   }
+  script_url_ = GetCurrentScriptUrl(script_state->GetIsolate());
 }
 
 ScriptPromiseResolver::~ScriptPromiseResolver() = default;
@@ -145,15 +143,14 @@ void ScriptPromiseResolver::ResolveOrRejectImmediately() {
   DCHECK(!GetExecutionContext()->IsContextPaused());
 
   probe::WillHandlePromise(GetExecutionContext(), script_state_,
-                           state_ == kResolving, class_like_name_,
-                           property_like_name_);
-  {
-    if (state_ == kResolving) {
-      resolver_.Resolve(value_.Get(script_state_->GetIsolate()));
-    } else {
-      DCHECK_EQ(state_, kRejecting);
-      resolver_.Reject(value_.Get(script_state_->GetIsolate()));
-    }
+                           state_ == kResolving,
+                           exception_context_.GetClassName(),
+                           exception_context_.GetPropertyName(), script_url_);
+  if (state_ == kResolving) {
+    resolver_.Resolve(value_.Get(script_state_->GetIsolate()));
+  } else {
+    DCHECK_EQ(state_, kRejecting);
+    resolver_.Reject(value_.Get(script_state_->GetIsolate()));
   }
   Detach();
 }

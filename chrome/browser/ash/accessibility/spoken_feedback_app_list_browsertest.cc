@@ -186,8 +186,10 @@ class SpokenFeedbackAppListBaseTest : public LoggedInSpokenFeedbackTest {
     // Disable the app list nudge in the spoken feedback app list test.
     AppListTestApi().DisableAppListNudge(true);
 
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kProductivityLauncherImageSearch);
+    scoped_feature_list_.InitWithFeatures(
+        {features::kProductivityLauncherImageSearch,
+         features::kLauncherSearchControl},
+        {});
 
     LoggedInSpokenFeedbackTest::SetUp();
   }
@@ -976,6 +978,35 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListSearchTest, VocalizeResultCount) {
 
   sm_.ExpectSpeech("A");
   sm_.ExpectSpeech("Displaying 5 results for ga");
+
+  sm_.Replay();
+}
+
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListSearchTest,
+                       SearchNotifierAnnouncement) {
+  EnableChromeVox();
+  ShowAppList();
+
+  sm_.ExpectSpeechPattern("Search your *");
+  sm_.ExpectSpeech("Edit text");
+
+  sm_.Call([this]() {
+    apps_provider_->set_best_match_count(2);
+    apps_provider_->set_count(3);
+    web_provider_->set_count(4);
+    SendKeyPress(ui::VKEY_G);
+  });
+
+  // Announce that there is a image search notifier.
+  sm_.ExpectSpeech("G");
+  sm_.ExpectSpeech("Displaying 8 results for g");
+  sm_.ExpectSpeech("Find your images by the content");
+  sm_.ExpectSpeech("Press shift plus tab to learn more");
+
+  // Verify the notifier announcement on focus.
+  sm_.Call([this]() { SendKeyPressWithShift(ui::VKEY_TAB); });
+  sm_.ExpectSpeechPattern("Try searching *");
+  sm_.ExpectSpeech("Continue");
 
   sm_.Replay();
 }

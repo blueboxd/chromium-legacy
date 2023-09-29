@@ -32,6 +32,8 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/tabs/organization/metrics.h"
+#include "chrome/browser/ui/tabs/organization/tab_organization_service.h"
+#include "chrome/browser/ui/tabs/organization/tab_organization_service_factory.h"
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_keyed_service.h"
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
@@ -2135,6 +2137,14 @@ void TabDragController::CompleteDrag() {
     LogTabStripOrganizationUKM(
         attached_context_->GetTabStripModel(),
         SuggestedTabStripOrganizationReason::DRAGGED_WITHIN_SAME_TABSTRIP);
+    if (features::IsTabOrganization()) {
+      Browser* browser = BrowserView::GetBrowserViewForNativeWindow(
+                             GetAttachedBrowserWidget()->GetNativeWindow())
+                             ->browser();
+      TabOrganizationService* tab_organization_service =
+          TabOrganizationServiceFactory::GetForProfile(browser->profile());
+      tab_organization_service->OnTriggerOccured(browser);
+    }
   }
 }
 
@@ -2403,6 +2413,12 @@ Browser* TabDragController::CreateBrowserForDrag(
   // restore the newly created browser using the original browser's stored data.
   // See crbug.com/1208923 and crbug.com/1333562 for details.
   create_params.restore_id = Browser::kDefaultRestoreId;
+
+  // Open the window in the same display.
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          source->GetWidget()->GetNativeWindow());
+  create_params.display_id = display.id();
 #endif
   // Do not copy attached window's show state as the attached window might be a
   // maximized or fullscreen window and we do not want the newly created browser
@@ -2421,9 +2437,13 @@ Browser* TabDragController::CreateBrowserForDrag(
 
   Browser* browser = Browser::Create(create_params);
   is_dragging_new_browser_ = true;
+
+#if !BUILDFLAG(IS_CHROMEOS)
   // If the window is created maximized then the bounds we supplied are ignored.
-  // We need to reset them again so they are honored.
+  // We need to reset them again so they are honored. On ChromeOS, this is
+  // handled in NativeWidgetAura.
   browser->window()->SetBounds(new_bounds);
+#endif
 
   return browser;
 }

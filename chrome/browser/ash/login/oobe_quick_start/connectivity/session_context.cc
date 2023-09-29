@@ -5,6 +5,8 @@
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/session_context.h"
 
 #include "base/base64.h"
+#include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/oobe_quick_start/oobe_quick_start_pref_names.h"
 #include "chrome/browser/browser_process.h"
@@ -19,7 +21,8 @@ namespace {
 
 // The keys used inside the kResumeQuickStartAfterRebootInfo local state
 // pref dict.
-constexpr char kPrepareForUpdateRandomSessionIdKey[] = "random_session_id";
+constexpr char kPrepareForUpdateSessionIdKey[] = "session_id";
+constexpr char kPrepareForUpdateAdvertisingIdKey[] = "advertising_id";
 constexpr char kPrepareForUpdateSecondarySharedSecretKey[] =
     "secondary_shared_secret";
 
@@ -35,17 +38,20 @@ SessionContext::SessionContext() {
   if (is_resume_after_update_) {
     FetchPersistedSessionContext();
   } else {
-    random_session_id_ = RandomSessionId();
+    session_id_ = base::RandUint64();
+    advertising_id_ = AdvertisingId();
     crypto::RandBytes(shared_secret_);
     crypto::RandBytes(secondary_shared_secret_);
   }
 }
 
-SessionContext::SessionContext(RandomSessionId random_session_id,
+SessionContext::SessionContext(SessionId session_id,
+                               AdvertisingId advertising_id,
                                SharedSecret shared_secret,
                                SharedSecret secondary_shared_secret,
                                bool is_resume_after_update)
-    : random_session_id_(random_session_id),
+    : session_id_(session_id),
+      advertising_id_(advertising_id),
       shared_secret_(shared_secret),
       secondary_shared_secret_(secondary_shared_secret),
       is_resume_after_update_(is_resume_after_update) {}
@@ -59,8 +65,10 @@ SessionContext::~SessionContext() = default;
 
 base::Value::Dict SessionContext::GetPrepareForUpdateInfo() {
   base::Value::Dict prepare_for_update_info;
-  prepare_for_update_info.Set(kPrepareForUpdateRandomSessionIdKey,
-                              random_session_id_.ToString());
+  prepare_for_update_info.Set(kPrepareForUpdateSessionIdKey,
+                              base::NumberToString(session_id_));
+  prepare_for_update_info.Set(kPrepareForUpdateAdvertisingIdKey,
+                              advertising_id_.ToString());
   std::string secondary_shared_secret_bytes(secondary_shared_secret_.begin(),
                                             secondary_shared_secret_.end());
   std::string secondary_shared_secret_base64;
@@ -79,21 +87,26 @@ void SessionContext::FetchPersistedSessionContext() {
   PrefService* prefs = g_browser_process->local_state();
   CHECK(prefs->GetBoolean(prefs::kShouldResumeQuickStartAfterReboot));
   prefs->ClearPref(prefs::kShouldResumeQuickStartAfterReboot);
-
   const base::Value::Dict& session_info =
       prefs->GetDict(prefs::kResumeQuickStartAfterRebootInfo);
-  const std::string* random_session_id_str =
-      session_info.FindString(kPrepareForUpdateRandomSessionIdKey);
-  CHECK(random_session_id_str);
-  absl::optional<RandomSessionId> maybe_random_session_id =
-      RandomSessionId::ParseFromBase64(*random_session_id_str);
-  if (!maybe_random_session_id.has_value()) {
+
+  const std::string* session_id_str =
+      session_info.FindString(kPrepareForUpdateSessionIdKey);
+  CHECK(session_id_str);
+  base::StringToUint64(*session_id_str, &session_id_);
+
+  const std::string* advertising_id_str =
+      session_info.FindString(kPrepareForUpdateAdvertisingIdKey);
+  CHECK(advertising_id_str);
+  absl::optional<AdvertisingId> maybe_advertising_id =
+      AdvertisingId::ParseFromBase64(*advertising_id_str);
+  if (!maybe_advertising_id.has_value()) {
     // TODO(b/234655072) Cancel Quick Start if this error occurs. The secondary
-    // connection cannot bootstrap if the RandomSessionId doesn't match.
+    // connection cannot bootstrap if the AdvertisingId doesn't match.
     prefs->ClearPref(prefs::kResumeQuickStartAfterRebootInfo);
     return;
   }
-  random_session_id_ = maybe_random_session_id.value();
+  advertising_id_ = maybe_advertising_id.value();
 
   const std::string* secondary_shared_secret_str =
       session_info.FindString(kPrepareForUpdateSecondarySharedSecretKey);

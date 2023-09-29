@@ -903,9 +903,9 @@ TEST_F(FileTransferAnalysisDelegateAuditOnlyTest, InvalidPath) {
 
   ScanUpload(source_url, destination_url);
 
-  EXPECT_EQ(
-      FileTransferAnalysisDelegate::RESULT_UNKNOWN,
-      file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(source_url));
+  EXPECT_TRUE(
+      file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(source_url)
+          .IsUnknown());
   // Checks that there was an early return.
   EXPECT_FALSE(
       file_transfer_analysis_delegate_->GetFilesRequestHandlerForTesting());
@@ -921,9 +921,9 @@ TEST_F(FileTransferAnalysisDelegateAuditOnlyTest, NonExistingFile) {
   ScanUpload(source_url, destination_directory_url_);
 
   // Directories should always be unknown!
-  EXPECT_EQ(
-      FileTransferAnalysisDelegate::RESULT_UNKNOWN,
-      file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(source_url));
+  EXPECT_TRUE(
+      file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(source_url)
+          .IsUnknown());
   // Checks that there was an early return.
   EXPECT_FALSE(
       file_transfer_analysis_delegate_->GetFilesRequestHandlerForTesting());
@@ -936,9 +936,9 @@ TEST_F(FileTransferAnalysisDelegateAuditOnlyTest, EmptyDirectory) {
   ScanUpload(source_directory_url_, destination_directory_url_);
 
   // Directories should always be unknown!
-  EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_UNKNOWN,
-            file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                source_directory_url_));
+  EXPECT_TRUE(file_transfer_analysis_delegate_
+                  ->GetAnalysisResultAfterScan(source_directory_url_)
+                  .IsUnknown());
   // Checks that there was an early return.
   EXPECT_FALSE(
       file_transfer_analysis_delegate_->GetFilesRequestHandlerForTesting());
@@ -955,12 +955,12 @@ TEST_F(FileTransferAnalysisDelegateAuditOnlyTest, SingleFileAllowed) {
 
   ScanUpload(source_url, destination_directory_url_);
 
-  EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_UNKNOWN,
-            file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                source_directory_url_));
-  EXPECT_EQ(
-      FileTransferAnalysisDelegate::RESULT_ALLOWED,
-      file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(source_url));
+  EXPECT_TRUE(file_transfer_analysis_delegate_
+                  ->GetAnalysisResultAfterScan(source_directory_url_)
+                  .IsUnknown());
+  EXPECT_TRUE(
+      file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(source_url)
+          .IsAllowed());
   // Checks that some scanning was performed.
   EXPECT_TRUE(
       file_transfer_analysis_delegate_->GetFilesRequestHandlerForTesting());
@@ -1005,12 +1005,12 @@ TEST_F(FileTransferAnalysisDelegateAuditOnlyTest, SingleFileBlockedDlp) {
 
   ScanUpload(source_url, destination_directory_url_);
 
-  EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_UNKNOWN,
-            file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                source_directory_url_));
-  EXPECT_EQ(
-      FileTransferAnalysisDelegate::RESULT_BLOCKED,
-      file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(source_url));
+  EXPECT_TRUE(file_transfer_analysis_delegate_
+                  ->GetAnalysisResultAfterScan(source_directory_url_)
+                  .IsUnknown());
+  EXPECT_TRUE(
+      file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(source_url)
+          .IsBlocked());
   // Checks that some scanning was performed.
   EXPECT_TRUE(
       file_transfer_analysis_delegate_->GetFilesRequestHandlerForTesting());
@@ -1057,14 +1057,14 @@ TEST_F(FileTransferAnalysisDelegateAuditOnlyTest, SingleFileWarnDlp) {
     ScanUpload(source_url, destination_directory_url_);
   }
 
-  EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_UNKNOWN,
-            file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                source_directory_url_));
+  EXPECT_TRUE(file_transfer_analysis_delegate_
+                  ->GetAnalysisResultAfterScan(source_directory_url_)
+                  .IsUnknown());
 
   // AnalysisResult should be blocked as the warning isn't bypassed.
-  EXPECT_EQ(
-      FileTransferAnalysisDelegate::RESULT_BLOCKED,
-      file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(source_url));
+  EXPECT_TRUE(
+      file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(source_url)
+          .IsBlocked());
   // Checks that some scanning was performed.
   EXPECT_TRUE(
       file_transfer_analysis_delegate_->GetFilesRequestHandlerForTesting());
@@ -1115,9 +1115,9 @@ TEST_F(FileTransferAnalysisDelegateAuditOnlyTest, SingleFileWarnDlpBypassed) {
     ScanUpload(source_url, destination_directory_url_);
   }
 
-  EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_UNKNOWN,
-            file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                source_directory_url_));
+  EXPECT_TRUE(file_transfer_analysis_delegate_
+                  ->GetAnalysisResultAfterScan(source_directory_url_)
+                  .IsUnknown());
 
   // Checks that some scanning was performed.
   EXPECT_TRUE(
@@ -1152,6 +1152,129 @@ TEST_F(FileTransferAnalysisDelegateAuditOnlyTest, SingleFileWarnDlpBypassed) {
 
     file_transfer_analysis_delegate_->BypassWarnings(absl::nullopt);
   }
+}
+
+TEST_F(FileTransferAnalysisDelegateAuditOnlyTest, CustomWarningSettingsUnset) {
+  // By default the custom warning message and the learn more URL are not set,
+  // and a user justification is not required to bypass a warning.
+  std::vector<base::FilePath> paths = CreateFilesForTest(
+      {FILE_PATH_LITERAL("foo.doc")}, source_directory_url_.path());
+
+  // Mark all files and text with failed scans.
+  std::string scan_id = "scan_id";
+  ContentAnalysisResponse response =
+      test::FakeContentAnalysisDelegate::DlpResponse(
+          ContentAnalysisResponse::Result::SUCCESS, "rule",
+          TriggeredRule::WARN);
+  response.set_request_token(scan_id);
+
+  SetDLPResponse(response);
+
+  storage::FileSystemURL source_url = PathToFileSystemURL(paths[0]);
+  ScanUpload(source_url, destination_directory_url_);
+
+  ASSERT_EQ(
+      file_transfer_analysis_delegate_->BypassRequiresJustification(kDlpTag),
+      false);
+  ASSERT_FALSE(
+      file_transfer_analysis_delegate_->GetCustomMessage(kDlpTag).has_value());
+  ASSERT_FALSE(file_transfer_analysis_delegate_->GetCustomLearnMoreUrl(kDlpTag)
+                   .has_value());
+
+  ASSERT_EQ(file_transfer_analysis_delegate_->BypassRequiresJustification(
+                kMalwareTag),
+            false);
+  ASSERT_FALSE(file_transfer_analysis_delegate_->GetCustomMessage(kMalwareTag)
+                   .has_value());
+  ASSERT_FALSE(
+      file_transfer_analysis_delegate_->GetCustomLearnMoreUrl(kMalwareTag)
+          .has_value());
+}
+
+TEST_F(FileTransferAnalysisDelegateAuditOnlyTest, CustomWarningSettingsSet) {
+  std::vector<base::FilePath> paths = CreateFilesForTest(
+      {FILE_PATH_LITERAL("foo.doc")}, source_directory_url_.path());
+
+  // Setup a policy that sets the custom warning message, the learn more URL,
+  // and requires a user justification to bypass warnings.
+  enterprise_connectors::test::SetAnalysisConnector(
+      profile_->GetPrefs(), enterprise_connectors::FILE_TRANSFER,
+      R"(
+        {
+          "service_provider": "google",
+          "enable": [
+            {
+              "source_destination_list": [
+                {
+                  "sources": [{
+                    "file_system_type": "*"
+                  }],
+                  "destinations": [{
+                    "file_system_type": "*"
+                  }]
+                }
+              ],
+              "tags": ["dlp", "malware"]
+            }
+          ],
+          "block_until_verdict": 1,
+          "custom_messages" : [
+            {
+              "learn_more_url": "https://learnmore-dlp.com",
+              "message": "Custom message dlp",
+              "tag": "dlp"
+            }, {
+              "learn_more_url": "https://learnmore-malware.com",
+              "message": "Custom message malware",
+              "tag": "malware"
+            }
+          ],
+          "require_justification_tags": [
+            "dlp",
+            "malware"
+          ]
+        }
+      )");
+
+  // Mark all files and text with failed scans.
+  std::string scan_id = "scan_id";
+  ContentAnalysisResponse response =
+      test::FakeContentAnalysisDelegate::DlpResponse(
+          ContentAnalysisResponse::Result::SUCCESS, "rule",
+          TriggeredRule::WARN);
+  response.set_request_token(scan_id);
+
+  SetDLPResponse(response);
+
+  storage::FileSystemURL source_url = PathToFileSystemURL(paths[0]);
+  ScanUpload(source_url, destination_directory_url_);
+
+  ASSERT_EQ(
+      file_transfer_analysis_delegate_->BypassRequiresJustification(kDlpTag),
+      true);
+  ASSERT_EQ(file_transfer_analysis_delegate_->GetCustomMessage(kDlpTag),
+            u"Custom message dlp");
+  ASSERT_EQ(file_transfer_analysis_delegate_->GetCustomLearnMoreUrl(kDlpTag),
+            absl::optional<GURL>("https://learnmore-dlp.com"));
+
+  ASSERT_EQ(file_transfer_analysis_delegate_->BypassRequiresJustification(
+                kMalwareTag),
+            true);
+  ASSERT_EQ(file_transfer_analysis_delegate_->GetCustomMessage(kMalwareTag),
+            u"Custom message malware");
+  ASSERT_EQ(
+      file_transfer_analysis_delegate_->GetCustomLearnMoreUrl(kMalwareTag),
+      absl::optional<GURL>("https://learnmore-malware.com"));
+
+  const std::string wrong_tag = "wrong-tag";
+  ASSERT_EQ(
+      file_transfer_analysis_delegate_->BypassRequiresJustification(wrong_tag),
+      false);
+  ASSERT_FALSE(file_transfer_analysis_delegate_->GetCustomMessage(wrong_tag)
+                   .has_value());
+  ASSERT_FALSE(
+      file_transfer_analysis_delegate_->GetCustomLearnMoreUrl(wrong_tag)
+          .has_value());
 }
 
 TEST_F(FileTransferAnalysisDelegateAuditOnlyTest,
@@ -1254,12 +1377,12 @@ TEST_F(FileTransferAnalysisDelegateAuditOnlyTest, SingleFileBlockedMalware) {
 
   ScanUpload(source_url, destination_directory_url_);
 
-  EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_UNKNOWN,
-            file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                source_directory_url_));
-  EXPECT_EQ(
-      FileTransferAnalysisDelegate::RESULT_BLOCKED,
-      file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(source_url));
+  EXPECT_TRUE(file_transfer_analysis_delegate_
+                  ->GetAnalysisResultAfterScan(source_directory_url_)
+                  .IsUnknown());
+  EXPECT_TRUE(
+      file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(source_url)
+          .IsBlocked());
   // Checks that some scanning was performed.
   EXPECT_TRUE(
       file_transfer_analysis_delegate_->GetFilesRequestHandlerForTesting());
@@ -1311,12 +1434,12 @@ TEST_F(FileTransferAnalysisDelegateAuditOnlyTest, SingleFileAllowedEncrypted) {
 
   ScanUpload(source_url, destination_directory_url_);
 
-  EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_UNKNOWN,
-            file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                source_directory_url_));
-  EXPECT_EQ(
-      FileTransferAnalysisDelegate::RESULT_ALLOWED,
-      file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(source_url));
+  EXPECT_TRUE(file_transfer_analysis_delegate_
+                  ->GetAnalysisResultAfterScan(source_directory_url_)
+                  .IsUnknown());
+  EXPECT_TRUE(
+      file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(source_url)
+          .IsAllowed());
   // Checks that some scanning was performed.
   EXPECT_TRUE(
       file_transfer_analysis_delegate_->GetFilesRequestHandlerForTesting());
@@ -1334,12 +1457,12 @@ TEST_F(FileTransferAnalysisDelegateAuditOnlyTest,
 
   ScanUpload(source_directory_url_, destination_directory_url_);
 
-  EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_UNKNOWN,
-            file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                source_directory_url_));
-  EXPECT_EQ(
-      FileTransferAnalysisDelegate::RESULT_ALLOWED,
-      file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(source_url));
+  EXPECT_TRUE(file_transfer_analysis_delegate_
+                  ->GetAnalysisResultAfterScan(source_directory_url_)
+                  .IsUnknown());
+  EXPECT_TRUE(
+      file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(source_url)
+          .IsAllowed());
   // Checks that some scanning was performed.
   EXPECT_TRUE(
       file_transfer_analysis_delegate_->GetFilesRequestHandlerForTesting());
@@ -1382,12 +1505,12 @@ TEST_F(FileTransferAnalysisDelegateAuditOnlyTest,
 
   ScanUpload(source_directory_url_, destination_directory_url_);
 
-  EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_UNKNOWN,
-            file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                source_directory_url_));
-  EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_BLOCKED,
-            file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                PathToFileSystemURL(paths[0])));
+  EXPECT_TRUE(file_transfer_analysis_delegate_
+                  ->GetAnalysisResultAfterScan(source_directory_url_)
+                  .IsUnknown());
+  EXPECT_TRUE(file_transfer_analysis_delegate_
+                  ->GetAnalysisResultAfterScan(PathToFileSystemURL(paths[0]))
+                  .IsBlocked());
   // Checks that some scanning was performed.
   EXPECT_TRUE(
       file_transfer_analysis_delegate_->GetFilesRequestHandlerForTesting());
@@ -1405,13 +1528,13 @@ TEST_F(FileTransferAnalysisDelegateAuditOnlyTest,
 
   ScanUpload(source_directory_url_, destination_directory_url_);
 
-  EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_UNKNOWN,
-            file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                source_directory_url_));
+  EXPECT_TRUE(file_transfer_analysis_delegate_
+                  ->GetAnalysisResultAfterScan(source_directory_url_)
+                  .IsUnknown());
   for (const auto& path : paths) {
-    EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_ALLOWED,
-              file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                  PathToFileSystemURL(path)));
+    EXPECT_TRUE(file_transfer_analysis_delegate_
+                    ->GetAnalysisResultAfterScan(PathToFileSystemURL(path))
+                    .IsAllowed());
   }
   // Checks that some scanning was performed.
   EXPECT_TRUE(
@@ -1463,13 +1586,13 @@ TEST_F(FileTransferAnalysisDelegateAuditOnlyTest,
 
   ScanUpload(source_directory_url_, destination_directory_url_);
 
-  EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_UNKNOWN,
-            file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                source_directory_url_));
+  EXPECT_TRUE(file_transfer_analysis_delegate_
+                  ->GetAnalysisResultAfterScan(source_directory_url_)
+                  .IsUnknown());
   for (const auto& path : paths) {
-    EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_BLOCKED,
-              file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                  PathToFileSystemURL(path)));
+    EXPECT_TRUE(file_transfer_analysis_delegate_
+                    ->GetAnalysisResultAfterScan(PathToFileSystemURL(path))
+                    .IsBlocked());
   }
   // Checks that some scanning was performed.
   EXPECT_TRUE(
@@ -1526,18 +1649,18 @@ TEST_F(FileTransferAnalysisDelegateAuditOnlyTest,
 
   ScanUpload(source_directory_url_, destination_directory_url_);
 
-  EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_UNKNOWN,
-            file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                source_directory_url_));
+  EXPECT_TRUE(file_transfer_analysis_delegate_
+                  ->GetAnalysisResultAfterScan(source_directory_url_)
+                  .IsUnknown());
   for (const auto& path : paths) {
     if (path.value().find("bad") != std::string::npos) {
-      EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_BLOCKED,
-                file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                    PathToFileSystemURL(path)));
+      EXPECT_TRUE(file_transfer_analysis_delegate_
+                      ->GetAnalysisResultAfterScan(PathToFileSystemURL(path))
+                      .IsBlocked());
     } else {
-      EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_ALLOWED,
-                file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                    PathToFileSystemURL(path)));
+      EXPECT_TRUE(file_transfer_analysis_delegate_
+                      ->GetAnalysisResultAfterScan(PathToFileSystemURL(path))
+                      .IsAllowed());
     }
   }
 
@@ -1612,18 +1735,18 @@ TEST_F(FileTransferAnalysisDelegateAuditOnlyTest, DirectoryTreeSomeBlocked) {
 
   ScanUpload(source_directory_url_, destination_directory_url_);
 
-  EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_UNKNOWN,
-            file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                source_directory_url_));
+  EXPECT_TRUE(file_transfer_analysis_delegate_
+                  ->GetAnalysisResultAfterScan(source_directory_url_)
+                  .IsUnknown());
   for (const auto& path : paths) {
     if (path.value().find("bad") != std::string::npos) {
-      EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_BLOCKED,
-                file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                    PathToFileSystemURL(path)));
+      EXPECT_TRUE(file_transfer_analysis_delegate_
+                      ->GetAnalysisResultAfterScan(PathToFileSystemURL(path))
+                      .IsBlocked());
     } else {
-      EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_ALLOWED,
-                file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                    PathToFileSystemURL(path)));
+      EXPECT_TRUE(file_transfer_analysis_delegate_
+                      ->GetAnalysisResultAfterScan(PathToFileSystemURL(path))
+                      .IsAllowed());
     }
   }
   // Checks that some scanning was performed.
@@ -1719,20 +1842,20 @@ TEST_F(FileTransferAnalysisDelegateAuditOnlyTest,
   EXPECT_THAT(warned_files,
               ::testing::UnorderedElementsAreArray(expected_warned_files));
 
-  EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_UNKNOWN,
-            file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                source_directory_url_));
+  EXPECT_TRUE(file_transfer_analysis_delegate_
+                  ->GetAnalysisResultAfterScan(source_directory_url_)
+                  .IsUnknown());
   for (const auto& path : paths) {
     bool should_block = path.value().find("bad") != std::string::npos;
     bool should_warn = path.value().find("warn") != std::string::npos;
     if (should_block || should_warn) {
-      EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_BLOCKED,
-                file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                    PathToFileSystemURL(path)));
+      EXPECT_TRUE(file_transfer_analysis_delegate_
+                      ->GetAnalysisResultAfterScan(PathToFileSystemURL(path))
+                      .IsBlocked());
     } else {
-      EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_ALLOWED,
-                file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                    PathToFileSystemURL(path)));
+      EXPECT_TRUE(file_transfer_analysis_delegate_
+                      ->GetAnalysisResultAfterScan(PathToFileSystemURL(path))
+                      .IsAllowed());
     }
   }
 
@@ -1794,19 +1917,19 @@ TEST_F(FileTransferAnalysisDelegateAuditOnlyTest,
   }
 
   // Should now no longer block bypassed files.
-  EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_UNKNOWN,
-            file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                source_directory_url_));
+  EXPECT_TRUE(file_transfer_analysis_delegate_
+                  ->GetAnalysisResultAfterScan(source_directory_url_)
+                  .IsUnknown());
   for (const auto& path : paths) {
     bool should_block = path.value().find("bad") != std::string::npos;
     if (should_block) {
-      EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_BLOCKED,
-                file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                    PathToFileSystemURL(path)));
+      EXPECT_TRUE(file_transfer_analysis_delegate_
+                      ->GetAnalysisResultAfterScan(PathToFileSystemURL(path))
+                      .IsBlocked());
     } else {
-      EXPECT_EQ(FileTransferAnalysisDelegate::RESULT_ALLOWED,
-                file_transfer_analysis_delegate_->GetAnalysisResultAfterScan(
-                    PathToFileSystemURL(path)));
+      EXPECT_TRUE(file_transfer_analysis_delegate_
+                      ->GetAnalysisResultAfterScan(PathToFileSystemURL(path))
+                      .IsAllowed());
     }
   }
 

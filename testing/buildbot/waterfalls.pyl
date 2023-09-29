@@ -132,6 +132,17 @@
         },
         'os_type': 'chromeos'
       },
+      'chromeos-jacuzzi-chrome-skylab': {
+        'additional_compile_targets': [
+          "chrome",
+          "linux_symbols",
+          "symupload",
+        ],
+        'test_suites': {
+          'skylab_tests': 'chromeos_jacuzzi_skylab_tests',
+        },
+        'os_type': 'chromeos',
+      },
       'chromeos-octopus-chrome': {
         'additional_compile_targets': [
           'chromiumos_preflight',
@@ -171,10 +182,17 @@
           'gtest_tests': 'chromeos_device_no_gtests',
         },
       },
-      # TODO(crbug.com/1218582): Merge this to lacros-amd64-generic-chrome once
-      # it's proven to be stable and easy to debug. This is the first time we
-      # run Skylab on CI, so wanted to be cautious to avoid causing trouble to
-      # LKGM rolls etc.
+      'chromeos-volteer-chrome-skylab': {
+        'additional_compile_targets': [
+          "chrome",
+          "linux_symbols",
+          "symupload",
+        ],
+        'test_suites': {
+          'skylab_tests': 'chromeos_volteer_skylab_tests',
+        },
+        'os_type': 'chromeos',
+      },
       'lacros-amd64-generic-chrome-skylab': {
         'additional_compile_targets': [
           'chrome',
@@ -322,6 +340,25 @@
       'swarming_containment_auto',
     ],
     'machines': {
+      'ChromeOS FYI Release Skylab (jacuzzi)': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'browser_config': 'cros-chrome',
+        'os_type': 'chromeos',
+        'skip_merge_script': True,
+        'use_swarming': False,
+        'mixins': [
+          'limited_capacity_bot',
+          'long_skylab_timeout',
+        ],
+        'test_suites': {
+          # There should be the same gtests here as on a normal CrOS bot,
+          # but mixing test types on a single bot is not supported in Skylab
+          # yet.
+          'skylab_gpu_telemetry_tests': 'gpu_fyi_chromeos_release_telemetry_tests_skylab',
+        },
+      },
       'Lacros FYI Release (jacuzzi)': {
         'additional_compile_targets': [
           'chrome',
@@ -360,11 +397,6 @@
     'name': 'chromium',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
-      'android-archive-dbg': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
       'android-archive-rel': {
         'additional_compile_targets': [
           'all',
@@ -403,17 +435,44 @@
         ],
         'os_type': 'chromeos',
       },
-      'linux-archive-dbg': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
       'linux-archive-rel': {
         'mixins': [
           'linux-archive-rel-args',
         ],
         'additional_compile_targets': [
           'all',
+        ],
+      },
+      'linux-chromeos-archive-rel': {
+        'additional_compile_targets': [
+          'base_unittests',
+          'browser_tests',
+          'chromeos_unittests',
+          'components_unittests',
+          'compositor_unittests',
+          'content_browsertests',
+          'content_unittests',
+          'crypto_unittests',
+          'dbus_unittests',
+          'device_unittests',
+          'gcm_unit_tests',
+          'google_apis_unittests',
+          'gpu_unittests',
+          'interactive_ui_tests',
+          'ipc_tests',
+          'media_unittests',
+          'message_center_unittests',
+          'nacl_loader_unittests',
+          'net_unittests',
+          'ppapi_unittests',
+          'printing_unittests',
+          'remoting_unittests',
+          'sandbox_linux_unittests',
+          'sql_unittests',
+          'ui_base_unittests',
+          'unit_tests',
+          'url_unittests',
+          'views_unittests',
         ],
       },
       'linux-lacros-archive-rel': {
@@ -426,18 +485,8 @@
           'all',
         ],
       },
-      'mac-archive-dbg': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
       'mac-archive-rel': {
         'mixins': ['mac-archive-rel-args'],
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
-      'mac-arm64-archive-dbg': {
         'additional_compile_targets': [
           'all',
         ],
@@ -453,11 +502,6 @@
           'all',
         ],
       },
-      'win-archive-dbg': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
       'win-archive-rel': {
         'additional_compile_targets': [
           'all',
@@ -467,11 +511,6 @@
         },
       },
       'win-official': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
-      'win32-archive-dbg': {
         'additional_compile_targets': [
           'all',
         ],
@@ -574,10 +613,7 @@
       },
       'Android arm Builder (dbg)': {
         'additional_compile_targets': [
-          'android_lint',
-          'boundary_interface_example_apk',
-          'dump_syms',
-          'microdump_stackwalk',
+          'all',
         ],
         'test_suites': {
           'junit_tests': 'chromium_junit_tests_no_swarming',
@@ -1503,38 +1539,6 @@
     'name': 'chromium.chromiumos',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
-      'Linux ChromiumOS Full': {
-        'additional_compile_targets': [
-          'base_unittests',
-          'browser_tests',
-          'chromeos_unittests',
-          'components_unittests',
-          'compositor_unittests',
-          'content_browsertests',
-          'content_unittests',
-          'crypto_unittests',
-          'dbus_unittests',
-          'device_unittests',
-          'gcm_unit_tests',
-          'google_apis_unittests',
-          'gpu_unittests',
-          'interactive_ui_tests',
-          'ipc_tests',
-          'media_unittests',
-          'message_center_unittests',
-          'nacl_loader_unittests',
-          'net_unittests',
-          'ppapi_unittests',
-          'printing_unittests',
-          'remoting_unittests',
-          'sandbox_linux_unittests',
-          'sql_unittests',
-          'ui_base_unittests',
-          'unit_tests',
-          'url_unittests',
-          'views_unittests',
-        ],
-      },
       'chromeos-amd64-generic-asan-rel': {
         'additional_compile_targets': [
           'chromiumos_preflight',
@@ -1608,11 +1612,6 @@
           'gtest_tests': 'chromeos_device_only_gtests',
         },
         'os_type': 'chromeos',
-      },
-      'lacros-amd64-generic-binary-size-rel': {
-        'additional_compile_targets': [
-          'chrome',
-        ],
       },
       'lacros-amd64-generic-rel': {
         'additional_compile_targets': [
@@ -1688,7 +1687,7 @@
       'linux-chromeos-rel': {
         'mixins': [
           'isolate_profile_data',
-          'linux-jammy',
+          'linux-jammy-2',
         ],
         'additional_compile_targets': [
           'all',
@@ -1706,7 +1705,7 @@
       'linux-lacros-tester-rel': {
         'mixins': [
           'isolate_profile_data',
-          'linux-jammy',
+          'linux-jammy-4',
         ],
         'additional_compile_targets': [
           'chrome',
@@ -3931,7 +3930,7 @@
         'mixins': [
           'has_native_resultdb_integration',
           'isolate_profile_data',
-          'mac_beta_x64',
+          'mac_13_x64',
         ],
         'test_suites': {
           'isolated_scripts': 'wpt_web_tests_content_shell',
@@ -4442,12 +4441,7 @@
           'limited_capacity_bot',
           'long_skylab_timeout',
         ],
-        'test_suites': {
-          # There should be the same gtests here as on the normal kevin bot,
-          # but mixing test types on a single bot is not supported in Skylab
-          # yet.
-          'skylab_gpu_telemetry_tests': 'gpu_fyi_chromeos_release_telemetry_tests_skylab',
-        },
+        'test_suites': {},
       },
       'GPU FYI Android arm Builder': {},
       'GPU FYI Android arm64 Builder': {},
@@ -4885,7 +4879,7 @@
       },
       'Cast Linux': {
         'mixins': [
-          'linux-jammy',
+          'linux-jammy-5',
         ],
         'additional_compile_targets': [
           'cast_shell',
@@ -4942,7 +4936,7 @@
       'Linux Tests': {
         'mixins': [
           'isolate_profile_data',
-          'linux-jammy',
+          'linux-jammy-3',
         ],
         'test_suites': {
           # TODO(crbug.com/1444855): Switch this back to
@@ -4954,7 +4948,7 @@
       },
       'Linux Tests (Wayland)': {
         'mixins': [
-          'linux-jammy',
+          'linux-jammy-6',
           'isolate_profile_data',
          ],
         'args': [
@@ -5148,6 +5142,11 @@
           'isolated_scripts': 'ios_simulator_noncq_tests'
         },
       },
+      'mac-arm64-dbg': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
       'mac-arm64-on-arm64-rel': {
         'additional_compile_targets': [
           'all',
@@ -5202,21 +5201,10 @@
     'machines': {
       'Linux ASan LSan Tests (1)': {
         'mixins': [
-          'linux-jammy',
+          'linux-jammy-8',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_and_gl_gtests',
-        },
-        'args': [
-          '--test-launcher-print-test-stdio=always',
-        ],
-      },
-      'Linux ASan Tests (sandboxed)': {
-        'mixins': [
-          'linux-jammy',
-        ],
-        'test_suites': {
-          'gtest_tests': 'sandboxed_chromium_memory_linux_gtests',
         },
         'args': [
           '--test-launcher-print-test-stdio=always',
@@ -5269,7 +5257,7 @@
       },
       'Linux TSan Tests': {
         'mixins': [
-          'linux-jammy',
+          'linux-jammy-7',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_and_gl_and_vulkan_gtests',
@@ -6303,6 +6291,11 @@
           'scripts': 'chromium_win_scripts',
         },
       },
+      'Win x64 Builder (dbg)': {
+        'additional_compile_targets': [
+          'all'
+        ],
+      },
       'Win10 Tests x64': {
         'mixins': [
           'x86-64',
@@ -6771,7 +6764,17 @@
         },
         'os_type': 'chromeos',
       },
-      'chromeos-jacuzzi-chrome-skylab-fyi': {
+      'chromeos-brya-chrome-dchecks-skylab': {
+        'additional_compile_targets': [
+          "chrome",
+          "linux_symbols",
+          "symupload",
+        ],
+        'test_suites': {
+          'skylab_tests': 'chromeos_brya_skylab_tests',
+        }
+      },
+      'chromeos-jacuzzi-chrome-dchecks-skylab': {
         'additional_compile_targets': [
           "chrome",
           "linux_symbols",
@@ -6804,17 +6807,6 @@
       'chromeos-trogdor-chrome-skylab-tests-fyi': {
         'test_suites': {
           'skylab_tests': 'chromeos_trogdor_skylab_tests',
-        },
-        'os_type': 'chromeos',
-      },
-      'chromeos-volteer-chrome-skylab-fyi': {
-        'additional_compile_targets': [
-          "chrome",
-          "linux_symbols",
-          "symupload",
-        ],
-        'test_suites': {
-          'skylab_tests': 'chromeos_volteer_skylab_tests',
         },
         'os_type': 'chromeos',
       },
@@ -7015,7 +7007,7 @@
       },
       'mac13-blink-rel': {
         'mixins': [
-          'mac_beta_x64',
+          'mac_13_x64',
         ],
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',

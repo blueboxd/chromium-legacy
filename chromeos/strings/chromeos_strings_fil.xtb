@@ -280,7 +280,6 @@
 <translation id="3226405216343213872">Naghahanap ng mga scanner</translation>
 <translation id="3226657629376379887">Menu ng mga pagkilos sa layout</translation>
 <translation id="3246869037381808805">Aalisin ang mga pag-print na lampas 1 araw na</translation>
-<translation id="3248223063252096240">Eksklusibo sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="3268178239013324452">Hindi na-print - Nakabukas ang takip</translation>
 <translation id="3275729367986477355">Larawan ng avatar</translation>
 <translation id="3283504360622356314">{0,plural, =1{I-edit ang file}one{I-edit ang mga file}other{I-edit ang mga file}}</translation>
@@ -921,6 +920,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">Piliin ang <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /></translation>
 <translation id="8151185429379586178">Mga tool ng developer</translation>
+<translation id="8152370627892825"><ph name="DESCRIPTION" />, <ph name="ACCELERATOR_INFO" />.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8183974620058026102">I-attach</translation>
 <translation id="8206859287963243715">Cellular</translation>

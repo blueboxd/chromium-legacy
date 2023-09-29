@@ -6,20 +6,15 @@
 
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
-#include "components/password_manager/core/browser/password_access_authenticator.h"
-
-namespace {
-
-using password_manager::PasswordAccessAuthenticator;
-
-}  // namespace
+#include "chrome/browser/device_reauth/chrome_device_authenticator_factory.h"
 
 ChromeDeviceAuthenticatorCommon::ChromeDeviceAuthenticatorCommon(
-    DeviceAuthenticatorProxy* proxy)
-    : device_authenticator_proxy_(proxy->GetWeakPtr()) {}
+    DeviceAuthenticatorProxy* proxy,
+    base::TimeDelta auth_validity_period)
+    : device_authenticator_proxy_(proxy->GetWeakPtr()),
+      auth_validity_period_(auth_validity_period) {}
 ChromeDeviceAuthenticatorCommon::~ChromeDeviceAuthenticatorCommon() = default;
 
 void ChromeDeviceAuthenticatorCommon::RecordAuthenticationTimeIfSuccessful(
@@ -28,14 +23,6 @@ void ChromeDeviceAuthenticatorCommon::RecordAuthenticationTimeIfSuccessful(
     return;
   }
   device_authenticator_proxy_->UpdateLastGoodAuthTimestamp();
-
-  // Holds scoped_refptr for kAuthValidityPeriod seconds, preventing object
-  // from being deleted.
-  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce([](scoped_refptr<ChromeDeviceAuthenticatorCommon> ptr) {},
-                     base::WrapRefCounted(this)),
-      PasswordAccessAuthenticator::kAuthValidityPeriod);
 }
 
 bool ChromeDeviceAuthenticatorCommon::NeedsToAuthenticate() const {
@@ -44,10 +31,5 @@ bool ChromeDeviceAuthenticatorCommon::NeedsToAuthenticate() const {
 
   return !last_good_auth_timestamp.has_value() ||
          base::TimeTicks::Now() - last_good_auth_timestamp.value() >=
-             PasswordAccessAuthenticator::kAuthValidityPeriod;
-}
-
-base::WeakPtr<ChromeDeviceAuthenticatorCommon>
-ChromeDeviceAuthenticatorCommon::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
+             auth_validity_period_;
 }

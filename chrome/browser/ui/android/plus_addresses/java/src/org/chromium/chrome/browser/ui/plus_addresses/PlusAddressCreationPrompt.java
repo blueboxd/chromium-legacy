@@ -4,8 +4,15 @@
 
 package org.chromium.chrome.browser.ui.plus_addresses;
 
+import android.app.Activity;
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.TextView;
+
 import androidx.annotation.Nullable;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -19,17 +26,31 @@ public class PlusAddressCreationPrompt implements ModalDialogProperties.Controll
     private PropertyModel mDialogModel;
     private PlusAddressCreationDelegate mPlusAddressDelegate;
     private ModalDialogManager mModalDialogManager;
+    private final View mDialogView;
 
-    public PlusAddressCreationPrompt(PlusAddressCreationDelegate delegate) {
+    public PlusAddressCreationPrompt(PlusAddressCreationDelegate delegate, Activity activity,
+            String primaryEmailAddressHolder) {
         mPlusAddressDelegate = delegate;
-        // TODO(crbug.com/1467623): Set a custom view, drop hard-coded strings etc. Keeping the
-        // modal as simple as possible for now.
+        LayoutInflater inflater = LayoutInflater.from(activity);
+        mDialogView = inflater.inflate(R.layout.plus_address_creation_prompt, null);
+
+        // TODO(crbug.com/1467623): Switch to more-standard strings, without any notion of
+        // inheriting the larger `generated_resources.grd`. This is a temporary state to work around
+        // some project exigencies.
+        Context context = ContextUtils.getApplicationContext();
+        TextView primaryEmailView = mDialogView.findViewById(R.id.plus_address_modal_primary_email);
+        primaryEmailView.setText(primaryEmailAddressHolder);
+
         PropertyModel.Builder builder =
                 new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
                         .with(ModalDialogProperties.CONTROLLER, this)
-                        .with(ModalDialogProperties.TITLE, "Lorem Ipsum")
-                        .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, "Yep")
-                        .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, "Dolor");
+                        .with(ModalDialogProperties.CUSTOM_VIEW, mDialogView)
+                        .with(ModalDialogProperties.BUTTON_STYLES,
+                                ModalDialogProperties.ButtonStyles.PRIMARY_FILLED_NEGATIVE_OUTLINE)
+                        .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT,
+                                context.getString(R.string.plus_address_modal_ok_text))
+                        .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT,
+                                context.getString(R.string.plus_address_modal_cancel_text));
         mDialogModel = builder.build();
     }
 
@@ -73,5 +94,9 @@ public class PlusAddressCreationPrompt implements ModalDialogProperties.Controll
         }
         mModalDialogManager = modalDialogManager;
         mModalDialogManager.showDialog(mDialogModel, ModalDialogManager.ModalDialogType.APP);
+    }
+
+    View getDialogViewForTesting() {
+        return mDialogView;
     }
 }

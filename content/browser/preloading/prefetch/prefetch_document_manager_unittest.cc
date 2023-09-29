@@ -42,10 +42,10 @@ class TestPrefetchService : public PrefetchService {
     prefetches_.push_back(prefetch_container);
   }
 
-  void PrepareToServe(
-      const GURL& url,
-      base::WeakPtr<PrefetchContainer> prefetch_container) override {
-    prefetches_prepared_to_serve_.emplace_back(url, prefetch_container);
+  void PrepareToServe(const GURL& url,
+                      PrefetchContainer& prefetch_container) override {
+    prefetches_prepared_to_serve_.emplace_back(url,
+                                               prefetch_container.GetWeakPtr());
   }
 
   std::vector<base::WeakPtr<PrefetchContainer>> prefetches_;
@@ -369,7 +369,7 @@ TEST_F(PrefetchDocumentManagerTest, ProcessNoVarySearchResponse) {
   // which the PrefetchContainer WeakPtr is not valid anymore.
   prefetch_document_manager->ReleasePrefetchContainer(
       GetPrefetchesPreparedToServe()[1].second->GetURL());
-  DCHECK(!GetPrefetchesPreparedToServe()[1].second);
+  CHECK(!GetPrefetchesPreparedToServe()[1].second);
   NavigateMainframeRendererTo(
       GetCrossOriginUrl("/candidate1.html?b=4&a=2&c=5"));
   EXPECT_EQ(GetPrefetchesPreparedToServe().size(), 3u);

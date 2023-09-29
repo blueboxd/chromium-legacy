@@ -169,6 +169,11 @@ void LayoutMultiColumnSet::Trace(Visitor* visitor) const {
   LayoutBlockFlow::Trace(visitor);
 }
 
+bool LayoutMultiColumnSet::IsLayoutNGObject() const {
+  NOT_DESTROYED();
+  return false;
+}
+
 unsigned LayoutMultiColumnSet::FragmentainerGroupIndexAtFlowThreadOffset(
     LayoutUnit flow_thread_offset,
     PageBoundaryRule rule) const {
@@ -356,11 +361,6 @@ void LayoutMultiColumnSet::StyleDidChange(StyleDifference diff,
   // cheap anyway, because the only thing it can paint is the column rule, while
   // actual multicol content is handled by the flow thread.
   SetHasBoxDecorationBackground(true);
-}
-
-void LayoutMultiColumnSet::UpdateLayout() {
-  NOT_DESTROYED();
-  NOTREACHED_NORETURN();
 }
 
 LayoutUnit LayoutMultiColumnSet::ColumnGap() const {

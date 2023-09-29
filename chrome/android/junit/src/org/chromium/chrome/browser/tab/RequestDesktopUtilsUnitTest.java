@@ -50,7 +50,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.FeatureList;
 import org.chromium.base.FeatureList.TestValues;
 import org.chromium.base.SysUtils;
-import org.chromium.base.UserDataHost;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -64,11 +63,11 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.RequestDesktopUtilsUnitTest.ShadowDisplayAndroid;
 import org.chromium.chrome.browser.tab.RequestDesktopUtilsUnitTest.ShadowDisplayAndroidManager;
+import org.chromium.chrome.browser.tab.RequestDesktopUtilsUnitTest.ShadowDisplayUtil;
 import org.chromium.chrome.browser.tab.RequestDesktopUtilsUnitTest.ShadowSysUtils;
 import org.chromium.chrome.browser.tab.RequestDesktopUtilsUnitTest.ShadowTabUtils;
 import org.chromium.chrome.browser.tab.RequestDesktopUtilsUnitTest.ShadowUmaSessionStats;
 import org.chromium.chrome.browser.tab.TabUtilsUnitTest.ShadowProfile;
-import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.components.browser_ui.site_settings.SingleCategorySettings.SiteLayout;
 import org.chromium.components.browser_ui.site_settings.SingleCategorySettingsConstants;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
@@ -87,6 +86,7 @@ import org.chromium.components.user_prefs.UserPrefsJni;
 import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayAndroidManager;
+import org.chromium.ui.display.DisplayUtil;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
@@ -106,8 +106,8 @@ import java.util.Map.Entry;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE,
         shadows = {ShadowSysUtils.class, ShadowProfile.class, ShadowUmaSessionStats.class,
-                ShadowDisplayAndroid.class, ShadowDisplayAndroidManager.class,
-                ShadowTabUtils.class})
+                ShadowDisplayAndroid.class, ShadowDisplayAndroidManager.class, ShadowTabUtils.class,
+                ShadowDisplayUtil.class})
 public class RequestDesktopUtilsUnitTest {
     @Rule
     public JniMocker mJniMocker = new JniMocker();
@@ -208,6 +208,20 @@ public class RequestDesktopUtilsUnitTest {
         }
     }
 
+    @Implements(DisplayUtil.class)
+    static class ShadowDisplayUtil {
+        private static int sSmallestScreenWidthDp;
+
+        public static void setCurrentSmallestScreenWidth(int smallestScreenWidthDp) {
+            sSmallestScreenWidthDp = smallestScreenWidthDp;
+        }
+
+        @Implementation
+        public static int getCurrentSmallestScreenWidth(Context context) {
+            return sSmallestScreenWidthDp;
+        }
+    }
+
     @Mock
     private WebsitePreferenceBridge.Natives mWebsitePreferenceBridgeJniMock;
     @Mock
@@ -226,8 +240,6 @@ public class RequestDesktopUtilsUnitTest {
     private ModalDialogManager mModalDialogManager;
     @Mock
     private Tracker mTracker;
-    @Mock
-    private CriticalPersistedTabData mCriticalPersistedTabData;
     @Mock
     private ObservableSupplier<Tab> mCurrentTabSupplier;
     @Mock
@@ -257,6 +269,7 @@ public class RequestDesktopUtilsUnitTest {
     private static String sGlobalDefaultsExperimentTrialName;
     private static String sGlobalDefaultsExperimentGroupName;
     private ShadowPackageManager mShadowPackageManager;
+    private boolean mIsDefaultValuePreference;
 
     @Before
     public void setup() {
@@ -296,7 +309,6 @@ public class RequestDesktopUtilsUnitTest {
                 .toDomainWildcardPattern(anyString());
 
         mSharedPreferencesManager = SharedPreferencesManager.getInstance();
-        mSharedPreferencesManager.disableKeyCheckerForTesting();
 
         mResources = ApplicationProvider.getApplicationContext().getResources();
         mResources.getConfiguration().smallestScreenWidthDp = 600;
@@ -316,10 +328,20 @@ public class RequestDesktopUtilsUnitTest {
         enableFeatureWithParams(
                 ChromeFeatureList.REQUEST_DESKTOP_SITE_DEFAULTS_LOGGING, null, false);
         enableFeature(ContentFeatureList.REQUEST_DESKTOP_SITE_WINDOW_SETTING, false);
+        ShadowDisplayUtil.setCurrentSmallestScreenWidth(800);
         when(mUserPrefsJni.get(mProfile)).thenReturn(mPrefService);
         doAnswer(invocation -> mWindowSetting)
                 .when(mPrefService)
                 .getBoolean(eq(DESKTOP_SITE_WINDOW_SETTING_ENABLED));
+        doAnswer(invocation -> mIsDefaultValuePreference)
+                .when(mPrefService)
+                .isDefaultValuePreference(eq(DESKTOP_SITE_WINDOW_SETTING_ENABLED));
+        doAnswer(invocation -> {
+            mWindowSetting = invocation.getArgument(1);
+            return true;
+        })
+                .when(mPrefService)
+                .setBoolean(eq(DESKTOP_SITE_WINDOW_SETTING_ENABLED), anyBoolean());
         ShadowTabUtils.setIsGlobalSetting(true);
         when(mActivity.getWindow()).thenReturn(mWindow);
         when(mWindow.getAttributes()).thenReturn(mLayoutParams);
@@ -1391,7 +1413,7 @@ public class RequestDesktopUtilsUnitTest {
 
         Assert.assertEquals("Request Desktop Site domain level setting is not set correctly.",
                 ContentSettingValues.ALLOW, mContentSettingMap.get(GOOGLE_COM).intValue());
-        verify(mCriticalPersistedTabData).setUserAgent(TabUserAgent.DEFAULT);
+        verify(mTab).setUserAgent(TabUserAgent.DEFAULT);
     }
 
     // Tests the fix for crash crbug.com/1381841. When the global setting opt-in message is clicked,
@@ -1517,12 +1539,65 @@ public class RequestDesktopUtilsUnitTest {
                 shouldApplyWindowSetting);
     }
 
+    @Test
+    public void testMaybeDefaultEnableWindowSetting_FeatureOff() {
+        mWindowSetting = false;
+        mIsDefaultValuePreference = true;
+        RequestDesktopUtils.maybeDefaultEnableWindowSetting(mActivity, mProfile);
+        Assert.assertFalse(
+                "Desktop site window setting should not be default enabled when feature is off",
+                mWindowSetting);
+    }
+
+    @Test
+    public void testMaybeDefaultEnableWindowSetting_PhoneSizedScreen() {
+        enableFeature(ContentFeatureList.REQUEST_DESKTOP_SITE_WINDOW_SETTING, true);
+        mWindowSetting = false;
+        mIsDefaultValuePreference = true;
+        ShadowDisplayUtil.setCurrentSmallestScreenWidth(400);
+        RequestDesktopUtils.maybeDefaultEnableWindowSetting(mActivity, mProfile);
+        Assert.assertFalse(
+                "Desktop site window setting should not be default enabled when the smallest "
+                        + "screen width is less than 600dp",
+                mWindowSetting);
+    }
+
+    @Test
+    public void testMaybeDefaultEnableWindowSetting_ExternalDisplay() {
+        enableFeature(ContentFeatureList.REQUEST_DESKTOP_SITE_WINDOW_SETTING, true);
+        mWindowSetting = false;
+        mIsDefaultValuePreference = true;
+        when(mDisplay.getDisplayId()).thenReturn(/*non built-in display*/ 2);
+        RequestDesktopUtils.maybeDefaultEnableWindowSetting(mActivity, mProfile);
+        Assert.assertFalse(
+                "Desktop site window setting should not be default enabled when Chrome is opened "
+                        + "on external display",
+                mWindowSetting);
+    }
+
+    @Test
+    public void testMaybeDefaultEnableWindowSetting_NotDefaultValuePreference() {
+        enableFeature(ContentFeatureList.REQUEST_DESKTOP_SITE_WINDOW_SETTING, true);
+        mWindowSetting = false;
+        mIsDefaultValuePreference = false;
+        RequestDesktopUtils.maybeDefaultEnableWindowSetting(mActivity, mProfile);
+        Assert.assertFalse(
+                "Desktop site window setting should not be default enabled when the preference "
+                        + "has been previously changed",
+                mWindowSetting);
+    }
+
+    @Test
+    public void testMaybeDefaultEnableWindowSetting_ShouldDefaultEnable() {
+        enableFeature(ContentFeatureList.REQUEST_DESKTOP_SITE_WINDOW_SETTING, true);
+        mWindowSetting = false;
+        mIsDefaultValuePreference = true;
+        RequestDesktopUtils.maybeDefaultEnableWindowSetting(mActivity, mProfile);
+        Assert.assertTrue("Desktop site window setting should be default enabled", mWindowSetting);
+    }
+
     private Tab createTab() {
-        Tab tab = mock(Tab.class);
-        UserDataHost tabDataHost = new UserDataHost();
-        when(tab.getUserDataHost()).thenReturn(tabDataHost);
-        tabDataHost.setUserData(CriticalPersistedTabData.class, mCriticalPersistedTabData);
-        return tab;
+        return mock(Tab.class);
     }
 
     private void enableFeature(String featureName, boolean enable) {

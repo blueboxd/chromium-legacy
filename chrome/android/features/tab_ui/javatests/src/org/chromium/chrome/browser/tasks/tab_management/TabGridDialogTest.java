@@ -37,6 +37,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
+import static org.chromium.chrome.browser.flags.ChromeFeatureList.DEFER_TAB_SWITCHER_LAYOUT_CREATION;
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.START_SURFACE_REFACTOR;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.addBlankTabs;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickFirstCardFromTabSwitcher;
@@ -149,7 +150,7 @@ import java.util.concurrent.ExecutionException;
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Restriction({Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-@EnableFeatures({START_SURFACE_REFACTOR})
+@EnableFeatures({DEFER_TAB_SWITCHER_LAYOUT_CREATION, START_SURFACE_REFACTOR})
 @Batch(Batch.PER_CLASS)
 public class TabGridDialogTest {
     // clang-format on
@@ -370,7 +371,7 @@ public class TabGridDialogTest {
         verifyTabSwitcherCardCount(cta, 1);
 
         // Add 400px top margin to the recyclerView.
-        RecyclerView recyclerView = cta.findViewById(R.id.tab_list_view);
+        RecyclerView recyclerView = cta.findViewById(R.id.tab_list_recycler_view);
         float tabGridCardPadding = TabUiThemeProvider.getTabGridCardMargin(cta);
         int deltaTopMargin = 400;
         ViewGroup.MarginLayoutParams params =
@@ -533,7 +534,8 @@ public class TabGridDialogTest {
 
         // Open the selection editor with longpress.
         openDialogFromTabSwitcherAndVerify(cta, 2, null);
-        onView(allOf(withId(R.id.tab_list_view), withParent(withId(R.id.dialog_container_view))))
+        onView(allOf(withId(R.id.tab_list_recycler_view),
+                       withParent(withId(R.id.dialog_container_view))))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(0, longClick()));
 
         mSelectionEditorRobot.resultRobot.verifyTabSelectionEditorIsVisible();
@@ -558,7 +560,8 @@ public class TabGridDialogTest {
 
         // Open the selection editor with longpress.
         openDialogFromTabSwitcherAndVerify(cta, 2, null);
-        onView(allOf(withId(R.id.tab_list_view), withParent(withId(R.id.dialog_container_view))))
+        onView(allOf(withId(R.id.tab_list_recycler_view),
+                       withParent(withId(R.id.dialog_container_view))))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(0, longClick()));
 
         mSelectionEditorRobot.resultRobot.verifyTabSelectionEditorIsVisible();
@@ -840,11 +843,13 @@ public class TabGridDialogTest {
         openDialogFromTabSwitcherAndVerify(cta, 2, null);
 
         // Swipe to dismiss two tabs in dialog.
-        onView(allOf(withId(R.id.tab_list_view), withParent(withId(R.id.dialog_container_view))))
+        onView(allOf(withId(R.id.tab_list_recycler_view),
+                       withParent(withId(R.id.dialog_container_view))))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(
                         1, getSwipeToDismissAction(true)));
         verifyShowingDialog(cta, 1, null);
-        onView(allOf(withId(R.id.tab_list_view), withParent(withId(R.id.dialog_container_view))))
+        onView(allOf(withId(R.id.tab_list_recycler_view),
+                       withParent(withId(R.id.dialog_container_view))))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(
                         0, getSwipeToDismissAction(false)));
         waitForDialogHidingAnimation(cta);
@@ -1123,7 +1128,7 @@ public class TabGridDialogTest {
         prepareTabsWithThumbnail(sActivityTestRule, 3, 0, "about:blank");
         enterTabSwitcher(cta);
         verifyTabSwitcherCardCount(cta, 3);
-        waitForThumbnailsToFetch((RecyclerView) cta.findViewById(R.id.tab_list_view));
+        waitForThumbnailsToFetch((RecyclerView) cta.findViewById(R.id.tab_list_recycler_view));
         verifyAllTabsHaveThumbnail(cta.getCurrentTabModel());
 
         // Create a tab group.
@@ -1132,7 +1137,7 @@ public class TabGridDialogTest {
         openDialogFromTabSwitcherAndVerify(cta, 3, null);
 
         View dialogView = cta.findViewById(R.id.dialog_parent_view);
-        waitForThumbnailsToFetch((RecyclerView) dialogView.findViewById(R.id.tab_list_view));
+        waitForThumbnailsToFetch((RecyclerView) dialogView.findViewById(R.id.tab_list_recycler_view));
         mRenderTestRule.render(dialogView, "3_tabs_portrait");
     }
 
@@ -1147,7 +1152,7 @@ public class TabGridDialogTest {
         prepareTabsWithThumbnail(sActivityTestRule, 3, 0, "about:blank");
         enterTabSwitcher(cta);
         verifyTabSwitcherCardCount(cta, 3);
-        waitForThumbnailsToFetch((RecyclerView) cta.findViewById(R.id.tab_list_view));
+        waitForThumbnailsToFetch((RecyclerView) cta.findViewById(R.id.tab_list_recycler_view));
         verifyAllTabsHaveThumbnail(cta.getCurrentTabModel());
 
         // Rotate to landscape mode and create a tab group.
@@ -1157,20 +1162,21 @@ public class TabGridDialogTest {
         openDialogFromTabSwitcherAndVerify(cta, 3, null);
 
         View dialogView = cta.findViewById(R.id.dialog_parent_view);
-        waitForThumbnailsToFetch((RecyclerView) dialogView.findViewById(R.id.tab_list_view));
+        waitForThumbnailsToFetch((RecyclerView) dialogView.findViewById(R.id.tab_list_recycler_view));
         mRenderTestRule.render(dialogView, "3_tabs_landscape_new_aspect_ratio");
     }
 
     @Test
     @MediumTest
     @Feature({"RenderTest"})
+    @DisableFeatures(ChromeFeatureList.GRID_TAB_SWITCHER_LANDSCAPE_ASPECT_RATIO_PHONES)
     @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
     public void testRenderDialog_3Tabs_Landscape(boolean nightModeEnabled) throws Exception {
         final ChromeTabbedActivity cta = sActivityTestRule.getActivity();
         prepareTabsWithThumbnail(sActivityTestRule, 3, 0, "about:blank");
         enterTabSwitcher(cta);
         verifyTabSwitcherCardCount(cta, 3);
-        waitForThumbnailsToFetch((RecyclerView) cta.findViewById(R.id.tab_list_view));
+        waitForThumbnailsToFetch((RecyclerView) cta.findViewById(R.id.tab_list_recycler_view));
         verifyAllTabsHaveThumbnail(cta.getCurrentTabModel());
 
         // Rotate to landscape mode and create a tab group.
@@ -1180,7 +1186,7 @@ public class TabGridDialogTest {
         openDialogFromTabSwitcherAndVerify(cta, 3, null);
 
         View dialogView = cta.findViewById(R.id.dialog_parent_view);
-        waitForThumbnailsToFetch((RecyclerView) dialogView.findViewById(R.id.tab_list_view));
+        waitForThumbnailsToFetch((RecyclerView) dialogView.findViewById(R.id.tab_list_recycler_view));
         mRenderTestRule.render(dialogView, "3_tabs_landscape_old_aspect_ratio");
     }
 
@@ -1193,7 +1199,7 @@ public class TabGridDialogTest {
         prepareTabsWithThumbnail(sActivityTestRule, 5, 0, "about:blank");
         enterTabSwitcher(cta);
         verifyTabSwitcherCardCount(cta, 5);
-        waitForThumbnailsToFetch((RecyclerView) cta.findViewById(R.id.tab_list_view));
+        waitForThumbnailsToFetch((RecyclerView) cta.findViewById(R.id.tab_list_recycler_view));
         verifyAllTabsHaveThumbnail(cta.getCurrentTabModel());
 
         // Create a tab group.
@@ -1208,7 +1214,7 @@ public class TabGridDialogTest {
         openDialogFromTabSwitcherAndVerify(cta, 5, null);
 
         View dialogView = cta.findViewById(R.id.dialog_parent_view);
-        waitForThumbnailsToFetch((RecyclerView) dialogView.findViewById(R.id.tab_list_view));
+        waitForThumbnailsToFetch((RecyclerView) dialogView.findViewById(R.id.tab_list_recycler_view));
         mRenderTestRule.render(dialogView, "5_tabs_select_last");
     }
 
@@ -1272,7 +1278,7 @@ public class TabGridDialogTest {
         verifyTabSwitcherCardCount(cta, 1);
 
         // Verify the initial group card content description.
-        RecyclerView recyclerView = cta.findViewById(R.id.tab_list_view);
+        RecyclerView recyclerView = cta.findViewById(R.id.tab_list_recycler_view);
         View firstItem = recyclerView.findViewHolderForAdapterPosition(0).itemView;
         String expandTargetString = "Expand tab group with 3 tabs.";
         assertEquals(expandTargetString, firstItem.getContentDescription());
@@ -1458,7 +1464,7 @@ public class TabGridDialogTest {
         // crash if the fake signal is not properly handled. See crbug.com/1096358.
         enterTabSwitcher(cta);
         onView(allOf(withParent(withId(getTabSwitcherParentId(sActivityTestRule.getActivity()))),
-                       withId(R.id.tab_list_view)))
+                       withId(R.id.tab_list_recycler_view)))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
         CriteriaHelper.pollUiThread(() -> isDialogFullyVisible(sActivityTestRule.getActivity()));
         verifyShowingDialog(cta, 2, null);
@@ -1522,7 +1528,7 @@ public class TabGridDialogTest {
 
     private void verifyShowingDialog(
             ChromeTabbedActivity cta, int tabCount, String customizedTitle) {
-        onView(allOf(withId(R.id.tab_list_view), withParent(withId(R.id.dialog_container_view))))
+        onView(allOf(withId(R.id.tab_list_recycler_view), withParent(withId(R.id.dialog_container_view))))
                 .check(matches(isDisplayed()))
                 .check(TabUiTestHelper.ChildrenCountAssertion.havingTabCount(tabCount));
 
@@ -1649,7 +1655,7 @@ public class TabGridDialogTest {
         // Animation source card becomes alpha = 0f when dialog is showing and animates back to 1f
         // when dialog hides. Make sure the source card has restored its alpha change.
         CriteriaHelper.pollUiThread(() -> {
-            RecyclerView recyclerView = cta.findViewById(R.id.tab_list_view);
+            RecyclerView recyclerView = cta.findViewById(R.id.tab_list_recycler_view);
             for (int i = 0; i < recyclerView.getAdapter().getItemCount(); i++) {
                 RecyclerView.ViewHolder viewHolder =
                         recyclerView.findViewHolderForAdapterPosition(i);
@@ -1721,7 +1727,7 @@ public class TabGridDialogTest {
     private void verifyFirstCardTitle(String title) {
         onView(allOf(withParent(withId(TabUiTestHelper.getTabSwitcherParentId(
                              sActivityTestRule.getActivity()))),
-                       withId(R.id.tab_list_view)))
+                       withId(R.id.tab_list_recycler_view)))
                 .check((v, noMatchException) -> {
                     if (noMatchException != null) throw noMatchException;
 

@@ -111,28 +111,17 @@ std::unique_ptr<UserScript> CreateUserScript(
   bool wants_file_access = false;
   if (!script_parsing::ParseMatchPatterns(
           content_script.matches,
-          base::OptionalToPtr(content_script.exclude_matches), definition_index,
+          base::OptionalToPtr(content_script.exclude_matches),
           extension->creation_flags(), can_execute_script_everywhere,
           valid_schemes, all_urls_includes_chrome_urls, result.get(), error,
-          &wants_file_access)) {
+          &wants_file_access, definition_index)) {
     return nullptr;
   }
 
   if (match_origin_as_fallback) {
-    // If the extension is using `match_origin_as_fallback`, we require the
-    // pattern to match all paths. This is because origins don't have a path;
-    // thus, if an extension specified `"match_origin_as_fallback": true` for
-    // a pattern of `"https://google.com/maps/*"`, this script would also run
-    // on about:blank, data:, etc frames from https://google.com (because in
-    // both cases, the precursor origin is https://google.com).
-    if (match_origin_as_fallback == MatchOriginAsFallbackBehavior::kAlways) {
-      for (const auto& pattern : result->url_patterns()) {
-        if (pattern.path() != "/*") {
-          *error =
-              base::ASCIIToUTF16(errors::kMatchOriginAsFallbackCantHavePaths);
-          return nullptr;
-        }
-      }
+    if (!script_parsing::ValidateMatchOriginAsFallback(
+            *match_origin_as_fallback, result->url_patterns(), error)) {
+      return nullptr;
     }
 
     result->set_match_origin_as_fallback(*match_origin_as_fallback);

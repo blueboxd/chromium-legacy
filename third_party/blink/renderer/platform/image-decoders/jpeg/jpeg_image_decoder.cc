@@ -42,10 +42,10 @@
 
 #include "base/logging.h"
 #include "base/numerics/checked_math.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image_metrics.h"
 #include "third_party/blink/renderer/platform/image-decoders/exif_reader.h"
-#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/private/SkJpegMetadataDecoder.h"
 
@@ -163,11 +163,6 @@ blink::BitmapImageMetrics::JpegColorSpace ExtractUMAJpegColorSpace(
     default:
       return blink::BitmapImageMetrics::JpegColorSpace::kUnknown;
   }
-}
-
-void UpdateJpegBppHistogram(gfx::Size size, size_t image_size_bytes) {
-  static constexpr char kType[] = "Jpeg";
-  blink::ImageDecoder::UpdateBppHistogram<kType>(size, image_size_bytes);
 }
 
 constexpr base::HistogramBase::Sample kImageAreaHistogramMin = 1;
@@ -748,7 +743,9 @@ class JPEGImageReader final {
         CountJpegColorSpace(ExtractUMAJpegColorSpace(info_));
         if (info_.jpeg_color_space != JCS_GRAYSCALE &&
             decoder_->IsAllDataReceived()) {
-          UpdateJpegBppHistogram(decoder_->Size(), data_->size());
+          static constexpr char kType[] = "Jpeg";
+          ImageDecoder::UpdateBppHistogram<kType>(decoder_->Size(),
+                                                  data_->size());
         }
         return jpeg_finish_decompress(&info_);
     }

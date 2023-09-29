@@ -38,7 +38,8 @@ void LogAndTraceDetectedSoftNavigation(LocalFrame* frame,
   TRACE_EVENT_INSTANT("scheduler,devtools.timeline,loading",
                       "SoftNavigationHeuristics_SoftNavigationDetected",
                       user_click_timestamp, "frame",
-                      GetFrameIdForTracing(frame), "url", url);
+                      GetFrameIdForTracing(frame), "url", url, "navigationId",
+                      window->GetNavigationId());
 }
 
 }  // namespace
@@ -81,32 +82,20 @@ void SoftNavigationHeuristics::ResetHeuristic() {
   did_reset_paints_ = false;
 }
 
-void SoftNavigationHeuristics::UserInitiatedInteraction(
-    ScriptState* script_state,
-    bool is_unfocused_keydown) {
+void SoftNavigationHeuristics::UserInitiatedClick(ScriptState* script_state) {
   // Set task ID to the current one.
   ThreadScheduler* scheduler = ThreadScheduler::Current();
   DCHECK(scheduler);
-  CHECK(script_state);
-  // This should not be called off-main-thread.
-  DCHECK(scheduler->GetTaskAttributionTracker());
-
-  ResetHeuristic();
-  if (is_unfocused_keydown) {
-    // TODO(https://crbug.com/1479052): investigate if we need to consider
-    // including the current task also for other cases.
-    absl::optional<scheduler::TaskAttributionId> task_id =
-        scheduler->GetTaskAttributionTracker()->RunningTaskAttributionId(
-            script_state);
-    if (task_id) {
-      potential_soft_navigation_task_ids_.insert(task_id.value().value());
-    }
+  auto* tracker = scheduler->GetTaskAttributionTracker();
+  if (!tracker) {
+    return;
   }
-  scheduler->GetTaskAttributionTracker()->RegisterObserver(this);
+  ResetHeuristic();
+  tracker->RegisterObserver(this);
   SetIsTrackingSoftNavigationHeuristicsOnDocument(true);
   user_click_timestamp_ = base::TimeTicks::Now();
   TRACE_EVENT_INSTANT("scheduler",
-                      "SoftNavigationHeuristics::UserInitiatedInteraction");
+                      "SoftNavigationHeuristics::UserInitiatedClick");
 }
 
 bool SoftNavigationHeuristics::IsCurrentTaskDescendantOfClickEventHandler(
@@ -130,7 +119,11 @@ bool SoftNavigationHeuristics::IsCurrentTaskDescendantOfClickEventHandler(
 void SoftNavigationHeuristics::ClickEventEnded(ScriptState* script_state) {
   ThreadScheduler* scheduler = ThreadScheduler::Current();
   DCHECK(scheduler);
-  scheduler->GetTaskAttributionTracker()->UnregisterObserver(this);
+  auto* tracker = scheduler->GetTaskAttributionTracker();
+  if (!tracker) {
+    return;
+  }
+  tracker->UnregisterObserver(this);
   CheckAndReportSoftNavigation(script_state);
   TRACE_EVENT_INSTANT("scheduler", "SoftNavigationHeuristics::ClickEventEnded");
 }
@@ -156,8 +149,7 @@ void SoftNavigationHeuristics::SameDocumentNavigationStarted(
   auto* tracker = ThreadScheduler::Current()->GetTaskAttributionTracker();
   // If we have no current task when the navigation is started, there's no need
   // to run a descendent check.
-  bool run_descendent_check =
-      tracker && tracker->RunningTaskAttributionId(script_state);
+  bool run_descendent_check = tracker && tracker->RunningTask(script_state);
 
   url_ = String();
   if (!SetFlagIfDescendantAndCheck(script_state, FlagType::kURLChange,

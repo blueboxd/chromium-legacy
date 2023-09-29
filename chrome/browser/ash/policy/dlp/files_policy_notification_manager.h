@@ -77,7 +77,8 @@ class FilesPolicyNotificationManager
   virtual void AddConnectorsBlockedFiles(
       file_manager::io_task::IOTaskId task_id,
       std::vector<base::FilePath> blocked_files,
-      dlp::FileAction action);
+      dlp::FileAction action,
+      FilesPolicyDialog::BlockReason reason);
 
   // Shows DLP Warning UI. If `task_id` is set, the corresponding IOTask
   // will be paused. Otherwise a desktop notification will be shown. Virtual
@@ -106,8 +107,8 @@ class FilesPolicyNotificationManager
 
   // Shows a policy dialog of type `type` for task identified by `task_id`.
   // Used for copy and move operations.
-  void ShowDialog(file_manager::io_task::IOTaskId task_id,
-                  FilesDialogType type);
+  virtual void ShowDialog(file_manager::io_task::IOTaskId task_id,
+                          FilesDialogType type);
 
   // Shows a DLP warning timeout notification for `action`. `notification_id`
   // should have value for IO tasks. When it  doesn't have a value, i.e. for non
@@ -130,7 +131,8 @@ class FilesPolicyNotificationManager
   // Clears any info stored about the task with `task_id`.
   virtual void OnErrorItemDismissed(file_manager::io_task::IOTaskId task_id);
 
-  std::map<DlpConfidentialFile, Policy> GetIOTaskBlockedFilesForTesting(
+  std::map<DlpConfidentialFile, FilesPolicyDialog::BlockReason>
+  GetIOTaskBlockedFilesForTesting(
       file_manager::io_task::IOTaskId task_id) const;
   // Returns whether IO task has a warning timeout timer.
   bool HasWarningTimerForTesting(file_manager::io_task::IOTaskId task_id) const;
@@ -204,11 +206,13 @@ class FilesPolicyNotificationManager
     // Returns true if `warning_info_` has value.
     bool HasWarningInfo() const;
 
-    const std::map<DlpConfidentialFile, Policy>& blocked_files() const {
+    const std::map<DlpConfidentialFile, FilesPolicyDialog::BlockReason>&
+    blocked_files() const {
       return blocked_files_;
     }
     // Add `file` to the blocked files map.
-    void AddBlockedFile(DlpConfidentialFile file, Policy policy);
+    void AddBlockedFile(DlpConfidentialFile file,
+                        FilesPolicyDialog::BlockReason reason);
 
     dlp::FileAction action() const { return action_; }
 
@@ -220,7 +224,8 @@ class FilesPolicyNotificationManager
     absl::optional<WarningInfo> warning_info_;
     // A map of all files blocked to be transferred and the block reason for
     // each.
-    std::map<DlpConfidentialFile, Policy> blocked_files_;
+    std::map<DlpConfidentialFile, FilesPolicyDialog::BlockReason>
+        blocked_files_;
     // The action that's restricted.
     dlp::FileAction action_;
     // Warning/Error dialog widget. Each FileTask is expected to have only one

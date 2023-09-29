@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "ash/app_list/app_list_util.h"
-#include "ash/game_dashboard/game_dashboard_utils.h"
 #include "ash/public/cpp/arc_game_controls_flag.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/utility/transformer_util.h"
@@ -978,9 +977,9 @@ void TouchInjector::RemoveAction(Action* action) {
   NotifyActionRemoved(*action);
 
   // It may need to turn on the flag `kEmpty` after removing an action.
-  DCHECK_EQ(false, ash::game_dashboard_utils::IsFlagSet(
-                       window_->GetProperty(ash::kArcGameControlsFlagsKey),
-                       ash::ArcGameControlsFlag::kEmpty));
+  DCHECK_EQ(false,
+            IsFlagSet(window_->GetProperty(ash::kArcGameControlsFlagsKey),
+                      ash::ArcGameControlsFlag::kEmpty));
   if (GetActiveActionsSize() == 0u) {
     UpdateFlagAndProperty(window_, ash::ArcGameControlsFlag::kEmpty,
                           /*enable_flag=*/true);
@@ -1000,6 +999,13 @@ void TouchInjector::ChangeActionName(Action* action, int index) {
   DCHECK(IsBeta());
   action->set_name_label_index(index);
   NotifyActionNameUpdated(*action);
+}
+
+void TouchInjector::RemoveActionNewState(Action* action) {
+  DCHECK(IsBeta());
+  DCHECK(action->is_new());
+  action->set_is_new(false);
+  NotifyActionNewStateRemoved(*action);
 }
 
 void TouchInjector::OverwriteDefaultAction(const ActionProto& proto,
@@ -1041,6 +1047,12 @@ void TouchInjector::NotifyActionAdded(Action& action) {
 void TouchInjector::NotifyActionRemoved(Action& action) {
   for (auto& observer : observers_) {
     observer.OnActionRemoved(action);
+  }
+}
+
+void TouchInjector::NotifyActionNewStateRemoved(Action& action) {
+  for (auto& observer : observers_) {
+    observer.OnActionNewStateRemoved(action);
   }
 }
 

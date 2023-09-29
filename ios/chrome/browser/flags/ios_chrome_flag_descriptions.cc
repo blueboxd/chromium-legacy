@@ -113,6 +113,12 @@ const char kAutofillEnableCardProductNameDescription[] =
     "When enabled, card product name (instead of issuer network) will be shown "
     "in Payments UI.";
 
+const char kAutofillEnableVirtualCardsName[] =
+    "Enable virtual card enrollment and retrieval";
+const char kAutofillEnableVirtualCardsDescription[] =
+    "When enabled, virtual card enrollment and retrieval will be available on "
+    "Bling.";
+
 const char kAutofillIOSDelayBetweenFieldsName[] = "Autofill delay";
 const char kAutofillIOSDelayBetweenFieldsDescription[] =
     "Delay between the different fields of a form being autofilled. In "
@@ -279,6 +285,12 @@ const char kCredentialProviderExtensionPromoName[] =
 const char kCredentialProviderExtensionPromoDescription[] =
     "When enabled, Credential Provider Extension promo will be "
     "presented to eligible users.";
+
+const char kDBVideoInSettingsName[] =
+    "Show default browser video in settings experiment";
+const char kDBVideoInSettingsDescription[] =
+    "When enabled, default browser video will be displayed to user in "
+    "settings.";
 
 const char kDefaultBrowserBlueDotPromoName[] = "Default Browser Blue Dot Promo";
 const char kDefaultBrowserBlueDotPromoDescription[] =
@@ -501,12 +513,6 @@ const char kEnableWebChannelsDescription[] =
     "Enable folowing content from web and display Following feed on NTP based "
     "on sites that users followed.";
 
-const char kTailoredSecurityIntegrationName[] =
-    "Enable Tailored Security Integration";
-const char kTailoredSecurityIntegrationDescription[] =
-    "Enable integration between account level enhanced safe browsing and "
-    "chrome enhanced safe browsing";
-
 const char kFeedBackgroundRefreshName[] = "Enable feed background refresh";
 const char kFeedBackgroundRefreshDescription[] =
     "Schedules a feed background refresh after some minimum period of time has "
@@ -679,6 +685,12 @@ const char kIOSSharedHighlightingV2Description[] =
 const char kIPHForSafariSwitcherName[] = "IPH for Safari Switcher";
 const char kIPHForSafariSwitcherDescription[] =
     "Enables displaying IPH for users who are considered Safari Switcher";
+
+const char kIPHiOSPromoPasswordManagerWidgetName[] =
+    "Password Manager widget promo IPH";
+const char kIPHiOSPromoPasswordManagerWidgetDescription[] =
+    "Enables displaying the Password Manager widget promo IPH when users "
+    "navigate to the Password Manager";
 
 const char kLockBottomToolbarName[] = "Lock bottom toolbar";
 const char kLockBottomToolbarDescription[] =
@@ -1034,12 +1046,6 @@ const char kSyncSegmentsDataDescription[] =
     "Enables history's segments to include foreign visits from syncing "
     "devices.";
 
-const char kSynthesizedRestoreSessionName[] =
-    "Use a synthesized native WKWebView sesion restoration (iOS15 only).";
-const char kSynthesizedRestoreSessionDescription[] =
-    "Enable instant session restoration by synthesizing WKWebView session "
-    "restoration data (iOS15 only).";
-
 const char kStartSurfaceName[] = "Start Surface";
 const char kStartSurfaceDescription[] =
     "Enable showing the Start Surface when launching Chrome via clicking the "
@@ -1064,6 +1070,11 @@ const char kThemeColorInTopToolbarName[] = "Top toolbar use page's theme color";
 const char kThemeColorInTopToolbarDescription[] =
     "When enabled with bottom omnibox, the top toolbar background color is the "
     "page's theme color";
+
+const char kIOSLargeFakeboxName[] = "Enable Large Fakebox on Home";
+const char kIOSLargeFakeboxDescription[] =
+    "When enabled, the Fakebox on Home appears larger and has an updated "
+    "design.";
 
 const char kIOSLensUseDirectUploadName[] =
     "Use direct upload for Lens searches";

@@ -19,6 +19,7 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/game_dashboard/game_dashboard_context_test_api.h"
 #include "ash/game_dashboard/game_dashboard_controller.h"
+#include "ash/game_dashboard/game_dashboard_widget.h"
 #include "ash/public/cpp/capture_mode/capture_mode_test_api.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
@@ -78,7 +79,7 @@ class GameDashboardCaptureModeTest : public AshTestBase {
     AshTestBase::SetUp();
     EXPECT_TRUE(features::IsGameDashboardEnabled());
 
-    game_window_ = CreateAppWindow(gfx::Rect(0, 100, 200, 200));
+    game_window_ = CreateAppWindow(gfx::Rect(0, 100, 300, 200));
     game_window_->SetProperty(kAppIDKey,
                               std::string(extension_misc::kGeForceNowAppId));
   }

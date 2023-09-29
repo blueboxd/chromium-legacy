@@ -23,6 +23,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_future.h"
 #include "base/test/with_feature_override.h"
+#include "base/time/time.h"
 #include "content/browser/private_aggregation/private_aggregation_manager_impl.h"
 #include "content/browser/private_aggregation/private_aggregation_test_utils.h"
 #include "content/browser/renderer_host/navigation_request.h"
@@ -915,7 +916,8 @@ class SharedStorageBrowserTestBase : public ContentBrowserTest {
       size_t expected_total_host_count = 1u,
       bool keep_alive_after_operation = true,
       absl::optional<std::string> context_id = absl::nullopt,
-      std::string* out_error = nullptr) {
+      std::string* out_error = nullptr,
+      bool wait_for_operation_finish = true) {
     DCHECK(out_module_script_url);
 
     base::StringPairs run_function_body_replacement;
@@ -964,9 +966,11 @@ class SharedStorageBrowserTestBase : public ContentBrowserTest {
       return;
     }
 
-    test_worklet_host_manager()
-        .GetAttachedWorkletHostForFrame(execution_target.render_frame_host())
-        ->WaitForWorkletResponses();
+    if (wait_for_operation_finish) {
+      test_worklet_host_manager()
+          .GetAttachedWorkletHostForFrame(execution_target.render_frame_host())
+          ->WaitForWorkletResponses();
+    }
   }
 
   FrameTreeNode* CreateIFrame(FrameTreeNode* root, const GURL& url) {
@@ -6596,8 +6600,10 @@ class SharedStoragePrivateAggregationEnabledBrowserTest
   };
 
   SharedStoragePrivateAggregationEnabledBrowserTest() {
-    private_aggregation_feature_.InitAndEnableFeature(
-        blink::features::kPrivateAggregationApi);
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{blink::features::kPrivateAggregationApi,
+                              blink::features::kSharedStorageAPIM118},
+        /*disabled_features=*/{});
   }
 
   void SetUpOnMainThread() override {
@@ -6609,7 +6615,7 @@ class SharedStoragePrivateAggregationEnabledBrowserTest
         static_cast<StoragePartitionImpl*>(GetStoragePartition());
 
     private_aggregation_host_ = new PrivateAggregationHost(
-        /*on_report_request_received=*/mock_callback_.Get(),
+        /*on_report_request_details_received=*/mock_callback_.Get(),
         storage_partition_impl->browser_context());
 
     storage_partition_impl->OverridePrivateAggregationManagerForTesting(
@@ -6627,8 +6633,11 @@ class SharedStoragePrivateAggregationEnabledBrowserTest
         std::make_unique<MockPrivateAggregationShellContentBrowserClient>();
   }
 
-  const base::MockRepeatingCallback<void(AggregatableReportRequest,
-                                         PrivateAggregationBudgetKey)>&
+  const base::MockRepeatingCallback<
+      void(PrivateAggregationHost::ReportRequestGenerator,
+           std::vector<blink::mojom::AggregatableReportHistogramContribution>,
+           PrivateAggregationBudgetKey,
+           PrivateAggregationBudgeter::BudgetDeniedBehavior)>&
   mock_callback() {
     return mock_callback_;
   }
@@ -6639,10 +6648,13 @@ class SharedStoragePrivateAggregationEnabledBrowserTest
  private:
   raw_ptr<PrivateAggregationHost, DanglingUntriaged> private_aggregation_host_;
 
-  base::test::ScopedFeatureList private_aggregation_feature_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
-  base::MockRepeatingCallback<void(AggregatableReportRequest,
-                                   PrivateAggregationBudgetKey)>
+  base::MockRepeatingCallback<void(
+      PrivateAggregationHost::ReportRequestGenerator,
+      std::vector<blink::mojom::AggregatableReportHistogramContribution>,
+      PrivateAggregationBudgetKey,
+      PrivateAggregationBudgeter::BudgetDeniedBehavior)>
       mock_callback_;
 };
 
@@ -6653,18 +6665,28 @@ IN_PROC_BROWSER_TEST_F(SharedStoragePrivateAggregationEnabledBrowserTest,
   base::RunLoop run_loop;
 
   EXPECT_CALL(mock_callback(), Run)
-      .WillOnce(testing::Invoke([&](AggregatableReportRequest request,
-                                    PrivateAggregationBudgetKey budget_key) {
-        ASSERT_EQ(request.payload_contents().contributions.size(), 1u);
-        EXPECT_EQ(request.payload_contents().contributions[0].bucket, 1);
-        EXPECT_EQ(request.payload_contents().contributions[0].value, 2);
-        EXPECT_EQ(request.shared_info().reporting_origin, a_test_origin_);
-        EXPECT_EQ(budget_key.origin(), a_test_origin_);
-        EXPECT_EQ(budget_key.api(),
-                  PrivateAggregationBudgetKey::Api::kSharedStorage);
-        EXPECT_TRUE(request.additional_fields().empty());
-        run_loop.Quit();
-      }));
+      .WillOnce(testing::Invoke(
+          [&](PrivateAggregationHost::ReportRequestGenerator generator,
+              std::vector<blink::mojom::AggregatableReportHistogramContribution>
+                  contributions,
+              PrivateAggregationBudgetKey budget_key,
+              PrivateAggregationBudgeter::BudgetDeniedBehavior
+                  budget_denied_behavior) {
+            AggregatableReportRequest request =
+                std::move(generator).Run(contributions);
+            ASSERT_EQ(request.payload_contents().contributions.size(), 1u);
+            EXPECT_EQ(request.payload_contents().contributions[0].bucket, 1);
+            EXPECT_EQ(request.payload_contents().contributions[0].value, 2);
+            EXPECT_EQ(request.shared_info().reporting_origin, a_test_origin_);
+            EXPECT_EQ(budget_key.origin(), a_test_origin_);
+            EXPECT_EQ(budget_key.api(),
+                      PrivateAggregationBudgetKey::Api::kSharedStorage);
+            EXPECT_TRUE(request.additional_fields().empty());
+            EXPECT_EQ(budget_denied_behavior,
+                      PrivateAggregationBudgeter::BudgetDeniedBehavior::
+                          kDontSendReport);
+            run_loop.Quit();
+          }));
 
   EXPECT_CALL(browser_client(),
               LogWebFeatureForCurrentPage(
@@ -6731,19 +6753,29 @@ IN_PROC_BROWSER_TEST_F(SharedStoragePrivateAggregationEnabledBrowserTest,
   base::RunLoop run_loop;
 
   EXPECT_CALL(mock_callback(), Run)
-      .WillOnce(testing::Invoke([&](AggregatableReportRequest request,
-                                    PrivateAggregationBudgetKey budget_key) {
-        ASSERT_EQ(request.payload_contents().contributions.size(), 2u);
-        EXPECT_EQ(request.payload_contents().contributions[0].bucket, 1);
-        EXPECT_EQ(request.payload_contents().contributions[0].value, 2);
-        EXPECT_EQ(request.payload_contents().contributions[1].bucket, 3);
-        EXPECT_EQ(request.payload_contents().contributions[1].value, 4);
-        EXPECT_EQ(request.shared_info().reporting_origin, a_test_origin_);
-        EXPECT_EQ(budget_key.origin(), a_test_origin_);
-        EXPECT_EQ(budget_key.api(),
-                  PrivateAggregationBudgetKey::Api::kSharedStorage);
-        run_loop.Quit();
-      }));
+      .WillOnce(testing::Invoke(
+          [&](PrivateAggregationHost::ReportRequestGenerator generator,
+              std::vector<blink::mojom::AggregatableReportHistogramContribution>
+                  contributions,
+              PrivateAggregationBudgetKey budget_key,
+              PrivateAggregationBudgeter::BudgetDeniedBehavior
+                  budget_denied_behavior) {
+            AggregatableReportRequest request =
+                std::move(generator).Run(contributions);
+            ASSERT_EQ(request.payload_contents().contributions.size(), 2u);
+            EXPECT_EQ(request.payload_contents().contributions[0].bucket, 1);
+            EXPECT_EQ(request.payload_contents().contributions[0].value, 2);
+            EXPECT_EQ(request.payload_contents().contributions[1].bucket, 3);
+            EXPECT_EQ(request.payload_contents().contributions[1].value, 4);
+            EXPECT_EQ(request.shared_info().reporting_origin, a_test_origin_);
+            EXPECT_EQ(budget_key.origin(), a_test_origin_);
+            EXPECT_EQ(budget_key.api(),
+                      PrivateAggregationBudgetKey::Api::kSharedStorage);
+            EXPECT_EQ(budget_denied_behavior,
+                      PrivateAggregationBudgeter::BudgetDeniedBehavior::
+                          kDontSendReport);
+            run_loop.Quit();
+          }));
 
   EXPECT_CALL(browser_client(),
               LogWebFeatureForCurrentPage(
@@ -6772,26 +6804,99 @@ IN_PROC_BROWSER_TEST_F(SharedStoragePrivateAggregationEnabledBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SharedStoragePrivateAggregationEnabledBrowserTest,
+                       TimeoutBeforeOperationFinish) {
+  EXPECT_CALL(mock_callback(), Run)
+      .WillOnce(testing::Invoke(
+          [&](PrivateAggregationHost::ReportRequestGenerator generator,
+              std::vector<blink::mojom::AggregatableReportHistogramContribution>
+                  contributions,
+              PrivateAggregationBudgetKey budget_key,
+              PrivateAggregationBudgeter::BudgetDeniedBehavior
+                  budget_denied_behavior) {
+            AggregatableReportRequest request =
+                std::move(generator).Run(contributions);
+            ASSERT_EQ(request.payload_contents().contributions.size(), 1u);
+            EXPECT_EQ(request.payload_contents().contributions[0].bucket, 1);
+            EXPECT_EQ(request.payload_contents().contributions[0].value, 2);
+            EXPECT_EQ(request.shared_info().reporting_origin, a_test_origin_);
+            EXPECT_EQ(budget_key.origin(), a_test_origin_);
+            EXPECT_EQ(budget_key.api(),
+                      PrivateAggregationBudgetKey::Api::kSharedStorage);
+            EXPECT_EQ(budget_denied_behavior,
+                      PrivateAggregationBudgeter::BudgetDeniedBehavior::
+                          kSendNullReport);
+            EXPECT_THAT(request.additional_fields(),
+                        testing::ElementsAre(
+                            testing::Pair("context_id", "example_context_id")));
+          }));
+
+  EXPECT_CALL(browser_client(),
+              LogWebFeatureForCurrentPage(
+                  shell()->web_contents()->GetPrimaryMainFrame(),
+                  blink::mojom::WebFeature::kPrivateAggregationApiAll));
+  EXPECT_CALL(
+      browser_client(),
+      LogWebFeatureForCurrentPage(
+          shell()->web_contents()->GetPrimaryMainFrame(),
+          blink::mojom::WebFeature::kPrivateAggregationApiSharedStorage));
+  ON_CALL(browser_client(), IsPrivateAggregationAllowed)
+      .WillByDefault(testing::Return(true));
+  ON_CALL(browser_client(), IsSharedStorageAllowed)
+      .WillByDefault(testing::Return(true));
+
+  GURL out_script_url;
+
+  // Run an operation that returns a promise that never resolves.
+  ExecuteScriptInWorklet(shell(), R"(
+      privateAggregation.contributeToHistogram({bucket: 1n, value: 2});
+      return new Promise(() => {});
+    )",
+                         &out_script_url, /*expected_total_host_count=*/1u,
+                         /*keep_alive_after_operation=*/true,
+                         /*context_id=*/"example_context_id",
+                         /*out_error=*/nullptr,
+                         /*wait_for_operation_finish=*/false);
+
+  // Wait for 5 seconds for the timeout to be reached.
+  {
+    base::RunLoop run_loop;
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), base::Seconds(5));
+    run_loop.Run();
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(SharedStoragePrivateAggregationEnabledBrowserTest,
                        ContextId) {
   WebContentsConsoleObserver console_observer(shell()->web_contents());
 
   base::RunLoop run_loop;
 
   EXPECT_CALL(mock_callback(), Run)
-      .WillOnce(testing::Invoke([&](AggregatableReportRequest request,
-                                    PrivateAggregationBudgetKey budget_key) {
-        ASSERT_EQ(request.payload_contents().contributions.size(), 1u);
-        EXPECT_EQ(request.payload_contents().contributions[0].bucket, 1);
-        EXPECT_EQ(request.payload_contents().contributions[0].value, 2);
-        EXPECT_EQ(request.shared_info().reporting_origin, a_test_origin_);
-        EXPECT_EQ(budget_key.origin(), a_test_origin_);
-        EXPECT_EQ(budget_key.api(),
-                  PrivateAggregationBudgetKey::Api::kSharedStorage);
-        EXPECT_THAT(request.additional_fields(),
-                    testing::ElementsAre(
-                        testing::Pair("context_id", "example_context_id")));
-        run_loop.Quit();
-      }));
+      .WillOnce(testing::Invoke(
+          [&](PrivateAggregationHost::ReportRequestGenerator generator,
+              std::vector<blink::mojom::AggregatableReportHistogramContribution>
+                  contributions,
+              PrivateAggregationBudgetKey budget_key,
+              PrivateAggregationBudgeter::BudgetDeniedBehavior
+                  budget_denied_behavior) {
+            AggregatableReportRequest request =
+                std::move(generator).Run(contributions);
+            ASSERT_EQ(request.payload_contents().contributions.size(), 1u);
+            EXPECT_EQ(request.payload_contents().contributions[0].bucket, 1);
+            EXPECT_EQ(request.payload_contents().contributions[0].value, 2);
+            EXPECT_EQ(request.shared_info().reporting_origin, a_test_origin_);
+            EXPECT_EQ(budget_key.origin(), a_test_origin_);
+            EXPECT_EQ(budget_key.api(),
+                      PrivateAggregationBudgetKey::Api::kSharedStorage);
+            EXPECT_THAT(request.additional_fields(),
+                        testing::ElementsAre(
+                            testing::Pair("context_id", "example_context_id")));
+            EXPECT_EQ(budget_denied_behavior,
+                      PrivateAggregationBudgeter::BudgetDeniedBehavior::
+                          kSendNullReport);
+            run_loop.Quit();
+          }));
 
   EXPECT_CALL(browser_client(),
               LogWebFeatureForCurrentPage(
@@ -6827,19 +6932,29 @@ IN_PROC_BROWSER_TEST_F(SharedStoragePrivateAggregationEnabledBrowserTest,
   base::RunLoop run_loop;
 
   EXPECT_CALL(mock_callback(), Run)
-      .WillOnce(testing::Invoke([&](AggregatableReportRequest request,
-                                    PrivateAggregationBudgetKey budget_key) {
-        ASSERT_EQ(request.payload_contents().contributions.size(), 1u);
-        EXPECT_EQ(request.payload_contents().contributions[0].bucket, 1);
-        EXPECT_EQ(request.payload_contents().contributions[0].value, 2);
-        EXPECT_EQ(request.shared_info().reporting_origin, a_test_origin_);
-        EXPECT_EQ(budget_key.origin(), a_test_origin_);
-        EXPECT_EQ(budget_key.api(),
-                  PrivateAggregationBudgetKey::Api::kSharedStorage);
-        EXPECT_THAT(request.additional_fields(),
-                    testing::ElementsAre(testing::Pair("context_id", "")));
-        run_loop.Quit();
-      }));
+      .WillOnce(testing::Invoke(
+          [&](PrivateAggregationHost::ReportRequestGenerator generator,
+              std::vector<blink::mojom::AggregatableReportHistogramContribution>
+                  contributions,
+              PrivateAggregationBudgetKey budget_key,
+              PrivateAggregationBudgeter::BudgetDeniedBehavior
+                  budget_denied_behavior) {
+            AggregatableReportRequest request =
+                std::move(generator).Run(contributions);
+            ASSERT_EQ(request.payload_contents().contributions.size(), 1u);
+            EXPECT_EQ(request.payload_contents().contributions[0].bucket, 1);
+            EXPECT_EQ(request.payload_contents().contributions[0].value, 2);
+            EXPECT_EQ(request.shared_info().reporting_origin, a_test_origin_);
+            EXPECT_EQ(budget_key.origin(), a_test_origin_);
+            EXPECT_EQ(budget_key.api(),
+                      PrivateAggregationBudgetKey::Api::kSharedStorage);
+            EXPECT_THAT(request.additional_fields(),
+                        testing::ElementsAre(testing::Pair("context_id", "")));
+            EXPECT_EQ(budget_denied_behavior,
+                      PrivateAggregationBudgeter::BudgetDeniedBehavior::
+                          kSendNullReport);
+            run_loop.Quit();
+          }));
 
   EXPECT_CALL(browser_client(),
               LogWebFeatureForCurrentPage(
@@ -6876,22 +6991,32 @@ IN_PROC_BROWSER_TEST_F(SharedStoragePrivateAggregationEnabledBrowserTest,
   base::RunLoop run_loop;
 
   EXPECT_CALL(mock_callback(), Run)
-      .WillOnce(testing::Invoke([&](AggregatableReportRequest request,
-                                    PrivateAggregationBudgetKey budget_key) {
-        ASSERT_EQ(request.payload_contents().contributions.size(), 1u);
-        EXPECT_EQ(request.payload_contents().contributions[0].bucket, 1);
-        EXPECT_EQ(request.payload_contents().contributions[0].value, 2);
-        EXPECT_EQ(request.shared_info().reporting_origin, a_test_origin_);
-        EXPECT_EQ(budget_key.origin(), a_test_origin_);
-        EXPECT_EQ(budget_key.api(),
-                  PrivateAggregationBudgetKey::Api::kSharedStorage);
-        EXPECT_THAT(request.additional_fields(),
-                    testing::ElementsAre(
-                        testing::Pair("context_id",
-                                      "an_example_of_a_context_id_with_the_"
-                                      "exact_maximum_allowed_length")));
-        run_loop.Quit();
-      }));
+      .WillOnce(testing::Invoke(
+          [&](PrivateAggregationHost::ReportRequestGenerator generator,
+              std::vector<blink::mojom::AggregatableReportHistogramContribution>
+                  contributions,
+              PrivateAggregationBudgetKey budget_key,
+              PrivateAggregationBudgeter::BudgetDeniedBehavior
+                  budget_denied_behavior) {
+            AggregatableReportRequest request =
+                std::move(generator).Run(contributions);
+            ASSERT_EQ(request.payload_contents().contributions.size(), 1u);
+            EXPECT_EQ(request.payload_contents().contributions[0].bucket, 1);
+            EXPECT_EQ(request.payload_contents().contributions[0].value, 2);
+            EXPECT_EQ(request.shared_info().reporting_origin, a_test_origin_);
+            EXPECT_EQ(budget_key.origin(), a_test_origin_);
+            EXPECT_EQ(budget_key.api(),
+                      PrivateAggregationBudgetKey::Api::kSharedStorage);
+            EXPECT_THAT(request.additional_fields(),
+                        testing::ElementsAre(
+                            testing::Pair("context_id",
+                                          "an_example_of_a_context_id_with_the_"
+                                          "exact_maximum_allowed_length")));
+            EXPECT_EQ(budget_denied_behavior,
+                      PrivateAggregationBudgeter::BudgetDeniedBehavior::
+                          kSendNullReport);
+            run_loop.Quit();
+          }));
 
   EXPECT_CALL(browser_client(),
               LogWebFeatureForCurrentPage(
@@ -7032,9 +7157,15 @@ IN_PROC_BROWSER_TEST_F(SharedStoragePrivateAggregationEnabledBrowserTest,
 
   EXPECT_CALL(mock_callback(), Run)
       .Times(3)
-      .WillRepeatedly(
-          testing::Invoke([&](AggregatableReportRequest request,
-                              PrivateAggregationBudgetKey budget_key) {
+      .WillRepeatedly(testing::Invoke(
+          [&](PrivateAggregationHost::ReportRequestGenerator generator,
+              std::vector<blink::mojom::AggregatableReportHistogramContribution>
+                  contributions,
+              PrivateAggregationBudgetKey budget_key,
+              PrivateAggregationBudgeter::BudgetDeniedBehavior
+                  budget_denied_behavior) {
+            AggregatableReportRequest request =
+                std::move(generator).Run(contributions);
             if (request.payload_contents().contributions.size() == 1u) {
               EXPECT_EQ(request.payload_contents().contributions[0].bucket, 3);
               EXPECT_EQ(request.payload_contents().contributions[0].value, 1);
@@ -7050,6 +7181,9 @@ IN_PROC_BROWSER_TEST_F(SharedStoragePrivateAggregationEnabledBrowserTest,
             EXPECT_EQ(budget_key.origin(), a_test_origin_);
             EXPECT_EQ(budget_key.api(),
                       PrivateAggregationBudgetKey::Api::kSharedStorage);
+            EXPECT_EQ(budget_denied_behavior,
+                      PrivateAggregationBudgeter::BudgetDeniedBehavior::
+                          kDontSendReport);
             barrier.Run();
           }));
 

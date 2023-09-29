@@ -5,12 +5,15 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
 
 #include <memory>
+#include <string>
 
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/icu_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/side_panel/side_panel.h"
@@ -22,7 +25,9 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_util.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_view_state_observer.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/test/views_test_utils.h"
 
@@ -360,24 +365,24 @@ TEST_F(SidePanelCoordinatorTest, SidePanelReopensToLastSeenGlobalEntry) {
   EXPECT_TRUE(browser_view()->unified_side_panel()->GetVisible());
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kReadingList);
+            SidePanelEntry::Id::kBookmarks);
 
-  coordinator_->Show(SidePanelEntry::Id::kBookmarks);
+  coordinator_->Show(SidePanelEntry::Id::kReadingList);
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kBookmarks);
+            SidePanelEntry::Id::kReadingList);
 
   coordinator_->Toggle();
   EXPECT_FALSE(browser_view()->unified_side_panel()->GetVisible());
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kBookmarks);
+            SidePanelEntry::Id::kReadingList);
 
   coordinator_->Toggle();
   EXPECT_TRUE(browser_view()->unified_side_panel()->GetVisible());
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kBookmarks);
+            SidePanelEntry::Id::kReadingList);
 }
 
 TEST_F(SidePanelCoordinatorTest, ShowOpensSidePanel) {
@@ -423,13 +428,13 @@ TEST_F(SidePanelCoordinatorTest, TabSwitchInvalidatesComboboxPointerOnClose) {
   EXPECT_FALSE(ComboboxViewExists());
 }
 
-TEST_F(SidePanelCoordinatorTest, SwapBetweenTabsWithReadingListOpen) {
-  // Verify side panel opens to kReadingList by default.
+TEST_F(SidePanelCoordinatorTest, SwapBetweenTabsWithBookmarksOpen) {
+  // Verify side panel opens to kBookmarks by default.
   browser_view()->browser()->tab_strip_model()->ActivateTabAt(0);
   coordinator_->Toggle();
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kReadingList);
+            SidePanelEntry::Id::kBookmarks);
 
   // Verify switching tabs does not change side panel visibility or entry seen
   // if it is in the global registry.
@@ -437,25 +442,25 @@ TEST_F(SidePanelCoordinatorTest, SwapBetweenTabsWithReadingListOpen) {
   EXPECT_TRUE(browser_view()->unified_side_panel()->GetVisible());
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kReadingList);
+            SidePanelEntry::Id::kBookmarks);
 }
 
-TEST_F(SidePanelCoordinatorTest, SwapBetweenTabsWithBookmarksOpen) {
-  // Open side panel and switch to kBookmarks and verify the active entry is
+TEST_F(SidePanelCoordinatorTest, SwapBetweenTabsWithReadingListOpen) {
+  // Open side panel and switch to kReadingList and verify the active entry is
   // updated.
   browser_view()->browser()->tab_strip_model()->ActivateTabAt(0);
   coordinator_->Toggle();
-  coordinator_->Show(SidePanelEntry::Id::kBookmarks);
+  coordinator_->Show(SidePanelEntry::Id::kReadingList);
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kBookmarks);
+            SidePanelEntry::Id::kReadingList);
 
   // Verify switching tabs does not change entry seen if it is in the global
   // registry.
   browser_view()->browser()->tab_strip_model()->ActivateTabAt(1);
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kBookmarks);
+            SidePanelEntry::Id::kReadingList);
 }
 
 TEST_F(SidePanelCoordinatorTest, ContextualEntryDeregistered) {
@@ -575,24 +580,24 @@ TEST_F(SidePanelCoordinatorTest, SwapBetweenTwoContextualEntryWithTheSameId) {
 
 TEST_F(SidePanelCoordinatorTest,
        SwapBetweenTabsAfterNavigatingToContextualEntry) {
-  // Open side panel and verify it opens to kReadingList by default.
+  // Open side panel and verify it opens to kBookmarks by default.
   browser_view()->browser()->tab_strip_model()->ActivateTabAt(0);
   coordinator_->Toggle();
-  EXPECT_TRUE(GetLastActiveEntryKey().has_value());
-  EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kReadingList);
-  VerifyEntryExistenceAndValue(global_registry_->active_entry(),
-                               SidePanelEntry::Id::kReadingList);
-  EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
-  EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
-
-  // Switch to a different global entry and verify the active entry is updated.
-  coordinator_->Show(SidePanelEntry::Id::kBookmarks);
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
             SidePanelEntry::Id::kBookmarks);
   VerifyEntryExistenceAndValue(global_registry_->active_entry(),
                                SidePanelEntry::Id::kBookmarks);
+  EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
+  EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
+
+  // Switch to a different global entry and verify the active entry is updated.
+  coordinator_->Show(SidePanelEntry::Id::kReadingList);
+  EXPECT_TRUE(GetLastActiveEntryKey().has_value());
+  EXPECT_EQ(GetLastActiveEntryKey().value().id(),
+            SidePanelEntry::Id::kReadingList);
+  VerifyEntryExistenceAndValue(global_registry_->active_entry(),
+                               SidePanelEntry::Id::kReadingList);
   EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
   auto* bookmarks_entry = coordinator_->GetCurrentSidePanelEntryForTesting();
@@ -603,7 +608,7 @@ TEST_F(SidePanelCoordinatorTest,
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
             SidePanelEntry::Id::kSideSearch);
   VerifyEntryExistenceAndValue(global_registry_->active_entry(),
-                               SidePanelEntry::Id::kBookmarks);
+                               SidePanelEntry::Id::kReadingList);
   VerifyEntryExistenceAndValue(contextual_registries_[0]->active_entry(),
                                SidePanelEntry::Id::kSideSearch);
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
@@ -614,9 +619,9 @@ TEST_F(SidePanelCoordinatorTest,
   browser_view()->browser()->tab_strip_model()->ActivateTabAt(1);
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kBookmarks);
+            SidePanelEntry::Id::kReadingList);
   VerifyEntryExistenceAndValue(global_registry_->active_entry(),
-                               SidePanelEntry::Id::kBookmarks);
+                               SidePanelEntry::Id::kReadingList);
   VerifyEntryExistenceAndValue(contextual_registries_[0]->active_entry(),
                                SidePanelEntry::Id::kSideSearch);
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
@@ -630,7 +635,7 @@ TEST_F(SidePanelCoordinatorTest,
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
             SidePanelEntry::Id::kSideSearch);
   VerifyEntryExistenceAndValue(global_registry_->active_entry(),
-                               SidePanelEntry::Id::kBookmarks);
+                               SidePanelEntry::Id::kReadingList);
   VerifyEntryExistenceAndValue(contextual_registries_[0]->active_entry(),
                                SidePanelEntry::Id::kSideSearch);
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
@@ -639,24 +644,24 @@ TEST_F(SidePanelCoordinatorTest,
 }
 
 TEST_F(SidePanelCoordinatorTest, TogglePanelWithContextualEntryShowing) {
-  // Open side panel and verify it opens to kReadingList by default.
+  // Open side panel and verify it opens to kBookmarks by default.
   browser_view()->browser()->tab_strip_model()->ActivateTabAt(0);
   coordinator_->Toggle();
-  EXPECT_TRUE(GetLastActiveEntryKey().has_value());
-  EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kReadingList);
-  VerifyEntryExistenceAndValue(global_registry_->active_entry(),
-                               SidePanelEntry::Id::kReadingList);
-  EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
-  EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
-
-  // Switch to a different global entry and verify the active entry is updated.
-  coordinator_->Show(SidePanelEntry::Id::kBookmarks);
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
             SidePanelEntry::Id::kBookmarks);
   VerifyEntryExistenceAndValue(global_registry_->active_entry(),
                                SidePanelEntry::Id::kBookmarks);
+  EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
+  EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
+
+  // Switch to a different global entry and verify the active entry is updated.
+  coordinator_->Show(SidePanelEntry::Id::kReadingList);
+  EXPECT_TRUE(GetLastActiveEntryKey().has_value());
+  EXPECT_EQ(GetLastActiveEntryKey().value().id(),
+            SidePanelEntry::Id::kReadingList);
+  VerifyEntryExistenceAndValue(global_registry_->active_entry(),
+                               SidePanelEntry::Id::kReadingList);
   EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
 
@@ -666,7 +671,7 @@ TEST_F(SidePanelCoordinatorTest, TogglePanelWithContextualEntryShowing) {
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
             SidePanelEntry::Id::kSideSearch);
   VerifyEntryExistenceAndValue(global_registry_->active_entry(),
-                               SidePanelEntry::Id::kBookmarks);
+                               SidePanelEntry::Id::kReadingList);
   VerifyEntryExistenceAndValue(contextual_registries_[0]->active_entry(),
                                SidePanelEntry::Id::kSideSearch);
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
@@ -680,7 +685,7 @@ TEST_F(SidePanelCoordinatorTest, TogglePanelWithContextualEntryShowing) {
             SidePanelEntry::Id::kSideSearch);
   EXPECT_FALSE(global_registry_->active_entry().has_value());
   VerifyEntryExistenceAndValue(global_registry_->last_active_entry(),
-                               SidePanelEntry::Id::kBookmarks);
+                               SidePanelEntry::Id::kReadingList);
   EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
   VerifyEntryExistenceAndValue(contextual_registries_[0]->last_active_entry(),
                                SidePanelEntry::Id::kSideSearch);
@@ -695,7 +700,7 @@ TEST_F(SidePanelCoordinatorTest, TogglePanelWithContextualEntryShowing) {
             SidePanelEntry::Id::kSideSearch);
   EXPECT_FALSE(global_registry_->active_entry().has_value());
   VerifyEntryExistenceAndValue(global_registry_->last_active_entry(),
-                               SidePanelEntry::Id::kBookmarks);
+                               SidePanelEntry::Id::kReadingList);
   VerifyEntryExistenceAndValue(contextual_registries_[0]->active_entry(),
                                SidePanelEntry::Id::kSideSearch);
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
@@ -703,14 +708,14 @@ TEST_F(SidePanelCoordinatorTest, TogglePanelWithContextualEntryShowing) {
 
 TEST_F(SidePanelCoordinatorTest,
        TogglePanelWithGlobalEntryShowingWithTabSwitch) {
-  // Open side panel and verify it opens to kReadingList by default.
+  // Open side panel and verify it opens to kBookmarks by default.
   browser_view()->browser()->tab_strip_model()->ActivateTabAt(0);
   coordinator_->Toggle();
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kReadingList);
+            SidePanelEntry::Id::kBookmarks);
   VerifyEntryExistenceAndValue(global_registry_->active_entry(),
-                               SidePanelEntry::Id::kReadingList);
+                               SidePanelEntry::Id::kBookmarks);
   EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
 
@@ -720,18 +725,18 @@ TEST_F(SidePanelCoordinatorTest,
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
             SidePanelEntry::Id::kSideSearch);
   VerifyEntryExistenceAndValue(global_registry_->active_entry(),
-                               SidePanelEntry::Id::kReadingList);
+                               SidePanelEntry::Id::kBookmarks);
   VerifyEntryExistenceAndValue(contextual_registries_[0]->active_entry(),
                                SidePanelEntry::Id::kSideSearch);
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
 
   // Switch to a global entry and verify the active entry is updated.
-  coordinator_->Show(SidePanelEntry::Id::kBookmarks);
+  coordinator_->Show(SidePanelEntry::Id::kReadingList);
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kBookmarks);
+            SidePanelEntry::Id::kReadingList);
   VerifyEntryExistenceAndValue(global_registry_->active_entry(),
-                               SidePanelEntry::Id::kBookmarks);
+                               SidePanelEntry::Id::kReadingList);
   EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
 
@@ -741,10 +746,10 @@ TEST_F(SidePanelCoordinatorTest,
   EXPECT_FALSE(browser_view()->unified_side_panel()->GetVisible());
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kBookmarks);
+            SidePanelEntry::Id::kReadingList);
   EXPECT_FALSE(global_registry_->active_entry().has_value());
   VerifyEntryExistenceAndValue(global_registry_->last_active_entry(),
-                               SidePanelEntry::Id::kBookmarks);
+                               SidePanelEntry::Id::kReadingList);
   EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
   EXPECT_FALSE(contextual_registries_[0]->last_active_entry().has_value());
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
@@ -757,7 +762,7 @@ TEST_F(SidePanelCoordinatorTest,
             SidePanelEntry::Id::kSideSearch);
   EXPECT_FALSE(global_registry_->active_entry().has_value());
   VerifyEntryExistenceAndValue(global_registry_->last_active_entry(),
-                               SidePanelEntry::Id::kBookmarks);
+                               SidePanelEntry::Id::kReadingList);
   EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
   EXPECT_FALSE(contextual_registries_[0]->last_active_entry().has_value());
   VerifyEntryExistenceAndValue(contextual_registries_[1]->active_entry(),
@@ -769,9 +774,9 @@ TEST_F(SidePanelCoordinatorTest,
   coordinator_->Toggle();
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kBookmarks);
+            SidePanelEntry::Id::kReadingList);
   VerifyEntryExistenceAndValue(global_registry_->active_entry(),
-                               SidePanelEntry::Id::kBookmarks);
+                               SidePanelEntry::Id::kReadingList);
   EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
   VerifyEntryExistenceAndValue(contextual_registries_[1]->active_entry(),
                                SidePanelEntry::Id::kSideSearch);
@@ -779,14 +784,14 @@ TEST_F(SidePanelCoordinatorTest,
 
 TEST_F(SidePanelCoordinatorTest,
        TogglePanelWithContextualEntryShowingWithTabSwitch) {
-  // Open side panel and verify it opens to kReadingList by default.
+  // Open side panel and verify it opens to kBookmarks by default.
   browser_view()->browser()->tab_strip_model()->ActivateTabAt(0);
   coordinator_->Toggle();
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kReadingList);
+            SidePanelEntry::Id::kBookmarks);
   VerifyEntryExistenceAndValue(global_registry_->active_entry(),
-                               SidePanelEntry::Id::kReadingList);
+                               SidePanelEntry::Id::kBookmarks);
   EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
 
@@ -796,7 +801,7 @@ TEST_F(SidePanelCoordinatorTest,
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
             SidePanelEntry::Id::kSideSearch);
   VerifyEntryExistenceAndValue(global_registry_->active_entry(),
-                               SidePanelEntry::Id::kReadingList);
+                               SidePanelEntry::Id::kBookmarks);
   VerifyEntryExistenceAndValue(contextual_registries_[0]->active_entry(),
                                SidePanelEntry::Id::kSideSearch);
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
@@ -810,7 +815,7 @@ TEST_F(SidePanelCoordinatorTest,
             SidePanelEntry::Id::kSideSearch);
   EXPECT_FALSE(global_registry_->active_entry().has_value());
   VerifyEntryExistenceAndValue(global_registry_->last_active_entry(),
-                               SidePanelEntry::Id::kReadingList);
+                               SidePanelEntry::Id::kBookmarks);
   EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
   VerifyEntryExistenceAndValue(contextual_registries_[0]->last_active_entry(),
                                SidePanelEntry::Id::kSideSearch);
@@ -822,9 +827,9 @@ TEST_F(SidePanelCoordinatorTest,
   coordinator_->Toggle();
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kReadingList);
+            SidePanelEntry::Id::kBookmarks);
   VerifyEntryExistenceAndValue(global_registry_->active_entry(),
-                               SidePanelEntry::Id::kReadingList);
+                               SidePanelEntry::Id::kBookmarks);
   EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
   VerifyEntryExistenceAndValue(contextual_registries_[0]->last_active_entry(),
                                SidePanelEntry::Id::kSideSearch);
@@ -836,10 +841,10 @@ TEST_F(SidePanelCoordinatorTest,
   EXPECT_FALSE(browser_view()->unified_side_panel()->GetVisible());
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kReadingList);
+            SidePanelEntry::Id::kBookmarks);
   EXPECT_FALSE(global_registry_->active_entry().has_value());
   VerifyEntryExistenceAndValue(global_registry_->last_active_entry(),
-                               SidePanelEntry::Id::kReadingList);
+                               SidePanelEntry::Id::kBookmarks);
   EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
   VerifyEntryExistenceAndValue(contextual_registries_[0]->last_active_entry(),
                                SidePanelEntry::Id::kSideSearch);
@@ -860,24 +865,24 @@ TEST_F(SidePanelCoordinatorTest,
 
 TEST_F(SidePanelCoordinatorTest,
        SwitchBetweenTabWithGlobalEntryAndTabWithLastActiveContextualEntry) {
-  // Open side panel and verify it opens to kReadingList by default.
+  // Open side panel and verify it opens to kBookmarks by default.
   browser_view()->browser()->tab_strip_model()->ActivateTabAt(0);
   coordinator_->Toggle();
-  EXPECT_TRUE(GetLastActiveEntryKey().has_value());
-  EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kReadingList);
-  VerifyEntryExistenceAndValue(global_registry_->active_entry(),
-                               SidePanelEntry::Id::kReadingList);
-  EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
-  EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
-
-  // Switch to another global entry and verify the active entry is updated.
-  coordinator_->Show(SidePanelEntry::Id::kBookmarks);
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
             SidePanelEntry::Id::kBookmarks);
   VerifyEntryExistenceAndValue(global_registry_->active_entry(),
                                SidePanelEntry::Id::kBookmarks);
+  EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
+  EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
+
+  // Switch to another global entry and verify the active entry is updated.
+  coordinator_->Show(SidePanelEntry::Id::kReadingList);
+  EXPECT_TRUE(GetLastActiveEntryKey().has_value());
+  EXPECT_EQ(GetLastActiveEntryKey().value().id(),
+            SidePanelEntry::Id::kReadingList);
+  VerifyEntryExistenceAndValue(global_registry_->active_entry(),
+                               SidePanelEntry::Id::kReadingList);
   EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
 
@@ -888,7 +893,7 @@ TEST_F(SidePanelCoordinatorTest,
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
             SidePanelEntry::Id::kSideSearch);
   VerifyEntryExistenceAndValue(global_registry_->active_entry(),
-                               SidePanelEntry::Id::kBookmarks);
+                               SidePanelEntry::Id::kReadingList);
   EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
   VerifyEntryExistenceAndValue(contextual_registries_[1]->active_entry(),
                                SidePanelEntry::Id::kSideSearch);
@@ -902,7 +907,7 @@ TEST_F(SidePanelCoordinatorTest,
             SidePanelEntry::Id::kSideSearch);
   EXPECT_FALSE(global_registry_->active_entry().has_value());
   VerifyEntryExistenceAndValue(global_registry_->last_active_entry(),
-                               SidePanelEntry::Id::kBookmarks);
+                               SidePanelEntry::Id::kReadingList);
   EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
   VerifyEntryExistenceAndValue(contextual_registries_[1]->last_active_entry(),
@@ -913,9 +918,9 @@ TEST_F(SidePanelCoordinatorTest,
   coordinator_->Toggle();
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kBookmarks);
+            SidePanelEntry::Id::kReadingList);
   VerifyEntryExistenceAndValue(global_registry_->active_entry(),
-                               SidePanelEntry::Id::kBookmarks);
+                               SidePanelEntry::Id::kReadingList);
   EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
   VerifyEntryExistenceAndValue(contextual_registries_[1]->last_active_entry(),
@@ -926,11 +931,11 @@ TEST_F(SidePanelCoordinatorTest,
   browser_view()->browser()->tab_strip_model()->ActivateTabAt(1);
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kBookmarks);
+            SidePanelEntry::Id::kReadingList);
   VerifyEntryExistenceAndValue(global_registry_->active_entry(),
-                               SidePanelEntry::Id::kBookmarks);
+                               SidePanelEntry::Id::kReadingList);
   VerifyEntryExistenceAndValue(global_registry_->last_active_entry(),
-                               SidePanelEntry::Id::kBookmarks);
+                               SidePanelEntry::Id::kReadingList);
   EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
   VerifyEntryExistenceAndValue(contextual_registries_[1]->last_active_entry(),
@@ -941,10 +946,10 @@ TEST_F(SidePanelCoordinatorTest,
   coordinator_->Toggle();
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kBookmarks);
+            SidePanelEntry::Id::kReadingList);
   EXPECT_FALSE(global_registry_->active_entry().has_value());
   VerifyEntryExistenceAndValue(global_registry_->last_active_entry(),
-                               SidePanelEntry::Id::kBookmarks);
+                               SidePanelEntry::Id::kReadingList);
   EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
   EXPECT_FALSE(contextual_registries_[1]->last_active_entry().has_value());
@@ -953,9 +958,9 @@ TEST_F(SidePanelCoordinatorTest,
   coordinator_->Toggle();
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kBookmarks);
+            SidePanelEntry::Id::kReadingList);
   VerifyEntryExistenceAndValue(global_registry_->active_entry(),
-                               SidePanelEntry::Id::kBookmarks);
+                               SidePanelEntry::Id::kReadingList);
   EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
 }
@@ -1002,9 +1007,9 @@ TEST_F(
   EXPECT_TRUE(browser_view()->unified_side_panel()->GetVisible());
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kReadingList);
+            SidePanelEntry::Id::kBookmarks);
   VerifyEntryExistenceAndValue(global_registry_->active_entry(),
-                               SidePanelEntry::Id::kReadingList);
+                               SidePanelEntry::Id::kBookmarks);
   EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
 
@@ -1012,9 +1017,9 @@ TEST_F(
   EXPECT_FALSE(browser_view()->unified_side_panel()->GetVisible());
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kReadingList);
+            SidePanelEntry::Id::kBookmarks);
   VerifyEntryExistenceAndValue(global_registry_->last_active_entry(),
-                               SidePanelEntry::Id::kReadingList);
+                               SidePanelEntry::Id::kBookmarks);
   EXPECT_FALSE(global_registry_->active_entry().has_value());
   EXPECT_FALSE(contextual_registries_[0]->active_entry().has_value());
   EXPECT_FALSE(contextual_registries_[1]->active_entry().has_value());
@@ -1035,7 +1040,7 @@ TEST_F(
   EXPECT_FALSE(browser_view()->unified_side_panel()->GetVisible());
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
-            SidePanelEntry::Id::kReadingList);
+            SidePanelEntry::Id::kBookmarks);
   EXPECT_FALSE(global_registry_->active_entry().has_value());
   VerifyEntryExistenceAndValue(contextual_registries_[0]->active_entry(),
                                SidePanelEntry::Id::kSideSearch);
@@ -1674,6 +1679,41 @@ TEST_F(SidePanelCoordinatorTest, DeregisterAndReturnView) {
       SidePanelUtil::DeregisterAndReturnView(global_registry_, extension_key);
   ASSERT_TRUE(returned_view);
   EXPECT_EQ(33, static_cast<ViewWithCounter*>(returned_view.get())->counter());
+}
+
+class SidePanelPinningCoordinatorTest : public SidePanelCoordinatorTest {
+ public:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kSidePanelPinning);
+    SidePanelCoordinatorTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(SidePanelPinningCoordinatorTest, SidePanelTitleUpdates) {
+  browser_view()->browser()->tab_strip_model()->ActivateTabAt(0);
+  coordinator_->Show(SidePanelEntry::Id::kBookmarks);
+  EXPECT_TRUE(GetLastActiveEntryKey().has_value());
+  EXPECT_EQ(GetLastActiveEntryKey().value().id(),
+            SidePanelEntry::Id::kBookmarks);
+  EXPECT_EQ(coordinator_->panel_title_->GetText(),
+            l10n_util::GetStringUTF16(IDS_BOOKMARK_MANAGER_TITLE));
+
+  coordinator_->Show(SidePanelEntry::Id::kReadingList);
+  EXPECT_TRUE(GetLastActiveEntryKey().has_value());
+  EXPECT_EQ(GetLastActiveEntryKey().value().id(),
+            SidePanelEntry::Id::kReadingList);
+  EXPECT_EQ(coordinator_->panel_title_->GetText(),
+            l10n_util::GetStringUTF16(IDS_READ_LATER_TITLE));
+
+  // Checks that the title updates even for contextual side panels
+  coordinator_->Show(SidePanelEntry::Id::kSideSearch);
+  EXPECT_TRUE(GetLastActiveEntryKey().has_value());
+  EXPECT_EQ(GetLastActiveEntryKey().value().id(),
+            SidePanelEntry::Id::kSideSearch);
+  EXPECT_EQ(coordinator_->panel_title_->GetText(), u"testing1");
 }
 
 // Test that the SidePanelCoordinator behaves and updates corrected when dealing

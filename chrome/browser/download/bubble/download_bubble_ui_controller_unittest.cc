@@ -13,9 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/download/bubble/download_bubble_prefs.h"
 #include "chrome/browser/download/bubble/download_bubble_update_service.h"
-#include "chrome/browser/download/bubble/download_display.h"
 #include "chrome/browser/download/bubble/download_display_controller.h"
-#include "chrome/browser/download/bubble/download_icon_state.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
@@ -25,6 +23,7 @@
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/download/download_display.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -53,7 +52,6 @@ using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using StrictMockDownloadItem = testing::StrictMock<download::MockDownloadItem>;
 using DownloadDangerType = download::DownloadDangerType;
-using DownloadIconState = download::DownloadIconState;
 using DownloadState = download::DownloadItem::DownloadState;
 using DownloadUIModelPtr = DownloadUIModel::DownloadUIModelPtr;
 using OfflineItemList =
@@ -99,7 +97,7 @@ class MockDownloadBubbleUpdateService : public DownloadBubbleUpdateService {
 
   bool GetAllModelsToDisplay(
       std::vector<DownloadUIModelPtr>& models,
-      const web_app::AppId* web_app_id,
+      const webapps::AppId* web_app_id,
       bool force_backfill_download_items = true) override {
     models.clear();
     int download_item_index = 0, offline_item_index = 0;
@@ -127,9 +125,9 @@ class MockDownloadBubbleUpdateService : public DownloadBubbleUpdateService {
 
   bool IsInitialized() const override { return true; }
 
-  MOCK_METHOD(DownloadDisplayController::ProgressInfo,
+  MOCK_METHOD(DownloadDisplay::ProgressInfo,
               GetProgressInfo,
-              (const web_app::AppId*),
+              (const webapps::AppId*),
               (const override));
 
  private:
@@ -265,6 +263,7 @@ class DownloadBubbleUIControllerTest : public testing::Test {
         .WillRepeatedly(Return(creation_type));
     EXPECT_CALL(item(index), IsPaused()).WillRepeatedly(Return(false));
     EXPECT_CALL(item(index), IsDangerous()).WillRepeatedly(Return(false));
+    EXPECT_CALL(item(index), IsInsecure()).WillRepeatedly(Return(false));
     // Functions called when checking ShouldShowDownloadStartedAnimation().
     EXPECT_CALL(item(index), IsSavePackageDownload())
         .WillRepeatedly(Return(false));

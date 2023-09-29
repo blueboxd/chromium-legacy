@@ -35,7 +35,6 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/crl_set.h"
 #include "net/cert/ev_root_ca_metadata.h"
-#include "net/cert/internal/cert_issuer_source_aia.h"
 #include "net/cert/internal/system_trust_store.h"
 #include "net/cert/ocsp_revocation_status.h"
 #include "net/cert/pem.h"
@@ -77,7 +76,6 @@
 #include "net/cert/cert_verify_proc_ios.h"
 #elif BUILDFLAG(IS_MAC)
 #include "base/mac/mac_util.h"
-#include "net/cert/internal/trust_store_mac.h"
 #endif
 
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
@@ -1376,19 +1374,19 @@ TEST(CertVerifyProcTest, TestHasTooLongValidity) {
     bool is_valid_too_long;
   } tests[] = {
       {"start_after_expiry.pem", true},
-      {"pre_br_validity_ok.pem", false},
+      {"pre_br_validity_ok.pem", true},
       {"pre_br_validity_bad_121.pem", true},
       {"pre_br_validity_bad_2020.pem", true},
-      {"10_year_validity.pem", false},
+      {"10_year_validity.pem", true},
       {"11_year_validity.pem", true},
-      {"39_months_after_2015_04.pem", false},
+      {"39_months_after_2015_04.pem", true},
       {"40_months_after_2015_04.pem", true},
-      {"60_months_after_2012_07.pem", false},
+      {"60_months_after_2012_07.pem", true},
       {"61_months_after_2012_07.pem", true},
-      {"825_days_after_2018_03_01.pem", false},
+      {"825_days_after_2018_03_01.pem", true},
       {"826_days_after_2018_03_01.pem", true},
       {"825_days_1_second_after_2018_03_01.pem", true},
-      {"39_months_based_on_last_day.pem", false},
+      {"39_months_based_on_last_day.pem", true},
       {"398_days_after_2020_09_01.pem", false},
       {"399_days_after_2020_09_01.pem", true},
       {"398_days_1_second_after_2020_09_01.pem", true},
@@ -1495,17 +1493,6 @@ TEST_P(CertVerifyProcInternalTest, MAYBE_TestKnownRoot) {
       << "that date, please disable and file a bug "
       << "against mattm. Current time: " << base::Time::Now();
   EXPECT_TRUE(verify_result.is_issued_by_known_root);
-#if BUILDFLAG(IS_MAC)
-  if (verify_proc_type() == CERT_VERIFY_PROC_BUILTIN) {
-    auto* mac_trust_debug_info =
-        net::TrustStoreMac::ResultDebugData::Get(&verify_result);
-    ASSERT_TRUE(mac_trust_debug_info);
-    // Since this test queries the real trust store, can't know exactly
-    // what bits should be set in the trust debug info, but it should at
-    // least have something set.
-    EXPECT_NE(0, mac_trust_debug_info->combined_trust_debug_info());
-  }
-#endif
 }
 
 // This tests that on successful certificate verification,
@@ -1685,17 +1672,30 @@ TEST(CertVerifyProcTest, SymantecCertsRejected) {
        0x68, 0xac, 0x53, 0x8e, 0x40, 0xab, 0xab, 0x5b, 0x19, 0xa6, 0x48,
        0x56, 0x61, 0x04, 0x2a, 0x10, 0x61, 0xc4, 0x61, 0x27, 0x76}};
 
+  auto [leaf, root] = CertBuilder::CreateSimpleChain2();
+
+  static constexpr base::Time may_1_2016 = base::Time::FromTimeT(1462060800);
+  leaf->SetValidity(may_1_2016, may_1_2016 + base::Days(1));
+  scoped_refptr<X509Certificate> leaf_pre_june_2016 =
+      leaf->GetX509Certificate();
+
+  static constexpr base::Time june_1_2016 = base::Time::FromTimeT(1464739200);
+  leaf->SetValidity(june_1_2016, june_1_2016 + base::Days(1));
+  scoped_refptr<X509Certificate> leaf_post_june_2016 =
+      leaf->GetX509Certificate();
+
+  static constexpr base::Time dec_20_2017 = base::Time::FromTimeT(1513728000);
+  leaf->SetValidity(dec_20_2017, dec_20_2017 + base::Days(1));
+  scoped_refptr<X509Certificate> leaf_dec_2017 = leaf->GetX509Certificate();
+
   // Test that certificates from the legacy Symantec infrastructure are
   // rejected:
-  // - dec_2017.pem : A certificate issued after 2017-12-01, which is rejected
-  //                  as of M65
-  // - pre_june_2016.pem : A certificate issued prior to 2016-06-01, which is
-  //                       rejected as of M66.
-  for (const char* rejected_cert : {"dec_2017.pem", "pre_june_2016.pem"}) {
-    scoped_refptr<X509Certificate> cert = CreateCertificateChainFromFile(
-        GetTestCertsDirectory(), rejected_cert, X509Certificate::FORMAT_AUTO);
-    ASSERT_TRUE(cert);
-
+  // leaf_dec_2017: A certificate issued after 2017-12-01, which is rejected
+  //                as of M65
+  // leaf_pre_june_2016: A certificate issued prior to 2016-06-01, which is
+  //                     rejected as of M66.
+  for (X509Certificate* cert :
+       {leaf_dec_2017.get(), leaf_pre_june_2016.get()}) {
     scoped_refptr<CertVerifyProc> verify_proc;
     int error = 0;
 
@@ -1708,7 +1708,7 @@ TEST(CertVerifyProcTest, SymantecCertsRejected) {
 
     CertVerifyResult test_result_1;
     error = verify_proc->Verify(
-        cert.get(), "127.0.0.1", /*ocsp_response=*/std::string(),
+        cert, "www.example.com", /*ocsp_response=*/std::string(),
         /*sct_list=*/std::string(), 0, CertificateList(), &test_result_1,
         NetLogWithSource());
     EXPECT_THAT(error, IsError(ERR_CERT_SYMANTEC_LEGACY));
@@ -1725,7 +1725,7 @@ TEST(CertVerifyProcTest, SymantecCertsRejected) {
 
     CertVerifyResult test_result_2;
     error = verify_proc->Verify(
-        cert.get(), "127.0.0.1", /*ocsp_response=*/std::string(),
+        cert, "www.example.com", /*ocsp_response=*/std::string(),
         /*sct_list=*/std::string(), 0, CertificateList(), &test_result_2,
         NetLogWithSource());
     EXPECT_THAT(error, IsOk());
@@ -1734,7 +1734,7 @@ TEST(CertVerifyProcTest, SymantecCertsRejected) {
     // ... Or the caller disabled enforcement of Symantec policies.
     CertVerifyResult test_result_3;
     error = verify_proc->Verify(
-        cert.get(), "127.0.0.1", /*ocsp_response=*/std::string(),
+        cert, "www.example.com", /*ocsp_response=*/std::string(),
         /*sct_list=*/std::string(),
         CertVerifyProc::VERIFY_DISABLE_SYMANTEC_ENFORCEMENT, CertificateList(),
         &test_result_3, NetLogWithSource());
@@ -1744,10 +1744,7 @@ TEST(CertVerifyProcTest, SymantecCertsRejected) {
 
   // Test that certificates from the legacy Symantec infrastructure issued
   // after 2016-06-01 appropriately rejected.
-  scoped_refptr<X509Certificate> cert = CreateCertificateChainFromFile(
-      GetTestCertsDirectory(), "post_june_2016.pem",
-      X509Certificate::FORMAT_AUTO);
-  ASSERT_TRUE(cert);
+  scoped_refptr<X509Certificate> cert = leaf_post_june_2016;
 
   scoped_refptr<CertVerifyProc> verify_proc;
   int error = 0;
@@ -1761,7 +1758,7 @@ TEST(CertVerifyProcTest, SymantecCertsRejected) {
   verify_proc = base::MakeRefCounted<MockCertVerifyProc>(symantec_result);
 
   CertVerifyResult test_result_1;
-  error = verify_proc->Verify(cert.get(), "127.0.0.1",
+  error = verify_proc->Verify(cert.get(), "www.example.com",
                               /*ocsp_response=*/std::string(),
                               /*sct_list=*/std::string(), 0, CertificateList(),
                               &test_result_1, NetLogWithSource());
@@ -1777,7 +1774,7 @@ TEST(CertVerifyProcTest, SymantecCertsRejected) {
   verify_proc = base::MakeRefCounted<MockCertVerifyProc>(allowlisted_result);
 
   CertVerifyResult test_result_2;
-  error = verify_proc->Verify(cert.get(), "127.0.0.1",
+  error = verify_proc->Verify(cert.get(), "www.example.com",
                               /*ocsp_response=*/std::string(),
                               /*sct_list=*/std::string(), 0, CertificateList(),
                               &test_result_2, NetLogWithSource());
@@ -1787,7 +1784,7 @@ TEST(CertVerifyProcTest, SymantecCertsRejected) {
   // ... Or the caller disabled enforcement of Symantec policies.
   CertVerifyResult test_result_3;
   error = verify_proc->Verify(
-      cert.get(), "127.0.0.1", /*ocsp_response=*/std::string(),
+      cert.get(), "www.example.com", /*ocsp_response=*/std::string(),
       /*sct_list=*/std::string(),
       CertVerifyProc::VERIFY_DISABLE_SYMANTEC_ENFORCEMENT, CertificateList(),
       &test_result_3, NetLogWithSource());
@@ -3003,13 +3000,6 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   EXPECT_NE(OK, error);
 
   EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
-  if (VerifyProcTypeIsBuiltin()) {
-    const net::CertIssuerSourceAia::AiaDebugData* aia_debug_data =
-        net::CertIssuerSourceAia::AiaDebugData::Get(&verify_result);
-    ASSERT_TRUE(aia_debug_data);
-    EXPECT_EQ(0, aia_debug_data->aia_fetch_success());
-    EXPECT_EQ(1, aia_debug_data->aia_fetch_fail());
-  }
 }
 #undef MAYBE_IntermediateFromAia404
 
@@ -3065,13 +3055,6 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
     int error = Verify(leaf.get(), kHostname, /*flags=*/0, CertificateList(),
                        &verify_result);
     EXPECT_THAT(error, IsOk());
-    if (VerifyProcTypeIsBuiltin()) {
-      const net::CertIssuerSourceAia::AiaDebugData* aia_debug_data =
-          net::CertIssuerSourceAia::AiaDebugData::Get(&verify_result);
-      ASSERT_TRUE(aia_debug_data);
-      EXPECT_EQ(1, aia_debug_data->aia_fetch_success());
-      EXPECT_EQ(0, aia_debug_data->aia_fetch_fail());
-    }
   }
 }
 
@@ -3129,13 +3112,6 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
     EXPECT_THAT(error, IsOk());
   }
 
-  if (VerifyProcTypeIsBuiltin()) {
-    const net::CertIssuerSourceAia::AiaDebugData* aia_debug_data =
-        net::CertIssuerSourceAia::AiaDebugData::Get(&verify_result);
-    ASSERT_TRUE(aia_debug_data);
-    EXPECT_EQ(1, aia_debug_data->aia_fetch_success());
-    EXPECT_EQ(0, aia_debug_data->aia_fetch_fail());
-  }
 }
 
 // This test is the same as IntermediateFromAia200Pem, but with a different
@@ -3188,13 +3164,6 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
     EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
   } else {
     EXPECT_THAT(error, IsOk());
-  }
-  if (VerifyProcTypeIsBuiltin()) {
-    const net::CertIssuerSourceAia::AiaDebugData* aia_debug_data =
-        net::CertIssuerSourceAia::AiaDebugData::Get(&verify_result);
-    ASSERT_TRUE(aia_debug_data);
-    EXPECT_EQ(1, aia_debug_data->aia_fetch_success());
-    EXPECT_EQ(0, aia_debug_data->aia_fetch_fail());
   }
 }
 
@@ -3262,11 +3231,6 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
 
     EXPECT_FALSE(verify_result.has_sha1);
     EXPECT_THAT(error, IsOk());
-    const net::CertIssuerSourceAia::AiaDebugData* aia_debug_data =
-        net::CertIssuerSourceAia::AiaDebugData::Get(&verify_result);
-    ASSERT_TRUE(aia_debug_data);
-    EXPECT_EQ(1, aia_debug_data->aia_fetch_success());
-    EXPECT_EQ(0, aia_debug_data->aia_fetch_fail());
   } else {
     EXPECT_NE(OK, error);
     if (verify_proc_type() == CERT_VERIFY_PROC_ANDROID &&
@@ -6039,9 +6003,10 @@ TEST(CertVerifyProcTest, LogsOnlyMostSpecificTrustAnchorUMA) {
 // is_issued_by_known_root was derived from the OS.
 TEST(CertVerifyProcTest, HasTrustAnchorVerifyOutOfDateUMA) {
   base::HistogramTester histograms;
-  scoped_refptr<X509Certificate> cert(ImportCertFromFile(
-      GetTestCertsDirectory(), "39_months_based_on_last_day.pem"));
-  ASSERT_TRUE(cert);
+  // Since we are setting is_issued_by_known_root=true, the certificate to be
+  // verified needs to have a validity period that satisfies
+  // HasTooLongValidity.
+  auto [leaf, root] = CertBuilder::CreateSimpleChain2();
 
   CertVerifyResult result;
 
@@ -6063,10 +6028,11 @@ TEST(CertVerifyProcTest, HasTrustAnchorVerifyOutOfDateUMA) {
 
   int flags = 0;
   CertVerifyResult verify_result;
-  int error = verify_proc->Verify(
-      cert.get(), "127.0.0.1", /*ocsp_response=*/std::string(),
-      /*sct_list=*/std::string(), flags, CertificateList(), &verify_result,
-      NetLogWithSource());
+  int error =
+      verify_proc->Verify(leaf->GetX509Certificate().get(), "www.example.com",
+                          /*ocsp_response=*/std::string(),
+                          /*sct_list=*/std::string(), flags, CertificateList(),
+                          &verify_result, NetLogWithSource());
   EXPECT_EQ(OK, error);
   const base::HistogramBase::Sample kUnknownRootHistogramID = 0;
   histograms.ExpectUniqueSample(kTrustAnchorVerifyHistogram,

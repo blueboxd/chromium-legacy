@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/test_browser_window.h"
 
+#include "base/feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/sharing/sharing_dialog_data.h"
@@ -349,6 +350,12 @@ bool TestBrowserWindow::IsFeaturePromoActive(
              iph_feature, user_education::FeaturePromoStatus::kContinued);
 }
 
+bool TestBrowserWindow::CanShowFeaturePromo(
+    const base::Feature& iph_feature) const {
+  return feature_promo_controller_ &&
+         feature_promo_controller_->CanShowPromo(iph_feature);
+}
+
 bool TestBrowserWindow::MaybeShowFeaturePromo(
     const base::Feature& iph_feature,
     user_education::FeaturePromoController::BubbleCloseCallback close_callback,
@@ -390,6 +397,9 @@ TestBrowserWindow::CloseFeaturePromoAndContinue(
 }
 
 void TestBrowserWindow::NotifyFeatureEngagementEvent(const char* event_name) {}
+
+void TestBrowserWindow::NotifyPromoFeatureUsed(
+    const base::Feature& iph_feature) {}
 
 user_education::FeaturePromoController*
 TestBrowserWindow::SetFeaturePromoController(

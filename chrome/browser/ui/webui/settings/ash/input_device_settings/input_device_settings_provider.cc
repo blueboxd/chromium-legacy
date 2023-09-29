@@ -20,16 +20,19 @@ namespace ash::settings {
 
 namespace {
 
+using ActionTypeVariant =
+    absl::variant<AcceleratorAction, ::ash::mojom::StaticShortcutAction>;
+
 // Used to represent a constant version of the mojom::ActionChoice struct.
 struct ActionChoice {
   const char* name;
-  AcceleratorAction action_id;
+  ActionTypeVariant action_variant;
 };
 
 // TODO(dpad): Update list to official list of actions.
 // TODO(b/286930911): Translate action string names.
 constexpr ActionChoice kMouseButtonOptions[] = {
-    {"Volume mute", AcceleratorAction::kVolumeMute},
+    {"Volume mute", AcceleratorAction::kVolumeMuteToggle},
     {"Microphone mute", AcceleratorAction::kMicrophoneMuteToggle},
     {"Play/Pause media", AcceleratorAction::kMediaPlayPause},
     {"Overview", AcceleratorAction::kToggleOverview},
@@ -38,12 +41,14 @@ constexpr ActionChoice kMouseButtonOptions[] = {
     {"Turn on high contrast", AcceleratorAction::kToggleHighContrast},
     {"Turn on magnifier", AcceleratorAction::kToggleFullscreenMagnifier},
     {"Turn on dictation", AcceleratorAction::kEnableOrToggleDictation},
+    {"Copy", ::ash::mojom::StaticShortcutAction::kCopy},
+    {"Paste", ::ash::mojom::StaticShortcutAction::kPaste},
 };
 
 // TODO(dpad): Update list to official list of actions.
 // TODO(b/286930911): Translate action string names.
 constexpr ActionChoice kGraphicsTabletOptions[] = {
-    {"Volume mute", AcceleratorAction::kVolumeMute},
+    {"Volume mute", AcceleratorAction::kVolumeMuteToggle},
     {"Microphone mute", AcceleratorAction::kMicrophoneMuteToggle},
     {"Play/Pause media", AcceleratorAction::kMediaPlayPause},
     {"Overview", AcceleratorAction::kToggleOverview},
@@ -52,7 +57,23 @@ constexpr ActionChoice kGraphicsTabletOptions[] = {
     {"Turn on high contrast", AcceleratorAction::kToggleHighContrast},
     {"Turn on magnifier", AcceleratorAction::kToggleFullscreenMagnifier},
     {"Turn on dictation", AcceleratorAction::kEnableOrToggleDictation},
+    {"Copy", ::ash::mojom::StaticShortcutAction::kCopy},
+    {"Paste", ::ash::mojom::StaticShortcutAction::kPaste},
 };
+
+mojom::ActionTypePtr GetActionType(AcceleratorAction accelerator_action) {
+  return mojom::ActionType::NewAcceleratorAction(accelerator_action);
+}
+
+mojom::ActionTypePtr GetActionType(
+    ::ash::mojom::StaticShortcutAction static_shortcut_action) {
+  return mojom::ActionType::NewStaticShortcutAction(static_shortcut_action);
+}
+
+mojom::ActionTypePtr GetActionTypeFromVariant(ActionTypeVariant variant) {
+  return absl::visit([](auto&& value) { return GetActionType(value); },
+                     variant);
+}
 
 template <typename T>
 struct CustomDeviceKeyComparator {
@@ -312,6 +333,48 @@ void InputDeviceSettingsProvider::ObserveGraphicsTabletSettings(
           InputDeviceSettingsController::Get()->GetConnectedGraphicsTablets()));
 }
 
+void InputDeviceSettingsProvider::ObserveButtonPresses(
+    mojo::PendingRemote<mojom::ButtonPressObserver> observer) {
+  DCHECK(features::IsPeripheralCustomizationEnabled());
+  button_press_observers_.Add(std::move(observer));
+}
+
+void InputDeviceSettingsProvider::OnCustomizableMouseButtonPressed(
+    const ::ash::mojom::Mouse& mouse,
+    const ::ash::mojom::Button& button) {
+  if (observing_paused_) {
+    return;
+  }
+
+  for (const auto& observer : button_press_observers_) {
+    observer->OnButtonPressed(button.Clone());
+  }
+}
+
+void InputDeviceSettingsProvider::OnCustomizablePenButtonPressed(
+    const ::ash::mojom::GraphicsTablet& graphics_tablet,
+    const ::ash::mojom::Button& button) {
+  if (observing_paused_) {
+    return;
+  }
+
+  for (const auto& observer : button_press_observers_) {
+    observer->OnButtonPressed(button.Clone());
+  }
+}
+
+void InputDeviceSettingsProvider::OnCustomizableTabletButtonPressed(
+    const ::ash::mojom::GraphicsTablet& graphics_tablet,
+    const ::ash::mojom::Button& button) {
+  if (observing_paused_) {
+    return;
+  }
+
+  for (const auto& observer : button_press_observers_) {
+    observer->OnButtonPressed(button.Clone());
+  }
+}
+
 void InputDeviceSettingsProvider::OnKeyboardConnected(
     const ::ash::mojom::Keyboard& keyboard) {
   NotifyKeyboardsUpdated();
@@ -459,7 +522,8 @@ void InputDeviceSettingsProvider::
         GetActionsForGraphicsTabletButtonCustomizationCallback callback) {
   std::vector<mojom::ActionChoicePtr> choices;
   for (const auto& choice : kGraphicsTabletOptions) {
-    choices.push_back(mojom::ActionChoice::New(choice.action_id, choice.name));
+    choices.push_back(mojom::ActionChoice::New(
+        GetActionTypeFromVariant(choice.action_variant), choice.name));
   }
   std::move(callback).Run(std::move(choices));
 }
@@ -468,7 +532,8 @@ void InputDeviceSettingsProvider::GetActionsForMouseButtonCustomization(
     GetActionsForMouseButtonCustomizationCallback callback) {
   std::vector<mojom::ActionChoicePtr> choices;
   for (const auto& choice : kMouseButtonOptions) {
-    choices.push_back(mojom::ActionChoice::New(choice.action_id, choice.name));
+    choices.push_back(mojom::ActionChoice::New(
+        GetActionTypeFromVariant(choice.action_variant), choice.name));
   }
   std::move(callback).Run(std::move(choices));
 }

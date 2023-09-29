@@ -21,7 +21,9 @@
 #import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/reload_type.h"
+#import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/public/session/proto/navigation.pb.h"
+#import "ios/web/public/session/proto/storage.pb.h"
 #import "ios/web/public/test/fakes/fake_browser_state.h"
 #import "ios/web/public/test/fakes/fake_navigation_manager.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
@@ -50,6 +52,11 @@ namespace {
 // URL scheme that will be rewritten by UrlRewriter installed in
 // NavigationManagerTest fixture. Scheme will be changed to kTestWebUIScheme.
 const char kSchemeToRewrite[] = "navigationmanagerschemetorewrite";
+
+// URLs used for session restoration tests.
+const char kTestURL1[] = "about://new-tab";
+const char kTestURL2[] = "about://version";
+const char* const kTestURLs[] = {kTestURL1, kTestURL2};
 
 // Replaces `kSchemeToRewrite` scheme with `kTestWebUIScheme`.
 bool UrlRewriter(GURL* url, BrowserState* browser_state) {
@@ -1368,32 +1375,6 @@ TEST_F(NavigationManagerTest, ReloadWithUserAgentTypeOnNewTabRedirect) {
   EXPECT_EQ(url, pending_item->GetURL());
 }
 
-// Tests that ReloadWithUserAgentType does not expose internal URLs.
-TEST_F(NavigationManagerTest, ReloadWithUserAgentTypeOnIntenalUrl) {
-  delegate_.SetWebState(&web_state_);
-  web_state_.SetLoading(true);
-
-  GURL url = wk_navigation_util::CreateRedirectUrl(GURL("http://www.1.com"));
-  navigation_manager()->AddPendingItem(
-      url, Referrer(), ui::PAGE_TRANSITION_TYPED,
-      NavigationInitiationType::BROWSER_INITIATED,
-      /*is_post_navigation=*/false, /*is_error_navigation=*/false,
-      web::HttpsUpgradeType::kNone);
-  GURL virtual_url("http://www.1.com/virtual");
-  navigation_manager()
-      ->GetPendingItemInCurrentOrRestoredSession()
-      ->SetVirtualURL(virtual_url);
-  [mock_wk_list_ setCurrentURL:base::SysUTF8ToNSString(url.spec())];
-  navigation_manager()->OnNavigationStarted(GURL("http://www.1.com/virtual"));
-
-  navigation_manager()->ReloadWithUserAgentType(UserAgentType::DESKTOP);
-
-  NavigationItem* pending_item =
-      navigation_manager()->GetPendingItemInCurrentOrRestoredSession();
-  EXPECT_EQ(url, pending_item->GetURL());
-  EXPECT_EQ(virtual_url, pending_item->GetVirtualURL());
-}
-
 // Tests that app-specific URLs are not rewritten for renderer-initiated loads
 // or reloads unless requested by a page with app-specific url.
 TEST_F(NavigationManagerTest, RewritingAppSpecificUrls) {
@@ -2328,21 +2309,6 @@ TEST_F(NavigationManagerTest, ReusePendingItemForHistoryNavigation) {
       web::HttpsUpgradeType::kNone);
 
   EXPECT_EQ(original_item0, manager_->GetPendingItem());
-
-  // Simulate reloading a redirect url.  This happens when one restores while
-  // offline.
-  GURL redirect_url = wk_navigation_util::CreateRedirectUrl(
-      manager_->GetPendingItem()->GetURL());
-  [mock_wk_list_ setCurrentURL:base::SysUTF8ToNSString(redirect_url.spec())
-                  backListURLs:nil
-               forwardListURLs:nil];
-  original_item0 = manager_->GetItemAtIndex(0);
-  manager_->AddPendingItem(
-      GURL("http://www.0.com"), Referrer(), ui::PAGE_TRANSITION_RELOAD,
-      web::NavigationInitiationType::BROWSER_INITIATED,
-      /*is_post_navigation=*/false, /*is_error_navigation=*/false,
-      web::HttpsUpgradeType::kNone);
-  EXPECT_EQ(original_item0, manager_->GetPendingItem());
 }
 
 // Tests that transient URL rewriters are only applied to a new pending item.
@@ -2705,19 +2671,6 @@ TEST_F(NavigationManagerTest, RestoreSessionWithEmptyHistory) {
   ASSERT_EQ(nullptr, manager_->GetPendingItem());
 }
 
-// Tests that the virtual URL of a restore_session redirect item is updated to
-// the target URL.
-TEST_F(NavigationManagerTest, HideInternalRedirectUrl) {
-  GURL target_url = GURL("http://www.1.com?query=special%26chars");
-  GURL url = wk_navigation_util::CreateRedirectUrl(target_url);
-  NSString* url_spec = base::SysUTF8ToNSString(url.spec());
-  [mock_wk_list_ setCurrentURL:url_spec];
-  NavigationItem* item = manager_->GetItemAtIndex(0);
-  ASSERT_TRUE(item);
-  EXPECT_EQ(target_url, item->GetVirtualURL());
-  EXPECT_EQ(url, item->GetURL());
-}
-
 // Tests that all NavigationManager APIs return reasonable values in the Empty
 // Window Open Navigation edge case. See comments in header file for details.
 TEST_F(NavigationManagerTest, EmptyWindowOpenNavigation) {
@@ -2826,11 +2779,6 @@ class NavigationManagerDetachedModeTest : public NavigationManagerTest {
     ASSERT_EQ(url0_, manager_->GetItemAtIndex(0)->GetURL());
     ASSERT_EQ(url1_, manager_->GetItemAtIndex(1)->GetURL());
     ASSERT_EQ(url2_, manager_->GetItemAtIndex(2)->GetURL());
-  }
-
-  NSString* CreateRedirectUrlForWKList(GURL url) {
-    GURL redirect_url = wk_navigation_util::CreateRedirectUrl(url);
-    return base::SysUTF8ToNSString(redirect_url.spec());
   }
 
   GURL url0_;
@@ -2977,18 +2925,6 @@ TEST_F(NavigationManagerDetachedModeTest, LoadURLWithParams) {
   histogram_tester_.ExpectBucketCount(kRestoreNavigationItemCount, 3, 1);
 }
 
-// Tests that detaching placeholder urls are cleaned before being cached.
-TEST_F(NavigationManagerDetachedModeTest, CachedPlaceholders) {
-  [mock_wk_list_ setCurrentURL:CreateRedirectUrlForWKList(url1_)
-                  backListURLs:@[ CreateRedirectUrlForWKList(url0_) ]
-               forwardListURLs:@[ CreateRedirectUrlForWKList(url2_) ]];
-  manager_->DetachFromWebView();
-
-  EXPECT_EQ(url0_, manager_->GetNavigationItemImplAtIndex(0)->GetURL());
-  EXPECT_EQ(url1_, manager_->GetNavigationItemImplAtIndex(1)->GetURL());
-  EXPECT_EQ(url2_, manager_->GetNavigationItemImplAtIndex(2)->GetURL());
-}
-
 // Tests that pending item is set to serializable when appropriate.
 TEST_F(NavigationManagerDetachedModeTest, NotSerializable) {
   manager_->AddPendingItem(
@@ -3053,6 +2989,8 @@ class NavigationManagerSerialisationTest : public PlatformTest {
 
   WebStateImpl* web_state() { return web_state_.get(); }
 
+  BrowserState* browser_state() { return &browser_state_; }
+
  private:
   WebTaskEnvironment task_environment_;
   FakeBrowserState browser_state_;
@@ -3093,9 +3031,17 @@ TEST_F(NavigationManagerSerialisationTest, LargeSession) {
 // Tests serializing NavigationManagerImpl state for a session that contain
 // items with ShouldSkipSerialization flag.
 TEST_F(NavigationManagerSerialisationTest, ShouldSkipSerializationItems) {
+  // Number of items to skip.
+  const int kCountOfItemsToSkip = 9;
+
+  // Number of items to insert in the session so that there is more than
+  // kMaxSessionSize items after dropping the skipped items.
+  const int kCountOfItemsToInsert =
+      wk_navigation_util::kMaxSessionSize + kCountOfItemsToSkip;
+
   // Populate the WebState with more than kMaxSessionSize navigation items.
   NSMutableArray<NSString*>* back_urls = [NSMutableArray array];
-  for (int i = 0; i < wk_navigation_util::kMaxSessionSize; ++i) {
+  for (int i = 0; i < kCountOfItemsToInsert; ++i) {
     [back_urls addObject:[NSString stringWithFormat:@"http://%d.test", i]];
   }
   [fake_web_view() setCurrentURL:@"http://current.test"
@@ -3103,29 +3049,34 @@ TEST_F(NavigationManagerSerialisationTest, ShouldSkipSerializationItems) {
                  forwardListURLs:nil];
   const int original_item_count = web_state()->GetNavigationItemCount();
 
-  const int skipped_item_index =
-      original_item_count - (wk_navigation_util::kMaxSessionSize / 2);
-  web_state()
-      ->GetNavigationManagerImpl()
-      .GetNavigationItemImplAtIndex(skipped_item_index)
-      ->SetShouldSkipSerialization(true);
+  web::NavigationManagerImpl& navigation_manager =
+      web_state()->GetNavigationManagerImpl();
+
+  // Skip the items just before the last committed item.
+  const int skipped_item_begin =
+      navigation_manager.GetLastCommittedItemIndex() - 1 - kCountOfItemsToSkip;
+  const int skipped_item_end = skipped_item_begin + kCountOfItemsToSkip;
+  for (int index = skipped_item_begin; index < skipped_item_end; ++index) {
+    navigation_manager.GetNavigationItemImplAtIndex(index)
+        ->SetShouldSkipSerialization(true);
+  }
 
   // Verify that the serialised state only contains kMaxSessionSize items.
   proto::NavigationStorage storage;
-  web_state()->GetNavigationManagerImpl().SerializeToProto(storage);
+  navigation_manager.SerializeToProto(storage);
   const int storage_item_count = storage.items_size();
   ASSERT_EQ(storage_item_count, wk_navigation_util::kMaxSessionSize);
+  EXPECT_LT(storage.last_committed_item_index(), storage_item_count);
   const int offset = original_item_count - storage_item_count;
 
   // Verify that URLs in the storage match original URLs without skipped item.
-  NavigationManager* navigation_manager = web_state()->GetNavigationManager();
   for (int i = 0; i < wk_navigation_util::kMaxSessionSize; ++i) {
     int item_index = i + offset;
-    if (item_index <= skipped_item_index) {
-      item_index -= 1;
+    if (item_index < skipped_item_end) {
+      item_index -= kCountOfItemsToSkip;
     }
 
-    NavigationItem* item = navigation_manager->GetItemAtIndex(item_index);
+    NavigationItem* item = navigation_manager.GetItemAtIndex(item_index);
     const proto::NavigationItemStorage& item_storage = storage.items(i);
     EXPECT_EQ(item->GetURL(), GURL(item_storage.url()));
   }
@@ -3180,6 +3131,164 @@ TEST_F(NavigationManagerSerialisationTest, ExtraLongURLLastCommittedItem) {
 
   NavigationItem* item = web_state()->GetNavigationManager()->GetItemAtIndex(0);
   EXPECT_EQ(item->GetURL(), GURL(storage.items(0).url()));
+}
+
+// Tests that restoring a session works correctly.
+TEST_F(NavigationManagerSerialisationTest, RestoreFromProto) {
+  proto::NavigationStorage storage;
+  storage.set_last_committed_item_index(0);
+  for (const char* url : kTestURLs) {
+    storage.add_items()->set_virtual_url(url);
+  }
+  storage.set_last_committed_item_index(storage.items_size() - 1);
+
+  // Create a WebState with a real navigation proxy as this is required to
+  // perform a session restore and access the view to force instantiation
+  // of the WKWebView.
+  std::unique_ptr<web::WebStateImpl> web_state =
+      std::make_unique<web::WebStateImpl>(
+          web::WebState::CreateParams(browser_state()));
+  std::ignore = web_state->GetView();
+
+  NavigationManagerImpl& navigation_manager =
+      web_state->GetNavigationManagerImpl();
+
+  base::RunLoop run_loop;
+  navigation_manager.RestoreFromProto(storage);
+  navigation_manager.AddRestoreCompletionCallback(run_loop.QuitClosure());
+  run_loop.Run();
+
+  const int urls_count = static_cast<int>(std::size(kTestURLs));
+  ASSERT_EQ(navigation_manager.GetItemCount(), urls_count);
+  EXPECT_EQ(navigation_manager.GetLastCommittedItemIndex(), urls_count - 1);
+
+  for (int index = 0; index < urls_count; ++index) {
+    EXPECT_EQ(navigation_manager.GetItemAtIndex(index)->GetURL(),
+              GURL(kTestURLs[index]));
+  }
+}
+
+// Tests that restoring a empty session works correctly.
+TEST_F(NavigationManagerSerialisationTest, RestoreFromProto_Empty) {
+  proto::NavigationStorage storage;
+  storage.set_last_committed_item_index(storage.items_size() - 1);
+
+  // Create a WebState with a real navigation proxy as this is required to
+  // perform a session restore and access the view to force instantiation
+  // of the WKWebView.
+  std::unique_ptr<web::WebStateImpl> web_state =
+      std::make_unique<web::WebStateImpl>(
+          web::WebState::CreateParams(browser_state()));
+  std::ignore = web_state->GetView();
+
+  NavigationManagerImpl& navigation_manager =
+      web_state->GetNavigationManagerImpl();
+
+  base::RunLoop run_loop;
+  navigation_manager.RestoreFromProto(storage);
+  navigation_manager.AddRestoreCompletionCallback(run_loop.QuitClosure());
+  run_loop.Run();
+
+  ASSERT_EQ(navigation_manager.GetItemCount(), 0);
+  EXPECT_EQ(navigation_manager.GetLastCommittedItemIndex(), -1);
+}
+
+// Tests that restoring a session works correctly and respect the index
+// of the last committed item.
+TEST_F(NavigationManagerSerialisationTest, RestoreFromProto_LastItemIndex) {
+  proto::NavigationStorage storage;
+  storage.set_last_committed_item_index(0);
+  for (const char* url : kTestURLs) {
+    storage.add_items()->set_virtual_url(url);
+  }
+  storage.set_last_committed_item_index(0);
+
+  // Create a WebState with a real navigation proxy as this is required to
+  // perform a session restore and access the view to force instantiation
+  // of the WKWebView.
+  std::unique_ptr<web::WebStateImpl> web_state =
+      std::make_unique<web::WebStateImpl>(
+          web::WebState::CreateParams(browser_state()));
+  std::ignore = web_state->GetView();
+
+  NavigationManagerImpl& navigation_manager =
+      web_state->GetNavigationManagerImpl();
+
+  base::RunLoop run_loop;
+  navigation_manager.RestoreFromProto(storage);
+  navigation_manager.AddRestoreCompletionCallback(run_loop.QuitClosure());
+  run_loop.Run();
+
+  const int urls_count = static_cast<int>(std::size(kTestURLs));
+  ASSERT_EQ(navigation_manager.GetItemCount(), urls_count);
+  EXPECT_EQ(navigation_manager.GetLastCommittedItemIndex(), 0);
+
+  for (int index = 0; index < urls_count; ++index) {
+    EXPECT_EQ(navigation_manager.GetItemAtIndex(index)->GetURL(),
+              GURL(kTestURLs[index]));
+  }
+}
+
+// Tests that restoring a session works correctly even if the index of the
+// last committed item is invalid (a bug in M117 caused the application to
+// write sessions with an index past the end of items).
+TEST_F(NavigationManagerSerialisationTest, RestoreFromProto_IndexOutOfBound) {
+  // The code to fix the out-of-bound index is in the code that deserialize
+  // the CRWSessionStorage, so we have to serialize/deserialize the object.
+  CRWSessionStorage* session_storage = nil;
+  {
+    proto::WebStateStorage storage;
+    proto::NavigationStorage* navigation_storage = storage.mutable_navigation();
+    for (const char* url : kTestURLs) {
+      navigation_storage->add_items()->set_virtual_url(url);
+    }
+    // Set an out-of-bound value for last committed item index.
+    navigation_storage->set_last_committed_item_index(std::size(kTestURLs));
+    session_storage = [[CRWSessionStorage alloc] initWithProto:storage];
+  }
+
+  NSError* error = nil;
+  NSData* data = [NSKeyedArchiver archivedDataWithRootObject:session_storage
+                                       requiringSecureCoding:NO
+                                                       error:&error];
+  ASSERT_FALSE(error);
+
+  NSKeyedUnarchiver* unarchiver =
+      [[NSKeyedUnarchiver alloc] initForReadingFromData:data error:&error];
+  unarchiver.requiresSecureCoding = NO;
+  ASSERT_FALSE(error);
+
+  session_storage = base::apple::ObjCCast<CRWSessionStorage>(
+      [unarchiver decodeObjectForKey:@"root"]);
+  ASSERT_TRUE(session_storage);
+
+  proto::WebStateStorage storage;
+  [session_storage serializeToProto:storage];
+
+  // Create a WebState with a real navigation proxy as this is required to
+  // perform a session restore and access the view to force instantiation
+  // of the WKWebView.
+  std::unique_ptr<web::WebStateImpl> web_state =
+      std::make_unique<web::WebStateImpl>(
+          web::WebState::CreateParams(browser_state()));
+  std::ignore = web_state->GetView();
+
+  NavigationManagerImpl& navigation_manager =
+      web_state->GetNavigationManagerImpl();
+
+  base::RunLoop run_loop;
+  navigation_manager.RestoreFromProto(storage.navigation());
+  navigation_manager.AddRestoreCompletionCallback(run_loop.QuitClosure());
+  run_loop.Run();
+
+  const int urls_count = static_cast<int>(std::size(kTestURLs));
+  ASSERT_EQ(navigation_manager.GetItemCount(), urls_count);
+  EXPECT_EQ(navigation_manager.GetLastCommittedItemIndex(), urls_count - 1);
+
+  for (int index = 0; index < urls_count; ++index) {
+    NavigationItem* item = navigation_manager.GetItemAtIndex(index);
+    EXPECT_EQ(item->GetURL(), GURL(kTestURLs[index]));
+  }
 }
 
 }  // namespace web

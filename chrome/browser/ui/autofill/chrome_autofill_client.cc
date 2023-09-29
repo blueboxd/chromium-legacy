@@ -25,6 +25,7 @@
 #include "chrome/browser/autofill/merchant_promo_code_manager_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/strike_database_factory.h"
+#include "chrome/browser/autofill/ui/ui_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/device_reauth/chrome_device_authenticator_factory.h"
 #include "chrome/browser/fast_checkout/fast_checkout_client_impl.h"
@@ -90,7 +91,7 @@
 #include "components/password_manager/core/browser/password_requirements_service.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/plus_addresses/features.h"
-#include "components/plus_addresses/plus_address_service.h"
+#include "components/plus_addresses/plus_address_types.h"
 #include "components/prefs/pref_service.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/security_state/core/security_state.h"
@@ -156,6 +157,10 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "components/zoom/zoom_controller.h"
 #endif  // BUILDFLAG(IS_ANDROID)
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/compose/chrome_compose_client.h"
+#endif
 
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
 #include "chrome/browser/autofill/autofill_ml_prediction_model_service_factory.h"
@@ -253,6 +258,15 @@ IbanManager* ChromeAutofillClient::GetIbanManager() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   return IbanManagerFactory::GetForProfile(profile);
+}
+
+compose::ComposeManager* ChromeAutofillClient::GetComposeManager() {
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)
+  auto* client = ChromeComposeClient::FromWebContents(web_contents());
+  return client ? &client->manager() : nullptr;
+#else
+  return nullptr;
+#endif
 }
 
 plus_addresses::PlusAddressService*
@@ -620,7 +634,7 @@ void ChromeAutofillClient::ShowMandatoryReauthOptInConfirmation() {
 #endif
 }
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+#if !BUILDFLAG(IS_ANDROID)
 void ChromeAutofillClient::HideVirtualCardEnrollBubbleAndIconIfVisible() {
   VirtualCardEnrollBubbleControllerImpl::CreateForWebContents(web_contents());
   VirtualCardEnrollBubbleControllerImpl* controller =
@@ -797,6 +811,12 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
     UploadSaveCardPromptCallback callback) {
 #if BUILDFLAG(IS_ANDROID)
   DCHECK(options.show_prompt);
+  if (options.card_save_type == AutofillClient::CardSaveType::kCvcSaveOnly) {
+    // TODO (crbug.com/1485194): Create a Message UI for saving CVC to an
+    // existing server card.
+    NOTIMPLEMENTED();
+    return;
+  }
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(GetProfile());
   AccountInfo account_info = identity_manager->FindExtendedAccountInfo(
@@ -845,17 +865,25 @@ void ChromeAutofillClient::ConfirmCreditCardFillAssist(
 }
 
 void ChromeAutofillClient::ShowEditAddressProfileDialog(
-    const AutofillProfile& profile) {
+    const AutofillProfile& profile,
+    AddressProfileSavePromptCallback on_user_decision_callback) {
 #if !BUILDFLAG(IS_ANDROID)
   EditAddressProfileDialogControllerImpl::CreateForWebContents(web_contents());
   EditAddressProfileDialogControllerImpl* controller =
       EditAddressProfileDialogControllerImpl::FromWebContents(web_contents());
   CHECK(controller);
+
+  absl::optional<AccountInfo> account = GetPrimaryAccountInfoFromBrowserContext(
+      web_contents()->GetBrowserContext());
+  CHECK(account);
   controller->OfferEdit(
-      profile, /*original_profile=*/nullptr,
-      /*footer_message=*/u"",
-      /*address_profile_save_prompt_callback=*/base::DoNothing(),
-      /*on_cancel_callback=*/base::DoNothing(),
+      /*profile=*/profile,
+      /*original_profile=*/nullptr,
+      /*footer_message=*/
+      l10n_util::GetStringFUTF16(
+          IDS_AUTOFILL_UPDATE_PROMPT_ACCOUNT_ADDRESS_SOURCE_NOTICE,
+          base::ASCIIToUTF16(account->email)),
+      /*on_user_decision_callback=*/std::move(on_user_decision_callback),
       /*is_migration_to_account=*/false);
 #else
   // Edit address profile dialog is only available is desktop.
@@ -869,7 +897,8 @@ void ChromeAutofillClient::ShowDeleteAddressProfileDialog() {
       web_contents());
   DeleteAddressProfileDialogControllerImpl* controller =
       DeleteAddressProfileDialogControllerImpl::FromWebContents(web_contents());
-  controller->OfferDelete();
+  controller->OfferDelete(/*is_account_address_profile=*/false,
+                          /*delete_dialog_callback=*/base::DoNothing());
 #else
   // Delete address profile dialog is only available is desktop.
   NOTREACHED_NORETURN();
@@ -1214,11 +1243,14 @@ ChromeAutofillClient::GetCurrentFormInteractionsFlowId() {
   return flow_id_;
 }
 
-scoped_refptr<device_reauth::DeviceAuthenticator>
-ChromeAutofillClient::GetDeviceAuthenticator() const {
+std::unique_ptr<device_reauth::DeviceAuthenticator>
+ChromeAutofillClient::GetDeviceAuthenticator() {
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+  device_reauth::DeviceAuthParams params(
+      base::Seconds(60), device_reauth::DeviceAuthSource::kAutofill);
+
   return ChromeDeviceAuthenticatorFactory::GetForProfile(
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()), params);
 #else
   return nullptr;
 #endif

@@ -54,9 +54,11 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
   void InstallUpdaterAndApp(
       const std::string& app_id,
       const bool is_silent_install,
+      const std::string& tag,
       const std::string& child_window_text_to_find) const override {
-    updater::test::InstallUpdaterAndApp(
-        updater_scope_, app_id, is_silent_install, child_window_text_to_find);
+    updater::test::InstallUpdaterAndApp(updater_scope_, app_id,
+                                        is_silent_install, tag,
+                                        child_window_text_to_find);
   }
 
   void ExpectInstalled() const override {
@@ -193,6 +195,11 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::ExpectNotRegistered(updater_scope_, app_id);
   }
 
+  void ExpectAppTag(const std::string& app_id,
+                    const std::string& tag) const override {
+    updater::test::ExpectAppTag(updater_scope_, app_id, tag);
+  }
+
   void ExpectAppVersion(const std::string& app_id,
                         const base::Version& version) const override {
     updater::test::ExpectAppVersion(updater_scope_, app_id, version);
@@ -310,6 +317,7 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
   void RunHandoff(const std::string& app_id) const override {
     updater::test::RunHandoff(updater_scope_, app_id);
   }
+#endif  // BUILDFLAG(IS_WIN)
 
   void InstallAppViaService(
       const std::string& app_id,
@@ -317,7 +325,6 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::InstallAppViaService(updater_scope_, app_id,
                                         expected_final_values);
   }
-#endif  // BUILDFLAG(IS_WIN)
 
   base::FilePath GetDifferentUserPath() const override {
 #if BUILDFLAG(IS_MAC)
@@ -360,6 +367,10 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
   void RunRecoveryComponent(const std::string& app_id,
                             const base::Version& version) const override {
     updater::test::RunRecoveryComponent(updater_scope_, app_id, version);
+  }
+
+  void SetLastChecked(const base::Time& time) const override {
+    updater::test::SetLastChecked(updater_scope_, time);
   }
 
   void ExpectLastChecked() const override {

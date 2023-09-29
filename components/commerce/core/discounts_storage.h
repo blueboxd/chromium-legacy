@@ -5,25 +5,68 @@
 #ifndef COMPONENTS_COMMERCE_CORE_DISCOUNTS_STORAGE_H_
 #define COMPONENTS_COMMERCE_CORE_DISCOUNTS_STORAGE_H_
 
+#include <map>
+#include <vector>
+
 #include "base/check.h"
+#include "base/functional/bind.h"
 #include "base/functional/callback.h"
+#include "base/memory/ptr_util.h"
+#include "base/scoped_observation.h"
+#include "components/commerce/core/commerce_types.h"
 #include "components/commerce/core/proto/discounts_db_content.pb.h"
+#include "components/history/core/browser/history_service.h"
+#include "components/history/core/browser/history_service_observer.h"
+#include "components/history/core/browser/history_types.h"
 #include "components/session_proto_db/session_proto_storage.h"
 
 namespace commerce {
 
 using DiscountsContent = discounts_db::DiscountsContentProto;
+using DiscountsKeyAndValues =
+    std::vector<SessionProtoStorage<DiscountsContent>::KeyAndValue>;
 
-class DiscountsStorage {
+class DiscountsStorage : public history::HistoryServiceObserver {
  public:
   explicit DiscountsStorage(
-      SessionProtoStorage<DiscountsContent>* discounts_proto_db);
+      SessionProtoStorage<DiscountsContent>* discounts_proto_db,
+      history::HistoryService* history_service);
   DiscountsStorage(const DiscountsStorage&) = delete;
   DiscountsStorage& operator=(const DiscountsStorage&) = delete;
-  virtual ~DiscountsStorage();
+  ~DiscountsStorage() override;
+
+  virtual void HandleServerDiscounts(
+      const std::vector<std::string>& urls_to_check,
+      DiscountsMap server_results,
+      DiscountInfoCallback callback);
+
+  // history::HistoryServiceObserver:
+  void OnURLsDeleted(history::HistoryService* history_service,
+                     const history::DeletionInfo& deletion_info) override;
 
  private:
+  void SaveDiscounts(const GURL& url, const std::vector<DiscountInfo>& infos);
+
+  void DeleteDiscountsForUrl(const std::string& url);
+
+  void OnLoadAllDiscounts(const std::vector<std::string>& urls_to_check,
+                          DiscountsMap server_results,
+                          DiscountInfoCallback callback,
+                          bool succeeded,
+                          DiscountsKeyAndValues data);
+
+  // When loading from local db, discard expired discounts and only convert &
+  // return unexpired ones.
+  std::vector<DiscountInfo> GetUnexpiredDiscountsFromProto(
+      const DiscountsContent& proto);
+
   raw_ptr<SessionProtoStorage<DiscountsContent>> proto_db_;
+
+  base::ScopedObservation<history::HistoryService,
+                          history::HistoryServiceObserver>
+      history_service_observation_{this};
+
+  base::WeakPtrFactory<DiscountsStorage> weak_ptr_factory_{this};
 };
 
 }  // namespace commerce

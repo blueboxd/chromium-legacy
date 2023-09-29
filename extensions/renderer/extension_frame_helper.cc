@@ -134,6 +134,15 @@ ExtensionFrameHelper::ExtensionFrameHelper(content::RenderFrame* render_frame,
       content::RenderFrameObserverTracker<ExtensionFrameHelper>(render_frame),
       extension_dispatcher_(extension_dispatcher) {
   g_frame_helpers.Get().insert(this);
+  if (render_frame->GetWebFrame()
+          ->GetDocumentLoader()
+          ->HasLoadedNonInitialEmptyDocument()) {
+    // With RenderDocument, cross-document navigations create a new RenderFrame
+    // (and thus, a new ExtensionFrameHelper). However, the frame tree node
+    // itself may have already navigated and loaded documents, so set
+    // `has_started_first_navigation_` to true in that case.
+    has_started_first_navigation_ = true;
+  }
 
   render_frame->GetAssociatedInterfaceRegistry()
       ->AddInterface<mojom::LocalFrame>(
@@ -180,8 +189,9 @@ v8::Local<v8::Array> ExtensionFrameHelper::GetV8MainFrames(
     if (!web_frame->IsOutermostMainFrame())
       continue;
 
-    if (!blink::WebFrame::ScriptCanAccess(web_frame))
+    if (!blink::WebFrame::ScriptCanAccess(context->GetIsolate(), web_frame)) {
       continue;
+    }
 
     v8::Local<v8::Context> frame_context = web_frame->MainWorldScriptContext();
     if (!frame_context.IsEmpty()) {
@@ -217,16 +227,13 @@ v8::Local<v8::Value> ExtensionFrameHelper::GetV8BackgroundPageMainFrame(
     v8::Isolate* isolate,
     const std::string& extension_id) {
   content::RenderFrame* main_frame = GetBackgroundPageFrame(extension_id);
-
-  v8::Local<v8::Value> background_page;
   blink::WebLocalFrame* web_frame =
       main_frame ? main_frame->GetWebFrame() : nullptr;
-  if (web_frame && blink::WebFrame::ScriptCanAccess(web_frame))
-    background_page = web_frame->MainWorldScriptContext()->Global();
-  else
-    background_page = v8::Undefined(isolate);
-
-  return background_page;
+  if (web_frame && blink::WebFrame::ScriptCanAccess(isolate, web_frame)) {
+    return web_frame->MainWorldScriptContext()->Global();
+  } else {
+    return v8::Undefined(isolate);
+  }
 }
 
 // static

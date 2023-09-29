@@ -23,10 +23,16 @@
 #include "url/gurl.h"
 
 namespace {
-// The relevance score for suggest tiles.
+// The relevance score for suggest tiles represented as a single tiling match.
 // Suggest tiles are placed in a dedicated SECTION_MOBILE_MOST_VISITED
 // making its relative relevance score not important.
-constexpr const int kMostVisitedTilesRelevance = 1;
+constexpr const int kMostVisitedTilesAggregateRelevance = 1;
+
+// The relevance score for suggest tiles represented as individual matches.
+// Repeatable Queries are recognized as searches, and may get merged to higher
+// ranking search suggestions listed below the carousel.
+constexpr const int kMostVisitedTilesIndividualRelevance = 1600;
+
 constexpr const int kMaxRecordedTileIndex = 15;
 
 constexpr char kHistogramTileTypeCountSearch[] =
@@ -91,17 +97,13 @@ bool BuildTileSuggest(AutocompleteProvider* provider,
           omnibox::kMostVisitedTilesHorizontalRenderGroup)) {
     auto* const url_service = client->GetTemplateURLService();
     auto* const dse = url_service->GetDefaultSearchProvider();
-    int relevance = 100;
+    int relevance = kMostVisitedTilesIndividualRelevance;
     for (const auto& tile : container) {
-      // TODO(crbug/1474087): pass this information from History layer via
-      // history::MostVisitedURL.
-      bool is_search =
-          url_service->IsSearchResultsPageFromDefaultSearchProvider(tile.url);
-      auto match =
-          BuildMatch(provider, client, tile.title, tile.url, relevance,
-                     is_search ? AutocompleteMatchType::TILE_REPEATABLE_QUERY
-                               : AutocompleteMatchType::TILE_MOST_VISITED_SITE);
-      if (is_search) {
+      auto match = BuildMatch(
+          provider, client, tile.title, tile.url, relevance,
+          tile.is_srp ? AutocompleteMatchType::TILE_REPEATABLE_QUERY
+                      : AutocompleteMatchType::TILE_MOST_VISITED_SITE);
+      if (tile.is_srp) {
         match.keyword = dse->keyword();
         std::u16string query = tile.title;
 
@@ -113,32 +115,32 @@ bool BuildTileSuggest(AutocompleteProvider* provider,
         match.fill_into_edit = query;
         match.contents = query;
         match.suggest_type = omnibox::TYPE_QUERY;
+
+        // Supply blanket SearchTermsArgs so we can also report SearchBoxStats.
+        match.search_terms_args =
+            std::make_unique<TemplateURLRef::SearchTermsArgs>(query);
       }
       matches.emplace_back(std::move(match));
       --relevance;
     }
   } else if (base::FeatureList::IsEnabled(omnibox::kMostVisitedTiles)) {
-    AutocompleteMatch match = BuildMatch(
-        provider, client, std::u16string(), GURL::EmptyGURL(),
-        kMostVisitedTilesRelevance, AutocompleteMatchType::TILE_NAVSUGGEST);
+    AutocompleteMatch match =
+        BuildMatch(provider, client, std::u16string(), GURL::EmptyGURL(),
+                   kMostVisitedTilesAggregateRelevance,
+                   AutocompleteMatchType::TILE_NAVSUGGEST);
 
     match.suggest_tiles.reserve(container.size());
-    auto* const url_service = client->GetTemplateURLService();
-
     size_t num_search_tiles = 0;
     size_t num_url_tiles = 0;
 
     for (const auto& tile : container) {
-      bool is_search =
-          url_service->IsSearchResultsPageFromDefaultSearchProvider(tile.url);
-
       match.suggest_tiles.push_back({
           .url = tile.url,
           .title = tile.title,
-          .is_search = is_search,
+          .is_search = tile.is_srp,
       });
 
-      if (is_search) {
+      if (tile.is_srp) {
         num_search_tiles++;
       } else {
         num_url_tiles++;

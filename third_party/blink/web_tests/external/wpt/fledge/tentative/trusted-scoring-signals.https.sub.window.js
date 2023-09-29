@@ -1,7 +1,17 @@
 // META: script=/resources/testdriver.js
 // META: script=/common/utils.js
 // META: script=resources/fledge-util.js
+// META: script=/common/subset-tests.js
 // META: timeout=long
+// META: variant=?1-5
+// META: variant=?6-10
+// META: variant=?11-15
+// META: variant=?16-20
+// META: variant=?21-25
+// META: variant=?26-30
+// META: variant=?31-35
+// META: variant=?36-40
+// META: variant=?41-last
 
 "use strict";
 
@@ -21,7 +31,7 @@ async function runTrustedScoringSignalsTest(test, uuid, renderURL, scoreAdCheck,
       decisionLogicURL:
           createDecisionScriptURL(uuid, {
                   scoreAd: `if (!(${scoreAdCheck})) throw "error";` })};
-  await runBasicFledgeTestExpectingWinner(
+  await joinGroupAndRunBasicFledgeTestExpectingWinner(
       test,
       {
         uuid: uuid,
@@ -81,19 +91,19 @@ function createScoringSignalsRenderUrlWithBody(uuid, responseBody) {
 // Tests where no renderURL value is received for the passed in renderURL.
 /////////////////////////////////////////////////////////////////////////////
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const decisionLogicScriptUrl = createDecisionScriptURL(
       uuid,
       { scoreAd: 'if (trustedScoringSignals !== null) throw "error";' });
-  await runBasicFledgeTestExpectingWinner(
+  await joinGroupAndRunBasicFledgeTestExpectingWinner(
       test,
       { uuid: uuid,
         auctionConfigOverrides: { decisionLogicURL: decisionLogicScriptUrl }
       });
 }, 'No trustedScoringSignalsURL.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, /*signalsParam=*/'close-connection');
   await runTrustedScoringSignalsTest(
@@ -101,71 +111,71 @@ promise_test(async test => {
       'trustedScoringSignals === null');
 }, 'Trusted scoring signals closes the connection without sending anything.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, /*signalsParam=*/'http-error');
   await runTrustedScoringSignalsTest(test, uuid, renderURL, 'trustedScoringSignals === null');
 }, 'Trusted scoring signals response is HTTP 404 error.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, /*signalsParam=*/'no-content-type');
   await runTrustedScoringSignalsTest(test, uuid, renderURL, 'trustedScoringSignals === null');
 }, 'Trusted scoring signals response has no content-type.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, /*signalsParam=*/'wrong-content-type');
   await runTrustedScoringSignalsTest(test, uuid, renderURL, 'trustedScoringSignals === null');
 }, 'Trusted scoring signals response has wrong content-type.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, /*signalsParam=*/'ad-auction-not-allowed');
   await runTrustedScoringSignalsTest(test, uuid, renderURL, 'trustedScoringSignals === null');
 }, 'Trusted scoring signals response does not allow FLEDGE.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, /*signalsParam=*/'bad-ad-auction-allowed');
   await runTrustedScoringSignalsTest(test, uuid, renderURL, 'trustedScoringSignals === null');
 }, 'Trusted scoring signals response has wrong Ad-Auction-Allowed header.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, /*signalsParam=*/'no-ad-auction-allow');
   await runTrustedScoringSignalsTest(test, uuid, renderURL, 'trustedScoringSignals === null');
 }, 'Trusted scoring signals response has no Ad-Auction-Allowed header.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createScoringSignalsRenderUrlWithBody(
       uuid, /*responseBody=*/'');
   await runTrustedScoringSignalsTest(test, uuid, renderURL, 'trustedScoringSignals === null');
 }, 'Trusted scoring signals response has no body.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createScoringSignalsRenderUrlWithBody(
       uuid, /*responseBody=*/'Not JSON');
   await runTrustedScoringSignalsTest(test, uuid, renderURL, 'trustedScoringSignals === null');
 }, 'Trusted scoring signals response is not JSON.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createScoringSignalsRenderUrlWithBody(
       uuid, /*responseBody=*/'[]');
   await runTrustedScoringSignalsTest(test, uuid, renderURL, 'trustedScoringSignals === null');
 }, 'Trusted scoring signals response is a JSON array.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createScoringSignalsRenderUrlWithBody(
       uuid, /*responseBody=*/'{JSON_keys_need_quotes: 1}');
   await runTrustedScoringSignalsTest(test, uuid, renderURL, 'trustedScoringSignals === null');
 }, 'Trusted scoring signals response is invalid JSON object.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createScoringSignalsRenderUrlWithBody(
       uuid, /*responseBody=*/'{}');
@@ -174,7 +184,7 @@ promise_test(async test => {
       `trustedScoringSignals.renderURL["${renderURL}"] === null`);
 }, 'Trusted scoring signals response has no renderURL object.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, /*signalsParam=*/'no-value');
   await runTrustedScoringSignalsTest(
@@ -182,7 +192,7 @@ promise_test(async test => {
       `trustedScoringSignals.renderURL["${renderURL}"] === null`);
 }, 'Trusted scoring signals response has no renderURLs.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, /*signalsParam=*/'wrong-url');
   await runTrustedScoringSignalsTest(
@@ -195,7 +205,7 @@ promise_test(async test => {
 // Tests where renderURL value is received for the passed in renderURL.
 /////////////////////////////////////////////////////////////////////////////
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, /*signalsParam=*/'null-value');
   await runTrustedScoringSignalsTest(
@@ -203,7 +213,7 @@ promise_test(async test => {
       `trustedScoringSignals.renderURL["${renderURL}"] === null`);
 }, 'Trusted scoring signals response has null value for renderURL.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, /*signalsParam=*/'num-value');
   await runTrustedScoringSignalsTest(
@@ -211,7 +221,7 @@ promise_test(async test => {
       `trustedScoringSignals.renderURL["${renderURL}"] === 1`);
 }, 'Trusted scoring signals response has a number value for renderURL.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null,
       /*signalsParam=*/'string-value');
@@ -220,7 +230,7 @@ promise_test(async test => {
       `trustedScoringSignals.renderURL["${renderURL}"] === "1"`);
 }, 'Trusted scoring signals response has a string value for renderURL.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, /*signalsParam=*/'array-value');
   await runTrustedScoringSignalsTest(
@@ -228,7 +238,7 @@ promise_test(async test => {
       `JSON.stringify(trustedScoringSignals.renderURL["${renderURL}"]) === '[1,"foo",null]'`);
 }, 'Trusted scoring signals response has an array value for renderURL.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, /*signalsParam=*/'object-value');
   await runTrustedScoringSignalsTest(
@@ -238,7 +248,7 @@ promise_test(async test => {
        JSON.stringify(trustedScoringSignals.renderURL["${renderURL}"]["c"]) === '["d"]'`);
 }, 'Trusted scoring signals response has an object value for renderURL.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, /*signalsParam=*/'+%20 \x00?,3#&');
   await runTrustedScoringSignalsTest(
@@ -246,7 +256,7 @@ promise_test(async test => {
       `trustedScoringSignals.renderURL["${renderURL}"] === "default value"`);
 }, 'Trusted scoring signals with escaped renderURL.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, /*signalsParam=*/'hostname');
   await runTrustedScoringSignalsTest(
@@ -261,7 +271,7 @@ promise_test(async test => {
 // render URLs from two different IGs, though that's the case this is trying to test -
 // browsers are not required to support batching, and even if they do, joining any two
 // particular requests may be racy.
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL1 = createRenderURL(uuid, /*script=*/null, /*signalsParam=*/'num-value');
   const renderURL2 = createRenderURL(uuid, /*script=*/null, /*signalsParam=*/'string-value');
@@ -298,7 +308,7 @@ promise_test(async test => {
 // Data-Version tests
 /////////////////////////////////////////////////////////////////////////////
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid);
   await runTrustedScoringSignalsDataVersionTest(
@@ -306,7 +316,7 @@ promise_test(async test => {
       'browserSignals.dataVersion === undefined');
 }, 'Trusted scoring signals response has no Data-Version.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, 'data-version:3');
   await runTrustedScoringSignalsDataVersionTest(
@@ -314,7 +324,7 @@ promise_test(async test => {
       'browserSignals.dataVersion === 3');
 }, 'Trusted scoring signals response has valid Data-Version.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, 'data-version:0');
   await runTrustedScoringSignalsDataVersionTest(
@@ -322,7 +332,7 @@ promise_test(async test => {
       'browserSignals.dataVersion === 0');
 }, 'Trusted scoring signals response has min Data-Version.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, 'data-version:4294967295');
   await runTrustedScoringSignalsDataVersionTest(
@@ -330,7 +340,7 @@ promise_test(async test => {
       'browserSignals.dataVersion === 4294967295');
 }, 'Trusted scoring signals response has max Data-Version.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, 'data-version:4294967296');
   await runTrustedScoringSignalsDataVersionTest(
@@ -338,7 +348,7 @@ promise_test(async test => {
       'browserSignals.dataVersion === undefined');
 }, 'Trusted scoring signals response has too large Data-Version.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, 'data-version:03');
   await runTrustedScoringSignalsDataVersionTest(
@@ -346,7 +356,7 @@ promise_test(async test => {
       'browserSignals.dataVersion === undefined');
 }, 'Trusted scoring signals response has data-version with leading 0.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, 'data-version:-1');
   await runTrustedScoringSignalsDataVersionTest(
@@ -354,7 +364,7 @@ promise_test(async test => {
       'browserSignals.dataVersion === undefined');
 }, 'Trusted scoring signals response has negative Data-Version.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, 'data-version:1.3');
   await runTrustedScoringSignalsDataVersionTest(
@@ -362,7 +372,7 @@ promise_test(async test => {
       'browserSignals.dataVersion === undefined');
 }, 'Trusted scoring signals response has decimal in Data-Version.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, 'data-version:2 2');
   await runTrustedScoringSignalsDataVersionTest(
@@ -370,7 +380,7 @@ promise_test(async test => {
       'browserSignals.dataVersion === undefined');
 }, 'Trusted scoring signals response has space in Data-Version.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, 'data-version:0x4');
   await runTrustedScoringSignalsDataVersionTest(
@@ -378,7 +388,7 @@ promise_test(async test => {
       'browserSignals.dataVersion === undefined');
 }, 'Trusted scoring signals response has hex Data-Version.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, 'data-version:3,replace-body:');
   await runTrustedScoringSignalsDataVersionTest(
@@ -386,7 +396,7 @@ promise_test(async test => {
       'browserSignals.dataVersion === undefined');
 }, 'Trusted scoring signals response has data-version and empty body.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, 'data-version:3,replace-body:[]');
   await runTrustedScoringSignalsDataVersionTest(
@@ -394,7 +404,7 @@ promise_test(async test => {
       'browserSignals.dataVersion === undefined');
 }, 'Trusted scoring signals response has data-version and JSON array body.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, 'data-version:3,replace-body:{} {}');
   await runTrustedScoringSignalsDataVersionTest(
@@ -402,7 +412,7 @@ promise_test(async test => {
       'browserSignals.dataVersion === undefined');
 }, 'Trusted scoring signals response has data-version and double JSON object body.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, 'data-version:3,replace-body:{}');
   await runTrustedScoringSignalsDataVersionTest(
@@ -414,7 +424,7 @@ promise_test(async test => {
 // Trusted scoring signals + component ad tests.
 /////////////////////////////////////////////////////////////////////////////
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, /*signalsParam=*/'close-connection');
   const componentURL = createRenderURL(uuid, /*script=*/null);
@@ -429,7 +439,7 @@ promise_test(async test => {
       });
 }, 'Component ads trusted scoring signals, server closes the connection without sending anything.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, /*signalsParam=*/'num-value');
   // This should not be sent. If it is, it will take precedence over the "num-value" parameter
@@ -444,7 +454,7 @@ promise_test(async test => {
       { adComponents: [{ renderURL: componentURL }] });
 }, 'Trusted scoring signals request without component ads in bid.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createScoringSignalsRenderUrlWithBody(
     uuid, /*responseBody=*/'{}');
@@ -463,7 +473,7 @@ promise_test(async test => {
       });
 }, 'Component ads trusted scoring signals trusted scoring signals response is empty JSON object.');
 
-promise_test(async test => {
+subsetTest(promise_test, async test => {
   const uuid = generateUuid(test);
   const renderURL = createRenderURL(uuid, /*script=*/null, /*signalsParam=*/'hostname');
   const componentURL1 = createRenderURL(uuid, /*script=*/null, /*signalsParam=*/'null-value');

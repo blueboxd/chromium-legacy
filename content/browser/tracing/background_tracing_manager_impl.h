@@ -15,6 +15,7 @@
 #include "base/no_destructor.h"
 #include "base/threading/sequence_bound.h"
 #include "base/timer/timer.h"
+#include "base/token.h"
 #include "content/browser/tracing/background_tracing_config_impl.h"
 #include "content/browser/tracing/trace_report/trace_report_database.h"
 #include "content/browser/tracing/trace_report/trace_upload_list.h"
@@ -52,6 +53,10 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager,
     virtual void OnAgentRemoved(
         tracing::mojom::BackgroundTracingAgent* agent) = 0;
   };
+
+  using ScenarioCountMap = base::flat_map<std::string, size_t>;
+  using FinishedProcessingCallback =
+      TraceUploadList::FinishedProcessingCallback;
 
   // These values are used for a histogram. Do not reorder.
   enum class Metrics {
@@ -93,23 +98,19 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager,
   static void ActivateForProcess(int child_process_id,
                                  mojom::ChildProcess* child_process);
 
+  void SetReceiveCallback(ReceiveCallback receive_callback) override;
   bool InitializeScenarios(
       const perfetto::protos::gen::ChromeFieldTracingConfig& config,
-      ReceiveCallback receive_callback,
       DataFiltering data_filtering) override;
 
   bool SetActiveScenario(std::unique_ptr<BackgroundTracingConfig>,
                          DataFiltering data_filtering) override;
-  bool SetActiveScenarioWithReceiveCallback(
-      std::unique_ptr<BackgroundTracingConfig>,
-      ReceiveCallback receive_callback,
-      DataFiltering data_filtering) override;
   bool HasActiveScenario() override;
   void DeleteTracesInDateRange(base::Time start, base::Time end) override;
 
   // TracingScenario::Delegate:
-  void OnScenarioActive(TracingScenario* scenario) override;
-  void OnScenarioIdle(TracingScenario* scenario) override;
+  bool OnScenarioActive(TracingScenario* scenario) override;
+  bool OnScenarioIdle(TracingScenario* scenario) override;
   void OnScenarioRecording(TracingScenario* scenario) override;
   void SaveTrace(TracingScenario* scenario,
                  const BackgroundTracingRule* triggered_rule,
@@ -119,19 +120,27 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager,
                                base::RepeatingCallback<bool()> callback);
 
   bool HasTraceToUpload() override;
-  void GetTraceToUpload(base::OnceCallback<void(std::string)>) override;
+  void GetTraceToUpload(
+      base::OnceCallback<void(absl::optional<std::string>,
+                              absl::optional<std::string>)>) override;
   std::unique_ptr<BackgroundTracingConfig> GetBackgroundTracingConfig(
       const std::string& trial_name) override;
+  void SetSystemProfileRecorder(
+      base::RepeatingCallback<std::string()> recorder) override;
+
+  CONTENT_EXPORT size_t GetScenarioSavedCount(const std::string& scenario_name);
+  CONTENT_EXPORT void InitializeTraceReportDatabase(
+      bool open_in_memory = false);
 
   // TraceUploadList
   void OpenDatabaseIfExists() override;
   void GetAllTraceReports(GetReportsCallback callback) override;
-  void DeleteSingleTrace(const base::Uuid& trace_uuid,
+  void DeleteSingleTrace(const base::Token& trace_uuid,
                          FinishedProcessingCallback callback) override;
   void DeleteAllTraces(FinishedProcessingCallback callback) override;
-  void UserUploadSingleTrace(const base::Uuid& trace_uuid,
+  void UserUploadSingleTrace(const base::Token& trace_uuid,
                              FinishedProcessingCallback callback) override;
-  void DownloadTrace(const base::Uuid& trace_uuid,
+  void DownloadTrace(const base::Token& trace_uuid,
                      GetProtoCallback callback) override;
 
   // Add/remove EnabledStateTestObserver.
@@ -152,17 +161,19 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager,
   void OnStartTracingDone();
   void OnProtoDataComplete(std::string&& serialized_trace,
                            const std::string& scenario_name,
-                           const std::string& rule_name);
+                           const std::string& rule_name,
+                           bool is_crash_scenario,
+                           const base::Token& uuid);
 
   // For tests
   CONTENT_EXPORT BackgroundTracingActiveScenario* GetActiveScenarioForTesting();
   CONTENT_EXPORT void InvalidateTriggersCallbackForTesting();
   CONTENT_EXPORT bool IsTracingForTesting();
   CONTENT_EXPORT void AbortScenarioForTesting() override;
-  CONTENT_EXPORT void SaveTraceForTesting(
-      std::string&& serialized_trace,
-      const std::string& scenario_name,
-      const std::string& rule_name) override;
+  CONTENT_EXPORT void SaveTraceForTesting(std::string&& serialized_trace,
+                                          const std::string& scenario_name,
+                                          const std::string& rule_name,
+                                          const base::Token& uuid) override;
 
  private:
 #if BUILDFLAG(IS_ANDROID)
@@ -188,12 +199,15 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager,
           provider);
   static void ClearPendingAgent(int child_process_id);
   void MaybeConstructPendingAgents();
-  void InitializeTraceReportDatabase(bool open_in_memory = false);
   void OnFinalizeComplete(absl::optional<BaseTraceReport> trace_to_upload,
                           bool success);
-  void OnTraceDatabaseCreated(absl::optional<BaseTraceReport> trace_to_upload,
+  void OnTraceDatabaseCreated(ScenarioCountMap scenario_saved_counts,
+                              absl::optional<BaseTraceReport> trace_to_upload,
                               bool success);
-  void OnTraceSaved(absl::optional<NewTraceReport> trace_to_upload);
+  void OnTraceDatabaseUpdated(ScenarioCountMap scenario_saved_counts);
+  void OnTraceSaved(const std::string& scenario_name,
+                    absl::optional<NewTraceReport> trace_to_upload,
+                    bool success);
   void CleanDatabase();
   size_t GetTraceUploadLimitKb() const;
 
@@ -202,8 +216,9 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager,
   std::vector<std::unique_ptr<TracingScenario>> scenarios_;
   raw_ptr<TracingScenario> active_scenario_{nullptr};
   ReceiveCallback receive_callback_;
+  base::RepeatingCallback<std::string()> system_profile_recorder_;
 
-  bool requires_anonymized_data_ = false;
+  bool requires_anonymized_data_ = true;
 
   std::map<std::string, base::RepeatingCallback<bool()>>
       named_trigger_callbacks_;
@@ -216,6 +231,8 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager,
 
   std::map<int, mojo::Remote<tracing::mojom::BackgroundTracingAgentProvider>>
       pending_agents_;
+
+  ScenarioCountMap scenario_saved_counts_;
 
   // Task runner on which |trace_database_| lives.
   scoped_refptr<base::SequencedTaskRunner> database_task_runner_;

@@ -26,7 +26,8 @@ using proto::SegmentInfo;
 // the time to read from DB in consecutive calls
 class SegmentInfoCache {
  public:
-  using SegmentInfoList = std::vector<std::pair<SegmentId, proto::SegmentInfo>>;
+  using SegmentInfoList =
+      std::vector<std::pair<SegmentId, const proto::SegmentInfo*>>;
 
   SegmentInfoCache();
   ~SegmentInfoCache();
@@ -36,8 +37,8 @@ class SegmentInfoCache {
   SegmentInfoCache& operator=(const SegmentInfoCache&) = delete;
 
   // Returns an optional SegmentInfo for a `segment_id` based on `model_source`.
-  absl::optional<SegmentInfo> GetSegmentInfo(SegmentId segment_id,
-                                             ModelSource model_source) const;
+  const SegmentInfo* GetSegmentInfo(SegmentId segment_id,
+                                    ModelSource model_source) const;
 
   // Returns list of segment info for list of `segment_ids` found in the cache
   // based on `model_source`. If segment info is not found for a segment id,

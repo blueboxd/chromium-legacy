@@ -8,7 +8,7 @@
 #import "base/immediate_crash.h"
 #import "base/strings/string_number_conversions.h"
 #import "base/task/thread_pool.h"
-#import "ios/chrome/browser/crash_report/crash_reporter_url_observer.h"
+#import "ios/chrome/browser/crash_report/model/crash_reporter_url_observer.h"
 #import "ios/chrome/browser/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
@@ -19,13 +19,13 @@
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/tab_insertion/model/tab_insertion_browser_agent.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/url_loading/scene_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
-#import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
 #import "net/base/url_util.h"
 
 BROWSER_USER_DATA_KEY_IMPL(UrlLoadingBrowserAgent)
@@ -401,6 +401,12 @@ void UrlLoadingBrowserAgent::LoadUrlInNewTabImpl(const UrlLoadParams& params,
 
   web::WebState* web_state =
       insertion_agent->InsertWebState(params.web_params, insertion_params);
-  web_state->GetNavigationManager()->LoadIfNecessary();
-  notifier_->NewTabDidLoadUrl(params.web_params.url, params.user_initiated);
+
+  // If the tab was created as "unrealized" (e.g. `instant_load`
+  // being false) then do not force a load. The tab will load
+  // when it transition to "realized".
+  if (web_state->IsRealized()) {
+    web_state->GetNavigationManager()->LoadIfNecessary();
+    notifier_->NewTabDidLoadUrl(params.web_params.url, params.user_initiated);
+  }
 }

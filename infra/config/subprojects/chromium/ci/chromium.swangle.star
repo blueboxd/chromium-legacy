@@ -13,6 +13,7 @@ ci.defaults.set(
     builder_group = "chromium.swangle",
     pool = ci.gpu.POOL,
     sheriff_rotations = sheriff_rotations.CHROMIUM_GPU,
+    contact_team_email = "chrome-gpu-infra@google.com",
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = reclient.jobs.DEFAULT,

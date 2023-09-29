@@ -74,6 +74,11 @@ const char kEnableDoNotTrack[] = "enable_do_not_track";
 // Number of times the First Follow UI has been shown.
 const char kFirstFollowUIShownCount[] = "follow.first_follow_ui_modal_count";
 
+// Number of times the First Follow UI has been shown with Follow UI Update
+// enabled.
+const char kFirstFollowUpdateUIShownCount[] =
+    "follow.first_follow_update_ui_modal_count";
+
 // A dictionary mapping push notification enabled features to their permission
 // to send notifications to the user.
 const char kFeaturePushNotificationPermissions[] =
@@ -252,6 +257,11 @@ const char kIosSafetyCheckManagerSafeBrowsingCheckResult[] =
 // Google Photos.
 const char kIosSaveToPhotosDefaultGaiaId[] =
     "ios.save_to_photos.default_gaia_id";
+
+// Time preference containing the last run time of the Safety Check (via
+// Settings).
+const char kIosSettingsSafetyCheckLastRunTime[] =
+    "ios.settings.safety_check.last_run_time";
 
 // The count of how many times the user has shared the app.
 const char kIosShareChromeCount[] = "ios.share_chrome.count";
@@ -442,5 +452,10 @@ const char kAutofillBrandingKeyboardAccessoriesTapped[] =
 // A boolean used to determine if the Price Tracking UI has been shown.
 const char kPriceNotificationsHasBeenShown[] =
     "ios.price_notifications.has_been_shown";
+
+// A boolean used to determine if the user has entered the password sharing flow
+// from the first run experience screen.
+const char kPasswordSharingFlowHasBeenEntered[] =
+    "ios.password_sharing.flow_entered";
 
 }  // namespace prefs

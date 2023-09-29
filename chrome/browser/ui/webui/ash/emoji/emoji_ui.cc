@@ -25,6 +25,8 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/ime/ash/ime_bridge.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/resources/grit/webui_resources.h"
 #include "ui/webui/color_change_listener/color_change_handler.h"
 
@@ -34,16 +36,28 @@ constexpr int kPaddingAroundCursor = 8;
 
 class EmojiiBubbleDialogView : public WebUIBubbleDialogView {
  public:
+  METADATA_HEADER(EmojiiBubbleDialogView);
   EmojiiBubbleDialogView(
       std::unique_ptr<BubbleContentsWrapper> contents_wrapper)
       : WebUIBubbleDialogView(nullptr, contents_wrapper.get()),
         contents_wrapper_(std::move(contents_wrapper)) {
     set_has_parent(false);
+
+    // With jelly support on, update border radius of bubble view.
+    // TODO(b/263055563): Remove this check once Jelly is fully launched in
+    // Emoji Picker.
+    if (base::FeatureList::IsEnabled(
+            ash::features::kImeSystemEmojiPickerJellySupport)) {
+      set_corner_radius(16);
+    }
   }
 
  private:
   std::unique_ptr<BubbleContentsWrapper> contents_wrapper_;
 };
+
+BEGIN_METADATA(EmojiiBubbleDialogView, WebUIBubbleDialogView)
+END_METADATA
 
 }  // namespace
 

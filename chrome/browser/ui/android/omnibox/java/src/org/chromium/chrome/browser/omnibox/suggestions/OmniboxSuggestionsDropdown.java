@@ -81,6 +81,7 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
     @VisibleForTesting
     /* package */ class SuggestionLayoutScrollListener extends LinearLayoutManager {
         private boolean mLastKeyboardShownState;
+        private boolean mCurrentGestureAffectedKeyboardState;
 
         public SuggestionLayoutScrollListener(Context context) {
             super(context);
@@ -118,6 +119,12 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
         @VisibleForTesting
         /* package */ int updateKeyboardVisibilityAndScroll(
                 int resultingDeltaY, int requestedDeltaY) {
+            // Change keyboard visibility only once per gesture.
+            // This helps in situations where the user interacts with the horizontal caoursel (e.g.
+            // the Most Visited Sites), where a horizontal finger swipe could result in a series of
+            // keyboard show/hide events.
+            if (mCurrentGestureAffectedKeyboardState) return resultingDeltaY;
+
             // If the effective scroll distance is:
             // - same as the desired one, we have enough content to scroll in a given direction
             //   (negative values = up, positive values = down).
@@ -151,6 +158,7 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
 
             if (mLastKeyboardShownState == keyboardShouldShow) return resultingDeltaY;
             mLastKeyboardShownState = keyboardShouldShow;
+            mCurrentGestureAffectedKeyboardState = true;
 
             if (keyboardShouldShow) {
                 if (mSuggestionDropdownOverscrolledToTopListener != null) {
@@ -181,6 +189,15 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
         @VisibleForTesting
         /* package */ void resetKeyboardShownState() {
             mLastKeyboardShownState = true;
+            mCurrentGestureAffectedKeyboardState = false;
+        }
+
+        /**
+         * Reset internal state, preparing to handle a new gesture.
+         * Note: currently invoked both when a gesture begins and ends.
+         */
+        /* package */ void onNewGesture() {
+            mCurrentGestureAffectedKeyboardState = false;
         }
     }
 
@@ -338,7 +355,8 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         try (TraceEvent tracing = TraceEvent.scoped("OmniboxSuggestionsList.Measure");
-                TimingMetric metric = OmniboxMetrics.recordSuggestionListMeasureTime()) {
+                TimingMetric metric = OmniboxMetrics.recordSuggestionListMeasureTime();
+                TimingMetric metric2 = OmniboxMetrics.recordSuggestionListMeasureWallTime()) {
             OmniboxAlignment omniboxAlignment = mEmbedder.getCurrentAlignment();
             maybeUpdateLayoutParams(omniboxAlignment.top);
             int availableViewportHeight = omniboxAlignment.height;
@@ -386,7 +404,8 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         try (TraceEvent tracing = TraceEvent.scoped("OmniboxSuggestionsList.Layout");
-                TimingMetric metric = OmniboxMetrics.recordSuggestionListLayoutTime()) {
+                TimingMetric metric = OmniboxMetrics.recordSuggestionListLayoutTime();
+                TimingMetric metric2 = OmniboxMetrics.recordSuggestionListLayoutWallTime()) {
             super.onLayout(changed, l, t, r, b);
         }
     }
@@ -427,9 +446,11 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         final int eventType = ev.getActionMasked();
-        if ((eventType == MotionEvent.ACTION_UP || eventType == MotionEvent.ACTION_DOWN)
-                && mGestureObserver != null) {
-            mGestureObserver.onGesture(eventType == MotionEvent.ACTION_UP, ev.getEventTime());
+        if (eventType == MotionEvent.ACTION_UP || eventType == MotionEvent.ACTION_DOWN) {
+            mLayoutScrollListener.onNewGesture();
+            if (mGestureObserver != null) {
+                mGestureObserver.onGesture(eventType == MotionEvent.ACTION_UP, ev.getEventTime());
+            }
         }
         return super.dispatchTouchEvent(ev);
     }

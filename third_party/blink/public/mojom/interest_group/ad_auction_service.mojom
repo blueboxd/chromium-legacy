@@ -22,7 +22,7 @@ struct AdKeywordReplacement {
 // promise param resolved --- either the top-level auction (if `main_auction`)
 // or a particular component auction.
 union AuctionAdConfigAuctionId {
-  uint32 main_auction;  // value unused.
+  uint32 main_auction;
   uint32 component_auction;  // value position in component_auctions array.
 };
 
@@ -39,6 +39,12 @@ enum AuctionAdConfigField {
 enum AuctionAdConfigBuyerTimeoutField {
   kPerBuyerTimeouts,
   kPerBuyerCumulativeTimeouts
+};
+
+// Coordinator which is conducting the auction.
+enum AdAuctionCoordinator {
+  kAWS,
+  kGCP,
 };
 
 // Used to provide a way of aborting a call to AdAuctionService.RunAdAuction
@@ -237,6 +243,6 @@ interface AdAuctionService {
 
   // Gets the ad auction data for running an external auction on a bidding and
   // auction server.
-  GetInterestGroupAdAuctionData(url.mojom.Origin seller)
+  GetInterestGroupAdAuctionData(url.mojom.Origin seller, AdAuctionCoordinator coordinator)
       => (mojo_base.mojom.BigBuffer request, mojo_base.mojom.Uuid? request_id);
 };

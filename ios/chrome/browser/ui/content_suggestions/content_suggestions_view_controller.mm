@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ntp/set_up_list_item_type.h"
 #import "ios/chrome/browser/safety_check/ios_chrome_safety_check_manager_constants.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cells_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
@@ -83,6 +84,14 @@ const CGFloat kSetUpListWidthWide = 418;
 
 // The distance in which a replaced/replacing module will fade out/in of view.
 const float kMagicStackReplaceModuleFadeAnimationDistance = 50;
+
+// The size configs of the Magic Stack edit button.
+const float kMagicStackEditButtonWidth = 61;
+const float kMagicStackEditButtonIconPointSize = 22;
+
+// Margin spacing between Magic Stack Edit button and horizontal neighboring
+// views.
+const float kMagicStackEditButtonMargin = 32;
 
 // The duration of the animation that hides the Set Up List.
 const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
@@ -256,16 +265,23 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
 
   // Only Create Magic Stack if the ranking has been received. It can be delayed
   // to after -viewDidLoad if fecthing from Segmentation Platform.
-  if (IsMagicStackEnabled() && _magicStackRankReceived) {
+  if (IsMagicStackEnabled()) {
     [self createMagicStack];
+    if (_magicStackRankReceived) {
+      [self populateMagicStack];
+    } else if (base::FeatureList::IsEnabled(
+                   segmentation_platform::features::
+                       kSegmentationPlatformIosModuleRanker)) {
+      // If Magic Stack rank has not been received from Segmentation, add
+      // placeholders
+      [self populateMagicStackWithPlaceholders];
+    }
   }
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
   [super viewWillDisappear:animated];
-  if (ShouldShowReturnToMostRecentTabForStartSurface()) {
-    [self.audience viewWillDisappear];
-  }
+  [self.audience viewWillDisappear];
 }
 
 #pragma mark - UIGestureRecognizerDelegate
@@ -454,9 +470,7 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
                                        kSegmentationPlatformIosModuleRanker)) {
     // Magic Stack order is only passed to the VC late when fetching it from the
     // Segmentation Platform
-    [self createMagicStack];
-    [self.view setNeedsLayout];
-    [self.view layoutIfNeeded];
+    [self populateMagicStack];
   }
 }
 
@@ -473,8 +487,6 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
       [_magicStackModuleOrder removeObjectAtIndex:change.index];
       UIView* moduleToRemove = _magicStack.arrangedSubviews[change.index];
       [moduleToRemove removeFromSuperview];
-      CHECK_EQ(_magicStackModuleOrder.count,
-               _magicStack.arrangedSubviews.count);
       break;
     }
     case MagicStackOrderChange::Type::kReplace: {
@@ -560,7 +572,7 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
       }
       // Only add it to the Magic Stack here if it is after the inital
       // construction of the Magic Stack.
-      if (_magicStack) {
+      if (_magicStackRankReceived) {
         if (shouldShowCompactedSetUpListModule) {
           MultiRowContainerView* multiRowContainer =
               [[MultiRowContainerView alloc]
@@ -691,10 +703,11 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
   }];
 }
 
+// Shows the Safety Check (Magic Stack) module with `state`.
 - (void)showSafetyCheck:(SafetyCheckState*)state {
   _safetyCheckState = state;
 
-  if (!_magicStack) {
+  if (!_magicStackRankReceived) {
     return;
   }
 
@@ -795,7 +808,7 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
                      type:ContentSuggestionsModuleType::kTabResumption
                  delegate:self];
 
-  if (_magicStack) {
+  if (_magicStackRankReceived) {
     [self insertModuleIntoMagicStack:self.tabResumptionModuleContainer];
   }
 }
@@ -930,6 +943,12 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
       !ShouldPutMostVisitedSitesInMagicStack()) {
     return NO;
   }
+  if (!_magicStackRankReceived &&
+      base::FeatureList::IsEnabled(segmentation_platform::features::
+                                       kSegmentationPlatformIosModuleRanker)) {
+    // There are two placeholders shown in the Magic Stack.
+    return NO;
+  }
   ContentSuggestionsModuleType firstModuleType = (ContentSuggestionsModuleType)[
       [_magicStackModuleOrder objectAtIndex:0] intValue];
   return [_magicStackModuleOrder count] == 1 && firstModuleType == type;
@@ -951,6 +970,7 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
   [self.audience neverShowModuleType:type];
 }
 
+// Returns the module's subtitle, if any, given the Magic Stack module `type`.
 - (NSString*)subtitleStringForModule:(ContentSuggestionsModuleType)type {
   if (type == ContentSuggestionsModuleType::kSafetyCheck ||
       type == ContentSuggestionsModuleType::kSafetyCheckMultiRow) {
@@ -1009,7 +1029,7 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
     if (ShouldPutMostVisitedSitesInMagicStack()) {
       // Only add it to the Magic Stack here if it is after the inital
       // construction of the Magic Stack.
-      if (_magicStack) {
+      if (_magicStackRankReceived) {
         [self insertModuleIntoMagicStack:self.mostVisitedModuleContainer];
       }
     } else {
@@ -1036,6 +1056,7 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
   }
 }
 
+// Creates the Safety Check (Magic Stack) module using the Safety Check `state`.
 - (void)createSafetyCheck:(SafetyCheckState*)state {
   self.safetyCheckState = state;
 
@@ -1109,6 +1130,8 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
   }
 }
 
+// Constructs the Magic Stack module only. No modules are added in this
+// implementation.
 - (void)createMagicStack {
   _magicStackScrollView = [[UIScrollView alloc] init];
   [_magicStackScrollView setShowsHorizontalScrollIndicator:NO];
@@ -1132,6 +1155,40 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
   // Ensures modules take up entire height of the Magic Stack.
   _magicStack.alignment = UIStackViewAlignmentFill;
   [_magicStackScrollView addSubview:_magicStack];
+
+  AddSameConstraints(_magicStack, _magicStackScrollView);
+  // Define width of ScrollView. Instrinsic content height of the
+  // StackView within the ScrollView will define the height of the
+  // ScrollView.
+  CGFloat width = [MagicStackModuleContainer
+      moduleWidthForHorizontalTraitCollection:self.traitCollection];
+  // Magic Stack has a wider width for wider screens so that clipToBounds can be
+  // YES with a peeking module still visible.
+  if (content_suggestions::ShouldShowWiderMagicStackLayer(self.traitCollection,
+                                                          self.view.window)) {
+    width = kMagicStackWideWidth;
+  }
+  _magicStackScrollViewWidthAnchor =
+      [_magicStackScrollView.widthAnchor constraintEqualToConstant:width];
+  [NSLayoutConstraint activateConstraints:@[
+    // Ensures only horizontal scrolling
+    [_magicStack.heightAnchor
+        constraintEqualToAnchor:_magicStackScrollView.heightAnchor],
+    _magicStackScrollViewWidthAnchor
+  ]];
+}
+
+// Resets and fills the Magic Stack with modules using `_magicStackModuleOrder`.
+// This method loops over any module types listed in `_magicStackModuleOrder`
+// and adds their respective views to the Magic Stack.
+- (void)populateMagicStack {
+  if (base::FeatureList::IsEnabled(segmentation_platform::features::
+                                       kSegmentationPlatformIosModuleRanker)) {
+    // Clear out any placeholders.
+    for (UIView* view in _magicStack.arrangedSubviews) {
+      [view removeFromSuperview];
+    }
+  }
 
   // Add Magic Stack modules in order dictated by `_magicStackModuleOrder`.
   for (NSNumber* moduleType in _magicStackModuleOrder) {
@@ -1217,26 +1274,54 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
         break;
     }
   }
-  AddSameConstraints(_magicStack, _magicStackScrollView);
-  // Define width of ScrollView. Instrinsic content height of the
-  // StackView within the ScrollView will define the height of the
-  // ScrollView.
-  CGFloat width = [MagicStackModuleContainer
-      moduleWidthForHorizontalTraitCollection:self.traitCollection];
-  // Magic Stack has a wider width for wider screens so that clipToBounds can be
-  // YES with a peeking module still visible.
-  if (content_suggestions::ShouldShowWiderMagicStackLayer(self.traitCollection,
-                                                          self.view.window)) {
-    width = kMagicStackWideWidth;
-  }
-  _magicStackScrollViewWidthAnchor =
-      [_magicStackScrollView.widthAnchor constraintEqualToConstant:width];
+
+  // Add Edit Button.
+  UIButton* editButton = [UIButton buttonWithType:UIButtonTypeSystem];
+  editButton.translatesAutoresizingMaskIntoConstraints = NO;
+  UIImage* image = DefaultSymbolTemplateWithPointSize(
+      kSliderHorizontal, kMagicStackEditButtonIconPointSize);
+  [editButton setImage:image forState:UIControlStateNormal];
+  editButton.tintColor = [UIColor colorNamed:kSolidBlackColor];
+  editButton.backgroundColor =
+      [UIColor colorNamed:@"magic_stack_edit_button_background_color"];
+  editButton.layer.cornerRadius = kMagicStackEditButtonWidth / 2;
+  [editButton addTarget:self.audience
+                 action:@selector(didTapMagicStackEditButton)
+       forControlEvents:UIControlEventTouchUpInside];
+  editButton.accessibilityIdentifier =
+      kMagicStackEditButtonAccessibilityIdentifier;
+  editButton.pointerInteractionEnabled = YES;
+
+  UIView* editContainerView = [[UIView alloc] init];
+  editContainerView.accessibilityIdentifier =
+      kMagicStackEditButtonContainerAccessibilityIdentifier;
+  [editContainerView addSubview:editButton];
+
+  [_magicStack addArrangedSubview:editContainerView];
+
   [NSLayoutConstraint activateConstraints:@[
-    // Ensures only horizontal scrolling
-    [_magicStack.heightAnchor
-        constraintEqualToAnchor:_magicStackScrollView.heightAnchor],
-    _magicStackScrollViewWidthAnchor
+    [editButton.leadingAnchor
+        constraintEqualToAnchor:editContainerView.leadingAnchor
+                       constant:kMagicStackEditButtonMargin],
+    [editButton.trailingAnchor
+        constraintEqualToAnchor:editContainerView.trailingAnchor
+                       constant:-kMagicStackEditButtonMargin],
+    [editButton.centerYAnchor
+        constraintEqualToAnchor:editContainerView.centerYAnchor],
+    [editButton.widthAnchor
+        constraintEqualToConstant:kMagicStackEditButtonWidth],
+    [editButton.heightAnchor constraintEqualToAnchor:editButton.widthAnchor]
   ]];
+}
+
+// Adds two placeholder modules to Magic Stack.
+- (void)populateMagicStackWithPlaceholders {
+  CHECK(_magicStack);
+  CHECK([_magicStack.arrangedSubviews count] == 0);
+  [_magicStack
+      addArrangedSubview:[[MagicStackModuleContainer alloc] initAsPlaceholder]];
+  [_magicStack
+      addArrangedSubview:[[MagicStackModuleContainer alloc] initAsPlaceholder]];
 }
 
 // Returns the index position `moduleType` should be placed in the Magic Stack.
@@ -1266,6 +1351,11 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
 
   NSUInteger magicStackIndex = 0;
   for (UIView* view in _magicStack.arrangedSubviews) {
+    if (view.accessibilityIdentifier ==
+        kMagicStackEditButtonContainerAccessibilityIdentifier) {
+      // Reached the edit button (e.g. end of modules).
+      break;
+    }
     MagicStackModuleContainer* moduleContainer =
         base::apple::ObjCCastStrict<MagicStackModuleContainer>(view);
     if ([self indexForMagicStackModule:moduleContainer.type] >
@@ -1278,8 +1368,8 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
   }
 
   // `magicStackIndex` here either represents the position right before the
-  // first found module with a rank higher than `moduleToInsert` or the end of
-  // the array.
+  // first found module with a rank higher than `moduleToInsert` or just before
+  // the last arrangedSubview (e.g. edit button).
   [_magicStack insertArrangedSubview:moduleToInsert atIndex:magicStackIndex];
 }
 

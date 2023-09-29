@@ -5,12 +5,13 @@
 #include "chromeos/ash/components/device_activity/churn_cohort_use_case_impl.h"
 
 #include "ash/constants/ash_features.h"
-#include "base/strings/stringprintf.h"
+#include "base/i18n/time_formatting.h"
 #include "base/time/time.h"
 #include "chromeos/ash/components/device_activity/fresnel_pref_names.h"
 #include "chromeos/ash/components/device_activity/fresnel_service.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/channel.h"
+#include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "third_party/private_membership/src/private_membership_rlwe_client.h"
 
 namespace ash::device_activity {
@@ -26,16 +27,12 @@ int GetBitSetAsInt(std::bitset<ChurnActiveStatus::kChurnBitSize> value) {
 
 bool IsFirstActiveInCohort(base::Time first_active_week,
                            base::Time cohort_active_ts) {
-  base::Time::Exploded exploded;
-  first_active_week.UTCExplode(&exploded);
-  int first_active_year = exploded.year;
-  int first_active_month = exploded.month;
-
-  cohort_active_ts.UTCExplode(&exploded);
-  int cohort_year = exploded.year;
-  int cohort_month = exploded.month;
-
-  return first_active_year == cohort_year && first_active_month == cohort_month;
+  base::Time::Exploded first_active_exploded;
+  first_active_week.UTCExplode(&first_active_exploded);
+  base::Time::Exploded cohort_exploded;
+  cohort_active_ts.UTCExplode(&cohort_exploded);
+  return first_active_exploded.year == cohort_exploded.year &&
+         first_active_exploded.month == cohort_exploded.month;
 }
 }  // namespace
 
@@ -65,9 +62,8 @@ ChurnCohortUseCaseImpl::~ChurnCohortUseCaseImpl() = default;
 // then the Churn Cohort window identifier is `202212`
 std::string ChurnCohortUseCaseImpl::GenerateWindowIdentifier(
     base::Time ts) const {
-  base::Time::Exploded exploded;
-  ts.UTCExplode(&exploded);
-  return base::StringPrintf("%04d%02d", exploded.year, exploded.month);
+  return base::UnlocalizedTimeFormatWithPattern(ts, "yyyyMM",
+                                                icu::TimeZone::getGMT());
 }
 
 absl::optional<FresnelImportDataRequest>

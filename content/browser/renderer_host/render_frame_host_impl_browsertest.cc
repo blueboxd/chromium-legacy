@@ -39,8 +39,8 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/navigation_request.h"
+#include "content/browser/renderer_host/origin_trial_state_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/browser/renderer_host/runtime_feature_state_controller_impl.h"
 #include "content/browser/sms/test/mock_sms_provider.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
@@ -129,11 +129,6 @@
 #include "content/browser/renderer_host/delegated_frame_host.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #endif  // defined(USE_AURA)
-
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_IOS)
-#include "content/browser/renderer_host/browser_compositor_view_mac.h"
-#include "content/browser/renderer_host/test_render_widget_host_view_mac_factory.h"
-#endif
 
 namespace content {
 namespace {
@@ -999,7 +994,7 @@ class RenderFrameHostImplWithTokensBrowserTest : public ContentBrowserTest {
 };
 
 // Check that the RuntimeFeatureStateDocumentData is altered when we receive a
-// RuntimeFeatureStateController IPC.
+// OriginTrialStateHost IPC.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplWithTokensBrowserTest,
                        DocumentDataAltered) {
   // Generated with:
@@ -1017,12 +1012,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplWithTokensBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), simple_origin_trial_url()));
 
   // Create a test remote to initiate the IPC.
-  mojo::Remote<blink::mojom::RuntimeFeatureStateController>
-      runtime_feature_state_controller_remote;
-  RuntimeFeatureStateControllerImpl::Create(
+  mojo::Remote<blink::mojom::OriginTrialStateHost>
+      origin_trial_state_host_remote;
+  OriginTrialStateHostImpl::Create(
       web_contents()->GetPrimaryMainFrame(),
-      runtime_feature_state_controller_remote.BindNewPipeAndPassReceiver());
-  ASSERT_TRUE(runtime_feature_state_controller_remote.is_connected());
+      origin_trial_state_host_remote.BindNewPipeAndPassReceiver());
+  ASSERT_TRUE(origin_trial_state_host_remote.is_connected());
 
   // Before ApplyFeatureDiffForOriginTrial() is called, we expect that the
   // feature overrides will be empty.
@@ -1036,14 +1031,15 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplWithTokensBrowserTest,
                 .GetFeatureOverrides());
 
   // Simulate receiving a feature diff from the renderer process.
-  auto overrides_with_tokens = base::flat_map<blink::mojom::RuntimeFeatureState,
-                                              blink::mojom::FeatureValuePtr>();
+  auto overrides_with_tokens =
+      base::flat_map<blink::mojom::RuntimeFeatureState,
+                     blink::mojom::OriginTrialFeatureStatePtr>();
   std::string raw_token(kValidFirstPartyToken);
   std::vector<std::string> raw_tokens_vector{raw_token};
   overrides_with_tokens[blink::mojom::RuntimeFeatureState::
                             kDisableThirdPartyStoragePartitioning] =
-      blink::mojom::FeatureValue::New(true, raw_tokens_vector);
-  runtime_feature_state_controller_remote.get()->ApplyFeatureDiffForOriginTrial(
+      blink::mojom::OriginTrialFeatureState::New(true, raw_tokens_vector);
+  origin_trial_state_host_remote.get()->ApplyFeatureDiffForOriginTrial(
       std::move(overrides_with_tokens));
 
   // Create the set of expected overrides without the corresponding tokens.
@@ -1051,14 +1047,14 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplWithTokensBrowserTest,
                          kDisableThirdPartyStoragePartitioning] = true;
 
   // Verify that the document data was altered with the correct overrides.
-  runtime_feature_state_controller_remote.FlushForTesting();
+  origin_trial_state_host_remote.FlushForTesting();
   EXPECT_EQ(expected_overrides,
             actual_document_data->runtime_feature_state_read_context()
                 .GetFeatureOverrides());
 }
 
 // Check that the RuntimeFeatureStateDocumentData is not altered when we receive
-// a RuntimeFeatureStateController IPC that contains an invalid token.
+// a OriginTrialStateHost IPC that contains an invalid token.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplWithTokensBrowserTest,
                        DocumentDataInvalidToken) {
   const char kInvalidToken[] = "invalid";
@@ -1067,12 +1063,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplWithTokensBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), simple_origin_trial_url()));
 
   // Create a test remote to initiate the IPC.
-  mojo::Remote<blink::mojom::RuntimeFeatureStateController>
-      runtime_feature_state_controller_remote;
-  RuntimeFeatureStateControllerImpl::Create(
+  mojo::Remote<blink::mojom::OriginTrialStateHost>
+      origin_trial_state_host_remote;
+  OriginTrialStateHostImpl::Create(
       web_contents()->GetPrimaryMainFrame(),
-      runtime_feature_state_controller_remote.BindNewPipeAndPassReceiver());
-  ASSERT_TRUE(runtime_feature_state_controller_remote.is_connected());
+      origin_trial_state_host_remote.BindNewPipeAndPassReceiver());
+  ASSERT_TRUE(origin_trial_state_host_remote.is_connected());
 
   // Before ApplyFeatureDiffForOriginTrial() is called, we expect that the
   // feature overrides will be empty.
@@ -1086,18 +1082,19 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplWithTokensBrowserTest,
                 .GetFeatureOverrides());
 
   // Simulate receiving a feature diff from the renderer process.
-  auto overrides_with_tokens = base::flat_map<blink::mojom::RuntimeFeatureState,
-                                              blink::mojom::FeatureValuePtr>();
+  auto overrides_with_tokens =
+      base::flat_map<blink::mojom::RuntimeFeatureState,
+                     blink::mojom::OriginTrialFeatureStatePtr>();
   std::string raw_token(kInvalidToken);
   std::vector<std::string> raw_tokens_vector{raw_token};
   overrides_with_tokens[blink::mojom::RuntimeFeatureState::
                             kDisableThirdPartyStoragePartitioning] =
-      blink::mojom::FeatureValue::New(true, raw_tokens_vector);
-  runtime_feature_state_controller_remote.get()->ApplyFeatureDiffForOriginTrial(
+      blink::mojom::OriginTrialFeatureState::New(true, raw_tokens_vector);
+  origin_trial_state_host_remote.get()->ApplyFeatureDiffForOriginTrial(
       std::move(overrides_with_tokens));
 
   // Verify that no feature overrides were added.
-  runtime_feature_state_controller_remote.FlushForTesting();
+  origin_trial_state_host_remote.FlushForTesting();
   EXPECT_EQ(expected_overrides,
             actual_document_data->runtime_feature_state_read_context()
                 .GetFeatureOverrides());
@@ -3748,227 +3745,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
       CreateBlockingDetails({}));
 }
 
-IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       ComputeIsolationInfoForNavigationPartyContext) {
-  // Start second server for HTTPS.
-  https_server()->ServeFilesFromSourceDirectory(GetTestDataFilePath());
-  https_server()->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
-  ASSERT_TRUE(https_server()->Start());
-
-  GURL url = https_server()->GetURL(
-      "a.test",
-      "/cross_site_iframe_factory.html?a.test(a.test, b.test(a.test(c.test), "
-      "b.test(b.test), c.test(d.test)))");
-
-  GURL b_url = https_server()->GetURL("b.test", "/");
-  GURL c_url = https_server()->GetURL("c.test", "/");
-  GURL d_url = https_server()->GetURL("d.test", "/");
-  net::SchemefulSite b_site(b_url);
-  net::SchemefulSite c_site(c_url);
-  net::SchemefulSite d_site(d_url);
-
-  EXPECT_TRUE(NavigateToURL(shell(), url));
-
-  // main frame
-  RenderFrameHostImpl* main_frame = web_contents()->GetPrimaryMainFrame();
-  EXPECT_EQ("https", main_frame->frame_tree_node()->current_origin().scheme());
-  EXPECT_EQ("a.test", main_frame->GetLastCommittedURL().host());
-  ASSERT_EQ(2u, main_frame->child_count());
-  // frame subresource
-  EXPECT_FALSE(main_frame->GetIsolationInfoForSubresources().is_internal());
-  // frame being navigated
-  EXPECT_FALSE(
-      main_frame->ComputeIsolationInfoForNavigation(url).is_internal());
-  EXPECT_FALSE(
-      main_frame->ComputeIsolationInfoForNavigation(b_url).is_internal());
-
-  // a.test -> a.test
-  FrameTreeNode* child_a = main_frame->child_at(0);
-  EXPECT_EQ("a.test", child_a->current_url().host());
-  ASSERT_EQ(0u, child_a->child_count());
-  // frame subresource
-  EXPECT_FALSE(child_a->current_frame_host()
-                   ->GetIsolationInfoForSubresources()
-                   .is_internal());
-  // frame being navigated
-  EXPECT_FALSE(child_a->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(url)
-                   .is_internal());
-  EXPECT_FALSE(child_a->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(b_url)
-                   .is_internal());
-
-  // a.test -> b.test
-  FrameTreeNode* child_b = main_frame->child_at(1);
-  EXPECT_EQ("b.test", child_b->current_url().host());
-  ASSERT_EQ(3u, child_b->child_count());
-  // frame subresource
-  EXPECT_FALSE(child_b->current_frame_host()
-                   ->GetIsolationInfoForSubresources()
-                   .is_internal());
-  // frame being navigated
-  EXPECT_FALSE(child_b->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(url)
-                   .is_internal());
-  EXPECT_FALSE(child_b->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(b_url)
-                   .is_internal());
-  EXPECT_FALSE(child_b->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(c_url)
-                   .is_internal());
-
-  // a.test -> b.test -> a.test
-  FrameTreeNode* child_ba = child_b->child_at(0);
-  EXPECT_EQ("a.test", child_ba->current_url().host());
-  ASSERT_EQ(1u, child_ba->child_count());
-  // frame subresource
-  EXPECT_FALSE(child_ba->current_frame_host()
-                   ->GetIsolationInfoForSubresources()
-                   .is_internal());
-  // frame being navigated
-  EXPECT_FALSE(child_ba->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(url)
-                   .is_internal());
-  EXPECT_FALSE(child_ba->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(b_url)
-                   .is_internal());
-  EXPECT_FALSE(child_ba->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(c_url)
-                   .is_internal());
-
-  // a.test -> b.test -> b.test
-  FrameTreeNode* child_bb = child_b->child_at(1);
-  EXPECT_EQ("b.test", child_bb->current_url().host());
-  ASSERT_EQ(1u, child_bb->child_count());
-  // frame subresource
-  EXPECT_FALSE(child_bb->current_frame_host()
-                   ->GetIsolationInfoForSubresources()
-                   .is_internal());
-  // frame being navigated
-  EXPECT_FALSE(child_bb->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(url)
-                   .is_internal());
-  EXPECT_FALSE(child_bb->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(b_url)
-                   .is_internal());
-  EXPECT_FALSE(child_bb->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(c_url)
-                   .is_internal());
-
-  // a.test -> b.test -> c.test
-  FrameTreeNode* child_bc = child_b->child_at(2);
-  EXPECT_EQ("c.test", child_bc->current_url().host());
-  ASSERT_EQ(1u, child_bc->child_count());
-  // frame subresource
-  EXPECT_FALSE(child_bc->current_frame_host()
-                   ->GetIsolationInfoForSubresources()
-                   .is_internal());
-  // frame being navigated
-  EXPECT_FALSE(child_bc->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(url)
-                   .is_internal());
-  EXPECT_FALSE(child_bc->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(b_url)
-                   .is_internal());
-  EXPECT_FALSE(child_bc->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(c_url)
-                   .is_internal());
-
-  // a.test -> b.test -> a.test -> c.test
-  FrameTreeNode* child_bac = child_ba->child_at(0);
-  EXPECT_EQ("c.test", child_bac->current_url().host());
-  // frame subresource
-  EXPECT_FALSE(child_bac->current_frame_host()
-                   ->GetIsolationInfoForSubresources()
-                   .is_internal());
-  // frame being navigated
-  EXPECT_FALSE(child_bac->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(url)
-                   .is_internal());
-  EXPECT_FALSE(child_bac->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(b_url)
-                   .is_internal());
-  EXPECT_FALSE(child_bac->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(c_url)
-                   .is_internal());
-
-  // a.test -> b.test -> b.test -> b.test
-  FrameTreeNode* child_bbb = child_bb->child_at(0);
-  EXPECT_EQ("b.test", child_bbb->current_url().host());
-  // frame subresource
-  EXPECT_FALSE(child_bbb->current_frame_host()
-                   ->GetIsolationInfoForSubresources()
-                   .is_internal());
-  // frame being navigated
-  EXPECT_FALSE(child_bbb->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(url)
-                   .is_internal());
-  EXPECT_FALSE(child_bbb->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(b_url)
-                   .is_internal());
-  EXPECT_FALSE(child_bbb->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(c_url)
-                   .is_internal());
-
-  // a.test -> b.test -> c.test ->d.test
-  FrameTreeNode* child_bcd = child_bc->child_at(0);
-  EXPECT_EQ("d.test", child_bcd->current_url().host());
-  // frame subresource
-  EXPECT_FALSE(child_bcd->current_frame_host()
-                   ->GetIsolationInfoForSubresources()
-                   .is_internal());
-  // frame being navigated
-  EXPECT_FALSE(child_bcd->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(url)
-                   .is_internal());
-  EXPECT_FALSE(child_bcd->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(b_url)
-                   .is_internal());
-  EXPECT_FALSE(child_bcd->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(c_url)
-                   .is_internal());
-  EXPECT_FALSE(child_bcd->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(d_url)
-                   .is_internal());
-}
-
-// Ensure that http(s) schemes are distinct.
-IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplBrowserTest,
-    ComputeIsolationInfoForNavigationPartyContextCrossScheme) {
-  // Start second server for HTTPS.
-  https_server()->ServeFilesFromSourceDirectory(GetTestDataFilePath());
-  https_server()->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
-  ASSERT_TRUE(https_server()->Start());
-
-  GURL http_url =
-      embedded_test_server()->GetURL("a.test", "/page_with_blank_iframe.html");
-  GURL https_url = https_server()->GetURL("a.test", "/title1.com");
-  EXPECT_TRUE(NavigateToURL(shell(), http_url));
-
-  RenderFrameHostImpl* main_frame = web_contents()->GetPrimaryMainFrame();
-  EXPECT_EQ(http_url, main_frame->GetLastCommittedURL());
-
-  ASSERT_EQ(1u, main_frame->child_count());
-  FrameTreeNode* child_frame = main_frame->child_at(0);
-
-  // http://a.test -> https://a.test
-  const auto script = base::StringPrintf("window.location.href=\"%s\"; ",
-                                         https_url.spec().c_str());
-  TestNavigationObserver observer(web_contents());
-  ASSERT_TRUE(ExecJs(child_frame, script));
-  observer.Wait();
-  EXPECT_EQ(https_url, child_frame->current_url());
-  // frame subresource
-  EXPECT_FALSE(child_frame->current_frame_host()
-                   ->GetIsolationInfoForSubresources()
-                   .is_internal());
-  // frame being navigated
-  EXPECT_FALSE(child_frame->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(http_url)
-                   .is_internal());
-}
-
 class RenderFrameHostImplSchemefulEnabledBrowserTest
     : public RenderFrameHostImplBrowserTest {
  public:
@@ -3979,47 +3755,6 @@ class RenderFrameHostImplSchemefulEnabledBrowserTest
  protected:
   base::test::ScopedFeatureList scope_feature_list_;
 };
-
-// Similar to
-// RenderFrameHostImplBrowserTest_ComputeIsolationInfoForNavigationPartyContextCrossScheme
-// with net::features::kSchemefulSameSite enabled.
-IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplSchemefulEnabledBrowserTest,
-    ComputeIsolationInfoForNavigationPartyContextCrossScheme) {
-  // Start second server for HTTPS.
-  https_server()->ServeFilesFromSourceDirectory(GetTestDataFilePath());
-  https_server()->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
-  ASSERT_TRUE(https_server()->Start());
-
-  GURL http_url =
-      embedded_test_server()->GetURL("a.test", "/page_with_blank_iframe.html");
-  GURL https_url = https_server()->GetURL("a.test", "/");
-
-  EXPECT_TRUE(NavigateToURL(shell(), http_url));
-
-  RenderFrameHostImpl* main_frame = web_contents()->GetPrimaryMainFrame();
-  EXPECT_EQ(http_url, main_frame->GetLastCommittedURL());
-
-  ASSERT_EQ(1u, main_frame->child_count());
-  FrameTreeNode* child_frame = main_frame->child_at(0);
-
-  // http://a.test -> https://a.test
-  const auto script = base::StringPrintf("window.location.href=\"%s\"; ",
-                                         https_url.spec().c_str());
-  TestNavigationObserver observer(web_contents());
-  ASSERT_TRUE(ExecJs(child_frame, script));
-  observer.Wait();
-  EXPECT_EQ(https_url, child_frame->current_url());
-  // frame subresource
-  EXPECT_FALSE(child_frame->current_frame_host()
-                   ->GetIsolationInfoForSubresources()
-                   .is_internal());
-
-  // frame being navigated
-  EXPECT_FALSE(child_frame->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(http_url)
-                   .is_internal());
-}
 
 class RenderFrameHostImplNoStrictSiteIsolationOnAndroidBrowserTest
     : public RenderFrameHostImplBrowserTest {
@@ -4041,188 +3776,6 @@ class RenderFrameHostImplNoStrictSiteIsolationOnAndroidBrowserTest
 #endif
   }
 };
-
-IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplNoStrictSiteIsolationOnAndroidBrowserTest,
-    ComputeIsolationInfoForNavigationPartyContextExceedMaxSize) {
-  // This sequence skips a4.com because it's HSTS preloaded. Using a4.com would
-  // cause a timeout since the embedded test server isn't HTTPS capable.
-  // TODO(crbug.com/1403108): Use a sustainable solution for preloaded domains.
-  GURL url = embedded_test_server()->GetURL(
-      "a.com",
-      "/cross_site_iframe_factory.html?a(a1(a2(a3(a5(a6(a7(a8(a9(a10(a11("
-      "a12(a13(a14(a15(a16(a17(a18(a19("
-      "a20(a21(a22(a2))))))))))))))))))))))");
-
-  base::test::ScopedRunLoopTimeout increased_timeout(FROM_HERE,
-                                                     base::Seconds(180));
-  EXPECT_TRUE(NavigateToURL(shell(), url));
-
-  GURL b_url = embedded_test_server()->GetURL("b.com", "/");
-
-  RenderFrameHostImpl* main_frame = web_contents()->GetPrimaryMainFrame();
-  EXPECT_EQ("http", main_frame->frame_tree_node()->current_origin().scheme());
-  EXPECT_EQ("a.com", main_frame->GetLastCommittedURL().host());
-  ASSERT_EQ(1u, main_frame->child_count());
-  FrameTreeNode* child_a1 = main_frame->child_at(0);
-  FrameTreeNode* child = child_a1;
-  int child_count = 1;
-  for (; child->child_count() > 0; child = child->child_at(0)) {
-    ASSERT_EQ(1u, child->child_count());
-    child_count++;
-  }
-  ASSERT_EQ(22, child_count);
-
-  // innermost frame navigation.
-  EXPECT_FALSE(child->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(b_url)
-                   .is_internal());
-  // innermost frame subresource.
-  EXPECT_FALSE(child->current_frame_host()
-                   ->GetIsolationInfoForSubresources()
-                   .is_internal());
-
-  // parent of innermost frame subresource.
-  EXPECT_FALSE(
-      child->parent()->GetIsolationInfoForSubresources().is_internal());
-}
-
-IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplBrowserTest,
-    ComputeIsolationInfoForNavigationPartyContextAboutBlank) {
-  GURL url =
-      embedded_test_server()->GetURL("a.com", "/page_with_blank_iframe.html");
-  EXPECT_TRUE(NavigateToURL(shell(), url));
-
-  RenderFrameHostImpl* main_frame = web_contents()->GetPrimaryMainFrame();
-  EXPECT_EQ("a.com", main_frame->GetLastCommittedURL().host());
-
-  // a.com -> about:blank
-  ASSERT_EQ(1u, main_frame->child_count());
-  FrameTreeNode* child_blank = main_frame->child_at(0);
-  EXPECT_TRUE(child_blank->current_url().IsAboutBlank());
-  EXPECT_EQ("a.com",
-            child_blank->current_frame_host()->GetLastCommittedOrigin().host());
-  // frame being navigated.
-  EXPECT_FALSE(child_blank->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(url)
-                   .is_internal());
-
-  // Add another iframe under about:blank frame.
-  // a.com -> about:blank ->b.com
-  GURL b_url = embedded_test_server()->GetURL("b.com", "/");
-  TestNavigationObserver observer(web_contents());
-  const auto script = base::StringPrintf(
-      "let f = document.createElement(\"iframe\");"
-      "f.src=\"%s\"; "
-      "document.body.appendChild(f);",
-      b_url.spec().c_str());
-  ASSERT_TRUE(ExecJs(child_blank->current_frame_host(), script));
-  observer.Wait();
-
-  ASSERT_EQ(1u, child_blank->child_count());
-  FrameTreeNode* child_b = child_blank->child_at(0u);
-  EXPECT_EQ("b.com", child_b->current_url().host());
-  // frame subresource
-  EXPECT_FALSE(child_b->current_frame_host()
-                   ->GetIsolationInfoForSubresources()
-                   .is_internal());
-  // frame being navigated.
-  EXPECT_FALSE(child_b->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(url)
-                   .is_internal());
-}
-
-IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       ComputeIsolationInfoForNavigationPartyContextDataUrl) {
-  GURL url =
-      embedded_test_server()->GetURL("a.com", "/page_with_blank_iframe.html");
-  EXPECT_TRUE(NavigateToURL(shell(), url));
-
-  RenderFrameHostImpl* main_frame = web_contents()->GetPrimaryMainFrame();
-  EXPECT_EQ("a.com", main_frame->GetLastCommittedURL().host());
-
-  // a.com -> data url
-  ASSERT_EQ(1u, main_frame->child_count());
-  FrameTreeNode* child_data = main_frame->child_at(0);
-  TestNavigationObserver observer1(web_contents());
-  EXPECT_TRUE(ExecJs(child_data->current_frame_host(),
-                     "window.location='data:text/html,foo'"));
-  observer1.Wait();
-  EXPECT_EQ("data", child_data->current_url().scheme());
-  // frame being navigated.
-  EXPECT_FALSE(child_data->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(url)
-                   .is_internal());
-
-  // Add another iframe under data url frame.
-  // a.com -> data url ->b.com
-  GURL b_url = embedded_test_server()->GetURL("b.com", "/");
-  const auto script = base::StringPrintf(
-      "let f = document.createElement(\"iframe\");"
-      "f.src=\"%s\"; "
-      "document.body.appendChild(f);",
-      b_url.spec().c_str());
-  TestNavigationObserver observer2(web_contents());
-  ASSERT_TRUE(ExecJs(child_data->current_frame_host(), script));
-  observer2.Wait();
-
-  ASSERT_EQ(1u, child_data->child_count());
-  FrameTreeNode* child_b = child_data->child_at(0u);
-  EXPECT_EQ("b.com", child_b->current_url().host());
-}
-
-IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       ComputeIsolationInfoForNavigationPartyContextFileUrl) {
-  GURL file_url = GetFileURL(FILE_PATH_LITERAL("page_with_blank_iframe.html"));
-  GURL a_url = embedded_test_server()->GetURL("a.com", "/");
-  GURL b_url = embedded_test_server()->GetURL("b.com", "/");
-  EXPECT_TRUE(NavigateToURL(shell(), file_url));
-
-  RenderFrameHostImpl* main_frame = web_contents()->GetPrimaryMainFrame();
-  EXPECT_EQ(file_url, main_frame->GetLastCommittedURL());
-
-  // file url -> a.com
-  ASSERT_EQ(1u, main_frame->child_count());
-  FrameTreeNode* child_a = main_frame->child_at(0);
-  const auto script1 =
-      base::StringPrintf("window.location=\"%s\"; ", a_url.spec().c_str());
-  TestNavigationObserver observer1(web_contents());
-  ASSERT_TRUE(ExecJs(child_a->current_frame_host(), script1));
-  observer1.Wait();
-  EXPECT_EQ(a_url, child_a->current_url());
-  // frame subresource
-  EXPECT_FALSE(child_a->current_frame_host()
-                   ->GetIsolationInfoForSubresources()
-                   .is_internal());
-  // frame being navigated
-  EXPECT_FALSE(child_a->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(file_url)
-                   .is_internal());
-
-  // file url -> a.com -> b.com
-  const auto script2 = base::StringPrintf(
-      "let f = document.createElement(\"iframe\");"
-      "f.src=\"%s\"; "
-      "document.body.appendChild(f);",
-      b_url.spec().c_str());
-  TestNavigationObserver observer2(web_contents());
-  ASSERT_TRUE(ExecJs(child_a->current_frame_host(), script2));
-  observer2.Wait();
-
-  ASSERT_EQ(1u, child_a->child_count());
-  FrameTreeNode* child_ab = child_a->child_at(0);
-  EXPECT_EQ(b_url, child_ab->current_url());
-
-  // frame subresource
-  EXPECT_FALSE(child_ab->current_frame_host()
-                   ->GetIsolationInfoForSubresources()
-                   .is_internal());
-  // frame being navigated
-  EXPECT_FALSE(child_ab->current_frame_host()
-                   ->ComputeIsolationInfoForNavigation(a_url)
-                   .is_internal());
-}
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        ComputeIsolationInfoForNavigationSiteForCookies) {
@@ -8036,7 +7589,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTestWithBFCache,
 }
 
 namespace {
-
 class RenderFrameHostImplBrowserTestWithBFCacheAndViewTransition
     : public RenderFrameHostImplBrowserTestWithBFCache {
  public:
@@ -8069,44 +7621,6 @@ void AssertBitmapOfColor(const SkBitmap& bitmap, SkColor color) {
     }
   }
 }
-
-#if BUILDFLAG(IS_ANDROID)
-ui::DelegatedFrameHostAndroid* GetDelegatedFrameHost(
-    RenderWidgetHostView* view) {
-  return static_cast<RenderWidgetHostViewAndroid*>(view)
-      ->delegated_frame_host_for_testing();
-}
-#else
-DelegatedFrameHost* GetDelegatedFrameHost(RenderWidgetHostView* view) {
-  DelegatedFrameHost* dfh = nullptr;
-#if BUILDFLAG(IS_MAC)
-  auto* compositor = GetBrowserCompositorMacForTesting(view);
-  dfh = compositor->GetDelegatedFrameHost();
-#elif defined(USE_AURA)
-  dfh = static_cast<RenderWidgetHostViewAura*>(view)
-            ->GetDelegatedFrameHostForTesting();
-#endif
-  return dfh;
-}
-#endif  // BUILDFLAG(IS_ANDROID)
-
-viz::SurfaceId GetCurrentSurfaceIdOnDelegatedFrameHost(
-    RenderWidgetHostView* view) {
-  auto* dfh = GetDelegatedFrameHost(view);
-  EXPECT_TRUE(dfh);
-#if BUILDFLAG(IS_ANDROID)
-  return dfh->GetCurrentSurfaceIdForTesting();
-#else
-  return dfh->GetCurrentSurfaceId();
-#endif
-}
-
-viz::SurfaceId GetFirstSurfaceIdAfterNavigation(RenderWidgetHostView* view) {
-  auto* dfh = GetDelegatedFrameHost(view);
-  EXPECT_TRUE(dfh);
-  return dfh->GetFirstSurfaceIdAfterNavigationForTesting();
-}
-
 }  // namespace
 
 // https://crbug.com/1415340: For a page with ViewTransition being restored from
@@ -8134,8 +7648,6 @@ IN_PROC_BROWSER_TEST_F(
   // Navigate to Red.
   ASSERT_TRUE(NavigateToURL(shell(), url_red));
   RenderFrameHostWrapper rfh_red(web_contents()->GetPrimaryMainFrame());
-  const auto first_surface_id_after_nav_before_bfcache_restore =
-      GetFirstSurfaceIdAfterNavigation(rfh_red->GetView());
 
   // Navigate to Green.
   ASSERT_TRUE(NavigateToURL(shell(), url_green));
@@ -8151,41 +7663,10 @@ IN_PROC_BROWSER_TEST_F(
       RenderWidgetHostImpl::From(rfh_red->GetView()->GetRenderWidgetHost());
   ASSERT_TRUE(rwhi_red->IsContentRenderingTimeoutRunning());
 
-  const auto first_surface_id_after_nav_after_bfcache_restore =
-      GetFirstSurfaceIdAfterNavigation(rfh_red->GetView());
-  // The `first_surface_id_after_nav_` of the DelegatedFrameHost{Android}, after
-  // the BFCache restore, should have a different value than before.
-  ASSERT_NE(first_surface_id_after_nav_after_bfcache_restore,
-            first_surface_id_after_nav_before_bfcache_restore);
-  // The first call to `DelegatedFrameHost{Android}::EmbedSurface` will set
-  // `first_surface_id_after_nav_` to the new current `viz::SurfaceId`; if there
-  // are subsequent `EmbedSurface` calls (i.e., Android), the current surface id
-  // will be newer than `first_surface_id_after_nav_`.
-  ASSERT_TRUE(
-      GetCurrentSurfaceIdOnDelegatedFrameHost(rfh_red->GetView())
-          .IsSameOrNewerThan(first_surface_id_after_nav_after_bfcache_restore));
-
-  {
-    gfx::Image screenshot;
-    ui::GrabViewSnapshot(web_contents()->GetView()->GetNativeView(),
-                         gfx::Rect(web_contents()->GetSize()), &screenshot);
-    AssertBitmapOfColor(screenshot.AsBitmap(), SK_ColorGREEN);
-  }
-
-  ASSERT_TRUE(rwhi_red->IsContentRenderingTimeoutRunning());
-  rwhi_red->ForceFirstFrameAfterNavigationTimeout();
-
-  WaitForBrowserCompositorFramePresented(web_contents());
-
-  // `ForceFirstFrameAfterNavigationTimeout` resets the fallback surface id to
-  // `first_surface_id_after_nav_` of the `DelegatedFrameHost{Android}`. This
-  // should have no effects on the screen.
-  {
-    gfx::Image screenshot;
-    ui::GrabViewSnapshot(web_contents()->GetView()->GetNativeView(),
-                         gfx::Rect(web_contents()->GetSize()), &screenshot);
-    AssertBitmapOfColor(screenshot.AsBitmap(), SK_ColorGREEN);
-  }
+  gfx::Image screenshot;
+  ui::GrabViewSnapshot(web_contents()->GetView()->GetNativeView(),
+                       gfx::Rect(web_contents()->GetSize()), &screenshot);
+  AssertBitmapOfColor(screenshot.AsBitmap(), SK_ColorGREEN);
 }
 
 // Tests that when a RenderFrameHost is stored in BFCache, that the visibility

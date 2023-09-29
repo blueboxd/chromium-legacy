@@ -148,7 +148,7 @@ V8CodeCache::GetCompileOptions(mojom::blink::V8CacheOptions cache_options,
   auto no_code_cache_compile_options = v8::ScriptCompiler::kNoCompileOptions;
 
   if (might_generate_compile_hints && url.ProtocolIsInHTTPFamily()) {
-    DCHECK(base::FeatureList::IsEnabled(features::kProduceCompileHints));
+    DCHECK(base::FeatureList::IsEnabled(features::kProduceCompileHints2));
 
     // If we end up compiling the script without forced eager compilation, we'll
     // also produce compile hints. This is orthogonal to producing the code
@@ -297,15 +297,6 @@ static void ProduceCacheInternal(
       if (cached_data) {
         const uint8_t* data = cached_data->data;
         int length = cached_data->length;
-        if (length > 1024) {
-          // Omit histogram samples for small cache data to avoid outliers.
-          int cache_size_ratio =
-              static_cast<int>(100.0 * length / source_text_length);
-          DEFINE_THREAD_SAFE_STATIC_LOCAL(
-              CustomCountHistogram, code_cache_size_histogram,
-              ("V8.CodeCacheSizeRatio", 1, 10000, 50));
-          code_cache_size_histogram.Count(cache_size_ratio);
-        }
         cache_handler->ClearCachedMetadata(
             code_cache_host, CachedMetadataHandler::kClearLocally);
         cache_handler->SetCachedMetadata(

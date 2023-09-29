@@ -73,3 +73,37 @@ class ReadAnythingAppReadAloudTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ReadAnythingAppReadAloudTest, ReadAloud_Visible) {
   ASSERT_TRUE(RunTest("read_aloud_visible_with_flag.js"));
 }
+
+IN_PROC_BROWSER_TEST_F(ReadAnythingAppReadAloudTest,
+                       ReadAloud_HighlightWhileReading) {
+  ASSERT_TRUE(RunTest("read_aloud_highlight_while_reading.js"));
+}
+
+IN_PROC_BROWSER_TEST_F(ReadAnythingAppReadAloudTest,
+                       ReadAloud_GranularityVisibleWhenPlaying) {
+  ASSERT_TRUE(RunTest("granularity_visible_when_playing.js"));
+}
+
+IN_PROC_BROWSER_TEST_F(ReadAnythingAppReadAloudTest,
+                       ReadAloud_GranularityHiddenWhenPaused) {
+  ASSERT_TRUE(RunTest("granularity_hidden_when_paused.js"));
+}
+
+IN_PROC_BROWSER_TEST_F(ReadAnythingAppReadAloudTest, Checkmarks_Visible) {
+  ASSERT_TRUE(RunTest("checkmark_visible_on_selected.js"));
+}
+
+IN_PROC_BROWSER_TEST_F(ReadAnythingAppReadAloudTest,
+                       RateCallback_ChangesSpeechRate) {
+  ASSERT_TRUE(RunTest("rate_callback_changes_speech_rate.js"));
+}
+
+IN_PROC_BROWSER_TEST_F(ReadAnythingAppReadAloudTest,
+                       ReadAloud_GranularityChangesUpdatesHighlight) {
+  ASSERT_TRUE(RunTest("read_aloud_highlight_with_granularity_changes.js"));
+}
+
+IN_PROC_BROWSER_TEST_F(ReadAnythingAppReadAloudTest,
+                       HighlightCallback_TogglesHighlight) {
+  ASSERT_TRUE(RunTest("highlight_callback_toggles_highlight.js"));
+}

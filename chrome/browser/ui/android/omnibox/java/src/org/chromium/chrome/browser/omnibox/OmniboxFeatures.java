@@ -57,9 +57,6 @@ public class OmniboxFeatures {
             MODERNIZE_VISUAL_UPDATE_MERGE_CLIPBOARD_ON_NTP = new BooleanCachedFieldTrialParameter(
                     ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE,
                     "modernize_visual_update_merge_clipboard_on_ntp", true);
-    private static final MutableFlagWithSafeDefault sShouldAdaptToNarrowTabletWindows =
-            new MutableFlagWithSafeDefault(
-                    ChromeFeatureList.OMNIBOX_ADAPT_NARROW_TABLET_WINDOWS, false);
 
     private static final MutableFlagWithSafeDefault sJourneysActionChipFlag =
             new MutableFlagWithSafeDefault(
@@ -70,11 +67,10 @@ public class OmniboxFeatures {
 
     private static final MutableFlagWithSafeDefault sCacheSuggestionResources =
             new MutableFlagWithSafeDefault(
-                    ChromeFeatureList.OMNIBOX_CACHE_SUGGESTION_RESOURCES, false);
+                    ChromeFeatureList.OMNIBOX_CACHE_SUGGESTION_RESOURCES, true);
 
     private static final MutableFlagWithSafeDefault sWarmRecycledViewPoolFlag =
-            new MutableFlagWithSafeDefault(
-                    ChromeFeatureList.OMNIBOX_WARM_RECYCLED_VIEW_POOL, false);
+            new MutableFlagWithSafeDefault(ChromeFeatureList.OMNIBOX_WARM_RECYCLED_VIEW_POOL, true);
 
     private static final MutableFlagWithSafeDefault sNoopEditUrlSuggestionClicks =
             new MutableFlagWithSafeDefault(
@@ -99,6 +95,10 @@ public class OmniboxFeatures {
     private static final MutableFlagWithSafeDefault sVisibleUrlTruncationFlag =
             new MutableFlagWithSafeDefault(ChromeFeatureList.ANDROID_VISIBLE_URL_TRUNCATION, false);
 
+    private static final MutableFlagWithSafeDefault sNoVisibleHintForTablets =
+            new MutableFlagWithSafeDefault(
+                    ChromeFeatureList.ANDROID_NO_VISIBLE_HINT_FOR_TABLETS, false);
+
     public static final int DEFAULT_MAX_PREFETCHES_PER_OMNIBOX_SESSION = 5;
 
     /**
@@ -108,14 +108,6 @@ public class OmniboxFeatures {
     public static boolean shouldShowModernizeVisualUpdate(Context context) {
         return ChromeFeatureList.sOmniboxModernizeVisualUpdate.isEnabled()
                 && (!isTablet(context) || enabledModernizeVisualUpdateOnTablet());
-    }
-
-    /**
-     * Returns whether the omnibox dropdown should be switched to a phone-like appearance when the
-     * window width is <600dp.
-     */
-    public static boolean shouldAdaptToNarrowTabletWindows() {
-        return sShouldAdaptToNarrowTabletWindows.isEnabled();
     }
 
     /**
@@ -255,5 +247,14 @@ public class OmniboxFeatures {
      */
     public static boolean shouldTruncateVisibleUrl() {
         return sVisibleUrlTruncationFlag.isEnabled();
+    }
+
+    /**
+     * @param context The activity context.
+     * @return Whether to calculate the visible hint. We always calculate the visible hint, except
+     * on tablets that have sNoVisibleHintForTablets enabled.
+     */
+    public static boolean shouldCalculateVisibleHint(Context context) {
+        return !(isTablet(context) && sNoVisibleHintForTablets.isEnabled());
     }
 }

@@ -42,12 +42,13 @@
 #import "ios/chrome/browser/bookmarks/model/account_bookmark_sync_service_factory.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_sync_service_factory.h"
-#import "ios/chrome/browser/consent_auditor/consent_auditor_factory.h"
+#import "ios/chrome/browser/consent_auditor/model/consent_auditor_factory.h"
 #import "ios/chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #import "ios/chrome/browser/favicon/favicon_service_factory.h"
 #import "ios/chrome/browser/history/history_service_factory.h"
 #import "ios/chrome/browser/metrics/google_groups_updater_service_factory.h"
 #import "ios/chrome/browser/passwords/ios_chrome_account_password_store_factory.h"
+#import "ios/chrome/browser/passwords/ios_chrome_password_receiver_service_factory.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_sender_service_factory.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/power_bookmarks/power_bookmark_service_factory.h"
@@ -63,7 +64,7 @@
 #import "ios/chrome/browser/sync/session_sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_invalidations_service_factory.h"
 #import "ios/chrome/browser/trusted_vault/ios_trusted_vault_service_factory.h"
-#import "ios/chrome/browser/webdata_services/web_data_service_factory.h"
+#import "ios/chrome/browser/webdata_services/model/web_data_service_factory.h"
 #import "ios/chrome/common/channel_info.h"
 #import "ios/web/public/thread/web_task_traits.h"
 #import "ios/web/public/thread/web_thread.h"
@@ -220,8 +221,8 @@ IOSChromeSyncClient::GetSessionSyncService() {
 password_manager::PasswordReceiverService*
 IOSChromeSyncClient::GetPasswordReceiverService() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  // TODO(crbug.com/1445868): return the service once there is a factory.
-  return nullptr;
+  return IOSChromePasswordReceiverServiceFactory::GetForBrowserState(
+      browser_state_);
 }
 
 password_manager::PasswordSenderService*

@@ -44,13 +44,11 @@ namespace {
 using ::offline_items_collection::ContentId;
 using ::offline_items_collection::OfflineContentProvider;
 using ::offline_items_collection::OfflineItem;
-using AllDownloadUIModelsInfo =
-    DownloadDisplayController::AllDownloadUIModelsInfo;
 using DownloadUIModelPtr = DownloadUIModel::DownloadUIModelPtr;
 using ItemSortKey = DownloadBubbleUpdateService::ItemSortKey;
 template <typename Id, typename Item>
 using IterMap = DownloadBubbleUpdateService::IterMap<Id, Item>;
-using ProgressInfo = DownloadDisplayController::ProgressInfo;
+using ProgressInfo = DownloadDisplay::ProgressInfo;
 template <typename Item>
 using SortedItems = DownloadBubbleUpdateService::SortedItems<Item>;
 
@@ -144,7 +142,7 @@ bool MaybeAddModel(DownloadUIModelPtr model,
 
 void UpdateInfoForModel(const DownloadUIModel& model,
                         base::Time cutoff_time,
-                        AllDownloadUIModelsInfo& info) {
+                        DownloadBubbleDisplayInfo& info) {
   if (!ShouldIncludeModel(&model, cutoff_time)) {
     return;
   }
@@ -265,7 +263,7 @@ bool DownloadBubbleUpdateService::CacheManager::IsOfflineItemCacheAtMax()
 }
 
 DownloadBubbleUpdateService::CacheManager&
-DownloadBubbleUpdateService::GetCacheForWebApp(const web_app::AppId& app_id) {
+DownloadBubbleUpdateService::GetCacheForWebApp(const webapps::AppId& app_id) {
   auto it = web_app_caches_.find(app_id);
   if (it == web_app_caches_.end()) {
     // Create a new CacheManager for this |app_id|.
@@ -276,7 +274,7 @@ DownloadBubbleUpdateService::GetCacheForWebApp(const web_app::AppId& app_id) {
 
 const DownloadBubbleUpdateService::CacheManager*
 DownloadBubbleUpdateService::GetExistingCacheForWebApp(
-    const web_app::AppId& app_id) const {
+    const webapps::AppId& app_id) const {
   if (auto it = web_app_caches_.find(app_id); it != web_app_caches_.end()) {
     return &it->second;
   }
@@ -462,7 +460,7 @@ bool DownloadBubbleUpdateService::CacheManager::GetAllModelsToDisplay(
 
 bool DownloadBubbleUpdateService::GetAllModelsToDisplay(
     std::vector<DownloadUIModelPtr>& models,
-    const web_app::AppId* web_app_id,
+    const webapps::AppId* web_app_id,
     bool force_backfill_download_items) {
   if (web_app_id == nullptr) {
     return main_cache_.GetAllModelsToDisplay(models,
@@ -472,21 +470,21 @@ bool DownloadBubbleUpdateService::GetAllModelsToDisplay(
       .GetAllModelsToDisplay(models, force_backfill_download_items);
 }
 
-const AllDownloadUIModelsInfo&
-DownloadBubbleUpdateService::CacheManager::GetAllModelsInfo() const {
-  return all_models_info_;
+const DownloadBubbleDisplayInfo&
+DownloadBubbleUpdateService::CacheManager::GetDisplayInfo() const {
+  return display_info_;
 }
 
-const AllDownloadUIModelsInfo& DownloadBubbleUpdateService::GetAllModelsInfo(
-    const web_app::AppId* web_app_id) {
+const DownloadBubbleDisplayInfo& DownloadBubbleUpdateService::GetDisplayInfo(
+    const webapps::AppId* web_app_id) {
   if (web_app_id == nullptr) {
-    return main_cache_.GetAllModelsInfo();
+    return main_cache_.GetDisplayInfo();
   }
   if (const CacheManager* cache = GetExistingCacheForWebApp(*web_app_id);
       cache != nullptr) {
-    return cache->GetAllModelsInfo();
+    return cache->GetDisplayInfo();
   }
-  return AllDownloadUIModelsInfo::EmptyInfo();
+  return DownloadBubbleDisplayInfo::EmptyInfo();
 }
 
 void DownloadBubbleUpdateService::CacheManager::UpdateAllModelsInfo() {
@@ -494,7 +492,7 @@ void DownloadBubbleUpdateService::CacheManager::UpdateAllModelsInfo() {
   ConsistencyCheckCaches();
 #endif  // DCHECK_IS_ON()
 
-  AllDownloadUIModelsInfo info;
+  DownloadBubbleDisplayInfo info;
   base::Time cutoff_time = GetCutoffTime();
 
   // Iterate over the two sorted caches (download items and offline items) in
@@ -526,7 +524,7 @@ void DownloadBubbleUpdateService::CacheManager::UpdateAllModelsInfo() {
     }
   }
 
-  all_models_info_ = info;
+  display_info_ = info;
 }
 
 ProgressInfo DownloadBubbleUpdateService::CacheManager::GetProgressInfo()
@@ -577,7 +575,7 @@ ProgressInfo DownloadBubbleUpdateService::CacheManager::GetProgressInfo()
 }
 
 ProgressInfo DownloadBubbleUpdateService::GetProgressInfo(
-    const web_app::AppId* web_app_id) const {
+    const webapps::AppId* web_app_id) const {
   if (web_app_id == nullptr) {
     return main_cache_.GetProgressInfo();
   }

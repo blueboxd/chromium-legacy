@@ -355,6 +355,9 @@ media::VAImplementation VendorStringToImplementationType(
   } else if (base::StartsWith(va_vendor_string, "Intel iHD driver",
                               base::CompareCase::SENSITIVE)) {
     return media::VAImplementation::kIntelIHD;
+  } else if (base::StartsWith(va_vendor_string, "Chromium fake libva driver",
+                              base::CompareCase::SENSITIVE)) {
+    return media::VAImplementation::kChromiumFakeDriver;
   }
   return media::VAImplementation::kOther;
 }
@@ -1837,14 +1840,23 @@ std::vector<SVCScalabilityMode> VaapiWrapper::GetSupportedScalabilityModes(
   if (media_profile == VP9PROFILE_PROFILE0) {
     scalability_modes.push_back(SVCScalabilityMode::kL1T2);
     scalability_modes.push_back(SVCScalabilityMode::kL1T3);
-    if (base::FeatureList::IsEnabled(kVaapiVp9kSVCHWEncoding) &&
-        GetDefaultVaEntryPoint(
+    if (GetDefaultVaEntryPoint(
             VaapiWrapper::kEncodeConstantQuantizationParameter, va_profile) ==
-            VAEntrypointEncSliceLP) {
-      scalability_modes.push_back(SVCScalabilityMode::kL2T2Key);
-      scalability_modes.push_back(SVCScalabilityMode::kL2T3Key);
-      scalability_modes.push_back(SVCScalabilityMode::kL3T2Key);
-      scalability_modes.push_back(SVCScalabilityMode::kL3T3Key);
+        VAEntrypointEncSliceLP) {
+      if (base::FeatureList::IsEnabled(kVaapiVp9kSVCHWEncoding)) {
+        scalability_modes.push_back(SVCScalabilityMode::kL2T2Key);
+        scalability_modes.push_back(SVCScalabilityMode::kL2T3Key);
+        scalability_modes.push_back(SVCScalabilityMode::kL3T2Key);
+        scalability_modes.push_back(SVCScalabilityMode::kL3T3Key);
+      }
+      if (base::FeatureList::IsEnabled(kVaapiVp9SModeHWEncoding)) {
+        scalability_modes.push_back(SVCScalabilityMode::kS2T1);
+        scalability_modes.push_back(SVCScalabilityMode::kS2T2);
+        scalability_modes.push_back(SVCScalabilityMode::kS2T3);
+        scalability_modes.push_back(SVCScalabilityMode::kS3T1);
+        scalability_modes.push_back(SVCScalabilityMode::kS3T2);
+        scalability_modes.push_back(SVCScalabilityMode::kS3T3);
+      }
     }
   }
 
@@ -2478,21 +2490,18 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
     return nullptr;
   }
 
-#if BUILDFLAG(IS_LINUX)
-  // TODO(crbug.com/1326754): enable use DRIME_PRIME_2 API on Linux with the
-  // iHD driver.
-  const bool use_drm_prime_2 = false;
-#else
+  // TODO(b/233894465): use the DRM_PRIME_2 API with the Mesa Gallium driver
+  // when AMD supports it.
   // TODO(b/233924862): use the DRM_PRIME_2 API with protected content.
   // TODO(b/233929647): use the DRM_PRIME_2 API with the i965 driver.
   // TODO(b/236746283): remove the kNoModifier check once the modifier is
   // plumbed for JPEG decoding and encoding.
   const bool use_drm_prime_2 =
       (GetImplementationType() == VAImplementation::kIntelIHD ||
+       GetImplementationType() == VAImplementation::kChromiumFakeDriver ||
        GetImplementationType() == VAImplementation::kMesaGallium) &&
       !protected_content &&
       pixmap->GetBufferFormatModifier() != gfx::NativePixmapHandle::kNoModifier;
-#endif
 
   union {
     VADRMPRIMESurfaceDescriptor descriptor;
@@ -3111,6 +3120,24 @@ bool VaapiWrapper::GetSupportedPackedHeaders(VideoCodecProfile profile,
   packed_sps = attrib.value & VA_ENC_PACKED_HEADER_SEQUENCE;
   packed_pps = attrib.value & VA_ENC_PACKED_HEADER_PICTURE;
   packed_slice = attrib.value & VA_ENC_PACKED_HEADER_SLICE;
+
+  return true;
+}
+
+bool VaapiWrapper::GetMinAV1SegmentSize(VideoCodecProfile profile,
+                                        uint32_t& min_seg_size) {
+  CHECK(!enforce_sequence_affinity_ ||
+        sequence_checker_.CalledOnValidSequence());
+  const VAProfile va_profile = ProfileToVAProfile(profile);
+  VAConfigAttrib attrib{};
+  attrib.type = VAConfigAttribEncAV1Ext1;
+  base::AutoLockMaybe auto_lock(va_lock_.get());
+  const VAStatus va_res = vaGetConfigAttributes(va_display_, va_profile,
+                                                va_entrypoint_, &attrib, 1);
+  VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVAGetConfigAttributes, false);
+
+  min_seg_size = reinterpret_cast<VAConfigAttribValEncAV1Ext1*>(&attrib.value)
+                     ->bits.min_segid_block_size_accepted;
 
   return true;
 }

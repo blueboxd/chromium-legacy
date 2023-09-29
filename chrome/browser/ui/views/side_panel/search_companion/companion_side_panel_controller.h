@@ -50,6 +50,8 @@ class CompanionSidePanelController : public CompanionTabHelper::Delegate,
       SidePanelOpenTrigger side_panel_open_trigger) override;
   void UpdateNewTabButton(GURL url_to_open) override;
   void OnCompanionSidePanelClosed() override;
+  bool IsCompanionShowing() override;
+  void SetCompanionAsActiveEntry(content::WebContents* contents) override;
   content::WebContents* GetCompanionWebContentsForTesting() override;
 
   // SidePanelEntryObserver:
@@ -79,6 +81,8 @@ class CompanionSidePanelController : public CompanionTabHelper::Delegate,
                            ui::PageTransition transition,
                            bool started_from_context_menu,
                            bool renderer_initiated) override;
+  void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
+                        const gfx::Size& frame_size) override;
 
   void AddObserver();
   void RemoveObserver();

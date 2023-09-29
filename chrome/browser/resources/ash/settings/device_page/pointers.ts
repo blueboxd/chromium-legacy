@@ -20,6 +20,7 @@ import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {isInputDeviceSettingsSplitEnabled} from '../common/load_time_booleans.js';
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
@@ -135,7 +136,7 @@ class SettingsPointersElement extends SettingsPointersElementBase {
       isDeviceSettingsSplitEnabled_: {
         type: Boolean,
         value() {
-          return loadTimeData.getBoolean('enableInputDeviceSettingsSplit');
+          return isInputDeviceSettingsSplitEnabled();
         },
         readOnly: true,
       },
@@ -181,7 +182,7 @@ class SettingsPointersElement extends SettingsPointersElementBase {
             'mouseAccelerationLabel');
   }
 
-  override currentRouteChanged(route: Route) {
+  override currentRouteChanged(route: Route): void {
     // Does not apply to this page.
     if (route !== routes.POINTERS) {
       return;
@@ -199,7 +200,7 @@ class SettingsPointersElement extends SettingsPointersElementBase {
     this.attemptDeepLink();
   }
 
-  private onLearnMoreLinkClicked_(event: Event) {
+  private onLearnMoreLinkClicked_(event: Event): void {
     const path = event.composedPath();
     if (!Array.isArray(path) || !path.length) {
       return;
@@ -211,19 +212,19 @@ class SettingsPointersElement extends SettingsPointersElementBase {
     }
   }
 
-  private onMouseReverseScrollRowClicked_() {
+  private onMouseReverseScrollRowClicked_(): void {
     this.setPrefValue(
         'settings.mouse.reverse_scroll',
         !this.getPref('settings.mouse.reverse_scroll').value);
   }
 
-  private onTouchpadReverseScrollRowClicked_() {
+  private onTouchpadReverseScrollRowClicked_(): void {
     this.setPrefValue(
         'settings.touchpad.natural_scroll',
         !this.getPref('settings.touchpad.natural_scroll').value);
   }
 
-  private onTouchpadHapticFeedbackRowClicked_() {
+  private onTouchpadHapticFeedbackRowClicked_(): void {
     this.setPrefValue(
         'settings.touchpad.haptic_feedback',
         !this.getPref('settings.touchpad.haptic_feedback').value);

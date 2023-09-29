@@ -539,6 +539,102 @@ TEST_F(ShellSurfaceTest, HostWindowIncludesAllSubSurfacesWithScaleFactor) {
   EXPECT_EQ(gfx::Point(10, 10), shell_surface->root_surface_origin_pixel());
 }
 
+TEST_F(ShellSurfaceTest, LocalSurfaceIdUpdatedOnHostWindowOriginChanged) {
+  constexpr gfx::Point kOrigin(100, 100);
+  std::unique_ptr<ShellSurface> shell_surface =
+      test::ShellSurfaceBuilder({100, 100})
+          .SetOrigin(kOrigin)
+          .SetGeometry(gfx::Rect(100, 100))
+          .BuildShellSurface();
+
+  auto* root_surface = shell_surface->root_surface();
+
+  auto child_buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(200, 200)));
+  auto child_surface = std::make_unique<Surface>();
+  child_surface->Attach(child_buffer.get());
+  auto subsurface =
+      std::make_unique<SubSurface>(child_surface.get(), root_surface);
+  subsurface->SetPosition(gfx::PointF(-50, -50));
+
+  child_surface->Commit();
+  root_surface->Commit();
+  EXPECT_EQ(gfx::Rect(-50, -50, 200, 200),
+            shell_surface->host_window()->bounds());
+
+  // Store the current local surface id.
+  const viz::LocalSurfaceId old_id =
+      shell_surface->GetSurfaceId().local_surface_id();
+
+  // If nothing is changed, no need to update local surface id.
+  child_surface->Commit();
+  root_surface->Commit();
+  EXPECT_EQ(shell_surface->GetSurfaceId().local_surface_id(), old_id);
+
+  // If the host window origin is updated, need to update local surface id.
+  subsurface->SetPosition(gfx::PointF(-25, -25));
+  child_surface->Commit();
+  root_surface->Commit();
+  EXPECT_EQ(gfx::Rect(-25, -25, 200, 200),
+            shell_surface->host_window()->bounds());
+  EXPECT_TRUE(
+      shell_surface->GetSurfaceId().local_surface_id().IsNewerThan(old_id));
+
+  EXPECT_EQ(gfx::Vector2dF(),
+            shell_surface->host_window()->layer()->GetSubpixelOffset());
+}
+
+TEST_F(ShellSurfaceTest,
+       LocalSurfaceIdUpdatedOnHostWindowOriginChangedWithScaleFactor) {
+  constexpr gfx::Point kOrigin(100, 100);
+  std::unique_ptr<ShellSurface> shell_surface =
+      test::ShellSurfaceBuilder({100, 100})
+          .SetOrigin(kOrigin)
+          .SetGeometry(gfx::Rect(100, 100))
+          .BuildShellSurface();
+
+  // Set scale.
+  constexpr float kScaleFactor = 2.0;
+  shell_surface->set_client_submits_surfaces_in_pixel_coordinates(true);
+  shell_surface->SetScaleFactor(kScaleFactor);
+
+  auto* root_surface = shell_surface->root_surface();
+
+  auto child_buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(200, 200)));
+  auto child_surface = std::make_unique<Surface>();
+  child_surface->Attach(child_buffer.get());
+  auto subsurface =
+      std::make_unique<SubSurface>(child_surface.get(), root_surface);
+  subsurface->SetPosition(gfx::PointF(-50, -50));
+
+  child_surface->Commit();
+  root_surface->Commit();
+  EXPECT_EQ(gfx::Rect(-25, -25, 100, 100),
+            shell_surface->host_window()->bounds());
+
+  // Store the current local surface id.
+  const viz::LocalSurfaceId old_id =
+      shell_surface->GetSurfaceId().local_surface_id();
+
+  // If nothing is changed, no need to update local surface id.
+  child_surface->Commit();
+  root_surface->Commit();
+  EXPECT_EQ(shell_surface->GetSurfaceId().local_surface_id(), old_id);
+
+  // If the host window origin is updated, need to update local surface id.
+  subsurface->SetPosition(gfx::PointF(-25, -25));
+  child_surface->Commit();
+  root_surface->Commit();
+  EXPECT_EQ(gfx::Rect(-12, -12, 100, 100),
+            shell_surface->host_window()->bounds());
+  EXPECT_TRUE(
+      shell_surface->GetSurfaceId().local_surface_id().IsNewerThan(old_id));
+
+  EXPECT_EQ(gfx::Vector2dF(-0.5, -0.5),
+            shell_surface->host_window()->layer()->GetSubpixelOffset());
+}
+
 TEST_F(ShellSurfaceTest, EventTargetWithNegativeHostWindowOrigin) {
   constexpr gfx::Point kOrigin(20, 20);
   std::unique_ptr<ShellSurface> shell_surface =
@@ -3867,6 +3963,31 @@ TEST_F(ShellSurfaceTest, NoGeometryWidgetBoundsUpdate) {
 
   EXPECT_EQ(kSmallerSize,
             shell_surface->GetWidget()->GetWindowBoundsInScreen().size());
+}
+
+TEST_F(ShellSurfaceTest, SubpixelPositionOffset) {
+  UpdateDisplay("1200x800*1.6");
+  std::unique_ptr<ShellSurface> shell_surface =
+      test::ShellSurfaceBuilder({256, 256})
+          .SetOrigin({20, 20})
+          .BuildShellSurface();
+  auto* surface = shell_surface->root_surface();
+  // Enabling a normal frame makes `GetClientViewBounds().origin()` return
+  // (0, 32), which makes the host window not align with any pixel boundary.
+  surface->SetFrame(SurfaceFrameType::NORMAL);
+  shell_surface->root_surface()->SetSurfaceHierarchyContentBoundsForTest(
+      gfx::Rect(-20, -20, 256, 256));
+  EXPECT_TRUE(shell_surface->OnPreWidgetCommit());
+  shell_surface->CommitWidget();
+  EXPECT_EQ(gfx::Point(20, 20), shell_surface->root_surface_origin_pixel());
+  EXPECT_EQ(gfx::Rect(-12, 20, 256, 256),
+            shell_surface->host_window()->bounds());
+  // Verify that 'root_surface_origin()' is exactly preservered in pixels with
+  // subpixel offset.
+  // (0, -0.125) is caused by the frame like above, and (-0.5, -0.5) is for
+  // 'root_surface_origin()'.
+  EXPECT_EQ(gfx::Vector2dF(-0.5, -0.625),
+            shell_surface->host_window()->layer()->GetSubpixelOffset());
 }
 
 }  // namespace exo

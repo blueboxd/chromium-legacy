@@ -5,6 +5,7 @@
 import './scanning_mojom_imports.js';
 import 'chrome://scanning/scan_done_section.js';
 
+import {FileType} from 'chrome://scanning/scanning.mojom-webui.js';
 import {ScanningBrowserProxyImpl} from 'chrome://scanning/scanning_browser_proxy.js';
 import {assertArrayEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 import {isVisible} from 'chrome://webui-test/chromeos/test_util.js';
@@ -39,7 +40,8 @@ suite('scanDoneSectionTest', function() {
 
   // Verify the scan done section can be initialized.
   test('initializeScanDoneSection', () => {
-    assertTrue(!!scanDoneSection.$$('#doneButtonContainer'));
+    assertTrue(
+        !!scanDoneSection.shadowRoot.querySelector('#doneButtonContainer'));
   });
 
   // Verify the file saved text updates correctly based on the number of files
@@ -51,7 +53,8 @@ suite('scanDoneSectionTest', function() {
         .then(() => {
           assertEquals(
               'Your file has been successfully scanned and saved to My files.',
-              scanDoneSection.$$('#fileSavedText').textContent.trim());
+              scanDoneSection.shadowRoot.querySelector('#fileSavedText')
+                  .textContent.trim());
           scanDoneSection.numFilesSaved = 2;
           return flushTasks();
         })
@@ -59,7 +62,8 @@ suite('scanDoneSectionTest', function() {
           assertEquals(
               'Your files have been successfully scanned and saved to My ' +
                   'files.',
-              scanDoneSection.$$('#fileSavedText').textContent.trim());
+              scanDoneSection.shadowRoot.querySelector('#fileSavedText')
+                  .textContent.trim());
         });
   });
 
@@ -71,14 +75,16 @@ suite('scanDoneSectionTest', function() {
         .then(() => {
           assertEquals(
               'Your file has been successfully scanned and saved to Downloads.',
-              scanDoneSection.$$('#fileSavedText').textContent.trim());
+              scanDoneSection.shadowRoot.querySelector('#fileSavedText')
+                  .textContent.trim());
           scanDoneSection.selectedFolder = 'My Drive';
           return flushTasks();
         })
         .then(() => {
           assertEquals(
               'Your file has been successfully scanned and saved to My Drive.',
-              scanDoneSection.$$('#fileSavedText').textContent.trim());
+              scanDoneSection.shadowRoot.querySelector('#fileSavedText')
+                  .textContent.trim());
         });
   });
 
@@ -95,7 +101,7 @@ suite('scanDoneSectionTest', function() {
     scanDoneSection.scannedFilePaths = scannedFilePaths;
     scanDoneSection.numFilesSaved = 1;
     return flushTasks().then(() => {
-      scanDoneSection.$$('#folderLink').click();
+      scanDoneSection.shadowRoot.querySelector('#folderLink').click();
       return flushTasks().then(() => {
         assertEquals(
             1, scanningBrowserProxy.getCallCount('showFileInLocation'));
@@ -115,7 +121,7 @@ suite('scanDoneSectionTest', function() {
     scanDoneSection.scannedFilePaths = [{'path': '/test/path/scan.jpg'}];
     scanDoneSection.numFilesSaved = 1;
     return flushTasks().then(() => {
-      scanDoneSection.$$('#folderLink').click();
+      scanDoneSection.shadowRoot.querySelector('#folderLink').click();
       return flushTasks().then(() => {
         assertEquals(
             1, scanningBrowserProxy.getCallCount('showFileInLocation'));
@@ -131,7 +137,7 @@ suite('scanDoneSectionTest', function() {
       doneEventFired = true;
     });
 
-    scanDoneSection.$$('#doneButton').click();
+    scanDoneSection.shadowRoot.querySelector('#doneButton').click();
     assertTrue(doneEventFired);
   });
 
@@ -143,7 +149,7 @@ suite('scanDoneSectionTest', function() {
     scanDoneSection.scannedFilePaths = scannedFilePaths;
 
     return flushTasks().then(() => {
-      scanDoneSection.$$('#showInFolderButton').click();
+      scanDoneSection.shadowRoot.querySelector('#showInFolderButton').click();
       return flushTasks().then(() => {
         assertEquals(
             1, scanningBrowserProxy.getCallCount('showFileInLocation'));
@@ -157,10 +163,9 @@ suite('scanDoneSectionTest', function() {
     const scannedFilePaths =
         [{'path': '/test/path/scan1.jpg'}, {'path': '/test/path/scan2.jpg'}];
     scanDoneSection.scannedFilePaths = scannedFilePaths;
-    scanDoneSection.selectedFileType =
-        ash.scanning.mojom.FileType.kJpg.toString();
+    scanDoneSection.selectedFileType = FileType.kJpg.toString();
 
-    scanDoneSection.$$('#editButton').click();
+    scanDoneSection.shadowRoot.querySelector('#editButton').click();
     const filePathsSentToMediaApp = /** @type {!Array<string>} */ (
         scanningBrowserProxy.getArgs('openFilesInMediaApp')[0]);
     assertArrayEquals(
@@ -172,13 +177,12 @@ suite('scanDoneSectionTest', function() {
   // app doesn't support PDFs.
   test('editButtonHiddenForFileTypePdf', () => {
     const editButton =
-        /** @type {!HTMLElement} */ (scanDoneSection.$$('#editButton'));
-    scanDoneSection.selectedFileType =
-        ash.scanning.mojom.FileType.kPng.toString();
+        /** @type {!HTMLElement} */ (
+            scanDoneSection.shadowRoot.querySelector('#editButton'));
+    scanDoneSection.selectedFileType = FileType.kPng.toString();
     assertTrue(isVisible(editButton));
 
-    scanDoneSection.selectedFileType =
-        ash.scanning.mojom.FileType.kPdf.toString();
+    scanDoneSection.selectedFileType = FileType.kPdf.toString();
     assertFalse(isVisible(editButton));
   });
 
@@ -190,14 +194,16 @@ suite('scanDoneSectionTest', function() {
         .then(() => {
           assertEquals(
               'Edit file',
-              scanDoneSection.$$('#editButtonLabel').textContent.trim());
+              scanDoneSection.shadowRoot.querySelector('#editButtonLabel')
+                  .textContent.trim());
           scanDoneSection.numFilesSaved = 2;
           return flushTasks();
         })
         .then(() => {
           assertEquals(
               'Edit files',
-              scanDoneSection.$$('#editButtonLabel').textContent.trim());
+              scanDoneSection.shadowRoot.querySelector('#editButtonLabel')
+                  .textContent.trim());
         });
   });
 });

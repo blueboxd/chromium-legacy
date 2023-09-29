@@ -29,12 +29,12 @@ class ChromeShellDelegate : public ash::ShellDelegate {
   bool CanShowWindowForUser(const aura::Window* window) const override;
   std::unique_ptr<ash::CaptureModeDelegate> CreateCaptureModeDelegate()
       const override;
+  std::unique_ptr<ash::ClipboardHistoryControllerDelegate>
+  CreateClipboardHistoryControllerDelegate() const override;
   std::unique_ptr<ash::GameDashboardDelegate> CreateGameDashboardDelegate()
       const override;
   std::unique_ptr<ash::AcceleratorPrefsDelegate>
   CreateAcceleratorPrefsDelegate() const override;
-  std::unique_ptr<ash::GlanceablesDelegate> CreateGlanceablesDelegate(
-      ash::GlanceablesController* controller) const override;
   ash::AccessibilityDelegate* CreateAccessibilityDelegate() override;
   std::unique_ptr<ash::BackGestureContextualNudgeDelegate>
   CreateBackGestureContextualNudgeDelegate(

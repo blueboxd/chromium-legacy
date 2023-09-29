@@ -23,7 +23,6 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
-#include "chrome/browser/ui/autofill/autofill_bubble_handler.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -625,6 +624,9 @@ void ManagePasswordsUIController::SavePassword(const std::u16string& username,
               Profile::FromBrowserContext(
                   web_contents()->GetBrowserContext()))) {
     sentiment_service->SavedPassword();
+    if (IsPendingPasswordPhished()) {
+      sentiment_service->PhishedPasswordUpdateFinished();
+    }
   }
 
   if (GetPasswordFormMetricsRecorder() && BubbleIsManualFallbackForSaving()) {
@@ -661,7 +663,6 @@ void ManagePasswordsUIController::SavePassword(const std::u16string& username,
   // in to Chrome") is closed.
   bubble_status_ = BubbleStatus::SHOWN_PENDING_ICON_UPDATE;
   if (Browser* browser = chrome::FindBrowserWithWebContents(web_contents())) {
-    browser->window()->GetAutofillBubbleHandler()->OnPasswordSaved();
     if (browser->window()->MaybeShowFeaturePromo(
             feature_engagement::
                 kIPHPasswordsManagementBubbleAfterSaveFeature)) {
@@ -1080,9 +1081,15 @@ void ManagePasswordsUIController::OnReauthCompleted() {
 void ManagePasswordsUIController::CancelAnyOngoingBiometricAuth() {
   if (!biometric_authenticator_)
     return;
-  biometric_authenticator_->Cancel(
-      device_reauth::DeviceAuthRequester::kTouchToFill);
+  biometric_authenticator_->Cancel();
   biometric_authenticator_.reset();
+}
+
+bool ManagePasswordsUIController::IsPendingPasswordPhished() const {
+  const password_manager::PasswordForm& pending_form = GetPendingPassword();
+  return pending_form.password_issues.find(
+             password_manager::InsecureType::kPhished) !=
+         pending_form.password_issues.end();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ManagePasswordsUIController);

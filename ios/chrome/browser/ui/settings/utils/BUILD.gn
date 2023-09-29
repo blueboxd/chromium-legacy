@@ -11,8 +11,6 @@ source_set("utils") {
     "password_auto_fill_status_observer.h",
     "password_utils.h",
     "password_utils.mm",
-    "settings_utils.h",
-    "settings_utils.mm",
   ]
   deps = [
     "//base",
@@ -41,7 +39,7 @@ source_set("unit_tests") {
     "//components/prefs",
     "//components/prefs:test_support",
     "//components/sync_preferences:test_support",
-    "//ios/chrome/browser/content_settings",
+    "//ios/chrome/browser/content_settings/model",
     "//ios/chrome/browser/shared/model/browser_state:test_support",
     "//ios/chrome/browser/shared/model/utils:test_support",
     "//ios/web/public/test",

@@ -1659,49 +1659,6 @@ bool HistoryBackend::GetMostRecentVisitsForURL(URLID id,
   return false;
 }
 
-size_t HistoryBackend::UpdateURLs(const URLRows& urls) {
-  if (!db_)
-    return 0;
-
-  URLRows changed_urls;
-  for (auto it = urls.begin(); it != urls.end(); ++it) {
-    DCHECK(it->id());
-    if (db_->UpdateURLRow(it->id(), *it))
-      changed_urls.push_back(*it);
-  }
-
-  // Broadcast notifications for any URLs that have actually been changed. This
-  // will update the in-memory database and the InMemoryURLIndex.
-  size_t num_updated_records = changed_urls.size();
-  if (num_updated_records) {
-    NotifyURLsModified(changed_urls, /*is_from_expiration=*/false);
-    ScheduleCommit();
-  }
-  return num_updated_records;
-}
-
-bool HistoryBackend::AddVisits(const GURL& url,
-                               const std::vector<VisitInfo>& visits,
-                               VisitSource visit_source) {
-  if (db_) {
-    for (const auto& visit : visits) {
-      if (!AddPageVisit(url, visit.first, /*referring_visit=*/0,
-                        /*external_referrer_url=*/GURL(), visit.second,
-                        /*hidden=*/!ui::PageTransitionIsMainFrame(visit.second),
-                        visit_source, IsTypedIncrement(visit.second),
-                        /*opener_visit=*/0,
-                        /*consider_for_ntp_most_visited=*/true,
-                        /*local_navigation_id=*/absl::nullopt)
-               .first) {
-        return false;
-      }
-    }
-    ScheduleCommit();
-    return true;
-  }
-  return false;
-}
-
 bool HistoryBackend::GetForeignVisit(const std::string& originator_cache_guid,
                                      VisitID originator_visit_id,
                                      VisitRow* visit_row) {
@@ -2850,9 +2807,12 @@ MostVisitedURLList HistoryBackend::QueryMostVisitedURLs(int result_count) {
       db_->QuerySegmentUsage(result_count, url_filter);
 
   MostVisitedURLList result;
-  for (const std::unique_ptr<PageUsageData>& current_data : data)
-    result.emplace_back(current_data->GetURL(), current_data->GetTitle(),
-                        current_data->GetScore());
+  for (const std::unique_ptr<PageUsageData>& current_data : data) {
+    result.emplace_back(current_data->GetURL(), current_data->GetTitle());
+    result.back().visit_count = current_data->GetVisitCount();
+    result.back().last_visit_time = current_data->GetLastVisitTimeslot();
+    result.back().score = current_data->GetScore();
+  }
 
   UMA_HISTOGRAM_TIMES("History.QueryMostVisitedURLsTime",
                       base::TimeTicks::Now() - begin_time);

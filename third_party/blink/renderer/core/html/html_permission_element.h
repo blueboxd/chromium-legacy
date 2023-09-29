@@ -35,6 +35,8 @@ class CORE_EXPORT HTMLPermissionElement final : public HTMLElement {
 
   void AttachLayoutTree(AttachContext& context) override;
 
+  bool granted() const { return permissions_granted_; }
+
   // Given an input type, return permissions list. This method is for testing
   // only.
   static Vector<mojom::blink::PermissionDescriptorPtr>
@@ -51,6 +53,7 @@ class CORE_EXPORT HTMLPermissionElement final : public HTMLElement {
 
   // blink::Element implements
   void AttributeChanged(const AttributeModificationParams& params) override;
+  void DidAddUserAgentShadowRoot(ShadowRoot&) override;
 
   // blink::Node override.
   void DefaultEventHandler(Event&) override;
@@ -83,6 +86,10 @@ class CORE_EXPORT HTMLPermissionElement final : public HTMLElement {
   // Removes any existing (temporary or indefinite) disable reasons.
   void EnableClicking(DisableReason reason);
 
+  // Callback triggered when permission is decided from browser side
+  void OnEmbededPermissionsDecided(
+      mojom::blink::EmbeddedPermissionControlResult result);
+
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
 
   HeapMojoRemote<mojom::blink::PermissionService> permission_service_;
@@ -93,6 +100,13 @@ class CORE_EXPORT HTMLPermissionElement final : public HTMLElement {
   // entry will have an expiration time associated with it, which can be
   // |base::TimeTicks::Max()| if it's indefinite.
   HashMap<DisableReason, base::TimeTicks> clicking_disabled_reasons_;
+
+  Member<HTMLDivElement> inner_element_;
+  Member<HTMLSpanElement> permission_text_;
+
+  // Set to true only if all the corresponding permissions (from `type`
+  // attribute) are granted.
+  bool permissions_granted_ = false;
 };
 
 }  // namespace blink

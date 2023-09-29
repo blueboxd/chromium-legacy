@@ -147,6 +147,7 @@ void WebContentsViewMac::FullscreenStateChanged(bool is_fullscreen) {}
 
 void WebContentsViewMac::UpdateWindowControlsOverlay(
     const gfx::Rect& bounding_rect) {
+  window_controls_overlay_bounding_rect_ = bounding_rect;
   if (remote_ns_view_) {
     remote_ns_view_->UpdateWindowControlsOverlay(bounding_rect);
   } else {
@@ -156,6 +157,7 @@ void WebContentsViewMac::UpdateWindowControlsOverlay(
 
 void WebContentsViewMac::StartDragging(
     const DropData& drop_data,
+    const url::Origin& source_origin,
     DragOperationsMask allowed_operations,
     const gfx::ImageSkia& image,
     const gfx::Vector2d& cursor_offset,
@@ -183,11 +185,11 @@ void WebContentsViewMac::StartDragging(
   // TODO(crbug.com/1302094): The param `drag_obj_rect` is unused.
 
   if (remote_ns_view_) {
-    remote_ns_view_->StartDrag(drop_data, mask, image, cursor_offset,
-                               is_privileged);
+    remote_ns_view_->StartDrag(drop_data, source_origin, mask, image,
+                               cursor_offset, is_privileged);
   } else {
-    in_process_ns_view_bridge_->StartDrag(drop_data, mask, image, cursor_offset,
-                                          is_privileged);
+    in_process_ns_view_bridge_->StartDrag(drop_data, source_origin, mask, image,
+                                          cursor_offset, is_privileged);
   }
 }
 
@@ -243,8 +245,15 @@ DropData* WebContentsViewMac::GetDropData() const {
   return [drag_dest_ currentDropData];
 }
 
-void WebContentsViewMac::UpdateDragCursor(ui::mojom::DragOperation operation) {
-  [drag_dest_ setCurrentOperation:static_cast<NSDragOperation>(operation)];
+// TODO(crbug.com/1482848): Investigate if this needs to be implemented.
+void WebContentsViewMac::CancelDragDropForPortalActivation() {
+  NOTIMPLEMENTED();
+}
+
+void WebContentsViewMac::UpdateDragOperation(ui::mojom::DragOperation operation,
+                                             bool document_is_handling_drag) {
+  [drag_dest_ setCurrentOperation:operation
+           documentIsHandlingDrag:document_is_handling_drag];
 }
 
 void WebContentsViewMac::GotFocus(RenderWidgetHostImpl* render_widget_host) {
@@ -643,6 +652,10 @@ void WebContentsViewMac::ViewsHostableAttach(
     remote_cocoa_application->CreateWebContentsNSView(
         ns_view_id_, std::move(stub_host), std::move(stub_ns_view_receiver));
     remote_ns_view_->SetParentNSView(views_host_->GetNSViewId());
+    if (!window_controls_overlay_bounding_rect_.IsEmpty()) {
+      remote_ns_view_->UpdateWindowControlsOverlay(
+          window_controls_overlay_bounding_rect_);
+    }
 
     // Because this view is being displayed from a remote process, reset the
     // in-process NSView's client pointer, so that the in-process NSView will

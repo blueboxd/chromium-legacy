@@ -45,7 +45,8 @@
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/ui/hats/trust_safety_sentiment_service.h"
-#endif
+#include "ui/views/widget/widget.h"
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/profiles/profiles_state.h"
@@ -360,6 +361,9 @@ void PrivacySandboxService::PromptActionOccurredM1(
       pref_service_->SetBoolean(prefs::kPrivacySandboxM1AdMeasurementEnabled,
                                 true);
     }
+#if !BUILDFLAG(IS_ANDROID)
+    MaybeCloseOpenPrompts();
+#endif // !BUILDFLAG(IS_ANDROID)
   } else if (PromptAction::kConsentAccepted == action) {
     DCHECK(privacy_sandbox::kPrivacySandboxSettings4ConsentRequired.Get());
     pref_service_->SetBoolean(prefs::kPrivacySandboxM1ConsentDecisionMade,
@@ -381,6 +385,9 @@ void PrivacySandboxService::PromptActionOccurredM1(
         prefs::kPrivacySandboxM1RestrictedNoticeAcknowledged, true);
     pref_service_->SetBoolean(prefs::kPrivacySandboxM1AdMeasurementEnabled,
                               true);
+#if !BUILDFLAG(IS_ANDROID)
+    MaybeCloseOpenPrompts();
+#endif // !BUILDFLAG(IS_ANDROID)
   }
 }
 
@@ -411,19 +418,22 @@ bool PrivacySandboxService::IsUrlSuitableForPrompt(const GURL& url) {
   return false;
 }
 
-void PrivacySandboxService::PromptOpenedForBrowser(Browser* browser) {
-  DCHECK(!browsers_with_open_prompts_.count(browser));
-  browsers_with_open_prompts_.insert(browser);
+#if !BUILDFLAG(IS_ANDROID)
+void PrivacySandboxService::PromptOpenedForBrowser(Browser* browser,
+                                                   views::Widget* widget) {
+  DCHECK(!browsers_to_open_prompts_.count(browser));
+  browsers_to_open_prompts_[browser] = widget;
 }
 
 void PrivacySandboxService::PromptClosedForBrowser(Browser* browser) {
-  DCHECK(browsers_with_open_prompts_.count(browser));
-  browsers_with_open_prompts_.erase(browser);
+  DCHECK(browsers_to_open_prompts_.count(browser));
+  browsers_to_open_prompts_.erase(browser);
 }
 
 bool PrivacySandboxService::IsPromptOpenForBrowser(Browser* browser) {
-  return browsers_with_open_prompts_.count(browser);
+  return browsers_to_open_prompts_.count(browser);
 }
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 void PrivacySandboxService::SetPromptDisabledForTests(bool disabled) {
   g_prompt_disabled_for_tests = disabled;
@@ -475,16 +485,16 @@ void PrivacySandboxService::OnPrivacySandboxV2PrefChanged() {
 }
 
 bool PrivacySandboxService::IsFirstPartySetsDataAccessEnabled() const {
-  return pref_service_->GetBoolean(prefs::kPrivacySandboxFirstPartySetsEnabled);
+  return privacy_sandbox_settings_->AreRelatedWebsiteSetsEnabled();
 }
 
 bool PrivacySandboxService::IsFirstPartySetsDataAccessManaged() const {
   return pref_service_->IsManagedPreference(
-      prefs::kPrivacySandboxFirstPartySetsEnabled);
+      prefs::kPrivacySandboxRelatedWebsiteSetsEnabled);
 }
 
 void PrivacySandboxService::SetFirstPartySetsDataAccessEnabled(bool enabled) {
-  pref_service_->SetBoolean(prefs::kPrivacySandboxFirstPartySetsEnabled,
+  pref_service_->SetBoolean(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
                             enabled);
 }
 
@@ -827,10 +837,9 @@ void PrivacySandboxService::LogPrivacySandboxState() {
   auto fps_status = FirstPartySetsState::kFpsNotRelevant;
   if (cookie_settings_->ShouldBlockThirdPartyCookies() &&
       cookie_settings_->GetDefaultCookieSetting() != CONTENT_SETTING_BLOCK) {
-    fps_status =
-        pref_service_->GetBoolean(prefs::kPrivacySandboxFirstPartySetsEnabled)
-            ? FirstPartySetsState::kFpsEnabled
-            : FirstPartySetsState::kFpsDisabled;
+    fps_status = privacy_sandbox_settings_->AreRelatedWebsiteSetsEnabled()
+                     ? FirstPartySetsState::kFpsEnabled
+                     : FirstPartySetsState::kFpsDisabled;
   }
   RecordFirstPartySetsStateHistogram(fps_status);
 
@@ -1516,7 +1525,7 @@ void PrivacySandboxService::MaybeInitializeFirstPartySetsPref() {
   // init has been run is not synced). If any of the user's devices local state
   // would disable the pref, it is disabled across all devices.
   if (AreThirdPartyCookiesBlocked(cookie_settings_.get())) {
-    pref_service_->SetBoolean(prefs::kPrivacySandboxFirstPartySetsEnabled,
+    pref_service_->SetBoolean(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
                               false);
   }
 
@@ -1577,6 +1586,27 @@ void PrivacySandboxService::RecordUpdatedTopicsConsent(
   pref_service_->SetString(prefs::kPrivacySandboxTopicsConsentTextAtLastUpdate,
                            consent_text);
 }
+
+#if !BUILDFLAG(IS_ANDROID)
+void PrivacySandboxService::MaybeCloseOpenPrompts() {
+  if (!privacy_sandbox::kPrivacySandboxSettings4CloseAllPrompts.Get()) {
+    return;
+  }
+
+  // Take a copy to avoid concurrent modification issues as widgets close and
+  // remove themselves from the map synchronously. The map will typically have
+  // at most a few elements, so this is cheap.
+  // It is not possible that a new prompt may be added during this process, as
+  // all prompts are created on the same thread, based on information which does
+  // not cross task boundaries.
+  auto browsers_to_open_prompts_copy = browsers_to_open_prompts_;
+  for (const auto& browser_prompt : browsers_to_open_prompts_copy) {
+    auto* prompt = browser_prompt.second;
+    CHECK(prompt);
+    prompt->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
+  }
+}
+#endif
 
 void PrivacySandboxService::InformSentimentService(
     PrivacySandboxService::PromptAction action) {

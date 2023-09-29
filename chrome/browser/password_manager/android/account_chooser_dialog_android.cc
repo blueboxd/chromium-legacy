@@ -116,8 +116,7 @@ AccountChooserDialogAndroid::AccountChooserDialogAndroid(
 
 AccountChooserDialogAndroid::~AccountChooserDialogAndroid() {
   if (authenticator_) {
-    authenticator_->Cancel(
-        device_reauth::DeviceAuthRequester::kAccountChooserDialog);
+    authenticator_->Cancel();
   }
 
   // |dialog_jobject_| can be null in tests or if the dialog could not
@@ -229,16 +228,14 @@ bool AccountChooserDialogAndroid::HandleCredentialChosen(
     return true;
   }
 
-  scoped_refptr<device_reauth::DeviceAuthenticator> authenticator =
+  std::unique_ptr<device_reauth::DeviceAuthenticator> authenticator =
       client_->GetDeviceAuthenticator();
   if (password_manager_util::CanUseBiometricAuth(authenticator.get(),
                                                  client_)) {
     authenticator_ = std::move(authenticator);
-    authenticator_->Authenticate(
-        device_reauth::DeviceAuthRequester::kAccountChooserDialog,
-        base::BindOnce(&AccountChooserDialogAndroid::OnReauthCompleted,
-                       base::Unretained(this), index),
-        /*use_last_valid_auth=*/true);
+    authenticator_->AuthenticateWithMessage(
+        u"", base::BindOnce(&AccountChooserDialogAndroid::OnReauthCompleted,
+                            base::Unretained(this), index));
     // The credential handling will only happen after the authentication
     // finishes.
     return false;

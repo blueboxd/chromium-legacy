@@ -57,7 +57,9 @@ with host_paths.SysPath(
   import jinja2  # pylint: disable=import-error
   import markupsafe  # pylint: disable=import-error,unused-import
 
-
+_CHROMIUM_TESTS_ROOT = 'chromium_tests_root'
+_DEVICE_TEMP_DIR_DATA_ROOT = posixpath.join('/data/local/tmp',
+                                            _CHROMIUM_TESTS_ROOT)
 _JINJA_TEMPLATE_DIR = os.path.join(
     host_paths.DIR_SOURCE_ROOT, 'build', 'android', 'pylib', 'instrumentation')
 _JINJA_TEMPLATE_FILENAME = 'render_test.html.jinja'
@@ -219,6 +221,11 @@ class LocalDeviceInstrumentationTestRun(
       # Functions to run concurrerntly when --concurrent-adb is enabled.
       install_steps = []
       post_install_steps = []
+
+      test_data_root_dir = posixpath.join(device.GetExternalStoragePath(),
+                                          _CHROMIUM_TESTS_ROOT)
+      if self._test_instance.store_data_dependencies_in_temp:
+        test_data_root_dir = _DEVICE_TEMP_DIR_DATA_ROOT
 
       if self._test_instance.replace_system_package:
         @trace_event.traced
@@ -443,8 +450,11 @@ class LocalDeviceInstrumentationTestRun(
 
       @instrumentation_tracing.no_tracing
       def push_test_data(dev):
-        device_root = posixpath.join(dev.GetExternalStoragePath(),
-                                     'chromium_tests_root')
+        device_root = test_data_root_dir
+        # Resolve the path only when need to manipulate data through adb shell
+        # commands. Don't resolve if the path is passed to app through flags.
+        if self._env.force_main_user:
+          device_root = device.ResolveSpecialPath(device_root)
         host_device_tuples_substituted = [
             (h, local_device_test_run.SubstituteDeviceRoot(d, device_root))
             for h, d in host_device_tuples
@@ -452,19 +462,25 @@ class LocalDeviceInstrumentationTestRun(
         logging.info('Pushing data dependencies.')
         for h, d in host_device_tuples_substituted:
           logging.debug('  %r -> %r', h, d)
-        local_device_environment.place_nomedia_on_device(dev, device_root)
+        dev.PlaceNomediaFile(device_root)
         dev.PushChangedFiles(host_device_tuples_substituted,
-                             delete_device_stale=True)
+                             delete_device_stale=True,
+                             as_root=self._env.force_main_user)
         if not host_device_tuples_substituted:
-          dev.RunShellCommand(['rm', '-rf', device_root], check_return=True)
-          dev.RunShellCommand(['mkdir', '-p', device_root], check_return=True)
+          dev.RunShellCommand(['rm', '-rf', device_root],
+                              check_return=True,
+                              as_root=self._env.force_main_user)
+          dev.RunShellCommand(['mkdir', '-p', device_root],
+                              check_return=True,
+                              as_root=self._env.force_main_user)
 
       @trace_event.traced
       def create_flag_changer(dev):
         flags = self._test_instance.flags
         webview_flags = self._test_instance.webview_flags
-        test_data_root_dir = posixpath.join(dev.GetExternalStoragePath(),
-                                            'chromium_tests_root')
+
+        if '--webview-verbose-logging' not in webview_flags:
+          webview_flags.append('--webview-verbose-logging')
 
         def _get_variations_seed_path_arg(seed_path):
           seed_path_components = DevicePathComponentsFor(seed_path)
@@ -775,18 +791,27 @@ class LocalDeviceInstrumentationTestRun(
                                   (test[0]['class'], test[0]['method'])
                                   if isinstance(test, list) else '%s_%s' %
                                   (test['class'], test['method']))
+      # Note for multi-user: when the main user is a secondary user, the path
+      # like "/sdcard/chrome" can be still used as it is when used by commands
+      # like "am instrument". But it needs to be converted when used by commands
+      # like "mkdir", "ls", "rm", with the method ResolveSpecialPath, and root
+      # permission.
       coverage_directory = os.path.join(
           device.GetExternalStoragePath(), 'chrome', 'test', 'coverage')
-      if not device.PathExists(coverage_directory):
-        device.RunShellCommand(['mkdir', '-p', coverage_directory],
-                               check_return=True)
-
       # Setting up for jacoco coverage.
       extras['coverage'] = 'true'
       jacoco_coverage_device_file = os.path.join(coverage_directory,
                                                  coverage_basename)
       jacoco_coverage_device_file += '.exec'
       extras['coverageFile'] = jacoco_coverage_device_file
+
+      if self._env.force_main_user:
+        coverage_directory = device.ResolveSpecialPath(coverage_directory)
+      if not device.PathExists(coverage_directory):
+        # Root permission is needed when accessing a secondary user's path.
+        device.RunShellCommand(['mkdir', '-p', coverage_directory],
+                               check_return=True,
+                               as_root=self._env.force_main_user)
 
       # Setting up for clang coverage.
       device_clang_profile_dir = code_coverage_utils.GetDeviceClangCoverageDir(
@@ -803,14 +828,23 @@ class LocalDeviceInstrumentationTestRun(
       # by the test APK in addition to the apk_under_test.
       breakpad_dump_directory = os.path.join(device.GetExternalStoragePath(),
                                              'chromium_dumps')
-      if device.PathExists(breakpad_dump_directory):
-        device.RemovePath(breakpad_dump_directory, recursive=True)
       flags_to_add.append('--breakpad-dump-location=' + breakpad_dump_directory)
+      if self._env.force_main_user:
+        breakpad_dump_directory = device.ResolveSpecialPath(
+            breakpad_dump_directory)
+      if device.PathExists(breakpad_dump_directory,
+                           as_root=self._env.force_main_user):
+        device.RemovePath(breakpad_dump_directory,
+                          recursive=True,
+                          as_root=self._env.force_main_user)
 
     # Save screenshot if screenshot dir is specified (save locally) or if
     # a GS bucket is passed (save in cloud).
     screenshot_device_file = device_temp_file.DeviceTempFile(
-        device.adb, suffix='.png', dir=device.GetExternalStoragePath())
+        device.adb,
+        suffix='.png',
+        dir=device.GetExternalStoragePath(),
+        device_utils=device)
     extras[EXTRA_SCREENSHOT_FILE] = screenshot_device_file.name
 
     # Set up the screenshot directory. This needs to be done for each test so
@@ -818,13 +852,15 @@ class LocalDeviceInstrumentationTestRun(
     # external storage since the default location doesn't allow file creation
     # from the instrumentation test app on Android L and M.
     ui_capture_dir = device_temp_file.NamedDeviceTemporaryDirectory(
-        device.adb,
-        dir=device.GetExternalStoragePath())
+        device.adb, dir=device.GetExternalStoragePath(), device_utils=device)
     extras[EXTRA_UI_CAPTURE_DIR] = ui_capture_dir.name
 
     if self._env.trace_output:
       trace_device_file = device_temp_file.DeviceTempFile(
-          device.adb, suffix='.json', dir=device.GetExternalStoragePath())
+          device.adb,
+          suffix='.json',
+          dir=device.GetExternalStoragePath(),
+          device_utils=device)
       extras[EXTRA_TRACE_FILE] = trace_device_file.name
 
     target = '%s/%s' % (self._test_instance.test_package,
@@ -866,11 +902,13 @@ class LocalDeviceInstrumentationTestRun(
     logging.info('preparing to run %s: %s', test_display_name, test)
 
     if _IsRenderTest(test):
-      # TODO(mikecase): Add DeviceTempDirectory class and use that instead.
-      self._render_tests_device_output_dir = posixpath.join(
-          device.GetExternalStoragePath(), 'render_test_output_dir')
+      self._render_tests_device_output_dir = (
+          device_temp_file.NamedDeviceTemporaryDirectory(
+              device.adb,
+              dir=device.GetExternalStoragePath(),
+              device_utils=device))
       flags_to_add.append('--render-test-output-dir=%s' %
-                          self._render_tests_device_output_dir)
+                          self._render_tests_device_output_dir.name)
 
     if _IsWPRRecordReplayTest(test):
       wpr_archive_relative_path = _GetWPRArchivePath(test)
@@ -960,6 +998,8 @@ class LocalDeviceInstrumentationTestRun(
               logging.warning('Jacoco coverage file does not exist: %s',
                               jacoco_coverage_device_file)
 
+            # Handling Clang coverage data.
+            # TODO(b/293175593): Use device.ResolveSpecialPath for multi-user
             if device.PathExists(device_clang_profile_dir, retries=0):
               code_coverage_utils.PullAndMaybeMergeClangCoverageFiles(
                   device, device_clang_profile_dir,
@@ -979,14 +1019,23 @@ class LocalDeviceInstrumentationTestRun(
           try:
             self._ProcessRenderTestResults(device, results)
           finally:
-            device.RemovePath(self._render_tests_device_output_dir,
+            device_output_dir_path = self._render_tests_device_output_dir.name
+            if self._env.force_main_user:
+              device_output_dir_path = device.ResolveSpecialPath(
+                  device_output_dir_path)
+            device.RemovePath(device_output_dir_path,
                               recursive=True,
-                              force=True)
+                              force=True,
+                              as_root=self._env.force_main_user)
             self._render_tests_device_output_dir = None
 
       def pull_ui_screen_captures():
         screenshots = []
-        for filename in device.ListDirectory(ui_capture_dir.name):
+        source_dir = ui_capture_dir.name
+        if self._env.force_main_user:
+          source_dir = device.ResolveSpecialPath(source_dir)
+        for filename in device.ListDirectory(source_dir,
+                                             as_root=self._env.force_main_user):
           if filename.endswith('.json'):
             screenshots.append(pull_ui_screenshot(filename))
         if screenshots:
@@ -1002,13 +1051,18 @@ class LocalDeviceInstrumentationTestRun(
 
       def pull_ui_screenshot(filename):
         source_dir = ui_capture_dir.name
+        if self._env.force_main_user:
+          source_dir = device.ResolveSpecialPath(source_dir)
         json_path = posixpath.join(source_dir, filename)
-        json_data = json.loads(device.ReadFile(json_path))
+        json_data = json.loads(
+            device.ReadFile(json_path, as_root=self._env.force_main_user))
         image_file_path = posixpath.join(source_dir, json_data['location'])
         with self._env.output_manager.ArchivedTempfile(
             json_data['location'], 'ui_capture', output_manager.Datatype.PNG
             ) as image_archive:
-          device.PullFile(image_file_path, image_archive.name)
+          device.PullFile(image_file_path,
+                          image_archive.name,
+                          as_root=self._env.force_main_user)
         json_data['image_link'] = image_archive.Link()
         return json_data
 
@@ -1128,7 +1182,9 @@ class LocalDeviceInstrumentationTestRun(
           device.ClearApplicationState(self._test_instance.package_info.package,
                                        permissions=permissions)
         if self._test_instance.enable_breakpad_dump:
-          device.RemovePath(breakpad_dump_directory, recursive=True)
+          device.RemovePath(breakpad_dump_directory,
+                            recursive=True,
+                            as_root=self._env.force_main_user)
     else:
       logging.debug('raw output from %s:', test_display_name)
       for l in output:
@@ -1232,8 +1288,10 @@ class LocalDeviceInstrumentationTestRun(
         # here because we will not have applied legacy storage workarounds on R+
         # yet.
         with device_temp_file.DeviceTempFile(
-            dev.adb, suffix='.json',
-            dir=dev.GetAppWritablePath()) as dev_test_list_json:
+            dev.adb,
+            suffix='.json',
+            dir=dev.GetAppWritablePath(),
+            device_utils=dev) as dev_test_list_json:
           junit4_runner_class = self._test_instance.junit4_runner_class
           test_package = self._test_instance.test_package
           extras = {
@@ -1255,7 +1313,12 @@ class LocalDeviceInstrumentationTestRun(
               logging.error('  %s', line)
           with tempfile_ext.NamedTemporaryDirectory() as host_dir:
             host_file = os.path.join(host_dir, 'list_tests.json')
-            dev.PullFile(dev_test_list_json.name, host_file)
+            device_file_path = dev_test_list_json.name
+            if self._env.force_main_user:
+              device_file_path = dev.ResolveSpecialPath(device_file_path)
+            dev.PullFile(device_file_path,
+                         host_file,
+                         as_root=self._env.force_main_user)
             with open(host_file, 'r') as host_file:
               return json.load(host_file)
 
@@ -1308,9 +1371,13 @@ class LocalDeviceInstrumentationTestRun(
   def _SaveTraceData(self, trace_device_file, device, test_class):
     trace_host_file = self._env.trace_output
 
-    if device.FileExists(trace_device_file.name):
+    device_file_path = trace_device_file.name
+    if self._env.force_main_user:
+      device_file_path = device.ResolveSpecialPath(device_file_path)
+    if device.FileExists(device_file_path, as_root=self._env.force_main_user):
       try:
-        java_trace_json = device.ReadFile(trace_device_file.name)
+        java_trace_json = device.ReadFile(device_file_path,
+                                          as_root=self._env.force_main_user)
       except IOError as e:
         raise Exception('error pulling trace file from device') from e
       finally:
@@ -1368,13 +1435,17 @@ class LocalDeviceInstrumentationTestRun(
                       link_name):
     screenshot_filename = '%s-%s.png' % (
         test_name, time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()))
-    if device.FileExists(screenshot_device_file.name):
+    device_file_path = screenshot_device_file.name
+    if self._env.force_main_user:
+      device_file_path = device.ResolveSpecialPath(device_file_path)
+    if device.FileExists(device_file_path):
       with self._env.output_manager.ArchivedTempfile(
           screenshot_filename, 'screenshot',
           output_manager.Datatype.PNG) as screenshot_host_file:
         try:
-          device.PullFile(screenshot_device_file.name,
-                          screenshot_host_file.name)
+          device.PullFile(device_file_path,
+                          screenshot_host_file.name,
+                          as_root=self._env.force_main_user)
         finally:
           screenshot_device_file.close()
       _SetLinkOnResults(results, test_name, link_name,
@@ -1386,7 +1457,7 @@ class LocalDeviceInstrumentationTestRun(
     self._ProcessSkiaGoldRenderTestResults(device, results)
 
   def _ProcessSkiaGoldRenderTestResults(self, device, results):
-    gold_dir = posixpath.join(self._render_tests_device_output_dir,
+    gold_dir = posixpath.join(self._render_tests_device_output_dir.name,
                               _DEVICE_GOLD_DIR)
     if not device.FileExists(gold_dir):
       return

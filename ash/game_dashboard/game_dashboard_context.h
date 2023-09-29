@@ -7,12 +7,12 @@
 
 #include <memory>
 
-#include "ash/game_dashboard/game_dashboard_widget.h"
+#include "ash/ash_export.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
+#include "ui/views/view_observer.h"
 #include "ui/views/widget/unique_widget_ptr.h"
-#include "ui/views/widget/widget.h"
 
 namespace aura {
 class Window;
@@ -20,12 +20,16 @@ class Window;
 
 namespace ash {
 
+class GameDashboardButton;
+class GameDashboardButtonInputMonitor;
 class GameDashboardMainMenuView;
 class GameDashboardToolbarView;
+class GameDashboardWidget;
 
 // This class manages Game Dashboard related UI for a given `aura::Window`, and
 // its instance is managed by the `GameDashboardController`.
-class ASH_EXPORT GameDashboardContext {
+class ASH_EXPORT GameDashboardContext : public views::ViewObserver,
+                                        public views::WidgetObserver {
  public:
   // Indicator for the 4 quadrants that the toolbar is able to be placed.
   enum class ToolbarSnapLocation {
@@ -38,9 +42,11 @@ class ASH_EXPORT GameDashboardContext {
   explicit GameDashboardContext(aura::Window* game_window);
   GameDashboardContext(const GameDashboardContext&) = delete;
   GameDashboardContext& operator=(const GameDashboardContext&) = delete;
-  ~GameDashboardContext();
+  ~GameDashboardContext() override;
 
   aura::Window* game_window() { return game_window_.get(); }
+
+  GameDashboardMainMenuView* main_menu_view() { return main_menu_view_; }
 
   GameDashboardWidget* game_dashboard_button_widget() {
     return game_dashboard_button_widget_.get();
@@ -48,6 +54,10 @@ class ASH_EXPORT GameDashboardContext {
 
   ToolbarSnapLocation toolbar_snap_location() const {
     return toolbar_snap_location_;
+  }
+
+  const std::u16string& recording_duration() const {
+    return recording_duration_;
   }
 
   // Reassigns the new `toolbar_snap_location_` and performs an animation as the
@@ -65,8 +75,6 @@ class ASH_EXPORT GameDashboardContext {
 
   // Closes the main menu. Clears `main_menu_widget_` and `main_menu_view_`.
   void CloseMainMenu();
-
-  bool IsMainMenuOpen() const { return main_menu_view_; }
 
   // Toggles the creation/deletion of the toolbar within the game window.
   // Returns the toolbar visibility state.
@@ -90,6 +98,12 @@ class ASH_EXPORT GameDashboardContext {
   // if the recording session was aborted.
   void OnRecordingEnded();
 
+  // views::ViewObserver:
+  void OnViewPreferredSizeChanged(views::View* observed_view) override;
+
+  // views::WidgetObserver:
+  void OnWidgetDestroying(views::Widget* widget) override;
+
  private:
   friend class GameDashboardContextTestApi;
 
@@ -101,8 +115,7 @@ class ASH_EXPORT GameDashboardContext {
   // the `game_window_`.
   void UpdateGameDashboardButtonWidgetBounds();
 
-  // Called when the button in the `game_dashboard_button_widget_` is pressed,
-  // and toggles the main menu.
+  // Called when `GameDashboardButton` is pressed, and toggles the main menu.
   void OnGameDashboardButtonPressed();
 
   // Determines the toolbar's physical location on screen based on the
@@ -131,8 +144,18 @@ class ASH_EXPORT GameDashboardContext {
   // The indicator of the current corner that the toolbar is placed.
   ToolbarSnapLocation toolbar_snap_location_;
 
+  // The `GameDashboardButton` view in the `game_dashboard_button_widget_`.
+  // Owned by the views hierarchy.
+  raw_ptr<GameDashboardButton, ExperimentalAsh> game_dashboard_button_ =
+      nullptr;
+
+  // Monitors mouse and touch input for `game_dashboard_button_widget_`.
+  std::unique_ptr<GameDashboardButtonInputMonitor>
+      game_dashboard_button_input_monitor_;
+
   // The `GameDashboardMainMenuView` when the user presses the Game Dashboard
-  // button. Owned by the views hierarchy.
+  // button.
+  // Owned by the views hierarchy.
   raw_ptr<GameDashboardMainMenuView, DanglingUntriaged | ExperimentalAsh>
       main_menu_view_ = nullptr;
 

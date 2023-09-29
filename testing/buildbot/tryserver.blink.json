@@ -8,7 +8,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -29,6 +28,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
+        "test": "blink_web_tests",
         "test_id_prefix": "ninja://:blink_web_tests/"
       },
       {
@@ -36,7 +36,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "isolate_name": "blink_wpt_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -57,6 +56,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 7
         },
+        "test": "blink_wpt_tests",
         "test_id_prefix": "ninja://:blink_wpt_tests/"
       },
       {
@@ -66,7 +66,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -85,6 +84,7 @@
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test": "blink_web_tests",
         "test_id_prefix": "ninja://:blink_web_tests/"
       },
       {
@@ -94,7 +94,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "isolate_name": "blink_wpt_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -114,6 +113,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
+        "test": "blink_wpt_tests",
         "test_id_prefix": "ninja://:blink_wpt_tests/"
       },
       {
@@ -122,7 +122,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -142,6 +141,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 8
         },
+        "test": "blink_web_tests",
         "test_id_prefix": "ninja://:blink_web_tests/"
       },
       {
@@ -150,7 +150,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "isolate_name": "blink_wpt_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -170,6 +169,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 10
         },
+        "test": "blink_wpt_tests",
         "test_id_prefix": "ninja://:blink_wpt_tests/"
       },
       {
@@ -179,7 +179,6 @@
           "--flag-specific=skia-vulkan-swiftshader",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -198,13 +197,13 @@
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test": "blink_web_tests",
         "test_id_prefix": "ninja://:blink_web_tests/"
       },
       {
         "args": [
           "--test-type=wdspec"
         ],
-        "isolate_name": "chrome_wpt_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -216,6 +215,7 @@
           "enable": true,
           "has_native_resultdb_integration": true
         },
+        "results_handler": "layout tests",
         "swarming": {
           "dimensions": {
             "os": "Ubuntu-22.04"
@@ -223,6 +223,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
+        "test": "chrome_wpt_tests",
         "test_id_prefix": "ninja://:chrome_wpt_tests/"
       }
     ]
@@ -234,7 +235,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -258,6 +258,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 8
         },
+        "test": "blink_web_tests",
         "test_id_prefix": "ninja://:blink_web_tests/"
       },
       {
@@ -265,7 +266,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "isolate_name": "blink_wpt_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -289,6 +289,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
+        "test": "blink_wpt_tests",
         "test_id_prefix": "ninja://:blink_wpt_tests/"
       }
     ]
@@ -300,7 +301,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -322,6 +322,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
+        "test": "blink_web_tests",
         "test_id_prefix": "ninja://:blink_web_tests/"
       },
       {
@@ -329,7 +330,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "isolate_name": "blink_wpt_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -351,6 +351,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 7
         },
+        "test": "blink_wpt_tests",
         "test_id_prefix": "ninja://:blink_wpt_tests/"
       }
     ]
@@ -362,7 +363,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -384,6 +384,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
+        "test": "blink_web_tests",
         "test_id_prefix": "ninja://:blink_web_tests/"
       },
       {
@@ -391,7 +392,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "isolate_name": "blink_wpt_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -413,6 +413,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 7
         },
+        "test": "blink_wpt_tests",
         "test_id_prefix": "ninja://:blink_wpt_tests/"
       }
     ]
@@ -424,7 +425,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -446,6 +446,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
+        "test": "blink_web_tests",
         "test_id_prefix": "ninja://:blink_web_tests/"
       },
       {
@@ -453,7 +454,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "isolate_name": "blink_wpt_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -475,6 +475,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 7
         },
+        "test": "blink_wpt_tests",
         "test_id_prefix": "ninja://:blink_wpt_tests/"
       }
     ]
@@ -486,7 +487,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -508,6 +508,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
+        "test": "blink_web_tests",
         "test_id_prefix": "ninja://:blink_web_tests/"
       },
       {
@@ -515,7 +516,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "isolate_name": "blink_wpt_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -537,6 +537,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 7
         },
+        "test": "blink_wpt_tests",
         "test_id_prefix": "ninja://:blink_wpt_tests/"
       }
     ]
@@ -548,7 +549,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -569,6 +569,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
+        "test": "blink_web_tests",
         "test_id_prefix": "ninja://:blink_web_tests/"
       },
       {
@@ -576,7 +577,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "isolate_name": "blink_wpt_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -597,6 +597,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 7
         },
+        "test": "blink_wpt_tests",
         "test_id_prefix": "ninja://:blink_wpt_tests/"
       }
     ]
@@ -608,7 +609,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -629,6 +629,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
+        "test": "blink_web_tests",
         "test_id_prefix": "ninja://:blink_web_tests/"
       },
       {
@@ -636,7 +637,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "isolate_name": "blink_wpt_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -657,6 +657,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 7
         },
+        "test": "blink_wpt_tests",
         "test_id_prefix": "ninja://:blink_wpt_tests/"
       }
     ]
@@ -668,7 +669,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -689,6 +689,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 6
         },
+        "test": "blink_web_tests",
         "test_id_prefix": "ninja://:blink_web_tests/"
       },
       {
@@ -696,7 +697,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "isolate_name": "blink_wpt_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -717,6 +717,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 9
         },
+        "test": "blink_wpt_tests",
         "test_id_prefix": "ninja://:blink_wpt_tests/"
       }
     ]
@@ -730,7 +731,6 @@
           "--target",
           "Release_x64"
         ],
-        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -754,6 +754,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
+        "test": "blink_web_tests",
         "test_id_prefix": "ninja://:blink_web_tests/"
       },
       {
@@ -763,7 +764,6 @@
           "--target",
           "Release_x64"
         ],
-        "isolate_name": "blink_wpt_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -787,6 +787,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 7
         },
+        "test": "blink_wpt_tests",
         "test_id_prefix": "ninja://:blink_wpt_tests/"
       }
     ]
@@ -800,7 +801,6 @@
           "--target",
           "Release_x64"
         ],
-        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -821,6 +821,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
+        "test": "blink_web_tests",
         "test_id_prefix": "ninja://:blink_web_tests/"
       },
       {
@@ -830,7 +831,6 @@
           "--target",
           "Release_x64"
         ],
-        "isolate_name": "blink_wpt_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -851,6 +851,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 7
         },
+        "test": "blink_wpt_tests",
         "test_id_prefix": "ninja://:blink_wpt_tests/"
       }
     ]

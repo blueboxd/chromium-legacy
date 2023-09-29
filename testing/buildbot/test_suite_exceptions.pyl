@@ -1052,11 +1052,6 @@
           'shards': 40,
         },
       },
-      'Linux ASan Tests (sandboxed)': {
-        'swarming': {
-          'shards': 30, # https://crbug.com/1103330
-        },
-      },
       'Linux CFI': {
         'swarming': {
           'shards': 20,  # https://crbug.com/1361973
@@ -1879,11 +1874,6 @@
           'shards': 24,
         },
       },
-      'Linux ASan Tests (sandboxed)': {
-        'swarming': {
-          'shards': 10, # https://crbug.com/1103330
-        },
-      },
       'Linux Chromium OS ASan LSan Tests (1)': {
         'swarming': {
           'shards': 10, # https://crbug.com/1471857
@@ -2227,7 +2217,8 @@
           '--test-launcher-jobs=3',
         ],
         'swarming': {
-          'shards': 16,
+          # ASAN bot is slow: https://crbug.com/1484550#c3
+          'shards': 32,
         },
       },
       'win-rel-cft': {
@@ -2659,9 +2650,9 @@
       },
     },
   },
-  'expected_color_pixel_validating_test KEVIN_PUBLIC_LKGM': {
+  'expected_color_pixel_validating_test JACUZZI_RELEASE_LKGM': {
     'modifications': {
-      'ChromeOS FYI Release Skylab (kevin)': {
+      'ChromeOS FYI Release Skylab (jacuzzi)': {
         'args': [
           # Skylab currently doesn't support use of LUCI_CONTEXT, so Gold cannot
           # automatically get the service account to authenticate with.
@@ -3307,7 +3298,11 @@
       'win10-code-coverage': {
         'swarming': {
           'shards': 32,
-        },
+          'dimensions': {
+            'pool': 'chromium.tests.coverage',
+            'ssd': '1',
+          },
+        }
       },
     },
   },
@@ -3377,6 +3372,13 @@
         },
       },
     },
+  },
+  'lacros_all_tast_tests amd64-generic': {
+    'modifications': {
+      'lacros-amd64-generic-rel': {
+        'ci_only': True,
+      }
+    }
   },
   'lacros_chrome_browsertests_run_in_series': {
     'modifications': {
@@ -3936,9 +3938,9 @@
       },
     },
   },
-  'pixel_skia_gold_validating_test KEVIN_PUBLIC_LKGM': {
+  'pixel_skia_gold_validating_test JACUZZI_RELEASE_LKGM': {
     'modifications': {
-      'ChromeOS FYI Release Skylab (kevin)': {
+      'ChromeOS FYI Release Skylab (jacuzzi)': {
         'args': [
           # Skylab currently doesn't support use of LUCI_CONTEXT, so Gold cannot
           # automatically get the service account to authenticate with.
@@ -4563,6 +4565,12 @@
         'args': [
           '--top-chrome-touch-ui=disabled',
         ],
+      },
+      'win-asan': {
+        'swarming': {
+          # ASAN bot is slow: https://crbug.com/1484550#c4
+          'shards': 4,
+        },
       },
       'win10-code-coverage': {
         'swarming': {

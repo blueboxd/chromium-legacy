@@ -33,7 +33,7 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
-#include "third_party/blink/renderer/core/layout/ng/svg/layout_ng_svg_text.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_text.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
@@ -57,7 +57,7 @@ void LayoutSVGInlineText::TextDidChange() {
   NOT_DESTROYED();
   SetTextInternal(NormalizeWhitespace(GetText()));
   LayoutText::TextDidChange();
-  LayoutNGSVGText::NotifySubtreeStructureChanged(
+  LayoutSVGText::NotifySubtreeStructureChanged(
       this, layout_invalidation_reason::kTextChanged);
 
   if (StyleRef().UsedUserModify() != EUserModify::kReadOnly)
@@ -81,7 +81,7 @@ void LayoutSVGInlineText::StyleDidChange(StyleDifference diff,
     return;
 
   // The text metrics may be influenced by style changes.
-  if (auto* ng_text = LayoutNGSVGText::LocateLayoutSVGTextAncestor(this)) {
+  if (auto* ng_text = LayoutSVGText::LocateLayoutSVGTextAncestor(this)) {
     ng_text->SetNeedsTextMetricsUpdate();
     ng_text->SetNeedsLayoutAndFullPaintInvalidation(
         layout_invalidation_reason::kStyleChange);
@@ -95,7 +95,7 @@ bool LayoutSVGInlineText::IsFontFallbackValid() const {
 void LayoutSVGInlineText::InvalidateSubtreeLayoutForFontUpdates() {
   NOT_DESTROYED();
   if (!IsFontFallbackValid()) {
-    LayoutNGSVGText::NotifySubtreeStructureChanged(
+    LayoutSVGText::NotifySubtreeStructureChanged(
         this, layout_invalidation_reason::kFontsChanged);
   }
   LayoutText::InvalidateSubtreeLayoutForFontUpdates();

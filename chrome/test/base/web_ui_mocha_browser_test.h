@@ -45,11 +45,14 @@ class WebUIMochaBrowserTest : public InProcessBrowserTest {
   // involve the WebContents, before the Mocha test runs.
   virtual void OnWebContentsAvailable(content::WebContents* web_contents);
 
+  // Hook for subclasses that want to run the Mocha test on a different set of
+  // WebContents than the WebContents of the test tab.
+  virtual void SubstituteWebContents(content::WebContents** out_new_contents);
+
   // InProcessBrowserTest overrides.
   void SetUpOnMainThread() override;
 
   void set_test_loader_host(const std::string& host);
-  void set_requires_web_contents_focus_(const bool& value);
 
  private:
   // The host to use when invoking the test loader URL, like

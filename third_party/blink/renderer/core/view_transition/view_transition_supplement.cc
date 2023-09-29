@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/view_transition/dom_view_transition.h"
 #include "third_party/blink/renderer/core/view_transition/view_transition.h"
 #include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -25,7 +26,7 @@ bool HasActiveTransitionInAncestorFrame(LocalFrame* frame) {
 
   while (parent && parent->IsLocalFrame()) {
     if (To<LocalFrame>(parent)->GetDocument() &&
-        ViewTransitionUtils::GetActiveTransition(
+        ViewTransitionUtils::GetTransition(
             *To<LocalFrame>(parent)->GetDocument())) {
       return true;
     }
@@ -48,14 +49,13 @@ void SkipTransitionInAllLocalFrames(LocalFrame* curr_frame) {
       return;
 
     auto* document = child.GetFrame().GetDocument();
-    auto* transition = document
-                           ? ViewTransitionUtils::GetActiveTransition(*document)
-                           : nullptr;
+    auto* transition =
+        document ? ViewTransitionUtils::GetTransition(*document) : nullptr;
     if (!transition)
       return;
 
-    transition->skipTransition();
-    DCHECK(!ViewTransitionUtils::GetActiveTransition(*document));
+    transition->SkipTransition();
+    DCHECK(!ViewTransitionUtils::GetTransition(*document));
   });
 }
 
@@ -82,7 +82,7 @@ ViewTransitionSupplement* ViewTransitionSupplement::From(Document& document) {
 }
 
 // static
-ViewTransition* ViewTransitionSupplement::startViewTransition(
+DOMViewTransition* ViewTransitionSupplement::startViewTransition(
     ScriptState* script_state,
     Document& document,
     V8ViewTransitionCallback* callback,
@@ -95,15 +95,14 @@ ViewTransition* ViewTransitionSupplement::startViewTransition(
     // Set the parent task ID if we're not in an extension task (as extensions
     // are not currently supported in TaskAttributionTracker).
     if (tracker && script_state->World().IsMainWorld()) {
-      auto id = tracker->RunningTaskAttributionId(script_state);
-      callback->SetParentTaskId(id);
+      callback->SetParentTask(tracker->RunningTask(script_state));
     }
   }
   return supplement->StartTransition(script_state, document, callback,
                                      exception_state);
 }
 
-ViewTransition* ViewTransitionSupplement::StartTransition(
+DOMViewTransition* ViewTransitionSupplement::StartTransition(
     ScriptState* script_state,
     Document& document,
     V8ViewTransitionCallback* callback,
@@ -114,9 +113,10 @@ ViewTransition* ViewTransitionSupplement::StartTransition(
     return nullptr;
 
   if (transition_)
-    transition_->skipTransition();
+    transition_->SkipTransition();
+
   DCHECK(!transition_)
-      << "skipTransition() should finish existing |transition_|";
+      << "SkipTransition() should finish existing |transition_|";
 
   // We need to be connected to a view to have a transition. We also need a
   // document element, since that's the originating element for the pseudo tree.
@@ -131,10 +131,10 @@ ViewTransition* ViewTransitionSupplement::StartTransition(
   // transition in a child frame.
   if (HasActiveTransitionInAncestorFrame(document.GetFrame())) {
     auto skipped_transition = transition_;
-    skipped_transition->skipTransition();
+    skipped_transition->SkipTransition();
 
     DCHECK(!transition_);
-    return skipped_transition;
+    return skipped_transition->GetScriptDelegate();
   }
 
   // Skip transitions in all frames associated with this widget. We can only
@@ -142,7 +142,7 @@ ViewTransition* ViewTransitionSupplement::StartTransition(
   SkipTransitionInAllLocalFrames(document.GetFrame());
   DCHECK(transition_);
 
-  return transition_;
+  return transition_->GetScriptDelegate();
 }
 
 void ViewTransitionSupplement::SetCrossDocumentOptIn(
@@ -163,9 +163,9 @@ void ViewTransitionSupplement::SetCrossDocumentOptIn(
   if (cross_document_opt_in_ ==
           mojom::blink::ViewTransitionSameOriginOptIn::kDisabled &&
       transition_ && !transition_->IsCreatedViaScriptAPI()) {
-    transition_->skipTransition();
+    transition_->SkipTransition();
     DCHECK(!transition_)
-        << "skipTransition() should finish existing |transition_|";
+        << "SkipTransition() should finish existing |transition_|";
   }
 }
 
@@ -184,10 +184,10 @@ void ViewTransitionSupplement::StartTransition(
   if (transition_) {
     // We should skip a transition if one exists, regardless of how it was
     // created, since navigation transition takes precedence.
-    transition_->skipTransition();
+    transition_->SkipTransition();
   }
   DCHECK(!transition_)
-      << "skipTransition() should finish existing |transition_|";
+      << "SkipTransition() should finish existing |transition_|";
   transition_ = ViewTransition::CreateForSnapshotForNavigation(
       &document, std::move(callback), this);
 }
@@ -205,7 +205,7 @@ void ViewTransitionSupplement::CreateFromSnapshotForNavigation(
 void ViewTransitionSupplement::AbortTransition(Document& document) {
   auto* supplement = FromIfExists(document);
   if (supplement && supplement->transition_) {
-    supplement->transition_->skipTransition();
+    supplement->transition_->SkipTransition();
     DCHECK(!supplement->transition_);
   }
 }
@@ -216,17 +216,6 @@ void ViewTransitionSupplement::StartTransition(
   DCHECK(!transition_) << "Existing transition on new Document";
   transition_ = ViewTransition::CreateFromSnapshotForNavigation(
       &document, std::move(transition_state), this);
-
-  // We may already be past the render blocking if this page is coming back from
-  // a BFCache or has been pre-rendered. In that case, let the transition know
-  // to advance the state. Note that this has to be done outside of
-  // `CreateFromSnapshotForNavigation`, because future phases will cause parts
-  // of the code (layout & paint specifically) to try and access the transition
-  // object, which wouldn't have been set yet if the following code is done in
-  // the constructor.
-  if (document.RenderingHasBegun()) {
-    transition_->NotifyRenderingHasBegun();
-  }
 }
 
 void ViewTransitionSupplement::OnTransitionFinished(
@@ -236,7 +225,7 @@ void ViewTransitionSupplement::OnTransitionFinished(
     transition_ = nullptr;
 }
 
-ViewTransition* ViewTransitionSupplement::GetActiveTransition() {
+ViewTransition* ViewTransitionSupplement::GetTransition() {
   return transition_;
 }
 
@@ -318,9 +307,9 @@ void ViewTransitionSupplement::WillInsertBody() {
   }
 
   // Since we don't have an opt-in, skip a navigation transition if it exists.
-  transition_->skipTransition();
+  transition_->SkipTransition();
   DCHECK(!transition_)
-      << "skipTransition() should finish existing |transition_|";
+      << "SkipTransition() should finish existing |transition_|";
 }
 
 }  // namespace blink

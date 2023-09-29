@@ -59,7 +59,12 @@ template <
                                         std::is_same<DataType, Iban>>,
                      bool> = true>
 bool DataModelEntryMatchesKey(const DataType& model, const std::string& key) {
-  return model.guid() == key || model.server_id() == key;
+  if constexpr (std::is_same_v<DataType, Iban>) {
+    // `Iban` does not have `server_id`.
+    return model.guid() == key || model.instrument_id() == key;
+  } else {
+    return model.guid() == key || model.server_id() == key;
+  }
 }
 
 template <typename DataType,

@@ -5,12 +5,14 @@
 #include "chromeos/ash/components/device_activity/churn_observation_use_case_impl.h"
 
 #include "ash/constants/ash_features.h"
+#include "base/i18n/time_formatting.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chromeos/ash/components/device_activity/fresnel_pref_names.h"
 #include "chromeos/ash/components/device_activity/fresnel_service.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/channel.h"
+#include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "third_party/private_membership/src/private_membership_rlwe_client.h"
 
 namespace {
@@ -39,55 +41,31 @@ base::Time GetNextMonth(base::Time ts) {
   ts.UTCExplode(&exploded);
 
   // Set new time to the first midnight of the next month.
+  // "+ 11) % 12) + 1" wraps the month around if it goes outside 1..12.
+  exploded.month = (((exploded.month + 1) + 11) % 12) + 1;
+  exploded.year += (exploded.month == 1);
   exploded.day_of_month = 1;
-  exploded.month += 1;
-  exploded.hour = 0;
-  exploded.minute = 0;
-  exploded.second = 0;
-  exploded.millisecond = 0;
-
-  // Handle case when month is December.
-  if (exploded.month > 12) {
-    exploded.year += 1;
-    exploded.month = 1;
-  }
+  exploded.hour = exploded.minute = exploded.second = exploded.millisecond = 0;
 
   base::Time new_month_ts;
-  bool success = base::Time::FromUTCExploded(exploded, &new_month_ts);
-
-  if (!success) {
-    return base::Time();
-  }
-
-  return new_month_ts;
+  return base::Time::FromUTCExploded(exploded, &new_month_ts) ? new_month_ts
+                                                              : base::Time();
 }
 
 base::Time GetPreviousMonth(base::Time ts) {
   base::Time::Exploded exploded;
   ts.UTCExplode(&exploded);
 
-  // Set new time to the first midnight of the next month.
+  // Set new time to the first midnight of the previous month.
+  // "+ 11) % 12) + 1" wraps the month around if it goes outside 1..12.
+  exploded.month = (((exploded.month - 1) + 11) % 12) + 1;
+  exploded.year -= (exploded.month == 12);
   exploded.day_of_month = 1;
-  exploded.month -= 1;
-  exploded.hour = 0;
-  exploded.minute = 0;
-  exploded.second = 0;
-  exploded.millisecond = 0;
-
-  // Handle case when month is January.
-  if (exploded.month < 1) {
-    exploded.year -= 1;
-    exploded.month = 12;
-  }
+  exploded.hour = exploded.minute = exploded.second = exploded.millisecond = 0;
 
   base::Time new_month_ts;
-  bool success = base::Time::FromUTCExploded(exploded, &new_month_ts);
-
-  if (!success) {
-    return base::Time();
-  }
-
-  return new_month_ts;
+  return base::Time::FromUTCExploded(exploded, &new_month_ts) ? new_month_ts
+                                                              : base::Time();
 }
 
 }  // namespace
@@ -180,10 +158,8 @@ ChurnObservationUseCaseImpl::~ChurnObservationUseCaseImpl() = default;
 // then the Churn observation window identifier is `202212`
 std::string ChurnObservationUseCaseImpl::GenerateWindowIdentifier(
     base::Time ts) const {
-  base::Time::Exploded exploded;
-  ts.UTCExplode(&exploded);
-
-  return base::StringPrintf("%04d%02d", exploded.year, exploded.month);
+  return base::UnlocalizedTimeFormatWithPattern(ts, "yyyyMM",
+                                                icu::TimeZone::getGMT());
 }
 
 absl::optional<FresnelImportDataRequest>
@@ -472,17 +448,11 @@ bool ChurnObservationUseCaseImpl::CohortCheckInSuccessfullyUpdatedActiveStatus()
   // Check that the active status object was updated at some point in this
   // month.
   base::Time::Exploded active_status_exploded;
-  base::Time::Exploded cur_ts_exploded;
-
   active_status_ts.UTCExplode(&active_status_exploded);
+  base::Time::Exploded cur_ts_exploded;
   cur_ping_ts.UTCExplode(&cur_ts_exploded);
-
-  if ((active_status_exploded.month == cur_ts_exploded.month) &&
-      (active_status_exploded.year == cur_ts_exploded.year)) {
-    return true;
-  }
-
-  return false;
+  return (active_status_exploded.month == cur_ts_exploded.month) &&
+         (active_status_exploded.year == cur_ts_exploded.year);
 }
 
 void ChurnObservationUseCaseImpl::SetObservationPeriodWindows(base::Time ts) {

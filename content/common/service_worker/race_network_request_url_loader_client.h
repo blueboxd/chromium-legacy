@@ -30,6 +30,9 @@ class CONTENT_EXPORT ServiceWorkerRaceNetworkRequestURLLoaderClient
     : public network::mojom::URLLoaderClient,
       public mojo::DataPipeDrainer::Client {
  public:
+  // The static function to override the data pipe buffer size from tests.
+  static void SetDataPipeCapacityBytesForTest(uint32_t size);
+
   using FetchResponseFrom = ServiceWorkerResourceLoader::FetchResponseFrom;
   enum class State {
     // The initial state.
@@ -99,13 +102,10 @@ class CONTENT_EXPORT ServiceWorkerRaceNetworkRequestURLLoaderClient
     kMaxValue = MOJO_RESULT_SHOULD_WAIT,
   };
 
-  // |data_pipe_capacity_num_bytes| indicates the byte size of the data pipe
-  // which is newly created in the constructor.
   ServiceWorkerRaceNetworkRequestURLLoaderClient(
       const network::ResourceRequest& request,
       base::WeakPtr<ServiceWorkerResourceLoader> owner,
-      mojo::PendingRemote<network::mojom::URLLoaderClient> forwarding_client,
-      uint32_t data_pipe_capacity_num_bytes);
+      mojo::PendingRemote<network::mojom::URLLoaderClient> forwarding_client);
   ServiceWorkerRaceNetworkRequestURLLoaderClient(
       const ServiceWorkerRaceNetworkRequestURLLoaderClient&) = delete;
   ServiceWorkerRaceNetworkRequestURLLoaderClient& operator=(
@@ -147,6 +147,9 @@ class CONTENT_EXPORT ServiceWorkerRaceNetworkRequestURLLoaderClient
       bool is_fallback);
 
  private:
+  static uint32_t data_pipe_size_for_test_;
+  uint32_t GetDataPipeCapacityBytes();
+
   struct DataPipeInfo {
     mojo::ScopedDataPipeProducerHandle producer;
     mojo::ScopedDataPipeConsumerHandle consumer;
@@ -193,6 +196,14 @@ class CONTENT_EXPORT ServiceWorkerRaceNetworkRequestURLLoaderClient
   // the fetch handler
   void ReadAndWrite(MojoResult);
   void WatchDataUpdate();
+  MojoResult BeginWriteData(DataPipeInfo& data_pipe_info,
+                            void** buffer,
+                            const std::string& histogram_prefix);
+  void CompleteWriteData(DataPipeInfo& data_pipe_info,
+                         void* write_buffer,
+                         const void* read_buffer,
+                         uint32_t num_bytes_to_consume);
+  void CompleteReadData(uint32_t num_bytes_to_consume);
 
   void Abort();
 
@@ -224,6 +235,9 @@ class CONTENT_EXPORT ServiceWorkerRaceNetworkRequestURLLoaderClient
   absl::optional<base::TimeTicks> response_received_time_;
   absl::optional<base::TimeTicks> fetch_handler_end_time_;
   absl::optional<bool> is_fetch_handler_fallback_;
+
+  base::TimeTicks request_start_;
+  base::Time request_start_time_;
 
   base::WeakPtrFactory<ServiceWorkerRaceNetworkRequestURLLoaderClient>
       weak_factory_{this};

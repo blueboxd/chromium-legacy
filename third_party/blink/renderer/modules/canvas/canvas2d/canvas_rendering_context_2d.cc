@@ -85,11 +85,6 @@
 
 namespace blink {
 
-// Try to restore context 4 times in the event that the context is lost. If the
-// context is unable to be restored after 4 attempts, we discard the backing
-// storage of the context and allocate a new one.
-static const unsigned kMaxTryRestoreContextAttempts = 4;
-
 static mojom::blink::ColorScheme GetColorSchemeFromCanvas(
     HTMLCanvasElement* canvas) {
   if (canvas && canvas->isConnected()) {
@@ -138,13 +133,6 @@ NoAllocDirectCallHost* CanvasRenderingContext2D::AsNoAllocDirectCallHost() {
 
 CanvasRenderingContext2D::~CanvasRenderingContext2D() = default;
 
-bool CanvasRenderingContext2D::IsAccelerated() const {
-  Canvas2DLayerBridge* layer_bridge = canvas()->GetCanvas2DLayerBridge();
-  if (!layer_bridge)
-    return false;
-  return layer_bridge->IsAccelerated();
-}
-
 bool CanvasRenderingContext2D::IsOriginTopLeft() const {
   // Use top-left origin since Skia Graphite won't support bottom-left origin.
   return true;
@@ -157,10 +145,7 @@ bool CanvasRenderingContext2D::IsComposited() const {
   if (settings && !settings->GetAcceleratedCompositingEnabled()) {
     return false;
   }
-  if (Canvas2DLayerBridge* layer_bridge = canvas()->GetCanvas2DLayerBridge()) {
-    return layer_bridge->IsComposited();
-  }
-  return false;
+  return canvas()->IsComposited();
 }
 
 void CanvasRenderingContext2D::Stop() {
@@ -231,27 +216,31 @@ void CanvasRenderingContext2D::TryRestoreContextEvent(TimerBase* timer) {
   // If lost mode is |kSyntheticLostContext| and |context_restorable_| is set to
   // true, it means context is forced to be lost for testing purpose. Restore
   // the context.
-  if (context_lost_mode_ == kSyntheticLostContext && IsPaintable()) {
+  if (context_lost_mode_ == kSyntheticLostContext &&
+      canvas()->GetOrCreateCanvas2DLayerBridge() &&
+      canvas()->GetCanvas2DLayerBridge()->GetPaintCanvas()) {
     try_restore_context_event_timer_.Stop();
-    Host()->GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferGPU);
     DispatchContextRestoredEvent(nullptr);
+    return;
+  }
 
-    // If RealLostContext, it means the context was not lost due to surface
-    // failure but rather due to a an eviction, which means image buffer exists.
-  } else if (context_lost_mode_ == kRealLostContext && IsPaintable() &&
-             canvas()->GetCanvas2DLayerBridge()->Restore()) {
+  // If RealLostContext, it means the context was not lost due to surface
+  // failure but rather due to a an eviction, which means image buffer exists.
+  if (context_lost_mode_ == kRealLostContext && IsPaintable() &&
+      canvas()->GetCanvas2DLayerBridge()->Restore()) {
     try_restore_context_event_timer_.Stop();
     DispatchContextRestoredEvent(nullptr);
+    return;
   }
 
   // If it fails to restore the context, TryRestoreContextEvent again.
-  if (++try_restore_context_attempt_count_ < kMaxTryRestoreContextAttempts) {
-    TryRestoreContextEvent(nullptr);
-  } else {
+  if (++try_restore_context_attempt_count_ > kMaxTryRestoreContextAttempts) {
     // After 4 tries, we start the final attempt, allocate a brand new image
     // buffer instead of restoring
-    Host()->DiscardResourceProvider();
     try_restore_context_event_timer_.Stop();
+    if (Host()) {
+      Host()->DiscardResourceProvider();
+    }
     if (CanCreateCanvas2dResourceProvider())
       DispatchContextRestoredEvent(nullptr);
   }
@@ -405,8 +394,7 @@ void CanvasRenderingContext2D::WillDraw(
   }
 }
 
-void CanvasRenderingContext2D::FlushCanvas(
-    CanvasResourceProvider::FlushReason reason) {
+void CanvasRenderingContext2D::FlushCanvas(FlushReason reason) {
   if (Host() && Host()->ResourceProvider()) {
     Host()->ResourceProvider()->FlushCanvas(reason);
   }
@@ -537,9 +525,6 @@ void CanvasRenderingContext2D::PruneLocalFontCache(size_t target_size) {
 
 void CanvasRenderingContext2D::StyleDidChange(const ComputedStyle* old_style,
                                               const ComputedStyle& new_style) {
-  // Only the visibility flag is considered here. display:none is
-  // handled via creation and destruction of the LayoutObject.
-  SetIsBeingDisplayed(new_style.Visibility() == EVisibility::kVisible);
   if (old_style && old_style->GetFont() == new_style.GetFont())
     return;
   PruneLocalFontCache(0);
@@ -583,7 +568,7 @@ bool CanvasRenderingContext2D::CanCreateCanvas2dResourceProvider() const {
 }
 
 scoped_refptr<StaticBitmapImage> blink::CanvasRenderingContext2D::GetImage(
-    CanvasResourceProvider::FlushReason reason) {
+    FlushReason reason) {
   if (!IsPaintable())
     return nullptr;
   return canvas()->GetCanvas2DLayerBridge()->NewImageSnapshot(reason);
@@ -604,15 +589,14 @@ ImageData* CanvasRenderingContext2D::getImageDataInternal(
       sx, sy, sw, sh, image_data_settings, exception_state);
 }
 
-void CanvasRenderingContext2D::FinalizeFrame(
-    CanvasResourceProvider::FlushReason reason) {
+void CanvasRenderingContext2D::FinalizeFrame(FlushReason reason) {
   TRACE_EVENT0("blink", "CanvasRenderingContext2D::FinalizeFrame");
   if (IsPaintable())
     canvas()->GetCanvas2DLayerBridge()->FinalizeFrame(reason);
 }
 
 CanvasRenderingContextHost*
-CanvasRenderingContext2D::GetCanvasRenderingContextHost() {
+CanvasRenderingContext2D::GetCanvasRenderingContextHost() const {
   return Host();
 }
 
@@ -659,20 +643,20 @@ void CanvasRenderingContext2D::drawFormattedText(
   }
 }
 
-void CanvasRenderingContext2D::SetIsInHiddenPage(bool hidden) {
-  if (IsPaintable())
-    canvas()->GetCanvas2DLayerBridge()->SetIsInHiddenPage(hidden);
-  if (hidden)
+void CanvasRenderingContext2D::PageVisibilityChanged() {
+  if (IsPaintable()) {
+    canvas()->GetCanvas2DLayerBridge()->PageVisibilityChanged();
+  }
+  if (!Host()->IsPageVisible()) {
     PruneLocalFontCache(0);
-}
-
-void CanvasRenderingContext2D::SetIsBeingDisplayed(bool displayed) {
-  if (IsPaintable())
-    canvas()->GetCanvas2DLayerBridge()->SetIsBeingDisplayed(displayed);
+  }
 }
 
 cc::Layer* CanvasRenderingContext2D::CcLayer() const {
-  return IsPaintable() ? canvas()->GetCanvas2DLayerBridge()->Layer() : nullptr;
+  if (!IsPaintable()) {
+    return nullptr;
+  }
+  return canvas()->GetOrCreateCcLayerIfNeeded();
 }
 
 CanvasRenderingContext2DSettings*
@@ -815,7 +799,7 @@ bool CanvasRenderingContext2D::ShouldDisableAccelerationBecauseOfReadback()
 
 bool CanvasRenderingContext2D::IsCanvas2DBufferValid() const {
   if (IsPaintable()) {
-    return canvas()->GetCanvas2DLayerBridge()->IsValid();
+    return canvas()->IsResourceValid();
   }
   return false;
 }

@@ -208,7 +208,7 @@ class PersonalDataManager : public KeyedService,
   // The function will sets the GUID of `imported_iban` to the one that matches
   // it in `local_ibans_` so that UpdateIban() will be able to update the
   // specific IBAN.
-  std::string OnAcceptedLocalIbanSave(Iban& imported_iban);
+  std::string OnAcceptedLocalIbanSave(Iban imported_iban);
 
   // Adds |profile| to the web database.
   virtual void AddProfile(const AutofillProfile& profile);
@@ -221,6 +221,7 @@ class PersonalDataManager : public KeyedService,
 
   // Returns the profile with the specified |guid|, or nullptr if there is no
   // profile with the specified |guid|.
+  // TODO(crbug.com/1487119): Change return type to const AutofillProfile*
   virtual AutofillProfile* GetProfileByGUID(const std::string& guid) const;
 
   // Determines whether the logged in user (if any) is eligible to store
@@ -247,7 +248,7 @@ class PersonalDataManager : public KeyedService,
   // 1) IBAN saving must be enabled.
   // 2) No IBAN exists in `local_ibans_` which has the same guid as`iban`.
   // 3) Local database is available.
-  virtual std::string AddIban(const Iban& iban);
+  virtual std::string AddIban(Iban iban);
 
   // Updates `iban` which already exists in the web database. This can only
   // be used on local ibans. Returns the guid of `iban` if the update is
@@ -269,6 +270,10 @@ class PersonalDataManager : public KeyedService,
   // can only be used on local credit cards.
   virtual void UpdateCreditCard(const CreditCard& credit_card);
 
+  // Updates a local CVC in the web database.
+  virtual void UpdateLocalCvc(const std::string& guid,
+                              const std::u16string& cvc);
+
   // Adds |credit_card| to the web database as a full server card.
   virtual void AddFullServerCreditCard(const CreditCard& credit_card);
 
@@ -283,7 +288,8 @@ class PersonalDataManager : public KeyedService,
 
   // Methods to add, update, remove, or clear server CVC in the web database.
   virtual void AddServerCvc(int64_t instrument_id, const std::u16string& cvc);
-  void UpdateServerCvc(int64_t instrument_id, const std::u16string& cvc);
+  virtual void UpdateServerCvc(int64_t instrument_id,
+                               const std::u16string& cvc);
   void RemoveServerCvc(int64_t instrument_id);
   void ClearServerCvcs();
 
@@ -350,8 +356,12 @@ class PersonalDataManager : public KeyedService,
   // using `GetProfilesFromSource()`, profiles from a single source are be
   // retrieved.
   // The profiles are returned in the specified `order`.
+  // TODO(crbug.com/1487119): Change return type to
+  // std::vector<const AutofillProfile*>
   virtual std::vector<AutofillProfile*> GetProfiles(
       ProfileOrder order = ProfileOrder::kNone) const;
+  // TODO(crbug.com/1487119): Change return type to
+  // std::vector<const AutofillProfile*>
   virtual std::vector<AutofillProfile*> GetProfilesFromSource(
       AutofillProfile::Source profile_source,
       ProfileOrder order = ProfileOrder::kNone) const;
@@ -403,24 +413,15 @@ class PersonalDataManager : public KeyedService,
 
   // Returns the profiles to suggest to the user for filling, ordered by
   // frecency.
+  // TODO(crbug.com/1487119): Change return type to
+  // std::vector<const AutofillProfile*>
   std::vector<AutofillProfile*> GetProfilesToSuggest() const;
 
   // Returns all `GetProfiles()` in the order that the should be shown in the
   // settings.
+  // TODO(crbug.com/1487119): Change return type to
+  // std::vector<const AutofillProfile*>
   std::vector<AutofillProfile*> GetProfilesForSettings() const;
-
-  // Returns Suggestions corresponding to the focused field's |type| and
-  // |field_contents|, i.e. what the user has typed. |field_is_autofilled| is
-  // true if the field has already been autofilled, and |field_types| stores the
-  // types of all the form's input fields, including the field with which the
-  // user is interacting.
-  // TODO(crbug.com/1210112): Move profile suggestion creation to
-  // suggestion_generator.
-  std::vector<Suggestion> GetProfileSuggestions(
-      const AutofillType& type,
-      const std::u16string& field_contents,
-      bool field_is_autofilled,
-      const ServerFieldTypeSet& field_types);
 
   // Returns the credit cards to suggest to the user. Those have been deduped
   // and ordered by frecency with the expired cards put at the end of the
@@ -553,9 +554,6 @@ class PersonalDataManager : public KeyedService,
   // Sets the value of the kAutofillHasSeenIban pref to true.
   void SetAutofillHasSeenIban();
 
-  // Returns the value of the AutofillIbanEnabled pref.
-  virtual bool IsAutofillIbanEnabled() const;
-
   // Returns whether sync's integration with payments is on.
   virtual bool IsAutofillWalletImportEnabled() const;
 
@@ -622,6 +620,9 @@ class PersonalDataManager : public KeyedService,
   // SyncService::IsSyncFeatureEnabled() are deleted from the codebase.
   bool IsSyncFeatureEnabledForAutofill() const;
 
+  // Returns true if the user's selectable `type` is enabled.
+  bool IsUserSelectableTypeEnabled(syncer::UserSelectableType type) const;
+
   // The functions below are related to the payments mandatory re-auth feature.
   // All of this functionality is done through per-profile per-device prefs.
   // `SetPaymentMethodsMandatoryReauthEnabled()` is used to update the opt-in
@@ -687,11 +688,11 @@ class PersonalDataManager : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            DeleteDisusedCreditCards_DoNothingWhenDisabled);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           GetProfileSuggestions_ProfileAutofillDisabled);
+                           GetProfilesToSuggest_ProfileAutofillDisabled);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           GetProfileSuggestions_NoProfilesLoadedIfDisabled);
+                           GetProfilesToSuggest_NoProfilesLoadedIfDisabled);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           GetProfileSuggestions_NoProfilesAddedIfDisabled);
+                           GetProfilesToSuggest_NoProfilesAddedIfDisabled);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            GetCreditCardsToSuggest_CreditCardAutofillDisabled);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
@@ -886,10 +887,6 @@ class PersonalDataManager : public KeyedService,
   // the new or updated card, or the empty string if no card was saved.
   virtual std::string SaveImportedCreditCard(
       const CreditCard& imported_credit_card);
-
-  // Saves `imported_iban` to the WebDB if it exists. Returns the guid of
-  // the new or updated IBAN, or an empty string if no IBAN was saved.
-  std::string SaveImportedIban(Iban& imported_iban);
 
   // Finds the country code that occurs most frequently among all profiles.
   // Prefers verified profiles over unverified ones.

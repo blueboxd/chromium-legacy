@@ -383,121 +383,77 @@ bool SetInstallerOutcomeForTesting(UpdaterScope updater_scope,
   return true;
 }
 
-std::string GetTextForSystemError(int error) {
-  wchar_t* system_allocated_buffer = nullptr;
-  constexpr DWORD kFormatOptions =
-      FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
-      FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK;
-  const DWORD chars_written = ::FormatMessage(
-      kFormatOptions, nullptr, error, 0,
-      reinterpret_cast<wchar_t*>(&system_allocated_buffer), 0, nullptr);
-  auto free_buffer = base::ScopedClosureRunner(
-      base::BindOnce(base::IgnoreResult(&LocalFree), system_allocated_buffer));
-  return chars_written > 0 ? base::WideToUTF8(system_allocated_buffer)
-                           : std::string();
-}
-
 // As much as possible, the implementation of this function is intended to be
 // backward compatible with the implementation of the Installer API in
 // Omaha/Google Update. Some edge cases could be missing.
-// TODO(crbug.com/1172866): remove the hardcoded assumption that error must
-// be zero to indicate success.
-std::pair<Installer::Result, absl::optional<int>>
-MakeInstallerResultAndOriginalError(
-    absl::optional<InstallerOutcome> installer_outcome,
-    int exit_code) {
-  if (installer_outcome && installer_outcome->installer_result) {
-    Installer::Result result;
-    switch (*installer_outcome->installer_result) {
-      case InstallerResult::kSuccess:
-        // This is unconditional success:
-        // - use the command line if available, and ignore everything else.
-        result.error = 0;
-        if (installer_outcome->installer_cmd_line) {
-          result.installer_cmd_line = *installer_outcome->installer_cmd_line;
-        }
-        CHECK_EQ(result.error, 0);
-        break;
-
-      case InstallerResult::kCustomError:
-        // This is an unconditional error:
-        // - use the installer error, or the exit code, or report a generic
-        //   error.
-        // - use the installer extra code if available.
-        // - use the text description of the error if available.
-        result.error = installer_outcome->installer_error
-                           ? *installer_outcome->installer_error
-                           : exit_code;
-        if (!result.error) {
-          result.error = kErrorApplicationInstallerFailed;
-        }
-        if (installer_outcome->installer_extracode1) {
-          result.extended_error = *installer_outcome->installer_extracode1;
-        }
-        if (installer_outcome->installer_text) {
-          result.installer_text = *installer_outcome->installer_text;
-        }
-        CHECK_NE(result.error, 0);
-        break;
-
-      case InstallerResult::kMsiError:
-      case InstallerResult::kSystemError:
-        // This is an unconditional error:
-        // - same as the case above but use a system-provided text.
-        result.error = installer_outcome->installer_error
-                           ? *installer_outcome->installer_error
-                           : exit_code;
-        if (!result.error) {
-          result.error = kErrorApplicationInstallerFailed;
-        }
-        if (installer_outcome->installer_extracode1) {
-          result.extended_error = *installer_outcome->installer_extracode1;
-        }
-        result.installer_text = GetTextForSystemError(result.error);
-        CHECK_NE(result.error, 0);
-        break;
-
-      case InstallerResult::kExitCode:
-        // This is could be a success or an error.
-        // - if success, then use the command line if available.
-        // - if an error, then ignore everything.
-        result.error = exit_code;
-        if (result.error == 0 && installer_outcome->installer_cmd_line) {
-          result.installer_cmd_line = *installer_outcome->installer_cmd_line;
-        }
-        break;
-    }
-
-    // `update_client` needs to view `ERROR_SUCCESS_REBOOT_REQUIRED` as a
-    // success, otherwise it will consider the app as not installed even though
-    // it installed successfully. So we reset the `error` to `0` here. The
-    // original error will be returned by this function via the
-    // `original_result_error`.
-    if (result.error == ERROR_SUCCESS_REBOOT_REQUIRED) {
-      const int original_result_error = result.error;
-      result.error = 0;
-      return std::make_pair(result, original_result_error);
-    }
-
-    return std::make_pair(result, absl::nullopt);
-  }
-
-  // TODO(crbug.com/1481314): handle an `exit_code` of
-  // `ERROR_SUCCESS_REBOOT_REQUIRED`.
-  return std::make_pair(
-      exit_code == 0
-          ? Installer::Result(update_client::InstallError::NONE)
-          : Installer::Result(kErrorApplicationInstallerFailed, exit_code),
-      absl::nullopt);
-}
-
-// Calls `MakeInstallerResultAndOriginalError` and returns the resultant
-// `Installer::Result`.
 Installer::Result MakeInstallerResult(
     absl::optional<InstallerOutcome> installer_outcome,
     int exit_code) {
-  return MakeInstallerResultAndOriginalError(installer_outcome, exit_code)
-      .first;
+  InstallerOutcome outcome;
+  if (installer_outcome && installer_outcome->installer_result) {
+    outcome = *installer_outcome;
+  } else {
+    // Set the installer result based on whether this is a success or an error.
+    if (exit_code == 0) {
+      outcome.installer_result = InstallerResult::kSuccess;
+    } else {
+      outcome.installer_result = InstallerResult::kExitCode;
+      outcome.installer_error = exit_code;
+    }
+  }
+
+  Installer::Result result;
+
+  // Read and set the installer extra code in all cases if available. Installers
+  // can use the `installer_extracode1` to transmit a custom value even in the
+  // case of success.
+  if (outcome.installer_extracode1) {
+    result.extended_error = *outcome.installer_extracode1;
+  }
+
+  switch (*outcome.installer_result) {
+    case InstallerResult::kSuccess:
+      // This is unconditional success:
+      // - use the command line if available, and ignore everything else.
+      result.error = 0;
+      if (outcome.installer_cmd_line) {
+        result.installer_cmd_line = *outcome.installer_cmd_line;
+      }
+      CHECK_EQ(result.error, 0);
+      break;
+
+    case InstallerResult::kCustomError:
+    case InstallerResult::kMsiError:
+    case InstallerResult::kSystemError:
+    case InstallerResult::kExitCode:
+      // These are usually unconditional errors:
+      // - use the installer error, or the exit code, or report a generic
+      //   error.
+      // - use the installer extra code if available.
+      // - use the text description of the error if available.
+      result.original_error =
+          outcome.installer_error ? *outcome.installer_error : exit_code;
+      if (!result.original_error) {
+        result.original_error = kErrorApplicationInstallerFailed;
+      }
+
+      // `update_client` needs to view the below codes as a success, otherwise
+      // it will consider the app as not installed. So we reset the `error` to
+      // `0` in these cases.
+      result.error =
+          result.original_error == ERROR_SUCCESS_REBOOT_INITIATED ||
+                  result.original_error == ERROR_SUCCESS_REBOOT_REQUIRED ||
+                  result.original_error == ERROR_SUCCESS_RESTART_REQUIRED
+              ? 0
+              : kErrorApplicationInstallerFailed;
+      result.installer_text =
+          outcome.installer_text ? *outcome.installer_text
+                                 : GetTextForSystemError(result.original_error);
+      CHECK_NE(result.original_error, 0);
+      break;
+  }
+
+  return result;
 }
 
 // Clears the previous installer output, runs the application installer,

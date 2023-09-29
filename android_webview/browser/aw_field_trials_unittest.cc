@@ -105,8 +105,11 @@ TEST_F(AwFieldTrialsTest, OnlyRegisterFeatureOverrides) {
   aw_field_trials.RegisterFeatureOverrides(feature_list.get());
   base::FeatureList::SetInstance(std::move(feature_list));
 
-  EXPECT_FALSE(
+  EXPECT_TRUE(
       base::FeatureList::IsEnabled(blink::features::kUserAgentClientHint));
+
+  EXPECT_FALSE(base::FeatureList::IsEnabled(
+      blink::features::kReduceUserAgentMinorVersion));
 }
 
 }  // namespace android_webview

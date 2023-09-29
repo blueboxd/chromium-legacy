@@ -328,6 +328,15 @@ void UnifiedSystemTrayBubble::OnWidgetDestroying(views::Widget* widget) {
 void UnifiedSystemTrayBubble::OnWindowActivated(ActivationReason reason,
                                                 aura::Window* gained_active,
                                                 aura::Window* lost_active) {
+  // This function is needed when QsRevamp is disabled since the message center
+  // bubble is on top of this bubble, which we need to customize the window
+  // activation handling like below. When QsRevamp is enabled, we don't need
+  // this anymore since everything is handled in
+  // `TrayEventFilter::OnWindowActivated()`
+  if (features::IsQsRevampEnabled()) {
+    return;
+  }
+
   if (!gained_active || !bubble_widget_) {
     return;
   }
@@ -342,11 +351,7 @@ void UnifiedSystemTrayBubble::OnWindowActivated(ActivationReason reason,
 
   // Don't close the bubble if a transient child is gaining or losing
   // activation.
-  if (bubble_widget_ == gained_active_widget ||
-      ::wm::HasTransientAncestor(gained_active,
-                                 bubble_widget_->GetNativeWindow()) ||
-      (lost_active && ::wm::HasTransientAncestor(
-                          lost_active, bubble_widget_->GetNativeWindow()))) {
+  if (bubble_widget_ == gained_active_widget) {
     return;
   }
 
@@ -443,9 +448,18 @@ void UnifiedSystemTrayBubble::UpdateBubbleBounds() {
         std::min(max_height, std::max(qs_current_height, kDetailedViewHeight));
   }
   if (is_qs_revamp_enabled_) {
+    // Setting the max height can result in the popup baseline being updated,
+    // closing this bubble.
     quick_settings_view_->SetMaxHeight(max_height);
   } else {
     unified_view_->SetMaxHeight(max_height);
+  }
+  if (!bubble_view_) {
+    // Updating the maximum height can result in popup baseline changing. If
+    // there is not enough room for popups, the bubble will be closed, and this
+    // `bubble_view_` will not exist. This is a corner case, and we should
+    // probably not close the bubble in this case.  See https://b/302172146.
+    return;
   }
   bubble_view_->SetMaxHeight(max_height);
   bubble_view_->ChangeAnchorAlignment(

@@ -9,6 +9,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/input_device_settings_controller.h"
 #include "ash/public/mojom/input_device_settings.mojom-forward.h"
+#include "ash/public/mojom/input_device_settings.mojom-shared.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/input_device_settings/input_device_settings_controller_impl.h"
@@ -208,6 +209,49 @@ std::string GetSixPackKeyMetricName(const std::string& prefix,
                        is_initial_value ? ".Initial" : ".Changed"});
 }
 
+void RecordKeyboardNumberOfKeysRemapped(const mojom::Keyboard& keyboard) {
+  base::flat_map<ui::mojom::ModifierKey, ui::mojom::ModifierKey>
+      default_remappings;
+  if (keyboard.meta_key == mojom::MetaKey::kCommand) {
+    default_remappings[ui::mojom::ModifierKey::kControl] =
+        ui::mojom::ModifierKey::kMeta;
+    default_remappings[ui::mojom::ModifierKey::kMeta] =
+        ui::mojom::ModifierKey::kControl;
+  }
+  const int num_keys_remapped = GetNumberOfNonDefaultRemappings(
+      *keyboard.settings, std::move(default_remappings));
+  const std::string keyboard_metrics =
+      base::StrCat({GetKeyboardMetricsPrefix(keyboard),
+                    "Modifiers.NumberOfRemappedKeysOnStart"});
+  base::UmaHistogramCounts100(keyboard_metrics, num_keys_remapped);
+}
+
+bool ShouldRecordFkeyMetrics(const mojom::Keyboard& keyboard) {
+  return ::features::AreF11AndF12ShortcutsEnabled() &&
+         Shell::Get()->keyboard_capability()->IsChromeOSKeyboard(keyboard.id) &&
+         (keyboard.settings->f11.has_value() &&
+          keyboard.settings->f12.has_value());
+}
+
+void RecordButtonRemappingNameIfChanged(
+    const mojom::ButtonRemappingPtr& original_remapping,
+    const mojom::ButtonRemappingPtr& new_remapping,
+    const char* peripheral_kind) {
+  const std::string metric_name_prefix =
+      base::StrCat({"ChromeOS.Settings.Device.", peripheral_kind,
+                    ".ButtonRemapping.Name.Changed."});
+  if (original_remapping->name != new_remapping->name) {
+    if (original_remapping->button->is_customizable_button()) {
+      base::UmaHistogramEnumeration(
+          base::StrCat({metric_name_prefix, "CustomizableButton"}),
+          original_remapping->button->get_customizable_button());
+    } else if (original_remapping->button->is_vkey()) {
+      base::UmaHistogramSparse(base::StrCat({metric_name_prefix, "Vkey"}),
+                               original_remapping->button->get_vkey());
+    }
+  }
+}
+
 }  // namespace
 
 InputDeviceSettingsMetricsManager::InputDeviceSettingsMetricsManager() =
@@ -264,24 +308,13 @@ void InputDeviceSettingsMetricsManager::RecordKeyboardInitialMetrics(
     RecordSixPackKeyInfo(keyboard, ui::VKEY_PRIOR, /*is_initial_value=*/true);
     RecordSixPackKeyInfo(keyboard, ui::VKEY_NEXT, /*is_initial_value=*/true);
   }
-}
 
-void InputDeviceSettingsMetricsManager::RecordKeyboardNumberOfKeysRemapped(
-    const mojom::Keyboard& keyboard) {
-  base::flat_map<ui::mojom::ModifierKey, ui::mojom::ModifierKey>
-      default_remappings;
-  if (keyboard.meta_key == mojom::MetaKey::kCommand) {
-    default_remappings[ui::mojom::ModifierKey::kControl] =
-        ui::mojom::ModifierKey::kMeta;
-    default_remappings[ui::mojom::ModifierKey::kMeta] =
-        ui::mojom::ModifierKey::kControl;
+  if (ShouldRecordFkeyMetrics(keyboard)) {
+    base::UmaHistogramEnumeration(keyboard_metrics_prefix + "F11.Initial",
+                                  keyboard.settings->f11.value());
+    base::UmaHistogramEnumeration(keyboard_metrics_prefix + "F12.Initial",
+                                  keyboard.settings->f12.value());
   }
-  const int num_keys_remapped = GetNumberOfNonDefaultRemappings(
-      *keyboard.settings, std::move(default_remappings));
-  const std::string keyboard_metrics =
-      base::StrCat({GetKeyboardMetricsPrefix(keyboard),
-                    "Modifiers.NumberOfRemappedKeysOnStart"});
-  base::UmaHistogramCounts100(keyboard_metrics, num_keys_remapped);
 }
 
 void InputDeviceSettingsMetricsManager::RecordKeyboardChangedMetrics(
@@ -349,6 +382,17 @@ void InputDeviceSettingsMetricsManager::RecordKeyboardChangedMetrics(
     if (keyboard.settings->six_pack_key_remappings->page_down !=
         old_settings.six_pack_key_remappings->page_down) {
       RecordSixPackKeyInfo(keyboard, ui::VKEY_NEXT, /*is_initial_value=*/false);
+    }
+  }
+
+  if (ShouldRecordFkeyMetrics(keyboard)) {
+    if (keyboard.settings->f11 != old_settings.f11) {
+      base::UmaHistogramEnumeration(keyboard_metrics_prefix + "F11.Changed",
+                                    keyboard.settings->f11.value());
+    }
+    if (keyboard.settings->f12 != old_settings.f12) {
+      base::UmaHistogramEnumeration(keyboard_metrics_prefix + "F12.Changed",
+                                    keyboard.settings->f12.value());
     }
   }
 }
@@ -457,6 +501,15 @@ void InputDeviceSettingsMetricsManager::RecordMouseChangedMetrics(
     base::UmaHistogramBoolean(
         "ChromeOS.Settings.Device.Mouse.SwapPrimaryButtons.Changed",
         mouse.settings->swap_right);
+  }
+  for (const auto& new_remapping : mouse.settings->button_remappings) {
+    for (const auto& original_remapping : old_settings.button_remappings) {
+      if (original_remapping->button == new_remapping->button) {
+        RecordButtonRemappingNameIfChanged(original_remapping, new_remapping,
+                                           /*peripheral_kind=*/
+                                           "Mouse");
+      }
+    }
   }
 }
 
@@ -637,6 +690,48 @@ void InputDeviceSettingsMetricsManager::RecordTouchpadChangedMetrics(
     base::UmaHistogramEnumeration(
         touchpad_metrics_prefix + "SimulateRightClick.Changed",
         touchpad.settings->simulate_right_click);
+  }
+}
+
+void InputDeviceSettingsMetricsManager::RecordGraphicsTabletInitialMetrics(
+    const mojom::GraphicsTablet& graphics_tablet) {
+  // Only record the metrics once for each graphics tablet.
+  const auto account_id =
+      Shell::Get()->session_controller()->GetActiveAccountId();
+  auto iter = recorded_graphics_tablets_.find(account_id);
+
+  if (iter != recorded_graphics_tablets_.end() &&
+      base::Contains(iter->second, graphics_tablet.device_key)) {
+    return;
+  }
+  recorded_graphics_tablets_[account_id].insert(graphics_tablet.device_key);
+
+  // TODO(cambickel): Add graphics tablet initial metrics logging.
+}
+
+void InputDeviceSettingsMetricsManager::RecordGraphicsTabletChangedMetrics(
+    const mojom::GraphicsTablet& graphics_tablet,
+    const mojom::GraphicsTabletSettings& old_settings) {
+  for (const auto& new_remapping :
+       graphics_tablet.settings->pen_button_remappings) {
+    for (const auto& original_remapping : old_settings.pen_button_remappings) {
+      if (original_remapping->button == new_remapping->button) {
+        RecordButtonRemappingNameIfChanged(original_remapping, new_remapping,
+                                           /*peripheral_kind=*/
+                                           "GraphicsTabletPen");
+      }
+    }
+  }
+  for (const auto& new_remapping :
+       graphics_tablet.settings->tablet_button_remappings) {
+    for (const auto& original_remapping :
+         old_settings.tablet_button_remappings) {
+      if (original_remapping->button == new_remapping->button) {
+        RecordButtonRemappingNameIfChanged(original_remapping, new_remapping,
+                                           /*peripheral_kind=*/
+                                           "GraphicsTablet");
+      }
+    }
   }
 }
 

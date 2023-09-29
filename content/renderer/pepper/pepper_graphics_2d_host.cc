@@ -657,9 +657,10 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
         upload_bgra ? viz::SinglePlaneFormat::kBGRA_8888
                     : viz::SinglePlaneFormat::kRGBA_8888;
 
-    bool overlays_supported =
-        enable_gpu_memory_buffer_ && main_thread_context_->ContextCapabilities()
-                                         .supports_scanout_shared_images;
+    bool overlays_supported = enable_gpu_memory_buffer_ &&
+                              main_thread_context_->SharedImageInterface()
+                                  ->GetCapabilities()
+                                  .supports_scanout_shared_images;
     uint32_t texture_target = GL_TEXTURE_2D;
     if (overlays_supported) {
       texture_target = gpu::GetBufferTextureTarget(
@@ -728,7 +729,8 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
                        main_thread_context_, size, gpu_mailbox);
     *transferable_resource = viz::TransferableResource::MakeGpu(
         std::move(gpu_mailbox), texture_target, std::move(out_sync_token), size,
-        format, overlays_supported);
+        format, overlays_supported,
+        viz::TransferableResource::ResourceSource::kPepperGraphics2D);
     composited_output_modified_ = false;
     return true;
   }
@@ -762,8 +764,8 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
   image_data_->Unmap();
 
   *transferable_resource = viz::TransferableResource::MakeSoftware(
-      shared_bitmap->id(), pixel_image_size,
-      viz::SinglePlaneFormat::kRGBA_8888);
+      shared_bitmap->id(), pixel_image_size, viz::SinglePlaneFormat::kRGBA_8888,
+      viz::TransferableResource::ResourceSource::kPepperGraphics2D);
   *release_callback = base::BindOnce(
       &PepperGraphics2DHost::ReleaseSoftwareCallback, this->AsWeakPtr(),
       std::move(shared_bitmap), std::move(registration));

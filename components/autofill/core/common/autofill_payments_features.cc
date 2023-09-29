@@ -181,13 +181,6 @@ BASE_FEATURE(kAutofillEnableVirtualCardFidoEnrollment,
              "AutofillEnableVirtualCardFidoEnrollment",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// When enabled, in the payments settings page on desktop, virtual card
-// enrollment management will be provided so that the user can enroll/unenroll a
-// card in virtual card.
-BASE_FEATURE(kAutofillEnableVirtualCardManagementInDesktopSettingsPage,
-             "AutofillEnableVirtualCardManagementInDesktopSettingsPage",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // When enabled, Chrome will show metadata along with other card information
 // when the virtual card is presented to users.
 BASE_FEATURE(kAutofillEnableVirtualCardMetadata,
@@ -199,7 +192,7 @@ BASE_FEATURE(kAutofillEnableVirtualCardMetadata,
 // views.
 BASE_FEATURE(kAutofillMoveLegalTermsAndIconForNewCardEnrollment,
              "AutofillMoveLegalTermsAndIconForNewCardEnrollment",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, Autofill will offer saving a card to the users when the Chrome
 // detects a card number with the last 4 digits that matches an existing server
@@ -254,13 +247,13 @@ BASE_FEATURE(kAutofillUpstreamAllowAllEmailDomains,
 // features disabled but not client-side features.
 BASE_FEATURE(kAutofillUpstreamAuthenticatePreflightCall,
              "AutofillUpstreamAuthenticatePreflightCall",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, the secure data type for cards sent during credit card upload
 // save is updated to match newer server requirements.
 BASE_FEATURE(kAutofillUpstreamUseAlternateSecureDataType,
              "AutofillUpstreamUseAlternateSecureDataType",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, we use the Elo regex to match the BIN ranges.
 BASE_FEATURE(kAutofillUseEloRegexForBinMatching,
@@ -280,6 +273,12 @@ BASE_FEATURE(kAutofillUseTwoDotsForLastFourDigits,
 // authentication on Bling.
 BASE_FEATURE(kAutofillEnablePaymentsMandatoryReauthOnBling,
              "AutofillEnablePaymentsMandatoryReauthOnBling",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When this is enabled, virtual card enrollment and retrieval will be enabled
+// on Bling.
+BASE_FEATURE(kAutofillEnableVirtualCards,
+             "AutofillEnableVirtualCards",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 

@@ -14,7 +14,7 @@ import {WebUiListenerMixin} from '//resources/cr_elements/web_ui_listener_mixin.
 import {assert} from '//resources/js/assert_ts.js';
 import {loadTimeData} from '//resources/js/load_time_data.js';
 import {IronIconElement} from '//resources/polymer/v3_0/iron-icon/iron-icon.js';
-import {DomRepeatEvent, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {DomRepeat, DomRepeatEvent, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {ReadAnythingElement} from './app.js';
 import {getTemplate} from './read_anything_toolbar.html.js';
@@ -27,14 +27,25 @@ export interface ReadAnythingToolbar {
     letterSpacingMenu: CrActionMenuElement,
     fontMenu: CrActionMenuElement,
     fontSizeMenu: CrActionMenuElement,
+    moreOptionsMenu: CrActionMenuElement,
+    voiceSelectionMenu: CrActionMenuElement,
+    fontTemplate: DomRepeat,
   };
 }
 
-interface MenuStateItem {
+interface MenuStateItem<T> {
   title: string;
   icon: string;
-  data: any;
+  data: T;
   callback: () => void;
+}
+
+interface MenuButton {
+  id: string;
+  icon: string;
+  // This is a function instead of just the menu itself because the menu isn't
+  // ready by the time we create the MenuButton entries.
+  menuToOpen: () => CrActionMenuElement;
 }
 
 // Enum for logging when a text style setting is changed.
@@ -72,13 +83,73 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
       lineSpacingOptions_: Array,
       colorOptions_: Array,
       rateOptions_: Array,
+      textStyleOptions_: Array,
     };
+  }
+
+  // This function has to be static because it's called from the ResizeObserver
+  // callback which doesn't have access to "this"
+  static maybeUpdateMoreOptions(toolbar: HTMLElement) {
+    // Hide the more options button first to calculate if we need it
+    const moreOptionsButton = toolbar.querySelector('#more') as HTMLElement;
+    assert(moreOptionsButton);
+    ReadAnythingToolbar.hideElement(moreOptionsButton, false);
+    const moreOptionsMenu = toolbar.querySelector('#moreOptionsMenu');
+    assert(moreOptionsMenu);
+    Array.from(moreOptionsMenu.children).forEach(child => {
+      ReadAnythingToolbar.hideElement(child as HTMLElement, false);
+    });
+
+    // Show all the buttons before deciding which ones to hide
+    const buttons = toolbar.querySelectorAll('.toolbar-button');
+    assert(buttons);
+    buttons.forEach(btn => {
+      ReadAnythingToolbar.showElement(btn as HTMLElement);
+    });
+
+    // When scroll width and client width are the different, then the content
+    // has overflowed
+    if (toolbar.scrollWidth !== toolbar.clientWidth) {
+      // If x buttons are pushed off screen, put the more options button before
+      // the last x + 1 buttons since adding it will push another button off
+      // screen
+      for (let i = buttons.length - 1; i >= 0; i--) {
+        // Hide the overflowed button in case it's still partially on screen
+        const button = buttons[i] as HTMLElement;
+        ReadAnythingToolbar.hideElement(button, true);
+        // Show the button that was pushed off screen in the more options menu
+        const styleButtonInMoreOptions =
+            moreOptionsMenu.querySelector('#' + button.id) as HTMLElement;
+        if (!styleButtonInMoreOptions) {
+          break;
+        }
+        ReadAnythingToolbar.showElement(styleButtonInMoreOptions);
+        if (button.getBoundingClientRect().right < toolbar.clientWidth) {
+          ReadAnythingToolbar.showElement(moreOptionsButton);
+          toolbar.insertBefore(moreOptionsButton, button);
+          break;
+        }
+      }
+    }
+  }
+
+  static hideElement(element: HTMLElement, keepSpace: boolean) {
+    if (keepSpace) {
+      element.style.visibility = 'hidden';
+    } else {
+      element.style.display = 'none';
+    }
+  }
+
+  static showElement(element: HTMLElement) {
+    element.style.visibility = 'visible';
+    element.style.display = 'inline-block';
   }
 
   // If you change these fonts, please also update read_anything_constants.h
   private fontOptions_: string[] = [];
 
-  private letterSpacingOptions_: MenuStateItem[] = [
+  private letterSpacingOptions_: Array<MenuStateItem<number>> = [
     {
       title: loadTimeData.getString('letterSpacingStandardTitle'),
       icon: 'read-anything:letter-spacing-standard',
@@ -102,7 +173,7 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
     },
   ];
 
-  private lineSpacingOptions_: MenuStateItem[] = [
+  private lineSpacingOptions_: Array<MenuStateItem<number>> = [
     {
       title: loadTimeData.getString('lineSpacingStandardTitle'),
       icon: 'read-anything:line-spacing-standard',
@@ -126,7 +197,7 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
     },
   ];
 
-  private colorOptions_: MenuStateItem[] = [
+  private colorOptions_: Array<MenuStateItem<string>> = [
     {
       title: loadTimeData.getString('defaultColorTitle'),
       icon: 'read-anything:default-theme',
@@ -159,7 +230,38 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
     },
   ];
 
+  private voiceSelectionOptions_: Array<MenuStateItem<SpeechSynthesisVoice>> =
+      [];
+
   private rateOptions_: number[] = [0.5, 0.8, 1, 1.2, 1.5, 2, 3, 4];
+
+  private textStyleOptions_: MenuButton[] = [
+    {
+      id: 'font-size',
+      icon: 'read-anything:font-size',
+      menuToOpen: () => this.$.fontSizeMenu,
+    },
+    {
+      id: 'font',
+      icon: 'read-anything:font',
+      menuToOpen: () => this.$.fontMenu,
+    },
+    {
+      id: 'color',
+      icon: 'read-anything:color',
+      menuToOpen: () => this.$.colorMenu,
+    },
+    {
+      id: 'line-spacing',
+      icon: 'read-anything:line-spacing',
+      menuToOpen: () => this.$.lineSpacingMenu,
+    },
+    {
+      id: 'letter-spacing',
+      icon: 'read-anything:letter-spacing',
+      menuToOpen: () => this.$.letterSpacingMenu,
+    },
+  ];
 
   private showAtPositionConfig_: ShowAtPositionConfig = {
     top: 20,
@@ -168,28 +270,31 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
   };
 
   private isReadAloudEnabled_: boolean;
+  private isHighlightOn_: boolean = true;
 
   // If Read Aloud is in the paused state.
-  isPaused = true;
+  private isPaused_: boolean = true;
 
   override connectedCallback() {
     super.connectedCallback();
     this.isReadAloudEnabled_ = chrome.readingMode.isReadAloudEnabled;
 
-    // TODO(b/1465029): Use the brower's preferred language to hide unsupported
-    // fonts.
-    this.fontOptions_.push(
-        'Poppins',
-        'Sans-serif',
-        'Serif',
-        'Comic Neue',
-        'Lexend Deca',
-        'EB Garamond',
-        'STIX Two Text',
-    );
+    this.updateFonts();
+
+    const shadowRoot = this.shadowRoot;
+    assert(shadowRoot);
+    const toolbar = shadowRoot.getElementById('toolbar-container');
+    assert(toolbar);
+    new ResizeObserver(this.onToolbarResize_).observe(toolbar);
   }
 
-  restoreSettingsFromPrefs(colorSuffix: string|undefined) {
+  private onToolbarResize_(entries: ResizeObserverEntry[]) {
+    assert(entries.length === 1);
+    const toolbar = entries[0].target as HTMLElement;
+    ReadAnythingToolbar.maybeUpdateMoreOptions(toolbar);
+  }
+
+  restoreSettingsFromPrefs(colorSuffix?: string) {
     const fontNodes = Array.from(this.$.fontMenu.children);
     fontNodes.forEach((element) => {
       if (element instanceof HTMLButtonElement) {
@@ -201,7 +306,16 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
       }
     });
 
-    // TODO(crbug.com/1474951): Restore rate checkmark
+    if (this.isReadAloudEnabled_) {
+      const speechRate = parseFloat(chrome.readingMode.speechRate.toFixed(1));
+      this.setRateIcon_(speechRate);
+      this.setCheckMarkForMenu_(
+          this.$.rateMenu, this.rateOptions_.indexOf(speechRate));
+
+      this.setHighlightState_(
+          chrome.readingMode.highlightGranularity ===
+          chrome.readingMode.highlightOn);
+    }
     this.setCheckMarkForMenu_(
         this.$.fontMenu,
         this.fontOptions_.indexOf(chrome.readingMode.fontName));
@@ -220,9 +334,19 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
             parseFloat(chrome.readingMode.letterSpacing.toFixed(2))));
   }
 
-  private getIndexOfSetting_(menuArray: MenuStateItem[], dataToFind: any):
-      number {
+  private getIndexOfSetting_(
+      menuArray: Array<MenuStateItem<any>>, dataToFind: any): number {
     return menuArray.findIndex((item) => (item.data === dataToFind));
+  }
+
+  updateFonts() {
+    const fonts = chrome.readingMode.supportedFonts;
+    this.fontOptions_ = [];
+    fonts.forEach(element => {
+      this.fontOptions_.push(element);
+    });
+
+    this.$.fontTemplate.render();
   }
 
   updateUiForPlaying() {
@@ -231,7 +355,15 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
     const button = shadowRoot.getElementById('play-pause');
     assert(button);
     button.setAttribute('iron-icon', 'read-anything-20:pause');
-    this.isPaused = false;
+    this.isPaused_ = false;
+
+    this.updateStyles({
+      '--audio-controls-background': 'var(--color-sys-tonal-container)',
+    });
+
+    const toolbar = shadowRoot.getElementById('toolbar-container');
+    assert(toolbar);
+    ReadAnythingToolbar.maybeUpdateMoreOptions(toolbar);
   }
 
   updateUiForPausing() {
@@ -240,7 +372,15 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
     const button = shadowRoot.getElementById('play-pause');
     assert(button);
     button.setAttribute('iron-icon', 'read-anything-20:play');
-    this.isPaused = true;
+    this.isPaused_ = true;
+
+    this.updateStyles({
+      '--audio-controls-background': 'transparent',
+    });
+
+    const toolbar = shadowRoot.getElementById('toolbar-container');
+    assert(toolbar);
+    ReadAnythingToolbar.maybeUpdateMoreOptions(toolbar);
   }
 
   private closeMenus_() {
@@ -251,28 +391,50 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
     this.$.fontMenu.close();
   }
 
+  private onNextGranularityClick_() {
+    if (this.contentPage) {
+      this.contentPage.playNextGranularity();
+    }
+  }
+
+  private onPreviousGranularityClick_() {
+    if (this.contentPage) {
+      this.contentPage.playPreviousGranularity();
+    }
+  }
+
+  private onTextStyleMenuButtonClick_(event: DomRepeatEvent<MenuButton>) {
+    this.openMenu_(event.model.item.menuToOpen(), event.target as HTMLElement);
+  }
+
   private onShowRateMenuClick_(event: MouseEvent) {
     this.openMenu_(this.$.rateMenu, event.target as HTMLElement);
   }
 
-  private onShowColorMenuClick_(event: MouseEvent) {
-    this.openMenu_(this.$.colorMenu, event.target as HTMLElement);
+  // TODO(crbug.com/1474951): Add unit tests
+  private onVoiceSelectionMenuClick_(event: MouseEvent) {
+    if (this.contentPage) {
+      const voices = this.contentPage.getVoices();
+      this.voiceSelectionOptions_ = Object.entries(voices).reduce(
+          (aggregateVoiceList: Array<MenuStateItem<SpeechSynthesisVoice>>,
+           [_, voiceListForLang]) =>
+              ([
+                ...aggregateVoiceList,
+                ...(voiceListForLang).map(speechSynthesisVoice => ({
+                                            title: speechSynthesisVoice.name,
+                                            icon: '',
+                                            data: speechSynthesisVoice,
+                                            callback: () => {},
+                                          })),
+              ]),
+          []);
+
+      this.openMenu_(this.$.voiceSelectionMenu, event.target as HTMLElement);
+    }
   }
 
-  private onShowLineSpacingMenuClick_(event: MouseEvent) {
-    this.openMenu_(this.$.lineSpacingMenu, event.target as HTMLElement);
-  }
-
-  private onShowLetterSpacingMenuClick_(event: MouseEvent) {
-    this.openMenu_(this.$.letterSpacingMenu, event.target as HTMLElement);
-  }
-
-  private onShowFontMenuClick_(event: MouseEvent) {
-    this.openMenu_(this.$.fontMenu, event.target as HTMLElement);
-  }
-
-  private onShowFontSizeMenuClick_(event: MouseEvent) {
-    this.openMenu_(this.$.fontSizeMenu, event.target as HTMLElement);
+  private onMoreOptionsClick_(event: MouseEvent) {
+    this.openMenu_(this.$.moreOptionsMenu, event.target as HTMLElement);
   }
 
   private openMenu_(menuToOpen: CrActionMenuElement, target: HTMLElement) {
@@ -287,29 +449,82 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
     });
   }
 
-  private onLetterSpacingClick_(event: DomRepeatEvent<MenuStateItem>) {
+  private onHighlightClick_() {
+    const shadowRoot = this.shadowRoot;
+    assert(shadowRoot);
+    const button = shadowRoot.getElementById('highlight');
+    assert(button);
+    if (this.isHighlightOn_) {
+      chrome.readingMode.turnedHighlightOff();
+    } else {
+      chrome.readingMode.turnedHighlightOn();
+    }
+    this.setHighlightState_(!this.isHighlightOn_);
+  }
+
+  private setHighlightState_(turnOn: boolean) {
+    const shadowRoot = this.shadowRoot;
+    assert(shadowRoot);
+    const button = shadowRoot.getElementById('highlight');
+    assert(button);
+    this.isHighlightOn_ = turnOn;
+    if (this.isHighlightOn_) {
+      button.setAttribute('iron-icon', 'read-anything:highlight-on');
+      button.setAttribute('title', loadTimeData.getString('turnHighlightOff'));
+    } else {
+      button.setAttribute('iron-icon', 'read-anything:highlight-off');
+      button.setAttribute('title', loadTimeData.getString('turnHighlightOn'));
+    }
+
+    if (this.contentPage) {
+      this.contentPage.updateHighlight(this.isHighlightOn_);
+    }
+  }
+
+  private onLetterSpacingClick_(event: DomRepeatEvent<MenuStateItem<number>>) {
     this.onTextStyleClick_(
         event, ReadAnythingSettingsChange.LETTER_SPACING_CHANGE,
         this.$.letterSpacingMenu,
         ReadAnythingElement.prototype.updateLetterSpacing);
   }
 
-  private onLineSpacingClick_(event: DomRepeatEvent<MenuStateItem>) {
+  private onLineSpacingClick_(event: DomRepeatEvent<MenuStateItem<number>>) {
     this.onTextStyleClick_(
         event, ReadAnythingSettingsChange.LINE_HEIGHT_CHANGE,
         this.$.lineSpacingMenu,
         ReadAnythingElement.prototype.updateLineSpacing);
   }
 
-  private onColorClick_(event: DomRepeatEvent<MenuStateItem>) {
+  private onColorClick_(event: DomRepeatEvent<MenuStateItem<string>>) {
     this.onTextStyleClick_(
         event, ReadAnythingSettingsChange.THEME_CHANGE, this.$.colorMenu,
         ReadAnythingElement.prototype.updateThemeFromWebUi);
   }
 
+  private onVoiceSelectClick_(
+      event: DomRepeatEvent<MenuStateItem<SpeechSynthesisVoice>>) {
+    // TODO(crbug.com/1474951): Save voice to prefs.
+    if (this.contentPage) {
+      this.contentPage.setSpeechSynthesisVoice(event.model.item.data);
+    }
+  }
+
+  private onVoicePreviewClick_(
+      event: DomRepeatEvent<MenuStateItem<SpeechSynthesisVoice>>) {
+    // Because the preview button is layered onto the voice-selection button,
+    // the onVoiceSelectClick_() listener is also subscribed to this event. This
+    // line is to make sure that the voice-selection callback is not triggered.
+    event.stopImmediatePropagation();
+
+    if (this.contentPage) {
+      this.contentPage.previewSpeechSynthesisVoice(
+          event.model.item.data as SpeechSynthesisVoice);
+    }
+  }
+
   private onTextStyleClick_(
-      event: DomRepeatEvent<MenuStateItem>, logVal: ReadAnythingSettingsChange,
-      menuClicked: CrActionMenuElement,
+      event: DomRepeatEvent<MenuStateItem<any>>,
+      logVal: ReadAnythingSettingsChange, menuClicked: CrActionMenuElement,
       contentPageCallback: ((data: any) => void)) {
     event.model.item.callback();
     chrome.metricsPrivate.recordEnumerationValue(
@@ -336,16 +551,17 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
   }
 
   private onRateClick_(event: DomRepeatEvent<number>) {
+    chrome.readingMode.onSpeechRateChange(event.model.item);
     if (this.contentPage) {
       this.contentPage.onSpeechRateChange(event.model.item);
-      this.setRateIcon(event.model.item);
+      this.setRateIcon_(event.model.item);
     }
     this.setCheckMarkForMenu_(this.$.rateMenu, event.model.index);
 
     this.closeMenus_();
   }
 
-  setRateIcon(rate: number) {
+  private setRateIcon_(rate: number) {
     const shadowRoot = this.shadowRoot;
     assert(shadowRoot);
     const button = shadowRoot.getElementById('rate');
@@ -359,10 +575,10 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
     checkMarks.forEach((element) => {
       assert(element instanceof HTMLElement);
       // TODO(crbug.com/1465029): Ensure this works with screen readers
-      element.style.visibility = 'hidden';
+      ReadAnythingToolbar.hideElement(element, true);
     });
     const checkMark = checkMarks[index] as IronIconElement;
-    checkMark.style.visibility = 'visible';
+    ReadAnythingToolbar.showElement(checkMark);
   }
 
   private onFontSizeIncreaseClick_() {
@@ -395,7 +611,7 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
   }
 
   private onPlayPauseClick_() {
-    if (this.isPaused) {
+    if (this.isPaused_) {
       this.updateUiForPlaying();
       if (this.contentPage) {
         this.contentPage.playSpeech();

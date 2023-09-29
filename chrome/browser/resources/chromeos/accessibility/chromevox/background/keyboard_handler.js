@@ -6,6 +6,7 @@
  * @fileoverview ChromeVox keyboard handler.
  */
 import {KeyCode} from '../../common/key_code.js';
+import {EarconId} from '../common/earcon_id.js';
 import {EventSourceType} from '../common/event_source_type.js';
 import {ChromeVoxKbHandler} from '../common/keyboard_handler.js';
 import {Msgs} from '../common/msgs.js';
@@ -111,6 +112,7 @@ export class BackgroundKeyboardHandler {
       evt.stopPropagation();
       this.eatenKeyDowns_.add(evt.keyCode);
     }
+
     return false;
   }
 

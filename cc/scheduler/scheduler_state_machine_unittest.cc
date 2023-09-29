@@ -1235,7 +1235,7 @@ TEST(SchedulerStateMachineTest, AbortedMainFrameDoesNotResetPendingTree) {
       SchedulerStateMachine::Action::SEND_BEGIN_MAIN_FRAME);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
   EXPECT_TRUE(state.has_pending_tree());
-  state.BeginMainFrameAborted(CommitEarlyOutReason::FINISHED_NO_UPDATES);
+  state.BeginMainFrameAborted(CommitEarlyOutReason::kFinishedNoUpdates);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
   EXPECT_TRUE(state.has_pending_tree());
   state.OnBeginImplFrameDeadline();
@@ -1462,7 +1462,7 @@ TEST(SchedulerStateMachineTest, TestAbortBeginMainFrameBecauseInvisible) {
 
   // Become invisible and abort BeginMainFrame.
   state.SetVisible(false);
-  state.BeginMainFrameAborted(CommitEarlyOutReason::ABORTED_NOT_VISIBLE);
+  state.BeginMainFrameAborted(CommitEarlyOutReason::kAbortedNotVisible);
 
   // NeedsCommit should now be true again because we never actually did a
   // commit.
@@ -1517,7 +1517,7 @@ TEST(SchedulerStateMachineTest, TestAbortBeginMainFrameBecauseCommitNotNeeded) {
 
   // Abort the commit, true means that the BeginMainFrame was sent but there
   // was no work to do on the main thread.
-  state.BeginMainFrameAborted(CommitEarlyOutReason::FINISHED_NO_UPDATES);
+  state.BeginMainFrameAborted(CommitEarlyOutReason::kFinishedNoUpdates);
 
   // NeedsCommit should now be false because the commit was actually handled.
   EXPECT_FALSE(state.NeedsCommit());
@@ -1574,7 +1574,7 @@ TEST(SchedulerStateMachineTest, TestMainFrameBeforeCommit) {
 
   // Abort the primary BeginMainFrame; the next BeginMainFrame should also be
   // primary.
-  state.BeginMainFrameAborted(CommitEarlyOutReason::FINISHED_NO_UPDATES);
+  state.BeginMainFrameAborted(CommitEarlyOutReason::kFinishedNoUpdates);
   state.IssueNextBeginImplFrame();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::Action::SEND_BEGIN_MAIN_FRAME);
@@ -1624,7 +1624,7 @@ TEST(SchedulerStateMachineTest, TestMainFrameBeforeCommit) {
   state.IssueNextBeginImplFrame();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::Action::SEND_BEGIN_MAIN_FRAME);
-  state.BeginMainFrameAborted(CommitEarlyOutReason::FINISHED_NO_UPDATES);
+  state.BeginMainFrameAborted(CommitEarlyOutReason::kFinishedNoUpdates);
   EXPECT_MAIN_FRAME_STATE(
       SchedulerStateMachine::BeginMainFrameState::READY_TO_COMMIT);
   EXPECT_NEXT_MAIN_FRAME_STATE(
@@ -2051,6 +2051,7 @@ TEST(SchedulerStateMachineTest,
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   state.SetVisible(true);
+  state.SetCanDraw(true);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::Action::BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
@@ -2068,8 +2069,20 @@ TEST(SchedulerStateMachineTest,
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::POST_COMMIT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::ACTIVATE_SYNC_TREE);
   EXPECT_TRUE(state.active_tree_needs_first_draw());
+  EXPECT_TRUE(state.needs_redraw());
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::DRAW_ABORT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
+  EXPECT_FALSE(state.active_tree_needs_first_draw());
+  EXPECT_FALSE(state.needs_redraw());
+
+  // Unpausing should draw again to ensure a frame is submitted for the commit.
+  state.SetBeginFrameSourcePaused(false);
+  EXPECT_TRUE(state.needs_redraw());
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::DRAW_IF_POSSIBLE);
+  state.DidSubmitCompositorFrame();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
+  state.DidReceiveCompositorFrameAck();
 }
 
 TEST(SchedulerStateMachineTest, TestInitialActionsWhenContextLost) {
@@ -2195,7 +2208,7 @@ TEST(SchedulerStateMachineTest,
 
   // Since only the scroll offset changed, the main thread will abort the
   // commit.
-  state.BeginMainFrameAborted(CommitEarlyOutReason::FINISHED_NO_UPDATES);
+  state.BeginMainFrameAborted(CommitEarlyOutReason::kFinishedNoUpdates);
 
   // Since the commit was aborted, we should draw right away instead of waiting
   // for the deadline.
@@ -2400,7 +2413,7 @@ TEST(SchedulerStateMachineTest,
   // Abort the commit, since that is what we expect the main thread to do if the
   // LayerTreeFrameSink was lost due to a synchronous call from the main thread
   // to release the LayerTreeFrameSink.
-  state.BeginMainFrameAborted(CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT);
+  state.BeginMainFrameAborted(CommitEarlyOutReason::kAbortedDeferredCommit);
 
   // The scheduler should begin the LayerTreeFrameSink creation now.
   EXPECT_ACTION_UPDATE_STATE(
@@ -2508,7 +2521,7 @@ TEST(SchedulerStateMachineTest,
   state.IssueNextBeginImplFrame();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::Action::SEND_BEGIN_MAIN_FRAME);
-  state.BeginMainFrameAborted(CommitEarlyOutReason::FINISHED_NO_UPDATES);
+  state.BeginMainFrameAborted(CommitEarlyOutReason::kFinishedNoUpdates);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
@@ -2884,7 +2897,7 @@ TEST(SchedulerStateMachineTest, TestFullPipelineMode) {
             state.CurrentBeginImplFrameDeadlineMode());
 
   // Abort commit and ensure that we don't block anymore.
-  state.BeginMainFrameAborted(CommitEarlyOutReason::FINISHED_NO_UPDATES);
+  state.BeginMainFrameAborted(CommitEarlyOutReason::kFinishedNoUpdates);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
   EXPECT_MAIN_FRAME_STATE(SchedulerStateMachine::BeginMainFrameState::IDLE);
   EXPECT_EQ(SchedulerStateMachine::BeginImplFrameDeadlineMode::IMMEDIATE,

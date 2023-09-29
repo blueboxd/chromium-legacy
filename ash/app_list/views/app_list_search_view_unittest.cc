@@ -176,7 +176,7 @@ class AppListSearchViewTest : public AshTestBase {
     if (tablet_mode()) {
       return GetAppListTestHelper()
           ->GetFullscreenSearchResultPageView()
-          ->search_view_for_test();
+          ->search_view();
     }
     return GetAppListTestHelper()->GetBubbleAppListSearchView();
   }
@@ -270,8 +270,10 @@ class SearchViewTabletTest : public AppListSearchViewTest {
 class SearchResultImageViewTest : public SearchViewClamshellAndTabletTest {
  public:
   SearchResultImageViewTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kProductivityLauncherImageSearch);
+    scoped_feature_list_.InitWithFeatures(
+        {features::kProductivityLauncherImageSearch,
+         features::kLauncherSearchControl},
+        {});
   }
 
   bool IsImageSearchEnabled(PrefService* prefs) {
@@ -666,6 +668,12 @@ TEST_P(SearchResultImageViewTest, AcceptingPrivacyNoticeRemovesIt) {
 
 TEST_P(SearchResultImageViewTest, SearchCategoryMenuItemToggleTest) {
   GetAppListTestHelper()->ShowAppList();
+  auto* app_list_client = GetAppListTestHelper()->app_list_client();
+
+  app_list_client->set_available_categories_for_test(
+      {AppListSearchControlCategory::kApps,
+       AppListSearchControlCategory::kFiles,
+       AppListSearchControlCategory::kWeb});
 
   // Press a character key to open the search.
   PressAndReleaseKey(ui::VKEY_A);
@@ -677,9 +685,8 @@ TEST_P(SearchResultImageViewTest, SearchCategoryMenuItemToggleTest) {
 
   // Set up the search callback to notify that the search is triggered.
   bool is_search_triggered = false;
-  GetAppListTestHelper()->app_list_client()->set_search_callback(
-      base::BindLambdaForTesting(
-          [&](const std::u16string& query) { is_search_triggered = true; }));
+  app_list_client->set_search_callback(base::BindLambdaForTesting(
+      [&](const std::u16string& query) { is_search_triggered = true; }));
 
   // Toggleable categories are on by default.
   PrefService* prefs =
@@ -693,14 +700,25 @@ TEST_P(SearchResultImageViewTest, SearchCategoryMenuItemToggleTest) {
   LeftClickOn(GetSearchBoxView()->GetFilterMenuItemByCategory(
       AppListSearchControlCategory::kApps));
   EXPECT_TRUE(GetSearchBoxView()->IsFilterMenuOpen());
-  ASSERT_TRUE(prefs->GetDict(prefs::kLauncherSearchCategoryControlStatus)
-                  .FindBool(GetAppListControlCategoryName(
-                      AppListSearchControlCategory::kApps))
-                  .has_value());
-  EXPECT_FALSE(prefs->GetDict(prefs::kLauncherSearchCategoryControlStatus)
-                   .FindBool(GetAppListControlCategoryName(
-                       AppListSearchControlCategory::kApps))
-                   .value());
+  absl::optional apps_search_enabled =
+      prefs->GetDict(prefs::kLauncherSearchCategoryControlStatus)
+          .FindBool(GetAppListControlCategoryName(
+              AppListSearchControlCategory::kApps));
+  ASSERT_TRUE(apps_search_enabled.has_value());
+  EXPECT_FALSE(*apps_search_enabled);
+  // Clicking on a menu item won't trigger the search.
+  EXPECT_FALSE(is_search_triggered);
+
+  // Verify that clicking on the last item can still be handled.
+  LeftClickOn(GetSearchBoxView()->GetFilterMenuItemByCategory(
+      AppListSearchControlCategory::kWeb));
+  EXPECT_TRUE(GetSearchBoxView()->IsFilterMenuOpen());
+  absl::optional web_search_enabled =
+      prefs->GetDict(prefs::kLauncherSearchCategoryControlStatus)
+          .FindBool(GetAppListControlCategoryName(
+              AppListSearchControlCategory::kWeb));
+  ASSERT_TRUE(web_search_enabled.has_value());
+  EXPECT_FALSE(*web_search_enabled);
   // Clicking on a menu item won't trigger the search.
   EXPECT_FALSE(is_search_triggered);
 
@@ -710,8 +728,61 @@ TEST_P(SearchResultImageViewTest, SearchCategoryMenuItemToggleTest) {
   EXPECT_FALSE(GetSearchBoxView()->IsFilterMenuOpen());
   EXPECT_TRUE(is_search_triggered);
 
-  GetAppListTestHelper()->app_list_client()->set_search_callback(
-      TestAppListClient::SearchCallback());
+  // Reset the search callback.
+  app_list_client->set_search_callback(TestAppListClient::SearchCallback());
+}
+
+// Verifies that the filter button and all menu items in the search category
+// filter have tooltips.
+TEST_P(SearchResultImageViewTest, SearchCategoryMenuItemTooltips) {
+  GetAppListTestHelper()->ShowAppList();
+  auto* app_list_client = GetAppListTestHelper()->app_list_client();
+
+  app_list_client->set_available_categories_for_test(
+      {AppListSearchControlCategory::kApps,
+       AppListSearchControlCategory::kAppShortcuts,
+       AppListSearchControlCategory::kFiles,
+       AppListSearchControlCategory::kGames,
+       AppListSearchControlCategory::kHelp,
+       AppListSearchControlCategory::kImages,
+       AppListSearchControlCategory::kPlayStore,
+       AppListSearchControlCategory::kWeb});
+
+  // Press a character key to open the search.
+  PressAndReleaseKey(ui::VKEY_A);
+  GetSearchBoxView()->GetWidget()->LayoutRootViewIfNecessary();
+  views::ImageButton* filter_button = GetSearchBoxView()->filter_button();
+  EXPECT_TRUE(filter_button->GetVisible());
+  EXPECT_EQ(filter_button->GetTooltipText({}),
+            u"Toggle search result categories");
+  LeftClickOn(filter_button);
+  EXPECT_TRUE(GetSearchBoxView()->IsFilterMenuOpen());
+
+  auto check_tooltip = [&](AppListSearchControlCategory category,
+                           std::u16string tooltip) {
+    EXPECT_EQ(GetSearchBoxView()
+                  ->GetFilterMenuItemByCategory(category)
+                  ->GetTooltipText({}),
+              tooltip);
+  };
+
+  // Check that all menu items have their corresponding tooltip.
+  check_tooltip(AppListSearchControlCategory::kApps, u"Your installed apps");
+  check_tooltip(
+      AppListSearchControlCategory::kAppShortcuts,
+      u"Quick access to specific pages or actions within installed apps");
+  check_tooltip(AppListSearchControlCategory::kFiles,
+                u"Your files on this device and Google Drive");
+  check_tooltip(AppListSearchControlCategory::kGames,
+                u"Games on the Play Store and other gaming platforms");
+  check_tooltip(AppListSearchControlCategory::kHelp,
+                u"Key shortcuts, tips for using device, and more");
+  check_tooltip(AppListSearchControlCategory::kImages,
+                u"Image search by content and image previews");
+  check_tooltip(AppListSearchControlCategory::kPlayStore,
+                u"Available apps from the Play Store");
+  check_tooltip(AppListSearchControlCategory::kWeb,
+                u"Websites including pages you've visited and open pages");
 }
 
 // Tests that key traversal correctly cycles between the list of results and
@@ -723,6 +794,13 @@ TEST_P(SearchResultImageViewTest, ResultSelectionCycle) {
 
   // Press a key to start a search.
   PressAndReleaseKey(ui::VKEY_A);
+
+  // Focus cycle with search notifier will be done in
+  // ResultSelectionCycleWithSearchNotifier. Remove it here.
+  auto* search_notifier = GetSearchView()->search_notifier_view();
+  EXPECT_TRUE(search_notifier);
+  LeftClickOn(search_notifier->toast_button());
+  EXPECT_FALSE(GetSearchView()->search_notifier_view());
   SearchModel::SearchResults* results = test_helper->GetSearchResults();
 
   // Create categorized app results.
@@ -782,6 +860,66 @@ TEST_P(SearchResultImageViewTest, ResultSelectionCycle) {
   ASSERT_TRUE(controller->selected_result());
   EXPECT_EQ(controller->selected_location_details()->result_index,
             kDefaultSearchItems - 1);
+}
+
+// Tests that key traversal correctly cycles between the list of results and
+// search box buttons.
+TEST_P(SearchResultImageViewTest, ResultSelectionCycleWithSearchNotifier) {
+  auto* test_helper = GetAppListTestHelper();
+  test_helper->ShowAppList();
+  EXPECT_FALSE(GetSearchView()->CanSelectSearchResults());
+
+  // Press a key to start a search.
+  PressAndReleaseKey(ui::VKEY_A);
+  SearchModel::SearchResults* results = test_helper->GetSearchResults();
+
+  // Create categorized app results.
+  AppListModelProvider::Get()->search_model()->DeleteAllResults();
+  test_helper->GetOrderedResultCategories()->push_back(
+      AppListSearchResultCategory::kApps);
+  SetUpSearchResults(results, 1, /*new_result_count=*/2, 100, false,
+                     SearchResult::Category::kApps);
+
+  std::vector<SearchResultContainerView*> result_containers =
+      GetSearchView()->result_container_views_for_test();
+  for (auto* container : result_containers) {
+    EXPECT_TRUE(container->RunScheduledUpdateForTest());
+  }
+
+  // When the search starts, the first result view is selected.
+  EXPECT_TRUE(GetSearchView()->CanSelectSearchResults());
+  ResultSelectionController* controller =
+      GetSearchView()->result_selection_controller_for_test();
+  EXPECT_EQ(controller->selected_location_details()->result_index, 0);
+
+  // When search notifier exists, move the focus to it by pressing up from the
+  // first search result.
+  PressAndReleaseKey(ui::VKEY_UP);
+  auto* search_notifier = GetSearchView()->search_notifier_view();
+  EXPECT_FALSE(controller->selected_result());
+  EXPECT_TRUE(search_notifier->toast_button()->HasFocus());
+
+  // Pressing left and right won't change the focus on the search notifier.
+  PressAndReleaseKey(ui::VKEY_LEFT);
+  EXPECT_TRUE(search_notifier->toast_button()->HasFocus());
+  PressAndReleaseKey(ui::VKEY_RIGHT);
+  EXPECT_TRUE(search_notifier->toast_button()->HasFocus());
+
+  // The previous view to focus is the close button.
+  PressAndReleaseKey(ui::VKEY_UP);
+  EXPECT_FALSE(controller->selected_result());
+  EXPECT_TRUE(GetSearchBoxView()->close_button()->HasFocus());
+
+  // Pressing down from the close button goes back to the search notifier.
+  PressAndReleaseKey(ui::VKEY_DOWN);
+  EXPECT_FALSE(controller->selected_result());
+  EXPECT_TRUE(search_notifier->toast_button()->HasFocus());
+
+  // Return the focus back to the search box and select the first result from
+  // the search notifier.
+  PressAndReleaseKey(ui::VKEY_DOWN);
+  EXPECT_TRUE(GetSearchBoxView()->search_box()->HasFocus());
+  EXPECT_EQ(controller->selected_location_details()->result_index, 0);
 }
 
 TEST_P(SearchViewClamshellAndTabletTest, AnimateSearchResultView) {

@@ -280,7 +280,6 @@
 <translation id="3226405216343213872">Recherche de numériseurs en cours…</translation>
 <translation id="3226657629376379887">Menu des actions de mise en page</translation>
 <translation id="3246869037381808805">Les tâches d'impression de plus d'un jour seront retirées</translation>
-<translation id="3248223063252096240">éléments exclusifs <ph name="PRODUCT_NAME" /></translation>
 <translation id="3268178239013324452">Échec : porte de l'imprimante ouverte</translation>
 <translation id="3275729367986477355">Image d'avatar</translation>
 <translation id="3283504360622356314">{0,plural, =1{Modifier le fichier}one{Modifier le fichier}other{Modifier les fichiers}}</translation>
@@ -921,6 +920,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">Sélectionner <ph name="TOPIC_SOURCE" /> (<ph name="TOPIC_SOURCE_DESC" />)</translation>
 <translation id="8151185429379586178">Outils de développement</translation>
+<translation id="8152370627892825"><ph name="DESCRIPTION" />, <ph name="ACCELERATOR_INFO" />.</translation>
 <translation id="8179976553408161302">Entrée</translation>
 <translation id="8183974620058026102">Joindre</translation>
 <translation id="8206859287963243715">Cellulaire</translation>

@@ -10,6 +10,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/power/battery_notification.h"
 #include "ash/system/power/power_status.h"
+#include "ash/system/system_notification_controller.h"
 #include "ash/system/toast/toast_manager_impl.h"
 #include "ash/system/toast/toast_overlay.h"
 #include "ash/test/ash_test_base.h"
@@ -53,7 +54,8 @@ class BatterySaverControllerTest : public AshTestBase {
 
   void UpdatePowerStatus(double battery_percent,
                          base::TimeDelta time_to_empty,
-                         bool charging) {
+                         bool charging,
+                         bool is_usb_charger = false) {
     power_manager::PowerSupplyProperties props;
 
     // Set battery percentage
@@ -65,12 +67,17 @@ class BatterySaverControllerTest : public AshTestBase {
     auto battery_state =
         power_manager::PowerSupplyProperties_BatteryState_DISCHARGING;
 
-    if (charging) {
+    if (is_usb_charger) {
+      external_power = power_manager::PowerSupplyProperties_ExternalPower_USB;
+    } else if (charging) {  // Otherwise, treat like AC charger.
       external_power = power_manager::PowerSupplyProperties_ExternalPower_AC;
+    }
+
+    if (battery_percent >= 100) {
+      battery_state = power_manager::PowerSupplyProperties_BatteryState_FULL;
+    } else if (charging) {
       battery_state =
-          battery_percent == 100
-              ? power_manager::PowerSupplyProperties_BatteryState_FULL
-              : power_manager::PowerSupplyProperties_BatteryState_CHARGING;
+          power_manager::PowerSupplyProperties_BatteryState_CHARGING;
     }
 
     // Set battery state
@@ -92,7 +99,7 @@ class BatterySaverControllerTest : public AshTestBase {
   }
 
   void DismissToast() {
-    Shell::Get()->toast_manager()->CloseAllToastsWithoutAnimation();
+    Shell::Get()->toast_manager()->CloseAllToastsWithAnimation();
   }
 
   bool IsBatterySaverActive() {
@@ -342,6 +349,7 @@ TEST_F(BatterySaverControllerTest, ShowDisableToast) {
   ToastOverlay* current_toast = GetCurrentToast();
   EXPECT_EQ(current_toast, nullptr);
 
+  // Test Disabled Toast via Button.
   // Enable battery saver mode.
   battery_saver_controller()->SetState(
       true, BatterySaverController::UpdateReason::kThreshold);
@@ -350,7 +358,7 @@ TEST_F(BatterySaverControllerTest, ShowDisableToast) {
   current_toast = GetCurrentToast();
   EXPECT_EQ(current_toast, nullptr);
 
-  // Disable battery saver mode.
+  // Disable battery saver mode via button.
   battery_saver_controller()->SetState(
       false, BatterySaverController::UpdateReason::kThreshold);
 
@@ -362,6 +370,28 @@ TEST_F(BatterySaverControllerTest, ShowDisableToast) {
       l10n_util::GetStringUTF16(IDS_ASH_BATTERY_SAVER_DISABLED_TOAST_TEXT));
   DismissToast();
 
+  // Test Disabled Toast via Charging.
+  // Enable battery saver mode.
+  battery_saver_controller()->SetState(
+      true, BatterySaverController::UpdateReason::kThreshold);
+
+  // There should be no `ToastOverlay` displayed when battery saver is enabled.
+  current_toast = GetCurrentToast();
+  EXPECT_EQ(current_toast, nullptr);
+
+  // Disable battery saver mode via Charging.
+  battery_saver_controller()->SetState(
+      false, BatterySaverController::UpdateReason::kCharging);
+
+  // Check to see if a `ToastOverlay` was displayed, and that it's accurate.
+  current_toast = GetCurrentToast();
+  EXPECT_NE(current_toast, nullptr);
+  EXPECT_EQ(
+      current_toast->GetText(),
+      l10n_util::GetStringUTF16(IDS_ASH_BATTERY_SAVER_DISABLED_TOAST_TEXT));
+  DismissToast();
+
+  // Test Disabled Toast via Settings.
   // Reenable to test that toast doesn't appear when toggled via Settings.
   battery_saver_controller()->SetState(
       true, BatterySaverController::UpdateReason::kSettings);
@@ -373,6 +403,84 @@ TEST_F(BatterySaverControllerTest, ShowDisableToast) {
   // Check there is still no toast since we disabled via Settings.
   current_toast = GetCurrentToast();
   EXPECT_EQ(current_toast, nullptr);
+}
+
+TEST_F(BatterySaverControllerNotificationTest,
+       ShowEnableToastAtCriticalPercentageForAutoEnable) {
+  SetExperimentArm(features::kBSMAutoEnable);
+  const int critical_percentage = Shell::Get()
+                                      ->system_notification_controller()
+                                      ->power_notification_controller()
+                                      ->GetCriticalPowerPercentage();
+
+  // Ensure there is no `ToastOverlay` being displayed at the start of the test.
+  ToastOverlay* current_toast = GetCurrentToast();
+  EXPECT_EQ(current_toast, nullptr);
+
+  // Set the battery to a critical percentage.
+  UpdatePowerStatus(critical_percentage, eight_hours_, /*charging=*/false);
+
+  // The enabled toast should be displayed.
+  current_toast = GetCurrentToast();
+  EXPECT_NE(current_toast, nullptr);
+  EXPECT_EQ(
+      current_toast->GetText(),
+      l10n_util::GetStringUTF16(IDS_ASH_BATTERY_SAVER_ENABLED_TOAST_TEXT));
+  DismissToast();
+
+  // Plug In AC Charger.
+  UpdatePowerStatus(critical_percentage, eight_hours_, /*charging=*/true);
+
+  // Toast should be 'Disabled' text.
+  current_toast = GetCurrentToast();
+  EXPECT_NE(current_toast, nullptr);
+  EXPECT_EQ(
+      current_toast->GetText(),
+      l10n_util::GetStringUTF16(IDS_ASH_BATTERY_SAVER_DISABLED_TOAST_TEXT));
+  DismissToast();
+}
+
+TEST_P(BatterySaverControllerNotificationTest, NotificationStateUpdatesOnUSB) {
+  SetExperimentArm(features::kBatterySaverNotificationBehavior.Get());
+  DismissNotification();
+
+  // Start test with 100% battery, eight hours time remaining, not charging.
+  UpdatePowerStatus(100, eight_hours_, /*charging=*/false);
+  NotificationNotPresent();
+  DismissNotification();
+
+  // Battery read jumps (not smoothly) from above threshold to below threshold.
+  UpdatePowerStatus(GetActivationPercent() - 1, eight_hours_,
+                    /*charging=*/false);
+  NotificationPresent();
+  DismissNotification();
+  EXPECT_TRUE(IsBatterySaverActive());
+
+  // Simulate USB Plug-In, which detects as AC first, then USB.
+  UpdatePowerStatus(GetActivationPercent() - 1, eight_hours_,
+                    /*charging=*/true);
+  EXPECT_FALSE(IsBatterySaverActive());
+  UpdatePowerStatus(GetActivationPercent() - 1, eight_hours_,
+                    /*charging=*/false, /*is_usb_charger=*/true);
+  EXPECT_EQ(IsBatterySaverActive(),
+            features::kBatterySaverNotificationBehavior.Get() ==
+                features::kBSMAutoEnable);
+  NotificationPresent();
+
+  // Disable Battery Saver via Settings toggle.
+  // This should cause an update in notification state, but not in notification.
+  battery_saver_controller()->SetState(
+      false, BatterySaverController::UpdateReason::kSettings);
+
+  // Unplug USB Charger.
+  UpdatePowerStatus(GetActivationPercent() - 1, eight_hours_,
+                    /*charging=*/false, /*is_usb_charger=*/false);
+
+  // If notification state was updated, then we should show a generic low power
+  // notification.
+  EXPECT_EQ(GetCurrentNotification()->title(),
+            l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_LOW_BATTERY_TITLE));
+  EXPECT_EQ(GetCurrentNotification()->buttons().size(), static_cast<ulong>(0));
 }
 
 TEST_P(BatterySaverControllerNotificationTest,

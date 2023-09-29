@@ -39,7 +39,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/mojom/installation/installation.mojom.h"
@@ -81,6 +80,8 @@ int gTimeDeltaInDaysForTesting = 0;
 InstallableParams ParamsToGetManifest() {
   InstallableParams params;
   params.check_eligibility = true;
+  params.fetch_metadata =
+      base::FeatureList::IsEnabled(features::kUniversalInstallManifest);
   return params;
 }
 
@@ -277,6 +278,7 @@ AppBannerManager::AppBannerManager(content::WebContents* web_contents)
           web_contents->GetBrowserContext())),
       manager_(InstallableManager::FromWebContents(web_contents)),
       manifest_(blink::mojom::Manifest::New()),
+      web_page_metadata_(mojom::WebPageMetadata::New()),
       status_reporter_(std::make_unique<NullStatusReporter>()) {
   DCHECK(manager_);
 
@@ -333,12 +335,23 @@ std::string AppBannerManager::GetAppIdentifier() {
 }
 
 std::u16string AppBannerManager::GetAppName() const {
-  return manifest().name.value_or(std::u16string());
+  return manifest().name.value_or(GetNameFromMetadata());
+}
+
+std::u16string AppBannerManager::GetNameFromMetadata() const {
+  return web_page_metadata().application_name.empty()
+             ? web_page_metadata().title
+             : web_page_metadata().application_name;
 }
 
 const blink::mojom::Manifest& AppBannerManager::manifest() const {
-  DCHECK(manifest_);
+  CHECK(manifest_);
   return *manifest_;
+}
+
+const mojom::WebPageMetadata& AppBannerManager::web_page_metadata() const {
+  CHECK(web_page_metadata_);
+  return *web_page_metadata_;
 }
 
 std::string AppBannerManager::GetBannerType() {
@@ -375,6 +388,7 @@ void AppBannerManager::OnDidGetManifest(const InstallableData& data) {
   manifest_url_ = *(data.manifest_url);
   manifest_ = data.manifest->Clone();
   manifest_id_ = blink::GetIdFromManifest(manifest());
+  web_page_metadata_ = data.web_page_metadata->Clone();
 
   // Skip checks for PasswordManager WebUI page.
   if (content::HasWebUIScheme(validated_url_) &&
@@ -399,7 +413,7 @@ void AppBannerManager::OnDidGetManifest(const InstallableData& data) {
 InstallableParams AppBannerManager::ParamsToPerformInstallableWebAppCheck() {
   InstallableParams params;
   params.valid_primary_icon = true;
-  params.valid_manifest = true;
+  params.installable_criteria = InstallableCriteria::kValidManifestWithIcons;
   params.fetch_screenshots = true;
 
   return params;
@@ -429,8 +443,9 @@ void AppBannerManager::OnDidPerformInstallableWebAppCheck(
   }
 
   UpdateState(State::ACTIVE);
-  if (data.valid_manifest)
+  if (data.installable_check_passed) {
     TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_REQUESTED);
+  }
 
   bool is_installable = data.errors.empty();
 
@@ -455,7 +470,7 @@ void AppBannerManager::OnDidPerformInstallableWebAppCheck(
     return;
   }
 
-  DCHECK(data.valid_manifest);
+  DCHECK(data.installable_check_passed);
   DCHECK(!data.primary_icon_url->is_empty());
   DCHECK(data.primary_icon);
 
@@ -463,6 +478,32 @@ void AppBannerManager::OnDidPerformInstallableWebAppCheck(
   primary_icon_ = *data.primary_icon;
   has_maskable_primary_icon_ = data.has_maskable_primary_icon;
   screenshots_ = *(data.screenshots);
+
+  if (base::FeatureList::IsEnabled(features::kUniversalInstallManifest)) {
+    SetInstallableWebAppCheckResult(
+        InstallableWebAppCheckResult::kYes_ByUserRequest);
+
+    InstallableParams check_promotable_params;
+    check_promotable_params.installable_criteria =
+        InstallableCriteria::kValidManifestWithIcons;
+    manager_->GetData(
+        check_promotable_params,
+        base::BindOnce(&AppBannerManager::OnDidPerformPromotableWebAppCheck,
+                       GetWeakPtrForThisNavigation()));
+    return;
+  }
+
+  SetInstallableWebAppCheckResult(
+      InstallableWebAppCheckResult::kYes_Promotable);
+  CheckSufficientEngagement();
+}
+
+void AppBannerManager::OnDidPerformPromotableWebAppCheck(
+    const InstallableData& data) {
+  if (!data.errors.empty()) {
+    Stop(data.GetFirstError());
+    return;
+  }
 
   SetInstallableWebAppCheckResult(
       InstallableWebAppCheckResult::kYes_Promotable);
@@ -506,6 +547,7 @@ void AppBannerManager::ResetCurrentPageData() {
   has_sufficient_engagement_ = false;
   active_media_players_.clear();
   manifest_ = blink::mojom::Manifest::New();
+  web_page_metadata_ = mojom::WebPageMetadata::New();
   manifest_url_ = GURL();
   manifest_id_ = GURL();
   validated_url_ = GURL();

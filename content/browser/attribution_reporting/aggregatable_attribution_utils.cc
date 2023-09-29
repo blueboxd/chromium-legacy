@@ -108,15 +108,14 @@ std::vector<AggregatableHistogramContribution> CreateAggregatableHistogram(
         100 * (buckets.size() - contributions.size()) / buckets.size());
   }
 
-  static_assert(
-      attribution_reporting::kMaxAggregationKeysPerSourceOrTrigger == 20,
-      "Bump the version for histogram "
-      "Conversions.AggregatableReport.NumContributionsPerReport2");
+  static_assert(attribution_reporting::kMaxAggregationKeysPerSource == 20,
+                "Bump the version for histogram "
+                "Conversions.AggregatableReport.NumContributionsPerReport2");
 
   base::UmaHistogramExactLinear(
       "Conversions.AggregatableReport.NumContributionsPerReport2",
       contributions.size(),
-      attribution_reporting::kMaxAggregationKeysPerSourceOrTrigger + 1);
+      attribution_reporting::kMaxAggregationKeysPerSource + 1);
 
   return contributions;
 }
@@ -149,7 +148,6 @@ absl::optional<AggregatableReportRequest> CreateAggregatableReportRequest(
           [&](const AttributionReport::NullAggregatableData& data) {
             source_time = data.fake_source_time;
             common_aggregatable_data = &data.common_data;
-            contributions.emplace_back(/*bucket=*/0, /*value=*/0);
           },
       },
       report.data());
@@ -188,7 +186,9 @@ absl::optional<AggregatableReportRequest> CreateAggregatableReportRequest(
           common_aggregatable_data->aggregation_coordinator_origin
               ? absl::make_optional(
                     **common_aggregatable_data->aggregation_coordinator_origin)
-              : absl::nullopt),
+              : absl::nullopt,
+          /*max_contributions_allowed=*/
+          attribution_reporting::kMaxAggregationKeysPerSource),
       AggregatableReportSharedInfo(
           report.initial_report_time(), report.external_report_id(),
           report.GetReportingOrigin(), debug_mode, std::move(additional_fields),

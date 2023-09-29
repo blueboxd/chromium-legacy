@@ -322,6 +322,7 @@ class CORE_EXPORT XMLHttpRequest final
   std::unique_ptr<TextResourceDecoder> decoder_;
 
   StringBuilder response_text_;
+  bool response_text_overflow_ = false;
   size_t response_text_last_reported_size_ = 0;
   Member<Document> response_document_;
   Member<DocumentParser> response_document_parser_;
@@ -356,11 +357,6 @@ class CORE_EXPORT XMLHttpRequest final
   // This blob loader will be used if |m_downloadingToFile| is true and
   // |m_responseTypeCode| is NOT ResponseTypeBlob.
   Member<BlobLoader> blob_loader_;
-
-  // Positive if we are dispatching events.
-  // This is an integer specifying the recursion level rather than a boolean
-  // because in some cases we have recursive dispatching.
-  int event_dispatch_recursion_level_ = 0;
 
   bool async_ = true;
 

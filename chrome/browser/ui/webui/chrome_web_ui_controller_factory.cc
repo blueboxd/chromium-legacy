@@ -46,7 +46,6 @@
 #include "chrome/browser/ui/webui/internals/internals_ui.h"
 #include "chrome/browser/ui/webui/interstitials/interstitial_ui.h"
 #include "chrome/browser/ui/webui/intro/intro_ui.h"
-#include "chrome/browser/ui/webui/invalidations/invalidations_ui.h"
 #include "chrome/browser/ui/webui/local_state/local_state_ui.h"
 #include "chrome/browser/ui/webui/location_internals/location_internals_ui.h"
 #include "chrome/browser/ui/webui/log_web_ui_url.h"
@@ -169,6 +168,7 @@
 #include "chrome/browser/ui/webui/side_panel/bookmarks/bookmarks_side_panel_ui.h"
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome_ui.h"
 #include "chrome/browser/ui/webui/side_panel/history_clusters/history_clusters_side_panel_ui.h"
+#include "chrome/browser/ui/webui/side_panel/performance_controls/performance_side_panel_ui.h"
 #include "chrome/browser/ui/webui/side_panel/read_anything/read_anything_untrusted_ui.h"
 #include "chrome/browser/ui/webui/side_panel/reading_list/reading_list_ui.h"
 #include "chrome/browser/ui/webui/side_panel/user_notes/user_notes_side_panel_ui.h"
@@ -473,8 +473,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<InternalsUI>;
   if (url.host_piece() == chrome::kChromeUIInterstitialHost)
     return &NewWebUI<InterstitialUI>;
-  if (url.host_piece() == chrome::kChromeUIInvalidationsHost)
-    return &NewWebUI<InvalidationsUI>;
   if (url.host_piece() ==
       security_interstitials::kChromeUIConnectionMonitoringDetectedHost) {
     return &NewWebUI<security_interstitials::KnownInterceptionDisclosureUI>;
@@ -616,6 +614,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
   if (url.host_piece() == chrome::kChromeUIUserNotesSidePanelHost)
     return &NewWebUI<UserNotesSidePanelUI>;
+  if (url.host_piece() == chrome::kChromeUIPerformanceSidePanelHost) {
+    return &NewWebUI<PerformanceSidePanelUI>;
+  }
   // Settings are implemented with native UI elements on Android.
   if (url.host_piece() == chrome::kChromeUISettingsHost)
     return &NewWebUI<settings::SettingsUI>;
@@ -939,11 +940,11 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
   // Use ui::GetSupportedResourceScaleFactors instead of
   // favicon_base::GetFaviconScales() because chrome favicons comes from
   // resources.
-  std::vector<ui::ResourceScaleFactor> resource_scale_factors =
+  const std::vector<ui::ResourceScaleFactor>& resource_scale_factors =
       ui::GetSupportedResourceScaleFactors();
 
   std::vector<gfx::Size> candidate_sizes;
-  for (auto scale_factor : resource_scale_factors) {
+  for (const auto scale_factor : resource_scale_factors) {
     float scale = ui::GetScaleForResourceScaleFactor(scale_factor);
     // Assume that GetFaviconResourceBytes() returns favicons which are
     // |gfx::kFaviconSize| x |gfx::kFaviconSize| DIP.
@@ -1112,7 +1113,6 @@ ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
     GURL(chrome::kChromeUIGpuURL),
     GURL(chrome::kChromeUIHistogramsURL),
     GURL(chrome::kChromeUIInspectURL),
-    GURL(chrome::kChromeUIInvalidationsUrl),
     GURL(chrome::kChromeUIManagementURL),
     GURL(chrome::kChromeUIPrefsInternalsURL),
     GURL(chrome::kChromeUIRestartURL),

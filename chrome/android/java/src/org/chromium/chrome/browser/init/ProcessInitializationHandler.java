@@ -24,6 +24,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.compat.ApiHelperForR;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
@@ -83,6 +84,7 @@ import org.chromium.chrome.browser.signin.SigninCheckerProvider;
 import org.chromium.chrome.browser.tab.state.PersistedTabData;
 import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
 import org.chromium.chrome.browser.ui.cars.DrivingRestrictionsManager;
+import org.chromium.chrome.browser.ui.hats.SurveyClientFactory;
 import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityPreferencesManager;
 import org.chromium.chrome.browser.usb.UsbNotificationManager;
 import org.chromium.chrome.browser.util.AfterStartupTaskUtils;
@@ -113,6 +115,7 @@ import org.chromium.ui.base.PhotoPicker;
 import org.chromium.ui.base.PhotoPickerListener;
 import org.chromium.ui.base.SelectFileDialog;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.GURL;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -174,8 +177,6 @@ public class ProcessInitializationHandler {
      * Performs the shared class initialization.
      */
     protected void handlePreNativeInitialization() {
-        Context application = ContextUtils.getApplicationContext();
-
         // Initialize the AccountManagerFacade with the correct AccountManagerDelegate. Must be done
         // only once and before AccountManagerFacadeProvider.getInstance() is invoked.
         AccountManagerFacadeProvider.setInstance(
@@ -261,6 +262,15 @@ public class ProcessInitializationHandler {
         if (BuildInfo.getInstance().isAutomotive) {
             DrivingRestrictionsManager.initialize();
         }
+
+        // Initialize UMA settings for survey component.
+        // TODO(crbug/1481316): Observe PrivacyPreferencesManagerImpl from SurveyClientFactory.
+        ObservableSupplierImpl<Boolean> crashUploadPermissionSupplier =
+                new ObservableSupplierImpl<>();
+        crashUploadPermissionSupplier.set(
+                PrivacyPreferencesManagerImpl.getInstance().isUsageAndCrashReportingPermitted());
+        PrivacyPreferencesManagerImpl.getInstance().addObserver(crashUploadPermissionSupplier::set);
+        SurveyClientFactory.initialize(crashUploadPermissionSupplier);
     }
 
     /**
@@ -326,10 +336,10 @@ public class ProcessInitializationHandler {
                         new Runnable() {
                             @Override
                             public void run() {
-                                String homepageUrl = HomepageManager.getHomepageUri();
+                                GURL homepageGurl = HomepageManager.getHomepageGurl();
                                 LaunchMetrics.recordHomePageLaunchMetrics(
                                         HomepageManager.isHomepageEnabled(),
-                                        UrlUtilities.isNTPUrl(homepageUrl), homepageUrl);
+                                        UrlUtilities.isNTPUrl(homepageGurl), homepageGurl);
                             }
                         });
 

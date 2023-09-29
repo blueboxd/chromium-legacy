@@ -78,7 +78,8 @@ class CORE_EXPORT AnimationFrameTimingMonitor final
                          ScriptState*,
                          bool resolving,
                          const char* class_like,
-                         const String& property_like);
+                         const String& property_like,
+                         const String& script_url);
   void Will(const probe::CompileAndRunScript&);
   void Did(const probe::CompileAndRunScript&);
   void Will(const probe::ExecuteScript&);
@@ -127,7 +128,7 @@ class CORE_EXPORT AnimationFrameTimingMonitor final
     return DidExecuteScript(probe, probe.context);
   }
 
-  void RecordLongAnimationFrameUKM(const AnimationFrameTimingInfo&);
+  void RecordLongAnimationFrameUKMAndTrace(const AnimationFrameTimingInfo&);
   void ApplyTaskDuration(base::TimeDelta task_duration);
 
   absl::optional<PendingScriptInfo> pending_script_info_;

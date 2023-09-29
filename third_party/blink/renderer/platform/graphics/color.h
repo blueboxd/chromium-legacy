@@ -136,6 +136,10 @@ class PLATFORM_EXPORT Color {
     return color_space == ColorSpace::kLch || color_space == ColorSpace::kOklch;
   }
 
+  // https://www.w3.org/TR/css-color-4/#legacy-color-syntax
+  // Returns true if the color is of a type that predates CSS Color 4. Includes
+  // rgb(), rgba(), hex color, named color, hsl() and hwb() types. These colors
+  // interpolate and serialize differently from other color types.
   static bool IsLegacyColorSpace(ColorSpace color_space) {
     return color_space == ColorSpace::kSRGBLegacy ||
            color_space == ColorSpace::kHSL || color_space == ColorSpace::kHWB;
@@ -199,6 +203,12 @@ class PLATFORM_EXPORT Color {
                               absl::optional<float> param1,
                               absl::optional<float> param2,
                               absl::optional<float> alpha);
+  static Color FromColorSpace(ColorSpace space,
+                              absl::optional<float> param0,
+                              absl::optional<float> param1,
+                              absl::optional<float> param2) {
+    return FromColorSpace(space, param0, param1, param2, 1.0f);
+  }
 
   // Create a color using the hsl() syntax.
   static Color FromHSLA(absl::optional<float> h,
@@ -353,11 +363,6 @@ class PLATFORM_EXPORT Color {
   inline bool operator!=(const Color& other) const { return !(*this == other); }
 
   unsigned GetHash() const;
-  // Returns true if the color is of a type that predates CSS Color 4. Includes
-  // rgb(), rgba(), hex color, named color, hsl() and hwb() types. These colors
-  // are always assumed to be in the sRGB color space and interpolate and
-  // serialize differently from other color types.
-  bool IsLegacyColor() const;
 
   // What colorspace space a color wants to interpolate in. This is not
   // equivalent to the colorspace of the color itself.
@@ -378,6 +383,7 @@ class PLATFORM_EXPORT Color {
   FRIEND_TEST_ALL_PREFIXES(BlinkColor, HueInterpolation);
   FRIEND_TEST_ALL_PREFIXES(BlinkColor, Premultiply);
   FRIEND_TEST_ALL_PREFIXES(BlinkColor, Unpremultiply);
+  FRIEND_TEST_ALL_PREFIXES(BlinkColor, ConvertToColorSpace);
   FRIEND_TEST_ALL_PREFIXES(BlinkColor, toSkColor4fValidation);
   FRIEND_TEST_ALL_PREFIXES(BlinkColor, ExportAsXYZD50Floats);
 

@@ -252,13 +252,15 @@ const NGFragmentItem* NGFragmentItems::EndOfReusableItems(
 bool NGFragmentItems::IsContainerForCulledInline(
     const LayoutInline& layout_inline,
     bool* is_first_container,
-    bool* is_last_container) const {
+    bool* is_last_container,
+    bool* child_has_any_child_items) const {
   DCHECK(!layout_inline.HasInlineFragments());
   const wtf_size_t start_idx = size_of_earlier_fragments_;
   const wtf_size_t end_idx = EndItemIndex();
   const LayoutObject* next_descendant;
   bool found_item = false;
   *is_first_container = true;
+  *child_has_any_child_items = false;
   for (const LayoutObject* descendant = layout_inline.FirstChild(); descendant;
        descendant = next_descendant) {
     wtf_size_t item_idx = descendant->FirstInlineFragmentItemIndex();
@@ -268,6 +270,7 @@ bool NGFragmentItems::IsContainerForCulledInline(
       next_descendant = descendant->NextInPreOrder(&layout_inline);
     if (!item_idx)
       continue;
+    *child_has_any_child_items = true;
 
     // |FirstInlineFragmentItemIndex| is 1-based. Convert to 0-based index.
     item_idx--;
@@ -276,6 +279,13 @@ bool NGFragmentItems::IsContainerForCulledInline(
       // This descendant starts in a later container. So this isn't the last
       // container for the culled inline.
       *is_last_container = false;
+      if (!found_item && descendant->IsFloating()) {
+        // Keep looking if we haven't found anything here. Even if this float
+        // starts in a later container, there may still be something to be found
+        // in this container. A float may be pushed to the next fragmentainer,
+        // while subsequent in-flow content may still fit in this container.
+        continue;
+      }
       return found_item;
     }
 

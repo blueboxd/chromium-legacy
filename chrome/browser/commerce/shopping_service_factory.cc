@@ -6,6 +6,7 @@
 
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/persisted_state_db/session_proto_db_factory.h"
@@ -67,6 +68,7 @@ ShoppingServiceFactory::ShoppingServiceFactory()
                 GetInstance());
   DependsOn(SessionProtoDBFactory<
             parcel_tracking_db::ParcelTrackingContent>::GetInstance());
+  DependsOn(HistoryServiceFactory::GetInstance());
 #if !BUILDFLAG(IS_ANDROID)
   DependsOn(SessionProtoDBFactory<
             discounts_db::DiscountsContentProto>::GetInstance());
@@ -82,7 +84,7 @@ ShoppingServiceFactory::BuildServiceInstanceForBrowserContext(
       GetCurrentCountryCode(g_browser_process->variations_service()),
       g_browser_process->GetApplicationLocale(),
       BookmarkModelFactory::GetInstance()->GetForBrowserContext(context),
-      OptimizationGuideKeyedServiceFactory::GetForProfile(profile),
+      nullptr, OptimizationGuideKeyedServiceFactory::GetForProfile(profile),
       profile->GetPrefs(), IdentityManagerFactory::GetForProfile(profile),
       SyncServiceFactory::GetForProfile(profile),
       profile->GetDefaultStoragePartition()
@@ -99,7 +101,9 @@ ShoppingServiceFactory::BuildServiceInstanceForBrowserContext(
 #endif
       SessionProtoDBFactory<
           parcel_tracking_db::ParcelTrackingContent>::GetInstance()
-          ->GetForProfile(context));
+          ->GetForProfile(context),
+      HistoryServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::EXPLICIT_ACCESS));
 }
 
 bool ShoppingServiceFactory::ServiceIsCreatedWithBrowserContext() const {

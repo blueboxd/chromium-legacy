@@ -196,8 +196,16 @@ void ChromeSigninClient::PreSignOut(
   // `signout_source_metric` is `signin_metrics::ProfileSignout::kAbortSignin`
   // if the user declines sync in the signin process. In case the user accepts
   // the managed account but declines sync, we should keep the window open.
+  // `signout_source_metric` is
+  // `signin_metrics::ProfileSignout::kRevokeSyncFromSettings` when the user
+  // turns off sync from the settings, we should also keep the window open at
+  // this point.
+  // TODO(https://crbug.com/1478102): Check for managed accounts to be modified
+  // when aligning Managed vs Consumer accounts.
   bool user_declines_sync_after_consenting_to_management =
-      signout_source_metric == signin_metrics::ProfileSignout::kAbortSignin &&
+      (signout_source_metric == signin_metrics::ProfileSignout::kAbortSignin ||
+       signout_source_metric ==
+           signin_metrics::ProfileSignout::kRevokeSyncFromSettings) &&
       chrome::enterprise_util::UserAcceptedAccountManagement(profile_);
   // These sign out won't remove the policy cache, keep the window opened.
   bool keep_window_opened =
@@ -214,7 +222,7 @@ void ChromeSigninClient::PreSignOut(
         profile_,
         base::BindRepeating(&ChromeSigninClient::OnCloseBrowsersSuccess,
                             base::Unretained(this), signout_source_metric,
-                            has_sync_account),
+                            /*should_sign_out=*/true, has_sync_account),
         base::BindRepeating(&ChromeSigninClient::OnCloseBrowsersAborted,
                             base::Unretained(this)),
         signout_source_metric == signin_metrics::ProfileSignout::kAbortSignin ||
@@ -304,9 +312,37 @@ void ChromeSigninClient::VerifySyncToken() {
   // We only verifiy the token once when Profile is just created.
   if (signin_util::IsForceSigninEnabled() && !force_signin_verifier_)
     force_signin_verifier_ = std::make_unique<ForceSigninVerifier>(
-        profile_, IdentityManagerFactory::GetForProfile(profile_));
+        profile_, IdentityManagerFactory::GetForProfile(profile_),
+        base::BindOnce(&ChromeSigninClient::OnTokenFetchComplete,
+                       base::Unretained(this)));
 #endif
 }
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+void ChromeSigninClient::OnTokenFetchComplete(bool token_is_valid) {
+  // If the token is valid we do need to do anything special and let the user
+  // proceed.
+  if (token_is_valid) {
+    return;
+  }
+
+  // Token is not valid, we close all the browsers and open the Profile
+  // Picker.
+  should_display_user_manager_ = true;
+  BrowserList::CloseAllBrowsersWithProfile(
+      profile_,
+      base::BindRepeating(
+          &ChromeSigninClient::OnCloseBrowsersSuccess, base::Unretained(this),
+          signin_metrics::ProfileSignout::kAuthenticationFailedWithForceSignin,
+          // Do not sign the user out to allow them to reauthenticate from the
+          // profile picker.
+          /*should_sign_out=*/false,
+          // Sync value is not used since we are not signing out.
+          /*has_sync_account=*/false),
+      /*on_close_aborted=*/base::DoNothing(),
+      /*skip_beforeunload=*/true);
+}
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 // Returns the account that must be auto-signed-in to the Main Profile in
@@ -393,6 +429,7 @@ void ChromeSigninClient::SetURLLoaderFactoryForTest(
 
 void ChromeSigninClient::OnCloseBrowsersSuccess(
     const signin_metrics::ProfileSignout signout_source_metric,
+    bool should_sign_out,
     bool has_sync_account,
     const base::FilePath& profile_path) {
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -401,8 +438,10 @@ void ChromeSigninClient::OnCloseBrowsersSuccess(
   }
 #endif
 
-  std::move(on_signout_decision_reached_)
-      .Run(GetSignoutDecision(has_sync_account, signout_source_metric));
+  if (should_sign_out) {
+    std::move(on_signout_decision_reached_)
+        .Run(GetSignoutDecision(has_sync_account, signout_source_metric));
+  }
 
   LockForceSigninProfile(profile_path);
   // After sign out, lock the profile and show UserManager if necessary.

@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Process;
 import android.os.SystemClock;
 import android.text.TextUtils;
@@ -21,6 +22,8 @@ import androidx.browser.customtabs.CustomTabsSessionToken;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.base.SplitCompatAppComponentFactory;
+import org.chromium.chrome.browser.base.SplitCompatAppComponentFactory.ProcessCreationReason;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.ClientManager.CalledWarmup;
 import org.chromium.chrome.browser.customtabs.features.TabInteractionRecorder;
@@ -154,13 +157,17 @@ public class CustomTabObserver extends EmptyTabObserver {
         trackNextLCP();
     }
 
-    public void trackNextPageLoadForHiddenTab(boolean usedSpeculation, Intent sourceIntent) {
+    public void trackNextPageLoadForHiddenTab(
+            boolean usedSpeculation, boolean hasCommitted, Intent sourceIntent) {
         mUsedHiddenTabSpeculation = usedSpeculation;
         mLaunchedForSpeculationRealtimeMillis =
                 BrowserIntentUtils.getStartupRealtimeMillis(sourceIntent);
         mLaunchedForSpeculationUptimeMillis =
                 BrowserIntentUtils.getStartupUptimeMillis(sourceIntent);
         trackNextLCP();
+        if (usedSpeculation && hasCommitted) {
+            recordFirstCommitNavigation(mLaunchedForSpeculationRealtimeMillis);
+        }
     }
 
     @Override
@@ -259,28 +266,37 @@ public class CustomTabObserver extends EmptyTabObserver {
 
         mFirstCommitRealtimeMillis = SystemClock.elapsedRealtime();
 
-        if (mCustomTabsConnection == null) return;
+        recordFirstCommitNavigation(mFirstCommitRealtimeMillis);
+    }
+
+    private void recordFirstCommitNavigation(long firstCommitRealtimeMillis) {
+        // ProcessCreationReason is only available on P+.
+        if (mCustomTabsConnection == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return;
 
         String histogram = null;
         long duration = 0;
+        @ProcessCreationReason
+        int processCreationReason = SplitCompatAppComponentFactory.getProcessCreationReason();
+
         // Note that this will exclude Webapp launches in all cases due to either
         // mUsedHiddenTabSpeculation being null, or mIntentReceivedTimestamp being 0.
         if (mUsedHiddenTabSpeculation != null && mUsedHiddenTabSpeculation) {
-            duration = mFirstCommitRealtimeMillis - mLaunchedForSpeculationRealtimeMillis;
-            histogram = "CustomTabs.Startup.TimeToFirstCommitNavigation.Speculated";
+            duration = firstCommitRealtimeMillis - mLaunchedForSpeculationRealtimeMillis;
+            histogram = "CustomTabs.Startup.TimeToFirstCommitNavigation2.Speculated";
         } else if (mIntentReceivedRealtimeMillis > 0) {
             // When the process is already warm the earliest measurable point in startup is when the
             // intent is received so we measure from there. In the cold start case we measure from
             // when the process was started as the best comparison against the warm case.
             if (wasWarmedUp()) {
-                duration = mFirstCommitRealtimeMillis - mIntentReceivedRealtimeMillis;
-                histogram = "CustomTabs.Startup.TimeToFirstCommitNavigation.WarmedUp";
-            } else if (SimpleStartupForegroundSessionDetector.runningCleanForegroundSession()) {
-                duration = mFirstCommitRealtimeMillis - Process.getStartElapsedRealtime();
-                histogram = "CustomTabs.Startup.TimeToFirstCommitNavigation.Cold";
+                duration = firstCommitRealtimeMillis - mIntentReceivedRealtimeMillis;
+                histogram = "CustomTabs.Startup.TimeToFirstCommitNavigation2.WarmedUp";
+            } else if (processCreationReason == ProcessCreationReason.ACTIVITY
+                    && SimpleStartupForegroundSessionDetector.runningCleanForegroundSession()) {
+                duration = firstCommitRealtimeMillis - Process.getStartElapsedRealtime();
+                histogram = "CustomTabs.Startup.TimeToFirstCommitNavigation2.Cold";
             } else {
-                duration = mFirstCommitRealtimeMillis - mIntentReceivedRealtimeMillis;
-                histogram = "CustomTabs.Startup.TimeToFirstCommitNavigation.Warm";
+                duration = firstCommitRealtimeMillis - mIntentReceivedRealtimeMillis;
+                histogram = "CustomTabs.Startup.TimeToFirstCommitNavigation2.Warm";
             }
         }
         if (histogram != null) {
@@ -290,28 +306,33 @@ public class CustomTabObserver extends EmptyTabObserver {
     }
 
     public void recordLargestContentfulPaint(long lcpUptimeMillis) {
-        if (mCustomTabsConnection == null) return;
+        // ProcessCreationReason is only available on P+.
+        if (mCustomTabsConnection == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return;
 
         String histogram = null;
         long duration = 0;
+        @ProcessCreationReason
+        int processCreationReason = SplitCompatAppComponentFactory.getProcessCreationReason();
+
         // Note that this will exclude Webapp launches in all cases due to either
         // mUsedHiddenTabSpeculation being null, or mIntentReceivedTimestamp being 0.
         if (mUsedHiddenTabSpeculation != null && mUsedHiddenTabSpeculation) {
             duration = lcpUptimeMillis - mLaunchedForSpeculationUptimeMillis;
-            histogram = "CustomTabs.Startup.TimeToLargestContentfulPaint.Speculated";
+            histogram = "CustomTabs.Startup.TimeToLargestContentfulPaint2.Speculated";
         } else if (mIntentReceivedRealtimeMillis > 0) {
             // When the process is already warm the earliest measurable point in startup is when the
             // intent is received so we measure from there. In the cold start case we measure from
             // when the process was started as the best comparison against the warm case.
             if (wasWarmedUp()) {
                 duration = lcpUptimeMillis - mIntentReceivedUptimeMillis;
-                histogram = "CustomTabs.Startup.TimeToLargestContentfulPaint.WarmedUp";
-            } else if (SimpleStartupForegroundSessionDetector.runningCleanForegroundSession()) {
+                histogram = "CustomTabs.Startup.TimeToLargestContentfulPaint2.WarmedUp";
+            } else if (processCreationReason == ProcessCreationReason.ACTIVITY
+                    && SimpleStartupForegroundSessionDetector.runningCleanForegroundSession()) {
                 duration = lcpUptimeMillis - Process.getStartUptimeMillis();
-                histogram = "CustomTabs.Startup.TimeToLargestContentfulPaint.Cold";
+                histogram = "CustomTabs.Startup.TimeToLargestContentfulPaint2.Cold";
             } else {
                 duration = lcpUptimeMillis - mIntentReceivedUptimeMillis;
-                histogram = "CustomTabs.Startup.TimeToLargestContentfulPaint.Warm";
+                histogram = "CustomTabs.Startup.TimeToLargestContentfulPaint2.Warm";
             }
         }
         if (histogram != null) {

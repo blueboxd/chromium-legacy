@@ -496,7 +496,7 @@ std::string MakeBidScript(const url::Origin& seller,
           'click', {bucket: 30n, value: 40 + bid});
     }
 
-    reportContextualWin = reportWin;
+    reportAdditionalBidWin = reportWin;
   )";
   return base::StringPrintf(
       kBidScript, seller.Serialize().c_str(), bid.c_str(), render_url.c_str(),
@@ -4752,9 +4752,24 @@ TEST_F(AuctionRunnerTest, ComponentAuctionSharedBuyer) {
           ElementsAreRequests(
               BuildPrivateAggregationRequest(/*bucket=*/10, /*value=*/23),
               BuildPrivateAggregationRequest(/*bucket=*/30, /*value=*/43)))));
+
   // Bid count should only be incremented by 1.
+  base::RunLoop run_loop;
+  interest_group_manager_->GetInterestGroup(
+      kBidder1Key,
+      base::BindLambdaForTesting(
+          [&](absl::optional<StorageInterestGroup> interest_group) {
+            ASSERT_TRUE(interest_group);
+            // MakeInterestGroup() set `bid_count` to 5, so it should be 6
+            // (not 7).
+            EXPECT_EQ(6, interest_group->bidding_browser_signals->bid_count);
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+
+  // Both uses should get reported to the observer, however.
   EXPECT_THAT(result_.interest_groups_that_bid,
-              testing::UnorderedElementsAre(kBidder1Key));
+              testing::UnorderedElementsAre(kBidder1Key, kBidder1Key));
   EXPECT_EQ(R"({"renderURL":"https://component2-bid.test/"})",
             result_.winning_group_ad_metadata);
   // Currently an interest group participating twice in an auction is counted
@@ -9048,7 +9063,8 @@ TEST_F(AuctionRunnerTest, PromiseServerResponseResolveTwice) {
   ad_auction_page_data_->AddAuctionResultWitnessForOrigin(kSeller,
                                                           witnessed_hash);
 
-  AdAuctionRequestContext context(kSeller, {}, std::move(client_context));
+  AdAuctionRequestContext context(kSeller, {}, std::move(client_context),
+                                  base::TimeTicks::Now());
   ad_auction_page_data_->RegisterAdAuctionRequestContext(request_id,
                                                          std::move(context));
 
@@ -19991,8 +20007,8 @@ TEST_P(AuctionRunnerKAnonTest, AdditionalBidBuyerReporting) {
                    browserSignals.interestGroupName);
     }
 
-    function reportContextualWin(auctionSignals, perBuyerSignals, sellerSignals,
-                       browserSignals) {
+    function reportAdditionalBidWin(auctionSignals, perBuyerSignals,
+                                    sellerSignals, browserSignals) {
       sendReportTo("https://contextual.test/?" +
                    browserSignals.interestGroupName);
     }
@@ -20119,6 +20135,7 @@ TEST_F(AuctionRunnerTest, ServerResponseLogsErrors) {
     GURL seller_decision_logic_url;
     bool encrypt;
     std::vector<std::string> errors;
+    AuctionResult result;
   } kTestCases[] = {
       {"Bad framing",
        bad_framing_response,
@@ -20126,28 +20143,32 @@ TEST_F(AuctionRunnerTest, ServerResponseLogsErrors) {
        true,
        kSellerUrl,
        true,
-       {"runAdAuction(): Could not parse response framing"}},
+       {"runAdAuction(): Could not parse response framing"},
+       AuctionResult::kInvalidServerResponse},
       {"not zipped",
        not_zipped_response,
        true,
        true,
        kSellerUrl,
        true,
-       {"runAdAuction(): Could not decompress server response"}},
+       {"runAdAuction(): Could not decompress server response"},
+       AuctionResult::kInvalidServerResponse},
       {"not CBOR",
        not_cbor_response,
        true,
        true,
        kSellerUrl,
        true,
-       {"runAdAuction(): Could not parse server response"}},
+       {"runAdAuction(): Could not parse server response"},
+       AuctionResult::kInvalidServerResponse},
       {"missing fields",
        missing_fields_response,
        true,
        true,
        kSellerUrl,
        true,
-       {"runAdAuction(): Could not parse server response"}},
+       {"runAdAuction(): Could not parse server response"},
+       AuctionResult::kInvalidServerResponse},
       {"not witnessed",
        chaff_response,
        false,
@@ -20155,7 +20176,8 @@ TEST_F(AuctionRunnerTest, ServerResponseLogsErrors) {
        kSellerUrl,
        true,
        {"runAdAuction(): Server response was not witnessed from " +
-        kSeller.Serialize()}},
+        kSeller.Serialize()},
+       AuctionResult::kInvalidServerResponse},
       {"wrong request id",
        chaff_response,
        true,
@@ -20163,32 +20185,37 @@ TEST_F(AuctionRunnerTest, ServerResponseLogsErrors) {
        kSellerUrl,
        true,
        {"runAdAuction(): No corresponding request with ID: " +
-        bad_request_id.AsLowercaseString()}},
+        bad_request_id.AsLowercaseString()},
+       AuctionResult::kInvalidServerResponse},
       {"wrong seller",
        chaff_response,
        true,
        true,
        kBidder1Url,  // Not the seller
        true,
-       {"runAdAuction(): Seller in response doesn't match request"}},
+       {"runAdAuction(): Seller in response doesn't match request"},
+       AuctionResult::kInvalidServerResponse},
       {"not encrypted",
        chaff_response,
        true,
        true,
        kSellerUrl,
        false,
-       {"runAdAuction(): Could not decrypt server response"}},
+       {"runAdAuction(): Could not decrypt server response"},
+       AuctionResult::kInvalidServerResponse},
       {"error on server",
        response_with_error,
        true,
        true,
        kSellerUrl,
        true,
-       {"runAdAuction(): Error on server"}},
+       {"runAdAuction(): Error on server"},
+       AuctionResult::kNoBids},
   };
 
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(test_case.test_name);
+    base::HistogramTester hist;
 
     const base::Uuid request_id = base::Uuid::GenerateRandomV4();
     server_response_request_id_ =
@@ -20216,7 +20243,8 @@ TEST_F(AuctionRunnerTest, ServerResponseLogsErrors) {
           witnessed_hash);
     }
 
-    AdAuctionRequestContext context(kSeller, {}, std::move(client_context));
+    AdAuctionRequestContext context(kSeller, {}, std::move(client_context),
+                                    base::TimeTicks::Now());
     ad_auction_page_data_->RegisterAdAuctionRequestContext(request_id,
                                                            std::move(context));
 
@@ -20240,6 +20268,8 @@ TEST_F(AuctionRunnerTest, ServerResponseLogsErrors) {
 
     task_environment()->RunUntilIdle();
     EXPECT_THAT(result_.errors, testing::ElementsAreArray(test_case.errors));
+    hist.ExpectUniqueSample("Ads.InterestGroup.ServerAuction.Result",
+                            test_case.result, 1);
   }
 
   // Clear this before the page expires to avoid the dangling ptr error.

@@ -14,6 +14,7 @@
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/app_service/publisher_helper.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -21,12 +22,14 @@
 #include "chrome/browser/web_applications/web_app_utils.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_menu_constants.h"
 #include "ash/webui/projector_app/public/cpp/projector_app_constants.h"  // nogncheck
 #include "base/functional/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/menu_item_constants.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
+#include "chrome/browser/apps/app_service/promise_apps/promise_app_web_apps_utils.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_terminal.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
@@ -60,7 +63,7 @@ void WebApps::Shutdown() {
   }
 }
 
-const WebApp* WebApps::GetWebApp(const AppId& app_id) const {
+const WebApp* WebApps::GetWebApp(const webapps::AppId& app_id) const {
   DCHECK(provider_);
   return provider_->registrar_unsafe().GetAppById(app_id);
 }
@@ -226,6 +229,17 @@ void WebApps::GetMenuModel(const std::string& app_id,
 }
 #endif
 
+void WebApps::UpdateAppSize(const std::string& app_id) {
+  const auto* web_app = GetWebApp(app_id);
+  if (!web_app) {
+    return;
+  }
+
+  provider_->scheduler().ComputeAppSize(
+      app_id, base::BindOnce(&WebApps::OnGetAppSize,
+                             weak_ptr_factory_.GetWeakPtr(), app_id));
+}
+
 void WebApps::SetWindowMode(const std::string& app_id,
                             apps::WindowMode window_mode) {
   publisher_helper().SetWindowMode(app_id, window_mode);
@@ -243,6 +257,23 @@ void WebApps::PublishWebApps(std::vector<apps::AppPtr> apps) {
   if (apps.empty()) {
     return;
   }
+  // Make sure none of the shortcuts that are supposed to be published as
+  // apps::Shortcut instead of apps::App get published here.
+  for (auto& app : apps) {
+    CHECK(!IsAppServiceShortcut(app->app_id, *provider_));
+  }
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // This is for prototyping and testing only. It is to provide an easy way to
+  // simulate web app promise icon behaviour for the UI/ client development of
+  // web app promise icons.
+  // TODO(b/261907269): Remove this code snippet and use real listeners for web
+  // app installation events.
+  if (ash::features::ArePromiseIconsForWebAppsEnabled()) {
+    for (auto& app : apps) {
+      apps::MaybeSimulatePromiseAppInstallationEvents(proxy(), app.get());
+    }
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   apps::AppPublisher::Publish(std::move(apps), app_type(),
                               /*should_notify_initialized=*/false);
@@ -260,10 +291,19 @@ void WebApps::PublishWebApp(apps::AppPtr app) {
   if (!is_ready_) {
     return;
   }
-
+  // Make sure none of the shortcuts that are supposed to be published as
+  // apps::Shortcut instead of apps::App get published here.
+  CHECK(!IsAppServiceShortcut(app->app_id, *provider_));
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   bool is_projector = app->app_id == ash::kChromeUIUntrustedProjectorSwaAppId;
-#endif
+
+  // This is for prototyping and testing only.
+  // TODO(b/261907269): Remove this code snippet and use real listeners for web
+  // app installation events.
+  if (ash::features::ArePromiseIconsForWebAppsEnabled()) {
+    apps::MaybeSimulatePromiseAppInstallationEvents(proxy(), app.get());
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   apps::AppPublisher::Publish(std::move(app));
 
@@ -283,6 +323,7 @@ void WebApps::ModifyWebAppCapabilityAccess(
     const std::string& app_id,
     absl::optional<bool> accessing_camera,
     absl::optional<bool> accessing_microphone) {
+  CHECK(!IsAppServiceShortcut(app_id, *provider_));
   apps::AppPublisher::ModifyCapabilityAccess(
       app_id, std::move(accessing_camera), std::move(accessing_microphone));
 }
@@ -292,6 +333,9 @@ std::vector<apps::AppPtr> WebApps::CreateWebApps() {
 
   std::vector<apps::AppPtr> apps;
   for (const WebApp& web_app : provider_->registrar_unsafe().GetApps()) {
+    if (IsAppServiceShortcut(web_app.app_id(), *provider_)) {
+      continue;
+    }
     apps.push_back(publisher_helper().CreateWebApp(&web_app));
   }
   return apps;
@@ -304,17 +348,12 @@ void WebApps::InitWebApps() {
   RegisterPublisher(app_type());
 
   std::vector<apps::AppPtr> apps = CreateWebApps();
-  for (const auto& app : apps) {
-    provider_->scheduler().ComputeAppSize(
-        app->app_id,
-        base::BindOnce(&WebApps::OnGetAppSize, weak_ptr_factory_.GetWeakPtr(),
-                       app->app_id));
-  }
+
   apps::AppPublisher::Publish(std::move(apps), app_type(),
                               /*should_notify_initialized=*/true);
 }
 
-void WebApps::OnGetAppSize(AppId app_id,
+void WebApps::OnGetAppSize(webapps::AppId app_id,
                            absl::optional<ComputeAppSizeCommand::Size> size) {
   auto app = std::make_unique<apps::App>(app_type(), app_id);
   if (!size.has_value()) {

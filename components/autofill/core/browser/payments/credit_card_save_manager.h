@@ -23,6 +23,7 @@
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/strike_databases/payments/credit_card_save_strike_database.h"
+#include "components/autofill/core/browser/strike_databases/payments/cvc_storage_strike_database.h"
 #include "components/autofill/core/browser/strike_databases/payments/local_card_migration_strike_database.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
@@ -136,6 +137,14 @@ class CreditCardSaveManager {
                                     const CreditCard& card,
                                     const bool uploading_local_card);
 
+  // Begins the process to offer server CVC save to the user. If
+  // `has_non_focusable_field` was true, the save was triggered by a form that
+  // has non_focusable fields. If `from_dynamic_change_form` was true, the save
+  // was triggered by a dynamic change form.
+  void AttemptToOfferCvcUploadSave(bool from_dynamic_change_form,
+                                   bool has_non_focusable_field,
+                                   const CreditCard& card);
+
   // Returns true if all the conditions for enabling the upload of credit card
   // are satisfied.
   virtual bool IsCreditCardUploadEnabled();
@@ -184,6 +193,9 @@ class CreditCardSaveManager {
 
   // Returns the CreditCardSaveStrikeDatabase for |client_|.
   CreditCardSaveStrikeDatabase* GetCreditCardSaveStrikeDatabase();
+
+  // Returns the CvcStorageStrikeDatabase for `client_`.
+  CvcStorageStrikeDatabase* GetCvcStorageStrikeDatabase();
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   // Returns the GetLocalCardMigrationStrikeDatabase for |client_|.
@@ -260,6 +272,13 @@ class CreditCardSaveManager {
       const AutofillClient::UserProvidedCardDetails&
           user_provided_card_details);
 
+  // Called once the user makes a decision with respect to the server CVC
+  // offer-to-save prompt.
+  void OnUserDidDecideOnCvcUploadSave(
+      AutofillClient::SaveCardOfferUserDecision user_decision,
+      const AutofillClient::UserProvidedCardDetails&
+          user_provided_card_details);
+
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   // Upload the card details with the user provided cardholder_name.
   // Only relevant for mobile as fix flow is two steps on mobile compared to
@@ -331,8 +350,9 @@ class CreditCardSaveManager {
   // Weak reference.
   raw_ptr<PersonalDataManager> personal_data_manager_;
 
-  // The credit card to be saved if local credit card or CVC save is accepted.
-  CreditCard local_card_save_candidate_;
+  // The credit card to be saved if local credit card or local or server CVC
+  // save is accepted.
+  CreditCard card_save_candidate_;
 
   // Collected information about a pending upload request.
   payments::PaymentsClient::UploadRequestDetails upload_request_;
@@ -388,6 +408,8 @@ class CreditCardSaveManager {
 
   std::unique_ptr<CreditCardSaveStrikeDatabase>
       credit_card_save_strike_database_;
+
+  std::unique_ptr<CvcStorageStrikeDatabase> cvc_storage_strike_database_;
 
   // Profiles that are only preliminarily imported. Those profiles are used
   // during a card import to determine the name and country for storing a new

@@ -6,6 +6,7 @@
 
 #include <array>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #include "base/functional/bind.h"
@@ -13,6 +14,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/ui/views/editor_menu/editor_menu_chip_view.h"
+#include "chrome/browser/ui/views/editor_menu/editor_menu_gradient_badge.h"
 #include "chrome/browser/ui/views/editor_menu/editor_menu_textfield_view.h"
 #include "chrome/browser/ui/views/editor_menu/editor_menu_view_delegate.h"
 #include "chrome/browser/ui/views/editor_menu/utils/pre_target_handler.h"
@@ -26,15 +28,12 @@
 #include "ui/color/color_provider.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_owner.h"
-#include "ui/display/screen.h"
-#include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/rounded_corners_f.h"
-#include "ui/gfx/skia_paint_util.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
+#include "ui/views/badge_painter.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -45,6 +44,7 @@
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
+#include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 
 namespace chromeos::editor_menu {
@@ -54,17 +54,9 @@ namespace {
 constexpr char kWidgetName[] = "EditorMenuViewWidget";
 constexpr char16_t kContainerTitle[] = u"Editor Menu";
 
-constexpr int kContainerMinWidthDip = 368;
 constexpr int kRadiusDip = 4;
 
 constexpr gfx::Insets kTitleContainerInsets = gfx::Insets::TLBR(10, 16, 10, 10);
-
-constexpr char16_t kBadgeText[] = u"New";
-constexpr gfx::Insets kBadgeInsets = gfx::Insets::VH(0, 8);
-constexpr int kBadgeHorizontalPaddingDip = 8;
-constexpr int kBadgeVerticalPaddingDip = 8;
-constexpr SkColor kBadgeBackgroundColorStart = SkColorSetRGB(0xB5, 0xC4, 0xFF);
-constexpr SkColor kBadgeBackgroundColorEnd = SkColorSetRGB(0xB3, 0xEF, 0xD4);
 
 constexpr char16_t kSettingsTooltipString[] = u"Settings";
 constexpr int kSettingsIconSizeDip = 20;
@@ -73,55 +65,10 @@ constexpr int kSettingsButtonBorderDip = 4;
 constexpr int kChipsContainerVerticalSpacingDip = 16;
 constexpr gfx::Insets kChipsMargin =
     gfx::Insets::TLBR(0, 8, kChipsContainerVerticalSpacingDip, 0);
-constexpr gfx::Insets kChipsContainerInsets = gfx::Insets::TLBR(0, 8, 0, 8);
+constexpr gfx::Insets kChipsContainerInsets = gfx::Insets::VH(0, 16);
 
 constexpr gfx::Insets kTextfieldContainerInsets =
     gfx::Insets::TLBR(0, 16, 10, 16);
-
-// Spacing between this view and the anchor view (context menu).
-constexpr int kMarginDip = 8;
-
-// A background that fills the canvas with rounded corners and gradient colors.
-class GradientRoundedRectBackground : public views::Background {
- public:
-  GradientRoundedRectBackground(float radius,
-                                SkColor start_color,
-                                SkColor end_color)
-      : radii_(gfx::RoundedCornersF{radius}),
-        start_color_(start_color),
-        end_color_(end_color) {}
-
-  GradientRoundedRectBackground(const GradientRoundedRectBackground&) = delete;
-  GradientRoundedRectBackground& operator=(
-      const GradientRoundedRectBackground&) = delete;
-
-  ~GradientRoundedRectBackground() override = default;
-
-  // views::Background:
-  void Paint(gfx::Canvas* canvas, views::View* view) const override {
-    const auto& bounds = view->GetContentsBounds();
-    gfx::Rect rect(bounds);
-    SkPath path;
-    SkScalar radii[8] = {radii_.upper_left(),  radii_.upper_left(),
-                         radii_.upper_right(), radii_.upper_right(),
-                         radii_.lower_right(), radii_.lower_right(),
-                         radii_.lower_left(),  radii_.lower_left()};
-    path.addRoundRect(gfx::RectToSkRect(rect), radii);
-
-    cc::PaintFlags flags;
-    flags.setBlendMode(SkBlendMode::kSrcOver);
-    flags.setShader(gfx::CreateGradientShader(
-        bounds.left_center(), bounds.right_center(), start_color_, end_color_));
-    flags.setAntiAlias(true);
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-    canvas->DrawPath(path, flags);
-  }
-
- private:
-  const gfx::RoundedCornersF radii_;
-  const SkColor start_color_;
-  const SkColor end_color_;
-};
 
 }  // namespace
 
@@ -201,22 +148,19 @@ void EditorMenuView::OnWidgetActivationChanged(views::Widget* widget,
   GetWidget()->Close();
 }
 
+void EditorMenuView::OnWidgetVisibilityChanged(views::Widget* widget,
+                                               bool visible) {
+  CHECK(delegate_);
+  delegate_->OnEditorMenuVisibilityChanged(visible);
+}
+
 void EditorMenuView::UpdateBounds(const gfx::Rect& anchor_view_bounds) {
-  int height = GetHeightForWidth(anchor_view_bounds.width());
-  int y = anchor_view_bounds.y() - kMarginDip - height;
+  const int editor_menu_width = GetEditorMenuWidth(anchor_view_bounds.width());
+  UpdateChipsContainer(editor_menu_width);
 
-  // The Editor Menu view will be off screen if showing above the anchor.
-  // Show below the anchor instead.
-  if (y < display::Screen::GetScreen()
-              ->GetDisplayMatching(anchor_view_bounds)
-              .work_area()
-              .y()) {
-    y = anchor_view_bounds.bottom() + kMarginDip;
-  }
-
-  gfx::Rect bounds = {{anchor_view_bounds.x(), y},
-                      {kContainerMinWidthDip, height}};
-  GetWidget()->SetBounds(bounds);
+  GetWidget()->SetBounds(GetEditorMenuBounds(
+      anchor_view_bounds,
+      gfx::Size(editor_menu_width, GetHeightForWidth(editor_menu_width))));
 }
 
 void EditorMenuView::InitLayout(const PresetTextQueries& preset_text_queries) {
@@ -228,8 +172,7 @@ void EditorMenuView::InitLayout(const PresetTextQueries& preset_text_queries) {
       cros_tokens::kCrosSysAppBase, kRadiusDip));
 
   auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
-  layout->SetOrientation(views::LayoutOrientation::kVertical)
-      .SetCrossAxisAlignment(views::LayoutAlignment::kStart);
+  layout->SetOrientation(views::LayoutOrientation::kVertical);
 
   AddTitleContainer();
   AddChipsContainer(preset_text_queries);
@@ -249,20 +192,11 @@ void EditorMenuView::AddTitleContainer() {
       views::style::STYLE_HEADLINE_5));
   title->SetEnabledColorId(ui::kColorSysOnSurface);
 
-  auto* badge =
-      title_container_->AddChildView(std::make_unique<views::FlexLayoutView>());
-  badge->SetMainAxisAlignment(views::LayoutAlignment::kCenter);
-  badge->SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
-  badge->SetProperty(views::kMarginsKey, kBadgeInsets);
-  auto* text = badge->AddChildView(std::make_unique<views::Label>(
-      kBadgeText, views::style::CONTEXT_LABEL, views::style::STYLE_BODY_2));
-  text->SetEnabledColorId(ui::kColorSysOnSurface);
-  badge->SetPreferredSize(gfx::Size(
-      text->GetPreferredSize().width() + 2 * kBadgeHorizontalPaddingDip,
-      text->GetPreferredSize().height() + 2 * kBadgeVerticalPaddingDip));
-  float radius = badge->GetPreferredSize().height() / 2.0f;
-  badge->SetBackground(std::make_unique<GradientRoundedRectBackground>(
-      radius, kBadgeBackgroundColorStart, kBadgeBackgroundColorEnd));
+  auto* badge = title_container_->AddChildView(
+      std::make_unique<EditorMenuGradientBadge>());
+  badge->SetProperty(
+      views::kMarginsKey,
+      gfx::Insets::VH(0, views::BadgePainter::kBadgeHorizontalMargin));
 
   auto* spacer =
       title_container_->AddChildView(std::make_unique<views::View>());
@@ -291,53 +225,24 @@ void EditorMenuView::AddTitleContainer() {
   settings_button_->SetHasInkDropActionOnClick(true);
 
   title_container_->SetProperty(views::kMarginsKey, kTitleContainerInsets);
-
-  int width = kContainerMinWidthDip - kTitleContainerInsets.width();
-  int height = std::max(title->GetPreferredSize().height(),
-                        settings_button_->GetPreferredSize().height());
-  title_container_->SetPreferredSize(gfx::Size(width, height));
 }
 
 void EditorMenuView::AddChipsContainer(
     const PresetTextQueries& preset_text_queries) {
   chips_container_ = AddChildView(std::make_unique<views::FlexLayoutView>());
   chips_container_->SetOrientation(views::LayoutOrientation::kVertical);
+  chips_container_->SetProperty(views::kMarginsKey, kChipsContainerInsets);
 
-  // Add a new row if the chip cannot fit the rest space in the current row.
-  // A simple calculation of the running width, considering the margins and
-  // paddings.
-  int running_width = 0;
-  views::View* row = nullptr;
+  // Put all the chips in a single row while we are initially creating the
+  // editor menu. This layout will be adjusted once the editor menu bounds are
+  // set.
+  auto* row = AddChipsRow();
   for (const auto& preset_text_query : preset_text_queries) {
-    auto chip = std::make_unique<EditorMenuChipView>(
+    row->AddChildView(std::make_unique<EditorMenuChipView>(
         base::BindRepeating(&EditorMenuView::OnChipButtonPressed,
                             weak_factory_.GetWeakPtr(),
                             preset_text_query.text_query_id),
-        preset_text_query);
-
-    int chip_width = chip->GetPreferredSize().width();
-    if (running_width == 0) {
-      // Add the container's left insets.
-      running_width += kChipsContainerInsets.left();
-      running_width += chip_width;
-    } else {
-      // Add the chip's left margin.
-      running_width += kChipsMargin.left();
-      running_width += chip_width;
-    }
-    // Add the containers's right insets when decide if wrap the row.
-    const bool should_wrap_row =
-        running_width + kChipsContainerInsets.right() > kContainerMinWidthDip;
-    if (row == nullptr || should_wrap_row) {
-      running_width = should_wrap_row ? 0 : running_width;
-      row = chips_container_->AddChildView(std::make_unique<views::View>());
-      auto* layout =
-          row->SetLayoutManager(std::make_unique<views::FlexLayout>());
-      layout->SetOrientation(views::LayoutOrientation::kHorizontal)
-          .SetInteriorMargin(kChipsContainerInsets)
-          .SetDefault(views::kMarginsKey, kChipsMargin);
-    }
-    chips_.emplace_back(row->AddChildView(std::move(chip)));
+        preset_text_query));
   }
 }
 
@@ -345,10 +250,53 @@ void EditorMenuView::AddTextfield() {
   textfield_ =
       AddChildView(std::make_unique<EditorMenuTextfieldView>(delegate_));
   textfield_->SetProperty(views::kMarginsKey, kTextfieldContainerInsets);
+}
 
-  int width = kContainerMinWidthDip - kTextfieldContainerInsets.width();
-  int height = textfield_->GetHeightForWidth(width);
-  textfield_->SetPreferredSize(gfx::Size(width, height));
+void EditorMenuView::UpdateChipsContainer(int editor_menu_width) {
+  // Remove chips from their current rows and transfer ownership since we want
+  // to add the chips to new rows.
+  std::vector<std::unique_ptr<EditorMenuChipView>> chips;
+  for (auto* row : chips_container_->children()) {
+    while (!row->children().empty()) {
+      chips.push_back(row->RemoveChildViewT(
+          views::AsViewClass<EditorMenuChipView>(row->children()[0])));
+    }
+  }
+
+  // Remove existing rows from the chips container and delete them.
+  chips_container_->RemoveAllChildViews();
+
+  // Re-add the chips into new rows in the chips container, adjusting the layout
+  // according to the updated editor menu width. We keep track of the running
+  // width of the current chip row and start a new row of chips whenever the
+  // chip being added can't fit into the current row.
+  const int chip_container_width =
+      editor_menu_width - kChipsContainerInsets.width();
+  int running_width = 0;
+  views::View* row = nullptr;
+  for (auto& chip : chips) {
+    const int chip_width = chip->GetPreferredSize().width();
+    if (row != nullptr && running_width + chip_width + kChipsMargin.left() <=
+                              chip_container_width) {
+      // Add the chip to the current row if it can fit (including space for
+      // padding between chips).
+      running_width += chip_width + kChipsMargin.left();
+    } else {
+      // Otherwise, create a new row for the chip.
+      row = AddChipsRow();
+      running_width = chip_width;
+    }
+    row->AddChildView(std::move(chip));
+  }
+}
+
+views::View* EditorMenuView::AddChipsRow() {
+  auto* row =
+      chips_container_->AddChildView(std::make_unique<views::FlexLayoutView>());
+  row->SetCollapseMargins(true);
+  row->SetIgnoreDefaultMainAxisMargins(true);
+  row->SetDefault(views::kMarginsKey, kChipsMargin);
+  return row;
 }
 
 void EditorMenuView::OnSettingsButtonPressed() {

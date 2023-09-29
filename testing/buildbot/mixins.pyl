@@ -2,7 +2,7 @@
 # Instead:
 # 1. Modify //infra/config/targets/mixins.star
 # 2. Run //infra/config/main.star
-# 3. Run //infra/config/scripts/sync-py-files.py
+# 3. Run //infra/config/scripts/sync-pyl-files.py
 
 {
   '10-x86-emulator': {
@@ -217,7 +217,7 @@
     ],
     'swarming': {
       'dimensions': {
-        'cpu': 'x86',
+        'cpu': 'x86-64',
         'kvm': '1',
         'os': 'Ubuntu-22.04',
         'pool': 'chromium.tests',
@@ -241,7 +241,7 @@
     ],
     'swarming': {
       'dimensions': {
-        'cpu': 'x86',
+        'cpu': 'x86-64',
         'kvm': '1',
         'gce': '1',
         'os': 'Ubuntu-22.04',
@@ -267,7 +267,7 @@
     ],
     'swarming': {
       'dimensions': {
-        'cpu': 'x86',
+        'cpu': 'x86-64',
         'kvm': '1',
         'gce': '1',
         'os': 'Ubuntu-22.04',
@@ -317,7 +317,7 @@
     ],
     'swarming': {
       'dimensions': {
-        'cpu': 'x86',
+        'cpu': 'x86-64',
         'kvm': '1',
         'gce': '1',
         'os': 'Ubuntu-18.04',
@@ -534,6 +534,62 @@
       },
     },
   },
+  'linux-jammy-2': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Ubuntu-22.04',
+        'zone': 'us',
+      },
+    },
+  },
+  'linux-jammy-3': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Ubuntu-22.04',
+        'locale': 'en_US.UTF-8',
+      },
+    },
+  },
+  'linux-jammy-4': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Ubuntu-22.04',
+        'kvm': '1',
+      },
+    },
+  },
+  'linux-jammy-5': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Ubuntu-22.04',
+        'python': '3',
+      },
+    },
+  },
+  'linux-jammy-6': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Ubuntu-22.04',
+        'inside_docker': '0',
+      },
+    },
+  },
+  'linux-jammy-7': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Ubuntu-22.04',
+        'python': '3.8',
+      },
+    },
+  },
+  'linux-jammy-8': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Ubuntu-22.04',
+        'cipd_platform': 'linux-amd64',
+      },
+    },
+  },
   'linux-jammy-or-bionic': {
     'swarming': {
       'dimensions': {
@@ -720,7 +776,7 @@
     'swarming': {
       'dimensions': {
         'cpu': 'arm64',
-        'os': 'Mac-13',
+        'os': 'Mac-14',
       },
     },
   },
@@ -728,7 +784,7 @@
     'swarming': {
       'dimensions': {
         'cpu': 'x86-64',
-        'os': 'Mac-13',
+        'os': 'Mac-13.5',
       },
     },
   },
@@ -1219,12 +1275,12 @@
   'xcode_15_beta': {
     'args': [
       '--xcode-build-version',
-      '15a5229m',
+      '15a240d',
     ],
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_15a5229m',
+          'name': 'xcode_ios_15a240d',
           'path': 'Xcode.app',
         },
       ],
@@ -1233,12 +1289,12 @@
   'xcode_15_main': {
     'args': [
       '--xcode-build-version',
-      '15a5229m',
+      '15a240d',
     ],
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_15a5229m',
+          'name': 'xcode_ios_15a240d',
           'path': 'Xcode.app',
         },
       ],

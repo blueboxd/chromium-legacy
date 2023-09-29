@@ -19,6 +19,7 @@
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "chrome/browser/web_applications/generated_icon_fix_util.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_version.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
@@ -438,8 +439,9 @@ void WebAppDatabase::Write(
     write_batch->WriteData(web_app->app_id(), proto->SerializeAsString());
   }
 
-  for (const AppId& app_id : update_data.apps_to_delete)
+  for (const webapps::AppId& app_id : update_data.apps_to_delete) {
     write_batch->DeleteData(app_id);
+  }
 
   store_->CommitWriteBatch(
       std::move(write_batch),
@@ -897,6 +899,11 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
         syncer::TimeToProtoTime(web_app.latest_install_time()));
   }
 
+  if (web_app.generated_icon_fix().has_value()) {
+    *local_data->mutable_generated_icon_fix() =
+        web_app.generated_icon_fix().value();
+  }
+
   return local_data;
 }
 
@@ -910,7 +917,7 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
 
   const sync_pb::WebAppSpecifics& sync_data = local_data.sync_data();
 
-  // AppId is a hash of start_url. Read start_url first:
+  // webapps::AppId is a hash of start_url. Read start_url first:
   GURL start_url(sync_data.start_url());
   if (start_url.is_empty() || !start_url.is_valid()) {
     DLOG(ERROR) << "WebApp proto start_url parse error: "
@@ -918,7 +925,7 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     return nullptr;
   }
 
-  ManifestId manifest_id;
+  webapps::ManifestId manifest_id;
   if (sync_data.has_relative_manifest_id()) {
     manifest_id =
         GenerateManifestId(sync_data.relative_manifest_id(), start_url);
@@ -926,7 +933,7 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     manifest_id = GenerateManifestIdFromStartUrlOnly(start_url);
   }
 
-  AppId app_id = GenerateAppIdFromManifestId(manifest_id);
+  webapps::AppId app_id = GenerateAppIdFromManifestId(manifest_id);
 
   auto web_app = std::make_unique<WebApp>(app_id);
   web_app->SetStartUrl(start_url);
@@ -1658,6 +1665,11 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
         syncer::ProtoTimeToTime(local_data.first_install_time()));
   }
 
+  if (local_data.has_generated_icon_fix() &&
+      generated_icon_fix_util::IsValid(local_data.generated_icon_fix())) {
+    web_app->SetGeneratedIconFix(local_data.generated_icon_fix());
+  }
+
   return web_app;
 }
 
@@ -1709,7 +1721,7 @@ void WebAppDatabase::OnAllMetadataRead(
 
   Registry registry;
   for (const syncer::ModelTypeStore::Record& record : *data_records) {
-    const AppId app_id = record.id;
+    const webapps::AppId app_id = record.id;
     std::unique_ptr<WebApp> web_app = ParseWebApp(app_id, record.value);
     if (web_app)
       registry.emplace(app_id, std::move(web_app));
@@ -1734,8 +1746,9 @@ void WebAppDatabase::OnDataWritten(
 }
 
 // static
-std::unique_ptr<WebApp> WebAppDatabase::ParseWebApp(const AppId& app_id,
-                                                    const std::string& value) {
+std::unique_ptr<WebApp> WebAppDatabase::ParseWebApp(
+    const webapps::AppId& app_id,
+    const std::string& value) {
   WebAppProto proto;
   const bool parsed = proto.ParseFromString(value);
   if (!parsed) {

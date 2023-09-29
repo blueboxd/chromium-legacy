@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.BLOCK_TOUCH_INPUT;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.BOTTOM_CONTROLS_HEIGHT;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.BOTTOM_PADDING;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.INITIAL_SCROLL_INDEX;
@@ -317,7 +318,13 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(context);
         mOnTabSwitcherShownCallback = onTabSwitcherShownCallback;
         if (layoutStateProviderSupplier != null) {
-            layoutStateProviderSupplier.onAvailable(this::onLayoutStateProviderAvailable);
+            if (layoutStateProviderSupplier.hasValue()) {
+                onLayoutStateProviderAvailable(layoutStateProviderSupplier.get());
+            } else {
+                // Only use onAvailable if no value is available as waiting for the Promise to
+                // resolve risks getActiveLayoutType changing before the value is supplied.
+                layoutStateProviderSupplier.onAvailable(this::onLayoutStateProviderAvailable);
+            }
         }
 
         if (incognitoReauthControllerSupplier != null) {
@@ -605,6 +612,10 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         notifyBackPressStateChangedInternal();
     }
 
+    private void blockTouchInput(boolean blockTouchInput) {
+        mContainerViewModel.set(BLOCK_TOUCH_INPUT, blockTouchInput);
+    }
+
     private void updateTopControlsProperties() {
         // If the Start surface is enabled, it will handle the margins and positioning of the tab
         // switcher. So, we shouldn't do it here.
@@ -723,24 +734,27 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
     @Override
     public void prepareHideTabSwitcherView() {
-        if (mTabGridDialogControllerSupplier != null
-                && mTabGridDialogControllerSupplier.hasValue()) {
-            // Don't wait until switcher container view hides.
-            // Hide dialog before GTS hides.
-            mTabGridDialogControllerSupplier.get().hideDialog(false);
-        }
+        hideTabSwitcherViewInternal(/*animate=*/false, /*skipVisibility=*/true);
     }
 
     @Override
     public void hideTabSwitcherView(boolean animate) {
+        hideTabSwitcherViewInternal(animate, /*skipVisibility=*/false);
+    }
+
+    private void hideTabSwitcherViewInternal(boolean animate, boolean skipVisibility) {
         if (mMode == TabListMode.GRID) {
             mIsTransitionInProgress = true;
             notifyBackPressStateChangedInternal();
         }
 
-        if (!animate) mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, false);
-        setVisibility(false);
-        mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, true);
+        blockTouchInput(true);
+
+        if (!skipVisibility) {
+            if (!animate) mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, false);
+            setVisibility(false);
+            mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, true);
+        }
 
         if (mTabGridDialogControllerSupplier != null
                 && mTabGridDialogControllerSupplier.hasValue()) {
@@ -815,6 +829,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
         if (!animate) mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, false);
         setVisibility(true);
+        blockTouchInput(false);
         mModelIndexWhenShown = mTabModelSelector.getCurrentModelIndex();
         mTabIdWhenShown = mTabModelSelector.getCurrentTabId();
         mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, true);
@@ -904,8 +919,9 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         }
 
         // Going back to the Start surface isn't handled by the TabSwitcherMediator any more, but in
-        // {@link ReturnToChromeBackPressHandler}.
-        if (mLastActiveLayoutType == LayoutType.START_SURFACE) {
+        // {@link ReturnToChromeBackPressHandler} when it isn't in incognito mode.
+        if (mLastActiveLayoutType == LayoutType.START_SURFACE
+                && !mTabModelSelector.isIncognitoSelected()) {
             return false;
         }
 
@@ -1044,6 +1060,10 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         mHandler.postDelayed(mClearTabListRunnable, getCleanupDelay());
         mIsTransitionInProgress = false;
         notifyBackPressStateChangedInternal();
+        if (ChromeFeatureList.sGridTabSwitcherAndroidAnimations.isEnabled()
+                && ReturnToChromeUtil.isStartSurfaceRefactorEnabled(mContext)) {
+            setVisibility(false);
+        }
     }
 
     /**
@@ -1205,8 +1225,11 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         if (mTabModelSelector.getCurrentTab() == null) return false;
 
         // Going back to the Start surface isn't handled by the TabSwitcherMediator any more, but in
-        // {@link ReturnToChromeBackPressHandler}.
-        if (mLastActiveLayoutType == LayoutType.START_SURFACE) return false;
+        // {@link ReturnToChromeBackPressHandler} when it isn't in incognito mode.
+        if (mLastActiveLayoutType == LayoutType.START_SURFACE
+                && !mTabModelSelector.isIncognitoSelected()) {
+            return false;
+        }
 
         return true;
     }
@@ -1230,6 +1253,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
     private void onLayoutStateProviderAvailable(LayoutStateProvider layoutStateProvider) {
         mLayoutStateProvider = layoutStateProvider;
+        mLastActiveLayoutType = mLayoutStateProvider.getActiveLayoutType();
         if (mLayoutStateObserver == null) {
             mLayoutStateObserver = new LayoutStateObserver() {
                 @Override

@@ -48,8 +48,6 @@ import './device_page/storage_external_entry.js';
 import './device_page/stylus.js';
 import './multidevice_page/multidevice_page.js';
 import './nearby_share_page/nearby_share_high_visibility_page.js';
-import './nearby_share_page/nearby_share_receive_dialog.js';
-import './nearby_share_page/nearby_share_subpage.js';
 import './os_files_page/google_drive_subpage.js';
 import './os_apps_page/android_apps_subpage.js';
 import './os_apps_page/app_notifications_page/app_notifications_subpage.js';
@@ -78,6 +76,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
  * imported into browser tests.
  */
 export {getContactManager, observeContactManager, setContactManagerForTesting} from '/shared/nearby_contact_manager.js';
+export {NearbyProgressElement} from '/shared/nearby_progress.js';
 export * as nearbyShareMojom from '/shared/nearby_share.mojom-webui.js';
 export {getNearbyShareSettings, observeNearbyShareSettings, setNearbyShareSettingsForTesting} from '/shared/nearby_share_settings.js';
 export {NearbySettings, NearbyShareSettingsMixin} from '/shared/nearby_share_settings_mixin.js';
@@ -87,7 +86,7 @@ export {SettingsDropdownMenuElement} from '/shared/settings/controls/settings_dr
 export {SettingsSliderElement} from '/shared/settings/controls/settings_slider.js';
 export {SettingsToggleButtonElement} from '/shared/settings/controls/settings_toggle_button.js';
 export {LifetimeBrowserProxy, LifetimeBrowserProxyImpl} from '/shared/settings/lifetime_browser_proxy.js';
-export {ProfileInfoBrowserProxy, ProfileInfoBrowserProxyImpl} from '/shared/settings/people_page/profile_info_browser_proxy.js';
+export {ProfileInfo, ProfileInfoBrowserProxy, ProfileInfoBrowserProxyImpl} from '/shared/settings/people_page/profile_info_browser_proxy.js';
 export {PageStatus, StatusAction, StoredAccount, SyncBrowserProxy, SyncBrowserProxyImpl, SyncPrefs, SyncStatus} from '/shared/settings/people_page/sync_browser_proxy.js';
 export {PrivacyPageBrowserProxyImpl, SecureDnsMode, SecureDnsUiManagementMode} from '/shared/settings/privacy_page/privacy_page_browser_proxy.js';
 export {AppManagementFileHandlingItemElement} from 'chrome://resources/cr_components/app_management/file_handling_item.js';
@@ -104,6 +103,7 @@ export {CrDrawerElement} from 'chrome://resources/cr_elements/cr_drawer/cr_drawe
 export {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 export {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.js';
 export {CrLinkRowElement} from 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
+export {CrCardRadioButtonElement} from 'chrome://resources/cr_elements/cr_radio_button/cr_card_radio_button.js';
 export {CrRadioButtonElement} from 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.js';
 export {CrRadioGroupElement} from 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.js';
 export {CrSearchableDropDownElement} from 'chrome://resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.js';
@@ -126,6 +126,7 @@ export {LacrosExtensionControlledIndicatorElement} from './common/lacros_extensi
 export {PrefsState} from './common/types.js';
 export {SettingsAudioElement} from './device_page/audio.js';
 export {setCrosAudioConfigForTesting} from './device_page/cros_audio_config.js';
+export {SettingsDevicePageElement} from './device_page/device_page.js';
 export {DevicePageBrowserProxy, DevicePageBrowserProxyImpl, IdleBehavior, LidClosedBehavior, NoteAppInfo, NoteAppLockScreenSupport, setDisplayApiForTesting, StorageSpaceState} from './device_page/device_page_browser_proxy.js';
 export * as fakeCrosAudioConfig from './device_page/fake_cros_audio_config.js';
 export {fakeGraphicsTabletButtonActions, fakeGraphicsTablets, fakeKeyboards, fakeKeyboards2, fakeMice, fakeMice2, fakeMouseButtonActions, fakePointingSticks, fakePointingSticks2, fakeStyluses, fakeTouchpads, fakeTouchpads2} from './device_page/fake_input_device_data.js';
@@ -167,9 +168,10 @@ export * as searchMojom from './mojom-webui/search.mojom-webui.js';
 export * as searchResultIconMojom from './mojom-webui/search_result_icon.mojom-webui.js';
 export * as settingMojom from './mojom-webui/setting.mojom-webui.js';
 export * as userActionRecorderMojom from './mojom-webui/user_action_recorder.mojom-webui.js';
-export {AndroidSmsInfo, MultiDeviceBrowserProxy, MultiDeviceBrowserProxyImpl} from './multidevice_page/multidevice_browser_proxy.js';
+export {MultiDeviceBrowserProxy, MultiDeviceBrowserProxyImpl} from './multidevice_page/multidevice_browser_proxy.js';
 export {MultiDeviceFeature, MultiDeviceFeatureState, MultiDevicePageContentData, MultiDeviceSettingsMode, PhoneHubFeatureAccessProhibitedReason, PhoneHubFeatureAccessStatus, PhoneHubPermissionsSetupAction, PhoneHubPermissionsSetupFeatureCombination, PhoneHubPermissionsSetupFlowScreens, PhoneHubPermissionsSetupMode} from './multidevice_page/multidevice_constants.js';
 export {NotificationAccessSetupOperationStatus, SettingsMultideviceNotificationAccessSetupDialogElement} from './multidevice_page/multidevice_notification_access_setup_dialog.js';
+export {SettingsMultidevicePageElement} from './multidevice_page/multidevice_page.js';
 export {PermissionsSetupStatus, SettingsMultidevicePermissionsSetupDialogElement, SetupFlowStatus} from './multidevice_page/multidevice_permissions_setup_dialog.js';
 export {Account, NearbyAccountManagerBrowserProxy, NearbyAccountManagerBrowserProxyImpl} from './nearby_share_page/nearby_account_manager_browser_proxy.js';
 export {NearbyShareConfirmPageElement} from './nearby_share_page/nearby_share_confirm_page.js';

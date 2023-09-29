@@ -28,7 +28,7 @@
 #include "components/error_page/common/error_page_switches.h"
 #include "components/error_page/common/net_error_info.h"
 #include "components/offline_pages/core/offline_page_feature.h"
-#include "components/strings/grit/components_chromium_strings.h"
+#include "components/strings/grit/components_branded_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/net_errors.h"
@@ -556,7 +556,7 @@ void AddLinkedSuggestionToList(const int error_code,
     case net::ERR_TOO_MANY_REDIRECTS:
       learn_more_url = GURL(kRedirectLoopLearnMoreUrl);
       suggestion_string = l10n_util::GetStringUTF16(
-          IDS_ERRORPAGES_SUGGESTION_CLEAR_COOKIES_SUMMARY);
+          IDS_ERRORPAGES_SUGGESTION_DELETE_COOKIES_SUMMARY);
       break;
     default:
       NOTREACHED();

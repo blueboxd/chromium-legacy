@@ -154,11 +154,11 @@ BASE_FEATURE(kPermissionStorageAccessAPI,
              "PermissionStorageAccessAPI",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// When enabled "window-management" may be used as an alias for
-// "window-placement". Additionally, reverse mappings (i.e. enum to string) will
-// default to the new alias.
-BASE_FEATURE(kWindowManagementPermissionAlias,
-             "WindowManagementPermissionAlias",
+// When enabled "window-placement" may be used as an alias for
+// "window-management". Additionally, reverse mappings (i.e. enum to string)
+// will default to the legacy strings ("window-placement").
+BASE_FEATURE(kWindowPlacementPermissionAlias,
+             "WindowPlacementPermissionAlias",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables disallowing MIDI permission by default.
@@ -175,6 +175,10 @@ const base::FeatureParam<bool> kUseStrongerPromptLanguage{
 const base::FeatureParam<base::TimeDelta> kOneTimePermissionTimeout{
     &features::kOneTimePermission, "one_time_permission_timeout",
     base::Minutes(5)};
+
+const base::FeatureParam<base::TimeDelta> kOneTimePermissionLongTimeout{
+    &features::kOneTimePermission, "one_time_permission_long_timeout",
+    base::Hours(16)};
 
 const base::FeatureParam<std::string> kPermissionPredictionServiceUrlOverride{
     &permissions::features::kPermissionPredictionServiceUseUrlOverride,

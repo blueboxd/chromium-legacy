@@ -109,6 +109,16 @@ void LCPCriticalPathPredictor::OnLargestContentfulPaintUpdated(
   }
 }
 
+void LCPCriticalPathPredictor::OnFontFetched(const KURL& url) {
+  if (!base::FeatureList::IsEnabled(blink::features::kLCPPFontURLPredictor)) {
+    return;
+  }
+  if (!url.ProtocolIsInHTTPFamily()) {
+    return;
+  }
+  GetHost().NotifyFetchedFont(url);
+}
+
 mojom::blink::LCPCriticalPathPredictorHost&
 LCPCriticalPathPredictor::GetHost() {
   if (!host_.is_bound() || !host_.is_connected()) {
@@ -117,6 +127,10 @@ LCPCriticalPathPredictor::GetHost() {
         host_.BindNewPipeAndPassReceiver(task_runner_));
   }
   return *host_.get();
+}
+
+bool LCPCriticalPathPredictor::IsLcpInfluencerScript(const KURL& url) {
+  return lcp_influencer_scripts_.Contains(url);
 }
 
 void LCPCriticalPathPredictor::Trace(Visitor* visitor) const {

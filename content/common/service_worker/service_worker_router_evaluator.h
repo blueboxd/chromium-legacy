@@ -6,7 +6,6 @@
 #define CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_ROUTER_EVALUATOR_H_
 
 #include <memory>
-#include <utility>
 
 #include "base/values.h"
 #include "content/common/content_export.h"
@@ -37,6 +36,7 @@ class CONTENT_EXPORT ServiceWorkerRouterEvaluator {
   std::string ToString() const;
 
  private:
+  class BaseCondition;
   class RouterRule;
   void Compile();
   std::vector<blink::ServiceWorkerRouterSource> EvaluateInternal(

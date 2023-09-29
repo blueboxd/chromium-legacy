@@ -26,9 +26,9 @@ import {reportError} from './error.js';
 import * as expert from './expert.js';
 import {Flag} from './flag.js';
 import {GalleryButton} from './gallerybutton.js';
-import {I18nString} from './i18n_string.js';
 import {Intent} from './intent.js';
 import * as Comlink from './lib/comlink.js';
+import {startMeasuringMemoryUsage} from './memory_usage.js';
 import * as metrics from './metrics.js';
 import * as filesystem from './models/file_system.js';
 import * as loadTimeData from './models/load_time_data.js';
@@ -590,20 +590,18 @@ async function main() {
       PerfEvent.LAUNCHING_FROM_WINDOW_CREATION,
       {hasError: !cameraStartSuccessful});
 
+  // Start the memory measurement when the camera preview is ready. The first
+  // measurement is performed immediately. The following measurements are
+  // performed periodically, or triggered by specific behaviors.
+  startMeasuringMemoryUsage();
+
   await window.appWindow?.onAppLaunched();
   metrics.sendOpenCameraEvent(cameraManager.getVidPid());
 
   if (autoTake) {
-    const takePromise = cameraView.beginTake(
+    cameraView.beginTake(
         openFrom === 'assistant' ? metrics.ShutterType.ASSISTANT :
                                    metrics.ShutterType.UNKNOWN);
-    if (takePromise === null) {
-      toast.show(
-          mode === Mode.VIDEO ? I18nString.ERROR_MSG_RECORD_START_FAILED :
-                                I18nString.ERROR_MSG_TAKE_PHOTO_FAILED);
-    } else {
-      await takePromise;
-    }
   }
 }
 

@@ -263,9 +263,11 @@ void Action::OverwriteDefaultActionFromProto(const ActionProto& proto) {
 bool Action::InitByAddingNewAction() {
   DCHECK(touch_injector_);
   id_ = touch_injector_->GetNextNewActionID();
+  is_new_ = true;
 
   InitPositions(original_positions_);
   InitPositions(current_positions_);
+  UpdateTouchDownPositions();
 
   return true;
 }
@@ -275,6 +277,7 @@ void Action::InitByChangingActionType(Action* action) {
   name_ = action->name();
   original_type_ = action->original_type();
   original_input_ = std::make_unique<InputElement>(*action->original_input());
+  is_new_ = action->is_new();
 
   original_positions_ = action->original_positions();
   current_positions_ = action->current_positions();
@@ -283,7 +286,7 @@ void Action::InitByChangingActionType(Action* action) {
 }
 
 bool IsInputBound(const InputElement& input_element) {
-  return input_element.input_sources() != InputSource::IS_NONE;
+  return !input_element.IsUnbound();
 }
 
 bool IsKeyboardBound(const InputElement& input_element) {
@@ -467,7 +470,8 @@ void Action::RemoveDefaultAction() {
 }
 
 bool Action::IsDeleted() {
-  return IsDefaultAction() && !IsInputBound(*current_input_);
+  return IsDefaultAction() &&
+         current_input_->input_sources() == InputSource::IS_NONE;
 }
 
 bool Action::CreateTouchPressedEvent(const base::TimeTicks& time_stamp,

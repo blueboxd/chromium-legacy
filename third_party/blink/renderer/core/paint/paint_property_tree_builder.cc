@@ -1604,7 +1604,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
       if (object_.GetNode() &&
           object_.GetNode()->GetPseudoId() == kPseudoIdViewTransition) {
         auto* transition =
-            ViewTransitionUtils::GetActiveTransition(object_.GetDocument());
+            ViewTransitionUtils::GetTransition(object_.GetDocument());
         DCHECK(transition);
 
         parent_effect =
@@ -1721,7 +1721,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateViewTransitionEffect() {
     if (full_context_.direct_compositing_reasons &
         CompositingReason::kViewTransitionElement) {
       auto* transition =
-          ViewTransitionUtils::GetActiveTransition(object_.GetDocument());
+          ViewTransitionUtils::GetTransition(object_.GetDocument());
       DCHECK(transition);
 
       auto* old_effect = transition->GetEffect(object_);
@@ -1761,7 +1761,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateViewTransitionClip() {
     if (full_context_.direct_compositing_reasons &
         CompositingReason::kViewTransitionElement) {
       auto* transition =
-          ViewTransitionUtils::GetActiveTransition(object_.GetDocument());
+          ViewTransitionUtils::GetTransition(object_.GetDocument());
       DCHECK(transition);
 
       if (!transition->NeedsViewTransitionClipNode(object_)) {
@@ -2543,7 +2543,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
       // 2) scrollbars aren't captured in the root snapshot.
       bool transition_forces_scrollbar_effect_nodes =
           object_.IsLayoutView() &&
-          ViewTransitionUtils::GetActiveTransition(object_.GetDocument());
+          ViewTransitionUtils::GetTransition(object_.GetDocument());
 
       auto setup_scrollbar_effect_node =
           [this, scrollable_area, transition_forces_scrollbar_effect_nodes](
@@ -3580,8 +3580,9 @@ bool PaintPropertyTreeBuilder::CanDoDeferredTransformNodeUpdate(
 
   // This fast path does not support iterating over each fragment, so do not
   // run the fast path in the presence of fragmentation.
-  if (object.FirstFragment().NextFragment())
+  if (object.IsFragmented()) {
     return false;
+  }
 
   auto* properties = object.FirstFragment().PaintProperties();
   // Cannot directly update properties if they have not been created yet.
@@ -3606,8 +3607,9 @@ bool PaintPropertyTreeBuilder::CanDoDeferredOpacityNodeUpdate(
 
   // This fast path does not support iterating over each fragment, so do not
   // run the fast path in the presence of fragmentation.
-  if (object.FirstFragment().NextFragment())
+  if (object.IsFragmented()) {
     return false;
+  }
 
   auto* properties = object.FirstFragment().PaintProperties();
   // Cannot directly update properties if they have not been created yet.

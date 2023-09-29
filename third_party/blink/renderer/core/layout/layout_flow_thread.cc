@@ -43,6 +43,11 @@ void LayoutFlowThread::Trace(Visitor* visitor) const {
   LayoutBlockFlow::Trace(visitor);
 }
 
+bool LayoutFlowThread::IsLayoutNGObject() const {
+  NOT_DESTROYED();
+  return false;
+}
+
 LayoutFlowThread* LayoutFlowThread::LocateFlowThreadContainingBlockOf(
     const LayoutObject& descendant,
     AncestorSearchConstraint constraint) {
@@ -199,6 +204,13 @@ void LayoutFlowThread::AddOutlineRects(
   collector.AddRect(FragmentsBoundingBox(flow_collector.Rect()));
 }
 
+void LayoutFlowThread::Paint(const PaintInfo& paint_info) const {
+  NOT_DESTROYED();
+  // NGBoxFragmentPainter traverses a physical fragment tree, and doesn't call
+  // Paint() for LayoutFlowThread.
+  NOTREACHED_NORETURN();
+}
+
 bool LayoutFlowThread::NodeAtPoint(HitTestResult& result,
                                    const HitTestLocation& hit_test_location,
                                    const PhysicalOffset& accumulated_offset,
@@ -208,6 +220,13 @@ bool LayoutFlowThread::NodeAtPoint(HitTestResult& result,
     return false;
   return LayoutBlockFlow::NodeAtPoint(result, hit_test_location,
                                       accumulated_offset, phase);
+}
+
+RecalcLayoutOverflowResult LayoutFlowThread::RecalcLayoutOverflow() {
+  NOT_DESTROYED();
+  // RecalcLayoutOverflow() traverses a physical fragment tree. So it's not
+  // called for LayoutFlowThread, which has no physical fragments.
+  NOTREACHED_NORETURN();
 }
 
 void LayoutFlowThread::GenerateColumnSetIntervalTree() {

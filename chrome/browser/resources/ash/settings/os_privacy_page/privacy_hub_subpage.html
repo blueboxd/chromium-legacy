@@ -1,12 +1,16 @@
 <style include="settings-shared">
-    .list-item:not(:last-of-type) {
-      border-bottom: var(--cr-separator-line);
-    }
+  .list-item:not(:last-of-type) {
+    border-bottom: var(--cr-separator-line);
+  }
 
-    .list-frame {
-      padding-bottom: 8px;
-      padding-top: 8px;
-    }
+  .list-frame {
+    padding-bottom: 8px;
+    padding-top: 8px;
+  }
+
+  #microphoneSubpageLinkWrapper:hover {
+    background-color: var(--cr-hover-background-color);
+  }
 </style>
 
 <div id="camera">
@@ -68,6 +72,23 @@
         slot="more-actions">
       </cr-tooltip-icon>
     </settings-toggle-button>
+    <div class="list-frame">
+      <template is="dom-if" if="[[isMicListEmpty_]]" restamp>
+        <div id="noMic" class="list-item">
+          $i18n{noMicrophoneConnectedText}
+        </div>
+      </template>
+      <template is="dom-if" if="[[!isMicListEmpty_]]" restamp>
+        <template
+            id="micList"
+            is="dom-repeat"
+            items="[[microphonesConnected_]]">
+          <div class="list-item">
+            [[item]]
+          </div>
+        </template>
+      </template>
+    </div>
   </template>
   <template is="dom-if" if="[[showAppPermissions_]]">
     <div class="settings-box no-padding">
@@ -94,24 +115,24 @@
         </cr-icon-button>
       </div>
       <div class="separator"></div>
-      <cr-toggle id="microphoneToggle" class="margin-matches-padding">
-      </cr-toggle>
+      <div id="microphoneToggleWrapper">
+        <cr-toggle
+            id="microphoneToggle"
+            class="margin-matches-padding"
+            checked="{{prefs.ash.user.microphone_allowed.value}}"
+            disabled="[[shouldDisableMicrophoneToggle_]]">
+        </cr-toggle>
+      </div>
+      <paper-tooltip
+          id="microphoneToggleTooltip"
+          hidden="[[!microphoneHardwareToggleActive_]]"
+          aria-hidden="true"
+          for="microphoneToggleWrapper"
+          fit-to-visible-bounds>
+        $i18n{microphoneHwToggleTooltip}
+      </paper-tooltip>
     </div>
   </template>
-  <div class="list-frame">
-    <template is="dom-if" if="[[isMicListEmpty_]]" restamp>
-      <div id="noMic" class="list-item">
-        $i18n{noMicrophoneConnectedText}
-      </div>
-    </template>
-    <template is="dom-if" if="[[!isMicListEmpty_]]" restamp>
-      <template id="micList" is="dom-repeat" items="[[microphonesConnected_]]">
-        <div class="list-item">
-          [[item]]
-        </div>
-      </template>
-    </template>
-  </div>
 </div>
 
 <template is="dom-if" if="[[showSpeakOnMuteDetectionPage_]]" restamp>
@@ -126,8 +147,7 @@
   </settings-toggle-button>
 </template>
 
-<!-- Location toggle is not to be shown in dogfooded version of Privacy Hub -->
-<template is="dom-if" if="[[showPrivacyHubMVPPage_]]" restamp>
+<template is="dom-if" if="[[showPrivacyHubLocationControl_]]" restamp>
   <settings-toggle-button
       class="hr"
       pref="{{prefs.ash.user.geolocation_allowed}}"

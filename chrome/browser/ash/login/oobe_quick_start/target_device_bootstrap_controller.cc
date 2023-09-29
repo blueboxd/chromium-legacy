@@ -9,10 +9,8 @@
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
-#include "base/hash/hash.h"
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/uuid.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/fido_assertion_info.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/qr_code.h"
@@ -108,8 +106,8 @@ void TargetDeviceBootstrapController::StartAdvertisingAndMaybeGetQRCode() {
   if (use_pin_authentication || session_context_.is_resume_after_update()) {
     status_.step = Step::ADVERTISING_WITHOUT_QR_CODE;
   } else {
-    auto qr_code = std::make_unique<QRCode>(
-        session_context_.random_session_id(), session_context_.shared_secret());
+    auto qr_code = std::make_unique<QRCode>(session_context_.advertising_id(),
+                                            session_context_.shared_secret());
     status_.step = Step::ADVERTISING_WITH_QR_CODE;
     status_.payload.emplace<QRCode::PixelData>(qr_code->pixel_data());
   }
@@ -145,7 +143,6 @@ void TargetDeviceBootstrapController::PrepareForUpdate() {
   }
 
   authenticated_connection_->NotifySourceOfUpdate(
-      session_id_,
       base::BindOnce(
           &TargetDeviceBootstrapController::OnNotifySourceOfUpdateResponse,
           weak_ptr_factory_.GetWeakPtr()));
@@ -168,15 +165,11 @@ void TargetDeviceBootstrapController::OnConnectionAuthenticated(
     base::WeakPtr<TargetDeviceConnectionBroker::AuthenticatedConnection>
         authenticated_connection) {
   constexpr Step kPossibleSteps[] = {Step::ADVERTISING_WITH_QR_CODE,
+                                     Step::ADVERTISING_WITHOUT_QR_CODE,
                                      Step::PIN_VERIFICATION};
   CHECK(base::Contains(kPossibleSteps, status_.step));
 
   authenticated_connection_ = authenticated_connection;
-
-  // Create session ID by generating UUID and then hashing.
-  const base::Uuid random_uuid = base::Uuid::GenerateRandomV4();
-  session_id_ = static_cast<int32_t>(
-      base::PersistentHash(random_uuid.AsLowercaseString()));
 
   status_.step = Step::CONNECTED;
   status_.payload.emplace<absl::monostate>();
@@ -207,7 +200,7 @@ void TargetDeviceBootstrapController::OnConnectionClosed(
 
 std::string TargetDeviceBootstrapController::GetDiscoverableName() {
   std::string device_type = base::UTF16ToUTF8(ui::GetChromeOSDeviceName());
-  std::string code = connection_broker_->GetSessionIdDisplayCode();
+  std::string code = connection_broker_->GetAdvertisingIdDisplayCode();
   return device_type + " (" + code + ")";
 }
 
@@ -250,6 +243,7 @@ void TargetDeviceBootstrapController::OnNotifySourceOfUpdateResponse(
     base::Value::Dict info =
         authenticated_connection_->GetPrepareForUpdateInfo();
     prefs->SetDict(prefs::kResumeQuickStartAfterRebootInfo, std::move(info));
+    prefs->CommitPendingWrite();
   }
 
   authenticated_connection_->Close(
@@ -294,7 +288,7 @@ void TargetDeviceBootstrapController::AttemptWifiCredentialTransfer() {
   WaitForUserVerification(base::BindOnce(
       &TargetDeviceConnectionBroker::AuthenticatedConnection::
           RequestWifiCredentials,
-      authenticated_connection_, session_id_,
+      authenticated_connection_,
       base::BindOnce(
           &TargetDeviceBootstrapController::OnWifiCredentialsReceived,
           weak_ptr_factory_.GetWeakPtr())));

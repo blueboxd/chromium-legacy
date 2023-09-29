@@ -1122,8 +1122,11 @@ class btree_iterator : private btree_iterator_generation_info {
   using const_reference = typename params_type::const_reference;
   using slot_type = typename params_type::slot_type;
 
-  using iterator =
-     btree_iterator<normal_node, normal_reference, normal_pointer>;
+  // In sets, all iterators are const.
+  using iterator = absl::conditional_t<
+      is_map_container::value,
+      btree_iterator<normal_node, normal_reference, normal_pointer>,
+      btree_iterator<normal_node, const_reference, const_pointer>>;
   using const_iterator =
       btree_iterator<const_node, const_reference, const_pointer>;
 
@@ -2420,7 +2423,7 @@ auto btree<P>::operator=(btree &&other) noexcept -> btree & {
 
     using std::swap;
     if (absl::allocator_traits<
-            allocator_type>::propagate_on_container_copy_assignment::value) {
+            allocator_type>::propagate_on_container_move_assignment::value) {
       swap(root_, other.root_);
       // Note: `rightmost_` also contains the allocator and the key comparator.
       swap(rightmost_, other.rightmost_);

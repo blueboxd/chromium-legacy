@@ -175,6 +175,7 @@
 <translation id="19288952978244135">Адкрыйце Chrome яшчэ раз.</translation>
 <translation id="1933845786846280168">Выбраная ўкладка</translation>
 <translation id="1943432128510653496">Захоўваць паролі</translation>
+<translation id="1944535645109964458">Няма даступных ключоў доступу</translation>
 <translation id="1952172573699511566">Тэкст на вэб-сайтах будзе паказвацца на мове, выбранай вамі ў якасці прыярытэтнай, калі гэта магчыма.</translation>
 <translation id="1959679933317802873">Чакаецца атрыманне змесціва</translation>
 <translation id="1960290143419248813">Абнаўленні Chrome больш не падтрымліваюцца для гэтай версіі Android.</translation>
@@ -222,6 +223,7 @@
 <translation id="2189903024544168260">Інтарэс выдалены</translation>
 <translation id="2194856509914051091">Інфармацыя для разгляду</translation>
 <translation id="2200113223741723867">Кіруйце наладамі абагульвання даных пра выкарыстанне</translation>
+<translation id="221494669172414749">Калі адкрыць Chrome без блакіроўкі профілю, паролі і спосабы аплаты, захаваныя для гэтага аўтамабіля, будуць выдалены. Блакіроўка профілю дазваляе абараніць гэты даныя.</translation>
 <translation id="2218567645332692482">Выкарыстоўваць пратакол HTTPS пры наведванні сайтаў і папярэджваць, калі ён не падтрымліваецца, перад тым як іх загружаць</translation>
 <translation id="2227444325776770048">Працягнуць як <ph name="USER_FULL_NAME" /></translation>
 <translation id="2230777942707397948">Пустое акно</translation>
@@ -262,6 +264,7 @@
 <translation id="2461822463642141190">Цяпер</translation>
 <translation id="2472163211318554013">Увайдзіце ва ўліковы запіс, каб карыстацца ўсімі магчымасцямі Chrome</translation>
 <translation id="247737702124049222">Апісанні відарысаў уключаны</translation>
+<translation id="2479148705183875116">Перайсці ў Налады</translation>
 <translation id="2482878487686419369">Апавяшчэнні</translation>
 <translation id="2496180316473517155">Гісторыя прагляду сайтаў</translation>
 <translation id="2497852260688568942">Сінхранізацыя выключана вашым адміністратарам</translation>
@@ -625,6 +628,7 @@
 <translation id="4257230861809842349">Выдаліць паролі з Менеджара пароляў Google?</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Якія даныя выкарыстоўваюцца:<ph name="END_BOLD" /> гісторыя прагляду сайтаў – пералік сайтаў, якія вы наведалі праз Chrome на гэтай прыладзе.</translation>
 <translation id="4269820728363426813">Капіраваць спасылку</translation>
+<translation id="4277529130885813215">Скарыстаць іншую прыладу</translation>
 <translation id="4283102315569707115">Запытваць сайты для камп'ютараў стандартна?</translation>
 <translation id="4285846616383034558">Файлы cookie, кэш і іншыя даныя сайтаў</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Уключыць блакіроўку экрана ў наладах Android<ph name="END_LINK" /></translation>
@@ -1013,6 +1017,7 @@
 <translation id="6295158916970320988">Усе сайты</translation>
 <translation id="6303969859164067831">Выйсці і выключыць сінхранізацыю</translation>
 <translation id="6312687380483398334">Вэб-праграмы (бязгучныя)</translation>
+<translation id="6315386555979018699">Выдаліць і працягнуць</translation>
 <translation id="6316139424528454185">Версія Android не падтрымлів.</translation>
 <translation id="6324916366299863871">Рэдагаваць ярлык</translation>
 <translation id="6324977638108296054">Не ўдалося стварыць спасылку на вылучаны тэкст</translation>
@@ -1164,6 +1169,7 @@
 <translation id="6955535239952325894">Гэта налада выключана ў браўзерах, якія знаходзяцца пад кіраваннем</translation>
 <translation id="6963766334940102469">Выдаліць закладкі</translation>
 <translation id="696447261358045621">Выйсці з рэжыму інкогніта</translation>
+<translation id="6965382102122355670">ОК</translation>
 <translation id="6971862865055170158">Не ўхваляць</translation>
 <translation id="6978717888677691380">Заблакіраваныя вамі сайты</translation>
 <translation id="6979737339423435258">За ўвесь час</translation>
@@ -1322,6 +1328,7 @@
 <translation id="7757787379047923882">Тэкст абагулены з прылады "<ph name="DEVICE_NAME" />"</translation>
 <translation id="7762668264895820836">SD-карта <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Дадаць адрас</translation>
+<translation id="7766587497031415281">Іншыя параметры выдалення даных пра работу ў браўзеры</translation>
 <translation id="7772032839648071052">Пацвердзіце фразу-пароль</translation>
 <translation id="7772375229873196092">Закрыццё праграмы "<ph name="APP_NAME" />"</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 і яшчэ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 і яшчэ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 і яшчэ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}many{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 і яшчэ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 і яшчэ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
@@ -1575,6 +1582,7 @@
 <translation id="8998289560386111590">Недаступна на вашай прыладзе</translation>
 <translation id="8998729206196772491">Вы ўваходзіце праз уліковы запіс, які кіруецца даменам <ph name="MANAGED_DOMAIN" />, што дае адміністратару кантроль над вашымі данымі з браўзера Chrome. Вашы даныя будуць назаўсёды прывязаны да гэтага ўліковага запісу. Калі выйсці з браўзера Chrome, вашы даныя будуць выдалены з гэтай прылады, але застануцца ва Уліковым запісе Google.</translation>
 <translation id="9012585441087414258">Абараняе ад заведама небяспечных сайтаў, спамповак і пашырэнняў. Калі старонка выконвае падазроныя дзеянні, URL-адрасы разам з фрагментамі змесціва старонкі адпраўляюцца на сервер Google Бяспечнага прагляду.</translation>
+<translation id="9019199799064251516">Працягнуць без блакіроўкі профілю аўтамабіля?</translation>
 <translation id="9022774213089566801">Часта наведваюцца</translation>
 <translation id="9022871169049522985">Сайты і рэкламадаўцы могуць ажыццяўляць ацэнку эфектыўнасці сваіх рэкламных аб'яў</translation>
 <translation id="9035378196785279980">Перамясціць сюды:\u2026</translation>
@@ -1637,5 +1645,6 @@
 <translation id="983192555821071799">Закрыць усе ўкладкі</translation>
 <translation id="987264212798334818">Агульныя</translation>
 <translation id="992745192656291733">Укладак: <ph name="TAB_COUNT" /></translation>
+<translation id="993520549480398880">Таксама выдаліць закладкі, гісторыю і іншыя даныя, захаваныя для гэтага аўтамабіля</translation>
 <translation id="996149300115483134">Меню карткі стужкі закрыта</translation>
 </translationbundle>

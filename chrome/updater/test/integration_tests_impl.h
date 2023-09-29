@@ -50,6 +50,7 @@ struct AppUpdateExpectation {
                        bool should_update,
                        bool allow_rollback,
                        const std::string& target_version_prefix,
+                       const std::string& target_channel,
                        const base::FilePath& crx_relative_path,
                        bool always_serve_crx = false,
                        const UpdateService::ErrorCategory error_category =
@@ -68,6 +69,7 @@ struct AppUpdateExpectation {
   const bool should_update;
   const bool allow_rollback;
   const std::string target_version_prefix;
+  const std::string target_channel;
   const base::FilePath crx_relative_path;
   const bool always_serve_crx;
   const UpdateService::ErrorCategory error_category;
@@ -140,6 +142,7 @@ void Install(UpdaterScope scope);
 void InstallUpdaterAndApp(UpdaterScope scope,
                           const std::string& app_id,
                           const bool is_silent_install,
+                          const std::string& tag,
                           const std::string& child_window_text_to_find);
 
 // Expects that the updater is installed on the system and the specified
@@ -253,6 +256,10 @@ void ExpectRegistered(UpdaterScope scope, const std::string& app_id);
 
 void ExpectNotRegistered(UpdaterScope scope, const std::string& app_id);
 
+void ExpectAppTag(UpdaterScope scope,
+                  const std::string& app_id,
+                  const std::string& tag);
+
 void ExpectAppVersion(UpdaterScope scope,
                       const std::string& app_id,
                       const base::Version& version);
@@ -333,6 +340,7 @@ void ExpectInstallSequence(UpdaterScope scope,
 
 void ExpectAppsUpdateSequence(UpdaterScope scope,
                               ScopedServer* test_server,
+                              const base::Value::Dict& request_attributes,
                               const std::vector<AppUpdateExpectation>& apps);
 
 void StressUpdateService(UpdaterScope scope);
@@ -357,6 +365,8 @@ void ExpectLegacyUpdaterMigrated(UpdaterScope scope);
 void RunRecoveryComponent(UpdaterScope scope,
                           const std::string& app_id,
                           const base::Version& version);
+
+void SetLastChecked(UpdaterScope scope, const base::Time& time);
 
 void ExpectLastChecked(UpdaterScope scope);
 

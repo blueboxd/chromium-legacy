@@ -7,8 +7,10 @@
 #include "ash/bubble/bubble_utils.h"
 #include "ash/style/typography.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/action.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/input_element.h"
+#include "chrome/browser/ash/arc/input_overlay/constants.h"
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/edit_labels.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/ui_utils.h"
@@ -18,9 +20,11 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/models/image_model.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/button.h"
 
 namespace arc::input_overlay {
 
@@ -37,18 +41,15 @@ EditLabel::EditLabel(DisplayOverlayController* controller,
 EditLabel::~EditLabel() = default;
 
 void EditLabel::OnActionInputBindingUpdated() {
-  if (action_->GetCurrentDisplayedInput().input_sources() ==
-      InputSource::IS_NONE) {
-    SetTextLabel(kUnknownBind);
-  } else {
-    const auto& keys = action_->GetCurrentDisplayedInput().keys();
-    DCHECK(index_ < keys.size());
-    SetTextLabel(GetDisplayText(keys[index_]));
-  }
+  SetLabelContent();
 }
 
 bool EditLabel::IsInputUnbound() {
-  return GetText().compare(kUnknownBind) == 0;
+  return GetText().compare(kUnknownBind) == 0 || GetText().empty();
+}
+
+void EditLabel::RemoveNewState() {
+  SetLabelContent();
 }
 
 void EditLabel::Init() {
@@ -65,15 +66,40 @@ void EditLabel::Init() {
   SetHasInkDropActionOnClick(false);
   ash::bubble_utils::ApplyStyle(label(), ash::TypographyToken::kCrosHeadline1,
                                 cros_tokens::kCrosSysOnPrimaryContainer);
-  OnActionInputBindingUpdated();
+  SetLabelContent();
+}
+
+void EditLabel::SetLabelContent() {
+  DCHECK(!action_->IsDeleted());
+  const auto& keys = action_->GetCurrentDisplayedInput().keys();
+  DCHECK(index_ < keys.size());
+  std::u16string output_string = GetDisplayText(keys[index_]);
+  if (action_->is_new() && output_string == kUnknownBind) {
+    output_string = u"";
+  }
+
+  // Clear icon if it is a valid key for new action.
+  SetImageModel(views::Button::STATE_NORMAL,
+                output_string.empty() ? ui::ImageModel::FromVectorIcon(
+                                            kGameControlsEditPenIcon,
+                                            cros_tokens::kCrosSysHighlightShape)
+                                      : ui::ImageModel());
+  if (output_string.empty()) {
+    SetBackground(views::CreateThemedRoundedRectBackground(
+        cros_tokens::kCrosSysHighlightShape,
+        /*radius=*/8));
+  } else {
+    SetTextLabel(output_string);
+  }
 }
 
 void EditLabel::SetTextLabel(const std::u16string& text) {
   SetText(text);
   SetAccessibleName(CalculateAccessibleName());
   SetBackground(views::CreateThemedRoundedRectBackground(
-      text == kUnknownBind ? cros_tokens::kCrosSysErrorHighlight
-                           : cros_tokens::kCrosSysHighlightShape,
+      text == kUnknownBind && !action_->is_new()
+          ? cros_tokens::kCrosSysErrorHighlight
+          : cros_tokens::kCrosSysHighlightShape,
       /*radius=*/8));
   if (HasFocus()) {
     SetToFocused();
@@ -96,26 +122,45 @@ std::u16string EditLabel::CalculateAccessibleName() {
 }
 
 void EditLabel::SetToDefault() {
-  SetEnabledTextColorIds(IsInputUnbound()
+  SetEnabledTextColorIds(IsInputUnbound() && !action_->is_new()
                              ? cros_tokens::kCrosSysError
                              : cros_tokens::kCrosSysOnPrimaryContainer);
   SetBorder(nullptr);
 }
 
 void EditLabel::SetToFocused() {
-  SetEnabledTextColorIds(IsInputUnbound() ? cros_tokens::kCrosSysError
-                                          : cros_tokens::kCrosSysHighlightText);
+  SetEnabledTextColorIds(IsInputUnbound() && !action_->is_new()
+                             ? cros_tokens::kCrosSysError
+                             : cros_tokens::kCrosSysHighlightText);
   SetBorder(views::CreateThemedRoundedRectBorder(
       /*thickness=*/2, /*corner_radius=*/8, cros_tokens::kCrosSysPrimary));
 }
 
 void EditLabel::OnFocus() {
   LabelButton::OnFocus();
+  if (action_->is_new()) {
+    // Hide the pen icon once the label is focused to edit.
+    SetImageModel(views::Button::STATE_NORMAL, ui::ImageModel());
+  }
   SetToFocused();
 }
 
 void EditLabel::OnBlur() {
   LabelButton::OnBlur();
+  // `OnBlur()` will be called before removing this view. This view is removed
+  // after changing action type and previous `action_` may be invalid. If
+  // `action_` is deleted, there is no need to update the content. This view
+  // will be removed after this.
+  if (!controller_->IsActiveAction(action_)) {
+    return;
+  }
+
+  if (action_->is_new() && GetText().empty()) {
+    SetImageModel(
+        views::Button::STATE_NORMAL,
+        ui::ImageModel::FromVectorIcon(kGameControlsEditPenIcon,
+                                       cros_tokens::kCrosSysHighlightShape));
+  }
   SetToDefault();
   // Reset the error state if an reserved key was pressed.
   SetNameTagState(/*is_error=*/false, u"");
@@ -124,8 +169,14 @@ void EditLabel::OnBlur() {
 bool EditLabel::OnKeyPressed(const ui::KeyEvent& event) {
   auto code = event.code();
   std::u16string new_bind = GetDisplayText(code);
-  if (GetText() == new_bind ||
-      (!action_->support_modifier_key() &&
+  // Don't show error when the same key is pressed.
+  if (GetText() == new_bind) {
+    SetNameTagState(/*is_error=*/false, u"");
+    return true;
+  }
+
+  // Show error when the reserved keys and modifier keys are pressed.
+  if ((!action_->support_modifier_key() &&
        ModifierDomCodeToEventFlag(code) != ui::EF_NONE) ||
       IsReservedDomCode(code)) {
     SetNameTagState(

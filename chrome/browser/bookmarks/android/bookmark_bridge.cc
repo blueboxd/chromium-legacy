@@ -216,7 +216,6 @@ void BookmarkBridge::GetImageUrlForBookmark(
   }
 
   page_image_service::mojom::Options options;
-  options.suggest_images = true;
   options.optimization_guide_images = true;
   image_service_->FetchImageFor(
       page_image_service::mojom::ClientId::Bookmarks,
@@ -248,19 +247,19 @@ BookmarkBridge::GetBookmarkIdForWebContents(
   }
 
   // Get all the nodes for |url| and sort them by date added.
-  std::vector<const bookmarks::BookmarkNode*> nodes;
   bookmarks::ManagedBookmarkService* managed =
       ManagedBookmarkServiceFactory::GetForProfile(profile_);
   bookmarks::BookmarkModel* model =
       BookmarkModelFactory::GetForBrowserContext(profile_);
 
-  model->GetNodesByURL(url, &nodes);
+  std::vector<const bookmarks::BookmarkNode*> nodes = model->GetNodesByURL(url);
   std::sort(nodes.begin(), nodes.end(), &bookmarks::MoreRecentlyAdded);
 
   // Return the first node matching the search criteria.
   for (const auto* node : nodes) {
-    if (only_editable && !managed->CanBeEditedByUser(node))
+    if (only_editable && managed->IsNodeManaged(node)) {
       continue;
+    }
     return JavaBookmarkIdCreateBookmarkId(env, node->id(),
                                           GetBookmarkType(node));
   }
@@ -317,62 +316,31 @@ bool BookmarkBridge::IsDoingExtensiveChanges(JNIEnv* env) {
   return bookmark_model_->IsDoingExtensiveChanges();
 }
 
-void BookmarkBridge::GetTopLevelFolderParentIds(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& j_result_obj) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  Java_BookmarkBridge_addToBookmarkIdList(
-      env, j_result_obj, bookmark_model_->root_node()->id(),
-      GetBookmarkType(bookmark_model_->root_node()));
-}
-
 void BookmarkBridge::GetTopLevelFolderIds(
     JNIEnv* env,
-    jboolean get_special,
-    jboolean get_normal,
     const JavaParamRef<jobject>& j_result_obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsLoaded());
 
   std::vector<const BookmarkNode*> top_level_folders;
-
-  if (get_special) {
-    if (managed_bookmark_service_->managed_node() &&
-        !managed_bookmark_service_->managed_node()->children().empty()) {
-      top_level_folders.push_back(managed_bookmark_service_->managed_node());
+  for (const auto& root_child : bookmark_model_->root_node()->children()) {
+    if (!root_child->IsVisible()) {
+      continue;
     }
-    if (partner_bookmarks_shim_->HasPartnerBookmarks() &&
-        IsReachable(partner_bookmarks_shim_->GetPartnerBookmarksRoot())) {
-      top_level_folders.push_back(
-          partner_bookmarks_shim_->GetPartnerBookmarksRoot());
-    }
-    if (reading_list_manager_->GetRoot()) {
-      top_level_folders.push_back(reading_list_manager_->GetRoot());
-    }
+    top_level_folders.push_back(root_child.get());
   }
-  std::size_t special_count = top_level_folders.size();
 
-  if (get_normal) {
-    DCHECK_EQ(4u, bookmark_model_->root_node()->children().size());
-    for (const auto& node : bookmark_model_->mobile_node()->children()) {
-      if (node->is_folder())
-        top_level_folders.push_back(node.get());
-    }
-
-    for (const auto& node : bookmark_model_->bookmark_bar_node()->children()) {
-      if (node->is_folder())
-        top_level_folders.push_back(node.get());
-    }
-
-    for (const auto& node : bookmark_model_->other_node()->children()) {
-      if (node->is_folder())
-        top_level_folders.push_back(node.get());
-    }
-
-    std::unique_ptr<icu::Collator> collator = GetICUCollator();
-    std::stable_sort(top_level_folders.begin() + special_count,
-                     top_level_folders.end(),
-                     BookmarkTitleComparer(this, collator.get()));
+  if (managed_bookmark_service_->managed_node() &&
+      !managed_bookmark_service_->managed_node()->children().empty()) {
+    top_level_folders.push_back(managed_bookmark_service_->managed_node());
+  }
+  if (partner_bookmarks_shim_->HasPartnerBookmarks() &&
+      IsReachable(partner_bookmarks_shim_->GetPartnerBookmarksRoot())) {
+    top_level_folders.push_back(
+        partner_bookmarks_shim_->GetPartnerBookmarksRoot());
+  }
+  if (reading_list_manager_->GetRoot()) {
+    top_level_folders.push_back(reading_list_manager_->GetRoot());
   }
 
   for (std::vector<const BookmarkNode*>::const_iterator it =
@@ -425,7 +393,7 @@ void BookmarkBridge::GetAllFoldersWithDepths(
     bookmarks.clear();
     for (const auto& child : node->children()) {
       if (child->is_folder() &&
-          managed_bookmark_service_->CanBeEditedByUser(child.get())) {
+          !managed_bookmark_service_->IsNodeManaged(child.get())) {
         bookmarks.push_back(child.get());
       }
     }
@@ -1089,7 +1057,7 @@ bool BookmarkBridge::IsEditable(const BookmarkNode* node) const {
   if (reading_list_manager_->IsReadingListBookmark(node))
     return reading_list_manager_->GetRoot() != node;
 
-  return managed_bookmark_service_->CanBeEditedByUser(node);
+  return !managed_bookmark_service_->IsNodeManaged(node);
 }
 
 bool BookmarkBridge::IsManaged(const BookmarkNode* node) const {

@@ -16,6 +16,7 @@
 #include "chromeos/ash/components/standalone_browser/feature_refs.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "content/public/test/browser_task_environment.h"
+#include "net/base/mock_network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/text_input_type.h"
 
@@ -48,6 +49,7 @@ TEST_F(EditorSwitchTest,
   EditorSwitch editor_switch(/*profile=*/&profile_,
                              /*country_code=*/kAllowedTestCountry);
 
+  EXPECT_FALSE(chromeos::features::IsOrcaEnabled());
   EXPECT_FALSE(editor_switch.IsAllowedForUse());
 }
 
@@ -64,6 +66,18 @@ TEST_F(EditorSwitchTest,
                              /*country_code=*/kAllowedTestCountry);
 
   EXPECT_FALSE(editor_switch.IsAllowedForUse());
+}
+
+TEST_F(EditorSwitchTest,
+       FeatureWillBeAvailableForUseWhenReceivingOrcaDogfoodFlag) {
+  base::test::ScopedFeatureList feature_list(chromeos::features::kOrcaDogfood);
+  TestingProfile profile_;
+  profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(false);
+  EditorSwitch editor_switch(/*profile=*/&profile_,
+                             /*country_code=*/kAllowedTestCountry);
+
+  EXPECT_TRUE(chromeos::features::IsOrcaEnabled());
+  EXPECT_TRUE(editor_switch.IsAllowedForUse());
 }
 
 TEST_F(EditorSwitchTest, FeatureWillNotBeAvailableForACountryNotApprovedYet) {
@@ -102,6 +116,9 @@ TEST_F(EditorSwitchTest, FeatureCannotBeTriggeredIfConsentDeclined) {
       /*disabled_features=*/{});
   TestingProfile profile_;
   profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(false);
+  auto mock_notifier = net::test::MockNetworkChangeNotifier::Create();
+  mock_notifier->SetConnectionType(
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN);
   EditorSwitch editor_switch(/*profile=*/&profile_,
                              /*country_code=*/kAllowedTestCountry);
 
@@ -115,7 +132,7 @@ TEST_F(EditorSwitchTest, FeatureCannotBeTriggeredIfConsentDeclined) {
       CreateFakeTextFieldContextualInfo(AppType::BROWSER));
 
   EXPECT_TRUE(editor_switch.IsAllowedForUse());
-  EXPECT_FALSE(editor_switch.CanBeTriggered());
+  EXPECT_EQ(editor_switch.GetEditorMode(), EditorMode::kBlocked);
 }
 
 TEST_F(EditorSwitchTest, FeatureCannotBeTriggeredOnAPasswordField) {
@@ -126,6 +143,9 @@ TEST_F(EditorSwitchTest, FeatureCannotBeTriggeredOnAPasswordField) {
       /*disabled_features=*/{});
   TestingProfile profile_;
   profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(false);
+  auto mock_notifier = net::test::MockNetworkChangeNotifier::Create();
+  mock_notifier->SetConnectionType(
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN);
   EditorSwitch editor_switch(/*profile=*/&profile_,
                              /*country_code=*/kAllowedTestCountry);
 
@@ -141,7 +161,7 @@ TEST_F(EditorSwitchTest, FeatureCannotBeTriggeredOnAPasswordField) {
       CreateFakeTextFieldContextualInfo(AppType::BROWSER));
 
   EXPECT_TRUE(editor_switch.IsAllowedForUse());
-  EXPECT_FALSE(editor_switch.CanBeTriggered());
+  EXPECT_EQ(editor_switch.GetEditorMode(), EditorMode::kBlocked);
 }
 
 TEST_F(EditorSwitchTest, FeatureCannotBeTriggeredWithNonEnglishInputMethod) {
@@ -152,6 +172,9 @@ TEST_F(EditorSwitchTest, FeatureCannotBeTriggeredWithNonEnglishInputMethod) {
       /*disabled_features=*/{});
   TestingProfile profile_;
   profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(false);
+  auto mock_notifier = net::test::MockNetworkChangeNotifier::Create();
+  mock_notifier->SetConnectionType(
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN);
   EditorSwitch editor_switch(/*profile=*/&profile_,
                              /*country_code=*/kAllowedTestCountry);
 
@@ -165,7 +188,7 @@ TEST_F(EditorSwitchTest, FeatureCannotBeTriggeredWithNonEnglishInputMethod) {
       CreateFakeTextFieldContextualInfo(AppType::BROWSER));
 
   EXPECT_TRUE(editor_switch.IsAllowedForUse());
-  EXPECT_FALSE(editor_switch.CanBeTriggered());
+  EXPECT_EQ(editor_switch.GetEditorMode(), EditorMode::kBlocked);
 }
 
 TEST_F(EditorSwitchTest, FeatureCanNotBeTriggeredOnArcApps) {
@@ -176,6 +199,9 @@ TEST_F(EditorSwitchTest, FeatureCanNotBeTriggeredOnArcApps) {
       /*disabled_features=*/{});
   TestingProfile profile_;
   profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(false);
+  auto mock_notifier = net::test::MockNetworkChangeNotifier::Create();
+  mock_notifier->SetConnectionType(
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN);
   EditorSwitch editor_switch(/*profile=*/&profile_,
                              /*country_code=*/kAllowedTestCountry);
 
@@ -189,7 +215,7 @@ TEST_F(EditorSwitchTest, FeatureCanNotBeTriggeredOnArcApps) {
       CreateFakeTextFieldContextualInfo(AppType::ARC_APP));
 
   EXPECT_TRUE(editor_switch.IsAllowedForUse());
-  EXPECT_FALSE(editor_switch.CanBeTriggered());
+  EXPECT_EQ(editor_switch.GetEditorMode(), EditorMode::kBlocked);
 }
 
 TEST_F(EditorSwitchTest,
@@ -201,6 +227,9 @@ TEST_F(EditorSwitchTest,
       /*disabled_features=*/{});
   TestingProfile profile_;
   profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(false);
+  auto mock_notifier = net::test::MockNetworkChangeNotifier::Create();
+  mock_notifier->SetConnectionType(
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN);
   EditorSwitch editor_switch(/*profile=*/&profile_,
                              /*country_code=*/kAllowedTestCountry);
 
@@ -214,7 +243,7 @@ TEST_F(EditorSwitchTest,
       CreateFakeTextFieldContextualInfo(AppType::ARC_APP));
 
   EXPECT_TRUE(editor_switch.IsAllowedForUse());
-  EXPECT_FALSE(editor_switch.CanBeTriggered());
+  EXPECT_EQ(editor_switch.GetEditorMode(), EditorMode::kBlocked);
 }
 
 TEST_F(EditorSwitchTest, FeatureCanNotBeTriggeredOnTabletMode) {
@@ -225,6 +254,9 @@ TEST_F(EditorSwitchTest, FeatureCanNotBeTriggeredOnTabletMode) {
       /*disabled_features=*/{});
   TestingProfile profile_;
   profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(false);
+  auto mock_notifier = net::test::MockNetworkChangeNotifier::Create();
+  mock_notifier->SetConnectionType(
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN);
   EditorSwitch editor_switch(/*profile=*/&profile_,
                              /*country_code=*/kAllowedTestCountry);
 
@@ -238,12 +270,10 @@ TEST_F(EditorSwitchTest, FeatureCanNotBeTriggeredOnTabletMode) {
       CreateFakeTextFieldContextualInfo(AppType::BROWSER));
 
   EXPECT_TRUE(editor_switch.IsAllowedForUse());
-  EXPECT_FALSE(editor_switch.CanBeTriggered());
+  EXPECT_EQ(editor_switch.GetEditorMode(), EditorMode::kBlocked);
 }
 
-TEST_F(
-    EditorSwitchTest,
-    FeatureCanBeTriggeredIfUserSwitchesOnSettingToggleAndHasNotGivenConsent) {
+TEST_F(EditorSwitchTest, FeatureCannotBeTriggeredWhenOffline) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
       /*enabled_features=*/{chromeos::features::kOrca,
@@ -251,32 +281,8 @@ TEST_F(
       /*disabled_features=*/{});
   TestingProfile profile_;
   profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(false);
-  EditorSwitch editor_switch(/*profile=*/&profile_,
-                             /*country_code=*/kAllowedTestCountry);
-
-  profile_.GetPrefs()->SetBoolean(prefs::kOrcaEnabled, true);
-  profile_.GetPrefs()->SetInteger(prefs::kOrcaConsentStatus,
-                                  base::to_underlying(ConsentStatus::kPending));
-  editor_switch.OnTabletModeUpdated(false);
-  editor_switch.OnActivateIme("xkb:us::eng");
-  editor_switch.OnInputContextUpdated(
-      TextInputMethod::InputContext(ui::TEXT_INPUT_TYPE_TEXT),
-      CreateFakeTextFieldContextualInfo(AppType::BROWSER));
-
-  EXPECT_TRUE(editor_switch.IsAllowedForUse());
-  EXPECT_TRUE(editor_switch.CanBeTriggered());
-}
-
-TEST_F(
-    EditorSwitchTest,
-    FeatureCanBeTriggeredOnANormalTextFieldOnABrowserWindowAndWithEnglishInputMethod) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      /*enabled_features=*/{chromeos::features::kOrca,
-                            features::kFeatureManagementOrca},
-      /*disabled_features=*/{});
-  TestingProfile profile_;
-  profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(false);
+  auto mock_notifier = net::test::MockNetworkChangeNotifier::Create();
+  mock_notifier->SetConnectionType(net::NetworkChangeNotifier::CONNECTION_NONE);
   EditorSwitch editor_switch(/*profile=*/&profile_,
                              /*country_code=*/kAllowedTestCountry);
 
@@ -290,7 +296,119 @@ TEST_F(
       CreateFakeTextFieldContextualInfo(AppType::BROWSER));
 
   EXPECT_TRUE(editor_switch.IsAllowedForUse());
-  EXPECT_TRUE(editor_switch.CanBeTriggered());
+  EXPECT_EQ(editor_switch.GetEditorMode(), EditorMode::kBlocked);
+}
+
+TEST_F(EditorSwitchTest, FeatureCanNotBeTriggeredWithTooLongTextSelection) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{chromeos::features::kOrca,
+                            features::kFeatureManagementOrca},
+      /*disabled_features=*/{});
+  TestingProfile profile_;
+  profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(false);
+  auto mock_notifier = net::test::MockNetworkChangeNotifier::Create();
+  mock_notifier->SetConnectionType(
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN);
+  EditorSwitch editor_switch(/*profile=*/&profile_,
+                             /*country_code=*/kAllowedTestCountry);
+
+  profile_.GetPrefs()->SetBoolean(prefs::kOrcaEnabled, true);
+  profile_.GetPrefs()->SetInteger(
+      prefs::kOrcaConsentStatus, base::to_underlying(ConsentStatus::kApproved));
+  editor_switch.OnTabletModeUpdated(true);
+  editor_switch.OnActivateIme("xkb:us::eng");
+  editor_switch.OnInputContextUpdated(
+      TextInputMethod::InputContext(ui::TEXT_INPUT_TYPE_TEXT),
+      CreateFakeTextFieldContextualInfo(AppType::BROWSER));
+  editor_switch.OnTextSelectionLengthChanged(10000);
+
+  EXPECT_TRUE(editor_switch.IsAllowedForUse());
+  EXPECT_EQ(editor_switch.GetEditorMode(), EditorMode::kBlocked);
+}
+
+TEST_F(
+    EditorSwitchTest,
+    FeatureCanBeTriggeredIfUserSwitchesOnSettingToggleAndHasNotGivenConsent) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{chromeos::features::kOrca,
+                            features::kFeatureManagementOrca},
+      /*disabled_features=*/{});
+  TestingProfile profile_;
+  profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(false);
+  auto mock_notifier = net::test::MockNetworkChangeNotifier::Create();
+  mock_notifier->SetConnectionType(
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN);
+  EditorSwitch editor_switch(/*profile=*/&profile_,
+                             /*country_code=*/kAllowedTestCountry);
+
+  profile_.GetPrefs()->SetBoolean(prefs::kOrcaEnabled, true);
+  profile_.GetPrefs()->SetInteger(prefs::kOrcaConsentStatus,
+                                  base::to_underlying(ConsentStatus::kPending));
+  editor_switch.OnTabletModeUpdated(false);
+  editor_switch.OnActivateIme("xkb:us::eng");
+  editor_switch.OnInputContextUpdated(
+      TextInputMethod::InputContext(ui::TEXT_INPUT_TYPE_TEXT),
+      CreateFakeTextFieldContextualInfo(AppType::BROWSER));
+
+  EXPECT_TRUE(editor_switch.IsAllowedForUse());
+  EXPECT_EQ(editor_switch.GetEditorMode(), EditorMode::kConsentNeeded);
+}
+
+TEST_F(EditorSwitchTest, TriggersRewriteModeForNoTextSelection) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{chromeos::features::kOrca,
+                            features::kFeatureManagementOrca},
+      /*disabled_features=*/{});
+  TestingProfile profile_;
+  profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(false);
+  auto mock_notifier = net::test::MockNetworkChangeNotifier::Create();
+  mock_notifier->SetConnectionType(
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN);
+  EditorSwitch editor_switch(/*profile=*/&profile_,
+                             /*country_code=*/kAllowedTestCountry);
+
+  profile_.GetPrefs()->SetBoolean(prefs::kOrcaEnabled, true);
+  profile_.GetPrefs()->SetInteger(
+      prefs::kOrcaConsentStatus, base::to_underlying(ConsentStatus::kApproved));
+  editor_switch.OnTabletModeUpdated(false);
+  editor_switch.OnActivateIme("xkb:us::eng");
+  editor_switch.OnInputContextUpdated(
+      TextInputMethod::InputContext(ui::TEXT_INPUT_TYPE_TEXT),
+      CreateFakeTextFieldContextualInfo(AppType::BROWSER));
+
+  EXPECT_TRUE(editor_switch.IsAllowedForUse());
+  EXPECT_EQ(editor_switch.GetEditorMode(), EditorMode::kWrite);
+}
+
+TEST_F(EditorSwitchTest, TriggersRewriteModeWhenSomeTextIsSelected) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{chromeos::features::kOrca,
+                            features::kFeatureManagementOrca},
+      /*disabled_features=*/{});
+  TestingProfile profile_;
+  profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(false);
+  auto mock_notifier = net::test::MockNetworkChangeNotifier::Create();
+  mock_notifier->SetConnectionType(
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN);
+  EditorSwitch editor_switch(/*profile=*/&profile_,
+                             /*country_code=*/kAllowedTestCountry);
+
+  profile_.GetPrefs()->SetBoolean(prefs::kOrcaEnabled, true);
+  profile_.GetPrefs()->SetInteger(
+      prefs::kOrcaConsentStatus, base::to_underlying(ConsentStatus::kApproved));
+  editor_switch.OnTabletModeUpdated(false);
+  editor_switch.OnActivateIme("xkb:us::eng");
+  editor_switch.OnInputContextUpdated(
+      TextInputMethod::InputContext(ui::TEXT_INPUT_TYPE_TEXT),
+      CreateFakeTextFieldContextualInfo(AppType::BROWSER));
+  editor_switch.OnTextSelectionLengthChanged(100);
+
+  EXPECT_TRUE(editor_switch.IsAllowedForUse());
+  EXPECT_EQ(editor_switch.GetEditorMode(), EditorMode::kRewrite);
 }
 
 }  // namespace

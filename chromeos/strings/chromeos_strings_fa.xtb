@@ -280,7 +280,6 @@
 <translation id="3226405216343213872">درحال جستجوی اسکنرها</translation>
 <translation id="3226657629376379887">منوی کنش‌های طرح‌بندی</translation>
 <translation id="3246869037381808805">کارهای چاپ قدیمی‌تر از ۱ روز برداشته می‌شوند</translation>
-<translation id="3248223063252096240"><ph name="PRODUCT_NAME" /> انحصاری</translation>
 <translation id="3268178239013324452">انجام نشد - در باز است</translation>
 <translation id="3275729367986477355">تصویر چهره‌نما</translation>
 <translation id="3283504360622356314">{0,plural, =1{ویرایش فایل}one{ویرایش فایل}other{ویرایش فایل‌ها}}</translation>
@@ -921,6 +920,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">انتخاب <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /></translation>
 <translation id="8151185429379586178">ابزارهای برنامه‌نویس</translation>
+<translation id="8152370627892825"><ph name="DESCRIPTION" />، <ph name="ACCELERATOR_INFO" />.</translation>
 <translation id="8179976553408161302">ورود</translation>
 <translation id="8183974620058026102">پیوست</translation>
 <translation id="8206859287963243715">سلولی</translation>

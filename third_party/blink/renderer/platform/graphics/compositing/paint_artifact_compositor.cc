@@ -150,14 +150,19 @@ std::unique_ptr<JSONObject> PaintArtifactCompositor::GetLayersAsJSON(
 }
 
 const TransformPaintPropertyNode&
-PaintArtifactCompositor::NearestScrollTranslationForLayer(
+PaintArtifactCompositor::ScrollTranslationStateForLayer(
     const PendingLayer& pending_layer) {
-  if (pending_layer.GetCompositingType() == PendingLayer::kScrollHitTestLayer)
+  if (pending_layer.GetCompositingType() == PendingLayer::kScrollHitTestLayer) {
     return pending_layer.ScrollTranslationForScrollHitTestLayer();
+  }
 
-  return pending_layer.GetPropertyTreeState()
-      .Transform()
-      .NearestScrollTranslationNode();
+  // When HitTestOpaqueness is enabled, use the correct scroll state for fixed
+  // position content, so scrolls on fixed content is correctly handled on the
+  // compositor if the fixed content is opaque to hit test.
+  const auto& transform = pending_layer.GetPropertyTreeState().Transform();
+  return RuntimeEnabledFeatures::HitTestOpaquenessEnabled()
+             ? transform.ScrollTranslationState()
+             : transform.NearestScrollTranslationNode();
 }
 
 bool PaintArtifactCompositor::NeedsCompositedScrolling(
@@ -805,14 +810,9 @@ void PaintArtifactCompositor::Update(
     scoped_refptr<const PaintArtifact> artifact,
     const ViewportProperties& viewport_properties,
     const Vector<const TransformPaintPropertyNode*>& scroll_translation_nodes,
-    const Vector<const TransformPaintPropertyNode*>& anchor_position_scrollers,
     Vector<std::unique_ptr<cc::ViewTransitionRequest>> transition_requests) {
-  const bool unification_enabled =
-      base::FeatureList::IsEnabled(features::kScrollUnification);
   // See: |UpdateRepaintedLayers| for repaint updates.
   DCHECK(needs_update_);
-  DCHECK(scroll_translation_nodes.empty() || unification_enabled);
-  DCHECK(anchor_position_scrollers.empty() || !unification_enabled);
   DCHECK(root_layer_);
 
   TRACE_EVENT0("blink", "PaintArtifactCompositor::Update");
@@ -883,13 +883,9 @@ void PaintArtifactCompositor::Update(
           effect.GetCompositorElementId();
     }
 
-    // The compositor scroll node is not directly stored in the property tree
-    // state but can be created via the scroll offset translation node.
-    const auto& scroll_translation =
-        NearestScrollTranslationForLayer(pending_layer);
     int scroll_id =
         property_tree_manager.EnsureCompositorScrollAndTransformNode(
-            scroll_translation);
+            ScrollTranslationStateForLayer(pending_layer));
 
     layer_list_builder.Add(&layer);
 
@@ -913,27 +909,18 @@ void PaintArtifactCompositor::Update(
     }
   }
 
-  if (unification_enabled) {
-    // We want to create a cc::TransformNode only if the scroller is painted.
-    // This avoids violating an assumption in CompositorAnimations that an
-    // element has property nodes for either all or none of its animating
-    // properties (see crbug.com/1385575).
-    // However, we want to create a cc::ScrollNode regardless of whether the
-    // scroller is painted. This ensures that scroll offset animations aren't
-    // affected by becoming unpainted.
-    for (auto* node : scroll_translation_nodes) {
-      property_tree_manager.EnsureCompositorScrollNode(*node);
-    }
-    for (auto* node : painted_scroll_translations_.Keys()) {
-      property_tree_manager.EnsureCompositorScrollAndTransformNode(*node);
-    }
-  } else {
-    // Anchor positioning requires all relevant scroll containers to have their
-    // cc::TransformNode and cc::ScrollNode, so that compositor can update the
-    // translation correctly.
-    for (auto* node : anchor_position_scrollers) {
-      property_tree_manager.EnsureCompositorScrollAndTransformNode(*node);
-    }
+  // We want to create a cc::TransformNode only if the scroller is painted.
+  // This avoids violating an assumption in CompositorAnimations that an
+  // element has property nodes for either all or none of its animating
+  // properties (see crbug.com/1385575).
+  // However, we want to create a cc::ScrollNode regardless of whether the
+  // scroller is painted. This ensures that scroll offset animations aren't
+  // affected by becoming unpainted.
+  for (auto* node : scroll_translation_nodes) {
+    property_tree_manager.EnsureCompositorScrollNode(*node);
+  }
+  for (auto* node : painted_scroll_translations_.Keys()) {
+    property_tree_manager.EnsureCompositorScrollAndTransformNode(*node);
   }
 
   root_layer_->layer_tree_host()->RegisterSelection(layer_selection);
@@ -1108,7 +1095,6 @@ uint32_t PaintArtifactCompositor::GetMainThreadScrollingReasons(
 
 bool PaintArtifactCompositor::UsesCompositedScrolling(
     const ScrollPaintPropertyNode& scroll) const {
-  DCHECK(RuntimeEnabledFeatures::CompositeScrollAfterPaintEnabled());
   CHECK(root_layer_);
   if (!root_layer_->layer_tree_host()) {
     return false;

@@ -119,9 +119,8 @@ constexpr int64_t kTimestamp = 987654321;
 constexpr em::PolicyFetchRequest::SignatureType kSignatureType =
     em::PolicyFetchRequest::SHA256_RSA;
 
-constexpr PolicyFetchReason kReason = PolicyFetchReason::kUnspecified;
-constexpr auto kProtoReason =
-    enterprise_management::DevicePolicyRequest::UNSPECIFIED;
+constexpr PolicyFetchReason kReason = PolicyFetchReason::kTest;
+constexpr auto kProtoReason = enterprise_management::DevicePolicyRequest::TEST;
 
 MATCHER_P(MatchProto, expected, "matches protobuf") {
   return arg.SerializePartialAsString() == expected.SerializePartialAsString();
@@ -415,6 +414,8 @@ em::DeviceManagementRequest GetRemoteCommandRequest(
       signature_type);
   remote_command_request.mutable_remote_command_request()
       ->set_send_secure_commands(true);
+  remote_command_request.mutable_remote_command_request()->set_type(
+      dm_protocol::kChromeUserRemoteCommandType);
 
   return remote_command_request;
 }
@@ -667,9 +668,56 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         std::tuple(PolicyFetchReason::kUnspecified,
                    enterprise_management::DevicePolicyRequest::UNSPECIFIED),
+        std::tuple(PolicyFetchReason::kBrowserStart,
+                   enterprise_management::DevicePolicyRequest::BROWSER_START),
         std::tuple(
             PolicyFetchReason::kDeviceEnrollment,
-            enterprise_management::DevicePolicyRequest::DEVICE_ENROLLMENT)));
+            enterprise_management::DevicePolicyRequest::DEVICE_ENROLLMENT),
+        std::tuple(PolicyFetchReason::kInvalidation,
+                   enterprise_management::DevicePolicyRequest::INVALIDATION),
+        std::tuple(
+            PolicyFetchReason::kRegistrationChanged,
+            enterprise_management::DevicePolicyRequest::REGISTRATION_CHANGED),
+        std::tuple(PolicyFetchReason::kRetryAfterStatusServiceActivationPending,
+                   enterprise_management::DevicePolicyRequest::
+                       RETRY_AFTER_STATUS_SERVICE_ACTIVATION_PENDING),
+        std::tuple(PolicyFetchReason::kRetryAfterStatusServicePolicyNotFound,
+                   enterprise_management::DevicePolicyRequest::
+                       RETRY_AFTER_STATUS_SERVICE_POLICY_NOT_FOUND),
+        std::tuple(PolicyFetchReason::kRetryAfterStatusServiceTooManyRequests,
+                   enterprise_management::DevicePolicyRequest::
+                       RETRY_AFTER_STATUS_SERVICE_TOO_MANY_REQUESTS),
+        std::tuple(PolicyFetchReason::kRetryAfterStatusRequestFailed,
+                   enterprise_management::DevicePolicyRequest::
+                       RETRY_AFTER_STATUS_REQUEST_FAILED),
+        std::tuple(PolicyFetchReason::kRetryAfterStatusTemporaryUnavailable,
+                   enterprise_management::DevicePolicyRequest::
+                       RETRY_AFTER_STATUS_TEMPORARY_UNAVAILABLE),
+        std::tuple(PolicyFetchReason::kRetryAfterStatusCannotSignRequest,
+                   enterprise_management::DevicePolicyRequest::
+                       RETRY_AFTER_STATUS_CANNOT_SIGN_REQUEST),
+        std::tuple(PolicyFetchReason::kRetryAfterStatusRequestInvalid,
+                   enterprise_management::DevicePolicyRequest::
+                       RETRY_AFTER_STATUS_REQUEST_INVALID),
+        std::tuple(PolicyFetchReason::kRetryAfterStatusHttpStatusError,
+                   enterprise_management::DevicePolicyRequest::
+                       RETRY_AFTER_STATUS_HTTP_STATUS_ERROR),
+        std::tuple(PolicyFetchReason::kRetryAfterStatusResponseDecodingError,
+                   enterprise_management::DevicePolicyRequest::
+                       RETRY_AFTER_STATUS_RESPONSE_DECODING_ERROR),
+        std::tuple(
+            PolicyFetchReason::kRetryAfterStatusServiceManagementNotSupported,
+            enterprise_management::DevicePolicyRequest::
+                RETRY_AFTER_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED),
+        std::tuple(PolicyFetchReason::kRetryAfterStatusRequestTooLarge,
+                   enterprise_management::DevicePolicyRequest::
+                       RETRY_AFTER_STATUS_REQUEST_TOO_LARGE),
+        std::tuple(PolicyFetchReason::kScheduled,
+                   enterprise_management::DevicePolicyRequest::SCHEDULED),
+        std::tuple(PolicyFetchReason::kSignin,
+                   enterprise_management::DevicePolicyRequest::SIGNIN),
+        std::tuple(PolicyFetchReason::kTest,
+                   enterprise_management::DevicePolicyRequest::TEST)));
 
 TEST_F(CloudPolicyClientTest, SetupRegistrationAndPolicyFetchWithOAuthToken) {
   const em::DeviceManagementResponse policy_response = GetPolicyResponse();
@@ -2383,7 +2431,8 @@ TEST_F(CloudPolicyClientTest, ShouldRejectUnsignedCommands) {
 
   client_->FetchRemoteCommands(
       std::make_unique<RemoteCommandJob::UniqueIDType>(kLastCommandId), {},
-      kSignatureType, std::move(callback));
+      kSignatureType, dm_protocol::kChromeUserRemoteCommandType,
+      std::move(callback));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -2412,7 +2461,8 @@ TEST_F(CloudPolicyClientTest,
 
   client_->FetchRemoteCommands(
       std::make_unique<RemoteCommandJob::UniqueIDType>(kLastCommandId), {},
-      kSignatureType, std::move(callback));
+      kSignatureType, dm_protocol::kChromeUserRemoteCommandType,
+      std::move(callback));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(received_commands, ElementsAre());
@@ -2438,7 +2488,8 @@ TEST_F(CloudPolicyClientTest, ShouldNotFailIfRemoteCommandResponseIsEmpty) {
 
   client_->FetchRemoteCommands(
       std::make_unique<RemoteCommandJob::UniqueIDType>(kLastCommandId), {},
-      kSignatureType, std::move(callback));
+      kSignatureType, dm_protocol::kChromeUserRemoteCommandType,
+      std::move(callback));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(received_commands, ElementsAre());
@@ -2483,7 +2534,8 @@ TEST_F(CloudPolicyClientTest, FetchSecureRemoteCommands) {
       1, remote_command_request.remote_command_request().command_results(0));
   client_->FetchRemoteCommands(
       std::make_unique<RemoteCommandJob::UniqueIDType>(kLastCommandId),
-      command_results, kSignatureType, std::move(callback));
+      command_results, kSignatureType,
+      dm_protocol::kChromeUserRemoteCommandType, std::move(callback));
   run_loop.Run();
   EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_REMOTE_COMMANDS,
             job_type_);

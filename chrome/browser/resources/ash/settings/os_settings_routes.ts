@@ -13,7 +13,7 @@
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 
-import {androidAppsVisible, isArcVmEnabled, isCrostiniSupported, isGuest, isKerberosEnabled, isPluginVmAvailable, isPowerwashAllowed, isRevampWayfindingEnabled} from './common/load_time_booleans.js';
+import {androidAppsVisible, isArcVmEnabled, isCrostiniSupported, isGuest, isInputDeviceSettingsSplitEnabled, isKerberosEnabled, isPluginVmAvailable, isPowerwashAllowed, isRevampWayfindingEnabled} from './common/load_time_booleans.js';
 import * as routesMojom from './mojom-webui/routes.mojom-webui.js';
 
 /**
@@ -171,6 +171,7 @@ export interface OsSettingsRoutes extends MinimumRoutes {
   KNOWN_NETWORKS: Route;
   LOCK_SCREEN: Route;
   MANAGE_ACCESSIBILITY: Route;
+  MANAGE_ISOLATED_WEB_APPS: Route;
   MANAGE_SWITCH_ACCESS_SETTINGS: Route;
   MANAGE_TTS_SETTINGS: Route;
   MULTIDEVICE: Route;
@@ -187,7 +188,6 @@ export interface OsSettingsRoutes extends MinimumRoutes {
   OS_LANGUAGES_INPUT: Route;
   OS_LANGUAGES_INPUT_METHOD_OPTIONS: Route;
   OS_LANGUAGES_LANGUAGES: Route;
-  OS_LANGUAGES_SMART_INPUTS: Route;
   OS_PRINTING: Route;
   OS_PRIVACY: Route;
   OS_RESET: Route;
@@ -288,14 +288,16 @@ export function createRoutes(): OsSettingsRoutes {
   r.BLUETOOTH_DEVICE_DETAIL = createSubpage(
       r.BLUETOOTH, routesMojom.BLUETOOTH_DEVICE_DETAIL_SUBPAGE_PATH,
       Subpage.kBluetoothDeviceDetail);
-  if (loadTimeData.getBoolean('enableSavedDevicesFlag')) {
+  if (loadTimeData.getBoolean('enableSavedDevicesFlag') &&
+      loadTimeData.getBoolean('isCrossDeviceFeatureSuiteEnabled')) {
     r.BLUETOOTH_SAVED_DEVICES = createSubpage(
         r.BLUETOOTH, routesMojom.BLUETOOTH_SAVED_DEVICES_SUBPAGE_PATH,
         Subpage.kBluetoothSavedDevices);
   }
 
   // MultiDevice section.
-  if (!isGuest()) {
+  if (!isGuest() &&
+      loadTimeData.getBoolean('isCrossDeviceFeatureSuiteEnabled')) {
     r.MULTIDEVICE = createSection(
         r.BASIC, routesMojom.MULTI_DEVICE_SECTION_PATH, Section.kMultiDevice);
     r.MULTIDEVICE_FEATURES = createSubpage(
@@ -342,7 +344,7 @@ export function createRoutes(): OsSettingsRoutes {
       r.DEVICE, routesMojom.DISPLAY_SUBPAGE_PATH, Subpage.kDisplay);
   r.AUDIO =
       createSubpage(r.DEVICE, routesMojom.AUDIO_SUBPAGE_PATH, Subpage.kAudio);
-  if (loadTimeData.getBoolean('enableInputDeviceSettingsSplit')) {
+  if (isInputDeviceSettingsSplitEnabled()) {
     r.PER_DEVICE_KEYBOARD = createSubpage(
         r.DEVICE, routesMojom.PER_DEVICE_KEYBOARD_SUBPAGE_PATH,
         Subpage.kPerDeviceKeyboard);
@@ -413,6 +415,9 @@ export function createRoutes(): OsSettingsRoutes {
         r.APP_MANAGEMENT, routesMojom.PLUGIN_VM_USB_PREFERENCES_SUBPAGE_PATH,
         Subpage.kPluginVmUsbPreferences);
   }
+  r.MANAGE_ISOLATED_WEB_APPS = createSubpage(
+      r.APPS, routesMojom.MANAGE_ISOLATED_WEB_APPS_SUBPAGE_PATH,
+      Subpage.kManageIsolatedWebApps);
 
   // Accessibility section.
   r.OS_ACCESSIBILITY = createSection(
@@ -453,56 +458,6 @@ export function createRoutes(): OsSettingsRoutes {
       routesMojom.SWITCH_ACCESS_OPTIONS_SUBPAGE_PATH,
       Subpage.kSwitchAccessOptions);
 
-  // Crostini section.
-  r.CROSTINI = createSection(
-      r.ADVANCED, routesMojom.CROSTINI_SECTION_PATH, Section.kCrostini);
-  if (isCrostiniSupported()) {
-    r.CROSTINI_DETAILS = createSubpage(
-        r.CROSTINI, routesMojom.CROSTINI_DETAILS_SUBPAGE_PATH,
-        Subpage.kCrostiniDetails);
-    r.CROSTINI_SHARED_PATHS = createSubpage(
-        r.CROSTINI_DETAILS,
-        routesMojom.CROSTINI_MANAGE_SHARED_FOLDERS_SUBPAGE_PATH,
-        Subpage.kCrostiniManageSharedFolders);
-    r.CROSTINI_SHARED_USB_DEVICES = createSubpage(
-        r.CROSTINI_DETAILS, routesMojom.CROSTINI_USB_PREFERENCES_SUBPAGE_PATH,
-        Subpage.kCrostiniUsbPreferences);
-    if (loadTimeData.valueExists('showCrostiniExportImport') &&
-        loadTimeData.getBoolean('showCrostiniExportImport')) {
-      r.CROSTINI_EXPORT_IMPORT = createSubpage(
-          r.CROSTINI_DETAILS,
-          routesMojom.CROSTINI_BACKUP_AND_RESTORE_SUBPAGE_PATH,
-          Subpage.kCrostiniBackupAndRestore);
-    }
-    if (loadTimeData.valueExists('showCrostiniExtraContainers') &&
-        loadTimeData.getBoolean('showCrostiniExtraContainers')) {
-      r.CROSTINI_EXTRA_CONTAINERS = createSubpage(
-          r.CROSTINI_DETAILS,
-          routesMojom.CROSTINI_EXTRA_CONTAINERS_SUBPAGE_PATH,
-          Subpage.kCrostiniExtraContainers);
-    }
-
-    r.CROSTINI_ANDROID_ADB = createSubpage(
-        r.CROSTINI_DETAILS,
-        routesMojom.CROSTINI_DEVELOP_ANDROID_APPS_SUBPAGE_PATH,
-        Subpage.kCrostiniDevelopAndroidApps);
-    r.CROSTINI_PORT_FORWARDING = createSubpage(
-        r.CROSTINI_DETAILS, routesMojom.CROSTINI_PORT_FORWARDING_SUBPAGE_PATH,
-        Subpage.kCrostiniPortForwarding);
-
-    r.BRUSCHETTA_DETAILS = createSubpage(
-        r.CROSTINI, routesMojom.BRUSCHETTA_DETAILS_SUBPAGE_PATH,
-        Subpage.kBruschettaDetails);
-    r.BRUSCHETTA_SHARED_USB_DEVICES = createSubpage(
-        r.BRUSCHETTA_DETAILS,
-        routesMojom.BRUSCHETTA_USB_PREFERENCES_SUBPAGE_PATH,
-        Subpage.kBruschettaUsbPreferences);
-    r.BRUSCHETTA_SHARED_PATHS = createSubpage(
-        r.BRUSCHETTA_DETAILS,
-        routesMojom.BRUSCHETTA_MANAGE_SHARED_FOLDERS_SUBPAGE_PATH,
-        Subpage.kBruschettaManageSharedFolders);
-  }
-
   // Privacy and Security section.
   r.OS_PRIVACY = createSection(
       r.BASIC, routesMojom.PRIVACY_AND_SECURITY_SECTION_PATH,
@@ -525,13 +480,6 @@ export function createRoutes(): OsSettingsRoutes {
       r.OS_PRIVACY, routesMojom.PRIVACY_HUB_MICROPHONE_SUBPAGE_PATH,
       Subpage.kPrivacyHubMicrophone);
 
-  // Printing section.
-  r.OS_PRINTING = createSection(
-      r.ADVANCED, routesMojom.PRINTING_SECTION_PATH, Section.kPrinting);
-  r.CUPS_PRINTERS = createSubpage(
-      r.OS_PRINTING, routesMojom.PRINTING_DETAILS_SUBPAGE_PATH,
-      Subpage.kPrintingDetails);
-
   // About section.
   r.ABOUT = createSection(
       /*parent=*/ null, routesMojom.ABOUT_CHROME_OS_SECTION_PATH,
@@ -541,6 +489,24 @@ export function createRoutes(): OsSettingsRoutes {
       Subpage.kDetailedBuildInfo);
 
   if (isRevampWayfindingEnabled()) {
+    // Device section, Input subpages.
+    const inputParentRoute = isInputDeviceSettingsSplitEnabled() ?
+        r.PER_DEVICE_KEYBOARD :
+        r.KEYBOARD;
+    assert(inputParentRoute);
+    r.OS_LANGUAGES_INPUT = createSubpage(
+        inputParentRoute, routesMojom.INPUT_SUBPAGE_PATH, Subpage.kInput);
+    r.OS_LANGUAGES_INPUT_METHOD_OPTIONS = createSubpage(
+        r.OS_LANGUAGES_INPUT, routesMojom.INPUT_METHOD_OPTIONS_SUBPAGE_PATH,
+        Subpage.kInputMethodOptions);
+    r.OS_LANGUAGES_EDIT_DICTIONARY = createSubpage(
+        r.OS_LANGUAGES_INPUT, routesMojom.EDIT_DICTIONARY_SUBPAGE_PATH,
+        Subpage.kEditDictionary);
+    r.OS_LANGUAGES_JAPANESE_MANAGE_USER_DICTIONARY = createSubpage(
+        r.OS_LANGUAGES_INPUT,
+        routesMojom.JAPANESE_MANAGE_USER_DICTIONARY_SUBPAGE_PATH,
+        Subpage.kJapaneseManageUserDictionary);
+
     // System Preferences section.
     r.SYSTEM_PREFERENCES = createSection(
         r.BASIC, routesMojom.SYSTEM_PREFERENCES_SECTION_PATH,
@@ -572,25 +538,10 @@ export function createRoutes(): OsSettingsRoutes {
           Subpage.kNetworkFileShares);
     }
 
-    // Languages and Input subpages.
+    // Language subpages.
     r.OS_LANGUAGES_LANGUAGES = createSubpage(
         r.SYSTEM_PREFERENCES, routesMojom.LANGUAGES_SUBPAGE_PATH,
         Subpage.kLanguages);
-    r.OS_LANGUAGES_INPUT = createSubpage(
-        r.SYSTEM_PREFERENCES, routesMojom.INPUT_SUBPAGE_PATH, Subpage.kInput);
-    r.OS_LANGUAGES_INPUT_METHOD_OPTIONS = createSubpage(
-        r.OS_LANGUAGES_INPUT, routesMojom.INPUT_METHOD_OPTIONS_SUBPAGE_PATH,
-        Subpage.kInputMethodOptions);
-    r.OS_LANGUAGES_EDIT_DICTIONARY = createSubpage(
-        r.OS_LANGUAGES_INPUT, routesMojom.EDIT_DICTIONARY_SUBPAGE_PATH,
-        Subpage.kEditDictionary);
-    r.OS_LANGUAGES_JAPANESE_MANAGE_USER_DICTIONARY = createSubpage(
-        r.OS_LANGUAGES_INPUT,
-        routesMojom.JAPANESE_MANAGE_USER_DICTIONARY_SUBPAGE_PATH,
-        Subpage.kJapaneseManageUserDictionary);
-    r.OS_LANGUAGES_SMART_INPUTS = createSubpage(
-        r.SYSTEM_PREFERENCES, routesMojom.SMART_INPUTS_SUBPAGE_PATH,
-        Subpage.kSmartInputs);
 
     // Search and Assistant subpages.
     r.SEARCH_SUBPAGE = createSubpage(
@@ -608,6 +559,22 @@ export function createRoutes(): OsSettingsRoutes {
         Subpage.kExternalStorage);
     r.POWER = createSubpage(
         r.SYSTEM_PREFERENCES, routesMojom.POWER_SUBPAGE_PATH, Subpage.kPower);
+
+    // Printing subpage.
+    r.CUPS_PRINTERS = createSubpage(
+        r.DEVICE, routesMojom.PRINTING_DETAILS_SUBPAGE_PATH,
+        Subpage.kPrintingDetails);
+
+    // Crostini subpages.
+    if (isCrostiniSupported()) {
+      r.CROSTINI_DETAILS = createSubpage(
+          r.ABOUT, routesMojom.CROSTINI_DETAILS_SUBPAGE_PATH,
+          Subpage.kCrostiniDetails);
+
+      r.BRUSCHETTA_DETAILS = createSubpage(
+          r.ABOUT, routesMojom.BRUSCHETTA_DETAILS_SUBPAGE_PATH,
+          Subpage.kBruschettaDetails);
+    }
   } else {
     // Date and Time section.
     r.DATETIME = createSection(
@@ -665,9 +632,6 @@ export function createRoutes(): OsSettingsRoutes {
         r.OS_LANGUAGES_INPUT,
         routesMojom.JAPANESE_MANAGE_USER_DICTIONARY_SUBPAGE_PATH,
         Subpage.kJapaneseManageUserDictionary);
-    r.OS_LANGUAGES_SMART_INPUTS = createSubpage(
-        r.OS_LANGUAGES, routesMojom.SMART_INPUTS_SUBPAGE_PATH,
-        Subpage.kSmartInputs);
 
     // Reset section.
     if (isPowerwashAllowed()) {
@@ -683,6 +647,69 @@ export function createRoutes(): OsSettingsRoutes {
         r.OS_SEARCH, routesMojom.SEARCH_SUBPAGE_PATH, Subpage.kSearch);
     r.GOOGLE_ASSISTANT = createSubpage(
         r.OS_SEARCH, routesMojom.ASSISTANT_SUBPAGE_PATH, Subpage.kAssistant);
+
+    // Printing section.
+    r.OS_PRINTING = createSection(
+        r.ADVANCED, routesMojom.PRINTING_SECTION_PATH, Section.kPrinting);
+    r.CUPS_PRINTERS = createSubpage(
+        r.OS_PRINTING, routesMojom.PRINTING_DETAILS_SUBPAGE_PATH,
+        Subpage.kPrintingDetails);
+
+    // Crostini section.
+    r.CROSTINI = createSection(
+        r.ADVANCED, routesMojom.CROSTINI_SECTION_PATH, Section.kCrostini);
+    if (isCrostiniSupported()) {
+      r.CROSTINI_DETAILS = createSubpage(
+          r.CROSTINI, routesMojom.CROSTINI_DETAILS_SUBPAGE_PATH,
+          Subpage.kCrostiniDetails);
+      r.BRUSCHETTA_DETAILS = createSubpage(
+          r.CROSTINI, routesMojom.BRUSCHETTA_DETAILS_SUBPAGE_PATH,
+          Subpage.kBruschettaDetails);
+    }
+  }
+
+  // Crostini details subpages.
+  if (isCrostiniSupported()) {
+    assert(r.CROSTINI_DETAILS);
+    assert(r.BRUSCHETTA_DETAILS);
+    r.CROSTINI_SHARED_PATHS = createSubpage(
+        r.CROSTINI_DETAILS,
+        routesMojom.CROSTINI_MANAGE_SHARED_FOLDERS_SUBPAGE_PATH,
+        Subpage.kCrostiniManageSharedFolders);
+    r.CROSTINI_SHARED_USB_DEVICES = createSubpage(
+        r.CROSTINI_DETAILS, routesMojom.CROSTINI_USB_PREFERENCES_SUBPAGE_PATH,
+        Subpage.kCrostiniUsbPreferences);
+    if (loadTimeData.valueExists('showCrostiniExportImport') &&
+        loadTimeData.getBoolean('showCrostiniExportImport')) {
+      r.CROSTINI_EXPORT_IMPORT = createSubpage(
+          r.CROSTINI_DETAILS,
+          routesMojom.CROSTINI_BACKUP_AND_RESTORE_SUBPAGE_PATH,
+          Subpage.kCrostiniBackupAndRestore);
+    }
+    if (loadTimeData.valueExists('showCrostiniExtraContainers') &&
+        loadTimeData.getBoolean('showCrostiniExtraContainers')) {
+      r.CROSTINI_EXTRA_CONTAINERS = createSubpage(
+          r.CROSTINI_DETAILS,
+          routesMojom.CROSTINI_EXTRA_CONTAINERS_SUBPAGE_PATH,
+          Subpage.kCrostiniExtraContainers);
+    }
+
+    r.CROSTINI_ANDROID_ADB = createSubpage(
+        r.CROSTINI_DETAILS,
+        routesMojom.CROSTINI_DEVELOP_ANDROID_APPS_SUBPAGE_PATH,
+        Subpage.kCrostiniDevelopAndroidApps);
+    r.CROSTINI_PORT_FORWARDING = createSubpage(
+        r.CROSTINI_DETAILS, routesMojom.CROSTINI_PORT_FORWARDING_SUBPAGE_PATH,
+        Subpage.kCrostiniPortForwarding);
+
+    r.BRUSCHETTA_SHARED_USB_DEVICES = createSubpage(
+        r.BRUSCHETTA_DETAILS,
+        routesMojom.BRUSCHETTA_USB_PREFERENCES_SUBPAGE_PATH,
+        Subpage.kBruschettaUsbPreferences);
+    r.BRUSCHETTA_SHARED_PATHS = createSubpage(
+        r.BRUSCHETTA_DETAILS,
+        routesMojom.BRUSCHETTA_MANAGE_SHARED_FOLDERS_SUBPAGE_PATH,
+        Subpage.kBruschettaManageSharedFolders);
   }
 
   return r as OsSettingsRoutes;

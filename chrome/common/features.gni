@@ -89,7 +89,6 @@ use_brlapi = is_chromeos_ash
 # Every grit target in //chrome should apply these defines so that the
 # proper build flags can be set.
 chrome_grit_defines = [
-  "chrome_root_store_supported=$chrome_root_store_supported",
   "enable_arcore=$enable_arcore",
   "enable_printing=$enable_printing",
   "enable_extensions=$enable_extensions",
@@ -99,10 +98,10 @@ chrome_grit_defines = [
   "enable_dice_support=$enable_dice_support",
   "enable_pdf=$enable_pdf",
   "enable_print_preview=$enable_print_preview",
+  "enable_search_engine_choice=$enable_search_engine_choice",
   "enable_screen_ai_service=$enable_screen_ai_service",
   "enable_supervised_users=$enable_supervised_users",
   "enable_vr=$enable_vr",
-  "enable_search_engine_choice=$enable_search_engine_choice",
   "enable_webui_certificate_viewer=$enable_webui_certificate_viewer",
   "enable_webui_tab_strip=$enable_webui_tab_strip",
   "is_official_build=$is_official_build",

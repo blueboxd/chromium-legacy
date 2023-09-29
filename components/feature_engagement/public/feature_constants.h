@@ -24,7 +24,6 @@ BASE_DECLARE_FEATURE(kIPHDummyFeature);
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
-BASE_DECLARE_FEATURE(kIPHAutofillFeedbackNewBadgeFeature);
 BASE_DECLARE_FEATURE(kIPHBatterySaverModeFeature);
 BASE_DECLARE_FEATURE(kIPHCompanionSidePanelFeature);
 BASE_DECLARE_FEATURE(kIPHCompanionSidePanelRegionSearchFeature);
@@ -60,6 +59,7 @@ BASE_DECLARE_FEATURE(kIPHSideSearchAutoTriggeringFeature);
 BASE_DECLARE_FEATURE(kIPHSideSearchFeature);
 BASE_DECLARE_FEATURE(kIPHSideSearchPageActionLabelFeature);
 BASE_DECLARE_FEATURE(kIPHTabSearchFeature);
+BASE_DECLARE_FEATURE(kIPHTrackingProtectionOnboardingFeature);
 BASE_DECLARE_FEATURE(kIPHWebUITabStripFeature);
 BASE_DECLARE_FEATURE(kIPHDesktopSnoozeFeature);
 BASE_DECLARE_FEATURE(kIPHDesktopPwaInstallFeature);
@@ -175,6 +175,7 @@ BASE_DECLARE_FEATURE(kIPHShareScreenshotFeature);
 BASE_DECLARE_FEATURE(kIPHSharingHubLinkToggleFeature);
 BASE_DECLARE_FEATURE(kIPHWebFeedFollowFeature);
 BASE_DECLARE_FEATURE(kIPHWebFeedPostFollowDialogFeature);
+BASE_DECLARE_FEATURE(kIPHWebFeedPostFollowDialogFeatureWithUIUpdate);
 BASE_DECLARE_FEATURE(kIPHSharedHighlightingBuilder);
 BASE_DECLARE_FEATURE(kIPHSharedHighlightingReceiverFeature);
 BASE_DECLARE_FEATURE(kIPHSharingHubWebnotesStylizeFeature);
@@ -256,6 +257,7 @@ BASE_DECLARE_FEATURE(kIPHScalableIphHelpAppBasedSevenFeature);
 BASE_DECLARE_FEATURE(kIPHScalableIphHelpAppBasedEightFeature);
 BASE_DECLARE_FEATURE(kIPHScalableIphHelpAppBasedNineFeature);
 BASE_DECLARE_FEATURE(kIPHScalableIphHelpAppBasedTenFeature);
+BASE_DECLARE_FEATURE(kIPHScalableIphGamingFeature);
 #endif
 
 #if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)

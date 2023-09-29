@@ -227,6 +227,9 @@ AuctionConfig CreateFullConfig() {
 
   auction_config.expects_additional_bids = true;
 
+  auction_config.aggregation_coordinator_origin =
+      url::Origin::Create(GURL("https://example.com"));
+
   return auction_config;
 }
 
@@ -688,6 +691,34 @@ TEST(AuctionConfigMojomTraitsTest, AdditionalBidsNoNonce) {
   AuctionConfig auction_config = CreateFullConfig();
   ASSERT_TRUE(auction_config.expects_additional_bids);
   auction_config.non_shared_params.auction_nonce.reset();
+  EXPECT_FALSE(SerializeAndDeserialize(auction_config));
+
+  auction_config.expects_additional_bids = false;
+  EXPECT_TRUE(SerializeAndDeserialize(auction_config));
+}
+
+// Can't have `expects_additional_bids` with no interestGroupBuyers.
+TEST(AuctionConfigMojomTraitsTest, AdditionalBidsNoInterestGroupBuyers) {
+  AuctionConfig auction_config = CreateFullConfig();
+  // These rely on interestGroupBuyers, so we have to clear these for this test.
+  auction_config.direct_from_seller_signals.mutable_value_for_testing().reset();
+
+  ASSERT_TRUE(auction_config.expects_additional_bids);
+  auction_config.non_shared_params.interest_group_buyers.reset();
+  EXPECT_FALSE(SerializeAndDeserialize(auction_config));
+
+  auction_config.expects_additional_bids = false;
+  EXPECT_TRUE(SerializeAndDeserialize(auction_config));
+}
+
+// Can't have `expects_additional_bids` with empty interestGroupBuyers.
+TEST(AuctionConfigMojomTraitsTest, AdditionalBidsEmptyInterestGroupBuyers) {
+  AuctionConfig auction_config = CreateFullConfig();
+  // These rely on interestGroupBuyers, so we have to clear these for this test.
+  auction_config.direct_from_seller_signals.mutable_value_for_testing().reset();
+
+  ASSERT_TRUE(auction_config.expects_additional_bids);
+  auction_config.non_shared_params.interest_group_buyers->clear();
   EXPECT_FALSE(SerializeAndDeserialize(auction_config));
 
   auction_config.expects_additional_bids = false;

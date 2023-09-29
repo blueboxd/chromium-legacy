@@ -132,8 +132,6 @@ component("cpp") {
     "spki_hash_set.h",
     "supports_loading_mode/supports_loading_mode_parser.cc",
     "supports_loading_mode/supports_loading_mode_parser.h",
-    "thread_delegate.cc",
-    "thread_delegate.h",
     "timing_allow_origin_parser.cc",
     "timing_allow_origin_parser.h",
     "trust_token_http_headers.cc",
@@ -390,8 +388,6 @@ component("cpp_base") {
     "cross_origin_opener_policy_mojom_traits.h",
     "data_element.cc",
     "data_element.h",
-    "http_raw_request_response_info.cc",
-    "http_raw_request_response_info.h",
     "http_request_headers_mojom_traits.cc",
     "http_request_headers_mojom_traits.h",
     "isolation_info_mojom_traits.cc",
@@ -594,9 +590,6 @@ source_set("tests") {
   if (is_linux) {
     sources += [ "network_interface_change_listener_mojom_traits_unittest.cc" ]
   }
-  if (is_android) {
-    sources += [ "system_dns_config_observer_mojom_traits_unittest.cc" ]
-  }
 
   deps = [
     ":cpp",
@@ -640,5 +633,13 @@ fuzzer_test("client_hints_fuzzer") {
     ":cpp",
     "//base",
     "//base:i18n",
+  ]
+}
+
+fuzzer_test("variants_header_fuzzer") {
+  sources = [ "variants_header_fuzzer.cc" ]
+  deps = [
+    ":cpp",
+    "//services/network/public/mojom:url_loader_base",
   ]
 }

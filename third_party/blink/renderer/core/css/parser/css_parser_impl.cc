@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
 #include "third_party/blink/renderer/core/css/parser/media_query_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
+#include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/style_rule_counter_style.h"
 #include "third_party/blink/renderer/core/css/style_rule_font_feature_values.h"
 #include "third_party/blink/renderer/core/css/style_rule_font_palette_values.h"
@@ -1496,6 +1497,10 @@ StyleRuleProperty* CSSParserImpl::ConsumePropertyRule(
     return nullptr;
   }
   if (!CSSVariableParser::IsValidVariableName(name_token)) {
+    if (observer_) {
+      observer_->ObserveErroneousAtRule(prelude_offset_start,
+                                        CSSAtRuleID::kCSSAtRuleProperty);
+    }
     return nullptr;
   }
   String name = name_token.Value().ToString();
@@ -1508,9 +1513,35 @@ StyleRuleProperty* CSSParserImpl::ConsumePropertyRule(
   ConsumeDeclarationList(stream, StyleRule::kProperty, CSSNestingType::kNone,
                          /*parent_rule_for_nesting=*/nullptr,
                          /*child_rules=*/nullptr);
-  return MakeGarbageCollected<StyleRuleProperty>(
+  StyleRuleProperty* rule = MakeGarbageCollected<StyleRuleProperty>(
       name,
       CreateCSSPropertyValueSet(parsed_properties_, kCSSPropertyRuleMode));
+  if (observer_ && rule) {
+    Vector<CSSPropertyID, 2> failed_properties;
+    absl::optional<CSSSyntaxDefinition> syntax =
+        PropertyRegistration::ConvertSyntax(rule->GetSyntax());
+    if (!syntax.has_value()) {
+      failed_properties.push_back(CSSPropertyID::kSyntax);
+    }
+    absl::optional<bool> inherits =
+        PropertyRegistration::ConvertInherits(rule->Inherits());
+    if (!inherits.has_value()) {
+      failed_properties.push_back(CSSPropertyID::kInherits);
+    }
+    absl::optional<const CSSValue*> initial =
+        syntax.has_value() ? PropertyRegistration::ConvertInitial(
+                                 rule->GetInitialValue(), *syntax, *context_)
+                           : absl::nullopt;
+    if (!initial.has_value() && syntax.has_value()) {
+      failed_properties.push_back(CSSPropertyID::kInitialValue);
+    }
+    if (!failed_properties.empty()) {
+      observer_->ObserveErroneousAtRule(prelude_offset_start,
+                                        CSSAtRuleID::kCSSAtRuleProperty,
+                                        failed_properties);
+    }
+  }
+  return rule;
 }
 
 StyleRuleCounterStyle* CSSParserImpl::ConsumeCounterStyleRule(
@@ -1958,6 +1989,19 @@ StyleRule* CSSParserImpl::ConsumeStyleRule(
     observer_->StartRuleHeader(StyleRule::kStyle, stream.LookAheadOffset());
   }
 
+  // Style rules that look like custom property declarations
+  // are not allowed by css-syntax.
+  //
+  // https://drafts.csswg.org/css-syntax/#consume-qualified-rule
+  bool custom_property_ambiguity = false;
+  if (RuntimeEnabledFeatures::CSSNestingIdentEnabled() &&
+      CSSVariableParser::IsValidVariableName(stream.Peek())) {
+    CSSParserTokenStream::State state = stream.Save();
+    stream.ConsumeIncludingWhitespace();  // <ident>
+    custom_property_ambiguity = stream.Peek().GetType() == kColonToken;
+    stream.Restore(state);
+  }
+
   // Parse the prelude of the style rule
   base::span<CSSSelector> selector_vector = CSSSelectorParser::ConsumeSelector(
       stream, context_, nesting_type, parent_rule_for_nesting,
@@ -1994,6 +2038,9 @@ StyleRule* CSSParserImpl::ConsumeStyleRule(
 
   if (selector_vector.empty()) {
     // Parse error, invalid selector list.
+    return nullptr;
+  }
+  if (custom_property_ambiguity) {
     return nullptr;
   }
 

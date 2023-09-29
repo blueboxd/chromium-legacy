@@ -563,7 +563,13 @@ bool ContentBrowserClient::IsWebAttributionReportingAllowed() {
   return true;
 }
 
-bool ContentBrowserClient::ShouldUseOsWebSourceAttributionReporting() {
+bool ContentBrowserClient::ShouldUseOsWebSourceAttributionReporting(
+    content::RenderFrameHost* rfh) {
+  return true;
+}
+
+bool ContentBrowserClient::ShouldUseOsWebTriggerAttributionReporting(
+    content::RenderFrameHost* rfh) {
   return true;
 }
 
@@ -598,14 +604,14 @@ bool ContentBrowserClient::IsPrivateAggregationDebugModeAllowed(
 
 bool ContentBrowserClient::IsCookieDeprecationLabelAllowed(
     content::BrowserContext* browser_context) {
-  return true;
+  return false;
 }
 
 bool ContentBrowserClient::IsCookieDeprecationLabelAllowedForContext(
     content::BrowserContext* browser_context,
     const url::Origin& top_frame_origin,
     const url::Origin& context_origin) {
-  return true;
+  return false;
 }
 
 bool ContentBrowserClient::CanSendSCTAuditingReport(
@@ -1599,5 +1605,13 @@ bool ContentBrowserClient::
         content::BrowserContext* browser_context) {
   return true;
 }
+
+#if !BUILDFLAG(IS_ANDROID)
+void ContentBrowserClient::BindVideoEffectsManager(
+    const std::string& device_id,
+    content::BrowserContext* browser_context,
+    mojo::PendingReceiver<video_capture::mojom::VideoEffectsManager>
+        video_effects_manager) {}
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace content

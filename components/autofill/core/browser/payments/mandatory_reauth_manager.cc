@@ -8,7 +8,7 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/metrics/payments/mandatory_reauth_metrics.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/strings/grit/components_chromium_strings.h"
+#include "components/strings/grit/components_branded_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill::payments {
@@ -21,15 +21,12 @@ MandatoryReauthManager::MandatoryReauthManager(AutofillClient* client)
 MandatoryReauthManager::~MandatoryReauthManager() = default;
 
 void MandatoryReauthManager::Authenticate(
-    device_reauth::DeviceAuthRequester requester,
     device_reauth::DeviceAuthenticator::AuthenticateCallback callback) {
   device_authenticator_ = client_->GetDeviceAuthenticator();
   CHECK(device_authenticator_);
-  device_authenticator_->Authenticate(
-      requester,
-      base::BindOnce(&MandatoryReauthManager::OnAuthenticationCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
-      /*use_last_valid_auth=*/true);
+  device_authenticator_->AuthenticateWithMessage(
+      u"", base::BindOnce(&MandatoryReauthManager::OnAuthenticationCompleted,
+                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void MandatoryReauthManager::AuthenticateWithMessage(
@@ -72,7 +69,7 @@ bool MandatoryReauthManager::ShouldOfferOptin(
   // If the device authenticator is not present or we can not authenticate with
   // biometric or screen lock, there will be no way to re-auth if the user
   // enrolls, so return that we should not offer mandatory re-auth opt-in.
-  if (scoped_refptr<device_reauth::DeviceAuthenticator> device_authenticator =
+  if (std::unique_ptr<device_reauth::DeviceAuthenticator> device_authenticator =
           client_->GetDeviceAuthenticator();
       !device_authenticator ||
       !device_authenticator->CanAuthenticateWithBiometricOrScreenLock()) {
@@ -151,10 +148,9 @@ void MandatoryReauthManager::OnUserAcceptedOptInPrompt() {
   // TODO(crbug.com/1427216): Convert this to
   // DeviceAuthenticator::AuthenticateWithMessage() with the correct message
   // once it is supported. Currently, the message is "Verify it's you".
-  Authenticate(device_reauth::DeviceAuthRequester::kPaymentsAutofillOptIn,
-               base::BindOnce(
-                   &MandatoryReauthManager::OnOptInAuthenticationStepCompleted,
-                   weak_ptr_factory_.GetWeakPtr()));
+  Authenticate(base::BindOnce(
+      &MandatoryReauthManager::OnOptInAuthenticationStepCompleted,
+      weak_ptr_factory_.GetWeakPtr()));
 #else
   NOTREACHED_NORETURN();
 #endif
@@ -190,7 +186,7 @@ void MandatoryReauthManager::OnUserClosedOptInPrompt() {
 
 MandatoryReauthAuthenticationMethod
 MandatoryReauthManager::GetAuthenticationMethod() {
-  scoped_refptr<device_reauth::DeviceAuthenticator> device_authenticator =
+  std::unique_ptr<device_reauth::DeviceAuthenticator> device_authenticator =
       client_->GetDeviceAuthenticator();
   if (!device_authenticator) {
     return MandatoryReauthAuthenticationMethod::kUnknown;

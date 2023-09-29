@@ -105,6 +105,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHSharingHubLinkToggleFeature,
     &kIPHWebFeedFollowFeature,
     &kIPHWebFeedPostFollowDialogFeature,
+    &kIPHWebFeedPostFollowDialogFeatureWithUIUpdate,
     &kIPHSharedHighlightingBuilder,
     &kIPHSharedHighlightingReceiverFeature,
     &kIPHSharingHubWebnotesStylizeFeature,
@@ -141,7 +142,6 @@ const base::Feature* const kAllFeatures[] = {
 #endif  // BUILDFLAG(IS_IOS)
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
-    &kIPHAutofillFeedbackNewBadgeFeature,
     &kIPHBatterySaverModeFeature,
     &kIPHCompanionSidePanelFeature,
     &kIPHCompanionSidePanelRegionSearchFeature,
@@ -176,6 +176,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHSideSearchFeature,
     &kIPHSideSearchPageActionLabelFeature,
     &kIPHTabSearchFeature,
+    &kIPHTrackingProtectionOnboardingFeature,
     &kIPHWebUITabStripFeature,
     &kIPHDesktopPwaInstallFeature,
     &kIPHProfileSwitchFeature,
@@ -231,6 +232,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHScalableIphHelpAppBasedEightFeature,
     &kIPHScalableIphHelpAppBasedNineFeature,
     &kIPHScalableIphHelpAppBasedTenFeature,
+    &kIPHScalableIphGamingFeature,
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)

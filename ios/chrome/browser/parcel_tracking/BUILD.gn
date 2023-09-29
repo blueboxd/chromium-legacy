@@ -2,6 +2,35 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+source_set("metrics") {
+  sources = [
+    "metrics.h",
+    "metrics.mm",
+  ]
+  deps = [ "//base" ]
+}
+
+source_set("infobar_delegate") {
+  sources = [
+    "parcel_tracking_infobar_delegate.h",
+    "parcel_tracking_infobar_delegate.mm",
+  ]
+  deps = [
+    ":parcel_tracking_step",
+    ":util",
+    "//base",
+    "//components/infobars/core",
+    "//ios/chrome/browser/shared/public/commands",
+    "//ios/chrome/browser/web/annotations",
+    "//ios/web/public",
+    "//ios/web/public/annotations:custom_text_check_result",
+  ]
+}
+
+source_set("parcel_tracking_step") {
+  sources = [ "parcel_tracking_step.h" ]
+}
+
 source_set("util") {
   sources = [
     "parcel_tracking_util.h",

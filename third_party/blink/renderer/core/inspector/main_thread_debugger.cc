@@ -223,10 +223,9 @@ int MainThreadDebugger::ContextGroupId(LocalFrame* frame) {
   return WeakIdentifierMap<LocalFrame>::Identifier(&local_frame_root);
 }
 
-MainThreadDebugger* MainThreadDebugger::Instance() {
+MainThreadDebugger* MainThreadDebugger::Instance(v8::Isolate* isolate) {
   DCHECK(IsMainThread());
-  ThreadDebugger* debugger =
-      ThreadDebugger::From(V8PerIsolateData::MainThreadIsolate());
+  ThreadDebugger* debugger = ThreadDebugger::From(isolate);
   DCHECK(debugger && !debugger->IsWorker());
   return static_cast<MainThreadDebugger*>(debugger);
 }
@@ -456,7 +455,7 @@ void MainThreadDebugger::QuerySelectorCallback(
   if (!container_node)
     return;
   ExceptionState exception_state(info.GetIsolate(),
-                                 ExceptionState::kExecutionContext,
+                                 ExceptionContextType::kOperationInvoke,
                                  "CommandLineAPI", "$");
   Element* element =
       container_node->QuerySelector(AtomicString(selector), exception_state);
@@ -479,7 +478,7 @@ void MainThreadDebugger::QuerySelectorAllCallback(
   if (!container_node)
     return;
   ExceptionState exception_state(info.GetIsolate(),
-                                 ExceptionState::kExecutionContext,
+                                 ExceptionContextType::kOperationInvoke,
                                  "CommandLineAPI", "$$");
   // ToV8(elementList) doesn't work here, since we need a proper Array instance,
   // not NodeList.
@@ -512,7 +511,7 @@ void MainThreadDebugger::XpathSelectorCallback(
     return;
 
   ExceptionState exception_state(info.GetIsolate(),
-                                 ExceptionState::kExecutionContext,
+                                 ExceptionContextType::kOperationInvoke,
                                  "CommandLineAPI", "$x");
   XPathResult* result = XPathEvaluator::Create()->evaluate(
       nullptr, selector, node, nullptr, XPathResult::kAnyType, ScriptValue(),

@@ -12,7 +12,7 @@
 
 import 'chrome://os-settings/os_settings.js';
 
-import {createRouterForTesting, ensureLazyLoaded, OneDriveBrowserProxy, OsSettingsRoutes, OsSettingsSubpageElement, resetGlobalScrollTargetForTesting, Route, Router, routes, setGlobalScrollTargetForTesting, SettingsSystemPreferencesPageElement} from 'chrome://os-settings/os_settings.js';
+import {createRouterForTesting, ensureLazyLoaded, OneDriveBrowserProxy, OsSettingsRoutes, OsSettingsSubpageElement, Route, Router, routes, SettingsSystemPreferencesPageElement} from 'chrome://os-settings/os_settings.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {assertFalse, assertNull, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
@@ -181,16 +181,6 @@ suite('<settings-system-preferences-page>', () => {
   });
 
   suite('Languages and Input subsection', () => {
-    setup(() => {
-      // Necessary for os-settings-edit-dictionary-page which uses
-      // GlobalScrollTargetMixin
-      setGlobalScrollTargetForTesting(document.body);
-    });
-
-    teardown(() => {
-      resetGlobalScrollTargetForTesting();
-    });
-
     test('Language settings card is visible', async () => {
       await createPage();
 
@@ -205,26 +195,6 @@ suite('<settings-system-preferences-page>', () => {
       {
         routeName: 'OS_LANGUAGES_LANGUAGES',
         elementTagName: 'os-settings-languages-page-v2',
-      },
-      {
-        routeName: 'OS_LANGUAGES_INPUT',
-        elementTagName: 'os-settings-input-page',
-      },
-      {
-        routeName: 'OS_LANGUAGES_INPUT_METHOD_OPTIONS',
-        elementTagName: 'settings-input-method-options-page',
-      },
-      {
-        routeName: 'OS_LANGUAGES_SMART_INPUTS',
-        elementTagName: 'os-settings-smart-inputs-page',
-      },
-      {
-        routeName: 'OS_LANGUAGES_EDIT_DICTIONARY',
-        elementTagName: 'os-settings-edit-dictionary-page',
-      },
-      {
-        routeName: 'OS_LANGUAGES_JAPANESE_MANAGE_USER_DICTIONARY',
-        elementTagName: 'os-settings-japanese-manage-user-dictionary-page',
       },
     ];
     languageSubpages.forEach(({routeName, elementTagName}) => {

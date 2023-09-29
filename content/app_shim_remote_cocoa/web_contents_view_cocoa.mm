@@ -244,6 +244,7 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
 }
 
 - (void)startDragWithDropData:(const DropData&)dropData
+                 sourceOrigin:(const url::Origin&)sourceOrigin
             dragOperationMask:(NSDragOperation)operationMask
                         image:(NSImage*)image
                        offset:(NSPoint)offset

@@ -136,14 +136,13 @@ OSExchangeDataProviderMac::CreateProviderWrappingPasteboard(
   return std::make_unique<WrappingProvider>(pasteboard);
 }
 
-void OSExchangeDataProviderMac::MarkOriginatedFromRenderer() {
-  NOTIMPLEMENTED();
-}
-
-bool OSExchangeDataProviderMac::DidOriginateFromRenderer() const {
-  // TODO(crbug.com/1288599): Implement this method.
-  NOTIMPLEMENTED();
-  return false;
+void OSExchangeDataProviderMac::MarkRendererTaintedFromOrigin(
+    const url::Origin& origin) {
+  NSString* string = origin.opaque()
+                         ? [NSString string]
+                         : base::SysUTF8ToNSString(origin.Serialize());
+  [GetPasteboard() setString:string
+                     forType:kUTTypeChromiumRendererInitiatedDrag];
 }
 
 absl::optional<url::Origin>
@@ -159,6 +158,20 @@ OSExchangeDataProviderMac::GetRendererTaintedOrigin() const {
   }
 
   return url::Origin::Create(GURL(base::SysNSStringToUTF8(item)));
+}
+
+void OSExchangeDataProviderMac::MarkOriginatedFromRenderer() {
+  NOTIMPLEMENTED();
+}
+
+bool OSExchangeDataProviderMac::IsRendererTainted() const {
+  return [GetPasteboard().types
+      containsObject:kUTTypeChromiumRendererInitiatedDrag];
+}
+bool OSExchangeDataProviderMac::DidOriginateFromRenderer() const {
+  // TODO(crbug.com/1288599): Implement this method.
+  NOTIMPLEMENTED();
+  return false;
 }
 
 void OSExchangeDataProviderMac::MarkAsFromPrivileged() {
@@ -178,9 +191,8 @@ void OSExchangeDataProviderMac::SetString(const std::u16string& string) {
 
 void OSExchangeDataProviderMac::SetURL(const GURL& url,
                                        const std::u16string& title) {
-  NSPasteboardItem* item =
-      ClipboardUtil::PasteboardItemFromUrl(base::SysUTF8ToNSString(url.spec()),
-                                           base::SysUTF16ToNSString(title));
+  NSPasteboardItem* item = ClipboardUtil::PasteboardItemFromUrl(
+      base::SysUTF8ToNSString(url.spec()), base::SysUTF16ToNSString(title));
   ClipboardUtil::AddDataToPasteboard(GetPasteboard(), item);
 }
 
@@ -191,8 +203,9 @@ void OSExchangeDataProviderMac::SetFilename(const base::FilePath& path) {
 
 void OSExchangeDataProviderMac::SetFilenames(
     const std::vector<FileInfo>& filenames) {
-  if (filenames.empty())
+  if (filenames.empty()) {
     return;
+  }
 
   NSMutableArray* paths = [NSMutableArray arrayWithCapacity:filenames.size()];
 
@@ -223,8 +236,9 @@ bool OSExchangeDataProviderMac::GetString(std::u16string* data) const {
   std::u16string title;
   bool result = GetURLAndTitle(FilenameToURLPolicy::DO_NOT_CONVERT_FILENAMES,
                                &url, &title);
-  if (result)
+  if (result) {
     *data = base::UTF8ToUTF16(url.spec());
+  }
 
   return result;
 }
@@ -242,10 +256,11 @@ bool OSExchangeDataProviderMac::GetURLAndTitle(FilenameToURLPolicy policy,
   // If there are no URLs, try to convert a filename to a URL if the policy
   // allows it. The title remains blank.
   //
-  // This could be done in the call to PopulateURLAndTitleFromPasteboard above
-  // if |true| were passed in as the last parameter, but that function strips
-  // the trailing slashes off of paths and always returns the last path element
-  // as the title whereas no path conversion nor title is wanted.
+  // This could be done in the call to PopulateURLAndTitleFromPasteboard
+  // above if |true| were passed in as the last parameter, but that function
+  // strips the trailing slashes off of paths and always returns the last
+  // path element as the title whereas no path conversion nor title is
+  // wanted.
   base::FilePath path;
   if (policy != FilenameToURLPolicy::DO_NOT_CONVERT_FILENAMES &&
       GetFilename(&path)) {
@@ -261,8 +276,9 @@ bool OSExchangeDataProviderMac::GetURLAndTitle(FilenameToURLPolicy policy,
 
 bool OSExchangeDataProviderMac::GetFilename(base::FilePath* path) const {
   NSArray* paths = [GetPasteboard() propertyListForType:NSFilenamesPboardType];
-  if ([paths count] == 0)
+  if ([paths count] == 0) {
     return false;
+  }
 
   *path = base::FilePath(base::SysNSStringToUTF8(paths[0]));
   return true;
@@ -271,12 +287,14 @@ bool OSExchangeDataProviderMac::GetFilename(base::FilePath* path) const {
 bool OSExchangeDataProviderMac::GetFilenames(
     std::vector<FileInfo>* filenames) const {
   NSArray* paths = [GetPasteboard() propertyListForType:NSFilenamesPboardType];
-  if ([paths count] == 0)
+  if ([paths count] == 0) {
     return false;
+  }
 
-  for (NSString* path in paths)
+  for (NSString* path in paths) {
     filenames->push_back(
         {base::FilePath(base::SysNSStringToUTF8(path)), base::FilePath()});
+  }
 
   return true;
 }
@@ -286,8 +304,9 @@ bool OSExchangeDataProviderMac::GetPickledData(
     base::Pickle* data) const {
   DCHECK(data);
   NSData* ns_data = [GetPasteboard() dataForType:format.ToNSString()];
-  if (!ns_data)
+  if (!ns_data) {
     return false;
+  }
 
   *data =
       base::Pickle(static_cast<const char*>([ns_data bytes]), [ns_data length]);
@@ -349,16 +368,16 @@ gfx::Vector2d OSExchangeDataProviderMac::GetDragImageOffset() const {
 
 NSDraggingItem* OSExchangeDataProviderMac::GetDraggingItem() const {
   // What's going on here is that initiating a drag (-[NSView
-  // beginDraggingSessionWithItems...]) requires a dragging item. Even though
-  // pasteboard items are NSPasteboardWriters, they are locked to their
-  // pasteboard and cannot be used to initiate a drag with another pasteboard
-  // (hello https://crbug.com/928684). Therefore, wrap them.
+  // beginDraggingSessionWithItems...]) requires a dragging item. Even
+  // though pasteboard items are NSPasteboardWriters, they are locked to
+  // their pasteboard and cannot be used to initiate a drag with another
+  // pasteboard (hello https://crbug.com/928684). Therefore, wrap them.
   //
   // OSExchangeDataProviderMac was written to the old NSPasteboard APIs that
-  // didn't account for more than one item. This kinda matches Views which also
-  // assumes that only one drag item can exist at a time. TODO(avi): Fix all of
-  // Views to be able to handle drags of more than one item. Then rewrite
-  // OSExchangeDataProviderMac to the new NSPasteboard item API.
+  // didn't account for more than one item. This kinda matches Views which
+  // also assumes that only one drag item can exist at a time. TODO(avi):
+  // Fix all of Views to be able to handle drags of more than one item. Then
+  // rewrite OSExchangeDataProviderMac to the new NSPasteboard item API.
 
   NSArray* pasteboardItems = [GetPasteboard() pasteboardItems];
   DCHECK(pasteboardItems);

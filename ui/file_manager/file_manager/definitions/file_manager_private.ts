@@ -20,7 +20,7 @@
 declare namespace chrome {
   export namespace fileManagerPrivate {
     type PreferencesChange = {
-      cellularDisabled: boolean,
+      driveSyncEnabledOnMeteredNetwork: boolean,
       arcEnabled: boolean,
       arcRemovableMediaAccessEnabled: boolean,
       folderShortcuts: string[],
@@ -44,8 +44,6 @@ declare namespace chrome {
     type DriveConnectionState = {
       type: chrome.fileManagerPrivate.DriveConnectionStateType,
       reason?: chrome.fileManagerPrivate.DriveOfflineReason,
-            hasCellularNetworkAccess: boolean,
-            canPinHostedFiles: boolean,
     }
 
     export type GetDriveConnectionStateCallback =

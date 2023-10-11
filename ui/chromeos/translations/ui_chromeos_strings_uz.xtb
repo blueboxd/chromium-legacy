@@ -278,6 +278,7 @@
 <translation id="3264582393905923483">Kontekst</translation>
 <translation id="3272909651715601089">“<ph name="PATH" />” ochilmadi</translation>
 <translation id="3280431534455935878">Fayl tayyorlanmoqda</translation>
+<translation id="3280719573299097127">Pulli tarmoqqa ulangansiz. Fayllar sinxronlanishi pauza qilindi.</translation>
 <translation id="3280987981688031357">Plastinka</translation>
 <translation id="3290356915286466215">Himoyalanmagan</translation>
 <translation id="3291218047831493686">SIM karta qulfi sozlamalarini almashtirish uchun bu tarmoqqa ulaning</translation>
@@ -631,6 +632,7 @@ Amal bajarilishini kuting va qurilmani “Fayllar” ilovasida chiqarib oling. A
 <translation id="5838451609423551646">Barcha elementlar tanlovi bekor qilindi.</translation>
 <translation id="5838825566232597749">AQSH (Workman, xalqaro)</translation>
 <translation id="5845721951356578987">Hamshira</translation>
+<translation id="5858478190805449225">Quvvat tejash rejimi yoniq. Quvvat tejalishi oʻchiqligida qayta urining.</translation>
 <translation id="5860491529813859533">Yoqish</translation>
 <translation id="5861477046012235702">Geymer</translation>
 <translation id="5864471791310927901">DHCP topilmadi</translation>
@@ -897,7 +899,6 @@ Amal bajarilishini kuting va qurilmani “Fayllar” ilovasida chiqarib oling. A
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7920501309908018401">My Drive jildidagi fayllar Chromebook qurilmangizga avtomatik sinxronlanadi va ularni internetsiz ham ochish mumkin.</translation>
 <translation id="7925247922861151263">AAA tekshirilmadi</translation>
-<translation id="7925686952655276919">Sinxronlash uchun mobil internetdan foydalanmang</translation>
 <translation id="7928710562641958568">Qurilmani chiqarib olish</translation>
 <translation id="7933875256234974853">Drive fayllari sinxronlashga tayyorlanmoqda...</translation>
 <translation id="7943385054491506837">AQSH Colemak</translation>
@@ -920,6 +921,7 @@ Amal bajarilishini kuting va qurilmani “Fayllar” ilovasida chiqarib oling. A
 <translation id="8087576439476816834">Yuklab olish: <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">Menga ulashilgan</translation>
 <translation id="8116072619078571545">Muzlagan suv</translation>
+<translation id="8120392982188717723">Pulli tarmoq orqali sinxronlashga ruxsat berish</translation>
 <translation id="8124093710070495550">Sinxronizatsiyada muammo</translation>
 <translation id="8128733386027980860">Ingliz (Buyuk Britaniya) va Dvorak klaviaturasi</translation>
 <translation id="8137331602592933310">Siz “<ph name="FILENAME" />” faylini o‘chira olmaysiz, chunki bu fayl sizga tegishli emas.</translation>

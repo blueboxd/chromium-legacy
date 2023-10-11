@@ -328,6 +328,11 @@ extern const char kEnableFriendlierSafeBrowsingSettingsStandardProtectionName[];
 extern const char
     kEnableFriendlierSafeBrowsingSettingsStandardProtectionDescription[];
 
+// Title and description for the flag to enable red interstitial facelift UI
+// changes.
+extern const char kEnableRedInterstitialFaceliftName[];
+extern const char kEnableRedInterstitialFaceliftDescription[];
+
 // Title and description for the flag to enable kEditPasswordsInSettings flag on
 // iOS.
 extern const char kEditPasswordsInSettingsName[];
@@ -361,10 +366,6 @@ extern const char kEnableDiscoverFeedDiscoFeedEndpointDescription[];
 // Title and description for the flag to remove the Feed from the NTP.
 extern const char kEnableFeedAblationName[];
 extern const char kEnableFeedAblationDescription[];
-
-// Title and description for the flag to enable the Fullscreen API.
-extern const char kEnableFullscreenAPIName[];
-extern const char kEnableFullscreenAPIDescription[];
 
 // Title and description for the flag to enable the preferences account storage.
 extern const char kEnablePreferencesAccountStorageName[];
@@ -896,11 +897,6 @@ extern const char kNewOverflowMenuShareChromeActionDescription[];
 // Title and description for the flag to enable the Start Surface.
 extern const char kStartSurfaceName[];
 extern const char kStartSurfaceDescription[];
-
-// Title and description for the flag to allow batch upload of local data from
-// the new account settings panel.
-extern const char kSyncEnableBatchUploadLocalDataName[];
-extern const char kSyncEnableBatchUploadLocalDataDescription[];
 
 // Title and description for the flag to control if Chrome Sync should use the
 // sandbox servers.

@@ -141,6 +141,18 @@ GREYElementInteraction* GetPasswordDetailTextFieldWithID(int detail_id) {
                  grey_kindOfClassName(@"UITextField"), nil));
 }
 
+// Matcher for "Save in Account" confirmation dialog button for bulk save
+// passwords in account flow.
+GREYElementInteraction* SaveInAccountConfirmationDialogButton() {
+  return [[EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(chrome_test_util::ButtonWithAccessibilityLabelId(
+                         IDS_IOS_BULK_UPLOAD_BUTTON_TITLE),
+                     grey_interactable(), nil)]
+      inRoot:grey_accessibilityID(
+                 kPasswordSettingsBulkMovePasswordsToAccountAlertViewId)];
+}
+
 // Matcher for "Saved Passwords" header in the password list.
 id<GREYMatcher> SavedPasswordsHeaderMatcher() {
   return grey_allOf(
@@ -360,6 +372,32 @@ void OpenSetPasscodeHelpArticle() {
                                    learnHow)] performAction:grey_tap()];
 }
 
+// Ensure the save passwords in account section is visible.
+void CheckSavePasswordsInAccountSectionVisible() {
+  [ChromeEarlGrey
+      waitForSufficientlyVisibleElementWithMatcher:
+          grey_accessibilityID(
+              kPasswordSettingsBulkMovePasswordsToAccountDescriptionTableViewId)];
+
+  [ChromeEarlGrey
+      waitForSufficientlyVisibleElementWithMatcher:
+          grey_accessibilityID(
+              kPasswordSettingsBulkMovePasswordsToAccountButtonTableViewId)];
+}
+
+// Ensure the save passwords in account section is no longer visible.
+void CheckSavePasswordsInAccountSectionHidden() {
+  [ChromeEarlGrey
+      waitForNotSufficientlyVisibleElementWithMatcher:
+          grey_accessibilityID(
+              kPasswordSettingsBulkMovePasswordsToAccountDescriptionTableViewId)];
+
+  [ChromeEarlGrey
+      waitForNotSufficientlyVisibleElementWithMatcher:
+          grey_accessibilityID(
+              kPasswordSettingsBulkMovePasswordsToAccountButtonTableViewId)];
+}
+
 // Verifies reauthentication UI histogram was recorded.
 void CheckReauthenticationUIEventMetric(ReauthenticationEvent event) {
   NSString* histogram = base::SysUTF8ToNSString(
@@ -502,7 +540,11 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
-  config.relaunch_policy = NoForceRelaunchAndResetState;
+
+  // See (crbug.com/1479593). Enforcing relaunch between tests is necessary to
+  // prevent flakiness, due to a spinner that appears in some tests and blocks
+  // later ones from interacting with the UI.
+  config.relaunch_policy = ForceRelaunchByCleanShutdown;
 
   config.features_enabled.push_back(
       password_manager::features::kIOSPasswordUISplit);
@@ -556,6 +598,50 @@ void CheckPasswordManagerVisitMetricCount(int count) {
         password_manager::features::kIOSPasswordAuthOnEntry);
     config.features_disabled.push_back(
         password_manager::features::kIOSPasswordAuthOnEntryV2);
+  }
+
+  if ([self isRunningTest:@selector
+            (testSavePasswordsInAccountHiddenWhenNotSignedIn)] ||
+      [self isRunningTest:@selector
+            (testSavePasswordsInAccountShownWhenEligible)] ||
+      [self isRunningTest:@selector
+            (testSavePasswordsInAccountOneDistinctDomain)] ||
+      [self isRunningTest:@selector
+            (testSavePasswordsInAccountTwoDistinctDomains)] ||
+      [self isRunningTest:@selector
+            (testSavePasswordsInAccountThreeDistinctDomains)] ||
+      [self isRunningTest:@selector
+            (testSavePasswordsInAccountFourDistinctDomains)]) {
+    config.features_enabled.push_back(
+        password_manager::features::
+            kIOSPasswordSettingsBulkUploadLocalPasswords);
+  }
+
+  if ([self isRunningTest:@selector(testSavePasswordsInAccountFlowCompletes)] ||
+      [self
+          isRunningTest:@selector(testSavePasswordsInAccountFlowAuthFailed)] ||
+      [self isRunningTest:@selector
+            (testSavePasswordsInAccountFlowNoAuthSetOnDevice)] ||
+      [self isRunningTest:@selector
+            (testSavePasswordsInAccountFlowCompletesMovingPasswords)]) {
+    config.features_enabled.push_back(
+        password_manager::features::
+            kIOSPasswordSettingsBulkUploadLocalPasswords);
+    config.features_disabled.push_back(
+        password_manager::features::kIOSPasswordAuthOnEntry);
+    config.features_disabled.push_back(
+        password_manager::features::kIOSPasswordAuthOnEntryV2);
+  }
+
+  if ([self isRunningTest:@selector
+            (testSavePasswordsInAccountHiddenWhenSyncing)] ||
+      [self isRunningTest:@selector
+            (testSavePasswordsInAccountHiddenWhenNotOptedInToAccountStorage)]) {
+    config.features_enabled.push_back(
+        password_manager::features::
+            kIOSPasswordSettingsBulkUploadLocalPasswords);
+    config.features_disabled.push_back(
+        syncer::kReplaceSyncPromosWithSignInPromos);
   }
 
   return config;
@@ -3234,6 +3320,359 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 
   [GetInteractionForListItem(localIconMatcher, kGREYDirectionDown)
       assertWithMatcher:grey_notVisible()];
+}
+
+// Tests that the save passwords in account section is hidden when syncing.
+- (void)testSavePasswordsInAccountHiddenWhenSyncing {
+  SavePasswordForm();
+
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:YES];
+
+  OpenPasswordManager();
+  OpenSettingsSubmenu();
+
+  // Ensure module is hidden.
+  CheckSavePasswordsInAccountSectionHidden();
+
+  // Close password manager settings.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(SettingsDoneButton(),
+                                          grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
+}
+
+// Tests that the save passwords in account section is hidden when not
+// signed-in.
+- (void)testSavePasswordsInAccountHiddenWhenNotSignedIn {
+  SavePasswordForm();
+
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
+
+  OpenPasswordManager();
+  OpenSettingsSubmenu();
+
+  // Ensure module is hidden.
+  CheckSavePasswordsInAccountSectionHidden();
+
+  // Close password manager settings.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(SettingsDoneButton(),
+                                          grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
+}
+
+// Tests that the save passwords in account section is hidden when not opted-in
+// for account storage.
+- (void)testSavePasswordsInAccountHiddenWhenNotOptedInToAccountStorage {
+  SavePasswordForm();
+
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
+
+  OpenPasswordManager();
+  OpenSettingsSubmenu();
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  // Set save passwords into account switch to off.
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::TableViewSwitchCell(
+                     kPasswordSettingsAccountStorageSwitchTableViewId, YES)]
+      performAction:TurnTableViewSwitchOn(NO)];
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  // Ensure module is now hidden.
+  CheckSavePasswordsInAccountSectionHidden();
+}
+
+// Tests that the save passwords in account section is shown when the user is
+// eligible.
+- (void)testSavePasswordsInAccountShownWhenEligible {
+  NSLog(@"GUJENAI");
+  SavePasswordForm(@"passwordtest1", @"user1", @"https://test1.com");
+
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
+
+  OpenPasswordManager();
+  OpenSettingsSubmenu();
+
+  // Ensure the move passwords to account section is shown.
+  CheckSavePasswordsInAccountSectionVisible();
+
+  // Close password manager settings menu.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(SettingsDoneButton(),
+                                          grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
+}
+
+// Tests that the confirmation dialog contains the correct string for saving one
+// distinct domain to the account.
+- (void)testSavePasswordsInAccountOneDistinctDomain {
+  SavePasswordForm(@"password1", @"user1", @"https://example1.com");
+
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
+
+  OpenPasswordManager();
+  OpenSettingsSubmenu();
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  // Tap on save passwords to account button.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(
+              kPasswordSettingsBulkMovePasswordsToAccountButtonTableViewId)]
+      performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  // Ensure the confirmation dialog appears with the correct patterned string.
+  NSString* result = @"You can save your password for example1.com in your "
+                     @"Google Account, foo1@gmail.com";
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(result)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that the confirmation dialog contains the correct string for saving two
+// distinct domains to the account.
+- (void)testSavePasswordsInAccountTwoDistinctDomains {
+  SavePasswordForm(@"password1", @"user1", @"https://example1.com");
+  SavePasswordForm(@"password1", @"user1", @"https://example2.com");
+
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
+
+  OpenPasswordManager();
+  OpenSettingsSubmenu();
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  // Tap on save passwords to account button.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(
+              kPasswordSettingsBulkMovePasswordsToAccountButtonTableViewId)]
+      performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  // Ensure the confirmation dialog appears with the correct patterned string.
+  NSString* result = @"You can save your passwords for example1.com and "
+                     @"example2.com in your Google Account, foo1@gmail.com";
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(result)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that the confirmation dialog contains the correct string for saving
+// three distinct domains to the account.
+- (void)testSavePasswordsInAccountThreeDistinctDomains {
+  SavePasswordForm(@"password1", @"user1", @"https://example1.com");
+  SavePasswordForm(@"password1", @"user1", @"https://example2.com");
+  SavePasswordForm(@"password1", @"user1", @"https://example3.com");
+
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
+
+  OpenPasswordManager();
+  OpenSettingsSubmenu();
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  // Tap on save passwords to account button.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(
+              kPasswordSettingsBulkMovePasswordsToAccountButtonTableViewId)]
+      performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  // Ensure the confirmation dialog appears with the correct patterned string.
+  NSString* result = @"You can save your passwords for example1.com, "
+                     @"example2.com, and 1 other "
+                     @"in your Google Account, foo1@gmail.com";
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(result)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that the confirmation dialog contains the correct string for saving
+// four distinct domains to the account.
+- (void)testSavePasswordsInAccountFourDistinctDomains {
+  SavePasswordForm(@"password1", @"user1", @"https://example1.com");
+  SavePasswordForm(@"password1", @"user1", @"https://example2.com");
+  SavePasswordForm(@"password1", @"user1", @"https://example3.com");
+  SavePasswordForm(@"password1", @"user1", @"https://example4.com");
+
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
+
+  OpenPasswordManager();
+  OpenSettingsSubmenu();
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  // Tap on save passwords to account button.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(
+              kPasswordSettingsBulkMovePasswordsToAccountButtonTableViewId)]
+      performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  // Ensure the confirmation dialog appears with the correct patterned string.
+  NSString* result =
+      @"You can save your passwords for example1.com, example2.com, and 2 "
+      @"others in your Google Account, foo1@gmail.com";
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(result)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that the local password is moved when accepting the confirmation
+// dialog, and that the corresponding snackbar appears.
+- (void)testSavePasswordsInAccountFlowCompletes {
+  SavePasswordForm(@"password1", @"user1", @"https://example1.com");
+
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
+
+  OpenPasswordManager();
+  OpenSettingsSubmenu();
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  // Tap on save passwords to account button.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(
+              kPasswordSettingsBulkMovePasswordsToAccountButtonTableViewId)]
+      performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  // Tap on "Save in Account" (accept) button.
+  [SaveInAccountConfirmationDialogButton() performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  // Ensure that the save passwords to account module has disappeared.
+  CheckSavePasswordsInAccountSectionHidden();
+
+  // Ensure the correct snackbar appears.
+  [ChromeEarlGrey
+      waitForSufficientlyVisibleElementWithMatcher:
+          grey_accessibilityLabel(
+              @"Password saved in your Google Account, foo1@gmail.com")];
+}
+
+// Tests that the local password is not moved when accepting the confirmation
+// dialog since authentication failed.
+- (void)testSavePasswordsInAccountFlowAuthFailed {
+  SavePasswordForm(@"password1", @"user1", @"https://example1.com");
+
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kFailure];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
+
+  OpenPasswordManager();
+  OpenSettingsSubmenu();
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  // Tap on save passwords to account button.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(
+              kPasswordSettingsBulkMovePasswordsToAccountButtonTableViewId)]
+      performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  // Tap on "Save in Account" (accept) button.
+  [SaveInAccountConfirmationDialogButton() performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  // Ensure the save passwords to account section is still there.
+  CheckSavePasswordsInAccountSectionVisible();
+}
+
+// Tests that the "set passcode" alert is shown if no authentication is set when
+// user tries to save passwords in their account.
+- (void)testSavePasswordsInAccountFlowNoAuthSetOnDevice {
+  SavePasswordForm(@"password1", @"user1", @"https://example1.com");
+
+  [PasswordSettingsAppInterface mockReauthenticationModuleCanAttempt:NO];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
+
+  OpenPasswordManager();
+  OpenSettingsSubmenu();
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  // Tap on save passwords to account button.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(
+              kPasswordSettingsBulkMovePasswordsToAccountButtonTableViewId)]
+      performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  // Tap on "Save in Account" (accept) button.
+  [SaveInAccountConfirmationDialogButton() performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  // Ensure the "set passcode" alert is shown.
+  [ChromeEarlGrey
+      waitForSufficientlyVisibleElementWithMatcher:
+          grey_accessibilityLabel(l10n_util::GetNSString(
+              IDS_IOS_PASSWORD_SETTINGS_BULK_UPLOAD_PASSWORDS_SET_UP_SCREENLOCK_CONTENT))];
+}
+
+// Tests that the local passwords are correctly handled in the save
+// passwords to account flow, and the correct snackbar appears.
+- (void)testSavePasswordsInAccountFlowCompletesMovingPasswords {
+  SavePasswordForm(@"password1", @"user1", @"https://example1.com");
+  SavePasswordForm(@"password2", @"user1", @"https://example1.com");
+  SavePasswordForm(@"password1", @"user1", @"https://example2.com");
+
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
+  SavePasswordForm(@"password1", @"user1", @"https://example1.com");
+
+  OpenPasswordManager();
+  OpenSettingsSubmenu();
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  // Tap on save passwords to account button.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(
+              kPasswordSettingsBulkMovePasswordsToAccountButtonTableViewId)]
+      performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  // Tap on "Save in Account" (accept) button.
+  [SaveInAccountConfirmationDialogButton() performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  // Ensure that the save passwords to account module has disappeared.
+  CheckSavePasswordsInAccountSectionHidden();
+
+  // Ensure the correct snackbar appears.
+  [ChromeEarlGrey
+      waitForSufficientlyVisibleElementWithMatcher:
+          grey_accessibilityLabel(
+              @"Passwords saved in your Google Account, foo1@gmail.com")];
 }
 
 // Checks opening the password manager with a successful reauthentication shows

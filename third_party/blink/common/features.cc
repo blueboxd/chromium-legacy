@@ -39,6 +39,14 @@ BASE_FEATURE(kAdAuctionReportingWithMacroApi,
              "AdAuctionReportingWithMacroApi",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Controls the capturing of the Ad-Auction-Signals header, and the maximum
+// allowed Ad-Auction-Signals header value.
+BASE_FEATURE(kAdAuctionSignals,
+             "AdAuctionSignals",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+const base::FeatureParam<int> kAdAuctionSignalsMaxSizeBytes{
+    &kAdAuctionSignals, "ad-auction-signals-max-size-bytes", 10000};
+
 // See https://github.com/WICG/turtledove/blob/main/FLEDGE.md
 // Changes default Permissions Policy for features join-ad-interest-group and
 // run-ad-auction to a more restricted EnableForSelf.
@@ -639,12 +647,6 @@ const base::FeatureParam<double> kCostReductionOfMultiplexedRequests{
     &kDelayLowPriorityRequestsAccordingToNetworkState,
     "CostReductionOfMultiplexedRequests", 0.5};
 
-// Allows web apps to customize their tab strip. See explainer for more detail:
-// https://github.com/WICG/manifest-incubations/blob/gh-pages/tabbed-mode-explainer.md
-BASE_FEATURE(kDesktopPWAsTabStripCustomizations,
-             "DesktopPWAsTabStripCustomizations",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kDirectCompositorThreadIpc,
              "DirectCompositorThreadIpc",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -737,6 +739,11 @@ const base::FeatureParam<int> kDeprecateUnloadPercent{&kDeprecateUnload,
 // of the unload deprecation rollout.
 const base::FeatureParam<int> kDeprecateUnloadBucket{&kDeprecateUnload,
                                                      "rollout_bucket", 0};
+
+// A list of hosts for which deprecation of unload is allowed. If it's empty
+// the all hosts are allowed.
+const base::FeatureParam<std::string> kDeprecateUnloadAllowlist{
+    &kDeprecateUnload, "allowlist", ""};
 
 // Controls whether LCP calculations should exclude low-entropy images. If
 // enabled, then the associated parameter sets the cutoff, expressed as the
@@ -1007,7 +1014,7 @@ BASE_FEATURE(kKeepAliveInBrowserMigration,
 // painted.
 BASE_FEATURE(kLCPAnimatedImagesReporting,
              "LCPAnimatedImagesReporting",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kLCPCriticalPathPredictor,
              "LCPCriticalPathPredictor",
@@ -1037,7 +1044,7 @@ BASE_FEATURE(kLCPScriptObserver,
 // Enables reporting as LCP of the time the first frame of a video was painted.
 BASE_FEATURE(kLCPVideoFirstFrame,
              "LCPVideoFirstFrame",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // A feature to reduce the set of resources fetched by No-State Prefetch.
 BASE_FEATURE(kLightweightNoStatePrefetch,

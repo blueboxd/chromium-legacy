@@ -833,8 +833,8 @@
   },
   {
     "name": "block-insecure-private-network-requests",
-    "owners": [ "titouan", "lyf", "chrome-security-owp-team@google.com" ],
-    "expiry_milestone": 118
+    "owners": [ "lyf", "phao", "chrome-security-owp-team@google.com" ],
+    "expiry_milestone": 120
   },
   {
     "name": "bluetooth-coredump",
@@ -1141,6 +1141,11 @@
     // This flag does not expire because it allows some test cases that host a local SM-DP+ server
     // on a network without an external connection to the internet to be able to install eSIM.
     "expiry_milestone": -1
+  },
+  {
+    "name": "cellular-carrier-lock",
+    "owners": [ "ejcaruso", "michamazur", "ujjwalpande", "cros-cellular-core@google.com" ],
+    "expiry_milestone": 130
   },
   {
     "name": "cellular-use-second-euicc",
@@ -2525,12 +2530,12 @@
   {
     "name": "enable-desktop-pwas-scope-extensions",
     "owners": [ "luhua@microsoft.com", "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 118
+    "expiry_milestone": 125
   },
   {
     "name": "enable-desktop-pwas-sub-apps",
-    "owners": [ "isandrk@chromium.org", "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 118
+    "owners": [ "samicolon@google.com", "desktop-pwas-team@google.com" ],
+    "expiry_milestone": 120
   },
   {
     "name": "enable-desktop-pwas-tab-strip",
@@ -3418,6 +3423,11 @@
     "expiry_milestone": 119
   },
   {
+    "name": "enable-red-interstitial-facelift",
+    "owners": ["skrakowi", "chrome-counter-abuse-alerts@google.com" ],
+    "expiry_milestone": 122
+  },
+  {
     "name": "enable-refine-data-source-reload-reporting",
     "owners": [ "sczs", "tinazwang" ],
     "expiry_milestone": 120
@@ -3473,11 +3483,6 @@
     "name": "enable-search-customizable-shortcuts-in-launcher",
     "owners": [ "xiangdongkong", "cros-peripherals@google.com"],
     "expiry_milestone": 130
-  },
-  {
-    "name": "enable-search-in-shortcuts-app",
-    "owners": [ "jimmyxgong", "zentaro", "cros-peripherals@google.com"],
-    "expiry_milestone": 120
   },
   {
     "name": "enable-search-resumption-module",
@@ -5381,6 +5386,11 @@
     "expiry_milestone": 120
   },
   {
+    "name": "legacy-tech-report-top-level-url",
+    "owners": ["zmin", "parastoog"],
+    "expiry_milestone": 122
+  },
+  {
     "name": "legacy-tls-interstitial",
     "owners": [ "cthomp" ],
     "expiry_milestone": 92
@@ -5546,7 +5556,7 @@
   {
     "name": "messages-for-android-stacking-animation",
     "owners": [ "lazzzis", "aishwaryarj"],
-    "expiry_milestone": 118
+    "expiry_milestone": 125
   },
   {
     "name": "metal",
@@ -6604,7 +6614,7 @@
   {
     "name": "pcie-billboard-notification",
     "owners": [ "jimmyxgong", "cros-peripherals@google.com"],
-    "expiry_milestone": 118
+    "expiry_milestone": 130
   },
   {
     "name": "pdf-ocr",
@@ -6714,6 +6724,11 @@
     "name": "preinstalled-web-app-window-experiment",
     "owners": [ "glenrob", "chromeos-web-apps-platform-syd@google.com" ],
     "expiry_milestone": 123
+  },
+  {
+    "name": "preloading-on-performance-page",
+    "owners": [ "fmacintosh@google.com", "koilos@google.com" ],
+    "expiry_milestone": 121
   },
   {
     "name": "price-insights",
@@ -6835,7 +6850,7 @@
     "owners": [
       "//content/browser/private_aggregation/OWNERS"
     ],
-    "expiry_milestone": 117
+    "expiry_milestone": 123
   },
   {
     "name": "private-network-access-preflight-short-timeout",
@@ -6860,6 +6875,11 @@
     "name": "productivity-launcher-image-search",
     "owners": [ "yulunwu","cros-system-ui-eng@google.com" ],
     "expiry_milestone": 118
+  },
+  {
+    "name": "profiles-reordering",
+    "owners": ["rsult", "chrome-signin-team"],
+    "expiry_milestone": 122
   },
   {
     "name": "promise-icons",
@@ -6902,6 +6922,11 @@
   {
     "name": "query-tiles-country-code",
     "owners": [ "shaktisahu", "qinmin" ],
+    "expiry_milestone": 120
+  },
+  {
+    "name": "query-tiles-disable-country-override",
+    "owners": [ "qinmin" ],
     "expiry_milestone": 120
   },
   {
@@ -7736,11 +7761,6 @@
     "expiry_milestone": 120
   },
   {
-    "name": "sync-enable-batch-upload-local-data",
-    "owners": ["ankushkush@google.com", "chrome-sync-dev@google.com"],
-    "expiry_milestone": 122
-  },
-  {
     "name": "sync-poll-immediately-on-every-startup",
     "owners": [ "treib", "//components/search/OWNERS" ],
     "expiry_milestone": 118
@@ -8279,7 +8299,7 @@
   {
     "name": "view-transition-on-navigation",
     "owners": [ "khushalsagar", "vmpstr", "chrishtr" ],
-    "expiry_milestone" : 118
+    "expiry_milestone" : 130
   },
   {
     "name": "viewport-segments",
@@ -8415,7 +8435,7 @@
   {
     "name": "web-share",
     "owners": [ "mhochk@microsoft.com", "ericwilligers@google.com", "hatalat@microsoft.com" ],
-    "expiry_milestone": 118
+    "expiry_milestone": 121
   },
   {
     "name": "web-sql-access",

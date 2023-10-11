@@ -23,6 +23,8 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/commerce/core/bookmark_update_manager.h"
 #include "components/commerce/core/commerce_feature_list.h"
+#include "components/commerce/core/commerce_utils.h"
+#include "components/commerce/core/discounts_storage.h"
 #include "components/commerce/core/metrics/metrics_utils.h"
 #include "components/commerce/core/metrics/scheduled_metrics_manager.h"
 #include "components/commerce/core/pref_names.h"
@@ -117,7 +119,10 @@ ShoppingService::ShoppingService(
     SessionProtoStorage<
         commerce_subscription_db::CommerceSubscriptionContentProto>*
         subscription_proto_db,
-    power_bookmarks::PowerBookmarkService* power_bookmark_service)
+    power_bookmarks::PowerBookmarkService* power_bookmark_service,
+    SessionProtoStorage<discounts_db::DiscountsContentProto>*
+        discounts_proto_db,
+    history::HistoryService* history_service)
     : country_on_startup_(country_on_startup),
       locale_on_startup_(locale_on_startup),
       opt_guide_(opt_guide),
@@ -128,7 +133,8 @@ ShoppingService::ShoppingService(
       bookmark_consent_throttle_(
           unified_consent::UrlKeyedDataCollectionConsentHelper::
               NewPersonalizedBookmarksDataCollectionConsentHelper(
-                  sync_service)),
+                  sync_service,
+                  /*require_sync_feature_enabled=*/true)),
       weak_ptr_factory_(this) {
   // Register for the types of information we're allowed to receive from
   // optimization guide.
@@ -192,6 +198,11 @@ ShoppingService::ShoppingService(
   if (pref_service_ && bookmark_model_ && subscriptions_manager_) {
     scheduled_metrics_manager_ =
         std::make_unique<metrics::ScheduledMetricsManager>(pref_service_, this);
+  }
+
+  if (IsDiscountInfoApiEnabled() && discounts_proto_db && history_service) {
+    discounts_storage_ =
+        std::make_unique<DiscountsStorage>(discounts_proto_db, history_service);
   }
 }
 
@@ -681,7 +692,7 @@ bool ShoppingService::IsDiscountEligibleToShowOnNavigation() {
                                     country_on_startup_, locale_on_startup_)) {
     return false;
   }
-  return account_checker_ && account_checker_->IsSignedIn() &&
+  return account_checker_ && account_checker_->IsOptedIntoSync() &&
          account_checker_->IsAnonymizedUrlDataCollectionEnabled();
 }
 
@@ -1221,13 +1232,27 @@ void ShoppingService::OnGetAllDiscountsFromOptGuide(
     DiscountInfoCallback callback,
     const std::vector<DiscountsPair>& results) {
   DiscountsMap map;
+  std::vector<std::string> urls_to_check_in_db;
   for (auto res : results) {
     if (res.second.size() > 0) {
       map.insert(res);
+      base::UmaHistogramEnumeration(kDiscountsFetchResultHistogramName,
+                                    DiscountsFetchResult::kInfoFromOptGuide);
+    } else {
+      urls_to_check_in_db.push_back(res.first.spec());
     }
   }
-  // TODO(b:289243652): Check local db.
-  std::move(callback).Run(std::move(map));
+  if (discounts_storage_) {
+    discounts_storage_->HandleServerDiscounts(
+        urls_to_check_in_db, std::move(map), std::move(callback));
+  } else {
+    std::move(callback).Run(std::move(map));
+  }
+}
+
+void ShoppingService::SetDiscountsStorageForTesting(
+    std::unique_ptr<DiscountsStorage> storage) {
+  discounts_storage_ = std::move(storage);
 }
 
 void ShoppingService::Subscribe(
@@ -1355,7 +1380,7 @@ bool ShoppingService::IsShoppingListEligible(AccountChecker* account_checker,
 
   // Make sure the user allows subscriptions to be made and that we can fetch
   // store data.
-  if (!account_checker || !account_checker->IsSignedIn() ||
+  if (!account_checker || !account_checker->IsOptedIntoSync() ||
       !account_checker->IsSyncingBookmarks() ||
       !account_checker->IsAnonymizedUrlDataCollectionEnabled() ||
       blocked_by_waa || account_checker->IsSubjectToParentalControls()) {

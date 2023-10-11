@@ -4,6 +4,7 @@
 <translation id="1005230401424685968">YYYY</translation>
 <translation id="1013952917065545813">మీరు ఇక్కడికి తిరిగి వచ్చి మీరు ఇటీవల మూసివేసిన ట్యాబ్‌లను మళ్లీ తెరవవచ్చు</translation>
 <translation id="1016495303386450659">అంశం అప్‌డేట్ చేయబడింది</translation>
+<translation id="1025514696883950875">{COUNT,plural, =1{ఖాతాలో పాస్‌వర్డ్‌ను సేవ్ చేయండి}other{ఖాతాలో పాస్‌వర్డ్‌లను సేవ్ చేయండి}}</translation>
 <translation id="1035980983510608210">అన్ని ట్యాబ్‌లను మూసివేయడం వలన పిన్ చేసిన ట్యాబ్‌లు కూడా మూసివేయబడతాయి.</translation>
 <translation id="1036348656032585052">ఆఫ్ చేయి</translation>
 <translation id="1044891598689252897">సైట్‌లు సాధారణ రీతిలో పని చేస్తాయి</translation>
@@ -40,6 +41,7 @@
 <translation id="1177414119866731261">Chrome మెనూను తెరవండి</translation>
 <translation id="1181037720776840403">తీసివేయండి</translation>
 <translation id="1200396280085622191">మెసేజ్‌లలో, ఇతర యాప్‌లలో కనిపించే లింక్‌లను ట్యాప్ చేయడం ద్వారా ఎప్పుడైనా, ఎక్కడైనా Chromeను ఉపయోగించండి.</translation>
+<translation id="1201402288615127009">తర్వాత</translation>
 <translation id="1207113853726624428">కొత్త శోధన</translation>
 <translation id="1207493287814084192">5:30 PM</translation>
 <translation id="1209206284964581585">ప్రస్తుతానికి దాచు</translation>
@@ -71,6 +73,7 @@
 <translation id="132683371494960526">మూలాధారిత ఫోల్డర్‌ను మార్చడానికి రెండుసార్లు నొక్కండి.</translation>
 <translation id="1332723353863236763">కొంత డేటా ఇంకా సేవ్ కాలేదు</translation>
 <translation id="1335348992705722518">సెట్టింగ్‌లను మేనేజ్ చేయండి...</translation>
+<translation id="1338381578078138897">{COUNT,plural, =1{మీ Google ఖాతాలో {COUNT} పాస్‌వర్డ్‌ను సేవ్ చేయండి}other{మీ Google ఖాతాలో {COUNT} పాస్‌వర్డ్‌లను సేవ్ చేయండి}}</translation>
 <translation id="1340643665687018190">మెనూను మూసివేయి</translation>
 <translation id="1348596747084433075">https://www.amazon.com/Wife-Gifts/s?k=for+Wife+Gifts</translation>
 <translation id="1358214951266274152">మీరు కాపీ చేసిన లింక్‌ను సందర్శించండి</translation>
@@ -88,6 +91,7 @@
 <translation id="1407135791313364759">అన్నీ తెరువు</translation>
 <translation id="1408847409015257906">"గోప్యత &amp; సెక్యూరిటీ"ని ట్యాప్ చేయండి.</translation>
 <translation id="1430915738399379752">ప్రింట్</translation>
+<translation id="1443958768615272145">బ్రౌజింగ్ చేయడం కొనసాగించండి</translation>
 <translation id="1449835205994625556">పాస్‌వర్డ్‌ను దాచండి</translation>
 <translation id="1450170672351507823">స్టాండర్డ్ రక్షణ ఆన్‌లో ఉంది. మరింత సెక్యూరిటీ కోసం, మెరుగైన రక్షణను ఉపయోగించండి.</translation>
 <translation id="149095475893949513">ఈ వెబ్‌సైట్, కాన్ఫిగరేషన్ ప్రొఫైల్‌ను డౌన్‌లోడ్ చేయడానికి ప్రయత్నిస్తోంది.</translation>
@@ -152,10 +156,13 @@
 <translation id="1830634592642484976">ఈ అడ్రస్ ప్రస్తుతం Chromeలో సేవ్ అవుతుంది. దీనిని Google ప్రోడక్ట్‌లన్నింటిలో ఉపయోగించాలంటే, మీ Google ఖాతా, <ph name="USER_EMAIL" />‌లో దానిని సేవ్ చేయండి.</translation>
 <translation id="1832848789136765277">మీ సింక్ చేసిన డేటాను మీరు ఎల్లప్పుడూ యాక్సెస్ చేయగలరని నిర్ధారించుకోవడానికి, అది మీరేనని వెరిఫై చేయండి</translation>
 <translation id="1836891464494477513">{count,plural, =1{బుక్‌మార్క్ మీ Google ఖాతా, {email}‌లో సేవ్ చేయబడింది}other{బుక్‌మార్క్‌లు మీ Google ఖాతా, {email}‌లో సేవ్ చేయబడ్డాయి}}</translation>
+<translation id="183878838231635348">మీ కోసం సేఫ్టీ చెక్ ఆటోమేటిక్‌గా గుర్తించే ఏవైనా గోప్యత లేదా సెక్యూరిటీ సమస్యలను ఈ కార్డ్ చూపుతుంది.</translation>
+<translation id="1847795903283049083">మీ బుక్‌మార్క్‌లు, రీడింగ్ లిస్ట్ లేదా పాస్‌వర్డ్ మేనేజర్‌లో కూడా మీరు ఈ ఐటెమ్‌లను చూడవచ్చు, మేనేజ్ చేయవచ్చు.</translation>
 <translation id="1870148520156231997">పాస్‌వర్డ్‌ను చూపండి</translation>
 <translation id="1872096359983322073">టార్చ్</translation>
 <translation id="1882901927376062252">{count,plural, =1{బుక్‌మార్క్ మీ Google ఖాతా, {email}‌లో సేవ్ చేయబడింది}other{{count} బుక్‌మార్క్‌లు మీ Google ఖాతా, {email}‌లో సేవ్ చేయబడ్డాయి}}</translation>
 <translation id="1883255238294161206">లిస్ట్‌ను కుదించు</translation>
+<translation id="1890237935065108104">ఈ సెట్టింగ్ అందుబాటులో లేదు.</translation>
 <translation id="1894023287452300670">ధరను ఇక్కడ ట్రాక్ చేయండి</translation>
 <translation id="189531189292803889">మీ iPad ఇటీవల రీస్టోర్ అయింది, దాని వలన మీ ఆటోమేటిక్ బ్రౌజర్ మారి ఉండవచ్చు.</translation>
 <translation id="1910975740091000991">iOS కోసం Chrome</translation>
@@ -164,6 +171,7 @@
 <translation id="1930989359703290198">మీ సంస్థ మిమ్మల్ని కొన్ని ఖాతాలతో మాత్రమే సైన్ ఇన్ చేయడానికి అనుమతిస్తుంది. అనుమతించబడని ఖాతాలు దాచబడతాయి. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="1941314575388338491">కాపీ చేయడానికి రెండుసార్లు నొక్కండి.</translation>
 <translation id="1943478190258551035">మెనూ → సెట్టింగ్‌లు</translation>
+<translation id="194449685234099560">మీరు ఇక్కడ మీరు తెరిచిన ట్యాబ్‌లన్నింటినీ కనుగొనవచ్చు.</translation>
 <translation id="1952172573699511566">వీలైనప్పుడు వెబ్‌సైట్‌లు, మీ ప్రాధాన్య భాషలో వచనాన్ని చూపుతాయి.</translation>
 <translation id="1959441496380398824">తేదీని తాకి, నొక్కి ఉంచండి.</translation>
 <translation id="1959679933317802873">కంటెంట్ కోసం వేచి ఉంది</translation>
@@ -186,6 +194,7 @@
 <translation id="20485545164632846">కొత్త ఐటెమ్</translation>
 <translation id="2049727122989709386"><ph name="COUNT" /> ఖాతాలు ఒకే పాస్‌వర్డ్‌ను ఉపయోగిస్తున్నాయి</translation>
 <translation id="2050196510205866090">{count,plural, =1{సేవ్ చేసిన {count} పేమెంట్ ఆప్షన్ మీ కీబోర్డ్ పైన అందుబాటులో ఉంది.}other{సేవ్ చేసిన {count} పేమెంట్ ఆప్షన్‌లు మీ కీబోర్డ్ పైన అందుబాటులో ఉన్నాయి.}}</translation>
+<translation id="2055515971416882518">"సెట్టింగ్‌ల"ను తెరవండి.</translation>
 <translation id="2073572773299281212"><ph name="DAYS" /> రోజుల క్రితం యాక్టివ్‌గా ఉంది</translation>
 <translation id="2074131957428911366">మీరు ఎప్పుడైనా <ph name="BEGIN_LINK" />సెట్టింగ్‌ల<ph name="END_LINK" /> ద్వారా వేటిని సింక్ చేయాలో ఎంచుకోవచ్చు.</translation>
 <translation id="2079545284768500474">చర్య రద్దు</translation>
@@ -244,6 +253,7 @@
 <translation id="2435457462613246316">పాస్‌వర్డ్‌ను చూపించు</translation>
 <translation id="2459155039684421202">అడ్రస్ బార్‌లో, “నా హిస్టరీని క్లియర్ చేయండి” లేదా “పాస్‌వర్డ్‌లను ఎడిట్ చేయండి” వంటి టాస్క్‌ను ఎంటర్ చేయండి.</translation>
 <translation id="2461070143328828326">పాస్‌వర్డ్ సెట్టింగ్‌లు</translation>
+<translation id="2462736546165239215">మీరు ఇక్కడ మీ బ్రౌజింగ్ హిస్టరీ మొత్తాన్ని కనుగొనవచ్చు.</translation>
 <translation id="2469960372084740698">సురక్షిత బ్రౌజింగ్‌ను ఆఫ్ చేయాలా?</translation>
 <translation id="2473876017985765807"><ph name="WEBSITE" />లో మీరు ఇప్పటికే పాస్‌వర్డ్‌ను సేవ్ చేశారు</translation>
 <translation id="2476359652512522418">ఎంచుకోబడలేదు</translation>
@@ -256,6 +266,7 @@
 <translation id="2523363575747517183">ఈ వెబ్‌సైట్ మరో అప్లికేషన్‌ను తెరవడానికి పలుసార్లు ప్రయత్నిస్తోంది.</translation>
 <translation id="2529021024822217800">అన్నీ తెరువు</translation>
 <translation id="2536991091671391962">మీరు సేవ్ చేసిన పాస్‌వర్డ్‌లను ఏ పరికరంలోనైనా ఉపయోగించవచ్చు. <ph name="EMAIL" /> కోసం అవి Google Password Managerలో సేవ్ చేయబడతాయి.</translation>
+<translation id="2542268842667970959">"సేఫ్టీ చెక్"ను దాచండి</translation>
 <translation id="2547458583188611426">సింక్ పని చేయడం లేదు. సింక్‌ను ప్రారంభించడానికి రహస్య పదబంధాన్ని ఎంటర్ చేయండి.</translation>
 <translation id="2551153019974022505">ఖాతా ఎర్రర్</translation>
 <translation id="2556092377360758201">రక్షణ లేదు (సిఫార్సు చేయడం లేదు)</translation>
@@ -309,6 +320,7 @@
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2783054063075604403">లింక్‌ను క్రియేట్ చేయడం సాధ్యపడలేదు</translation>
 <translation id="2786701870377699570">సింక్ చేసిన పరికరాలలో ట్యాబ్‌లను సెర్చ్ చేయండి</translation>
+<translation id="2789552044937754463">{COUNT,plural, =1{మీ Google ఖాతా, {EMAIL}‌లో పాస్‌వర్డ్ సేవ్ చేయబడింది}other{మీ Google ఖాతా, {EMAIL}‌లో పాస్‌వర్డ్‌లను సేవ్ చేయబడ్డాయి}}</translation>
 <translation id="2797029671965852011">హిస్టరీని చూడండి</translation>
 <translation id="2800683595868705743">ట్యాబ్ స్విచర్ నుండి నిష్క్రమించండి</translation>
 <translation id="2815198996063984598">2. ఆటోమేటిక్ బ్రౌజర్ యాప్‌ను ట్యాప్ చేయండి</translation>
@@ -343,6 +355,7 @@
 <translation id="2952278131021475699">Lens కెమెరా సెర్చ్</translation>
 <translation id="2952581218264071393">1. Chrome సెట్టింగ్‌లను తెరవండి</translation>
 <translation id="2956733177489514605">మీ పాస్‌వర్డ్‌లను, ఇంకా మరిన్నింటిని సింక్ చేయడానికి మీ Google ఖాతాతో సైన్ ఇన్ చేయండి.</translation>
+<translation id="2958271635022991876">మీరు ఇక్కడ కొత్త ట్యాబ్‌ను తెరవవచ్చు.</translation>
 <translation id="2958718410589002129">పాస్‌వర్డ్‌లు</translation>
 <translation id="2961210776189273067">టైటిల్</translation>
 <translation id="2964349545761222050">థర్డ్-పార్టీ కుక్కీలను బ్లాక్ చేయండి</translation>
@@ -412,6 +425,7 @@
 <translation id="3328801116991980348">సైట్ సమాచారం</translation>
 <translation id="3340938510625667914">Chrome చర్యలు</translation>
 <translation id="3344485292736684439">{count,plural, =1{బుక్‌మార్క్ మీ {email} ఖాతాలోని "{title}"‌లో సేవ్ అయ్యింది}other{బుక్‌మార్క్‌లు మీ {email} ఖాతాలోని "{title}"‌లో సేవ్ అయ్యాయి}}</translation>
+<translation id="3349676726073650389">మీరు ఫాలో అయ్యే సైట్‌లు, సెర్చ్‌లు మీ Google ఖాతాలో సేవ్ చేయబడతాయి. మీ ఫాలోలను సెట్టింగ్‌లలో మీరు ఎప్పుడైనా మేనేజ్ చేయవచ్చు.</translation>
 <translation id="3365529507898144230">Photosలో సేవ్ చేయండి</translation>
 <translation id="3371831930909698441">అనువాదం అందుబాటులో ఉంది. స్క్రీన్ దిగువ భాగానికి సమీపంలో ఎంపికలు అందుబాటులో ఉంటాయి.</translation>
 <translation id="3377063233124932127">ఇప్పుడు మీరు సేవ్ చేసిన మీ బుక్‌మార్క్‌లు, పాస్‌వర్డ్‌లు, ఇంకా మరిన్ని పేజీ ఎగువున కనిపిస్తాయి.</translation>
@@ -449,6 +463,7 @@
 <translation id="3533202363250687977">అజ్ఞాత ట్యాబ్‌లన్నీ మూసివేయి</translation>
 <translation id="3533436815740441613">కొత్త ట్యాబ్</translation>
 <translation id="3540141921715814660">బుక్‌మార్క్‌లకు జోడించండి</translation>
+<translation id="355101282835380364">ఖాతాలో సేవ్ చేయండి…</translation>
 <translation id="3551320343578183772">ట్యాబ్‌ను మూసివేయి</translation>
 <translation id="3565207542107370586">బ్రౌజింగ్ డేటాను క్లియర్ చేయండి…</translation>
 <translation id="3575234738189584619">Lens ద్వారా సెర్చ్ చేయండి</translation>
@@ -462,6 +477,7 @@
 <translation id="3609785682760573515">సింక్ చేస్తోంది...</translation>
 <translation id="3631443864840848029">మీరు ఈ సైట్‌లో మీ ప్రస్తుత పాస్‌వర్డ్‌ను సేవ్ చేస్తున్నారని నిర్ధారించుకోండి.</translation>
 <translation id="3638472932233958418">వెబ్‌పేజీలను ముందే లోడ్ చేయి</translation>
+<translation id="3643338347976071250">{count,plural, =1{ఈ పరికరంలో {count} పాస్‌వర్డ్ మాత్రమే సేవ్ చేయబడుతుంది. దీన్ని మీ ఇతర పరికరాలలో ఉపయోగించడానికి, మీ Google ఖాతా, {email}లో దీన్ని సేవ్ చేయండి.}other{ఈ పరికరంలో {count} పాస్‌వర్డ్‌లు మాత్రమే సేవ్ చేయబడతాయి. వాటిని మీ ఇతర పరికరాలలో ఉపయోగించడానికి, వాటిని మీ Google ఖాతా, {email}‌లో సేవ్ చేయండి.}}</translation>
 <translation id="364480321352456989">మీ Chrome వెర్షన్ కాలం చెల్లింది.</translation>
 <translation id="3646736009628185125">ప్రస్తుతం మీ ఫ్యామిలీ మెంబర్ పాస్‌వర్డ్‌లను అందుకోలేరు. Chromeను అప్‌డేట్ చేసుకొని, వారి పాస్‌వర్డ్‌లను సింక్ చేసుకోవాల్సిందిగా వారిని అడగండి. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="3661160521073045932">కాన్ఫిగరేషన్ ప్రొఫైల్ అందుబాటులో ఉంది</translation>
@@ -469,6 +485,7 @@
 <translation id="368329460027487650">సైన్ అవుట్ చేశారు. సైన్ ఇన్ చేయడానికి ఆప్షన్‌లను తెరుస్తుంది.</translation>
 <translation id="3688815115226493214">ట్యాబ్ సూచనలు</translation>
 <translation id="3700134753671613714">మీ బుక్‌మార్క్‌లను మీ అన్ని పరికరాల్లో పొందడానికి సైన్ ఇన్ చేయండి.</translation>
+<translation id="3708944822379815019">{COUNT,plural, =1{ఈ పరికరంలో {COUNT} పాస్‌వర్డ్ మాత్రమే సేవ్ చేయబడుతుంది. దీన్ని మీ ఇతర పరికరాలలో ఉపయోగించడానికి, మీ Google ఖాతా, {EMAIL}లో దీన్ని సేవ్ చేయండి.}other{ఈ పరికరంలో {COUNT} పాస్‌వర్డ్‌లు మాత్రమే సేవ్ చేయబడతాయి. వాటిని మీ ఇతర పరికరాలలో ఉపయోగించడానికి, వాటిని మీ Google ఖాతా, {EMAIL}‌లో సేవ్ చేయండి.}}</translation>
 <translation id="3709582977625132201">చదవనిదిగా గుర్తు పెట్టు</translation>
 <translation id="371230970611282515">ప్రమాదకరమైన సంఘటనలు జరగడానికి ముందే, వాటిని గుర్తించి, మిమ్మల్ని హెచ్చరిస్తుంది.</translation>
 <translation id="37207012422556617">ట్రెండింగ్ సెర్చ్‌లు</translation>
@@ -501,6 +518,7 @@
 <translation id="3892144330757387737">మీ హిస్టరీని ఇక్కడ చూడగలరు</translation>
 <translation id="3897092660631435901">మెనూ</translation>
 <translation id="3904829425754749514">మీ సంస్థ సింక్‌ను ఆఫ్ చేసింది. ఈ పరికరంలో మీరు ఇప్పటికీ మీ బుక్‌మార్క్‌లు, హిస్టరీ, పాస్‌వర్డ్‌లు, అలాగే ఇతర సెట్టింగ్‌లను చూడవచ్చు. మీరు మార్పులు చేస్తే, అవి మీ ఖాతాకు సింక్ చేయబడవు.</translation>
+<translation id="3909222758573607742">ఖాతాలో పాస్‌వర్డ్‌లను, ఇతర ఐటెమ్‌లను సేవ్ చేయండి</translation>
 <translation id="3913386780052199712">Chromeకు సైన్ ఇన్ చేశారు</translation>
 <translation id="3915450441834151894">సైట్ సమాచారం</translation>
 <translation id="3922310737605261887">కాపీ చేసిన వచనం కోసం వెతకండి</translation>
@@ -511,6 +529,7 @@
 <translation id="3959736869653157332">మెనూ → కొత్త అజ్ఞాత ట్యాబ్</translation>
 <translation id="3967822245660637423">డౌన్‌లోడ్ పూర్తయింది</translation>
 <translation id="3968505803272650567">ఆసక్తులను మేనేజ్ చేయండి</translation>
+<translation id="3971789053442864420">{count,plural, =1{{count} పాస్‌వర్డ్}other{{count} పాస్‌వర్డ్‌లు}}</translation>
 <translation id="3989635538409502728">సైన్ అవుట్</translation>
 <translation id="3995521777587992544">పేజీ లోడ్ పురోగతి బార్, <ph name="EMAIL" /> లోడ్ చేయబడింది.</translation>
 <translation id="4002019827078931033">అడ్రస్ బార్‌ను పై భాగానికి తరలించండి</translation>
@@ -541,6 +560,7 @@
 <translation id="418156467088430727">కొత్త ట్యాబ్‌లో ఆఫ్‌లైన్ వెర్ష‌న్‌ను చూడండి</translation>
 <translation id="4181841719683918333">భాషలు</translation>
 <translation id="4187450337729239226">పేస్ట్ చేసి, సెర్చ్ చేయండి</translation>
+<translation id="4197456013861852807">{count,plural, =1{ఈ పరికరంలో {count} ఐటెమ్ మాత్రమే సేవ్ చేయబడుతుంది. దీన్ని మీ ఇతర పరికరాలలో ఉపయోగించడానికి, మీ Google ఖాతా, {email}లో దీన్ని సేవ్ చేయండి.}other{ఈ పరికరంలో {count} ఐటెమ్‌లు మాత్రమే సేవ్ చేయబడతాయి. వాటిని మీ ఇతర పరికరాలలో ఉపయోగించడానికి, వాటిని మీ Google ఖాతా, {email}‌లో సేవ్ చేయండి.}}</translation>
 <translation id="4216918546378735658">రద్దు చేయండి</translation>
 <translation id="4223967053752765281">సైన్ ఇన్‌ను మీ సంస్థ ఆఫ్ చేసింది. ఈ పరికరంలో మీరు ఇప్పటికీ మీ బుక్‌మార్క్‌లు, హిస్టరీ, పాస్‌వర్డ్‌లు, అలాగే ఇతర సెట్టింగ్‌లను చూడవచ్చు. మీరు మార్పులు చేస్తే, అవి మీ ఖాతాకు సింక్ చేయబడవు.</translation>
 <translation id="422474357428465195">మీ సెక్యూరిటీని ప్రమాదంలో ఉంచే అనేక పాస్‌వర్డ్ సమస్యలు మీకు ఉన్నాయి.</translation>
@@ -621,6 +641,7 @@
 <translation id="4645575059429386691">మీ తల్లి/తండ్రి ద్వారా నిర్వహించబడుతోంది</translation>
 <translation id="4650125387981512669"><ph name="FIRST_RUN_ACCOUNT_NAME" />గా కొనసాగించండి</translation>
 <translation id="4652817563047461855">మీ పాస్‌వర్డ్‌లు సురక్షితంగా ఉన్నాయని నిర్ధారించుకోండి, అవి చోరీకి గురయ్యాయో లేదో తెలుసుకోండి, అదనంగా, ఆన్‌లైన్‌లో మిమ్మల్ని మీరు రక్షించుకోవడంలో సహాయపడటానికి సలహాను పొందండి. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
+<translation id="4659194143325814340">{count,plural, =1{మీ రీడింగ్ లిస్ట్‌లో {count} పేజీ ఉంది}other{మీ రీడింగ్ లిస్ట్‌లో {count} పేజీలు ఉన్నాయి}}</translation>
 <translation id="4659667755519643272">ట్యాబ్ స్విచర్‌లోకి ప్రవేశించు</translation>
 <translation id="46614316059270592">పాస్‌వర్డ్‌ను సేవ్ చేయండి</translation>
 <translation id="4682686630151240767">1. iPhone సెట్టింగ్‌లను తెరవండి</translation>
@@ -629,12 +650,14 @@
 <translation id="4697071790493980729">ఫలితాలు ఏవీ కనుగొనబడలేదు</translation>
 <translation id="470966556546083668">సింక్‌ను ఆన్ చేయవద్దు</translation>
 <translation id="4711809265250406889">ఆన్‌లో ఉన్నప్పుడు</translation>
+<translation id="4729712004042194392">{count,plural, =1{{website_1}}=2{{website_1}, {website_2}}=3{{website_1}, {website_2}, ఇంకా మరో 1}other{{website_1}, {website_2}, ఇంకా మరో {more_count}}}</translation>
 <translation id="4737560986434232178">ఇటీవల ఉపయోగించిన ట్యాబ్‌లలో సెర్చ్ చేయండి</translation>
 <translation id="473775607612524610">అప్‌డేట్‌</translation>
 <translation id="4746926359847517643">మీరు వాటిని హిస్టరీ నుండి ఎప్పుడైనా తిరిగి పొందవచ్చు.</translation>
 <translation id="4751162929052964260"><ph name="TITLE" />, <ph name="STATE" />, ఈ పరికరంలో మాత్రమే, <ph name="URL" /></translation>
 <translation id="4751645464639803239">కొత్త అజ్ఞాత ట్యాబ్</translation>
 <translation id="4766112107778026136">Discover &amp; ఫాలో అవుతున్నవి</translation>
+<translation id="47677902929517676">మీ ఖాతాలో పాస్‌వర్డ్‌లను సేవ్ చేయడానికి, మీరు ముందుగా మీ పరికరంలో పాస్‌కోడ్‌ను సెట్ చేయాలి.</translation>
 <translation id="4775879719735953715">డిఫాల్ట్ బ్రౌజర్</translation>
 <translation id="4778644898150334464">వేరే పాస్‌వర్డ్‌ను ఉపయోగించండి</translation>
 <translation id="478808905805139173">అజ్ఞాత మోడ్‌లో తెరవాలా?</translation>
@@ -672,6 +695,7 @@
 <translation id="4918086044614829423">ఆమోదించు</translation>
 <translation id="4922154083994158612">మరింత సెక్యూరిటీ కావాలా?</translation>
 <translation id="4930714375720679147">ఆన్ చేయి</translation>
+<translation id="4937410517508563815">ఖాతాలో పాస్‌వర్డ్‌లను సేవ్ చేయండి</translation>
 <translation id="4938338714234463591">ఇది వెబ్‌సైట్‌లలోని నిర్దిష్ట ఫీచర్‌లతో మీ వాయిస్‌ను ఉపయోగించడానికి మిమ్మల్ని అనుమతిస్తుంది.</translation>
 <translation id="4941089862236492464">క్షమించండి, మీ అంశాన్ని భాగస్వామ్యం చేయడంలో సమస్య ఉంది.</translation>
 <translation id="4944543191714094452">పేజీలో కనుగొనండి…</translation>
@@ -726,6 +750,7 @@
 <translation id="5228579091201413441">సింక్‌ను ప్రారంభించండి</translation>
 <translation id="5232485538978018676">నిర్వహించబడుతున్న ఖాతాతో సైన్ ఇన్ చేయండి</translation>
 <translation id="5234764350956374838">తొలగించండి</translation>
+<translation id="5238301240406177137">ఖాతాలో సేవ్ చేయండి</translation>
 <translation id="5245322853195994030">సింక్‌ను రద్దు చేయండి</translation>
 <translation id="5271265092610673171">{count,plural, =1{అవసరమైన ఫీల్డ్ ఖాళీగా ఉంది. సేవ్ చేయడానికి ముందు దాన్ని పూరించండి.}other{కొన్ని అవసరమైన ఫీల్డ్స్ ఖాళీగా ఉన్నాయి. సేవ్ చేయడానికి ముందు వాటిని పూరించండి.}}</translation>
 <translation id="5271549068863921519">పాస్‌వర్డ్‌ను సేవ్ చేయండి</translation>
@@ -770,6 +795,7 @@
 <translation id="5597915316964418992">ట్యాబ్ గ్రిడ్‌ను తెరవండి</translation>
 <translation id="560322036295180549">మీ సంస్థ ఆఫ్ చేసింది</translation>
 <translation id="5614553682702429503">పాస్‌వర్డ్‌ను సేవ్ చేయాలా?</translation>
+<translation id="5619871095170816857">ఈ కార్డ్ గత 24 గంటల్లో మీ సింక్ చేయబడిన అన్ని పరికరాలలో మీరు చివరిగా ఉపయోగించిన ఓపెన్ ట్యాబ్‌ను చూపుతుంది.</translation>
 <translation id="5626245204502895507">ఫైల్‌ను ఈ సమయంలో డౌన్‌‌లోడ్ చేయడం సాధ్యపడలేదు.</translation>
 <translation id="562753339521713441">సేఫ్టీ చెక్‌ను రన్ చేయండి</translation>
 <translation id="5631164295104953411">పేమెంట్ ఆప్షన్‌ను జోడించండి</translation>
@@ -925,7 +951,7 @@
 <translation id="6361848730467328243"><ph name="DOMAIN_NAME" />ను ఫాలో అవ్వండి</translation>
 <translation id="6362362396625799311">అజ్ఞాత ట్యాబ్‌లు ఏవీ తెరిచి లేవు</translation>
 <translation id="6363526231572697780">వినియోగదారు పేరు లేదు</translation>
-<translation id="6366190659675876144">ప్రామాణిక రక్షణ</translation>
+<translation id="6366190659675876144">స్టాండర్డ్ రక్షణ</translation>
 <translation id="6366663624406569102">సైన్ అవుట్ చేసి, సింక్‌ను ఆఫ్ చేయండి</translation>
 <translation id="6374469231428023295">మళ్లీ ప్రయత్నించు</translation>
 <translation id="6377118281273296434">సైట్ భద్రత</translation>
@@ -1039,7 +1065,7 @@
 <translation id="6869389390665537774">మీరు సందర్శించిన పేజీలను చూడవచ్చు లేదా వాటిని మీ హిస్టరీ నుండి తొలగించవచ్చు</translation>
 <translation id="687135068089457384">సెట్టింగ్‌లను చూడండి</translation>
 <translation id="6873263987691478642">విభజన వీక్షణ</translation>
-<translation id="6882836635272038266">ప్రమాదకరంగా గుర్తించిన వెబ్‌సైట్‌లు, డౌన్‌లోడ్‌లు, ఎక్స్‌టెన్షన్‌ల నుండి ప్రామాణిక రక్షణ.</translation>
+<translation id="6882836635272038266">ప్రమాదకరంగా గుర్తించిన వెబ్‌సైట్‌లు, డౌన్‌లోడ్‌లు, ఎక్స్‌టెన్షన్‌ల నుండి స్టాండర్డ్ రక్షణ.</translation>
 <translation id="6888009575607455378">మీరు చేసిన మార్పులను ఖచ్చితంగా విస్మరించాలనుకుంటున్నారా?</translation>
 <translation id="6896758677409633944">కాపీ చేయి</translation>
 <translation id="6897187120838603299">మీ పాస్‌వర్డ్ మీ పరికరంలో సేవ్ చేయబడుతుంది.</translation>
@@ -1075,6 +1101,7 @@
 <translation id="7082853213442715471">ఆన్ చేసినప్పుడు, కొన్ని వెబ్ టెక్నాలజీలు బ్లాక్ చేయబడతాయి, దీని కారణంగా, కొన్ని వెబ్‌సైట్‌లు నెమ్మదిగా లోడ్ కావచ్చు లేదా సరిగ్గా పని చేయకపోవచ్చు.</translation>
 <translation id="7095110968493193530"><ph name="EMAIL" /> కోసం Google Password Managerకు</translation>
 <translation id="7099761977003084116">ఇటీవలి ట్యాబ్‌లు</translation>
+<translation id="7101580180124131336">మీరు ఇప్పుడు ఫాలో అవుతున్న <ph name="CHANNEL_NAME" /> నుండి, దాని గురించిన కంటెంట్‌ను చూస్తారు.</translation>
 <translation id="7102005569666697658">డౌన్‌లోడ్ చేస్తోంది… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">దాచిపెట్టు</translation>
 <translation id="7108762695052995889">సైట్‌ను సందర్శించండి</translation>
@@ -1098,6 +1125,7 @@
 <translation id="7265758999917665941">ఈ సైట్ కోసం ఎప్పటికీ వద్దు</translation>
 <translation id="7272437679830969316">మీ గుర్తింపును ధృవీకరించడం సాధ్యపడలేదు. పాస్‌వర్డ్ కాపీ చేయబడలేదు.</translation>
 <translation id="7291368939935408496">పాస్‌వర్డ్‌లను సిద్ధం చేస్తోంది...</translation>
+<translation id="7302503784943202842">మీ పరికరాలన్నింటిలో పాస్‌వర్డ్‌లను ఉపయోగించండి</translation>
 <translation id="730958329302570991">Google Password Managerకు ఎప్పుడైనా సైట్ పాస్‌వర్డ్‌లను సులభంగా జోడించండి.</translation>
 <translation id="7313347584264171202">మీ అజ్ఞాత ట్యాబ్‌లను ఇక్కడ చూడగలరు</translation>
 <translation id="7331371412779932885">మీ Google ఖాతాను ఉపయోగించి, మీకు చెందిన ఇతర పరికరాలలో మీరు జరిపిన బ్రౌజింగ్ యాక్టివిటీ ఆధారంగా మీకు ట్యాబ్ సూచనలను అందిస్తుంది. దీని కోసం తప్పనిసరిగా మీ పరికరాలు ఒకే Google ఖాతాతో సైన్ ఇన్ అయ్యి ఉండటంతో పాటు, సింక్ అయ్యి కూడా ఉండాలి.</translation>
@@ -1155,6 +1183,7 @@
 <translation id="764827086632467055">ఆటోమేటిక్ బ్రౌజర్ యాప్‌ను ట్యాప్ చేయండి</translation>
 <translation id="7649070708921625228">సహాయం</translation>
 <translation id="7658239707568436148">రద్దు చేయండి</translation>
+<translation id="7666861622396822790">మీరు దీన్ని <ph name="BEGIN_LINK" />కంటెంట్ సెట్టింగ్‌లు<ph name="END_LINK" />లో మేనేజ్ చేయవచ్చు.</translation>
 <translation id="7671141431838911305">ఇన్‌స్టాల్ చేయి</translation>
 <translation id="7679915578945954324">సైట్ అడ్రస్‌లు కాపీ చేయబడ్డాయి</translation>
 <translation id="7687508192620387263">క్యాలెండర్ ఫైల్ అందుబాటులో ఉంది</translation>
@@ -1163,6 +1192,7 @@
 <translation id="7711440461521638739">మీరు ఏ పాస్‌వర్డ్‌లను మళ్లీ ఉపయోగించడం లేదు</translation>
 <translation id="7719038820139380048">మీ ఆసక్తుల ఆధారంగా కంటెంట్‌ను పొందడానికి సైన్ ఇన్ చేయండి.</translation>
 <translation id="7720410380936703141">మళ్లీ ట్రై చేయండి</translation>
+<translation id="7724085059277147439">{count,plural, =1{మీ Google ఖాతా, {email}‌లో ఐటెమ్ సేవ్ చేయబడింది}other{మీ Google ఖాతా, {email}‌లో ఐటెమ్‌లు సేవ్ చేయబడ్డాయి}}</translation>
 <translation id="7726702057919861819">మెనూ → హిస్టరీ → బ్రౌజింగ్ డేటాను క్లియర్ చేయండి</translation>
 <translation id="7729458878441927652">మీ ఇతర పరికరాల నుండి ట్యాబ్‌లను చూడటానికి, మీ ట్యాబ్‌లను, హిస్టరీని సింక్ చేయండి.</translation>
 <translation id="7733646263819020771"><ph name="BOOKMRK_NAME" />. ఈ పరికరంలో మాత్రమే ఉంది.</translation>
@@ -1228,6 +1258,7 @@
 <translation id="8032569120109842252">ఫాలో చేస్తున్నారు</translation>
 <translation id="804225253087497565">మీరు సైన్ ఇన్ చేసినప్పుడు, <ph name="BEGIN_LINK" />సెర్చ్ హిస్టరీ<ph name="END_LINK" />, <ph name="BEGIN_LINK" />ఇతర రకాల యాక్టివిటీ<ph name="END_LINK" /> మీ Google ఖాతాలో సేవ్ చేయబడవచ్చు. మీరు వాటిని ఎప్పుడైనా తొలగించవచ్చు.</translation>
 <translation id="804427445359061970">ఇతర పరికరాలలో ఉన్న మీ ట్యాబ్‌లను మీరు ఇక్కడ చూడవచ్చు</translation>
+<translation id="8044568254381073661">ఎన్‌క్రిప్షన్ చేయకుండా సేవ్ చేయండి</translation>
 <translation id="8059533439631660104">విభాగాన్ని కుదిస్తుంది.</translation>
 <translation id="8065292699993359127">Chromeలోని అజ్ఞాత మోడ్‌లో URLలను తెరవండి</translation>
 <translation id="806745655614357130">నా డేటాను విడిగా ఉంచండి</translation>
@@ -1253,6 +1284,7 @@
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> ఖాతాలు</translation>
 <translation id="8159358225423560600">ఇప్పుడే</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8182037667962849780">{count,plural, =1{{website_1} కోసం}=2{{website_2}, {website_1} కోసం}=3{{website_1}, {website_2}, ఇంకా మరో 1 వెబ్‌సైట్ కోసం}other{{website_1}, {website_2}, ఇంకా మరో {more_count} వెబ్‌సైట్‌ల కోసం}}</translation>
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />మీ పరికరాలు<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8197543752516192074">పేజీని అనువదించు</translation>
 <translation id="8205564605687841303">రద్దు చేయండి</translation>
@@ -1278,11 +1310,14 @@
 <translation id="8328777765163860529">అన్నింటినీ మూసివేయి</translation>
 <translation id="8343993175958086504">మీ అంశాలను బ్యాకప్ చేసి, వాటిని ఏ పరికరంలో అయినా ఉపయోగించండి.</translation>
 <translation id="834783239627985533">అత్యంత ఎక్కువగా సందర్శించిన సైట్‌లు</translation>
+<translation id="8356276002902955750">{count,plural, =1{{count} బుక్‌మార్క్}other{{count} బుక్‌మార్క్‌లు}}</translation>
 <translation id="8378714024927312812">మీ సంస్థ ద్వారా నిర్వహించబడుతున్నవి</translation>
 <translation id="8386068868580335421">రీసెట్ చేయండి</translation>
 <translation id="838867811594159347">రహస్య పదబంధాన్ని ఎంటర్ చేయండి…</translation>
 <translation id="8393889347136007944">ట్యాబ్‌లు <ph name="THRESHOLD" /> రోజుల పాటు ఉపయోగించబడలేదు</translation>
+<translation id="8395339334550012808">త్వరలో, మీరు ఫాలో అవుతున్న <ph name="CHANNEL_NAME" /> నుండి, దాని గురించిన కంటెంట్‌ను చూస్తారు.</translation>
 <translation id="8395378633507873708">అడ్రస్ బార్</translation>
+<translation id="8403629764260204788">"నిరంతర బ్రౌజింగ్"ను దాచండి</translation>
 <translation id="8407669440184693619">ఈ సైట్ కోసం పాస్‌వర్డ్‌లు కనుగొనబడలేదు</translation>
 <translation id="842017693807136194">దీనితో సైన్ ఇన్ చేయబడింది</translation>
 <translation id="8423121072346537366">ఇప్పుడే</translation>
@@ -1304,6 +1339,7 @@
 <translation id="8503813439785031346">యూజర్‌పేరు</translation>
 <translation id="850600235656508448">అజ్ఞాత మోడ్‌లో తెరువు</translation>
 <translation id="8517375800490286174">ఓపెన్ సోర్స్ లైసెన్స్‌లు</translation>
+<translation id="8522147671363140027">{count,plural, =1{ఈ పరికరంలో {count} పాస్‌వర్డ్, ఇతర ఐటెమ్‌లు మాత్రమే సేవ్ చేయబడతాయి. వాటిని మీ ఇతర పరికరాలలో ఉపయోగించడానికి, వాటిని మీ Google ఖాతా, {email}‌లో సేవ్ చేయండి.}other{ఈ పరికరంలో {count} పాస్‌వర్డ్‌లు, ఇతర ఐటెమ్‌లు మాత్రమే సేవ్ చేయబడతాయి. వాటిని మీ ఇతర పరికరాలలో ఉపయోగించడానికి, వాటిని మీ Google ఖాతా, {email}‌లో సేవ్ చేయండి.}}</translation>
 <translation id="8524799873541103884"><ph name="NUMBER_OF_OPEN_TABS" />లో <ph name="FIRST_VISIBLE_TAB" /> నుండి <ph name="LAST_VISIBLE_TAB" /> వరకు <ph name="INCOGNITO" /> ట్యాబ్‌లు</translation>
 <translation id="8528009254289981965">అజ్ఞాతంలో ఇతర యాప్‌ల నుండి లింక్‌లను తెరవండి</translation>
 <translation id="8529767659511976195">కొత్తది</translation>
@@ -1364,6 +1400,7 @@
 <translation id="8855242995793521265">మీ బ్రౌజర్ లేదా పరికర వేగాన్ని అంతగా తగ్గించదు.</translation>
 <translation id="8855781063981781621">Chromeలో లాక్‌డౌన్ మోడ్‌ను డిజేబుల్ చేయడానికి మీ iPadలో దాన్ని ఆఫ్ చేయాలి.</translation>
 <translation id="8863431381414769983">Google Maps నుండి దిశలు, లోకల్ సమాచారాన్ని పొందండి</translation>
+<translation id="8865415417596392024">మీ ఖాతాలోని Chrome డేటా</translation>
 <translation id="8868471676553493380">{count,plural, =1{{count} ట్యాబ్}other{{count} ట్యాబ్‌లు}}</translation>
 <translation id="8870413625673593573">ఇటీవల మూసివేసినవి</translation>
 <translation id="8876882697946675716">మీ పరికరాలను సింక్‌లో ఉంచండి</translation>
@@ -1389,6 +1426,7 @@
 <translation id="8976414606286374109">కార్డ్‌లు మీ Google ఖాతాకు సేవ్ చేయబడ్డాయి.</translation>
 <translation id="8981454092730389528">Google కార్య‌క‌లాపాల నియంత్రణలు</translation>
 <translation id="8985320356172329008">Googleకు ఇలా సైన్ ఇన్ చేశారు</translation>
+<translation id="8991382496704361510">ఈ పరికరంలో</translation>
 <translation id="8998289560386111590">ఈ మోడ్ మీ పరికరంలో అందుబాటులో లేదు</translation>
 <translation id="8999545564078155498">ముఖం IDతో అన్‌లాక్ చేయండి</translation>
 <translation id="9000089900434778519">మీ సెర్చ్ ఇంజిన్ <ph name="DSE_NAME" />. వర్తిస్తే, మీ సెర్చ్ హిస్టరీని తొలగించడానికి దాని సూచనలను చూడండి.</translation>
@@ -1412,6 +1450,7 @@
 <translation id="9097506547406246598">అన్-ఫాలో చేయడం సాధ్యం కాదు. ఏదో తప్పు జరిగింది.</translation>
 <translation id="9098541895599151034"><ph name="NUMBER_OF_ACCOUNTS" /> URLలకు సంబంధించిన పాస్‌వర్డ్‌లను తొలగించాలా?</translation>
 <translation id="9100610230175265781">రహస్య పదబంధం అవసరం</translation>
+<translation id="9106655997975673326">"<ph name="SOURCE_DEVICE" />" నుండి</translation>
 <translation id="9107664647686727385">చోరీకి గురైన పాస్‌వర్డ్‌ల కోసం చెక్ చేయండి</translation>
 <translation id="9120217828624527905">పూర్తి పేజీ అనువాదానికి మారండి</translation>
 <translation id="9124387962554796433">Search, అలాగే ఇతర Google సర్వీస్‌లను వ్యక్తిగతీకరించడం కోసం Google మీ హిస్టరీని ఉపయోగించవచ్చు.</translation>
@@ -1436,6 +1475,7 @@
 <translation id="953008885340860025">Chrome సైన్ అవుట్ చేయబడింది</translation>
 <translation id="959066944189734975">మీరు <ph name="CHANNEL_NAME" />ను ఫాలో అవుతున్నారు</translation>
 <translation id="96615566463761848">ఇతర పరికరాల నుండి ట్యాబ్ సూచనలను చూడండి</translation>
+<translation id="972300586996227526">{COUNT,plural, =1{మీరు {DOMAIN_ONE} కోసం మీ పాస్‌వర్డ్‌ను మీ Google ఖాతా, {EMAIL}‌లో సేవ్ చేయవచ్చు}=2{మీరు {DOMAIN_ONE}, {DOMAIN_TWO} కోసం మీ పాస్‌వర్డ్‌లను మీ Google ఖాతా, {EMAIL}‌లో సేవ్ చేయవచ్చు}=3{మీరు {DOMAIN_ONE}, {DOMAIN_TWO}, ఇంకా {OTHER_DOMAINS_COUNT} కోసం మీ పాస్‌వర్డ్‌లను మీ Google ఖాతా, {EMAIL}‌లో సేవ్ చేయవచ్చు}other{మీరు {DOMAIN_ONE}, {DOMAIN_TWO}, ఇంకా {OTHER_DOMAINS_COUNT} కోసం మీ పాస్‌వర్డ్‌లను మీ Google ఖాతా, {EMAIL}‌లో సేవ్ చేయవచ్చు}}</translation>
 <translation id="97300214378190234">ఇతర యాప్‌లలో కనిపించే లింక్‌లను ట్యాప్ చేయడం ద్వారా ఎప్పుడైనా, ఎక్కడైనా Chromeను ఉపయోగించండి.</translation>
 <translation id="973493300226275298">ఆన్‌లైన్ స్టోర్‌లలో ప్రోడక్ట్ ధరను ట్రాక్ చేయండి. ధర తగ్గినప్పుడు మీరు అలర్ట్‌లను పొందుతారు.</translation>
 <translation id="981498610235328462">మీ సంస్థ మిమ్మల్ని కొన్ని ఖాతాలతో మాత్రమే సైన్ ఇన్ చేయడానికి అనుమతిస్తుంది. అనుమతించబడని ఖాతాలు దాచబడతాయి.</translation>

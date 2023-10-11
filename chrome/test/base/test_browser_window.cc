@@ -107,7 +107,9 @@ const ui::ColorProvider* TestBrowserWindow::GetColorProvider() const {
   return ui::ColorProviderManager::Get().GetColorProviderFor(
       {ui::ColorProviderKey::ColorMode::kLight,
        ui::ColorProviderKey::ContrastMode::kNormal, ui::SystemTheme::kDefault,
-       ui::ColorProviderKey::FrameType::kChromium});
+       ui::ColorProviderKey::FrameType::kChromium,
+       ui::ColorProviderKey::FrameStyle::kDefault,
+       ui::ColorProviderKey::UserColorSource::kAccent});
 }
 
 ui::ElementContext TestBrowserWindow::GetElementContext() {

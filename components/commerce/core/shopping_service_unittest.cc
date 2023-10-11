@@ -5,13 +5,16 @@
 #include "components/commerce/core/shopping_service.h"
 #include "base/functional/bind.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/uuid.h"
 #include "base/values.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/commerce/core/commerce_feature_list.h"
+#include "components/commerce/core/commerce_utils.h"
 #include "components/commerce/core/mock_account_checker.h"
+#include "components/commerce/core/mock_discounts_storage.h"
 #include "components/commerce/core/pref_names.h"
 #include "components/commerce/core/proto/shopping_page_types.pb.h"
 #include "components/commerce/core/shopping_service_test_base.h"
@@ -33,6 +36,8 @@ using optimization_guide::OptimizationGuideDecisionCallback;
 using optimization_guide::OptimizationMetadata;
 using optimization_guide::proto::Any;
 using optimization_guide::proto::OptimizationType;
+
+using testing::_;
 
 namespace commerce {
 
@@ -73,9 +78,9 @@ const char kDiscountTerms[] = "terms";
 const char kDiscountValueText[] = "10% off";
 const double kDiscountExpiryTime = 1000000;
 const char kDiscountCode[] = "discount code";
-const int64_t kDiscountId1 = 111;
-const int64_t kDiscountId2 = 222;
-const int64_t kDiscountOfferId = 123456;
+const uint64_t kDiscountId1 = 111;
+const uint64_t kDiscountId2 = 222;
+const uint64_t kDiscountOfferId = 123456;
 
 }  // namespace
 
@@ -93,6 +98,11 @@ class ShoppingServiceTest : public ShoppingServiceTestBase {
                                      const std::string& locale) {
     return ShoppingService::IsShoppingListEligible(account_checker, prefs,
                                                    country, locale);
+  }
+
+  void SetDiscountsStorageForTesting(
+      std::unique_ptr<DiscountsStorage> storage) {
+    shopping_service_->SetDiscountsStorageForTesting(std::move(storage));
   }
 };
 
@@ -666,7 +676,7 @@ TEST_F(ShoppingServiceTest, TestShoppingListEligible_SignIn) {
   ASSERT_TRUE(IsShoppingListEligible(&checker, &prefs, kEligibleCountry,
                                      kEligibleLocale));
 
-  checker.SetSignedIn(false);
+  checker.SetOptedIntoSync(false);
 
   ASSERT_FALSE(IsShoppingListEligible(&checker, &prefs, kEligibleCountry,
                                       kEligibleLocale));
@@ -1120,6 +1130,15 @@ TEST_F(ShoppingServiceTest, TestDiscountInfoResponse) {
                           OptimizationGuideDecision::kTrue,
                           opt_guide_->BuildDiscountsResponse(infos));
 
+  std::unique_ptr<MockDiscountsStorage> storage =
+      std::make_unique<MockDiscountsStorage>();
+  EXPECT_CALL(*storage, HandleServerDiscounts(
+                            std::vector<std::string>{kDiscountsUrl1}, _, _));
+  SetDiscountsStorageForTesting(std::move(storage));
+
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount(kDiscountsFetchResultHistogramName, 0);
+
   base::RunLoop run_loop;
   shopping_service_->GetDiscountInfoForUrls(
       std::vector<GURL>{GURL(kDiscountsUrl1), GURL(kDiscountsUrl2)},
@@ -1141,7 +1160,7 @@ TEST_F(ShoppingServiceTest, TestDiscountInfoResponse) {
             ASSERT_EQ(kDiscountId1, discounts[0].id);
             ASSERT_EQ(true, discounts[0].is_merchant_wide);
             ASSERT_EQ(kDiscountExpiryTime, discounts[0].expiry_time_sec);
-            ASSERT_EQ(kDiscountOfferId, (int)discounts[0].offer_id);
+            ASSERT_EQ(kDiscountOfferId, discounts[0].offer_id);
 
             ASSERT_EQ(kDiscountId2, discounts[1].id);
             ASSERT_EQ(DiscountClusterType::kUnspecified,
@@ -1151,6 +1170,9 @@ TEST_F(ShoppingServiceTest, TestDiscountInfoResponse) {
           },
           &run_loop));
   run_loop.Run();
+
+  histogram_tester.ExpectTotalCount(kDiscountsFetchResultHistogramName, 1);
+  histogram_tester.ExpectBucketCount(kDiscountsFetchResultHistogramName, 0, 1);
 }
 
 TEST_F(ShoppingServiceTest, TestDiscountInfoResponse_InfoWithoutId) {

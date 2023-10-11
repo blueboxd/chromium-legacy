@@ -78,11 +78,13 @@
 #import "ios/chrome/browser/shared/model/browser_state/browser_state_info_cache.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/ui/authentication/history_sync/history_sync_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
+#import "ios/chrome/browser/ui/content_suggestions/safety_check/safety_check_prefs.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/voice/voice_search_prefs_registration.h"
 #import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
@@ -156,6 +158,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   sessions::SessionIdGenerator::RegisterPrefs(registry);
   set_up_list_prefs::RegisterPrefs(registry);
   tab_resumption_prefs::RegisterPrefs(registry);
+  safety_check_prefs::RegisterPrefs(registry);
   update_client::RegisterPrefs(registry);
   variations::VariationsService::RegisterPrefs(registry);
   component_updater::RegisterComponentUpdateServicePrefs(registry);
@@ -294,6 +297,11 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(
       prefs::kIosMagicStackSegmentationTabResumptionImpressionsSinceFreshness,
       -1);
+  // Pref used to store the number of impressions of the parcel tracking module
+  // in the Home Surface since a parcel tracking freshness signal.
+  registry->RegisterIntegerPref(
+      prefs::kIosMagicStackSegmentationParcelTrackingImpressionsSinceFreshness,
+      -1);
 
   // Preferences related to the new Safety Check Manager.
   registry->RegisterStringPref(
@@ -310,6 +318,10 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
       PrefRegistry::LOSSY_PREF);
   registry->RegisterTimePref(prefs::kIosSafetyCheckManagerLastRunTime,
                              base::Time(), PrefRegistry::LOSSY_PREF);
+  // TODO(crbug.com/1481230): Remove this Pref when Settings Safety Check is
+  // refactored to use the new Safety Check Manager.
+  registry->RegisterTimePref(prefs::kIosSettingsSafetyCheckLastRunTime,
+                             base::Time());
 }
 
 void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -497,6 +509,9 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
   registry->RegisterBooleanPref(prefs::kIosParcelTrackingOptInPromptDisplayed,
                                 false);
+
+  // Register prefs used to skip too frequent History Sync Opt-In prompt.
+  history_sync::RegisterBrowserStatePrefs(registry);
 }
 
 // This method should be periodically pruned of year+ old migrations.

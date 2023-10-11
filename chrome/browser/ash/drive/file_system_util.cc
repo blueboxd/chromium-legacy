@@ -175,6 +175,15 @@ bool IsOobeDrivePinningEnabled() {
   return IsOobeDrivePinningEnabled(ProfileManager::GetActiveUserProfile());
 }
 
+// To ensure that the DrivePinningScreen is always available to the wizard,
+// regardless of the current user profile, check this to add the
+// DrivePinningScreen to the screen_manager when initializing the
+// wizardController.
+bool IsOobeDrivePinningScreenEnabled() {
+  return base::FeatureList::IsEnabled(ash::features::kOobeDrivePinning) &&
+         ash::features::IsOobeChoobeEnabled();
+}
+
 std::ostream& operator<<(std::ostream& out, const ConnectionStatus status) {
   switch (status) {
 #define PRINT(s)               \
@@ -193,8 +202,26 @@ std::ostream& operator<<(std::ostream& out, const ConnectionStatus status) {
              << ")";
 }
 
+// For testing.
+static ConnectionStatus connection_status_for_testing;
+static bool has_connection_status_for_testing = false;
+
+void SetDriveConnectionStatusForTesting(const ConnectionStatus status) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  VLOG(1) << "SetDriveConnectionStatusForTesting: " << status;
+  connection_status_for_testing = status;
+  has_connection_status_for_testing = true;
+}
+
 ConnectionStatus GetDriveConnectionStatus(Profile* const profile) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   using enum ConnectionStatus;
+
+  if (has_connection_status_for_testing) {
+    VLOG(1) << "GetDriveConnectionStatus: for testing: "
+            << connection_status_for_testing;
+    return connection_status_for_testing;
+  }
 
   if (!GetIntegrationServiceByProfile(profile)) {
     VLOG(1) << "GetDriveConnectionStatus: no Drive integration service";

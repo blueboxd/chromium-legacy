@@ -70,7 +70,8 @@ public class AutofillSaveCardBottomSheetContentTest {
     @Before
     public void setUp() {
         mContext = RuntimeEnvironment.getApplication().getApplicationContext();
-        mContent = new AutofillSaveCardBottomSheetContent(mContext, mDelegate);
+        mContent = new AutofillSaveCardBottomSheetContent(mContext);
+        mContent.setDelegate(mDelegate);
     }
 
     @Test
@@ -96,11 +97,13 @@ public class AutofillSaveCardBottomSheetContentTest {
     @Test
     public void testSetUiInfo_setsAllViews() {
         AutofillSaveCardUiInfo uiInfo = new AutofillSaveCardUiInfo.Builder()
+                                                .withIsForUpload(true)
                                                 .withLogoIcon(0)
                                                 .withTitleText("Title Text")
                                                 .withDescriptionText("Description Text")
                                                 .withCardDetail(new CardDetail(EXAMPLE_DRAWABLE_RES,
                                                         "CardLabel Text", "CardSubLabel Text"))
+                                                .withCardDescription("Card Description")
                                                 .withConfirmText("Confirm Text")
                                                 .withCancelText("Cancel Text")
                                                 .build();
@@ -118,10 +121,29 @@ public class AutofillSaveCardBottomSheetContentTest {
         assertEquals("CardLabel Text", getTextViewText(R.id.autofill_save_card_credit_card_label));
         assertEquals(
                 "CardSubLabel Text", getTextViewText(R.id.autofill_save_card_credit_card_sublabel));
+        assertEquals("Card Description",
+                contentView.findViewById(R.id.autofill_credit_card_chip).getContentDescription());
         Button confirmButton = contentView.findViewById(R.id.autofill_save_card_confirm_button);
         assertEquals("Confirm Text", confirmButton.getText());
         Button cancelButton = contentView.findViewById(R.id.autofill_save_card_cancel_button);
         assertEquals("Cancel Text", cancelButton.getText());
+    }
+
+    @Test
+    public void testSetUiInfo_setsViewsToGone_whenEmptyText() {
+        // Set visibility to gone on description and legal message to remove the visually extra
+        // margins caused by empty views.
+        AutofillSaveCardUiInfo uiInfo = defaultUiInfoBuilder()
+                                                .withDescriptionText("")
+                                                .withLegalMessageLines(ImmutableList.of())
+                                                .build();
+
+        mContent.setUiInfo(uiInfo);
+
+        View contentView = mContent.getContentView();
+        assertEquals(View.GONE,
+                contentView.findViewById(R.id.autofill_save_card_description_text).getVisibility());
+        assertEquals(View.GONE, contentView.findViewById(R.id.legal_message).getVisibility());
     }
 
     private CharSequence getTextViewText(@IdRes int resourceId) {
@@ -130,7 +152,12 @@ public class AutofillSaveCardBottomSheetContentTest {
 
     @Test
     public void testSetLogoIconId_visiblySetsTheImage() {
-        mContent.setUiInfo(defaultUiInfoBuilder().withLogoIcon(EXAMPLE_DRAWABLE_RES).build());
+        AutofillSaveCardUiInfo uiInfo = defaultUiInfoBuilder()
+                                                .withIsForUpload(true)
+                                                .withLogoIcon(EXAMPLE_DRAWABLE_RES)
+                                                .build();
+
+        mContent.setUiInfo(uiInfo);
 
         ImageView imageView = mContent.getContentView().findViewById(R.id.autofill_save_card_icon);
         assertThat(imageView.getDrawable(), notNullValue());
@@ -161,6 +188,23 @@ public class AutofillSaveCardBottomSheetContentTest {
                                 "abc", Arrays.asList(new Link(0, 2, HTTPS_EXAMPLE_COM)))))
                         .build());
         TextView view = mContent.getContentView().findViewById(R.id.legal_message);
+        List<ClickableSpan> spans = getClickableSpans((Spannable) view.getText());
+
+        spans.get(0).onClick(view);
+
+        verify(mDelegate).didClickLegalMessageUrl(HTTPS_EXAMPLE_COM);
+    }
+
+    @Test
+    public void testSetDelegateAfterSetUiInfo_callsLegalMessageDelegate() {
+        AutofillSaveCardBottomSheetContent content =
+                new AutofillSaveCardBottomSheetContent(mContext);
+        content.setUiInfo(defaultUiInfoBuilder()
+                                  .withLegalMessageLines(ImmutableList.of(new LegalMessageLine(
+                                          "abc", Arrays.asList(new Link(0, 2, HTTPS_EXAMPLE_COM)))))
+                                  .build());
+        content.setDelegate(mDelegate);
+        TextView view = content.getContentView().findViewById(R.id.legal_message);
         List<ClickableSpan> spans = getClickableSpans((Spannable) view.getText());
 
         spans.get(0).onClick(view);
@@ -226,26 +270,20 @@ public class AutofillSaveCardBottomSheetContentTest {
 
     @Test
     public void testGetSheetContentDescriptionStringId() {
-        // TODO(crbug.com/1454271): Implement save card bottom sheet.
-        assertEquals(android.R.string.ok, mContent.getSheetContentDescriptionStringId());
-    }
-
-    @Test
-    public void testGetSheetHalfHeightAccessibilityStringId() {
-        // TODO(crbug.com/1454271): Implement save card bottom sheet.
-        assertEquals(android.R.string.ok, mContent.getSheetHalfHeightAccessibilityStringId());
+        assertEquals(R.string.autofill_save_card_prompt_bottom_sheet_content_description,
+                mContent.getSheetContentDescriptionStringId());
     }
 
     @Test
     public void testGetSheetFullHeightAccessibilityStringId() {
-        // TODO(crbug.com/1454271): Implement save card bottom sheet.
-        assertEquals(android.R.string.ok, mContent.getSheetFullHeightAccessibilityStringId());
+        assertEquals(R.string.autofill_save_card_prompt_bottom_sheet_full_height,
+                mContent.getSheetFullHeightAccessibilityStringId());
     }
 
     @Test
     public void testGetSheetClosedAccessibilityStringId() {
-        // TODO(crbug.com/1454271): Implement save card bottom sheet.
-        assertEquals(android.R.string.ok, mContent.getSheetClosedAccessibilityStringId());
+        assertEquals(R.string.autofill_save_card_prompt_bottom_sheet_closed,
+                mContent.getSheetClosedAccessibilityStringId());
     }
 
     private List<ClickableSpan> getClickableSpans(Spannable text) {
@@ -254,7 +292,7 @@ public class AutofillSaveCardBottomSheetContentTest {
 
     private static AutofillSaveCardUiInfo.Builder defaultUiInfoBuilder() {
         return new AutofillSaveCardUiInfo.Builder()
-                .withIsForUpload(false)
+                .withIsForUpload(true)
                 .withCardDetail(new CardDetail(/*iconId=*/0, /*label=*/"", /*subLabel=*/""))
                 .withLegalMessageLines(Collections.EMPTY_LIST)
                 .withTitleText("")

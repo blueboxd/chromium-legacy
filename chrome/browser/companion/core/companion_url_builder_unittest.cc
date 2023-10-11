@@ -12,7 +12,7 @@
 #include "chrome/browser/companion/core/mock_signin_delegate.h"
 #include "chrome/browser/companion/core/promo_handler.h"
 #include "chrome/browser/companion/core/proto/companion_url_params.pb.h"
-#include "chrome/browser/companion/visual_search/features.h"
+#include "chrome/common/companion/visual_search/features.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -291,6 +291,28 @@ TEST_F(CompanionUrlBuilderTest, WithoutTextQuery) {
 
   EXPECT_TRUE(net::GetValueForKeyInQuery(companion_url, "origin", &value));
   EXPECT_EQ(value, kOrigin);
+}
+
+TEST_F(CompanionUrlBuilderTest, WithQueryStartTime) {
+  auto time = base::Time::Now();
+  auto timestamp = std::make_unique<base::Time>(time);
+  int64_t nanoseconds_in_milliseconds = 1e6;
+  int64_t time_nanoseconds = time.ToJavaTime() * nanoseconds_in_milliseconds;
+  GURL page_url(kValidUrl);
+  std::string encoded_proto =
+      url_builder_->BuildCompanionUrlParamProto(page_url, std::move(timestamp));
+
+  // Deserialize the query param into protobuf.
+  companion::proto::CompanionUrlParams proto =
+      DeserializeCompanionRequest(encoded_proto);
+
+  companion::proto::Timestamp* query_start_time =
+      proto.mutable_query_start_time();
+  EXPECT_TRUE(query_start_time);
+  EXPECT_EQ(query_start_time->seconds(),
+            time_nanoseconds / base::Time::kNanosecondsPerSecond);
+  EXPECT_EQ(query_start_time->nanos(),
+            time_nanoseconds % base::Time::kNanosecondsPerSecond);
 }
 
 class CompanionUrlBuilderCurrentTabTest : public CompanionUrlBuilderTest {

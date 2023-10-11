@@ -108,7 +108,6 @@ constexpr std::string_view kSubpremise = "subpremise";
 constexpr std::string_view kZipCode = "zip_code";
 // kCountryCode = "country_code"
 // kSortingCode = "sorting_code"
-constexpr std::string_view kPremiseName = "premise_name";
 constexpr std::string_view kApartmentNumber = "apartment_number";
 constexpr std::string_view kFloor = "floor";
 constexpr std::string_view kStreetAddressStatus = "street_address_status";
@@ -117,7 +116,6 @@ constexpr std::string_view kDependentStreetNameStatus =
     "dependent_street_name_status";
 constexpr std::string_view kHouseNumberStatus = "house_number_status";
 constexpr std::string_view kSubpremiseStatus = "subpremise_status";
-constexpr std::string_view kPremiseNameStatus = "premise_name_status";
 constexpr std::string_view kDependentLocalityStatus =
     "dependent_locality_status";
 constexpr std::string_view kCityStatus = "city_status";
@@ -811,14 +809,10 @@ bool AddAutofillProfileAddressesToProfile(sql::Database* db,
                     kStreetAddressStatus,
                     kStreetName,
                     kStreetNameStatus,
-                    kDependentStreetName,
-                    kDependentStreetNameStatus,
                     kHouseNumber,
                     kHouseNumberStatus,
                     kSubpremise,
                     kSubpremiseStatus,
-                    kPremiseName,
-                    kPremiseNameStatus,
                     kDependentLocality,
                     kDependentLocalityStatus,
                     kCity,
@@ -870,8 +864,7 @@ bool AddAutofillProfileAddressesToProfile(sql::Database* db,
       int index = 1;
       for (ServerFieldType type :
            {ADDRESS_HOME_STREET_ADDRESS, ADDRESS_HOME_STREET_NAME,
-            ADDRESS_HOME_DEPENDENT_STREET_NAME, ADDRESS_HOME_HOUSE_NUMBER,
-            ADDRESS_HOME_SUBPREMISE, ADDRESS_HOME_PREMISE_NAME,
+            ADDRESS_HOME_HOUSE_NUMBER, ADDRESS_HOME_SUBPREMISE,
             ADDRESS_HOME_DEPENDENT_LOCALITY, ADDRESS_HOME_CITY,
             ADDRESS_HOME_STATE, ADDRESS_HOME_ZIP, ADDRESS_HOME_SORTING_CODE,
             ADDRESS_HOME_COUNTRY, ADDRESS_HOME_APT_NUM, ADDRESS_HOME_FLOOR}) {
@@ -1140,11 +1133,9 @@ AutofillTable::GetStoredTypesForAutofillProfile() {
       NAME_FULL_WITH_HONORIFIC_PREFIX,
       ADDRESS_HOME_STREET_ADDRESS,
       ADDRESS_HOME_STREET_NAME,
-      ADDRESS_HOME_DEPENDENT_STREET_NAME,
-      ADDRESS_HOME_STREET_AND_DEPENDENT_STREET_NAME,
+      ADDRESS_HOME_STREET_LOCATION,
       ADDRESS_HOME_HOUSE_NUMBER,
       ADDRESS_HOME_SUBPREMISE,
-      ADDRESS_HOME_PREMISE_NAME,
       ADDRESS_HOME_DEPENDENT_LOCALITY,
       ADDRESS_HOME_CITY,
       ADDRESS_HOME_STATE,
@@ -1714,7 +1705,16 @@ std::unique_ptr<AutofillProfile> AutofillTable::GetAutofillProfile(
   // As `SelectByGuid()` already calls `s.Step()`, do-while is used here.
   do {
     ServerFieldType type = ToSafeServerFieldType(s.ColumnInt(0), UNKNOWN_TYPE);
-    DCHECK(type != UNKNOWN_TYPE);
+    if (type == UNKNOWN_TYPE) {
+      // This is possible in two cases:
+      // - The database was tampered with by external means.
+      // - The type corresponding to `s.ColumnInt(0)` was deprecated. In this
+      //   case, due to the structure of
+      //   `GetProfileTypeTokensTable(profile_source)`, it is not necessary to
+      //   add database migration logic or drop a column. Instead, during the
+      //   next update, the data will be dropped.
+      continue;
+    }
     profile->SetRawInfoWithVerificationStatusInt(type, s.ColumnString16(1),
                                                  s.ColumnInt(2));
     profile->token_quality().LoadSerializedObservationsForStoredType(
@@ -3889,13 +3889,13 @@ bool AutofillTable::InitLegacyProfileAddressesTable() {
        {kDependentStreetName, "VARCHAR"},
        {kHouseNumber, "VARCHAR"},
        {kSubpremise, "VARCHAR"},
-       {kPremiseName, "VARCHAR"},
+       {"premise_name", "VARCHAR"},
        {kStreetAddressStatus, "INTEGER DEFAULT 0"},
        {kStreetNameStatus, "INTEGER DEFAULT 0"},
        {kDependentStreetNameStatus, "INTEGER DEFAULT 0"},
        {kHouseNumberStatus, "INTEGER DEFAULT 0"},
        {kSubpremiseStatus, "INTEGER DEFAULT 0"},
-       {kPremiseNameStatus, "INTEGER DEFAULT 0"},
+       {"premise_name_status", "INTEGER DEFAULT 0"},
        {kDependentLocality, "VARCHAR"},
        {kCity, "VARCHAR"},
        {kState, "VARCHAR"},

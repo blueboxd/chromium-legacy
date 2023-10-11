@@ -1136,7 +1136,8 @@ bool FocusController::AdvanceFocusInDocumentOrder(
 
     // We didn't find an element to focus, so we should try to pass focus to
     // Chrome.
-    if (!initial_focus && page_->GetChromeClient().CanTakeFocus(type)) {
+    if ((!initial_focus || document->GetFrame()->IsFencedFrameRoot()) &&
+        page_->GetChromeClient().CanTakeFocus(type)) {
       document->ClearFocusedElement();
       document->SetSequentialFocusNavigationStartingPoint(nullptr);
       SetFocusedFrame(nullptr);
@@ -1503,11 +1504,8 @@ int FocusController::AdjustedTabIndex(const Element& element) {
     // missing values.
     return element.GetIntegralAttribute(html_names::kTabindexAttr, 0);
   }
-  bool default_focusable =
-      element.IsFocusable() ||
-      element.IsScrollableContainerThatShouldBeKeyboardFocusable();
   return element.GetIntegralAttribute(html_names::kTabindexAttr,
-                                      default_focusable ? 0 : -1);
+                                      element.IsFocusable() ? 0 : -1);
 }
 
 void FocusController::Trace(Visitor* visitor) const {

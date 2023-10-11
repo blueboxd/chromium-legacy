@@ -6,6 +6,11 @@
 
 namespace privacy_sandbox {
 
+// Show the Tracking Protection onboarding flow if not already onboarded.
+BASE_FEATURE(kPrivacySandboxSuppressDialogOnNonNormalBrowsers,
+             "PrivacySandboxSuppressDialogOnNonNormalBrowsers",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kPrivacySandboxSettings4,
              "PrivacySandboxSettings4",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -65,6 +70,9 @@ const base::FeatureParam<bool>
         &kPrivacySandboxSettings4, "suppress-dialog-for-external-app-launches",
         true};
 
+const base::FeatureParam<bool> kPrivacySandboxSettings4CloseAllPrompts{
+    &kPrivacySandboxSettings4, "close-all-prompts", true};
+
 BASE_FEATURE(kPrivacySandboxSettings3,
              "PrivacySandboxSettings3",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -100,7 +108,7 @@ const base::FeatureParam<bool> kPrivacySandboxFirstPartySetsUISampleSets{
 
 BASE_FEATURE(kEnforcePrivacySandboxAttestations,
              "EnforcePrivacySandboxAttestations",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 const char kPrivacySandboxEnrollmentOverrides[] =
     "privacy-sandbox-enrollment-overrides";

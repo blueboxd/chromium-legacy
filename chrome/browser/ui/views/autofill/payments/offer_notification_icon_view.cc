@@ -64,9 +64,7 @@ void OfferNotificationIconView::UpdateImpl() {
       SetCommandEnabled(controller && controller->IsIconVisible());
 
   if (command_enabled) {
-    if (!GetVisible()) {
-      MaybeShowPageActionLabel();
-    }
+    MaybeShowPageActionLabel();
   } else {
     HidePageActionLabel();
   }
@@ -79,7 +77,9 @@ void OfferNotificationIconView::MaybeShowPageActionLabel() {
     return;
   }
   should_extend_label_shown_duration_ = true;
+  SetPaintLabelOverSolidBackground(true);
   AnimateIn(IDS_DISCOUNT_ICON_EXPANDED_TEXT);
+  controller->OnIconExpanded();
   SetAccessibilityProperties(
       /*role*/ absl::nullopt,
       l10n_util::GetStringUTF16(

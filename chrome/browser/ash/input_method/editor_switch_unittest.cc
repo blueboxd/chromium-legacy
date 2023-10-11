@@ -52,19 +52,12 @@ TEST_F(EditorSwitchTest,
 }
 
 TEST_F(EditorSwitchTest,
-       FeatureWillNotBeAvailableForUnmanagedAccountOnDogfoodDevices) {
-  base::test::ScopedFeatureList feature_list(features::kOrcaDogfood);
-  TestingProfile profile_;
-  profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(false);
-  EditorSwitch editor_switch(/*profile=*/&profile_,
-                             /*country_code=*/kAllowedTestCountry);
-
-  EXPECT_FALSE(editor_switch.IsAllowedForUse());
-}
-
-TEST_F(EditorSwitchTest,
        FeatureWillNotBeAvailableForManagedAccountOnNonDogfoodDevices) {
-  base::test::ScopedFeatureList feature_list(chromeos::features::kOrca);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{chromeos::features::kOrca,
+                            features::kFeatureManagementOrca},
+      /*disabled_features=*/{});
   TestingProfile profile_;
   profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(true);
   EditorSwitch editor_switch(/*profile=*/&profile_,
@@ -74,7 +67,11 @@ TEST_F(EditorSwitchTest,
 }
 
 TEST_F(EditorSwitchTest, FeatureWillNotBeAvailableForACountryNotApprovedYet) {
-  base::test::ScopedFeatureList feature_list(chromeos::features::kOrca);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{chromeos::features::kOrca,
+                            features::kFeatureManagementOrca},
+      /*disabled_features=*/{});
   TestingProfile profile_;
   profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(false);
   EditorSwitch editor_switch(/*profile=*/&profile_,
@@ -84,18 +81,25 @@ TEST_F(EditorSwitchTest, FeatureWillNotBeAvailableForACountryNotApprovedYet) {
 }
 
 TEST_F(EditorSwitchTest,
-       FeatureWillBeAvailableForUseForManagedAccountOnDogfoodDevices) {
-  base::test::ScopedFeatureList feature_list(features::kOrcaDogfood);
+       FeatureWillNotBeAvailableWithoutFeatureManagementFlag) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{chromeos::features::kOrca},
+      /*disabled_features=*/{features::kFeatureManagementOrca});
   TestingProfile profile_;
-  profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(true);
+  profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(false);
   EditorSwitch editor_switch(/*profile=*/&profile_,
-                             /*country_code=*/kAllowedTestCountry);
+                             /*country_code=*/kDeniedTestCountry);
 
-  EXPECT_TRUE(editor_switch.IsAllowedForUse());
+  EXPECT_FALSE(editor_switch.IsAllowedForUse());
 }
 
 TEST_F(EditorSwitchTest, FeatureCannotBeTriggeredIfConsentDeclined) {
-  base::test::ScopedFeatureList feature_list(chromeos::features::kOrca);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{chromeos::features::kOrca,
+                            features::kFeatureManagementOrca},
+      /*disabled_features=*/{});
   TestingProfile profile_;
   profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(false);
   EditorSwitch editor_switch(/*profile=*/&profile_,
@@ -114,7 +118,11 @@ TEST_F(EditorSwitchTest, FeatureCannotBeTriggeredIfConsentDeclined) {
 }
 
 TEST_F(EditorSwitchTest, FeatureCannotBeTriggeredOnAPasswordField) {
-  base::test::ScopedFeatureList feature_list(chromeos::features::kOrca);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{chromeos::features::kOrca,
+                            features::kFeatureManagementOrca},
+      /*disabled_features=*/{});
   TestingProfile profile_;
   profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(false);
   EditorSwitch editor_switch(/*profile=*/&profile_,
@@ -133,7 +141,11 @@ TEST_F(EditorSwitchTest, FeatureCannotBeTriggeredOnAPasswordField) {
 }
 
 TEST_F(EditorSwitchTest, FeatureCannotBeTriggeredWithNonEnglishInputMethod) {
-  base::test::ScopedFeatureList feature_list(chromeos::features::kOrca);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{chromeos::features::kOrca,
+                            features::kFeatureManagementOrca},
+      /*disabled_features=*/{});
   TestingProfile profile_;
   profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(false);
   EditorSwitch editor_switch(/*profile=*/&profile_,
@@ -152,7 +164,11 @@ TEST_F(EditorSwitchTest, FeatureCannotBeTriggeredWithNonEnglishInputMethod) {
 }
 
 TEST_F(EditorSwitchTest, FeatureCanNotBeTriggeredOnArcApps) {
-  base::test::ScopedFeatureList feature_list(chromeos::features::kOrca);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{chromeos::features::kOrca,
+                            features::kFeatureManagementOrca},
+      /*disabled_features=*/{});
   TestingProfile profile_;
   profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(false);
   EditorSwitch editor_switch(/*profile=*/&profile_,
@@ -172,7 +188,11 @@ TEST_F(EditorSwitchTest, FeatureCanNotBeTriggeredOnArcApps) {
 
 TEST_F(EditorSwitchTest,
        FeatureCanNotBeTriggeredIfUserSwitchesOffSettingToggle) {
-  base::test::ScopedFeatureList feature_list(chromeos::features::kOrca);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{chromeos::features::kOrca,
+                            features::kFeatureManagementOrca},
+      /*disabled_features=*/{});
   TestingProfile profile_;
   profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(false);
   EditorSwitch editor_switch(/*profile=*/&profile_,
@@ -193,7 +213,11 @@ TEST_F(EditorSwitchTest,
 TEST_F(
     EditorSwitchTest,
     FeatureCanBeTriggeredIfUserSwitchesOnSettingToggleAndHasNotGivenConsent) {
-  base::test::ScopedFeatureList feature_list(chromeos::features::kOrca);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{chromeos::features::kOrca,
+                            features::kFeatureManagementOrca},
+      /*disabled_features=*/{});
   TestingProfile profile_;
   profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(false);
   EditorSwitch editor_switch(/*profile=*/&profile_,
@@ -214,7 +238,11 @@ TEST_F(
 TEST_F(
     EditorSwitchTest,
     FeatureCanBeTriggeredOnANormalTextFieldOnABrowserWindowAndWithEnglishInputMethod) {
-  base::test::ScopedFeatureList feature_list(chromeos::features::kOrca);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{chromeos::features::kOrca,
+                            features::kFeatureManagementOrca},
+      /*disabled_features=*/{});
   TestingProfile profile_;
   profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(false);
   EditorSwitch editor_switch(/*profile=*/&profile_,

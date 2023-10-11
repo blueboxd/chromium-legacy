@@ -6,11 +6,11 @@
 
 #import <Foundation/Foundation.h>
 
+#import "base/containers/contains.h"
 #import "base/metrics/field_trial_params.h"
-#import "components/variations/service/variations_service.h"
+#import "components/country_codes/country_codes.h"
 #import "components/version_info/channel.h"
 #import "ios/chrome/app/background_mode_buildflags.h"
-#import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/common/channel_info.h"
 
@@ -131,10 +131,9 @@ const char kEnableFeedUseInteractivityInvalidationForForegroundRefreshes[] =
     "EnableFeedUseInteractivityInvalidationForForegroundRefreshes";
 
 bool IsWebChannelsEnabled() {
-  variations::VariationsService* variations_service =
-      GetApplicationContext()->GetVariationsService();
-  if (variations_service &&
-      variations_service->GetStoredPermanentCountry() == "us") {
+  std::string launched_countries[6] = {"AU", "CA", "GB", "NZ", "US", "ZA"};
+  if (base::Contains(launched_countries,
+                     country_codes::GetCurrentCountryCode())) {
     return true;
   }
   return base::FeatureList::IsEnabled(kEnableWebChannels);

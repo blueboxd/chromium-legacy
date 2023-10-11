@@ -69,6 +69,7 @@
 #include "components/autofill/core/browser/payments/credit_card_cvc_authenticator.h"
 #include "components/autofill/core/browser/payments/credit_card_otp_authenticator.h"
 #include "components/autofill/core/browser/payments/mandatory_reauth_manager.h"
+#include "components/autofill/core/browser/payments/offer_notification_options.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/ui/payments/bubble_show_options.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller_impl.h"
@@ -125,6 +126,7 @@
 #include "chrome/browser/ui/android/autofill/card_name_fix_flow_view_android.h"
 #include "chrome/browser/ui/android/infobars/autofill_credit_card_filling_infobar.h"
 #include "chrome/browser/ui/android/infobars/autofill_offer_notification_infobar.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/browser/ui/autofill/payments/autofill_snackbar_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/offer_notification_controller_android.h"
 #include "components/autofill/core/browser/payments/autofill_credit_card_filling_infobar_delegate_mobile.h"
@@ -756,12 +758,21 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
     LocalSaveCardPromptCallback callback) {
 #if BUILDFLAG(IS_ANDROID)
   DCHECK(options.show_prompt);
+  AutofillSaveCardUiInfo ui_info =
+      AutofillSaveCardUiInfo::CreateForLocalSave(options, card);
+  auto save_card_delegate =
+      std::make_unique<AutofillSaveCardDelegate>(std::move(callback), options);
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnablePaymentsAndroidBottomSheet)) {
+    if (auto* bridge = GetOrCreateAutofillSaveCardBottomSheetBridge()) {
+      bridge->RequestShowContent(ui_info, std::move(save_card_delegate));
+    }
+    return;
+  }
   infobars::ContentInfoBarManager::FromWebContents(web_contents())
       ->AddInfoBar(CreateSaveCardInfoBarMobile(
           std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
-              AutofillSaveCardUiInfo::CreateForLocalSave(options, card),
-              std::make_unique<AutofillSaveCardDelegate>(std::move(callback),
-                                                         options))));
+              std::move(ui_info), std::move(save_card_delegate))));
 #else
   // Do lazy initialization of SaveCardBubbleControllerImpl.
   SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
@@ -784,28 +795,19 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
       identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin));
   AutofillSaveCardUiInfo ui_info = AutofillSaveCardUiInfo::CreateForUploadSave(
       options, card, legal_message_lines, account_info);
-  auto common_delegate =
+  auto save_card_delegate =
       std::make_unique<AutofillSaveCardDelegate>(std::move(callback), options);
   if (base::FeatureList::IsEnabled(
           features::kAutofillEnablePaymentsAndroidBottomSheet)) {
-    if (!autofill_save_card_bottom_sheet_bridge_) {
-      // During shutdown the window may be null. There is no need to show the
-      // bottom sheet during shutdown.
-      auto* window_android = web_contents()->GetTopLevelNativeWindow();
-      if (!window_android) {
-        return;
-      }
-      autofill_save_card_bottom_sheet_bridge_ =
-          std::make_unique<AutofillSaveCardBottomSheetBridge>(window_android);
+    if (auto* bridge = GetOrCreateAutofillSaveCardBottomSheetBridge()) {
+      bridge->RequestShowContent(ui_info, std::move(save_card_delegate));
     }
-    autofill_save_card_bottom_sheet_bridge_->RequestShowContent(
-        ui_info, std::move(common_delegate));
     return;
   }
   infobars::ContentInfoBarManager::FromWebContents(web_contents())
       ->AddInfoBar(CreateSaveCardInfoBarMobile(
           std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
-              std::move(ui_info), std::move(common_delegate))));
+              std::move(ui_info), std::move(save_card_delegate))));
 #else
   // Do lazy initialization of SaveCardBubbleControllerImpl.
   SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
@@ -841,9 +843,12 @@ void ChromeAutofillClient::ShowEditAddressProfileDialog(
   EditAddressProfileDialogControllerImpl* controller =
       EditAddressProfileDialogControllerImpl::FromWebContents(web_contents());
   CHECK(controller);
-  controller->OfferEdit(profile, /*original_profile=*/nullptr,
-                        /*footer_message=*/u"", base::DoNothing(),
-                        /*is_migration_to_account=*/false);
+  controller->OfferEdit(
+      profile, /*original_profile=*/nullptr,
+      /*footer_message=*/u"",
+      /*address_profile_save_prompt_callback=*/base::DoNothing(),
+      /*on_cancel_callback=*/base::DoNothing(),
+      /*is_migration_to_account=*/false);
 #else
   // Edit address profile dialog is only available is desktop.
   NOTREACHED_NORETURN();
@@ -1028,8 +1033,7 @@ void ChromeAutofillClient::HideAutofillPopup(PopupHidingReason reason) {
 
 void ChromeAutofillClient::UpdateOfferNotification(
     const AutofillOfferData* offer,
-    bool notification_has_been_shown,
-    bool expand_notification_icon) {
+    const OfferNotificationOptions& options) {
   DCHECK(offer);
   CreditCard* card =
       offer->GetEligibleInstrumentIds().empty()
@@ -1041,7 +1045,7 @@ void ChromeAutofillClient::UpdateOfferNotification(
     return;
 
 #if BUILDFLAG(IS_ANDROID)
-  if (notification_has_been_shown) {
+  if (options.notification_has_been_shown) {
     // For Android, if notification has been shown on this merchant, don't show
     // it again.
     return;
@@ -1054,9 +1058,7 @@ void ChromeAutofillClient::UpdateOfferNotification(
   OfferNotificationBubbleControllerImpl::CreateForWebContents(web_contents());
   OfferNotificationBubbleControllerImpl* controller =
       OfferNotificationBubbleControllerImpl::FromWebContents(web_contents());
-  controller->ShowOfferNotificationIfApplicable(
-      offer, card, /*should_show_icon_only_=*/notification_has_been_shown,
-      expand_notification_icon);
+  controller->ShowOfferNotificationIfApplicable(offer, card, options);
 #endif
 }
 
@@ -1346,5 +1348,24 @@ std::u16string ChromeAutofillClient::GetAccountHolderEmail() {
       identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync));
   return base::UTF8ToUTF16(primary_account_info.email);
 }
+
+#if BUILDFLAG(IS_ANDROID)
+AutofillSaveCardBottomSheetBridge*
+ChromeAutofillClient::GetOrCreateAutofillSaveCardBottomSheetBridge() {
+  if (!autofill_save_card_bottom_sheet_bridge_) {
+    // During shutdown the window may be null. There is no need to show the
+    // bottom sheet during shutdown.
+    auto* window_android = web_contents()->GetTopLevelNativeWindow();
+    TabModel* tab_model =
+        TabModelList::GetTabModelForWebContents(web_contents());
+    if (window_android && tab_model) {
+      autofill_save_card_bottom_sheet_bridge_ =
+          std::make_unique<AutofillSaveCardBottomSheetBridge>(window_android,
+                                                              tab_model);
+    }
+  }
+  return autofill_save_card_bottom_sheet_bridge_.get();
+}
+#endif
 
 }  // namespace autofill

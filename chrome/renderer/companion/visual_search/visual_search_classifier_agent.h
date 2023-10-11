@@ -10,6 +10,7 @@
 #include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/common/companion/visual_search.mojom.h"
+#include "chrome/renderer/companion/visual_search/visual_search_eligibility.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -19,14 +20,12 @@
 namespace companion::visual_search {
 
 using ClassificationResultsAndStats =
-    std::pair<std::vector<SkBitmap>, mojom::ClassificationStatsPtr>;
+    std::pair<std::vector<SingleImageFeaturesAndBytes>,
+              mojom::ClassificationStatsPtr>;
 
 class VisualSearchClassifierAgent : public content::RenderFrameObserver,
                                     mojom::VisualSuggestionsRequestHandler {
  public:
-  using ClassifierResultCallback =
-      base::OnceCallback<void(std::vector<SkBitmap>)>;
-
   static VisualSearchClassifierAgent* Create(
       content::RenderFrame* render_frame);
 
@@ -38,6 +37,7 @@ class VisualSearchClassifierAgent : public content::RenderFrameObserver,
 
   // RenderFrameObserver implementation:
   void OnDestruct() override;
+  void DidFinishLoad() override;
 
   // VisualSuggestionsRequestHandler implementation:
   // This method is the main entrypoint which triggers visual classification.
@@ -62,6 +62,9 @@ class VisualSearchClassifierAgent : public content::RenderFrameObserver,
   // same thread that triggered the classification task (i.e. main thread).
   void OnClassificationDone(ClassificationResultsAndStats results);
 
+  // Handler method used when agent request model from browser.
+  void HandleGetModelCallback(base::File file, const std::string& config);
+
   // Used to track whether there is an ongoing classification task, if so, we
   // drop the incoming request.
   bool is_classifying_ = false;
@@ -82,6 +85,9 @@ class VisualSearchClassifierAgent : public content::RenderFrameObserver,
   // The result handler is used to give us a path back to results. It
   // typically will lead to a Mojom IPC call back to the browser process.
   mojo::Remote<mojom::VisualSuggestionsResultHandler> result_handler_;
+
+  // Remote pipe for fetching model and metadata from the browser process.
+  mojo::Remote<mojom::VisualSuggestionsModelProvider> model_provider_;
 
   // Pointer factory necessary for scheduling tasks on different threads.
   base::WeakPtrFactory<VisualSearchClassifierAgent> weak_ptr_factory_{this};

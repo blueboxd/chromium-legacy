@@ -5,6 +5,7 @@
 package org.chromium.components.autofill.payments;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 
 import android.annotation.SuppressLint;
@@ -31,12 +32,32 @@ public class AutofillSaveCardUiInfoTest {
                 .withLogoIcon(0)
                 .withIsForUpload(false)
                 .withCardDetail(new CardDetail(0, "", ""))
+                .withCardDescription("")
                 .withLegalMessageLines(Collections.EMPTY_LIST)
                 .withTitleText("")
                 .withConfirmText("")
                 .withCancelText("")
                 .withIsGooglePayBrandingEnabled(false)
                 .withDescriptionText("");
+    }
+
+    @Test
+    public void testConstructor_createsEmptyListWhenLegalMessageLinesIsNull() {
+        var uiInfo = new AutofillSaveCardUiInfo(
+                /*isForUpload=*/false,
+                /*logoIcon=*/0,
+                /*issuerIcon=*/0,
+                /*legalMessageLines=*/null,
+                /*cardLabel=*/null,
+                /*cardSubLabel=*/null,
+                /*cardDescription=*/null,
+                /*titleText=*/null,
+                /*confirmText=*/null,
+                /*cancelText=*/null,
+                /*isGooglePayBrandingEnabled=*/false,
+                /*descriptionText=*/null);
+
+        assertThat(uiInfo.getLegalMessageLines(), empty());
     }
 
     @Test
@@ -65,6 +86,14 @@ public class AutofillSaveCardUiInfoTest {
         assertThat(uiInfo.getCardDetail().issuerIconDrawableId, equalTo(1));
         assertThat(uiInfo.getCardDetail().label, equalTo("cardLabel"));
         assertThat(uiInfo.getCardDetail().subLabel, equalTo("cardSubLabel"));
+    }
+
+    @Test
+    public void testBuilder_setsCardDescription() {
+        AutofillSaveCardUiInfo uiInfo =
+                defaultBuilder().withCardDescription("cardDescription").build();
+
+        assertThat(uiInfo.getCardDescription(), equalTo("cardDescription"));
     }
 
     @Test

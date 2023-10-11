@@ -276,7 +276,7 @@ void LogQualityMetrics(
       }
 
       base::UmaHistogramEnumeration(
-          "Autofill.LabelInference.InferredLabelSource.AtSubmission",
+          "Autofill.LabelInference.InferredLabelSource.AtSubmission2",
           field->label_source);
     }
   }
@@ -391,6 +391,16 @@ void LogQualityMetrics(
                                           address_field_stats);
     AutofillMetrics::LogFieldFillingStats(FormType::kCreditCardForm,
                                           cc_field_stats);
+
+    AutofillMetrics::LogFormFillingScore(FormType::kAddressForm,
+                                         address_field_stats);
+    AutofillMetrics::LogFormFillingScore(FormType::kCreditCardForm,
+                                         cc_field_stats);
+
+    AutofillMetrics::LogFormFillingComplexScore(FormType::kAddressForm,
+                                                address_field_stats);
+    AutofillMetrics::LogFormFillingComplexScore(FormType::kCreditCardForm,
+                                                cc_field_stats);
 
     if (card_form) {
       AutofillMetrics::LogCreditCardSeamlessnessAtSubmissionTime(

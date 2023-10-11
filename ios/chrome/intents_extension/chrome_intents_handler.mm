@@ -6,12 +6,15 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/chrome/common/intents/ClearBrowsingDataIntent.h"
 #import "ios/chrome/common/intents/ManagePasswordsIntent.h"
 #import "ios/chrome/common/intents/ManagePaymentMethodsIntent.h"
 #import "ios/chrome/common/intents/ManageSettingsIntent.h"
 #import "ios/chrome/common/intents/OpenBookmarksIntent.h"
 #import "ios/chrome/common/intents/OpenInChromeIncognitoIntent.h"
 #import "ios/chrome/common/intents/OpenInChromeIntent.h"
+#import "ios/chrome/common/intents/OpenLatestTabIntent.h"
+#import "ios/chrome/common/intents/OpenLensIntent.h"
 #import "ios/chrome/common/intents/OpenNewIncognitoTabIntent.h"
 #import "ios/chrome/common/intents/OpenNewTabIntent.h"
 #import "ios/chrome/common/intents/OpenReadingListIntent.h"
@@ -40,7 +43,10 @@
                                     ManagePaymentMethodsIntentHandling,
                                     RunSafetyCheckIntentHandling,
                                     ManagePasswordsIntentHandling,
-                                    ManageSettingsIntentHandling>
+                                    ManageSettingsIntentHandling,
+                                    OpenLatestTabIntentHandling,
+                                    OpenLensIntentHandling,
+                                    ClearBrowsingDataIntentHandling>
 @end
 
 @implementation ChromeIntentsHandler
@@ -348,6 +354,50 @@
   ManageSettingsIntentResponse* response = [[ManageSettingsIntentResponse alloc]
       initWithCode:ManageSettingsIntentResponseCodeContinueInApp
       userActivity:activity];
+
+  completion(response);
+}
+
+#pragma mark - OpenLatestTabIntentHandling
+
+- (void)handleOpenLatestTab:(OpenLatestTabIntent*)intent
+                 completion:(void (^)(OpenLatestTabIntentResponse*))completion {
+  NSUserActivity* activity = [[NSUserActivity alloc]
+      initWithActivityType:NSStringFromClass([OpenLatestTabIntent class])];
+
+  OpenLatestTabIntentResponse* response = [[OpenLatestTabIntentResponse alloc]
+      initWithCode:OpenLatestTabIntentResponseCodeContinueInApp
+      userActivity:activity];
+
+  completion(response);
+}
+
+#pragma mark - OpenLensIntentHandling
+
+- (void)handleOpenLens:(OpenLensIntent*)intent
+            completion:(void (^)(OpenLensIntentResponse*))completion {
+  NSUserActivity* activity = [[NSUserActivity alloc]
+      initWithActivityType:NSStringFromClass([OpenLatestTabIntent class])];
+
+  OpenLensIntentResponse* response = [[OpenLensIntentResponse alloc]
+      initWithCode:OpenLensIntentResponseCodeContinueInApp
+      userActivity:activity];
+
+  completion(response);
+}
+
+#pragma mark - ClearBrowsingDataIntentHandling
+
+- (void)handleClearBrowsingData:(ClearBrowsingDataIntent*)intent
+                     completion:(void (^)(ClearBrowsingDataIntentResponse*))
+                                    completion {
+  NSUserActivity* activity = [[NSUserActivity alloc]
+      initWithActivityType:NSStringFromClass([ClearBrowsingDataIntent class])];
+
+  ClearBrowsingDataIntentResponse* response =
+      [[ClearBrowsingDataIntentResponse alloc]
+          initWithCode:ClearBrowsingDataIntentResponseCodeContinueInApp
+          userActivity:activity];
 
   completion(response);
 }

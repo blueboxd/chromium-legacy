@@ -90,6 +90,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="1293264513303784526">USB-C cihaz (sol bağlantı noktası)</translation>
 <translation id="1293556467332435079">Dosyalar</translation>
 <translation id="1293699935367580298">Esc</translation>
+<translation id="1294046132466831888">Keşfet'i aç</translation>
 <translation id="1294929383540927798">Kilit ekranı bildirim ayarlarını değiştir</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1306549533752902673">ÖNERİLEN UYGULAMALAR</translation>
@@ -199,6 +200,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="1757857692711134412">Gün batımına kadar kapalı</translation>
 <translation id="1768366657309696705"><ph name="LAUNCHER_KEY_NAME" /> + Nokta klavye kısayolu değişti. Insert tuşunu kullanmak için <ph name="LAUNCHER_KEY_NAME" /> tuşu + Üst Karakter + Geri Tuşu'na basın.</translation>
 <translation id="1770726142253415363"><ph name="ROW_NUMBER" />. satır, <ph name="COLUMN_NUMBER" />. sütuna taşındı.</translation>
+<translation id="1771458705381257690">Cihazınızı kurup özelleştirmek için <ph name="NAME" /> uygulamasını açın</translation>
 <translation id="1771761307086386028">Sağa kaydır</translation>
 <translation id="1774796056689732716">Takvim, <ph name="CURRENT_MONTH_YEAR" />, şu anda <ph name="DATE" /> seçili.</translation>
 <translation id="1775598828170459419"><ph name="NUM_SHOWN_ITEMS" />/<ph name="NUM_TOTAL_ITEMS" /> gösteriliyor</translation>
@@ -365,6 +367,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2526581474998477112">Pencerelerin kilidini açın</translation>
 <translation id="2528111225373402384">Hotspot ayarları</translation>
+<translation id="253007620291357635"><ph name="NETWORK_NAME" /> · <ph name="SERVICE_PROVIDER" /></translation>
 <translation id="2530896289327917474">Metin imleciyle göz atmayı açma veya kapatma</translation>
 <translation id="2531025035050312891">cihaz yavaş</translation>
 <translation id="2531107890083353124">Sekmeyi sürüklerken <ph name="KEY_ONE" /> tuşuna basın</translation>
@@ -387,6 +390,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="2612614436418177118">Uygulama simgesini uygulama tablosu içinde taşıyın</translation>
 <translation id="2620016719323068571"><ph name="CATEGORY" />, dosyalar, uygulamalar genelinde ve daha fazla yerde arama yapın...</translation>
 <translation id="2620436844016719705">Sistem</translation>
+<translation id="2620900772667816510">Bluetooth Süper Çözünürlük</translation>
 <translation id="2621713457727696555">Güvenlik sağlandı</translation>
 <translation id="2624588537172718173">Cihaz sesi ve mikrofonu</translation>
 <translation id="263399434338050016">"Tümünü seç"</translation>
@@ -511,6 +515,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="3161500364292033097">Masayı ve pencereleri kapatın</translation>
 <translation id="316356270129335934"><ph name="MANAGER" />, <ph name="DEVICE_TYPE" /> cihazınızı geri çekiyor. Cihazınız sıfırlanacak ve tüm veriler silinecek.</translation>
 <translation id="3171170659304083361">Giriş yöntemi ayarları</translation>
+<translation id="3176221688814061633">Chromebook veya Bluetooth cihazınızda Bluetooth'un eski bir sürümü kullanılıyor. Daha iyi ses kalitesi için Bluetooth Süper Çözünürlük'ü açın veya cihazın mikrofonunu kullanın.</translation>
 <translation id="3181441307743005334">Yeniden başlatmak biraz zaman alabilir</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Bir cihaza bağlı}other{# cihaza bağlı}}</translation>
 <translation id="320207200541803018">Zamanlayıcı ayarla</translation>
@@ -524,7 +529,6 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="324366796737464147">Gürültü giderme</translation>
 <translation id="3249513730522716925"><ph name="WINDOW_TITLE" /> penceresi, Masa <ph name="ACTIVE_DESK" /> üzerinden Masa <ph name="TARGET_DESK" /> üzerine taşındı</translation>
-<translation id="3252573918265662711">Kurulum</translation>
 <translation id="3253743281242075461">Sınıf çalışmaları türü: <ph name="GLANCEABLES_CLASSROOM_LIST_NAME" /></translation>
 <translation id="3255483164551725916">Neler yapabilirsin?</translation>
 <translation id="3256109297135787951">Rafınızdaki bir öğenin vurgusunu kaldırır</translation>
@@ -673,6 +677,7 @@ Cihazınızı güç kaynağına bağlayın.</translation>
 <translation id="3781910048497807059">Odağı önceki bölmeye taşır</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Kilitle</translation>
+<translation id="3789841737615482174">Yükle</translation>
 <translation id="3796215473395753611">alt + yukarı ok</translation>
 <translation id="3796746699333205839">Bir uygulama kameranızı ve mikrofonunuzu kullanıyor</translation>
 <translation id="3798670284305777884">Hoparlör (dahili)</translation>
@@ -1188,6 +1193,7 @@ Cihazınızı güç kaynağına bağlayın.</translation>
 <translation id="5876666360658629066">Ebeveyn kodunu girin</translation>
 <translation id="5881540930187678962">Telefon Merkezi'ni sonra kurun</translation>
 <translation id="5881663018261910378">Kapalı</translation>
+<translation id="5883017113634523865">Kullanılabilir tüm özellikleri görmek için Google Play'den <ph name="NAME" /> uygulamasını yükleyin</translation>
 <translation id="5887954372087850114"><ph name="WINDOW_TITLE" /> penceresi <ph name="DESK_TITLE" /> masasına atandı ve diğer tüm masalardaki ataması kaldırıldı</translation>
 <translation id="588817334757907802">Dosyayı Chrome tarayıcıda aç</translation>
 <translation id="5895138241574237353">Yeniden başlat</translation>
@@ -1477,7 +1483,6 @@ Yeni yüklenmiş</translation>
 <translation id="7086931198345821656">Bu güncelleme için <ph name="DEVICE_TYPE" /> cihazınızda Powerwash işlemi yapılması gerekiyor. Tüm veriler silinecektir. En yeni <ph name="SYSTEM_APP_NAME" /> güncellemesi ile ilgili daha fazla bilgi edinin.</translation>
 <translation id="7088960765736518739">Anahtar Erişimi</translation>
 <translation id="709015856939120012">Sayfayı yakınlaştır</translation>
-<translation id="7098053464892629930">Kullanılabilen tüm özellikleri görmek için Google Play'de <ph name="NAME" /> için geliştirilen uygulamayı indirin</translation>
 <translation id="7098389117866926363">USB-C cihaz (arkadaki sol bağlantı noktası)</translation>
 <translation id="7100906357717321275">Dosyalar uygulamasında gizli dosyaları gösterin</translation>
 <translation id="7108254681523785542">Yapıştırılacak bir öğe seçin. <ph name="SHORTCUT_KEY_NAME" /> + v tuşlarına basarak panoyu görebilirsiniz.</translation>
@@ -1498,6 +1503,7 @@ Yeni yüklenmiş</translation>
 <translation id="7189412385142492784">Venüs ne kadar uzak</translation>
 <translation id="7198435252016571249">Kamera sağ alt köşeye tutturuldu. Sistem yüzeyi ile çakışıyor.</translation>
 <translation id="7219573373513695352">Bağlı cihaz yok</translation>
+<translation id="7229029500464092426">Bellek <ph name="AVAILABLE_MEMORY" /> | <ph name="TOTAL_MEMORY" /> toplam</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Bir güncellemenin uygulanması için bu Chromebook'un yeniden başlatılması gerekiyor. Bu işlem bir dakika kadar sürebilir.</translation>
 <translation id="7256634071279256947">Arka mikrofon</translation>
 <translation id="7258828758145722155">Dün düzenlendi</translation>
@@ -1523,6 +1529,7 @@ Yeni yüklenmiş</translation>
 <translation id="7360036564632145207">Çevre birimleri için veri erişimi koruma ayarınızı değiştirmek performansı optimize edebilir</translation>
 <translation id="736045644501761622">Duvar kağıdı ve stil ayarlayın</translation>
 <translation id="7371404428569700291">Pencereyi kaydet</translation>
+<translation id="7372069265635026568">Toplam <ph name="TOTAL_MEMORY" /> bellekten <ph name="AVAILABLE_MEMORY" /> kullanılabilir</translation>
 <translation id="737315737514430195">Mikrofonun sesinin açılması, izni olan tüm uygulamaların ve web sitelerinin mikrofona erişmesine izin verir</translation>
 <translation id="7377169924702866686">Caps Lock açık.</translation>
 <translation id="7377481913241237033">Kod kullanarak bağlanma</translation>
@@ -1616,6 +1623,7 @@ Cihazı kapatmak için cihazın güç düğmesini tekrar basılı tutun.</transl
 <translation id="7714767791242455379">Yeni hücresel ağ ekle</translation>
 <translation id="7720400844887872976">Saat <ph name="TIME" /> olana kadar açık</translation>
 <translation id="7720410380936703141">TEKRAR DENE</translation>
+<translation id="7721132362314201794">Masa adı</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 bildirim}other{# bildirim}}</translation>
 <translation id="7723703419796509666">Geliştirici Araçları konsolunu göster veya gizle</translation>
 <translation id="7724603315864178912">Kes</translation>
@@ -1838,7 +1846,6 @@ Cihazı kapatmak için cihazın güç düğmesini tekrar basılı tutun.</transl
 <translation id="8660331759611631213">71'in karekökü</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, <ph name="SIGNAL_STRENGTH" /> Sinyal Gücü</translation>
 <translation id="8664282223139913403">Kısmi ekran görüntüsü almak için enter tuşuna basın</translation>
-<translation id="8666856788528804727">Cihazınızı kurmak için <ph name="NAME" /> uygulamasını açın</translation>
 <translation id="8676770494376880701">Düşük güçlü şarj cihazı bağlandı</translation>
 <translation id="8683506306463609433">Performans izleme etkin</translation>
 <translation id="8703634754197148428">Kaydı başlat. Kayıt başladıktan sonra Alt+Üst Karakter+L tuşlarını kullanarak rafta bulunan kaydı durdur düğmesine gidebilirsiniz</translation>
@@ -1852,6 +1859,7 @@ Cihazı kapatmak için cihazın güç düğmesini tekrar basılı tutun.</transl
 <translation id="8731487213223706745">Bitiş zamanı: <ph name="END_TIME" /> <ph name="DAYS_ELAPSED" /></translation>
 <translation id="8734991477317290293">Bu klavye, tuş vuruşlarınızı çalmaya çalışıyor olabilir</translation>
 <translation id="8735678380411481005">Klavye arka ışığı rengi</translation>
+<translation id="8742057891287715849"><ph name="NAME" /> · <ph name="SERVICE_PROVIDER" />: Etkinleştiriliyor...</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
 <translation id="8755498163081687682">Kimliğinizi doğrulayın: <ph name="ORIGIN_NAME" />, kimliğinizi doğrulamak istiyor</translation>

@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
+#import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator+protected.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
@@ -187,7 +188,7 @@ using signin_metrics::PromoAction;
   ProceduralBlock completionAction = ^{
     [weakSelf interruptUserSigninUIWithAction:action
                          signinCompletionInfo:completionInfo
-                                   completion:completion];
+                          interruptCompletion:completion];
   };
   if (self.addAccountSigninCoordinator) {
     // `self.addAccountSigninCoordinator` needs to be interupted before
@@ -389,8 +390,10 @@ using signin_metrics::PromoAction;
   DCHECK(self.mediator);
   DCHECK(self.viewController);
 
+  self.unifiedConsentCoordinator.delegate = nil;
   [self.unifiedConsentCoordinator stop];
   self.unifiedConsentCoordinator = nil;
+  self.mediator.delegate = nil;
   [self.mediator disconnect];
   self.mediator = nil;
   self.viewController = nil;
@@ -491,8 +494,9 @@ using signin_metrics::PromoAction;
 - (void)interruptUserSigninUIWithAction:(SigninCoordinatorInterrupt)action
                    signinCompletionInfo:
                        (SigninCompletionInfo*)signinCompletinInfo
-                             completion:(ProceduralBlock)completion {
-  if (self.viewControllerPresentingAnimation) {
+                    interruptCompletion:(ProceduralBlock)interruptCompletion {
+  if (self.viewControllerPresentingAnimation &&
+      action != SigninCoordinatorInterrupt::UIShutdownNoDismiss) {
     // UIKit doesn't allow a view controller to be dismissed during the
     // animation. The interruption has to be processed when the view controller
     // will be fully presented.
@@ -502,7 +506,7 @@ using signin_metrics::PromoAction;
     self.interruptCallback = ^() {
       [weakSelf interruptUserSigninUIWithAction:action
                            signinCompletionInfo:signinCompletinInfo
-                                     completion:completion];
+                            interruptCompletion:interruptCompletion];
     };
     return;
   }
@@ -513,17 +517,22 @@ using signin_metrics::PromoAction;
   DCHECK(!self.advancedSettingsSigninCoordinator);
   __weak UserSigninCoordinator* weakSelf = self;
   ProceduralBlock runCompletionCallback = ^{
+    // This will finish the coordinator (and call the sign-in completion block).
     [weakSelf
         viewControllerDismissedWithResult:SigninCoordinatorResultInterrupted
                            completionInfo:signinCompletinInfo];
-    if (completion) {
-      completion();
+    // Once this coordinator is fully finished, `interruptCompletion` can be
+    // called.
+    if (interruptCompletion) {
+      interruptCompletion();
     }
   };
   switch (action) {
     case SigninCoordinatorInterrupt::UIShutdownNoDismiss: {
-      [self.mediator interruptWithAction:action
-                              completion:runCompletionCallback];
+      // The mediator should be interrupted and ignore callbacks.
+      self.mediator.delegate = nil;
+      [self.mediator interruptWithAction:action completion:nil];
+      runCompletionCallback();
       break;
     }
     case SigninCoordinatorInterrupt::DismissWithAnimation: {
@@ -627,20 +636,22 @@ using signin_metrics::PromoAction;
 
 - (NSString*)description {
   return [NSString
-      stringWithFormat:@"<%@: %p, addAccountSigninCoordinator: "
-                       @"%p, advancedSettingsSigninCoordinator: "
-                       @"%p, signinIntent: %lu, accessPoint: %d, "
-                       @"viewController: %p, beingPresented: %d, "
-                       @"baseViewController: %@, window: %p>",
-                       self.class.description, self,
-                       self.addAccountSigninCoordinator,
-                       self.advancedSettingsSigninCoordinator,
-                       self.signinIntent,
-                       static_cast<int>(self.logger.accessPoint),
-                       self.viewController,
-                       self.viewController.isBeingPresented,
-                       NSStringFromClass([self.baseViewController class]),
-                       self.baseViewController.view.window];
+      stringWithFormat:
+          @"<%@: %p, addAccountSigninCoordinator: "
+          @"%p, advancedSettingsSigninCoordinator: "
+          @"%p, signinIntent: %lu, signinStateOnStart: %lu, interruptCallback "
+          @"%p, accessPoint: %d, signin in progress %d, mediator %p, "
+          @"viewController: %p, presented: %@, baseViewController: %@, "
+          @"window: %p>",
+          self.class.description, self, self.addAccountSigninCoordinator,
+          self.advancedSettingsSigninCoordinator, self.signinIntent,
+          self.signinStateOnStart, self.interruptCallback,
+          static_cast<int>(self.logger.accessPoint),
+          self.mediator.isAuthenticationInProgress, self.mediator,
+          self.viewController,
+          ViewControllerPresentationStatusDescription(self.viewController),
+          NSStringFromClass([self.baseViewController class]),
+          self.baseViewController.view.window];
 }
 
 #pragma mark - Methods for unittests

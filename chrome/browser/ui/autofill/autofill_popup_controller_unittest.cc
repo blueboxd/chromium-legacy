@@ -23,13 +23,11 @@
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory_test_api.h"
-#include "components/autofill/content/browser/content_autofill_driver_test_api.h"
-#include "components/autofill/content/browser/content_autofill_router.h"
-#include "components/autofill/content/browser/content_autofill_router_test_api.h"
 #include "components/autofill/content/browser/test_autofill_client_injector.h"
 #include "components/autofill/content/browser/test_autofill_driver_injector.h"
 #include "components/autofill/content/browser/test_autofill_manager_injector.h"
 #include "components/autofill/content/browser/test_content_autofill_client.h"
+#include "components/autofill/core/browser/autofill_driver_router.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -146,6 +144,10 @@ class MockAutofillPopupView : public AutofillPopupView {
   MOCK_METHOD(bool, OverlapsWithPictureInPictureWindow, (), (const override));
   MOCK_METHOD(absl::optional<int32_t>, GetAxUniqueId, (), (override));
   MOCK_METHOD(void, AxAnnounce, (const std::u16string&), (override));
+  MOCK_METHOD(base::WeakPtr<AutofillPopupView>,
+              CreateSubPopupView,
+              (base::WeakPtr<AutofillPopupController>),
+              (override));
 
   base::WeakPtr<AutofillPopupView> GetWeakPtr() override {
     return weak_ptr_factory_.GetWeakPtr();
@@ -165,14 +167,17 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
           gfx::NativeWindow,
           Profile*,
           password_manager::metrics_util::PasswordMigrationWarningTriggers)>
-          show_pwd_migration_warning_callback)
+          show_pwd_migration_warning_callback,
+      absl::optional<base::WeakPtr<ExpandablePopupParentControllerImpl>>
+          parent = absl::nullopt)
       : AutofillPopupControllerImpl(
             external_delegate,
             web_contents,
             nullptr,
             element_bounds,
             base::i18n::UNKNOWN_DIRECTION,
-            std::move(show_pwd_migration_warning_callback)) {}
+            std::move(show_pwd_migration_warning_callback),
+            parent) {}
   ~TestAutofillPopupController() override = default;
 
   // Making protected functions public for testing
@@ -255,7 +260,7 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
   virtual std::unique_ptr<NiceMock<MockAutofillExternalDelegate>>
   CreateExternalDelegate() {
     return std::make_unique<NiceMock<MockAutofillExternalDelegate>>(
-        autofill_manager());
+        &autofill_manager());
   }
 
   // Shows empty suggestions with the popup_item_id ids passed as
@@ -310,17 +315,13 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
     return autofill_client_injector_[web_contents()];
   }
 
-  ContentAutofillRouter& autofill_router() {
-    return autofill_client()->GetAutofillDriverFactory()->autofill_router();
-  }
-
   NiceMock<MockAutofillDriver>* autofill_driver() {
     return autofill_driver_injector_[web_contents()];
   }
 
-  BrowserAutofillManager* autofill_manager() {
-    return static_cast<BrowserAutofillManager*>(
-        autofill_driver()->autofill_manager());
+  BrowserAutofillManager& autofill_manager() {
+    return static_cast<BrowserAutofillManager&>(
+        autofill_driver()->GetAutofillManager());
   }
 
   TestAutofillClientInjector<TestContentAutofillClient>
@@ -511,7 +512,7 @@ TEST_F(AutofillPopupControllerUnitTest, PopupsWithOnlyDataLists) {
 }
 
 TEST_F(AutofillPopupControllerUnitTest, GetOrCreateAndroid) {
-  NiceMock<MockAutofillExternalDelegate> delegate(autofill_manager());
+  NiceMock<MockAutofillExternalDelegate> delegate(&autofill_manager());
 
   WeakPtr<AutofillPopupControllerImpl> controller =
       AutofillPopupControllerImpl::GetOrCreate(
@@ -580,7 +581,7 @@ TEST_F(AutofillPopupControllerUnitTest, ProperlyResetController) {
 TEST_F(AutofillPopupControllerUnitTest, HidingClearsPreview) {
   // Create a new controller, because hiding destroys it and we can't destroy it
   // twice.
-  StrictMock<MockAutofillExternalDelegate> delegate(autofill_manager());
+  StrictMock<MockAutofillExternalDelegate> delegate(&autofill_manager());
   StrictMock<TestAutofillPopupController>* test_controller =
       new StrictMock<TestAutofillPopupController>(delegate.GetWeakPtrForTest(),
                                                   web_contents(), gfx::RectF(),
@@ -606,7 +607,7 @@ TEST_F(AutofillPopupControllerUnitTest, DontHideWhenWaitingForData) {
 TEST_F(AutofillPopupControllerUnitTest, ShouldReportHidingPopupReason) {
   // Create a new controller, because hiding destroys it and we can't destroy it
   // twice (since we already hide it in the destructor).
-  NiceMock<MockAutofillExternalDelegate> delegate(autofill_manager());
+  NiceMock<MockAutofillExternalDelegate> delegate(&autofill_manager());
   NiceMock<TestAutofillPopupController>* test_controller =
       new NiceMock<TestAutofillPopupController>(delegate.GetWeakPtrForTest(),
                                                 web_contents(), gfx::RectF(),
@@ -759,6 +760,17 @@ TEST_F(AutofillPopupControllerUnitTest, AcceptAddressNoPwdWarningAndroid) {
   EXPECT_CALL(*delegate(), DidAcceptSuggestion).Times(1);
   EXPECT_CALL(show_pwd_migration_warning_callback_, Run).Times(0);
   popup_controller().AcceptSuggestionWithoutThreshold(0);
+}
+#endif
+
+#if !BUILDFLAG(IS_ANDROID)
+TEST_F(AutofillPopupControllerUnitTest, SubPopupIsCreatedWithViewFromParent) {
+  NiceMock<MockAutofillPopupView> autofill_popup_sub_view;
+  EXPECT_CALL(*autofill_popup_view(), CreateSubPopupView)
+      .WillRepeatedly(Return(autofill_popup_sub_view.GetWeakPtr()));
+  base::WeakPtr<AutofillPopupController> sub_controller =
+      popup_controller().OpenSubPopup({0, 0, 10, 10}, {});
+  EXPECT_TRUE(sub_controller);
 }
 #endif
 

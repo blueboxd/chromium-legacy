@@ -348,6 +348,11 @@ const char
         "security "
         "settings page.";
 
+const char kEnableRedInterstitialFaceliftName[] = "Red interstitial facelift";
+const char kEnableRedInterstitialFaceliftDescription[] =
+    "Enables red interstitial facelift UI changes, including icon, string, and "
+    "style changes.";
+
 const char kEditPasswordsInSettingsName[] = "Edit passwords in settings";
 const char kEditPasswordsInSettingsDescription[] =
     "Enables password editing in settings.";
@@ -406,10 +411,6 @@ const char kEnableFeedSyntheticCapabilitiesName[] =
 const char kEnableFeedSyntheticCapabilitiesDescription[] =
     "If enabled synthethic capablities will be used to inform the server of "
     "the client capabilities.";
-
-const char kEnableFullscreenAPIName[] = "Enable Fullscreen API";
-const char kEnableFullscreenAPIDescription[] =
-    "Enable the Fullscreen API for web content (iOS 16.0+).";
 
 const char kEnableFollowIPHExpParamsName[] =
     "Enable Follow IPH Experiment Parameters";
@@ -1019,11 +1020,6 @@ const char kNewOverflowMenuShareChromeActionName[] =
     "Share Chrome App action in the new overflow menu";
 const char kNewOverflowMenuShareChromeActionDescription[] =
     "Enables the Share Chrome App action in the new overflow menu.";
-
-const char kSyncEnableBatchUploadLocalDataName[] =
-    "Enable batch upload of local data";
-const char kSyncEnableBatchUploadLocalDataDescription[] =
-    "Allows batch upload of local data from the account settings panel.";
 
 const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =

@@ -13,6 +13,7 @@
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/platform_util.h"
@@ -76,6 +77,12 @@ static_assert(kAutofillPopupMinWidth > 128);
 // TODO(crbug.com/831603): move handling the max width to the base class.
 constexpr int kAutofillPopupMaxWidth = kAutofillPopupWidthMultiple * 38;
 
+// Preferred position relative to the control sides of the sub-popup.
+constexpr std::array<views::BubbleArrowSide, 2> kDefaultSubPopupSides = {
+    views::BubbleArrowSide::kLeft, views::BubbleArrowSide::kRight};
+constexpr std::array<views::BubbleArrowSide, 2> kDefaultSubPopupSidesRTL = {
+    views::BubbleArrowSide::kRight, views::BubbleArrowSide::kLeft};
+
 int GetContentsVerticalPadding() {
   return ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_CONTENT_LIST_VERTICAL_SINGLE);
@@ -96,18 +103,53 @@ bool IsFooterItem(const std::vector<Suggestion>& suggestions,
              : IsFooterPopupItemId(popup_item_id);
 }
 
+bool CanShowRootPopup(base::WeakPtr<AutofillPopupController> controller) {
+#if BUILDFLAG(IS_MAC)
+  // It's possible for the container_view to not be in a window. In that case,
+  // cancel the popup since we can't fully set it up.
+  if (!platform_util::GetTopLevel(controller->container_view())) {
+    return false;
+  }
+#else
+  // If the top level widget can't be found, cancel the popup since we can't
+  // fully set it up. On Mac Cocoa browser, |observing_widget| is null
+  // because the parent is not a views::Widget.
+  if (!views::Widget::GetTopLevelWidgetForNativeView(
+          controller->container_view())) {
+    return false;
+  }
+#endif
+
+  return true;
+}
+
 }  // namespace
 
+// Creates a new popup view instance. The Widget parent is taken either from
+// the top level widget for the root popup or from the parent for sub-popups.
+// Setting Widget's parent enables its internal child-lifetime management,
+// see `Widget::InitParams::parent` doc comment for details.
 PopupViewViews::PopupViewViews(
     base::WeakPtr<AutofillPopupController> controller,
+    base::WeakPtr<ExpandablePopupParentView> parent,
     views::Widget* parent_widget)
-    : PopupBaseView(controller, parent_widget), controller_(controller) {
-  views::BoxLayout* layout =
-      SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kVertical));
-  layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
+    : PopupBaseView(controller,
+                    parent_widget,
+                    base::i18n::IsRTL() ? kDefaultSubPopupSidesRTL
+                                        : kDefaultSubPopupSides,
+                    /*show_arrow_pointer=*/false),
+      controller_(controller),
+      parent_(parent) {
+  InitViews();
+}
 
-  CreateChildViews();
+PopupViewViews::PopupViewViews(
+    base::WeakPtr<AutofillPopupController> controller)
+    : PopupBaseView(controller,
+                    views::Widget::GetTopLevelWidgetForNativeView(
+                        controller->container_view())),
+      controller_(controller) {
+  InitViews();
 }
 
 PopupViewViews::~PopupViewViews() = default;
@@ -172,11 +214,26 @@ void PopupViewViews::SetSelectedCell(absl::optional<CellIndex> cell_index) {
     GetPopupRowViewAt(old_index->first).SetSelectedCell(absl::nullopt);
   }
 
+  if (open_sub_popup_timer_.IsRunning()) {
+    open_sub_popup_timer_.Stop();
+  }
+
   if (cell_index && HasPopupRowViewAt(cell_index->first)) {
     row_with_selected_cell_ = cell_index->first;
     PopupRowView& new_row = GetPopupRowViewAt(cell_index->first);
     new_row.SetSelectedCell(cell_index->second);
     new_row.ScrollViewToVisible();
+
+    bool can_open_sub_popup =
+        cell_index->second == PopupRowView::CellType::kControl &&
+        !controller_->GetSuggestionAt(cell_index->first).children.empty();
+    absl::optional<CellIndex> open_sub_popup_cell =
+        can_open_sub_popup ? cell_index : absl::nullopt;
+    open_sub_popup_timer_.Start(
+        FROM_HERE, kOpenSubPopupDelay,
+        base::BindOnce(&PopupViewViews::SetCellWithOpenSubPopup,
+                       weak_ptr_factory_.GetWeakPtr(), open_sub_popup_cell));
+
   } else {
     row_with_selected_cell_ = absl::nullopt;
   }
@@ -315,6 +372,11 @@ bool PopupViewViews::RemoveSelectedCell() {
 }
 
 void PopupViewViews::OnSuggestionsChanged() {
+  if (open_sub_popup_timer_.IsRunning()) {
+    open_sub_popup_timer_.Stop();
+  }
+  SetCellWithOpenSubPopup(absl::nullopt);
+
   CreateChildViews();
   DoUpdateBoundsAndRedrawPopup();
 }
@@ -338,6 +400,16 @@ void PopupViewViews::AxAnnounce(const std::u16string& text) {
     return;
   }
   browser_view->GetViewAccessibility().AnnounceText(text);
+}
+
+base::WeakPtr<AutofillPopupView> PopupViewViews::CreateSubPopupView(
+    base::WeakPtr<AutofillPopupController> controller) {
+  if (GetWidget()) {
+    return (new PopupViewViews(controller, weak_ptr_factory_.GetWeakPtr(),
+                               GetWidget()))
+        ->GetWeakPtr();
+  }
+  return nullptr;
 }
 
 void PopupViewViews::OnWidgetVisibilityChanged(views::Widget* widget,
@@ -367,6 +439,15 @@ void PopupViewViews::OnWidgetVisibilityChanged(views::Widget* widget,
 bool PopupViewViews::HasPopupRowViewAt(size_t index) const {
   return index < rows_.size() &&
          absl::holds_alternative<PopupRowView*>(rows_[index]);
+}
+
+void PopupViewViews::InitViews() {
+  views::BoxLayout* layout =
+      SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical));
+  layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
+
+  CreateChildViews();
 }
 
 void PopupViewViews::CreateChildViews() {
@@ -641,6 +722,38 @@ bool PopupViewViews::CanShowDropdownInBounds(const gfx::Rect& bounds) const {
   return CanShowDropdownHere(min_height, bounds, element_bounds);
 }
 
+void PopupViewViews::SetCellWithOpenSubPopup(
+    absl::optional<CellIndex> cell_index) {
+  if (open_sub_popup_cell_ == cell_index) {
+    return;
+  }
+
+  // Close previously open sub-popup if any.
+  if (open_sub_popup_cell_ && HasPopupRowViewAt(open_sub_popup_cell_->first)) {
+    controller_->HideSubPopup();
+    GetPopupRowViewAt(open_sub_popup_cell_->first)
+        .SetCellPermanentlyHighlighted(open_sub_popup_cell_->second, false);
+    open_sub_popup_cell_ = absl::nullopt;
+  }
+
+  // Open a sub-popup on the new cell if provided.
+  if (cell_index && HasPopupRowViewAt(cell_index->first)) {
+    const Suggestion& suggestion =
+        controller_->GetSuggestionAt(cell_index->first);
+
+    CHECK(!suggestion.children.empty());
+    CHECK(cell_index->second == PopupRowView::CellType::kControl);
+
+    PopupRowView& row = GetPopupRowViewAt(cell_index->first);
+
+    if (controller_->OpenSubPopup(row.GetCellBounds(cell_index->second),
+                                  suggestion.children)) {
+      row.SetCellPermanentlyHighlighted(cell_index->second, true);
+      open_sub_popup_cell_ = cell_index;
+    }
+  }
+}
+
 base::WeakPtr<AutofillPopupView> PopupViewViews::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
@@ -652,28 +765,11 @@ END_METADATA
 // static
 base::WeakPtr<AutofillPopupView> AutofillPopupView::Create(
     base::WeakPtr<AutofillPopupController> controller) {
-#if BUILDFLAG(IS_MAC)
-  // It's possible for the container_view to not be in a window. In that case,
-  // cancel the popup since we can't fully set it up.
-  if (!platform_util::GetTopLevel(controller->container_view())) {
+  if (!CanShowRootPopup(controller)) {
     return nullptr;
   }
-#endif
 
-  views::Widget* observing_widget =
-      views::Widget::GetTopLevelWidgetForNativeView(
-          controller->container_view());
-
-#if !BUILDFLAG(IS_MAC)
-  // If the top level widget can't be found, cancel the popup since we can't
-  // fully set it up. On Mac Cocoa browser, |observing_widget| is null
-  // because the parent is not a views::Widget.
-  if (!observing_widget) {
-    return nullptr;
-  }
-#endif
-
-  return (new PopupViewViews(controller, observing_widget))->GetWeakPtr();
+  return (new PopupViewViews(controller))->GetWeakPtr();
 }
 
 }  // namespace autofill

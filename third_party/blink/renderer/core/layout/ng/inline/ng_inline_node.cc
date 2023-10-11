@@ -529,11 +529,6 @@ void NGInlineNode::PrepareLayout(NGInlineNodeData* previous_data) const {
   ShapeTextIncludingFirstLine(
       data, previous_data ? &previous_data->text_content : nullptr, nullptr);
 
-  // TODO(https://crbug.com/1463890): Update the likelihood condition.
-  if (UNLIKELY(RuntimeEnabledFeatures::CSSTextAutoSpaceEnabled())) {
-    TextAutoSpace::ApplyIfNeeded(*data);
-  }
-
   AssociateItemsWithInlines(data);
   DCHECK_EQ(data, MutableData());
 
@@ -1287,9 +1282,11 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
   HeapVector<NGInlineItem>* items = &data->items;
 
   ShapeResultSpacing<String> spacing(text_content, IsSvgText());
+  TextAutoSpace auto_space(*data);
 
   const bool allow_shape_cache =
-      IsNGShapeCacheAllowed(text_content, override_font, *items, spacing);
+      IsNGShapeCacheAllowed(text_content, override_font, *items, spacing) &&
+      !auto_space.MayApply();
 
   // Provide full context of the entire node to the shaper.
   ReusingTextShaper shaper(data, previous_items, allow_shape_cache);
@@ -1480,6 +1477,8 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
     shape_result->CopyRanges(text_item_ranges.data(), text_item_ranges.size());
   }
 
+  auto_space.ApplyIfNeeded(*data);
+
 #if DCHECK_IS_ON()
   for (const NGInlineItem& item : *items) {
     if (item.Type() == NGInlineItem::kText && item.Length()) {
@@ -1528,6 +1527,9 @@ void NGInlineNode::ShapeTextForFirstLineIfNeeded(NGInlineNodeData* data) const {
   first_line_items->items.AppendVector(data->items);
   for (auto& item : first_line_items->items) {
     item.SetStyleVariant(NGStyleVariant::kFirstLine);
+  }
+  if (data->segments) {
+    first_line_items->segments = data->segments->Clone();
   }
 
   // Re-shape if the font is different.

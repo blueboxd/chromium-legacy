@@ -278,6 +278,7 @@
 <translation id="3264582393905923483">Кантэкст</translation>
 <translation id="3272909651715601089">Не ўдалося адкрыць архіў "<ph name="PATH" />"</translation>
 <translation id="3280431534455935878">Ідзе падрыхтоўка</translation>
+<translation id="3280719573299097127">Вы выкарыстоўваеце сетку з падлікам трафіка. Сінхранізацыя файлаў прыпынена.</translation>
 <translation id="3280987981688031357">Вінілавая пласцінка</translation>
 <translation id="3290356915286466215">Не абаронена</translation>
 <translation id="3291218047831493686">Каб змяніць налады блакіроўкі SIM-карты, падключыцеся да гэтай сеткі</translation>
@@ -631,6 +632,7 @@
 <translation id="5838451609423551646">Скасаваны выбар усіх элементаў</translation>
 <translation id="5838825566232597749">ЗША (Workman, міжнародная)</translation>
 <translation id="5845721951356578987">Медработнік</translation>
+<translation id="5858478190805449225">Рэжым энергазберажэння ўключаны. Паўтарыце спробу, калі рэжым энергазберажэння будзе выключаны.</translation>
 <translation id="5860491529813859533">Уключыць</translation>
 <translation id="5861477046012235702">Геймер</translation>
 <translation id="5864471791310927901">Не ўдалося выканаць пошук DHCP</translation>
@@ -897,7 +899,6 @@
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7920501309908018401">Вашы файлы ў Маім Дыску будуць аўтаматычна сінхранізавацца з вашым Chromebook, каб вы маглі атрымаць да іх доступ без падключэння да інтэрнэту.</translation>
 <translation id="7925247922861151263">Не ўдалося выканаць праверку AAA</translation>
-<translation id="7925686952655276919">Не выкарыстоўваць мабільную перадачу даных для сінхранізацыі</translation>
 <translation id="7928710562641958568">Адключыць прыладу</translation>
 <translation id="7933875256234974853">Падрыхтоўка да сінхранізацыі файлаў Дыска...</translation>
 <translation id="7943385054491506837">ЗША (Colemak)</translation>
@@ -920,6 +921,7 @@
 <translation id="8087576439476816834">Спампаваць, <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">Абагуленае са мной</translation>
 <translation id="8116072619078571545">Ледзяная вада</translation>
+<translation id="8120392982188717723">Дазволіць сінхранізацыю ў сетках з падлікам трафіка</translation>
 <translation id="8124093710070495550">Праблема з сінхранізацыяй</translation>
 <translation id="8128733386027980860">Англійская (Вялікабрытанія) з раскладкай Дворака</translation>
 <translation id="8137331602592933310">Файл "<ph name="FILENAME" />" абагулены з вамі. Вы не можаце выдаліць гэты файл, бо не з'яўляецеся яго ўладальнікам.</translation>

@@ -22,7 +22,7 @@ source_set("feature_list") {
     "flag_descriptions.cc",
     "flag_descriptions.h",
   ]
-
+  public_deps = [ ":utils" ]
   deps = [
     ":commerce_heuristics_data",
     ":pref_names",
@@ -120,6 +120,11 @@ proto_library("commerce_subscription_db_content_proto") {
   sources = [ "proto/commerce_subscription_db_content.proto" ]
 }
 
+proto_library("discounts_db_content_proto") {
+  proto_in_dir = "//"
+  sources = [ "proto/discounts_db_content.proto" ]
+}
+
 source_set("commerce_heuristics_data") {
   sources = [
     "commerce_heuristics_data.cc",
@@ -183,6 +188,8 @@ static_library("shopping_service") {
   sources = [
     "bookmark_update_manager.cc",
     "bookmark_update_manager.h",
+    "discounts_storage.cc",
+    "discounts_storage.h",
     "metrics/scheduled_metrics_manager.cc",
     "metrics/scheduled_metrics_manager.h",
     "price_tracking_utils.cc",
@@ -199,13 +206,17 @@ static_library("shopping_service") {
 
   deps = [
     ":account_checker",
+    ":commerce_constants",
     ":commerce_subscription_db_content_proto",
+    ":discounts_db_content_proto",
     ":feature_list",
     ":metrics",
     ":pref_names",
     ":proto",
+    ":utils",
     "//base",
     "//components/bookmarks/browser",
+    "//components/history/core/browser",
     "//components/keyed_service/core",
     "//components/leveldb_proto",
     "//components/optimization_guide/core",
@@ -248,6 +259,8 @@ source_set("shopping_service_test_support") {
   testonly = true
 
   sources = [
+    "mock_discounts_storage.cc",
+    "mock_discounts_storage.h",
     "mock_shopping_service.cc",
     "mock_shopping_service.h",
     "shopping_service_test_base.cc",
@@ -288,6 +301,7 @@ source_set("shopping_service_unit_tests") {
 
   sources = [
     "bookmark_update_manager_unittest.cc",
+    "discounts_storage_unittest.cc",
     "metrics/scheduled_metrics_manager_unittest.cc",
     "pdp_metrics_unittest.cc",
     "price_tracking_utils_unittest.cc",
@@ -299,11 +313,13 @@ source_set("shopping_service_unit_tests") {
 
   deps = [
     ":account_checker_test_support",
+    ":discounts_db_content_proto",
     ":metrics",
     ":pref_names",
     ":shopping_service_test_support",
     "subscriptions:test_support",
     "webui:unit_tests",
+    "//components/history/core/browser",
     "//components/search",
   ]
 }
@@ -395,4 +411,16 @@ source_set("commerce_types") {
   sources = [ "commerce_types.h" ]
 
   deps = [ "//url" ]
+}
+
+source_set("utils") {
+  sources = [
+    "commerce_utils.cc",
+    "commerce_utils.h",
+  ]
+  deps = [
+    ":commerce_constants",
+    "//base",
+    "//net:net",
+  ]
 }

@@ -22,8 +22,13 @@
 #include "chrome/browser/extensions/test_extension_environment.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "chrome/browser/feed/web_feed_tab_helper.h"
+#include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
+#include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/predictors/loading_predictor.h"
+#include "chrome/browser/predictors/loading_predictor_factory.h"
+#include "chrome/browser/predictors/preconnect_manager.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -113,6 +118,7 @@ static content::ContextMenuParams CreateParams(int contexts) {
   rv.is_editable = false;
   rv.media_type = blink::mojom::ContextMenuDataMediaType::kNone;
   rv.page_url = GURL("http://test.page/");
+  rv.frame_url = GURL("http://test.page/");
 
   static constexpr char16_t selected_text[] = u"sel";
   if (contexts & MenuItem::SELECTION) {
@@ -143,7 +149,7 @@ static content::ContextMenuParams CreateParams(int contexts) {
   }
 
   if (contexts & MenuItem::FRAME) {
-    rv.frame_url = GURL("http://test.frame/");
+    rv.is_subframe = true;
   }
 
   return rv;
@@ -539,7 +545,9 @@ TEST_F(RenderViewContextMenuDeveloperItemsTest,
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
+class RenderViewContextMenuPrefsTest
+    : public ChromeRenderViewHostTestHarness,
+      public predictors::PreconnectManager::Observer {
  public:
   RenderViewContextMenuPrefsTest() = default;
 
@@ -577,6 +585,24 @@ class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
                                 -> std::unique_ptr<KeyedService> {
           return std::make_unique<syncer::TestSyncService>();
         }));
+    last_preresolved_url_ = GURL();
+  }
+
+  // Begins listening for loading preconnections.
+  void BeginPreresolveListening() {
+    auto* loading_predictor =
+        predictors::LoadingPredictorFactory::GetForProfile(
+            GetBrowser()->profile());
+    ASSERT_TRUE(loading_predictor);
+    loading_predictor->preconnect_manager()->SetObserverForTesting(this);
+    last_preresolved_url_ = GURL();
+  }
+
+  void OnPreresolveFinished(
+      const GURL& url,
+      const net::NetworkAnonymizationKey& network_anonymization_key,
+      bool success) override {
+    last_preresolved_url_ = url;
   }
 
   void TearDown() override {
@@ -651,11 +677,14 @@ class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
     return browser_.get();
   }
 
+  const GURL& last_preresolved_url() const { return last_preresolved_url_; }
+
  private:
   std::unique_ptr<custom_handlers::ProtocolHandlerRegistry> registry_;
   std::unique_ptr<ScopedTestingLocalState> testing_local_state_;
   raw_ptr<TemplateURLService, DanglingUntriaged> template_url_service_;
   std::unique_ptr<Browser> browser_;
+  GURL last_preresolved_url_;
 };
 
 // Verifies when Incognito Mode is not available (disabled by policy),
@@ -1636,6 +1665,7 @@ TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearchChromeUIScheme) {
                                        /*supports_image_search=*/true);
   content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
   params.page_url = GURL(chrome::kChromeUISettingsURL);
+  params.frame_url = params.page_url;
   TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
                                  params);
   menu.SetBrowser(GetBrowser());
@@ -1644,16 +1674,125 @@ TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearchChromeUIScheme) {
   EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH));
 }
 
+// Verify that the adding the companion image search option to the menu
+// issues a preconnection request to lens.google.com.
+TEST_F(RenderViewContextMenuPrefsTest,
+       CompanionImageSearchIssuesGoogleLensPreconnect) {
+  BeginPreresolveListening();
+  base::test::ScopedFeatureList features;
+  features.InitWithFeaturesAndParameters(
+      {{companion::features::internal::kSidePanelCompanion,
+        {{"open-companion-for-image-search", "true"}}}},
+      {});
+  SetUserSelectedDefaultSearchProvider("https://www.google.com",
+                                       /*supports_image_search=*/true);
+  content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
+  params.has_image_contents = true;
+  TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
+                                 params);
+  menu.SetBrowser(GetBrowser());
+  menu.Init();
+
+  size_t index = 0;
+  ui::MenuModel* model = nullptr;
+
+  ASSERT_TRUE(menu.GetMenuModelAndItemIndex(
+      IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE, &model, &index));
+
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(last_preresolved_url().spec(), "https://lens.google.com/");
+}
+
+// Verify that the adding the companion region search option to the menu
+// issues a preconnection request to lens.google.com.
+TEST_F(RenderViewContextMenuPrefsTest,
+       CompanionRegionSearchIssuesGoogleLensPreconnect) {
+  BeginPreresolveListening();
+  base::test::ScopedFeatureList features;
+  features.InitWithFeaturesAndParameters(
+      {{companion::features::internal::kSidePanelCompanion,
+        {{"open-companion-for-image-search", "true"}}}},
+      {});
+  SetUserSelectedDefaultSearchProvider("https://www.google.com",
+                                       /*supports_image_search=*/true);
+  content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
+
+  TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
+                                 params);
+  menu.SetBrowser(GetBrowser());
+  menu.Init();
+
+  size_t index = 0;
+  ui::MenuModel* model = nullptr;
+
+  ASSERT_TRUE(menu.GetMenuModelAndItemIndex(
+      IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH, &model, &index));
+  EXPECT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH));
+
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(last_preresolved_url().spec(), "https://lens.google.com/");
+}
+
+// Verify that the adding the Lens image search option to the menu
+// issues a preconnection request to lens.google.com.
+TEST_F(RenderViewContextMenuPrefsTest,
+       LensImageSearchIssuesGoogleLensPreconnect) {
+  BeginPreresolveListening();
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(lens::features::kLensStandalone);
+  SetUserSelectedDefaultSearchProvider("https://www.google.com",
+                                       /*supports_image_search=*/true);
+  content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
+  params.has_image_contents = true;
+  TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
+                                 params);
+  menu.SetBrowser(GetBrowser());
+  menu.Init();
+
+  size_t index = 0;
+  ui::MenuModel* model = nullptr;
+
+  ASSERT_TRUE(menu.GetMenuModelAndItemIndex(
+      IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE, &model, &index));
+
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(last_preresolved_url().spec(), "https://lens.google.com/");
+}
+
+// Verify that the adding the Lens region search option to the menu
+// issues a preconnection request to lens.google.com.
+TEST_F(RenderViewContextMenuPrefsTest,
+       LensRegionSearchIssuesGoogleLensPreconnect) {
+  BeginPreresolveListening();
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(lens::features::kLensStandalone);
+  SetUserSelectedDefaultSearchProvider("https://www.google.com",
+                                       /*supports_image_search=*/true);
+  content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
+
+  TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
+                                 params);
+  menu.SetBrowser(GetBrowser());
+  menu.Init();
+
+  size_t index = 0;
+  ui::MenuModel* model = nullptr;
+
+  ASSERT_TRUE(menu.GetMenuModelAndItemIndex(
+      IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH, &model, &index));
+  EXPECT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH));
+
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(last_preresolved_url().spec(), "https://lens.google.com/");
+}
+
 // Verify that the new badge is added to region search context menu items if
 // appropriate feature is enabled.
 TEST_F(RenderViewContextMenuPrefsTest,
        CompanionNewBadgeEnabledForRegionSearchContextMenuItem) {
   base::test::ScopedFeatureList features;
-  features.InitWithFeaturesAndParameters(
-      {{companion::features::internal::kSidePanelCompanion,
-        {{"open-companion-for-image-search", "true"}}},
-       {companion::features::kCompanionEnableNewBadgesInContextMenu, {}}},
-      {});
+  features.InitAndEnableFeature(
+      companion::features::kCompanionEnableNewBadgesInContextMenu);
   SetUserSelectedDefaultSearchProvider("https://www.google.com",
                                        /*supports_image_search=*/true);
   content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
@@ -1676,10 +1815,8 @@ TEST_F(RenderViewContextMenuPrefsTest,
 TEST_F(RenderViewContextMenuPrefsTest,
        CompanionNewBadgeDisabledForRegionSearchContextMenuItem) {
   base::test::ScopedFeatureList features;
-  features.InitWithFeaturesAndParameters(
-      {{companion::features::internal::kSidePanelCompanion,
-        {{"open-companion-for-image-search", "true"}}}},
-      {companion::features::kCompanionEnableNewBadgesInContextMenu});
+  features.InitAndDisableFeature(
+      companion::features::kCompanionEnableNewBadgesInContextMenu);
   SetUserSelectedDefaultSearchProvider("https://www.google.com",
                                        /*supports_image_search=*/true);
   content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
@@ -1702,11 +1839,8 @@ TEST_F(RenderViewContextMenuPrefsTest,
 TEST_F(RenderViewContextMenuPrefsTest,
        CompanionNewBadgeEnabledForImageSearchContextMenuItems) {
   base::test::ScopedFeatureList features;
-  features.InitWithFeaturesAndParameters(
-      {{companion::features::internal::kSidePanelCompanion,
-        {{"open-companion-for-image-search", "true"}}},
-       {companion::features::kCompanionEnableNewBadgesInContextMenu, {}}},
-      {});
+  features.InitAndEnableFeature(
+      companion::features::kCompanionEnableNewBadgesInContextMenu);
   SetUserSelectedDefaultSearchProvider("https://www.google.com",
                                        /*supports_image_search=*/true);
   content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
@@ -1733,10 +1867,8 @@ TEST_F(RenderViewContextMenuPrefsTest,
 TEST_F(RenderViewContextMenuPrefsTest,
        CompanionNewBadgeDisabledForImageSearchContextMenuItems) {
   base::test::ScopedFeatureList features;
-  features.InitWithFeaturesAndParameters(
-      {{companion::features::internal::kSidePanelCompanion,
-        {{"open-companion-for-image-search", "true"}}}},
-      {companion::features::kCompanionEnableNewBadgesInContextMenu});
+  features.InitAndDisableFeature(
+      companion::features::kCompanionEnableNewBadgesInContextMenu);
   SetUserSelectedDefaultSearchProvider("https://www.google.com",
                                        /*supports_image_search=*/true);
   content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
@@ -1804,8 +1936,10 @@ class FormatUrlForClipboardTest
 
 const FormatUrlForClipboardTestData kFormatUrlForClipboardTestData[]{
     {"http://www.foo.com/", "http://www.foo.com/", "HttpNoEscapes"},
-    {"http://www.foo.com/%61%62%63", "http://www.foo.com/abc",
-     "HttpSafeUnescapes"},
+    // Percent-encoded ASCII characters are no longer unescaped.
+    // See https://crbug.com/1252531.
+    {"http://www.foo.com/%61%62%63", "http://www.foo.com/%61%62%63",
+     "HttpNoEscape"},
     {"https://www.foo.com/abc%20def", "https://www.foo.com/abc%20def",
      "HttpsEscapedSpecialCharacters"},
     {"https://www.foo.com/%CE%B1%CE%B2%CE%B3",
@@ -1814,8 +1948,10 @@ const FormatUrlForClipboardTestData kFormatUrlForClipboardTestData[]{
      "FileEscapedUnicodeCharacters"},
     {"file://stuff.host.co/my%2Bshare/foo.txt",
      "file://stuff.host.co/my%2Bshare/foo.txt", "FileEscapedSpecialCharacters"},
+    // Percent-encoded ASCII characters are no longer unescaped.
+    // See https://crbug.com/1252531.
     {"file://stuff.host.co/my%2Dshare/foo.txt",
-     "file://stuff.host.co/my-share/foo.txt", "FileSafeUnescapes"},
+     "file://stuff.host.co/my%2Dshare/foo.txt", "FileNoEscape"},
     {"mailto:me@foo.com", "me@foo.com", "MailToNoEscapes"},
     {"mailto:me@foo.com,you@bar.com?subject=Hello%20world",
      "me@foo.com,you@bar.com", "MailToWithQuery"},

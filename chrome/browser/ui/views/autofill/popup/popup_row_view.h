@@ -14,6 +14,7 @@
 #include "content/public/common/input/native_web_keyboard_event.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/view.h"
 
 namespace content {
@@ -82,6 +83,12 @@ class PopupRowView : public views::View {
   absl::optional<CellType> GetSelectedCell() const { return selected_cell_; }
   void SetSelectedCell(absl::optional<CellType> cell);
 
+  // Sets the highlighted state on the cell of specified type.
+  void SetCellPermanentlyHighlighted(CellType cell, bool highlighted);
+
+  // Returns the cell's bounds, the cell of the requested type must be present.
+  gfx::RectF GetCellBounds(CellType cell) const;
+
   // Attempts to process a key press `event`. Returns true if it did (and the
   // parent no longer needs to handle it).
   bool HandleKeyPressEvent(const content::NativeWebKeyboardEvent& event);
@@ -96,6 +103,10 @@ class PopupRowView : public views::View {
   // current selection. Does not wrap.
   void SelectNextCell();
   void SelectPreviousCell();
+
+  // Returns the cell view or `nullptr` if it was not created.
+  const PopupCellView* GetCellView(CellType type) const;
+  PopupCellView* GetCellView(CellType type);
 
   AccessibilitySelectionDelegate& GetA11ySelectionDelegate() {
     return a11y_selection_delegate_.get();

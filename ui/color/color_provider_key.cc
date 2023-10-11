@@ -21,9 +21,10 @@ ColorProviderKey::ColorProviderKey()
                        ContrastMode::kNormal,
                        SystemTheme::kDefault,
                        FrameType::kChromium,
+                       FrameStyle::kDefault,
+                       UserColorSource::kAccent,
                        absl::nullopt,
                        absl::nullopt,
-                       false,
                        nullptr) {}
 
 ColorProviderKey::ColorProviderKey(
@@ -31,18 +32,20 @@ ColorProviderKey::ColorProviderKey(
     ContrastMode contrast_mode,
     SystemTheme system_theme,
     FrameType frame_type,
+    FrameStyle frame_style,
+    UserColorSource user_color_source,
     absl::optional<SkColor> user_color,
     absl::optional<SchemeVariant> scheme_variant,
-    bool is_grayscale,
     scoped_refptr<ThemeInitializerSupplier> custom_theme)
     : color_mode(color_mode),
       contrast_mode(contrast_mode),
       elevation_mode(ElevationMode::kLow),
       system_theme(system_theme),
       frame_type(frame_type),
+      frame_style(frame_style),
+      user_color_source(user_color_source),
       user_color(user_color),
       scheme_variant(scheme_variant),
-      is_grayscale(is_grayscale),
       custom_theme(std::move(custom_theme)) {}
 
 ColorProviderKey::ColorProviderKey(const ColorProviderKey&) = default;

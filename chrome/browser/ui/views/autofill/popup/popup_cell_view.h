@@ -44,8 +44,9 @@ class PopupCellView : public views::View {
     virtual ~AccessibilityDelegate() = default;
 
     // Sets the a11y information in `node_data` based on whether the cell in
-    // question `is_selected` or not.
+    // question `is_selected` or not, or `is_permanently_highlighted` or not.
     virtual void GetAccessibleNodeData(bool is_selected,
+                                       bool is_permanently_highlighted,
                                        ui::AXNodeData* node_data) const = 0;
   };
 
@@ -61,6 +62,12 @@ class PopupCellView : public views::View {
   // Gets and sets the selected state of the cell.
   bool GetSelected() const { return selected_; }
   virtual void SetSelected(bool selected);
+
+  // Sets the highlighted state of the cell, for which there is an external
+  // reason like opening a sub-popup.
+  void SetPermanentlyHighlighted(bool permanently_highlighted);
+
+  bool IsHighlighted() const;
 
   // Gets and sets the tooltip of the cell.
   const std::u16string& GetTooltipText() const { return tooltip_text_; }
@@ -129,6 +136,7 @@ class PopupCellView : public views::View {
  protected:
   // The selection state.
   bool selected_ = false;
+  bool permanently_highlighted_ = false;
   base::RepeatingClosure on_selected_callback_;
   base::RepeatingClosure on_unselected_callback_;
 

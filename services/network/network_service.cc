@@ -75,10 +75,10 @@
 #include "services/network/dns_config_change_manager.h"
 #include "services/network/first_party_sets/first_party_sets_manager.h"
 #include "services/network/http_auth_cache_copier.h"
+#include "services/network/masked_domain_list/network_service_proxy_allow_list.h"
 #include "services/network/net_log_exporter.h"
 #include "services/network/net_log_proxy_sink.h"
 #include "services/network/network_context.h"
-#include "services/network/network_service_proxy_allow_list.h"
 #include "services/network/public/cpp/crash_keys.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/initiator_lock_compatibility.h"
@@ -487,6 +487,9 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
 
   network_service_proxy_allow_list_ =
       std::make_unique<NetworkServiceProxyAllowList>();
+
+  network_service_resource_block_list_ =
+      std::make_unique<NetworkServiceResourceBlockList>();
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
   constexpr size_t kMaxSCTAuditingCacheEntries = 1024;
@@ -950,12 +953,25 @@ void NetworkService::UpdateKeyPinsList(mojom::PinListPtr pin_list,
 }
 
 void NetworkService::UpdateMaskedDomainList(const std::string& raw_mdl) {
+  const base::Time start_time = base::Time::Now();
   auto mdl = masked_domain_list::MaskedDomainList();
   if (mdl.ParseFromString(raw_mdl)) {
+    UMA_HISTOGRAM_MEMORY_KB("NetworkService.MaskedDomainList.SizeInKB",
+                            mdl.ByteSizeLong() / 1024);
+
     network_service_proxy_allow_list_->UseMaskedDomainList(mdl);
+    network_service_resource_block_list_->UseMaskedDomainList(mdl);
+
+    base::UmaHistogramBoolean("NetworkService.MaskedDomainList.UpdateSuccess",
+                              true);
   } else {
+    base::UmaHistogramBoolean("NetworkService.MaskedDomainList.UpdateSuccess",
+                              false);
     LOG(ERROR) << "Unable to parse MDL in NetworkService";
   }
+
+  base::UmaHistogramTimes("NetworkService.MaskedDomainList.UpdateProcessTime",
+                          base::Time::Now() - start_time);
 }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -1011,8 +1027,8 @@ void NetworkService::StartNetLogBounded(base::File file,
 
       base::BindOnce(
           &NetworkService::OnStartNetLogBoundedScratchDirectoryCreated,
-          base::Unretained(this), std::move(file), max_total_size, capture_mode,
-          std::move(constants)));
+          weak_factory_.GetWeakPtr(), std::move(file), max_total_size,
+          capture_mode, std::move(constants)));
 }
 
 void NetworkService::OnStartNetLogBoundedScratchDirectoryCreated(

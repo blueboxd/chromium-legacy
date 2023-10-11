@@ -641,7 +641,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Enterprise.DeviceRemoteCommand.Crd.{Enterprise_CrdSessionType}.{Enterprise_UserSessionType}.SessionDuration"
-    units="minutes" expires_after="2024-01-01">
+    units="minutes" expires_after="2024-03-03">
   <owner>macinashutosh@google.com</owner>
   <owner>chromeos-commercial-crd@google.com</owner>
   <summary>
@@ -1365,13 +1365,23 @@ chromium-metrics-reviews@google.com.
   <summary>Record whether the kernel supports fanotify delete events.</summary>
 </histogram>
 
-<histogram name="Enterprise.Dlp.FileActionBlocked"
+<histogram name="Enterprise.Dlp.FileActionBlocked2"
     enum="EnterpriseDlpPolicyFileAction" expires_after="2023-12-01">
   <owner>accorsi@google.com</owner>
   <owner>chromeos-dlp@google.com</owner>
   <summary>
-    Records which file action is blocked because of Data Leak Prevention policy
-    restrictions.
+    Records when a file action is blocked because of Data Leak Prevention policy
+    Files restriction. Identifies which file action was blocked.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.Dlp.FileActionBlockReviewed"
+    enum="EnterpriseDlpPolicyFileAction" expires_after="2024-03-01">
+  <owner>ayaelattar@google.com</owner>
+  <owner>chromeos-dlp@google.com</owner>
+  <summary>
+    Records which file action blocked by Data Leak Prevention policy is
+    reviewed.
   </summary>
 </histogram>
 
@@ -1402,6 +1412,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records True when opening the Files App to show a Data Leak Prevention
     dialog times out, and False when it successfully opens.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.Dlp.FilesBlockedCount" units="entries"
+    expires_after="2024-03-01">
+  <owner>ayaelattar@google.com</owner>
+  <owner>chromeos-dlp@google.com</owner>
+  <summary>
+    Records the number of files blocked by Data Leak Prevention policy per file
+    action.
   </summary>
 </histogram>
 
@@ -2289,7 +2309,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.PlatformAuth.GetAuthData.Count" units="count"
-    expires_after="2023-12-31">
+    expires_after="2024-03-03">
   <owner>igorruvinov@chromium.org</owner>
   <owner>zmin@chromium.org</owner>
   <summary>
@@ -2446,7 +2466,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.PolicyUpdatePeriod.MachineLevelUser" units="days"
-    expires_after="2023-11-30">
+    expires_after="2024-03-03">
   <owner>zmin@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -2870,6 +2890,19 @@ chromium-metrics-reviews@google.com.
     Only reported on ChromeOS Ash, only for managed users who are primary users
     in the given session. The values are capped at around 5 seconds, and
     timeouts are reported as this upper boundary value as well.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.UserPolicy.Count" units="policies"
+    expires_after="2024-06-12">
+  <owner>vincb@google.com</owner>
+  <owner>ftirelo@chromium.org</owner>
+  <summary>
+    Records the number of user policies that are active when using a managed
+    account.
+
+    Recorded once during the profile's browsing session on the first policy
+    update after signing in with a managed account.
   </summary>
 </histogram>
 

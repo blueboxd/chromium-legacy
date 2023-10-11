@@ -632,12 +632,12 @@ static_library("browser") {
     "interstitials/enterprise_util.h",
     "invalidation/profile_invalidation_provider_factory.cc",
     "invalidation/profile_invalidation_provider_factory.h",
-    "ip_protection/blind_sign_http_impl.cc",
-    "ip_protection/blind_sign_http_impl.h",
-    "ip_protection/ip_protection_auth_token_provider.cc",
-    "ip_protection/ip_protection_auth_token_provider.h",
-    "ip_protection/ip_protection_auth_token_provider_factory.cc",
-    "ip_protection/ip_protection_auth_token_provider_factory.h",
+    "ip_protection/ip_protection_config_http.cc",
+    "ip_protection/ip_protection_config_http.h",
+    "ip_protection/ip_protection_config_provider.cc",
+    "ip_protection/ip_protection_config_provider.h",
+    "ip_protection/ip_protection_config_provider_factory.cc",
+    "ip_protection/ip_protection_config_provider_factory.h",
     "k_anonymity_service/k_anonymity_service_client.cc",
     "k_anonymity_service/k_anonymity_service_client.h",
     "k_anonymity_service/k_anonymity_service_factory.cc",
@@ -1380,6 +1380,8 @@ static_library("browser") {
     "preloading/prefetch/search_prefetch/search_prefetch_url_loader_interceptor.h",
     "preloading/prefetch/search_prefetch/streaming_search_prefetch_url_loader.cc",
     "preloading/prefetch/search_prefetch/streaming_search_prefetch_url_loader.h",
+    "preloading/preloading_features.cc",
+    "preloading/preloading_features.h",
     "preloading/prerender/prerender_manager.cc",
     "preloading/prerender/prerender_manager.h",
     "preloading/prerender/prerender_utils.cc",
@@ -1985,6 +1987,7 @@ static_library("browser") {
     ":buildflags",
     ":dev_ui_browser_resources_grit",
     ":expired_flags_list",
+    ":get_proxy_config_proto",
     ":k_anonymity_storage_proto",
     ":lcp_critical_path_predictor_proto",
     ":ntp_background_proto",
@@ -2077,6 +2080,8 @@ static_library("browser") {
     "//chrome/common:channel_info",
     "//chrome/common:version_header",
     "//chrome/common/cart:mojo_bindings",
+    "//chrome/common/companion:mojo_bindings",
+    "//chrome/common/companion/visual_search:flags",
     "//chrome/common/net",
     "//chrome/common/notifications",
     "//chrome/installer/util:with_no_strings",
@@ -2523,7 +2528,6 @@ static_library("browser") {
 
   if (!is_android) {
     deps += [
-      "//chrome/browser/companion/visual_search:flags",
       "//components/user_education/common",
     ]
   }
@@ -4128,8 +4132,6 @@ static_library("browser") {
       "policy/webhid_device_policy_handler.h",
       "preloading/prefetch/zero_suggest_prefetch/zero_suggest_prefetch_tab_helper.cc",
       "preloading/prefetch/zero_suggest_prefetch/zero_suggest_prefetch_tab_helper.h",
-      "preloading/preloading_features.cc",
-      "preloading/preloading_features.h",
       "private_network_access/chrome_private_network_device_chooser.cc",
       "private_network_access/chrome_private_network_device_chooser.h",
       "private_network_access/chrome_private_network_device_chooser_desktop.cc",
@@ -4555,6 +4557,7 @@ static_library("browser") {
       "//components/app_constants",
       "//components/commerce/core:cart_db_content_proto",
       "//components/commerce/core:coupon_db_content_proto",
+      "//components/commerce/core:discounts_db_content_proto",
       "//components/commerce/core:proto",
       "//components/commerce/core:public",
       "//components/commerce/core/mojom:mojo_bindings",
@@ -7950,6 +7953,10 @@ proto_library("lcp_critical_path_predictor_proto") {
   sources = [
     "predictors/lcp_critical_path_predictor/lcp_critical_path_predictor.proto",
   ]
+}
+
+proto_library("get_proxy_config_proto") {
+  sources = [ "ip_protection/get_proxy_config.proto" ]
 }
 
 proto_library("permissions_proto") {

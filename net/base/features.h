@@ -357,6 +357,10 @@ NET_EXPORT BASE_DECLARE_FEATURE(kBlockNewForbiddenHeaders);
 // Whether to probe for SHA-256 on some legacy platform keys, before assuming
 // the key requires SHA-1. See SSLPlatformKeyWin for details.
 NET_EXPORT BASE_DECLARE_FEATURE(kPlatformKeyProbeSHA256);
+
+// Whether or not to use the GetNetworkConnectivityHint API on modern Windows
+// versions for the Network Change Notifier.
+NET_EXPORT BASE_DECLARE_FEATURE(kEnableGetNetworkConnectivityHintAPI);
 #endif
 
 // Prefetch to follow normal semantics instead of 5-minute rule
@@ -394,6 +398,11 @@ NET_EXPORT extern const base::FeatureParam<std::string>
 // getting blind-signed tokens.
 NET_EXPORT extern const base::FeatureParam<std::string>
     kIpPrivacyTokenServerGetTokensPath;
+
+// Sets the path component of the IP protection auth token server URL used for
+// getting proxy configuration.
+NET_EXPORT extern const base::FeatureParam<std::string>
+    kIpPrivacyTokenServerGetProxyConfigPath;
 
 // Sets the batch size to fetch new auth tokens for IP protection.
 NET_EXPORT extern const base::FeatureParam<int>
@@ -460,6 +469,13 @@ NET_EXPORT BASE_DECLARE_FEATURE(kZstdContentEncoding);
 NET_EXPORT BASE_DECLARE_FEATURE(kDigestAuthEnableSecureAlgorithms);
 
 NET_EXPORT BASE_DECLARE_FEATURE(kThirdPartyPartitionedStorageAllowedByDefault);
+
+// Gate access to cookie deprecation API which allows developers to opt in
+// server side testing without cookies. This doesn't actually do anything in
+// terms of deprecating cookies.
+// (See
+// https://developer.chrome.com/en/docs/privacy-sandbox/chrome-testing/#mode-a)
+NET_EXPORT BASE_DECLARE_FEATURE(kCookieDeprecationFacilitatedTestingLabels);
 
 }  // namespace net::features
 

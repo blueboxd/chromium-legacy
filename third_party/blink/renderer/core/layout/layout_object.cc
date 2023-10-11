@@ -83,6 +83,7 @@
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inl.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
+#include "third_party/blink/renderer/core/layout/layout_ruby_column.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -91,7 +92,6 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_fieldset.h"
-#include "third_party/blink/renderer/core/layout/ng/layout_ng_ruby_run.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inline_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
@@ -2808,6 +2808,18 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
         cache->LocationChanged(this);
     }
 
+    if (style_->ContentVisibility() != new_style.ContentVisibility()) {
+      if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
+        if (GetNode()) {
+          cache->RemoveSubtreeWhenSafe(GetNode());
+        } else {
+          // Removing the AXObject for a nodeless layout object will also
+          // remove its subtree.
+          cache->Remove(this);
+        }
+      }
+    }
+
     if (visibility_changed || style_->IsInert() != new_style.IsInert()) {
       if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
         cache->StyleChanged(this, /*visibility_or_inertness_changed*/ true);
@@ -3096,9 +3108,9 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
     GetDocument().EnsureCSSToggleInference().MarkNeedsRebuild();
   }
 
-  if (old_style &&
+  if (RuntimeEnabledFeatures::HitTestOpaquenessEnabled() && old_style &&
       old_style->UsedPointerEvents() != StyleRef().UsedPointerEvents()) {
-    // UsedPointerEvents affects hit test opaqueness.
+    // UsedPointerEvents affects hit test opacity.
     SetShouldInvalidatePaintForHitTest();
   }
 
@@ -4550,6 +4562,7 @@ void LayoutObject::SetShouldDoFullPaintInvalidationWithoutLayoutChangeInternal(
 
 void LayoutObject::SetShouldInvalidatePaintForHitTest() {
   NOT_DESTROYED();
+  DCHECK(RuntimeEnabledFeatures::HitTestOpaquenessEnabled());
   if (PaintInvalidationReasonForPrePaint() <
       PaintInvalidationReason::kHitTest) {
     SetShouldCheckForPaintInvalidationWithoutLayoutChange();

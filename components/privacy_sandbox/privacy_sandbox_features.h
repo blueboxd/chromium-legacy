@@ -11,6 +11,11 @@
 
 namespace privacy_sandbox {
 
+// When true, do not show any privacySandbox dialog when the browser isn't a
+// normal browser.
+COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
+BASE_DECLARE_FEATURE(kPrivacySandboxSuppressDialogOnNonNormalBrowsers);
+
 // Enables the fourth release of the Privacy Sandbox settings.
 COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
 BASE_DECLARE_FEATURE(kPrivacySandboxSettings4);
@@ -82,6 +87,11 @@ extern const base::FeatureParam<bool>
 COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
 extern const base::FeatureParam<bool>
     kPrivacySandboxSettings4SuppressDialogForExternalAppLaunches;
+
+// When true, attempts to close all open dialogs when one dialog's flow has
+// been completed. Included as a kill switch.
+COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
+extern const base::FeatureParam<bool> kPrivacySandboxSettings4CloseAllPrompts;
 
 // Enables the third release of the Privacy Sandbox settings.
 COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)

@@ -39,6 +39,12 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAdAuctionReportingWithMacroApi);
 
+// Controls the capturing of the Ad-Auction-Signals header, and the maximum
+// allowed Ad-Auction-Signals header value.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAdAuctionSignals);
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kAdAuctionSignalsMaxSizeBytes;
+
 // Runtime flag that changes default Permissions Policy for features
 // join-ad-interest-group and run-ad-auction to a more restricted EnableForSelf.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
@@ -315,8 +321,6 @@ extern const base::FeatureParam<base::TimeDelta> kHttpRttThreshold;
 BLINK_COMMON_EXPORT
 extern const base::FeatureParam<double> kCostReductionOfMultiplexedRequests;
 
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDesktopPWAsTabStripCustomizations);
-
 // Enables input IPC to directly target the renderer's compositor thread without
 // hopping through the IO thread first.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDirectCompositorThreadIpc);
@@ -379,6 +383,8 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDeprecateUnloadByUserAndOrigin);
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kDeprecateUnloadPercent;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int> kDeprecateUnloadBucket;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
+    kDeprecateUnloadAllowlist;
 
 // This feature (EventTimingReportAllEarlyEntriesOnPaintedPresentation) is
 // having an effect only when EventTimingMatchPresentationIndex is turned on.

@@ -90,6 +90,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="1293264513303784526">USB-C qurilma (chap port)</translation>
 <translation id="1293556467332435079">Fayllar</translation>
 <translation id="1293699935367580298">Esc</translation>
+<translation id="1294046132466831888">Tanishuv ilovasini ochish</translation>
 <translation id="1294929383540927798">Qulflangan ekranda chiqadigan bildirishnomalar sozlamalarini o‘zgartirish</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1306549533752902673">TAVSIYA ETILGAN ILOVALAR</translation>
@@ -199,6 +200,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="1757857692711134412">Quyosh botishigacha oʻchiq</translation>
 <translation id="1768366657309696705"><ph name="LAUNCHER_KEY_NAME" /> + Nuqta tezkor tugmasi oʻzgardi. Insert tugmasidan foydalanish uchun <ph name="LAUNCHER_KEY_NAME" /> tugmasi + Shift + Backspace tugmalarini bosing.</translation>
 <translation id="1770726142253415363"><ph name="ROW_NUMBER" />-qator, <ph name="COLUMN_NUMBER" />-ustunga oʻtdi.</translation>
+<translation id="1771458705381257690">Qurilmani sozlash va moslash uchun <ph name="NAME" /> ilovasini oching</translation>
 <translation id="1771761307086386028">Oʻngga aylantirish</translation>
 <translation id="1774796056689732716">Taqvim, <ph name="CURRENT_MONTH_YEAR" />, hozir <ph name="DATE" /> tanlangan.</translation>
 <translation id="1775598828170459419">Chiqarilgan: <ph name="NUM_SHOWN_ITEMS" /> / <ph name="NUM_TOTAL_ITEMS" /></translation>
@@ -365,6 +367,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2526581474998477112">Oynalarni yechish</translation>
 <translation id="2528111225373402384">Hotspot sozlamalari</translation>
+<translation id="253007620291357635"><ph name="NETWORK_NAME" /> · <ph name="SERVICE_PROVIDER" /></translation>
 <translation id="2530896289327917474">Faol kursor rejimini yoqish yoki oʻchirish</translation>
 <translation id="2531025035050312891">qurilma sekin ishlayapti</translation>
 <translation id="2531107890083353124">Varaqni sudrayotganda <ph name="KEY_ONE" /> tugmasini bosing</translation>
@@ -387,6 +390,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="2612614436418177118">Ilova ikonkasini ilovalar jadvaliga joylash</translation>
 <translation id="2620016719323068571"><ph name="CATEGORY" />, fayllar, ilovalar va boshqalarni qidirish...</translation>
 <translation id="2620436844016719705">Tizim</translation>
+<translation id="2620900772667816510">Bluetooth super aniqlik (sr)</translation>
 <translation id="2621713457727696555">Himoyalangan</translation>
 <translation id="2624588537172718173">Qurilmadagi audio va mikrofon</translation>
 <translation id="263399434338050016">“Hammasini tanlash”</translation>
@@ -511,6 +515,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="3161500364292033097">Ish stoli va oynalarni yopish</translation>
 <translation id="316356270129335934"><ph name="MANAGER" /> <ph name="DEVICE_TYPE" /> tizimini eski versiyaga qaytarmoqda. Qurilma asliga qaytariladi va barcha maʼlumotlar butunlay tozalanadi.</translation>
 <translation id="3171170659304083361">Matn kiritish sozlamalari</translation>
+<translation id="3176221688814061633">Chromebook yoki Bluetooth qurilmada yoqilgan Bluetooth versiyasi eskirgan. Audio sifatini yaxshilash uchun Bluetooth super aniqlik (sr) parametrini yoqing yoki ichki mikrofondan foydalaning.</translation>
 <translation id="3181441307743005334">Oʻchib yonishi biroz vaqt olishi mumkin</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Qurilmaga ulandi}other{# ta qurilmaga ulandi}}</translation>
 <translation id="320207200541803018">Taymer belgilash</translation>
@@ -524,7 +529,6 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="324366796737464147">Shovqinsizlantirish</translation>
 <translation id="3249513730522716925"><ph name="WINDOW_TITLE" /> oynasi <ph name="ACTIVE_DESK" /> ish stolidan <ph name="TARGET_DESK" /> ish stoliga koʻchirildi</translation>
-<translation id="3252573918265662711">Sozlash</translation>
 <translation id="3253743281242075461">Sinf ishi turi: <ph name="GLANCEABLES_CLASSROOM_LIST_NAME" /></translation>
 <translation id="3255483164551725916">Assistent nimalarga qodir?</translation>
 <translation id="3256109297135787951">Javondagi narsaning ajratib belgilanishini bekor qilish</translation>
@@ -673,6 +677,7 @@ Qurilmani quvvat manbaiga ulang.</translation>
 <translation id="3781910048497807059">Avvalgi panelni fokuslash</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Qulflash</translation>
+<translation id="3789841737615482174">O‘rnatish</translation>
 <translation id="3796215473395753611">alt + tepaga strelka</translation>
 <translation id="3796746699333205839">Ilova kamera va mikrofoningizni ishlatmoqda</translation>
 <translation id="3798670284305777884">Karnay (ichki)</translation>
@@ -1188,6 +1193,7 @@ Qurilmani quvvat manbaiga ulang.</translation>
 <translation id="5876666360658629066">Ota-ona kodini kiriting</translation>
 <translation id="5881540930187678962">Phone Hub funksiyasini keyin sozlash</translation>
 <translation id="5881663018261910378">Oʻchiq</translation>
+<translation id="5883017113634523865">Barcha mavjud funksiyalarni koʻrish uchun Google Play orqali <ph name="NAME" /> ilovasini oʻrnating</translation>
 <translation id="5887954372087850114"><ph name="WINDOW_TITLE" /> oynasi <ph name="DESK_TITLE" /> ish stoliga biriktirildi va barcha boshqa ish stollaridan yechildi</translation>
 <translation id="588817334757907802">Faylni Chrome brauzerida ochish</translation>
 <translation id="5895138241574237353">Qayta ishga tushirish</translation>
@@ -1477,7 +1483,6 @@ yangi oʻrnatilgan</translation>
 <translation id="7086931198345821656">Bu yangilanish oʻrnatilishi uchun <ph name="DEVICE_TYPE" /> butunlay tozalanishi (powerwash) lozim. Barcha maʼlumotlar oʻchirib tashlanadi. <ph name="SYSTEM_APP_NAME" /> oxirgi yangilanishi haqida batafsil axborot</translation>
 <translation id="7088960765736518739">Switch Access</translation>
 <translation id="709015856939120012">Sahifadagi kattalashtirish</translation>
-<translation id="7098053464892629930">Barcha funksiyalardan foydalanish uchun Google Play Market orqali <ph name="NAME" /> ilovasini yuklab oling</translation>
 <translation id="7098389117866926363">USB-C qurilma (orqa tomondagi chap port)</translation>
 <translation id="7100906357717321275">Fayllar ilovasida yashirin fayllarni koʻrsatish</translation>
 <translation id="7108254681523785542">Joylash uchun elementni tanlang. Vaqtincha xotirani <ph name="SHORTCUT_KEY_NAME" /> + v tugmalarini bosib, koʻrish mumkin.</translation>
@@ -1498,6 +1503,7 @@ yangi oʻrnatilgan</translation>
 <translation id="7189412385142492784">Venera qanchalik uzoq</translation>
 <translation id="7198435252016571249">Kamera pastki oʻng burchakka joylandi. Tizim platfromasi bilan muammo chiqdi.</translation>
 <translation id="7219573373513695352">Hech qanday qurilma ulanmagan</translation>
+<translation id="7229029500464092426">Xotira: <ph name="AVAILABLE_MEMORY" /> | jami: <ph name="TOTAL_MEMORY" /></translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Yangilanish amalga oshishi uchun Chromebook qayta ishga tushirilishi lozim. Bu 1 daqiqacha vaqt olishi mumkin.</translation>
 <translation id="7256634071279256947">Orqa mikrofon</translation>
 <translation id="7258828758145722155">Kecha tahrirlangan</translation>
@@ -1523,6 +1529,7 @@ yangi oʻrnatilgan</translation>
 <translation id="7360036564632145207">Samaradorlikni oshirish uchun tashqi qurilmalarga maʼlumotlaringizga kirish huquqlarini oʻzgartiring</translation>
 <translation id="736045644501761622">Fon rasmi va uslubini sozlash</translation>
 <translation id="7371404428569700291">Yozib olish oynasi</translation>
+<translation id="7372069265635026568">Xotira: <ph name="AVAILABLE_MEMORY" /> / <ph name="TOTAL_MEMORY" /></translation>
 <translation id="737315737514430195">Bunda mikrofonga ruxsat beriladi. Barcha ilovalar va saytlar mikrofondan foydalana oladi</translation>
 <translation id="7377169924702866686">Caps Lock yoniq.</translation>
 <translation id="7377481913241237033">Kod bilan ulanish</translation>
@@ -1616,6 +1623,7 @@ Qurilmani oʻchirish uchun uning quvvat tugmasini biroz bosib turing.</translati
 <translation id="7714767791242455379">Yangi mobil tarmoq kiritish</translation>
 <translation id="7720400844887872976">Yoniqlik muddati: <ph name="TIME" /></translation>
 <translation id="7720410380936703141">QAYTADAN</translation>
+<translation id="7721132362314201794">Ish stoli nomi</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 ta bildirishnoma}other{# ta bildirishnoma}}</translation>
 <translation id="7723703419796509666">Dasturchi vositalari terminalini ochish va yopish</translation>
 <translation id="7724603315864178912">Qirqish</translation>
@@ -1838,7 +1846,6 @@ Qurilmani oʻchirish uchun uning quvvat tugmasini biroz bosib turing.</translati
 <translation id="8660331759611631213">71 sonining kvadrat ildizi</translation>
 <translation id="8663756353922886599">Himoya: <ph name="CONNECTION_STATUS" />, Signal darajasi: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664282223139913403">Qismni rasmga olish uchun Enter tugmasini bosing</translation>
-<translation id="8666856788528804727">Qurilmani sozlash uchun <ph name="NAME" /> ilovasini oching</translation>
 <translation id="8676770494376880701">Kam quvvatli zaryadlash vositasi</translation>
 <translation id="8683506306463609433">Unumdorlik kuzatilmoqda</translation>
 <translation id="8703634754197148428">Yozib olish. Yozib olish jarayoni boshlansa, javonga oʻtish va yozib olishni toʻxtatish tugmasini topish uchun Alt + Shift + L tugmalaridan foydalaning</translation>
@@ -1852,6 +1859,7 @@ Qurilmani oʻchirish uchun uning quvvat tugmasini biroz bosib turing.</translati
 <translation id="8731487213223706745">Tugash vaqti: <ph name="END_TIME" /> <ph name="DAYS_ELAPSED" /></translation>
 <translation id="8734991477317290293">Bu bosilayotgan tugmalarni kuzatish urinishi bo‘lishi mumkin.</translation>
 <translation id="8735678380411481005">Klaviatura orqa chirogʻi rangi</translation>
+<translation id="8742057891287715849"><ph name="NAME" /> · <ph name="SERVICE_PROVIDER" />: Faollashtirilmoqda...</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
 <translation id="8755498163081687682">Shaxsingizni tasdiqlang: <ph name="ORIGIN_NAME" /> bu siz ekanligingizni tasdiqlamoqchi</translation>

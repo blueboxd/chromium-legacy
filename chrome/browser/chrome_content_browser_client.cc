@@ -309,7 +309,6 @@
 #include "content/public/browser/tts_controller.h"
 #include "content/public/browser/tts_platform.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
-#include "content/public/browser/user_level_memory_pressure_signal_features.h"
 #include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/browser/weak_document_ptr.h"
 #include "content/public/browser/web_contents.h"
@@ -441,6 +440,7 @@
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif BUILDFLAG(IS_ANDROID)
 #include "base/android/application_status_listener.h"
+#include "base/android/build_info.h"
 #include "base/feature_list.h"
 #include "chrome/android/features/dev_ui/buildflags.h"
 #include "chrome/browser/android/customtabs/client_data_header_web_contents_observer.h"
@@ -788,6 +788,10 @@ BASE_FEATURE(kNetworkServiceCodeIntegrity,
 BASE_FEATURE(kAllowGaiaOriginIsolationOnAndroid,
              "AllowGaiaOriginIsolationOnAndroid",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kPrivateNetworkAccessRestrictionsForAutomotive,
+             "PrivateNetworkAccessRestrictionsForAutomotive",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_ANDROID)
 
 // A small ChromeBrowserMainExtraParts that invokes a callback when threads are
@@ -1674,7 +1678,7 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
       true);
 
   registry->RegisterBooleanPref(
-      policy::policy_prefs::kForcePermissionPolicyUnloadDefaultEnabled, true);
+      policy::policy_prefs::kForcePermissionPolicyUnloadDefaultEnabled, false);
 
 #if BUILDFLAG(IS_CHROMEOS)
   registry->RegisterListPref(prefs::kMandatoryExtensionsForIncognitoNavigation);
@@ -2752,11 +2756,8 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         command_line->AppendSwitch(blink::switches::kDataUrlInSvgUseEnabled);
       }
 
-      // The policy is "enabled" to follow policy naming convention but the
-      // switch is "disable" because we want the default to have no switch since
-      // this is the default case.
-      if (!prefs->GetBoolean(policy::policy_prefs::
-                                 kForcePermissionPolicyUnloadDefaultEnabled)) {
+      if (prefs->GetBoolean(policy::policy_prefs::
+                                kForcePermissionPolicyUnloadDefaultEnabled)) {
         command_line->AppendSwitch(
             blink::switches::kForcePermissionPolicyUnloadDefaultEnabled);
       }
@@ -2876,32 +2877,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #if BUILDFLAG(IS_ANDROID)
     // If the platform is Android, force the distillability service on.
     command_line->AppendSwitch(switches::kEnableDistillabilityService);
-
-    // The browser process only decides to enable or disable
-    // UserLevelMemoryPressureSignalGenerator feature. Renderer processes
-    // follow the decision. If the browser process enables the feature, renderer
-    // processes will provide private memory footprint for the browser process
-    // and will generate memory pressure signals when the browser process
-    // requests. So the decision will be provided for renderer processes
-    // via commandline flag.
-    std::ostringstream user_level_memory_pressure_params;
-    if (features::IsUserLevelMemoryPressureSignalEnabledOn4GbDevices()) {
-      user_level_memory_pressure_params
-          << features::InertIntervalFor4GbDevices().InSeconds() << "s,"
-          << features::MinUserMemoryPressureIntervalOn4GbDevices().InSeconds()
-          << "s";
-    } else if (features::IsUserLevelMemoryPressureSignalEnabledOn6GbDevices()) {
-      user_level_memory_pressure_params
-          << features::InertIntervalFor6GbDevices().InSeconds() << "s,"
-          << features::MinUserMemoryPressureIntervalOn6GbDevices().InSeconds()
-          << "s";
-    }
-    if (user_level_memory_pressure_params.tellp() > 0) {
-      command_line->AppendSwitchASCII(
-          switches::kUserLevelMemoryPressureSignalParams,
-          user_level_memory_pressure_params.str());
-    }
-#endif  // BUILDFLAG(IS_ANDROID)
+#endif
 
 #if BUILDFLAG(ENABLE_NACL)
     AppendDisableNaclSwitchIfNecessary(command_line);
@@ -3544,6 +3520,29 @@ bool ChromeContentBrowserClient::IsPrivateAggregationAllowed(
       top_frame_origin, reporting_origin);
 }
 
+bool ChromeContentBrowserClient::IsCookieDeprecationLabelAllowed(
+    content::BrowserContext* browser_context) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+
+  auto* privacy_sandbox_settings =
+      PrivacySandboxSettingsFactory::GetForProfile(profile);
+  DCHECK(privacy_sandbox_settings);
+  return privacy_sandbox_settings->IsCookieDeprecationLabelAllowed();
+}
+
+bool ChromeContentBrowserClient::IsCookieDeprecationLabelAllowedForContext(
+    content::BrowserContext* browser_context,
+    const url::Origin& top_frame_origin,
+    const url::Origin& context_origin) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+
+  auto* privacy_sandbox_settings =
+      PrivacySandboxSettingsFactory::GetForProfile(profile);
+  DCHECK(privacy_sandbox_settings);
+  return privacy_sandbox_settings->IsCookieDeprecationLabelAllowedForContext(
+      top_frame_origin, context_origin);
+}
+
 #if BUILDFLAG(IS_CHROMEOS)
 void ChromeContentBrowserClient::OnTrustAnchorUsed(
     content::BrowserContext* browser_context) {
@@ -4121,6 +4120,8 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 #if BUILDFLAG(IS_ANDROID)
   web_prefs->font_scale_factor = static_cast<float>(
       prefs->GetDouble(browser_ui::prefs::kWebKitFontScaleFactor));
+  web_prefs->text_size_contrast_factor =
+      prefs->GetInteger(prefs::kAccessibilityTextSizeContrastFactor);
   web_prefs->force_enable_zoom =
       prefs->GetBoolean(browser_ui::prefs::kWebKitForceEnableZoom);
   web_prefs->font_weight_adjustment =
@@ -7523,6 +7524,15 @@ ChromeContentBrowserClient::ShouldOverridePrivateNetworkRequestPolicy(
           PrivateNetworkRequestPolicyOverride::kForceAllow;
     }
   }
+
+#if BUILDFLAG(IS_ANDROID)
+  if (base::FeatureList::IsEnabled(
+          kPrivateNetworkAccessRestrictionsForAutomotive) &&
+      base::android::BuildInfo::GetInstance()->is_automotive()) {
+    return content::ContentBrowserClient::PrivateNetworkRequestPolicyOverride::
+        kForcePreflightBlock;
+  }
+#endif
 
   return content::ContentBrowserClient::PrivateNetworkRequestPolicyOverride::
       kDefault;

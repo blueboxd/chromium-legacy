@@ -156,6 +156,8 @@ public final class ProductionSupportedFlagList {
                     "Enables brotli compression support in WebView."),
             Flag.baseFeature(NetFeatures.ZSTD_CONTENT_ENCODING,
                     "Enables zstd content-encoding support in the browser."),
+            Flag.baseFeature(
+                    AwFeatures.WEBVIEW_EXIT_REASON_METRIC, "Records various system exit reasons"),
             Flag.baseFeature(AwFeatures.WEBVIEW_EXTRA_HEADERS_SAME_ORIGIN_ONLY,
                     "Only allow extra headers added via loadUrl() to be sent to the same origin "
                             + "as the original request."),
@@ -173,6 +175,10 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.GMS_CORE_EMOJI,
                     "Enables retrieval of the emoji font through GMS Core "
                             + "improving emoji glyph coverage."),
+            Flag.baseFeature(
+                    AndroidAutofillFeatures.ANDROID_AUTOFILL_FORM_SUBMISSION_CHECK_BY_ID_NAME,
+                    "When enabled, form submissions are reported to AutofillManager iff the form "
+                            + "global ids match."),
             Flag.baseFeature(
                     AndroidAutofillFeatures
                             .ANDROID_AUTOFILL_VIEW_STRUCTURE_WITH_FORM_HIERARCHY_LAYER_NAME,
@@ -458,8 +464,7 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(NetworkServiceFeatures.ATTRIBUTION_REPORTING_CROSS_APP_WEB,
                     "Enable attribution reporting to cross the app/web barrier by letting "
                             + "the WebView use OS-level attribution."),
-            Flag.baseFeature(BaseFeatures.THREAD_POOL_CAP,
-                    "Reduces the thread pool cap to use less threads"),
+            Flag.baseFeature(BaseFeatures.THREAD_POOL_CAP2, "Sets a fixed thread pool cap"),
             Flag.baseFeature(BlinkFeatures.BEFOREUNLOAD_EVENT_CANCEL_BY_PREVENT_DEFAULT,
                     "Enables showing the cancel dialog by calling preventDefault() "
                             + "on beforeunload event."),
@@ -524,6 +529,16 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.NON_STANDARD_APPEARANCE_VALUES_LOW_USAGE,
                     "This flag allows non-standard CSS appearance values with page load "
                             + "usage < 0.001% and shows a deprecation warning."),
+            Flag.baseFeature(ContentFeatures.SERVICE_WORKER_STATIC_ROUTER,
+                    "Enables Service Worker static routing API."),
+            Flag.baseFeature(AwFeatures.WEBVIEW_SUPERVISED_USER_SITE_DETECTION,
+                    "Enable detection of the loading of mature sites on "
+                            + "WebViews running on supervised user accounts"),
+            Flag.baseFeature(AwFeatures.WEBVIEW_SUPERVISED_USER_SITE_BLOCK,
+                    "Enable blocking the loading of mature sites on "
+                            + "WebViews running on supervised user accounts"),
+            Flag.baseFeature(CcFeatures.USE_MAP_RECT_FOR_PIXEL_MOVEMENT,
+                    "Enables the usage of MapRect for computing filter pixel movement."),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

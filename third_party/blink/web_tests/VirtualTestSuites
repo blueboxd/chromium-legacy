@@ -274,7 +274,8 @@
               "external/wpt/performance-timeline/tentative/with-filter-options-originA.html",
               "external/wpt/css/css-color/parsing/color-invalid-relative-color.html",
               "external/wpt/css/css-color/parsing/color-valid-relative-color.html",
-              "external/wpt/css/css-color/parsing/color-computed-relative-color.html"
+              "external/wpt/css/css-color/parsing/color-computed-relative-color.html",
+              "external/wpt/soft-navigation-heuristics/disabled.html"
             ],
     "exclusive_tests": ["media/stable"],
     "args": ["--stable-release-mode",
@@ -911,6 +912,7 @@
       "external/wpt/css/css-highlight-api/highlight-pseudo-computed.html",
       "external/wpt/css/css-text/parsing/text-autospace-computed.html",
       "external/wpt/css/css-text/parsing/text-autospace-valid.html",
+      "external/wpt/css/css-text/text-autospace/",
       "external/wpt/css/css-text/text-spacing-trim/",
       "external/wpt/web-animations/animation-model/animation-types/accumulation-per-property-002.html",
       "external/wpt/web-animations/animation-model/animation-types/addition-per-property-002.html",
@@ -2512,6 +2514,17 @@
              "--disable-threaded-compositing", "--disable-threaded-animation"],
     "owners": ["dizhangg@chromium.org"],
     "expires": "Dec 21, 2023"
+  },
+  {
+    "prefix": "cookie-deprecation-label",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/cookie-deprecation-label"
+    ],
+    "exclusive_tests": "ALL",
+    "args": ["--enable-features=CookieDeprecationFacilitatedTestingLabels:label/label_test",
+             "--disable-threaded-compositing", "--disable-threaded-animation"],
+    "expires": "Dec 31, 2023"
   },
   "Suite fot tests that should run with single threaded compositing",
   "(As opposed to threaded compositing, which is the default for web tests)",

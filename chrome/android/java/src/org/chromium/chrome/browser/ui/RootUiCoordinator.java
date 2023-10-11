@@ -126,6 +126,7 @@ import org.chromium.chrome.browser.tab.TabObscuringHandlerSupplier;
 import org.chromium.chrome.browser.tab.TabUtils.LoadIfNeededCaller;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.tab_management.RecyclerViewPosition;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.ButtonDataProvider;
@@ -159,7 +160,6 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.ExpandedSheetHelper;
 import org.chromium.components.browser_ui.bottomsheet.ManagedBottomSheetController;
-import org.chromium.components.browser_ui.util.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
 import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
@@ -212,7 +212,7 @@ public class RootUiCoordinator
     protected final ActivityWindowAndroid mWindowAndroid;
 
     protected final ActivityTabProvider mActivityTabProvider;
-    private ObservableSupplier<ShareDelegate> mShareDelegateSupplier;
+    protected ObservableSupplier<ShareDelegate> mShareDelegateSupplier;
 
     protected @Nullable FindToolbarManager mFindToolbarManager;
     private @Nullable FindToolbarObserver mFindToolbarObserver;
@@ -329,7 +329,6 @@ public class RootUiCoordinator
             new OneshotSupplierImpl<>();
     private FoldTransitionController mFoldTransitionController;
     private RestoreTabsFeatureHelper mRestoreTabsFeatureHelper;
-    private ComposedBrowserControlsVisibilityDelegate mAppBrowserControlsVisibilityDelegate;
 
     /**
      * Create a new {@link RootUiCoordinator} for the given activity.
@@ -1593,16 +1592,6 @@ public class RootUiCoordinator
     }
 
     /**
-     * @return {@link ComposedBrowserControlsVisibilityDelegate} object for tabbed activity.
-     */
-    public ComposedBrowserControlsVisibilityDelegate getAppBrowserControlsVisibilityDelegate() {
-        if (mAppBrowserControlsVisibilityDelegate == null) {
-            mAppBrowserControlsVisibilityDelegate = new ComposedBrowserControlsVisibilityDelegate();
-        }
-        return mAppBrowserControlsVisibilityDelegate;
-    }
-
-    /**
      * Gets the browser controls manager, creates it unless already created.
      * @deprecated Instead, inject this directly to your constructor. If that's not possible, then
      *         use {@link BrowserControlsManagerSupplier}.
@@ -1736,8 +1725,29 @@ public class RootUiCoordinator
         if (mRestoreTabsFeatureHelper == null) {
             mRestoreTabsFeatureHelper = new RestoreTabsFeatureHelper();
         }
+
+        Supplier<Integer> gtsTabListModelSizeSupplier = () -> {
+            if (mTabSwitcherSupplier.get() != null) {
+                return mTabSwitcherSupplier.get().getTabSwitcherTabListModelSize();
+            } else if (mStartSurfaceSupplier.get() != null) {
+                return mStartSurfaceSupplier.get().getTabSwitcherTabListModelSize();
+            }
+            return 0;
+        };
+
+        Callback<Integer> scrollGTSToRestoredTabsCallback = (tabListModelSize) -> {
+            if (mTabSwitcherSupplier.get() != null) {
+                mTabSwitcherSupplier.get().setTabSwitcherRecyclerViewPosition(
+                        new RecyclerViewPosition(tabListModelSize, 0));
+            } else if (mStartSurfaceSupplier.get() != null) {
+                mStartSurfaceSupplier.get().setTabSwitcherRecyclerViewPosition(
+                        new RecyclerViewPosition(tabListModelSize, 0));
+            }
+        };
+
         mRestoreTabsFeatureHelper.maybeShowPromo(mActivity, mProfileSupplier.get(),
-                mTabCreatorManagerSupplier.get(), getBottomSheetController());
+                mTabCreatorManagerSupplier.get(), getBottomSheetController(),
+                gtsTabListModelSizeSupplier, scrollGTSToRestoredTabsCallback);
     }
 
     // Testing methods

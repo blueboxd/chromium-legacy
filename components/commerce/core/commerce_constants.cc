@@ -14,4 +14,19 @@ const char kChromeUIShoppingInsightsSidePanelHost[] =
 const char kChromeUIShoppingInsightsSidePanelUrl[] =
     "chrome://shopping-insights-side-panel.top-chrome";
 
+const char kUTMSourceLabel[] = "utm_source";
+
+const char kUTMMediumLabel[] = "utm_medium";
+
+const char kUTMCampaignLabel[] = "utm_campaign";
+
+const char kUTMSourceValue[] = "chrome";
+
+const char kUTMMediumValue[] = "app";
+
+const char kUTMCampaignValueForDiscounts[] =
+    "chrome-history-cluster-with-discount";
+
+const char kUTMPrefix[] = "utm_";
+
 }  // namespace commerce

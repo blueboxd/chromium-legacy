@@ -131,7 +131,6 @@ import org.chromium.chrome.browser.media.FullscreenVideoPictureInPictureControll
 import org.chromium.chrome.browser.metrics.ActivityTabStartupMetricsTracker;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
-import org.chromium.chrome.browser.modaldialog.TabModalLifetimeHandler;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.night_mode.WebContentsDarkModeController;
@@ -407,8 +406,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private boolean mBlockingDrawForAppRestart;
     private Runnable mShowContentRunnable;
     private boolean mIsRecreatingForTabletModeChange;
-    // Handling the dismissal of tab modal dialog.
-    private TabModalLifetimeHandler mTabModalLifetimeHandler;
 
     protected ChromeActivity() {
         mIntentHandler = new IntentHandler(this, createIntentHandlerDelegate());
@@ -730,7 +727,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             setLowEndTheme();
 
             WarmupManager warmupManager = WarmupManager.getInstance();
-            if (warmupManager.hasViewHierarchyWithToolbar(getControlContainerLayoutId())) {
+            if (warmupManager.hasViewHierarchyWithToolbar(getControlContainerLayoutId(), this)) {
                 View placeHolderView = new View(this);
                 setContentView(placeHolderView);
                 ViewGroup contentParent = (ViewGroup) placeHolderView.getParent();
@@ -1372,8 +1369,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     private void onDeferredStartupForMultiWindowMode() {
         // If the Activity was launched in multi-window mode, record a user action.
-        recordMultiWindowModeChanged(
-                /* isInMultiWindowMode= */ true, /* isDeferredStartup= */ true);
+        recordMultiWindowModeChanged(/*isInMultiWindowMode=*/true, /*isDeferredStartup=*/true);
     }
 
     /**
@@ -1652,21 +1648,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     @Override
     protected ModalDialogManager createModalDialogManager() {
-        var dialogManager = new ModalDialogManager(
+        return new ModalDialogManager(
                 new AppModalPresenter(this), ModalDialogManager.ModalDialogType.APP);
-        // TODO(crbug.com/1157310): Transition this::method refs to dedicated suppliers.
-        mTabModalLifetimeHandler = new TabModalLifetimeHandler(this, getLifecycleDispatcher(),
-                dialogManager,
-                ()
-                        -> mRootUiCoordinator.getAppBrowserControlsVisibilityDelegate(),
-                this::getTabObscuringHandler, this::getToolbarManager,
-                getContextualSearchManagerSupplier(), getTabModelSelectorSupplier(),
-                this::getBrowserControlsManager, this::getFullscreenManager, mBackPressManager);
-        return dialogManager;
-    }
-
-    protected TabModalLifetimeHandler getTabModalLifetimeHandler() {
-        return mTabModalLifetimeHandler;
     }
 
     protected Drawable getBackgroundDrawable() {
@@ -2833,8 +2816,14 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mIsTabReparentingPrepared = true;
             if (!isFinishing()) {
                 mIsRecreatingForTabletModeChange = true;
-                // Store the OnPause timestamp before recreation to capture unfold latency metric.
-                if (isTablet) super.setOnPauseBeforeFoldRecreateTimestampMs();
+                // Store the OnPause timestamp before recreation to capture unfold latency metric
+                // only if the activity is currently not in stopped state, to not capture the time
+                // when system was suspended. Hence, unfolding instances where Chrome wasn't in
+                // foreground are not captured in this metric.
+                if (isTablet
+                        && ApplicationStatus.getStateForActivity(this) != ActivityState.STOPPED) {
+                    super.setOnPauseBeforeFoldRecreateTimestampMs();
+                }
                 recreate();
                 mHandler.removeCallbacks(mShowContentRunnable);
                 return true;

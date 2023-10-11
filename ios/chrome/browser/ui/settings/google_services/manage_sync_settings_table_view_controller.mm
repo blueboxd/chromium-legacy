@@ -139,18 +139,24 @@ CGFloat kDefaultSectionFooterHeightPointSize = 10.;
                 withRowAnimation:UITableViewRowAnimationNone];
 }
 
-- (void)deleteSections:(NSIndexSet*)sections {
+- (void)deleteSections:(NSIndexSet*)sections
+      withRowAnimation:(BOOL)withRowAnimation {
   if (!self.tableViewModel) {
     // No need to reload since the model has not been loaded yet.
     return;
   }
-  // To avoid animation glitches related to crbug.com/1469539.
-  [UIView performWithoutAnimation:^{
-    [self.tableView beginUpdates];
+  if (withRowAnimation) {
     [self.tableView deleteSections:sections
-                  withRowAnimation:UITableViewRowAnimationNone];
-    [self.tableView endUpdates];
-  }];
+                  withRowAnimation:UITableViewRowAnimationAutomatic];
+  } else {
+    // To avoid animation glitches related to crbug.com/1469539.
+    [UIView performWithoutAnimation:^{
+      [self.tableView beginUpdates];
+      [self.tableView deleteSections:sections
+                    withRowAnimation:UITableViewRowAnimationNone];
+      [self.tableView endUpdates];
+    }];
+  }
 }
 
 - (void)reloadItem:(TableViewItem*)item {
@@ -158,7 +164,19 @@ CGFloat kDefaultSectionFooterHeightPointSize = 10.;
     // No need to reload since the model has not been loaded yet.
     return;
   }
+  if (!item) {
+    // No need to reload if the item doesn't exist. indexPathForItem below
+    // should handle nil just fine, but doesn't hurt to early return explicitly.
+    return;
+  }
   NSIndexPath* indexPath = [self.tableViewModel indexPathForItem:item];
+  if (!indexPath) {
+    // No need to reload if the item is not in the model. This would also cause
+    // a crash below since NSArrays cannot contain nil.
+    // TODO(crbug.com/1485554): Better understand the crash root cause and CHECK
+    // instead of no-op.
+    return;
+  }
   // To avoid animation glitches related to crbug.com/1469539.
   [UIView performWithoutAnimation:^{
     [self.tableView beginUpdates];

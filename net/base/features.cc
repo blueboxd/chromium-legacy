@@ -321,6 +321,10 @@ BASE_FEATURE(kBlockNewForbiddenHeaders,
 BASE_FEATURE(kPlatformKeyProbeSHA256,
              "PlatformKeyProbeSHA256",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kEnableGetNetworkConnectivityHintAPI,
+             "EnableGetNetworkConnectivityHintAPI",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 // Prefetch to follow normal semantics instead of 5-minute rule
@@ -377,6 +381,11 @@ const base::FeatureParam<std::string> kIpPrivacyTokenServerGetInitialDataPath{
 const base::FeatureParam<std::string> kIpPrivacyTokenServerGetTokensPath{
     &kEnableIpProtectionProxy, /*name=*/"IpPrivacyTokenServerGetTokensPath",
     /*default_value=*/"/v1/authWithHeaderCreds"};
+
+const base::FeatureParam<std::string> kIpPrivacyTokenServerGetProxyConfigPath{
+    &kEnableIpProtectionProxy,
+    /*name=*/"IpPrivacyTokenServerGetProxyConfigPath",
+    /*default_value=*/"/v1/ipblinding/getProxyConfig"};
 
 const base::FeatureParam<int> kIpPrivacyAuthTokenCacheBatchSize{
     &kEnableIpProtectionProxy, /*name=*/"IpPrivacyAuthTokenCacheBatchSize",
@@ -466,6 +475,10 @@ BASE_FEATURE(kDigestAuthEnableSecureAlgorithms,
 // TODO(crbug.com/1468277): Default enable when UI work is complete.
 BASE_FEATURE(kThirdPartyPartitionedStorageAllowedByDefault,
              "ThirdPartyPartitionedStorageAllowedByDefault",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCookieDeprecationFacilitatedTestingLabels,
+             "CookieDeprecationFacilitatedTestingLabels",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace net::features

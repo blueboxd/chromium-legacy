@@ -5,9 +5,11 @@
 #include <cstddef>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
@@ -91,6 +93,9 @@ class TelemetryExtensionEventsApiBrowserTest
   }
 
  protected:
+  void CheckIsEventSupported(const std::vector<std::string>& events,
+                             const std::string& status);
+
   FakeEventsService* GetFakeService() {
     return fake_events_service_impl_.get();
   }
@@ -108,30 +113,110 @@ class TelemetryExtensionEventsApiBrowserTest
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 };
 
-// Checks that the correct events are available. This checks all released events
-// that are not behind a feature flag.
-IN_PROC_BROWSER_TEST_F(TelemetryExtensionEventsApiBrowserTest,
-                       CheckCorrectEventsAvailable) {
-  constexpr char kEnabledEvents[] =
-      "['onAudioJackEvent', 'onLidEvent', 'onUsbEvent', "
-      "'onKeyboardDiagnosticEvent', 'onSdCardEvent', 'onPowerEvent', "
-      "'onStylusGarageEvent', 'onTouchpadButtonEvent', 'onTouchpadTouchEvent', "
-      "'onTouchpadConnectedEvent', 'onExternalDisplayEvent', "
-      "'onStylusConnectedEvent', 'onStylusTouchEvent']";
+void TelemetryExtensionEventsApiBrowserTest::CheckIsEventSupported(
+    const std::vector<std::string>& events,
+    const std::string& status) {
+  if (events.empty()) {
+    return;
+  }
 
+  std::string event_str;
+  for (const auto& event : events) {
+    if (event_str.empty()) {
+      event_str.append("[");
+    } else {
+      event_str.append(",");
+    }
+    event_str.append("'");
+    event_str.append(event);
+    event_str.append("'");
+  }
+  event_str.append("]");
+
+  // Don't use array.forEach because it doesn't support await.
   CreateExtensionAndRunServiceWorker(base::StringPrintf(R"(
     chrome.test.runTests([
-      function checkSupportedEvents() {
-        const methods = Object.getOwnPropertyNames(chrome.os.events)
-            .filter(item =>
-               typeof chrome.os.events[item].addListener === 'function');
-
-        chrome.test.assertEq(methods.sort(), %s.sort());
+      async function isEventSupported() {
+        const events = %s;
+        for (let i = 0; i < events.length; i++) {
+          const result = await chrome.os.events.isEventSupported(events[i]);
+          chrome.test.assertEq(result, {
+            status: '%s'
+          });
+        }
         chrome.test.succeed();
       }
     ]);
     )",
-                                                        kEnabledEvents));
+                                                        event_str.c_str(),
+                                                        status.c_str()));
+}
+
+// Checks the event supportability.
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionEventsApiBrowserTest,
+                       IsEventSupported) {
+  auto supported = crosapi::TelemetryExtensionSupportStatus::NewSupported(
+      crosapi::TelemetryExtensionSupported::New());
+  GetFakeService()->SetIsEventSupportedResponse(std::move(supported));
+
+  std::vector<std::string> unsupported_events;
+  std::vector<std::string> supported_events;
+  crosapi::TelemetryEventCategoryEnum category =
+      crosapi::TelemetryEventCategoryEnum::kUnmappedEnumField;
+  switch (category) {
+    // Features behind a feature flag.
+    case crosapi::TelemetryEventCategoryEnum::kUnmappedEnumField:
+      [[fallthrough]];
+    // Features without a feature flag.
+    case crosapi::TelemetryEventCategoryEnum::kAudioJack:
+      supported_events.push_back("audio_jack");
+      [[fallthrough]];
+    case crosapi::TelemetryEventCategoryEnum::kLid:
+      supported_events.push_back("lid");
+      [[fallthrough]];
+    case crosapi::TelemetryEventCategoryEnum::kUsb:
+      supported_events.push_back("usb");
+      [[fallthrough]];
+    case crosapi::TelemetryEventCategoryEnum::kExternalDisplay:
+      supported_events.push_back("external_display");
+      [[fallthrough]];
+    case crosapi::TelemetryEventCategoryEnum::kSdCard:
+      supported_events.push_back("sd_card");
+      [[fallthrough]];
+    case crosapi::TelemetryEventCategoryEnum::kPower:
+      supported_events.push_back("power");
+      [[fallthrough]];
+    case crosapi::TelemetryEventCategoryEnum::kKeyboardDiagnostic:
+      supported_events.push_back("keyboard_diagnostic");
+      [[fallthrough]];
+    case crosapi::TelemetryEventCategoryEnum::kStylusGarage:
+      supported_events.push_back("stylus_garage");
+      [[fallthrough]];
+    case crosapi::TelemetryEventCategoryEnum::kTouchpadButton:
+      supported_events.push_back("touchpad_button");
+      [[fallthrough]];
+    case crosapi::TelemetryEventCategoryEnum::kTouchpadTouch:
+      supported_events.push_back("touchpad_touch");
+      [[fallthrough]];
+    case crosapi::TelemetryEventCategoryEnum::kTouchpadConnected:
+      supported_events.push_back("touchpad_connected");
+      [[fallthrough]];
+    case crosapi::TelemetryEventCategoryEnum::kStylusTouch:
+      supported_events.push_back("stylus_touch");
+      [[fallthrough]];
+    case crosapi::TelemetryEventCategoryEnum::kStylusConnected:
+      supported_events.push_back("stylus_connected");
+      [[fallthrough]];
+    case crosapi::TelemetryEventCategoryEnum::kTouchscreenTouch:
+      supported_events.push_back("touchscreen_touch");
+      [[fallthrough]];
+    case crosapi::TelemetryEventCategoryEnum::kTouchscreenConnected:
+      supported_events.push_back("touchscreen_connected");
+      break;
+  }
+
+  CheckIsEventSupported(unsupported_events, "unsupported");
+  CheckIsEventSupported(supported_events, "supported");
 }
 
 IN_PROC_BROWSER_TEST_F(TelemetryExtensionEventsApiBrowserTest,
@@ -261,6 +346,155 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionEventsApiBrowserTest,
             chrome.os.events.startCapturingEvents("audio_jack"),
             'Error: Companion app UI is not open.'
         );
+        chrome.test.succeed();
+      }
+    ]);
+  )");
+}
+
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionEventsApiBrowserTest,
+                       StartListeningToRegularEvents_SuccessPwaUnfocused) {
+  OpenAppUiAndMakeItSecure();
+  AddBlankTabAndShow(browser());
+
+  // Emit an event as soon as the subscription is registered with the fake.
+  GetFakeService()->SetOnSubscriptionChange(
+      base::BindLambdaForTesting([this]() {
+        auto audio_jack_info = crosapi::TelemetryAudioJackEventInfo::New();
+        audio_jack_info->state =
+            crosapi::TelemetryAudioJackEventInfo::State::kAdd;
+        audio_jack_info->device_type =
+            crosapi::TelemetryAudioJackEventInfo::DeviceType::kHeadphone;
+
+        GetFakeService()->EmitEventForCategory(
+            crosapi::TelemetryEventCategoryEnum::kAudioJack,
+            crosapi::TelemetryEventInfo::NewAudioJackEventInfo(
+                std::move(audio_jack_info)));
+      }));
+
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function startCapturingEvents() {
+        chrome.os.events.onAudioJackEvent.addListener((event) => {
+          chrome.test.assertEq(event, {
+            event: 'connected',
+            deviceType: 'headphone'
+          });
+
+          chrome.test.succeed();
+        });
+
+        await chrome.os.events.startCapturingEvents("audio_jack");
+      }
+    ]);
+  )");
+
+  base::test::TestFuture<size_t> remote_set_size;
+  GetFakeService()->SetOnSubscriptionChange(
+      base::BindLambdaForTesting([this, &remote_set_size]() {
+        auto* remote_set = GetFakeService()->GetObserversByCategory(
+            crosapi::TelemetryEventCategoryEnum::kAudioJack);
+        ASSERT_TRUE(remote_set);
+
+        remote_set->FlushForTesting();
+        remote_set_size.SetValue(remote_set->size());
+      }));
+
+  // Calling `stopCapturingEvents` will result in the connection being cut.
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function stopCapturingEvents() {
+        await chrome.os.events.stopCapturingEvents("audio_jack");
+        chrome.test.succeed();
+      }
+    ]);
+  )");
+
+  EXPECT_EQ(remote_set_size.Get(), 0UL);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    TelemetryExtensionEventsApiBrowserTest,
+    StartListeningToFocusRestrictedEvents_ErrorPwaUnfocused) {
+  OpenAppUiAndMakeItSecure();
+  AddBlankTabAndShow(browser());
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function startCapturingEvents() {
+        await chrome.test.assertPromiseRejects(
+            chrome.os.events.startCapturingEvents("touchpad_connected"),
+            'Error: Companion app UI is not focused.'
+        );
+        chrome.test.succeed();
+      }
+    ]);
+  )");
+}
+
+// TODO(b/284428237): Add more browser tests regarding focus changes.
+IN_PROC_BROWSER_TEST_F(
+    TelemetryExtensionEventsApiBrowserTest,
+    StartListeningToRegularAndFocusRestrictedEvents_Success) {
+  OpenAppUiAndMakeItSecure();
+
+  // Emit an event as soon as the subscription is registered with the fake.
+  GetFakeService()->SetOnSubscriptionChange(
+      base::BindLambdaForTesting([this]() {
+        auto audio_jack_info = crosapi::TelemetryAudioJackEventInfo::New();
+        audio_jack_info->state =
+            crosapi::TelemetryAudioJackEventInfo::State::kAdd;
+        audio_jack_info->device_type =
+            crosapi::TelemetryAudioJackEventInfo::DeviceType::kHeadphone;
+
+        GetFakeService()->EmitEventForCategory(
+            crosapi::TelemetryEventCategoryEnum::kAudioJack,
+            crosapi::TelemetryEventInfo::NewAudioJackEventInfo(
+                std::move(audio_jack_info)));
+      }));
+
+  GetFakeService()->SetOnSubscriptionChange(
+      base::BindLambdaForTesting([this]() {
+        std::vector<crosapi::TelemetryInputTouchButton> buttons{
+            crosapi::TelemetryInputTouchButton::kLeft,
+            crosapi::TelemetryInputTouchButton::kMiddle,
+            crosapi::TelemetryInputTouchButton::kRight};
+
+        auto connected_event =
+            crosapi::TelemetryTouchpadConnectedEventInfo::New(
+                1, 2, 3, std::move(buttons));
+
+        GetFakeService()->EmitEventForCategory(
+            crosapi::TelemetryEventCategoryEnum::kTouchpadConnected,
+            crosapi::TelemetryEventInfo::NewTouchpadConnectedEventInfo(
+                std::move(connected_event)));
+      }));
+
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function startCapturingEvents() {
+        chrome.os.events.onAudioJackEvent.addListener((event) => {
+          chrome.test.assertEq(event, {
+            event: 'connected',
+            deviceType: 'headphone'
+          });
+        });
+
+        chrome.os.events.onTouchpadConnectedEvent.addListener((event) => {
+          chrome.test.assertEq(event, {
+            maxX: 1,
+            maxY: 2,
+            maxPressure: 3,
+            buttons: [
+              'left',
+              'middle',
+              'right'
+            ]
+          });
+        });
+
+        await chrome.os.events.startCapturingEvents("audio_jack");
+        await chrome.os.events.startCapturingEvents("touchpad_connected");
+
         chrome.test.succeed();
       }
     ]);
@@ -676,43 +910,84 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionEventsApiBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TelemetryExtensionEventsApiBrowserTest,
-                       CheckTouchscreenTouchEventApiWithoutFeatureFlagFail) {
+                       OnTouchscreenTouchEvent_Success) {
   OpenAppUiAndMakeItSecure();
+
+  GetFakeService()->SetOnSubscriptionChange(
+      base::BindLambdaForTesting([this]() {
+        std::vector<crosapi::TelemetryTouchPointInfoPtr> touch_points;
+        touch_points.push_back(crosapi::TelemetryTouchPointInfo::New(
+            1, 2, 3, crosapi::UInt32Value::New(4), crosapi::UInt32Value::New(5),
+            crosapi::UInt32Value::New(6)));
+        touch_points.push_back(crosapi::TelemetryTouchPointInfo::New(
+            7, 8, 9, nullptr, nullptr, nullptr));
+
+        auto touch_event = crosapi::TelemetryTouchscreenTouchEventInfo::New(
+            std::move(touch_points));
+
+        GetFakeService()->EmitEventForCategory(
+            crosapi::TelemetryEventCategoryEnum::kTouchscreenTouch,
+            crosapi::TelemetryEventInfo::NewTouchscreenTouchEventInfo(
+                std::move(touch_event)));
+      }));
 
   CreateExtensionAndRunServiceWorker(R"(
     chrome.test.runTests([
-      function touchscreenTouchEventNotWorking() {
-        chrome.test.assertThrows(() => {
-          chrome.os.events.onTouchscreenTouchEvent.addListener((event) => {
-            // unreachable.
+      async function startCapturingEvents() {
+        chrome.os.events.onTouchscreenTouchEvent.addListener((event) => {
+          chrome.test.assertEq(event, {
+            touchPoints: [{
+              trackingId: 1,
+              x: 2,
+              y: 3,
+              pressure: 4,
+              touchMajor: 5,
+              touchMinor: 6
+            },{
+              trackingId: 7,
+              x: 8,
+              y: 9,
+            }]
           });
-        }, [],
-          'Cannot read properties of undefined (reading \'addListener\')'
-        );
 
-        chrome.test.succeed();
+          chrome.test.succeed();
+        });
+
+        await chrome.os.events.startCapturingEvents("touchscreen_touch");
       }
     ]);
   )");
 }
 
-IN_PROC_BROWSER_TEST_F(
-    TelemetryExtensionEventsApiBrowserTest,
-    CheckTouchscreenConnectedEventApiWithoutFeatureFlagFail) {
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionEventsApiBrowserTest,
+                       OnTouchscreenConnectedEvent_Success) {
   OpenAppUiAndMakeItSecure();
+
+  GetFakeService()->SetOnSubscriptionChange(
+      base::BindLambdaForTesting([this]() {
+        auto connected_event =
+            crosapi::TelemetryTouchscreenConnectedEventInfo::New(1, 2, 3);
+
+        GetFakeService()->EmitEventForCategory(
+            crosapi::TelemetryEventCategoryEnum::kTouchscreenConnected,
+            crosapi::TelemetryEventInfo::NewTouchscreenConnectedEventInfo(
+                std::move(connected_event)));
+      }));
 
   CreateExtensionAndRunServiceWorker(R"(
     chrome.test.runTests([
-      function touchscreenConnectedEventNotWorking() {
-        chrome.test.assertThrows(() => {
-          chrome.os.events.onTouchscreenConnectedEvent.addListener((event) => {
-            // unreachable.
+      async function startCapturingEvents() {
+        chrome.os.events.onTouchscreenConnectedEvent.addListener((event) => {
+          chrome.test.assertEq(event, {
+            maxX: 1,
+            maxY: 2,
+            maxPressure: 3
           });
-        }, [],
-          'Cannot read properties of undefined (reading \'addListener\')'
-        );
 
-        chrome.test.succeed();
+          chrome.test.succeed();
+        });
+
+        await chrome.os.events.startCapturingEvents("touchscreen_connected");
       }
     ]);
   )");
@@ -956,90 +1231,6 @@ IN_PROC_BROWSER_TEST_F(PendingApprovalTelemetryExtensionEventsApiBrowserTest,
 
   EXPECT_TRUE(is_diagnostic_app_open);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-}
-
-IN_PROC_BROWSER_TEST_F(PendingApprovalTelemetryExtensionEventsApiBrowserTest,
-                       CheckTouchscreenTouchEventApiWithFeatureFlagWork) {
-  OpenAppUiAndMakeItSecure();
-
-  GetFakeService()->SetOnSubscriptionChange(
-      base::BindLambdaForTesting([this]() {
-        std::vector<crosapi::TelemetryTouchPointInfoPtr> touch_points;
-        touch_points.push_back(crosapi::TelemetryTouchPointInfo::New(
-            1, 2, 3, crosapi::UInt32Value::New(4), crosapi::UInt32Value::New(5),
-            crosapi::UInt32Value::New(6)));
-        touch_points.push_back(crosapi::TelemetryTouchPointInfo::New(
-            7, 8, 9, nullptr, nullptr, nullptr));
-
-        auto touch_event = crosapi::TelemetryTouchscreenTouchEventInfo::New(
-            std::move(touch_points));
-
-        GetFakeService()->EmitEventForCategory(
-            crosapi::TelemetryEventCategoryEnum::kTouchscreenTouch,
-            crosapi::TelemetryEventInfo::NewTouchscreenTouchEventInfo(
-                std::move(touch_event)));
-      }));
-
-  CreateExtensionAndRunServiceWorker(R"(
-    chrome.test.runTests([
-      async function startCapturingEvents() {
-        chrome.os.events.onTouchscreenTouchEvent.addListener((event) => {
-          chrome.test.assertEq(event, {
-            touchPoints: [{
-              trackingId: 1,
-              x: 2,
-              y: 3,
-              pressure: 4,
-              touchMajor: 5,
-              touchMinor: 6
-            },{
-              trackingId: 7,
-              x: 8,
-              y: 9,
-            }]
-          });
-
-          chrome.test.succeed();
-        });
-
-        await chrome.os.events.startCapturingEvents("touchscreen_touch");
-      }
-    ]);
-  )");
-}
-
-IN_PROC_BROWSER_TEST_F(PendingApprovalTelemetryExtensionEventsApiBrowserTest,
-                       CheckTouchscreenConnectedEventApiWithFeatureFlagWork) {
-  OpenAppUiAndMakeItSecure();
-
-  GetFakeService()->SetOnSubscriptionChange(
-      base::BindLambdaForTesting([this]() {
-        auto connected_event =
-            crosapi::TelemetryTouchscreenConnectedEventInfo::New(1, 2, 3);
-
-        GetFakeService()->EmitEventForCategory(
-            crosapi::TelemetryEventCategoryEnum::kTouchscreenConnected,
-            crosapi::TelemetryEventInfo::NewTouchscreenConnectedEventInfo(
-                std::move(connected_event)));
-      }));
-
-  CreateExtensionAndRunServiceWorker(R"(
-    chrome.test.runTests([
-      async function startCapturingEvents() {
-        chrome.os.events.onTouchscreenConnectedEvent.addListener((event) => {
-          chrome.test.assertEq(event, {
-            maxX: 1,
-            maxY: 2,
-            maxPressure: 3
-          });
-
-          chrome.test.succeed();
-        });
-
-        await chrome.os.events.startCapturingEvents("touchscreen_connected");
-      }
-    ]);
-  )");
 }
 
 }  // namespace chromeos

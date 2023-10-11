@@ -1194,7 +1194,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureNotValidated.FailureError"
-    enum="NetErrorCodes" expires_after="2023-11-30">
+    enum="NetErrorCodes" expires_after="2024-06-13">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
@@ -1209,7 +1209,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureNotValidated.FailureTime" units="ms"
-    expires_after="2023-11-30">
+    expires_after="2024-01-30">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
@@ -1224,7 +1224,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureNotValidated.SuccessTime" units="ms"
-    expires_after="2023-11-30">
+    expires_after="2024-01-30">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
@@ -1468,7 +1468,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.ProbeSequence.ConfigChange.Success.AttemptTime"
-    units="ms" expires_after="2023-11-30">
+    units="ms" expires_after="2024-01-30">
   <owner>awillia@chromium.org</owner>
   <owner>src/net/dns/OWNERS</owner>
   <summary>
@@ -1478,7 +1478,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.ProbeSequence.NetworkChange.Failure.AttemptTime"
-    units="ms" expires_after="2023-11-30">
+    units="ms" expires_after="2024-01-30">
   <owner>awillia@chromium.org</owner>
   <owner>src/net/dns/OWNERS</owner>
   <summary>
@@ -1488,7 +1488,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.ProbeSequence.NetworkChange.Success.AttemptTime"
-    units="ms" expires_after="2023-11-30">
+    units="ms" expires_after="2024-01-30">
   <owner>awillia@chromium.org</owner>
   <owner>src/net/dns/OWNERS</owner>
   <summary>
@@ -1532,6 +1532,24 @@ chromium-metrics-reviews@google.com.
     Whether a HostResolverManager::Job (the basic internal unit of work for
     non-local host resolutions, potentially merging redundant requests from
     Chrome) succeeded or failed, and whether it was speculative.
+  </summary>
+</histogram>
+
+<histogram base="true" name="Net.DNS.ResolveContext.DohAutoupgrade.Status"
+    enum="DohServerAutoupgradeStatus" expires_after="2024-01-30">
+<!-- Name completed by histogram_suffixes
+   name="DohProviderId" -->
+
+  <owner>awillia@chromium.org</owner>
+  <owner>src/net/OWNERS</owner>
+  <summary>
+    The state of the Secure DNS (DoH) auto-upgrade functionality. This histogram
+    is only emitted by clients with secure DNS set to automatic mode, and the
+    emission occurs one minute after the insecure DNS to secure DNS auto-upgrade
+    network probing begins. There will be one histogram emission per DoH
+    provider in the system DNS configuration per NetworkContext that allows
+    using secure DNS queries, and re-emissions can occur each time the DNS
+    configuration changes.
   </summary>
 </histogram>
 
@@ -2449,7 +2467,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicConnection.MultiPortPathStatusWhenMigrating"
-    enum="MultiPortStatusOnMigration" expires_after="2023-12-30">
+    enum="MultiPortStatusOnMigration" expires_after="2024-03-03">
   <owner>renjietang@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -2691,7 +2709,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicMultiPort.AltPortFailureWhenPathDegradingVsGeneral"
-    units="%" expires_after="2023-12-24">
+    units="%" expires_after="2024-03-03">
   <owner>renjietang@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -2701,7 +2719,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicMultiPort.AltPortRttWhenPathDegradingVsGeneral"
-    units="%" expires_after="2023-12-24">
+    units="%" expires_after="2024-03-03">
   <owner>renjietang@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -2755,7 +2773,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicNetworkDegradingDurationTillDisconnected" units="ms"
-    expires_after="2023-12-31">
+    expires_after="2024-03-03">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -3727,7 +3745,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.NumDefaultPathDegrading" units="times"
-    expires_after="2023-10-22">
+    expires_after="2024-03-03">
   <owner>renjietang@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -4808,7 +4826,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.RestrictedCookieManager.CookiePartitionKeyOK"
-    enum="Boolean" expires_after="2024-01-01">
+    enum="Boolean" expires_after="2024-03-03">
   <owner>dylancutler@google.com</owner>
   <owner>src/net/cookies/OWNERS</owner>
   <summary>
@@ -4822,7 +4840,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.RestrictedCookieManager.GetCookiesString.Count30Seconds"
-    units="IPCs" expires_after="2023-12-31">
+    units="IPCs" expires_after="2024-03-03">
   <owner>carlscab@google.com</owner>
   <owner>olivierli@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -4836,7 +4854,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.RestrictedCookieManager.PartitionedCookiesInScript"
-    units="cookies" expires_after="2024-01-01">
+    units="cookies" expires_after="2024-03-03">
   <owner>dylancutler@google.com</owner>
   <owner>src/net/cookies/OWNERS</owner>
   <summary>
@@ -4921,7 +4939,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Net.SharedDictionaryManagerOnDisk.TotalDictionaryCountWhenAdded"
-    units="count" expires_after="2023-12-01">
+    units="count" expires_after="2024-03-03">
   <owner>horo@chromium.org</owner>
   <owner>src/net/extras/shared_dictionary/OWNERS</owner>
   <summary>
@@ -4933,7 +4951,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Net.SharedDictionaryManagerOnDisk.TotalDictionarySizeKBWhenAdded"
-    units="KB" expires_after="2023-12-01">
+    units="KB" expires_after="2024-03-03">
   <owner>horo@chromium.org</owner>
   <owner>src/net/extras/shared_dictionary/OWNERS</owner>
   <summary>
@@ -4945,7 +4963,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Net.SharedDictionaryOnDisk.OpenEntryLatency.{SuccessOrFailure}"
-    units="ms" expires_after="2023-12-01">
+    units="ms" expires_after="2024-03-03">
   <owner>horo@chromium.org</owner>
   <owner>src/net/extras/shared_dictionary/OWNERS</owner>
   <summary>
@@ -4956,7 +4974,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.SharedDictionaryOnDisk.ReadDataLatency.{SuccessOrFailure}"
-    units="ms" expires_after="2023-12-01">
+    units="ms" expires_after="2024-03-03">
   <owner>horo@chromium.org</owner>
   <owner>src/net/extras/shared_dictionary/OWNERS</owner>
   <summary>
@@ -5003,7 +5021,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.SharedDictionaryStore.DictionarySizeKBPerSiteWhenAdded"
-    units="KB" expires_after="2023-12-01">
+    units="KB" expires_after="2024-03-03">
   <owner>horo@chromium.org</owner>
   <owner>src/net/extras/shared_dictionary/OWNERS</owner>
   <summary>
@@ -5040,7 +5058,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Net.SharedDictionaryTransaction.DictionaryReadLatency.{SuccessOrFailure}"
-    units="ms" expires_after="2023-12-01">
+    units="ms" expires_after="2024-03-03">
   <owner>horo@chromium.org</owner>
   <owner>src/net/extras/shared_dictionary/OWNERS</owner>
   <summary>
@@ -5940,7 +5958,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.ZstdFilter.MaxMemoryUsage" units="KB"
-    expires_after="2023-11-17">
+    expires_after="2024-03-03">
   <owner>nidhijaju@chromium.org</owner>
   <owner>blink-network-stack@google.com</owner>
   <summary>

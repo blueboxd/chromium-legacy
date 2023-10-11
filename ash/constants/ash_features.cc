@@ -425,6 +425,16 @@ BASE_FEATURE(kCellularBypassESimInstallationConnectivityCheck,
              "CellularBypassESimInstallationConnectivityCheck",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If enabled, the Cellular Carrier Lock manager will start on every boot to
+// check state of lock configuration and setup the modem if needed.
+// This flag will be removed before launch (http://launch/4211912).
+BASE_FEATURE(kCellularCarrierLock,
+             "CellularCarrierLock",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+constexpr base::FeatureParam<int> kCellularCarrierLockLastConfig{
+    &kCellularCarrierLock, "LastConfigDateDelta", -2};
+
 // If enabled, use second the Euicc that is exposed by Hermes in Cellular Setup
 // and Settings.
 BASE_FEATURE(kCellularUseSecondEuicc,
@@ -1020,11 +1030,19 @@ BASE_FEATURE(kFastPairPwaCompanion,
 // The URI for the Fast Pair web companion.
 const base::FeatureParam<std::string> kFastPairPwaCompanionInstallUri{
     &kFastPairPwaCompanion, "pwa-companion-install-uri",
-    /*default*/ "https://www.google.com"};
+    /*default*/ ""};
 
-// The app ID for the installed Fast Pair web companion.
+// (optional) The app ID for the installed Fast Pair web companion.
+// e.g. ncmjhecbjeaamljdfahankockkkdmedg
 const base::FeatureParam<std::string> kFastPairPwaCompanionAppId{
     &kFastPairPwaCompanion, "pwa-companion-app-id",
+    /*default*/ ""};
+
+// (optional) The Play Store link to download the Fast Pair web companion.
+// e.g.
+// https://play.google.com/store/apps/details?id=com.google.android.apps.photos
+const base::FeatureParam<std::string> kFastPairPwaCompanionPlayStoreUri{
+    &kFastPairPwaCompanion, "pwa-companion-play-store-uri",
     /*default*/ ""};
 
 // Sets Fast Pair scanning to low power mode.
@@ -1076,7 +1094,7 @@ BASE_FEATURE(kFeatureManagementUpdateNotification,
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kUpdateNotification,
              "UpdateNotification",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Allows borealis on certain boards whose features are determined by
 // FeatureManagement. This feature does not apply to all boards, and does not
@@ -1114,6 +1132,11 @@ BASE_FEATURE(kFederatedServiceScheduleTasks,
 // Enables the federated strings service.
 BASE_FEATURE(kFederatedStringsService,
              "FederatedStringsService",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the federated strings service to schedule tasks.
+BASE_FEATURE(kFederatedStringsServiceScheduleTasks,
+             "FederatedStringsServiceScheduleTasks",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kFederatedTimezoneCodePhh,
@@ -1486,7 +1509,7 @@ BASE_FEATURE(kImeSystemEmojiPickerExtension,
 // Enable or disable system emoji picker GIF support
 BASE_FEATURE(kImeSystemEmojiPickerGIFSupport,
              "SystemEmojiPickerGIFSupport",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable or disable system emoji picker jelly support
 BASE_FEATURE(kImeSystemEmojiPickerJellySupport,
@@ -1734,6 +1757,18 @@ const base::FeatureParam<base::TimeDelta> kEcheConnectionStatusResetTimeout{
     &kEcheNetworkConnectionState, "EcheConnectionStatusResetTimeout",
     base::Minutes(10)};
 
+BASE_FEATURE(kEcheShorterScanningDutyCycle,
+             "EcheShorterScanningDutyCycle",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+const base::FeatureParam<base::TimeDelta> kEcheScanningCycleOnTime{
+    &kEcheShorterScanningDutyCycle, "EcheScanningCycleOnTime",
+    base::Seconds(30)};
+
+const base::FeatureParam<base::TimeDelta> kEcheScanningCycleOffTime{
+    &kEcheShorterScanningDutyCycle, "EcheScanningCycleOffTime",
+    base::Seconds(30)};
+
 // Enables multi-zone rgb keyboard customization.
 BASE_FEATURE(kMultiZoneRgbKeyboard,
              "MultiZoneRgbKeyboard",
@@ -1883,10 +1918,6 @@ BASE_FEATURE(kOnlyShowNewShortcutsApp,
 BASE_FEATURE(kSearchCustomizableShortcutsInLauncher,
              "SearchCustomizableShortcutsInLauncher",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kSearchInShortcutsApp,
-             "SearchInShortcutsApp",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables or disables the feedback tool new UX on ChromeOS.
 // This tool under development will be rolled out via Finch.
@@ -2347,7 +2378,7 @@ BASE_FEATURE(kShimlessRMADiagnosticPage,
 // Enables or disables device compliance check in the Shimless RMA flow.
 BASE_FEATURE(kShimlessRMAComplianceCheck,
              "ShimlessRMAComplianceCheck",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables 3p diagnostics in the Shimless RMA flow.
 BASE_FEATURE(kShimlessRMA3pDiagnostics,
@@ -2827,7 +2858,7 @@ const base::FeatureParam<int> kDeviceForceScheduledRebootMaxDelay{
 // Enables settings to be split per device.
 BASE_FEATURE(kInputDeviceSettingsSplit,
              "InputDeviceSettingsSplit",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables bug fix for dead keys on the Terminal app.
 // When enabled, dead keys correctly emit the 'Dead' event on key down for the
@@ -3045,6 +3076,10 @@ bool IsCaptivePortalErrorPageEnabled() {
 
 bool IsCaptureModeTourEnabled() {
   return base::FeatureList::IsEnabled(kCaptureModeTour);
+}
+
+bool IsCellularCarrierLockEnabled() {
+  return base::FeatureList::IsEnabled(kCellularCarrierLock);
 }
 
 bool IsCheckPasswordsAgainstCryptohomeHelperEnabled() {
@@ -3269,6 +3304,16 @@ bool IsFederatedServiceEnabled() {
 bool IsFederatedServiceScheduleTasksEnabled() {
   return IsFederatedServiceEnabled() &&
          base::FeatureList::IsEnabled(kFederatedServiceScheduleTasks);
+}
+
+bool IsFederatedStringsServiceEnabled() {
+  return base::FeatureList::IsEnabled(kFederatedService) &&
+         base::FeatureList::IsEnabled(kFederatedStringsService);
+}
+
+bool IsFederatedStringsServiceScheduleTasksEnabled() {
+  return IsFederatedStringsServiceEnabled() &&
+         base::FeatureList::IsEnabled(kFederatedStringsServiceScheduleTasks);
 }
 
 bool IsFileManagerFuseBoxDebugEnabled() {
@@ -3590,6 +3635,10 @@ bool IsEcheLauncherListViewEnabled() {
 bool IsEcheNetworkConnectionStateEnabled() {
   return base::FeatureList::IsEnabled(kEcheNetworkConnectionState) &&
          base::FeatureList::IsEnabled(kEcheSWA);
+}
+
+bool IsEcheShorterScanningDutyCycleEnabled() {
+  return base::FeatureList::IsEnabled(kEcheShorterScanningDutyCycle);
 }
 
 bool IsNearbyKeepAliveFixEnabled() {

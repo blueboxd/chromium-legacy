@@ -13,6 +13,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
+#include "components/autofill/core/browser/payments/offer_notification_options.h"
 #include "components/commerce/core/test_utils.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/test/browser_test.h"
@@ -52,13 +53,10 @@ class OfferNotificationIconViewBrowserTest : public UiBrowserTest {
         ChromeAutofillClient::FromWebContentsForTesting(GetWebContents());
 
     if (name == "show_offer_notification_icon_only") {
-      autofill_client->UpdateOfferNotification(
-          &offer, /*notification_has_been_shown=*/false,
-          /*expand_notification_icon=*/false);
+      autofill_client->UpdateOfferNotification(&offer, {});
     } else if (name == "show_offer_notification_icon_expanded") {
       autofill_client->UpdateOfferNotification(
-          &offer, /*notification_has_been_shown=*/false,
-          /*expand_notification_icon=*/true);
+          &offer, {.expand_notification_icon = true});
     }
   }
 
@@ -67,6 +65,7 @@ class OfferNotificationIconViewBrowserTest : public UiBrowserTest {
     if (!offer_notification_icon_view) {
       return false;
     }
+
     EXPECT_EQ(offer_notification_icon_view->GetAccessibleName(),
               l10n_util::GetStringUTF16(
                   IDS_AUTOFILL_OFFERS_REMINDER_ICON_TOOLTIP_TEXT));
@@ -86,7 +85,11 @@ class OfferNotificationIconViewBrowserTest : public UiBrowserTest {
     return true;
   }
 
-  void WaitForUserDismissal() override {}
+  void WaitForUserDismissal() override {
+    // Consider closing the browser to be dismissal. This is useful when using
+    // the test-launcher-interactive option.
+    ui_test_utils::WaitForBrowserToClose();
+  }
 
  protected:
   content::WebContents* GetWebContents() {

@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/views/autofill/payments/offer_notification_bubble_views.h"
 
+#include "base/i18n/time_formatting.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/views/accessibility/theme_tracking_non_accessible_image_view.h"
 #include "chrome/browser/ui/views/autofill/payments/payments_view_util.h"
 #include "chrome/browser/ui/views/autofill/payments/promo_code_label_button.h"
@@ -16,7 +18,7 @@
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
-#include "components/commerce/core/commerce_feature_list.h"
+#include "components/commerce/core/commerce_utils.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
@@ -173,6 +175,9 @@ void OfferNotificationBubbleViews::InitWithFreeListingCouponOfferContent() {
   std::u16string promo_code_value_prop_string;
 
   if (::features::IsChromeRefresh2023()) {
+    set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
+        views::DialogContentType::kControl, views::DialogContentType::kText));
+
     const int dialog_inset = views::LayoutProvider::Get()
                                  ->GetInsetsMetric(views::INSETS_DIALOG)
                                  .left();
@@ -202,10 +207,8 @@ void OfferNotificationBubbleViews::InitWithFreeListingCouponOfferContent() {
   }
 
   if (base::FeatureList::IsEnabled(commerce::kShowDiscountOnNavigation)) {
-    // TODO(b/296338434): Update the format of the date.
     auto expiration_date_text = l10n_util::GetStringFUTF16(
-        IDS_DISCOUNT_EXPIRATION_DATE,
-        base::ASCIIToUTF16(TimeFormatHTTP(offer->GetExpiry())));
+        IDS_DISCOUNT_EXPIRATION_DATE, TimeFormatShortDate(offer->GetExpiry()));
     if (promo_code_value_prop_string.empty()) {
       promo_code_value_prop_string = expiration_date_text;
     } else {

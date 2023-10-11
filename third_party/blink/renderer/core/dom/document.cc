@@ -2268,6 +2268,8 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
   UpdateStyle();
   GetStyleResolver().ClearResizedForViewportUnits();
 
+  rendering_had_begun_for_last_style_update_ = RenderingHasBegun();
+
   GetLayoutView()->ClearHitTestCache();
 
   DCHECK(!document_animations_->NeedsAnimationTimingUpdate());
@@ -2719,10 +2721,11 @@ void Document::AttachCompositorTimeline(cc::AnimationTimeline* timeline) const {
 }
 
 void Document::ClearFocusedElementIfNeeded() {
-  if (!clear_focused_element_timer_.IsActive() && focused_element_ &&
-      !focused_element_->IsFocusable()) {
-    clear_focused_element_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
+  if (clear_focused_element_timer_.IsActive() || !focused_element_ ||
+      focused_element_->IsFocusable()) {
+    return;
   }
+  clear_focused_element_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void Document::ClearFocusedElementTimerFired(TimerBase*) {
@@ -2773,11 +2776,19 @@ void Document::GetPageDescription(const ComputedStyle& style,
       if (description->size.width() > description->size.height())
         description->size.Transpose();
       break;
-    case PageSizeType::kFixed:
+    case PageSizeType::kFixed: {
+      gfx::SizeF css_size = style.PageSize();
       if (!description->ignore_page_size) {
-        description->size = style.PageSize();
+        description->size = css_size;
+        break;
+      }
+      if ((css_size.width() > css_size.height()) !=
+          (description->size.width() > description->size.height())) {
+        // Keep the page size, but match orientation.
+        description->size.Transpose();
       }
       break;
+    }
     default:
       NOTREACHED();
   }

@@ -90,6 +90,7 @@
 <translation id="1293264513303784526">Устройство USB-C (порт слева)</translation>
 <translation id="1293556467332435079">Файлы</translation>
 <translation id="1293699935367580298">Esc</translation>
+<translation id="1294046132466831888">Открыть приложение "Возможности"</translation>
 <translation id="1294929383540927798">Изменить настройки уведомлений на заблокированном экране</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1306549533752902673">РЕКОМЕНДУЕМЫЕ ПРИЛОЖЕНИЯ</translation>
@@ -199,6 +200,7 @@
 <translation id="1757857692711134412">Выкл. до заката</translation>
 <translation id="1768366657309696705">Функция сочетания клавиш <ph name="LAUNCHER_KEY_NAME" /> + . (точка) изменилась. Чтобы использовать клавишу Insert, нажмите <ph name="LAUNCHER_KEY_NAME" /> + Shift + Backspace.</translation>
 <translation id="1770726142253415363">Приложение перемещено в строку <ph name="ROW_NUMBER" />, столбец <ph name="COLUMN_NUMBER" />.</translation>
+<translation id="1771458705381257690">Чтобы настроить устройство, откройте приложение "<ph name="NAME" />"</translation>
 <translation id="1771761307086386028">Вправо</translation>
 <translation id="1774796056689732716">Календарь, <ph name="CURRENT_MONTH_YEAR" />, сейчас выбрано <ph name="DATE" />.</translation>
 <translation id="1775598828170459419">Показано задач: <ph name="NUM_SHOWN_ITEMS" /> из <ph name="NUM_TOTAL_ITEMS" /></translation>
@@ -365,6 +367,7 @@
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2526581474998477112">Открепить окна</translation>
 <translation id="2528111225373402384">Настройки точки доступа</translation>
+<translation id="253007620291357635"><ph name="NETWORK_NAME" /> · <ph name="SERVICE_PROVIDER" /></translation>
 <translation id="2530896289327917474">Включить или отключить режим активного курсора</translation>
 <translation id="2531025035050312891">устройство работает медленно</translation>
 <translation id="2531107890083353124">Нажмите <ph name="KEY_ONE" /> при перетаскивании вкладки</translation>
@@ -387,6 +390,7 @@
 <translation id="2612614436418177118">Переместить значок приложения в сетке</translation>
 <translation id="2620016719323068571">Ищите <ph name="CATEGORY" />, файлы, приложения и не только…</translation>
 <translation id="2620436844016719705">Система</translation>
+<translation id="2620900772667816510">Bluetooth Super Resolution</translation>
 <translation id="2621713457727696555">Защищена</translation>
 <translation id="2624588537172718173">Звук с устройства и микрофон</translation>
 <translation id="263399434338050016">"Выбрать все"</translation>
@@ -511,6 +515,7 @@
 <translation id="3161500364292033097">Закрыть рабочий стол и окна</translation>
 <translation id="316356270129335934">По требованию <ph name="MANAGER" /> на вашем устройстве <ph name="DEVICE_TYPE" /> выполняется откат. Настройки устройства будут сброшены, а все данные – удалены.</translation>
 <translation id="3171170659304083361">Настройки способов ввода</translation>
+<translation id="3176221688814061633">На одном из ваших устройств устаревшая версия Bluetooth. Включите функцию Bluetooth Super Resolution или используйте встроенный микрофон для более высокого качества звука.</translation>
 <translation id="3181441307743005334">Перезапуск может занять несколько минут</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Подключено одно устройство}one{Подключено # устройство}few{Подключено # устройства}many{Подключено # устройств}other{Подключено # устройства}}</translation>
 <translation id="320207200541803018">Установи таймер</translation>
@@ -524,7 +529,6 @@
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="324366796737464147">Шумоподавление</translation>
 <translation id="3249513730522716925">Окно "<ph name="WINDOW_TITLE" />" перемещено с рабочего стола "<ph name="ACTIVE_DESK" />" на рабочий стол "<ph name="TARGET_DESK" />".</translation>
-<translation id="3252573918265662711">Настройка</translation>
 <translation id="3253743281242075461">Тип задания: <ph name="GLANCEABLES_CLASSROOM_LIST_NAME" /></translation>
 <translation id="3255483164551725916">Что ты умеешь?</translation>
 <translation id="3256109297135787951">Снять выделение с объекта на панели запуска.</translation>
@@ -673,6 +677,7 @@
 <translation id="3781910048497807059">Перейти к предыдущей панели</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Заблокировать</translation>
+<translation id="3789841737615482174">Установить</translation>
 <translation id="3796215473395753611">Alt + Стрелка вверх</translation>
 <translation id="3796746699333205839">Приложение использует вашу камеру и микрофон</translation>
 <translation id="3798670284305777884">Динамик (встроенный)</translation>
@@ -1188,6 +1193,7 @@
 <translation id="5876666360658629066">Введите родительский код</translation>
 <translation id="5881540930187678962">Настройте функцию "Управление телефоном" позже</translation>
 <translation id="5881663018261910378">Отключено</translation>
+<translation id="5883017113634523865">Чтобы увидеть все доступные функции, установите из Google Play сопутствующее приложение для <ph name="NAME" /></translation>
 <translation id="5887954372087850114">Окно "<ph name="WINDOW_TITLE" />" назначено рабочему столу "<ph name="DESK_TITLE" />". Назначение для других рабочих столов отменено.</translation>
 <translation id="588817334757907802">Открыть файл в браузере Chrome</translation>
 <translation id="5895138241574237353">Перезапустить</translation>
@@ -1477,7 +1483,6 @@
 <translation id="7086931198345821656">Чтобы установить это обновление, на устройстве <ph name="DEVICE_TYPE" /> необходимо воспользоваться функцией Powerwash. Все данные будут удалены. Узнайте больше о последнем обновлении <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="7088960765736518739">Функция Switch Access</translation>
 <translation id="709015856939120012">Увеличить масштаб страницы</translation>
-<translation id="7098053464892629930">Скачайте приложение "<ph name="NAME" />" в Google Play, чтобы использовать все доступные функции</translation>
 <translation id="7098389117866926363">Устройство USB-C (порт слева на задней панели)</translation>
 <translation id="7100906357717321275">Показать скрытые файлы в приложении "Файлы"</translation>
 <translation id="7108254681523785542">Выберите элемент, который нужно вставить. Чтобы открыть историю буфера обмена, нажмите <ph name="SHORTCUT_KEY_NAME" /> + V.</translation>
@@ -1498,6 +1503,7 @@
 <translation id="7189412385142492784">Расстояние до Венеры</translation>
 <translation id="7198435252016571249">Окно предварительного просмотра камеры привязано к правому нижнему углу, так как перекрывало элементы системного интерфейса</translation>
 <translation id="7219573373513695352">Нет подключенных устройств.</translation>
+<translation id="7229029500464092426">Доступно памяти: <ph name="AVAILABLE_MEMORY" /> | Всего памяти: <ph name="TOTAL_MEMORY" /></translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" /> Для установки обновления необходимо перезапустить Chromebook. Это может занять около минуты.</translation>
 <translation id="7256634071279256947">Основной микрофон</translation>
 <translation id="7258828758145722155">Изменено вчера</translation>
@@ -1523,6 +1529,7 @@
 <translation id="7360036564632145207">Чтобы оптимизировать производительность, измените настройки доступа к данным для периферийных устройств.</translation>
 <translation id="736045644501761622">Выбрать обои и стиль</translation>
 <translation id="7371404428569700291">Запись контента в окне</translation>
+<translation id="7372069265635026568">Память: доступно <ph name="AVAILABLE_MEMORY" /> из <ph name="TOTAL_MEMORY" /></translation>
 <translation id="737315737514430195">Доступ к микрофону получат все приложения и сайты с разрешением "Микрофон".</translation>
 <translation id="7377169924702866686">Включен режим Caps Lock.</translation>
 <translation id="7377481913241237033">Подключиться с помощью кода</translation>
@@ -1616,6 +1623,7 @@
 <translation id="7714767791242455379">Добавить мобильную сеть</translation>
 <translation id="7720400844887872976">Вкл. до <ph name="TIME" /></translation>
 <translation id="7720410380936703141">ПОВТОРИТЬ</translation>
+<translation id="7721132362314201794">Название рабочего стола</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 уведомление}one{# уведомление}few{# уведомления}many{# уведомлений}other{# уведомления}}</translation>
 <translation id="7723703419796509666">Показать или скрыть консоль инструментов разработчика</translation>
 <translation id="7724603315864178912">Вырезать</translation>
@@ -1838,7 +1846,6 @@
 <translation id="8660331759611631213">Квадратный корень из 71</translation>
 <translation id="8663756353922886599">Статус подключения – "<ph name="CONNECTION_STATUS" />", уровень сигнала – <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664282223139913403">Нажмите Ввод, чтобы сделать скриншот части экрана</translation>
-<translation id="8666856788528804727">Откройте "<ph name="NAME" />", чтобы настроить устройство</translation>
 <translation id="8676770494376880701">Подключено маломощное зарядное устройство</translation>
 <translation id="8683506306463609433">Отслеживание эффективности</translation>
 <translation id="8703634754197148428">Начать запись. Чтобы найти кнопку остановки записи, перейдите к панели запуска, используя сочетание клавиш Alt + Shift + L.</translation>
@@ -1852,6 +1859,7 @@
 <translation id="8731487213223706745">Окончание: <ph name="END_TIME" /> <ph name="DAYS_ELAPSED" /></translation>
 <translation id="8734991477317290293">Это может быть попыткой узнать, какие клавиши вы нажимаете.</translation>
 <translation id="8735678380411481005">Цвет подсветки клавиатуры</translation>
+<translation id="8742057891287715849"><ph name="NAME" /> · <ph name="SERVICE_PROVIDER" />: активация…</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
 <translation id="8755498163081687682"><ph name="ORIGIN_NAME" /> запрашивает подтверждение вашей личности</translation>

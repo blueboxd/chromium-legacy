@@ -467,10 +467,14 @@ bool VotesUploader::UploadPasswordVote(
             has_passwords_revealed_vote_);
       }
       // If a user accepts a save or update prompt, send a single username vote.
-      if ((autofill_type == autofill::PASSWORD ||
-           autofill_type == autofill::NEW_PASSWORD) &&
-          single_username_vote_data_) {
-        SetSingleUsernameVoteOnPasswordForm(form_structure);
+      if (autofill_type == autofill::PASSWORD ||
+          autofill_type == autofill::NEW_PASSWORD) {
+        if (single_username_vote_data_.has_value() &&
+            base::FeatureList::IsEnabled(
+                features::kUsernameFirstFlowFallbackCrowdsourcing)) {
+          SetSingleUsernameVoteOnPasswordForm(
+              single_username_vote_data_.value(), form_structure);
+        }
       }
     }
     if (autofill_type != autofill::ACCOUNT_CREATION_PASSWORD) {
@@ -641,6 +645,26 @@ void VotesUploader::MaybeSendSingleUsernameVotes() {
     MaybeSendSingleUsernameVote(vote_data, vote_data.form_predictions,
                                 /*is_forgot_password_vote=*/true);
   }
+
+  SingleUsernameVoteDataAvailability availability =
+      SingleUsernameVoteDataAvailability::kNone;
+  if (single_username_vote_data_.has_value()) {
+    if (forgot_password_vote_data_.size() > 0) {
+      availability = forgot_password_vote_data_.contains(
+                         single_username_vote_data_->renderer_id)
+                         ? SingleUsernameVoteDataAvailability::kBothWithOverlap
+                         : SingleUsernameVoteDataAvailability::kBothNoOverlap;
+    } else {  // `forgot_password_vote_data_` is empty.
+      availability = SingleUsernameVoteDataAvailability::kUsernameFirstOnly;
+    }
+
+  } else {  // `single_username_vote_data_` has no value.
+    if (forgot_password_vote_data_.size() > 0) {
+      availability = SingleUsernameVoteDataAvailability::kForgotPasswordOnly;
+    }
+  }
+  base::UmaHistogramEnumeration(
+      "PasswordManager.SingleUsername.VoteDataAvailability", availability);
 }
 
 void VotesUploader::CalculateUsernamePromptEditState(
@@ -903,20 +927,17 @@ bool VotesUploader::SetSingleUsernameVoteOnUsernameForm(
 }
 
 void VotesUploader::SetSingleUsernameVoteOnPasswordForm(
+    const SingleUsernameVoteData& vote_data,
     FormStructure& form_structure) {
-  if (!base::FeatureList::IsEnabled(
-          features::kUsernameFirstFlowFallbackCrowdsourcing)) {
-    return;
-  }
   AutofillUploadContents::SingleUsernameData single_username_data;
   single_username_data.set_username_form_signature(
-      single_username_vote_data_->form_predictions.form_signature.value());
+      vote_data.form_predictions.form_signature.value());
   single_username_data.set_username_field_signature(
-      GetUsernameFieldSignature(*single_username_vote_data_).value());
-  single_username_data.set_value_type(single_username_vote_data_->value_type);
-  single_username_data.set_prompt_edit(single_username_vote_data_->prompt_edit);
+      GetUsernameFieldSignature(vote_data).value());
+  single_username_data.set_value_type(vote_data.value_type);
+  single_username_data.set_prompt_edit(vote_data.prompt_edit);
 
-  form_structure.set_single_username_data(single_username_data);
+  form_structure.AddSingleUsernameData(single_username_data);
 }
 
 AutofillUploadContents::SingleUsernamePromptEdit

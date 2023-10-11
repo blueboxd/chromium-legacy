@@ -972,10 +972,6 @@ TEST_P(AutofillTableProfileTest, AutofillProfile) {
 
   home_profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_COUNTRY, u"DE",
                                                 VerificationStatus::kObserved);
-
-  home_profile.SetRawInfoWithVerificationStatus(
-      ADDRESS_HOME_DEPENDENT_STREET_NAME, u"", VerificationStatus::kObserved);
-
   home_profile.SetRawInfoWithVerificationStatus(
       ADDRESS_HOME_HOUSE_NUMBER, u"House Number",
       VerificationStatus::kUserVerified);
@@ -986,8 +982,6 @@ TEST_P(AutofillTableProfileTest, AutofillProfile) {
                                                 VerificationStatus::kParsed);
   home_profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_FLOOR, u"2",
                                                 VerificationStatus::kParsed);
-  home_profile.SetRawInfoWithVerificationStatus(
-      ADDRESS_HOME_PREMISE_NAME, u"Premise", VerificationStatus::kUserVerified);
   ASSERT_EQ(home_profile.GetRawInfo(ADDRESS_HOME_STREET_NAME), u"Street Name");
   home_profile.SetRawInfoWithVerificationStatus(
       ADDRESS_HOME_LANDMARK, u"Landmark", VerificationStatus::kObserved);

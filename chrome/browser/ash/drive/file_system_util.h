@@ -44,6 +44,7 @@ bool IsDriveEnabledForProfile(const Profile* profile);
 [[nodiscard]] bool IsDriveFsBulkPinningEnabled();
 [[nodiscard]] bool IsOobeDrivePinningEnabled(const Profile* profile);
 [[nodiscard]] bool IsOobeDrivePinningEnabled();
+[[nodiscard]] bool IsOobeDrivePinningScreenEnabled();
 
 // Connection status to Drive.
 enum class ConnectionStatus {
@@ -63,6 +64,9 @@ enum class ConnectionStatus {
 };
 
 std::ostream& operator<<(std::ostream& out, ConnectionStatus status);
+
+// Sets the Drive connection status for testing purposes.
+void SetDriveConnectionStatusForTesting(ConnectionStatus status);
 
 // Returns the Drive connection status for the |profile|.
 ConnectionStatus GetDriveConnectionStatus(Profile* profile);

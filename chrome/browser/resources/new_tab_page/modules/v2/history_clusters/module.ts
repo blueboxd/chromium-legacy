@@ -4,9 +4,9 @@
 
 import './cart/cart_tile.js';
 import './header_tile.js';
-import './visit_tile.js';
 import './suggest_tile.js';
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
+import '../../../discount.mojom-webui.js';
 
 import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
@@ -22,6 +22,7 @@ import {ModuleDescriptor} from '../../module_descriptor.js';
 
 import {HistoryClustersProxyImpl} from './history_clusters_proxy.js';
 import {getTemplate} from './module.html.js';
+import {VisitTileModuleElement} from './visit_tile.js';
 
 export const MAX_MODULE_ELEMENT_INSTANCES = 3;
 
@@ -53,6 +54,15 @@ export class HistoryClustersModuleElement extends I18nMixin
         value: null,
       },
 
+      /**
+        The discounts displayed on the visit tiles of this element, could be
+        empty.
+      */
+      discounts: {
+        type: Array,
+        value: [],
+      },
+
       /** The cluster displayed by this element. */
       cluster: {
         type: Object,
@@ -65,8 +75,8 @@ export class HistoryClustersModuleElement extends I18nMixin
 
       imagesEnabled_: {
         type: Boolean,
-        computed: `computeImagesEnabled_(cart)`,
         reflectToAttribute: true,
+        value: () => loadTimeData.getBoolean('historyClustersImagesEnabled'),
       },
 
       showRelatedSearches: {
@@ -78,6 +88,7 @@ export class HistoryClustersModuleElement extends I18nMixin
   }
 
   cart: Cart|null;
+  discounts: string[];
   cluster: Cluster;
   format: string;
   showRelatedSearches: boolean;
@@ -120,6 +131,20 @@ export class HistoryClustersModuleElement extends I18nMixin
     HistoryClustersProxyImpl.getInstance().handler.recordLayoutTypeShown(
         this.imagesEnabled_ ? LayoutType.kImages : LayoutType.kTextOnly,
         this.cluster.id);
+  }
+
+  private computeShowRelatedSearches(): boolean {
+    return this.cluster.relatedSearches.length > 1;
+  }
+
+  private computeLabel_(): string {
+    return this.cluster.label.replace(/[“”]+/g, '');
+  }
+
+  private shouldShowCartTile_(cart: Object): boolean {
+    return loadTimeData.getBoolean(
+               'modulesChromeCartInHistoryClustersModuleEnabled') &&
+        !!cart;
   }
 
   private onDisableButtonClick_() {
@@ -176,11 +201,6 @@ export class HistoryClustersModuleElement extends I18nMixin
     this.$.infoDialogRender.get().showModal();
   }
 
-  private onSuggestClick_() {
-    HistoryClustersProxyImpl.getInstance().handler.recordClick(this.cluster.id);
-    this.dispatchEvent(new Event('usage', {bubbles: true, composed: true}));
-  }
-
   private onShowAllButtonClick_() {
     assert(this.cluster.label.length >= 2, 'Unexpected cluster label length');
     HistoryClustersProxyImpl.getInstance().handler.showJourneysSidePanel(
@@ -188,23 +208,50 @@ export class HistoryClustersModuleElement extends I18nMixin
     this.dispatchEvent(new Event('usage', {bubbles: true, composed: true}));
   }
 
-  private shouldShowCartTile_(cart: Object): boolean {
-    return loadTimeData.getBoolean(
-               'modulesChromeCartInHistoryClustersModuleEnabled') &&
-        !!cart;
+  private onSuggestTileClick_(e: Event) {
+    this.recordTileClickIndex_(e.target as HTMLElement, 'Suggest');
+    this.recordClick_();
   }
 
-  private computeImagesEnabled_(): boolean {
-    return loadTimeData.getBoolean('historyClustersImagesEnabled') ||
-        !!this.cart;
+  private onVisitTileClick_(e: Event) {
+    this.recordTileClickIndex_(e.target as HTMLElement, 'Visit');
+    this.recordClick_();
+    this.maybeRecordDiscountClick_(e.target as VisitTileModuleElement);
   }
 
-  private computeShowRelatedSearches(): boolean {
-    return this.cluster.relatedSearches.length > 1;
+  private recordTileClickIndex_(tile: HTMLElement, tileType: string) {
+    const layoutType =
+        this.imagesEnabled_ ? LayoutType.kImages : LayoutType.kTextOnly;
+    const index = Array.from(tile.parentNode!.children).indexOf(tile);
+    chrome.metricsPrivate.recordValue(
+        {
+          metricName: `NewTabPage.HistoryClusters.Layout${layoutType}.${
+              tileType!}Tile.ClickIndex`,
+          type: chrome.metricsPrivate.MetricTypeType.HISTOGRAM_LINEAR,
+          min: 0,
+          max: 10,
+          buckets: 10,
+        },
+        index);
   }
 
-  private computeLabel_(): string {
-    return this.cluster.label.replace(/[“”]+/g, '');
+  private recordClick_() {
+    HistoryClustersProxyImpl.getInstance().handler.recordClick(this.cluster.id);
+    this.dispatchEvent(new Event('usage', {bubbles: true, composed: true}));
+  }
+
+  private maybeRecordDiscountClick_(tile: VisitTileModuleElement) {
+    if (tile.hasDiscount) {
+      chrome.metricsPrivate.recordUserAction(
+          `NewTabPage.HistoryClusters.DiscountClicked`);
+    }
+  }
+
+  private getInfo_(discounts: string[]): TrustedHTML {
+    const hasDiscount = discounts.some((discount) => !!discount);
+    return this.i18nAdvanced(
+        hasDiscount ? 'modulesHistoryWithDiscountInfo' :
+                      'modulesJourneysInfo');
   }
 }
 
@@ -223,6 +270,34 @@ async function createElement(cluster: Cluster):
     element.cart = cart;
   }
 
+  element.discounts = [];
+  if (loadTimeData.getBoolean('historyClustersModuleDiscountsEnabled')) {
+    const {discounts} = await HistoryClustersProxyImpl.getInstance()
+                            .handler.getDiscountsForCluster(cluster);
+    for (const visit of cluster.visits) {
+      let discountInValue = '';
+      for (const [url, urlDiscounts] of discounts) {
+        if (url.url === visit.normalizedUrl.url && urlDiscounts.length > 0) {
+          // API is designed to support multiple discounts, but for now we only
+          // have one.
+          discountInValue = urlDiscounts[0].valueInText;
+          visit.normalizedUrl.url = urlDiscounts[0].annotatedVisitUrl.url;
+        }
+      }
+      element.discounts.push(discountInValue);
+    }
+    // For visits without discounts, discount string in corresponding index in
+    // `discounts` array is empty.
+    // Only interested in the discounts for the first two visits (first three
+    // elements in the array) since they are the only visible ones.
+    const hasDiscount =
+        element.discounts.slice(0, CLUSTER_MIN_REQUIRED_URL_VISITS)
+            .some((discount) => discount.length > 0);
+    chrome.metricsPrivate.recordBoolean(
+        `NewTabPage.HistoryClusters.HasDiscount`, hasDiscount);
+  } else {
+    element.discounts = Array(cluster.visits.length).fill('');
+  }
   return element;
 }
 

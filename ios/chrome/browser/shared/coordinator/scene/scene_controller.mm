@@ -1258,7 +1258,8 @@ void InjectNTP(Browser* browser) {
   // `self.signinCoordinator.signinCompletion()` was called in the interrupt
   // method. Therefore now `self.signinCoordinator` is now stopped, and
   // `self.signinCoordinator` is now nil.
-  DCHECK(!self.signinCoordinator);
+  DCHECK(!self.signinCoordinator)
+      << base::SysNSStringToUTF8([self.signinCoordinator description]);
 
   [self.historyCoordinator stop];
   self.historyCoordinator = nil;
@@ -1815,7 +1816,19 @@ void InjectNTP(Browser* browser) {
           instantSigninCoordinatorWithBaseViewController:baseViewController
                                                  browser:mainBrowser
                                                 identity:command.identity
-                                             accessPoint:command.accessPoint];
+                                             accessPoint:command.accessPoint
+                                             promoAction:command.promoAction];
+      break;
+    case AuthenticationOperation::kSheetSigninAndHistorySync:
+      self.signinCoordinator = [SigninCoordinator
+          sheetSigninAndHistorySyncCoordinatorWithBaseViewController:
+              baseViewController
+                                                             browser:mainBrowser
+                                                         accessPoint:
+                                                             command.accessPoint
+                                                         promoAction:
+                                                             command
+                                                                 .promoAction];
       break;
   }
   [self startSigninCoordinatorWithCompletion:command.callback];
@@ -2478,6 +2491,10 @@ void InjectNTP(Browser* browser) {
       return ^{
         [weakSelf startLensWithEntryPoint:LensEntrypoint::Spotlight];
       };
+    case START_LENS_FROM_INTENTS:
+      return ^{
+        [weakSelf startLensWithEntryPoint:LensEntrypoint::Intents];
+      };
     case FOCUS_OMNIBOX:
       return ^{
         [weakSelf focusOmnibox];
@@ -2530,6 +2547,14 @@ void InjectNTP(Browser* browser) {
       return ^{
         [weakSelf showSettingsFromViewController:weakSelf.currentInterface
                                                      .viewController];
+      };
+    case OPEN_LATEST_TAB:
+      return ^{
+        [weakSelf openLatestTab];
+      };
+    case OPEN_CLEAR_BROWSING_DATA_DIALOG:
+      return ^{
+        [weakSelf openClearBrowsingDataDialog];
       };
     default:
       return nil;
@@ -2644,6 +2669,29 @@ void InjectNTP(Browser* browser) {
       HandlerForProtocol(self.currentInterface.browser->GetCommandDispatcher(),
                          ApplicationCommands);
   [applicationCommandsHandler showCreditCardSettings];
+}
+
+- (void)openClearBrowsingDataDialog {
+  if (!self.currentInterface.browser) {
+    return;
+  }
+
+  id<ApplicationCommands> applicationCommandsHandler =
+      HandlerForProtocol(self.currentInterface.browser->GetCommandDispatcher(),
+                         ApplicationCommands);
+  [applicationCommandsHandler showClearBrowsingDataSettings];
+}
+
+- (void)openLatestTab {
+  WebStateList* webStateList = self.currentInterface.browser->GetWebStateList();
+  web::WebState* webState = StartSurfaceRecentTabBrowserAgent::FromBrowser(
+                                self.currentInterface.browser)
+                                ->most_recent_tab();
+  if (!webState) {
+    return;
+  }
+  int index = webStateList->GetIndexOfWebState(webState);
+  webStateList->ActivateWebStateAt(index);
 }
 
 #pragma mark - TabOpening implementation.
@@ -3654,11 +3702,11 @@ void InjectNTP(Browser* browser) {
 // it.
 - (void)addANewTabAndPresentBrowser:(Browser*)browser
                   withURLLoadParams:(const UrlLoadParams&)urlLoadParams {
+  TabInsertion::Params tabInsertionParams;
+  tabInsertionParams.should_skip_new_tab_animation =
+      urlLoadParams.from_external;
   TabInsertionBrowserAgent::FromBrowser(browser)->InsertWebState(
-      urlLoadParams.web_params, nil, false, browser->GetWebStateList()->count(),
-      /*in_background=*/false, /*inherit_opener=*/false,
-      /*should_show_start_surface=*/false,
-      /*should_skip_new_tab_animation=*/urlLoadParams.from_external);
+      urlLoadParams.web_params, tabInsertionParams);
   [self beginActivatingBrowser:browser focusOmnibox:NO];
 }
 

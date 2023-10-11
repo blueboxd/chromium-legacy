@@ -211,6 +211,8 @@
         base::ScopedObservation<WebStateList, WebStateListObserverBridge>>(
         _webStateListObserver.get());
     _webStateListObservation->Observe(_webStateList);
+
+    [self setupSuggestionsProvider];
   }
   return self;
 }
@@ -369,6 +371,35 @@
 
 - (void)onWebStateChange {
   [self.consumer dismiss];
+}
+
+// Make sure the suggestions provider is properly set up. We need to make sure
+// that FormSuggestionController's "_provider" member is set, which happens
+// within [FormSuggestionController onSuggestionsReady:provider:], before the
+// credit card suggestion is selected.
+// TODO(crbug.com/1479175): Remove this dependency on suggestions.
+- (void)setupSuggestionsProvider {
+  web::WebState* activeWebState = _webStateList->GetActiveWebState();
+  if (!activeWebState) {
+    return;
+  }
+
+  FormSuggestionTabHelper* tabHelper =
+      FormSuggestionTabHelper::FromWebState(activeWebState);
+  if (!tabHelper) {
+    return;
+  }
+
+  id<FormInputSuggestionsProvider> provider =
+      tabHelper->GetAccessoryViewProvider();
+  // Setting this to true only when we are retrieving suggestions for the bottom
+  // sheet. We are not using the results from this call, it is just to set the
+  // provider so the bottom sheet can fill the fields later.
+  autofill::FormActivityParams params = _params;
+  params.has_user_gesture = true;
+  [provider retrieveSuggestionsForForm:params
+                              webState:activeWebState
+              accessoryViewUpdateBlock:nil];
 }
 
 // Returns the icon associated with the provided credit card.

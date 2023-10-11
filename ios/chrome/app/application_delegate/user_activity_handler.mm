@@ -75,6 +75,9 @@ NSString* const kSiriManagePaymentMethods = @"ManagePaymentMethodsIntent";
 NSString* const kSiriRunSafetyCheck = @"RunSafetyCheckIntent";
 NSString* const kSiriManagePasswords = @"ManagePasswordsIntent";
 NSString* const kSiriManageSettings = @"ManageSettingsIntent";
+NSString* const kSiriOpenLatestTab = @"OpenLatestTabIntent";
+NSString* const kSiriOpenLensFromIntents = @"OpenLensIntent";
+NSString* const kSiriClearBrowsingData = @"ClearBrowsingDataIntent";
 
 // Constants for compatible mode for user activities.
 NSString* const kRegularMode = @"RegularMode";
@@ -313,6 +316,14 @@ NSArray* CompatibleModeForActivityType(NSString* activityType) {
                                 Incognito:YES
                                 initStage:initStage];
 
+  } else if ([userActivity.activityType isEqualToString:kSiriOpenLatestTab]) {
+    AppStartupParameters* startupParams = [[AppStartupParameters alloc]
+        initWithExternalURL:GURL()
+                completeURL:GURL()
+            applicationMode:ApplicationModeForTabOpening::NORMAL];
+
+    startupParams.postOpeningAction = OPEN_LATEST_TAB;
+    connectionInformation.startupParameters = startupParams;
   } else if ([userActivity.activityType isEqualToString:kSiriOpenReadingList]) {
     [connectionInformation
         setStartupParameters:[self startupParametersForOpeningNewTabWithAction:
@@ -373,7 +384,19 @@ NSArray* CompatibleModeForActivityType(NSString* activityType) {
     [connectionInformation
         setStartupParameters:
             [self startupParametersForOpeningNewTabWithAction:MANAGE_SETTINGS]];
-  } else {
+  } else if ([userActivity.activityType
+                 isEqualToString:kSiriOpenLensFromIntents]) {
+    [connectionInformation
+        setStartupParameters:[self startupParametersForOpeningNewTabWithAction:
+                                       START_LENS_FROM_INTENTS]];
+  } else if ([userActivity.activityType
+                 isEqualToString:kSiriClearBrowsingData]) {
+    [connectionInformation
+        setStartupParameters:[self startupParametersForOpeningNewTabWithAction:
+                                       OPEN_CLEAR_BROWSING_DATA_DIALOG]];
+  }
+
+  else {
     // Do nothing for unknown activity type.
     return NO;
   }

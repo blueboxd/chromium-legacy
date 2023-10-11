@@ -36,6 +36,7 @@ const wchar_t kRegCleanInstallRequiredForVersionBelowField[] =
 const wchar_t kRegClientField[] = L"client";
 const wchar_t kRegCommandLineField[] = L"CommandLine";
 const wchar_t kRegCriticalVersionField[] = L"cpv";
+const wchar_t kRegDefaultField[] = L"";
 const wchar_t kRegDidRunField[] = L"dr";
 const wchar_t kRegDowngradeCleanupCommandField[] = L"DowngradeCleanupCommand";
 const wchar_t kRegEulaAceptedField[] = L"eulaaccepted";

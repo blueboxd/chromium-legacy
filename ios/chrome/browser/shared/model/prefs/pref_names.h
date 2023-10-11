@@ -50,6 +50,8 @@ extern const char kIosDiscoverFeedLastUnseenRefreshTime[];
 extern const char kIosLatestMostVisitedSites[];
 extern const char kIosMagicStackSegmentationMVTImpressionsSinceFreshness[];
 extern const char
+    kIosMagicStackSegmentationParcelTrackingImpressionsSinceFreshness[];
+extern const char
     kIosMagicStackSegmentationShortcutsImpressionsSinceFreshness[];
 extern const char
     kIosMagicStackSegmentationSafetyCheckImpressionsSinceFreshness[];
@@ -69,6 +71,7 @@ extern const char kIosSafetyCheckManagerSafeBrowsingCheckResult[];
 extern const char kIosSaveToPhotosDefaultGaiaId[];
 extern const char kIosSettingsPromoAlreadySeen[];
 extern const char kIosSettingsSigninPromoDisplayedCount[];
+extern const char kIosSettingsSafetyCheckLastRunTime[];
 extern const char kIosNtpFeedTopPromoAlreadySeen[];
 extern const char kIosNtpFeedTopSigninPromoDisplayedCount[];
 extern const char kIosReadingListPromoAlreadySeen[];

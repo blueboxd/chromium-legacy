@@ -12,8 +12,8 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/proxy_delegate.h"
-#include "services/network/ip_protection_auth_token_cache.h"
-#include "services/network/network_service_proxy_allow_list.h"
+#include "services/network/ip_protection_config_cache.h"
+#include "services/network/masked_domain_list/network_service_proxy_allow_list.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 namespace net {
@@ -48,9 +48,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceProxyDelegate
     proxy_resolution_service_ = proxy_resolution_service;
   }
 
-  void SetIpProtectionAuthTokenCache(
-      std::unique_ptr<IpProtectionAuthTokenCache> auth_token_cache) {
-    auth_token_cache_ = std::move(auth_token_cache);
+  void SetIpProtectionConfigCache(
+      std::unique_ptr<IpProtectionConfigCache> ipp_config_cache) {
+    ipp_config_cache_ = std::move(ipp_config_cache);
   }
 
   // net::ProxyDelegate implementation:
@@ -66,8 +66,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceProxyDelegate
       const net::ProxyServer& proxy_server,
       const net::HttpResponseHeaders& response_headers) override;
 
-  IpProtectionAuthTokenCache* GetAuthTokenCacheForTesting() {
-    return auth_token_cache_.get();
+  IpProtectionConfigCache* GetIpProtectionConfigCacheForTesting() {
+    return ipp_config_cache_.get();
   }
 
  private:
@@ -76,6 +76,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceProxyDelegate
 
   // Checks whether |proxy_server| is present in the current proxy config.
   bool IsInProxyConfig(const net::ProxyServer& proxy_server) const;
+
+  bool IsProxyForIpProtection(const net::ProxyServer& proxy_server) const;
 
   // Whether the current config may proxy |url|.
   bool MayProxyURL(const GURL& url) const;
@@ -109,7 +111,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceProxyDelegate
   raw_ptr<net::ProxyResolutionService, DanglingUntriaged>
       proxy_resolution_service_ = nullptr;
 
-  std::unique_ptr<IpProtectionAuthTokenCache> auth_token_cache_;
+  std::unique_ptr<IpProtectionConfigCache> ipp_config_cache_;
 };
 
 }  // namespace network

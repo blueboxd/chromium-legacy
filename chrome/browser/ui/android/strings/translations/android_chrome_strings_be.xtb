@@ -58,6 +58,7 @@
 <translation id="124678866338384709">Закрыць бягучую ўкладку</translation>
 <translation id="1246905108078336582">Выдаліць прапанову з буфера абмену?</translation>
 <translation id="1258753120186372309">Дудл Google: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1263063910731171689">Цяпер вы будзеце бачыць змесціва канала "<ph name="SITE_NAME" />" і інфармацыю пра яго ў раздзеле "Вы падпісаны". Сайты і вынікі пошуку, на якія вы падпісаны, захоўваюцца ў вашым Уліковым запісе Google. Падпіскамі можна кіраваць у наладах у любы час.</translation>
 <translation id="1263231323834454256">Спіс чытання</translation>
 <translation id="1266864766717917324">Не ўдалося абагуліць змесціва наступнага тыпу: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269129608791067105">Ваша гісторыя знаходзіцца тут</translation>
@@ -136,6 +137,7 @@
 <translation id="1671236975893690980">Чакаецца спампоўванне…</translation>
 <translation id="1672586136351118594">Больш не паказваць</translation>
 <translation id="1680919990519905526">Аб'ектыў: пошук тавару<ph name="BEGIN_NEW" />Навінка<ph name="END_NEW" /></translation>
+<translation id="1687482373098770139">Хутка вы ўбачыце змесціва канала "<ph name="SITE_NAME" />" і інфармацыю пра яго ў раздзеле "Вы падпісаны". Сайты і вынікі пошуку, на якія вы падпісаны, захоўваюцца ў вашым Уліковым запісе Google. Падпіскамі можна кіраваць у наладах у любы час.</translation>
 <translation id="1702543251015153180">Змяніць налады цёмнай тэмы?</translation>
 <translation id="1702907158640575240">Браўзер пад кіраваннем</translation>
 <translation id="1710099199314114079">Пераключэнне і закрыццё ўкладак</translation>
@@ -310,8 +312,10 @@
 <translation id="265156376773362237">Стандартная перадзагрузка</translation>
 <translation id="2656405586795711023">Вэб-праграмы</translation>
 <translation id="2669454659051515572">Усе, хто карыстаецца гэтай прыладай, могуць бачыць спампаваныя файлы</translation>
+<translation id="2673169232805572412">Калі сайт спрабуе ўкрасці ваш пароль або вы спампоўваеце шкодны файл, Chrome таксама можа адпраўляць у Google URL-адрасы і фрагменты змесціва старонак</translation>
 <translation id="2702516483241149200">Навінка: абагульце спасылку, пры выкарыстанні якой старонка прагартаецца гэтага фрагмента тэксту</translation>
 <translation id="2708051474374549906">Актыўная абарона ў рэальным часе ад небяспечных вэб-сайтаў, спамповак і пашырэнняў. Яе эфектыўнасць забяспечваюць даныя пра вашу работу ў браўзеры, якія адпраўляюцца ў Google.</translation>
+<translation id="2708226184420201102">Адкрыць у браўзеры <ph name="PRODUCT_NAME" /></translation>
 <translation id="271033894570825754">Новае</translation>
 <translation id="2711073837061989559">Пробныя версіі функцый</translation>
 <translation id="2718352093833049315">Толькі па Wi-Fi</translation>
@@ -340,6 +344,7 @@
 <translation id="2870560284913253234">Сайт</translation>
 <translation id="2871733351037274014">Перадзагрузка старонак</translation>
 <translation id="2876136027428473467"><ph name="CHILD_NAME" /> просіць ухваліць гэты вэб-сайт:</translation>
+<translation id="2876628302275096482">Даведайцеся больш пра тое, <ph name="BEGIN_LINK" />як Chrome забяспечвае прыватнасць вашых даных<ph name="END_LINK" /></translation>
 <translation id="2886836735871983413">Сайты будуць з'яўляцца тут па меры прагляду вамі вэб-старонак</translation>
 <translation id="2888126860611144412">Пра браўзер Chrome</translation>
 <translation id="2891154217021530873">Спыніць загрузку старонкі</translation>
@@ -1241,6 +1246,7 @@
 <translation id="7431991332293347422">Кіраванне тым, як ваша гісторыя прагляду сайтаў выкарыстоўваецца для персаналізацыі пошуку і ў іншых мэтах</translation>
 <translation id="7435356471928173109">Выключаны адміністратарам</translation>
 <translation id="7437998757836447326">Выйсці з Chrome</translation>
+<translation id="7450926666485653189">Адпраўляе ў Google абфускаваную частку URL-адраса праз сервер прыватнасці, які хавае ваш IP-адрас</translation>
 <translation id="7453467225369441013">Будзе выкананы выхад з большасці сайтаў. З Уліковага запісу Google вы не выйдзеце.</translation>
 <translation id="7453810262525006706">Згарнуць да віду збоку</translation>
 <translation id="7454641608352164238">Не хапае месца</translation>
@@ -1287,7 +1293,7 @@
 <translation id="7630202231528827509">URL-адрас пастаўшчыка DNS</translation>
 <translation id="7634280112532283638">Змаганне са спамам і махлярствам</translation>
 <translation id="7638584964844754484">Няправільная фраза-пароль</translation>
-<translation id="7641339528570811325">Выдаліць гісторыю праглядаў…</translation>
+<translation id="7641339528570811325">Выдаліць даныя пра работу ў браўзеры…</translation>
 <translation id="7646772052135772216">Сінхранізацыя пароляў не працуе</translation>
 <translation id="7655240423373329753">апошнія 7 дзён</translation>
 <translation id="7655900163790317559">Уключаецца Bluetooth…</translation>
@@ -1368,7 +1374,7 @@
 <translation id="8004582292198964060">Браўзер</translation>
 <translation id="8013372441983637696">Таксама выдаліць даныя Chrome з гэтай прылады</translation>
 <translation id="8015452622527143194">Вярнуць усё на старонцы да стандартнага памеру</translation>
-<translation id="8026334261755873520">Выдаленне гісторыі праглядаў</translation>
+<translation id="8026334261755873520">Выдаленне гісторыі</translation>
 <translation id="8027863900915310177">Выберыце, куды спампаваць файл</translation>
 <translation id="8030852056903932865">Ухваліць</translation>
 <translation id="8032569120109842252">Вы падпісаны</translation>
@@ -1470,6 +1476,7 @@
 <translation id="8497242791509864205">Адкрыць параметры сартавання</translation>
 <translation id="8497480609928300907">Тлумачэнні адносна дапаможніка па прыватнасці</translation>
 <translation id="8497726226069778601">Тут нічога няма… пакуль што</translation>
+<translation id="8501423924927196358">Індыкатар загрузкі на старонцы статыстыкі</translation>
 <translation id="8503559462189395349">Паролі Chrome</translation>
 <translation id="8503813439785031346">Імя карыстальніка</translation>
 <translation id="8505766168025405649">Стан спампоўкі можна паглядзець у апавяшчэнні</translation>

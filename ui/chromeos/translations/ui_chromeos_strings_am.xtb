@@ -278,6 +278,7 @@
 <translation id="3264582393905923483">አውድ</translation>
 <translation id="3272909651715601089">«<ph name="PATH" />» መክፈት አልተቻለም</translation>
 <translation id="3280431534455935878">በማዘጋጀት ላይ</translation>
+<translation id="3280719573299097127">የሚለካ አውታረ መረብ ላይ ነዎት። የፋይል ማመሳሰል ባለበት ቆሟል።</translation>
 <translation id="3280987981688031357">ቪኒል መዝገብ</translation>
 <translation id="3290356915286466215">ደህንነቱ ያልተጠበቀ</translation>
 <translation id="3291218047831493686">የሲም መቆለፊያ ቅንብርን ለመለወጥ ወደዚህ አውታረ መረብ ያገናኙ</translation>
@@ -632,6 +633,7 @@
 <translation id="5838451609423551646">ሁሉም ግቤቶች ከምርጫ ተወግደዋል።</translation>
 <translation id="5838825566232597749">አሜሪካ ዎርክማን ዓለምአቀፍ</translation>
 <translation id="5845721951356578987">ነርስ</translation>
+<translation id="5858478190805449225">የባትሪ ኃይል ቆጣቢ ሁነታ በርቷል። የባትሪ ኃይል ቆጣቢ ሁነታ ሲጠፋ እንደገና ይሞክሩ።</translation>
 <translation id="5860491529813859533">አብራ</translation>
 <translation id="5861477046012235702">ተጫዋች</translation>
 <translation id="5864471791310927901">የDHCP ፍለጋ አልተሳካም</translation>
@@ -898,7 +900,6 @@
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7920501309908018401">በMy Drive ውስጥ ያሉትን የእርስዎን ፋይሎች ያለ የበይነመረብ ግንኙነት መድረስ እንዲችሉ በራስ ሰር ወደ Chromebook ይሰምራሉ።</translation>
 <translation id="7925247922861151263">የAAA ማረጋገጥ አልተሳካም</translation>
-<translation id="7925686952655276919">ለማመሳሰል የተንቀሳቃሽ ስልክ ውሂብን አትጠቀም</translation>
 <translation id="7928710562641958568">መሣሪያን አውጣ</translation>
 <translation id="7933875256234974853">የDrive ፋይሎችን ለማስመር በመዘጋጀት ላይ...</translation>
 <translation id="7943385054491506837">የአሜሪካ ኮልማክ</translation>
@@ -921,6 +922,7 @@
 <translation id="8087576439476816834">አውርድ፣ <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">ከእኔ ጋር የተጋሩ</translation>
 <translation id="8116072619078571545">በረዶ ውሃ</translation>
+<translation id="8120392982188717723">በሚለኩ አውታረ መረቦች ላይ ማስመርን ይፍቀዱ</translation>
 <translation id="8124093710070495550">የስምረት ችግር</translation>
 <translation id="8128733386027980860">እንግሊዝኛ (ዩኬ) ከድቮራክ ቁልፍ ሰሌዳ ጋር</translation>
 <translation id="8137331602592933310">«<ph name="FILENAME" />» ለእርስዎ ተጋርቷል። እርስዎ ባለቤቱ ስላልሆኑ ሊሰርዙት አይችሉም።</translation>

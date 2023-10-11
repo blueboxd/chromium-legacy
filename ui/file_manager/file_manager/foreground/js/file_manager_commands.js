@@ -1239,22 +1239,22 @@ CommandHandler.COMMANDS_['toggle-hidden-android-folders'] =
 CommandHandler.COMMANDS_['drive-sync-settings'] =
     new (class extends FilesCommand {
       execute(event, fileManager) {
-        // If checked, the sync is disabled.
-        const nowCellularDisabled =
+        const nowDriveSyncEnabledOnMeteredNetwork =
             fileManager.ui.gearMenu.syncButton.hasAttribute('checked');
-        const changeInfo = {cellularDisabled: !nowCellularDisabled};
+        const changeInfo = {
+          driveSyncEnabledOnMeteredNetwork:
+              !nowDriveSyncEnabledOnMeteredNetwork,
+        };
         chrome.fileManagerPrivate.setPreferences(changeInfo);
         CommandHandler.recordMenuItemSelected(
-            nowCellularDisabled ?
-                CommandHandler.MenuCommandsForUMA.MOBILE_DATA_OFF :
-                CommandHandler.MenuCommandsForUMA.MOBILE_DATA_ON);
+            nowDriveSyncEnabledOnMeteredNetwork ?
+                CommandHandler.MenuCommandsForUMA.MOBILE_DATA_ON :
+                CommandHandler.MenuCommandsForUMA.MOBILE_DATA_OFF);
       }
 
       /** @override */
       canExecute(event, fileManager) {
-        event.canExecute = fileManager.directoryModel.isOnDrive() &&
-            fileManager.volumeManager.getDriveConnectionState()
-                .hasCellularNetworkAccess;
+        event.canExecute = fileManager.directoryModel.isOnDrive();
         event.command.setHidden(!event.canExecute);
       }
     })();

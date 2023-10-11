@@ -12,8 +12,10 @@
 #include "ash/constants/ash_features.h"
 #include "ash/webui/shimless_rma/backend/shimless_rma_delegate.h"
 #include "base/files/file_path.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
+#include "chrome/browser/ash/shimless_rma/diagnostics_app_profile_helper_constants.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -89,6 +91,7 @@ struct PrepareDiagnosticsAppProfileState {
   ~PrepareDiagnosticsAppProfileState();
 
   // Arguments
+  raw_ptr<DiagnosticsAppProfileHelperDelegate> delegate;
   base::FilePath crx_path;
   base::FilePath swbn_path;
   ShimlessRmaDelegate::PrepareDiagnosticsAppBrowserContextCallback callback;
@@ -160,14 +163,12 @@ void InstallIsolatedWebApp(
       state->iwa_id.value());
   web_app::IsolatedWebAppLocation location =
       web_app::InstalledBundle{.path = state->swbn_path};
-  auto* web_app_provider = web_app::WebAppProvider::GetForWebApps(
-      Profile::FromBrowserContext(state->context));
-  CHECK(web_app_provider);
-  web_app_provider->scheduler().InstallIsolatedWebApp(
-      url_info, location,
-      /*expected_version=*/absl::nullopt, /*optional_keep_alive=*/nullptr,
-      /*optional_profile_keep_alive=*/nullptr,
-      base::BindOnce(&OnIsolatedWebAppInstalled, std::move(state)));
+  state->delegate->GetWebAppCommandScheduler(state->context)
+      ->InstallIsolatedWebApp(
+          url_info, location,
+          /*expected_version=*/absl::nullopt, /*optional_keep_alive=*/nullptr,
+          /*optional_profile_keep_alive=*/nullptr,
+          base::BindOnce(&OnIsolatedWebAppInstalled, std::move(state)));
 }
 
 void CheckExtensionIsReady(
@@ -193,9 +194,7 @@ void OnCheckExtensionIsReadyResponse(
           kExtensionReadyPollingInterval);
       return;
     }
-    ReportError(std::move(state),
-                "Can't activate the extension. Extension's service worker is "
-                "not registered.");
+    ReportError(std::move(state), k3pDiagErrorCannotActivateExtension);
     return;
   }
 
@@ -208,7 +207,7 @@ void CheckExtensionIsReady(
     blink::StorageKey storage_key,
     base::Time start_time) {
   content::ServiceWorkerContext* service_worker_context =
-      extensions::util::GetServiceWorkerContextForExtensionId(
+      state->delegate->GetServiceWorkerContextForExtensionId(
           state->extension_id.value(), state->context);
   // Extensions register a service worker. Diagnostics app IWAs need to be
   // started after the service worker is up to communicate with the extensions.
@@ -236,8 +235,9 @@ void OnExtensionInstalled(
   state->crx_installer.reset();
 
   if (!chromeos::IsChromeOSSystemExtension(extension->id())) {
-    ReportError(std::move(state), "Extension " + extension->id() +
-                                      " is not a ChromeOS system extension.");
+    ReportError(std::move(state),
+                base::StringPrintf(k3pDiagErrorNotChromeOSSystemExtension,
+                                   extension->id().c_str()));
     return;
   }
 
@@ -324,12 +324,37 @@ void PrepareDiagnosticsAppProfileImpl(
 
 }  // namespace
 
+DiagnosticsAppProfileHelperDelegate::DiagnosticsAppProfileHelperDelegate() =
+    default;
+
+DiagnosticsAppProfileHelperDelegate::~DiagnosticsAppProfileHelperDelegate() =
+    default;
+
+content::ServiceWorkerContext*
+DiagnosticsAppProfileHelperDelegate::GetServiceWorkerContextForExtensionId(
+    const extensions::ExtensionId& extension_id,
+    content::BrowserContext* browser_context) {
+  return extensions::util::GetServiceWorkerContextForExtensionId(
+      extension_id, browser_context);
+}
+
+web_app::WebAppCommandScheduler*
+DiagnosticsAppProfileHelperDelegate::GetWebAppCommandScheduler(
+    content::BrowserContext* browser_context) {
+  auto* web_app_provider = web_app::WebAppProvider::GetForWebApps(
+      Profile::FromBrowserContext(browser_context));
+  CHECK(web_app_provider);
+  return &web_app_provider->scheduler();
+}
+
 void PrepareDiagnosticsAppProfile(
+    DiagnosticsAppProfileHelperDelegate* delegate,
     const base::FilePath& crx_path,
     const base::FilePath& swbn_path,
     ShimlessRmaDelegate::PrepareDiagnosticsAppBrowserContextCallback callback) {
   CHECK(::ash::features::IsShimlessRMA3pDiagnosticsEnabled());
   auto state = std::make_unique<PrepareDiagnosticsAppProfileState>();
+  state->delegate = delegate;
   state->crx_path = crx_path;
   state->swbn_path = swbn_path;
   state->callback = std::move(callback);

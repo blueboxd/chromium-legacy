@@ -383,7 +383,7 @@ void PersonalDataManager::Init(
     history::HistoryService* history_service,
     syncer::SyncService* sync_service,
     StrikeDatabaseBase* strike_database,
-    AutofillImageFetcher* image_fetcher) {
+    AutofillImageFetcherBase* image_fetcher) {
   database_helper_->Init(profile_database, account_database);
 
   SetPrefService(pref_service);
@@ -1589,9 +1589,9 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   // Duplicates across sources are resolved in favour of `kAccount` profiles.
   std::vector<AutofillProfile*> unique_matched_profiles;
   std::vector<Suggestion> unique_suggestions =
-      suggestion_selection::GetUniqueSuggestions(
-          field_types, comparator, app_locale_, matched_profiles, suggestions,
-          &unique_matched_profiles);
+      suggestion_selection::GetUniqueSuggestions(field_types, comparator,
+                                                 matched_profiles, suggestions,
+                                                 &unique_matched_profiles);
 
   std::unique_ptr<LabelFormatter> formatter;
   bool use_formatter;
@@ -2110,6 +2110,10 @@ bool PersonalDataManager::IsPaymentCvcStorageEnabled() {
   return base::FeatureList::IsEnabled(
              features::kAutofillEnableCvcStorageAndFilling) &&
          prefs::IsPaymentCvcStorageEnabled(pref_service_);
+}
+
+AutofillImageFetcherBase* PersonalDataManager::GetImageFetcher() const {
+  return image_fetcher_;
 }
 
 AutofillProfileMigrationStrikeDatabase*

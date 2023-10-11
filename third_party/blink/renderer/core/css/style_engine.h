@@ -108,7 +108,6 @@ class StyleInitialData;
 class TextTrack;
 class TreeScopeStyleSheetCollection;
 class ViewportStyleResolver;
-class SelectorFilter;
 struct LogicalSize;
 
 enum InvalidationScope { kInvalidateCurrentScope, kInvalidateAllScopes };
@@ -312,6 +311,14 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void SetStyleAffectedByLayout() { style_affected_by_layout_ = true; }
   bool StyleAffectedByLayout() { return style_affected_by_layout_; }
 
+  void SetStyleMaybeAffectedByLayoutForAccessibility() {
+    style_affected_by_layout_for_accessibility_ = true;
+  }
+  bool StyleMaybeAffectedByLayoutForAccessibility() {
+    return style_affected_by_layout_for_accessibility_ ||
+           style_affected_by_layout_;
+  }
+
   bool StyleMaybeAffectedByLayout(const Node&);
 
   bool SkippedContainerRecalc() const { return skipped_container_recalc_ != 0; }
@@ -478,11 +485,10 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
                                               Element& removed_element,
                                               Element& after_element);
   void ScheduleNthPseudoInvalidations(ContainerNode&);
-  void ApplyRuleSetInvalidation(TreeScope&,
-                                ContainerNode&,
-                                SelectorFilter&,
-                                const HeapHashSet<Member<RuleSet>>&,
-                                InvalidationScope = kInvalidateCurrentScope);
+  void ScheduleInvalidationsForRuleSets(
+      TreeScope&,
+      const HeapHashSet<Member<RuleSet>>&,
+      InvalidationScope = kInvalidateCurrentScope);
   void ScheduleCustomElementInvalidations(HashSet<AtomicString> tag_names);
   void ScheduleInvalidationsForHasPseudoAffectedByInsertion(
       Element* parent,
@@ -743,12 +749,11 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   bool ShouldSkipInvalidationFor(const Element&) const;
   bool IsSubtreeAndSiblingsStyleDirty(const Element&) const;
-  void ApplyRuleSetInvalidationForElement(
-      const TreeScope& tree_scope,
-      Element& element,
-      SelectorFilter& selector_filter,
-      const HeapHashSet<Member<RuleSet>>& rule_sets,
-      bool is_shadow_host);
+  void ScheduleRuleSetInvalidationsForElement(
+      Element&,
+      const HeapHashSet<Member<RuleSet>>&);
+  void ScheduleTypeRuleSetInvalidations(ContainerNode&,
+                                        const HeapHashSet<Member<RuleSet>>&);
   void InvalidateSlottedElements(HTMLSlotElement&);
   void InvalidateForRuleSetChanges(
       TreeScope& tree_scope,
@@ -881,6 +886,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   // True if we have performed style recalc for at least one element that
   // depends on container queries.
   bool style_affected_by_layout_{false};
+  bool style_affected_by_layout_for_accessibility_{false};
   // The number of elements currently in a skipped style recalc state.
   //
   // Style recalc can be skipped for an element [1] if its style depends on

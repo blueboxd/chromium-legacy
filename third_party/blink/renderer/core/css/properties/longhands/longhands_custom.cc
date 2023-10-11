@@ -3704,6 +3704,13 @@ const CSSValue* ForcedColorAdjust::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.ForcedColorAdjust());
 }
 
+const CSSValue* FormSizing::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool) const {
+  return CSSIdentifierValue::Create(style.FormSizing());
+}
+
 void InternalVisitedColor::ApplyInitial(StyleResolverState& state) const {
   ComputedStyleBuilder& builder = state.StyleBuilder();
   builder.SetInternalVisitedColor(builder.InitialColorForColorScheme());
@@ -4209,6 +4216,11 @@ const CSSValue* InsetBlockEnd::ParseSingleValue(
       static_cast<CSSAnchorQueryTypes>(CSSAnchorQueryType::kAnchor));
 }
 
+bool InsetBlockEnd::IsLayoutDependent(const ComputedStyle* style,
+                                      LayoutObject* layout_object) const {
+  return layout_object && layout_object->IsBox();
+}
+
 const CSSValue* InsetBlockStart::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -4216,6 +4228,11 @@ const CSSValue* InsetBlockStart::ParseSingleValue(
   return css_parsing_utils::ConsumeMarginOrOffset(
       range, context, css_parsing_utils::UnitlessQuirk::kForbid,
       static_cast<CSSAnchorQueryTypes>(CSSAnchorQueryType::kAnchor));
+}
+
+bool InsetBlockStart::IsLayoutDependent(const ComputedStyle* style,
+                                        LayoutObject* layout_object) const {
+  return layout_object && layout_object->IsBox();
 }
 
 const CSSValue* InsetInlineEnd::ParseSingleValue(
@@ -4227,6 +4244,11 @@ const CSSValue* InsetInlineEnd::ParseSingleValue(
       static_cast<CSSAnchorQueryTypes>(CSSAnchorQueryType::kAnchor));
 }
 
+bool InsetInlineEnd::IsLayoutDependent(const ComputedStyle* style,
+                                       LayoutObject* layout_object) const {
+  return layout_object && layout_object->IsBox();
+}
+
 const CSSValue* InsetInlineStart::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -4234,6 +4256,11 @@ const CSSValue* InsetInlineStart::ParseSingleValue(
   return css_parsing_utils::ConsumeMarginOrOffset(
       range, context, css_parsing_utils::UnitlessQuirk::kForbid,
       static_cast<CSSAnchorQueryTypes>(CSSAnchorQueryType::kAnchor));
+}
+
+bool InsetInlineStart::IsLayoutDependent(const ComputedStyle* style,
+                                         LayoutObject* layout_object) const {
+  return layout_object && layout_object->IsBox();
 }
 
 const blink::Color InternalVisitedBackgroundColor::ColorIncludingFallback(
@@ -5134,18 +5161,21 @@ const CSSValue* MarginBottom::ParseSingleValue(
 
 bool MarginBottom::IsLayoutDependent(const ComputedStyle* style,
                                      LayoutObject* layout_object) const {
-  return layout_object && layout_object->IsBox();
+  return layout_object && layout_object->IsBox() &&
+         (!style || !style->MarginBottom().IsFixed());
 }
 
 const CSSValue* MarginBottom::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
-  if (const LayoutBox* box = DynamicTo<LayoutBox>(layout_object)) {
-    return ZoomAdjustedPixelValue(box->MarginBottom(), style);
+  const Length& margin_bottom = style.MarginBottom();
+  if (margin_bottom.IsFixed() || !layout_object || !layout_object->IsBox()) {
+    return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(margin_bottom,
+                                                               style);
   }
-  return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-      style.MarginBottom(), style);
+  return ZoomAdjustedPixelValue(To<LayoutBox>(layout_object)->MarginBottom(),
+                                style);
 }
 
 bool MarginInlineEnd::IsLayoutDependent(const ComputedStyle* style,
@@ -5184,18 +5214,21 @@ const CSSValue* MarginLeft::ParseSingleValue(
 
 bool MarginLeft::IsLayoutDependent(const ComputedStyle* style,
                                    LayoutObject* layout_object) const {
-  return layout_object && layout_object->IsBox();
+  return layout_object && layout_object->IsBox() &&
+         (!style || !style->MarginLeft().IsFixed());
 }
 
 const CSSValue* MarginLeft::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
-  if (const LayoutBox* box = DynamicTo<LayoutBox>(layout_object)) {
-    return ZoomAdjustedPixelValue(box->MarginLeft(), style);
+  const Length& margin_left = style.MarginLeft();
+  if (margin_left.IsFixed() || !layout_object || !layout_object->IsBox()) {
+    return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(margin_left,
+                                                               style);
   }
-  return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(style.MarginLeft(),
-                                                             style);
+  return ZoomAdjustedPixelValue(To<LayoutBox>(layout_object)->MarginLeft(),
+                                style);
 }
 
 const CSSValue* MarginRight::ParseSingleValue(
@@ -5208,18 +5241,21 @@ const CSSValue* MarginRight::ParseSingleValue(
 
 bool MarginRight::IsLayoutDependent(const ComputedStyle* style,
                                     LayoutObject* layout_object) const {
-  return layout_object && layout_object->IsBox();
+  return layout_object && layout_object->IsBox() &&
+         (!style || !style->MarginRight().IsFixed());
 }
 
 const CSSValue* MarginRight::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
-  if (const LayoutBox* box = DynamicTo<LayoutBox>(layout_object)) {
-    return ZoomAdjustedPixelValue(box->MarginRight(), style);
+  const Length& margin_right = style.MarginRight();
+  if (margin_right.IsFixed() || !layout_object || !layout_object->IsBox()) {
+    return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(margin_right,
+                                                               style);
   }
-  return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-      style.MarginRight(), style);
+  return ZoomAdjustedPixelValue(To<LayoutBox>(layout_object)->MarginRight(),
+                                style);
 }
 
 const CSSValue* MarginTop::ParseSingleValue(
@@ -5232,18 +5268,21 @@ const CSSValue* MarginTop::ParseSingleValue(
 
 bool MarginTop::IsLayoutDependent(const ComputedStyle* style,
                                   LayoutObject* layout_object) const {
-  return layout_object && layout_object->IsBox();
+  return layout_object && layout_object->IsBox() &&
+         (!style || !style->MarginTop().IsFixed());
 }
 
 const CSSValue* MarginTop::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
-  if (const LayoutBox* box = DynamicTo<LayoutBox>(layout_object)) {
-    return ZoomAdjustedPixelValue(box->MarginTop(), style);
+  const Length& margin_top = style.MarginTop();
+  if (margin_top.IsFixed() || !layout_object || !layout_object->IsBox()) {
+    return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(margin_top,
+                                                               style);
   }
-  return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(style.MarginTop(),
-                                                             style);
+  return ZoomAdjustedPixelValue(To<LayoutBox>(layout_object)->MarginTop(),
+                                style);
 }
 
 const CSSValue* MarkerEnd::ParseSingleValue(
@@ -7393,15 +7432,19 @@ const CSSValue* ShapeOutside::ParseSingleValue(
   }
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   CSSValue* box_value = css_parsing_utils::ConsumeShapeBox(range);
-  if (CSSValue* shape_value = css_parsing_utils::ConsumeBasicShape(
-          range, context, css_parsing_utils::AllowPathValue::kForbid)) {
+  CSSValue* shape_value = css_parsing_utils::ConsumeBasicShape(
+      range, context, css_parsing_utils::AllowPathValue::kForbid);
+  if (shape_value) {
     list->Append(*shape_value);
     if (!box_value) {
       box_value = css_parsing_utils::ConsumeShapeBox(range);
     }
   }
   if (box_value) {
-    list->Append(*box_value);
+    if (!shape_value || To<CSSIdentifierValue>(box_value)->GetValueID() !=
+                            CSSValueID::kMarginBox) {
+      list->Append(*box_value);
+    }
   }
   if (!list->length()) {
     return nullptr;

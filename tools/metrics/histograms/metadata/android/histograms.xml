@@ -539,7 +539,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BackPress.Interval" units="ms"
-    expires_after="2023-12-31">
+    expires_after="2024-03-03">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/chrome/browser/back_press/android/OWNERS</owner>
   <summary>
@@ -755,6 +755,16 @@ chromium-metrics-reviews@google.com.
     The contact properties requested by the website (names, emails, telephone
     numbers). Measured once when the Contacts Picker dialog is dismissed. Note:
     This metric was not logged in June 2023.
+  </summary>
+</histogram>
+
+<histogram name="Android.ContactsPicker.PropertiesUserRejected"
+    enum="ContactsPickerProperties" expires_after="2024-06-01">
+  <owner>finnur@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The contact properties requested by the website but rejected by the user.
+    Measured once when the Contacts Picker dialog is dismissed.
   </summary>
 </histogram>
 
@@ -4004,7 +4014,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabStrip.DelayTempStripRemovalTimedOut"
-    enum="BooleanTimedOut" expires_after="2023-12-31">
+    enum="BooleanTimedOut" expires_after="2024-03-03">
   <owner>nemco@google.com</owner>
   <owner>skavuluru@google.com</owner>
   <owner>twellington@chromium.org</owner>
@@ -4103,7 +4113,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabStrip.TimeToBufferSwapAfterInitializeTabState"
-    units="ms" expires_after="2023-12-31">
+    units="ms" expires_after="2024-03-03">
   <owner>nemco@google.com</owner>
   <owner>skavuluru@google.com</owner>
   <owner>twellington@chromium.org</owner>
@@ -4118,7 +4128,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabStrip.TimeToInitializeTabStateAfterBufferSwap"
-    units="ms" expires_after="2023-12-31">
+    units="ms" expires_after="2024-03-03">
   <owner>nemco@google.com</owner>
   <owner>skavuluru@google.com</owner>
   <owner>twellington@chromium.org</owner>
@@ -4336,18 +4346,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.UnfoldToTablet.Latency" units="ms"
+<histogram name="Android.UnfoldToTablet.Latency2" units="ms"
     expires_after="2024-07-31">
   <owner>amanvr@google.com</owner>
   <owner>woa-performance@google.com</owner>
   <summary>
     Records the time taken by chrome to display the first frame presented after
-    unfolding a foldable device. This histogram aims to capture the unfold
-    latency in devices which switch to tablet mode when unfolded, and is
-    recorded every time the device is unfolded. The begin timestamp of the
-    metric is the timestamp from the start of the first OnPause activity
-    lifecycle callback before the activity recreates. The end timestamp is the
-    timestamp when Chrome displays the first frame on the new screen.
+    unfolding a foldable device when Chrome is on top. This histogram aims to
+    capture the unfold latency in devices which switch to tablet mode when
+    unfolded, and is recorded every time the device is unfolded. The begin
+    timestamp of the metric is the timestamp from the start of the first OnPause
+    activity lifecycle callback before the activity recreates. The end timestamp
+    is the timestamp when Chrome displays the first frame on the new screen.
   </summary>
 </histogram>
 
@@ -4944,6 +4954,80 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.WebView.HistoricalApplicationExitInfo.Counts"
+    enum="AndroidProcessExitReason" expires_after="2024-01-06">
+  <owner>avvall@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Enumerates over the historical list of ApplicationExitInfo and their exit
+    reasons for an application. Records the latest exit reason for the embedding
+    application.
+  </summary>
+</histogram>
+
+<histogram
+    name="Android.WebView.HistoricalApplicationExitInfo.Counts.BACKGROUND"
+    enum="AndroidProcessExitReason" expires_after="2024-01-06">
+  <owner>avvall@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Enumerates over the historical list of ApplicationExitInfo and their exit
+    reasons for an application. Records the latest exit reason for the embedding
+    application, specifically when WebView's last recorded state before exiting
+    was the background state.
+  </summary>
+</histogram>
+
+<histogram
+    name="Android.WebView.HistoricalApplicationExitInfo.Counts.DESTROYED"
+    enum="AndroidProcessExitReason" expires_after="2024-01-06">
+  <owner>avvall@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Enumerates over the historical list of ApplicationExitInfo and their exit
+    reasons for an application. Records the latest exit reason for the embedding
+    application, specifically when WebView's last recorded state before exiting
+    was the destroyed state.
+  </summary>
+</histogram>
+
+<histogram
+    name="Android.WebView.HistoricalApplicationExitInfo.Counts.FOREGROUND"
+    enum="AndroidProcessExitReason" expires_after="2024-01-06">
+  <owner>avvall@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Enumerates over the historical list of ApplicationExitInfo and their exit
+    reasons for an application. Records the latest exit reason for the embedding
+    application, specifically when WebView's last recorded state before exiting
+    was the foreground state.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.HistoricalApplicationExitInfo.Counts.UNKNOWN"
+    enum="AndroidProcessExitReason" expires_after="2024-01-06">
+  <owner>avvall@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Enumerates over the historical list of ApplicationExitInfo and their exit
+    reasons for an application. Records the latest exit reason for the embedding
+    application, specifically when WebView's last recorded state before exiting
+    was the detached state.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.HistoricalApplicationExitInfo.Delta"
+    units="ms" expires_after="2024-01-06">
+  <owner>avvall@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Tracks the deltas (in ms) between the current time of recording and the last
+    time of recording historical application exit info data. Only recorded if
+    the last time at recording was non-zero and there was some exit reason
+    recorded.
+  </summary>
+</histogram>
+
 <histogram name="Android.WebView.InputStreamTime" units="ms"
     expires_after="2023-12-04">
   <owner>jam@chromium.org</owner>
@@ -5117,7 +5201,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.NonEmbeddedMetrics.HistogramRecordAge"
-    units="minutes" expires_after="2023-12-31">
+    units="minutes" expires_after="2024-03-03">
   <owner>hazems@chromium.org</owner>
   <owner>ntfschr@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -5131,7 +5215,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.NonEmbeddedMetrics.NumHistograms"
-    units="histograms" expires_after="2023-12-31">
+    units="histograms" expires_after="2024-03-03">
   <owner>ntfschr@chromium.org</owner>
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -5539,7 +5623,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.Startup.CreationTime.Stage1.FactoryInit"
-    units="ms" expires_after="2023-12-31">
+    units="ms" expires_after="2024-03-03">
   <owner>torne@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -5561,7 +5645,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.Startup.CreationTime.Stage2.ProviderInit.Warm"
-    units="ms" expires_after="2023-12-31">
+    units="ms" expires_after="2024-03-03">
   <owner>torne@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -5609,6 +5693,30 @@ chromium-metrics-reviews@google.com.
     <variant name="MetricsBridgeService"/>
     <variant name="VariationsSeedServer"/>
   </token>
+</histogram>
+
+<histogram name="Android.WebView.SupervisedUser.UrlCheckResult"
+    enum="AndroidWebViewSupervisedUserUrlCheckResult"
+    expires_after="2024-08-28">
+  <owner>jdeabreu@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records whether a given URL is allowed to be loaded by the current device
+    user. This is based on a combination of a call to GMS Core, which checks if
+    the url is allowed, and the setting
+    AwFeatures.WEBVIEW_SUPERVISED_USER_SITE_BLOCK, which determines if we
+    actually block urls or only log the results.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.SupervisedUser.UrlCheckTime" units="ms"
+    expires_after="2024-08-28">
+  <owner>jdeabreu@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records the time taken to return from the call to GMS Core that checks if a
+    given URL is allowed to be loaded by the current device user.
+  </summary>
 </histogram>
 
 <histogram name="Android.WebView.SupportLibrary.ClientIsCompat"

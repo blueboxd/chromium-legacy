@@ -1059,6 +1059,106 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, MediaQueryNoCSSPageMargins) {
   VerifyPagesPrinted(true);
 }
 
+TEST_F(MAYBE_PrintRenderFrameHelperTest, InputScale1) {
+  // The default page size in these tests is US Letter - 8.5 by 11 inches.
+  // Setting vertical margins to 0.5in results in a page area of 10 inches.
+  // Setting the input scale factor to 2 shrinks this to 5 inches. Content that
+  // is 50 inches tall should therefore require 10 pages.
+  LoadHTML(R"HTML(
+    <style>
+      @page {
+        margin: 0.5in;
+      }
+      body {
+        margin: 0;
+      }
+    </style>
+    <div style="height:50in;"></div>
+  )HTML");
+
+  printer()->Params().scale_factor = 2;
+  print_manager()->SetExpectedPagesCount(10);
+  OnPrintPages();
+  VerifyPagesPrinted(true);
+}
+
+TEST_F(MAYBE_PrintRenderFrameHelperTest, InputScale2) {
+  // The default page size in these tests is US Letter - 8.5 by 11 inches.
+  // Setting vertical margins to 0.5in results in a page area of 10 inches.
+  // Setting the input scale factor to 2 shrinks this to 5 inches. Content that
+  // is 45.5 inches tall should therefore require just a bit more than 9 pages,
+  // i.e. 10 pages.
+  LoadHTML(R"HTML(
+    <style>
+      @page {
+        margin: 0.5in;
+      }
+      body {
+        margin: 0;
+      }
+    </style>
+    <div style="height:45.5in;"></div>
+  )HTML");
+
+  printer()->Params().scale_factor = 2;
+  print_manager()->SetExpectedPagesCount(10);
+  OnPrintPages();
+  VerifyPagesPrinted(true);
+}
+
+TEST_F(MAYBE_PrintRenderFrameHelperTest, InputScaleAndAvoidOverflowScale1) {
+  // The default page size in these tests is US Letter - 8.5 by 11 inches.
+  // Setting vertical margins to 0.5in and horizontal margins to 2.25in leaves
+  // 4in by 10in for the page area. Setting the input scale factor to 2 shrinks
+  // this to 2in by 5in. There's a 3in wide block in the test. To make it fit
+  // without overflowing, Blink will increase the page area size by 3/2,
+  // i.e. 50% larger, so that the final page area for layout is 3 by 7.5
+  // inches. Content that is 75 inches tall should therefore require 10 pages.
+  LoadHTML(R"HTML(
+    <style>
+      @page {
+        margin: 0.5in 2.25in;
+      }
+      body {
+        margin: 0;
+      }
+    </style>
+    <div style="width:3in; height:75in;"></div>
+  )HTML");
+
+  printer()->Params().scale_factor = 2;
+  print_manager()->SetExpectedPagesCount(10);
+  OnPrintPages();
+  VerifyPagesPrinted(true);
+}
+
+TEST_F(MAYBE_PrintRenderFrameHelperTest, InputScaleAndAvoidOverflowScale2) {
+  // The default page size in these tests is US Letter - 8.5 by 11 inches.
+  // Setting vertical margins to 0.5in and horizontal margins to 2.25in leaves
+  // 4in by 10in for the page area. Setting the input scale factor to 2 shrinks
+  // this to 2in by 5in. There's a 3in wide block in the test. To make it fit
+  // without overflowing, Blink will increase the page area size by 3/2,
+  // i.e. 50% larger, so that the final page area for layout is 3 by 7.5
+  // inches. Content that is 68 inches tall should therefore require just a bit
+  // more than 9 pages, i.e. 10 pages.
+  LoadHTML(R"HTML(
+    <style>
+      @page {
+        margin: 0.5in 2.25in;
+      }
+      body {
+        margin: 0;
+      }
+    </style>
+    <div style="width:3in; height:68in;"></div>
+  )HTML");
+
+  printer()->Params().scale_factor = 2;
+  print_manager()->SetExpectedPagesCount(10);
+  OnPrintPages();
+  VerifyPagesPrinted(true);
+}
+
 #if defined(MOCK_PRINTER_SUPPORTS_PAGE_IMAGES)
 
 TEST_F(MAYBE_PrintRenderFrameHelperTest, PrintWithIframe) {
@@ -1613,6 +1713,304 @@ TEST_F(PrintRenderFrameHelperPreviewTest, PrintPreviewShrinkToFitPage) {
   VerifyPrintPreviewGenerated(true);
   VerifyPagesPrinted(false);
 
+  OnClosePrintPreviewDialog();
+}
+
+// Test to verify that print preview workflow scale the html page contents to
+// fit the page size, and that orientation implied by specified CSS page size is
+// honored, even though the size itself is to be ignored.
+TEST_F(PrintRenderFrameHelperPreviewTest, ShrinkToFitPageMatchOrientation) {
+  LoadHTML(R"HTML(
+      <style>
+        @page { size: 17in 15in; }
+      </style>
+      :-D
+  )HTML");
+
+  print_settings().Set(kSettingPrinterType,
+                       static_cast<int>(mojom::PrinterType::kLocal));
+  base::Value::Dict custom_margins;
+  custom_margins.Set(kSettingMarginTop, 10);
+  custom_margins.Set(kSettingMarginRight, 20);
+  custom_margins.Set(kSettingMarginBottom, 30);
+  custom_margins.Set(kSettingMarginLeft, 40);
+  print_settings().Set(kSettingMarginsType,
+                       static_cast<int>(mojom::MarginType::kCustomMargins));
+  print_settings().Set(kSettingMarginsCustom, std::move(custom_margins));
+  OnPrintPreview();
+
+  EXPECT_EQ(0u, preview_ui()->print_preview_pages_remaining());
+  VerifyDefaultPageLayout(732, 572, 10, 30, 40, 20, true, true);
+  OnClosePrintPreviewDialog();
+}
+
+// Test to verify that print preview workflow scale the html page contents to
+// fit the page size, and that orientation implied by specified CSS page size is
+// honored.
+TEST_F(PrintRenderFrameHelperPreviewTest,
+       ShrinkToFitPageMatchOrientationCssMargins) {
+  LoadHTML(R"HTML(
+      <style>
+        @page {
+          size: 20in 17in;
+          margin: 1in 2in 3in 4in;
+        }
+      </style>
+      :-D
+  )HTML");
+  // The default page size is 8.5 by 11 inches. The @page descriptor wants it in
+  // landscape mode, so 11 by 8.5 inches, then. The content should be scaled to
+  // fit on the page. The requested page size is 20 by 17 inches. Figure out
+  // which axis needs the most scaling. 20/11 < 17/8.5. 17/8.5 is 2. The content
+  // needs to be scaled down by a factor of 2. To retain the aspect ratio of the
+  // paper size, additional horizontal margins will be inserted, so that the
+  // page width before scaling becomes 22in (11*2). The requested page size is
+  // 20in, so add an additional 1in to the left and the right margins. This
+  // means that the result would be the same as if this were in the CSS:
+  //
+  // @page {
+  //   size: 22in 17in;
+  //   margin: 1in 3in 3in 5in;
+  // }
+  //
+  // Then scale everything down by a factor of 2.
+
+  print_settings().Set(kSettingPrinterType,
+                       static_cast<int>(mojom::PrinterType::kLocal));
+  OnPrintPreview();
+
+  EXPECT_EQ(0u, preview_ui()->print_preview_pages_remaining());
+  VerifyDefaultPageLayout(504, 468, 36, 108, 180, 108, true, true);
+  OnClosePrintPreviewDialog();
+}
+
+TEST_F(PrintRenderFrameHelperPreviewTest, MarginsAndInputScaleToPdf1) {
+  // The default page size in these tests is US Letter - 8.5 by 11 inches.
+  // Setting vertical margins to 0.5in results in a page area of 10 inches.
+  // Setting the input scale factor to 200% shrinks this to 5 inches. Content
+  // that is 50 inches tall should therefore require 10 pages.
+  LoadHTML(R"HTML(
+    <style>
+      @page { margin:0.5in; }
+      body { margin:0; }
+    </style>
+    <div style="height:50in;"></div>
+  )HTML");
+
+  print_settings().Set(kSettingScaleFactor, 200);
+  OnPrintPreview();
+
+  EXPECT_EQ(0u, preview_ui()->print_preview_pages_remaining());
+  VerifyDefaultPageLayout(540, 720, 36, 36, 36, 36, false, false);
+  VerifyPreviewPageCount(10);
+  OnClosePrintPreviewDialog();
+}
+
+TEST_F(PrintRenderFrameHelperPreviewTest, MarginsAndInputScaleToPdf2) {
+  // The default page size in these tests is US Letter - 8.5 by 11 inches.
+  // Setting vertical margins to 0.5in results in a page area of 10 inches.
+  // Setting the input scale factor to 200% shrinks this to 5 inches. Content
+  // that is 45.5 inches tall should therefore require just a bit more than 9
+  // pages, i.e. 10 pages.
+  LoadHTML(R"HTML(
+    <style>
+      @page { margin:0.5in; }
+      body { margin:0; }
+    </style>
+    <div style="height:45.5in;"></div>
+  )HTML");
+
+  print_settings().Set(kSettingScaleFactor, 200);
+  OnPrintPreview();
+
+  EXPECT_EQ(0u, preview_ui()->print_preview_pages_remaining());
+  VerifyDefaultPageLayout(540, 720, 36, 36, 36, 36, false, false);
+  VerifyPreviewPageCount(10);
+  OnClosePrintPreviewDialog();
+}
+
+TEST_F(PrintRenderFrameHelperPreviewTest, MarginsAndInputScaleToPrinter1) {
+  // The default page size in these tests is US Letter - 8.5 by 11 inches.
+  // Setting vertical margins to 0.5in results in a page area of 10 inches.
+  // Setting the input scale factor to 200% shrinks this to 5 inches. Content
+  // that is 50 inches tall should therefore require 10 pages.
+  LoadHTML(R"HTML(
+    <style>
+      @page { margin:0.5in; }
+      body { margin:0; }
+    </style>
+    <div style="height:50in;"></div>
+  )HTML");
+
+  print_settings().Set(kSettingPrinterType,
+                       static_cast<int>(mojom::PrinterType::kLocal));
+  print_settings().Set(kSettingScaleFactor, 200);
+  OnPrintPreview();
+
+  EXPECT_EQ(0u, preview_ui()->print_preview_pages_remaining());
+  VerifyDefaultPageLayout(540, 720, 36, 36, 36, 36, false, false);
+  VerifyPreviewPageCount(10);
+  OnClosePrintPreviewDialog();
+}
+
+TEST_F(PrintRenderFrameHelperPreviewTest, MarginsAndInputScaleToPrinter2) {
+  // The default page size in these tests is US Letter - 8.5 by 11 inches.
+  // Setting vertical margins to 0.5in results in a page area of 10 inches.
+  // Setting the input scale factor to 200% shrinks this to 5 inches. Content
+  // that is 45.5 inches tall should therefore require just a bit more than 9
+  // pages, i.e. 10 pages.
+  LoadHTML(R"HTML(
+    <style>
+      @page { margin:0.5in; }
+      body { margin:0; }
+    </style>
+    <div style="height:45.5in;"></div>
+  )HTML");
+
+  print_settings().Set(kSettingPrinterType,
+                       static_cast<int>(mojom::PrinterType::kLocal));
+  print_settings().Set(kSettingScaleFactor, 200);
+  OnPrintPreview();
+
+  EXPECT_EQ(0u, preview_ui()->print_preview_pages_remaining());
+  VerifyDefaultPageLayout(540, 720, 36, 36, 36, 36, false, false);
+  VerifyPreviewPageCount(10);
+  OnClosePrintPreviewDialog();
+}
+
+TEST_F(PrintRenderFrameHelperPreviewTest, MarginsSizeAndInputScaleToPrinter1) {
+  // The default page size in these tests is US Letter - 8.5 by 11 inches.
+  // Setting the page width to 34 inches and vertical margins to 1 inch results
+  // in a page area of 32 inches. Setting the input scale factor to 200% shrinks
+  // this to 16 inches. Content that is 160 inches tall should therefore require
+  // 10 pages. Furthermore, setting the page width to 34 inches and having to
+  // fit this to the actual "paper" means that everything needs to be scaled
+  // down by 34/8.5 = 4. This also applies to the final margins. Horizontal
+  // margins will therefore become 1/4 inch. Being in portrait mode, the actual
+  // "paper" height is larger than the width, although the CSS-specified page
+  // size has the same height and width. In order to resolve the
+  // over-constrained situation, this means that vertical margins will be
+  // adjusted to center the page area on "paper".
+  LoadHTML(R"HTML(
+    <style>
+      @page { margin:1in; size:34in; }
+      body { margin:0; }
+    </style>
+    <div style="height:160in;"></div>
+  )HTML");
+
+  print_settings().Set(kSettingPrinterType,
+                       static_cast<int>(mojom::PrinterType::kLocal));
+  print_settings().Set(kSettingScaleFactor, 200);
+  OnPrintPreview();
+
+  EXPECT_EQ(0u, preview_ui()->print_preview_pages_remaining());
+  VerifyDefaultPageLayout(576, 576, 108, 108, 18, 18, true, true);
+  VerifyPreviewPageCount(10);
+  OnClosePrintPreviewDialog();
+}
+
+TEST_F(PrintRenderFrameHelperPreviewTest, MarginsSizeAndInputScaleToPrinter2) {
+  // The default page size in these tests is US Letter - 8.5 by 11 inches.
+  // Setting the page width to 34 inches and vertical margins to 1 inch results
+  // in a page area of 32 inches. Setting the input scale factor to 200% shrinks
+  // this to 16 inches. Content that is 145 inches tall should therefore require
+  // just a bit more than 9 pages, i.e. 10 pages. Furthermore, setting the page
+  // width to 34 inches and having to fit this to the actual "paper" means that
+  // everything needs to be scaled down by 34/8.5 = 4. This also applies to the
+  // final margins. Horizontal margins will therefore become 1/4 inch. Being in
+  // portrait mode, the actual "paper" height is larger than the width, although
+  // the CSS-specified page size has the same height and width. In order to
+  // resolve the over-constrained situation, this means that vertical margins
+  // will be adjusted to center the page area on "paper".
+  LoadHTML(R"HTML(
+    <style>
+      @page { margin:1in; size:34in; }
+      body { margin:0; }
+    </style>
+    <div style="height:145in;"></div>
+  )HTML");
+
+  print_settings().Set(kSettingPrinterType,
+                       static_cast<int>(mojom::PrinterType::kLocal));
+  print_settings().Set(kSettingScaleFactor, 200);
+  OnPrintPreview();
+
+  EXPECT_EQ(0u, preview_ui()->print_preview_pages_remaining());
+  VerifyDefaultPageLayout(576, 576, 108, 108, 18, 18, true, true);
+  VerifyPreviewPageCount(10);
+  OnClosePrintPreviewDialog();
+}
+
+TEST_F(PrintRenderFrameHelperPreviewTest,
+       MarginsSizeAndInputScaleAndAvoidOverflowScaleToPrinter1) {
+  // The default page size in these tests is US Letter - 8.5 by 11 inches.
+  // Setting the page width to 34 inches and vertical margins to 1 inch results
+  // in a page area of 32 inches. Setting the input scale factor to 200% shrinks
+  // this to 16 inches. There's a 48in wide block in the test. To make it fit
+  // without overflowing, Blink will increase the page area size by 3/2 (48/32),
+  // i.e. 50% larger, so that the final page area for layout is 24 by 24 inches.
+  // Content that is 240 inches tall should therefore require 10
+  // pages. Furthermore, setting the page width to 34 inches and having to fit
+  // this to the actual "paper" means that everything needs to be scaled down by
+  // 34/8.5 = 4. This also applies to the final margins. Horizontal margins will
+  // therefore become 1/4 inch. Being in portrait mode, the actual "paper"
+  // height is larger than the width, although the CSS-specified page size has
+  // the same height and width. In order to resolve the over-constrained
+  // situation, this means that vertical margins will be adjusted to center the
+  // page area on "paper".
+  LoadHTML(R"HTML(
+    <style>
+      @page { margin:1in; size:34in; }
+      body { margin:0; }
+    </style>
+    <div style="width:48in; height:240in;"></div>
+  )HTML");
+
+  print_settings().Set(kSettingPrinterType,
+                       static_cast<int>(mojom::PrinterType::kLocal));
+  print_settings().Set(kSettingScaleFactor, 200);
+  OnPrintPreview();
+
+  EXPECT_EQ(0u, preview_ui()->print_preview_pages_remaining());
+  VerifyDefaultPageLayout(576, 576, 108, 108, 18, 18, true, true);
+  VerifyPreviewPageCount(10);
+  OnClosePrintPreviewDialog();
+}
+
+TEST_F(PrintRenderFrameHelperPreviewTest,
+       MarginsSizeAndInputScaleAndAvoidOverflowScaleToPrinter2) {
+  // The default page size in these tests is US Letter - 8.5 by 11 inches.
+  // Setting the page width to 34 inches and vertical margins to 1 inch results
+  // in a page area of 32 inches. Setting the input scale factor to 200% shrinks
+  // this to 16 inches. There's a 48in wide block in the test. To make it fit
+  // without overflowing, Blink will increase the page area size by 3/2 (48/32),
+  // i.e. 50% larger, so that the final page area for layout is 24 by 24 inches.
+  // Content that is 217 inches tall should therefore require just a bit more
+  // than 9 pages, i.e. 10 pages. Furthermore, setting the page width to 34
+  // inches and having to fit this to the actual "paper" means that everything
+  // needs to be scaled down by 34/8.5 = 4. This also applies to the final
+  // margins. Horizontal margins will therefore become 1/4 inch. Being in
+  // portrait mode, the actual "paper" height is larger than the width, although
+  // the CSS-specified page size has the same height and width. In order to
+  // resolve the over-constrained situation, this means that vertical margins
+  // will be adjusted to center the page area on "paper".
+  LoadHTML(R"HTML(
+    <style>
+      @page { margin:1in; size:34in; }
+      body { margin:0; }
+    </style>
+    <div style="width:48in; height:217in;"></div>
+  )HTML");
+
+  print_settings().Set(kSettingPrinterType,
+                       static_cast<int>(mojom::PrinterType::kLocal));
+  print_settings().Set(kSettingScaleFactor, 200);
+  OnPrintPreview();
+
+  EXPECT_EQ(0u, preview_ui()->print_preview_pages_remaining());
+  VerifyDefaultPageLayout(576, 576, 108, 108, 18, 18, true, true);
+  VerifyPreviewPageCount(10);
   OnClosePrintPreviewDialog();
 }
 

@@ -66,6 +66,78 @@
       <key>strings</key>
       <array>
         <dict>
+         <key>output</key>
+          <string>eoLMs3</string>
+          <key>input</key>
+          <string>IDS_IOS_INTENTS_OPEN_LATEST_TAB_TITLE</string>
+        </dict>
+        <dict>
+          <key>output</key>
+          <string>QI9R4N</string>
+          <key>input</key>
+          <string>IDS_IOS_INTENTS_CLEAR_BROWSING_DATA_TITLE</string>
+        </dict>
+        <dict>
+         <key>output</key>
+          <string>6yFN6Z</string>
+          <key>input</key>
+          <string>IDS_IOS_INTENTS_CLEAR_BROWSING_DATA_TITLE</string>
+        </dict>
+        <dict>
+          <key>output</key>
+          <string>G5abvV</string>
+          <key>input</key>
+          <string>IDS_IOS_INTENTS_CLEAR_BROWSING_DATA_TITLE</string>
+        </dict>
+        <dict>
+          <key>output</key>
+          <string>QNOy9O</string>
+          <key>input</key>
+          <string>IDS_IOS_INTENTS_CLEAR_BROWSING_DATA_DESCRIPTION</string>
+        </dict>
+        <dict>
+          <key>output</key>
+          <string>O7udUr</string>
+          <key>input</key>
+          <string>IDS_IOS_INTENTS_OPEN_LENS_TITLE</string>
+        </dict>
+        <dict>
+          <key>output</key>
+          <string>M0ARnB</string>
+          <key>input</key>
+          <string>IDS_IOS_INTENTS_OPEN_LENS_DESCRIPTION</string>
+        </dict>
+        <dict>
+          <key>output</key>
+          <string>IBwb6d</string>
+          <key>input</key>
+          <string>IDS_IOS_INTENTS_OPEN_LENS_TITLE</string>
+        </dict>
+        <dict>
+          <key>output</key>
+          <string>KggFtq</string>
+          <key>input</key>
+          <string>IDS_IOS_INTENTS_OPEN_LENS_TITLE</string>
+        </dict>
+        <dict>
+          <key>output</key>
+          <string>Evtnyl</string>
+          <key>input</key>
+          <string>IDS_IOS_INTENTS_OPEN_LATEST_TAB_DESCRIPTION</string>
+        </dict>
+        <dict>
+          <key>output</key>
+          <string>ymx2nZ</string>
+          <key>input</key>
+          <string>IDS_IOS_INTENTS_OPEN_LATEST_TAB_TITLE</string>
+        </dict>
+        <dict>
+          <key>output</key>
+          <string>oVEOzX</string>
+          <key>input</key>
+          <string>IDS_IOS_INTENTS_OPEN_LATEST_TAB_TITLE</string>
+        </dict>
+        <dict>
           <key>output</key>
           <string>Um63tc</string>
           <key>input</key>
@@ -298,6 +370,12 @@
           <string>7Qq5ww</string>
           <key>input</key>
           <string>IDS_IOS_INTENTS_SEARCH_WITH_VOICE_TITLE</string>
+        </dict>
+        <dict>
+          <key>output</key>
+          <string>ylmClv</string>
+          <key>input</key>
+          <string>IDS_IOS_INTENTS_SEARCH_WITH_VOICE_DESCRIPTION</string>
         </dict>
         <dict>
           <key>output</key>

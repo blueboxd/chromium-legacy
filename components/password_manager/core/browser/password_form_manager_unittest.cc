@@ -79,6 +79,7 @@ using autofill::PasswordFormGenerationData;
 using autofill::ServerFieldType;
 using autofill::ServerFieldTypeSet;
 using autofill::SINGLE_USERNAME;
+using autofill::SINGLE_USERNAME_FORGOT_PASSWORD;
 using autofill::UNKNOWN_TYPE;
 using autofill::password_generation::PasswordGenerationType;
 using base::TestMockTimeTaskRunner;
@@ -535,7 +536,8 @@ class PasswordFormManagerTest : public testing::Test,
                     const std::u16string field_value,
                     FormSignature form_signature,
                     FieldSignature field_signature,
-                    bool is_likely_otp) {
+                    bool is_likely_otp,
+                    ServerFieldType predicted_type) {
     FieldInfo info(driver_id, field_id, GetSignonRealm(url), field_value,
                    is_likely_otp);
     FormPredictions predictions;
@@ -543,7 +545,7 @@ class PasswordFormManagerTest : public testing::Test,
     predictions.fields.push_back({
         .renderer_id = field_id,
         .signature = field_signature,
-        .type = UNKNOWN_TYPE,
+        .type = predicted_type,
     });
     field_info_manager_->AddFieldInfo(info, predictions);
   }
@@ -2648,12 +2650,12 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlow) {
             : autofill::AutofillUploadContents::USERNAME_LIKE);
     expected_single_username_data.set_prompt_edit(
         autofill::AutofillUploadContents::EDITED_POSITIVE);
-    EXPECT_CALL(
-        mock_autofill_download_manager_,
-        StartUploadRequest(
-            AllOf(SignatureIs(CalculateFormSignature(submitted_form)),
-                  UploadedSingleUsernameDataIs(expected_single_username_data)),
-            _, _, _, _, _, /*observer=*/IsNull()));
+    EXPECT_CALL(mock_autofill_download_manager_,
+                StartUploadRequest(
+                    AllOf(SignatureIs(CalculateFormSignature(submitted_form)),
+                          UploadedSingleUsernameDataIs(
+                              {expected_single_username_data})),
+                    _, _, _, _, _, /*observer=*/IsNull()));
 
     if (is_password_update) {
       // Expect another upload for first login votes. This upload is not related
@@ -2729,7 +2731,7 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlowWithPrefilledUsername) {
       mock_autofill_download_manager_,
       StartUploadRequest(
           AllOf(SignatureIs(CalculateFormSignature(submitted_form_)),
-                UploadedSingleUsernameDataIs(expected_single_username_data)),
+                UploadedSingleUsernameDataIs({expected_single_username_data})),
           _, _, _, _, _, /*observer=*/IsNull()));
 
   // Simulate showing the prompt and saving the suggested value.
@@ -2824,7 +2826,7 @@ TEST_P(PasswordFormManagerTest, NegativeUsernameFirstFlowVotes) {
       mock_autofill_download_manager_,
       StartUploadRequest(
           AllOf(SignatureIs(CalculateFormSignature(submitted_form)),
-                UploadedSingleUsernameDataIs(expected_single_username_data)),
+                UploadedSingleUsernameDataIs({expected_single_username_data})),
           _, _, _, _, _, /*observer=*/IsNull()));
 
   base::HistogramTester histogram_tester;
@@ -2884,7 +2886,7 @@ TEST_P(PasswordFormManagerTest, PossibleUsernameLikelyOTP) {
       mock_autofill_download_manager_,
       StartUploadRequest(
           AllOf(SignatureIs(CalculateFormSignature(submitted_form)),
-                UploadedSingleUsernameDataIs(expected_single_username_data)),
+                UploadedSingleUsernameDataIs({expected_single_username_data})),
           _, _, _, _, _, /*observer=*/IsNull()));
 
   form_manager_->Save();
@@ -3217,7 +3219,7 @@ TEST_P(PasswordFormManagerTest, StrongForgotPasswordFormVotes) {
   AddFieldInfo(/*driver_id=*/0, kSingleUsernameFieldRendererId,
                observed_form_only_password_fields_.url, kPossibleUsername,
                kSingleUsernameFormSignature, kSingleUsernameFieldSignature,
-               /*is_likely_otp=*/false);
+               /*is_likely_otp=*/false, UNKNOWN_TYPE);
 
   // Simulate user input in another single text field form, unrelated to FPF.
   constexpr FormSignature kOtherFormSignature(2000);
@@ -3226,7 +3228,7 @@ TEST_P(PasswordFormManagerTest, StrongForgotPasswordFormVotes) {
   AddFieldInfo(/*driver_id=*/0, kOtherFieldRendererId,
                observed_form_only_password_fields_.url, u"OTP",
                kOtherFormSignature, kOtherFieldSignature,
-               /*is_likely_otp=*/false);
+               /*is_likely_otp=*/false, UNKNOWN_TYPE);
 
   // Simulate submitting a password form.
   FormData submitted_form = observed_form_only_password_fields_;
@@ -3274,7 +3276,7 @@ TEST_P(PasswordFormManagerTest, WeakForgotPasswordFormVotes) {
                observed_form_only_password_fields_.url,
                saved_match_.username_value, kSingleUsernameFormSignature,
                kSingleUsernameFieldSignature,
-               /*is_likely_otp=*/false);
+               /*is_likely_otp=*/false, UNKNOWN_TYPE);
 
   // Simulate user input in another single text field form, unrelated to FPF.
   constexpr FormSignature kOtherFormSignature(2000);
@@ -3283,7 +3285,7 @@ TEST_P(PasswordFormManagerTest, WeakForgotPasswordFormVotes) {
   AddFieldInfo(/*driver_id=*/0, kOtherFieldRendererId,
                observed_form_only_password_fields_.url, u"OTP",
                kOtherFormSignature, kOtherFieldSignature,
-               /*is_likely_otp=*/false);
+               /*is_likely_otp=*/false, UNKNOWN_TYPE);
 
   // Simulate submitting a password form. A previously saved username value
   // (`saved_match_.username_value`) is offered as username in the prompt
@@ -3329,7 +3331,7 @@ TEST_P(PasswordFormManagerTest,
   AddFieldInfo(/*driver_id=*/0, kSingleUsernameFieldRendererId,
                observed_form_only_password_fields_.url, kPossibleUsername,
                kSingleUsernameFormSignature, kSingleUsernameFieldSignature,
-               /*is_likely_otp=*/false);
+               /*is_likely_otp=*/false, UNKNOWN_TYPE);
 
   // Simulate user input in another single text field form, unrelated to FPF.
   constexpr FormSignature kOtherFormSignature(2000);
@@ -3338,7 +3340,7 @@ TEST_P(PasswordFormManagerTest,
   AddFieldInfo(/*driver_id=*/0, kOtherFieldRendererId,
                observed_form_only_password_fields_.url, u"OTP",
                kOtherFormSignature, kOtherFieldSignature,
-               /*is_likely_otp=*/false);
+               /*is_likely_otp=*/false, UNKNOWN_TYPE);
 
   // Simulate submitting a password form.
   FormData submitted_form = observed_form_;
@@ -3352,6 +3354,70 @@ TEST_P(PasswordFormManagerTest,
   ExpectSingleUsernameUpload(
       kSingleUsernameFormSignature,
       AutofillUploadContents::Field::WEAK_FORGOT_PASSWORD,
+      autofill::SINGLE_USERNAME_FORGOT_PASSWORD);
+
+  // Expect no vote on another single text field form, unrelated to FPF.
+  EXPECT_CALL(
+      mock_autofill_download_manager_,
+      StartUploadRequest(SignatureIs(kOtherFormSignature), _, _, _, _, _, _))
+      .Times(0);
+
+  // Expect upload for the password form. This upload is unrelated to FPF: it
+  // is a result of saving a new password on the password form.
+  EXPECT_CALL(
+      mock_autofill_download_manager_,
+      StartUploadRequest(SignatureIs(CalculateFormSignature(submitted_form)), _,
+                         _, _, _, _, _));
+
+  form_manager_->Save();
+}
+
+// Tests that no vote is sent for the OTP field, unless there is a server
+// prediction confirming it's a single username field.
+TEST_P(PasswordFormManagerTest, ForgotPasswordFormVotesOnLiklelyOTPField) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kForgotPasswordFormSupport},
+      /*disabled_features=*/{});
+
+  CreateFormManager(observed_form_only_password_fields_);
+  fetcher_->NotifyFetchCompleted();
+
+  // Simulate user input in a single text field in a forgot password form,
+  // for which PasswordManager's heuristics say it's an OTP field, but server
+  // predictions contradict that.
+  constexpr char16_t kPossibleUsername[] = u"possible_username";
+  AddFieldInfo(/*driver_id=*/0, kSingleUsernameFieldRendererId,
+               observed_form_only_password_fields_.url, kPossibleUsername,
+               kSingleUsernameFormSignature, kSingleUsernameFieldSignature,
+               /*is_likely_otp=*/true, SINGLE_USERNAME_FORGOT_PASSWORD);
+
+  // Simulate user input in another single text field form, unrelated to FPF,
+  // for which PasswordManager's heuristics say it's an OTP field, and server
+  // does not contradict that.
+  constexpr FormSignature kOtherFormSignature(2000);
+  constexpr FieldRendererId kOtherFieldRendererId(200);
+  constexpr FieldSignature kOtherFieldSignature(4000);
+  AddFieldInfo(/*driver_id=*/0, kOtherFieldRendererId,
+               observed_form_only_password_fields_.url, u"OTP",
+               kOtherFormSignature, kOtherFieldSignature,
+               /*is_likely_otp=*/true, NOT_USERNAME);
+
+  // Simulate submitting a password form.
+  FormData submitted_form = observed_form_only_password_fields_;
+  submitted_form.fields[0].value = u"strongpassword";
+  ASSERT_TRUE(form_manager_->ProvisionallySave(submitted_form, &driver_,
+                                               /*possible_username=*/nullptr));
+  form_manager_->SaveSuggestedUsernameValueToVotesUploader();
+
+  // Simulate the user modifying the username in the prompt.
+  form_manager_->OnUpdateUsernameFromPrompt(kPossibleUsername);
+
+  // Expect a strong positive vote on the single text field in a forgot password
+  // form.
+  ExpectSingleUsernameUpload(
+      kSingleUsernameFormSignature,
+      AutofillUploadContents::Field::STRONG_FORGOT_PASSWORD,
       autofill::SINGLE_USERNAME_FORGOT_PASSWORD);
 
   // Expect no vote on another single text field form, unrelated to FPF.

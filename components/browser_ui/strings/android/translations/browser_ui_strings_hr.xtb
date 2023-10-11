@@ -118,6 +118,7 @@
 <translation id="3008272652534848354">Poništi dopuštenja</translation>
 <translation id="301521992641321250">Automatski blokirano</translation>
 <translation id="3069226013421428034">Dopusti prijavu treće strane za određenu web-lokaciju.</translation>
+<translation id="3082992102194421695">{COUNT,plural, =1{Istječe sutra}one{Istječe za # dan}few{Istječe za # dana}other{Istječe za # dana}}</translation>
 <translation id="310297983047869047">Prethodni slajd</translation>
 <translation id="3109724472072898302">Sažeto</translation>
 <translation id="3114012059975132928">Player videozapisa</translation>
@@ -371,7 +372,7 @@
 <translation id="7684642910516280563">Ne dopuštaj web-lokaciji upotrebu kolačića trećih strana</translation>
 <translation id="7719367874908701697">Zumiranje stranice</translation>
 <translation id="7781829728241885113">Danas</translation>
-<translation id="7791543448312431591">Dodavanje</translation>
+<translation id="7791543448312431591">Dodajte</translation>
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7804248752222191302">Web-lokacija upotrebljava vašu kameru</translation>
 <translation id="7807060072011926525">Omogućuje Google</translation>

@@ -692,7 +692,7 @@ chrome.fileManagerPrivate.GetVolumeRootOptions;
 /**
  * @typedef {{
  *   driveEnabled: boolean,
- *   cellularDisabled: boolean,
+ *   driveSyncEnabledOnMeteredNetwork: boolean,
  *   searchSuggestEnabled: boolean,
  *   use24hourClock: boolean,
  *   timezone: string,
@@ -709,7 +709,7 @@ chrome.fileManagerPrivate.Preferences;
 
 /**
  * @typedef {{
- *   cellularDisabled: (boolean|undefined),
+ *   driveSyncEnabledOnMeteredNetwork: (boolean|undefined),
  *   arcEnabled: (boolean|undefined),
  *   arcRemovableMediaAccessEnabled: (boolean|undefined),
  *   folderShortcuts: (!Array<string>|undefined),
@@ -752,9 +752,7 @@ chrome.fileManagerPrivate.DriveMetadataSearchResult;
 /**
  * @typedef {{
  *   type: !chrome.fileManagerPrivate.DriveConnectionStateType,
- *   reason: (!chrome.fileManagerPrivate.DriveOfflineReason|undefined),
- *   hasCellularNetworkAccess: boolean,
- *   canPinHostedFiles: boolean
+ *   reason: (!chrome.fileManagerPrivate.DriveOfflineReason|undefined)
  * }}
  */
 chrome.fileManagerPrivate.DriveConnectionState;
@@ -1375,7 +1373,7 @@ chrome.fileManagerPrivate.searchFilesByHashes = function(volumeId, hashList, cal
 chrome.fileManagerPrivate.searchFiles = function(searchParams, callback) {};
 
 /**
- * Retrieves the state of the current device connection. |callback|
+ * Retrieves the current device connection status. |callback|
  * @param {function(!chrome.fileManagerPrivate.DeviceConnectionState): void}
  *     callback
  */
@@ -1687,10 +1685,11 @@ chrome.fileManagerPrivate.resumeIOTask = function(taskId, params) {};
 
 /**
  * Notifies the browser that any info still stored about an already completed
- * I/O task identified by id can be cleared.
+ * I/O task identified by |taskId| can be cleared.
  * @param {number} taskId
+ * @param {function(): void} callback Callback that does not take arguments.
  */
-chrome.fileManagerPrivate.dismissIOTask = function(taskId) {};
+chrome.fileManagerPrivate.dismissIOTask = function(taskId, callback) {};
 
 /**
  * Shows a policy dialog for a task. Task ids are communicated to the Files App

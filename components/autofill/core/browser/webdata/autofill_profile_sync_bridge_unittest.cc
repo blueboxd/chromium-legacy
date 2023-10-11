@@ -169,11 +169,8 @@ AutofillProfile ConstructCompleteProfile() {
   profile.SetRawInfo(ADDRESS_HOME_SORTING_CODE, u"CEDEX");
   profile.SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY, u"Santa Clara");
   profile.SetRawInfo(ADDRESS_HOME_STREET_NAME, u"Street Name");
-  profile.SetRawInfo(ADDRESS_HOME_DEPENDENT_STREET_NAME,
-                     u"Dependent Street Name");
   profile.SetRawInfo(ADDRESS_HOME_HOUSE_NUMBER, u"House Number");
   profile.SetRawInfo(ADDRESS_HOME_SUBPREMISE, u"Subpremise");
-  profile.SetRawInfo(ADDRESS_HOME_PREMISE_NAME, u"Premise");
   profile.set_language_code("en");
   profile.FinalizeAfterImport();
   return profile;
@@ -242,11 +239,8 @@ AutofillProfileSpecifics ConstructCompleteSpecifics() {
   specifics.set_address_home_language_code("en");
 
   specifics.set_address_home_thoroughfare_name("Street Name");
-  specifics.set_address_home_dependent_thoroughfare_name(
-      "Dependent Street Name");
   specifics.set_address_home_thoroughfare_number("House Number");
   specifics.set_address_home_subpremise_name("Subpremise");
-  specifics.set_address_home_premise_name("Premise");
 
   specifics.set_validity_state_bitfield(kValidityStateBitfield);
   return specifics;

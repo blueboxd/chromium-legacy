@@ -28,8 +28,13 @@ AppServiceShortcutContextMenu::AppServiceShortcutContextMenu(
     app_list::AppContextMenuDelegate* delegate,
     Profile* profile,
     const apps::ShortcutId& shortcut_id,
-    AppListControllerDelegate* controller)
-    : AppContextMenu(delegate, profile, shortcut_id.value(), controller),
+    AppListControllerDelegate* controller,
+    ash::AppListItemContext item_context)
+    : AppContextMenu(delegate,
+                     profile,
+                     shortcut_id.value(),
+                     controller,
+                     item_context),
       proxy_(apps::AppServiceProxyFactory::GetForProfile(profile)),
       shortcut_id_(shortcut_id) {}
 
@@ -68,6 +73,8 @@ void AppServiceShortcutContextMenu::GetMenuModel(
   AddContextMenuOption(menu_model.get(),
                        static_cast<ash::CommandId>(ash::UNINSTALL),
                        IDS_APP_LIST_REMOVE_SHORTCUT);
+
+  AddReorderMenuOption(menu_model.get());
 
   std::move(callback).Run(std::move(menu_model));
 }

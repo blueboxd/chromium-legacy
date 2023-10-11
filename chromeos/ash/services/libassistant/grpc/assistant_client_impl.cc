@@ -170,28 +170,14 @@ void AssistantClientImpl::GetSpeakerIdEnrollmentInfo(
             bool has_model = false;
             //  `response` could have an error field.
             // Treat any error as no existing model.
-            if (response.has_cloud_enrollment_status_response()) {
-              has_model = response.cloud_enrollment_status_response()
-                              .utterance_status() ==
-                          ::assistant::api::CloudEnrollmentStatusResponse::
-                              HAS_UTTERANCES;
+            if (response.has_user_model_status_response()) {
+              has_model =
+                  response.user_model_status_response().user_model_exists();
             }
             std::move(on_done).Run(has_model);
           },
           std::move(on_done)),
       kDefaultStateConfig);
-}
-
-void AssistantClientImpl::ResetAllDataAndShutdown() {
-  // ResetAllDataAndShutdown request may have high latency. Server
-  // recommendation is to set proper deadlines for every RPC.
-  constexpr int kResetAllDataAndShutdownTimeoutMs = 10000;
-  StateConfig custom_config(kMaxRpcRetries, kResetAllDataAndShutdownTimeoutMs);
-  libassistant_client_->CallServiceMethod(
-      ::assistant::api::ResetAllDataAndShutdownRequest(),
-      GetLoggingCallback<::assistant::api::ResetAllDataAndShutdownResponse>(
-          /*request_name=*/__func__),
-      custom_config);
 }
 
 void AssistantClientImpl::SendDisplayRequest(

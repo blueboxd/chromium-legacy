@@ -89,6 +89,25 @@ class VotesUploader {
     kChangedToUnknownValue,
   };
 
+  // Whether two existing single username detection mechanisms (UFF and FPF)
+  // have data, overlapping or not. Used for UMA recording, must be in sync with
+  // SingleUsernameVoteDataAvailability in "tools/metrics/histograms/enums.xml".
+  enum class SingleUsernameVoteDataAvailability {
+    // No data available for both UFF and FPF voting.
+    kNone = 0,
+    // Data only available for single username voting.
+    kUsernameFirstOnly = 1,
+    // Data only available for forgot password voting.
+    kForgotPasswordOnly = 2,
+    // Data available for both UFF and FPF voting, but these votes are for
+    // different fields.
+    kBothNoOverlap = 3,
+    // Data available for both UFF and FPF voting, forgot password voting
+    // data contains data for UFF voting.
+    kBothWithOverlap = 4,
+    kMaxValue = kBothWithOverlap
+  };
+
   VotesUploader(PasswordManagerClient* client,
                 bool is_possible_change_password_form);
   VotesUploader(const VotesUploader& other);
@@ -270,6 +289,7 @@ class VotesUploader {
   // a username form that preceded the password form, and on the type of user
   // input it had (e.g. email-like, phone-like, arbitrary string).
   void SetSingleUsernameVoteOnPasswordForm(
+      const SingleUsernameVoteData& vote_data,
       autofill::FormStructure& form_structure);
 
   // Calculates whether the |saved_username| (the value actually saved in the

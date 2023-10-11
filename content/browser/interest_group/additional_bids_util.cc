@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/containers/flat_set.h"
 #include "base/json/json_writer.h"
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
@@ -23,6 +24,7 @@
 #include "content/browser/interest_group/interest_group_auction.h"
 #include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/interest_group/ad_auction_constants.h"
 #include "third_party/blink/public/common/interest_group/ad_display_size.h"
 #include "third_party/boringssl/src/include/openssl/curve25519.h"
 #include "url/origin.h"
@@ -75,6 +77,7 @@ base::expected<AdditionalBidDecodeResult, std::string> DecodeAdditionalBid(
     InterestGroupAuction* auction,
     const base::Value& bid_in,
     const base::Uuid& auction_nonce,
+    const base::flat_set<url::Origin>& interest_group_buyers,
     const url::Origin& seller,
     base::optional_ref<const url::Origin> top_level_seller) {
   const base::Value::Dict* result_dict = bid_in.GetIfDict();
@@ -142,6 +145,14 @@ base::expected<AdditionalBidDecodeResult, std::string> DecodeAdditionalBid(
     return base::unexpected(base::StrCat(
         {"Additional bid on auction with seller '", seller.Serialize(),
          "' rejected due to missing or invalid interest group info."}));
+  }
+
+  if (interest_group_buyers.find(ig_owner.value()) ==
+      interest_group_buyers.end()) {
+    return base::unexpected(base::StrCat(
+        {"Additional bid on auction with seller '", seller.Serialize(),
+         "' rejected because the additional bid's owner, '",
+         ig_owner->Serialize(), "', is not in interestGroupBuyers."}));
   }
 
   if (!ig_owner->IsSameOriginWith(ig_bidding_url)) {
@@ -249,6 +260,12 @@ base::expected<AdditionalBidDecodeResult, std::string> DecodeAdditionalBid(
           {"Additional bid on auction with seller '", seller.Serialize(),
            "' rejected due to invalid adComponents."}));
     }
+    if (ad_components_list->size() > blink::kMaxAdAuctionAdComponents) {
+      return base::unexpected(base::StrCat(
+          {"Additional bid on auction with seller '", seller.Serialize(),
+           "' rejected due to too many ad component URLs."}));
+    }
+
     synth_interest_group->interest_group.ad_components.emplace();
     for (const base::Value& ad_component : *ad_components_list) {
       const std::string* ad_component_str = ad_component.GetIfString();

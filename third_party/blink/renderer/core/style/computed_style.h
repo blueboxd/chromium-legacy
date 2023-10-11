@@ -589,7 +589,7 @@ class ComputedStyle final : public ComputedStyleBase {
     // multiple rare data pointer indirections. |HasClipPath| was added as a way
     // to reduce the cost of these expensive indirections by placing a bit
     // in more easily accessible memory.
-    return HasClipPath() ? ClipPathInternal().get() : nullptr;
+    return HasClipPath() ? ClipPathInternal().Get() : nullptr;
   }
 
   // column-rule-width
@@ -2498,6 +2498,11 @@ class ComputedStyle final : public ComputedStyleBase {
             OverflowClipMargin()->GetMargin() != LayoutUnit());
   }
 
+  // Form-sizing utility function
+  bool DisableControlFixedSize() const {
+    return FormSizing() == EFormSizing::kNormal;
+  }
+
  private:
   bool IsInlineSizeContainer() const {
     return ContainerType() & kContainerTypeInlineSize;
@@ -2964,9 +2969,9 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   }
 
   // clip-patch
-  void SetClipPath(scoped_refptr<ClipPathOperation> clip_path) {
-    SetHasClipPath(clip_path.get());
-    SetClipPathInternal(std::move(clip_path));
+  void SetClipPath(ClipPathOperation* clip_path) {
+    SetHasClipPath(clip_path);
+    SetClipPathInternal(clip_path);
   }
 
   // color

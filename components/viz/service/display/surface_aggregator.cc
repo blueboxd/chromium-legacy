@@ -48,6 +48,7 @@
 #include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/overlay_transform_utils.h"
 
 namespace viz {
@@ -74,13 +75,15 @@ struct MaskFilterInfoExt {
 
     // If the embedding quad has no mask filter, then we do not have to block
     // merging.
-    if (mask_filter_info.IsEmpty())
+    if (mask_filter_info.IsEmpty()) {
       return true;
+    }
 
     // If the embedding quad has rounded corner and it is not a fast rounded
     // corner, we cannot merge.
-    if (mask_filter_info.HasRoundedCorners() && !is_fast_rounded_corner)
+    if (mask_filter_info.HasRoundedCorners() && !is_fast_rounded_corner) {
       return false;
+    }
 
     // If any of the quads in the render pass to merged has a mask filter of its
     // own, then we have to check if that has fast rounded corners and they fit
@@ -108,18 +111,27 @@ struct MaskFilterInfoExt {
         return false;
       }
 
+      // Take the bounds of the sqs filter and apply clipping rect as it may
+      // make current mask fit the |mask_filter_info|'s bounds. Not doing so may
+      // result in marking this mask not suitable for merging while it never
+      // spans outside another mask.
+      auto rounded_corner_bounds = sqs->mask_filter_info.bounds();
+      if (sqs->clip_rect.has_value()) {
+        rounded_corner_bounds.Intersect(gfx::RectF(*sqs->clip_rect));
+      }
+
       // Before checking if current mask's rounded corners do not intersect with
       // the upper level rounded corner mask, its system coordinate must be
       // transformed to that target's system coordinate.
-      gfx::MaskFilterInfo sqs_filter = sqs->mask_filter_info;
-      sqs_filter.ApplyTransform(parent_target_transform);
+      rounded_corner_bounds =
+          parent_target_transform.MapRect(rounded_corner_bounds);
 
-      // This is the only case when quads of this render pass with a mask
+      // This is the only case when quads of this render pass with the mask
       // filter info that has fast rounded corners set can be merged into the
       // embedding render pass. So, if they don't intersect with the "toplevel"
       // rounded corners, we can merge.
       if (!mask_filter_info.rounded_corner_bounds().Contains(
-              sqs_filter.bounds())) {
+              rounded_corner_bounds)) {
         return false;
       }
     }
@@ -1444,17 +1456,23 @@ void SurfaceAggregator::CopyQuadsToPass(
                         &damage_rect_in_quad_space_valid,
                         new_mask_filter_info_ext);
     } else {
-      if (quad->shared_quad_state != last_copied_source_shared_quad_state) {
+      // Here we output the optional quad's |per_quad_damage| to the
+      // |surface_damage_rect_list_|. Any non per quad damage associated with
+      // this |source_pass| will have been added to the
+      // |surface_damage_rect_list_| before this phase.
+      bool needs_sqs =
+          quad->shared_quad_state != last_copied_source_shared_quad_state;
+      bool has_per_quad_damage =
+          source_pass.has_per_quad_damage &&
+          GetOptionalDamageRectFromQuad(quad).has_value() &&
+          resolved_pass.aggregation().will_draw;
+
+      if (needs_sqs || has_per_quad_damage) {
         SharedQuadState* dest_shared_quad_state = CopySharedQuadState(
             quad->shared_quad_state, client_namespace_id, target_transform,
             clip_rect, new_mask_filter_info_ext, dest_pass);
-        // Here we output the optional quad's |per_quad_damage| to the
-        // |surface_damage_rect_list_|. Any non per quad damage associated with
-        // this |source_pass| will have been added to the
-        // |surface_damage_rect_list_| before this phase.
-        if (source_pass.has_per_quad_damage &&
-            GetOptionalDamageRectFromQuad(quad).has_value() &&
-            resolved_pass.aggregation().will_draw) {
+
+        if (has_per_quad_damage) {
           auto damage_rect_in_target_space =
               GetOptionalDamageRectFromQuad(quad);
           dest_shared_quad_state->overlay_damage_index =

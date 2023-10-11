@@ -18723,6 +18723,35 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Mobile.PasswordsSettings.BulkSavePasswordsToAccountButtonClicked">
+  <owner>nicolasmacbeth@google.com</owner>
+  <owner>tmartino@chromium.org</owner>
+  <description>
+    Reported when the user clicks on the entrypoint button of the &quot;save
+    passwords in account&quot; section. iOS only.
+  </description>
+</action>
+
+<action
+    name="Mobile.PasswordsSettings.BulkSavePasswordsToAccountDialog.Accepted">
+  <owner>nicolasmacbeth@google.com</owner>
+  <owner>tmartino@chromium.org</owner>
+  <description>
+    Reported when the user accepts the confirmation dialog to move their local
+    passwords to their account. iOS only.
+  </description>
+</action>
+
+<action
+    name="Mobile.PasswordsSettings.BulkSavePasswordsToAccountDialog.Cancelled">
+  <owner>nicolasmacbeth@google.com</owner>
+  <owner>tmartino@chromium.org</owner>
+  <description>
+    Reported when the user denies the confirmation dialog to move their local
+    passwords to their account. iOS only.
+  </description>
+</action>
+
 <action name="Mobile.Signin.SnackbarUndoTapped">
   <owner>triploblastic@chromium.org</owner>
   <owner>chrome-signin-team@google.org</owner>
@@ -24163,6 +24192,15 @@ should be able to be added at any place in this file.
   <owner>chrome-shopping@google.com</owner>
   <description>
     An attempt to permanently remove the cart module is undone.
+  </description>
+</action>
+
+<action name="NewTabPage.HistoryClusters.DiscountClicked">
+  <owner>yuezhanggg@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <description>
+    User clicks on a tile with discount in the history cluster module.
   </description>
 </action>
 
@@ -32536,6 +32574,57 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_BulkUpload_Close">
+  <owner>arthurmilchior@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    Recorded when the Bulk Upload Settings is dismissed. iOS only.
+  </description>
+</action>
+
+<action name="Signin_BulkUpload_FaceID_CannotBeStarted">
+  <owner>arthurmilchior@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    Recorded when the face id auth cannot be started in the Bulk Upload
+    Settings. iOS only.
+  </description>
+</action>
+
+<action name="Signin_BulkUpload_FaceID_Failed">
+  <owner>arthurmilchior@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    Recorded when the face id auth fails in the Bulk Upload Settings. iOS only.
+  </description>
+</action>
+
+<action name="Signin_BulkUpload_FaceID_Success">
+  <owner>arthurmilchior@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    Recorded when the face id auth is successful in the Bulk Upload Settings.
+    iOS only.
+  </description>
+</action>
+
+<action name="Signin_BulkUpload_Open">
+  <owner>arthurmilchior@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    Recorded when the Bulk Upload Settings is opened. iOS only.
+  </description>
+</action>
+
+<action name="Signin_BulkUpload_Save">
+  <owner>arthurmilchior@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    Recorded when the user presses the save button in the Bulk Upload Settings.
+    iOS only.
+  </description>
+</action>
+
 <action name="Signin_EnterpriseAccountPrompt_Cancel">
   <owner>gogerald@chromium.org</owner>
   <description>
@@ -39469,6 +39558,8 @@ should be able to be added at any place in this file.
       label="For Sharing Hub link toggle feature."/>
   <suffix name="SharingHubWebnotesStylize"
       label="For SharingHubWebnotesStylize feature."/>
+  <suffix name="ShoppingCollectionFeature"
+      label="For the explanation of what the shopping collection is."/>
   <suffix name="ShoppingListMenuItem"
       label="For ShoppingListMenuItem feature."/>
   <suffix name="ShoppingListSaveFlow"

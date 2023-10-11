@@ -4214,25 +4214,6 @@
       ]
     },
     {
-      "id": 416,
-      "cr_bugs": [1465960],
-      "description": "Disable video acceleration on Jasper Lake Intel ChromeOS devices",
-      "os": {
-        "type": "chromeos"
-      },
-      "intel_gpu_series": [
-        "jasperlake"
-      ],
-      "features": [
-        "disable_accelerated_h264_decode",
-        "disable_accelerated_h264_encode",
-        "disable_accelerated_vp8_decode",
-        "disable_accelerated_vp9_decode",
-        "disable_accelerated_vp9_encode",
-        "disable_accelerated_vp9_profile2_decode"
-      ]
-    },
-    {
       "id": 417,
       "description": "Limit D3D11VideoDecoder to 11.0 due to failures on QC chipsets.",
       "comment": [
@@ -4243,7 +4224,7 @@
       "os": {
         "type": "win"
       },
-      "vendor_id": "0x5143",
+      "vendor_id": "0x4d4f4351",
       "features": [
         "limit_d3d11_video_decoder_to_11_0"
       ]

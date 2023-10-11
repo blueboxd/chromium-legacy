@@ -118,6 +118,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kElasticOverscroll,
     &features::kPrivacyGuideAndroid,
     &features::kPrivacyGuideAndroid3,
+    &features::kPrivacyGuidePreloadAndroid,
     &features::kPrivacyGuideAndroidPostMVP,
     &features::kPushMessagingDisallowSenderIDs,
     &features::kPwaUpdateDialogForIcon,
@@ -171,6 +172,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kAndroidHatsRefactor,
     &kAndroidSearchEngineChoiceNotification,
     &kAndroidImprovedBookmarks,
+    &kAndroidNoVisibleHintForTablets,
     &kAndroidVisibleUrlTruncation,
     &kAnimatedImageDragShadow,
     &kAppMenuMobileSiteOption,
@@ -370,7 +372,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &password_manager::features::kPasskeyManagementUsingAccountSettingsAndroid,
     &password_manager::features::kPasswordEditDialogWithDetails,
     &password_manager::features::kRecoverFromNeverSaveAndroid,
-    &password_manager::features::kUnifiedPasswordManagerAndroid,
     &password_manager::features::kUnifiedPasswordManagerAndroidBranding,
     &password_manager::features::
         kUnifiedPasswordManagerLocalPasswordsMigrationWarning,
@@ -448,7 +449,7 @@ BASE_FEATURE(kAddToHomescreenIPH,
 
 BASE_FEATURE(kAdvancedPeripheralsSupport,
              "AdvancedPeripheralsSupport",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAdvancedPeripheralsSupportTabStrip,
              "AdvancedPeripheralsSupportTabStrip",
@@ -484,6 +485,10 @@ BASE_FEATURE(kAndroidSearchEngineChoiceNotification,
 
 BASE_FEATURE(kAndroidImprovedBookmarks,
              "AndroidImprovedBookmarks",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kAndroidNoVisibleHintForTablets,
+             "AndroidNoVisibleHintForTablets",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAndroidVisibleUrlTruncation,

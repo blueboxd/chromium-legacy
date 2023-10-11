@@ -276,12 +276,6 @@ BASE_FEATURE(kDesktopCaptureChangeSource,
              "DesktopCaptureChangeSource",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Adds a tab strip to PWA windows.
-// TODO(crbug.com/897314): Enable this feature.
-BASE_FEATURE(kDesktopPWAsTabStrip,
-             "DesktopPWAsTabStrip",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enable the device posture API.
 // Tracking bug for enabling device posture API: https://crbug.com/1066842.
 BASE_FEATURE(kDevicePosture,
@@ -650,6 +644,12 @@ BASE_FEATURE(kLazyInitializeMediaControls,
              "LazyInitializeMediaControls",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Using top-level document URL when create an enterprise report for legacy
+// technologies usage
+BASE_FEATURE(kLegacyTechReportTopLevelUrl,
+             "LegacyTechReportTopLevelUrl",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Configures whether Blink on Windows 8.0 and below should use out of process
 // API font fallback calls to retrieve a fallback font family name as opposed to
 // using a hard-coded font lookup table.
@@ -669,7 +669,7 @@ BASE_FEATURE(kLogJsConsoleMessages,
 // Enables a fix for a macOS IME Live Conversion issue. crbug.com/1328530.
 BASE_FEATURE(kMacImeLiveConversionFix,
              "MacImeLiveConversionFix",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Uses ThreadType::kCompositing for the main thread
 BASE_FEATURE(kMainThreadCompositingPriority,

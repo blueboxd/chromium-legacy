@@ -1644,6 +1644,12 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_o.chrome_public_unit_test_apk.filter',
         ],
       },
+      'android-pie-arm64-rel': {
+        'swarming': {
+          # TODO(crbug.com/1462745): Temporarily increase the shard to 3 for the network issue.
+          'shards': 3,
+        },
+      },
     },
   },
   'chrome_public_wpt': {
@@ -4878,7 +4884,7 @@
             # which is used by Dawn Mac x64 Release (Intel).
             'cpu': 'x86-64',
             'gpu': '8086:3e9b',
-            'os': 'Mac-13.3.1',
+            'os': 'Mac-13.3.1|Mac-13.5',
             'display_attached': '1',
           },
         },
@@ -4948,7 +4954,7 @@
             # which is used by Dawn Mac x64 Release (Intel).
             'cpu': 'x86-64',
             'gpu': '8086:3e9b',
-            'os': 'Mac-13.3.1',
+            'os': 'Mac-13.3.1|Mac-13.5',
             'display_attached': '1',
           },
         },

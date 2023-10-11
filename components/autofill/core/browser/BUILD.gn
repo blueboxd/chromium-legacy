@@ -88,6 +88,8 @@ static_library("browser") {
     "autofill_download_manager.cc",
     "autofill_download_manager.h",
     "autofill_driver.h",
+    "autofill_driver_router.cc",
+    "autofill_driver_router.h",
     "autofill_experiments.cc",
     "autofill_experiments.h",
     "autofill_external_delegate.cc",
@@ -187,6 +189,9 @@ static_library("browser") {
     "form_data_importer.h",
     "form_data_importer_utils.cc",
     "form_data_importer_utils.h",
+    "form_forest.cc",
+    "form_forest.h",
+    "form_forest_util_inl.h",
     "form_parsing/address_field.cc",
     "form_parsing/address_field.h",
     "form_parsing/autofill_parsing_utils.h",
@@ -361,6 +366,7 @@ static_library("browser") {
     "payments/mandatory_reauth_manager.h",
     "payments/offer_notification_handler.cc",
     "payments/offer_notification_handler.h",
+    "payments/offer_notification_options.h",
     "payments/otp_unmask_delegate.h",
     "payments/otp_unmask_result.h",
     "payments/payments_client.cc",
@@ -449,8 +455,7 @@ static_library("browser") {
     "ui/address_form_label_formatter.h",
     "ui/address_phone_form_label_formatter.cc",
     "ui/address_phone_form_label_formatter.h",
-    "ui/autofill_image_fetcher.cc",
-    "ui/autofill_image_fetcher.h",
+    "ui/autofill_image_fetcher_base.h",
     "ui/autofill_popup_delegate.h",
     "ui/autofill_resource_utils.cc",
     "ui/autofill_resource_utils.h",
@@ -578,6 +583,13 @@ static_library("browser") {
     ]
   }
 
+  if (!is_android) {
+    sources += [
+      "ui/autofill_image_fetcher.cc",
+      "ui/autofill_image_fetcher.h",
+    ]
+  }
+
   if (build_with_tflite_lib) {
     sources += [
       "ml_model/autofill_ml_prediction_model_handler.cc",
@@ -631,6 +643,7 @@ static_library("browser") {
     "//build:branding_buildflags",
     "//build:chromeos_buildflags",
     "//components/commerce/core:commerce_types",
+    "//components/commerce/core:utils",
     "//components/device_reauth",
     "//components/feature_engagement",
     "//components/google/core/common",
@@ -745,6 +758,8 @@ static_library("test_support") {
     "data_model/autofill_structured_address_test_utils.h",
     "data_model/test_autofill_data_model.cc",
     "data_model/test_autofill_data_model.h",
+    "form_forest_test_api.cc",
+    "form_forest_test_api.h",
     "form_structure_test_api.cc",
     "form_structure_test_api.h",
     "geo/alternative_state_name_map_test_utils.cc",
@@ -981,6 +996,7 @@ source_set("unit_tests") {
     "form_autofill_history_unittest.cc",
     "form_data_importer_unittest.cc",
     "form_data_importer_utils_unittest.cc",
+    "form_forest_unittest.cc",
     "form_parsing/address_field_unittest.cc",
     "form_parsing/birthdate_field_unittest.cc",
     "form_parsing/credit_card_field_unittest.cc",
@@ -1067,7 +1083,6 @@ source_set("unit_tests") {
     "strike_databases/strike_database_integrator_test_strike_database_unittest.cc",
     "strike_databases/strike_database_unittest.cc",
     "ui/address_combobox_model_unittest.cc",
-    "ui/autofill_image_fetcher_unittest.cc",
     "ui/country_combobox_model_unittest.cc",
     "ui/payments/bubble_show_options_unittest.cc",
     "ui/payments/card_unmask_prompt_controller_impl_unittest.cc",
@@ -1110,6 +1125,10 @@ source_set("unit_tests") {
       # Not included on iOS because the files need to be bundled specially.
       "heuristic_classification_unittests.cc",
     ]
+  }
+
+  if (!is_android) {
+    sources += [ "ui/autofill_image_fetcher_unittest.cc" ]
   }
 
   if (is_win || is_mac || is_android) {
@@ -1170,6 +1189,7 @@ source_set("unit_tests") {
     "//components/policy/core/common",
     "//components/prefs:test_support",
     "//components/resources",
+    "//components/search:search",
     "//components/security_state/core",
     "//components/signin/public/identity_manager:test_support",
     "//components/strings",

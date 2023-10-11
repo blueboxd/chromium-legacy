@@ -182,8 +182,9 @@
   BOOL inIncognito = self.browser->GetBrowserState()->IsOffTheRecord();
   UrlLoadingBrowserAgent* URLLoader =
       UrlLoadingBrowserAgent::FromBrowser(self.browser);
-  OpenDistantSessionInBackground(session, inIncognito, URLLoader,
-                                 self.loadStrategy);
+  OpenDistantSessionInBackground(session, inIncognito,
+                                 GetDefaultNumberOfTabsToLoadSimultaneously(),
+                                 URLLoader, self.loadStrategy);
 
   [self showActiveRegularTabFromRecentTabs];
 }
@@ -220,7 +221,9 @@
   _historySyncPopupCoordinator = [[HistorySyncPopupCoordinator alloc]
       initWithBaseViewController:self.recentTabsTableViewController
                          browser:self.browser
-             dedicatedSignInDone:dedicatedSignInDone
+                   showUserEmail:!dedicatedSignInDone
+               signOutIfDeclined:dedicatedSignInDone
+                      isOptional:NO
                      accessPoint:signin_metrics::AccessPoint::
                                      ACCESS_POINT_RECENT_TABS];
   _historySyncPopupCoordinator.delegate = self;
@@ -258,7 +261,7 @@
 #pragma mark - HistorySyncPopupCoordinatorDelegate
 
 - (void)historySyncPopupCoordinator:(HistorySyncPopupCoordinator*)coordinator
-         didCloseWithDeclinedByUser:(BOOL)declined {
+                didFinishWithResult:(SigninCoordinatorResult)result {
   _historySyncPopupCoordinator.delegate = nil;
   [_historySyncPopupCoordinator stop];
   _historySyncPopupCoordinator = nil;

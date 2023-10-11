@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.page_insights;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
@@ -30,14 +31,21 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.util.Batch;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsSizer;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
+import org.chromium.chrome.browser.page_insights.proto.PageInsights;
+import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.xsurface.ProcessScope;
+import org.chromium.chrome.browser.xsurface.pageinsights.PageInsightsSurfaceRenderer;
+import org.chromium.chrome.browser.xsurface.pageinsights.PageInsightsSurfaceScope;
+import org.chromium.chrome.browser.xsurface_provider.XSurfaceProcessScopeProvider;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.SheetState;
@@ -92,6 +100,14 @@ public class PageInsightsCoordinatorTest {
     private ExpandedSheetHelper mExpandedSheetHelper;
     @Mock
     private BooleanSupplier mIsPageInsightsHubEnabled;
+    @Mock
+    private ProcessScope mProcessScope;
+    @Mock
+    private PageInsightsSurfaceScope mSurfaceScope;
+    @Mock
+    private PageInsightsSurfaceRenderer mSurfaceRenderer;
+    @Mock
+    private Supplier<ShareDelegate> mShareDelegateSupplier;
 
     private PageInsightsCoordinator mPageInsightsCoordinator;
     private ManagedBottomSheetController mPageInsightsController;
@@ -106,6 +122,13 @@ public class PageInsightsCoordinatorTest {
     @Before
     public void setupTest() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> rootView().removeAllViews());
+        XSurfaceProcessScopeProvider.setProcessScopeForTesting(mProcessScope);
+        doReturn(mSurfaceScope).when(mProcessScope).obtainPageInsightsSurfaceScope(any());
+        doReturn(mSurfaceRenderer).when(mSurfaceScope).provideSurfaceRenderer();
+        doReturn(new View(ContextUtils.getApplicationContext()))
+                .when(mSurfaceRenderer)
+                .render(any(), any());
+        doReturn(false).when(mIsPageInsightsHubEnabled).getAsBoolean();
     }
 
     private static Activity getActivity() {
@@ -142,8 +165,9 @@ public class PageInsightsCoordinatorTest {
         });
         doReturn(true).when(mIsPageInsightsHubEnabled).getAsBoolean();
         mPageInsightsCoordinator = new PageInsightsCoordinator(activity, mTabProvider,
-                mPageInsightsController, mBottomUiController, mExpandedSheetHelper,
-                mBrowserControlsStateProvider, mBrowserControlsSizer, mIsPageInsightsHubEnabled);
+                mShareDelegateSupplier, mPageInsightsController, mBottomUiController,
+                mExpandedSheetHelper, mBrowserControlsStateProvider, mBrowserControlsSizer,
+                mIsPageInsightsHubEnabled);
         mTestSupport = new BottomSheetTestSupport(mPageInsightsController);
         waitForAnimationToFinish();
     }

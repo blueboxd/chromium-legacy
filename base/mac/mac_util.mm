@@ -574,7 +574,7 @@ void OpenSystemSettingsPane(SystemSettingsPane pane) {
         url = @"x-apple.systempreferences:com.apple.Trackpad-Settings."
               @"extension";
       } else {
-        url = @"x-apple.systempreferences:com.apple.preference.trackpad";
+        pane_file = @"/System/Library/PreferencePanes/Trackpad.prefPane";
       }
       break;
   }

@@ -93,6 +93,12 @@ chromium-metrics-reviews@google.com.
   <variant name=".None" summary="neither consumer nor enterprise"/>
 </variants>
 
+<variants name="RequestedSkippedOrChecked">
+  <variant name="" summary="requested"/>
+  <variant name="Checked" summary="checked"/>
+  <variant name="Skipped" summary="skipped"/>
+</variants>
+
 <variants name="ThrottleProcess">
   <variant name="Browser" summary="Browser"/>
   <variant name="Renderer" summary="Renderer"/>
@@ -135,7 +141,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.Android.RealTimeAllowlist.IsInAllowlistElapsed"
-    units="ms" expires_after="2023-12-31">
+    units="ms" expires_after="2024-03-03">
   <owner>skrakowi@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -181,7 +187,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SafeBrowsing.Android.RealTimeAllowlist.PopulateResourceFileElapsed"
-    units="ms" expires_after="2023-12-31">
+    units="ms" expires_after="2024-03-03">
   <owner>skrakowi@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -831,7 +837,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.ExtensionTelemetry.Signals.Discarded"
-    enum="SBExtensionTelemetrySignalsSignalType" expires_after="2023-12-31">
+    enum="SBExtensionTelemetrySignalsSignalType" expires_after="2024-03-03">
   <owner>anunoy@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1539,6 +1545,17 @@ chromium-metrics-reviews@google.com.
     Logs whether the Safe Browsing check is completed when a navigation response
     has arrived. If not, the navigation will be deferred until the Safe Browsing
     check is completed. Logs on each navigation response policy callback.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.IOS.SubframeCheck.Skipped" enum="BooleanSkipped"
+    expires_after="2024-09-26">
+  <owner>ajuma@chromium.org</owner>
+  <owner>joemerramos@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Logs whether a subframe Safe Browsing check is skipped. This is recorded
+    once for every subframe navigation policy decision.
   </summary>
 </histogram>
 
@@ -2329,6 +2346,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.TailoredSecurity.ShouldRetryOutcome"
+    enum="SafeBrowsingTailoredSecurityShouldRetryOutcome"
+    expires_after="2024-09-06">
+  <owner>jacastro@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Records the outcome of running the tailored security retry logic. It is
+    logged once each time Chrome starts for syncing users in the cases where the
+    retry attempt could occur.
+  </summary>
+</histogram>
+
 <histogram
     name="SafeBrowsing.TailoredSecurity.SyncPromptEnabledNotificationResult"
     enum="SafeBrowsingTailoredSecurityNotificationResult"
@@ -3030,7 +3059,8 @@ failing to fetch the updates which puts users' security at risk. -->
   </token>
 </histogram>
 
-<histogram name="SafeBrowsing.{Process}Throttle.RequestDestination"
+<histogram
+    name="SafeBrowsing.{Process}Throttle.RequestDestination{RequestedSkippedOrChecked}"
     enum="RequestDestination" expires_after="2024-08-16">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
@@ -3039,6 +3069,7 @@ failing to fetch the updates which puts users' security at risk. -->
     loader throttle. Logged each time WillStartRequest is called.
   </summary>
   <token key="Process" variants="ThrottleProcess"/>
+  <token key="RequestedSkippedOrChecked" variants="RequestedSkippedOrChecked"/>
 </histogram>
 
 <histogram name="SafeBrowsing.{Process}Throttle.TotalDelay2{ResponseType}"

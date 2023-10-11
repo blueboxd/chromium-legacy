@@ -51,10 +51,6 @@
 #include "chromeos/ash/components/drivefs/drivefs_bootstrap.h"
 #include "chromeos/ash/components/drivefs/drivefs_pin_manager.h"
 #include "chromeos/ash/components/drivefs/sync_status_tracker.h"
-#include "chromeos/ash/components/network/network_handler.h"
-#include "chromeos/ash/components/network/network_state.h"
-#include "chromeos/ash/components/network/network_state_handler.h"
-#include "chromeos/ash/components/network/network_state_handler_observer.h"
 #include "chromeos/components/drivefs/mojom/drivefs_native_messaging.mojom.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/crosapi/mojom/drive_integration_service.mojom.h"
@@ -95,6 +91,7 @@ using drivefs::pinning::PinManager;
 using network::NetworkConnectionTracker;
 using network::mojom::ConnectionType;
 using prefs::kDriveFsBulkPinningEnabled;
+using util::ConnectionStatus;
 
 // Name of the directory used to store metadata.
 const base::FilePath::CharType kMetadataDirectory[] = FILE_PATH_LITERAL("meta");
@@ -384,110 +381,36 @@ void RecordBulkPinningMountFailureReason(const Profile* profile,
 }  // namespace
 
 // Observes changes in Drive's Preferences and network connections.
-class DriveIntegrationService::PrefWatcher : ash::NetworkStateHandlerObserver {
- public:
-  using NetworkHandler = ash::NetworkHandler;
-  using NetworkState = ash::NetworkState;
-  using NetworkStateHandler = ash::NetworkStateHandler;
-
-  explicit PrefWatcher(DriveIntegrationService* const service)
-      : service_(service) {
-    DCHECK(service_);
-    pref_change_registrar_.Init(service_->GetPrefs());
-    pref_change_registrar_.Add(
-        prefs::kDisableDrive,
-        base::BindRepeating(&PrefWatcher::ToggleDrive,
-                            weak_ptr_factory_.GetWeakPtr()));
-    pref_change_registrar_.Add(
-        prefs::kDisableDriveOverCellular,
-        base::BindRepeating(&PrefWatcher::ToggleMetered,
-                            weak_ptr_factory_.GetWeakPtr()));
-    if (ash::features::IsDriveFsMirroringEnabled()) {
-      pref_change_registrar_.Add(
-          prefs::kDriveFsEnableMirrorSync,
-          base::BindRepeating(&PrefWatcher::ToggleMirroring,
-                              weak_ptr_factory_.GetWeakPtr()));
-    }
-
-    if (util::IsDriveFsBulkPinningEnabled(service_->profile_)) {
-      pref_change_registrar_.Add(
-          kDriveFsBulkPinningEnabled,
-          base::BindRepeating(&PrefWatcher::ToggleBulkPinning,
-                              weak_ptr_factory_.GetWeakPtr()));
-    }
-
-    DCHECK(!network_state_handler_);
-    if (!NetworkHandler::IsInitialized()) {
-      return;  // Test environment.
-    }
-
-    network_state_handler_ = NetworkHandler::Get()->network_state_handler();
-    DCHECK(network_state_handler_);
-    network_state_handler_->AddObserver(this);
+void DriveIntegrationService::RegisterPrefs() {
+  registrar_.Init(GetPrefs());
+  registrar_.Add(
+      prefs::kDisableDrive,
+      base::BindRepeating(&DriveIntegrationService::OnDrivePrefChanged,
+                          base::Unretained(this)));
+  registrar_.Add(prefs::kDisableDriveOverCellular,
+                 base::BindRepeating(&DriveIntegrationService::OnNetworkChanged,
+                                     base::Unretained(this)));
+  if (ash::features::IsDriveFsMirroringEnabled()) {
+    registrar_.Add(
+        prefs::kDriveFsEnableMirrorSync,
+        base::BindRepeating(&DriveIntegrationService::OnMirroringPrefChanged,
+                            base::Unretained(this)));
   }
 
-  ~PrefWatcher() override {
-    if (network_state_handler_) {
-      network_state_handler_->RemoveObserver(this);
-    }
+  if (util::IsDriveFsBulkPinningEnabled(profile_)) {
+    registrar_.Add(
+        kDriveFsBulkPinningEnabled,
+        base::BindRepeating(&DriveIntegrationService::ToggleBulkPinning,
+                            base::Unretained(this)));
   }
 
- private:
-  void ToggleMetered() {
-    VLOG(1) << "ToggleMetered";
-    service_->UpdateNetworkState();
+  if (!ash::NetworkHandler::IsInitialized()) {
+    return;  // Test environment.
   }
 
-  void ToggleDrive() {
-    VLOG(1) << "ToggleDrive";
-    service_->SetEnabled(
-        !service_->GetPrefs()->GetBoolean(prefs::kDisableDrive));
-  }
-
-  void ToggleMirroring() {
-    VLOG(1) << "ToggleMirroring";
-    if (!ash::features::IsDriveFsMirroringEnabled()) {
-      return;
-    }
-
-    if (service_->GetPrefs()->GetBoolean(prefs::kDriveFsEnableMirrorSync)) {
-      service_->ToggleMirroring(
-          true, base::BindOnce(
-                    &DriveIntegrationService::OnEnableMirroringStatusUpdate,
-                    service_->weak_ptr_factory_.GetWeakPtr()));
-    } else {
-      service_->ToggleMirroring(
-          false, base::BindOnce(
-                     &DriveIntegrationService::OnDisableMirroringStatusUpdate,
-                     service_->weak_ptr_factory_.GetWeakPtr()));
-    }
-  }
-
-  void ToggleBulkPinning() {
-    VLOG(1) << "ToggleBulkPinning";
-    service_->ToggleBulkPinning();
-  }
-
-  void DefaultNetworkChanged(const NetworkState*) override {
-    VLOG(1) << "DefaultNetworkChanged";
-    service_->UpdateNetworkState();
-  }
-
-  void OnShuttingDown() override {
-    VLOG(1) << "OnShuttingDown";
-    if (network_state_handler_) {
-      network_state_handler_->RemoveObserver(this);
-      network_state_handler_ = nullptr;
-    }
-  }
-
-  const raw_ptr<DriveIntegrationService, ExperimentalAsh> service_;
-  PrefChangeRegistrar pref_change_registrar_;
-  raw_ptr<NetworkStateHandler, ExperimentalAsh> network_state_handler_ =
-      nullptr;
-
-  base::WeakPtrFactory<PrefWatcher> weak_ptr_factory_{this};
-};
+  network_state_handler_.Observe(
+      ash::NetworkHandler::Get()->network_state_handler());
+}
 
 class DriveIntegrationService::DriveFsHolder
     : public drivefs::DriveFsHost::Delegate,
@@ -680,7 +603,7 @@ class DriveIntegrationService::DriveFsHolder
 };
 
 DriveIntegrationService::DriveIntegrationService(
-    Profile* profile,
+    Profile* const profile,
     const std::string& test_mount_point_name,
     const base::FilePath& test_cache_root,
     DriveFsMojoListenerFactory test_drivefs_mojo_listener_factory)
@@ -690,7 +613,7 @@ DriveIntegrationService::DriveIntegrationService(
                                 ? test_cache_root
                                 : util::GetCacheRootPath(profile)),
       drivefs_holder_(std::make_unique<DriveFsHolder>(
-          profile_,
+          profile,
           this,
           std::move(test_drivefs_mojo_listener_factory))) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -701,7 +624,7 @@ DriveIntegrationService::DriveIntegrationService(
        base::WithBaseSyncPrimitives()});
 
   if (util::IsDriveAvailableForProfile(profile)) {
-    pref_watcher_ = std::make_unique<PrefWatcher>(this);
+    RegisterPrefs();
   }
 
   bool migrated_to_drivefs =
@@ -714,16 +637,10 @@ DriveIntegrationService::DriveIntegrationService(
         blocking_task_runner_.get()));
   }
 
-  SetEnabled(drive::util::IsDriveEnabledForProfile(profile));
+  SetEnabled(util::IsDriveEnabledForProfile(profile));
 }
 
-DriveIntegrationService::~DriveIntegrationService() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-}
-
-PrefService* DriveIntegrationService::GetPrefs() const {
-  return profile_->GetPrefs();
-}
+DriveIntegrationService::~DriveIntegrationService() = default;
 
 void DriveIntegrationService::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -1022,7 +939,7 @@ bool DriveIntegrationService::AddDriveMountPointAfterMounted() {
     }
   }
 
-  UpdateNetworkState();
+  OnNetworkChanged();
 
   if (!GetPrefs()->GetBoolean(prefs::kDriveFsPinnedMigrated)) {
     MigratePinnedFiles();
@@ -1050,8 +967,6 @@ void DriveIntegrationService::RemoveDriveMountPoint() {
 
   if (pin_manager_) {
     pin_manager_->Stop();
-    pin_manager_->RemoveObserver(this);
-    GetDriveFsHost()->RemoveObserver(pin_manager_.get());
     pin_manager_.reset();
   }
 }
@@ -1150,7 +1065,7 @@ void DriveIntegrationService::OnMounted(const base::FilePath& mount_path) {
       OnProgress(pin_manager_->GetProgress());
     }
 
-    GetDriveFsHost()->AddObserver(pin_manager_.get());
+    pin_manager_->SetDriveFsHost(GetDriveFsHost());
 
     // Ensure the new PinManager has the right view of the network state.
     pin_manager_->SetOnline(is_online_);
@@ -1302,6 +1217,7 @@ void DriveIntegrationService::PinFiles(
 }
 
 void DriveIntegrationService::ToggleBulkPinning() {
+  VLOG(1) << "ToggleBulkPinning";
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!pin_manager_) {
     VLOG(1) << "No bulk-pinning manager";
@@ -1350,8 +1266,10 @@ void DriveIntegrationService::OnGetOfflineFilesSpaceUsage(
 
 void DriveIntegrationService::ClearOfflineFiles(
     base::OnceCallback<void(drive::FileError)> callback) {
-  if (!util::IsDriveFsBulkPinningEnabled(profile_) || !IsMounted() ||
-      !GetDriveFsInterface()) {
+  if ((!util::IsDriveFsBulkPinningEnabled(profile_) &&
+       !base::FeatureList::IsEnabled(
+           ash::features::kFilesGoogleDriveSettingsPage)) ||
+      !IsMounted() || !GetDriveFsInterface()) {
     std::move(callback).Run(drive::FILE_ERROR_SERVICE_UNAVAILABLE);
     return;
   }
@@ -1743,12 +1661,11 @@ void DriveIntegrationService::GetDocsOfflineStats(
   GetDriveFsInterface()->GetDocsOfflineStats(std::move(callback));
 }
 
-void DriveIntegrationService::UpdateNetworkState() {
-  const util::ConnectionStatus status =
-      util::GetDriveConnectionStatus(profile_);
-  VLOG(1) << "UpdateNetworkState: " << status;
+void DriveIntegrationService::OnNetworkChanged() {
+  const ConnectionStatus status = util::GetDriveConnectionStatus(profile_);
+  VLOG(1) << "OnNetworkChanged: " << status;
 
-  using enum util::ConnectionStatus;
+  using enum ConnectionStatus;
   is_online_ = status == kMetered || status == kConnected;
 
   if (DriveFs* const drivefs = GetDriveFsInterface()) {
@@ -1769,6 +1686,40 @@ void DriveIntegrationService::UpdateNetworkState() {
   if (pin_manager_) {
     pin_manager_->SetOnline(is_online_);
   }
+}
+
+void DriveIntegrationService::OnDrivePrefChanged() {
+  VLOG(1) << "OnDrivePrefChanged";
+  SetEnabled(!GetPrefs()->GetBoolean(prefs::kDisableDrive));
+}
+
+void DriveIntegrationService::OnMirroringPrefChanged() {
+  VLOG(1) << "OnMirroringPrefChanged";
+  if (!ash::features::IsDriveFsMirroringEnabled()) {
+    return;
+  }
+
+  if (GetPrefs()->GetBoolean(prefs::kDriveFsEnableMirrorSync)) {
+    ToggleMirroring(
+        true,
+        base::BindOnce(&DriveIntegrationService::OnEnableMirroringStatusUpdate,
+                       weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    ToggleMirroring(
+        false,
+        base::BindOnce(&DriveIntegrationService::OnDisableMirroringStatusUpdate,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void DriveIntegrationService::DefaultNetworkChanged(const ash::NetworkState*) {
+  VLOG(1) << "DefaultNetworkChanged";
+  OnNetworkChanged();
+}
+
+void DriveIntegrationService::OnShuttingDown() {
+  VLOG(1) << "OnShuttingDown";
+  network_state_handler_.Reset();
 }
 
 //===================== DriveIntegrationServiceFactory =======================

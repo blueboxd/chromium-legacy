@@ -373,13 +373,14 @@ const FeatureEntry::FeatureParam
         {kMagicStackMostVisitedModuleParam, "true"},
         {kReducedSpaceParam, "-80"},
         {kHideIrrelevantModulesParam, "true"}};
-const FeatureEntry::FeatureParam kMagicStackPushedDown[] = {
+const FeatureEntry::FeatureParam kMagicStackReducedNTPTopSpace[] = {
     {kMagicStackMostVisitedModuleParam, "false"},
-    {kReducedSpaceParam, "-30"}};
-const FeatureEntry::FeatureParam kMagicStackPushedDownHidIrrelevantModules[] = {
-    {kMagicStackMostVisitedModuleParam, "false"},
-    {kReducedSpaceParam, "-30"},
-    {kHideIrrelevantModulesParam, "true"}};
+    {kReducedSpaceParam, "20"}};
+const FeatureEntry::FeatureParam
+    kMagicStackReducedNTPTopSpaceHidIrrelevantModules[] = {
+        {kMagicStackMostVisitedModuleParam, "false"},
+        {kReducedSpaceParam, "20"},
+        {kHideIrrelevantModulesParam, "true"}};
 
 const FeatureEntry::FeatureVariation kMagicStackVariations[]{
     {"Most Visited Tiles in Magic Stack", kMagicStackMostVisitedModule,
@@ -387,11 +388,11 @@ const FeatureEntry::FeatureVariation kMagicStackVariations[]{
     {"Most Visited Tiles in Magic Stack and hide irrelevant modules",
      kMagicStackMostVisitedModuleHideIrrelevantModules,
      std::size(kMagicStackMostVisitedModuleHideIrrelevantModules), nullptr},
-    {"Magic Stack with more NTP Top Space", kMagicStackPushedDown,
-     std::size(kMagicStackPushedDown), nullptr},
-    {"Magic Stack with more NTP Top Space and hide irrelevant modules",
-     kMagicStackPushedDownHidIrrelevantModules,
-     std::size(kMagicStackPushedDownHidIrrelevantModules), nullptr},
+    {"Magic Stack with less NTP Top Space", kMagicStackReducedNTPTopSpace,
+     std::size(kMagicStackReducedNTPTopSpace), nullptr},
+    {"Magic Stack with less NTP Top Space and hide irrelevant modules",
+     kMagicStackReducedNTPTopSpaceHidIrrelevantModules,
+     std::size(kMagicStackReducedNTPTopSpaceHidIrrelevantModules), nullptr},
 };
 
 const FeatureEntry::FeatureParam kEnableDefaultModel[] = {
@@ -729,6 +730,7 @@ const FeatureEntry::Choice kReplaceSyncPromosWithSignInPromosChoices[] = {
      "FeedBottomSyncStringRemoval,"
      "SyncEnableContactInfoDataTypeInTransportMode,"
      "SyncEnableContactInfoDataTypeForCustomPassphraseUsers,"
+     "SyncEnableBatchUploadLocalData,"
      "EnablePreferencesAccountStorage"},
 };
 
@@ -1030,9 +1032,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSynthesizedRestoreSessionName,
      flag_descriptions::kSynthesizedRestoreSessionDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kSynthesizedRestoreSession)},
-    {"enable-fullscreen-api", flag_descriptions::kEnableFullscreenAPIName,
-     flag_descriptions::kEnableFullscreenAPIDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(web::features::kEnableFullscreenAPI)},
     {"enable-tailored-security-integration",
      flag_descriptions::kTailoredSecurityIntegrationName,
      flag_descriptions::kTailoredSecurityIntegrationDescription,
@@ -1418,6 +1417,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          safe_browsing::kFriendlierSafeBrowsingSettingsStandardProtection)},
+    {"enable-red-interstitial-facelift",
+     flag_descriptions::kEnableRedInterstitialFaceliftName,
+     flag_descriptions::kEnableRedInterstitialFaceliftDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(safe_browsing::kRedInterstitialFacelift)},
     {"show-inactive-tabs-count", flag_descriptions::kShowInactiveTabsCountName,
      flag_descriptions::kShowInactiveTabsCountDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kShowInactiveTabsCount)},
@@ -1704,11 +1708,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kInactiveTabsMoveLimitName,
      flag_descriptions::kInactiveTabsMoveLimitDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kInactiveTabsMoveLimit)},
-    {"sync-enable-batch-upload-local-data",
-     flag_descriptions::kSyncEnableBatchUploadLocalDataName,
-     flag_descriptions::kSyncEnableBatchUploadLocalDataDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(syncer::kSyncEnableBatchUploadLocalData)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
@@ -1863,6 +1862,14 @@ NSMutableDictionary* CreateExperimentalTestingPolicies() {
     [testing_policies addEntriesFromDictionary:@{password_manager_key : @NO}];
     [allowed_experimental_policies addObject:password_manager_key];
   }
+
+  if ([defaults boolForKey:@"EnableUserPolicyMerge"]) {
+    NSString* user_policy_merge_key =
+        base::SysUTF8ToNSString(policy::key::kCloudUserPolicyMerge);
+    [testing_policies addEntriesFromDictionary:@{user_policy_merge_key : @YES}];
+    [allowed_experimental_policies addObject:user_policy_merge_key];
+  }
+
   if ([defaults boolForKey:@"AddManagedBookmarks"]) {
     NSString* managed_bookmarks_key =
         base::SysUTF8ToNSString(policy::key::kManagedBookmarks);

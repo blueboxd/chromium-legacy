@@ -10,7 +10,8 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
-#include "components/commerce/core/commerce_feature_list.h"
+#include "components/autofill/core/browser/payments/offer_notification_options.h"
+#include "components/commerce/core/commerce_utils.h"
 #include "content/public/test/browser_test.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -79,9 +80,7 @@ class OfferNotificationBubbleViewPixelBrowserTest
         views::test::AnyWidgetTestPasskey{},
         OfferNotificationBubbleViews::kViewClassName);
 
-    autofill_client->UpdateOfferNotification(
-        &offer, /*notification_has_been_shown=*/true,
-        /*expand_notification_icon=*/false);
+    autofill_client->UpdateOfferNotification(&offer, {});
     OfferNotificationBubbleControllerImpl* controller = GetController();
     EXPECT_TRUE(controller);
     // Ensure the window is active before reshowing the bubble.

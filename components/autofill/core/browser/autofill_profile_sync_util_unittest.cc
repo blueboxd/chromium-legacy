@@ -71,12 +71,12 @@ AutofillProfile ConstructCompleteProfile() {
   profile.SetRawInfo(COMPANY_NAME, u"Google, Inc.");
   profile.SetRawInfoWithVerificationStatus(
       ADDRESS_HOME_STREET_ADDRESS,
-      u"123 Fake St. Dep Premise Marcos y Oliva\n"
+      u"123 Fake St. Premise Marcos y Oliva\n"
       u"Apt. 10 Floor 2 Red tree",
       VerificationStatus::kObserved);
 
   // Set testing values and statuses for the address.
-  EXPECT_EQ(u"123 Fake St. Dep Premise Marcos y Oliva",
+  EXPECT_EQ(u"123 Fake St. Premise Marcos y Oliva",
             profile.GetRawInfo(ADDRESS_HOME_LINE1));
   EXPECT_EQ(u"Apt. 10 Floor 2 Red tree",
             profile.GetRawInfo(ADDRESS_HOME_LINE2));
@@ -112,11 +112,12 @@ AutofillProfile ConstructCompleteProfile() {
 
   profile.SetRawInfoWithVerificationStatus(
       ADDRESS_HOME_STREET_NAME, u"Fake St.", VerificationStatus::kFormatted);
-  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_DEPENDENT_STREET_NAME,
-                                           u"Dep",
-                                           VerificationStatus::kFormatted);
 
   profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_HOUSE_NUMBER, u"123",
+                                           VerificationStatus::kFormatted);
+
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_STREET_LOCATION,
+                                           u"123 Fake St.",
                                            VerificationStatus::kFormatted);
 
   profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_SUBPREMISE,
@@ -126,9 +127,6 @@ AutofillProfile ConstructCompleteProfile() {
                                            VerificationStatus::kParsed);
   profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_FLOOR, u"2",
                                            VerificationStatus::kParsed);
-
-  profile.SetRawInfoWithVerificationStatus(
-      ADDRESS_HOME_PREMISE_NAME, u"Premise", VerificationStatus::kFormatted);
   profile.set_language_code("en");
 
   // Set testing values for the birthdate.
@@ -206,10 +204,10 @@ AutofillProfileSpecifics ConstructCompleteSpecifics() {
   // Set values and statuses for the address.
   // Address lines are derived from the home street address and do not have an
   // independent status.
-  specifics.set_address_home_line1("123 Fake St. Dep Premise Marcos y Oliva");
+  specifics.set_address_home_line1("123 Fake St. Premise Marcos y Oliva");
   specifics.set_address_home_line2("Apt. 10 Floor 2 Red tree");
   specifics.set_address_home_street_address(
-      "123 Fake St. Dep Premise Marcos y Oliva\n"
+      "123 Fake St. Premise Marcos y Oliva\n"
       "Apt. 10 Floor 2 Red tree");
   specifics.set_address_home_street_address_status(
       sync_pb::AutofillProfileSpecifics_VerificationStatus::
@@ -219,12 +217,12 @@ AutofillProfileSpecifics ConstructCompleteSpecifics() {
   specifics.set_address_home_thoroughfare_name_status(
       sync_pb::AutofillProfileSpecifics_VerificationStatus_FORMATTED);
 
-  specifics.set_address_home_dependent_thoroughfare_name("Dep");
-  specifics.set_address_home_dependent_thoroughfare_name_status(
-      sync_pb::AutofillProfileSpecifics_VerificationStatus_FORMATTED);
-
   specifics.set_address_home_thoroughfare_number("123");
   specifics.set_address_home_thoroughfare_number_status(
+      sync_pb::AutofillProfileSpecifics_VerificationStatus_FORMATTED);
+
+  specifics.set_address_home_street_location("123 Fake St.");
+  specifics.set_address_home_street_location_status(
       sync_pb::AutofillProfileSpecifics_VerificationStatus_FORMATTED);
 
   specifics.set_address_home_subpremise_name("Apt. 10 Floor 2");
@@ -238,10 +236,6 @@ AutofillProfileSpecifics ConstructCompleteSpecifics() {
   specifics.set_address_home_floor("2");
   specifics.set_address_home_floor_status(
       sync_pb::AutofillProfileSpecifics_VerificationStatus_PARSED);
-
-  specifics.set_address_home_premise_name("Premise");
-  specifics.set_address_home_premise_name_status(
-      sync_pb::AutofillProfileSpecifics_VerificationStatus_FORMATTED);
 
   specifics.set_address_home_city("Mountain View");
   specifics.set_address_home_city_status(

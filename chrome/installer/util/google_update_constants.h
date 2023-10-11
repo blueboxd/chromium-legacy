@@ -51,6 +51,7 @@ extern const wchar_t kRegCleanInstallRequiredForVersionBelowField[];
 extern const wchar_t kRegClientField[];
 extern const wchar_t kRegCommandLineField[];
 extern const wchar_t kRegCriticalVersionField[];
+extern const wchar_t kRegDefaultField[];
 extern const wchar_t kRegDidRunField[];
 extern const wchar_t kRegDowngradeCleanupCommandField[];
 extern const wchar_t kRegEulaAceptedField[];

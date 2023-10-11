@@ -388,6 +388,9 @@ chromium-metrics-reviews@google.com.
                highlights"/>
   <variant name="IPH_SharingHubLinkToggle"
       summary="turning on link sharing in the Sharing Hub"/>
+  <variant name="IPH_ShoppingCollectionFeature"
+      summary="UI that is shown in the bookmark save flow when a page is
+               saved to the shopping collection"/>
   <variant name="IPH_ShoppingListMenuItem"
       summary="A text bubble showing that a product can be tracked from the
                overflow menu"/>
@@ -584,7 +587,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tutorial{TutorialID}.Completion" enum="BooleanSuccess"
-    expires_after="2023-12-31">
+    expires_after="2024-03-03">
   <owner>dpenning@chromium.org</owner>
   <owner>dfried@chromium.org</owner>
   <summary>
@@ -595,7 +598,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tutorial{TutorialID}.IPHLinkClicked" enum="BooleanSuccess"
-    expires_after="2023-12-31">
+    expires_after="2024-03-03">
   <owner>dpenning@chromium.org</owner>
   <owner>dfried@chromium.org</owner>
   <summary>

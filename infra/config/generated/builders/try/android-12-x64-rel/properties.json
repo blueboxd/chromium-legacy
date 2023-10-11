@@ -11,7 +11,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "android-12-x64-rel",
-              "project": "chromium"
+              "project": "chromium-m118"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-android-archive",
@@ -43,12 +43,9 @@
         {
           "bucket": "ci",
           "builder": "android-12-x64-rel",
-          "project": "chromium"
+          "project": "chromium-m118"
         }
-      ],
-      "rts_config": {
-        "condition": "QUICK_RUN_ONLY"
-      }
+      ]
     }
   },
   "$build/code_coverage": {

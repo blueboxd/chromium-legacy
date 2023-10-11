@@ -58,6 +58,7 @@
 <translation id="124678866338384709">Затваряне на текущия раздел</translation>
 <translation id="1246905108078336582">Искате ли да премахнете предложението от буферната памет?</translation>
 <translation id="1258753120186372309">Драскулка на Google: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1263063910731171689">Вече в „Следено“ ще виждате съдържание от и за <ph name="SITE_NAME" />. Сайтовете и търсенията, които следвате, се запазват в профила ви в Google. Можете да ги управлявате от настройките по всяко време.</translation>
 <translation id="1263231323834454256">Списък за четене</translation>
 <translation id="1266864766717917324">Споделянето на <ph name="CONTENT_TYPE" /> не бе възможно</translation>
 <translation id="1269129608791067105">Тук ще се показва историята ви</translation>
@@ -136,6 +137,7 @@
 <translation id="1671236975893690980">Предстои изтегляне…</translation>
 <translation id="1672586136351118594">Да не се показва отново</translation>
 <translation id="1680919990519905526">Пазар. с Google Обектив <ph name="BEGIN_NEW" />Ново<ph name="END_NEW" /></translation>
+<translation id="1687482373098770139">Скоро в „Следено“ ще виждате съдържание от и за <ph name="SITE_NAME" />. Сайтовете и търсенията, които следвате, се запазват в профила ви в Google. Можете да ги управлявате от настройките по всяко време.</translation>
 <translation id="1702543251015153180">Да се променят ли настройките ви за тъмната тема?</translation>
 <translation id="1702907158640575240">Управляван браузър</translation>
 <translation id="1710099199314114079">Превключване или затваряне на раздели</translation>
@@ -310,8 +312,10 @@
 <translation id="265156376773362237">Стандартно предварит. зареждане</translation>
 <translation id="2656405586795711023">Уеб приложения</translation>
 <translation id="2669454659051515572">Всеки, който използва това устройство, може да преглежда изтеглените файлове</translation>
+<translation id="2673169232805572412">Ако сайт се опита да открадне паролата ви или изтеглите опасен файл, Chrome може да изпрати до Google URL адресите и част от съдържанието на страницата</translation>
 <translation id="2702516483241149200">Ново: споделяне на връзка, която превърта до този текст</translation>
 <translation id="2708051474374549906">Проактивна защита в реално време срещу опасни сайтове, изтегляния и разширения, която работи чрез изпращане на данни за сърфирането ви до Google</translation>
+<translation id="2708226184420201102">Отваряне на <ph name="PRODUCT_NAME" /> в браузъра</translation>
 <translation id="271033894570825754">Създаване</translation>
 <translation id="2711073837061989559">Експерименти</translation>
 <translation id="2718352093833049315">Само при Wi-Fi</translation>
@@ -340,6 +344,7 @@
 <translation id="2870560284913253234">Сайт</translation>
 <translation id="2871733351037274014">Предварително зареждане на страници</translation>
 <translation id="2876136027428473467"><ph name="CHILD_NAME" /> иска да одобрите този уебсайт:</translation>
+<translation id="2876628302275096482">Научете повече за това <ph name="BEGIN_LINK" />как Chrome се грижи за поверителността на данните ви<ph name="END_LINK" /></translation>
 <translation id="2886836735871983413">Когато сърфирате в мрежата, тук ще се показва списък със сайтове</translation>
 <translation id="2888126860611144412">Всичко за Chrome</translation>
 <translation id="2891154217021530873">Спиране на зареждането на страницата</translation>
@@ -1241,6 +1246,7 @@
 <translation id="7431991332293347422">Контролирайте начина, по който историята ви на сърфиране се използва за персонализиране на търсенето и др.</translation>
 <translation id="7435356471928173109">Изключено от администратора ви</translation>
 <translation id="7437998757836447326">Изход от Chrome</translation>
+<translation id="7450926666485653189">До Google се изпраща усложнена част от URL адреса чрез поверителен сървър, който скрива IP адреса ви</translation>
 <translation id="7453467225369441013">Ще излезете от повечето сайтове, но не и от профила си в Google.</translation>
 <translation id="7453810262525006706">Свиване до страничен изглед</translation>
 <translation id="7454641608352164238">Няма достатъчно място</translation>
@@ -1470,6 +1476,7 @@
 <translation id="8497242791509864205">Отваряне на опциите за сортиране</translation>
 <translation id="8497480609928300907">Обяснение на ръководството за поверителност</translation>
 <translation id="8497726226069778601">Тук няма нищо… засега</translation>
+<translation id="8501423924927196358">Индикатор за зареждането на Page Insights</translation>
 <translation id="8503559462189395349">Пароли в Chrome</translation>
 <translation id="8503813439785031346">Потребителско име</translation>
 <translation id="8505766168025405649">Вижте известието за състоянието на изтегляне</translation>

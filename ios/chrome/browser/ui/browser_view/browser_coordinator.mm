@@ -1516,13 +1516,20 @@ enum class ToolbarKind {
 }
 
 - (void)showPaymentsBottomSheet:(const autofill::FormActivityParams&)params {
+  if (self.paymentsSuggestionBottomSheetCoordinator) {
+    return;
+  }
   self.paymentsSuggestionBottomSheetCoordinator =
       [[PaymentsSuggestionBottomSheetCoordinator alloc]
           initWithBaseViewController:self.viewController
                              browser:self.browser
                               params:params];
-  self.paymentsSuggestionBottomSheetCoordinator.applicationCommandsHandler =
-      HandlerForProtocol(self.dispatcher, ApplicationCommands);
+  self.paymentsSuggestionBottomSheetCoordinator
+      .applicationSettingsCommandsHandler =
+      HandlerForProtocol(self.dispatcher, ApplicationSettingsCommands);
+  self.paymentsSuggestionBottomSheetCoordinator
+      .browserCoordinatorCommandsHandler =
+      HandlerForProtocol(self.dispatcher, BrowserCoordinatorCommands);
   [self.paymentsSuggestionBottomSheetCoordinator start];
 }
 
@@ -1738,6 +1745,11 @@ enum class ToolbarKind {
   // Preload VoiceSearchController and views and view controllers needed
   // for voice search.
   [_voiceSearchController prepareToAppear];
+}
+
+- (void)dismissPaymentSuggestions {
+  [self.paymentsSuggestionBottomSheetCoordinator stop];
+  self.paymentsSuggestionBottomSheetCoordinator = nil;
 }
 
 #pragma mark - DefaultPromoCommands
@@ -2032,6 +2044,7 @@ enum class ToolbarKind {
       initWithBaseViewController:self.viewController
                          browser:self.browser];
   pageInfoCoordinator.presentationProvider = self;
+  [self.pageInfoCoordinator stop];
   self.pageInfoCoordinator = pageInfoCoordinator;
   [self.pageInfoCoordinator start];
 }
@@ -2058,7 +2071,9 @@ enum class ToolbarKind {
 }
 
 - (void)openPasswordSettings {
-  CHECK(!self.passwordSettingsCoordinator);
+  // TODO(crbug.com/1464966): Switch back to DCHECK if the number of reports is
+  // low.
+  DUMP_WILL_BE_CHECK(!self.passwordSettingsCoordinator);
 
   // Use main browser to open the password settings.
   SceneState* sceneState =
@@ -2687,10 +2702,11 @@ enum class ToolbarKind {
          baseViewForWebState:(web::WebState*)webState {
   NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
   if (NTPHelper && NTPHelper->IsActive()) {
-    // NTPCoordinator should be started at this point. If for some reason it is
-    // not, the DCHECK will let us know and we will fall back to using the
-    // webState's view.
-    DCHECK(_NTPCoordinator.started);
+    // If NTPCoordinator is not started yet, fall back to using the
+    // webState's view. `_NTPCoordinator.started` should be true in most cases
+    // but it can be false when the app will be terminated or the browser data
+    // is removed. In particular, it can be false when this method is called as
+    // a delayed task while the app is being terminated.
     if (_NTPCoordinator.started) {
       return _NTPCoordinator.viewController.view;
     }

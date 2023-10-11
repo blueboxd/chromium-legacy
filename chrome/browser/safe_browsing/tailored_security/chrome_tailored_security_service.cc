@@ -71,8 +71,13 @@ ChromeTailoredSecurityService::ChromeTailoredSecurityService(Profile* profile)
   AddObserver(this);
   if (base::FeatureList::IsEnabled(
           safe_browsing::kTailoredSecurityRetryForSyncUsers)) {
-    retry_timer_.Start(FROM_HERE, kRetryAttemptStartupDelay, this,
-                       &ChromeTailoredSecurityService::MaybeRetryForSyncUsers);
+    if (HistorySyncEnabledForUser() &&
+        !SafeBrowsingPolicyHandler::IsSafeBrowsingProtectionLevelSetByPolicy(
+            prefs())) {
+      retry_timer_.Start(
+          FROM_HERE, kRetryAttemptStartupDelay, this,
+          &ChromeTailoredSecurityService::MaybeRetryForSyncUsers);
+    }
   }
 }
 
@@ -282,8 +287,12 @@ bool ChromeTailoredSecurityService::ShouldRetryForSyncUsers() {
       // retry attempt fails, enough time passes before retrying again.
       prefs->SetTime(prefs::kTailoredSecurityNextSyncFlowTimestamp,
                      base::Time::Now() + kRetryNextAttemptDelay);
+      LogShouldRetryOutcome(
+          TailoredSecurityShouldRetryOutcome::kRetryNeededDoRetry);
       return true;
     }
+    LogShouldRetryOutcome(
+        TailoredSecurityShouldRetryOutcome::kRetryNeededKeepWaiting);
     return false;
   }
   if (prefs->GetInteger(prefs::kTailoredSecuritySyncFlowRetryState) ==
@@ -296,18 +305,30 @@ bool ChromeTailoredSecurityService::ShouldRetryForSyncUsers() {
         base::Time()) {
       prefs->SetTime(prefs::kTailoredSecurityNextSyncFlowTimestamp,
                      base::Time::Now() + kWaitingPeriodInterval);
+      LogShouldRetryOutcome(
+          TailoredSecurityShouldRetryOutcome::kUnsetInitializeWaitingPeriod);
       return false;
-    }
-    if (base::Time::Now() >=
-        prefs->GetTime(prefs::kTailoredSecurityNextSyncFlowTimestamp)) {
+    } else if (base::Time::Now() >=
+               prefs->GetTime(prefs::kTailoredSecurityNextSyncFlowTimestamp)) {
       // Set the next attempt time to a future point in time so that if this
       // retry attempt fails, enough time passes before retrying again.
       prefs->SetTime(prefs::kTailoredSecurityNextSyncFlowTimestamp,
                      base::Time::Now() + kRetryNextAttemptDelay);
+      LogShouldRetryOutcome(
+          TailoredSecurityShouldRetryOutcome::kUnsetRetryBecauseDoneWaiting);
       return true;
+    } else {
+      LogShouldRetryOutcome(
+          TailoredSecurityShouldRetryOutcome::kUnsetStillWaiting);
     }
   }
   return false;
+}
+
+void LogShouldRetryOutcome(
+    ChromeTailoredSecurityService::TailoredSecurityShouldRetryOutcome outcome) {
+  base::UmaHistogramEnumeration(
+      "SafeBrowsing.TailoredSecurity.ShouldRetryOutcome", outcome);
 }
 
 }  // namespace safe_browsing

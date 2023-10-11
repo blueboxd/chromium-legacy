@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.commerce.ShoppingFeatures;
 import org.chromium.chrome.browser.commerce.ShoppingServiceFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.native_page.BasicNativePage;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -152,7 +153,7 @@ public class BookmarkManagerCoordinator
         mBookmarkToolbarCoordinator = new BookmarkToolbarCoordinator(context, mSelectableListLayout,
                 mSelectionDelegate, /*searchDelegate=*/this, dragReorderableRecyclerViewAdapter,
                 isDialogUi, bookmarkDelegateSupplier, mBookmarkModel, mBookmarkOpener,
-                mBookmarkUiPrefs, mModalDialogManager);
+                mBookmarkUiPrefs, mModalDialogManager, this::onEndSearch);
         mSelectableListLayout.configureWideDisplayStyle();
 
         LargeIconBridge largeIconBridge = new LargeIconBridge(mProfile);
@@ -165,7 +166,8 @@ public class BookmarkManagerCoordinator
                 new BookmarkImageFetcher(context, mBookmarkModel, mImageFetcher, largeIconBridge,
                         BookmarkUtils.getRoundedIconGenerator(context, displayPref),
                         BookmarkUtils.getImageIconSize(res, displayPref),
-                        BookmarkUtils.getFaviconDisplaySize(res, displayPref));
+                        BookmarkUtils.getFaviconDisplaySize(res, displayPref),
+                        SyncServiceFactory.getForProfile(profile));
 
         BookmarkUndoController bookmarkUndoController =
                 new BookmarkUndoController(context, mBookmarkModel, snackbarManager);

@@ -278,6 +278,7 @@
 <translation id="3264582393905923483">Kontekst</translation>
 <translation id="3272909651715601089">Nije uspelo otvaranje arhive „<ph name="PATH" />“</translation>
 <translation id="3280431534455935878">Priprema</translation>
+<translation id="3280719573299097127">Koristite mrežu sa ograničenjem. Sinhronizacija fajlova je pauzirana.</translation>
 <translation id="3280987981688031357">Gramofonska ploča</translation>
 <translation id="3290356915286466215">Nezaštićeno</translation>
 <translation id="3291218047831493686">Povežite se na ovu mrežu da biste promenili podešavanje zaključavanja SIM kartice</translation>
@@ -632,6 +633,7 @@
 <translation id="5838451609423551646">Uklonili ste sve stavke iz izbora.</translation>
 <translation id="5838825566232597749">Američka Workman internacionalna</translation>
 <translation id="5845721951356578987">Medicinska sestra</translation>
+<translation id="5858478190805449225">Ušteda baterije je uključena. Probajte ponovo kada isključite Uštedu baterije.</translation>
 <translation id="5860491529813859533">Uključi</translation>
 <translation id="5861477046012235702">Gejmer</translation>
 <translation id="5864471791310927901">Pronalaženje DHCP-a nije uspelo</translation>
@@ -898,7 +900,6 @@
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7920501309908018401">Fajlovi na Mom disku će se automatski sinhronizovati sa Chromebook-om, pa možete da im pristupate bez internet veze.</translation>
 <translation id="7925247922861151263">Provera potvrde identiteta, ovlašćenja i pristupa nije uspela</translation>
-<translation id="7925686952655276919">Ne koristi podatke za mobilne uređaje za sinhronizaciju</translation>
 <translation id="7928710562641958568">Izbaci uređaj</translation>
 <translation id="7933875256234974853">Priprema se sinhronizacija fajlova sa Diska...</translation>
 <translation id="7943385054491506837">američka Colemak</translation>
@@ -921,6 +922,7 @@
 <translation id="8087576439476816834">Preuzmite, <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">Deljeno sa mnom</translation>
 <translation id="8116072619078571545">Voda sa ledom</translation>
+<translation id="8120392982188717723">Dozvoli sinhronizaciju na mrežama sa ograničenjem</translation>
 <translation id="8124093710070495550">Problem sa sinhronizacijom</translation>
 <translation id="8128733386027980860">engleski (SAD) sa tastaturom Dvorak</translation>
 <translation id="8137331602592933310">„<ph name="FILENAME" />“ se deli sa vama. Ne možete da je izbrišete jer nije u vašem vlasništvu.</translation>

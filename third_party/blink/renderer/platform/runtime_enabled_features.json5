@@ -745,6 +745,10 @@
       base_feature: "none",
     },
     {
+      name: "CookieDeprecationFacilitatedTestingLabels",
+      base_feature: "none",
+    },
+    {
       name: "CooperativeScheduling",
       base_feature: "none",
       public: true,
@@ -896,6 +900,11 @@
       base_feature: "none",
     },
     {
+      // crbug.com/1447058
+      name: "CssFormSizing",
+      status: "test",
+    },
+    {
       name: "CSSGridTemplatePropertyInterpolation",
       status: "stable",
       base_feature: "none",
@@ -965,6 +974,13 @@
     {
       // Support nested selectors that start with idents.
       name: "CSSNestingIdent",
+    },
+    {
+      // Support for typed om numeric factory methods for various units that
+      // were otherwise shipped: rex, rch, ic, ric, lh, rlh, x (cap and rcap
+      // covered by separate runtime flag).
+      name: "CSSNumericFactoryCompleteness",
+      status: "stable",
     },
     {
       name: "CSSObjectViewBox",
@@ -1763,11 +1779,9 @@
       public: true,
     },
     {
-      name: "FledgeBiddingAndAuctionServer",
-      base_feature: "none",
+      name: "FledgeBiddingAndAuctionServerAPI",
       origin_trial_feature_name: "FledgeBiddingAndAuctionServer",
       origin_trial_allows_third_party: true,
-      public: true,
     },
     {
       name: "FledgeDirectFromSellerSignalsHeaderAdSlot",
@@ -2046,6 +2060,14 @@
       status: {"Android": "stable"},
       base_feature: "none",
     },
+    // This change, although technically breaking, is expected to be fully web-compatible
+    // due to how import attributes are currently used in the ecosystem. However, this is
+    // a killswitch just in case. This can be removed once it ships to stable and no
+    // regressions are reported.
+    {
+      name: "ImportAttributesDisallowUnknownKeys",
+      status: "stable"
+    },
     {
       name: "IncomingCallNotifications",
     },
@@ -2129,16 +2151,11 @@
       settable_from_internals: true,
     },
     {
-      name: "LayoutFlexNewColumnAlgorithm",
-      status: "stable",
-    },
-    {
       name: "LayoutFlexNewRowAlgorithmV3",
       status: "test",
     },
     {
       name: "LayoutIgnoreMarginsForSticky",
-      status: "stable",
     },
     {
       name: "LayoutNewFixedPositionInvalidation",
@@ -2219,6 +2236,7 @@
       name: "LongAnimationFrameMonitoring",
       implied_by: ["LongAnimationFrameTiming", "LongAnimationFrameUKM", "LongTaskFromLongAnimationFrame"],
       status: "experimental",
+      origin_trial_allows_third_party: true,
       origin_trial_feature_name: "LongAnimationFrameTiming"
     },
     {
@@ -2226,6 +2244,7 @@
       // "long-animation-frame" timeline entry)
       name: "LongAnimationFrameTiming",
       status: "experimental",
+      origin_trial_allows_third_party: true,
       origin_trial_feature_name: "LongAnimationFrameTiming"
     },
     {
@@ -2785,7 +2804,7 @@
     {
       name: "PaymentRequestAllowOneActivationlessShow",
       public: true,
-      status: "test",
+      status: "stable",
     },
     {
       name: "PaymentRequestMerchantValidationEvent",
@@ -2937,7 +2956,7 @@
       // When enabled, gives the option to pretty-print JSON documents to
       // cleanly format the JSON and make it readable.
       name:"PrettyPrintJSONDocument",
-      status: "stable",
+      status: "experimental",
     },
     // The RTE feature encompasses multiple APIs, including: Attribution
     // Reporting, FLEDGE, Topics and Fenced Frames.
@@ -3278,7 +3297,7 @@
     {
       name: "SecurePaymentConfirmationAllowOneActivationlessShow",
       public: true,
-      status: "test",
+      status: "stable",
     },
     {
       name: "SecurePaymentConfirmationDebug",
@@ -3446,6 +3465,7 @@
       name: "SoftNavigationHeuristics",
       status: "experimental",
       depends_on: ["NavigationId"],
+      origin_trial_allows_third_party: true,
       origin_trial_feature_name: "SoftNavigationHeuristics",
     },
     {
@@ -3771,6 +3791,12 @@
       name: "UnexposedTaskIds",
       base_feature: "none",
     },
+    {
+      // Skip CSS animation events on unowned CSS animations:
+      // https://drafts.csswg.org/css-animations-2/#event-dispatch
+      name: "UnownedAnimationsSkipCSSEvents",
+      status: "stable",
+    },
     // This is a reverse OT used for a phased deprecation, on desktop
     // https://crbug.com/1071424
     {
@@ -3952,14 +3978,18 @@
     {
       name: "WebAppTabStrip",
       status: "experimental",
-      base_feature: "none",
+      base_feature: "DesktopPWAsTabStrip",
+      base_feature_status: "enabled",
+      copied_from_base_feature_if: "overridden",
       origin_trial_feature_name: "WebAppTabStrip",
       origin_trial_os: ["chromeos"],
     },
     {
       name: "WebAppTabStripCustomizations",
       status: "experimental",
-      base_feature: "none",
+      base_feature: "DesktopPWAsTabStripCustomizations",
+      base_feature_status: "enabled",
+      copied_from_base_feature_if: "overridden",
       origin_trial_feature_name: "WebAppTabStrip",
       origin_trial_os: ["chromeos"],
     },

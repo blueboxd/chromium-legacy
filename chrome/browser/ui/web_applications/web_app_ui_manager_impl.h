@@ -5,42 +5,57 @@
 #ifndef CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_UI_MANAGER_IMPL_H_
 #define CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_UI_MANAGER_IMPL_H_
 
+#include <stddef.h>
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
-#include "base/containers/unique_ptr_adapters.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/web_applications/web_app_callback_app_identity.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
-#include "components/webapps/browser/installable/installable_metrics.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "chrome/browser/web_applications/web_app_uninstall_dialog_user_options.h"
+#include "content/public/browser/web_contents.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
 class BrowserWindow;
 class Profile;
+class SkBitmap;
+
+namespace apps {
+struct AppLaunchParams;
+}
+
+namespace base {
+class FilePath;
+}
 
 namespace views {
 class NativeWindowTracker;
 }  // namespace views
 
+namespace webapps {
+enum class WebappUninstallSource;
+}
+
 namespace web_app {
 
-class WebAppProvider;
-class WebAppDialogManager;
+class AppLock;
 
-// This KeyedService is a UI counterpart for WebAppProvider.
-// TODO(calamity): Rename this to WebAppProviderDelegate to better reflect that
-// this class serves a wide range of Web Applications <-> Browser purposes.
+// Implementation of WebAppUiManager that depends upon //c/b/ui.
+// Allows //c/b/web_applications code to call into //c/b/ui without directly
+// depending on UI.
 class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
  public:
-  static WebAppUiManagerImpl* Get(WebAppProvider* provider);
-
   explicit WebAppUiManagerImpl(Profile* profile);
   WebAppUiManagerImpl(const WebAppUiManagerImpl&) = delete;
   WebAppUiManagerImpl& operator=(const WebAppUiManagerImpl&) = delete;
@@ -48,8 +63,6 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
 
   void Start() override;
   void Shutdown() override;
-
-  WebAppDialogManager& dialog_manager();
 
   // WebAppUiManager:
   WebAppUiManagerImpl* AsImpl() override;
@@ -73,6 +86,10 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
   void ReparentAppTabToWindow(content::WebContents* contents,
                               const AppId& app_id,
                               bool shortcut_created) override;
+  void ShowWebAppFileLaunchDialog(
+      const std::vector<base::FilePath>& file_paths,
+      const web_app::AppId& app_id,
+      WebAppLaunchAcceptanceCallback launch_callback) override;
   void ShowWebAppIdentityUpdateDialog(
       const std::string& app_id,
       bool title_change,
@@ -83,6 +100,7 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
       const SkBitmap& new_icon,
       content::WebContents* web_contents,
       web_app::AppIdentityDialogCallback callback) override;
+  void ShowWebAppSettings(const AppId& app_id) override;
   base::Value LaunchWebApp(apps::AppLaunchParams params,
                            LaunchWebAppWindowSetting launch_setting,
                            Profile& profile,
@@ -153,11 +171,16 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
       webapps::WebappUninstallSource uninstall_source,
       UninstallCompleteCallback complete_callback,
       UninstallScheduledCallback uninstall_scheduled_callback,
-      bool user_wants_uninstall);
+      web_app::UninstallUserOptions uninstall_options);
 
   void OnUninstallCancelled(
       UninstallCompleteCallback complete_callback,
       UninstallScheduledCallback uninstall_scheduled_callback);
+
+  void ClearWebAppSiteDataIfNeeded(
+      const GURL app_start_url,
+      UninstallCompleteCallback uninstall_complete_callback,
+      webapps::UninstallResultCode uninstall_code);
 
   const raw_ptr<Profile> profile_;
   std::map<AppId, std::vector<base::OnceClosure>> windows_closed_requests_map_;

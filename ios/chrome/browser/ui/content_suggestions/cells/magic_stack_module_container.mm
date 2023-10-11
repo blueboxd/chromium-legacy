@@ -64,11 +64,28 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
   id<MagicStackModuleContainerDelegate> _delegate;
   UILabel* _title;
   UILabel* _subtitle;
+  BOOL _isPlaceholder;
 }
 
 - (instancetype)initWithType:(ContentSuggestionsModuleType)type {
   self = [super initWithFrame:CGRectZero];
   if (self) {
+  }
+  return self;
+}
+
+- (instancetype)initAsPlaceholder {
+  self = [super initWithFrame:CGRectZero];
+  if (self) {
+    _isPlaceholder = YES;
+    self.layer.cornerRadius = kCornerRadius;
+    self.backgroundColor = [UIColor colorNamed:kBackgroundColor];
+
+    UIImageView* placeholderImage = [[UIImageView alloc]
+        initWithImage:[UIImage imageNamed:@"magic_stack_placeholder_module"]];
+    placeholderImage.translatesAutoresizingMaskIntoConstraints = NO;
+    [self addSubview:placeholderImage];
+    AddSameConstraints(placeholderImage, self);
   }
   return self;
 }
@@ -108,6 +125,9 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
         [MagicStackModuleContainer titleStringForModule:type];
     [_title setContentHuggingPriority:UILayoutPriorityDefaultLow
                               forAxis:UILayoutConstraintAxisHorizontal];
+    [_title
+        setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                        forAxis:UILayoutConstraintAxisVertical];
     [titleStackView addArrangedSubview:_title];
     // `setContentHuggingPriority:` does not guarantee that titleStackView
     // completely resists vertical expansion since UIStackViews do not have
@@ -305,7 +325,7 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
   // is the only module in the Magic Stack in a wider screen, the module should
   // be wider to match the wider Magic Stack ScrollView.
   BOOL MVTModuleShouldUseWideWidth =
-      (_type == ContentSuggestionsModuleType::kMostVisited &&
+      (!_isPlaceholder && _type == ContentSuggestionsModuleType::kMostVisited &&
        !ShouldPutMostVisitedSitesInMagicStack() &&
        content_suggestions::ShouldShowWiderMagicStackLayer(self.traitCollection,
                                                            self.window));
@@ -375,6 +395,9 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
 - (BOOL)allowsLongPress {
   switch (_type) {
     case ContentSuggestionsModuleType::kTabResumption:
+    case ContentSuggestionsModuleType::kSafetyCheck:
+    case ContentSuggestionsModuleType::kSafetyCheckMultiRow:
+    case ContentSuggestionsModuleType::kSafetyCheckMultiRowOverflow:
     case ContentSuggestionsModuleType::kSetUpListSync:
     case ContentSuggestionsModuleType::kSetUpListDefaultBrowser:
     case ContentSuggestionsModuleType::kSetUpListAutofill:
@@ -412,6 +435,7 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
     case ContentSuggestionsModuleType::kSetUpListAutofill:
     case ContentSuggestionsModuleType::kSetUpListAllSet:
     case ContentSuggestionsModuleType::kSafetyCheck:
+    case ContentSuggestionsModuleType::kTabResumption:
       return YES;
     default:
       return NO;
@@ -423,6 +447,10 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
   switch (_type) {
     case ContentSuggestionsModuleType::kTabResumption:
       return l10n_util::GetNSString(IDS_IOS_TAB_RESUMPTION_CONTEXT_MENU_TITLE);
+    case ContentSuggestionsModuleType::kSafetyCheck:
+    case ContentSuggestionsModuleType::kSafetyCheckMultiRow:
+    case ContentSuggestionsModuleType::kSafetyCheckMultiRowOverflow:
+      return l10n_util::GetNSString(IDS_IOS_SAFETY_CHECK_CONTEXT_MENU_TITLE);
     case ContentSuggestionsModuleType::kSetUpListSync:
     case ContentSuggestionsModuleType::kSetUpListDefaultBrowser:
     case ContentSuggestionsModuleType::kSetUpListAutofill:
@@ -440,6 +468,11 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
     case ContentSuggestionsModuleType::kTabResumption:
       return l10n_util::GetNSString(
           IDS_IOS_TAB_RESUMPTION_CONTEXT_MENU_DESCRIPTION);
+    case ContentSuggestionsModuleType::kSafetyCheck:
+    case ContentSuggestionsModuleType::kSafetyCheckMultiRow:
+    case ContentSuggestionsModuleType::kSafetyCheckMultiRowOverflow:
+      return l10n_util::GetNSString(
+          IDS_IOS_SAFETY_CHECK_CONTEXT_MENU_DESCRIPTION);
     case ContentSuggestionsModuleType::kSetUpListSync:
     case ContentSuggestionsModuleType::kSetUpListDefaultBrowser:
     case ContentSuggestionsModuleType::kSetUpListAutofill:

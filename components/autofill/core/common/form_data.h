@@ -125,7 +125,7 @@ struct FrameTokenWithPredecessor {
 // The unowned fields of the frame constitute that frame's *unowned form*.
 //
 // Forms from different frames of the same WebContents may furthermore be
-// merged. For details, see ContentAutofillRouter.
+// merged. For details, see AutofillDriverRouter.
 //
 // clang-format off
 // [1] https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#reset-the-form-owner
@@ -181,14 +181,6 @@ struct FormData {
   // Same as SameFormAs() except calling FormFieldData.SimilarFieldAs() to
   // compare fields.
   bool SimilarFormAs(const FormData& other) const;
-
-  // TODO(crbug/1211834): This function is deprecated.
-  // If |form| is the same as this from the POV of dynamic refills.
-  bool DynamicallySameFormAs(const FormData& form) const;
-
-  // TODO(crbug/1211834): This function is deprecated.
-  // Allow FormData to be a key in STL containers.
-  bool operator<(const FormData& form) const;
 
   // The id attribute of the form.
   std::u16string id_attribute;

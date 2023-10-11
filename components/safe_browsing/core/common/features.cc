@@ -151,6 +151,11 @@ BASE_FEATURE(kExtensionTelemetryReportHostsContactedViaWebSocket,
              "SafeBrowsingExtensionTelemetryReportHostsContactedViaWebsocket",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(
+    kExtensionTelemetryInterceptRemoteHostsContactedInRenderer,
+    "SafeBrowsingExtensionTelmetryInterceptRemoteHostsContactedInRenderer",
+    base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kExtensionTelemetryTabsApiSignal,
              "SafeBrowsingExtensionTelemetryTabsApiSignal",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -291,6 +296,10 @@ BASE_FEATURE(kSafeBrowsingSkipImageCssFont,
 #endif
 );
 
+BASE_FEATURE(kSafeBrowsingSkipSubresources,
+             "SafeBrowsingSkipSubResources",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kSevenZipEvaluationEnabled,
              "SafeBrowsingSevenZipEvaluationEnabled",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -385,10 +394,12 @@ constexpr struct {
     {&kExtensionTelemetryDeclarativeNetRequestSignal, true},
     {&kExtensionTelemetryDisableOffstoreExtensions, true},
     {&kExtensionTelemetryFileData, true},
+    {&kExtensionTelemetryInterceptRemoteHostsContactedInRenderer, true},
     {&kExtensionTelemetryPersistence, true},
     {&kExtensionTelemetryPotentialPasswordTheft, true},
     {&kExtensionTelemetryReportContactedHosts, true},
     {&kExtensionTelemetryReportHostsContactedViaWebSocket, true},
+    {&kExtensionTelemetryTabsApiSignal, true},
     {&kExtensionTelemetryTabsExecuteScriptSignal, true},
     {&kFileTypePoliciesTag, true},
     {&kHashPrefixRealTimeLookups, true},
@@ -403,6 +414,8 @@ constexpr struct {
     {&kSafeBrowsingCsbrrNewDownloadTrigger, true},
     {&kSafeBrowsingLookupMechanismExperiment, true},
     {&kSafeBrowsingRemoveCookiesInAuthRequests, true},
+    {&kSafeBrowsingSkipImageCssFont, true},
+    {&kSafeBrowsingSkipSubresources, true},
     {&kSevenZipEvaluationEnabled, true},
     {&kSimplifiedUrlDisplay, true},
     {&kStrictDownloadTimeout, true},

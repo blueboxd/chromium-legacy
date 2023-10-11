@@ -14,6 +14,7 @@
 
 class AuthenticationService;
 class ChromeAccountManagerService;
+class PrefService;
 @protocol ManageSyncSettingsCommandHandler;
 @protocol ManageSyncSettingsConsumer;
 @protocol SyncErrorSettingsCommandHandler;
@@ -51,6 +52,10 @@ class SyncService;
 @property(nonatomic, assign) BOOL forcedSigninEnabled;
 // Returns the default title for the Sync Settings based on the account state.
 @property(nonatomic, strong, readonly) NSString* overrideViewControllerTitle;
+// Number of local items to upload excluding passwords.
+@property(nonatomic, assign) NSInteger localItemsToUpload;
+// Number of local passwords to upload.
+@property(nonatomic, assign) NSInteger localPasswordsToUpload;
 
 // Designated initializer.
 // `syncService`: Sync service. Should not be null.
@@ -59,12 +64,16 @@ class SyncService;
           identityManager:(signin::IdentityManager*)identityManager
     authenticationService:(AuthenticationService*)authenticationService
     accountManagerService:(ChromeAccountManagerService*)accountManagerService
+              prefService:(PrefService*)prefService
       initialAccountState:(SyncSettingsAccountState)initialAccountState
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
 // Disconnects the mediator to all observers and services.
 - (void)disconnect;
+
+// Enable or disable Autofill data type.
+- (void)autofillAlertConfirmed:(BOOL)value;
 
 @end
 

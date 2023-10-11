@@ -1475,6 +1475,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Search.Lens.ViewportDimensionsSent.Success" units="Boolean"
+    expires_after="2024-03-31">
+  <owner>mercerd@google.com</owner>
+  <owner>lens-chrome-eng@google.com</owner>
+  <summary>
+    When the user performs a Lens search on Desktop, records if the viewport
+    dimensions of the side panel were included in the request. A false value
+    indicates either the viewport width or height were not included in the
+    request. A true value is recorded if and only if both the `vpw` and `vph`
+    url params were added to the request with non-zero values.
+  </summary>
+</histogram>
+
 <histogram name="Search.PartnershipSearchPerformed" enum="SearchEntryPoint"
     expires_after="M85">
   <owner>yusufo@chromium.org</owner>
@@ -1713,7 +1726,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.RelatedSearches.CarouselLastVisibleItemPosition"
-    units="position" expires_after="2023-12-31">
+    units="position" expires_after="2024-03-03">
   <owner>donnd@chromium.org</owner>
   <owner>gangwu@chromium.org</owner>
   <owner>related-searches-vteam@google.com</owner>
@@ -1739,7 +1752,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.RelatedSearches.CarouselScrolled" enum="Boolean"
-    expires_after="2023-12-31">
+    expires_after="2024-03-03">
   <owner>donnd@chromium.org</owner>
   <owner>gangwu@chromium.org</owner>
   <owner>related-searches-vteam@google.com</owner>
@@ -1777,7 +1790,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.RelatedSearches.QualifiedUsers" enum="Boolean"
-    expires_after="2023-12-31">
+    expires_after="2024-03-03">
   <owner>donnd@chromium.org</owner>
   <owner>related-searches-vteam@google.com</owner>
   <summary>

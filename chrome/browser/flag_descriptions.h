@@ -751,6 +751,9 @@ extern const char kEnableFriendlierSafeBrowsingSettingsStandardProtectionName[];
 extern const char
     kEnableFriendlierSafeBrowsingSettingsStandardProtectionDescription[];
 
+extern const char kEnableRedInterstitialFaceliftName[];
+extern const char kEnableRedInterstitialFaceliftDescription[];
+
 extern const char kEnableTailoredSecurityUpdatedMessagesName[];
 extern const char kEnableTailoredSecurityUpdatedMessagesDescription[];
 
@@ -816,9 +819,6 @@ extern const char kEnableShortcutCustomizationDescription[];
 
 extern const char kEnableSearchCustomizableShortcutsInLauncherName[];
 extern const char kEnableSearchCustomizableShortcutsInLauncherDescription[];
-
-extern const char kEnableSearchInShortcutsAppName[];
-extern const char kEnableSearchInShortcutsAppDescription[];
 
 extern const char kEnableInputDeviceSettingsSplitName[];
 extern const char kEnableInputDeviceSettingsSplitDescription[];
@@ -1190,6 +1190,9 @@ extern const char kExtractRelatedSearchesFromPrefetchedZPSResponseDescription[];
 
 extern const char kLargeFaviconFromGoogleName[];
 extern const char kLargeFaviconFromGoogleDescription[];
+
+extern const char kLegacyTechReportTopLevelUrlName[];
+extern const char kLegacyTechReportTopLevelUrlDescription[];
 
 extern const char kLensCameraAssistedSearchName[];
 extern const char kLensCameraAssistedSearchDescription[];
@@ -1637,6 +1640,9 @@ extern const char kEnableOmniboxSearchPrefetchDescription[];
 
 extern const char kEnableOmniboxClientSearchPrefetchName[];
 extern const char kEnableOmniboxClientSearchPrefetchDescription[];
+
+extern const char kPreloadingOnPerformancePageName[];
+extern const char kPreloadingOnPerformancePageDescription[];
 
 extern const char kPrivacyGuideAndroidName[];
 extern const char kPrivacyGuideAndroidDescription[];
@@ -2443,6 +2449,8 @@ extern const char kQueryTilesEnableQueryEditingName[];
 extern const char kQueryTilesEnableQueryEditingDescription[];
 extern const char kQueryTilesEnableTrendingName[];
 extern const char kQueryTilesEnableTrendingDescription[];
+extern const char kQueryTilesDisableCountryOverrideName[];
+extern const char kQueryTilesDisableCountryOverrideDescription[];
 extern const char kQueryTilesCountryCode[];
 extern const char kQueryTilesCountryCodeDescription[];
 extern const char kQueryTilesCountryCodeUS[];
@@ -3273,6 +3281,9 @@ extern const char kForceControlFaceAeDescription[];
 
 extern const char kCellularBypassESimInstallationConnectivityCheckName[];
 extern const char kCellularBypassESimInstallationConnectivityCheckDescription[];
+
+extern const char kCellularCarrierLockName[];
+extern const char kCellularCarrierLockDescription[];
 
 extern const char kCellularUseSecondEuiccName[];
 extern const char kCellularUseSecondEuiccDescription[];
@@ -4401,6 +4412,11 @@ extern const char kThirdPartyProfileManagementDescription[];
 extern const char kEnableBuiltinHlsName[];
 extern const char kEnableBuiltinHlsDescription[];
 #endif  // BUILDFLAG(ENABLE_HLS_DEMUXER)
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+extern const char kProfilesReorderingName[];
+extern const char kProfilesReorderingDescription[];
+#endif
 
 // ============================================================================
 // Don't just add flags to the end, put them in the right section in

@@ -328,18 +328,38 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
     }
   }
 
-  if (event->type() == ui::ET_GESTURE_END) {
-    UpdateGestureTarget(nullptr);
-  } else if (event->type() == ui::ET_GESTURE_BEGIN) {
+  if (event->type() == ui::ET_GESTURE_BEGIN) {
     // We don't always process ET_GESTURE_END events (i.e. on a fling or swipe),
     // so reset `is_moving_floated_window_` in ET_GESTURE_BEGIN.
     is_moving_floated_window_ = false;
-  } else if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
-             event->type() == ui::ET_GESTURE_PINCH_BEGIN) {
-    // Because the `event_location` is calculated differently based on gesture
-    // type, we only update the `gesture_target_`'s recorded position upon
-    // receiving the begin event of drag or pinch.
-    UpdateGestureTarget(target, event_location);
+  }
+
+  if (event->type() == ui::ET_GESTURE_END &&
+      event->details().touch_points() == 1) {
+    UpdateGestureTarget(nullptr);
+  }
+
+  if (!gesture_target_) {
+    if (event->type() == ui::ET_GESTURE_BEGIN) {
+      // If `gesture_target_` does not exist then this is the start of a
+      // completely new gesture. We sometimes cannot wait for
+      // event-type-specific `BEGIN` event to set `gesture_target_`
+      // because client may call `AttemptToStartDrag()` before that.
+      UpdateGestureTarget(target, event_location);
+      in_pinch_ = event->details().touch_points() != 1;
+    }
+  } else if (!in_gesture_drag_ &&
+             (event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
+              event->type() == ui::ET_GESTURE_PINCH_BEGIN)) {
+    // If `gesture_target_` exists but `in_gesture_drag_` is false then
+    // the gesture has been received by `this` but the client has not
+    // called `AttemptToStartDrag()` yet. We should update the
+    // `event_location_in_gesture_target` because there could have been
+    // a gesture type change.
+    gfx::PointF location_in_target = event_location;
+    aura::Window::ConvertPointToTarget(target, gesture_target_,
+                                       &location_in_target);
+    UpdateGestureTarget(gesture_target_, location_in_target);
   }
 
   if (event->type() == ui::ET_GESTURE_PINCH_BEGIN) {
@@ -638,6 +658,10 @@ bool ToplevelWindowEventHandler::AttemptToStartDrag(
     const gfx::PointF& point_in_parent,
     int window_component,
     ToplevelWindowEventHandler::EndClosure end_closure) {
+  if (first_finger_hittest_ == HTNOWHERE) {
+    first_finger_hittest_ = window_component;
+  }
+
   // This function is called from client to start either a drag or a
   // pinch gesture. There is a delay from when `this` first receives a
   // gesture begin event to when the client asks the gesture to be
@@ -681,8 +705,9 @@ bool ToplevelWindowEventHandler::AttemptToStartDrag(
 
   end_closure_ = std::move(end_closure);
   in_gesture_drag_ = (source == ::wm::WINDOW_MOVE_SOURCE_TOUCH);
-  // |gesture_target_| needs to be updated if the drag originated from a
-  // client (i.e. |this| never handled ET_GESTURE_EVENT_BEGIN).
+  // `gesture_target_` and `first_finger_hittest_` need to be updated if the
+  // drag originated from a client (i.e. `this` never handled
+  // ET_GESTURE_EVENT_BEGIN).
   if (in_gesture_drag_ && (!gesture_target_ || update_gesture_target)) {
     UpdateGestureTarget(window);
   }
@@ -739,8 +764,9 @@ bool ToplevelWindowEventHandler::AttemptToStartPinch(
 
   in_gesture_drag_ = true;
 
-  // `gesture_target_` needs to be updated if the drag originated from a
-  // client (i.e. `this` never handled ET_GESTURE_EVENT_BEGIN).
+  // `gesture_target_` and `first_finger_hittest_` need to be updated if
+  // the drag originated from a client (i.e. `this` never handled
+  // ET_GESTURE_EVENT_BEGIN).
   if (!gesture_target_ || update_gesture_target) {
     UpdateGestureTarget(window);
   }
@@ -760,16 +786,20 @@ bool ToplevelWindowEventHandler::PrepareForPinch(
   // Reset `window_resizer_` if there is an ongoing drag move.
   if (window_resizer_ && in_gesture_drag_ && window_resizer_->IsMove()) {
     window_resizer_.reset();
+    window_component = first_finger_hittest_;
   }
 
-  in_pinch_ = true;
-  std::unique_ptr<WindowResizer> resizer(
-      CreateWindowResizer(window, point_in_parent, window_component,
-                          ::wm::WINDOW_MOVE_SOURCE_TOUCH));
+  std::unique_ptr<WindowResizer> resizer(CreateWindowResizer(
+      window, point_in_parent, window_component, wm::WINDOW_MOVE_SOURCE_TOUCH));
+  if (!resizer) {
+    return false;
+  }
   window_resizer_ =
       std::make_unique<ScopedWindowResizer>(this, std::move(resizer), false);
   Shell::Get()->multi_display_metrics_controller()->OnWindowMovedOrResized(
       window);
+
+  in_pinch_ = true;
   return true;
 }
 
@@ -845,12 +875,12 @@ bool ToplevelWindowEventHandler::PrepareForDrag(
   }
 
   // If an ongoing resizing event exists (e.g. during transition from pinch to
-  // drag), reset the resizer here.
+  // drag), reset the resizer here, but use the old `window_component`.
   if (window_resizer_) {
     window_resizer_.reset();
+    window_component = first_finger_hittest_;
   }
 
-  requires_reinitialization_ = false;
   std::unique_ptr<WindowResizer> resizer(
       CreateWindowResizer(window, point_in_parent, window_component, source));
   if (!resizer)
@@ -859,6 +889,8 @@ bool ToplevelWindowEventHandler::PrepareForDrag(
       this, std::move(resizer), grab_capture);
   Shell::Get()->multi_display_metrics_controller()->OnWindowMovedOrResized(
       window);
+
+  requires_reinitialization_ = false;
   return true;
 }
 

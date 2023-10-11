@@ -18,6 +18,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/bind_post_task.h"
@@ -37,6 +38,7 @@
 #include "media/base/video_util.h"
 #include "media/capture/capture_switches.h"
 #include "media/media_buildflags.h"
+#include "media/mojo/clients/mojo_video_encoder_metrics_provider.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "media/video/h264_parser.h"
 #include "media/video/video_encode_accelerator.h"
@@ -73,6 +75,18 @@ bool IsNV12GpuMemoryBufferVideoFrame(const webrtc::VideoFrame& input_image) {
   CHECK(frame);
   return frame->format() == media::PIXEL_FORMAT_NV12 &&
          frame->storage_type() == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER;
+}
+
+media::SVCScalabilityMode ToSVCScalabilityMode(
+    const std::vector<media::VideoEncodeAccelerator::Config::SpatialLayer>&
+        spatial_layers,
+    media::SVCInterLayerPredMode inter_layer_pred) {
+  if (spatial_layers.empty()) {
+    return media::SVCScalabilityMode::kL1T1;
+  }
+  return GetSVCScalabilityMode(spatial_layers.size(),
+                               spatial_layers[0].num_of_temporal_layers,
+                               inter_layer_pred);
 }
 
 class SignaledValue {
@@ -437,22 +451,29 @@ bool CreateSpatialLayersConfig(
   return true;
 }
 
+struct ActiveSpatialLayers {
+  // `spatial_index` considered active if
+  // `begin_index <= spatial_index < end_index`
+  size_t begin_index = 0;
+  size_t end_index = 0;
+  size_t size() const { return end_index - begin_index; }
+};
+
 struct FrameInfo {
  public:
   FrameInfo(const base::TimeDelta& media_timestamp,
             int32_t rtp_timestamp,
             int64_t capture_time_ms,
-            const std::vector<gfx::Size>& resolutions)
+            const ActiveSpatialLayers& active_spatial_layers)
       : media_timestamp_(media_timestamp),
         rtp_timestamp_(rtp_timestamp),
         capture_time_ms_(capture_time_ms),
-        resolutions_(resolutions) {}
+        active_spatial_layers_(active_spatial_layers) {}
 
   const base::TimeDelta media_timestamp_;
   const int32_t rtp_timestamp_;
   const int64_t capture_time_ms_;
-  const std::vector<gfx::Size> resolutions_ ALLOW_DISCOURAGED_TYPE(
-      "Matches media::Vp9Metadata::spatial_layer_resolutions etc");
+  const ActiveSpatialLayers active_spatial_layers_;
   size_t produced_frames_ = 0;
 };
 
@@ -561,6 +582,8 @@ class RTCVideoEncoder::Impl : public media::VideoEncodeAccelerator::Client {
       media::VideoEncoderInfo,
       std::vector<webrtc::VideoFrameBuffer::Type>)>;
   Impl(media::GpuVideoAcceleratorFactories* gpu_factories,
+       scoped_refptr<media::MojoVideoEncoderMetricsProviderFactory>
+           encoder_metrics_provider_factory,
        webrtc::VideoCodecType video_codec_type,
        webrtc::VideoContentType video_content_type,
        UpdateEncoderInfoCallback update_encoder_info_callback,
@@ -638,11 +661,11 @@ class RTCVideoEncoder::Impl : public media::VideoEncodeAccelerator::Client {
   // Records |failed_timestamp_match_| value after a session.
   void RecordTimestampMatchUMA() const;
 
-  // Get a list of the spatial layer resolutions that are currently active,
+  // Gets ActiveSpatialLayers that are currently active,
   // meaning the are configured, have active=true and have non-zero bandwidth
   // allocated to them.
-  // Returns an empty list is spatial layers are not used.
-  std::vector<gfx::Size> ActiveSpatialResolutions() const;
+  // Returns an empty list if a layer encoding is not used.
+  ActiveSpatialLayers GetActiveSpatialLayers() const;
 
   // Call VideoEncodeAccelerator::UseOutputBitstreamBuffer() for a buffer whose
   // id is |bitstream_buffer_id|.
@@ -658,7 +681,11 @@ class RTCVideoEncoder::Impl : public media::VideoEncodeAccelerator::Client {
   SEQUENCE_CHECKER(sequence_checker_);
 
   // Factory for creating VEAs, shared memory buffers, etc.
-  media::GpuVideoAcceleratorFactories* gpu_factories_;
+  media::GpuVideoAcceleratorFactories* const gpu_factories_;
+
+  scoped_refptr<media::MojoVideoEncoderMetricsProviderFactory>
+      encoder_metrics_provider_factory_;
+  std::unique_ptr<media::VideoEncoderMetricsProvider> encoder_metrics_provider_;
 
   // webrtc::VideoEncoder expects InitEncode() and Encode() to be synchronous.
   // Do this by waiting on the |async_init_event_| when initialization
@@ -734,15 +761,13 @@ class RTCVideoEncoder::Impl : public media::VideoEncodeAccelerator::Client {
   // Calling this causes a software encoder fallback.
   base::RepeatingClosure execute_software_fallback_;
 
-  // The reslutions of active spatial layer, only used when |Vp9Metadata| is
-  // contained in |BitstreamBufferMetadata|. it will be updated when key frame
-  // is produced.
-  std::vector<gfx::Size> current_spatial_layer_resolutions_
-      ALLOW_DISCOURAGED_TYPE(
-          "Matches media::Vp9Metadata::spatial_layer_resolutions etc");
+  // The spatial layer resolutions configured in VEA::Initialize(). This is set
+  // only in CreateAndInitializeVEA().
+  WTF::Vector<gfx::Size> init_spatial_layer_resolutions_;
 
-  // Index of the highest spatial layer with bandwidth allocated for it.
-  size_t highest_active_spatial_index_{0};
+  // The current active spatial layer range. This is set in
+  // CreateAndInitializeVEA() and updated in RequestEncodingParametersChange().
+  ActiveSpatialLayers active_spatial_layers_;
 
   // We cannot immediately return error conditions to the WebRTC user of this
   // class, as there is no error callback in the webrtc::VideoEncoder interface.
@@ -768,18 +793,22 @@ class RTCVideoEncoder::Impl : public media::VideoEncodeAccelerator::Client {
 
 RTCVideoEncoder::Impl::Impl(
     media::GpuVideoAcceleratorFactories* gpu_factories,
+    scoped_refptr<media::MojoVideoEncoderMetricsProviderFactory>
+        encoder_metrics_provider_factory,
     webrtc::VideoCodecType video_codec_type,
     webrtc::VideoContentType video_content_type,
     UpdateEncoderInfoCallback update_encoder_info_callback,
     base::RepeatingClosure execute_software_fallback,
     base::WeakPtr<Impl>& weak_this_for_client)
     : gpu_factories_(gpu_factories),
+      encoder_metrics_provider_factory_(
+          std::move(encoder_metrics_provider_factory)),
       video_codec_type_(video_codec_type),
       video_content_type_(video_content_type),
       update_encoder_info_callback_(std::move(update_encoder_info_callback)),
       execute_software_fallback_(std::move(execute_software_fallback)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
-
+  CHECK(encoder_metrics_provider_factory_);
   preferred_pixel_formats_ = {webrtc::VideoFrameBuffer::Type::kI420};
   weak_this_ = weak_this_factory_.GetWeakPtr();
   weak_this_for_client = weak_this_;
@@ -823,6 +852,13 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
         media::VideoEncodeAccelerator::Config::EncoderType::kNoPreference;
   }
 #endif
+  encoder_metrics_provider_ =
+      encoder_metrics_provider_factory_->CreateVideoEncoderMetricsProvider();
+  encoder_metrics_provider_->Initialize(
+      vea_config.output_profile, vea_config.input_visible_size,
+      /*is_hardware_encoder=*/true,
+      ToSVCScalabilityMode(vea_config.spatial_layers,
+                           vea_config.inter_layer_pred));
   if (!video_encoder_->Initialize(vea_config, this,
                                   std::make_unique<media::NullMediaLog>())) {
     NotifyErrorStatus({media::EncoderStatus::Codes::kEncoderInitializationError,
@@ -830,13 +866,13 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
     return;
   }
 
-  current_spatial_layer_resolutions_.clear();
+  init_spatial_layer_resolutions_.clear();
   for (const auto& layer : vea_config.spatial_layers) {
-    current_spatial_layer_resolutions_.emplace_back(layer.width, layer.height);
+    init_spatial_layer_resolutions_.emplace_back(layer.width, layer.height);
   }
-  highest_active_spatial_index_ = vea_config.spatial_layers.empty()
-                                      ? 0u
-                                      : vea_config.spatial_layers.size() - 1;
+
+  active_spatial_layers_.begin_index = 0;
+  active_spatial_layers_.end_index = vea_config.spatial_layers.size();
 
   // RequireBitstreamBuffers or NotifyError will be called and the waiter will
   // be signaled.
@@ -958,11 +994,11 @@ void RTCVideoEncoder::Impl::RequestEncodingParametersChange(
   uint32_t framerate =
       std::max(1u, static_cast<uint32_t>(parameters.framerate_fps + 0.5));
 
-  highest_active_spatial_index_ = 0;
+  active_spatial_layers_.begin_index = 0;
+  active_spatial_layers_.end_index = 0;
   for (size_t spatial_id = 0;
        spatial_id < media::VideoBitrateAllocation::kMaxSpatialLayers;
        ++spatial_id) {
-    bool spatial_layer_active = false;
     for (size_t temporal_id = 0;
          temporal_id < media::VideoBitrateAllocation::kMaxTemporalLayers;
          ++temporal_id) {
@@ -975,13 +1011,13 @@ void RTCVideoEncoder::Impl::RequestEncodingParametersChange(
                      << parameters.bitrate.ToString();
         break;
       }
-      if (temporal_layer_bitrate > 0)
-        spatial_layer_active = true;
+      if (temporal_layer_bitrate > 0) {
+        if (active_spatial_layers_.end_index == 0) {
+          active_spatial_layers_.begin_index = spatial_id;
+        }
+        active_spatial_layers_.end_index = spatial_id + 1;
+      }
     }
-
-    if (spatial_layer_active &&
-        spatial_id < current_spatial_layer_resolutions_.size())
-      highest_active_spatial_index_ = spatial_id;
   }
   DCHECK_EQ(allocation.GetSumBps(), parameters.bitrate.get_sum_bps());
   video_encoder_->RequestEncodingParametersChange(allocation, framerate);
@@ -992,14 +1028,11 @@ void RTCVideoEncoder::Impl::RecordTimestampMatchUMA() const {
                             !failed_timestamp_match_);
 }
 
-std::vector<gfx::Size> RTCVideoEncoder::Impl::ActiveSpatialResolutions() const {
-  if (current_spatial_layer_resolutions_.empty())
-    return {};
-  DCHECK_LT(highest_active_spatial_index_,
-            current_spatial_layer_resolutions_.size());
-  return std::vector<gfx::Size>(current_spatial_layer_resolutions_.begin(),
-                                current_spatial_layer_resolutions_.begin() +
-                                    highest_active_spatial_index_ + 1);
+ActiveSpatialLayers RTCVideoEncoder::Impl::GetActiveSpatialLayers() const {
+  if (init_spatial_layer_resolutions_.empty()) {
+    return ActiveSpatialLayers();
+  }
+  return active_spatial_layers_;
 }
 
 void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
@@ -1096,11 +1129,16 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
     frames_in_encoder_count_--;
   }
 
+  if (metadata.end_of_picture()) {
+    CHECK(encoder_metrics_provider_);
+    encoder_metrics_provider_->IncrementEncodedFrameCount();
+  }
+
   // Find RTP and capture timestamps by going through |pending_timestamps_|.
   // Derive it from current time otherwise.
   absl::optional<uint32_t> rtp_timestamp;
   absl::optional<int64_t> capture_timestamp_ms;
-  absl::optional<std::vector<gfx::Size>> expected_resolutions;
+  absl::optional<ActiveSpatialLayers> expected_active_spatial_layers;
   if (!failed_timestamp_match_) {
     // Pop timestamps until we have a match.
     while (!submitted_frames_.empty()) {
@@ -1109,12 +1147,12 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
       if (front_frame.media_timestamp_ == metadata.timestamp) {
         rtp_timestamp = front_frame.rtp_timestamp_;
         capture_timestamp_ms = front_frame.capture_time_ms_;
-        expected_resolutions = front_frame.resolutions_;
-        const size_t num_resolutions =
-            std::max(front_frame.resolutions_.size(), size_t{1});
+        expected_active_spatial_layers = front_frame.active_spatial_layers_;
+        const size_t num_spatial_layers =
+            std::max(front_frame.active_spatial_layers_.size(), size_t{1});
         ++front_frame.produced_frames_;
 
-        if (front_frame.produced_frames_ == num_resolutions &&
+        if (front_frame.produced_frames_ == num_spatial_layers &&
             !end_of_picture) {
           // The top layer must always have the end-of-picture indicator.
           NotifyErrorStatus({media::EncoderStatus::Codes::kEncoderFailedEncode,
@@ -1124,8 +1162,7 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
         if (end_of_picture) {
           // Remove pending timestamp at the top spatial layer in the case of
           // SVC encoding.
-          if (!front_frame.resolutions_.empty() &&
-              front_frame.produced_frames_ != front_frame.resolutions_.size()) {
+          if (front_frame.produced_frames_ != num_spatial_layers) {
             // At least one resolution was not produced.
             NotifyErrorStatus(
                 {media::EncoderStatus::Codes::kEncoderFailedEncode,
@@ -1194,27 +1231,80 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
       webrtc::CodecSpecificInfoVP9& vp9 = info.codecSpecific.VP9;
       if (metadata.vp9) {
         // Temporal and/or spatial layer stream.
-        if (!metadata.vp9->spatial_layer_resolutions.empty() &&
-            expected_resolutions != metadata.vp9->spatial_layer_resolutions) {
+        CHECK(expected_active_spatial_layers);
+        if (metadata.key_frame) {
+          if (metadata.vp9->spatial_layer_resolutions.empty()) {
+            NotifyErrorStatus(
+                {media::EncoderStatus::Codes::kEncoderFailedEncode,
+                 "SVC resolution metadata is not filled on keyframe"});
+            return;
+          }
+
+          CHECK_NE(expected_active_spatial_layers->end_index, 0u);
+          const size_t expected_begin_index =
+              expected_active_spatial_layers->begin_index;
+          const size_t expected_end_index =
+              expected_active_spatial_layers->end_index;
+          const size_t begin_index =
+              metadata.vp9->begin_active_spatial_layer_index;
+          const size_t end_index = metadata.vp9->end_active_spatial_layer_index;
+          if (begin_index != expected_begin_index ||
+              end_index != expected_end_index) {
+            NotifyErrorStatus(
+                {media::EncoderStatus::Codes::kEncoderFailedEncode,
+                 base::StrCat({"SVC active layer indices don't match "
+                               "request: expected [",
+                               base::NumberToString(expected_begin_index), ", ",
+                               base::NumberToString(expected_end_index),
+                               "), but got [",
+                               base::NumberToString(begin_index), ", ",
+                               base::NumberToString(end_index), ")"})});
+            return;
+          }
+
+          const std::vector<gfx::Size> expected_resolutions(
+              init_spatial_layer_resolutions_.begin() + begin_index,
+              init_spatial_layer_resolutions_.begin() + end_index);
+          if (metadata.vp9->spatial_layer_resolutions != expected_resolutions) {
+            NotifyErrorStatus(
+                {media::EncoderStatus::Codes::kEncoderFailedEncode,
+                 "Encoded SVC resolution set does not match request"});
+            return;
+          }
+        }
+        const ActiveSpatialLayers& vea_active_spatial_layers =
+            *expected_active_spatial_layers;
+        CHECK_NE(vea_active_spatial_layers.end_index, 0u);
+        const uint8_t spatial_index =
+            metadata.vp9->spatial_idx + vea_active_spatial_layers.begin_index;
+        if (spatial_index >= init_spatial_layer_resolutions_.size()) {
           NotifyErrorStatus(
-              {media::EncoderStatus::Codes::kEncoderFailedEncode,
-               "Encoded SVC resolution set does not match request"});
+              {media::EncoderStatus::Codes::kInvalidOutputBuffer,
+               base::StrCat(
+                   {"spatial_idx=", base::NumberToString(spatial_index),
+                    " is not less than init_spatial_layer_resolutions_.size()=",
+                    base::NumberToString(
+                        init_spatial_layer_resolutions_.size())})});
           return;
         }
-
-        const uint8_t spatial_index = metadata.vp9->spatial_idx;
-        if (spatial_index >= current_spatial_layer_resolutions_.size()) {
-          NotifyErrorStatus({media::EncoderStatus::Codes::kInvalidOutputBuffer,
-                             "invalid spatial index"});
+        if (spatial_index >= vea_active_spatial_layers.end_index) {
+          NotifyErrorStatus(
+              {media::EncoderStatus::Codes::kInvalidOutputBuffer,
+               base::StrCat(
+                   {"spatial_idx=", base::NumberToString(spatial_index),
+                    " is not less than vea_active_spatial_layers.end_index=",
+                    base::NumberToString(
+                        vea_active_spatial_layers.end_index)})});
           return;
         }
         image.SetSpatialIndex(spatial_index);
         image._encodedWidth =
-            current_spatial_layer_resolutions_[spatial_index].width();
+            init_spatial_layer_resolutions_[spatial_index].width();
         image._encodedHeight =
-            current_spatial_layer_resolutions_[spatial_index].height();
+            init_spatial_layer_resolutions_[spatial_index].height();
 
-        vp9.first_frame_in_picture = spatial_index == 0;
+        vp9.first_frame_in_picture =
+            spatial_index == vea_active_spatial_layers.begin_index;
         vp9.inter_pic_predicted = metadata.vp9->inter_pic_predicted;
         vp9.non_ref_for_inter_layer_pred =
             !metadata.vp9->referenced_by_upper_spatial_layers;
@@ -1226,14 +1316,25 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
         for (size_t i = 0; i < metadata.vp9->p_diffs.size(); ++i)
           vp9.p_diff[i] = metadata.vp9->p_diffs[i];
         vp9.ss_data_available = metadata.key_frame;
-        vp9.first_active_layer = 0;
-        vp9.num_spatial_layers = current_spatial_layer_resolutions_.size();
+
+        // |num_spatial_layers| is not the number of active spatial layers,
+        // but the highest spatial layer + 1.
+        vp9.first_active_layer = vea_active_spatial_layers.begin_index;
+        vp9.num_spatial_layers = vea_active_spatial_layers.end_index;
+
         if (vp9.ss_data_available) {
           vp9.spatial_layer_resolution_present = true;
           vp9.gof.num_frames_in_gof = 0;
-          for (size_t i = 0; i < vp9.num_spatial_layers; ++i) {
-            vp9.width[i] = current_spatial_layer_resolutions_[i].width();
-            vp9.height[i] = current_spatial_layer_resolutions_[i].height();
+          for (size_t i = 0; i < vea_active_spatial_layers.begin_index; ++i) {
+            // Signal disabled layers.
+            vp9.width[i] = 0;
+            vp9.height[i] = 0;
+          }
+          for (size_t i = vea_active_spatial_layers.begin_index;
+               i < vea_active_spatial_layers.end_index; ++i) {
+            wtf_size_t wtf_i = base::checked_cast<wtf_size_t>(i);
+            vp9.width[i] = init_spatial_layer_resolutions_[wtf_i].width();
+            vp9.height[i] = init_spatial_layer_resolutions_[wtf_i].height();
           }
         }
         vp9.flexible_mode = true;
@@ -1263,6 +1364,9 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
         }
         info.end_of_picture = true;
       }
+      // TODO(bugs.webrtc.org/11999): Fill `info.generic_frame_info` to
+      // provide more accurate description of used layering than webrtc can
+      // simulate based on the codec specific info.
     } break;
     default:
       break;
@@ -1289,6 +1393,11 @@ void RTCVideoEncoder::Impl::NotifyErrorStatus(
              << static_cast<int>(status.code())
              << ", message=" << status.message();
   RecordEncoderStatusUMA(status, video_codec_type_);
+  if (encoder_metrics_provider_) {
+    // |encoder_metrics_provider_| is nullptr if NotifyErrorStatus() is called
+    // before it is created in CreateAndInitializeVEA().
+    encoder_metrics_provider_->SetError(status);
+  }
   video_encoder_.reset();
   status_ = WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
 
@@ -1470,7 +1579,7 @@ void RTCVideoEncoder::Impl::EncodeOneFrame(FrameChunk frame_chunk) {
                            &FrameInfo::media_timestamp_));
     submitted_frames_.emplace_back(timestamp, frame_chunk.timestamp,
                                    frame_chunk.render_time_ms,
-                                   ActiveSpatialResolutions());
+                                   GetActiveSpatialLayers());
   }
 
   // Call UseOutputBitstreamBuffer() for pending output buffers.
@@ -1531,7 +1640,7 @@ void RTCVideoEncoder::Impl::EncodeOneFrameWithNativeInput(
                            &FrameInfo::media_timestamp_));
     submitted_frames_.emplace_back(frame->timestamp(), frame_chunk.timestamp,
                                    frame_chunk.render_time_ms,
-                                   ActiveSpatialResolutions());
+                                   GetActiveSpatialLayers());
   }
 
   // Call UseOutputBitstreamBuffer() for pending output buffers.
@@ -1609,12 +1718,17 @@ void RTCVideoEncoder::Impl::RegisterEncodeCompleteCallback(
 RTCVideoEncoder::RTCVideoEncoder(
     media::VideoCodecProfile profile,
     bool is_constrained_h264,
-    media::GpuVideoAcceleratorFactories* gpu_factories)
+    media::GpuVideoAcceleratorFactories* gpu_factories,
+    scoped_refptr<media::MojoVideoEncoderMetricsProviderFactory>
+        encoder_metrics_provider_factory)
     : profile_(profile),
       is_constrained_h264_(is_constrained_h264),
       gpu_factories_(gpu_factories),
+      encoder_metrics_provider_factory_(
+          std::move(encoder_metrics_provider_factory)),
       gpu_task_runner_(gpu_factories->GetTaskRunner()) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(webrtc_sequence_checker_);
+  CHECK(encoder_metrics_provider_factory_);
   DVLOG(1) << "RTCVideoEncoder(): profile=" << GetProfileName(profile);
 
   // The default values of EncoderInfo.
@@ -1645,6 +1759,12 @@ RTCVideoEncoder::~RTCVideoEncoder() {
 
   Release();
   DCHECK(!impl_);
+
+  // |encoder_metrics_provider_factory_| needs to be destroyed on the same
+  // sequence as one that destroys the VideoEncoderMetricsProviders created by
+  // it. It is gpu task runner in this case.
+  gpu_task_runner_->ReleaseSoon(FROM_HERE,
+                                std::move(encoder_metrics_provider_factory_));
 }
 
 bool RTCVideoEncoder::IsCodecInitializationPending() const {
@@ -1788,9 +1908,9 @@ int32_t RTCVideoEncoder::InitEncode(
           base::BindRepeating(&RTCVideoEncoder::SetError, weak_this_));
 
   impl_ = std::make_unique<Impl>(
-      gpu_factories_, ProfileToWebRtcVideoCodecType(profile_),
-      webrtc_content_type, update_encoder_info_callback,
-      execute_software_fallback, weak_impl_);
+      gpu_factories_, encoder_metrics_provider_factory_,
+      ProfileToWebRtcVideoCodecType(profile_), webrtc_content_type,
+      update_encoder_info_callback, execute_software_fallback, weak_impl_);
 
   media::VideoPixelFormat pixel_format = media::PIXEL_FORMAT_I420;
   auto storage_type =

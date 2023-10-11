@@ -278,6 +278,7 @@
 <translation id="3264582393905923483">प्रसंग</translation>
 <translation id="3272909651715601089">"<ph name="PATH" />" को नहीं खोला जा सका</translation>
 <translation id="3280431534455935878">तैयार कर रहा है</translation>
+<translation id="3280719573299097127">आप सीमित डेटा वाले नेटवर्क पर हैं. फ़ाइल को सिंक करने की सुविधा रोक दी गई है.</translation>
 <translation id="3280987981688031357">विनाइल रिकॉर्ड</translation>
 <translation id="3290356915286466215">असुरक्षित</translation>
 <translation id="3291218047831493686">सिम लॉक सेटिंग में बदलाव करने के लिए इस नेटवर्क से कनेक्ट करें</translation>
@@ -632,6 +633,7 @@
 <translation id="5838451609423551646">सभी एंट्री से चुने हुए का निशान हटाया गया.</translation>
 <translation id="5838825566232597749">यूएस वर्कमैन अंतर्राष्‍ट्रीय</translation>
 <translation id="5845721951356578987">नर्स</translation>
+<translation id="5858478190805449225">बैटरी सेवर मोड चालू है. बैटरी सेवर मोड बंद होने पर फिर से कोशिश करें.</translation>
 <translation id="5860491529813859533">चालू करें</translation>
 <translation id="5861477046012235702">गेमर</translation>
 <translation id="5864471791310927901">DHCP लुकअप विफल</translation>
@@ -898,7 +900,6 @@
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7920501309908018401">'मेरी ड्राइव' में मौजूद फ़ाइलें, आपके Chromebook से अपने-आप सिंक हो जाएंगी. इससे उन्हें बिना इंटरनेट कनेक्शन के ऐक्सेस किया जा सकता है.</translation>
 <translation id="7925247922861151263">AAA जाँच पूरा नहीं हो सका</translation>
-<translation id="7925686952655276919">समन्‍वयन के लिए मोबाइल डेटा का उपयोग न करें</translation>
 <translation id="7928710562641958568">डिवाइस निकालें</translation>
 <translation id="7933875256234974853">Drive की फ़ाइलें सिंक होने के लिए तैयार की जा रही हैं...</translation>
 <translation id="7943385054491506837">यूएस कोलमैक</translation>
@@ -921,6 +922,7 @@
 <translation id="8087576439476816834"><ph name="PROFILE_NAME" /> डाउनलोड करें</translation>
 <translation id="8106045200081704138">मुझसे शेयर किया गया</translation>
 <translation id="8116072619078571545">ठंडा पानी</translation>
+<translation id="8120392982188717723">सीमित डेटा वाले नेटवर्क पर सिंक करने की अनुमति दें</translation>
 <translation id="8124093710070495550">सिंक करने से जुड़ी समस्या</translation>
 <translation id="8128733386027980860">ड्वोराक कीबोर्ड के साथ अंग्रेज़ी (यूके)</translation>
 <translation id="8137331602592933310">"<ph name="FILENAME" />" को आपके साथ शेयर किया गया है. आप इसे नहीं मिटा सकते क्योंकि आप इसके मालिक नहीं हैं.</translation>

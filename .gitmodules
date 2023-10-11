@@ -1049,4 +1049,5 @@
 	path = webkit/data/test_shell/plugins
 	url = https://chrome-internal.googlesource.com/chrome/data/webkit_plugin_tests.git
 	gclient-condition = checkout_src_internal
-    ignore = all
+        ignore = all
+

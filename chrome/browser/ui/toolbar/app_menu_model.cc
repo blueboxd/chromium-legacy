@@ -878,6 +878,13 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
       }
       LogMenuAction(MENU_ACTION_SHOW_BOOKMARK_BAR);
       break;
+    case IDC_SHOW_BOOKMARK_SIDE_PANEL:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "WrenchMenu.TimeToAction.ShowBookmarkSidePanel", delta);
+      }
+      LogMenuAction(MENU_ACTION_SHOW_BOOKMARK_SIDE_PANEL);
+      break;
     case IDC_SHOW_BOOKMARK_MANAGER:
       if (!uma_action_recorded_) {
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ShowBookmarkMgr",
@@ -905,6 +912,14 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
                                    delta);
       }
       LogMenuAction(MENU_ACTION_BOOKMARK_ALL_TABS);
+      break;
+      // Search companion.
+    case IDC_SHOW_SEARCH_COMPANION:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "WrenchMenu.TimeToAction.ShowSearchCompanion", delta);
+      }
+      LogMenuAction(MENU_ACTION_SHOW_SEARCH_COMPANION);
       break;
     // Extensions menu.
     case IDC_EXTENSIONS_SUBMENU_MANAGE_EXTENSIONS:

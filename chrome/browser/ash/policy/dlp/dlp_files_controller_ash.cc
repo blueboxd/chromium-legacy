@@ -111,6 +111,7 @@ absl::optional<DlpFileDestination> GetFileDestinationForApp(
     case apps::AppType::kPluginVm:
       return DlpFileDestination(data_controls::Component::kPluginVm);
     case apps::AppType::kWeb:
+    case apps::AppType::kSystemWeb:
       // Expecting `PublisherId()` to return an URL. For web apps this should be
       // the start URL.
       return DlpFileDestination(GURL(app_update.PublisherId()));
@@ -121,7 +122,6 @@ absl::optional<DlpFileDestination> GetFileDestinationForApp(
     case apps::AppType::kRemote:
     case apps::AppType::kBorealis:
     case apps::AppType::kBruschetta:
-    case apps::AppType::kSystemWeb:
       return absl::nullopt;
   }
   return absl::nullopt;
@@ -741,7 +741,6 @@ void DlpFilesControllerAsh::IsFilesTransferRestricted(
     switch (level) {
       case DlpRulesManager::Level::kBlock: {
         files_levels.emplace_back(file, ::dlp::RestrictionLevel::LEVEL_BLOCK);
-        DlpHistogramEnumeration(dlp::kFileActionBlockedUMA, files_action);
         break;
       }
       case DlpRulesManager::Level::kNotSet:
@@ -862,8 +861,6 @@ bool DlpFilesControllerAsh::IsDlpPolicyMatched(const FileDaemonInfo& file) {
   switch (level) {
     case policy::DlpRulesManager::Level::kBlock:
       restricted = true;
-      DlpHistogramEnumeration(dlp::kFileActionBlockedUMA,
-                              dlp::FileAction::kUnknown);
       break;
     case policy::DlpRulesManager::Level::kWarn:
       DlpHistogramEnumeration(dlp::kFileActionWarnedUMA,

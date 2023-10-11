@@ -77,6 +77,7 @@ constexpr char kExampleUrl2[] = "https://example2.com/";
 constexpr char kExampleUrl3[] = "https://example3.com/";
 constexpr char kExampleUrl4[] = "https://example4.com/";
 constexpr char kExampleUrl5[] = "https://example5.com/";
+constexpr char kExampleUrl6[] = "https://example6.com/";
 
 constexpr char kExampleSourcePattern1[] = "example1.com";
 constexpr char kExampleSourcePattern2[] = "example2.com";
@@ -111,6 +112,7 @@ constexpr char kArcAppId[] = "arcApp";
 constexpr char kCrostiniAppId[] = "crostiniApp";
 constexpr char kPluginVmAppId[] = "pluginVmApp";
 constexpr char kWebAppId[] = "webApp";
+constexpr char kSystemWebAppId[] = "systemWebApp";
 
 constexpr char kRuleName1[] = "rule #1";
 constexpr char kRuleName2[] = "rule #2";
@@ -1095,13 +1097,6 @@ TEST_F(DlpFilesControllerAshTest, CheckReportingOnIsDlpPolicyMatched) {
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples(GetDlpHistogramPrefix() +
-                                     std::string(dlp::kFileActionBlockedUMA)),
-      base::BucketsAre(base::Bucket(dlp::FileAction::kUnknown, 3),
-                       base::Bucket(dlp::FileAction::kDownload, 0),
-                       base::Bucket(dlp::FileAction::kTransfer, 0)));
-
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(GetDlpHistogramPrefix() +
                                      std::string(dlp::kFileActionWarnedUMA)),
       base::BucketsAre(base::Bucket(dlp::FileAction::kUnknown, 3),
                        base::Bucket(dlp::FileAction::kDownload, 0),
@@ -1415,13 +1410,6 @@ TEST_F(DlpFilesControllerAshTest, IsFilesTransferRestricted_MyFiles) {
       dlp::FileAction::kTransfer, cb.Get());
 
   ASSERT_EQ(events.size(), 0u);
-
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(GetDlpHistogramPrefix() +
-                                     std::string(dlp::kFileActionBlockedUMA)),
-      base::BucketsAre(base::Bucket(dlp::FileAction::kUnknown, 0),
-                       base::Bucket(dlp::FileAction::kDownload, 0),
-                       base::Bucket(dlp::FileAction::kTransfer, 0)));
 }
 
 class DlpFilesExternalDestinationTest
@@ -1519,13 +1507,6 @@ TEST_P(DlpFilesExternalDestinationTest, IsFilesTransferRestricted_Component) {
                              kExampleSourcePattern3, expected_component,
                              DlpRulesManager::Restriction::kFiles, kRuleName3,
                              kRuleId3, DlpRulesManager::Level::kBlock)));
-
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(GetDlpHistogramPrefix() +
-                                     std::string(dlp::kFileActionBlockedUMA)),
-      base::BucketsAre(base::Bucket(dlp::FileAction::kUnknown, 0),
-                       base::Bucket(dlp::FileAction::kDownload, 0),
-                       base::Bucket(dlp::FileAction::kTransfer, 2)));
 }
 
 TEST_P(DlpFilesExternalDestinationTest, FileDownloadBlocked) {
@@ -1684,17 +1665,6 @@ TEST_P(DlpFilesUrlDestinationTest, IsFilesTransferRestricted_Url) {
             DlpRulesManager::Restriction::kFiles, triggered_rule_names[i],
             triggered_rule_ids[i], DlpRulesManager::Level::kBlock)));
   }
-
-  int blocked_downloads = disallowed_source_patterns.empty()
-                              ? 0
-                              : disallowed_source_patterns.size();
-
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(GetDlpHistogramPrefix() +
-                                     std::string(dlp::kFileActionBlockedUMA)),
-      base::BucketsAre(
-          base::Bucket(dlp::FileAction::kDownload, blocked_downloads),
-          base::Bucket(dlp::FileAction::kTransfer, 0)));
 }
 
 class DlpFilesWarningDialogChoiceTest
@@ -2115,6 +2085,8 @@ class DlpFilesAppLaunchTest : public DlpFilesAppServiceTest,
     CreateAndStoreFakeApp(kPluginVmAppId, apps::AppType::kPluginVm,
                           kExampleUrl4);
     CreateAndStoreFakeApp(kWebAppId, apps::AppType::kWeb, kExampleUrl5);
+    CreateAndStoreFakeApp(kSystemWebAppId, apps::AppType::kSystemWeb,
+                          kExampleUrl6);
   }
 };
 
@@ -2125,7 +2097,9 @@ INSTANTIATE_TEST_SUITE_P(
                       std::make_tuple(apps::AppType::kArc, kArcAppId),
                       std::make_tuple(apps::AppType::kCrostini, kCrostiniAppId),
                       std::make_tuple(apps::AppType::kPluginVm, kPluginVmAppId),
-                      std::make_tuple(apps::AppType::kWeb, kWebAppId)));
+                      std::make_tuple(apps::AppType::kWeb, kWebAppId),
+                      std::make_tuple(apps::AppType::kSystemWeb,
+                                      kSystemWebAppId)));
 
 TEST_P(DlpFilesAppLaunchTest, CheckIfAppLaunchAllowed) {
   auto [app_type, app_id] = GetParam();
@@ -2180,6 +2154,7 @@ TEST_P(DlpFilesAppLaunchTest, CheckIfAppLaunchAllowed) {
     EXPECT_TRUE(last_check_files_transfer_request.has_destination_url());
     EXPECT_EQ(GURL(last_check_files_transfer_request.destination_url()),
               GURL(std::string(extensions::kExtensionScheme) + "://" + app_id));
+
   } else if (app_type == apps::AppType::kArc) {
     EXPECT_TRUE(last_check_files_transfer_request.has_destination_component());
     EXPECT_EQ(last_check_files_transfer_request.destination_component(),
@@ -2199,6 +2174,11 @@ TEST_P(DlpFilesAppLaunchTest, CheckIfAppLaunchAllowed) {
     EXPECT_TRUE(last_check_files_transfer_request.has_destination_url());
     EXPECT_EQ(GURL(last_check_files_transfer_request.destination_url()),
               GURL(kExampleUrl5));
+
+  } else if (app_type == apps::AppType::kSystemWeb) {
+    EXPECT_TRUE(last_check_files_transfer_request.has_destination_url());
+    EXPECT_EQ(GURL(last_check_files_transfer_request.destination_url()),
+              GURL(kExampleUrl6));
   }
 
   EXPECT_TRUE(last_check_files_transfer_request.has_file_action());
@@ -2234,7 +2214,8 @@ TEST_P(DlpFilesAppLaunchTest, IsLaunchBlocked) {
   urls.push_back(kExampleUrl1);
 
   if (app_type == apps::AppType::kChromeApp ||
-      app_type == apps::AppType::kWeb) {
+      app_type == apps::AppType::kWeb ||
+      app_type == apps::AppType::kSystemWeb) {
     EXPECT_CALL(*rules_manager_, IsRestrictedDestination)
         .WillOnce(testing::Return(DlpRulesManager::Level::kBlock));
   } else {
@@ -2265,7 +2246,8 @@ TEST_P(DlpFilesAppLaunchTest, IsLaunchBlocked_Empty) {
   app_service_intent->files.push_back(std::move(file1));
 
   if (app_type == apps::AppType::kChromeApp ||
-      app_type == apps::AppType::kWeb) {
+      app_type == apps::AppType::kWeb ||
+      app_type == apps::AppType::kSystemWeb) {
     EXPECT_CALL(*rules_manager_, IsRestrictedDestination)
         .WillOnce(testing::Return(DlpRulesManager::Level::kBlock));
   } else {

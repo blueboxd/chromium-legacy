@@ -9,7 +9,7 @@ import {NativeEventTarget as EventTarget} from 'chrome://resources/ash/common/ev
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {ColorChangeUpdater} from 'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
 
-import {getBulkPinProgress, getDialogCaller, getDlpBlockedComponents, getPreferences} from '../../common/js/api.js';
+import {getBulkPinProgress, getDialogCaller, getDlpBlockedComponents, getDriveConnectionState, getPreferences} from '../../common/js/api.js';
 import {ArrayDataModel} from '../../common/js/array_data_model.js';
 import {DialogType, isFolderDialogType} from '../../common/js/dialog_type.js';
 import {getKeyModifiers, queryDecoratedElement, queryRequiredElement} from '../../common/js/dom_utils.js';
@@ -35,6 +35,7 @@ import {Store} from '../../externs/ts/store.js';
 import {getMyFiles} from '../../state/ducks/all_entries.js';
 import {updateBulkPinProgress} from '../../state/ducks/bulk_pinning.js';
 import {updateDeviceConnectionState} from '../../state/ducks/device.js';
+import {updateDriveConnectionStatus} from '../../state/ducks/drive.js';
 import {updatePreferences} from '../../state/ducks/preferences.js';
 import {updateSearch} from '../../state/ducks/search.js';
 import {addUiEntry, removeUiEntry} from '../../state/ducks/ui_entries.js';
@@ -51,7 +52,6 @@ import {DialogActionController} from './dialog_action_controller.js';
 import {FileFilter} from './directory_contents.js';
 import {DirectoryModel} from './directory_model.js';
 import {DirectoryTreeNamingController} from './directory_tree_naming_controller.js';
-import {DriveDialogController} from './drive_dialog_controller.js';
 import {importElements} from './elements_importer.js';
 import {EmptyFolderController} from './empty_folder_controller.js';
 import {CommandHandler, CommandUtil} from './file_manager_commands.js';
@@ -182,12 +182,6 @@ export class FileManager extends EventTarget {
      * @private {ActionsController}
      */
     this.actionsController_ = null;
-
-    /**
-     * Controller for showing dialogs from Drive.
-     * @private {?DriveDialogController}
-     */
-    this.driveDialogController_ = null;
 
     /**
      * Handler for command events.
@@ -692,14 +686,8 @@ export class FileManager extends EventTarget {
         /** @type {!A11yAnnounce} */ (this.ui_));
     this.actionsController_ = new ActionsController(
         this.volumeManager_, assert(this.metadataModel_), this.directoryModel_,
-        assert(this.folderShortcutsModel_),
-        this.fileBrowserBackground_.driveSyncHandler, this.selectionHandler_,
+        assert(this.folderShortcutsModel_), this.selectionHandler_,
         assert(this.ui_));
-    if (this.dialogType === DialogType.FULL_PAGE) {
-      this.driveDialogController_ = new DriveDialogController(this.ui_);
-      this.fileBrowserBackground_.driveSyncHandler.addDialog(
-          window.appID, this.driveDialogController_);
-    }
     this.lastModifiedController_ = new LastModifiedController(
         this.ui_.listContainer.table, this.directoryModel_);
 
@@ -1311,6 +1299,11 @@ export class FileManager extends EventTarget {
     });
     this.onPreferencesChanged_();
 
+    chrome.fileManagerPrivate.onDriveConnectionStatusChanged.addListener(() => {
+      this.onDriveConnectionStatusChanged_();
+    });
+    this.onDriveConnectionStatusChanged_();
+
     // The fmp.onCrostiniChanged receives enabled/disabled events via a pref
     // watcher and share/unshare events.  The enabled/disabled prefs are
     // handled in fmp.onCrostiniChanged rather than fmp.onPreferencesChanged
@@ -1667,10 +1660,6 @@ export class FileManager extends EventTarget {
     if (this.ui_ && this.ui_.progressCenterPanel) {
       this.progressCenter.removePanel(this.ui_.progressCenterPanel);
     }
-
-    if (this.driveDialogController_) {
-      this.fileBrowserBackground_.driveSyncHandler.removeDialog(window.appID);
-    }
   }
 
   /**
@@ -1771,6 +1760,17 @@ export class FileManager extends EventTarget {
     if (redraw && !util.isFilesAppExperimental()) {
       this.ui_.directoryTree.redraw(false);
     }
+  }
+
+  async onDriveConnectionStatusChanged_() {
+    let connectionState = null;
+    try {
+      connectionState = await getDriveConnectionState();
+    } catch (e) {
+      console.error('Failed to retrieve drive connection state:', e);
+      return;
+    }
+    this.store_.dispatch(updateDriveConnectionStatus(connectionState));
   }
 
   /**

@@ -59,7 +59,9 @@ class PrefRegistrySyncable;
                                            browser:(Browser*)browser
                                           identity:(id<SystemIdentity>)identity
                                        accessPoint:(signin_metrics::AccessPoint)
-                                                       accessPoint;
+                                                       accessPoint
+                                       promoAction:(signin_metrics::PromoAction)
+                                                       promoAction;
 
 // Returns a coordinator for forced sign-in workflow.
 // `viewController` presents the sign-in.
@@ -172,6 +174,18 @@ class PrefRegistrySyncable;
                                                 accessPoint:(signin_metrics::
                                                                  AccessPoint)
                                                                 accessPoint;
+
+// Returns a coordinator to display the sign-in view then the history opt-in.
++ (instancetype)
+    sheetSigninAndHistorySyncCoordinatorWithBaseViewController:
+        (UIViewController*)viewController
+                                                       browser:(Browser*)browser
+                                                   accessPoint:(signin_metrics::
+                                                                    AccessPoint)
+                                                                   accessPoint
+                                                   promoAction:(signin_metrics::
+                                                                    PromoAction)
+                                                                   promoAction;
 
 // Interrupts the sign-in flow.
 // `signinCompletion(SigninCoordinatorResultInterrupted, nil)` is guaranteed to

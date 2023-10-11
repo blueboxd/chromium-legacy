@@ -1056,27 +1056,21 @@ public class ImeAdapterImpl
             mRestartInputOnNextStateUpdate = true;
         }
 
-        if (mWebContents.getStylusWritingHandler() != null) {
-            // Update edit bounds to stylus writing service.
-            Rect editableNodeBoundsPixOnScreen;
-            if (isEditable) {
-                editableNodeBoundsPixOnScreen =
-                        new Rect(nodeLeftDip, nodeTopDip, nodeRightDip, nodeBottomDip);
-                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
-                    RectF bounds = new RectF(editableNodeBoundsPixOnScreen);
-                    EditorBoundsInfo editorBoundsInfo = new EditorBoundsInfo.Builder()
-                                                                .setEditorBounds(bounds)
-                                                                .setHandwritingBounds(bounds)
-                                                                .build();
-                    mCursorAnchorInfoController.updateWithEditorBoundsInfo(
-                            editorBoundsInfo, getContainerView());
-                }
-            } else {
-                editableNodeBoundsPixOnScreen = new Rect();
-            }
-            mWebContents.getStylusWritingHandler().onFocusedNodeChanged(
-                    editableNodeBoundsPixOnScreen, isEditable, mViewDelegate.getContainerView());
+        if (mWebContents.getStylusWritingHandler() == null) {
+            return;
         }
+        // Update edit bounds to stylus writing service.
+        Rect editableNodeBounds = new Rect();
+        if (isEditable) {
+            editableNodeBounds.set(nodeLeftDip, nodeTopDip, nodeRightDip, nodeBottomDip);
+        }
+        float deviceScale = mWebContents.getRenderCoordinates().getDeviceScaleFactor();
+        EditorBoundsInfo editorBoundsInfo =
+                mWebContents.getStylusWritingHandler().onFocusedNodeChanged(editableNodeBounds,
+                        isEditable, mViewDelegate.getContainerView(), deviceScale,
+                        mWebContents.getRenderCoordinates().getContentOffsetYPixInt());
+        mCursorAnchorInfoController.updateWithEditorBoundsInfo(
+                editorBoundsInfo, getContainerView());
     }
 
     @CalledByNative
@@ -1090,38 +1084,35 @@ public class ImeAdapterImpl
         if (!ViewUtils.hasFocus(containerView)) ViewUtils.requestFocus(containerView);
 
         updateInputStateForStylusWriting();
-        return mWebContents.getStylusWritingHandler().requestStartStylusWriting();
+        return mWebContents.getStylusWritingHandler().requestStartStylusWriting(
+                getStylusWritingImeCallback());
     }
 
     @CalledByNative
     void onEditElementFocusedForStylusWriting(int focusedEditLeft, int focusedEditTop,
             int focusedEditRight, int focusedEditBottom, int caretX, int caretY) {
-        if (mWebContents.getStylusWritingHandler() == null) return;
+        if (mWebContents.getStylusWritingHandler() == null) {
+            return;
+        }
         float scaleFactor = mWebContents.getRenderCoordinates().getDeviceScaleFactor();
         RectF focusedEditBounds =
-                new RectF(focusedEditLeft / scaleFactor, focusedEditTop / scaleFactor,
-                        focusedEditRight / scaleFactor, focusedEditBottom / scaleFactor);
+                new RectF(focusedEditLeft, focusedEditTop, focusedEditRight, focusedEditBottom);
         Point cursorPosition = new Point(caretX, caretY);
-        if (!focusedEditBounds.isEmpty()) {
-            int[] screenLocation = new int[2];
-            getContainerView().getLocationOnScreen(screenLocation);
-            int contentOffsetY = mWebContents.getRenderCoordinates().getContentOffsetYPixInt();
-            cursorPosition.offset(screenLocation[0], screenLocation[1] + contentOffsetY);
-        }
+        if (focusedEditBounds.isEmpty()) return;
+
+        int[] screenLocation = new int[2];
+        getContainerView().getLocationOnScreen(screenLocation);
+        int contentOffsetY = mWebContents.getRenderCoordinates().getContentOffsetYPixInt();
+        cursorPosition.offset(screenLocation[0], screenLocation[1] + contentOffsetY);
 
         Rect roundedBounds = new Rect();
         focusedEditBounds.round(roundedBounds);
         // Send focused edit bounds and caret center position to Stylus writing service.
-        mWebContents.getStylusWritingHandler().onEditElementFocusedForStylusWriting(
-                roundedBounds, cursorPosition);
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
-            EditorBoundsInfo editorBoundsInfo = new EditorBoundsInfo.Builder()
-                                                        .setEditorBounds(focusedEditBounds)
-                                                        .setHandwritingBounds(focusedEditBounds)
-                                                        .build();
-            mCursorAnchorInfoController.updateWithEditorBoundsInfo(
-                    editorBoundsInfo, getContainerView());
-        }
+        EditorBoundsInfo editorBoundsInfo =
+                mWebContents.getStylusWritingHandler().onEditElementFocusedForStylusWriting(
+                        roundedBounds, cursorPosition, scaleFactor, contentOffsetY);
+        mCursorAnchorInfoController.updateWithEditorBoundsInfo(
+                editorBoundsInfo, getContainerView());
     }
 
     /**
@@ -1153,7 +1144,7 @@ public class ImeAdapterImpl
     }
 
     /** Lazily creates/returns a StylusWritingImeCallback object. */
-    public StylusWritingImeCallback getStylusWritingImeCallback() {
+    private StylusWritingImeCallback getStylusWritingImeCallback() {
         if (mStylusWritingImeCallback == null) {
             mStylusWritingImeCallback = new StylusWritingImeCallback() {
                 @Override

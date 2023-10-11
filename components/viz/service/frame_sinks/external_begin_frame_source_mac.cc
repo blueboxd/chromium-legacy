@@ -234,7 +234,8 @@ void ExternalBeginFrameSourceMac::OnDisplayLinkCallback(
     DCHECK(update_vsync_params_callback_);
     update_vsync_params_callback_.Run(frame_time, interval);
   } else if (!just_started_begin_frame_) {
-    base::TimeDelta delta = frame_time - (last_frame_time_ + last_interval_);
+    base::TimeDelta delta =
+        base::TimeTicks::Now() - (last_frame_time_ + last_interval_);
     RecordBeginFrameSourceAccuracy(delta);
   }
   just_started_begin_frame_ = false;
@@ -311,11 +312,17 @@ void ExternalBeginFrameSourceMac::SetPreferredInterval(
     return;
   }
 
-  CHECK(interval >= nominal_refresh_period_);
-  CHECK(interval == nominal_refresh_period_ ||
-        interval <= kMaxSupportedFrameInterval);
+  // Cap the refresh interval if it's out of the supported range.
+  base::TimeDelta adjusted_interval = interval;
+  if (interval < nominal_refresh_period_) {
+    adjusted_interval = nominal_refresh_period_;
+  } else if (interval > kMaxSupportedFrameInterval &&
+             interval != nominal_refresh_period_) {
+    adjusted_interval = kMaxSupportedFrameInterval;
+  }
+
   vsyncs_to_skip_ = 0;
-  vsync_subsampling_factor_ = interval.IntDiv(nominal_refresh_period_);
+  vsync_subsampling_factor_ = adjusted_interval.IntDiv(nominal_refresh_period_);
 
   TRACE_EVENT1("gpu", "ExternalBeginFrameSourceMac::SetPreferredInterval",
                "vsync_subsampling_factor", vsync_subsampling_factor_);
@@ -384,7 +391,21 @@ void DelayBasedBeginFrameSourceMac::OnTimeSourceParamsUpdate(
     ui::VSyncParamsMac params) {
   time_source_next_update_time_ = base::TimeTicks::Now() + base::Seconds(10);
   time_source_updater_ = nullptr;
-  OnUpdateVSyncParameters(params.display_timebase, params.display_interval);
+
+  CHECK(update_vsync_params_callback_);
+  if (last_hw_interval_ == params.display_interval) {
+    // No hw display interval change. Keep the current preferred interval in
+    // DelayBasedTimeSource.
+    // (ex. HW interval is 60Hz but the preferred interval is 30Hz.)
+    OnUpdateVSyncParameters(params.display_timebase, time_source()->Interval());
+  } else {
+    // Notify Display FrameRateDecider of the new display interval.
+    // FrameRateDecider will set the preferred frame interval.
+    update_vsync_params_callback_.Run(params.display_timebase,
+                                      params.display_interval);
+  }
+
+  last_hw_interval_ = params.display_interval;
 }
 
 void DelayBasedBeginFrameSourceMac::AddObserver(BeginFrameObserver* obs) {
@@ -411,6 +432,11 @@ void DelayBasedBeginFrameSourceMac::OnTimerTick() {
     RequestTimeSourceParamsUpdate();
   }
   DelayBasedBeginFrameSource::OnTimerTick();
+}
+
+void DelayBasedBeginFrameSourceMac::SetUpdateVSyncParametersCallback(
+    UpdateVSyncParametersCallback callback) {
+  update_vsync_params_callback_ = callback;
 }
 
 }  // namespace viz

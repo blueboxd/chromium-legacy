@@ -935,9 +935,8 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
   [_incognitoGridCoordinator stop];
   _incognitoGridCoordinator = nil;
 
-  // Disconnect UI from models they observe.
-  self.regularTabsMediator.browser = nil;
-  self.incognitoTabsMediator.browser = nil;
+  [self.regularTabsMediator disconnect];
+  self.regularTabsMediator = nil;
 
   // TODO(crbug.com/845192) : RecentTabsTableViewController behaves like a
   // coordinator and that should be factored out.
@@ -1219,7 +1218,9 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
   _historySyncPopupCoordinator = [[HistorySyncPopupCoordinator alloc]
       initWithBaseViewController:_baseViewController
                          browser:self.regularBrowser
-             dedicatedSignInDone:dedicatedSignInDone
+                   showUserEmail:!dedicatedSignInDone
+               signOutIfDeclined:dedicatedSignInDone
+                      isOptional:NO
                      accessPoint:signin_metrics::AccessPoint::
                                      ACCESS_POINT_RECENT_TABS];
   _historySyncPopupCoordinator.delegate = self;
@@ -1249,7 +1250,7 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
 
   BOOL inIncognito = self.regularBrowser->GetBrowserState()->IsOffTheRecord();
   OpenDistantSessionInBackground(
-      session, inIncognito,
+      session, inIncognito, GetDefaultNumberOfTabsToLoadSimultaneously(),
       UrlLoadingBrowserAgent::FromBrowser(self.regularBrowser),
       self.baseViewController.remoteTabsViewController.loadStrategy);
 
@@ -1415,27 +1416,52 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
 #pragma mark - SnackbarCoordinatorDelegate
 
 - (CGFloat)snackbarCoordinatorBottomOffsetForCurrentlyPresentedView:
-    (SnackbarCoordinator*)snackbarCoordinator {
-  NSString* bottomToolbarGuideName;
-  if ([self.bvcContainer currentBVC]) {
-    // Use the BVC bottom bar as the offset as it is currently presented.
-    bottomToolbarGuideName = kSecondaryToolbarGuide;
-  } else {
+               (SnackbarCoordinator*)snackbarCoordinator
+                                                forceBrowserToolbar:
+                                                    (BOOL)forceBrowserToolbar {
+  if (!self.bvcContainer.currentBVC) {
     // The tab grid is being show so use tab grid bottom bar.
-    bottomToolbarGuideName = kTabGridBottomToolbarGuide;
+    // kTabGridBottomToolbarGuide is stored in the shared layout guide center.
+    UIView* tabGridBottomToolbarView = [LayoutGuideCenterForBrowser(nil)
+        referencedViewUnderName:kTabGridBottomToolbarGuide];
+    return CGRectGetHeight(tabGridBottomToolbarView.bounds);
   }
 
+  if (!forceBrowserToolbar &&
+      self.bvcContainer.currentBVC.presentedViewController) {
+    UIViewController* presentedViewController =
+        self.bvcContainer.currentBVC.presentedViewController;
+
+    // When the presented view is a navigation controller, return the navigation
+    // controller's toolbar height.
+    if ([presentedViewController isKindOfClass:UINavigationController.class]) {
+      UINavigationController* navigationController =
+          base::apple::ObjCCastStrict<UINavigationController>(
+              presentedViewController);
+
+      if (navigationController.toolbar &&
+          !navigationController.isToolbarHidden) {
+        CGFloat toolbarHeight =
+            CGRectGetHeight(presentedViewController.view.frame) -
+            CGRectGetMinY(navigationController.toolbar.frame);
+        return toolbarHeight;
+      } else {
+        return 0.0;
+      }
+    }
+  }
+
+  // Use the BVC bottom bar as the offset.
   Browser* browser = nil;
   if (snackbarCoordinator == self.snackbarCoordinator) {
     browser = self.regularBrowser;
   } else if (snackbarCoordinator == self.incognitoSnackbarCoordinator) {
     browser = self.incognitoBrowser;
   }
-
-  DCHECK(browser);
+  CHECK(browser);
 
   UIView* bottomToolbar = [LayoutGuideCenterForBrowser(browser)
-      referencedViewUnderName:bottomToolbarGuideName];
+      referencedViewUnderName:kSecondaryToolbarGuide];
 
   return CGRectGetHeight(bottomToolbar.bounds);
 }
@@ -1443,7 +1469,7 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
 #pragma mark - HistorySyncPopupCoordinatorDelegate
 
 - (void)historySyncPopupCoordinator:(HistorySyncPopupCoordinator*)coordinator
-         didCloseWithDeclinedByUser:(BOOL)declined {
+                didFinishWithResult:(SigninCoordinatorResult)result {
   _historySyncPopupCoordinator.delegate = nil;
   [_historySyncPopupCoordinator stop];
   _historySyncPopupCoordinator = nil;

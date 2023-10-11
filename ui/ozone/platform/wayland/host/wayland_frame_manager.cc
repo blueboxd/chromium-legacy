@@ -11,6 +11,7 @@
 #include "base/containers/adapters.h"
 #include "base/containers/fixed_flat_set.h"
 #include "base/time/time.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rrect_f.h"
@@ -52,6 +53,18 @@ bool ValidateRect(const gfx::RectF& rect) {
 }
 
 uint32_t GetPresentationKindFlags(uint32_t flags) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // `gfx::PresentationFeedback::kFailure` is not a flag defined by wayland
+  // protocol (in presentation-time.xml). So unlike other flags, it does not
+  // have a corresponding WP_PRESENTATION_FEEDBACK_KIND*. However in Ash-Lacros
+  // interraction, this flag is still sent and used. In Ash-Lacros world,
+  // `presented` with `gfx::PresentationFeedback::kFailure` is used instead of
+  // `discarded` so that timestamp can be included in the message.
+  if (flags & gfx::PresentationFeedback::kFailure) {
+    return gfx::PresentationFeedback::kFailure;
+  }
+#endif
+
   // Wayland spec has different meaning of VSync. In Chromium, VSync means to
   // update the begin frame vsync timing based on presentation feedback.
   uint32_t presentation_flags = gfx::PresentationFeedback::kVSync;
@@ -464,7 +477,7 @@ void WaylandFrameManager::ApplySurfaceConfigure(
     for (auto& submitted_frames : submitted_frames_) {
       auto result = submitted_frames->submitted_buffers.find(surface);
       if (result != submitted_frames->submitted_buffers.end() &&
-          result->second->wl_buffer() == buffer_handle->wl_buffer()) {
+          result->second->buffer() == buffer_handle->buffer()) {
         submitted_frames->submitted_buffers.erase(result);
         break;
       }
@@ -590,7 +603,7 @@ bool WaylandFrameManager::EnsureWlBuffersExist(WaylandFrame& frame) {
       if (!handle) {
         frame.buffer_lost = true;
         subsurface_to_overlay.second = wl::WaylandOverlayConfig();
-      } else if (!handle->wl_buffer() && !handle_pending_creation) {
+      } else if (!handle->buffer() && !handle_pending_creation) {
         // Found the first not-ready buffer, let handle invoke
         // MaybeProcessPendingFrame() when wl_buffer is created.
         handle_pending_creation = handle;
@@ -603,7 +616,7 @@ bool WaylandFrameManager::EnsureWlBuffersExist(WaylandFrame& frame) {
     if (!handle) {
       frame.buffer_lost = true;
       frame.root_config = wl::WaylandOverlayConfig();
-    } else if (!handle->wl_buffer() && !handle_pending_creation) {
+    } else if (!handle->buffer() && !handle_pending_creation) {
       handle_pending_creation = handle;
     }
   }
@@ -632,7 +645,7 @@ void WaylandFrameManager::OnExplicitBufferRelease(WaylandSurface* surface,
   for (const auto& frame : submitted_frames_) {
     auto result = frame->submitted_buffers.find(surface);
     if (result != frame->submitted_buffers.end() &&
-        result->second->wl_buffer() == buffer) {
+        result->second->buffer() == buffer) {
       // Explicitly make this buffer released when
       // linux_explicit_synchronization is used.
       result->second->OnExplicitRelease(surface);
@@ -666,7 +679,7 @@ void WaylandFrameManager::OnWlBufferRelease(WaylandSurface* surface,
   for (const auto& frame : submitted_frames_) {
     auto result = frame->submitted_buffers.find(surface);
     if (result != frame->submitted_buffers.end() &&
-        result->second->wl_buffer() == buffer) {
+        result->second->buffer() == buffer) {
       if (connection_->UseImplicitSyncInterop()) {
         base::ScopedFD fence =
             connection_->buffer_manager_host()->ExtractReleaseFence(

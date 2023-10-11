@@ -40,7 +40,7 @@ using optimization_guide::proto::RequestContext;
 
 namespace commerce {
 
-const int64_t kInvalidDiscountId = 0;
+const uint64_t kInvalidDiscountId = 0;
 
 MockOptGuideDecider::MockOptGuideDecider() = default;
 MockOptGuideDecider::~MockOptGuideDecider() = default;
@@ -395,7 +395,7 @@ void ShoppingServiceTestBase::SetUp() {
       sync_service_.get(),
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           test_url_loader_factory_.get()),
-      nullptr, nullptr);
+      nullptr, nullptr, nullptr, nullptr);
 }
 
 void ShoppingServiceTestBase::TestBody() {}

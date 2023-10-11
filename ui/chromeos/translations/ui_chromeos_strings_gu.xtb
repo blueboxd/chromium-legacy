@@ -278,6 +278,7 @@
 <translation id="3264582393905923483">સંદર્ભ</translation>
 <translation id="3272909651715601089">"<ph name="PATH" />" ખોલી શક્યા નથી</translation>
 <translation id="3280431534455935878">તૈયારી કરી રહ્યાં છીએ</translation>
+<translation id="3280719573299097127">તમે કોઈ મીટર્ડ નેટવર્ક પર છો. ફાઇલ સિંકની પ્રક્રિયા થોભાવવામાં આવી છે.</translation>
 <translation id="3280987981688031357">વિનાઇલ રેકોર્ડ</translation>
 <translation id="3290356915286466215">અસુરક્ષિત</translation>
 <translation id="3291218047831493686">સિમ લૉક સેટિંગમાં ફેરફાર કરવા માટે આ નેટવર્ક સાથે કનેક્ટ કરો</translation>
@@ -632,6 +633,7 @@
 <translation id="5838451609423551646">પસંદગીમાંથી બધી એન્ટ્રી કાઢી નાખી.</translation>
 <translation id="5838825566232597749">US Workman આંતરરાષ્ટ્રિય</translation>
 <translation id="5845721951356578987">નર્સ</translation>
+<translation id="5858478190805449225">બૅટરી સેવર મોડ ચાલુ છે. જ્યારે બૅટરી સેવર મોડ બંધ કરવામાં આવે, ત્યારે ફરી પ્રયાસ કરો.</translation>
 <translation id="5860491529813859533">ચાલુ કરો</translation>
 <translation id="5861477046012235702">ગેમ રમનાર</translation>
 <translation id="5864471791310927901">DHCP લુકઅપ નિષ્ફળ</translation>
@@ -896,7 +898,6 @@
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7920501309908018401">My-Driveની તમારી ફાઇલો તમારા Chromebook સાથે ઑટોમૅટિક રીતે સિંક થશે જેથી તમે તેને ઇન્ટરનેટ કનેક્શન વિના ઍક્સેસ કરી શકશો.</translation>
 <translation id="7925247922861151263">AAA તપાસ નિષ્ફળ</translation>
-<translation id="7925686952655276919">સમન્વયન માટે ડેટા માહિતીની ઉપયોગ કરશો નહીં</translation>
 <translation id="7928710562641958568">ઉપકરણ હટાવો</translation>
 <translation id="7933875256234974853">Drive ફાઇલોને સિંક કરવાની તૈયારી કરી રહ્યાં છીએ...</translation>
 <translation id="7943385054491506837">યુએસ કોલમેક</translation>
@@ -919,6 +920,7 @@
 <translation id="8087576439476816834"><ph name="PROFILE_NAME" /> ડાઉનલોડ કરો</translation>
 <translation id="8106045200081704138">મારી સાથે શેર કરેલા</translation>
 <translation id="8116072619078571545">બરફનું પાણી</translation>
+<translation id="8120392982188717723">મીટર્ડ નેટવર્ક પર સિંક કરવાની મંજૂરી આપો</translation>
 <translation id="8124093710070495550">સિંકની સમસ્યા</translation>
 <translation id="8128733386027980860">અંગ્રેજી (યુકે), Dvorak કીબોર્ડ સાથે</translation>
 <translation id="8137331602592933310">"<ph name="FILENAME" />" તમારી સાથે શેર કરવામાં આવી છે. તમે એને કાઢી શકતા નથી કારણ કે તમે તેના માલિક નથી.</translation>

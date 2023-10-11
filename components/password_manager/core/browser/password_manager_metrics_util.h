@@ -18,6 +18,10 @@
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
+namespace password_manager {
+struct PasswordForm;
+}
+
 namespace password_manager::metrics_util {
 
 using IsUsernameChanged = base::StrongAlias<class IsUsernameChangedTag, bool>;
@@ -158,15 +162,6 @@ enum AutoSigninPromoUserAction {
   AUTO_SIGNIN_TURN_OFF = 1,
   AUTO_SIGNIN_OK_GOT_IT = 2,
   AUTO_SIGNIN_PROMO_ACTION_COUNT
-};
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum AccountChooserUserAction {
-  ACCOUNT_CHOOSER_DISMISSED = 0,
-  ACCOUNT_CHOOSER_CREDENTIAL_CHOSEN = 1,
-  ACCOUNT_CHOOSER_SIGN_IN = 2,
-  ACCOUNT_CHOOSER_ACTION_COUNT
 };
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -705,6 +700,17 @@ enum class SharedPasswordsNotificationBubbleInteractions {
   kMaxValue = kCloseButtonClicked,
 };
 
+// Represent all possible states of GetLoginsWithAffiliationsRequestHandler in
+// regards to grouped matches. Entries should not be renumbered and numeric
+// values should never be reused. Always keep this enum in sync with the
+// corresponding PasswordManager.GroupedPasswordFetchResult in enums.xml.
+enum class GroupedPasswordFetchResult {
+  kNoMatches = 0,
+  kBetterMatchesExist = 1,
+  kOnlyGroupedMatches = 2,
+  kMaxValue = kOnlyGroupedMatches,
+};
+
 std::string GetPasswordAccountStorageUsageLevelHistogramSuffix(
     PasswordAccountStorageUsageLevel usage_level);
 
@@ -792,10 +798,6 @@ void LogPasswordGenerationAvailableSubmissionEvent(
 
 // Log a user action on showing the autosignin first run experience.
 void LogAutoSigninPromoUserAction(AutoSigninPromoUserAction action);
-
-// Log a user action on showing the account chooser for one or many accounts.
-void LogAccountChooserUserActionOneAccount(AccountChooserUserAction action);
-void LogAccountChooserUserActionManyAccounts(AccountChooserUserAction action);
 
 // Log the result of navigator.credentials.get.
 void LogCredentialManagerGetResult(CredentialManagerGetResult result,
@@ -893,6 +895,10 @@ void LogUserInteractionsInPasswordManagementBubble(
 void LogUserInteractionsInSharedPasswordsNotificationBubble(
     SharedPasswordsNotificationBubbleInteractions interaction);
 
+// Logs GroupedPasswordFetchResult.
+void LogGroupedPasswordsResults(
+    const std::vector<std::unique_ptr<password_manager::PasswordForm>>& logins);
+
 // Wraps |callback| into another callback that measures the elapsed time between
 // construction and actual execution of the callback. Records the result to
 // |histogram|, which is expected to be a char literal.
@@ -910,14 +916,13 @@ base::OnceCallback<R(Args...)> TimeCallback(
 }
 
 #if BUILDFLAG(IS_IOS)
-// This enum indicates migration status from Keychain to OSCrypt on iOS in the
-// version 39.
+// This enum indicates migration status from Keychain to OSCrypt for passwords
+// on iOS in the version 39.
 //
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 //
-// Needs to stay in sync with PasswordManagerMatchedFormType in
-// enums.xml.
+// Needs to stay in sync with MigrationToOSCryptEnum in enums.xml.
 enum class MigrationToOSCrypt {
   kStarted = 0,
   kFailedToCopyPasswordColumn = 1,
@@ -929,18 +934,40 @@ enum class MigrationToOSCrypt {
   kMaxValue = kFailedToDelete,
 };
 
-// Records the latency of the migration to OSCrypt of the login db on iOS
-// separated by password store type and whether the migration was successful or
-// not.
+// Records the latency of the passwords migration to OSCrypt of the login db on
+// iOS separated by password store type and whether the migration was successful
+// or not.
 void RecordMigrationToOSCryptLatency(bool success,
                                      base::TimeDelta latency,
                                      base::StringPiece store_infix);
 
-// Records the status of the migration to OSCrypt of the login db on iOS
-// separated by password store type.
+// Records the status of the passwords migration to OSCrypt of the login db on
+// iOS separated by password store type.
 void RecordMigrationToOSCryptStatus(base::TimeTicks migration_start_time,
                                     bool is_account_store,
                                     MigrationToOSCrypt status);
+
+// This enum indicates migration status from Keychain to OSCrypt for password
+// notes on iOS in the version 40.
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+//
+// Needs to stay in sync with PasswordNotesMigrationToOSCryptEnum in enums.xml.
+enum class PasswordNotesMigrationToOSCrypt {
+  kStarted = 0,
+  kFailedToDecryptFromKeychain = 1,
+  kFailedToEncrypt = 2,
+  kFailedToUpdate = 3,
+  kSuccess = 4,
+  kMaxValue = kSuccess,
+};
+
+// Records the status of the password notes migration to OSCrypt of the login db
+// on iOS separated by password store type.
+void RecordPasswordNotesMigrationToOSCryptStatus(
+    bool is_account_store,
+    PasswordNotesMigrationToOSCrypt status);
 #endif
 }  // namespace password_manager::metrics_util
 

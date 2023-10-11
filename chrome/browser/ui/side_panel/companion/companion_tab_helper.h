@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/side_panel/side_panel_enums.h"
 #include "components/lens/buildflags.h"
 #include "components/lens/lens_metrics.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 #if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
@@ -19,6 +20,10 @@ namespace content {
 class WebContents;
 }  // namespace content
 
+namespace ui {
+class ImageModel;
+}  // namespace ui
+
 namespace companion {
 
 class CompanionPageHandler;
@@ -27,7 +32,8 @@ class CompanionPageHandler;
 // values such as a text query. This class also owns the
 // CompanionSidePanelController.
 class CompanionTabHelper
-    : public content::WebContentsUserData<CompanionTabHelper> {
+    : public content::WebContentsUserData<CompanionTabHelper>,
+      public content::WebContentsObserver {
  public:
   class Delegate {
    public:
@@ -47,11 +53,32 @@ class CompanionTabHelper
     virtual void OnCompanionSidePanelClosed() = 0;
     // Retrieves the web contents for testing purposes.
     virtual content::WebContents* GetCompanionWebContentsForTesting() = 0;
+    // Returns true if Companion is currently open and showing to the user.
+    virtual bool IsCompanionShowing() = 0;
+    // Set Companion as the active side panel entry in the given web contents.
+    virtual void SetCompanionAsActiveEntry(content::WebContents* contents) = 0;
     // Add a callback to be called when Companion is fully loaded in the side
     // panel, i.e. the spinner of the tab would stop spinning, Javascript is
     // loaded and the onload event was dispatched.
     virtual void AddCompanionFinishedLoadingCallback(
         base::OnceCallback<void()> callback) = 0;
+
+    // Create a contextual Lens entry.
+    virtual void CreateAndRegisterLensEntry(
+        const content::OpenURLParams& params,
+        std::u16string combobox_label,
+        const ui::ImageModel favicon) = 0;
+    // Opens a contextual Lens view that was already created.
+    virtual void OpenContextualLensView(
+        const content::OpenURLParams& params) = 0;
+    // Removes and deletes the contextual Lens view.
+    virtual void RemoveContextualLensView() = 0;
+    // Testing method to get the Lens view web contents.
+    virtual content::WebContents* GetLensViewWebContentsForTesting() = 0;
+    // Testing method to open lens results in a new tab.
+    virtual bool OpenLensResultsInNewTabForTesting() = 0;
+    // Testing method to check if the new tab button is enabled for Lens.
+    virtual bool IsLensLaunchButtonEnabledForTesting() = 0;
   };
 
   using CompanionLoadedCallback = base::OnceCallback<void()>;
@@ -59,6 +86,16 @@ class CompanionTabHelper
   CompanionTabHelper(const CompanionTabHelper&) = delete;
   CompanionTabHelper& operator=(const CompanionTabHelper&) = delete;
   ~CompanionTabHelper() override;
+
+  // content::WebContentsObserver overrides.
+  void DidOpenRequestedURL(content::WebContents* new_contents,
+                           content::RenderFrameHost* source_render_frame_host,
+                           const GURL& url,
+                           const content::Referrer& referrer,
+                           WindowOpenDisposition disposition,
+                           ui::PageTransition transition,
+                           bool started_from_context_menu,
+                           bool renderer_initiated) override;
 
   // Add a callback to be called when Companion is fully loaded in the side
   // panel, i.e. the spinner of the tab would stop spinning, Javascript is
@@ -92,6 +129,10 @@ class CompanionTabHelper
   // Returns the latest image data saved to the helper and not passed to the
   // handler or an empty pointer if none.
   std::unique_ptr<side_panel::mojom::ImageQuery> GetImageQuery();
+  bool HasImageQuery();
+
+  // Returns the most recently set start time for the text query entry point.
+  std::unique_ptr<base::Time> GetTextQueryStartTime();
 
   // Called when the companion side panel is closed. Used for cleaning up any
   // local state.
@@ -123,6 +164,18 @@ class CompanionTabHelper
   absl::optional<SidePanelOpenTrigger>
   GetAndResetMostRecentSidePanelOpenTrigger();
 
+  // Create and register a contextual Lens entry.
+  void CreateAndRegisterLensEntry(const content::OpenURLParams& params,
+                                  std::u16string combobox_label,
+                                  const ui::ImageModel favicon);
+  // Open an already created contextual Lens view with provided params.
+  void OpenContextualLensView(const content::OpenURLParams& params);
+  // Delete the contextual lens view associated with this web contents.
+  void RemoveContextualLensView();
+  content::WebContents* GetLensViewWebContentsForTesting();
+  bool OpenLensResultsInNewTabForTesting();
+  bool IsLensLaunchButtonEnabledForTesting();
+
  private:
   explicit CompanionTabHelper(content::WebContents* web_contents);
 
@@ -142,6 +195,7 @@ class CompanionTabHelper
   std::unique_ptr<side_panel::mojom::ImageQuery> image_query_;
   std::unique_ptr<Delegate> delegate_;
   std::string text_query_;
+  std::unique_ptr<base::Time> text_query_start_time_;
 
   // Caches the trigger source for an in-progress companion page open action in
   // the current tab. Should be cleared after the open action is complete.

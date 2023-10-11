@@ -256,6 +256,11 @@ const char kEnableBenchmarkingDescription[] =
     "after 3 restarts. On the third restart, the flag will appear to be off "
     "but the effect is still active.";
 
+const char kPreloadingOnPerformancePageName[] =
+    "Preloading Settings on Performance Page";
+const char kPreloadingOnPerformancePageDescription[] =
+    "Moves preloading settings to the performance page.";
+
 const char kPrivacyIndicatorsName[] = "Enable Privacy Indicators";
 const char kPrivacyIndicatorsDescription[] =
     "While screen sharing or camera/microphone is being accessed, show a green "
@@ -1231,11 +1236,6 @@ const char kEnableSearchCustomizableShortcutsInLauncherName[] =
 const char kEnableSearchCustomizableShortcutsInLauncherDescription[] =
     "Enable searching for customizable shortcuts in launcher.";
 
-const char kEnableSearchInShortcutsAppName[] =
-    "Enable search in new shortcuts app";
-const char kEnableSearchInShortcutsAppDescription[] =
-    "Enable searching for shortcuts in the new shortcuts app.";
-
 const char kEnableInputDeviceSettingsSplitName[] =
     "Enable input device settings split";
 const char kEnableInputDeviceSettingsSplitDescription[] =
@@ -1286,6 +1286,11 @@ const char
     kEnableFriendlierSafeBrowsingSettingsStandardProtectionDescription[] =
         "Updates the text and layout on both the privacy guide and the "
         "security settings page.";
+
+const char kEnableRedInterstitialFaceliftName[] = "Red interstitial facelift";
+const char kEnableRedInterstitialFaceliftDescription[] =
+    "Enables red interstitial facelift UI changes, including icon, string, and "
+    "style changes.";
 
 const char kEnableTailoredSecurityUpdatedMessagesName[] =
     "Enable tailored security updated messages";
@@ -2108,6 +2113,14 @@ const char kExtractRelatedSearchesFromPrefetchedZPSResponseDescription[] =
 const char kLargeFaviconFromGoogleName[] = "Large favicons from Google";
 const char kLargeFaviconFromGoogleDescription[] =
     "Request large favicons from Google's favicon service";
+
+const char kLegacyTechReportTopLevelUrlName[] =
+    "Using top level navigation URL for legacy technology report";
+const char kLegacyTechReportTopLevelUrlDescription[] =
+    "When a legacy technology report is triggered and uploaded for enterprise "
+    "users. By default, the URL of the report won't be same as the one in the "
+    "Omnibox if the event is detected in a sub-frame. Enable this flag will "
+    "allow browser trace back to the top level URL instead.";
 
 const char kLensCameraAssistedSearchName[] =
     "Google Lens in Omnibox and New Tab Page";
@@ -4147,6 +4160,11 @@ const char kQueryTilesEnableTrendingName[] =
     "Query Tiles - Enable trending queries";
 const char kQueryTilesEnableTrendingDescription[] =
     "Allow tiles of trending queries to show up in front of curated tiles";
+const char kQueryTilesDisableCountryOverrideName[] =
+    "Disable tre default country list for query tiles.";
+const char kQueryTilesDisableCountryOverrideDescription[] =
+    "Disable the default country list for query tiles. It is still "
+    "possible to show query tiles through server experiments.";
 const char kQueryTilesCountryCode[] = "Country code for getting tiles";
 const char kQueryTilesCountryCodeDescription[] =
     "When query tiles are enabled, this value determines tiles for which "
@@ -5677,6 +5695,11 @@ const char kCellularBypassESimInstallationConnectivityCheckName[] =
 const char kCellularBypassESimInstallationConnectivityCheckDescription[] =
     "Bypass the non-cellular internet connectivity check during eSIM "
     "installation.";
+
+const char kCellularCarrierLockName[] =
+    "Cellular Carrier Lock provisioning manager";
+const char kCellularCarrierLockDescription[] =
+    "Enable support for Carrier Lock configuration on cellular device.";
 
 const char kCellularUseSecondEuiccName[] = "Use second Euicc";
 const char kCellularUseSecondEuiccDescription[] =
@@ -7602,6 +7625,14 @@ const char kEnableBuiltinHlsName[] = "Builtin HLS player";
 const char kEnableBuiltinHlsDescription[] =
     "Enables chrome's builtin HLS player instead of Android's MediaPlayer";
 #endif  // BUILDFLAG(ENABLE_HLS_DEMUXER)
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+const char kProfilesReorderingName[] = "Profiles Reordering";
+const char kProfilesReorderingDescription[] =
+    "Enables profiles reordering in the Profile Picker main view by drag and "
+    "dropping the Profile Tiles. The order is saved when changed and "
+    "persisted.";
+#endif
 
 // ============================================================================
 // Don't just add flags to the end, put them in the right section in

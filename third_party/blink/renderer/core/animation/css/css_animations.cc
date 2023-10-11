@@ -174,8 +174,8 @@ CSSAnimationProxy::CSSAnimationProxy(
     AnimationTimeDelta timeline_time = timeline->CurrentTime().value();
     at_scroll_timeline_boundary_ =
         timeline_time.is_zero() ||
-        IsWithinAnimationTimeTolerance(timeline_time,
-                                       timeline_duration_.value());
+        TimingCalculations::IsWithinAnimationTimeTolerance(
+            timeline_time, timeline_duration_.value());
   }
 }
 
@@ -260,7 +260,7 @@ absl::optional<AnimationTimeDelta> CSSAnimationProxy::CalculateInheritedTime(
     // discontinuity.
     AnimationTimeDelta end_time = std::max(
         timing.start_delay.AsTimeValue() +
-            MultiplyZeroAlwaysGivesZero(
+            TimingCalculations::MultiplyZeroAlwaysGivesZero(
                 timing.iteration_duration.value_or(AnimationTimeDelta()),
                 timing.iteration_count) +
             timing.end_delay.AsTimeValue(),
@@ -2514,8 +2514,9 @@ void CSSAnimations::CalculateTransitionUpdate(
     const ComputedStyleBuilder& style_builder,
     const ComputedStyle* old_style,
     bool can_trigger_animations) {
-  if (animating_element.GetDocument().FinishingOrIsPrinting())
+  if (animating_element.GetDocument().FinishingOrIsPrinting()) {
     return;
+  }
 
   ElementAnimations* element_animations =
       animating_element.GetElementAnimations();
@@ -2544,6 +2545,12 @@ void CSSAnimations::CalculateTransitionUpdate(
          "beginning of the lifecycle update, or a style based on the "
          "@starting-style style";
 #endif
+
+  if (old_style && !old_style->IsStartingStyle() &&
+      !animating_element.GetDocument().RenderingHadBegunForLastStyleUpdate()) {
+    // Only allow transitions on the first rendered frame for @starting-style.
+    old_style = nullptr;
+  }
 
   if (!animation_style_recalc && old_style) {
     // TODO: Don't run transitions if style.Display() == EDisplay::kNone
@@ -2855,7 +2862,18 @@ void CSSAnimations::AnimationEventDelegate::MaybeDispatch(
         PseudoElement::PseudoElementNameForEvents(animation_target_);
     AnimationEvent* event = AnimationEvent::Create(
         event_name, name_, elapsed_time, pseudo_element_name);
-    event->SetTarget(GetEventTarget());
+
+    EventTarget* event_target = GetEventTarget();
+    if (!event_target) {
+      // TODO(crbug.com/1483390): Investigate why event target may be null.
+      // This condition only appears to be possible for a disposed pseudo-
+      // element. Though in this case, any attached CSS animations should be
+      // canceled. This workaround is safe since there is no originating
+      // element to listen to the event.
+      return;
+    }
+
+    event->SetTarget(event_target);
     GetDocument().EnqueueAnimationFrameEvent(event);
   }
 }
@@ -3003,9 +3021,9 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
       // "active time of the animation at the moment it was cancelled,
       // calculated using a fill mode of both".
       absl::optional<AnimationTimeDelta> cancel_active_time =
-          CalculateActiveTime(animation_node.NormalizedTiming(),
-                              Timing::FillMode::BOTH,
-                              animation_node.LocalTime(), previous_phase_);
+          TimingCalculations::CalculateActiveTime(
+              animation_node.NormalizedTiming(), Timing::FillMode::BOTH,
+              animation_node.LocalTime(), previous_phase_);
       // Being the FillMode::BOTH the only possibility to get a null
       // cancel_active_time is that previous_phase_ is kPhaseNone. This cannot
       // happen because we know that current_phase == kPhaseNone and

@@ -71,6 +71,8 @@
 #include "components/lens/lens_testing_utils.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/privacy_sandbox/privacy_sandbox_attestations/privacy_sandbox_attestations.h"
+#include "components/privacy_sandbox/privacy_sandbox_attestations/scoped_privacy_sandbox_attestations.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/supervised_user/core/common/buildflags.h"
@@ -593,7 +595,7 @@ class ContextMenuForSupervisedUsersBrowserTest : public ContextMenuBrowserTest {
  public:
   ContextMenuForSupervisedUsersBrowserTest() {
     supervision_mixin_.InitFeatures();
-  };
+  }
 
   supervised_user::SupervisedUserService* GetSupervisedUserService() {
     return SupervisedUserServiceFactory::GetForProfile(browser()->profile());
@@ -1397,6 +1399,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenInNewTabReferrer) {
   // Set up menu with link URL.
   content::ContextMenuParams params;
   params.page_url = kReferrerWithFragment;
+  params.frame_url = params.page_url;
   params.link_url = echoheader;
 
   // Select "Open Link in New Tab" and wait for the new tab to be added.
@@ -2075,6 +2078,13 @@ IN_PROC_BROWSER_TEST_F(ContextMenuFencedFrameTest,
 // from a contextual menu inside of a fenced frame.
 IN_PROC_BROWSER_TEST_F(ContextMenuFencedFrameTest,
                        AutomaticBeaconSentAfterContextMenuNavigation) {
+  privacy_sandbox::ScopedPrivacySandboxAttestations scoped_attestations(
+      privacy_sandbox::PrivacySandboxAttestations::CreateForTesting());
+  // Mark all Privacy Sandbox APIs as attested since the test case is testing
+  // behaviors not related to attestations.
+  privacy_sandbox::PrivacySandboxAttestations::GetInstance()
+      ->SetAllPrivacySandboxAttestedForTesting(true);
+
   constexpr char kReportingURL[] = "/_report_event_server.html";
   constexpr char kBeaconMessage[] = "this is the message";
 

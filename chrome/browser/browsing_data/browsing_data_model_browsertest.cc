@@ -33,6 +33,8 @@
 #include "components/browsing_data/core/features.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/privacy_sandbox/privacy_sandbox_attestations/privacy_sandbox_attestations.h"
+#include "components/privacy_sandbox/privacy_sandbox_attestations/scoped_privacy_sandbox_attestations.h"
 #include "components/privacy_sandbox/privacy_sandbox_settings.h"
 #include "components/services/storage/public/mojom/local_storage_control.mojom.h"
 #include "components/services/storage/public/mojom/storage_usage_info.mojom.h"
@@ -288,6 +290,13 @@ class BrowsingDataModelBrowserTest
   void SetUpOnMainThread() override {
     PrivacySandboxSettingsFactory::GetForProfile(browser()->profile())
         ->SetAllPrivacySandboxAllowedForTesting();
+    scoped_attestations_ =
+        std::make_unique<privacy_sandbox::ScopedPrivacySandboxAttestations>(
+            privacy_sandbox::PrivacySandboxAttestations::CreateForTesting());
+    // Mark all Privacy Sandbox APIs as attested since the test cases are
+    // testing behaviors not related to attestations.
+    privacy_sandbox::PrivacySandboxAttestations::GetInstance()
+        ->SetAllPrivacySandboxAttestedForTesting(true);
     host_resolver()->AddRule("*", "127.0.0.1");
     https_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::test_server::EmbeddedTestServer::TYPE_HTTPS);
@@ -352,6 +361,8 @@ class BrowsingDataModelBrowserTest
  private:
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
+  std::unique_ptr<privacy_sandbox::ScopedPrivacySandboxAttestations>
+      scoped_attestations_;
 };
 
 IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
@@ -933,37 +944,53 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
       content_settings->allowed_browsing_data_model();
   ValidateBrowsingDataEntries(allowed_browsing_data_model, {});
   ASSERT_EQ(allowed_browsing_data_model->size(), 0u);
+  if (!GetParam()) {
+    return;
+  }
 
   SetDataForType("SessionStorage", web_contents());
-  if (GetParam()) {
-    WaitForModelUpdate(allowed_browsing_data_model, /*expected_size=*/1);
+  WaitForModelUpdate(allowed_browsing_data_model, /*expected_size=*/1);
 
-    // Validate Session Storage is reported.
-    url::Origin testOrigin = https_test_server()->GetOrigin(kTestHost);
-    auto data_key = blink::StorageKey::CreateFirstParty(testOrigin);
-    ValidateBrowsingDataEntries(
-        allowed_browsing_data_model,
-        {{kTestHost,
-          data_key,
-          {{BrowsingDataModel::StorageType::kSessionStorage},
-           /*storage_size=*/0,
-           /*cookie_count=*/0}}});
-    ASSERT_EQ(allowed_browsing_data_model->size(), 1u);
+  // Validate Session Storage is reported.
+  url::Origin testOrigin = https_test_server()->GetOrigin(kTestHost);
+  auto storage_key = blink::StorageKey::CreateFirstParty(testOrigin);
 
-    // Delete Session Storage
-    RemoveBrowsingDataForDataOwner(allowed_browsing_data_model, kTestHost);
-  }
+  // Obtaining Session Storage namespace_id from the navigation controller.
+  const auto& session_storage_namespace_map =
+      web_contents()->GetController().GetSessionStorageNamespaceMap();
+  const auto& storage_partition_config =
+      content::StoragePartitionConfig::CreateDefault(
+          web_contents()->GetBrowserContext());
+  const auto& namespace_id =
+      session_storage_namespace_map.at(storage_partition_config);
+
+  content::SessionStorageUsageInfo data_key{storage_key, namespace_id->id()};
+
+  ValidateBrowsingDataEntries(
+      allowed_browsing_data_model,
+      {{kTestHost,
+        data_key,
+        {{BrowsingDataModel::StorageType::kSessionStorage},
+         /*storage_size=*/0,
+         /*cookie_count=*/0}}});
+  ASSERT_EQ(allowed_browsing_data_model->size(), 1u);
+
+  // Delete Session Storage
+  RemoveBrowsingDataForDataOwner(allowed_browsing_data_model, kTestHost);
+
   // Validate that the allowed browsing data model is empty.
   ValidateBrowsingDataEntries(allowed_browsing_data_model, {});
   ASSERT_EQ(allowed_browsing_data_model->size(), 0u);
+  ASSERT_FALSE(HasDataForType("SessionStorage", web_contents()));
 }
 
 IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
                        QuotaStorageAccessReportedCorrectly) {
-  // TODO(crbug.com/1442473): Investigate and include remaining quota storage
-  // data types ["ServiceWorker"].
-  std::vector<std::string> quota_storage_data_types = {"IndexedDb",
-                                                       "FileSystem", "WebSql"};
+  // Keeping the `ServiceWorker` type last as checking it after deletion counts
+  // as a new access report and repopulates the model, this way we keep it from
+  // affecting other quota storage types test.
+  std::vector<std::string> quota_storage_data_types = {
+      "IndexedDb", "FileSystem", "WebSql", "ServiceWorker"};
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   quota_storage_data_types.push_back("MediaLicense");
@@ -986,28 +1013,31 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
     ValidateBrowsingDataEntries(allowed_browsing_data_model, {});
     ASSERT_EQ(allowed_browsing_data_model->size(), 0u);
 
-    SetDataForType(data_type, web_contents());
-    if (GetParam()) {
-      WaitForModelUpdate(allowed_browsing_data_model, /*expected_size=*/1);
-
-      // Validate quota data is reported.
-      url::Origin testOrigin = https_test_server()->GetOrigin(kTestHost);
-      auto data_key = blink::StorageKey::CreateFirstParty(testOrigin);
-      ValidateBrowsingDataEntries(
-          allowed_browsing_data_model,
-          {{kTestHost,
-            data_key,
-            {{BrowsingDataModel::StorageType::kQuotaStorage},
-             /*storage_size=*/0,
-             /*cookie_count=*/0}}});
-      ASSERT_EQ(allowed_browsing_data_model->size(), 1u);
-
-      // Delete quota data
-      RemoveBrowsingDataForDataOwner(allowed_browsing_data_model, kTestHost);
+    if (!GetParam()) {
+      return;
     }
-    // Validate that the allowed browsing data model is empty.
+
+    SetDataForType(data_type, web_contents());
+    WaitForModelUpdate(allowed_browsing_data_model, /*expected_size=*/1);
+
+    // Validate quota storage is reported.
+    url::Origin testOrigin = https_test_server()->GetOrigin(kTestHost);
+    auto data_key = blink::StorageKey::CreateFirstParty(testOrigin);
+    ValidateBrowsingDataEntries(
+        allowed_browsing_data_model,
+        {{kTestHost,
+          data_key,
+          {{BrowsingDataModel::StorageType::kQuotaStorage},
+           /*storage_size=*/0,
+           /*cookie_count=*/0}}});
+    ASSERT_EQ(allowed_browsing_data_model->size(), 1u);
+
+    // Delete quota storage
+    RemoveBrowsingDataForDataOwner(allowed_browsing_data_model, kTestHost);
+    //  Validate that the allowed browsing data model is empty.
     ValidateBrowsingDataEntries(allowed_browsing_data_model, {});
     ASSERT_EQ(allowed_browsing_data_model->size(), 0u);
+    ASSERT_FALSE(HasDataForType(data_type, web_contents()));
   }
 }
 

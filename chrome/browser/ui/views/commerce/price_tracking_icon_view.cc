@@ -8,6 +8,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/commerce/shopping_service_factory.h"
+#include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -41,6 +42,8 @@
 
 namespace {
 
+// This will add the bookmark to the shopping collection if the feature is
+// enabled, otherwise we save to "other bookmarks".
 void AddIfNotBookmarkedToTheDefaultFolder(bookmarks::BookmarkModel* model,
                                           content::WebContents* web_contents) {
   GURL url;
@@ -51,8 +54,14 @@ void AddIfNotBookmarkedToTheDefaultFolder(bookmarks::BookmarkModel* model,
       return;
     }
 
-    const bookmarks::BookmarkNode* other_node = model->other_node();
-    model->AddNewURL(other_node, other_node->children().size(), title, url);
+    const bookmarks::BookmarkNode* parent = model->other_node();
+
+    // Automatically add the bookmark to the shopping collection if enabled.
+    if (base::FeatureList::IsEnabled(commerce::kShoppingCollection)) {
+      parent = commerce::GetShoppingCollectionBookmarkFolder(model, true);
+    }
+
+    model->AddNewURL(parent, parent->children().size(), title, url);
   }
 }
 
@@ -309,16 +318,26 @@ bool PriceTrackingIconView::ShouldShowFirstUseExperienceBubble() const {
 }
 
 void PriceTrackingIconView::MaybeShowPageActionLabel() {
-  auto* tab_helper =
-      commerce::ShoppingListUiTabHelper::FromWebContents(GetWebContents());
+  if (!base::FeatureList::IsEnabled(commerce::kCommerceAllowChipExpansion)) {
+    return;
+  }
 
-  if (!tab_helper || tab_helper->GetPageActionToExpand() !=
-                         PageActionIconType::kPriceTracking) {
+  auto* tracker =
+      feature_engagement::TrackerFactory::GetForBrowserContext(profile_);
+  if (!tracker ||
+      !tracker->ShouldTriggerHelpUI(
+          feature_engagement::kIPHPriceTrackingPageActionIconLabelFeature)) {
     return;
   }
 
   should_extend_label_shown_duration_ = true;
   AnimateIn(absl::nullopt);
+
+  // Note that `Dismiss()` in this case does not dismiss the UI. It's telling
+  // the FE backend that the promo is done so that other promos can run. Showing
+  // the label should not block other promos from displaying.
+  tracker->Dismissed(
+      feature_engagement::kIPHPriceTrackingPageActionIconLabelFeature);
 }
 
 void PriceTrackingIconView::HidePageActionLabel() {

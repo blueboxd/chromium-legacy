@@ -278,6 +278,7 @@
 <translation id="3264582393905923483">السياق</translation>
 <translation id="3272909651715601089">تعذّر فتح "<ph name="PATH" />".</translation>
 <translation id="3280431534455935878">جارٍ التحضير</translation>
+<translation id="3280719573299097127">تم إيقاف مزامنة الملفات مؤقتًا، بسبب اتصالك بشبكة تفرض تكلفة استخدام.</translation>
 <translation id="3280987981688031357">أسطوانة موسيقية</translation>
 <translation id="3290356915286466215">غير مؤمّن</translation>
 <translation id="3291218047831493686">‏يمكنك الاتصال بهذه الشبكة لتغيير إعدادات قفل شريحة SIM.</translation>
@@ -632,6 +633,7 @@
 <translation id="5838451609423551646">تمت إزالة جميع الإدخالات من الاختيار.</translation>
 <translation id="5838825566232597749">‏Workman الأمريكية الدولية</translation>
 <translation id="5845721951356578987">ممرّضة</translation>
+<translation id="5858478190805449225">وضع "توفير شحن البطارية" مُفعَّل. يُرجى إعادة المحاولة عندما يكون هذا الوضع غير مُفعَّل.</translation>
 <translation id="5860491529813859533">تفعيل</translation>
 <translation id="5861477046012235702">لاعب</translation>
 <translation id="5864471791310927901">‏تعذّر بحث DHCP</translation>
@@ -898,7 +900,6 @@
 <translation id="7911118814695487383">‏نظام التشغيل Linux</translation>
 <translation id="7920501309908018401">‏ستتم مزامنة ملفاتك في مجلد "ملفاتي" مع Chromebook تلقائيًا لتتمكّن من الوصول إليها بدون اتصال بالإنترنت.</translation>
 <translation id="7925247922861151263">‏تعذّر فحص AAA</translation>
-<translation id="7925686952655276919">عدم استخدام بيانات الجوال للمزامنة</translation>
 <translation id="7928710562641958568">إخراج الجهاز</translation>
 <translation id="7933875256234974853">‏جارٍ الاستعداد لمزامنة ملفات Google Drive…</translation>
 <translation id="7943385054491506837">‏الأمريكية Colemak</translation>
@@ -921,6 +922,7 @@
 <translation id="8087576439476816834">تنزيل <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">تمت مشاركتها معي</translation>
 <translation id="8116072619078571545">ماء مثلج</translation>
+<translation id="8120392982188717723">السماح بالمزامنة على الشبكات الخاضعة للقياس</translation>
 <translation id="8124093710070495550">لا يمكن استكمال المزامنة</translation>
 <translation id="8128733386027980860">‏الإنجليزية (المملكة المتحدة) باستخدام لوحة مفاتيح Dvorak</translation>
 <translation id="8137331602592933310">تمت مشاركة "<ph name="FILENAME" />" معك. لا يمكنك حذفه، نظرًا لأنك لا تمتلكه.</translation>

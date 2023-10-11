@@ -176,11 +176,13 @@ UpdateAddressProfileView::UpdateAddressProfileView(
   SetAcceptCallback(base::BindOnce(
       &SaveUpdateAddressProfileBubbleController::OnUserDecision,
       base::Unretained(controller_),
-      AutofillClient::SaveAddressProfileOfferUserDecision::kAccepted));
+      AutofillClient::SaveAddressProfileOfferUserDecision::kAccepted,
+      controller->GetProfileToSave()));
   SetCancelCallback(base::BindOnce(
       &SaveUpdateAddressProfileBubbleController::OnUserDecision,
       base::Unretained(controller_),
-      AutofillClient::SaveAddressProfileOfferUserDecision::kDeclined));
+      AutofillClient::SaveAddressProfileOfferUserDecision::kDeclined,
+      controller->GetProfileToSave()));
 
   SetProperty(views::kElementIdentifierKey, kTopViewId);
   SetTitle(controller_->GetWindowTitle());
@@ -276,9 +278,10 @@ UpdateAddressProfileView::UpdateAddressProfileView(
             .Build());
   }
 
-  set_fixed_width(std::max(main_content_view->GetPreferredSize().width(),
-                           layout_provider->GetDistanceMetric(
-                               views::DISTANCE_BUBBLE_PREFERRED_WIDTH)));
+  set_fixed_width(std::max(
+      main_content_view->GetPreferredSize().width() + margins().width(),
+      layout_provider->GetDistanceMetric(
+          views::DISTANCE_BUBBLE_PREFERRED_WIDTH)));
 }
 
 bool UpdateAddressProfileView::ShouldShowCloseButton() const {
